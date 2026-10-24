@@ -3,6 +3,7 @@
 
 void log(const char *fmt, ...);
 // world (metres, y up) -> screen pixels with the game's camera of the last frame; false when behind or unknown
+const char *camera_status();   // for the Path tab
 bool world_to_screen(float x, float y, float z, float sw, float sh, float *sx, float *sy);
 
 namespace ui {

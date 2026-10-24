@@ -217,13 +217,16 @@ static void draw(IDirect3DDevice9 *dev) {
 // their own view. The screen camera is the one whose projection has the screen's aspect ratio; among those, the
 // one used most often in the frame.
 typedef HRESULT(WINAPI *SetVSConstF_t)(IDirect3DDevice9 *, UINT, const float *, UINT);
-struct CamCand { float m[28]; int uses; };
+struct CamCand { float m[28]; int uses, src; };   // src 0 = shader constants, 1 = SetTransform
 static CamCand g_cands[64];
 static int g_ncands = 0;
 static float g_cam[28];
 static bool g_cam_ok = false;
 static DWORD g_cam_at = 0, g_cam_logged = 0;
 static float g_aspect = 0;   // backbuffer width / height
+static char g_cam_status[160] = "not seen yet";
+static void add_candidate(const float *c, int src);
+const char *camera_status() { return g_cam_status; }
 
 static HRESULT WINAPI hk_setvsc(IDirect3DDevice9 *d, UINT start, const float *c, UINT n) {
     if (start == 0 && n >= 7 && c[0] > 0.1f && c[5] > 0.1f && fabsf(c[12]) < 1e-4f && fabsf(c[13]) < 1e-4f &&
@@ -231,18 +234,52 @@ static HRESULT WINAPI hk_setvsc(IDirect3DDevice9 *d, UINT start, const float *c,
         const float *v = c + 16;
         float t2 = v[3] * v[3] + v[7] * v[7] + v[11] * v[11];
         float det = v[0] * (v[5] * v[10] - v[6] * v[9]) - v[1] * (v[4] * v[10] - v[6] * v[8]) + v[2] * (v[4] * v[9] - v[5] * v[8]);
-        if (t2 > 1e-6f && det > 0.5f) {
-            int i = 0;
-            // the same camera = same x/y scale and view (the depth row varies between passes)
-            while (i < g_ncands && (g_cands[i].m[0] != c[0] || g_cands[i].m[5] != c[5] ||
-                                    memcmp(g_cands[i].m + 16, c + 16, 12 * sizeof(float))))
-                i++;
-            if (i < g_ncands) g_cands[i].uses++;
-            else if (g_ncands < 64) { memcpy(g_cands[g_ncands].m, c, sizeof g_cands[0].m); g_cands[g_ncands++].uses = 1; }
-        }
+        if (t2 > 1e-6f && det > 0.5f) add_candidate(c, 0);
     }
     auto o = (SetVSConstF_t)original(d, 94);
     return o ? o(d, start, c, n) : D3DERR_INVALIDCALL;
+}
+
+// Count a camera seen this frame: the same camera = same x / y scale and view (the depth row varies between passes).
+static void add_candidate(const float *c, int src) {
+    int i = 0;
+    while (i < g_ncands && (g_cands[i].m[0] != c[0] || g_cands[i].m[5] != c[5] ||
+                            memcmp(g_cands[i].m + 16, c + 16, 12 * sizeof(float))))
+        i++;
+    if (i < g_ncands) g_cands[i].uses++;
+    else if (g_ncands < 64) {
+        memcpy(g_cands[g_ncands].m, c, sizeof g_cands[0].m);
+        g_cands[g_ncands].src = src;
+        g_cands[g_ncands++].uses = 1;
+    }
+}
+
+// Fixed-function drawing (no vertex shaders): the camera comes through SetTransform as D3D row-vector matrices;
+// they are turned into the shader layout (column-vector rows) and counted the same way.
+typedef HRESULT(WINAPI *SetTransform_t)(IDirect3DDevice9 *, D3DTRANSFORMSTATETYPE, const D3DMATRIX *);
+static float g_ff_proj[16];
+static bool g_ff_have_proj = false;
+
+static HRESULT WINAPI hk_settransform(IDirect3DDevice9 *d, D3DTRANSFORMSTATETYPE t, const D3DMATRIX *m) {
+    if (m) {
+        const float *f = (const float *)m;
+        if (t == D3DTS_PROJECTION && fabsf(f[11] - 1) < 1e-4f && fabsf(f[15]) < 1e-4f && f[0] > 0.1f && f[5] > 0.1f) {
+            for (int r = 0; r < 4; r++)
+                for (int c = 0; c < 4; c++) g_ff_proj[r * 4 + c] = f[c * 4 + r];
+            g_ff_have_proj = true;
+        } else if (t == D3DTS_VIEW && g_ff_have_proj) {
+            float cand[28];
+            memcpy(cand, g_ff_proj, sizeof g_ff_proj);
+            for (int r = 0; r < 3; r++)
+                for (int c = 0; c < 4; c++) cand[16 + r * 4 + c] = f[c * 4 + r];
+            const float *v = cand + 16;
+            float t2 = v[3] * v[3] + v[7] * v[7] + v[11] * v[11];
+            float det = v[0] * (v[5] * v[10] - v[6] * v[9]) - v[1] * (v[4] * v[10] - v[6] * v[8]) + v[2] * (v[4] * v[9] - v[5] * v[8]);
+            if (t2 > 1e-6f && det > 0.5f) add_candidate(cand, 1);
+        }
+    }
+    auto o = (SetTransform_t)original(d, 44);
+    return o ? o(d, t, m) : D3DERR_INVALIDCALL;
 }
 
 bool world_to_screen(float x, float y, float z, float sw, float sh, float *sx, float *sy) {
@@ -267,6 +304,23 @@ static void camera_frame_done() {
         bool screen = g_aspect <= 0 || fabsf(aspect / g_aspect - 1) < 0.03f;
         if (screen && (best < 0 || g_cands[i].uses > g_cands[best].uses)) best = i;
     }
+    bool exact = best >= 0;
+    if (best < 0)   // no projection of the screen's shape (fullscreen scaling...): the most used non-square one
+        for (int i = 0; i < g_ncands; i++) {
+            float aspect = g_cands[i].m[5] / g_cands[i].m[0];
+            if (fabsf(aspect - 1) > 0.05f && (best < 0 || g_cands[i].uses > g_cands[best].uses)) best = i;
+        }
+    if (g_ncands) {
+        if (best >= 0)
+            snprintf(g_cam_status, sizeof g_cam_status, "found (%s, %s; used %d times this frame, %d cameras seen)",
+                     g_cands[best].src ? "fixed-function" : "shaders", exact ? "screen shape" : "closest shape",
+                     g_cands[best].uses, g_ncands);
+        else
+            snprintf(g_cam_status, sizeof g_cam_status, "not found (%d views, none screen-shaped, screen %.3f)", g_ncands,
+                     g_aspect);
+    } else if (GetTickCount() - g_cam_at > 2000) {
+        snprintf(g_cam_status, sizeof g_cam_status, "not found (the game sent no camera)");
+    }
     if (best >= 0) {
         memcpy(g_cam, g_cands[best].m, sizeof g_cam);
         g_cam_ok = true;
@@ -277,8 +331,8 @@ static void camera_frame_done() {
         log("camera: screen aspect %.3f, %d candidates, chose %d", g_aspect, g_ncands, best);
         for (int i = 0; i < g_ncands; i++) {
             const float *m = g_cands[i].m;
-            log("  #%d uses %d proj %.3f %.3f aspect %.3f  view t %.1f %.1f %.1f", i, g_cands[i].uses, m[0], m[5],
-                m[5] / m[0], m[19], m[23], m[27]);
+            log("  #%d %s uses %d proj %.3f %.3f aspect %.3f  view t %.1f %.1f %.1f", i, g_cands[i].src ? "ff" : "vs",
+                g_cands[i].uses, m[0], m[5], m[5] / m[0], m[19], m[23], m[27]);
         }
     }
     g_ncands = 0;
@@ -322,6 +376,7 @@ static HRESULT WINAPI hk_create(IDirect3D9 *d3d, UINT ad, D3DDEVTYPE t, HWND foc
         hook_slot(g_dev, 17, (void *)hk_present);
         hook_slot(g_dev, 16, (void *)hk_reset);
         hook_slot(g_dev, 94, (void *)hk_setvsc);
+        hook_slot(g_dev, 44, (void *)hk_settransform);
         g_loaded_at = GetTickCount();
         hook_dinput_iat();
     }

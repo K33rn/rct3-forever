@@ -39,6 +39,9 @@ USE
     fading trail of where they have walked. Up to 8 guests at once, each in its own colour (their name
     in the list turns that colour). Tracking stays on screen when the menu is closed; tick route /
     trail / labels to choose what is drawn, or "Stop tracking all" in All guests.
+    The pins and routes are drawn under the menu window: close the menu (F9) or move it aside to see
+    them. The Path tab's "On-screen camera" line says whether the mod found the game's camera; if it
+    says "not found", send PeepEditor.log.
   - Go to: send the guest somewhere - pick any ride, shop or stall in the park and press "Go here".
     The game plans the walk (shown on screen with Track), then they queue and ride, or walk up and buy.
     Guests walk in groups, so the whole group goes. Notes:

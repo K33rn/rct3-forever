@@ -485,6 +485,7 @@ static void tab_prefs(uintptr_t g) {
 
 static void tab_path(uintptr_t g) {
     track_controls(g);
+    ImGui::TextDisabled("On-screen camera: %s", camera_status());
     Vec3 p = position(g);
     Waypoints w = waypoints(g);
     ImGui::Text("Position: %.1f, %.1f, %.1f", p.x, p.y, p.z);
