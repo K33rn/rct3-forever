@@ -193,11 +193,11 @@ void tab() {
             i_input("Rating penalty", PARK, 0x180);
             ImGui::SeparatorText("Guests");
             f_input("Guests in the park", PARK, 0x60, true, 1, "%.0f", "the game's count (spawn guests below to add real ones)");
-            f_input("On their way in", PARK, 0x74, true, 1, "%.0f");
+            f_input("On their way in", PARK, 0x74, true, 1, "%.0f", "the game's own monthly count: it starts again at 0 each month, so guests still walking in when a month ends can take it below 0");
             f_input("Adults", PARK, 0x88, true, 1, "%.0f");
             f_input("Teenagers", PARK, 0x9c, true, 1, "%.0f");
             f_input("Children", PARK, 0xb0, true, 1, "%.0f");
-            f_input("Guest intake (this month)", PARK, 0x100, true, 1, "%.0f");
+            f_input("Guest intake (this month)", PARK, 0x100, true, 1, "%.0f", "the game's own monthly count");
             f_input("Ideal guests (attractions)", PARK, 0x150, true, 10, "%.0f", "how many guests the attractions draw; new guests come only while the park has fewer than ideal + publicity");
             f_input("Ideal guests (live)", PARK, 0x18c, false, 10, "%.0f", "ideal guests + publicity: the limit for new arrivals");
             ImGui::SeparatorText("Appeal and publicity");
