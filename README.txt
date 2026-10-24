@@ -28,6 +28,8 @@ USE
     the targets; tick "lock" to hold a value.
   - Preferences: the intensity range they like, nausea tolerance, pool preference.
   - Path: their current route, point by point, with the walking distance left and the point they head for.
+  - The guest you select is always shown in the park while the menu is open: a white pin with their
+    name, and the route they are walking.
   - Track on screen (Overview or Path tab): shows the guest in the park itself - a coloured pin with
     their name and what they are doing, the route they plan to walk (dots, ending in a flag), and a
     fading trail of where they have walked. Up to 8 guests at once, each in its own colour (their name

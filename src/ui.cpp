@@ -208,7 +208,7 @@ static void toggle_track(uintptr_t g) {
     g_tracks.push_back(Track{g, col, {position(g)}});
 }
 
-bool overlay_active() { return !g_tracks.empty(); }
+bool overlay_active() { return !g_tracks.empty() || (g_open && g_sel); }
 
 static ImU32 with_alpha(ImU32 c, float a) { return (c & 0x00ffffff) | ((ImU32)(a * 255) << 24); }
 
@@ -220,6 +220,10 @@ static void draw_world() {
         ImVec2 sa, sb;
         if (proj(a, sa) && proj(b, sb)) dl->AddLine(sa, sb, c, w);
     };
+    static Track sel{0, IM_COL32(255, 255, 255, 255), {}};
+    bool show_sel = g_open && g_sel && guest_class(g_sel) >= 0 && !find_track(g_sel);
+    if (show_sel && sel.g != g_sel) sel = Track{g_sel, IM_COL32(255, 255, 255, 255), {position(g_sel)}};
+    if (show_sel) g_tracks.push_back(sel);   // drawn with the others this frame, taken out again below
     for (size_t i = 0; i < g_tracks.size();) {
         Track &t = g_tracks[i];
         if (guest_class(t.g) < 0) { g_tracks.erase(g_tracks.begin() + i); continue; }   // left the park / gone
@@ -277,6 +281,10 @@ static void draw_world() {
             }
         }
         i++;
+    }
+    if (show_sel && !g_tracks.empty() && g_tracks.back().g == sel.g) {   // keep its trail for next frame
+        sel = g_tracks.back();
+        g_tracks.pop_back();
     }
 }
 

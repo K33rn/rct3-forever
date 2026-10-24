@@ -176,25 +176,35 @@ static void draw(IDirect3DDevice9 *dev) {
 }
 
 // ---- the game's camera --------------------------------------------------------------------------------------
-// The game draws the world with vertex shaders. Once a frame it uploads c0..c3 = projection (rows: 2.414 = cot of
-// half the 45 degree field of view, ...; c3 = 0 0 1 0) and c4..c6 = the view matrix rows (rotation + translation).
-// Other uploads carry a view without translation (camera-relative passes) or a mirrored one (water reflections):
-// the first full, unmirrored one of the frame is kept.
+// The game draws the world with vertex shaders and uploads c0..c3 = projection (rows: cot(fov/2) / aspect, cot(fov/2),
+// depth row, c3 = 0 0 1 0) and c4..c6 = view rows (rotation + translation). Several passes upload such a pair each
+// frame: camera-relative passes (no translation), water reflections (mirrored), and others such as shadows with
+// their own view. The screen camera is the one whose projection has the screen's aspect ratio; among those, the
+// one used most often in the frame.
 typedef HRESULT(WINAPI *SetVSConstF_t)(IDirect3DDevice9 *, UINT, const float *, UINT);
 static SetVSConstF_t o_setvsc;
-static float g_cam[28], g_cam_next[28];   // 16 projection + 12 view
-static bool g_cam_ok = false, g_cam_have_next = false;
-static DWORD g_cam_at = 0;
+struct CamCand { float m[28]; int uses; };
+static CamCand g_cands[64];
+static int g_ncands = 0;
+static float g_cam[28];
+static bool g_cam_ok = false;
+static DWORD g_cam_at = 0, g_cam_logged = 0;
+static float g_aspect = 0;   // backbuffer width / height
 
 static HRESULT WINAPI hk_setvsc(IDirect3DDevice9 *d, UINT start, const float *c, UINT n) {
-    if (start == 0 && n >= 7 && !g_cam_have_next && c[0] > 0.1f && fabsf(c[12]) < 1e-4f && fabsf(c[13]) < 1e-4f &&
+    if (start == 0 && n >= 7 && c[0] > 0.1f && c[5] > 0.1f && fabsf(c[12]) < 1e-4f && fabsf(c[13]) < 1e-4f &&
         fabsf(c[14] - 1) < 1e-4f && fabsf(c[15]) < 1e-4f) {
         const float *v = c + 16;
         float t2 = v[3] * v[3] + v[7] * v[7] + v[11] * v[11];
         float det = v[0] * (v[5] * v[10] - v[6] * v[9]) - v[1] * (v[4] * v[10] - v[6] * v[8]) + v[2] * (v[4] * v[9] - v[5] * v[8]);
         if (t2 > 1e-6f && det > 0.5f) {
-            memcpy(g_cam_next, c, sizeof g_cam_next);
-            g_cam_have_next = true;
+            int i = 0;
+            // the same camera = same x/y scale and view (the depth row varies between passes)
+            while (i < g_ncands && (g_cands[i].m[0] != c[0] || g_cands[i].m[5] != c[5] ||
+                                    memcmp(g_cands[i].m + 16, c + 16, 12 * sizeof(float))))
+                i++;
+            if (i < g_ncands) g_cands[i].uses++;
+            else if (g_ncands < 64) { memcpy(g_cands[g_ncands].m, c, sizeof g_cands[0].m); g_cands[g_ncands++].uses = 1; }
         }
     }
     return o_setvsc(d, start, c, n);
@@ -216,16 +226,37 @@ bool world_to_screen(float x, float y, float z, float sw, float sh, float *sx, f
 }
 
 static void camera_frame_done() {
-    if (g_cam_have_next) {
-        memcpy(g_cam, g_cam_next, sizeof g_cam);
+    int best = -1;
+    for (int i = 0; i < g_ncands; i++) {
+        float aspect = g_cands[i].m[5] / g_cands[i].m[0];   // projection: x scale = y scale / aspect
+        bool screen = g_aspect <= 0 || fabsf(aspect / g_aspect - 1) < 0.03f;
+        if (screen && (best < 0 || g_cands[i].uses > g_cands[best].uses)) best = i;
+    }
+    if (best >= 0) {
+        memcpy(g_cam, g_cands[best].m, sizeof g_cam);
         g_cam_ok = true;
         g_cam_at = GetTickCount();
     }
-    g_cam_have_next = false;
+    if (ui::overlay_active() && GetTickCount() - g_cam_logged > 15000) {   // what the choice was made from
+        g_cam_logged = GetTickCount();
+        log("camera: screen aspect %.3f, %d candidates, chose %d", g_aspect, g_ncands, best);
+        for (int i = 0; i < g_ncands; i++) {
+            const float *m = g_cands[i].m;
+            log("  #%d uses %d proj %.3f %.3f aspect %.3f  view t %.1f %.1f %.1f", i, g_cands[i].uses, m[0], m[5],
+                m[5] / m[0], m[19], m[23], m[27]);
+        }
+    }
+    g_ncands = 0;
 }
 
 static HRESULT WINAPI hk_present(IDirect3DDevice9 *dev, const RECT *a, const RECT *b, HWND w, const RGNDATA *r) {
     if (dev == g_dev) {
+        IDirect3DSurface9 *bb = nullptr;   // the back buffer: what the screen camera renders to
+        if (SUCCEEDED(dev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb)) && bb) {
+            D3DSURFACE_DESC sd;
+            if (SUCCEEDED(bb->GetDesc(&sd)) && sd.Height) g_aspect = (float)sd.Width / sd.Height;
+            bb->Release();
+        }
         camera_frame_done();
         draw(dev);
     }
