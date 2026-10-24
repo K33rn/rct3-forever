@@ -310,6 +310,21 @@ static void camera_frame_done() {
             float aspect = g_cands[i].m[5] / g_cands[i].m[0];
             if (fabsf(aspect - 1) > 0.05f && (best < 0 || g_cands[i].uses > g_cands[best].uses)) best = i;
         }
+    if (uintptr_t rd = game::renderer()) {   // the game's own camera, the same with any graphics card or settings
+        float v[16], p[16];
+        if (game::rd(rd + 0x790, v, sizeof v) && game::rd(rd + 0x7d0, p, sizeof p) && p[0] > 0.1f && p[5] > 0.1f &&
+            fabsf(p[11] - 1) < 1e-3f) {
+            for (int r = 0; r < 4; r++)
+                for (int c = 0; c < 4; c++) g_cam[r * 4 + c] = p[c * 4 + r];   // row-vector -> column-vector rows
+            for (int r = 0; r < 3; r++)
+                for (int c = 0; c < 4; c++) g_cam[16 + r * 4 + c] = v[c * 4 + r];
+            g_cam_ok = true;
+            g_cam_at = GetTickCount();
+            snprintf(g_cam_status, sizeof g_cam_status, "found (game memory, renderer %08x)", (unsigned)rd);
+            g_ncands = 0;
+            return;
+        }
+    }
     if (g_ncands) {
         if (best >= 0)
             snprintf(g_cam_status, sizeof g_cam_status, "found (%s, %s; used %d times this frame, %d cameras seen)",

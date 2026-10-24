@@ -26,6 +26,13 @@ static std::vector<Guest> g_list;
 static std::vector<std::pair<uintptr_t, size_t>> g_excluded;
 static volatile LONG g_scans = 0, g_want = 0;
 static double g_ms = 0;
+static volatile uintptr_t g_renderer = 0;
+static const uint32_t kRendererVt = 0xfbf138, kRendererVt210 = 0xfbf12c;
+
+uintptr_t renderer() {
+    uintptr_t r = g_renderer;
+    return r && get<uint32_t>(r) == kRendererVt && get<uint32_t>(r + 0x210) == kRendererVt210 ? r : 0;
+}
 
 void exclude_region(uintptr_t base, size_t size) {
     std::lock_guard<std::mutex> l(g_mx);
@@ -74,6 +81,7 @@ static void scan_once() {
             if (!rd(p, buf, n)) break;
             for (size_t i = 0; i + 4 <= n; i += 4) {
                 uint32_t v = *(uint32_t *)(buf + i);
+                if (v == kRendererVt && get<uint32_t>(p + i + 0x210) == kRendererVt210) g_renderer = p + i;
                 if (v != kGuestClasses[0].vt && v != kGuestClasses[1].vt) continue;
                 int c = guest_class(p + i);
                 if (c >= 0) found.push_back({p + i, c});

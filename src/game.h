@@ -59,6 +59,9 @@ struct Guest { uintptr_t addr; int cls; };
 int guest_class(uintptr_t a);
 // Background scan of the game's heap for guest objects; the list is refreshed every few seconds.
 void start_scanner();
+// The game's renderer (vtable 0xfbf138, +0x210 = 0xfbf12c), found by the same scan; 0 until then. Its main camera
+// block is at +0x740: view matrix at +0x790 and projection at +0x7d0 (D3D row-vector layout).
+uintptr_t renderer();
 void request_scan();
 std::vector<Guest> guests();
 int scans_done();
