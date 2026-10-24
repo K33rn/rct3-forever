@@ -5,6 +5,10 @@ An in-game menu to view and change any guest ("peep") in your park: their money,
 ride preferences, where they are walking, what they are thinking, and every other value they carry.
 
 INSTALL
+  With RCT3 Workshop: Mod Loader > Install content... > pick PeepEditor.zip > Install. It goes in as a
+  "Code mod" beside RCT3plus.exe; Disable / Uninstall there take it out again.
+
+  By hand:
   1. Close the game.
   2. Copy d3d9.dll and PeepEditor.ini from this zip into the game folder, next to RCT3plus.exe.
      Steam: C:\Program Files (x86)\Steam\steamapps\common\Rollercoaster Tycoon 3 Gold
