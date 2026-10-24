@@ -61,5 +61,7 @@ NOTES
   - Made for RCT3plus.exe (the Platinum / Complete Edition executable). Other versions are not supported.
   - Single-player game, no online parts: this mod only edits your own park in memory.
   - A log is written to PeepEditor.log in the game folder.
+  - If the game crashes on start with the mod, set HookGameInput=0 in PeepEditor.ini and send
+    PeepEditor.log and CrashDump.txt from the game folder.
 
 Built with Claude Code (AI) from the research in this project; uses Dear ImGui (licence in LICENSES.txt).

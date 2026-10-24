@@ -63,39 +63,70 @@ static LRESULT CALLBACK wndproc(HWND h, UINT m, WPARAM w, LPARAM l) {
     return CallWindowProcW(g_oldproc, h, m, w, l);
 }
 
-static const GUID kSysMouse = {0x6F1D2B60, 0xD5A0, 0x11CF, {0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+// DirectInput devices of different kinds can have different vtables (seen on a PC with two devices whose second
+// one wasn't the same class): the originals are kept per vtable and looked up from the object, never shared.
+struct VtHooks { void **vt; void *orig[128]; };
+static VtHooks g_vts[16];
+static int g_nvts = 0;
+static CRITICAL_SECTION g_vt_lock;
+
+static void *original(void *obj, int slot) {
+    void **vt = *(void ***)obj;
+    for (int i = 0; i < g_nvts; i++)
+        if (g_vts[i].vt == vt) return g_vts[i].orig[slot];
+    return nullptr;
+}
+
+// Patch slot of obj's vtable once, remembering that vtable's own original.
+static void hook_slot(void *obj, int slot, void *fn) {
+    EnterCriticalSection(&g_vt_lock);
+    void **vt = *(void ***)obj;
+    int i = 0;
+    while (i < g_nvts && g_vts[i].vt != vt) i++;
+    if (i == g_nvts && g_nvts < 16) { g_vts[g_nvts].vt = vt; memset(g_vts[g_nvts].orig, 0, sizeof g_vts[0].orig); g_nvts++; }
+    if (i < g_nvts && !g_vts[i].orig[slot] && vt[slot] != fn) g_vts[i].orig[slot] = patch(vt, slot, fn);
+    LeaveCriticalSection(&g_vt_lock);
+}
+
 static void *g_mouse_dev, *g_key_dev;
 typedef HRESULT(WINAPI *GetDeviceState_t)(void *, DWORD, void *);
 typedef HRESULT(WINAPI *GetDeviceData_t)(void *, DWORD, void *, DWORD *, DWORD);
 typedef HRESULT(WINAPI *DICreateDevice_t)(void *, REFGUID, void **, void *);
-static GetDeviceState_t o_state;
-static GetDeviceData_t o_data;
-static DICreateDevice_t o_dicreate;
+typedef HRESULT(WINAPI *GetCaps_t)(void *, DIDEVCAPS *);
 
 static bool blocked(void *dev) { return (dev == g_mouse_dev && block_mouse()) || (dev == g_key_dev && block_keys()); }
 
 static HRESULT WINAPI hk_state(void *dev, DWORD cb, void *data) {
-    HRESULT r = o_state(dev, cb, data);
+    auto o = (GetDeviceState_t)original(dev, 9);
+    if (!o) return E_FAIL;
+    HRESULT r = o(dev, cb, data);
     if (SUCCEEDED(r) && blocked(dev)) memset(data, 0, cb);
     return r;
 }
 
 static HRESULT WINAPI hk_data(void *dev, DWORD cb, void *rgdod, DWORD *n, DWORD fl) {
-    HRESULT r = o_data(dev, cb, rgdod, n, fl);
+    auto o = (GetDeviceData_t)original(dev, 10);
+    if (!o) return E_FAIL;
+    HRESULT r = o(dev, cb, rgdod, n, fl);
     if (SUCCEEDED(r) && n && blocked(dev)) *n = 0;
     return r;
 }
 
 static HRESULT WINAPI hk_dicreate(void *di, REFGUID g, void **dev, void *outer) {
-    HRESULT r = o_dicreate(di, g, dev, outer);
+    auto o = (DICreateDevice_t)original(di, 3);
+    if (!o) return E_FAIL;
+    HRESULT r = o(di, g, dev, outer);
     if (SUCCEEDED(r) && dev && *dev) {
-        if (IsEqualGUID(g, kSysMouse)) g_mouse_dev = *dev; else g_key_dev = *dev;   // the game makes a mouse and a keyboard
-        void **vt = *(void ***)*dev;
-        void *o = patch(vt, 9, (void *)hk_state);
-        if (o) o_state = (GetDeviceState_t)o;
-        o = patch(vt, 10, (void *)hk_data);
-        if (o) o_data = (GetDeviceData_t)o;
-        log("dinput device %p (%s)", *dev, IsEqualGUID(g, kSysMouse) ? "mouse" : "other");
+        DIDEVCAPS caps;
+        memset(&caps, 0, sizeof caps);
+        caps.dwSize = sizeof caps;
+        int type = SUCCEEDED(((GetCaps_t)(*(void ***)*dev)[3])(*dev, &caps)) ? (int)(caps.dwDevType & 0xff) : 0;
+        if (type == DI8DEVTYPE_MOUSE) g_mouse_dev = *dev;
+        else if (type == DI8DEVTYPE_KEYBOARD) g_key_dev = *dev;
+        hook_slot(*dev, 9, (void *)hk_state);
+        hook_slot(*dev, 10, (void *)hk_data);
+        log("dinput device %p type %d vtable %p (%s)", *dev, type, *(void **)*dev,
+            type == DI8DEVTYPE_MOUSE ? "mouse" : type == DI8DEVTYPE_KEYBOARD ? "keyboard" : "other");
     }
     return r;
 }
@@ -105,15 +136,22 @@ static DI8Create_t o_di8;
 
 static HRESULT WINAPI hk_di8(HINSTANCE h, DWORD v, REFIID riid, void **out, void *outer) {
     HRESULT r = o_di8(h, v, riid, out, outer);
-    if (SUCCEEDED(r) && out && *out) {
-        void *o = patch(*(void ***)*out, 3, (void *)hk_dicreate);
-        if (o) o_dicreate = (DICreateDevice_t)o;
-    }
+    if (SUCCEEDED(r) && out && *out) hook_slot(*out, 3, (void *)hk_dicreate);
     return r;
 }
 
 // Point the exe's import of DINPUT8!DirectInput8Create at our wrapper.
 static void hook_dinput_iat() {
+    static int enabled = -1;   // PeepEditor.ini [PeepEditor] HookGameInput=0 leaves DirectInput alone
+    if (enabled < 0) {
+        char ini[MAX_PATH];
+        GetModuleFileNameA(nullptr, ini, MAX_PATH);
+        char *sl = strrchr(ini, '\\');
+        strcpy(sl ? sl + 1 : ini, "PeepEditor.ini");
+        enabled = GetPrivateProfileIntA("PeepEditor", "HookGameInput", 1, ini) != 0;
+        log("HookGameInput=%d", enabled);
+    }
+    if (!enabled) return;
     uint8_t *base = (uint8_t *)GetModuleHandleA(nullptr);
     auto nt = (IMAGE_NT_HEADERS *)(base + ((IMAGE_DOS_HEADER *)base)->e_lfanew);
     auto &dir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
@@ -141,9 +179,6 @@ static void hook_dinput_iat() {
 typedef HRESULT(WINAPI *Present_t)(IDirect3DDevice9 *, const RECT *, const RECT *, HWND, const RGNDATA *);
 typedef HRESULT(WINAPI *Reset_t)(IDirect3DDevice9 *, D3DPRESENT_PARAMETERS *);
 typedef HRESULT(WINAPI *CreateDevice_t)(IDirect3D9 *, UINT, D3DDEVTYPE, HWND, DWORD, D3DPRESENT_PARAMETERS *, IDirect3DDevice9 **);
-static Present_t o_present;
-static Reset_t o_reset;
-static CreateDevice_t o_create;
 
 static void draw(IDirect3DDevice9 *dev) {
     if (!g_imgui) {
@@ -182,7 +217,6 @@ static void draw(IDirect3DDevice9 *dev) {
 // their own view. The screen camera is the one whose projection has the screen's aspect ratio; among those, the
 // one used most often in the frame.
 typedef HRESULT(WINAPI *SetVSConstF_t)(IDirect3DDevice9 *, UINT, const float *, UINT);
-static SetVSConstF_t o_setvsc;
 struct CamCand { float m[28]; int uses; };
 static CamCand g_cands[64];
 static int g_ncands = 0;
@@ -207,7 +241,8 @@ static HRESULT WINAPI hk_setvsc(IDirect3DDevice9 *d, UINT start, const float *c,
             else if (g_ncands < 64) { memcpy(g_cands[g_ncands].m, c, sizeof g_cands[0].m); g_cands[g_ncands++].uses = 1; }
         }
     }
-    return o_setvsc(d, start, c, n);
+    auto o = (SetVSConstF_t)original(d, 94);
+    return o ? o(d, start, c, n) : D3DERR_INVALIDCALL;
 }
 
 bool world_to_screen(float x, float y, float z, float sw, float sh, float *sx, float *sy) {
@@ -260,19 +295,22 @@ static HRESULT WINAPI hk_present(IDirect3DDevice9 *dev, const RECT *a, const REC
         camera_frame_done();
         draw(dev);
     }
-    return o_present(dev, a, b, w, r);
+    auto o = (Present_t)original(dev, 17);
+    return o ? o(dev, a, b, w, r) : D3DERR_INVALIDCALL;
 }
 
 static HRESULT WINAPI hk_reset(IDirect3DDevice9 *dev, D3DPRESENT_PARAMETERS *pp) {
     if (g_imgui) ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT r = o_reset(dev, pp);
+    auto o = (Reset_t)original(dev, 16);
+    HRESULT r = o ? o(dev, pp) : D3DERR_INVALIDCALL;
     if (g_imgui && SUCCEEDED(r)) ImGui_ImplDX9_CreateDeviceObjects();
     return r;
 }
 
 static HRESULT WINAPI hk_create(IDirect3D9 *d3d, UINT ad, D3DDEVTYPE t, HWND focus, DWORD fl, D3DPRESENT_PARAMETERS *pp,
                                 IDirect3DDevice9 **out) {
-    HRESULT r = o_create(d3d, ad, t, focus, fl, pp, out);
+    auto o = (CreateDevice_t)original(d3d, 16);
+    HRESULT r = o ? o(d3d, ad, t, focus, fl, pp, out) : D3DERR_INVALIDCALL;
     log("CreateDevice -> %08lx", (unsigned long)r);
     if (SUCCEEDED(r) && out && *out) {
         g_dev = *out;
@@ -281,13 +319,9 @@ static HRESULT WINAPI hk_create(IDirect3D9 *d3d, UINT ad, D3DDEVTYPE t, HWND foc
             g_hwnd = w;
             g_oldproc = (WNDPROC)SetWindowLongPtrW(w, GWLP_WNDPROC, (LONG_PTR)wndproc);
         }
-        void **vt = *(void ***)g_dev;
-        void *o = patch(vt, 17, (void *)hk_present);
-        if (o) o_present = (Present_t)o;
-        o = patch(vt, 16, (void *)hk_reset);
-        if (o) o_reset = (Reset_t)o;
-        o = patch(vt, 94, (void *)hk_setvsc);
-        if (o) o_setvsc = (SetVSConstF_t)o;
+        hook_slot(g_dev, 17, (void *)hk_present);
+        hook_slot(g_dev, 16, (void *)hk_reset);
+        hook_slot(g_dev, 94, (void *)hk_setvsc);
         g_loaded_at = GetTickCount();
         hook_dinput_iat();
     }
@@ -308,8 +342,7 @@ extern "C" IDirect3D9 *WINAPI Proxy_Direct3DCreate9(UINT sdk) {
     }
     IDirect3D9 *d = real(sdk);
     if (d) {
-        void *o = patch(*(void ***)d, 16, (void *)hk_create);
-        if (o) o_create = (CreateDevice_t)o;
+        hook_slot(d, 16, (void *)hk_create);
     }
     hook_dinput_iat();
     return d;
@@ -318,6 +351,7 @@ extern "C" IDirect3D9 *WINAPI Proxy_Direct3DCreate9(UINT sdk) {
 BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
     if (why == DLL_PROCESS_ATTACH) {
         g_self = h;
+        InitializeCriticalSection(&g_vt_lock);
         DisableThreadLibraryCalls(h);
         GetModuleFileNameA(h, g_log_path, MAX_PATH);
         char *s = strrchr(g_log_path, '\\');
