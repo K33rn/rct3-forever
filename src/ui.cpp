@@ -55,7 +55,11 @@ void init() {
     st.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.55f, 0.2f, 0.7f, 0.8f);
     st.Colors[ImGuiCol_Tab] = ImVec4(0.30f, 0.12f, 0.40f, 1);
     st.Colors[ImGuiCol_TabSelected] = ImVec4(0.60f, 0.20f, 0.70f, 1);
-    st.Colors[ImGuiCol_SliderGrab] = ImVec4(0.15f, 0.85f, 0.95f, 1);
+    // the slider's value is written over its grab: a thin, see-through grab keeps the number readable
+    st.GrabMinSize = 5;
+    st.GrabRounding = 2;
+    st.Colors[ImGuiCol_SliderGrab] = ImVec4(0.15f, 0.85f, 0.95f, 0.45f);
+    st.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.15f, 0.85f, 0.95f, 0.65f);
     st.Colors[ImGuiCol_CheckMark] = ImVec4(0.15f, 0.85f, 0.95f, 1);
     st.ScaleAllSizes(scale);
     ImGui::GetIO().FontGlobalScale = scale;
