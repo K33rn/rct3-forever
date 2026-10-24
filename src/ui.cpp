@@ -65,13 +65,19 @@ void init() {
 bool open() { return g_open; }
 int toggle_key() { return g_key; }
 
+static DWORD g_toggled_at = 0;
+
+void toggle() {
+    if (GetTickCount() - g_toggled_at < 250) return;   // the same press seen by both the poll and the window message
+    g_toggled_at = GetTickCount();
+    g_open = !g_open;
+    if (g_open) request_scan();
+}
+
 void poll_toggle(HWND w) {
     static bool was = false;
     bool down = (GetAsyncKeyState(g_key) & 0x8000) != 0 && GetForegroundWindow() == w;
-    if (down && !was) {
-        g_open = !g_open;
-        if (g_open) request_scan();
-    }
+    if (down && !was) toggle();
     was = down;
 }
 
@@ -502,6 +508,109 @@ static void tab_path(uintptr_t g) {
     ImGui::Text("Heading for object %08x", (unsigned)deref(g + STATE_TARGET));
 }
 
+static void tab_goto(uintptr_t g) {
+    static std::vector<Attraction> list;
+    static DWORD list_at = 0;
+    static char filter[48] = "";
+    static int kind = 0;   // 0 all, 1 rides, 2 shops & stalls, 3 other
+    static std::string msg;
+    static bool msg_ok = false;
+    static uintptr_t msg_for = 0;
+    if (GetTickCount() - list_at > 2000) { list = attractions(); list_at = GetTickCount(); }
+    if (msg_for != g) msg.clear();
+
+    uintptr_t tgt = group_target(g);
+    const Attraction *heading = nullptr;
+    for (auto &a : list)
+        if (a.obj == tgt) heading = &a;
+    int n = group_size(g);
+    ImGui::Text("Heading for: %s", heading ? heading->name.c_str() : "nowhere in particular (wandering the paths)");
+    ImGui::TextDisabled("Guests walk in groups: sending this guest sends their whole group (%d %s).", n,
+                        n == 1 ? "guest" : "guests");
+    std::string os = order_status(g);
+    if (!os.empty()) {
+        ImGui::Text("Order: %s", os.c_str());
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Cancel order")) cancel_order(g);
+    }
+    track_controls(g);
+    ImGui::Separator();
+    ImGui::SetNextItemWidth(180);
+    ImGui::InputTextWithHint("##af", "search attractions", filter, sizeof filter);
+    ImGui::SameLine();
+    ImGui::RadioButton("all", &kind, 0); ImGui::SameLine();
+    ImGui::RadioButton("rides", &kind, 1); ImGui::SameLine();
+    ImGui::RadioButton("shops & stalls", &kind, 2); ImGui::SameLine();
+    ImGui::RadioButton("other", &kind, 3);
+    static bool want = true;
+    ImGui::Checkbox("Make them hungry & thirsty when sent to a shop (guests only buy what they need)", &want);
+    if (!msg.empty())
+        ImGui::TextColored(msg_ok ? ImVec4(0.4f, 1, 0.5f, 1) : ImVec4(1, 0.45f, 0.4f, 1), "%s", msg.c_str());
+
+    if (ImGui::BeginTable("attr", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInnerV,
+                          ImVec2(0, ImGui::GetContentRegionAvail().y - 34))) {
+        ImGui::TableSetupScrollFreeze(0, 1);
+        ImGui::TableSetupColumn("Attraction", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Kind", ImGuiTableColumnFlags_WidthFixed, 110);
+        ImGui::TableSetupColumn("Entrance", ImGuiTableColumnFlags_WidthFixed, 80);
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 70);
+        ImGui::TableHeadersRow();
+        std::string f = filter;
+        std::transform(f.begin(), f.end(), f.begin(), ::tolower);
+        for (auto &a : list) {
+            int k = a.ride ? 1 : a.shop ? 2 : 3;
+            if (kind && kind != k) continue;
+            std::string ln = a.name;
+            std::transform(ln.begin(), ln.end(), ln.begin(), ::tolower);
+            if (!f.empty() && ln.find(f) == std::string::npos) continue;
+            ImGui::PushID((int)a.obj);
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            if (a.obj == tgt) ImGui::TextColored(ImVec4(0.15f, 0.85f, 0.95f, 1), "%s  <- heading here", a.name.c_str());
+            else ImGui::TextUnformatted(a.name.c_str());
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(k == 1 ? "ride" : k == 2 ? "shop" : "other");
+            if (!a.open) { ImGui::SameLine(); ImGui::TextColored(ImVec4(1, 0.45f, 0.4f, 1), "closed"); }
+            ImGui::TableNextColumn();
+            static std::map<uintptr_t, int> pick;
+            int &e = pick[a.obj];
+            if (a.entrances > 1) {
+                ImGui::SetNextItemWidth(70);
+                ImGui::SliderInt("##e", &e, 1, a.entrances, "%d");
+            } else if (a.entrances == 1) {
+                e = 1;
+                ImGui::TextDisabled("1");
+            } else {
+                ImGui::TextDisabled("none");
+            }
+            ImGui::TableNextColumn();
+            ImGui::BeginDisabled(a.entrances <= 0 || !a.open);
+            if (ImGui::SmallButton("Go here")) {
+                std::string why;
+                if (!a.ride && want) make_wanting(g);
+                msg_ok = send_to(g, a.obj, std::max(e, 1) - 1, &why);
+                if (msg_ok) order(g, a.obj, std::max(e, 1) - 1);
+                msg = msg_ok ? "On the way to " + a.name + (a.ride ? " - they'll queue and ride." : ".") : why;
+                msg_for = g;
+                log("send %08x -> %s (%s): %s", (unsigned)g, a.name.c_str(), a.ride ? "ride" : "other",
+                    msg_ok ? "ok" : why.c_str());
+                if (msg_ok && !find_track(g)) toggle_track(g);   // show where they're going
+            }
+            ImGui::EndDisabled();
+            ImGui::PopID();
+        }
+        ImGui::EndTable();
+    }
+    if (ImGui::Button("Leave the park")) {
+        put<uint8_t>(g + WANT_LEAVE_PARK, 1);
+        msg = "Wants to leave the park: they'll head for the exit when they next decide.";
+        msg_ok = true;
+        msg_for = g;
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("%d attractions", (int)list.size());
+}
+
 static void tab_thoughts(uintptr_t g) {
     // RecentThoughts: {entries*, count}; each entry is 0x34 bytes: Thought, Variant, Time (-1 = empty slot), two references
     uint32_t arr = get<uint32_t>(g + RECENT_THOUGHTS);
@@ -666,6 +775,7 @@ void frame(bool toast) {
             if (ImGui::BeginTabItem("Feelings & needs")) { tab_feelings(g_sel); ImGui::EndTabItem(); }
             if (ImGui::BeginTabItem("Preferences")) { tab_prefs(g_sel); ImGui::EndTabItem(); }
             if (ImGui::BeginTabItem("Path")) { tab_path(g_sel); ImGui::EndTabItem(); }
+            if (ImGui::BeginTabItem("Go to")) { tab_goto(g_sel); ImGui::EndTabItem(); }
             if (ImGui::BeginTabItem("Thoughts")) { tab_thoughts(g_sel); ImGui::EndTabItem(); }
             if (ImGui::BeginTabItem("Memory")) { tab_memory(g_sel); ImGui::EndTabItem(); }
         }

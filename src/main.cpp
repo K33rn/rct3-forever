@@ -56,7 +56,10 @@ static LRESULT CALLBACK wndproc(HWND h, UINT m, WPARAM w, LPARAM l) {
         bool key = (m >= WM_KEYFIRST && m <= WM_KEYLAST);
         if ((mouse && block_mouse()) || (key && block_keys())) return 0;
     }
-    if ((m == WM_KEYDOWN || m == WM_KEYUP) && (int)w == ui::toggle_key()) return 0;
+    if ((m == WM_KEYDOWN || m == WM_KEYUP) && (int)w == ui::toggle_key()) {
+        if (m == WM_KEYDOWN && !(l & 0x40000000) && g_imgui) ui::toggle();   // not an auto-repeat
+        return 0;
+    }
     return CallWindowProcW(g_oldproc, h, m, w, l);
 }
 
@@ -156,6 +159,7 @@ static void draw(IDirect3DDevice9 *dev) {
     }
     ui::poll_toggle(g_hwnd);
     ui::apply_locks();
+    game::tick_orders();
     bool toast = GetTickCount() - g_loaded_at < 8000;
     if (!ui::open() && !toast && !ui::overlay_active()) return;
     ImGui_ImplDX9_NewFrame();

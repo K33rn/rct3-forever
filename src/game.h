@@ -73,6 +73,23 @@ const char *thought_name(int id);         // read from the game's own table at 0
 int thought_count();
 
 struct Vec3 { float x, y, z; };
+
+// Attractions (rides, shops, ATMs, toilets...) from the game's attraction manager (global 0x12f4e4c, list at +0x64).
+// All of these call game code: use them on the game's thread only (the menu runs there).
+struct Attraction { uintptr_t obj; std::string name; bool ride, shop; int entrances; bool open; };
+std::vector<Attraction> attractions();
+std::string attraction_name(uintptr_t obj);
+uintptr_t group_target(uintptr_t guest);   // where the guest's group is heading (its FlockTarget), 0 when none
+int group_size(uintptr_t guest);
+// Send the guest's whole group to an attraction entrance, as the game does when a guest picks one at a junction
+// (0x781a18..0x781c1d). Returns false with a reason when it can't.
+bool send_to(uintptr_t guest, uintptr_t attraction, int entrance, std::string *why);
+// Keep a sent group going there until it arrives (re-sends if the group's own AI changes its mind on the way).
+void order(uintptr_t guest, uintptr_t attraction, int entrance);
+void tick_orders();                         // every frame, game thread
+std::string order_status(uintptr_t guest);  // "" when there's no order
+void cancel_order(uintptr_t guest);
+void make_wanting(uintptr_t guest);         // the whole group gets hungry and thirsty (food, drink = 0.25)
 Vec3 position(uintptr_t g);
 struct Waypoints { uint32_t ptr = 0; int16_t count = 0, next = 0, last = 0; std::vector<Vec3> pts; };
 Waypoints waypoints(uintptr_t g);

@@ -33,6 +33,16 @@ USE
     fading trail of where they have walked. Up to 8 guests at once, each in its own colour (their name
     in the list turns that colour). Tracking stays on screen when the menu is closed; tick route /
     trail / labels to choose what is drawn, or "Stop tracking all" in All guests.
+  - Go to: send the guest somewhere - pick any ride, shop or stall in the park and press "Go here".
+    The game plans the walk (shown on screen with Track), then they queue and ride, or walk up and buy.
+    Guests walk in groups, so the whole group goes. Notes:
+      * only while the group is walking about - not while queueing, riding, shopping or sitting;
+      * the attraction must be open (new shops start closed: open them in their own window first);
+      * guests only buy what they need, so "make them hungry & thirsty" (on by default) gives them a
+        reason to buy when sent to a shop;
+      * the order is kept until they get there: if the group's own mind changes on the way, it is sent
+        again (shown as "kept on course"). "Cancel order" stops that.
+    "Leave the park" sends them home.
   - Thoughts: their last six thoughts (the game's own thought names), and give them a new one.
   - Memory: every byte of the guest, with a box to write any value at any offset.
   - All guests: make everyone happy, fill everyone's needs, cure nausea, give everyone cash, set
