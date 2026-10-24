@@ -33,7 +33,7 @@ def fetch_imgui():
 
 def build():
     os.makedirs(OUT, exist_ok=True)
-    src = [os.path.join(HERE, 'src', f) for f in ('main.cpp', 'game.cpp', 'goto.cpp', 'ui.cpp')]
+    src = [os.path.join(HERE, 'src', f) for f in ('main.cpp', 'game.cpp', 'goto.cpp', 'park.cpp', 'ui.cpp')]
     src += [os.path.join(IMGUI, f) for f in ('imgui.cpp', 'imgui_draw.cpp', 'imgui_tables.cpp', 'imgui_widgets.cpp')]
     src += [os.path.join(IMGUI, 'backends', f) for f in ('imgui_impl_dx9.cpp', 'imgui_impl_win32.cpp')]
     dll = os.path.join(OUT, 'd3d9.dll')

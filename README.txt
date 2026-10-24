@@ -1,8 +1,11 @@
 PEEP EDITOR for RollerCoaster Tycoon 3 (Platinum / Complete, Steam or disc with Soaked! and Wild!)
 ====================================================================================================
 
-An in-game menu to view and change any guest ("peep") in your park: their money, feelings, needs,
-ride preferences, where they are walking, what they are thinking, and every other value they carry.
+An in-game menu with two tabs:
+  Guests - view and change any guest ("peep") in your park: their money, feelings, needs, ride
+           preferences, where they are walking, what they are thinking, and every other value they carry.
+  Park   - edit the park's live statistics (park rating, guest counts, appeal, publicity, opening hours,
+           cash, loan, entrance fee, park value...) and spawn new guests.
 
 INSTALL
   With RCT3 Workshop: Mod Loader > Install content... > pick PeepEditor.zip > Install. It goes in as a
@@ -13,7 +16,7 @@ INSTALL
   2. Copy d3d9.dll and PeepEditor.ini from this zip into the game folder, next to RCT3plus.exe.
      Steam: C:\Program Files (x86)\Steam\steamapps\common\Rollercoaster Tycoon 3 Gold
      (In Steam: right-click the game > Manage > Browse local files.)
-  3. Start the game. "Peep Editor loaded - press F9 in a park" shows in the top-left corner for a few
+  3. Start the game. "Park & Peep Editor loaded - press F9 in a park" shows in the top-left corner for a few
      seconds.
 
 UNINSTALL
@@ -21,7 +24,9 @@ UNINSTALL
   Nothing else is changed - the game's own files and your saves are never touched.
 
 USE
-  Load a park, then press F9 (change the key in PeepEditor.ini).
+  Load a park, then press F9 (change the key in PeepEditor.ini). The window has two tabs, Guests and Park.
+
+  GUESTS TAB
   - Left: every guest. Search by name, sort by clicking a column, click a guest to open them.
   - Overview: name (type a new one and press Rename), age group and sex numbers, what they are doing, where they are,
     time in park, rides done, what they bought, favourite ride, queue time, and switches such as
@@ -56,6 +61,21 @@ USE
   - Memory: every byte of the guest, with a box to write any value at any offset.
   - All guests: make everyone happy, fill everyone's needs, cure nausea, give everyone cash, set
     everyone's intensity range.
+
+  PARK TAB
+  - Park: park rating, rating penalty, guests in the park / on their way / adults / teenagers / children,
+    guest intake, ideal guests, adult / teenager / children appeal, publicity, and what new guests start
+    with (generation rate, happiness, hunger, thirst, ride intensity), opening and closing time.
+  - Money: cash, loan, max loan, interest rate, park entrance fee, the fee guests accept, park value,
+    company value, cash less loan, share price, weekly profit, income, expenditure, land and
+    construction-rights prices, and the cash new guests bring.
+  - The game keeps recalculating most of these (the rating, values, counts) as it runs: tick "lock" next
+    to a value to hold it. Money is in dollars.
+  - Spawn guests: pick a group (random as the game picks, lone teenager / adult, couples, teenage gang,
+    adult party, family, day trip) and how many, then Spawn. They appear where the game's own guests
+    arrive - the roads and car parks at the map's edge - and walk in through the entrance, paying the
+    entrance fee. If nothing spawns, no road from the map edge reaches a park entrance.
+
   While the mouse is over the menu the game ignores clicks; typing in a box doesn't reach the game.
 
 NOTES

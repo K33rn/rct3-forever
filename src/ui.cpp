@@ -7,6 +7,7 @@
 #include <vector>
 #include "imgui.h"
 #include "game.h"
+#include "park.h"
 
 using namespace game;
 
@@ -93,6 +94,7 @@ static std::map<uint64_t, Lock> g_locks;   // key: guest << 16 | offset
 static uint64_t lock_key(uintptr_t g, uint32_t off) { return ((uint64_t)g << 16) | off; }
 
 void apply_locks() {
+    park::apply_locks();
     for (auto it = g_locks.begin(); it != g_locks.end();) {
         Lock &l = it->second;
         if (guest_class(l.guest) < 0) { it = g_locks.erase(it); continue; }
@@ -732,6 +734,8 @@ static void tab_all() {
     if (ImGui::Button("Unlock all")) g_locks.clear();
 }
 
+static void guests_tab();
+
 void frame(bool toast) {
     draw_world();
     if (!g_open) {
@@ -740,7 +744,7 @@ void frame(bool toast) {
             ImGui::SetNextWindowBgAlpha(0.75f);
             ImGui::Begin("##toast", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
                                                  ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings);
-            ImGui::Text("Peep Editor loaded - press %s in a park", g_key_name);
+            ImGui::Text("Park & Peep Editor loaded - press %s in a park", g_key_name);
             ImGui::End();
         }
         return;
@@ -752,7 +756,16 @@ void frame(bool toast) {
     refresh_rows(false);
     ImGui::SetNextWindowSize(ImVec2(1000, 620), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(40, 60), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Peep Editor", &g_open)) { ImGui::End(); return; }
+    if (!ImGui::Begin("Park & Peep Editor###PeepEditor", &g_open)) { ImGui::End(); return; }
+    if (ImGui::BeginTabBar("top")) {
+        if (ImGui::BeginTabItem("Guests")) { guests_tab(); ImGui::EndTabItem(); }
+        if (ImGui::BeginTabItem("Park")) { park::tab(); ImGui::EndTabItem(); }
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
+}
+
+static void guests_tab() {
     int in_park = 0;
     for (auto &r : g_rows) in_park += r.in_park;
     ImGui::Text("%d guests (%d in the park)", (int)g_rows.size(), in_park);
@@ -798,7 +811,6 @@ void frame(bool toast) {
         if (!have) ImGui::TextDisabled("Pick a guest on the left.");
     }
     ImGui::EndChild();
-    ImGui::End();
 }
 
 }  // namespace ui
