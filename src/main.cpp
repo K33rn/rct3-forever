@@ -6,6 +6,7 @@
 #include <d3d9.h>
 #include <dinput.h>
 #include <stdio.h>
+#include <math.h>
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
@@ -156,7 +157,7 @@ static void draw(IDirect3DDevice9 *dev) {
     ui::poll_toggle(g_hwnd);
     ui::apply_locks();
     bool toast = GetTickCount() - g_loaded_at < 8000;
-    if (!ui::open() && !toast) return;
+    if (!ui::open() && !toast && !ui::overlay_active()) return;
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::GetIO().MouseDrawCursor = ui::open();
@@ -170,8 +171,60 @@ static void draw(IDirect3DDevice9 *dev) {
     }
 }
 
+// ---- the game's camera --------------------------------------------------------------------------------------
+// The game draws the world with vertex shaders. Once a frame it uploads c0..c3 = projection (rows: 2.414 = cot of
+// half the 45 degree field of view, ...; c3 = 0 0 1 0) and c4..c6 = the view matrix rows (rotation + translation).
+// Other uploads carry a view without translation (camera-relative passes) or a mirrored one (water reflections):
+// the first full, unmirrored one of the frame is kept.
+typedef HRESULT(WINAPI *SetVSConstF_t)(IDirect3DDevice9 *, UINT, const float *, UINT);
+static SetVSConstF_t o_setvsc;
+static float g_cam[28], g_cam_next[28];   // 16 projection + 12 view
+static bool g_cam_ok = false, g_cam_have_next = false;
+static DWORD g_cam_at = 0;
+
+static HRESULT WINAPI hk_setvsc(IDirect3DDevice9 *d, UINT start, const float *c, UINT n) {
+    if (start == 0 && n >= 7 && !g_cam_have_next && c[0] > 0.1f && fabsf(c[12]) < 1e-4f && fabsf(c[13]) < 1e-4f &&
+        fabsf(c[14] - 1) < 1e-4f && fabsf(c[15]) < 1e-4f) {
+        const float *v = c + 16;
+        float t2 = v[3] * v[3] + v[7] * v[7] + v[11] * v[11];
+        float det = v[0] * (v[5] * v[10] - v[6] * v[9]) - v[1] * (v[4] * v[10] - v[6] * v[8]) + v[2] * (v[4] * v[9] - v[5] * v[8]);
+        if (t2 > 1e-6f && det > 0.5f) {
+            memcpy(g_cam_next, c, sizeof g_cam_next);
+            g_cam_have_next = true;
+        }
+    }
+    return o_setvsc(d, start, c, n);
+}
+
+bool world_to_screen(float x, float y, float z, float sw, float sh, float *sx, float *sy) {
+    if (!g_cam_ok || GetTickCount() - g_cam_at > 1000) return false;
+    const float *P = g_cam, *V = g_cam + 16;
+    float vx = V[0] * x + V[1] * y + V[2] * z + V[3];
+    float vy = V[4] * x + V[5] * y + V[6] * z + V[7];
+    float vz = V[8] * x + V[9] * y + V[10] * z + V[11];
+    float cx = P[0] * vx + P[1] * vy + P[2] * vz + P[3];
+    float cy = P[4] * vx + P[5] * vy + P[6] * vz + P[7];
+    float cw = P[12] * vx + P[13] * vy + P[14] * vz + P[15];
+    if (cw < 0.5f) return false;   // behind (or at) the camera
+    *sx = (cx / cw * 0.5f + 0.5f) * sw;
+    *sy = (0.5f - cy / cw * 0.5f) * sh;
+    return true;
+}
+
+static void camera_frame_done() {
+    if (g_cam_have_next) {
+        memcpy(g_cam, g_cam_next, sizeof g_cam);
+        g_cam_ok = true;
+        g_cam_at = GetTickCount();
+    }
+    g_cam_have_next = false;
+}
+
 static HRESULT WINAPI hk_present(IDirect3DDevice9 *dev, const RECT *a, const RECT *b, HWND w, const RGNDATA *r) {
-    if (dev == g_dev) draw(dev);
+    if (dev == g_dev) {
+        camera_frame_done();
+        draw(dev);
+    }
     return o_present(dev, a, b, w, r);
 }
 
@@ -198,6 +251,8 @@ static HRESULT WINAPI hk_create(IDirect3D9 *d3d, UINT ad, D3DDEVTYPE t, HWND foc
         if (o) o_present = (Present_t)o;
         o = patch(vt, 16, (void *)hk_reset);
         if (o) o_reset = (Reset_t)o;
+        o = patch(vt, 94, (void *)hk_setvsc);
+        if (o) o_setvsc = (SetVSConstF_t)o;
         g_loaded_at = GetTickCount();
         hook_dinput_iat();
     }

@@ -173,6 +173,123 @@ static std::string display_name(uintptr_t g, int index) {
     return n;
 }
 
+// ---- tracking guests on screen ---------------------------------------------------------------------------
+
+struct Track { uintptr_t g; ImU32 col; std::vector<Vec3> trail; };
+static std::vector<Track> g_tracks;
+static bool g_show_route = true, g_show_trail = true, g_show_labels = true;
+static const ImU32 kTrackColours[] = {IM_COL32(40, 230, 250, 255), IM_COL32(255, 80, 200, 255), IM_COL32(255, 220, 40, 255),
+                                      IM_COL32(120, 255, 90, 255), IM_COL32(255, 140, 40, 255), IM_COL32(170, 120, 255, 255),
+                                      IM_COL32(255, 255, 255, 255), IM_COL32(255, 70, 70, 255)};
+static const int kMaxTracks = 8, kTrailPoints = 600;
+
+static Track *find_track(uintptr_t g) {
+    for (auto &t : g_tracks)
+        if (t.g == g) return &t;
+    return nullptr;
+}
+
+static void toggle_track(uintptr_t g) {
+    for (size_t i = 0; i < g_tracks.size(); i++)
+        if (g_tracks[i].g == g) { g_tracks.erase(g_tracks.begin() + i); return; }
+    if ((int)g_tracks.size() >= kMaxTracks) g_tracks.erase(g_tracks.begin());
+    ImU32 col = kTrackColours[0];
+    for (ImU32 c : kTrackColours) {   // first colour not in use
+        bool used = false;
+        for (auto &t : g_tracks) used |= t.col == c;
+        if (!used) { col = c; break; }
+    }
+    g_tracks.push_back(Track{g, col, {position(g)}});
+}
+
+bool overlay_active() { return !g_tracks.empty(); }
+
+static ImU32 with_alpha(ImU32 c, float a) { return (c & 0x00ffffff) | ((ImU32)(a * 255) << 24); }
+
+static void draw_world() {
+    ImDrawList *dl = ImGui::GetBackgroundDrawList();
+    ImVec2 ds = ImGui::GetIO().DisplaySize;
+    auto proj = [&](const Vec3 &p, ImVec2 &o) { return world_to_screen(p.x, p.y, p.z, ds.x, ds.y, &o.x, &o.y); };
+    auto line = [&](const Vec3 &a, const Vec3 &b, ImU32 c, float w) {
+        ImVec2 sa, sb;
+        if (proj(a, sa) && proj(b, sb)) dl->AddLine(sa, sb, c, w);
+    };
+    for (size_t i = 0; i < g_tracks.size();) {
+        Track &t = g_tracks[i];
+        if (guest_class(t.g) < 0) { g_tracks.erase(g_tracks.begin() + i); continue; }   // left the park / gone
+        Vec3 p = position(t.g);
+        Vec3 &last = t.trail.back();
+        float dx = p.x - last.x, dy = p.y - last.y, dz = p.z - last.z;
+        if (dx * dx + dy * dy + dz * dz > 0.25f * 0.25f) {
+            t.trail.push_back(p);
+            if ((int)t.trail.size() > kTrailPoints) t.trail.erase(t.trail.begin());
+        }
+        const Vec3 up{0, 0.15f, 0};
+        auto lift = [&](Vec3 v) { v.x += up.x; v.y += up.y; v.z += up.z; return v; };
+        if (g_show_trail) {   // where they have been, fading out with age
+            size_t n = t.trail.size();
+            for (size_t k = 1; k < n; k++)
+                line(lift(t.trail[k - 1]), lift(t.trail[k]), with_alpha(t.col, 0.15f + 0.6f * k / n), 3.0f);
+        }
+        if (g_show_route) {   // where they are going: the route's remaining points
+            Waypoints w = waypoints(t.g);
+            Vec3 prev = lift(p);
+            for (int k = std::max<int>(0, w.next); k < (int)w.pts.size(); k++) {
+                Vec3 q = lift(w.pts[k]);
+                line(prev, q, IM_COL32(0, 0, 0, 160), 5.0f);
+                line(prev, q, t.col, 2.5f);
+                ImVec2 sq;
+                if (proj(q, sq)) dl->AddCircleFilled(sq, 3.5f, t.col);
+                prev = q;
+            }
+            ImVec2 se;
+            if (!w.pts.empty() && w.next < (int)w.pts.size() && proj(lift(w.pts.back()), se)) {
+                Vec3 flag = w.pts.back();
+                flag.y += 2.0f;
+                ImVec2 sf;
+                if (proj(flag, sf)) {
+                    dl->AddLine(se, sf, t.col, 2.0f);
+                    dl->AddTriangleFilled(sf, ImVec2(sf.x + 12, sf.y + 4), ImVec2(sf.x, sf.y + 9), t.col);
+                }
+            }
+        }
+        ImVec2 feet, head;
+        Vec3 h = p;
+        h.y += 2.3f;
+        if (proj(p, feet) && proj(h, head)) {   // the marker: a pin over the guest's head
+            dl->AddLine(feet, head, with_alpha(t.col, 0.8f), 2.0f);
+            dl->AddCircleFilled(head, 7.0f, IM_COL32(0, 0, 0, 200));
+            dl->AddCircleFilled(head, 5.5f, t.col);
+            dl->AddCircle(feet, 6.0f, t.col, 0, 2.0f);
+            if (g_show_labels) {
+                char lab[96];
+                snprintf(lab, sizeof lab, "%s - %s", utf8(name(t.g)).c_str(), state_name(get<int32_t>(t.g + STATE)));
+                ImVec2 sz = ImGui::CalcTextSize(lab);
+                ImVec2 at(head.x - sz.x / 2, head.y - 12 - sz.y);
+                dl->AddRectFilled(ImVec2(at.x - 4, at.y - 2), ImVec2(at.x + sz.x + 4, at.y + sz.y + 2), IM_COL32(0, 0, 0, 170), 3.0f);
+                dl->AddText(at, t.col, lab);
+            }
+        }
+        i++;
+    }
+}
+
+static void track_controls(uintptr_t g) {
+    bool on = find_track(g) != nullptr;
+    if (ImGui::Button(on ? "Stop tracking on screen" : "Track on screen")) toggle_track(g);
+    if (on) {
+        ImGui::SameLine();
+        ImGui::ColorButton("##col", ImGui::ColorConvertU32ToFloat4(find_track(g)->col), ImGuiColorEditFlags_NoTooltip,
+                           ImVec2(18, 18));
+    }
+    ImGui::SameLine();
+    ImGui::Checkbox("route", &g_show_route);
+    ImGui::SameLine();
+    ImGui::Checkbox("trail", &g_show_trail);
+    ImGui::SameLine();
+    ImGui::Checkbox("labels", &g_show_labels);
+}
+
 // ---- the guest list ---------------------------------------------------------------------------------------
 
 struct Row { uintptr_t g; int index; std::string name; float cash, happy, energy; int state; bool in_park; };
@@ -239,7 +356,12 @@ static void guest_list() {
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::PushID((int)r.g);
-            if (ImGui::Selectable(r.name.c_str(), g_sel == r.g, ImGuiSelectableFlags_SpanAllColumns)) {
+            if (Track *t = find_track(r.g)) {
+                ImGui::PushStyleColor(ImGuiCol_Text, t->col);
+            }
+            bool sel = ImGui::Selectable(r.name.c_str(), g_sel == r.g, ImGuiSelectableFlags_SpanAllColumns);
+            if (find_track(r.g)) ImGui::PopStyleColor();
+            if (sel) {
                 g_sel_changed = g_sel != r.g;
                 g_sel = r.g;
             }
@@ -268,6 +390,7 @@ static void tab_overview(uintptr_t g) {
     ImGui::InputText("##name", buf, sizeof buf);
     ImGui::SameLine();
     if (ImGui::Button("Rename") && buf[0]) set_name(g, wide(buf));
+    track_controls(g);
     int cls = guest_class(g);
     ImGui::Text("Kind: %s, age group %d, sex %d", cls >= 0 ? kGuestClasses[cls].name : "?", get<uint8_t>(g + PERSON_TYPE),
                 get<uint8_t>(g + SUB_TYPE));
@@ -347,6 +470,7 @@ static void tab_prefs(uintptr_t g) {
 }
 
 static void tab_path(uintptr_t g) {
+    track_controls(g);
     Vec3 p = position(g);
     Waypoints w = waypoints(g);
     ImGui::Text("Position: %.1f, %.1f, %.1f", p.x, p.y, p.z);
@@ -478,12 +602,16 @@ static void tab_all() {
     if (ImGui::Button("Set for everyone"))
         each([](uintptr_t g) { put(g + INTENSITY_MIN, lo); put(g + INTENSITY_MAX, hi); });
     ImGui::Separator();
+    ImGui::Text("Tracked on screen: %d of %d", (int)g_tracks.size(), kMaxTracks);
+    ImGui::SameLine();
+    if (ImGui::Button("Stop tracking all")) g_tracks.clear();
     ImGui::Text("Locked values: %d", (int)g_locks.size());
     ImGui::SameLine();
     if (ImGui::Button("Unlock all")) g_locks.clear();
 }
 
 void frame(bool toast) {
+    draw_world();
     if (!g_open) {
         if (toast) {
             ImGui::SetNextWindowPos(ImVec2(12, 12));

@@ -28,6 +28,11 @@ USE
     the targets; tick "lock" to hold a value.
   - Preferences: the intensity range they like, nausea tolerance, pool preference.
   - Path: their current route, point by point, with the walking distance left and the point they head for.
+  - Track on screen (Overview or Path tab): shows the guest in the park itself - a coloured pin with
+    their name and what they are doing, the route they plan to walk (dots, ending in a flag), and a
+    fading trail of where they have walked. Up to 8 guests at once, each in its own colour (their name
+    in the list turns that colour). Tracking stays on screen when the menu is closed; tick route /
+    trail / labels to choose what is drawn, or "Stop tracking all" in All guests.
   - Thoughts: their last six thoughts (the game's own thought names), and give them a new one.
   - Memory: every byte of the guest, with a box to write any value at any offset.
   - All guests: make everyone happy, fill everyone's needs, cure nausea, give everyone cash, set
