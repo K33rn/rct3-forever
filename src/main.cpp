@@ -52,7 +52,8 @@ static bool block_keys() { return ui::open() && g_imgui && ImGui::GetIO().WantCa
 static LRESULT CALLBACK wndproc(HWND h, UINT m, WPARAM w, LPARAM l) {
     if (g_imgui && ui::open()) {
         ImGui_ImplWin32_WndProcHandler(h, m, w, l);
-        bool mouse = (m >= WM_MOUSEFIRST && m <= WM_MOUSELAST) || m == WM_INPUT;
+        // clicks and the wheel over the menu are the menu's; movement still reaches the game so its cursor follows
+        bool mouse = m >= WM_LBUTTONDOWN && m <= WM_MOUSELAST;
         bool key = (m >= WM_KEYFIRST && m <= WM_KEYLAST);
         if ((mouse && block_mouse()) || (key && block_keys())) return 0;
     }
@@ -100,7 +101,11 @@ static HRESULT WINAPI hk_state(void *dev, DWORD cb, void *data) {
     auto o = (GetDeviceState_t)original(dev, 9);
     if (!o) return E_FAIL;
     HRESULT r = o(dev, cb, data);
-    if (SUCCEEDED(r) && blocked(dev)) memset(data, 0, cb);
+    if (SUCCEEDED(r) && blocked(dev)) {
+        // the mouse keeps moving the game's cursor (lX, lY); only the wheel and buttons are hidden from the game
+        if (dev == g_mouse_dev && cb > 8) memset((char *)data + 8, 0, cb - 8);
+        else if (dev != g_mouse_dev) memset(data, 0, cb);
+    }
     return r;
 }
 
@@ -108,7 +113,24 @@ static HRESULT WINAPI hk_data(void *dev, DWORD cb, void *rgdod, DWORD *n, DWORD 
     auto o = (GetDeviceData_t)original(dev, 10);
     if (!o) return E_FAIL;
     HRESULT r = o(dev, cb, rgdod, n, fl);
-    if (SUCCEEDED(r) && n && blocked(dev)) *n = 0;
+    if (SUCCEEDED(r) && n && rgdod && blocked(dev)) {
+        if (dev == g_mouse_dev && cb >= 8) {   // keep X / Y movement events, drop wheel and button events
+            DWORD kept = 0;
+            for (DWORD i = 0; i < *n; i++) {
+                char *e = (char *)rgdod + i * cb;
+                DWORD ofs = *(DWORD *)e;
+                if (ofs == DIMOFS_X || ofs == DIMOFS_Y) {
+                    if (kept != i) memmove((char *)rgdod + kept * cb, e, cb);
+                    kept++;
+                }
+            }
+            *n = kept;
+        } else if (dev != g_mouse_dev) {
+            *n = 0;
+        }
+    } else if (SUCCEEDED(r) && n && !rgdod && blocked(dev) && dev != g_mouse_dev) {
+        *n = 0;   // a peek for the number of waiting events
+    }
     return r;
 }
 
@@ -199,7 +221,7 @@ static void draw(IDirect3DDevice9 *dev) {
     if (!ui::open() && !toast && !ui::overlay_active()) return;
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
-    ImGui::GetIO().MouseDrawCursor = ui::open();
+    ImGui::GetIO().MouseDrawCursor = false;   // the game's own cursor stays the only one
     ImGui::NewFrame();
     ui::frame(toast);
     ImGui::EndFrame();
