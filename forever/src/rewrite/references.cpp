@@ -3,6 +3,7 @@
 // and is itself linked into that list, so the object knows who refers to it. Each kind of reference is its own
 // class, so the compiler made copies of these functions for every one.
 #include "rewrite.h"
+#include <string.h>
 
 struct ListNode {
     ListNode *prev;
@@ -115,3 +116,71 @@ static const uint32_t delete_copies[] = {
 };
 static const uint8_t delete_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x04, 0x8b, 0x48, 0x0c, 0x85, 0xc9};
 REWRITE_COPIES("ObjectRef::DeleteTarget", delete_copies, delete_original, delete_target, &g_deletes);
+
+// ---- LoadField: read a reference stored in a save file -------------------------------------------------------
+// Each kind of saved object describes its fields; a reference field's description knows where in the object the
+// reference sits. Called as field->Load(object, stream, loader). Loading reads the 8-byte id the save file holds, has the loader turn it into the id of the object
+// as loaded now, and points the reference at that object's handle. Returns what the class's own reaction returns.
+
+struct SaveStream {
+    void **vtable;
+    int32_t position;       // +0x4: where reading is
+    int32_t buffer_start;   // +0x8: position of the first buffered byte
+    int32_t buffer_end;     // +0xc
+    char unknown[4];
+    uint8_t buffer[8];      // +0x14: the buffered bytes (longer)
+};
+
+struct FieldInfo {
+    char unknown[0x28];
+    int32_t offset;   // +0x28: where the field sits in the object
+};
+
+struct ReferenceField {
+    void **vtable;
+    FieldInfo *info;   // +0x4
+};
+
+typedef void(__fastcall *StreamRead)(SaveStream *, void *, void *into, int32_t size);
+static const StreamRead stream_read = (StreamRead)0x809210;   // reads past the buffer
+typedef uint64_t(__fastcall *ResolveId)(void *loader, void *, uint32_t id_low, uint32_t id_high);
+static const ResolveId resolve_id = (ResolveId)0x808840;
+static Handle *(__stdcall *const handle_for)(uint32_t id_low, uint32_t id_high) =
+    (Handle * (__stdcall *)(uint32_t, uint32_t))0x805650;   // with one more reference
+
+static volatile long g_loads;
+
+static uint32_t __fastcall load_field(ReferenceField *field, void *, uint8_t *object, SaveStream *stream, void *loader) {
+    g_loads++;
+    uint32_t id[2];
+    int32_t at = stream->position;
+    if (at >= stream->buffer_start && at + 8 <= stream->buffer_end) {
+        memcpy(id, stream->buffer + (at - stream->buffer_start), 8);
+        stream->position = at + 8;
+    } else {
+        stream_read(stream, nullptr, id, 8);
+    }
+    ObjectRef *r = (ObjectRef *)(object + field->info->offset);
+    uint64_t now = resolve_id(loader, nullptr, id[0], id[1]);
+    leave(r);
+    join(r, handle_for((uint32_t)now, (uint32_t)(now >> 32)));
+    return ((uint32_t(__fastcall *)(ObjectRef *))r->vtable[0])(r);
+}
+
+static const uint32_t load_copies[] = {
+    0x44eeb0, 0x44ef90, 0x44f070, 0x460c60, 0x46dc30, 0x4723d0, 0x4724b0, 0x472590,
+    0x472670, 0x48fc00, 0x4a5890, 0x4adcc0, 0x4adda0, 0x4c1bf0, 0x4c6010, 0x4d2c90,
+    0x4ea4a0, 0x507c00, 0x5131c0, 0x5132a0, 0x513380, 0x533680, 0x533760, 0x5339d0,
+    0x54da50, 0x54dcb0, 0x54dd90, 0x5649b0, 0x593da0, 0x593e80, 0x5ab100, 0x5b8000,
+    0x5c2900, 0x5c2b50, 0x5ec630, 0x5ec710, 0x6f3670, 0x73a030, 0x73ec80, 0x762780,
+    0x79a360, 0x7cce80, 0x7ccf60, 0x7cd040, 0x815cd0, 0x815db0, 0x820380, 0x82e660,
+    0x84ac30, 0x84ad10, 0x98d170, 0x98d250, 0x98d330, 0x9d7970, 0xa11b50, 0xa153f0,
+    0xa31fd0, 0xa7cb40, 0xa87660, 0xa8f3d0, 0xaa9320, 0xab4020, 0xab4100, 0xad8c30,
+    0xae31b0, 0xaf2250, 0xb157d0, 0xb17b70, 0xb1bc20, 0xb1ee60, 0xb22850, 0xb24ac0,
+    0xb24c90, 0xb2d750, 0xb305f0, 0xb3a9e0, 0xb3aac0, 0xb45990, 0xb45a70, 0xb542f0,
+    0xb58d80, 0xb58e60, 0xb63ea0, 0xb8a230, 0xb8a310, 0xb8a3f0, 0xb8a4d0, 0xb8a5b0,
+    0xba0150, 0xba0230,
+};
+static const uint8_t load_original[] = {0x83, 0xec, 0x08, 0x53, 0x55, 0x56, 0x57, 0x8b,
+                                        0xf9, 0x8b, 0x4c, 0x24, 0x20, 0x8b, 0x41, 0x04};
+REWRITE_COPIES("ReferenceField::Load", load_copies, load_original, load_field, &g_loads);

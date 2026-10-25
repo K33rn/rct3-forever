@@ -336,7 +336,7 @@ address,size,name,callers,status
 0x417a00,26,OwnedPointer::Reset,56,rewritten
 0x417a20,439,,52,to do
 0x417c00,26,OwnedPointer::Reset,130,rewritten
-0x417c20,130,Array32::SetCapacity,93,rewritten
+0x417c20,130,Array<4>::SetCapacity,93,rewritten
 0x417d70,205,,6,to do
 0x417e40,288,,6,to do
 0x417fe0,105,,0,to do
@@ -391,14 +391,14 @@ address,size,name,callers,status
 0x41b5b0,98,,1,to do
 0x41b820,30,,0,to do
 0x41b8f0,26,OwnedPointer::Reset,6,rewritten
-0x41b910,61,Array32::Allocate,0,rewritten
-0x41b950,130,Array32::SetCapacity,1,rewritten
+0x41b910,61,Array<4>::Allocate,0,rewritten
+0x41b950,130,Array<4>::SetCapacity,1,rewritten
 0x41b9e0,26,OwnedPointer::Reset,3,rewritten
-0x41ba00,61,Array32::Allocate,0,rewritten
-0x41ba40,130,Array32::SetCapacity,2,rewritten
+0x41ba00,61,Array<4>::Allocate,0,rewritten
+0x41ba40,130,Array<4>::SetCapacity,2,rewritten
 0x41bad0,26,OwnedPointer::Reset,2,rewritten
-0x41baf0,61,Array32::Allocate,0,rewritten
-0x41bb30,130,Array32::SetCapacity,1,rewritten
+0x41baf0,61,Array<4>::Allocate,0,rewritten
+0x41bb30,130,Array<4>::SetCapacity,1,rewritten
 0x41bbc0,26,OwnedPointer::Reset,0,rewritten
 0x41bbe0,26,OwnedPointer::Reset,5,rewritten
 0x41bc10,26,OwnedPointer::Reset,2,rewritten
@@ -470,7 +470,7 @@ address,size,name,callers,status
 0x423c70,7,,3,to do
 0x423d60,26,OwnedPointer::Reset,2,rewritten
 0x423d80,26,OwnedPointer::Reset,33,rewritten
-0x423da0,61,Array32::Allocate,1,rewritten
+0x423da0,61,Array<4>::Allocate,1,rewritten
 0x423de0,261,,31,to do
 0x423fb0,73,,15,to do
 0x424000,173,,1,to do
@@ -519,7 +519,7 @@ address,size,name,callers,status
 0x426bc0,188,,1,to do
 0x426c90,79,,1,to do
 0x426d20,26,OwnedPointer::Reset,2,rewritten
-0x426d40,130,Array32::SetCapacity,2,rewritten
+0x426d40,130,Array<4>::SetCapacity,2,rewritten
 0x426de0,307,,1,to do
 0x426f40,2087,,13,to do
 0x427790,70,,0,to do
@@ -551,7 +551,7 @@ address,size,name,callers,status
 0x42a430,72,,0,to do
 0x42a480,72,,3,to do
 0x42a4d0,26,OwnedPointer::Reset,1,rewritten
-0x42a4f0,130,Array32::SetCapacity,1,rewritten
+0x42a4f0,130,Array<4>::SetCapacity,1,rewritten
 0x42a580,55,,0,to do
 0x42a5c0,110,,1,to do
 0x42a650,173,,1,to do
@@ -645,8 +645,8 @@ address,size,name,callers,status
 0x42f830,99,,1,to do
 0x42f8a0,26,OwnedPointer::Reset,2,rewritten
 0x42f8c0,26,OwnedPointer::Reset,0,rewritten
-0x42f8e0,61,Array32::Allocate,0,rewritten
-0x42f920,130,Array32::SetCapacity,2,rewritten
+0x42f8e0,61,Array<4>::Allocate,0,rewritten
+0x42f920,130,Array<4>::SetCapacity,2,rewritten
 0x42f9b0,133,,1,to do
 0x42fa40,198,,1,to do
 0x42fb10,282,,0,to do
@@ -867,7 +867,7 @@ address,size,name,callers,status
 0x445270,9,,5,to do
 0x445300,26,OwnedPointer::Reset,1,rewritten
 0x445320,26,OwnedPointer::Reset,0,rewritten
-0x445340,139,,1,to do
+0x445340,139,Array<8>::SetCapacity,1,rewritten
 0x4453d0,112,,1,to do
 0x445440,611,,1,to do
 0x4456c0,22,,1,to do
@@ -919,7 +919,7 @@ address,size,name,callers,status
 0x4490e0,12,,1,to do
 0x449170,36,OwnedPair::Free,2,rewritten
 0x449270,26,OwnedPointer::Reset,2,rewritten
-0x449290,130,Array32::SetCapacity,2,rewritten
+0x449290,130,Array<4>::SetCapacity,2,rewritten
 0x449320,198,,1,to do
 0x4493f0,282,,0,to do
 0x449580,1038,,3,to do
@@ -963,11 +963,11 @@ address,size,name,callers,status
 0x44cdb0,30,,0,to do
 0x44cf10,30,,0,to do
 0x44d020,26,OwnedPointer::Reset,0,rewritten
-0x44d040,130,Array32::SetCapacity,1,rewritten
+0x44d040,130,Array<4>::SetCapacity,1,rewritten
 0x44d0d0,26,OwnedPointer::Reset,2,rewritten
 0x44d180,211,,0,to do
 0x44d260,931,,1,to do
-0x44da90,130,Array32::SetCapacity,96,rewritten
+0x44da90,130,Array<4>::SetCapacity,96,rewritten
 0x44dfc0,30,,1,to do
 0x44dfe0,7,BaseClass::SetClass,1,rewritten
 0x44dff0,30,,1,to do
@@ -991,9 +991,9 @@ address,size,name,callers,status
 0x44ec30,67,,2,to do
 0x44ec90,293,,1,to do
 0x44edc0,124,,1,to do
-0x44eeb0,212,,1,to do
-0x44ef90,212,,0,to do
-0x44f070,212,,0,to do
+0x44eeb0,212,ReferenceField::Load,1,rewritten
+0x44ef90,212,ReferenceField::Load,0,rewritten
+0x44f070,212,ReferenceField::Load,0,rewritten
 0x44f150,237,,0,to do
 0x44f240,2359,,2,to do
 0x44fb80,30,,2,to do
@@ -1023,7 +1023,7 @@ address,size,name,callers,status
 0x454850,115,,30,to do
 0x4548d0,92,,15,to do
 0x454930,191,,7,to do
-0x454a40,170,,1,to do
+0x454a40,170,Array<24>::SetCapacity,1,rewritten
 0x454af0,12,,1,to do
 0x454b20,43,,4,to do
 0x454b50,162,,0,to do
@@ -1094,7 +1094,7 @@ address,size,name,callers,status
 0x45af10,35,,1,to do
 0x45b060,30,,0,to do
 0x45b080,26,OwnedPointer::Reset,2,rewritten
-0x45b0a0,61,Array32::Allocate,0,rewritten
+0x45b0a0,61,Array<4>::Allocate,0,rewritten
 0x45b150,30,,1,to do
 0x45b170,7,BaseClass::SetClass,1,rewritten
 0x45b180,16,,2,to do
@@ -1138,13 +1138,13 @@ address,size,name,callers,status
 0x45e4f0,23,,5,to do
 0x45e510,120,,3,to do
 0x45e5a0,48,,0,to do
-0x45e880,61,Array32::Allocate,1,rewritten
+0x45e880,61,Array<4>::Allocate,1,rewritten
 0x45e8c0,60,,1,to do
 0x45e900,26,OwnedPointer::Reset,2,rewritten
-0x45e920,130,Array32::SetCapacity,1,rewritten
+0x45e920,130,Array<4>::SetCapacity,1,rewritten
 0x45e9b0,26,OwnedPointer::Reset,2,rewritten
-0x45e9d0,61,Array32::Allocate,0,rewritten
-0x45ea10,130,Array32::SetCapacity,2,rewritten
+0x45e9d0,61,Array<4>::Allocate,0,rewritten
+0x45ea10,130,Array<4>::SetCapacity,2,rewritten
 0x45eab0,35,,1,to do
 0x45eae0,90,,1,to do
 0x45eb50,276,,1,to do
@@ -1180,7 +1180,7 @@ address,size,name,callers,status
 0x460960,293,,1,to do
 0x460a90,124,,1,to do
 0x460c00,67,,1,to do
-0x460c60,212,,1,to do
+0x460c60,212,ReferenceField::Load,1,rewritten
 0x460da0,61,,1,to do
 0x460de0,159,,2,to do
 0x460e80,152,,10,to do
@@ -1264,7 +1264,7 @@ address,size,name,callers,status
 0x468900,29,,1,to do
 0x468920,26,OwnedPointer::Reset,12,rewritten
 0x468940,26,OwnedPointer::Reset,3,rewritten
-0x468960,54,,1,to do
+0x468960,54,Array<1>::Allocate,1,rewritten
 0x4689a0,69,,1,to do
 0x4689f0,3814,,1,to do
 0x4698e0,521,,0,to do
@@ -1278,7 +1278,7 @@ address,size,name,callers,status
 0x46aa90,1392,,3,to do
 0x46afae,55,Catch@0046afae,1,generated
 0x46b040,40,,0,to do
-0x46b1c0,130,Array32::SetCapacity,1,rewritten
+0x46b1c0,130,Array<4>::SetCapacity,1,rewritten
 0x46b250,421,,2,to do
 0x46b490,126,,1,to do
 0x46b520,60,,3,to do
@@ -1296,7 +1296,7 @@ address,size,name,callers,status
 0x46c3f0,26,OwnedPointer::Reset,2,rewritten
 0x46c430,26,OwnedPointer::Reset,1,rewritten
 0x46c480,109,,1,to do
-0x46c500,130,Array32::SetCapacity,4,rewritten
+0x46c500,130,Array<4>::SetCapacity,4,rewritten
 0x46c5b0,26,OwnedPointer::Reset,2,rewritten
 0x46c5d0,179,,1,to do
 0x46c6c0,168,,1,to do
@@ -1323,7 +1323,7 @@ address,size,name,callers,status
 0x46d9d0,67,,4,to do
 0x46da20,293,,1,to do
 0x46db50,124,,1,to do
-0x46dc30,212,,1,to do
+0x46dc30,212,ReferenceField::Load,1,rewritten
 0x46dd10,230,,1,to do
 0x46de00,95,,0,to do
 0x46df30,105,,1,to do
@@ -1359,12 +1359,12 @@ address,size,name,callers,status
 0x470e90,27,,1,to do
 0x470eb0,207,,3,to do
 0x471090,26,OwnedPointer::Reset,1,rewritten
-0x4710b0,130,Array32::SetCapacity,3,rewritten
+0x4710b0,130,Array<4>::SetCapacity,3,rewritten
 0x471160,26,OwnedPointer::Reset,1,rewritten
 0x471180,153,,1,to do
 0x471220,131,,1,to do
 0x4712b0,48,,37,to do
-0x4712e0,139,,1,to do
+0x4712e0,139,Array<8>::SetCapacity,1,rewritten
 0x471370,68,,1,to do
 0x471400,107,,1,to do
 0x471480,34,,1,to do
@@ -1390,10 +1390,10 @@ address,size,name,callers,status
 0x4722b0,67,,0,to do
 0x472310,67,,1,to do
 0x472370,67,,0,to do
-0x4723d0,212,,1,to do
-0x4724b0,212,,1,to do
-0x472590,212,,1,to do
-0x472670,212,,1,to do
+0x4723d0,212,ReferenceField::Load,1,rewritten
+0x4724b0,212,ReferenceField::Load,1,rewritten
+0x472590,212,ReferenceField::Load,1,rewritten
+0x472670,212,ReferenceField::Load,1,rewritten
 0x472750,937,,5,to do
 0x472b40,258,,1,to do
 0x473320,1156,,1,to do
@@ -1431,7 +1431,7 @@ address,size,name,callers,status
 0x4756e0,34,,5,to do
 0x475720,76,,2,to do
 0x475a10,26,OwnedPointer::Reset,2,rewritten
-0x475a30,139,,9,to do
+0x475a30,139,Array<8>::SetCapacity,9,rewritten
 0x475ae0,178,,0,to do
 0x475ba0,101,,11,to do
 0x475c10,78,,2,to do
@@ -1495,7 +1495,7 @@ address,size,name,callers,status
 0x477ea0,36,,1,to do
 0x477f00,26,OwnedPointer::Reset,3,rewritten
 0x477f20,26,OwnedPointer::Reset,4,rewritten
-0x477f40,61,Array32::Allocate,0,rewritten
+0x477f40,61,Array<4>::Allocate,0,rewritten
 0x4780a0,224,,1,to do
 0x4781a0,30,,1,to do
 0x4781c0,123,,1,to do
@@ -1622,7 +1622,7 @@ address,size,name,callers,status
 0x483160,135,,5,to do
 0x4831f0,265,,3,to do
 0x483320,26,OwnedPointer::Reset,1,rewritten
-0x483340,139,,1,to do
+0x483340,139,Array<8>::SetCapacity,1,rewritten
 0x4833d0,1028,,1,to do
 0x4837e0,38,,2,to do
 0x483810,50,,1,to do
@@ -1752,7 +1752,7 @@ address,size,name,callers,status
 0x48dd50,30,,2,to do
 0x48dd70,169,,1,to do
 0x48df30,26,OwnedPointer::Reset,2,rewritten
-0x48df50,61,Array32::Allocate,0,rewritten
+0x48df50,61,Array<4>::Allocate,0,rewritten
 0x48e000,220,,1,to do
 0x48e0e0,30,,1,to do
 0x48e100,236,,1,to do
@@ -1774,7 +1774,7 @@ address,size,name,callers,status
 0x48f990,67,,0,to do
 0x48f9f0,293,,1,to do
 0x48fb20,124,,1,to do
-0x48fc00,212,,1,to do
+0x48fc00,212,ReferenceField::Load,1,rewritten
 0x48fce0,61,,1,to do
 0x48fd20,105,,1,to do
 0x48fd90,606,,1,to do
@@ -1813,7 +1813,7 @@ address,size,name,callers,status
 0x492ed0,112,,36,to do
 0x492f40,694,,1,to do
 0x493200,1557,,28,to do
-0x493860,132,,12,to do
+0x493860,132,Array<2>::SetCapacity,12,rewritten
 0x493930,151,,8,to do
 0x493a30,30,,1,to do
 0x493a50,30,,1,to do
@@ -1854,7 +1854,7 @@ address,size,name,callers,status
 0x495bb0,7,,18,to do
 0x495bf0,32,,5,to do
 0x495dc0,26,OwnedPointer::Reset,2,rewritten
-0x495de0,130,Array32::SetCapacity,1,rewritten
+0x495de0,130,Array<4>::SetCapacity,1,rewritten
 0x495e90,96,,2,to do
 0x495ef0,86,,2,to do
 0x495f50,205,,1,to do
@@ -2116,7 +2116,7 @@ address,size,name,callers,status
 0x4a5620,67,,2,to do
 0x4a5680,293,,1,to do
 0x4a57b0,124,,1,to do
-0x4a5890,212,,1,to do
+0x4a5890,212,ReferenceField::Load,1,rewritten
 0x4a59d0,61,,2,to do
 0x4a5a40,855,,1,to do
 0x4a5da0,30,,0,to do
@@ -2148,7 +2148,7 @@ address,size,name,callers,status
 0x4a8b00,13,,1,to do
 0x4a8bf0,39,,1,to do
 0x4a8dd0,26,OwnedPointer::Reset,2,rewritten
-0x4a8df0,130,Array32::SetCapacity,1,rewritten
+0x4a8df0,130,Array<4>::SetCapacity,1,rewritten
 0x4a8e80,26,OwnedPointer::Reset,2,rewritten
 0x4a8fd0,87,,5,to do
 0x4a9050,32,,0,to do
@@ -2211,8 +2211,8 @@ address,size,name,callers,status
 0x4ad9c0,116,,1,to do
 0x4adab0,281,,1,to do
 0x4adbd0,116,,1,to do
-0x4adcc0,212,,1,to do
-0x4adda0,212,,1,to do
+0x4adcc0,212,ReferenceField::Load,1,rewritten
+0x4adda0,212,ReferenceField::Load,1,rewritten
 0x4ade80,102,,10,to do
 0x4adef0,2991,,2,to do
 0x4aeb40,57,,9,to do
@@ -2362,7 +2362,7 @@ address,size,name,callers,status
 0x4bf500,116,,9,to do
 0x4bf580,61,,8,to do
 0x4bf710,26,OwnedPointer::Reset,2,rewritten
-0x4bf730,151,,4,to do
+0x4bf730,151,Array<12>::SetCapacity,4,rewritten
 0x4bf810,26,OwnedPointer::Reset,12,rewritten
 0x4bf970,28,,40,to do
 0x4bf990,31,,2,to do
@@ -2401,7 +2401,7 @@ address,size,name,callers,status
 0x4c1900,124,,1,to do
 0x4c19e0,293,,1,to do
 0x4c1b10,124,,1,to do
-0x4c1bf0,212,,1,to do
+0x4c1bf0,212,ReferenceField::Load,1,rewritten
 0x4c1cd0,70,,1,to do
 0x4c1d20,347,,7,to do
 0x4c1e80,18,,6,to do
@@ -2462,7 +2462,7 @@ address,size,name,callers,status
 0x4c5f30,61,,2,to do
 0x4c5f70,61,,0,to do
 0x4c5fc0,67,,2,to do
-0x4c6010,212,,1,to do
+0x4c6010,212,ReferenceField::Load,1,rewritten
 0x4c60f0,1936,,2,to do
 0x4c68b0,30,,2,to do
 0x4c68d0,89,,1,to do
@@ -2498,7 +2498,7 @@ address,size,name,callers,status
 0x4c9530,1752,,1,to do
 0x4c9cb0,43,,0,to do
 0x4c9d60,26,OwnedPointer::Reset,2,rewritten
-0x4c9d80,130,Array32::SetCapacity,3,rewritten
+0x4c9d80,130,Array<4>::SetCapacity,3,rewritten
 0x4c9e50,59,,2,to do
 0x4c9e90,130,,1,to do
 0x4c9f20,263,,2,to do
@@ -2533,7 +2533,7 @@ address,size,name,callers,status
 0x4cc460,10,,1,to do
 0x4cc470,86,,1,to do
 0x4cc5d0,26,OwnedPointer::Reset,1,rewritten
-0x4cc5f0,130,Array32::SetCapacity,1,rewritten
+0x4cc5f0,130,Array<4>::SetCapacity,1,rewritten
 0x4cc710,262,,1,to do
 0x4cc830,75,,4,to do
 0x4cc880,108,,12,to do
@@ -2636,7 +2636,7 @@ address,size,name,callers,status
 0x4d2b90,29,,11,to do
 0x4d2bb0,67,,0,to do
 0x4d2c10,118,ObjectRef::DeleteTarget,2,rewritten
-0x4d2c90,212,,1,to do
+0x4d2c90,212,ReferenceField::Load,1,rewritten
 0x4d2d70,1099,,2,to do
 0x4d3280,260,,4,to do
 0x4d3390,169,,3,to do
@@ -2832,7 +2832,7 @@ address,size,name,callers,status
 0x4ea3c0,62,,3,to do
 0x4ea400,61,,0,to do
 0x4ea450,67,,12,to do
-0x4ea4a0,212,,1,to do
+0x4ea4a0,212,ReferenceField::Load,1,rewritten
 0x4ea580,917,,2,to do
 0x4ea920,30,,3,to do
 0x4ea940,125,,1,to do
@@ -3024,7 +3024,7 @@ address,size,name,callers,status
 0x501fc0,162,,1,to do
 0x502070,64,,3,to do
 0x5020d0,26,OwnedPointer::Reset,18,rewritten
-0x5020f0,130,Array32::SetCapacity,3,rewritten
+0x5020f0,130,Array<4>::SetCapacity,3,rewritten
 0x5021b0,573,,1,to do
 0x502520,137,,2,to do
 0x5026d0,213,,1,to do
@@ -3065,7 +3065,7 @@ address,size,name,callers,status
 0x507af0,108,,2,to do
 0x507b60,61,,2,to do
 0x507bb0,67,,0,to do
-0x507c00,212,,1,to do
+0x507c00,212,ReferenceField::Load,1,rewritten
 0x507ce0,1400,,3,to do
 0x508260,30,,2,to do
 0x508280,172,,2,to do
@@ -3125,13 +3125,13 @@ address,size,name,callers,status
 0x50c680,39,,5,to do
 0x50c9b0,26,OwnedPointer::Reset,0,rewritten
 0x50c9d0,26,OwnedPointer::Reset,2,rewritten
-0x50c9f0,157,,1,to do
+0x50c9f0,157,Array<16>::SetCapacity,1,rewritten
 0x50ca90,26,OwnedPointer::Reset,20,rewritten
 0x50cab0,26,OwnedPointer::Reset,0,rewritten
 0x50cb50,30,,1,to do
 0x50cb70,26,OwnedPointer::Reset,5,rewritten
 0x50cb90,26,OwnedPointer::Reset,0,rewritten
-0x50cbb0,130,Array32::SetCapacity,1,rewritten
+0x50cbb0,130,Array<4>::SetCapacity,1,rewritten
 0x50cda0,26,OwnedPointer::Reset,2,rewritten
 0x50cf50,178,,1,to do
 0x50d060,28,,1,to do
@@ -3227,9 +3227,9 @@ address,size,name,callers,status
 0x512f50,293,,1,to do
 0x513080,124,,1,to do
 0x513160,76,,2,to do
-0x5131c0,212,,0,to do
-0x5132a0,212,,0,to do
-0x513380,212,,0,to do
+0x5131c0,212,ReferenceField::Load,0,rewritten
+0x5132a0,212,ReferenceField::Load,0,rewritten
+0x513380,212,ReferenceField::Load,0,rewritten
 0x513460,48,,2,to do
 0x513490,290,,3,to do
 0x5136c0,61,,1,to do
@@ -3436,9 +3436,9 @@ address,size,name,callers,status
 0x533250,280,,1,to do
 0x533460,296,,1,to do
 0x533590,127,,1,to do
-0x533680,212,,1,to do
-0x533760,212,,1,to do
-0x5339d0,212,,1,to do
+0x533680,212,ReferenceField::Load,1,rewritten
+0x533760,212,ReferenceField::Load,1,rewritten
+0x5339d0,212,ReferenceField::Load,1,rewritten
 0x533ab0,729,,1,to do
 0x533d90,36,SharedBuffer::Release,7,rewritten
 0x533dc0,89,,7,to do
@@ -3517,7 +3517,7 @@ address,size,name,callers,status
 0x53c520,33,,1,to do
 0x53c550,1,,1,to do
 0x53c6c0,26,OwnedPointer::Reset,2,rewritten
-0x53c6e0,130,Array32::SetCapacity,1,rewritten
+0x53c6e0,130,Array<4>::SetCapacity,1,rewritten
 0x53c770,29,,1,to do
 0x53c790,4,,4,to do
 0x53c920,219,,2,to do
@@ -3646,9 +3646,9 @@ address,size,name,callers,status
 0x54d6f0,67,,1,to do
 0x54d750,280,,1,to do
 0x54d9f0,67,,1,to do
-0x54da50,212,,1,to do
-0x54dcb0,212,,1,to do
-0x54dd90,212,,1,to do
+0x54da50,212,ReferenceField::Load,1,rewritten
+0x54dcb0,212,ReferenceField::Load,1,rewritten
+0x54dd90,212,ReferenceField::Load,1,rewritten
 0x54de70,107,,1,to do
 0x54dee0,141,,1,to do
 0x54e150,67,,1,to do
@@ -3750,8 +3750,8 @@ address,size,name,callers,status
 0x557bd0,69,,2,to do
 0x557c20,37,,5,to do
 0x557cc0,26,OwnedPointer::Reset,2,rewritten
-0x557ce0,59,,0,to do
-0x557d20,157,,1,to do
+0x557ce0,59,Array<16>::Allocate,0,rewritten
+0x557d20,157,Array<16>::SetCapacity,1,rewritten
 0x557dc0,168,,4,to do
 0x557e70,99,,1,to do
 0x557ee0,1043,,2,to do
@@ -3903,7 +3903,7 @@ address,size,name,callers,status
 0x564750,67,,0,to do
 0x5647a0,293,,1,to do
 0x5648d0,124,,1,to do
-0x5649b0,212,,0,to do
+0x5649b0,212,ReferenceField::Load,0,rewritten
 0x564af0,1280,,2,to do
 0x565030,1798,,4,to do
 0x565740,42,,1,to do
@@ -4035,7 +4035,7 @@ address,size,name,callers,status
 0x57e180,6098,,1,to do
 0x57f960,30,,3,to do
 0x57fdf0,26,OwnedPointer::Reset,2,rewritten
-0x57fe10,151,,1,to do
+0x57fe10,151,Array<12>::SetCapacity,1,rewritten
 0x57feb0,346,,1,to do
 0x580040,95,,1,to do
 0x580100,30,,2,to do
@@ -4179,7 +4179,7 @@ address,size,name,callers,status
 0x58df40,141,,10,to do
 0x58dfd0,1974,,2,to do
 0x58e7d0,26,OwnedPointer::Reset,1,rewritten
-0x58e7f0,61,Array32::Allocate,0,rewritten
+0x58e7f0,61,Array<4>::Allocate,0,rewritten
 0x58e880,175,,0,to do
 0x58e930,24,,1,to do
 0x58e950,89,,2,to do
@@ -4211,7 +4211,7 @@ address,size,name,callers,status
 0x58fdc0,51,,1,to do
 0x58fe50,28,,1,to do
 0x590280,26,OwnedPointer::Reset,2,rewritten
-0x5902a0,130,Array32::SetCapacity,1,rewritten
+0x5902a0,130,Array<4>::SetCapacity,1,rewritten
 0x590370,68,,1,to do
 0x5903c0,122,,1,to do
 0x590440,187,,1,to do
@@ -4266,8 +4266,8 @@ address,size,name,callers,status
 0x593900,118,ObjectRef::DeleteTarget,4,rewritten
 0x593980,280,,1,to do
 0x593b90,280,,1,to do
-0x593da0,212,,0,to do
-0x593e80,212,,0,to do
+0x593da0,212,ReferenceField::Load,0,rewritten
+0x593e80,212,ReferenceField::Load,0,rewritten
 0x593f60,59,,16,to do
 0x593fa0,83,,1,to do
 0x594000,73,,3,to do
@@ -4337,7 +4337,7 @@ address,size,name,callers,status
 0x59a2d0,33,,41,to do
 0x59a390,30,,0,to do
 0x59a410,26,OwnedPointer::Reset,2,rewritten
-0x59a430,130,Array32::SetCapacity,1,rewritten
+0x59a430,130,Array<4>::SetCapacity,1,rewritten
 0x59a500,79,,1,to do
 0x59a550,16,,6,to do
 0x59a5f0,438,,2,to do
@@ -4484,10 +4484,10 @@ address,size,name,callers,status
 0x5a22e0,39,,1,to do
 0x5a2350,30,,0,to do
 0x5a23d0,26,OwnedPointer::Reset,2,rewritten
-0x5a23f0,139,,1,to do
+0x5a23f0,139,Array<8>::SetCapacity,1,rewritten
 0x5a24d0,30,,1,to do
 0x5a24f0,26,OwnedPointer::Reset,1,rewritten
-0x5a2510,130,Array32::SetCapacity,1,rewritten
+0x5a2510,130,Array<4>::SetCapacity,1,rewritten
 0x5a25c0,18,,0,to do
 0x5a2690,427,,2,to do
 0x5a2880,753,,2,to do
@@ -4565,7 +4565,7 @@ address,size,name,callers,status
 0x5aae10,124,,1,to do
 0x5aaef0,293,,1,to do
 0x5ab020,124,,1,to do
-0x5ab100,212,,1,to do
+0x5ab100,212,ReferenceField::Load,1,rewritten
 0x5ab230,201,,6,to do
 0x5ab300,132,,3,to do
 0x5ab390,992,,2,to do
@@ -4631,7 +4631,7 @@ address,size,name,callers,status
 0x5b7d50,61,,0,to do
 0x5b7da0,67,,0,to do
 0x5b7ef0,48,,1,to do
-0x5b8000,212,,1,to do
+0x5b8000,212,ReferenceField::Load,1,rewritten
 0x5b80e0,2866,,2,to do
 0x5b8c40,837,,1,to do
 0x5b8f90,198,,3,to do
@@ -4643,7 +4643,7 @@ address,size,name,callers,status
 0x5b99b0,30,,3,to do
 0x5b99d0,105,,1,to do
 0x5b9ac0,26,OwnedPointer::Reset,5,rewritten
-0x5b9ae0,54,,0,to do
+0x5b9ae0,54,Array<1>::Allocate,0,rewritten
 0x5b9b20,120,,1,to do
 0x5b9ba0,160,,1,to do
 0x5b9c60,1142,,2,to do
@@ -4789,8 +4789,8 @@ address,size,name,callers,status
 0x5c2610,67,,0,to do
 0x5c2670,118,ObjectRef::DeleteTarget,1,rewritten
 0x5c26f0,280,,1,to do
-0x5c2900,212,,1,to do
-0x5c2b50,212,,1,to do
+0x5c2900,212,ReferenceField::Load,1,rewritten
+0x5c2b50,212,ReferenceField::Load,1,rewritten
 0x5c2c30,4049,,5,to do
 0x5c3ca0,284,,1,to do
 0x5c3dc0,1258,,1,to do
@@ -4952,7 +4952,7 @@ address,size,name,callers,status
 0x5d3bf0,26,OwnedPointer::Reset,2,rewritten
 0x5d3c10,26,OwnedPointer::Reset,3,rewritten
 0x5d3c30,26,OwnedPointer::Reset,1,rewritten
-0x5d3c50,130,Array32::SetCapacity,1,rewritten
+0x5d3c50,130,Array<4>::SetCapacity,1,rewritten
 0x5d3d00,50,,12,to do
 0x5d3d40,95,,1,to do
 0x5d3de0,62,,0,to do
@@ -5165,8 +5165,8 @@ address,size,name,callers,status
 0x5ec480,118,ObjectRef::DeleteTarget,1,rewritten
 0x5ec500,61,,0,to do
 0x5ec550,67,,0,to do
-0x5ec630,212,,1,to do
-0x5ec710,212,,1,to do
+0x5ec630,212,ReferenceField::Load,1,rewritten
+0x5ec710,212,ReferenceField::Load,1,rewritten
 0x5ec7f0,1674,,2,to do
 0x5eced0,263,,1,to do
 0x5ecfe0,162,,1,to do
@@ -5209,9 +5209,9 @@ address,size,name,callers,status
 0x5f1140,264,,1,to do
 0x5f1250,703,,1,to do
 0x5f1610,26,OwnedPointer::Reset,1,rewritten
-0x5f1630,130,Array32::SetCapacity,5,rewritten
+0x5f1630,130,Array<4>::SetCapacity,5,rewritten
 0x5f16e0,26,OwnedPointer::Reset,2,rewritten
-0x5f1700,130,Array32::SetCapacity,1,rewritten
+0x5f1700,130,Array<4>::SetCapacity,1,rewritten
 0x5f17a0,26,OwnedPointer::Reset,5,rewritten
 0x5f17c0,30,,0,to do
 0x5f17e0,7,,2,to do
@@ -5313,7 +5313,7 @@ address,size,name,callers,status
 0x5fc010,145,,1,to do
 0x5fc0f0,17,,1,to do
 0x5fc2c0,26,OwnedPointer::Reset,0,rewritten
-0x5fc2e0,130,Array32::SetCapacity,3,rewritten
+0x5fc2e0,130,Array<4>::SetCapacity,3,rewritten
 0x5fc4c0,30,,2,to do
 0x5fc4f0,160,,3,to do
 0x5fc5a0,64,,0,to do
@@ -5405,8 +5405,8 @@ address,size,name,callers,status
 0x6167b0,2739,,1,to do
 0x617290,111,,1,to do
 0x617350,26,OwnedPointer::Reset,2,rewritten
-0x617370,61,,0,to do
-0x6173b0,139,,8,to do
+0x617370,61,Array<8>::Allocate,0,rewritten
+0x6173b0,139,Array<8>::SetCapacity,8,rewritten
 0x617440,325,,2,to do
 0x617590,35,,1,to do
 0x6175c0,54,,1,to do
@@ -5537,7 +5537,7 @@ address,size,name,callers,status
 0x621520,113,,1,to do
 0x6215e0,175,,1,to do
 0x6216d0,26,OwnedPointer::Reset,4,rewritten
-0x6216f0,130,Array32::SetCapacity,1,rewritten
+0x6216f0,130,Array<4>::SetCapacity,1,rewritten
 0x6217d0,196,,1,to do
 0x6218d0,503,,2,to do
 0x621ad0,30,,2,to do
@@ -5929,7 +5929,7 @@ address,size,name,callers,status
 0x646a80,30,,2,to do
 0x646ac0,26,OwnedPointer::Reset,2,rewritten
 0x646ae0,26,OwnedPointer::Reset,8,rewritten
-0x646b00,61,Array32::Allocate,0,rewritten
+0x646b00,61,Array<4>::Allocate,0,rewritten
 0x646d40,30,,2,to do
 0x646da0,305,,7,to do
 0x646f20,246,,1,to do
@@ -6077,7 +6077,7 @@ address,size,name,callers,status
 0x65b400,20,,2,to do
 0x65b470,58,,1,to do
 0x65b4d0,26,OwnedPointer::Reset,2,rewritten
-0x65b4f0,130,Array32::SetCapacity,1,rewritten
+0x65b4f0,130,Array<4>::SetCapacity,1,rewritten
 0x65b590,91,,3,to do
 0x65b5f0,89,,1,to do
 0x65b690,151,,1,to do
@@ -6141,7 +6141,7 @@ address,size,name,callers,status
 0x660560,136,,2,to do
 0x660630,72,,0,to do
 0x660690,26,OwnedPointer::Reset,0,rewritten
-0x6606b0,130,Array32::SetCapacity,1,rewritten
+0x6606b0,130,Array<4>::SetCapacity,1,rewritten
 0x660740,104,,1,to do
 0x6607b0,655,,1,to do
 0x660ad0,605,,2,to do
@@ -6252,8 +6252,8 @@ address,size,name,callers,status
 0x66a020,529,,1,to do
 0x66a350,26,,1,to do
 0x66a460,26,OwnedPointer::Reset,2,rewritten
-0x66a480,61,Array32::Allocate,0,rewritten
-0x66a4c0,130,Array32::SetCapacity,2,rewritten
+0x66a480,61,Array<4>::Allocate,0,rewritten
+0x66a4c0,130,Array<4>::SetCapacity,2,rewritten
 0x66a580,123,,4,to do
 0x66a600,30,,2,to do
 0x66a620,326,,1,to do
@@ -6322,10 +6322,10 @@ address,size,name,callers,status
 0x6715e0,50,,1,to do
 0x671620,1,,6,to do
 0x671630,1,,6,to do
-0x671980,61,Array32::Allocate,0,rewritten
+0x671980,61,Array<4>::Allocate,0,rewritten
 0x6719c0,26,OwnedPointer::Reset,2,rewritten
-0x6719e0,130,Array32::SetCapacity,3,rewritten
-0x671a70,54,,0,to do
+0x6719e0,130,Array<4>::SetCapacity,3,rewritten
+0x671a70,54,Array<1>::Allocate,0,rewritten
 0x671ab0,120,,10,to do
 0x671c30,105,,1,to do
 0x671ca0,187,,2,to do
@@ -6441,7 +6441,7 @@ address,size,name,callers,status
 0x67c6a0,193,,1,to do
 0x67c7c0,142,,4,to do
 0x67c8c0,26,OwnedPointer::Reset,1,rewritten
-0x67c8e0,61,Array32::Allocate,0,rewritten
+0x67c8e0,61,Array<4>::Allocate,0,rewritten
 0x67c9f0,192,,1,to do
 0x67cab0,30,,2,to do
 0x67cad0,79,,1,to do
@@ -6561,10 +6561,10 @@ address,size,name,callers,status
 0x6854f0,37,,10,to do
 0x685530,51,,1,to do
 0x6855d0,26,OwnedPointer::Reset,2,rewritten
-0x6855f0,61,Array32::Allocate,0,rewritten
-0x685630,130,Array32::SetCapacity,1,rewritten
+0x6855f0,61,Array<4>::Allocate,0,rewritten
+0x685630,130,Array<4>::SetCapacity,1,rewritten
 0x6856c0,26,OwnedPointer::Reset,2,rewritten
-0x6856e0,130,Array32::SetCapacity,1,rewritten
+0x6856e0,130,Array<4>::SetCapacity,1,rewritten
 0x6857d0,30,,2,to do
 0x6857f0,559,,1,to do
 0x685a20,152,,3,to do
@@ -6660,7 +6660,7 @@ address,size,name,callers,status
 0x68f640,140,,21,to do
 0x68f720,167,,0,to do
 0x68f7f0,26,OwnedPointer::Reset,1,rewritten
-0x68f810,139,,1,to do
+0x68f810,139,Array<8>::SetCapacity,1,rewritten
 0x68f8a0,195,,4,to do
 0x68f990,346,,2,to do
 0x68faf0,281,,4,to do
@@ -6697,16 +6697,16 @@ address,size,name,callers,status
 0x6914a0,79,,2,to do
 0x6914f0,30,,0,to do
 0x6916f0,26,OwnedPointer::Reset,0,rewritten
-0x691710,157,,2,to do
+0x691710,157,Array<16>::SetCapacity,2,rewritten
 0x6917b0,26,OwnedPointer::Reset,20,rewritten
 0x6917d0,26,OwnedPointer::Reset,0,rewritten
 0x6917f0,26,OwnedPointer::Reset,0,rewritten
 0x691810,26,OwnedPointer::Reset,0,rewritten
 0x691830,142,,1,to do
 0x6918c0,26,OwnedPointer::Reset,0,rewritten
-0x6918e0,151,,4,to do
+0x6918e0,151,Array<12>::SetCapacity,4,rewritten
 0x691980,26,OwnedPointer::Reset,0,rewritten
-0x6919a0,170,,8,to do
+0x6919a0,170,Array<24>::SetCapacity,8,rewritten
 0x691a50,26,OwnedPointer::Reset,0,rewritten
 0x691b10,93,,1,to do
 0x691d50,13,,1,to do
@@ -6781,7 +6781,7 @@ address,size,name,callers,status
 0x69eea0,84,,6,to do
 0x69ef40,35,,1,to do
 0x69efa0,42,,0,to do
-0x69eff0,130,Array32::SetCapacity,1,rewritten
+0x69eff0,130,Array<4>::SetCapacity,1,rewritten
 0x69f1e0,61,,2,to do
 0x69f230,86,,1,to do
 0x69f290,96,,0,to do
@@ -7153,7 +7153,7 @@ address,size,name,callers,status
 0x6b9ba0,81,,1,to do
 0x6b9c10,580,,1,to do
 0x6b9e70,101,,1,to do
-0x6b9f70,61,Array32::Allocate,0,rewritten
+0x6b9f70,61,Array<4>::Allocate,0,rewritten
 0x6ba070,80,,1,to do
 0x6ba0c0,146,,1,to do
 0x6ba1e0,140,,1,to do
@@ -7221,7 +7221,7 @@ address,size,name,callers,status
 0x6c2140,174,,3,to do
 0x6c21f0,26,,1,to do
 0x6c2240,26,OwnedPointer::Reset,1,rewritten
-0x6c2260,139,,1,to do
+0x6c2260,139,Array<8>::SetCapacity,1,rewritten
 0x6c22f0,518,,1,to do
 0x6c2500,2408,,1,to do
 0x6c2e80,457,,25,to do
@@ -7242,10 +7242,10 @@ address,size,name,callers,status
 0x6c3940,37,,1,to do
 0x6c3970,26,,2,to do
 0x6c3a20,26,OwnedPointer::Reset,4,rewritten
-0x6c3a40,61,Array32::Allocate,0,rewritten
-0x6c3a80,130,Array32::SetCapacity,5,rewritten
+0x6c3a40,61,Array<4>::Allocate,0,rewritten
+0x6c3a80,130,Array<4>::SetCapacity,5,rewritten
 0x6c3b10,26,OwnedPointer::Reset,1,rewritten
-0x6c3b30,130,Array32::SetCapacity,1,rewritten
+0x6c3b30,130,Array<4>::SetCapacity,1,rewritten
 0x6c3bc0,26,OwnedPointer::Reset,0,rewritten
 0x6c3be0,149,,10,to do
 0x6c3c80,54,,1,to do
@@ -7356,8 +7356,8 @@ address,size,name,callers,status
 0x6cfd40,18,,1,to do
 0x6cfd80,18,,1,to do
 0x6cfdd0,145,,1,to do
-0x6cfee0,61,Array32::Allocate,0,rewritten
-0x6cff20,130,Array32::SetCapacity,1,rewritten
+0x6cfee0,61,Array<4>::Allocate,0,rewritten
+0x6cff20,130,Array<4>::SetCapacity,1,rewritten
 0x6cffc0,487,,25,to do
 0x6d0290,30,,2,to do
 0x6d02c0,99,,1,to do
@@ -7514,7 +7514,7 @@ address,size,name,callers,status
 0x6d9630,18,,1,to do
 0x6d96f0,73,,1,to do
 0x6d9760,26,OwnedPointer::Reset,4,rewritten
-0x6d9780,130,Array32::SetCapacity,2,rewritten
+0x6d9780,130,Array<4>::SetCapacity,2,rewritten
 0x6d9980,147,,1,to do
 0x6d9a20,159,,1,to do
 0x6d9ac0,30,,2,to do
@@ -7808,7 +7808,7 @@ address,size,name,callers,status
 0x6f1010,52,,3,to do
 0x6f1050,161,,1,to do
 0x6f11c0,26,OwnedPointer::Reset,1,rewritten
-0x6f11e0,130,Array32::SetCapacity,2,rewritten
+0x6f11e0,130,Array<4>::SetCapacity,2,rewritten
 0x6f1280,265,,1,to do
 0x6f13c0,242,,2,to do
 0x6f14c0,30,,2,to do
@@ -7840,7 +7840,7 @@ address,size,name,callers,status
 0x6f2d40,2191,,1,to do
 0x6f35d0,61,,0,to do
 0x6f3620,67,,0,to do
-0x6f3670,212,,1,to do
+0x6f3670,212,ReferenceField::Load,1,rewritten
 0x6f3750,7971,,1,to do
 0x6f5680,505,,2,to do
 0x6f5880,352,,2,to do
@@ -8357,7 +8357,7 @@ address,size,name,callers,status
 0x72a4d0,2029,,2,to do
 0x72acc0,87,,1,to do
 0x72ad20,467,,1,to do
-0x72af00,130,Array32::SetCapacity,6,rewritten
+0x72af00,130,Array<4>::SetCapacity,6,rewritten
 0x72af90,100,,1,to do
 0x72b000,34,,1,to do
 0x72b030,231,,2,to do
@@ -8454,10 +8454,10 @@ address,size,name,callers,status
 0x7335f0,234,,2,to do
 0x7336e0,130,,1,to do
 0x733770,26,OwnedPointer::Reset,2,rewritten
-0x733790,61,Array32::Allocate,0,rewritten
+0x733790,61,Array<4>::Allocate,0,rewritten
 0x7337d0,73,,1,to do
 0x733820,26,OwnedPointer::Reset,2,rewritten
-0x733840,61,Array32::Allocate,0,rewritten
+0x733840,61,Array<4>::Allocate,0,rewritten
 0x733880,73,,1,to do
 0x7338d0,66,,3,to do
 0x733920,136,,1,to do
@@ -8542,7 +8542,7 @@ address,size,name,callers,status
 0x739ad0,236,,1,to do
 0x739bc0,1035,,1,to do
 0x739fd0,67,,0,to do
-0x73a030,212,,1,to do
+0x73a030,212,ReferenceField::Load,1,rewritten
 0x73a110,105,,1,to do
 0x73a180,803,,2,to do
 0x73a4b0,30,,2,to do
@@ -8587,7 +8587,7 @@ address,size,name,callers,status
 0x73e980,293,,1,to do
 0x73eab0,124,,1,to do
 0x73ec20,67,,4,to do
-0x73ec80,212,,1,to do
+0x73ec80,212,ReferenceField::Load,1,rewritten
 0x73edc0,61,,2,to do
 0x73ee00,39,,1,to do
 0x73ee30,81,,4,to do
@@ -8654,11 +8654,11 @@ address,size,name,callers,status
 0x745a90,26,OwnedPointer::Reset,0,rewritten
 0x745ad0,26,OwnedPointer::Reset,2,rewritten
 0x745af0,26,OwnedPointer::Reset,2,rewritten
-0x745b10,157,,1,to do
+0x745b10,157,Array<16>::SetCapacity,1,rewritten
 0x745bb0,26,OwnedPointer::Reset,2,rewritten
-0x745bd0,130,Array32::SetCapacity,1,rewritten
+0x745bd0,130,Array<4>::SetCapacity,1,rewritten
 0x745c60,26,OwnedPointer::Reset,2,rewritten
-0x745c80,130,Array32::SetCapacity,1,rewritten
+0x745c80,130,Array<4>::SetCapacity,1,rewritten
 0x745d10,44,,0,to do
 0x745d80,28,,2,to do
 0x745e40,525,,3,to do
@@ -8726,7 +8726,7 @@ address,size,name,callers,status
 0x74ec80,3559,,9,to do
 0x74fde0,493,,1,to do
 0x74ffd0,108,,1,to do
-0x750040,130,Array32::SetCapacity,1,rewritten
+0x750040,130,Array<4>::SetCapacity,1,rewritten
 0x7500d0,183,,1,to do
 0x750190,446,,2,to do
 0x750350,703,,1,to do
@@ -8734,7 +8734,7 @@ address,size,name,callers,status
 0x750ea0,208,,1,to do
 0x750f90,218,,1,to do
 0x7510f0,26,OwnedPointer::Reset,1,rewritten
-0x751110,130,Array32::SetCapacity,1,rewritten
+0x751110,130,Array<4>::SetCapacity,1,rewritten
 0x7511a0,135,,3,to do
 0x751230,13,,1,to do
 0x7512b0,38,,4,to do
@@ -8806,7 +8806,7 @@ address,size,name,callers,status
 0x755310,30,,1,to do
 0x755330,30,,1,to do
 0x755350,30,,1,to do
-0x755430,139,,1,to do
+0x755430,139,Array<8>::SetCapacity,1,rewritten
 0x7554c0,340,,1,to do
 0x755630,34,,1,to do
 0x7557d0,945,,2,to do
@@ -8950,7 +8950,7 @@ address,size,name,callers,status
 0x762510,61,,0,to do
 0x762560,293,,1,to do
 0x762690,124,,1,to do
-0x762780,212,,1,to do
+0x762780,212,ReferenceField::Load,1,rewritten
 0x762860,214,,2,to do
 0x762940,44,,1,to do
 0x762980,132,,1,to do
@@ -9059,7 +9059,7 @@ address,size,name,callers,status
 0x7734f0,26,OwnedPointer::Reset,0,rewritten
 0x773510,142,,1,to do
 0x7735c0,26,OwnedPointer::Reset,2,rewritten
-0x7735e0,130,Array32::SetCapacity,3,rewritten
+0x7735e0,130,Array<4>::SetCapacity,3,rewritten
 0x773670,107,,3,to do
 0x773710,69,,46,to do
 0x773760,107,,1,to do
@@ -9230,9 +9230,9 @@ address,size,name,callers,status
 0x7875d0,563,,2,to do
 0x787810,1085,,1,to do
 0x787da0,26,OwnedPointer::Reset,2,rewritten
-0x787dc0,130,Array32::SetCapacity,1,rewritten
+0x787dc0,130,Array<4>::SetCapacity,1,rewritten
 0x787e70,26,OwnedPointer::Reset,2,rewritten
-0x787e90,130,Array32::SetCapacity,1,rewritten
+0x787e90,130,Array<4>::SetCapacity,1,rewritten
 0x787f80,111,,4,to do
 0x787ff0,50,,1,to do
 0x788030,263,,2,to do
@@ -9246,7 +9246,7 @@ address,size,name,callers,status
 0x788e70,30,,3,to do
 0x788eb0,59,,1,to do
 0x788f50,26,OwnedPointer::Reset,2,rewritten
-0x788f70,130,Array32::SetCapacity,1,rewritten
+0x788f70,130,Array<4>::SetCapacity,1,rewritten
 0x789000,389,,1,to do
 0x7891e0,427,,1,to do
 0x789390,122,,2,to do
@@ -9390,7 +9390,7 @@ address,size,name,callers,status
 0x79a150,290,,1,to do
 0x79a280,126,ObjectRef::Assign,1,rewritten
 0x79a300,67,,0,to do
-0x79a360,212,,0,to do
+0x79a360,212,ReferenceField::Load,0,rewritten
 0x79a440,583,,2,to do
 0x79a690,30,,3,to do
 0x79a6b0,913,,1,to do
@@ -9508,8 +9508,8 @@ address,size,name,callers,status
 0x7a3e70,30,,3,to do
 0x7a3f30,268,,7,to do
 0x7a4080,26,OwnedPointer::Reset,2,rewritten
-0x7a40a0,61,Array32::Allocate,0,rewritten
-0x7a40e0,130,Array32::SetCapacity,1,rewritten
+0x7a40a0,61,Array<4>::Allocate,0,rewritten
+0x7a40e0,130,Array<4>::SetCapacity,1,rewritten
 0x7a4170,476,,1,to do
 0x7a4380,1514,,1,to do
 0x7a4970,244,,0,to do
@@ -9792,9 +9792,9 @@ address,size,name,callers,status
 0x7bfff0,579,,1,to do
 0x7c0240,865,,1,to do
 0x7c05d0,48,,1,to do
-0x7c06e0,157,,2,to do
-0x7c0780,170,,2,to do
-0x7c0830,139,,2,to do
+0x7c06e0,157,Array<16>::SetCapacity,2,rewritten
+0x7c0780,170,Array<24>::SetCapacity,2,rewritten
+0x7c0830,139,Array<8>::SetCapacity,2,rewritten
 0x7c08e0,346,,1,to do
 0x7c0a60,33,,0,to do
 0x7c0ab0,33,,0,to do
@@ -9931,9 +9931,9 @@ address,size,name,callers,status
 0x7ccbc0,67,,0,to do
 0x7ccc70,293,,1,to do
 0x7ccda0,124,,1,to do
-0x7cce80,212,,0,to do
-0x7ccf60,212,,0,to do
-0x7cd040,212,,0,to do
+0x7cce80,212,ReferenceField::Load,0,rewritten
+0x7ccf60,212,ReferenceField::Load,0,rewritten
+0x7cd040,212,ReferenceField::Load,0,rewritten
 0x7cd120,94,,11,to do
 0x7cd180,74,,7,to do
 0x7cd1d0,74,,3,to do
@@ -10185,7 +10185,7 @@ address,size,name,callers,status
 0x7f0550,86,,1,to do
 0x7f05e0,13,,1,to do
 0x7f0640,26,OwnedPointer::Reset,0,rewritten
-0x7f0660,130,Array32::SetCapacity,4,rewritten
+0x7f0660,130,Array<4>::SetCapacity,4,rewritten
 0x7f06f0,441,,0,to do
 0x7f08d0,26,OwnedPointer::Reset,2,rewritten
 0x7f08f0,169,,1,to do
@@ -10234,8 +10234,8 @@ address,size,name,callers,status
 0x7f7090,30,,3,to do
 0x7f70b0,105,,1,to do
 0x7f71a0,26,OwnedPointer::Reset,1,rewritten
-0x7f71c0,61,Array32::Allocate,0,rewritten
-0x7f7200,130,Array32::SetCapacity,0,rewritten
+0x7f71c0,61,Array<4>::Allocate,0,rewritten
+0x7f7200,130,Array<4>::SetCapacity,0,rewritten
 0x7f7300,61,,2,to do
 0x7f7340,656,,2,to do
 0x7f7600,30,,3,to do
@@ -10303,15 +10303,15 @@ address,size,name,callers,status
 0x7fb3c0,7,,10,to do
 0x7fb420,18,,1,to do
 0x7fb550,26,OwnedPointer::Reset,12,rewritten
-0x7fb570,130,Array32::SetCapacity,4,rewritten
+0x7fb570,130,Array<4>::SetCapacity,4,rewritten
 0x7fb600,26,OwnedPointer::Reset,6,rewritten
-0x7fb620,130,Array32::SetCapacity,2,rewritten
+0x7fb620,130,Array<4>::SetCapacity,2,rewritten
 0x7fb6d0,26,OwnedPointer::Reset,0,rewritten
-0x7fb6f0,130,Array32::SetCapacity,1,rewritten
+0x7fb6f0,130,Array<4>::SetCapacity,1,rewritten
 0x7fb7a0,26,OwnedPointer::Reset,2,rewritten
-0x7fb7c0,130,Array32::SetCapacity,2,rewritten
+0x7fb7c0,130,Array<4>::SetCapacity,2,rewritten
 0x7fb850,26,OwnedPointer::Reset,2,rewritten
-0x7fb870,130,Array32::SetCapacity,1,rewritten
+0x7fb870,130,Array<4>::SetCapacity,1,rewritten
 0x7fb900,177,,3,to do
 0x7fb9c0,121,,2,to do
 0x7fba40,105,,3,to do
@@ -10429,11 +10429,11 @@ address,size,name,callers,status
 0x800c60,40,,0,to do
 0x800d40,18,,0,to do
 0x8011b0,26,OwnedPointer::Reset,2,rewritten
-0x8011d0,130,Array32::SetCapacity,1,rewritten
+0x8011d0,130,Array<4>::SetCapacity,1,rewritten
 0x801280,26,OwnedPointer::Reset,2,rewritten
-0x8012a0,130,Array32::SetCapacity,1,rewritten
+0x8012a0,130,Array<4>::SetCapacity,1,rewritten
 0x801350,26,OwnedPointer::Reset,3,rewritten
-0x801370,130,Array32::SetCapacity,1,rewritten
+0x801370,130,Array<4>::SetCapacity,1,rewritten
 0x801420,26,OwnedPointer::Reset,2,rewritten
 0x801450,112,,7,to do
 0x8015a0,692,,1,to do
@@ -10480,7 +10480,7 @@ address,size,name,callers,status
 0x805a00,162,,1,to do
 0x805ab0,17,,294,to do
 0x805b60,26,OwnedPointer::Reset,0,rewritten
-0x805b80,130,Array32::SetCapacity,1,rewritten
+0x805b80,130,Array<4>::SetCapacity,1,rewritten
 0x805c10,177,,4,to do
 0x805cd0,163,,0,to do
 0x805d80,105,,2,to do
@@ -10501,7 +10501,7 @@ address,size,name,callers,status
 0x807090,114,,1,to do
 0x807700,286,,1,to do
 0x8078a0,26,OwnedPointer::Reset,0,rewritten
-0x8078c0,130,Array32::SetCapacity,1,rewritten
+0x8078c0,130,Array<4>::SetCapacity,1,rewritten
 0x807970,177,,4,to do
 0x807a30,30,,1,to do
 0x807a50,7,BaseClass::SetClass,1,rewritten
@@ -10619,13 +10619,13 @@ address,size,name,callers,status
 0x80e650,616,,4,to do
 0x80e8d0,36,OwnedPair::Free,2,rewritten
 0x80ea10,26,OwnedPointer::Reset,1,rewritten
-0x80ea30,164,,1,to do
+0x80ea30,164,Array<20>::SetCapacity,1,rewritten
 0x80eae0,26,OwnedPointer::Reset,2,rewritten
-0x80eb00,130,Array32::SetCapacity,1,rewritten
+0x80eb00,130,Array<4>::SetCapacity,1,rewritten
 0x80eb90,26,OwnedPointer::Reset,10,rewritten
-0x80ebb0,130,Array32::SetCapacity,11,rewritten
+0x80ebb0,130,Array<4>::SetCapacity,11,rewritten
 0x80ec40,26,OwnedPointer::Reset,0,rewritten
-0x80ec60,59,,0,to do
+0x80ec60,59,Array<16>::Allocate,0,rewritten
 0x80eca0,26,OwnedPointer::Reset,0,rewritten
 0x80ecf0,59,,0,to do
 0x80ed30,52,,0,to do
@@ -10684,7 +10684,7 @@ address,size,name,callers,status
 0x814760,48,,0,to do
 0x8147a0,48,,0,to do
 0x814a00,26,OwnedPointer::Reset,0,rewritten
-0x814a20,130,Array32::SetCapacity,5,rewritten
+0x814a20,130,Array<4>::SetCapacity,5,rewritten
 0x814b00,55,,1,to do
 0x814b40,62,,1,to do
 0x815110,30,,1,to do
@@ -10706,8 +10706,8 @@ address,size,name,callers,status
 0x815970,67,,0,to do
 0x815ac0,293,,1,to do
 0x815bf0,124,,1,to do
-0x815cd0,212,,1,to do
-0x815db0,212,,1,to do
+0x815cd0,212,ReferenceField::Load,1,rewritten
+0x815db0,212,ReferenceField::Load,1,rewritten
 0x815ef0,70,,4,to do
 0x815f40,411,,6,to do
 0x8160e0,30,,2,to do
@@ -10854,7 +10854,7 @@ address,size,name,callers,status
 0x820090,124,,1,to do
 0x820170,293,,1,to do
 0x8202a0,124,,1,to do
-0x820380,212,,1,to do
+0x820380,212,ReferenceField::Load,1,rewritten
 0x820460,120,,1,to do
 0x820540,86,,3,to do
 0x820740,849,,1,to do
@@ -11033,7 +11033,7 @@ address,size,name,callers,status
 0x82e340,30,,1,to do
 0x82e450,293,,1,to do
 0x82e580,124,,1,to do
-0x82e660,212,,1,to do
+0x82e660,212,ReferenceField::Load,1,rewritten
 0x82e740,260,,1,to do
 0x82e860,144,,1,to do
 0x82e8f0,1062,,3,to do
@@ -11200,7 +11200,7 @@ address,size,name,callers,status
 0x8400b0,80,,3,to do
 0x840100,163,,1,to do
 0x840290,26,OwnedPointer::Reset,2,rewritten
-0x8402b0,130,Array32::SetCapacity,1,rewritten
+0x8402b0,130,Array<4>::SetCapacity,1,rewritten
 0x840350,244,,3,to do
 0x840450,385,,2,to do
 0x840620,52,,1,to do
@@ -11244,7 +11244,7 @@ address,size,name,callers,status
 0x843d60,1204,,24,to do
 0x844220,933,,3,to do
 0x8446b0,26,OwnedPointer::Reset,3,rewritten
-0x8446d0,130,Array32::SetCapacity,1,rewritten
+0x8446d0,130,Array<4>::SetCapacity,1,rewritten
 0x844760,156,,1,to do
 0x844800,123,,3,to do
 0x844910,147,,0,to do
@@ -11359,8 +11359,8 @@ address,size,name,callers,status
 0x84aa80,263,,5,to do
 0x84ab90,61,,0,to do
 0x84abe0,67,,0,to do
-0x84ac30,212,,1,to do
-0x84ad10,212,,1,to do
+0x84ac30,212,ReferenceField::Load,1,rewritten
+0x84ad10,212,ReferenceField::Load,1,rewritten
 0x84adf0,54,,0,to do
 0x84ae30,402,,2,to do
 0x84afe0,367,,5,to do
@@ -11398,36 +11398,36 @@ address,size,name,callers,status
 0x84dd70,133,,2,to do
 0x84de00,79,,2,to do
 0x84e190,26,OwnedPointer::Reset,1,rewritten
-0x84e1b0,164,,1,to do
+0x84e1b0,164,Array<20>::SetCapacity,1,rewritten
 0x84e260,26,OwnedPointer::Reset,1,rewritten
-0x84e280,130,Array32::SetCapacity,1,rewritten
+0x84e280,130,Array<4>::SetCapacity,1,rewritten
 0x84e310,26,OwnedPointer::Reset,1,rewritten
-0x84e330,61,Array32::Allocate,0,rewritten
-0x84e370,130,Array32::SetCapacity,1,rewritten
+0x84e330,61,Array<4>::Allocate,0,rewritten
+0x84e370,130,Array<4>::SetCapacity,1,rewritten
 0x84e400,26,OwnedPointer::Reset,1,rewritten
-0x84e420,164,,1,to do
+0x84e420,164,Array<20>::SetCapacity,1,rewritten
 0x84e4d0,26,OwnedPointer::Reset,1,rewritten
-0x84e4f0,164,,1,to do
+0x84e4f0,164,Array<20>::SetCapacity,1,rewritten
 0x84e5a0,26,OwnedPointer::Reset,1,rewritten
-0x84e5c0,164,,1,to do
+0x84e5c0,164,Array<20>::SetCapacity,1,rewritten
 0x84e670,26,OwnedPointer::Reset,1,rewritten
-0x84e690,164,,1,to do
+0x84e690,164,Array<20>::SetCapacity,1,rewritten
 0x84e740,26,OwnedPointer::Reset,1,rewritten
-0x84e760,164,,1,to do
+0x84e760,164,Array<20>::SetCapacity,1,rewritten
 0x84e810,26,OwnedPointer::Reset,1,rewritten
-0x84e830,164,,1,to do
+0x84e830,164,Array<20>::SetCapacity,1,rewritten
 0x84e8e0,26,OwnedPointer::Reset,1,rewritten
-0x84e900,164,,1,to do
+0x84e900,164,Array<20>::SetCapacity,1,rewritten
 0x84e9b0,26,OwnedPointer::Reset,1,rewritten
-0x84e9d0,164,,1,to do
+0x84e9d0,164,Array<20>::SetCapacity,1,rewritten
 0x84ea80,26,OwnedPointer::Reset,1,rewritten
-0x84eaa0,164,,1,to do
+0x84eaa0,164,Array<20>::SetCapacity,1,rewritten
 0x84eb50,26,OwnedPointer::Reset,1,rewritten
-0x84eb70,164,,1,to do
+0x84eb70,164,Array<20>::SetCapacity,1,rewritten
 0x84ec20,26,OwnedPointer::Reset,1,rewritten
-0x84ec40,164,,1,to do
+0x84ec40,164,Array<20>::SetCapacity,1,rewritten
 0x84ecf0,26,OwnedPointer::Reset,1,rewritten
-0x84ed10,164,,1,to do
+0x84ed10,164,Array<20>::SetCapacity,1,rewritten
 0x84edc0,450,,1,to do
 0x84ef90,519,,8,to do
 0x84f1a0,83,,6,to do
@@ -11646,7 +11646,7 @@ address,size,name,callers,status
 0x8609a0,101,,7,to do
 0x860a20,383,,2,to do
 0x860cd0,26,OwnedPointer::Reset,3,rewritten
-0x860cf0,151,,1,to do
+0x860cf0,151,Array<12>::SetCapacity,1,rewritten
 0x860d90,26,OwnedPointer::Reset,3,rewritten
 0x860db0,142,,1,to do
 0x860e40,26,OwnedPointer::Reset,3,rewritten
@@ -11845,7 +11845,7 @@ address,size,name,callers,status
 0x87a370,354,,2,to do
 0x87a5d0,30,,0,to do
 0x87a620,26,OwnedPointer::Reset,0,rewritten
-0x87a640,130,Array32::SetCapacity,1,rewritten
+0x87a640,130,Array<4>::SetCapacity,1,rewritten
 0x87a6d0,140,,2,to do
 0x87a780,58,,0,to do
 0x87a7c0,13,,1,to do
@@ -11860,7 +11860,7 @@ address,size,name,callers,status
 0x87b700,195,,1,to do
 0x87b7d0,26,OwnedPointer::Reset,2,rewritten
 0x87b7f0,26,OwnedPointer::Reset,1,rewritten
-0x87b810,164,,1,to do
+0x87b810,164,Array<20>::SetCapacity,1,rewritten
 0x87b8f0,21,,1,to do
 0x87b910,419,,4,to do
 0x87bac0,27,,2,to do
@@ -12087,7 +12087,7 @@ address,size,name,callers,status
 0x8ae2e0,7,,3,to do
 0x8ae2f0,136,,6,to do
 0x8ae3c0,26,OwnedPointer::Reset,0,rewritten
-0x8ae3e0,139,,1,to do
+0x8ae3e0,139,Array<8>::SetCapacity,1,rewritten
 0x8ae4b0,28,,2,to do
 0x8ae4d0,119,,1,to do
 0x8ae570,684,,1,to do
@@ -12189,7 +12189,7 @@ address,size,name,callers,status
 0x8b64c0,30,,2,to do
 0x8b6570,167,,0,to do
 0x8b6620,77,,1,to do
-0x8b6670,130,Array32::SetCapacity,1,rewritten
+0x8b6670,130,Array<4>::SetCapacity,1,rewritten
 0x8b6700,30,,1,to do
 0x8b6730,219,,2,to do
 0x8b6810,240,,1,to do
@@ -12251,7 +12251,7 @@ address,size,name,callers,status
 0x8bfa60,166,,2,to do
 0x8bfb10,419,,2,to do
 0x8bfd70,26,OwnedPointer::Reset,2,rewritten
-0x8bfd90,157,,1,to do
+0x8bfd90,157,Array<16>::SetCapacity,1,rewritten
 0x8bfe50,94,,3,to do
 0x8bfeb0,64,,0,to do
 0x8bfef0,93,,2,to do
@@ -12453,7 +12453,7 @@ address,size,name,callers,status
 0x8dcaa0,206,,2,to do
 0x8dcb70,206,,0,to do
 0x8dcd20,26,OwnedPointer::Reset,2,rewritten
-0x8dcd40,139,,1,to do
+0x8dcd40,139,Array<8>::SetCapacity,1,rewritten
 0x8dcde0,55,,8,to do
 0x8dce20,192,,8,to do
 0x8dcee0,378,,3,to do
@@ -12704,13 +12704,13 @@ address,size,name,callers,status
 0x8fdc80,36,OwnedPair::Free,2,rewritten
 0x8fde70,121,,1,to do
 0x8fdef0,26,OwnedPointer::Reset,2,rewritten
-0x8fdf10,61,,0,to do
+0x8fdf10,61,Array<8>::Allocate,0,rewritten
 0x8fdf50,26,OwnedPointer::Reset,0,rewritten
-0x8fdf70,151,,1,to do
+0x8fdf70,151,Array<12>::SetCapacity,1,rewritten
 0x8fe010,26,OwnedPointer::Reset,1,rewritten
-0x8fe030,164,,1,to do
+0x8fe030,164,Array<20>::SetCapacity,1,rewritten
 0x8fe0e0,26,OwnedPointer::Reset,0,rewritten
-0x8fe100,61,Array32::Allocate,0,rewritten
+0x8fe100,61,Array<4>::Allocate,0,rewritten
 0x8fe140,26,OwnedPointer::Reset,0,rewritten
 0x8fe1c0,26,OwnedPointer::Reset,2,rewritten
 0x8fe1e0,60,,1,to do
@@ -12775,9 +12775,9 @@ address,size,name,callers,status
 0x905e10,10,,5,to do
 0x905e70,10,,1,to do
 0x905f10,26,OwnedPointer::Reset,1,rewritten
-0x905f30,164,,1,to do
+0x905f30,164,Array<20>::SetCapacity,1,rewritten
 0x905fe0,26,OwnedPointer::Reset,1,rewritten
-0x906000,164,,1,to do
+0x906000,164,Array<20>::SetCapacity,1,rewritten
 0x9060f0,204,,1,to do
 0x9061c0,306,,1,to do
 0x906300,1603,,1,to do
@@ -12825,7 +12825,7 @@ address,size,name,callers,status
 0x90c4b0,26,OwnedPointer::Reset,1,rewritten
 0x90c4d0,26,OwnedPointer::Reset,1,rewritten
 0x90c4f0,26,OwnedPointer::Reset,1,rewritten
-0x90c510,164,,1,to do
+0x90c510,164,Array<20>::SetCapacity,1,rewritten
 0x90c5c0,117,,2,to do
 0x90c6d0,44,,1,to do
 0x90c700,7,,2,to do
@@ -12877,7 +12877,7 @@ address,size,name,callers,status
 0x912ee0,78,,2,to do
 0x912f30,27,,1,to do
 0x913080,26,OwnedPointer::Reset,1,rewritten
-0x9130a0,139,,5,to do
+0x9130a0,139,Array<8>::SetCapacity,5,rewritten
 0x913130,26,OwnedPointer::Reset,1,rewritten
 0x9131c0,408,,1,to do
 0x913360,180,,5,to do
@@ -12947,7 +12947,7 @@ address,size,name,callers,status
 0x91a090,26,OwnedPointer::Reset,2,rewritten
 0x91a0b0,226,,2,to do
 0x91a1a0,26,OwnedPointer::Reset,2,rewritten
-0x91a1c0,139,,1,to do
+0x91a1c0,139,Array<8>::SetCapacity,1,rewritten
 0x91a250,26,OwnedPointer::Reset,2,rewritten
 0x91a330,351,,1,to do
 0x91a4a0,294,,1,to do
@@ -13022,9 +13022,9 @@ address,size,name,callers,status
 0x926050,87,,1,to do
 0x9260b0,7,,1,to do
 0x9261e0,26,OwnedPointer::Reset,2,rewritten
-0x926200,130,Array32::SetCapacity,2,rewritten
+0x926200,130,Array<4>::SetCapacity,2,rewritten
 0x926290,26,OwnedPointer::Reset,2,rewritten
-0x9262b0,130,Array32::SetCapacity,1,rewritten
+0x9262b0,130,Array<4>::SetCapacity,1,rewritten
 0x926340,26,OwnedPointer::Reset,0,rewritten
 0x926360,510,,3,to do
 0x9265b0,68,,2,to do
@@ -13124,11 +13124,11 @@ address,size,name,callers,status
 0x937420,334,,1,to do
 0x9375c0,90,,4,to do
 0x9376f0,26,OwnedPointer::Reset,2,rewritten
-0x937710,147,,1,to do
+0x937710,147,Array<6>::SetCapacity,1,rewritten
 0x9377b0,26,OwnedPointer::Reset,2,rewritten
-0x9377d0,157,,1,to do
+0x9377d0,157,Array<16>::SetCapacity,1,rewritten
 0x937870,26,OwnedPointer::Reset,2,rewritten
-0x937890,151,,1,to do
+0x937890,151,Array<12>::SetCapacity,1,rewritten
 0x937930,202,,1,to do
 0x937a00,191,,2,to do
 0x937ac0,85,,16,to do
@@ -13210,11 +13210,11 @@ address,size,name,callers,status
 0x9402f0,115,,5,to do
 0x940610,51,,6,to do
 0x940650,26,OwnedPointer::Reset,2,rewritten
-0x940670,151,,1,to do
+0x940670,151,Array<12>::SetCapacity,1,rewritten
 0x940710,26,OwnedPointer::Reset,2,rewritten
-0x940730,139,,1,to do
+0x940730,139,Array<8>::SetCapacity,1,rewritten
 0x9407e0,26,OwnedPointer::Reset,0,rewritten
-0x940800,139,,5,to do
+0x940800,139,Array<8>::SetCapacity,5,rewritten
 0x9408f0,28,,3,to do
 0x940970,30,,1,to do
 0x940990,7,BaseClass::SetClass,1,rewritten
@@ -13352,8 +13352,8 @@ address,size,name,callers,status
 0x955a10,11982,,2,to do
 0x958940,28,,1,to do
 0x9589a0,26,OwnedPointer::Reset,2,rewritten
-0x9589c0,61,Array32::Allocate,0,rewritten
-0x958a00,130,Array32::SetCapacity,2,rewritten
+0x9589c0,61,Array<4>::Allocate,0,rewritten
+0x958a00,130,Array<4>::SetCapacity,2,rewritten
 0x958a90,173,,3,to do
 0x958b40,258,,4,to do
 0x958c50,55,,1,to do
@@ -13367,13 +13367,13 @@ address,size,name,callers,status
 0x959f30,128,,1,to do
 0x959fb0,33,,2,to do
 0x95a070,26,OwnedPointer::Reset,1,rewritten
-0x95a090,157,,1,to do
+0x95a090,157,Array<16>::SetCapacity,1,rewritten
 0x95a130,26,OwnedPointer::Reset,1,rewritten
-0x95a150,157,,1,to do
+0x95a150,157,Array<16>::SetCapacity,1,rewritten
 0x95a1f0,26,OwnedPointer::Reset,1,rewritten
-0x95a210,139,,2,to do
+0x95a210,139,Array<8>::SetCapacity,2,rewritten
 0x95a2a0,26,OwnedPointer::Reset,0,rewritten
-0x95a2c0,139,,18,to do
+0x95a2c0,139,Array<8>::SetCapacity,18,rewritten
 0x95a3d0,64,,1,to do
 0x95a410,254,,2,to do
 0x95a510,80,,1,to do
@@ -13511,9 +13511,9 @@ address,size,name,callers,status
 0x968e50,199,,1,to do
 0x968f20,201,,1,to do
 0x969050,26,OwnedPointer::Reset,1,rewritten
-0x969070,164,,1,to do
+0x969070,164,Array<20>::SetCapacity,1,rewritten
 0x969120,26,OwnedPointer::Reset,1,rewritten
-0x969140,164,,1,to do
+0x969140,164,Array<20>::SetCapacity,1,rewritten
 0x9691f0,30,,1,to do
 0x969220,16,,1,to do
 0x969230,180,,1,to do
@@ -13530,9 +13530,9 @@ address,size,name,callers,status
 0x969b10,30,,1,to do
 0x969b40,20,,1,to do
 0x969c00,26,OwnedPointer::Reset,1,rewritten
-0x969c20,164,,1,to do
+0x969c20,164,Array<20>::SetCapacity,1,rewritten
 0x969cd0,26,OwnedPointer::Reset,1,rewritten
-0x969cf0,164,,1,to do
+0x969cf0,164,Array<20>::SetCapacity,1,rewritten
 0x969da0,30,,1,to do
 0x969dd0,51,,2,to do
 0x969e10,16,,1,to do
@@ -13573,13 +13573,13 @@ address,size,name,callers,status
 0x96c470,20,,1,to do
 0x96c4b0,26,,2,to do
 0x96c5c0,26,OwnedPointer::Reset,1,rewritten
-0x96c5e0,164,,1,to do
+0x96c5e0,164,Array<20>::SetCapacity,1,rewritten
 0x96c690,26,OwnedPointer::Reset,1,rewritten
-0x96c6b0,164,,1,to do
+0x96c6b0,164,Array<20>::SetCapacity,1,rewritten
 0x96c760,26,OwnedPointer::Reset,1,rewritten
-0x96c780,164,,1,to do
+0x96c780,164,Array<20>::SetCapacity,1,rewritten
 0x96c830,26,OwnedPointer::Reset,1,rewritten
-0x96c850,164,,1,to do
+0x96c850,164,Array<20>::SetCapacity,1,rewritten
 0x96c900,30,,1,to do
 0x96c930,2126,,1,to do
 0x96d180,2261,,1,to do
@@ -13630,7 +13630,7 @@ address,size,name,callers,status
 0x970c80,164,,1,to do
 0x970da0,26,OwnedPointer::Reset,1,rewritten
 0x970dc0,26,OwnedPointer::Reset,1,rewritten
-0x970de0,61,,0,to do
+0x970de0,61,Array<8>::Allocate,0,rewritten
 0x970e20,30,,1,to do
 0x970e50,50,,1,to do
 0x970e90,143,,2,to do
@@ -13823,9 +13823,9 @@ address,size,name,callers,status
 0x982a10,36,,8,to do
 0x982aa0,30,,0,to do
 0x982ae0,26,OwnedPointer::Reset,2,rewritten
-0x982b00,130,Array32::SetCapacity,1,rewritten
+0x982b00,130,Array<4>::SetCapacity,1,rewritten
 0x982bb0,26,OwnedPointer::Reset,0,rewritten
-0x982bd0,130,Array32::SetCapacity,1,rewritten
+0x982bd0,130,Array<4>::SetCapacity,1,rewritten
 0x982c70,147,,5,to do
 0x982d30,30,,1,to do
 0x982d50,105,,3,to do
@@ -13846,7 +13846,7 @@ address,size,name,callers,status
 0x983700,39,,1,to do
 0x983730,22,,2,to do
 0x9837c0,26,OwnedPointer::Reset,1,rewritten
-0x9837e0,139,,1,to do
+0x9837e0,139,Array<8>::SetCapacity,1,rewritten
 0x983870,96,,0,to do
 0x9838d0,131,,1,to do
 0x983960,17,,1,to do
@@ -13866,7 +13866,7 @@ address,size,name,callers,status
 0x9846c0,48,,0,to do
 0x9846f0,120,,2,to do
 0x9847c0,26,OwnedPointer::Reset,1,rewritten
-0x9847e0,130,Array32::SetCapacity,2,rewritten
+0x9847e0,130,Array<4>::SetCapacity,2,rewritten
 0x984870,142,,1,to do
 0x984900,57,,4,to do
 0x984950,66,,1,to do
@@ -13984,9 +13984,9 @@ address,size,name,callers,status
 0x98ce80,124,,1,to do
 0x98cf60,293,,1,to do
 0x98d090,124,,1,to do
-0x98d170,212,,1,to do
-0x98d250,212,,1,to do
-0x98d330,212,,1,to do
+0x98d170,212,ReferenceField::Load,1,rewritten
+0x98d250,212,ReferenceField::Load,1,rewritten
+0x98d330,212,ReferenceField::Load,1,rewritten
 0x98d480,61,,0,to do
 0x98d520,335,,2,to do
 0x98d6f0,197,,1,to do
@@ -14062,7 +14062,7 @@ address,size,name,callers,status
 0x994990,48,,0,to do
 0x994ac0,347,,1,to do
 0x994c60,26,OwnedPointer::Reset,3,rewritten
-0x994c80,61,Array32::Allocate,0,rewritten
+0x994c80,61,Array<4>::Allocate,0,rewritten
 0x994ce0,366,,1,to do
 0x994e60,782,,1,to do
 0x9951c0,888,,1,to do
@@ -14133,7 +14133,7 @@ address,size,name,callers,status
 0x99bd10,72,,0,to do
 0x99bde0,134,,3,to do
 0x99be70,26,OwnedPointer::Reset,2,rewritten
-0x99be90,130,Array32::SetCapacity,2,rewritten
+0x99be90,130,Array<4>::SetCapacity,2,rewritten
 0x99c050,30,,2,to do
 0x99c070,114,,4,to do
 0x99c0f0,68,,1,to do
@@ -14262,11 +14262,11 @@ address,size,name,callers,status
 0x9a9af0,162,,1,to do
 0x9a9bd0,164,,1,to do
 0x9a9dc0,26,OwnedPointer::Reset,2,rewritten
-0x9a9de0,61,Array32::Allocate,0,rewritten
-0x9a9e20,130,Array32::SetCapacity,1,rewritten
+0x9a9de0,61,Array<4>::Allocate,0,rewritten
+0x9a9e20,130,Array<4>::SetCapacity,1,rewritten
 0x9a9eb0,26,OwnedPointer::Reset,2,rewritten
-0x9a9ed0,61,Array32::Allocate,0,rewritten
-0x9a9f10,130,Array32::SetCapacity,2,rewritten
+0x9a9ed0,61,Array<4>::Allocate,0,rewritten
+0x9a9f10,130,Array<4>::SetCapacity,2,rewritten
 0x9a9fb0,30,,2,to do
 0x9a9fd0,122,,1,to do
 0x9aa0a0,271,,6,to do
@@ -14390,10 +14390,10 @@ address,size,name,callers,status
 0x9bbf40,22,,1,to do
 0x9bbf60,22,,1,to do
 0x9bbfc0,95,,4,to do
-0x9bc0c0,130,Array32::SetCapacity,3,rewritten
+0x9bc0c0,130,Array<4>::SetCapacity,3,rewritten
 0x9bc150,26,OwnedPointer::Reset,2,rewritten
-0x9bc170,61,Array32::Allocate,0,rewritten
-0x9bc1b0,130,Array32::SetCapacity,2,rewritten
+0x9bc170,61,Array<4>::Allocate,0,rewritten
+0x9bc1b0,130,Array<4>::SetCapacity,2,rewritten
 0x9bc260,30,,2,to do
 0x9bc280,65,,2,to do
 0x9bc2d0,221,,5,to do
@@ -14460,7 +14460,7 @@ address,size,name,callers,status
 0x9c2510,13,,3,to do
 0x9c2520,135,,1,to do
 0x9c2600,26,OwnedPointer::Reset,2,rewritten
-0x9c2620,61,Array32::Allocate,0,rewritten
+0x9c2620,61,Array<4>::Allocate,0,rewritten
 0x9c26b0,312,,1,to do
 0x9c2810,373,,1,to do
 0x9c29e0,160,,1,to do
@@ -14514,8 +14514,8 @@ address,size,name,callers,status
 0x9c62d0,85,,3,to do
 0x9c6330,85,,3,to do
 0x9c6430,26,OwnedPointer::Reset,2,rewritten
-0x9c6450,61,Array32::Allocate,0,rewritten
-0x9c6490,130,Array32::SetCapacity,3,rewritten
+0x9c6450,61,Array<4>::Allocate,0,rewritten
+0x9c6490,130,Array<4>::SetCapacity,3,rewritten
 0x9c65b0,454,,1,to do
 0x9c6780,206,,3,to do
 0x9c6860,156,,2,to do
@@ -14593,19 +14593,19 @@ address,size,name,callers,status
 0x9cdd40,43,,2,to do
 0x9cdd70,628,,1,to do
 0x9ce240,26,OwnedPointer::Reset,2,rewritten
-0x9ce260,130,Array32::SetCapacity,1,rewritten
+0x9ce260,130,Array<4>::SetCapacity,1,rewritten
 0x9ce2f0,26,OwnedPointer::Reset,2,rewritten
-0x9ce310,130,Array32::SetCapacity,1,rewritten
+0x9ce310,130,Array<4>::SetCapacity,1,rewritten
 0x9ce3a0,26,OwnedPointer::Reset,2,rewritten
-0x9ce3c0,130,Array32::SetCapacity,1,rewritten
+0x9ce3c0,130,Array<4>::SetCapacity,1,rewritten
 0x9ce450,26,OwnedPointer::Reset,2,rewritten
 0x9ce470,26,OwnedPointer::Reset,2,rewritten
-0x9ce490,61,,1,to do
+0x9ce490,61,Array<8>::Allocate,1,rewritten
 0x9ce4d0,26,OwnedPointer::Reset,2,rewritten
-0x9ce4f0,61,Array32::Allocate,0,rewritten
-0x9ce530,130,Array32::SetCapacity,1,rewritten
+0x9ce4f0,61,Array<4>::Allocate,0,rewritten
+0x9ce530,130,Array<4>::SetCapacity,1,rewritten
 0x9ce5c0,26,OwnedPointer::Reset,0,rewritten
-0x9ce5e0,130,Array32::SetCapacity,1,rewritten
+0x9ce5e0,130,Array<4>::SetCapacity,1,rewritten
 0x9ce6d0,945,,0,to do
 0x9cea90,74,,3,to do
 0x9ceae0,51,,2,to do
@@ -14695,7 +14695,7 @@ address,size,name,callers,status
 0x9d6110,635,,4,to do
 0x9d6390,154,,1,to do
 0x9d6430,30,,1,to do
-0x9d65f0,130,Array32::SetCapacity,1,rewritten
+0x9d65f0,130,Array<4>::SetCapacity,1,rewritten
 0x9d6680,347,,1,to do
 0x9d69b0,99,,1,to do
 0x9d6ee0,30,,1,to do
@@ -14714,7 +14714,7 @@ address,size,name,callers,status
 0x9d7680,124,,1,to do
 0x9d7760,293,,1,to do
 0x9d7890,124,,1,to do
-0x9d7970,212,,1,to do
+0x9d7970,212,ReferenceField::Load,1,rewritten
 0x9d7a50,162,,1,to do
 0x9d7b00,872,,1,to do
 0x9d7e70,321,,1,to do
@@ -15047,7 +15047,7 @@ address,size,name,callers,status
 0x9f88c0,36,OwnedPair::Free,2,rewritten
 0x9f89b0,187,,1,to do
 0x9f8a70,26,OwnedPointer::Reset,2,rewritten
-0x9f8a90,130,Array32::SetCapacity,1,rewritten
+0x9f8a90,130,Array<4>::SetCapacity,1,rewritten
 0x9f8b20,17,,1,to do
 0x9f8b40,569,,21,to do
 0x9f8d80,502,,1,to do
@@ -15141,7 +15141,7 @@ address,size,name,callers,status
 0xa01870,30,,1,to do
 0xa018a0,30,,1,to do
 0xa018d0,808,,0,to do
-0xa01c30,130,Array32::SetCapacity,1,rewritten
+0xa01c30,130,Array<4>::SetCapacity,1,rewritten
 0xa01cc0,30,,1,to do
 0xa01ce0,282,,1,to do
 0xa01e00,119,,1,to do
@@ -15290,9 +15290,9 @@ address,size,name,callers,status
 0xa0e960,356,,1,to do
 0xa0eb00,54,,1,to do
 0xa0ebc0,48,,1,to do
-0xa0ecb0,139,,2,to do
-0xa0ed40,170,,2,to do
-0xa0edf0,139,,2,to do
+0xa0ecb0,139,Array<8>::SetCapacity,2,rewritten
+0xa0ed40,170,Array<24>::SetCapacity,2,rewritten
+0xa0edf0,139,Array<8>::SetCapacity,2,rewritten
 0xa0ee90,33,,0,to do
 0xa0eee0,33,,0,to do
 0xa0ef30,33,,0,to do
@@ -15328,7 +15328,7 @@ address,size,name,callers,status
 0xa11810,312,,1,to do
 0xa11950,412,,2,to do
 0xa11af0,67,,8,to do
-0xa11b50,212,,1,to do
+0xa11b50,212,ReferenceField::Load,1,rewritten
 0xa11c30,763,,3,to do
 0xa11f70,1080,,2,to do
 0xa123b0,1498,,4,to do
@@ -15358,7 +15358,7 @@ address,size,name,callers,status
 0xa15050,399,,2,to do
 0xa151f0,412,,2,to do
 0xa15390,67,,14,to do
-0xa153f0,212,,1,to do
+0xa153f0,212,ReferenceField::Load,1,rewritten
 0xa154d0,943,,3,to do
 0xa158d0,1471,,2,to do
 0xa15ea0,809,,4,to do
@@ -15615,7 +15615,7 @@ address,size,name,callers,status
 0xa2d300,30,,1,to do
 0xa2d3d0,344,,1,to do
 0xa2d5e0,26,OwnedPointer::Reset,2,rewritten
-0xa2d600,61,Array32::Allocate,0,rewritten
+0xa2d600,61,Array<4>::Allocate,0,rewritten
 0xa2d640,549,,1,to do
 0xa2d930,114,,2,to do
 0xa2d9b0,30,,0,to do
@@ -15661,7 +15661,7 @@ address,size,name,callers,status
 0xa31c90,61,,0,to do
 0xa31dc0,293,,1,to do
 0xa31ef0,124,,1,to do
-0xa31fd0,212,,1,to do
+0xa31fd0,212,ReferenceField::Load,1,rewritten
 0xa320b0,122,,1,to do
 0xa32190,102,,1,to do
 0xa32200,256,,4,to do
@@ -15686,7 +15686,7 @@ address,size,name,callers,status
 0xa33b50,105,,1,to do
 0xa33bc0,30,,2,to do
 0xa33c70,26,OwnedPointer::Reset,2,rewritten
-0xa33c90,59,,0,to do
+0xa33c90,59,Array<44>::Allocate,0,rewritten
 0xa33ce0,374,,1,to do
 0xa341c0,30,,2,to do
 0xa341e0,153,,1,to do
@@ -15700,9 +15700,9 @@ address,size,name,callers,status
 0xa35440,114,,1,to do
 0xa35500,51,,0,to do
 0xa35550,448,,1,to do
-0xa357e0,61,Array32::Allocate,0,rewritten
+0xa357e0,61,Array<4>::Allocate,0,rewritten
 0xa35820,26,OwnedPointer::Reset,2,rewritten
-0xa35840,61,,0,to do
+0xa35840,61,Array<8>::Allocate,0,rewritten
 0xa35890,555,,1,to do
 0xa35ac0,30,,2,to do
 0xa35ae0,332,,1,to do
@@ -15793,7 +15793,7 @@ address,size,name,callers,status
 0xa40340,40,,0,to do
 0xa40450,371,,3,to do
 0xa40610,26,OwnedPointer::Reset,2,rewritten
-0xa40630,61,Array32::Allocate,1,rewritten
+0xa40630,61,Array<4>::Allocate,1,rewritten
 0xa40680,88,,2,to do
 0xa40700,591,,1,to do
 0xa40960,122,,1,to do
@@ -15845,11 +15845,11 @@ address,size,name,callers,status
 0xa47750,30,,2,to do
 0xa47770,38,,1,to do
 0xa47860,26,OwnedPointer::Reset,2,rewritten
-0xa47880,61,Array32::Allocate,0,rewritten
+0xa47880,61,Array<4>::Allocate,0,rewritten
 0xa478c0,26,OwnedPointer::Reset,2,rewritten
-0xa478e0,61,Array32::Allocate,0,rewritten
+0xa478e0,61,Array<4>::Allocate,0,rewritten
 0xa47920,26,OwnedPointer::Reset,4,rewritten
-0xa47940,61,Array32::Allocate,0,rewritten
+0xa47940,61,Array<4>::Allocate,0,rewritten
 0xa479a0,30,,2,to do
 0xa479d0,139,,2,to do
 0xa47d30,3822,,1,to do
@@ -15889,7 +15889,7 @@ address,size,name,callers,status
 0xa51600,40,,0,to do
 0xa51690,48,,0,to do
 0xa51740,26,OwnedPointer::Reset,0,rewritten
-0xa51760,61,Array32::Allocate,0,rewritten
+0xa51760,61,Array<4>::Allocate,0,rewritten
 0xa517a0,32,,4,to do
 0xa517c0,174,,2,to do
 0xa51870,123,,1,to do
@@ -15990,10 +15990,10 @@ address,size,name,callers,status
 0xa5a730,37,,1,to do
 0xa5a830,7,,2,to do
 0xa5a840,2666,,1,to do
-0xa5b460,61,Array32::Allocate,0,rewritten
-0xa5b4a0,130,Array32::SetCapacity,2,rewritten
+0xa5b460,61,Array<4>::Allocate,0,rewritten
+0xa5b4a0,130,Array<4>::SetCapacity,2,rewritten
 0xa5b530,26,OwnedPointer::Reset,1,rewritten
-0xa5b550,61,Array32::Allocate,0,rewritten
+0xa5b550,61,Array<4>::Allocate,0,rewritten
 0xa5b5c0,26,OwnedPointer::Reset,0,rewritten
 0xa5b5e0,73,,1,to do
 0xa5b630,302,,2,to do
@@ -16006,7 +16006,7 @@ address,size,name,callers,status
 0xa5b9d0,30,,1,to do
 0xa5b9f0,62,,1,to do
 0xa5bcd0,237,,1,to do
-0xa5bdc0,130,Array32::SetCapacity,1,rewritten
+0xa5bdc0,130,Array<4>::SetCapacity,1,rewritten
 0xa5be50,237,,1,to do
 0xa5bf40,30,,1,to do
 0xa5bf70,30,,1,to do
@@ -16125,7 +16125,7 @@ address,size,name,callers,status
 0xa63c00,43,,1,to do
 0xa63c30,48,,1,to do
 0xa63cb0,26,OwnedPointer::Reset,6,rewritten
-0xa63cd0,61,Array32::Allocate,0,rewritten
+0xa63cd0,61,Array<4>::Allocate,0,rewritten
 0xa63d10,1929,,1,to do
 0xa644a0,353,,1,to do
 0xa64650,175,,1,to do
@@ -16156,21 +16156,21 @@ address,size,name,callers,status
 0xa6b310,168,,88,to do
 0xa6b430,21,,4,to do
 0xa6b600,26,OwnedPointer::Reset,6,rewritten
-0xa6b620,61,Array32::Allocate,0,rewritten
-0xa6b660,130,Array32::SetCapacity,2,rewritten
+0xa6b620,61,Array<4>::Allocate,0,rewritten
+0xa6b660,130,Array<4>::SetCapacity,2,rewritten
 0xa6b6f0,26,OwnedPointer::Reset,2,rewritten
 0xa6b710,246,,1,to do
 0xa6b810,26,OwnedPointer::Reset,2,rewritten
-0xa6b830,130,Array32::SetCapacity,2,rewritten
+0xa6b830,130,Array<4>::SetCapacity,2,rewritten
 0xa6b8c0,26,OwnedPointer::Reset,2,rewritten
-0xa6b8e0,130,Array32::SetCapacity,1,rewritten
+0xa6b8e0,130,Array<4>::SetCapacity,1,rewritten
 0xa6b970,26,OwnedPointer::Reset,4,rewritten
-0xa6b990,130,Array32::SetCapacity,1,rewritten
+0xa6b990,130,Array<4>::SetCapacity,1,rewritten
 0xa6ba20,26,OwnedPointer::Reset,2,rewritten
-0xa6ba40,139,,2,to do
+0xa6ba40,139,Array<8>::SetCapacity,2,rewritten
 0xa6bad0,26,OwnedPointer::Reset,2,rewritten
 0xa6baf0,26,OwnedPointer::Reset,2,rewritten
-0xa6bb10,130,Array32::SetCapacity,1,rewritten
+0xa6bb10,130,Array<4>::SetCapacity,1,rewritten
 0xa6bba0,26,OwnedPointer::Reset,2,rewritten
 0xa6bbc0,60,,0,to do
 0xa6bc90,30,,1,to do
@@ -16264,7 +16264,7 @@ address,size,name,callers,status
 0xa7ca50,67,,5,to do
 0xa7caa0,61,,2,to do
 0xa7caf0,67,,4,to do
-0xa7cb40,212,,1,to do
+0xa7cb40,212,ReferenceField::Load,1,rewritten
 0xa7cc20,355,,1,to do
 0xa7cde0,89,,1,to do
 0xa7ce40,93,,1,to do
@@ -16302,7 +16302,7 @@ address,size,name,callers,status
 0xa803c0,30,,2,to do
 0xa80540,52,,1,to do
 0xa805b0,26,OwnedPointer::Reset,2,rewritten
-0xa805d0,61,Array32::Allocate,0,rewritten
+0xa805d0,61,Array<4>::Allocate,0,rewritten
 0xa80610,411,,1,to do
 0xa807d0,30,,2,to do
 0xa807f0,187,,1,to do
@@ -16375,7 +16375,7 @@ address,size,name,callers,status
 0xa874d0,240,,1,to do
 0xa875c0,61,,0,to do
 0xa87610,67,,0,to do
-0xa87660,212,,1,to do
+0xa87660,212,ReferenceField::Load,1,rewritten
 0xa87740,553,,2,to do
 0xa879c0,130,,1,to do
 0xa87a50,369,,1,to do
@@ -16480,7 +16480,7 @@ address,size,name,callers,status
 0xa8f0b0,118,ObjectRef::DeleteTarget,1,rewritten
 0xa8f1c0,293,,1,to do
 0xa8f2f0,124,,1,to do
-0xa8f3d0,212,,1,to do
+0xa8f3d0,212,ReferenceField::Load,1,rewritten
 0xa8f510,48,,2,to do
 0xa8f540,153,,1,to do
 0xa8f5e0,258,,2,to do
@@ -16495,10 +16495,10 @@ address,size,name,callers,status
 0xa905f0,205,,2,to do
 0xa906c0,188,,4,to do
 0xa907e0,26,OwnedPointer::Reset,0,rewritten
-0xa90800,61,Array32::Allocate,0,rewritten
-0xa90840,130,Array32::SetCapacity,1,rewritten
+0xa90800,61,Array<4>::Allocate,0,rewritten
+0xa90840,130,Array<4>::SetCapacity,1,rewritten
 0xa908d0,26,OwnedPointer::Reset,0,rewritten
-0xa908f0,139,,2,to do
+0xa908f0,139,Array<8>::SetCapacity,2,rewritten
 0xa90980,115,,1,to do
 0xa90a10,26,OwnedPointer::Reset,4,rewritten
 0xa90a30,148,,3,to do
@@ -16603,8 +16603,8 @@ address,size,name,callers,status
 0xa9dbb0,4113,,1,to do
 0xa9ec10,27,,1,to do
 0xa9edd0,26,OwnedPointer::Reset,2,rewritten
-0xa9edf0,61,Array32::Allocate,0,rewritten
-0xa9ee30,130,Array32::SetCapacity,1,rewritten
+0xa9edf0,61,Array<4>::Allocate,0,rewritten
+0xa9ee30,130,Array<4>::SetCapacity,1,rewritten
 0xa9ef10,35,,6,to do
 0xa9ef40,29,,3,to do
 0xa9f090,119,,36,to do
@@ -16729,7 +16729,7 @@ address,size,name,callers,status
 0xaa91d0,122,,1,to do
 0xaa9250,122,,1,to do
 0xaa92d0,61,,0,to do
-0xaa9320,212,,1,to do
+0xaa9320,212,ReferenceField::Load,1,rewritten
 0xaa9400,701,,2,to do
 0xaa96c0,30,,3,to do
 0xaa96e0,234,,1,to do
@@ -16850,8 +16850,8 @@ address,size,name,callers,status
 0xab3d90,118,ObjectRef::DeleteTarget,4,rewritten
 0xab3e10,293,,1,to do
 0xab3f40,124,,1,to do
-0xab4020,212,,1,to do
-0xab4100,212,,1,to do
+0xab4020,212,ReferenceField::Load,1,rewritten
+0xab4100,212,ReferenceField::Load,1,rewritten
 0xab4250,120,,1,to do
 0xab42d0,162,,0,to do
 0xab4380,162,,0,to do
@@ -17046,7 +17046,7 @@ address,size,name,callers,status
 0xac77d0,53,,0,to do
 0xac7840,238,,3,to do
 0xac79e0,26,OwnedPointer::Reset,2,rewritten
-0xac7a00,61,Array32::Allocate,0,rewritten
+0xac7a00,61,Array<4>::Allocate,0,rewritten
 0xac7a40,218,,3,to do
 0xac7b20,192,,2,to do
 0xac7c00,75,,2,to do
@@ -17189,7 +17189,7 @@ address,size,name,callers,status
 0xad8aa0,223,,2,to do
 0xad8b80,18,,1,to do
 0xad8bd0,67,,0,to do
-0xad8c30,212,,1,to do
+0xad8c30,212,ReferenceField::Load,1,rewritten
 0xad8d10,1684,,2,to do
 0xad93b0,30,,2,to do
 0xad93d0,194,,2,to do
@@ -17263,7 +17263,7 @@ address,size,name,callers,status
 0xae2eb0,293,,1,to do
 0xae2fe0,124,,1,to do
 0xae30c0,237,,1,to do
-0xae31b0,212,,1,to do
+0xae31b0,212,ReferenceField::Load,1,rewritten
 0xae3290,61,,2,to do
 0xae32d0,30,,2,to do
 0xae32f0,274,,3,to do
@@ -17373,7 +17373,7 @@ address,size,name,callers,status
 0xaf1eb0,123,,1,to do
 0xaf1f30,224,,1,to do
 0xaf2010,124,,4,to do
-0xaf2250,212,,1,to do
+0xaf2250,212,ReferenceField::Load,1,rewritten
 0xaf2330,338,,1,to do
 0xaf2490,162,,1,to do
 0xaf2540,30,,3,to do
@@ -17425,7 +17425,7 @@ address,size,name,callers,status
 0xaf7570,24,,1,to do
 0xaf75d0,86,,0,to do
 0xaf7690,26,OwnedPointer::Reset,4,rewritten
-0xaf76b0,61,Array32::Allocate,0,rewritten
+0xaf76b0,61,Array<4>::Allocate,0,rewritten
 0xaf76f0,26,OwnedPointer::Reset,1,rewritten
 0xaf7710,234,,1,to do
 0xaf7800,41,,1,to do
@@ -17609,7 +17609,7 @@ address,size,name,callers,status
 0xb10990,18,,0,to do
 0xb10a60,30,,0,to do
 0xb10b60,26,OwnedPointer::Reset,0,rewritten
-0xb10b80,130,Array32::SetCapacity,1,rewritten
+0xb10b80,130,Array<4>::SetCapacity,1,rewritten
 0xb10c20,18,,0,to do
 0xb10c40,30,,0,to do
 0xb10d80,18,,1,to do
@@ -17682,7 +17682,7 @@ address,size,name,callers,status
 0xb15680,161,,1,to do
 0xb15730,61,,1,to do
 0xb15780,67,,0,to do
-0xb157d0,212,,1,to do
+0xb157d0,212,ReferenceField::Load,1,rewritten
 0xb158b0,352,,2,to do
 0xb15a10,30,,2,to do
 0xb15a30,586,,2,to do
@@ -17710,7 +17710,7 @@ address,size,name,callers,status
 0xb17af0,5,,2,to do
 0xb17b00,67,,0,to do
 0xb17b50,30,,1,to do
-0xb17b70,212,,1,to do
+0xb17b70,212,ReferenceField::Load,1,rewritten
 0xb17c50,32,,2,to do
 0xb17c70,1069,,3,to do
 0xb180a0,30,,2,to do
@@ -17755,7 +17755,7 @@ address,size,name,callers,status
 0xb1b930,126,ObjectRef::Assign,5,rewritten
 0xb1bb50,101,,2,to do
 0xb1bbc0,67,,3,to do
-0xb1bc20,212,,1,to do
+0xb1bc20,212,ReferenceField::Load,1,rewritten
 0xb1bd00,1204,,3,to do
 0xb1c1f0,30,,2,to do
 0xb1c210,121,,1,to do
@@ -17777,7 +17777,7 @@ address,size,name,callers,status
 0xb1ed30,140,,0,to do
 0xb1edc0,61,,0,to do
 0xb1ee10,67,,0,to do
-0xb1ee60,212,,0,to do
+0xb1ee60,212,ReferenceField::Load,0,rewritten
 0xb1ef40,107,,1,to do
 0xb1efb0,30,,2,to do
 0xb1efd0,110,,1,to do
@@ -17819,7 +17819,7 @@ address,size,name,callers,status
 0xb22600,429,,0,to do
 0xb227b0,61,,0,to do
 0xb22800,67,,0,to do
-0xb22850,212,,0,to do
+0xb22850,212,ReferenceField::Load,0,rewritten
 0xb22930,1452,,2,to do
 0xb22f20,162,,1,to do
 0xb22fd0,30,,2,to do
@@ -17851,9 +17851,9 @@ address,size,name,callers,status
 0xb24850,67,,1,to do
 0xb248b0,293,,1,to do
 0xb249e0,124,,1,to do
-0xb24ac0,212,,1,to do
+0xb24ac0,212,ReferenceField::Load,1,rewritten
 0xb24ba0,230,,1,to do
-0xb24c90,212,,1,to do
+0xb24c90,212,ReferenceField::Load,1,rewritten
 0xb24d70,650,,2,to do
 0xb25060,30,,2,to do
 0xb25080,79,,1,to do
@@ -17899,7 +17899,7 @@ address,size,name,callers,status
 0xb2d630,114,,1,to do
 0xb2d6b0,61,,0,to do
 0xb2d700,67,,0,to do
-0xb2d750,212,,1,to do
+0xb2d750,212,ReferenceField::Load,1,rewritten
 0xb2d830,503,,2,to do
 0xb2da30,30,,2,to do
 0xb2da50,973,,1,to do
@@ -17942,7 +17942,7 @@ address,size,name,callers,status
 0xb30090,494,,1,to do
 0xb30280,714,,1,to do
 0xb30590,67,,0,to do
-0xb305f0,212,,1,to do
+0xb305f0,212,ReferenceField::Load,1,rewritten
 0xb306d0,162,,0,to do
 0xb30780,558,,2,to do
 0xb309d0,30,,2,to do
@@ -18072,8 +18072,8 @@ address,size,name,callers,status
 0xb3a720,67,,0,to do
 0xb3a780,280,,1,to do
 0xb3a990,78,,1,to do
-0xb3a9e0,212,,1,to do
-0xb3aac0,212,,1,to do
+0xb3a9e0,212,ReferenceField::Load,1,rewritten
+0xb3aac0,212,ReferenceField::Load,1,rewritten
 0xb3aba0,130,,1,to do
 0xb3ac30,184,,1,to do
 0xb3acf0,30,,0,to do
@@ -18161,8 +18161,8 @@ address,size,name,callers,status
 0xb45700,118,ObjectRef::DeleteTarget,1,rewritten
 0xb45780,293,,1,to do
 0xb458b0,124,,1,to do
-0xb45990,212,,1,to do
-0xb45a70,212,,1,to do
+0xb45990,212,ReferenceField::Load,1,rewritten
+0xb45a70,212,ReferenceField::Load,1,rewritten
 0xb45bb0,125,,1,to do
 0xb45c30,871,,2,to do
 0xb45fa0,212,,2,to do
@@ -18283,7 +18283,7 @@ address,size,name,callers,status
 0xb53f10,146,,1,to do
 0xb53fb0,220,,1,to do
 0xb54090,67,,0,to do
-0xb542f0,212,,1,to do
+0xb542f0,212,ReferenceField::Load,1,rewritten
 0xb543d0,987,,3,to do
 0xb547d0,318,,1,to do
 0xb54910,94,,1,to do
@@ -18336,8 +18336,8 @@ address,size,name,callers,status
 0xb58a20,445,,0,to do
 0xb58be0,307,,1,to do
 0xb58d20,67,,1,to do
-0xb58d80,212,,1,to do
-0xb58e60,212,,1,to do
+0xb58d80,212,ReferenceField::Load,1,rewritten
+0xb58e60,212,ReferenceField::Load,1,rewritten
 0xb58f40,568,,1,to do
 0xb59180,1634,,2,to do
 0xb597f0,30,,5,to do
@@ -18446,7 +18446,7 @@ address,size,name,callers,status
 0xb63db0,7,BaseClass::SetClass,1,rewritten
 0xb63dc0,126,ObjectRef::Assign,2,rewritten
 0xb63e40,67,,2,to do
-0xb63ea0,212,,0,to do
+0xb63ea0,212,ReferenceField::Load,0,rewritten
 0xb63f80,2169,,7,to do
 0xb64800,2508,,6,to do
 0xb651d0,2955,,2,to do
@@ -18493,7 +18493,7 @@ address,size,name,callers,status
 0xb6b880,53,,5,to do
 0xb6b900,79,,2,to do
 0xb6b9f0,26,OwnedPointer::Reset,2,rewritten
-0xb6ba10,130,Array32::SetCapacity,1,rewritten
+0xb6ba10,130,Array<4>::SetCapacity,1,rewritten
 0xb6baa0,198,,1,to do
 0xb6bb70,134,,1,to do
 0xb6bc00,107,,1,to do
@@ -18599,7 +18599,7 @@ address,size,name,callers,status
 0xb759f0,63,,1,to do
 0xb75ab0,28,,0,to do
 0xb75b80,26,OwnedPointer::Reset,0,rewritten
-0xb75ba0,151,,2,to do
+0xb75ba0,151,Array<12>::SetCapacity,2,rewritten
 0xb75c40,50,,0,to do
 0xb75c90,7,,3,to do
 0xb75cb0,26,OwnedPointer::Reset,1,rewritten
@@ -18753,9 +18753,9 @@ address,size,name,callers,status
 0xb82470,26,OwnedPointer::Reset,2,rewritten
 0xb82520,258,,2,to do
 0xb82630,26,OwnedPointer::Reset,2,rewritten
-0xb82650,61,,1,to do
+0xb82650,61,Array<8>::Allocate,1,rewritten
 0xb82690,26,OwnedPointer::Reset,1,rewritten
-0xb826b0,130,Array32::SetCapacity,1,rewritten
+0xb826b0,130,Array<4>::SetCapacity,1,rewritten
 0xb82750,230,,3,to do
 0xb82840,36,,0,to do
 0xb82870,40,,4,to do
@@ -18879,11 +18879,11 @@ address,size,name,callers,status
 0xb89f30,293,,1,to do
 0xb8a060,124,,1,to do
 0xb8a1d0,67,,0,to do
-0xb8a230,212,,0,to do
-0xb8a310,212,,0,to do
-0xb8a3f0,212,,0,to do
-0xb8a4d0,212,,0,to do
-0xb8a5b0,212,,0,to do
+0xb8a230,212,ReferenceField::Load,0,rewritten
+0xb8a310,212,ReferenceField::Load,0,rewritten
+0xb8a3f0,212,ReferenceField::Load,0,rewritten
+0xb8a4d0,212,ReferenceField::Load,0,rewritten
+0xb8a5b0,212,ReferenceField::Load,0,rewritten
 0xb8a7b0,61,,2,to do
 0xb8a7f0,86,,2,to do
 0xb8a850,274,,2,to do
@@ -19034,14 +19034,14 @@ address,size,name,callers,status
 0xb98d50,32,,2,to do
 0xb98d70,660,,5,to do
 0xb993e0,26,OwnedPointer::Reset,0,rewritten
-0xb99400,61,,0,to do
+0xb99400,61,Array<8>::Allocate,0,rewritten
 0xb99440,83,,2,to do
 0xb994a0,26,OwnedPointer::Reset,0,rewritten
-0xb994c0,61,Array32::Allocate,0,rewritten
+0xb994c0,61,Array<4>::Allocate,0,rewritten
 0xb99500,73,,2,to do
 0xb99570,26,OwnedPointer::Reset,1,rewritten
-0xb99590,57,,0,to do
-0xb995d0,132,,4,to do
+0xb99590,57,Array<2>::Allocate,0,rewritten
+0xb995d0,132,Array<2>::SetCapacity,4,rewritten
 0xb99660,28,,8,to do
 0xb99720,28,,2,to do
 0xb99820,30,,1,to do
@@ -19119,8 +19119,8 @@ address,size,name,callers,status
 0xb9fe50,124,,1,to do
 0xb9ff30,296,,1,to do
 0xba0060,127,,1,to do
-0xba0150,212,,1,to do
-0xba0230,212,,1,to do
+0xba0150,212,ReferenceField::Load,1,rewritten
+0xba0230,212,ReferenceField::Load,1,rewritten
 0xba0310,48,,3,to do
 0xba0340,155,,3,to do
 0xba0490,59,,2,to do
@@ -19862,8 +19862,8 @@ address,size,name,callers,status
 0xbd19c0,61,,2,to do
 0xbd1bd0,49,,1,to do
 0xbd1f60,26,OwnedPointer::Reset,2,rewritten
-0xbd1f80,61,Array32::Allocate,0,rewritten
-0xbd1fc0,130,Array32::SetCapacity,1,rewritten
+0xbd1f80,61,Array<4>::Allocate,0,rewritten
+0xbd1fc0,130,Array<4>::SetCapacity,1,rewritten
 0xbd2050,127,,16,to do
 0xbd20d0,62,,0,to do
 0xbd2110,86,,1,to do
@@ -20044,7 +20044,7 @@ address,size,name,callers,status
 0xbdd460,76,,2,to do
 0xbdd4b0,76,,2,to do
 0xbdd630,11,,4,to do
-0xbdd640,130,Array32::SetCapacity,2,rewritten
+0xbdd640,130,Array<4>::SetCapacity,2,rewritten
 0xbdd740,146,,1,to do
 0xbdd7e0,53,,1,to do
 0xbdd840,30,,1,to do
@@ -21946,7 +21946,7 @@ address,size,name,callers,status
 0xc70da0,673,,1,to do
 0xc71070,1693,,1,to do
 0xc719f0,26,OwnedPointer::Reset,2,rewritten
-0xc71a10,130,Array32::SetCapacity,1,rewritten
+0xc71a10,130,Array<4>::SetCapacity,1,rewritten
 0xc71aa0,93,,6,to do
 0xc71b00,40,,1,to do
 0xc71b30,123,,1,to do
@@ -21987,7 +21987,7 @@ address,size,name,callers,status
 0xc77360,16,,1,to do
 0xc77390,26,,1,to do
 0xc774c0,26,OwnedPointer::Reset,2,rewritten
-0xc774e0,130,Array32::SetCapacity,1,rewritten
+0xc774e0,130,Array<4>::SetCapacity,1,rewritten
 0xc77570,40,,1,to do
 0xc775a0,40,,1,to do
 0xc775d0,30,,1,to do
@@ -22033,7 +22033,7 @@ address,size,name,callers,status
 0xc957e0,1693,,1,to do
 0xc95ee0,818,,1,to do
 0xc96350,26,OwnedPointer::Reset,2,rewritten
-0xc96370,130,Array32::SetCapacity,1,rewritten
+0xc96370,130,Array<4>::SetCapacity,1,rewritten
 0xc96400,40,,1,to do
 0xc96450,123,,1,to do
 0xc964d0,297,,1,to do
@@ -22403,7 +22403,7 @@ address,size,name,callers,status
 0xcb5a50,86,,0,to do
 0xcb5be0,283,,2,to do
 0xcb5d30,34,,0,to do
-0xcb5dc0,61,Array32::Allocate,0,rewritten
+0xcb5dc0,61,Array<4>::Allocate,0,rewritten
 0xcb5e60,83,,2,to do
 0xcb5ec0,235,,0,to do
 0xcb6070,258,,0,to do
@@ -22735,7 +22735,7 @@ address,size,name,callers,status
 0xcc82b0,110,,0,to do
 0xcc8320,89,,0,to do
 0xcc8430,26,OwnedPointer::Reset,0,rewritten
-0xcc8450,61,Array32::Allocate,0,rewritten
+0xcc8450,61,Array<4>::Allocate,0,rewritten
 0xcc8490,890,,1,to do
 0xcc8810,938,,1,to do
 0xcc8bc0,793,,1,to do
@@ -22892,7 +22892,7 @@ address,size,name,callers,status
 0xcdb780,35,,23,to do
 0xcdb7b0,157,,20,to do
 0xcdb880,26,OwnedPointer::Reset,0,rewritten
-0xcdb8a0,130,Array32::SetCapacity,1,rewritten
+0xcdb8a0,130,Array<4>::SetCapacity,1,rewritten
 0xcdb930,22,,9,to do
 0xcdb950,26,OwnedPointer::Reset,9,rewritten
 0xcdb970,51,,9,to do
@@ -22915,7 +22915,7 @@ address,size,name,callers,status
 0xcde1a0,1191,,2,to do
 0xcde660,1196,,1,to do
 0xcdeb10,262,,6,to do
-0xcdeca0,130,Array32::SetCapacity,1,rewritten
+0xcdeca0,130,Array<4>::SetCapacity,1,rewritten
 0xcded30,171,,21,to do
 0xcdede0,158,,29,to do
 0xcdee80,145,,21,to do
@@ -22977,13 +22977,13 @@ address,size,name,callers,status
 0xce2b50,30,,1,to do
 0xce2bb0,242,,1,to do
 0xce2d60,26,OwnedPointer::Reset,1,rewritten
-0xce2d80,130,Array32::SetCapacity,3,rewritten
+0xce2d80,130,Array<4>::SetCapacity,3,rewritten
 0xce2e10,26,OwnedPointer::Reset,2,rewritten
-0xce2e30,157,,2,to do
+0xce2e30,157,Array<16>::SetCapacity,2,rewritten
 0xce2ed0,26,OwnedPointer::Reset,2,rewritten
-0xce2ef0,139,,13,to do
+0xce2ef0,139,Array<8>::SetCapacity,13,rewritten
 0xce2f80,26,OwnedPointer::Reset,2,rewritten
-0xce2fa0,151,,1,to do
+0xce2fa0,151,Array<12>::SetCapacity,1,rewritten
 0xce3040,185,,2,to do
 0xce3100,92,,2,to do
 0xce3160,168,,8,to do
@@ -23044,11 +23044,11 @@ address,size,name,callers,status
 0xce6880,1450,,1,to do
 0xce6f80,151,,1,to do
 0xce7020,26,OwnedPointer::Reset,1,rewritten
-0xce7040,164,,1,to do
+0xce7040,164,Array<20>::SetCapacity,1,rewritten
 0xce70f0,26,OwnedPointer::Reset,1,rewritten
-0xce7110,157,,1,to do
+0xce7110,157,Array<16>::SetCapacity,1,rewritten
 0xce71b0,26,OwnedPointer::Reset,1,rewritten
-0xce71d0,130,Array32::SetCapacity,1,rewritten
+0xce71d0,130,Array<4>::SetCapacity,1,rewritten
 0xce7260,102,,2,to do
 0xce7300,105,,4,to do
 0xce7370,121,,3,to do

@@ -129,6 +129,16 @@ struct Test {
 
 static std::vector<uint8_t> g_data0, g_arena0, g_data1, g_arena1;
 
+// A test that crashes (in the original or the rewrite) is reported, and fails the run.
+static const char *g_testing = "";
+static int g_testing_case;
+static const char *g_testing_which = "";
+static LONG WINAPI crashed(EXCEPTION_POINTERS *x) {
+    printf("  CRASHED %s, case %d, in the %s: exception %08lx at %p\n", g_testing, g_testing_case, g_testing_which,
+           x->ExceptionRecord->ExceptionCode, x->ExceptionRecord->ExceptionAddress);
+    ExitProcess(3);
+}
+
 static bool check(const rewrite::Entry *e, const Test &t, int iterations, uint64_t seed) {
     static const struct { unsigned short bits; const char *name; } fpu[] = {{0x000, "24"}, {0x200, "53"}, {0x300, "64"}};
     Rng rng{seed};
@@ -138,11 +148,13 @@ static bool check(const rewrite::Entry *e, const Test &t, int iterations, uint64
         memcpy(g_arena0.data(), g_arena, sizeof g_arena);
         for (auto &p : fpu) {
             set_fpu(p.bits);
+            g_testing = e->name, g_testing_case = it, g_testing_which = "original";
             Result a = t.call((void *)e->at);
             if (t.data) memcpy(g_data1.data(), (void *)DATA, DATA_SIZE);
             memcpy(g_arena1.data(), g_arena, sizeof g_arena);
             if (t.data) memcpy((void *)DATA, g_data0.data(), DATA_SIZE);
             memcpy(g_arena, g_arena0.data(), sizeof g_arena);
+            g_testing_which = "rewrite";
             Result b = t.call(e->with);
             bool same = a == b && (!t.data || !memcmp(g_data1.data(), (void *)DATA, DATA_SIZE)) &&
                         !memcmp(g_arena1.data(), g_arena, sizeof g_arena);
@@ -199,6 +211,22 @@ static void *__cdecl stub_null_handle() {
     record(0x805750, g_null_handle);
     return g_null_handle;
 }
+static void __fastcall stub_stream_read(void *stream, void *, uint8_t *into, int32_t size) {
+    record(0x809210, stream);
+    record(0x809210, (void *)(uintptr_t)size);
+    for (int32_t i = 0; i < size; i++) into[i] = (uint8_t)(0xa5 ^ (i * 7));
+}
+static uint64_t __fastcall stub_resolve_id(void *loader, void *, uint32_t low, uint32_t high) {
+    record(0x808840, loader);
+    record(0x808840, (void *)(uintptr_t)low);
+    record(0x808840, (void *)(uintptr_t)high);
+    return ((uint64_t)(high ^ 0x55aa) << 32) | (low * 3 + 1);
+}
+static void *__stdcall stub_handle_for(uint32_t low, uint32_t high) {
+    record(0x805650, (void *)(uintptr_t)low);
+    record(0x805650, (void *)(uintptr_t)high);
+    return g_null_handle;
+}
 // virtual functions of test objects: record who was called with what, return something recognisable
 static uint32_t __fastcall stub_virtual0(void *self) {
     record(0x1, self);
@@ -221,6 +249,9 @@ static void install_stubs() {
     stub(0xbcdfd0, (void *)stub_alloc_aligned);
     stub(0x8055c0, (void *)stub_release_handle);
     stub(0x805750, (void *)stub_null_handle);
+    stub(0x809210, (void *)stub_stream_read);
+    stub(0x808840, (void *)stub_resolve_id);
+    stub(0x805650, (void *)stub_handle_for);
 }
 
 // ---- the tests ----------------------------------------------------------------------------------------------
@@ -358,13 +389,14 @@ static std::vector<Test> tests() {
                 obj_call};
     Test base{0x441fc0, fresh, obj_call};
 
-    // Arrays of 4-byte items {data, capacity}; data null means capacity 0 (the game never has items without data)
+    // Arrays {data, capacity} of items of any size (up to 44 bytes); data null means capacity 0 (the game never
+    // has items without data)
     auto array = [=](Rng &r) {
         fresh(r);
         *arena<uint32_t>(ALLOC_NEXT) = 0;
         int cap = r.range(0, 8);
         uint32_t *items = arena<uint32_t>(0x800);
-        for (int i = 0; i < 16; i++) items[i] = r.next();
+        for (int i = 0; i < 0x400 / 4; i++) items[i] = r.next();
         arena<void *>(0x100)[0] = cap ? items : nullptr;
         arena<int32_t>(0x100)[1] = cap;
         *arena<int32_t>(0) = r.next() % 4 ? r.range(0, 10) : cap;
@@ -373,8 +405,14 @@ static std::vector<Test> tests() {
         return Result{(uint32_t)((int32_t(__fastcall *)(void *, void *, int32_t))fn)(arena<void>(0x100), nullptr,
                                                                                      *arena<int32_t>(0))};
     };
-    Test set_capacity{0x417c20, array, array_call};
-    Test allocate{0x41b910, array, array_call};
+    // one copy of each item size; the others of the same size are checked by the same test
+    for (uintptr_t at : {0x417c20, 0x493860, 0x937710, 0x445340, 0x4bf730, 0x50c9f0, 0x80ea30, 0x454a40,
+                         0x41b910, 0x468960, 0xb99590, 0x617370, 0x557ce0, 0xa33c90}) {
+        Test x{at, array, array_call};
+        x.iterations = 20;
+        x.data = false;
+        t.push_back(x);
+    }
 
     // References: handles at 0x300 (current), 0x380 (the other reference's), 0x400 (the null handle), each with a
     // circular list whose head node is at handle + 0x40; the reference at 0x100 sits in the current handle's list
@@ -413,7 +451,29 @@ static std::vector<Test> tests() {
     Test delete_target{0x490800, handles,
                        [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
 
-    for (Test *x : {&owned, &pair, &shared, &unlink, &base, &set_capacity, &allocate, &assign, &delete_target}) {
+    // a reference field read from a save stream at 0x700, whose position is sometimes inside its buffer (read from
+    // there) and sometimes not (read by the stream); the reference at 0x100 sits `offset` into the object
+    Test load{0x44eeb0,
+              [=](Rng &r) {
+                  handles(r);
+                  for (int i = 0; i < 64; i++) arena<uint32_t>(0x700)[i] = r.next();
+                  uint8_t *stream = arena<uint8_t>(0x700);
+                  int start = r.range(0, 20);
+                  *(int32_t *)(stream + 4) = r.range(0, 40);
+                  *(int32_t *)(stream + 8) = start;
+                  *(int32_t *)(stream + 0xc) = start + r.range(0, 40);
+                  int offset = r.range(4, 0x80);
+                  *(int32_t *)arena<uint8_t>(0x640 + 0x28) = offset;
+                  arena<void *>(0x600)[1] = arena<void>(0x640);
+                  arena<uint32_t>(0)[0] = 0x100 - offset;
+              },
+              [](void *fn) {
+                  return Result{((uint32_t(__fastcall *)(void *, void *, void *, void *, void *))fn)(
+                      arena<void>(0x600), nullptr, arena<void>(arena<uint32_t>(0)[0]), arena<void>(0x700),
+                      arena<void>(0x900))};
+              }};
+
+    for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load}) {
         x->iterations = 20;
         x->data = false;
         t.push_back(*x);
@@ -459,6 +519,7 @@ int main(int argc, char **argv) {
             bad++;
         }
     install_stubs();
+    SetUnhandledExceptionFilter(crashed);
     auto all = tests();
     // one line per rewrite; a rewrite of many copies is checked on each copy
     std::vector<const char *> done;
