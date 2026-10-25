@@ -100,3 +100,4 @@
 | `0xa123b0` | Animal::ChooseA123B0 | In outline: half the time (Random::Ran0), when not flagged (+0x138), picks an animal's next action (`0xA11350`) |
 | `0xb130b0` | Enclosure::RebuildB130B0 | In outline: another enclosure cell rebuild like Enclosure::RebuildB13F60 |
 | `0xa158d0` | Animal::ChooseA158D0 | In outline: another animal action pick like Animal::ChooseA123B0 (`0xA14B70`) |
+| `0xb180c0` | WildAnimal::PlaceB180C0 | In outline: places an animal on the terrain (a 90 by 90 grid, WildAnimal::Interface60) |

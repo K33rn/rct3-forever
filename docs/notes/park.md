@@ -369,3 +369,11 @@
 | `0x95ad40` | Water::Spread95AD40 | In outline: spreads water from a cell by its kind (+8: 0, ...) to its neighbours (`0x95A570`), growing a shared list by 0x200 when full (`0x95A2C0`, `0x133B4B8`, `0x133B4C4`) |
 | `0x728120` | Terrain::TileShape728120 | In outline: another tile shape builder like Terrain::TileShape72A4D0: edge middles (Quad::EdgeMiddles) and quarter corners (TileQuarter::Corners) by the quarter given |
 | `0x8d7ac0` | Terrain::Rows8D7AC0 | In outline: rebuilds terrain row n (within the grid, +0x54): sets it up (`0xAFA6B0`, `0x8C8BA0`) and builds each of its cells (`0x8D67A0`) |
+| `0x8d6fc0` | Terrain::Columns8D6FC0 | In outline: the column form of Terrain::Rows8D7AC0: rebuilds terrain column n and its cells (`0x8D67A0`) |
+| `0x7a1970` | Path::Under7A1970 | In outline: finds the path tile under a point (PathManager, `0x71B370`) and its parts (InterfaceD8::Get, Interface94::Get), and for flag 2 (+0x408) what is on it (`0x12F51B4`) |
+| `0xaafc00` | Fence::PiecesAAFC00 | In outline: goes over a border's packed piece values (low three bits kind 1, side bits 0x38, turn 0xC0) and handles each case when not flagged (+0x178) |
+| `0x57afb0` | Ride::NameAt57AFB0 | In outline: finds what is under the mouse (MainCamera::Get, `0xCD79C0`) and makes its name texts |
+| `0x5615d0` | Path::Queue5615D0 | In outline: for a queue (kind 0xD) not flagged (+0x98): with the ride's flag 0x100 and a length (+0x70), checks its kinds 0x5D to 0x5F (`0x5BF000`) |
+| `0x8d68e0` | Terrain::ReadCell8D68E0 | In outline: reads a saved terrain cell from a block (`0x809210`, 4 and 1 bytes at a time), checking the block's size and its kind (+0x12, +0x1A) |
+| `0x8d9060` | Terrain::GrowRows8D9060 | In outline: adds n rows to the terrain (kept under 255): sets it up (`0xAFA6B0`, `0x8C8BA0`) and makes each new row's cells |
+| `0x566e00` | Path::Check566E00 | In outline: for kinds other than 0x3A to 0x3C, when not flagged (+0x98, +0xF0), checks the piece (`0x5DBCD0`) |

@@ -1494,3 +1494,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcaea60` | Loader::StartCAEA60 | In outline: when not started (+0xF8) and not paused (`0x13D0DF1`), makes a name text and starts loading it (`0xC3C3E0`) |
 | `0x4405f0` | NamedObject::Register4405F0 | In outline: joins a named object to its list (ListMember with `0x10EC9E8`) and, when it has a name, adds it to the name table (Name::Assign on `0x1400128`, NameTable::Set) |
 | `0xa52cb0` | Campaign::FindFiles | In outline: lists the files in the campaign folder (Campaign::FolderName, `0xBE5570`) |
+| `0xa3efe0` | Text::ReadLinesA3EFE0 | In outline: reads a text resource's lines into a list, skipping empty ones |

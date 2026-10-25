@@ -407,3 +407,9 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x926fa0` | Water::LinkPoints926FA0 | In outline: links two water points when their directions agree, and in debug draws the link in green (Colour::FromARGB 0x3F00FF00) |
 | `0x971cd0` | Water::Draw971CD0 | In outline: draws a water piece by its kind (0, ...), filling its buffers (Water::FillBuffers971060) when flagged (+0xB5) |
 | `0xcdbcb0` | Shapes::HitCDBCB0 | In outline: checks a shape's parts (up to 0x80) against a box (`0xBCC740`) |
+| `0xc1cea0` | Particles::QuadC1CEA0 | In outline: builds a particle's quad from two triangles (Triangle::FromBase) by its kind |
+| `0x9c4c10` | Particles::Emit9C4C10 | In outline: when on (+0x90) and moving, makes particles along a movement by distance, scaled by its values (+0x64, +0x78, +0x7C) |
+| `0xce6880` | Shapes::FillCE6880 | In outline: fills a shape's vertices (+0x18) with a colour from the alpha given |
+| `0x890b50` | Scenery::Shadow890B50 | In outline: works out a scenery part's shadow corners in a shared eight-point table (`0x1311190`), six sides at a time |
+| `0x923350` | Waterfall::Build923350 | In outline: builds a waterfall's shape when flagged (+0x300): checks it (Water::DebugDraw927D60) and fills its two sides (`0x9197A0`, `0x919C80`) |
+| `0x4988c0` | Scenery::Visible4988C0 | In outline: goes over a set's parts (+0x14, +0x24) marking the shown ones and, when flagged (+0x7C), refreshes (`0x498630`) |

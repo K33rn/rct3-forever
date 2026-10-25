@@ -213,3 +213,8 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5cd4f0` | TrackedRide::Sounds5CD4F0 | In outline: turns a ride's sounds with it (RideSound::Rotate, +0x21C and +0x224) when on (+0x218), and refreshes (`0x5C1070`, `0x5D4940`) |
 | `0x5ca360` | TrackedRide::End5CA360 | In outline: sets up one end of a ride's track (by the flag given) from the middle of its span (Span::Middle) with the current tool (`0x12F5638`, +0x114) |
 | `0xab51d0` | PoolPiece::PlaceAB51D0 | In outline: places a pool piece (PoolPiece::PoolPiece) when not flagged (+0x194), with its kind (`0xBCA7E0`) and its owner (`0xAA96E0`) |
+| `0x573ef0` | Ride::PlaceEntrance573EF0 | In outline: places a ride's entrance or exit: with no slot (+0x194 below 0) the plain way (Ride::PlaceEntrance56A660), otherwise among its slots (+0x192) on the terrain |
+| `0x5bb960` | Car::Brake5BB960 | In outline: changes a ride car's speed by an amount, kept within its limits (+0, +0x10) when shown (+0x250) |
+| `0xa9b950` | PoolComplex::SceneryA9B950 | In outline: refreshes a pool's parts (`0xA9B800`, `0xA9AA60`) and makes a scenery item for it (SceneryItem::SceneryItem) |
+| `0xbc2330` | Track::BuildMeshBC2330 | In outline: builds a track's mesh: its sections (Track::BuildBBBFE0) and their vertices (64 bytes each, `0xBEE8C0`) |
+| `0xab45d0` | PoolComplex::BuildAB45D0 | In outline: builds a pool complex's parts (`0xA9A440`, `0xAC2BC0`, `0xA85410`) when not flagged (+0x194) |

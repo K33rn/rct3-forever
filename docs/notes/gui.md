@@ -653,3 +653,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x5f4060` | Window::Layout5F4060 | In outline: lays out a window by the screen (`0x13D0DB8`, narrower than 700 handled) and places it (Window::SetRelation) |
 | `0x6a9ef0` | Window::Draw6A9EF0 | In outline: draws a window's frame (`0x6ACE50`) and its title text, cut to fit its width (`0x6AE070`) |
 | `0xa5c260` | Texts::LookupA5C260 | In outline: gives one of a set of game texts by number (each checked loaded, `0x12FDDC0`, `0x12FA3FC`, `0x1305B88`, `0x12FADB8`, ...) |
+| `0x9bac90` | Window::Build9BAC90 | In outline: builds a window from the shared title `0x1341448` |

@@ -188,3 +188,5 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbc7940` | Object::HitTestBC7940 | In outline: whether a ray within a distance hits an object's parts by kind (2, and 6 to 0x19), using its two ends (`0xBC5AB0`, `0xBC5B40`) |
 | `0x960e90` | Particles::PointOnShape | In outline: picks a point on a shape for a particle: checks it is inside its box (+0x20 to +0x30) and rounds it to a cell |
 | `0x970040` | Points::Sort970040 | In outline: sorts a list of 24-byte points by their first value (from the top down) |
+| `0x85d520` | Box::RayHit85D520 | In outline: whether a ray meets a box: inside already, or where it crosses each face plane, checking the point is within the face |
+| `0x95ec30` | Water::Edge95EC30 | In outline: works out where water meets a height along an edge, by case (kind 3, `0x95DE00`) |

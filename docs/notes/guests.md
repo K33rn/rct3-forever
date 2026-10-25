@@ -131,3 +131,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7790f0` | GuestGroup::Update7790F0 | In outline: a group's update by its state (+0x44: 2, ...): with two members, checks the first (GuestGroup::Member) is in state 0x10 stage 2 and free (+0x3EC bit 28) |
 | `0x7cfee0` | Person::HandleEvent7CFEE0 | In outline: a person's handling of an event by its number (0x100 and below): sets its state (Person::SetState(2, 0)) when not flagged (+0x2D4) |
 | `0x75fa30` | Guest::TryAction75FA30 | In outline: whether a guest can do something now: when free (+0x334), checks the target (`0x784840`, `0x783B30`) |
+| `0x7d59c0` | Person::Swim7D59C0 | In outline: checks the water under a person (WaterManager::Get, `0x93E7D0`) and, when not flagged (+0x3C0) and in stage 2, acts on it |
+| `0x7ac710` | Crowd::Update7AC710 | In outline: updates the crowd sounds (Crowd::Sounds, `0x7B5010`) by the sizes of three groups of people (+0x548 to +0x550) |
