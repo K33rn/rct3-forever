@@ -9,6 +9,8 @@ Entry::Entry(const char *name, uintptr_t at, const uint8_t *original, size_t len
     g_list = this;
 }
 
+const Entry *list() { return g_list; }
+
 void install_all() {
     int n = 0, done = 0;
     for (Entry *e = g_list; e; e = e->next, n++)

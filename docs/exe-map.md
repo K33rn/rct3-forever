@@ -54,6 +54,15 @@ capacity; int count; flag}`. The current value is `data[index]`; capacity is 64 
 | Address | What it does | In Forever |
 |---|---|---|
 | `0x611AF0` | GraphedValue::Push: newest slot back one (wrapping), store, count up to capacity | **rewritten** |
+| `0x475170` / `0x475220` | Random: set / get the generator state (stored XOR `0x075BD924` at `0x10EC9E0`) | **rewritten** |
+| `0x4751E0` | Random: one MINSTD step (x 48271 mod 2^31 - 1, Schrage's method) | **rewritten** |
+| `0x475180` | Random: one step, then [0, 1) from the low 23 bits (667 callers) | **rewritten** |
+| `0x708960` / `0x708970` / `0x708980` | Park entrances: count (`[0x13061A8]`), at index (list `[0x13061A4]`), random | **rewritten** |
+| `0x758BB0` | Guest: set intensity preference (+0x434) and band (+0x43C min, +0x438 max) | **rewritten** |
+| `0x758C30` | Guest: ideal intensity, Min + f x (Max - Min) | **rewritten** |
+| `0x49AC80` / `0x4BD9D0` | An object's interface by id (`[0x13CDE74]`, `[0x13D0680]`): class info = virtual function 1, table +0x14, count +0x18, entry +0x10 = offset | **rewritten** |
+| `0x4BFC00` | Ride: running average of a score part, array at +0x12C | **rewritten** |
+| `0xA88450` | Attraction: 3 x value at +0x70 (IdealGuests share) | **rewritten** |
 | `0x781DA0` | Makes a guest group of a type (fastcall, `ecx` = type 0–7, 11 = weighted random) at an injection point and sends it to an entrance; returns the group or 0 | used by the Peep Editor |
 | `0x43D940` | The park's update (guest arrivals from `0x43DF37`) | |
 | `0x437A10` | Works out the park's attractiveness numbers each update | |

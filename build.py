@@ -2,7 +2,10 @@
 compiler), then dist/RCT3Forever-<version>.zip.
 
 usage: uv run --no-project --with ziglang --with pefile python build.py
+       uv run --no-project --with ziglang --with pefile python build.py test ["<game folder>"]
 Dear ImGui is downloaded into third_party/ on the first build (MIT licence, shipped in the zip's licence file).
+`test` builds tools/equiv and checks every rewritten function against the game's own (see tools/equiv/equiv.cpp);
+the game folder defaults to the one in out/RCT3Forever.ini.
 """
 import glob
 import io
@@ -18,8 +21,9 @@ IMGUI_VER = '1.91.9'
 IMGUI = os.path.join(HERE, 'third_party', 'imgui')
 OUT = os.path.join(HERE, 'out')
 DIST = os.path.join(HERE, 'dist')
+# -march=i686 (no SSE): float maths on the x87 FPU like the game (Visual C++ 2003), so rewrites round as it does
 ZIG = [sys.executable, '-m', 'ziglang', 'c++', '-target', 'x86-windows-gnu', '-O2', '-std=c++17', '-fno-exceptions',
-       '-fno-rtti', '-DNDEBUG', '-DWIN32_LEAN_AND_MEAN', '-Wno-nullability-completeness', '-s']
+       '-fno-rtti', '-march=i686', '-DNDEBUG', '-DWIN32_LEAN_AND_MEAN', '-Wno-nullability-completeness', '-s']
 
 
 def fetch_imgui():
@@ -84,8 +88,34 @@ def package(dll, exe):
     print('wrote', zpath, os.path.getsize(zpath), 'bytes')
 
 
+def test(game):
+    exe = os.path.join(OUT, 'equiv.exe')
+    src = [os.path.join(HERE, 'tools', 'equiv', 'equiv.cpp')]
+    src += glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp'))
+    # its own fixed base far from 0x400000, where the game is loaded, and no ASLR to move it there
+    # and a 1 MB stack (Zig's default 16 MB lands right on 0x400000)
+    subprocess.check_call(ZIG + ['-o', exe, *src, '-Wl,--image-base,0x30000000', '-Wl,--stack,0x100000'])
+    import pefile
+    pe = pefile.PE(exe)
+    pe.OPTIONAL_HEADER.DllCharacteristics &= ~0x40   # IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE
+    data = pe.write()
+    pe.close()
+    open(exe, 'wb').write(data)
+    if not game:
+        import configparser
+        ini = configparser.ConfigParser(comment_prefixes=(';',), strict=False)
+        ini.read(os.path.join(OUT, 'RCT3Forever.ini'))
+        game = ini.get('Game', 'Folder', fallback='')
+    if not game:
+        sys.exit('give the game folder: build.py test "<game folder>"')
+    print('checking the rewrites against', game)
+    sys.exit(subprocess.call([exe, os.path.join(game, 'RCT3plus.exe')] + sys.argv[3:]))
+
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
+    if sys.argv[1:2] == ['test']:
+        test(sys.argv[2] if len(sys.argv) > 2 else '')
     fetch_imgui()
     d, e = build_dll(), build_exe()
     check(d, e)

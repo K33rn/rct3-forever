@@ -14,6 +14,7 @@ struct Entry {
     Entry *next;
     Entry(const char *name, uintptr_t at, const uint8_t *original, size_t len, void *with, volatile long *calls);
 };
+const Entry *list();   // every registered rewrite (also used by tools/equiv)
 }
 
 #define REWRITE_CAT2(a, b) a##b

@@ -26,7 +26,7 @@ the game folder: everything happens in memory while the game runs, and closing i
 | `RCT3Forever.exe` (launcher) | Finds the game (Steam, or asks once), checks it's the supported version, starts it with Forever loaded before any of the game's own code runs |
 | `forever.dll` | Runs inside the game: checks the version again, turns on the Park & Peep Editor, puts the rewritten functions in place |
 | Park & Peep Editor | The in-game editor (F9), on by default |
-| Rewritten functions | 1 so far: `GraphedValue::Push`, which records the park's statistics (rating, guests, cash, profit...) for its graphs. See [the rewrite list](docs/rewriting.md#rewritten-so-far) |
+| Rewritten functions | 14 so far: the game's random number generator, the park's statistics graphs, park entrances, guests' taste for intense rides and parts of how they choose rides. Each one is proven bit-for-bit identical to the original by the equivalence test. See [the rewrite list](docs/rewriting.md#rewritten-so-far) |
 
 ## Progress
 
@@ -35,13 +35,13 @@ runs), **documented** (understood and described, next to rewrite), or **to do**.
 and pieces the compiler split off from functions are counted separately; they don't need rewriting.
 
 <!-- progress -->
-`░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **0.00% rewritten**, 0.50% understood and documented (by code size)
+`░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **0.01% rewritten**, 0.49% understood and documented (by code size)
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 1 | 39 bytes | 0.00% |
-| Documented | 67 | 45,340 bytes | 0.50% |
-| To do | 28,024 | 9,061,551 bytes | 99.50% |
+| Rewritten | 13 | 549 bytes | 0.01% |
+| Documented | 59 | 44,992 bytes | 0.49% |
+| To do | 28,020 | 9,061,389 bytes | 99.50% |
 | **Game total** | **28,092** | **9,106,930 bytes** | |
 | Library code Ghidra recognised (stays as is) | 476 | 83,778 bytes | |
 | Compiler-made pieces (go with their function) | 42,200 | 506,334 bytes | |
@@ -111,7 +111,9 @@ Windows, with [uv](https://docs.astral.sh/uv/) (it fetches Python and Zig's C++ 
 uv run --no-project --with ziglang --with pefile python build.py
 ```
 
-This makes `out/forever.dll`, `out/RCT3Forever.exe` and `dist/RCT3Forever-0.1.zip`. Dear ImGui is downloaded into
+This makes `out/forever.dll`, `out/RCT3Forever.exe` and `dist/RCT3Forever-0.1.zip`.
+`python build.py test` (same `uv run` prefix) checks every rewritten function against the game's own one, using
+your RCT3plus.exe (see [docs/rewriting.md](docs/rewriting.md)). Dear ImGui is downloaded into
 `third_party/` on the first build. To try a build, copy `forever/RCT3Forever.ini` into `out/` and run
 `out/RCT3Forever.exe`.
 
@@ -123,6 +125,7 @@ This makes `out/forever.dll`, `out/RCT3Forever.exe` and `dist/RCT3Forever-0.1.zi
 | `peepeditor/` | The Park & Peep Editor (built with `FOREVER` defined for Forever; its own `build.py` makes the standalone `d3d9.dll`) |
 | `docs/` | [Progress](docs/progress.md) and [the function list](docs/functions.csv), [rewriting functions](docs/rewriting.md), [the map of RCT3plus.exe](docs/exe-map.md), [research notes](docs/research-physics-and-guests.md) |
 | `tools/progress.py` | Updates the progress numbers: run it after adding a rewrite or documenting a function |
+| `tools/equiv/` | The equivalence tester: runs original and rewritten functions side by side on random inputs |
 
 ## Contributing a rewritten function
 
