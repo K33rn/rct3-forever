@@ -184,9 +184,9 @@
 | `0x456200` | ManagedObject::LoadRCT3fc | Loads the file `RCT3.fc` (ManagedObject::LoadFile) into the object given |
 | `0xa51d90` | Scenario::TitleText | The title text of scenario n: the game text `Scenario` + its lookup name + `_Title` (Scenario::LookupText) |
 | `0x6e7190` | EnclosureVisitorsCondition::CurrentText | The objective's progress text: the game text `EnclosureVisitorsCondition_Current` with the current number written in, and its timing (ObjectiveCondition::DescribeTiming) |
-| `0x4d9940` | AttractionRenameDialog::Apply | Applies a new name typed for an attraction: when it is empty, shows the game text `NoEmptyAttractionNames` (in a message window) and puts the old name back (`0x4C0850`); otherwise sets it (`0x4C2100`); then, for a pool attraction (+0x40), refreshes it (`0xA7C440`, `0xA8AC30`) |
-| `0x4ec760` | RideRenameDialog::Apply | The same check for a ride's new name (`NoEmptyAttractionNames` when empty, else `0x4C2100`) |
-| `0xb91980` | AnimalShelterRenameDialog::Apply | The same check for an animal shelter's new name (`NoEmptyAttractionNames` when empty, else `0xB8BA60`) |
+| `0x4d9940` | AttractionNameEdit::Apply | Applies a new name typed for an attraction: when it is empty, shows the game text `NoEmptyAttractionNames` (in a message window) and puts the old name back (`0x4C0850`); otherwise sets it (`0x4C2100`); then, for a pool attraction (+0x40), refreshes it (`0xA7C440`, `0xA8AC30`) |
+| `0x4ec760` | AttractionNameEdit::Apply2 | The same check for another attraction name field (`NoEmptyAttractionNames` when empty, else `0x4C2100`) |
+| `0xb91980` | AnimalShelterNameEdit::Apply | The same check for an animal shelter's new name (`NoEmptyAttractionNames` when empty, else `0xB8BA60`) |
 | `0xa2ccf0` | CarriedItem::MakeGolfBall | Makes the mini golf `GolfBall` carried item (CarriedItemInstance) |
 | `0xa2cea0` | CarriedItem::MakeGolfClub | Makes the mini golf `GolfClub` carried item (CarriedItemInstance) |
 | `0xa2d050` | CarriedItem::MakeKidsGolfClub | Makes the mini golf `KidsGolfClub` carried item (CarriedItemInstance) |
