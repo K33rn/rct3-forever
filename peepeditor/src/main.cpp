@@ -34,6 +34,19 @@ void log(const char *fmt, ...) {
     fclose(f);
 }
 
+// PeepEditor.ini beside RCT3plus.exe; built into RCT3 Forever, RCT3Forever.ini beside forever.dll
+void settings_path(char *out) {
+#ifdef FOREVER
+    GetModuleFileNameA(g_self, out, MAX_PATH);
+    const char *name = "RCT3Forever.ini";
+#else
+    GetModuleFileNameA(nullptr, out, MAX_PATH);
+    const char *name = "PeepEditor.ini";
+#endif
+    char *s = strrchr(out, '\\');
+    strcpy(s ? s + 1 : out, name);
+}
+
 static void *patch(void **vt, int i, void *fn) {
     if (vt[i] == fn) return nullptr;
     DWORD old;
@@ -164,12 +177,10 @@ static HRESULT WINAPI hk_di8(HINSTANCE h, DWORD v, REFIID riid, void **out, void
 
 // Point the exe's import of DINPUT8!DirectInput8Create at our wrapper.
 static void hook_dinput_iat() {
-    static int enabled = -1;   // PeepEditor.ini [PeepEditor] HookGameInput=0 leaves DirectInput alone
+    static int enabled = -1;   // [PeepEditor] HookGameInput=0 in the settings leaves DirectInput alone
     if (enabled < 0) {
         char ini[MAX_PATH];
-        GetModuleFileNameA(nullptr, ini, MAX_PATH);
-        char *sl = strrchr(ini, '\\');
-        strcpy(sl ? sl + 1 : ini, "PeepEditor.ini");
+        settings_path(ini);
         enabled = GetPrivateProfileIntA("PeepEditor", "HookGameInput", 1, ini) != 0;
         log("HookGameInput=%d", enabled);
     }
@@ -422,8 +433,15 @@ static HRESULT WINAPI hk_create(IDirect3D9 *d3d, UINT ad, D3DDEVTYPE t, HWND foc
 
 typedef IDirect3D9 *(WINAPI *Create9_t)(UINT);
 
+#ifdef FOREVER
+void *peep_real_create9;   // what RCT3plus.exe imported, set by forever.dll before it points the import here
+#endif
+
 extern "C" IDirect3D9 *WINAPI Proxy_Direct3DCreate9(UINT sdk) {
     static Create9_t real;
+#ifdef FOREVER
+    real = (Create9_t)peep_real_create9;
+#endif
     if (!real) {
         char p[MAX_PATH];
         GetSystemDirectoryA(p, MAX_PATH);
@@ -440,17 +458,25 @@ extern "C" IDirect3D9 *WINAPI Proxy_Direct3DCreate9(UINT sdk) {
     return d;
 }
 
+static void attach(HINSTANCE h) {
+    g_self = h;
+    InitializeCriticalSection(&g_vt_lock);
+    GetModuleFileNameA(h, g_log_path, MAX_PATH);
+    char *s = strrchr(g_log_path, '\\');
+    strcpy(s ? s + 1 : g_log_path, "PeepEditor.log");
+    DeleteFileA(g_log_path);
+    log("Peep Editor loaded into pid %lu", GetCurrentProcessId());
+    game::start_scanner();
+}
+
+#ifdef FOREVER
+void peep_attach(HINSTANCE h) { attach(h); }   // forever.dll's DllMain calls this
+#else
 BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
     if (why == DLL_PROCESS_ATTACH) {
-        g_self = h;
-        InitializeCriticalSection(&g_vt_lock);
         DisableThreadLibraryCalls(h);
-        GetModuleFileNameA(h, g_log_path, MAX_PATH);
-        char *s = strrchr(g_log_path, '\\');
-        strcpy(s ? s + 1 : g_log_path, "PeepEditor.log");
-        DeleteFileA(g_log_path);
-        log("Peep Editor loaded into pid %lu", GetCurrentProcessId());
-        game::start_scanner();
+        attach(h);
     }
     return TRUE;
 }
+#endif

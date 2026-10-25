@@ -36,9 +36,7 @@ static int parse_key(const char *s) {
 
 void init() {
     char path[MAX_PATH];
-    GetModuleFileNameA(nullptr, path, MAX_PATH);
-    char *s = strrchr(path, '\\');
-    strcpy(s ? s + 1 : path, "PeepEditor.ini");
+    settings_path(path);
     char key[32];
     GetPrivateProfileStringA("PeepEditor", "ToggleKey", "F9", key, sizeof key, path);
     if (int vk = parse_key(key)) {
@@ -744,7 +742,11 @@ void frame(bool toast) {
             ImGui::SetNextWindowBgAlpha(0.75f);
             ImGui::Begin("##toast", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
                                                  ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings);
+#ifdef FOREVER
+            ImGui::Text("RCT3 Forever - Park & Peep Editor: press %s in a park", g_key_name);
+#else
             ImGui::Text("Park & Peep Editor loaded - press %s in a park", g_key_name);
+#endif
             ImGui::End();
         }
         return;

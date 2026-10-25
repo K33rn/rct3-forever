@@ -2,6 +2,7 @@
 #include <windows.h>
 
 void log(const char *fmt, ...);
+void settings_path(char *out);   // the .ini the [PeepEditor] settings are read from
 // world (metres, y up) -> screen pixels with the game's camera of the last frame; false when behind or unknown
 const char *camera_status();   // for the Path tab
 bool world_to_screen(float x, float y, float z, float sw, float sh, float *sx, float *sy);
