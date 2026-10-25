@@ -77,3 +77,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x505e90` | Vector4::Transform | Transforms a four-value vector by a 4x4 matrix in place |
 | `0xbc4ff0` | Grid::SnapIndex | The number of the nearest whole step for a value (steps of a given size); when the value is not within a tolerance of that step, gives the step it lies in instead and sets the flag |
 | `0x8e30c0` | Bits::MergeLowest | Compares a cost with the best so far: a lower one replaces it and its four two-bit fields; an equal one keeps the lower of each two-bit field (register-passed arguments) |
+| `0x4262f0` | Vector::SideDirection | The unit vector across the vector at +0x3F0 in the ground plane (up crossed with it), or its unnormalised value with 1 as the last part when that is zero |

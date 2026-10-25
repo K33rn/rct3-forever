@@ -1291,3 +1291,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x46c6c0` | Entries::CountNegative | How many entries (0x50 bytes each at +0x6C, count +0x70) have a value below 0 at +0x40 |
 | `0xbe63b0` | VertexData::SetElement | Copies element n of a vertex layout (its size from the type table `0x10F2BA8`) into the record at its offset |
 | `0xbfcb60` | Object0FA5B08::Object0FA5B08 | Constructor (tables `0xFA5AA8`, then `0xFA5B08`): joins its owner's list (+0x46C, +0x14) and sets its mode (+0x7C) to 6 or 7 (by the setting `0x13D3175`), with 8 added when flagged |
+| `0xa517c0` | Slots::Reserve | Works out how many of the first slots (8 bytes each at +0xC, count +0x10) to keep: 6, or 3 when +0x14 is set, plus the slots of kinds 3, 4 and 5, kept below the count; then marks the empty ones (kind 0) among them as kind 1 |
