@@ -27,3 +27,5 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x47aea0` | Options::Load | Reads the player's settings from `My Documents\Atari\Options.txt` when the file exists (`0xBE45E0`). Called from `Game::Initialise` |
 | `0x47b570` | Options::Save | Takes the current display settings (`0x12F4618`: resolution and the rest) into the options, each clamped between its option's minimum and maximum, and writes them to `\Atari\Options.txt`. Called from `FrontEnd::Start`, `0x607D00` and `0x6392E0` |
 | `0x404ba0` | Movies::List | Lists the movie files in the game's `Movies` folder (`*.wmv`). Called from `StartupScreen::Draw` and two others |
+| `0x9ebc70` | AttractSequence::Save | Writes a camera sequence for the attract mode to `AttractSequences\*.dat`: lines of `"%s",%I64d` and `,%f,%I64d`. Called from `ParkView::HandleCommands` (a key command) and `0x9EC540` |
+| `0x453630` | Resources::LoadCommon | Loads the `*.common.ovl` resource files of a folder (such as `GUI`). Called from 39 places, `StartupScreen::Draw` among them |
