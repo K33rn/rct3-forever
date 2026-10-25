@@ -1,0 +1,104 @@
+"""Constructors of the classes whose destructors are known, written to docs/notes/constructors.md.
+
+usage: python tools/constructors.py "<game folder>\\RCT3plus.exe"     (after tools/destructors.py)
+
+The destructors (destructors.md) put back their classes' virtual function tables, so those tables are known. A
+function that stores one of them at offset 0 of the object it is called on (`this`, which arrives in ecx and is
+often kept in another register) and returns that object is a constructor of the class (or of a class built on it).
+This lists each with the tables it sets, which destructor undoes it, and the calls it makes (by name where the notes
+have one): its base class's constructor and the members it constructs.
+"""
+import collections
+import csv
+import glob
+import os
+import re
+import struct
+import sys
+
+import capstone
+import pefile
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = 0x400000
+SKIP = re.compile(r'(Empty|Thunk|Virtual thunk|Set |Get |Returns|Member|Global|Deleting)')
+
+
+def main():
+    pe = pefile.PE(sys.argv[1], fast_load=True)
+    mem = pe.get_memory_mapped_image()
+    md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    md.detail = True
+    X = capstone.x86
+    funcs = {int(r['address'], 16): r for r in csv.DictReader(open(os.path.join(HERE, 'docs', 'functions.csv')))}
+    notes = {}
+    for p in glob.glob(os.path.join(HERE, 'docs', 'notes', '*.md')):
+        if os.path.basename(p) == 'constructors.md':
+            continue
+        for m in re.finditer(r'^\| `0x([0-9a-fA-F]+)` \| ([^|]+?) \|', open(p, encoding='utf-8').read(), re.M):
+            notes[int(m.group(1), 16)] = m.group(2)
+    # a class's table starts with its deleting destructor (small.md), which calls the class's destructor
+    dtor_names = {int(m.group(1), 16): m.group(2).strip() for m in re.finditer(
+        r'^\| `(0x[0-9a-f]+)` \| ([^|]*)\|', open(os.path.join(HERE, 'docs', 'notes', 'destructors.md'),
+                                                encoding='utf-8').read(), re.M)}
+    deleting = {int(m.group(1), 16): int(m.group(2), 16) for m in re.finditer(
+        r'^\| `(0x[0-9a-f]+)` \| Deleting destructor \| Destroys the object \(`(0x[0-9a-f]+)`',
+        open(os.path.join(HERE, 'docs', 'notes', 'small.md'), encoding='utf-8').read(), re.M)}
+    dtor_of = {}
+    for v in range(0xF26000, 0x10E7000, 4):
+        d = struct.unpack_from('<I', mem, v - BASE)[0]
+        if d in deleting:
+            dtor_of[v] = (deleting[d], dtor_names.get(deleting[d], ''))
+
+    def name(t):
+        if t in notes and not SKIP.match(notes[t]):
+            return notes[t]
+        return f'`{t:#x}`'
+
+    rows = []
+    for va, r in sorted(funcs.items()):
+        if r['status'] not in ('to do', 'documented') or va in notes:
+            continue
+        ins = list(md.disasm(mem[va - BASE:va - BASE + int(r['size'])], va))
+        this = {X.X86_REG_ECX}
+        tables, calls, returns_this = [], [], False
+        for k, i in enumerate(ins):
+            if i.mnemonic == 'mov' and len(i.operands) == 2 and i.operands[0].type == X.X86_OP_REG and \
+                    i.operands[1].type == X.X86_OP_REG and i.operands[1].reg in this:
+                this.add(i.operands[0].reg)
+            if i.mnemonic == 'mov' and len(i.operands) == 2 and i.operands[0].type == X.X86_OP_MEM and \
+                    i.operands[1].type == X.X86_OP_IMM:
+                v = i.operands[1].imm & 0xffffffff
+                if v in dtor_of and i.operands[0].mem.base in this and i.operands[0].mem.index == 0 and v not in tables:
+                    tables.append(v)
+            if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM:
+                calls.append(i.operands[0].imm & 0xffffffff)
+            if i.mnemonic == 'ret' and k > 0:
+                p = ins[k - 1] if ins[k - 1].mnemonic != 'pop' else ins[k - 2] if k > 1 else ins[k - 1]
+                for back in ins[max(0, k - 4):k]:
+                    if back.mnemonic == 'mov' and back.op_str.startswith('eax, ') and \
+                            back.operands[1].type == X.X86_OP_REG and back.operands[1].reg in this:
+                        returns_this = True
+        if not tables or not returns_this:
+            continue
+        dtor, dname = dtor_of[tables[0]]
+        cnt = collections.Counter(name(c) for c in calls)
+        desc = (f'Constructor of the class with the table' + ('s ' if len(tables) > 1 else ' ') +
+                ', '.join(f'`{t:#x}`' for t in tables[:4]) + f' (its destructor is `{dtor:#x}`'
+                + (f', {dname}' if dname and dname != 'Destructor' else '') + '): sets its tables and members')
+        if cnt:
+            desc += ', calling ' + ', '.join(f'{k}' + (f' x{v}' if v > 1 else '') for k, v in cnt.most_common(8)) + \
+                    (', ...' if len(cnt) > 8 else '')
+        desc += '; returns the object'
+        rows.append(f'| `{va:#x}` | Constructor | {desc} |')
+    out = ['# Constructors', '',
+           'Generated by `tools/constructors.py`: functions that store a class\'s virtual function table (one whose first entry is',
+           'a deleting destructor, so its destructor is known: [destructors.md](destructors.md)) into the object they are called on and return that',
+           'object: the constructors of those classes, with what they call.', '',
+           '| Address | Name | What it does |', '|---|---|---|'] + rows
+    open(os.path.join(HERE, 'docs', 'notes', 'constructors.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
+    print(len(rows), 'constructors')
+
+
+if __name__ == '__main__':
+    main()
