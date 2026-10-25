@@ -23,3 +23,7 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x6b1640` | Window::SetRelationAndLayout | `Window::SetRelation`, after laying the window out (`0x6AFAF0`) |
 | `0x6afaf0` | Window::UpdateRect | Works out a window's rectangle again and, when it changed, passes the change on (`0xBE7450`) and to the windows that depend on it |
 | `0xbf9c80` | Error::Throw | Throws one of the engine's errors: jumps (`longjmp`) to the innermost handler; when there is none, shows `THROWN ERROR WAS NOT CAUGHT` in a `FATE-AL` message box and exits |
+| `0xc11160` | Scanner::Lex | The flex-generated scanner that `Parser::Parse` reads tokens from: matches the input against its tables (a switch over the actions), with flex's error `start-condition stack underflow` |
+| `0x47aea0` | Options::Load | Reads the player's settings from `My Documents\Atari\Options.txt` when the file exists (`0xBE45E0`). Called from `Game::Initialise` |
+| `0x47b570` | Options::Save | Takes the current display settings (`0x12F4618`: resolution and the rest) into the options, each clamped between its option's minimum and maximum, and writes them to `\Atari\Options.txt`. Called from `FrontEnd::Start`, `0x607D00` and `0x6392E0` |
+| `0x404ba0` | Movies::List | Lists the movie files in the game's `Movies` folder (`*.wmv`). Called from `StartupScreen::Draw` and two others |
