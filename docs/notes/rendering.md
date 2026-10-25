@@ -50,3 +50,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc061d0` | GE_Device::LoadPassShaders | Loads the device's depth-of-field, shadow and occlusion query shaders (`GE_Device_DofFill`, `GE_Device_ShadowRender`, `GE_Device_OcclusionQuery`). Called from three places |
 | `0x703c70` | Terrain::LoadGridShaders | Loads the terrain grid shaders: billboards and the owned, construction-rights and selected grids (`TerrainOwnedGrid`, `TerrainConstructionOwnedGrid`, `TerrainSelectedGrid`). Called from `0x7048E0` |
 | `0x8e4ee0` | Terrain::DebugChess | The developer's chessboard terrain patterns (`Chess: Odd`, `Chess: Even`) |
+| `0xcec310` | ShapeMaterial::FromName (3) | Turns a material name into its kind: `AlphaMask`, `Alpha`, `Glass`, `Reflection`, `Chrome`. Called from `0xCEC590` |
+| `0x811860` | AlphaMask::LoadBitmaps | Loads the alpha mask bitmaps (`AlphaMaskBitmap`, `AlphaMaskFadeBitmap`). Called from three places |
+| `0x9de680` | EnvironmentMap::LoadShaders | Loads the environment cube map shaders (`EnvCubemap`, `EnvCubemapColour`). Called from `0x9DF0E0` |
+| `0x85b060` | Shadows::LoadShaders | Loads the shadow shaders (`ShadowDrawSolidColour`, `ShadowCopy`). Called from `0x85BC70` |
+| `0x914660` | WaterDrop::LoadShaders | Loads the water drop shaders (`WaterDrop`, `WaterDropWash`). Called from `0x477BD0` |

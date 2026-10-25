@@ -83,3 +83,16 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc35a20` | Messages::Redirect | Sends the engine's messages to the developer's IDE or to a file (`Redirecting to IDE`, `Redirecting to file`) |
 | `0xc4f590` | Shaders::LoadDefaults | Loads the default vertex and pixel shader sources (`vsdefault`, `psdefault`). Called from `GE_Device::SetupDepthOfField` |
 | `0xaac130` | PathFinder::DebugText | Writes a path search's developer statistics (`Cost: %.1f:`, `Nodes Visited: %d`) |
+| `0x45df00` | GameZone::LoadM4D | Loads the in-game advertising library (`m4d.dll`: `MMT_Initialize`, `MMT_DeInitialize`, `MMT_NetUpdate`, `MMT_FlushImpressionCache`, `MMT_GetZoneHeaders`, ...). Called from `GameZone::Setup` |
+| `0x4470b0` | Graphics::LoadFixes | Reads the graphics workarounds for known cards and drivers (`Graphics.fix`: `BeefynessForShaderModel`, `AmbientLightForViewport3D`, `Radeon7x00BillboardMadness`, `NVidiaSpecularMasking`, `NoReflections`, `NoGlare`, `NoExplicitDownsampling`, ...). Called from `Game::Initialise` |
+| `0x453430` | Language::FromIndex | Gives a language's name by its number: `English`, `French`, `German`, `Dutch`, `Italian`, `Spanish`, `Danish`, `Norwegian`, `Swedish`, `Finnish`, `Chinese`, `Korean`, ... Called from four places |
+| `0x617840` | Language::IsChinese | Checks for Chinese or simplified Chinese |
+| `0x61c9b0` | MessageConsoleEntry::Fields | Registers a message console entry's saved fields (a `resourcesymbol` `Text` and a `float32` `Time`). Called from `0x6203A0` |
+| `0x7fd9d0` | AIDDatabaseEntry::Fields | Registers an attraction definition's saved fields (`OVERLAYFILENAME`, `SYMBOLNAME`, `ATTRTYPE`). Called from `0x7FFDF0` |
+| `0x552950` | PersonInfo::Fields | Registers the saved fields shared by the ride person infos (`StationIndex`, `SeatState`). Called by the MiniGolf, SplinePath, TrackedRide and WalkAlongTrack person infos |
+| `0x699ea0` | GUIRenderer::Shaders | Gets the GUI renderer's shaders (`GUIRendererColour`, `GUIRendererBitmap`, `GUIRendererZMask`). Called from 37 places |
+| `0x6b0230` | SkinItem::Texture | Gets a GUI skin item's texture, reporting `No texture for skin item` / `Missing skin texture`. Called from 73 places |
+| `0x456fd0` | CrashDump::ExceptionName | Turns an exception code into its name (`Access Violation`, `Datatype Misalignment`, `Breakpoint`, `In Page Error`, `Illegal Instruction`, `No Memory`, ...). Called from `CrashDump::Write` |
+| `0xcbb7e0` | Inflate::BuildTrees | zlib's building of the inflate code trees, with its errors (`oversubscribed distance tree`, `incomplete distance tree`, `empty distance tree with lengths`, ...). Called from `Inflate` |
+| `0xcd65a0` | DebugInfo::ResourceStats | Writes the developer's resource statistics, one line per resource type (`RS: %20s   PL: %10d   BT: %5d   DB: %10d   TC: %5d   MIN: %8d   MAX: %8d`) and the total. Called from `DebugInfo::Draw` |
+| `0x707530` | Scenario::DefaultText | Gives a new scenario its default name and description (`Scenario_DefaultName`, `_DefaultDescription`). Called from `Park::Park` and `NewGame::Start` |

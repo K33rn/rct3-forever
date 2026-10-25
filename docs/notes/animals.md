@@ -41,3 +41,9 @@
 | `0xb03220` | Darts::Load | Loads the darts and the safari T. rex model (`WildAnimals\Darts\Darts`, `SafariTrex`). Called from `0xB05170` |
 | `0xbbefa0` | WildAnimal::SpeciesStats | Writes a species' statistics for the developer: number of prey, prey, breeding happiness and space needs, vertical step reach, ... (`WildAnimalSpeciesStat_*`). Called from `WildAnimal::DebugStats` |
 | `0xb4b290` | AnimalCrate::StateName | Writes an animal crate's state: closed, dropping, fading in, opening, opened, waiting to be picked up |
+| `0xb10430` | AnimalFood::ModelNames | Makes the animal food models' names (`foodleaves`, `foodhay`, `foodmeat`). Called from two places |
+| `0xb37de0` | WildAnimal::RarityName | Writes an animal's rarity: endangered, rare, moderate, common (`WildAnimalRarity_*`), or baby. Called from two places |
+| `0xbbeca0` | WildAnimal::GeneticStats | Writes an animal's genetic statistics for the developer: hunger, enjoyment it gives guests, social, water need, adolescence, ... (`WildAnimalGeneticStat_*`). Called from `WildAnimal::DebugStats` |
+| `0xb13c50` | WAS_Chase::StateName | Writes a chasing animal's state: chasing, fleeing, finished |
+| `0xa19140` | Seagull::Models (2) | Picks between two seagull models |
+| `0xa11810` | Duck::Models (2) | Picks between two duck models |

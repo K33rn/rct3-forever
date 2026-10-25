@@ -211,3 +211,18 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xc32f60` | DebugConsole::BuildWatch | Builds the debug console's watch window: names and values (`Watch enviro`). Called from `DebugConsole::Build` |
 | `0xa1f060` | WindowArea::Names | Makes the names of the window areas used by tutorials (`WindowArea:Dragger`, `WindowArea:ToolTipDialog`). Called from `0xA58C10`; `0xA1F350` is the same |
 | `0xa1f350` | WindowArea::Names (2) | The same as `0xA1F060` |
+| `0x490e80` | CameraRoute::AddWaypoint | Adds a waypoint to a camera route from the park view's key commands (`Add Waypoint`). Called from `ParkView::HandleCommands` |
+| `0x463690` | AdMenu::StyleNames | Makes the advert styles' names (`Rota`, `Stat`: rotating and static) |
+| `0xa23330` | TutorialSetup::StepLabel | Writes a tutorial step's label (`Step: %d`, `Global`). Called from `0xA1EF20` |
+| `0xa824f0` | TrackBrowser::BuildButtons | Builds the track browser's build and cancel buttons (`TrackBrowser_BuildThis`, `_Cancel`) |
+| `0x66b660` | TrackBrowser::BuildButtons (2) | The same as `0xA824F0` for another browser |
+| `0x65d9b0` | MessageBox::BuildOkCancel | Builds a message box's OK and cancel buttons (`SMB_Label_OK`, `SMB_Label_Cancel`) |
+| `0xaf2560` | SoakedDesigner::BuildIdentBar | Builds the bar of a Soaked! effect in the display editor (`SpecialSoakedIdentbar`). Called from two places |
+| `0xa7cc20` | PoolComplex::ConfirmSell | Asks before selling a pool complex (`ConfirmSellPoolComplex_*`). Called from `0xA7CE40` |
+| `0x984ec0` | ResearchCategories::Help | Gives the research categories' help texts (`Obj_Rides_*Help`, `Obj_ShopsHelp`, ...). Called from three places |
+| `0x984d30` | ResearchCategories::GreyIcons | Gives the research categories' greyed icons (`Obj_Rides_*_Grey`, `Obj_Shops_Grey`, ...). Called from the InventionEditor window |
+| `0x984ba0` | ResearchCategories::Icons | Gives the research categories' icons (`Obj_Rides_TransportRides`, `Obj_Rides_GentleRides`, ..., `Obj_Shops`, `Obj_Scenery`, `Obj_Paths`). Called from two places |
+| `0x4840b0` | SingleItemDelete::Message | Builds the single-item delete message for animated items (`SingleItemDeleteEditor_AI_Message`, `_Title`). Called from `RCTDesktop::CreateWindows` |
+| `0xbb5310` | AttractionDetails::ButtonFlags | Turns the attraction window's button flag names into values (`ButtonFlagStateChooser`, `View`, `Thoughts`, `Finances`, `Customers`, `StallItems`, `Adverts`, `StallExtras`, ...). Called from `0xBB5470` |
+| `0x874840` | EntranceExitMenu::Build | Builds the entrance and exit buttons (exit first). Called from `0x6616D0` |
+| `0x8746a0` | EntranceExitMenu::Build (2) | The same with the entrance first. Called from `0x6618C0` |

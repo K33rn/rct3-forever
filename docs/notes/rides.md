@@ -61,3 +61,12 @@ Tracked rides, flat rides and their cars and trains.
 | `0xbbfa30` | SwingMode::FromName | Turns a ride car's swing mode name into its value: none, free, about R, about F, spinning about U (`SwingMode*`) |
 | `0xbb3e90` | AtStation::FromName | Turns a station condition's name into its value: at station, all, any, exactly one, at least one, none (`AtStation*`) |
 | `0x589180` | TrackSpecial::Directions | Makes the special track pieces' up, down, left and right buttons (`TrackSpecial_*`). Called from three places |
+| `0x87c130` | Blueprint::LoadShaders | Loads the shaders that draw objects as blueprints while placing them (`ShapeBlueprint`, `ShapeNormalEdge`, `TerrainTileBlueprint`). Called from `0x87C930` |
+| `0xbb45f0` | LeaveRideBehaviour::FromName | Turns how guests leave a ride into its value: walking off, or as a rigid body (also down a water slide or from a high dive) (`LeaveRideBehaviour*`) |
+| `0xbbfde0` | SwingAnchor::FromName | Turns a swinging part's anchor into its value: the parent's pivot or origin (`SwingAnchor*`) |
+| `0x55f5a0` | RideTrain::StateName | Writes a train's state: waiting to load, loading, ready to go, restraints closing, doors closing, waiting to go at the station (also in sync with another train), ... (`State*`) |
+| `0x535020` | Ride::QueueText | Writes how many people are queueing (`PeopleQueueing0` ... `4`, `X`) |
+| `0x5318c0` | Ride::RidersText | Writes how many people are on a ride (`PeopleOnRide0` ... `4`, `X`) |
+| `0x532600` | RideBreakdown::StateName | Writes a breakdown's state: awaiting breakdown, calling a mechanic, waiting for them to arrive, being fixed, fixed (`BreakdownState*`) |
+| `0x5117e0` | RideCar::MissingBone | Reports a bone missing from a ride car (`missing bone ... for car`). Called from `RideCar::FindBones` |
+| `0xb93330` | Attraction::LoadIcon (2) | Loads an attraction's icon, reporting a missing texture. Called from `0xBA89A0` |

@@ -29,3 +29,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7fec50` | Person::PartGroupNames | Makes the names of the saved person part groups (`HeadPartGroup`, `BodyPartGroup`, `LegsPartGroup`, `SwimSuitBodyPartGroup`, `SwimSuitLegsPartGroup`). Called from `0x7FFDF0` |
 | `0x7bfff0` | Person::CheckParts | Reports a person's model parts per level of detail: fixed parts unresolved, optional parts missing (`Main`, `SwimSuit`). Called from `0x7BD4A0` |
 | `0x7446d5` | AvatarDatabaseEntry::Write | Writes an avatar's version, name and leader for saving |
+| `0xed8d00` | HandymanTools::Mower | Makes the handyman's lawnmower tool at start-up (`People\HandyMan\Tools`, `MoterMower`, `Lawnmower`) |
+| `0xed8b90` | HandymanTools::Sponge | Makes the handyman's sponge tool at start-up (`People\HandyMan\Tools`, `Spunge`, `Sponge`) |
