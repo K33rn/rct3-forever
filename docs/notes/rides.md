@@ -90,13 +90,10 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5341d0` | Ride::CheckReliability | Checks a ride's reliability and warns when it is low (`RideReliabilityLow`). Called from `0x4AF910` |
 | `0x583ef0` | PathArrow::Build | Makes the arrow showing a path's direction (`PathArrow`). Called from five places |
 | `0x49e670` | Waypoint::Draw | Draws a route waypoint's ring (`WaypointRing`). Called from `0x49ED40` |
-| `0x4d4650` | WaterSlide::Setup | Sets up a water slide (`Slide`). Called from `0x4D56A0` |
 | `0x5912c0` | Stall::FindPeepBones | Finds a stall's guest positions, reporting `No peep bones for stall '%S'`. Called from `0x5964F0` |
 | `0x4f6200` | TrackEditor::AutoCompleteCost | Refuses to auto-complete a track the player can't afford (`RideAutoCompleteNotEnoughCash`, `%NAME%`). Called from six places |
 | `0x487750` | RideCar::FindPivot | Finds a ride car model's pivot (`Pivot`). Called from `0x487B90` |
 | `0x5a93f0` | Ride::MissingInspectionPoint | Reports a ride without an inspection point (`Missing inspection point`) |
 | `0xa3fc20` | TrackImporter::AddPiece | Adds an imported track piece, matching its curve and flags (lift chain, enclosed, station), reporting `No match for track piece %d`. Called from two places |
 | `0x65e590` | TrackImporter::Music | Sets an imported ride's music (`Attraction_Music`). Called from `TrackImporter::Load` |
-| `0x4ad2f0` | RobotArm::Setup | Sets up the robot arm ride (`RobotArm`) |
-| `0x533ab0` | Ride::QueueSign | Places a ride's queue sign (`queuesign`) |
 | `0x88c920` | Sign::NoEntry | Sets up a no entry sign (`Sign_NoEntry`). Called from `0x88CD90` |

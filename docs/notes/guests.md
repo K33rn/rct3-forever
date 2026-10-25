@@ -39,9 +39,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0xa673d0` | Person::DrawShadow | Draws a person's shadow blob (`PeopleShadowBlob`) and updates their lights |
 | `0x5f0b70` | Person::LookAt | Turns a person's head to look at something (`LookAt`), at random intervals. Called from two places |
 | `0x779f30` | GuestGroup::DebugWants | Writes what a guest group wants, for the developer: home, ATM, first aid, toilet, food, drink, umbrella, sun block, bench, bin (`Group's desired objects (NOT LOCALISED):`). Called from `GuestWindow::AvatarHighlight` |
-| `0x798650` | Handyman::Brush | The handyman's brush |
-| `0x798be0` | Handyman::WaterCan | The handyman's watering can (`WaterCan`) |
-| `0x7b6790` | Guest::SwimsuitStall | A guest using the swimsuit stall (`SwimSuitStall`). Called from `0x762A10` |
 | `0x40aa60` | BodyGuard::Create | Creates a VIP's bodyguards (`BodyGuard`). Called from `0x6F7330` |
-| `0x7cc440` | Person::MadeWet | A person getting wet (`MadeWet`). Called from `0x762F60` |
 | `0x745070` | AvatarGroup::Leader | Reads which avatar leads a group (`Leader`). Called from two places |

@@ -771,7 +771,7 @@ address,size,name,callers,status
 0x439280,1201,,1,to do
 0x439740,29,,1,to do
 0x439760,1319,,3,to do
-0x439c90,1061,,1,documented
+0x439c90,1061,,1,to do
 0x43a0c0,1641,,1,to do
 0x43a730,173,,1,to do
 0x43a7e0,230,,1,to do
@@ -2201,7 +2201,7 @@ address,size,name,callers,status
 0x4ace60,245,,4,to do
 0x4acf80,125,,3,to do
 0x4ad000,611,,1,to do
-0x4ad2f0,900,,1,documented
+0x4ad2f0,900,,1,to do
 0x4ad680,67,,4,to do
 0x4ad6e0,67,,3,to do
 0x4ad740,118,ObjectRef::DeleteTarget,11,rewritten
@@ -2661,7 +2661,7 @@ address,size,name,callers,status
 0x4d44f0,39,,1,to do
 0x4d4520,150,,2,to do
 0x4d45c0,141,,8,to do
-0x4d4650,1316,,2,documented
+0x4d4650,1316,,2,to do
 0x4d4b90,805,,2,documented
 0x4d4ef0,30,,2,to do
 0x4d4f10,89,,1,to do
@@ -3439,7 +3439,7 @@ address,size,name,callers,status
 0x533680,212,ReferenceField::Load,1,rewritten
 0x533760,212,ReferenceField::Load,1,rewritten
 0x5339d0,212,ReferenceField::Load,1,rewritten
-0x533ab0,729,,1,documented
+0x533ab0,729,,1,to do
 0x533d90,36,SharedBuffer::Release,7,rewritten
 0x533dc0,89,,7,to do
 0x533e20,430,,1,to do
@@ -7306,7 +7306,7 @@ address,size,name,callers,status
 0x6c8c30,22,,1,to do
 0x6c8c90,30,,2,to do
 0x6c8cb0,30,,2,to do
-0x6c8cd0,3742,,1,documented
+0x6c8cd0,3742,,1,to do
 0x6c9b80,287,,5,to do
 0x6c9ca0,16,,1,to do
 0x6c9d30,28,,0,to do
@@ -9370,9 +9370,9 @@ address,size,name,callers,status
 0x797d70,1183,,2,to do
 0x798210,332,,1,to do
 0x798370,722,,1,to do
-0x798650,1273,,1,documented
+0x798650,1273,,1,to do
 0x798b50,142,,1,to do
-0x798be0,1001,,1,documented
+0x798be0,1001,,1,to do
 0x798fd0,641,,1,to do
 0x7995a0,105,,1,documented
 0x799610,30,,3,to do
@@ -9698,7 +9698,7 @@ address,size,name,callers,status
 0x7b6680,39,,1,to do
 0x7b66b0,161,,1,to do
 0x7b6760,36,,1,to do
-0x7b6790,1081,,1,documented
+0x7b6790,1081,,1,to do
 0x7b6bd0,422,,3,to do
 0x7b6d80,289,,3,to do
 0x7b6eb0,1004,,2,to do
@@ -9923,7 +9923,7 @@ address,size,name,callers,status
 0x7cbf50,126,ObjectRef::Assign,37,rewritten
 0x7cbfd0,581,,4,to do
 0x7cc220,534,,6,to do
-0x7cc440,813,,1,documented
+0x7cc440,813,,1,to do
 0x7cc770,164,,3,to do
 0x7cc820,763,,0,to do
 0x7ccb30,61,,0,to do
