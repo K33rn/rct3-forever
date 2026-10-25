@@ -463,7 +463,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9b26b0` | FireworkMode::ShowInstructions | Shows the firework display mode's instructions in the identification bar (the game text `FireworkIdentbarInstructions`) |
 | `0xaef810` | WaterJetDesigner::OpenFiles | Opens the file window for saved water jet displays (folder `WaterJets`) next to the water jet designer |
 | `0xad6460` | LaserDesigner::OpenFiles | Opens the file window for saved laser shows (folder `Lasers`) next to the laser designer |
-| `0x69a6e0` | Sound::GUIClick | Plays the interface sound `GUIClick` (a sound made with `0x47CEE0`, one of its variations picked at random) |
+| `0x69a6e0` | Sound::GUIClick | Plays the interface sound `GUIClick` (a sound made with `0x47CEE0`, one of three variations picked with rand() % 3) |
 | `0x69a830` | Sound::GUIBClick | Plays the interface sound `GUIBClick` the same way |
 | `0x69a980` | Sound::GUIBRelease | Plays the interface sound `GUIBRelease` the same way |
 | `0x69aad0` | Sound::GUIWarning | Plays the interface sound `GUIWarning` the same way |
