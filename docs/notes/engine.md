@@ -299,3 +299,11 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x6d6180` | RegisteredItem::RegisteredItem | Constructor of a base class (table `0xF63F2C`) whose objects all go in one global list (`0x1305F44`, count `0x1305F4C`, growing to twice its size plus 10): keeps its place in the list at +4. Used by about 45 constructors |
 | `0x468450` | ShowMessageBox | Shows a Windows message box (MessageBoxA) with two wide texts, first turning each into plain text in spare room at the end of its own buffer. Used by about 60 functions to report problems |
 | `0x49b9f0` | ReportMissingResourceSymbol | When the flag (Flags::Bit0) is clear, shows a message box `Missing Resource Symbol` with the symbol's name |
+| `0x40c380` | Table2C::Value | The value at +8 of entry n (36 bytes each) of the table at +0x2C |
+| `0xbce060` | Memory::FreeCounted | Frees a block, counting it off the live blocks (`0x13D0D48`) |
+| `0x4797b0` | Options::SetBool | Sets yes/no option n (the table at `0x10EDAB8`, 8 bytes each) to 1 or 0 |
+| `0xbe4090` | SaveWriter::Run | `0xC50B70` with the argument, then waits for the writing to finish (SaveWriter::Wait) |
+| `0xce7cc0` | Registry::Ensure2 | Makes the global at `0x1400B70` (36 bytes: zeros, -1 at +4) the first time it is needed |
+| `0x413650` | Object413::Object413 | Constructor (table `0xF26E00`): clears +4..+0xC, keeps itself at +0x10 and sets up from the argument with `0x412EA0` |
+| `0x458130` | Init458 | Runs `0x458010` and returns its argument |
+| `0xcc1c60` | Release2C | `0xCC4EA0` with the value at +0x2C |

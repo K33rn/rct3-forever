@@ -391,4 +391,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x67b4f0` | Label::SetText | Sets the text of the window's text part (+0x114 of the window at +0xF0, sharing the text given) and updates the window (`0x6AFC20`) |
 | `0x67b710` | Button::SetImages | Sets a button's images: two pairs (+0x104/+0x10C unticked, +0x108/+0x110 ticked, the second of each pair while highlighted (flag 0x20)), +0x114 and a seventh at +0x128; shows the one for its state now (Window::SetContent) and, when asked, sizes the button to the first image |
 | `0x67b800` | Button::SetSingleImage | Gives a button the same image for every state (Button::SetImages with it six times) and the last value given. Used by about 95 window builders |
-| `0x63c840` | ImageWindow::ImageWindow | Constructor of a window part (tables `0xF49148`, `0xF49134`, `0xF49108`; built on WindowList with the value given) that registers its class's fields once (the class description in the argument, or `0x12F7E90`) |
+| `0x63c840` | WindowPart::WindowPart | Constructor of a window part (tables `0xF49148`, `0xF49134`, `0xF49108`; built on WindowList with the value given) that registers its class's fields once (the class description in the argument, or `0x12F7E90`) |
+| `0x41bea0` | Window::SetText114 | Makes the window's text at +0x114 share the text given |
+| `0x6a9e50` | Window::SetFlagsDC | Sets the bits of the window's flags (+0xDC) chosen by the mask to the values given, updating what depends on bit 0 (its text style and values from `0x13037D8` and `0x1302BD8`) when that bit changes |
+| `0x6a7920` | Window::SetOffsets148 | Sets +0x148 and +0x14C of the window at +0xE4 to the two (signed byte) values given |
