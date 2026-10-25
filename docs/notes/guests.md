@@ -102,3 +102,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x798650` | Handyman::Sweep | In outline: the handyman's sweeping: walks the path (Person::FollowPath), faces his work and uses the `Brush` tool, then changes state |
 | `0x798be0` | Handyman::Water | In outline: the handyman's watering: goes to the flower bed (its scenery behaviour's owner) and uses the `WaterCan` tool, then changes state |
 | `0x7cc440` | Person::MadeWet | In outline: when a person is made wet (`MadeWet`), sets the time and reaction at random (Random::Ran0, the game clock) |
+| `0x7cbfd0` | Person::Splash | In outline: makes a person's splash sound (`PeepSplash`), chosen at random |
+| `0xbaeb30` | Person::InspectionPoint | In outline: the `InspectionPoint01` point name |
+| `0x490880` | WayPoint::Name | In outline: makes way points named `Way Point ` + number |

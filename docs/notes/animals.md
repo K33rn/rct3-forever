@@ -72,3 +72,9 @@
 | `0xb71bc0` | WildAnimal::ConfirmSell | Opens the confirmation for selling a wild animal, with the game text `SellAnimalConfirmMessage` and the animal's details, acting on the animal's reference when confirmed |
 | `0xb6fa30` | WildAnimal::ShowSold | After a wild animal is sold, shows the game text `SellAnimalSoldMessage` (in a message window) with its details |
 | `0x741280` | AnimalKeeper::NeedEnclosure | In outline: when an animal keeper is hired with no enclosure, shows the game text `EnclosureNeeded_Message`; also makes the keeper (AnimalKeeper::AnimalKeeper) at a random spot |
+| `0xb223d0` | WildAnimal::SpeciesText | In outline: a wild animal's species name (`Name_WildAnimalSpecies_PolarBear` among them) with its sex and age text |
+| `0xb3b230` | WildAnimal::GrownToAdult | In outline: when a young animal grows up, shows `WildAnimalMessage_GrownToAdult` and sets up its adult look (WildAnimalVisual::Setup) |
+| `0xb38560` | WildAnimal::DescendantName | In outline: a descendant animal's name with its number (`AnimalDescendantSuffix`) |
+| `0xb3cf30` | WildAnimal::BecomePregnant | In outline: at random (Random::Ran0) makes an animal pregnant and shows `WildAnimalMessage_Pregnant` |
+| `0xb8e820` | AnimalShelter::FoodNames | In outline: the names of a shelter's troughs (`food` + number, AnimalShelter::TroughNames) |
+| `0x4b6570` | Aquarium::Check | In outline: checks for an aquarium (`Aquarium:trr`) by its name |

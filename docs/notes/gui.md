@@ -519,3 +519,19 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x66c7d0` | AttractionResultsDialog::Labels | In outline: the attraction results dialog's labels (`AttractionResultsDialogLabel_` + name) |
 | `0x55d300` | AttractionResultsDialog::Labels2 | In outline: more labels of that dialog (`AttractionResultsDialogLabel_` + name) |
 | `0x660ad0` | AvatarEditor::CrownIcon | In outline: the avatar editor's crown icon (`AvatarEditor_CrownIcon`) |
+| `0x677f30` | RideSelection::GroupItem | In outline: a ride selection item for a group (`Group_Containing_` + name) |
+| `0x677d40` | RideSelection::GroupItem2 | In outline: another ride selection group item (`Group_Containing_` + name) |
+| `0x4052a0` | DemoText::Item | In outline: a demo text item (`DemoOut_` + number) |
+| `0xa41620` | Scenario::NameText | In outline: a scenario's name text (`Scenario` + its name) |
+| `0x4d7230` | RideCamera::BuildWindow2 | In outline: builds the ride camera's window area (`RideCamWindowArea`) for this window |
+| `0xaac350` | PoolPlacementGrid::Build | In outline: the pool placement grid controls (`PoolPlacementGrid`) |
+| `0x746f50` | PersonEditor::UnderlineColour | In outline: the person editor's underline colour icon (`PersonEditor_UnderlineColourIcon`) |
+| `0xaca850` | ColourSelection::Block | In outline: a block of the colour selection (`ColourSelection_Block`) with its skin texture |
+| `0x597fb0` | AttractionCustomersDialog::SoldLabel | In outline: the customers dialog's `AttractionCustomersDialogLabel_Sold` label |
+| `0x6bd2a0` | Money::Label | In outline: a money label (`Money`) |
+| `0xa4b8f0` | Window::LayoutForEnglish2 | In outline: lays a window out for English or for Asian languages (Language::IsAsian) |
+| `0x70ea00` | LandDialog::RadiusWindow | In outline: builds the land tool's `Radius` window (LandDialog::BuildRadius) |
+| `0x8368d0` | StyleWindow::Build2 | In outline: another style chooser (`StyleName`) |
+| `0x86f3e0` | ObjectGroup::Name | In outline: an object group's name (`Obj_Group`) |
+| `0x4f0a70` | TrackDesigner::StateText | In outline: a state text (`State` + number) |
+| `0x8dc760` | HelpButton::Build | In outline: builds a `Help` button with its images and text |

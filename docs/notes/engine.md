@@ -1223,3 +1223,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc40480` | OverlayFile::LoadChecked | In outline: opens an overlay file, relocates it and checks its types (OverlayFile::Open, Relocate, CheckTypeIndex), reporting problems and marking `BLOCKED` entries |
 | `0xc3ad70` | OverlayFile::ReportBlocked | In outline: builds and reports a message about `BLOCKED` entries |
 | `0x498ec0` | ShaderText::Setup | In outline: sets up text drawing with the `SIOpaqueText` shader (looked up by name) |
+| `0xdfe7e0` | Thread::WaitWithMessages | Waits on handles while still handling the thread's window messages (WaitForMultipleObjects with a timeout, PeekMessage / DispatchMessage), raising the thread's priority meanwhile; `AMUnblock` is its private message |

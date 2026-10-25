@@ -226,3 +226,17 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9a3f10` | Fireworks::FilePath | In outline: builds a firework file's path in the `Fireworks/` folder |
 | `0x9ea300` | Weather::StartLoop | In outline: starts the weather's looping sound (`WeatherLoop`), loading the rain when it rains |
 | `0x54c8b0` | Ride::ParticleSound | In outline: plays a ride's particle sound (`RideParticleSound`) |
+| `0x8ee760` | Terrain::ShadowHorizon | In outline: sets up the terrain's shadow horizon (`TerrainShadowHorizon`, a texture style looked up by name) and rebuilds the terrain |
+| `0x8e9e40` | Terrain::MarkBlocked | In outline: goes over the terrain on the current device, marking `BLOCKED` cells |
+| `0x63e310` | GUIIcon::Window | In outline: a window showing a `GUIIcon:txs` texture (TextureResource) |
+| `0xc69ab0` | ScrollBar::Draw | In outline: draws a `Scrollbar` in its colours (Colour::ToRGB) |
+| `0x438c50` | GUIRenderer::Bitmap | In outline: sets up the GUI renderer's bitmap drawing (`GUIRendererBitmap`, looked up by name) |
+| `0x86e1d0` | SceneryItem::VisualProxyReport | In outline: reports a scenery item's visual proxy (`SceneryItemVisualProxy`) for the developer (Model::DebugReport) |
+| `0xafd600` | Terrain::HoleStencil | In outline: sets up the terrain hole stencil (`TerrainHoleStencil`, looked up by name) as a pooled object |
+| `0x9bfd70` | ParticleEffects::Flare | In outline: makes the `Flare_00` particle effect (ParticleDesc and its emitter) |
+| `0x85ae60` | Shadows::ShapeShadow | In outline: sets up shape shadows (`ShapeShadow`, looked up by name) |
+| `0x482b70` | ScreenDistortion::ScreenDistortion | In outline: the screen distortion effect (`ScreenDistortion`, looked up by name), registered as a list member, with its option and random start |
+| `0x42db70` | ShaderSetup::SIOpaque | In outline: looks up the `SIOpaque` shader by name |
+| `0x46b5a0` | MoviePlayback::Setup | In outline: looks up the `MoviePlayback` shader by name |
+| `0x90b640` | Water::Puddle | In outline: sets up puddles (`Puddle`, looked up by name) through the water manager |
+| `0xbd4e20` | ResourceTable::MarkBlocked | In outline: marks `BLOCKED` entries of a resource table |

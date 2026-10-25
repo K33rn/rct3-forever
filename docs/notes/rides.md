@@ -145,3 +145,10 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5351e0` | RideCar::PeepSlot | In outline: the seat slot of a ride car (`Peep01` ...) |
 | `0x66ce00` | RideDetails::CarName | In outline: shows a ride car's name in the details window (RideCar::Name), `None` when there is none |
 | `0xa3f770` | TrackImporter::Coaster | In outline: matches an imported track to a coaster (`Coaster`) |
+| `0xb048a0` | DartHelicopter::Start | In outline: starts the dart helicopter (`DartHelicopter`) with the main camera |
+| `0x581750` | RobotArm::JointName | In outline: the robot arm's joint names (`IK_RobotJoint` + number) |
+| `0xab3b50` | PoolSegment::Sound | In outline: makes a pool segment sound (`PoolSegment`) |
+| `0xb05170` | FireDart::Sound | In outline: makes the fire dart sound (`FireDart`) after loading the darts |
+| `0x85c890` | EarthThump::Sound | In outline: makes the `EarthThump` sound at a random time |
+| `0x54ed80` | Burn::Sound | In outline: makes the `Burn` sound |
+| `0x9d26f0` | PMSound::Data | In outline: the `PMSoundData` entries (numbered) |

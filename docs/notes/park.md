@@ -206,3 +206,16 @@
 | `0x7b6180` | Crowd::Sounds | In outline: sets up the crowd sounds (`CheatBonusCheer1Fade`, `CheatBonusCheer1Lp`, ...) in a slot pool |
 | `0x7b6790` | Stall::SwimSuitStall | In outline: sets up the `SwimSuitStall` stall item |
 | `0x6defd5` | ThemedAttractionsCondition::CurrentText | The objective's progress text: the game text `ThemedAttractionsCondition_Current` with the number written in, and its timing |
+| `0x83a550` | CapObjects::Name | In outline: the `CapObjects` name text |
+| `0x7085b0` | Park::ChainSounds | In outline: the park's `Standard2Chain` sounds (Crowd::Sounds) |
+| `0x9d9f50` | CarriedItem::MakeVoucher | In outline: makes a `Voucher` carried item, dated by the game clock |
+| `0x7f9bc0` | VIP::LeftPark | In outline: when a VIP leaves the park (`VIP_LeftPark`), with the crowd sounds |
+| `0x456aa0` | LoadFileCache::Save | In outline: saves the load file cache to `RCT3.fc` (ManagedObject::SaveFileQuick) |
+| `0x9af1b0` | Object9AF::Name | In outline: a name text, `NULL` when there is none |
+| `0x9af040` | Object9AF::Name2 | The same for another field (`NULL` when none) |
+| `0x9aeed0` | Object9AF::Name3 | The same for another field (`NULL` when none) |
+| `0x819e00` | LitterBin::ReadCapacity | In outline: reads a litter bin's `capacity` setting |
+| `0x8b4f90` | SceneryBehaviour::ReadCapacity | In outline: reads a behaviour's `capacity` setting |
+| `0x88c780` | Sign::ReadNoEntry | In outline: reads a sign's `enablenoentry` setting |
+| `0x6b6df0` | PathPlacement::Check2 | In outline: another path placement check with the path manager and terrain (`DFAIL`) |
+| `0x6b67a0` | PathPlacement::Check3 | In outline: another path placement check (`DFAIL`) |
