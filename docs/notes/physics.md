@@ -181,3 +181,8 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbb9d80` | PointSet::Walk4 | In outline: another pass over a list of points like PointSet::Walk |
 | `0x929bc0` | Water::Link929BC0 | In outline: links a water piece's points to the ones around it (`0x926FA0`) where they face the same way, and refreshes them (`0x417C20`) |
 | `0x960810` | Points::InBox960810 | In outline: picks the points of a list (16 bytes each) that lie inside a box (+0x20 to +0x34) into a new list |
+| `0xa17a40` | Camera::PathA17A40 | In outline: for mode 1 (+0x50), moves along a camera path (`0xA0F990`), measures its turn and turns the view (Vector::RotateAround) |
+| `0x4b5350` | Camera::Follow4B5350 | In outline: another follow camera like Camera::Follow4DFE40: points it (Matrix::LookAlongZSide) and tilts it (Matrix::TurnAboutX) when its checks pass (`0x4B51E0`) |
+| `0xa0f990` | CameraPath::Step | In outline: moves along a camera path by a distance: measures the way to the next point and its direction against the path's (+0x84, +0xA4), and moves on to the next point when past it |
+| `0x906300` | Points::Merge906300 | In outline: merges a list of points into another, like Points::Merge906950 |
+| `0xbc7940` | Object::HitTestBC7940 | In outline: whether a ray within a distance hits an object's parts by kind (2, and 6 to 0x19), using its two ends (`0xBC5AB0`, `0xBC5B40`) |

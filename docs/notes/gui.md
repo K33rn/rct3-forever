@@ -644,3 +644,5 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x88b470` | List::Draw88B470 | In outline: draws a list of parts (+0xE0) at its scale (Node::TotalScale), each with its background (`0x694E90`) |
 | `0x6cd960` | Window::Build6CD960 | In outline: builds a window from the shared title `0x1305E48` |
 | `0x5c6610` | TrackedRide::Height5C6610 | In outline: a ride piece's height at a point (`0x5C14D0`), or, when below 0 and not flagged (+0x170), from the middle of its span (Span::Middle) |
+| `0xacfdb0` | Graph::DrawACFDB0 | In outline: draws a graph window's contents when not flagged (+0x108): its frame (`0x6ACE50`) and its lines (`0x695E80`) |
+| `0x663680` | Window::Build663680 | In outline: builds a window for a thing (`0x4E4410`, `0x8DC9B0`) with two parts of style 0x9165 (`0x6A2620`) and opens it (MainWindow::Build) |

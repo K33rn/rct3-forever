@@ -351,3 +351,10 @@
 | `0x8e44a0` | Terrain::Mark8E44A0 | In outline: goes over a rectangle of terrain cells (+4 to +0x10) and marks the ones whose value (+0x14) is set |
 | `0x49ee80` | Curve::Sample49EE80 | In outline: samples a curve at a point (scaled by `0xF2EACC`) into the values given |
 | `0x56b690` | Ride::UpdateTool56B690 | In outline: when not flagged (+0x5C) and the ride is not being placed (+0x378), acts by the tool's mode (`0x12F5638`: 2, 6 and 7 with entries at +0x78) |
+| `0x4d56a0` | Shop::UpdateTool4D56A0 | In outline: when not flagged (+0x58) and not being placed (+0x378), acts on the current tool (`0x12F5638`) by its result (`0x4D45C0`: 2, ...) |
+| `0x79c2e0` | Tool::Cells79C2E0 | In outline: works out the cells a tool covers on the terrain (a 90 by 90 grid) from its point (+0x54), rounded |
+| `0x47a790` | Park::ListNames47A790 | In outline: goes over a list of things (`0x1305D54`, count `0x1305D58`), skipping the ones that fail a check (`0xBD19C0`), and joins their names into one text |
+| `0x8ec360` | Water::BuildAll8EC360 | In outline: builds the water pieces (Water::Build8EB860) and, for the current device (ForCurrent(3)), fills a shared 0x1000-entry table (`0x1317E40`) from the pair records |
+| `0x95bc10` | Water::BodyAt95BC10 | In outline: the water height of a cell's body: sets it up (`0x95A210`) and goes over the cells by their kind (+8: 0, ...) |
+| `0xaa4950` | GridTool::PlaceAA4950 | In outline: places a grid tool's cells at the ground under the mouse (MainCamera::Get) on the terrain (a 90 by 90 grid), after refreshing it (`0xAA3DE0`) |
+| `0x5d9000` | Placement::Finish5D9000 | In outline: finishes placing a piece: refreshes it (`0x846A90`, `0x5C45E0`) and, when not flagged (+0xAC), sets it up (Interface54::Get) |

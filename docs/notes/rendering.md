@@ -390,3 +390,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xce0d10` | Mesh::BuildCE0D10 | In outline: the same mesh table build as Mesh::BuildCE0670 (another copy) |
 | `0x5725d0` | Ride::DebugDraw5725D0 | In outline: in the developers' view mode 3 (`0x12F54C0`), draws a ride's points (+0x192 of them) and links (Registry::Ensure, `0x481620`) |
 | `0x93df70` | Water::Clip93DF70 | In outline: clips a water piece to the view: transforms its points (`0xCD78A0`) and keeps their range |
+| `0xcdfed0` | Mesh::BuildCDFED0 | In outline: the same mesh table build as Mesh::BuildCE0670 (another copy) |
+| `0x864da0` | Scenery::DrawVisible864DA0 | In outline: collects the scenery in view (Scenery::CollectVisible863140), sorts it by camera distance (MainCamera::Get) and draws it (`0xCD7DC0`) |
+| `0x9f91b0` | Firework::Ground9F91B0 | In outline: works out where a firework part meets the terrain, cell by cell (rounded) |
+| `0x9742b0` | Particles::Draw9742B0 | In outline: when particles are on (`0x12F018C` +0x24 +1), draws a particle list for the current device (ForCurrent(3)), each quad from its direction and its colour times a fade (+0x40) |
+| `0xaf6d60` | Effect::BlendAF6D60 | In outline: when not flagged (+0x60), makes a blender for an effect (Blender::Blender, FloatBlenderElement) and starts it (`0x98A770`) |
