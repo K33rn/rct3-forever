@@ -101,3 +101,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7816f0` | GuestGroup::StateText | The text for a guest group's state, such as the game text `GuestGroup_State_Wandering` |
 | `0x798650` | Handyman::Sweep | In outline: the handyman's sweeping: walks the path (Person::FollowPath), faces his work and uses the `Brush` tool, then changes state |
 | `0x798be0` | Handyman::Water | In outline: the handyman's watering: goes to the flower bed (its scenery behaviour's owner) and uses the `WaterCan` tool, then changes state |
+| `0x7cc440` | Person::MadeWet | In outline: when a person is made wet (`MadeWet`), sets the time and reaction at random (Random::Ran0, the game clock) |

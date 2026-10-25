@@ -205,3 +205,4 @@
 | `0x4a6d20` | InventibleAnimation::LoadSkins | In outline: loads the `Skin` entries of an animation that can be invented (InventibleAnimation) |
 | `0x7b6180` | Crowd::Sounds | In outline: sets up the crowd sounds (`CheatBonusCheer1Fade`, `CheatBonusCheer1Lp`, ...) in a slot pool |
 | `0x7b6790` | Stall::SwimSuitStall | In outline: sets up the `SwimSuitStall` stall item |
+| `0x6defd5` | ThemedAttractionsCondition::CurrentText | The objective's progress text: the game text `ThemedAttractionsCondition_Current` with the number written in, and its timing |

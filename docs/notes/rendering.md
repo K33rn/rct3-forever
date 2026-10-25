@@ -221,3 +221,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x83b8a0` | Billboards::Setup | In outline: sets up a billboard list with the `BillboardStandard` shader |
 | `0xccdd90` | ResourceFile::Load | In outline: loads a resource file's data, swapping byte order when the file's flag (`0x13D0DF2`) says so, marking `BLOCKED` entries |
 | `0xbfb7b0` | ResourceFile::Save | In outline: writes a resource's data to a save stream (SaveWriter::Write), marking `BLOCKED` entries |
+| `0x486a00` | Billboards::Setup2 | In outline: sets up another billboard list with the `BillboardStandard` shader |
+| `0xb49b70` | Shadows::BlobCheck | In outline: checks people's shapes (Model::CheckShapes) and sets up the `PeopleShadowBlob` shadow |
+| `0x9a3f10` | Fireworks::FilePath | In outline: builds a firework file's path in the `Fireworks/` folder |
+| `0x9ea300` | Weather::StartLoop | In outline: starts the weather's looping sound (`WeatherLoop`), loading the rain when it rains |
+| `0x54c8b0` | Ride::ParticleSound | In outline: plays a ride's particle sound (`RideParticleSound`) |

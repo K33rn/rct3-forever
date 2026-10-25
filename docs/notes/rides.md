@@ -139,3 +139,9 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4d4650` | Slide::Update | In outline: updates a slide ride (`Slide`), timing riders with the game clock and Random::Ran0 |
 | `0x487b90` | RideTrain::LoadCars | In outline: loads a train's cars (RideTrain::Load), turning their parts with the shape turns, `None` when a car has no part |
 | `0x9c7b00` | Particle::NameText | In outline: the name text of a particle effect, made from `ParticleName_` and the effect's name |
+| `0x4ad2f0` | RobotArm::Update | In outline: updates the robot arm ride (`RobotArm`) and its riders, with Random::Ran0 |
+| `0x4ad000` | RobotArm::Rider | In outline: finds a robot arm rider's person (`RobotArm`) |
+| `0x533ab0` | Queue::SignName | In outline: finds a queue's sign (`queuesign`) by name |
+| `0x5351e0` | RideCar::PeepSlot | In outline: the seat slot of a ride car (`Peep01` ...) |
+| `0x66ce00` | RideDetails::CarName | In outline: shows a ride car's name in the details window (RideCar::Name), `None` when there is none |
+| `0xa3f770` | TrackImporter::Coaster | In outline: matches an imported track to a coaster (`Coaster`) |

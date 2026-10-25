@@ -1216,3 +1216,10 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x91e8a0` | TerrainFlattenRecord::TerrainFlattenRecord | Constructor of a managed object (class description `0x133A144`) holding a terrain flattening record; on first use registers its saved fields: `OriginalPosLeft`, `OriginalPosRight`, `StartPosLeft`, `StartPosRight`, `HiWaterPos`, `LoWaterPos`, `FlattenTilesArray` (`FlattenTileCol`, `FlattenTileRow`, `HeightArrayItem0`-`3`), `NumFlattenedTiles`, `Flags`, `DepthFactor`, an oriented box (`OBBPos`, `OBBExtents`, `OBBOr` ...) and `ScanLineTilesArray` |
 | `0x80a7f0` | ResourceNames::Load | In outline: reads the names of a resource file's entries (`Name`, `RCT3_Name`, `AOP_FSName_`), formatting the file's path with `%s`, through the resource lookups |
 | `0x439c90` | Music::FindFolder | In outline: compares names with the `music` folder and builds its path text (with the shared text `0x1106DC4`) |
+| `0xc08310` | MainWindow::Run | Runs the game's main window: checks the Windows version (NT 5 or later), shows the window, saves the screen saver and power-off settings and turns the screen saver off (SystemParametersInfoA) while the game runs, then the message loop; an error from the game is shown in a message box `Error from game` |
+| `0xc6cb20` | DebugConsole::BuildSubmenu | In outline: builds a submenu (`subm`) of the developer console (DebugConsole::BuildMenu) |
+| `0xc17ec0` | Script::MatchTag | In outline: compares tags in a text (with an `ARSE` tag among them), through text substrings and comparisons |
+| `0x6b64b0` | PathPlacement::Check | In outline: checks a path placement against the path manager and terrain, giving a failure code (`DFAIL` among the texts) |
+| `0xc40480` | OverlayFile::LoadChecked | In outline: opens an overlay file, relocates it and checks its types (OverlayFile::Open, Relocate, CheckTypeIndex), reporting problems and marking `BLOCKED` entries |
+| `0xc3ad70` | OverlayFile::ReportBlocked | In outline: builds and reports a message about `BLOCKED` entries |
+| `0x498ec0` | ShaderText::Setup | In outline: sets up text drawing with the `SIOpaqueText` shader (looked up by name) |

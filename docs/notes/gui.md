@@ -494,3 +494,28 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x433120` | Swatch::DrawBackground | In outline: draws a colour swatch's background (`GUI2Swatch_Background`) through the alpha batches |
 | `0x7519b0` | Swatch::DrawTick | In outline: draws a colour swatch's tick (`GUI2Swatch_Tick`) |
 | `0x465180` | CustomContent::OpenMovie | In outline: opens a movie from the `CustomContent` folder (MovieDecoder::Open) |
+| `0xc66dd0` | ScrollBar::Build | In outline: builds a scroll bar with its `scroll filler` part |
+| `0x608130` | Window::BuildForGerman2 | In outline: builds another window laid out differently when the language is `German` |
+| `0xa4b1a0` | Window::LayoutForEnglish | In outline: lays a window out for English or for Asian languages (Language::IsAsian), setting its texts |
+| `0xa36c90` | KeyBindingWindow::Build | In outline: builds the key binding part of the options window, with its click sound (`Plip`) and key combinations |
+| `0x6787b0` | GUIIcon::Load | In outline: loads a `GUIIcon` texture (TextureResource) by name |
+| `0x836530` | StyleWindow::Build | In outline: builds the style chooser (`StyleName`) for scenery, reacting to held keys |
+| `0x6a98f0` | Swatch::Build | In outline: builds a colour swatch window with its tick (`GUI2Swatch_Tick`) |
+| `0x6452f0` | FlexiColourWindow::Build | In outline: builds the flexi-colour controls (`Flexicolour_%d`) |
+| `0x623eb0` | LandDialog::RadiusButtons | In outline: builds the land tool's radius buttons (`Land_RadiusButton`) |
+| `0x448d40` | RideCamera::BuildWindow | In outline: builds the ride camera's window area (`RideCamWindowArea`, RideCamera::BuildGUI) |
+| `0x687ab0` | FileWindow::DirectoryName | In outline: the name text of a file window's folder (`DirectoryName_` + its name) |
+| `0x68be70` | DatDescWindow::Build | In outline: builds the description window of a data file (`GUI2_DatDesc`), reporting it when it cannot be loaded |
+| `0xaff7d0` | WildAnimalUnlock::Build | In outline: builds the wild animal unlock window with its check box and the game text `WildAnimalUnlockText` |
+| `0xa25af0` | TutorialWindow::Build | In outline: builds a tutorial window with its `Tutorial Name` |
+| `0x4b8e10` | AttractionCustomersDialog::Labels | In outline: builds the attraction customers dialog's labels (`AttractionCustomersDialogLabel_` + name), with the attraction's rates |
+| `0x4b90e0` | AttractionCustomersDialog::Labels2 | In outline: more labels of that dialog (`AttractionCustomersDialogLabel_` + name) |
+| `0x719710` | Tooltip::Make | In outline: makes a tooltip text, or `invalid tooltip` when there is none |
+| `0xb70cb0` | DartCam::Build | In outline: builds the dart camera's top button (`DartCam_TopButton`) |
+| `0x61ffe0` | MessageAlert::Show | In outline: shows a message alert (`Message alert`) about an object, with its sound |
+| `0xa2eb70` | MultiSelectSwatch::Build | In outline: builds the stall items' colour choice, with the tooltip `MultiSelectSwatch_SelectAvailableColsTT` and each item's profit |
+| `0x65eea0` | PaintTool::BuildViewport | In outline: builds the paint tool's viewport (`GUI2_PaintTool_Viewport`) |
+| `0xa82a40` | PoolInfo::Labels | In outline: the pool information labels (`PoolInfoLabel_` + name) |
+| `0x66c7d0` | AttractionResultsDialog::Labels | In outline: the attraction results dialog's labels (`AttractionResultsDialogLabel_` + name) |
+| `0x55d300` | AttractionResultsDialog::Labels2 | In outline: more labels of that dialog (`AttractionResultsDialogLabel_` + name) |
+| `0x660ad0` | AvatarEditor::CrownIcon | In outline: the avatar editor's crown icon (`AvatarEditor_CrownIcon`) |
