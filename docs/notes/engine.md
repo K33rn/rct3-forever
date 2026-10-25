@@ -312,3 +312,8 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc34850` | Report | Formats a message from the text and the values after it (`0xC345E0`, then `0xC32720`), as ReportMissingInterface and others use |
 | `0x59a2d0` | Clamp0To3 | Gives 1, 2 or 3 for those values and 0 for anything else |
 | `0xbc51e0` | Extent::Clear | Clears the first two values and sets the three at +0x1C, +0x2C and +0x3C to the largest float |
+| `0x9ead70` | Weather::Get | The weather (kept in `0x1341930`): made when asked for (280 bytes, Weather::Weather) and activated; returns it |
+| `0x68f640` | AssertFailed | Shows an `Assertion Failed!` message (`File: %s`, `Line: %d`, `Expression: %s`, `Details: %s`) |
+| `0xc1a8c0` | Timer::Milliseconds | The time in milliseconds from the high-resolution counter (QueryPerformanceCounter times 1000, divided by the counter's frequency kept at `0x13E47C0`) |
+| `0xbcfa40` | String::FromCN | Makes a shared text from n characters of C text: use count 1, length n, a capacity rounded up to 16 bytes, an aligned block holding the copy |
+| `0xbce020` | Memory::AllocCounted | Allocates a 16-byte-aligned block, counting it among the live blocks (`0x13D0D48`) |

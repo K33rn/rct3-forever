@@ -129,3 +129,5 @@
 | `0xa9f090` | IndexedTable::Entry | Entry n of a table indexed from +0x1C to +0x20 (28 bytes each, at +0x24): the interface of the object it refers to, looked up once per entry; null outside the range |
 | `0x4cce80` | AttractionInstance::FirstOf | With a non-zero argument AttractionInstance::FirstListed; otherwise the value of the first entry of the list at +0x64, or 0 |
 | `0x43ffb0` | KeyState::Held | Whether the key (its code minus 0x1A as a bit) is set in either of two bit masks of the table at +0x84 (entries +0x70 and +0x74) |
+| `0x560f80` | Interface48b::Get | The interface (id in `0x12F5544`) of the object its reference at +0x48 points to, looked up once (flag +0x5C) |
+| `0xbc78f0` | Span::Middle | The middle of the values at +0xC of the objects at +0x20 and +0x24 (their sum halved) |
