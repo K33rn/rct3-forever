@@ -116,10 +116,9 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0xa13c90` | Duck::Create | Makes a new Duck: allocates 368 bytes and constructs it (constructor `0xa11c30`) |
 | `0xa11c30` | Duck::Duck | Constructor of Duck, virtual function table `0xf87ce4`: sets up its members, and on first use registers its saved fields: LeftDuck, RightDuck, SwimTime, Leader |
 | `0xed4ad0` | DungTargetCondition class description | Creates the class description of DungTargetCondition (global `0x130606c`), with its factory `0x6db7d0` |
-| `0x6db7d0` | DungTargetCondition::Create | Makes a new DungTargetCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
-| `0x6d7450` | DungTargetCondition::DungTargetCondition | Constructor of DungTargetCondition, virtual function table `0xf64198`: sets up its members, and on first use registers its saved fields: Value, GT |
+| `0x6db7d0` | DungTargetCondition::Create | Makes a new DungTargetCondition: allocates 120 bytes and constructs it |
 | `0xed4910` | EnclosureIncomeCondition class description | Creates the class description of EnclosureIncomeCondition (global `0x1305fd4`), with its factory `0x6db300` |
-| `0x6db300` | EnclosureIncomeCondition::Create | Makes a new EnclosureIncomeCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6db300` | EnclosureIncomeCondition::Create | Makes a new EnclosureIncomeCondition: allocates 120 bytes and constructs it |
 | `0xef17b0` | EnclosureManager class description | Creates the class description of EnclosureManager (global `0x13d05d8`), with its factory `0xba44c0` |
 | `0xba44c0` | EnclosureManager::Create | Makes a new EnclosureManager: allocates 216 bytes and constructs it (constructor `0xba35a0`) |
 | `0xba35a0` | EnclosureManager::EnclosureManager | Constructor of EnclosureManager, virtual function table `0xf9d054`: sets up its members, and on first use registers its saved fields: Cols, Rows, Tiles, Region, BrokenState, Regions, Valid, Entry, AssessmentValid, AssessmentIdealPrice, AssessmentExcitement, AssessmentSize, AssessmentVegitation, AssessmentLitter, NumberDamagedFences, NumberBrokenFences, NumFences, RegionFI |
@@ -182,6 +181,7 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0x6d68c0` | GenericConsistantCondition::GenericConsistantCondition | Constructor of GenericConsistantCondition, virtual function table `0xf63f60`: sets up its members, and on first use registers its saved fields: Consistant, StartTime, NextCheckTime, ConsistantFlags |
 | `0xed3ea0` | GenericValueCondition class description | Creates the class description of GenericValueCondition (global `0x1305f54`), with its factory `0x6d7710` |
 | `0x6d7710` | GenericValueCondition::Create | Makes a new GenericValueCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6d7450` | GenericValueCondition::GenericValueCondition | Constructor of GenericValueCondition, virtual function table `0xf64198`: sets up its members, and on first use registers its saved fields: Value, GT |
 | `0xeaa970` | GlobalPassportData class description | Creates the class description of GlobalPassportData (global `0x12f003c`), with its factory `0x46e7a0` |
 | `0x46e7a0` | GlobalPassportData::Create | Makes a new GlobalPassportData: allocates 96 bytes and constructs it (constructor `0x46e120`) |
 | `0x46e120` | GlobalPassportData::GlobalPassportData | Constructor of GlobalPassportData, virtual function table `0xf2cabc`: sets up its members, and on first use registers its saved fields: NumStampsRequiredForGift, Gift |
@@ -225,8 +225,8 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0xa3c270` | ImportableTrack::Create | Makes a new ImportableTrack: allocates 192 bytes and constructs it (constructor `0xa39c90`) |
 | `0xa39c90` | ImportableTrack::ImportableTrack | Constructor of ImportableTrack, virtual function table `0xf89f10`: sets up its members |
 | `0xeed090` | InventibleAnimation class description | Creates the class description of InventibleAnimation (global `0x13ce5d8`), with its factory `0xaf2330` |
-| `0xaf2330` | InventibleAnimation::Create | Makes a new InventibleAnimation: allocates 16 bytes and constructs it (constructor `0xbcf850`) |
-| `0xbcf850` | InventibleAnimation::InventibleAnimation | Constructor of InventibleAnimation: sets up its members |
+| `0xaf2330` | InventibleAnimation::Create | Makes a new InventibleAnimation: allocates 16 bytes and constructs it (constructor `0xaf19c0`) |
+| `0xaf19c0` | InventibleAnimation::InventibleAnimation | Constructor of InventibleAnimation, virtual function table `0xf9668c`: sets up its members, and on first use registers its saved fields: IsHidden, IsAvailable, IsInvented, Duration, Name, ShowSkin, Index |
 | `0xee3c40` | InventionGroup class description | Creates the class description of InventionGroup (global `0x13412cc`), with its factory `0x982970` |
 | `0x982970` | InventionGroup::Create | Makes a new InventionGroup: allocates 208 bytes and constructs it (constructor `0x982100`) |
 | `0x982100` | InventionGroup::InventionGroup | Constructor of InventionGroup, virtual function table `0xf7f6f8`: sets up its members, and on first use registers its saved fields: IsHidden, IsAvailable, IsInvented, GroupName |
@@ -312,7 +312,7 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0x9c5220` | MetaParticle::Create | Makes a new MetaParticle: allocates 176 bytes and constructs it (constructor `0x9c48e0`) |
 | `0x9c48e0` | MetaParticle::MetaParticle | Constructor of MetaParticle, virtual function table `0xf84890`: sets up its members |
 | `0xed4d40` | MinAnimalHealthCondition class description | Creates the class description of MinAnimalHealthCondition (global `0x1306064`), with its factory `0x6dbde0` |
-| `0x6dbde0` | MinAnimalHealthCondition::Create | Makes a new MinAnimalHealthCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6dbde0` | MinAnimalHealthCondition::Create | Makes a new MinAnimalHealthCondition: allocates 120 bytes and constructs it |
 | `0xeae280` | MiniGolfPersonInfo class description | Creates the class description of MiniGolfPersonInfo (global `0x12f4fc0`), with its factory `0x4eb5e0` |
 | `0x4eb5e0` | MiniGolfPersonInfo::Create | Makes a new MiniGolfPersonInfo: allocates 336 bytes and constructs it (constructor `0x4ea580`) |
 | `0x4ea580` | MiniGolfPersonInfo::MiniGolfPersonInfo | Constructor of MiniGolfPersonInfo, virtual function table `0xf35578`: sets up its members, and on first use registers its saved fields: TrackPiece, Shot, Stroke, Flags, SwapOnOff, GetOffAtExit, MiniGolfState |
@@ -335,8 +335,8 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0x6d7630` | ObjectiveCondition::Create | Makes a new ObjectiveCondition: allocates 96 bytes and constructs it (constructor `0x6d65e0`) |
 | `0x6d65e0` | ObjectiveCondition::ObjectiveCondition | Constructor of ObjectiveCondition, virtual function table `0xf63ed0`: sets up its members, and on first use registers its saved fields: Difficulty, ObjectiveId, ConditionId, Completed, IsChallengeCondtion, ChallengeId |
 | `0xeb1f40` | ObjectMessageConsoleEntry class description | Creates the class description of ObjectMessageConsoleEntry (global `0x12f57c8`), with its factory `0x61dec0` |
-| `0x61dec0` | ObjectMessageConsoleEntry::Create | Makes a new ObjectMessageConsoleEntry: allocates 168 bytes and constructs it (constructor `0xbd0490`) |
-| `0xbd0490` | ObjectMessageConsoleEntry::ObjectMessageConsoleEntry | Constructor of ObjectMessageConsoleEntry: sets up its members |
+| `0x61dec0` | ObjectMessageConsoleEntry::Create | Makes a new ObjectMessageConsoleEntry: allocates 168 bytes and constructs it (constructor `0x61cbe0`) |
+| `0x61cbe0` | ObjectMessageConsoleEntry::ObjectMessageConsoleEntry | Constructor of ObjectMessageConsoleEntry, virtual function table `0xf43bd0`: sets up its members, and on first use registers its saved fields: Object, Panel, ObjectString, Object2, NumObjects |
 | `0xed5c30` | Park class description | Creates the class description of Park (global `0x130619c`), with its factory `0x7084b0` |
 | `0x7084b0` | Park::Create | Makes a new Park: allocates 496 bytes and constructs it (constructor `0x707680`) |
 | `0x707680` | Park::Park | Constructor of Park, virtual function table `0xf68b78`: sets up its members, and on first use registers its saved fields: Flags, Name, graphedValue, GuestsInPark, GuestsOnWayToPark, AdultsInPark, TeenagersInPark, ChildrenInPark, AdultAppeal, TeenagerAppeal, ChildrenAppeal, GuestIntake, PublicityLevel, ParkRating, ParkRatingPenalty, AssessedEntranceFee, IdealGuests, ObjectiveText, InitialGuestHappiness, InitialGuestHunger, InitialGuestThirst, GuestRideIntensityPreference, GuestGenerationRate, GuestThinkCycle, ParkFenceEntry, OpeningTimeMinutes, ClosingTimeMinutes, ScenarioName, ScenarioDescription, ParkRatingBreakdownText, PeepsWantToUsePools, AllowBabyAnimals, AllowAdultAnimals, RescuedAnimals |
@@ -347,7 +347,7 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0x708e50` | ParkEntranceBehaviour::Create | Makes a new ParkEntranceBehaviour: allocates 112 bytes and constructs it (constructor `0x708ac0`) |
 | `0x708ac0` | ParkEntranceBehaviour::ParkEntranceBehaviour | Constructor of ParkEntranceBehaviour, virtual function table `0xf68f80`: sets up its members |
 | `0xed42c0` | ParkGuestsCondition class description | Creates the class description of ParkGuestsCondition (global `0x1306084`), with its factory `0x6da1e0` |
-| `0x6da1e0` | ParkGuestsCondition::Create | Makes a new ParkGuestsCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6da1e0` | ParkGuestsCondition::Create | Makes a new ParkGuestsCondition: allocates 120 bytes and constructs it |
 | `0xed9660` | ParkInspector class description | Creates the class description of ParkInspector (global `0x1306c88`), with its factory `0x7a99c0` |
 | `0x7a99c0` | ParkInspector::Create | Makes a new ParkInspector: allocates 1376 bytes and constructs it (constructor `0x7a7260`) |
 | `0x7a7260` | ParkInspector::ParkInspector | Constructor of ParkInspector, virtual function table `0xf70c60`: sets up its members, and on first use registers its saved fields: EvaluationHandler, Attraction, EvaluatedRecentlyFlags, RTIT_NoMaintenanceManNear, RTIT_Attraction_Evaluated, RTIT_Ride_NoExit, RTIT_Ride_NoEntrance, RTIT_Ride_NoPathToEntrance, RTIT_Ride_NoPathToExit, RTIT_Ride_InappropriateMusic, RTIT_Ride_NoRideAssessment, RTIT_Ride_LongQueueTime, RTIT_Ride_LongRideTime, RTIT_TrackedRide_Boring, RTIT_Stall_TooExpensive, RTIT_Stall_TooCheap, RTIT_Stall_NoPathToGetTo, RTIT_Stall_TooManyForDemand, RTIT_Stall_NotEnoughForDemand, RTIT_Vista_InappropriateStyle, RTIT_Staff_Lazy, RTIT_Staff_Unhappy, RTIT_Staff_NoPathToGetTo, CurrentTask, WatchTime, TaskGapTime, IncState, SubStateTimer, Contemplate, AnimSequence, AnimSequenceIndex, LastThoughtAboutTrappedPersonInEnclosureTime |
@@ -355,9 +355,9 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0x7a9950` | ParkInspectorManager::Create | Makes a new ParkInspectorManager: allocates 88 bytes and constructs it (constructor `0x7a70a0`) |
 | `0x7a70a0` | ParkInspectorManager::ParkInspectorManager | Constructor of ParkInspectorManager, virtual function table `0xf70910`: sets up its members, and on first use registers its saved fields: ParkInspectorRef |
 | `0xed4210` | ParkRatingCondition class description | Creates the class description of ParkRatingCondition (global `0x1305fcc`), with its factory `0x6da070` |
-| `0x6da070` | ParkRatingCondition::Create | Makes a new ParkRatingCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6da070` | ParkRatingCondition::Create | Makes a new ParkRatingCondition: allocates 120 bytes and constructs it |
 | `0xed3f50` | ParkValueCondition class description | Creates the class description of ParkValueCondition (global `0x1306078`), with its factory `0x6d9980` |
-| `0x6d9980` | ParkValueCondition::Create | Makes a new ParkValueCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6d9980` | ParkValueCondition::Create | Makes a new ParkValueCondition: allocates 120 bytes and constructs it |
 | `0xee5790` | ParticleBaseDesc class description | Creates the class description of ParticleBaseDesc (global `0x1341510`), with its factory `0x9cb980` |
 | `0x9cb980` | ParticleBaseDesc::Create | Makes a new ParticleBaseDesc: allocates 288 bytes and constructs it (constructor `0x9c9220`) |
 | `0x9c9220` | ParticleBaseDesc::ParticleBaseDesc | Constructor of ParticleBaseDesc, virtual function table `0xf84ba4`: sets up its members, and on first use registers its saved fields: RefCount, Lifetime, LifetimeRandom, ParticleEmitterDescs, ParticleEmitterDescsElement, SoundName, SoundPlayTime, SoundMinDist, SoundMaxDist, ColourModifierDefaultR, ColourModifierDefaultG, ColourModifierDefaultB, ColourModifierDefaultA, ColourModifierR, ColourModifierG, ColourModifierB, ColourModifierA, StrengthModifierDefault, StrengthModifier, Particles, Time, Position, Velocity, Orientation, SizeScale, MainViewID, PlayedSound, NumParticles, IdentifyingIcon, IdentifyingColourR, IdentifyingColourG, IdentifyingColourB, IdentifyingColourDarkR, IdentifyingColourDarkG, IdentifyingColourDarkB, Cost, Name |
@@ -401,12 +401,14 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0x7e1580` | Person::Create | Makes a new Person: allocates 1024 bytes and constructs it (constructor `0x7df320`) |
 | `0x7df320` | Person::Person | Constructor of Person, virtual function table `0xf72160`: sets up its members, and on first use registers its saved fields: WorldMatrix, PathOffset, FacingAngle, AnimSpeed, MoveSpeed, TimeToNextThink, PerformInterupt, TemporaryAlternateWalkingAnimTimer, AlternateWalkingAnim, CurrentWalkAnim, AnimType, AnimTime, PersonType, SubType, LevelOfDetail, SkinPalette, UpperClothingPalette, LowerClothingPalette, UpperSwimSuitPalette, LowerSwimSuitPalette, UseSwimSuit, HeadPartGroup, BodyPartGroup, LegsPartGroup, SwimSuitBodyPartGroup, SwimSuitLegsPartGroup, State, SubState, WayPoints, DecideTime, HeadOptionals, BodyOptionals, LegsOptionals, NameS, StartDate, StateTarget, RecentThoughts, Thought, Variant, Time, ... |
 | `0xeda710` | PersonMessage class description | Creates the class description of PersonMessage (global `0x1309dd8`), with its factory `0x7e1e80` |
-| `0x7e1e80` | PersonMessage::Create | Makes a new PersonMessage: allocates 200 bytes and constructs it (constructor `0x805750`) |
-| `0x805750` | PersonMessage::PersonMessage | Constructor of PersonMessage: sets up its members |
+| `0x7e1e80` | PersonMessage::Create | Makes a new PersonMessage: allocates 200 bytes and constructs it (constructor `0x7e1990`) |
+| `0x7e1990` | PersonMessage::PersonMessage | Constructor of PersonMessage, virtual function table `0xf72868`: sets up its members, and on first use registers its saved fields: Person, Thought, Variant, PersonMessageTime |
 | `0xeb1fd0` | PersonStateMessageConsoleEntry class description | Creates the class description of PersonStateMessageConsoleEntry (global `0x12f57a4`), with its factory `0x61df90` |
-| `0x61df90` | PersonStateMessageConsoleEntry::Create | Makes a new PersonStateMessageConsoleEntry: allocates 144 bytes and constructs it (constructor `0x805750`) |
+| `0x61df90` | PersonStateMessageConsoleEntry::Create | Makes a new PersonStateMessageConsoleEntry: allocates 144 bytes and constructs it (constructor `0x61d310`) |
+| `0x61d310` | PersonStateMessageConsoleEntry::PersonStateMessageConsoleEntry | Constructor of PersonStateMessageConsoleEntry, virtual function table `0xf43c18`: sets up its members, and on first use registers its saved fields: MessageConsole_PersonState, Person, PersonName, PersonState |
 | `0xeaac40` | PhotoMessageEntry class description | Creates the class description of PhotoMessageEntry (global `0x12f0074`), with its factory `0x4742c0` |
-| `0x4742c0` | PhotoMessageEntry::Create | Makes a new PhotoMessageEntry: allocates 16 bytes and constructs it (constructor `0xbcf850`) |
+| `0x4742c0` | PhotoMessageEntry::Create | Makes a new PhotoMessageEntry: allocates 16 bytes and constructs it (constructor `0x472750`) |
+| `0x472750` | PhotoMessageEntry::PhotoMessageEntry | Constructor of PhotoMessageEntry, virtual function table `0xf2cd80`: sets up its members, and on first use registers its saved fields: GuestPtr, CoasterPtr, GroupPtr, VPointPtr |
 | `0xeeab30` | PoolComplex class description | Creates the class description of PoolComplex (global `0x13cdf24`), with its factory `0xa8ba80` |
 | `0xa8ba80` | PoolComplex::Create | Makes a new PoolComplex: allocates 232 bytes and constructs it (constructor `0xa8afb0`) |
 | `0xa8afb0` | PoolComplex::PoolComplex | Constructor of PoolComplex, virtual function table `0xf91438`: sets up its members, and on first use registers its saved fields: Index, TicketPrice, Dirt, ReportedNumPeople, WaveAmplitude, WaveFrequency, WaveOnPeriod, WaveTotalPeriod, RawName |
@@ -423,9 +425,9 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0xa99a90` | PoolExtraBehaviour::Create | Makes a new PoolExtraBehaviour: allocates 160 bytes and constructs it (constructor `0xa99050`) |
 | `0xa99050` | PoolExtraBehaviour::PoolExtraBehaviour | Constructor of PoolExtraBehaviour, virtual function table `0xf91cf8`: sets up its members, and on first use registers its saved fields: Segment, Side, Seats, Person, TimeLeft |
 | `0xed4370` | PoolGuestsCondition class description | Creates the class description of PoolGuestsCondition (global `0x1305fe4`), with its factory `0x6da350` |
-| `0x6da350` | PoolGuestsCondition::Create | Makes a new PoolGuestsCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6da350` | PoolGuestsCondition::Create | Makes a new PoolGuestsCondition: allocates 120 bytes and constructs it |
 | `0xed4160` | PoolIncomeCondition class description | Creates the class description of PoolIncomeCondition (global `0x13060a0`), with its factory `0x6d9ea0` |
-| `0x6d9ea0` | PoolIncomeCondition::Create | Makes a new PoolIncomeCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6d9ea0` | PoolIncomeCondition::Create | Makes a new PoolIncomeCondition: allocates 120 bytes and constructs it |
 | `0xeeb690` | PoolPiece class description | Creates the class description of PoolPiece (global `0x13ce02c`), with its factory `0xaa9880` |
 | `0xaa9880` | PoolPiece::Create | Makes a new PoolPiece: allocates 392 bytes and constructs it (constructor `0xaa9400`) |
 | `0xaa9400` | PoolPiece::PoolPiece | Constructor of PoolPiece, virtual function table `0xf92a80`: sets up its members, and on first use registers its saved fields: Segment, Above, Below |
@@ -472,7 +474,7 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0x6e8410` | ReleaseAnimalsCondition::Create | Makes a new ReleaseAnimalsCondition: allocates 152 bytes and constructs it (constructor `0x6e6530`) |
 | `0x6e6530` | ReleaseAnimalsCondition::ReleaseAnimalsCondition | Constructor of ReleaseAnimalsCondition, virtual function table `0xf65c48`: sets up its members, and on first use registers its saved fields: Species, NumReleased |
 | `0xed4420` | RepayLoanCondition class description | Creates the class description of RepayLoanCondition (global `0x1305fbc`), with its factory `0x6da4c0` |
-| `0x6da4c0` | RepayLoanCondition::Create | Makes a new RepayLoanCondition: allocates 112 bytes and constructs it (constructor `0x6d68c0`) |
+| `0x6da4c0` | RepayLoanCondition::Create | Makes a new RepayLoanCondition: allocates 112 bytes and constructs it |
 | `0xee3dc0` | ResearchCategoryInstance class description | Creates the class description of ResearchCategoryInstance (global `0x1341300`), with its factory `0x984600` |
 | `0x984600` | ResearchCategoryInstance::Create | Makes a new ResearchCategoryInstance: allocates 200 bytes and constructs it (constructor `0x983c70`) |
 | `0x983c70` | ResearchCategoryInstance::ResearchCategoryInstance | Constructor of ResearchCategoryInstance, virtual function table `0xf7f824`: sets up its members, and on first use registers its saved fields: IsHidden, IsAvailable, IsInvented, CategoryName, CurrentLevel, DevelopCost, Budget |
@@ -504,7 +506,7 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0x8251e0` | RideEventBehaviour::Create | Makes a new RideEventBehaviour: allocates 240 bytes and constructs it (constructor `0x8249d0`) |
 | `0x8249d0` | RideEventBehaviour::RideEventBehaviour | Constructor of RideEventBehaviour, virtual function table `0xf76638`: sets up its members, and on first use registers its saved fields: State, Triggerer, EventType |
 | `0xed40b0` | RideIncomeCondition class description | Creates the class description of RideIncomeCondition (global `0x1305f90`), with its factory `0x6d9cd0` |
-| `0x6d9cd0` | RideIncomeCondition::Create | Makes a new RideIncomeCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6d9cd0` | RideIncomeCondition::Create | Makes a new RideIncomeCondition: allocates 120 bytes and constructs it |
 | `0xeaeca0` | RideInstance class description | Creates the class description of RideInstance (global `0x12f51b8`), with its factory `0x53a1a0` |
 | `0x53a1a0` | RideInstance::Create | Makes a new RideInstance: allocates 848 bytes and constructs it (constructor `0x537c90`) |
 | `0x537c90` | RideInstance::RideInstance | Constructor of RideInstance, virtual function table `0xf386c0`: sets up its members, and on first use registers its saved fields: RideStationsObj, RideMusicSelection, TicketPrice, RideAssessmentResults, AssessmentRatings, AssessmentValue, AssessmentUnderCover, AssessmentReliability, AssessmentIsValid, m_checkBreakdownUpdateTime, m_updateDownTimeCounter, m_breakdownType, m_lastBreakdownType, m_inspectionInterval, m_minutesSinceLastInspection, m_downTimePercent, m_downTimeCounters, m_downTimeCountersElement, m_favouriteRideCount, NumCircuits, MinWaitTime, MaxWaitTime, DepartureIntervalSecs, WaitForLoad, FenceFlexiColours, COL0, COL1, COL2, QueueFlexiColours, Fence, OverrideFence, Entrance, Exit, m_queueTimeSecs, QueueLine, Queue, Guest, EntranceTimeRemaining, ExitTimeRemaining, RideStations |
@@ -557,7 +559,7 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0xa33b50` | ShopItemInstance::Create | Makes a new ShopItemInstance: allocates 168 bytes and constructs it (constructor `0xa32d10`) |
 | `0xa32d10` | ShopItemInstance::ShopItemInstance | Constructor of ShopItemInstance, virtual function table `0xf897a8`: sets up its members, and on first use registers its saved fields: CIDEntry, Price, TotalSold, Extras, Name, FlexiColour0, FlexiColour1, FlexiColour2, SaleItem, Stall, PeepSpecificInventory, Sex, Inventory, Available |
 | `0xed4000` | ShopProfitCondition class description | Creates the class description of ShopProfitCondition (global `0x1306014`), with its factory `0x6d9af0` |
-| `0x6d9af0` | ShopProfitCondition::Create | Makes a new ShopProfitCondition: allocates 120 bytes and constructs it (constructor `0x6d7450`) |
+| `0x6d9af0` | ShopProfitCondition::Create | Makes a new ShopProfitCondition: allocates 120 bytes and constructs it |
 | `0xeecfe0` | ShowController class description | Creates the class description of ShowController (global `0x13ce5f0`), with its factory `0xaf3920` |
 | `0xaf3920` | ShowController::Create | Makes a new ShowController: allocates 184 bytes and constructs it (constructor `0xaf2840`) |
 | `0xaf2840` | ShowController::ShowController | Constructor of ShowController, virtual function table `0xf96870`: sets up its members, and on first use registers its saved fields: Time, AnimationSequence, AnimSeq, AvailableAnimations, AvailAnim, Display, Ride, WaitRestart, HasNaturallyFinished, LastLoops, IconName, AttractionReference |
@@ -628,7 +630,8 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0xb8ee30` | Trough::Create | Makes a new Trough: allocates 96 bytes and constructs it (constructor `0xb8df50`) |
 | `0xb8df50` | Trough::Trough | Constructor of Trough, virtual function table `0xf9c3ac`: sets up its members, and on first use registers its saved fields: TroughMembers, AnimalMember, Type |
 | `0xeedae0` | TroughFood class description | Creates the class description of TroughFood (global `0x13ce6f0`), with its factory `0xb10310` |
-| `0xb10310` | TroughFood::Create | Makes a new TroughFood: allocates 16 bytes and constructs it (constructor `0xbcf850`) |
+| `0xb10310` | TroughFood::Create | Makes a new TroughFood: allocates 16 bytes and constructs it (constructor `0xb0fd40`) |
+| `0xb0fd40` | TroughFood::TroughFood | Constructor of TroughFood, virtual function table `0xf97e14`: sets up its members, and on first use registers its saved fields: Pos, Or, Eats, EatsTotal, ResourceName, IdealHeight |
 | `0xee85f0` | Tutorial class description | Creates the class description of Tutorial (global `0x1342700`), with its factory `0xa1df70` |
 | `0xa1df70` | Tutorial::Create | Makes a new Tutorial: allocates 192 bytes and constructs it (constructor `0xa1b380`) |
 | `0xa1b380` | Tutorial::Tutorial | Constructor of Tutorial, virtual function table `0xf881a8`: sets up its members, and on first use registers its saved fields: TutorialName, TutorialTitle, WindowsToActivate, AndChildren, Highlight, Flags, Steps, StepTitle, Text, FlashingWindow, Triggers, Type, Name, WindowPos, StepRepeat, ForceOnTop, RestrictTrackPlacementX, RestrictTrackPlacementY, RestrictTrackPlacementX2, RestrictTrackPlacementY2, WindowWidth, ForceNormalCamera |
@@ -753,7 +756,7 @@ fields it saves, listed here in the order they are registered). Sizes are the by
 | `0xb2c5a0` | WAS_Scratch::Create | Makes a new WAS_Scratch: allocates 368 bytes and constructs it (constructor `0xb2ae80`) |
 | `0xb2ae80` | WAS_Scratch::WAS_Scratch | Constructor of WAS_Scratch, virtual function table `0xf98c90`: sets up its members, and on first use registers its saved fields: Stage, TargetType, TargetCol, TargetRow, Target, TravelTarget, ScratchTarget, MoveAwayTarget, TargetMatriciesValid |
 | `0xeee930` | WAS_ScratchAnim class description | Creates the class description of WAS_ScratchAnim (global `0x13ce8a4`), with its factory `0xb298a0` |
-| `0xb298a0` | WAS_ScratchAnim::Create | Makes a new WAS_ScratchAnim: allocates 152 bytes and constructs it (constructor `0xb7c7a0`) |
+| `0xb298a0` | WAS_ScratchAnim::Create | Makes a new WAS_ScratchAnim: allocates 152 bytes and constructs it |
 | `0xeeea70` | WAS_ShowOff class description | Creates the class description of WAS_ShowOff (global `0x13ce8b4`), with its factory `0xb2e380` |
 | `0xb2e380` | WAS_ShowOff::Create | Makes a new WAS_ShowOff: allocates 192 bytes and constructs it (constructor `0xb2d830`) |
 | `0xb2d830` | WAS_ShowOff::WAS_ShowOff | Constructor of WAS_ShowOff, virtual function table `0xf98d18`: sets up its members, and on first use registers its saved fields: PathNodes, Gallery, SlotNumber |

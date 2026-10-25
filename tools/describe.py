@@ -32,6 +32,23 @@ def functions():
     return {int(r['address'], 16): r for r in csv.DictReader(open(os.path.join(HERE, 'docs', 'functions.csv')))}
 
 
+def vtable_slots(img):
+    """function -> [(class, slot)] for the virtual function tables listed in docs/notes/classes.md"""
+    slots = collections.defaultdict(list)
+    p = os.path.join(HERE, 'docs', 'notes', 'classes.md')
+    if not os.path.exists(p):
+        return slots
+    for m in re.finditer(r'\| (\w+)::\1 \| Constructor of \w+, virtual function table `0x([0-9a-f]+)`',
+                         open(p, encoding='utf-8').read()):
+        vt = int(m.group(2), 16)
+        for k in range(200):
+            f = img.u32(vt + 4 * k)
+            if not TEXT[0] <= f < TEXT[1]:
+                break
+            slots[f].append((m.group(1), k))
+    return slots
+
+
 def notes_names():
     """`| `0xADDR` | Name | ...` rows of docs/notes/*.md"""
     names = {}
@@ -133,6 +150,7 @@ def main():
     exe = sys.argv[1]
     funcs = functions()
     a, imports = load(exe, funcs)
+    slots = vtable_slots(Image(exe))
     names = {va: r['name'] for va, r in funcs.items() if r['name']}
     names.update(notes_names())
     callers = collections.defaultdict(set)
@@ -158,6 +176,9 @@ def main():
     for va in addrs:
         r, info = funcs[va], a[va]
         print(f'== {va:#x} {names.get(va, "")}  {r["size"]} bytes, {r["status"]}')
+        if slots.get(va):
+            print('  virtual: ' + ', '.join(f'{c} slot {k}' for c, k in slots[va][:8]) +
+                  (f' (+{len(slots[va]) - 8} more)' if len(slots[va]) > 8 else ''))
         cs = collections.Counter(name(c) for c in info['calls'])
         if cs:
             print('  calls: ' + ', '.join(f'{k}' + (f' x{n}' if n > 1 else '') for k, n in cs.most_common(40)))
@@ -165,7 +186,7 @@ def main():
             print('  jumps to: ' + ', '.join(name(c) for c in info['jumps_out'][:8]))
         cl = sorted(callers.get(va, ()))
         if cl:
-            print(f'  called from ({len(cl)}): ' + ', '.join(name(c) for c in cl[:12]))
+            print(f'  called from ({len(cl)}): ' + ', '.join(name(c) + (f' [{slots[c][0][0]}.{slots[c][0][1]}]' if slots.get(c) else '') for c in cl[:12]))
         if info['strings']:
             ss = list(dict.fromkeys(info['strings']))
             print(f'  strings ({len(ss)}): ' + ' | '.join(s[:70] for s in ss[:60]))

@@ -71,6 +71,16 @@ def main():
             if name and factory in funcs:
                 classes.append({'name': name, 'init': va, 'factory': factory, 'info': glob})
 
+    def uses_global(va, g):
+        if g is None:
+            return False
+        for i in code(va):
+            for op in i.operands:
+                if op.type == capstone.x86.X86_OP_MEM and op.mem.base == 0 and op.mem.index == 0 and \
+                        op.mem.disp & 0xffffffff == g:
+                    return True
+        return False
+
     # 2. each factory: allocate size bytes, then call the constructor
     for c in classes:
         size = ctor = None
@@ -82,7 +92,10 @@ def main():
                 t = imm(i)
                 if t == ALLOC:
                     size = last_push
-                elif t is not None and size is not None and ctor is None:
+                elif t is not None and size is not None and ctor is None and t in funcs and \
+                        uses_global(t, c['info']):
+                    # the constructor falls back on the class's own description when given none (some
+                    # factories have the constructor built in; then the calls after allocating are other things)
                     ctor = t
         c['size'], c['ctor'] = size, ctor
 
