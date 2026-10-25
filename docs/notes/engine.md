@@ -243,3 +243,24 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x475180` | Random::Ran0 | A second random number generator, Numerical Recipes' ran0: its state (`0x10EC9E0`, kept XORed with 123459876) is advanced by the minimal standard generator (times 48271, using Schrage's method with 44488, modulo 2^31 - 1); returns the low 23 bits divided by 2^23, a number from 0 up to 1. Used for the many random chances of guests, staff and scenery |
 | `0xcdee80` | SlotPool::Add | Puts an object into the first free slot of a pool (slots +0, free list +8 with its count +0x10, growing by +0x14 slots when none are free), keeping the lowest (+0x18) and one past the highest (+0x1C) used slot; the slot is what the caller keeps (litter bins, guest injection points, ...) |
 | `0xcdede0` | SlotPool::Remove | Empties slot n of the pool and puts it on the free list (growing the list when needed); when it was the lowest used slot, finds the next used one |
+| `0xcd2b30` | ListMember::ListMember | Constructor of an object (table `0xFC34EC`) that keeps the list it is given at +4 and adds itself to it (PointerArray::Add). Used by about 220 constructors |
+| `0xcd2b50` | ListMember::~ListMember | Puts its table back and takes itself out of its list (PointerArray::Remove) |
+| `0xcdb9b0` | PointerArray::Add | Appends a pointer to an array ({data, capacity, count, growth step}), growing it by the step when it is full |
+| `0xcdb9e0` | PointerArray::Remove | Takes the first copy of a pointer out of an array, moving the later ones down |
+| `0xbcfb10` | String::FromC | Makes a shared text from C text: use count 1, its length, a capacity rounded up to 16 bytes, an aligned block holding a copy. Used by about 220 functions |
+| `0x402b90` | ArrayConstruct | Calls the given function once for each of the n items of an array (the compiler's array constructor loop). Used by about 180 functions |
+| `0xbe4060` | SaveWriter::Write | Writes bytes to a save stream: waits until the writer is ready (`0xC569B0`), writes them (`0xC53530`), then waits again. Used by about 130 save functions |
+| `0xc569b0` | SaveWriter::Wait | Waits for the stream's writing to finish, running `0xC56320` until its busy flag clears (while marking `0x13E6C60`) |
+| `0xbb5160` | OffsetRef::Owner | When the entry's first value is not -1, the object it is embedded in (this - 0x38); otherwise the object stored at +0x24 |
+| `0xbb3e70` | OffsetRef::Owner2 | When the first value is not -1, this - 0x38; otherwise the object at +0x18. Used by about 145 functions |
+| `0xbb4280` | OffsetRef::Owner3 | When the first value is not -1, this - 0x18; otherwise the object at +0x12C. Used by about 115 functions |
+| `0xbb51b0` | OffsetRef::Offset38 | Returns 0x38 |
+| `0xbb3d70` | OffsetRef::Offset18 | Returns 0x18 |
+| `0xbe7450` | Rect::Assign | Copies a rectangle (four values). Used by about 115 functions |
+| `0xbd1420` | Flags::Bit0 | Bit 0 of the value at +4. Used by about 105 functions |
+| `0xcd23a0` | RunUntilDone | Calls `0xCD21E0` with its two arguments until it returns -1 |
+| `0xbe8fe0` | Call10IfReady | When `0xBE8E40` gives something, `0xBE8EA0` with all ten arguments; otherwise 0 |
+| `0xbec340` | ForCurrent | `0xBEC1A0` with the first value of what `0xBD9670` gives and the argument |
+| `0xbd9fa0` | UpdateAndCheck | Runs `0xC374C0` and `0xC37220`, then whether `0x13D0DF0` is 0 |
+| `0x67b800` | Window::SetAllSix | `0x67B710` with the first argument for all six of its values and the second as the last |
+| `0x67b4b0` | Thunk67B3C0 | Calls `0x67B3C0` |

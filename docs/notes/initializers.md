@@ -897,3 +897,5 @@ and leaves it with `0x46F990`). See the script for how they are recognised.
 | `0xf040d0` | Name AdvanceTimeRecordingTimeBase | Registers the name `AdvanceTimeRecordingTimeBase` at start-up (`0xBECA70`), kept in `0x13e6f9c` |
 | `0xf04150` | Name ComponentDeterminedTimeBase | Registers the name `ComponentDeterminedTimeBase` at start-up (`0xBECA70`), kept in `0x13e6fbc` |
 | `0xf13be0` | Name Element3D | Registers the name `Element3D` at start-up (`0xBECA70`), kept in `0x1400340` |
+| `0xbce1a0` | ModuleList::Start | Starts the module list at `0x10F2B88` (`0xBCDE60`: its initialisers in turn) for a start-up global, filling in the result passed in and returning it. Used by 742 of the start-up module globals |
+| `0x805ab0` | ModuleList::Start2 | The same for the module list at `0x10F06F0`. Used by the other 128 start-up module globals |
