@@ -299,3 +299,7 @@
 | `0xabf250` | Fence::RebuildRect | In outline: rebuilds the pieces of an area (bounds +0x4C to +0x58) over a rectangle, cell by cell: clears the old ones and makes the new ones (`0xAAF4E0`) |
 | `0x941090` | Water::HitTest941090 | In outline: whether a ray hits water, by the kind of thing it is (1 to 6): checks each part (`0x93D140`) and keeps the nearest hit |
 | `0x945ae0` | Water::HeightAt945AE0 | In outline: the water height at a terrain cell: checks the water bodies (+0x24, count +0x40) and the cell (0x30 bytes each at +0x1C) and its neighbours (`0x90C240`) for the highest surface above the point |
+| `0x8c7660` | Terrain::BuildEdges8C7660 | In outline: goes over a rectangle of terrain cells and for each layer (+0x48) builds the cliff pieces on each of a cell's four sides where its neighbour differs (`0x8C6760`, sides 0 to 3), skipping flagged sides (+0x13) |
+| `0xa92e40` | GridTool::UpdateA92E40 | In outline: a grid tool's update by its mode (+0x140): finds the cell under the mouse (`0xA91E70`) and, when the dragged rectangle changes, updates the cells it adds or drops (`0xAC0A50`, `0xABFF60`) |
+| `0x4bc500` | Scenery::DrawFootprint4BC500 | In outline: draws a scenery item's footprint marks around its centre (SceneryItem::FootprintCentre) with the shared shader set (Registry::Ensure, `0x481620`), a second set when +0x370 is clear |
+| `0x558380` | Placement::Snap558380 | In outline: snaps a thing being placed to the tile at a point by its rotation (`0x42EB40`), and by the result case sets its box (Box::Assign) and its position (`0x7359A0`) |

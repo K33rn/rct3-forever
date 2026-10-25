@@ -612,3 +612,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa47d30` | Graph::LayoutA47D30 | In outline: lays out a graph window: its axes and labels (`0xA45310` sized 400 by 100, `0xA45570`, `0xA451D0`), five marks, its lines (+0x22C) and bars (+0x240), each set to its value (Window::SetValueEC) |
 | `0x6f8360` | Window::Layout6F8360 | Places each of the window's parts (+0x12C to past +0x1A0) at fixed positions and sizes worked out from the window's width and height (its rectangle at +0x7C), with Window::UpdateRect |
 | `0xa1fdb0` | Window::LayoutA1FDB0 | Places the window's parts at positions and sizes worked out from its size (Window::UpdateRect for each) |
+| `0x7f1fc0` | ListWindow::Build7F1FC0 | In outline: builds a window with a titled list box (ListBox::ListBox, ListWindow::SetCount) filled from the items given |

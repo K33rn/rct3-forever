@@ -325,3 +325,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc73fe0` | Device::PickFormatC73FE0 | In outline: like Device::PickFormatC8DA50, picks among formats by the device's version numbers (+0x2080, +0x2084) |
 | `0xc2bac0` | Skeleton::BuildC2BAC0 | In outline: sets up a model's bones: goes over up to 0x105 bone slots (`0xC2CA20`), lines up the ones out of range (Matrix::LookAlongZSide) and makes their tables (0x50 and 8 bytes each) |
 | `0xc9fbb0` | Batches::BuildC9FBB0 | In outline: another batch builder like Batches::BuildC9EF70, with three flags for what to build and a buffer for the current device (ForCurrent(3), `0xC31770`) |
+| `0x8f28b0` | Terrain::FillBuffers8F28B0 | In outline: fills a terrain patch's vertex and index buffers from its layers and cells |
+| `0xca09f0` | Batches::SortCA09F0 | In outline: groups a model's batches by material (+0x4C) and builds their draw lists, like the batch builders at `0xC9EF70` |
+| `0x8c0cf0` | Terrain::DrawPass8C0CF0 | In outline: draws a terrain pass for the visible rows (`0x8BEEF0` on `0x1400160`), counting each batch (Counter::Increment, RenderStats::AddBatch) |
+| `0xc1d7e0` | Particles::BuildC1D7E0 | In outline: builds a particle's quad (Triangle::FromBase, turned by its angle) and works out its size from its values (+0x90) and a time factor (`0xDDD040`) |
+| `0x447740` | Terrain::DrawGrid447740 | In outline: draws the terrain grid overlay: two scaled views (Matrix::ScaleOffset2D) and a pass of batches (`0x447610`) |

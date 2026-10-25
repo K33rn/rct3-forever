@@ -161,3 +161,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x8ef1e0` | Normals::Smooth8EF1E0 | In outline: goes over two lists of points (+0, +4) normalising their directions and then over their groups |
 | `0x4284b0` | Curves::Setup4284B0 | In outline: fills a set of curves with fixed key points (`0x426790`: time, value) and three marks (`0x428450` at 9.0), with a different set when +0x669 is set |
 | `0x906950` | Points::Merge906950 | In outline: merges two lists of points and groups (+0, and the one given) into one, keeping their order |
+| `0x506ed0` | Car::Break506ED0 | In outline: breaks a model apart: checks its shapes (Model::CheckShapes), makes a rigid body for it (RigidBody::RigidBody) and sets its pieces flying with random speeds (VerletPoint::SetVelocity) |
+| `0x92a260` | Water::Group92A260 | In outline: groups water points (sorted by height) into pieces, joining the ones close enough together and refreshing them (`0x417C20`) |
+| `0x87a7f0` | Cuts::Split87A7F0 | In outline: cuts shapes along pairs of points (PairIds::Get): where a pair crosses the cut, adds a point at the crossing (`0x87A370` at the fraction between them) and sorts the pieces by side |
