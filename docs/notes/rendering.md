@@ -273,3 +273,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x8f35b0` | Terrain::LodDistance | A terrain patch's distance for detail: half its smaller side plus its cell size times (2 to the level minus 1), capped |
 | `0x8f8660` | Sound::SetVolumeScale | Sets the volume scale of the current sound (`0x1339F58`, kept between 0.2 and 1) and its volume from its kind's level (`0x10EDD40`), or 0 when that kind is muted (`0x12F0168`) |
 | `0x6b6400` | Terrain::SlopeShade | A grey for a terrain cell (0x18 bytes each) from the height difference across it, from black up to `0x7F7F7F` |
+| `0xccf9f0` | Vertices::Gather | Builds n vertices of 32 bytes: a position from one table and a normal from another (by the two indices of each source entry) and texture coordinates from the entry plus an offset |
+| `0xccf970` | Vertices::Gather2 | The same vertex gathering as Vertices::Gather (another copy) |
+| `0x959f30` | Light::FadeAlpha | An alpha for a point from its distance to a light's centre (+0x3C, +0x40): full inside its near radius (+0x44), none beyond the far one (+0x48), times its strength (+0x38), in the top byte of a colour |
+| `0xcc68c0` | Nodes::MatrixFor | The matrix (64 bytes) for node n, from the local list (+0x18) or the shared one (+4) by the node's flags, and which one it was |
+| `0x8fdb30` | Quad::UpdateCounts | Sets a shape's vertex and index counts (+0x18, +0x1C) to 4 and 6 when all four of its corners are set, otherwise 0, and keeps the totals `0x133A028` and `0x133A02C` up to date |

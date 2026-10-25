@@ -251,3 +251,4 @@
 | `0xafa0e0` | Terrain::CellColourAt | The colour for a terrain cell at a height (dark grey `0xFF333333` by default), from the flagged layers of the cell (0x2C bytes each) that the height reaches |
 | `0x8750c0` | Grid3::Rotate | Turns a position in a 3x3 grid by a rotation (0 to 3) |
 | `0x875020` | Grid3::RotateBack | Turns a position in a 3x3 grid the other way (0 to 3) |
+| `0x4ee3a0` | Gate::SetState | Sets a gate's two state values (+0x20, +0x24) for an action 0 to 4 (open or shut, and which side) |

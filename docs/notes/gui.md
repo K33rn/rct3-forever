@@ -577,3 +577,6 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x61c280` | Tabs::Animate | Moves the tab offsets (+0xE4, count +0xE8) by the time: the selected tab (+0xE0) comes forward, the others go back to at most 0 |
 | `0x757eb0` | Blink::Due | Whether a timer (+0xBC) has passed its period (from the table `0xFC35D8` by +0xB8); when it has, takes off one period, or all whole periods when asked |
 | `0x502520` | Cursor::MoveByScreen | Moves a position (+0x20, +0x24) by a screen movement, scaled by +0x30 and the GUI area's size |
+| `0x758880` | Filter::Accepts | Whether an item passes a filter by its kind (+0x120) and option (+0x121): the bits tested in the item's flags (+0x2C) are 1 or 2, 4 or 8, 0x10 or 0x20, or any |
+| `0x63a920` | Window::OutsideEllipse | Whether a point lies outside the ellipse filling the window's area, shrunk by its margin (+0xD4) |
+| `0x9f6490` | List::FindSelected | Looks through a list (+0xE4) for the entry with the id given, keeps its value in the owner (+0xDC, +0x15C) and clears +0x160 |

@@ -97,3 +97,9 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x7b2e30` | SphereQuery::Set3 | The same sphere query setup (another copy) |
 | `0x488660` | SphereQuery::Set4 | The same sphere query setup (another copy) |
 | `0x8e7130` | Bounds::Grow | Grows a box (+0x190 to +0x19C) to take in the one given and keeps the value given (+0x1A0) |
+| `0xc20950` | Matrix::RotateZ | Turns a matrix about the z axis by an angle (each row's first and second values) |
+| `0xbee000` | Matrix::RotateZ2 | The same turn about the z axis (another copy) |
+| `0xa5f530` | CameraAngles::Clamp2 | Keeps a camera's tilt (+0x20) between -1.5677 and 1.5677 and brings its turning angle (+0x24) into 0 to 2 pi |
+| `0x875160` | UnitSquare::Rotate | Turns a position in a unit square (0 to 1) by a rotation (0 to 3) |
+| `0x47bd90` | Sound::DistanceFade | How loud a sound is from its distance to the listener (`0x10F4620`): 1 inside its near distance (+0x80), 0 beyond its far one (+0x84), straight in between |
+| `0xb1f750` | Matrix::Copy3x4 | Copies the first twelve values of a matrix |

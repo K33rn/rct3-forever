@@ -1321,3 +1321,18 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcea630` | IdMap::Compact2 | The same for another id map (table `0x140EAF0`) |
 | `0xcea210` | IdMap::Compact3 | The same for another id map (table `0x140AAF0`) |
 | `0xc51870` | Request::Request | Constructor of a request record: joins its owner's list (+0x10), keeps its range (start, start plus length), flags and callback, and takes the next number of `0x13E6C94` (never 0) |
+| `0x8e79f0` | IdMap::Compact4 | The same compaction as IdMap::Compact for another id map (table `0x1313CD0`) |
+| `0x40b860` | IdMap::Compact5 | The same compaction for another id map (table `0x10FFA20`) |
+| `0x84dd70` | Record::Copy7 | Copies a record (the first value and those from +0x10 to +0x5C) |
+| `0xbcf600` | String::FindLast | The last place of a text inside a string, searching backwards from the place given (the end when -1), or -1 |
+| `0xca6f90` | Slider::SetValue | Sets the bound value (+4) from a fraction: between the minimum (+8) and maximum (+0xC), rounded down to whole steps (+0x10) |
+| `0xc1aea0` | Buckets::ClearLists | Empties the list of each entry in bucket n, or in every bucket when n is below 0 |
+| `0xc0a060` | Refs20::CopyFrom | Constructor (table `0xFAF9B4`): copies twenty counted references from another one (each counted one more use) and its value at +4 |
+| `0xc09fe0` | Refs20::Refs20 | Constructor (table `0xFAF9B4`): keeps the owner given and twenty counted references from it (each counted one more use) |
+| `0xbcf460` | String::Find | The place of a text inside a string, searching from the place given, or -1 |
+| `0x973140` | Key::Compare2 | A sort comparison of two keys of six values, value by value: -1, 0 or 1 |
+| `0x88f750` | Key::Compare3 | The same six-value comparison (another copy) |
+| `0x84dcf0` | Record::Copy8 | Copies a record (the first value and those from +0x10 to +0x58) |
+| `0x90b410` | Timers::CountDown | Counts each timer (20 bytes each at +4, count +0xC) down by the time times a rate (+0) and removes the ones that run out by moving the last one into their place |
+| `0x940ae0` | Pairs::SortOnce | Sorts a list of pairs (8 bytes each) by their second value, once (marked sorted at +0xC) |
+| `0xc16660` | Bits::AllSet | Whether every block of a range (the block size at +4) has its bit set in the bit list (+0xC, words +0x10) |
