@@ -472,3 +472,8 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x674180` | AdMenu::AddCustomImage | Adds the `Custom` image entry to the ad menu (AdMenu::BuildCustomImage) and relates it to the menu |
 | `0xb4f7c0` | AnimalCamera::BuildWindow | Builds the animal camera's window area (`AnimalCamWindowArea`, RideCamera::BuildGUI) |
 | `0x7573e0` | Entertainer::AddCostumeMenu | Adds the entertainer's `Costume` menu (Entertainer::BuildCostumeMenu) |
+| `0x6019f0` | Window::SizeForLanguage | A window size that depends on the game's language (Resources::LoadCommon gives it): 500 wide in German, 460 otherwise, and 20 taller than the part at +0x184 |
+| `0x444b10` | Language::ChooseEnglishOrOther | Runs `0x443A20` when the game's language is English and `0x443AE0` otherwise |
+| `0x9d83d0` | FireworkDisplay::NewDefaults | Sets up a new firework display's details: its name from the game text `FireworkDisplayDefaultName`, an empty second text, 0x528 and 0xFFFF, and a reference that refers to nothing |
+| `0xa5c090` | ProgramInfo::AddAwardsTab | Adds the awards tab to the program information window, with the tooltip game text `PID_TT_AwardsTabPopUp` |
+| `0x9db1c0` | ProgramInfo::AddCampaignsTab | Adds the campaigns tab to the program information window, with the tooltip game text `PID_TT_CampaignsTabPopUp` |

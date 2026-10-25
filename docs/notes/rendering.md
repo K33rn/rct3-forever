@@ -209,3 +209,4 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc484a0` | ShaderCache::Save | Writes the compiled shader cache to `SCCache.bin` (through Writer::Write4 and the writer helpers) |
 | `0x9256a0` | Waterfall::ConfirmDelete | Asks before deleting a waterfall, with the game text `Waterfall_Delete` (in a message window), keeping a reference to the waterfall for the answer |
 | `0x924f60` | Waterfall::ShowLandNotOwned | Shows the game text `Waterfall_DeletionFailure_LandNotOwned` (in a message window) when a waterfall cannot be deleted because the land is not the park's |
+| `0x87f5b0` | Model::ReportMissingLOD | Shows a message box `Missing mesh data for LOD` with the model's name (+4) |
