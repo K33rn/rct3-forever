@@ -175,3 +175,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x8bcc90` | Grid::CellAt | Turns a position into a grid cell (column and row, rounding down), using the grid's origin (+0xC, +0x10) and cell size (+0x14, +0x18), and says whether it's inside. Called from many places with the terrain |
 | `0x59acc0` | TrackedRide::TrackInterface | Gets (and caches at +0x64) an interface of the object the reference at +0x54 points to, through its class's interface table (id `0x12F5544`). `0x5D4870` is the same with id `0x12F54E0` |
 | `0x5d4870` | TrackedRide::Interface2 | The same as `0x59ACC0` with the interface id `0x12F54E0` |
+| `0xbce000` | Memory::Free | Frees a block from the game's allocator (`0xBCDFC0`): jumps to the C runtime's `free`. Called from thousands of places, most of all destructors |
