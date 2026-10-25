@@ -374,3 +374,45 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcec560` | Table10::Lookup | The entry of the table at +0x10 whose index `0xCEB190` works out from the given object's +0x28 and +0x24 and the two values given |
 | `0xb44da0` | Table7C::Current | The interface of the object entry n of the table at +0x7C (28 bytes each, n at +0x78) refers to, looked up once per entry; null when n is negative |
 | `0xb36e30` | Interface44c::Get | The interface (id in `0x13CE94C`) of the object its reference at +0x44 points to, looked up once (flag +0x58) |
+| `0x4d1800` | Interface58::Get | The interface (id in `0x130654c`) of the object its reference at +0x58 points to, or null |
+| `0x4d1880` | Interface58::Get | The interface (id in `0x1306c2c`) of the object its reference at +0x58 points to, or null |
+| `0x552780` | Interface44::Get | The interface (id in `0x12f51b4`) of the object its reference at +0x44 points to, or null |
+| `0x557b30` | Interface54::Get | The interface (id in `0x1306444`) of the object its reference at +0x54 points to, or null |
+| `0x557b70` | Interface54::Get | The interface (id in `0x1306444`) of the object its reference at +0x54 points to, or null |
+| `0x7307c0` | InterfaceBD8::Get | The interface (id in `0x1310f90`) of the object its reference at +0xbd8 points to, or null |
+| `0x759800` | Interface1C0::Get | The interface (id in `0x13112f0`) of the object its reference at +0x1c0 points to, or null. Used by WaterCannon::Update |
+| `0x79e260` | Interface510::Get | The interface (id in `0x12f4f44`) of the object its reference at +0x510 points to, or null |
+| `0x7f5fc0` | Interface44::Get | The interface (id in `0x13d0680`) of the object its reference at +0x44 points to, or null |
+| `0x828820` | Interface14C::Get | The interface (id in `0x1103b60`) of the object its reference at +0x14c points to, or null. Used by TrackPiece::Activate |
+| `0x939340` | Interface3C::Get | The interface (id in `0x12f5608`) of the object its reference at +0x3c points to, or null |
+| `0x984900` | Interface80::Get | The interface (id in `0x13412b8`) of the object its reference at +0x80 points to, or null |
+| `0x9984a0` | Interface1BC::Get | The interface (id in `0x130b5c8`) of the object its reference at +0x1bc points to, or null |
+| `0x9c4850` | Interface9C::Get | The interface (id in `0x13414b4`) of the object its reference at +0x9c points to, or null |
+| `0x9d9bc0` | Interface60::Get | The interface (id in `0x1342768`) of the object its reference at +0x60 points to, or null |
+| `0xa28e20` | Interface48::Get | The interface (id in `0x13427a0`) of the object its reference at +0x48 points to, or null. Used by Passport::Build |
+| `0xa7eb40` | Interface44::Get | The interface (id in `0x13cde74`) of the object its reference at +0x44 points to, or null |
+| `0xb47e50` | InterfaceB4::Get | The interface (id in `0x13ce968`) of the object its reference at +0xb4 points to, or null |
+| `0xb51a40` | Interface138::Get | The interface (id in `0x13ce968`) of the object its reference at +0x138 points to, or null |
+| `0xb59d50` | Interface144::Get | The interface (id in `0x13ceabc`) of the object its reference at +0x144 points to, or null. Used by WildAnimalItem::~WildAnimalItem |
+| `0x558fe0` | Interface20::GetCached | The interface (id in `0x130bbec`) of the object its reference at +0x20 points to, looked up the first time only (kept at +0x30 with the flag at +0x34), or null |
+| `0x559040` | Interface20::GetCached | The interface (id in `0x130bbec`) of the object its reference at +0x20 points to, looked up the first time only (kept at +0x30 with the flag at +0x34), or null |
+| `0x71df50` | Interface4C::GetCached | The interface (id in `0x130646c`) of the object its reference at +0x4c points to, looked up the first time only (kept at +0x5c with the flag at +0x60), or null |
+| `0x981ab0` | Interface2C::GetCached | The interface (id in `0x13412c8`) of the object its reference at +0x2c points to, looked up the first time only (kept at +0x3c with the flag at +0x40), or null |
+| `0x9bc6e0` | Interface24::GetCached | The interface (id in `0x1341524`) of the object its reference at +0x24 points to, looked up the first time only (kept at +0x34 with the flag at +0x38), or null |
+| `0xa97710` | Interface64::GetCached | The interface (id in `0x13ce3bc`) of the object its reference at +0x64 points to, looked up the first time only (kept at +0x74 with the flag at +0x78), or null |
+| `0xaccc40` | Interface60::GetCached | The interface (id in `0x13ce450`) of the object its reference at +0x60 points to, looked up the first time only (kept at +0x70 with the flag at +0x74), or null. Used by LaserDesigner::Build |
+| `0xae8c80` | Interface4C::GetCached | The interface (id in `0x13ce450`) of the object its reference at +0x4c points to, looked up the first time only (kept at +0x5c with the flag at +0x60), or null. Used by WaterJetDesigner::Build |
+| `0xae8ce0` | Interface68::GetCached | The interface (id in `0x13ce450`) of the object its reference at +0x68 points to, looked up the first time only (kept at +0x78 with the flag at +0x7c), or null. Used by WaterJetDesigner::Build |
+| `0xaf0e90` | Interface60::GetCached | The interface (id in `0x1341354`) of the object its reference at +0x60 points to, looked up the first time only (kept at +0x70 with the flag at +0x74), or null |
+| `0xb449d0` | Interface44::GetCached | The interface (id in `0x13ce94c`) of the object its reference at +0x44 points to, looked up the first time only (kept at +0x54 with the flag at +0x58), or null. Used by WildAnimal::FullName, WildAnimal::Release |
+| `0xb53710` | Interface44::GetCached | The interface (id in `0x13ce968`) of the object its reference at +0x44 points to, looked up the first time only (kept at +0x54 with the flag at +0x58), or null. Used by WildAnimal::NameBaby, WildAnimal::Birth |
+| `0xb57530` | Interface6C::GetCached | The interface (id in `0x13ce730`) of the object its reference at +0x6c points to, looked up the first time only (kept at +0x7c with the flag at +0x80), or null |
+| `0xb7b8f0` | Interface60::GetCached | The interface (id in `0x13cea98`) of the object its reference at +0x60 points to, looked up the first time only (kept at +0x70 with the flag at +0x74), or null. Used by WildAnimal::GiveBirth |
+| `0x416f10` | FlatTagManager::Get | The object kept in `0x1103c1c`: made the first time it is needed (88 bytes, constructed by `0x430010` (FlatTagManager::FlatTagManager)) and activated; returns it |
+| `0x4366e0` | SimpleResearch::Get | The object kept in `0x1341308`: made the first time it is needed (168 bytes, constructed by `0x9852b0` (SimpleResearch::SimpleResearch)) and activated; returns it |
+| `0x47daa0` | Sky::Get | The object kept in `0x1341864`: made the first time it is needed (1,120 bytes, constructed by `0x9e51d0` (Sky::Sky)) and activated; returns it |
+| `0x47dc30` | WaterFlowManager::Get | The object kept in `0x133a1d8`: made the first time it is needed (440 bytes, constructed by `0x92f800` (WaterFlowManager::WaterFlowManager)) and activated; returns it |
+| `0x7f0060` | StaffSettings::Get | The object kept in `0x130aad8`: made the first time it is needed (72 bytes, constructed by `0x7efce0` (StaffSettings::StaffSettings)) and activated; returns it |
+| `0x809520` | GUI2_CurrentDatDesc::Get | The object kept in `0x12f7eb4`: made the first time it is needed (88 bytes, constructed by `0x63f550` (GUI2_CurrentDatDesc::GUI2_CurrentDatDesc)) and activated; returns it |
+| `0x87ecd0` | FlexiColourGroupCache::Get | The object kept in `0x130ac4c`: made the first time it is needed (72 bytes, constructed by `0x80d930` (FlexiColourGroupCache::FlexiColourGroupCache)) and activated; returns it |
+| `0xa5de40` | Awards::Get | The object kept in `0x134297c`: made the first time it is needed (136 bytes, constructed by `0xa5d6f0` (Awards::Awards)) and activated; returns it |
