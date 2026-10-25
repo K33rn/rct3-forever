@@ -103,3 +103,10 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4b2660` | AnimatedRideInstance::Activate | An animated (flat) ride's activation (virtual slot 3): finds and activates its definition, sets up its stations (`0x539090`) and, for the whale show, the show (`WhaleShow::Setup`) |
 | `0x5874c0` | SpecialAttractionInstance::Activate | A special attraction's activation (virtual slot 3): finds and activates its definition by name and sets up its parts |
 | `0x59cf00` | Track::Activate | A ride track's activation (virtual slot 3): checks its track sections (`TrackSection::Check`) and builds its pieces and splines |
+| `0xbc4ba0` | TrackImporter::BankName | Name of a track piece's bank, for the track importer: 0 `Flat`, 1 `45Right`, 2 `90Right`, 3 `135Right`, 4 `Inverted`, 5 `135Left`, 6 `90Left`, 7 `45Left`; null otherwise |
+| `0xbc4af0` | TrackImporter::SlopeName | Name of a track piece's slope: 0 `Flat`, 1 `MediumUp`, 2 `MediumDown`, 3 `SteepUp`, 4 `SteepDown`, 5 `VerticalUp`, 6 `VerticalDown`, 7 `JoinsSplines`; null otherwise |
+| `0xbc4150` | TrackImporter::CurveName | Name of a track piece's curve: 0 `Straight`, 1 `GentleLeft`, 2 `MediumLeft`, 3 `SharpLeft`, 4 `GentleRight`, 5 `MediumRight`, 6 `SharpRight`, 7 `Special`; null otherwise |
+| `0xbcd250` | RideCar::PositionName | Name of a car's position in its train (used by RideTrain::BuildCars): 0 `Front`, 1 `Second`, 2 `Middle`, 3 `Penultimate`, 4 `Rear`, 5 `Link`; null otherwise |
+| `0xbbf9f0` | RideCar::WheelName | Name of a car's wheel bone (used by RideCar::FindBones): 0 `WheelFR`, 1 `WheelFL`, 2 `WheelRR`, 3 `WheelRL`; null otherwise |
+| `0x4de1c0` | Ride::BreakdownStatusName | Name of a ride's breakdown status: 0 `BreakStatus_Fixed`, 1 `BreakStatus_AwaitingBreak`, 2 `BreakStatus_CallMechanic`, 3 `BreakStatus_WaitMechanicArrive`, 4 `BreakStatus_BeingFixed`; null otherwise |
+| `0x4bef70` | Ride::StateName | Name of a ride's open state: 0 `StateClosed`, 1 `StateTesting`, 2 `StateOpen`; null otherwise |
