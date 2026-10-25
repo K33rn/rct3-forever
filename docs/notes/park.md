@@ -35,3 +35,4 @@
 | `0x72ba70` | PathTile::Activate | A path tile's activation (virtual slot 3): links it into the path network (`PathManager`) and fits it to the terrain |
 | `0x79c1a0` | Park::CountBelow | Counts the entries of the ring of object pointers at `0x1306BC8` whose value at +0xB0 is below the given limit, leaving out those with flag 0x20 at +0xB4 when asked. Called from Park::RatingBreakdown |
 | `0x83fbc0` | SceneryItem::RemoveLink | Takes the given object out of the item's list (+0x54, count +0x58), moving the later ones down. Called from SceneryItem::~SceneryItem |
+| `0x6e9a40` | Objectives::Find | The objective in slot 0-7 of group 0-2 (the table at +0x28; the middle index can only be 0), or null when out of range or empty. Used by Objective::~Objective and Vendor::Sell |

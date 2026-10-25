@@ -335,3 +335,6 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x617290` | Vector2::SnapToGrid | Snaps a 2D point down to a grid of the given spacing: each coordinate becomes floor(value / spacing) x spacing. Called from FrontScreen::BuildExpansionBadges |
 | `0x4ef080` | TrackDesigner::CarSettingMode | Sets the track designer's car setting mode (+0x810, left alone while it is 0) from the given car's value at +0x1BC: 3 when it is negative, 2 when positive, 1 when zero. Called from TrackDesigner::BuildCarSetting |
 | `0x45e430` | AdMenu::ScaleLevel | Turns a ratio into a level for the ad media: 8a / b of 64 gives 0, 32 gives 1, 16 gives 2, 4 gives 4, 2 gives 5, 1 gives 6, anything else 3. Called from AdMenu::ShowMedia |
+| `0xbe7780` | Rect::Contains | Whether a point lies in a rectangle (left, top, right, bottom), edges included. Called from GUIRenderer::Render |
+| `0x543b90` | RideOpModeDialog::DefaultSecondValue | When the dialog has its second setting control (+0x190): if its value (+0x19C) is negative, sets it and the control's value (+0x28C) to 20 and refreshes the control (`0x6AFC20`); otherwise `0x6B0990`. Called from RideOpModeDialog::Build |
+| `0x543b40` | RideOpModeDialog::DefaultFirstValue | The same for the first setting control (+0x17C, value +0x188, the control's +0x288). Called from RideOpModeDialog::Build |

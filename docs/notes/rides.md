@@ -113,3 +113,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0xa3fab0` | TrackImporter::MapPieceCode | Maps an imported piece code (0-9) to the game's, by one of two tables: normally 0 1 2 3 4 5 6 7 3 6, with the flag 0 1 1 2 4 4 5 7 3 6. Called from TrackImporter::AddPiece |
 | `0x94e000` | WaterDrops::EmitterCount | How many drops emitter n (208 bytes each at +0x1A4) gives: its +0x10 divided by its interval (+0xC), rounded up; 0 when the interval is not positive. Called from Model::DebugReport |
 | `0xbcef20` | WideString::FindLast | Searches a wide text backwards from the given position (or from its last character when it is -1) for a character: its position, or -1. Used by MiniGolfHole::Setup, FindSplines and SetupPlayers |
+| `0xa3fa60` | TrackImporter::OppositeDirection | The direction opposite the one given (in eax), of eight: 0-3 become 4-7 and 4-7 become 0-3. Called from TrackImporter::AddPiece |
