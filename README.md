@@ -16,6 +16,9 @@ improve.
 **No game files are included.** You need your own RollerCoaster Tycoon 3. RCT3 Forever doesn't change anything in
 the game folder: everything happens in memory while the game runs, and closing it leaves the game exactly as it was.
 
+See the [roadmap](ROADMAP.md) for where things stand and what's planned next, including a Debug tab with the
+game's own developer tools.
+
 ## What's in 0.1
 
 | Part | What it does |
