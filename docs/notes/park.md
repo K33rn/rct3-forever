@@ -126,3 +126,6 @@
 | `0x726930` | PathTile::Centre | The world position of the middle of a path tile: its grid cell (+0x22, +0x89) times the grid's cell size plus its origin, with the height the tile's slot 7 gives there |
 | `0x4bf970` | AttractionInstance::FirstListed | The value of the first entry of the list at +0xB0, or 0 when it is empty |
 | `0x5d48d0` | Interface54::Get | The interface (id in `0x12F54E0`) of the object its reference at +0x54 points to, looked up once (flag +0x68) |
+| `0xa9f090` | IndexedTable::Entry | Entry n of a table indexed from +0x1C to +0x20 (28 bytes each, at +0x24): the interface of the object it refers to, looked up once per entry; null outside the range |
+| `0x4cce80` | AttractionInstance::FirstOf | With a non-zero argument AttractionInstance::FirstListed; otherwise the value of the first entry of the list at +0x64, or 0 |
+| `0x43ffb0` | KeyState::Held | Whether the key (its code minus 0x1A as a bit) is set in either of two bit masks of the table at +0x84 (entries +0x70 and +0x74) |

@@ -307,3 +307,8 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x413650` | Object413::Object413 | Constructor (table `0xF26E00`): clears +4..+0xC, keeps itself at +0x10 and sets up from the argument with `0x412EA0` |
 | `0x458130` | Init458 | Runs `0x458010` and returns its argument |
 | `0xcc1c60` | Release2C | `0xCC4EA0` with the value at +0x2C |
+| `0x624440` | WaterfallManager::Get | The waterfall manager (kept in `0x133A174`): made the first time (1,008 bytes, WaterfallManager::WaterfallManager) and activated; returns it |
+| `0x4420e0` | WideString::AssignWide | Sets a wide text to a copy of a 0-ended wide text (its length found, then `0xBD0640`); returns it |
+| `0xc34850` | Report | Formats a message from the text and the values after it (`0xC345E0`, then `0xC32720`), as ReportMissingInterface and others use |
+| `0x59a2d0` | Clamp0To3 | Gives 1, 2 or 3 for those values and 0 for anything else |
+| `0xbc51e0` | Extent::Clear | Clears the first two values and sets the three at +0x1C, +0x2C and +0x3C to the largest float |

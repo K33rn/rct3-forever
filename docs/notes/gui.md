@@ -395,3 +395,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x41bea0` | Window::SetText114 | Makes the window's text at +0x114 share the text given |
 | `0x6a9e50` | Window::SetFlagsDC | Sets the bits of the window's flags (+0xDC) chosen by the mask to the values given, updating what depends on bit 0 (its text style and values from `0x13037D8` and `0x1302BD8`) when that bit changes |
 | `0x6a7920` | Window::SetOffsets148 | Sets +0x148 and +0x14C of the window at +0xE4 to the two (signed byte) values given |
+| `0x6a2b80` | Window::SetPairE4 | Sets +0xE4 and +0xE8 and clears flag 0x1000000 of +0x94 |

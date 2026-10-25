@@ -86,3 +86,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x759db0` | Guest::ResetSlot70 | Person::ClearSlot70, then a random value from 0.35 to 0.65 at +0x408 (Random::Ran0), `0x7594E0`, copies of +0x408..+0x414 into +0x418..+0x424, `0x759570` and `0x7595F0`, and a random value from 0 to 0.2 at +0x430. Slot 70 of Guest, BodyGuard and VIP |
 | `0x7ad730` | ParkInspector::Slot53 | One time in ten (Random::Ran0) tries `0x7AD360` first and stops if it succeeds; otherwise Person's slot 53 (`0x7DAD70`). Slot 53 of ParkInspector |
 | `0x758b10` | Guest::Group | The guest's group: the interface (id in `0x1306920`) of the object its reference at +0x4F0 points to, or null (used before GuestDetails::BuildGroupTabs and by group members) |
+| `0x773710` | GuestGroup::Member | Member n of a group (+0x60, 20 bytes each): the guest interface (id in `0x130654C`) of the object it refers to, or null |
