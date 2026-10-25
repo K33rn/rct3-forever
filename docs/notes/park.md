@@ -358,3 +358,6 @@
 | `0x95bc10` | Water::BodyAt95BC10 | In outline: the water height of a cell's body: sets it up (`0x95A210`) and goes over the cells by their kind (+8: 0, ...) |
 | `0xaa4950` | GridTool::PlaceAA4950 | In outline: places a grid tool's cells at the ground under the mouse (MainCamera::Get) on the terrain (a 90 by 90 grid), after refreshing it (`0xAA3DE0`) |
 | `0x5d9000` | Placement::Finish5D9000 | In outline: finishes placing a piece: refreshes it (`0x846A90`, `0x5C45E0`) and, when not flagged (+0xAC), sets it up (Interface54::Get) |
+| `0x8af980` | Scenery::RateSpot8AF980 | In outline: works out a spot's rating: sets up (`0x8AED60`), finds what is near it (`0x48C300`, `0x7B9BB0`) and the terrain, keeping the nearest |
+| `0x8fe4e0` | Terrain::Points8FE4E0 | In outline: picks the points of a list inside a box (+0x10 to +0x18) after growing the list when needed (`0x8FDF70`) |
+| `0x82f120` | Footprint::Check82F120 | In outline: checks a footprint's cells (+0x14 of them) turned by a rotation (Footprint::RotateCell) against the terrain heights within a tolerance |

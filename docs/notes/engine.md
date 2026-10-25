@@ -1492,3 +1492,5 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x464b30` | LiveContent::Find | In outline: builds the path of the game's `\LiveContent\` folder (from the shared install folder text, `0x1106DC4`) and looks through it |
 | `0x742780` | Ids::Allocate742780 | In outline: finds free numbers in a list (+0x40), skipping up to ten taken ones, and grows it by ten when full (`0xBD05B0`) |
 | `0xcaea60` | Loader::StartCAEA60 | In outline: when not started (+0xF8) and not paused (`0x13D0DF1`), makes a name text and starts loading it (`0xC3C3E0`) |
+| `0x4405f0` | NamedObject::Register4405F0 | In outline: joins a named object to its list (ListMember with `0x10EC9E8`) and, when it has a name, adds it to the name table (Name::Assign on `0x1400128`, NameTable::Set) |
+| `0xa52cb0` | Campaign::FindFiles | In outline: lists the files in the campaign folder (Campaign::FolderName, `0xBE5570`) |

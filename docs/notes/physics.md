@@ -186,3 +186,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xa0f990` | CameraPath::Step | In outline: moves along a camera path by a distance: measures the way to the next point and its direction against the path's (+0x84, +0xA4), and moves on to the next point when past it |
 | `0x906300` | Points::Merge906300 | In outline: merges a list of points into another, like Points::Merge906950 |
 | `0xbc7940` | Object::HitTestBC7940 | In outline: whether a ray within a distance hits an object's parts by kind (2, and 6 to 0x19), using its two ends (`0xBC5AB0`, `0xBC5B40`) |
+| `0x960e90` | Particles::PointOnShape | In outline: picks a point on a shape for a particle: checks it is inside its box (+0x20 to +0x30) and rounds it to a cell |

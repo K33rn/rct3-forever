@@ -95,3 +95,4 @@
 | `0xb35770` | WildAnimal::CheckSpotB35770 | In outline: finds the terrain cells of an animal (WildAnimal::Interface60) and of a point near it (Grid::CellAt), and checks them against its enclosure (EnclosureManager::Get) |
 | `0xbaa9f0` | Enclosure::UpdateBAA9F0 | In outline: when on (+0x28) and not paused (`0x13D05FC`), checks a thing's place in the enclosures (`0xBAA5E0`, EnclosureManager::Get, its height +0x68) |
 | `0xb51ad0` | Animal::PlaceB51AD0 | In outline: places an animal at the ground point under the mouse (MainCamera::Get, `0xCD79C0`) on the terrain (a 90 by 90 grid) |
+| `0xb13f60` | Enclosure::RebuildB13F60 | In outline: rebuilds an enclosure's cells on the terrain (a 90 by 90 grid) from the enclosure manager (EnclosureManager::Get, `0xB9AAE0`) |

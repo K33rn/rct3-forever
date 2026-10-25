@@ -646,3 +646,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x5c6610` | TrackedRide::Height5C6610 | In outline: a ride piece's height at a point (`0x5C14D0`), or, when below 0 and not flagged (+0x170), from the middle of its span (Span::Middle) |
 | `0xacfdb0` | Graph::DrawACFDB0 | In outline: draws a graph window's contents when not flagged (+0x108): its frame (`0x6ACE50`) and its lines (`0x695E80`) |
 | `0x663680` | Window::Build663680 | In outline: builds a window for a thing (`0x4E4410`, `0x8DC9B0`) with two parts of style 0x9165 (`0x6A2620`) and opens it (MainWindow::Build) |
+| `0x7491e0` | AvatarEditor::Draw7491E0 | In outline: draws the avatar editor's figure turned by its angles (Matrix::TurnColumnsAboutY, Shape::TurnAboutX), with its parts (`0x7BED80`, `0x7BEDB0`) when not flagged (+0xE49) |
+| `0x6084f0` | Window::Fill6084F0 | In outline: fills a window's list from a list of things (`0x1305D54`), finding each by name (stricmp) and skipping hidden ones unless the developers' view is on (`0x1103B9C`) |
+| `0x9ddc20` | Window::Build9DDC20 | In outline: builds a window from its title like Window::Build9B7940 |
+| `0x7a4380` | Window::Layout7A4380 | In outline: places a window's parts (Window::UpdateRect) and, with items (+0x17C), lays out each of its rows |

@@ -127,3 +127,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x75c3b0` | Guest::Update75C3B0 | In outline: a guest's update in one of its states (0x12 handled): sets its state (Person::SetState), checks what it is linked to (`0x7F8360`) and uses the path manager |
 | `0x76d890` | Guest::Update76D890 | In outline: a guest's timed update (while +0x4A0 is above 0, not flagged +0x4D0): checks the thing it is linked to (+0x4CC, Interface50::Get) and its next step (`0x772F40`) |
 | `0x76d240` | Guest::PickSpot76D240 | In outline: picks a random spot for a guest within a cell area on the terrain (a 90 by 90 grid, Random::Ran0, `0x4751E0`) |
+| `0x77b820` | GuestGroup::Pick77B820 | In outline: half the time (Random::Ran0), picks something for a guest of a group to do (`0x784700`) when it is free (+0x334) |
+| `0x7790f0` | GuestGroup::Update7790F0 | In outline: a group's update by its state (+0x44: 2, ...): with two members, checks the first (GuestGroup::Member) is in state 0x10 stage 2 and free (+0x3EC bit 28) |

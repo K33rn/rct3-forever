@@ -205,3 +205,10 @@ Tracked rides, flat rides and their cars and trains.
 | `0x523a00` | Ride::Update523A00 | In outline: a ride's update when not flagged (+0x180): goes over its parts (+0x7B4, `0x518300`) and updates the ones not done (+0x24) |
 | `0x5b9180` | TrackedRide::Sections5B9180 | In outline: for a ride in mode 3 (+0xB0), goes over its track sections (`0x12F5338`), checks each one (`0x559BF0`) and lays out the flagged ones (+0x850, `0x559D10`) |
 | `0x588260` | AttractionPerson::Walk588260 | In outline: moves a person toward their spot on an attraction (AttractionPersonInfo::MoveTowards), turned by the spot's facing (Matrix::FacingRotation) |
+| `0x4e6670` | AttractionPerson::Update4E6670 | In outline: another attraction person update like AttractionPerson::Update4E6CA0, when it has a target (+0x128) |
+| `0x5c58b0` | TrackedRide::Ends5C58B0 | In outline: works out a ride piece's end points and directions (`0x5C0200`), normalising each |
+| `0x4f26a0` | Ride::Linked4F26A0 | In outline: whether a ride part is linked to another: the same one, or in mode 3 with a link (+0x4A8) matching one of its ends (+0x34, +0x3C), and for the selected ride (`0x12F5608`) |
+| `0x5e6c30` | TrackPiece::Place5E6C30 | In outline: places a track piece unless blocked (`0x5D9720`): makes it (TrackPiece::TrackPiece), sets it up at its place (`0x5CDB00`) and, when asked, for the selected ride (`0x12F5608`) |
+| `0x5ed1f0` | Ride::Update5ED1F0 | In outline: a ride's update by its part's kind (`0x5316A0`, +0xAC: 0, ...) |
+| `0x5cd4f0` | TrackedRide::Sounds5CD4F0 | In outline: turns a ride's sounds with it (RideSound::Rotate, +0x21C and +0x224) when on (+0x218), and refreshes (`0x5C1070`, `0x5D4940`) |
+| `0x5ca360` | TrackedRide::End5CA360 | In outline: sets up one end of a ride's track (by the flag given) from the middle of its span (Span::Middle) with the current tool (`0x12F5638`, +0x114) |

@@ -594,7 +594,7 @@ address,size,name,callers,status
 0x42c9a0,8,,1,documented
 0x42c9b0,8,,2,documented
 0x42c9c0,146,,1,to do
-0x42ca70,1702,,1,to do
+0x42ca70,1702,,1,documented
 0x42d130,33,,1,to do
 0x42d160,44,,0,to do
 0x42d200,9,,13,to do
@@ -1226,7 +1226,7 @@ address,size,name,callers,status
 0x464690,706,,1,documented
 0x464960,126,,1,to do
 0x4649e0,250,,1,documented
-0x464b30,1612,,1,to do
+0x464b30,1612,,1,documented
 0x465180,1749,,3,documented
 0x465860,297,,21,documented
 0x465990,30,DeletingDestructor,1,rewritten
@@ -1529,7 +1529,7 @@ address,size,name,callers,status
 0x47a150,266,,0,to do
 0x47a260,307,,0,to do
 0x47a3a0,992,,0,documented
-0x47a790,1633,,0,to do
+0x47a790,1633,,0,documented
 0x47ae70,36,SharedBuffer::Release,3,rewritten
 0x47aea0,1732,,1,documented
 0x47b570,1771,,3,documented
@@ -2031,7 +2031,7 @@ address,size,name,callers,status
 0x49ed40,37,,1,to do
 0x49ed70,99,,4,to do
 0x49ede0,30,DeletingDestructor,1,rewritten
-0x49ee80,1669,,0,to do
+0x49ee80,1669,,0,documented
 0x49f570,102,,1,documented
 0x49f5f0,424,,1,to do
 0x49f7b0,96,,1,to do
@@ -2104,7 +2104,7 @@ address,size,name,callers,status
 0x4a3670,44,,5,to do
 0x4a36a0,26,,1,to do
 0x4a36e0,316,,2,to do
-0x4a3820,1668,,4,to do
+0x4a3820,1668,,4,documented
 0x4a3ed0,344,,1,to do
 0x4a4030,1628,,3,documented
 0x4a46d0,200,,1,to do
@@ -2256,7 +2256,7 @@ address,size,name,callers,status
 0x4b5060,382,,1,to do
 0x4b51e0,239,,8,to do
 0x4b52d0,126,ObjectRef::Assign,14,rewritten
-0x4b5350,1636,,1,to do
+0x4b5350,1636,,1,documented
 0x4b59c0,178,,1,to do
 0x4b5a80,90,,1,to do
 0x4b5ae0,94,,1,to do
@@ -2669,7 +2669,7 @@ address,size,name,callers,status
 0x4d50a0,1234,,1,to do
 0x4d5580,175,,1,to do
 0x4d5630,105,,1,documented
-0x4d56a0,1642,,1,to do
+0x4d56a0,1642,,1,documented
 0x4d5d40,830,,1,to do
 0x4d60a0,567,,6,documented
 0x4d6300,30,DeletingDestructor,2,rewritten
@@ -2822,7 +2822,7 @@ address,size,name,callers,status
 0x4e6ca0,1760,,1,documented
 0x4e7380,507,,1,to do
 0x4e7590,2154,,3,documented
-0x4e7e00,1713,,1,to do
+0x4e7e00,1713,,1,documented
 0x4e84c0,624,,6,to do
 0x4e8730,2348,,1,documented
 0x4e9060,3560,,4,documented
@@ -2836,7 +2836,7 @@ address,size,name,callers,status
 0x4ea580,917,,2,documented
 0x4ea920,30,DeletingDestructor,3,rewritten
 0x4ea940,125,,1,to do
-0x4ea9c0,1725,,1,to do
+0x4ea9c0,1725,,1,documented
 0x4eb0a0,331,,1,to do
 0x4eb1f0,465,,1,to do
 0x4eb3d0,519,,1,to do
@@ -3290,7 +3290,7 @@ address,size,name,callers,status
 0x5230f0,1687,,3,documented
 0x523790,375,,6,to do
 0x523910,234,,4,to do
-0x523a00,1672,,2,to do
+0x523a00,1672,,2,documented
 0x524090,30,DeletingDestructor,2,rewritten
 0x5240b0,364,,3,to do
 0x524220,114,,1,to do
@@ -3298,7 +3298,7 @@ address,size,name,callers,status
 0x5242e0,5993,,1,to do
 0x525a50,1320,,32,to do
 0x525fc0,201,,1,to do
-0x526100,1690,,1,to do
+0x526100,1690,,1,documented
 0x5267a0,309,,1,to do
 0x5268e0,399,,1,to do
 0x526a70,458,,2,to do
@@ -3944,7 +3944,7 @@ address,size,name,callers,status
 0x56a660,2514,,1,documented
 0x56b040,577,,3,to do
 0x56b290,1021,,5,to do
-0x56b690,1667,,1,to do
+0x56b690,1667,,1,documented
 0x56bd20,395,,1,to do
 0x56beb0,48,ObjectArray::Free,2,rewritten
 0x56bee0,153,,1,documented
@@ -3966,7 +3966,7 @@ address,size,name,callers,status
 0x572320,579,,2,to do
 0x572570,58,,3,to do
 0x5725b0,18,,2,to do
-0x5725d0,1654,,1,to do
+0x5725d0,1654,,1,documented
 0x572c50,3179,,1,documented
 0x5738d0,355,,1,to do
 0x573a40,171,,0,to do
@@ -4107,7 +4107,7 @@ address,size,name,callers,status
 0x5874c0,2101,,1,documented
 0x587d00,983,,1,to do
 0x5880e0,377,,1,documented
-0x588260,1619,,2,to do
+0x588260,1619,,2,documented
 0x588990,105,,1,documented
 0x588a00,30,DeletingDestructor,4,rewritten
 0x588a60,28,,1,documented
@@ -4638,7 +4638,7 @@ address,size,name,callers,status
 0x5b9060,105,,1,documented
 0x5b90d0,30,DeletingDestructor,2,rewritten
 0x5b9140,28,,1,documented
-0x5b9180,1646,,1,to do
+0x5b9180,1646,,1,documented
 0x5b9860,327,,3,documented
 0x5b99b0,30,DeletingDestructor,3,rewritten
 0x5b99d0,105,,1,documented
@@ -4805,7 +4805,7 @@ address,size,name,callers,status
 0x5c6160,27,,2,to do
 0x5c6180,991,,2,to do
 0x5c6560,162,,1,documented
-0x5c6610,1643,,3,to do
+0x5c6610,1643,,3,documented
 0x5c6c80,428,,3,to do
 0x5c6e30,456,,32,to do
 0x5c7000,456,,4,to do
@@ -5039,7 +5039,7 @@ address,size,name,callers,status
 0x5d8610,931,,4,to do
 0x5d89c0,798,,3,to do
 0x5d8ce0,798,,1,to do
-0x5d9000,1585,,2,to do
+0x5d9000,1585,,2,documented
 0x5d9640,215,,1,to do
 0x5d9720,115,,7,to do
 0x5d97a0,140,,47,to do
@@ -6173,7 +6173,7 @@ address,size,name,callers,status
 0x6631a0,26,,3,to do
 0x6631c0,919,,7,documented
 0x663560,183,,5,to do
-0x663680,1614,,2,to do
+0x663680,1614,,2,documented
 0x663cd0,30,DeletingDestructor,1,rewritten
 0x663cf0,784,,3,to do
 0x664320,38,,1,documented
@@ -6462,7 +6462,7 @@ address,size,name,callers,status
 0x67dd00,30,DeletingDestructor,3,rewritten
 0x67dd20,511,,5,to do
 0x67df20,77,,2,to do
-0x67dfd0,1689,,2,to do
+0x67dfd0,1689,,2,documented
 0x67e670,48,,2,to do
 0x67e6a0,325,,1,to do
 0x67e8f0,108,,1,to do
@@ -6729,7 +6729,7 @@ address,size,name,callers,status
 0x6950b0,359,,46,to do
 0x695220,704,,30,to do
 0x6954f0,749,,1,to do
-0x6957f0,1654,,52,to do
+0x6957f0,1654,,52,documented
 0x695e80,378,,45,to do
 0x696000,296,,2,to do
 0x696130,230,,5,documented
@@ -6961,7 +6961,7 @@ address,size,name,callers,status
 0x6abd90,615,,113,to do
 0x6ac010,30,DeletingDestructor,2,rewritten
 0x6ac050,18,,18,documented
-0x6ac080,1658,,14,to do
+0x6ac080,1658,,14,documented
 0x6ac710,30,DeletingDestructor,2,rewritten
 0x6ac730,508,,6,to do
 0x6acac0,7,,1,to do
@@ -7325,7 +7325,7 @@ address,size,name,callers,status
 0x6cd410,828,,1,to do
 0x6cd750,391,,2,to do
 0x6cd8e0,114,,1,documented
-0x6cd960,1647,,1,to do
+0x6cd960,1647,,1,documented
 0x6ce2c0,3660,,1,documented
 0x6cf110,738,,1,to do
 0x6cf430,40,,0,documented
@@ -8577,7 +8577,7 @@ address,size,name,callers,status
 0x73d7f0,48,,7,to do
 0x73d830,411,,1,to do
 0x73d9d0,37,,1,to do
-0x73da00,1692,,1,to do
+0x73da00,1692,,1,documented
 0x73e100,126,ObjectRef::Assign,8,rewritten
 0x73e180,685,,1,to do
 0x73e520,222,,6,to do
@@ -8622,7 +8622,7 @@ address,size,name,callers,status
 0x7425e0,186,,1,documented
 0x7426a0,110,,1,to do
 0x742710,103,,1,to do
-0x742780,1594,,2,to do
+0x742780,1594,,2,documented
 0x742dc0,135,,4,to do
 0x742e50,1706,,1,documented
 0x743500,1378,,1,documented
@@ -8913,7 +8913,7 @@ address,size,name,callers,status
 0x75ba90,817,,1,to do
 0x75bdd0,884,,1,to do
 0x75c150,602,,1,to do
-0x75c3b0,1668,,1,to do
+0x75c3b0,1668,,1,documented
 0x75ca40,789,,1,to do
 0x75cd70,126,ObjectRef::Assign,7,rewritten
 0x75cdf0,2299,,3,documented
@@ -8975,8 +8975,8 @@ address,size,name,callers,status
 0x76b790,237,,1,to do
 0x76b880,6558,,4,documented
 0x76d220,30,DeletingDestructor,3,rewritten
-0x76d240,1604,,17,to do
-0x76d890,1662,,3,to do
+0x76d240,1604,,17,documented
+0x76d890,1662,,3,documented
 0x76df50,105,,1,documented
 0x76dff0,3,,5,to do
 0x76e000,1,,2,documented
@@ -9417,7 +9417,7 @@ address,size,name,callers,status
 0x79c050,73,,1,to do
 0x79c0a0,256,,4,to do
 0x79c1a0,314,,2,documented
-0x79c2e0,1641,,3,to do
+0x79c2e0,1641,,3,documented
 0x79c950,525,,1,to do
 0x79cb60,223,,1,to do
 0x79cd20,1211,,2,documented
@@ -9537,7 +9537,7 @@ address,size,name,callers,status
 0x7a8270,498,,1,to do
 0x7a8490,458,,1,to do
 0x7a8670,126,ObjectRef::Assign,14,rewritten
-0x7a86f0,1709,,1,to do
+0x7a86f0,1709,,1,documented
 0x7a8da0,391,,1,to do
 0x7a8f30,85,,4,documented
 0x7a8f90,301,,4,to do
@@ -9800,7 +9800,7 @@ address,size,name,callers,status
 0x7c0ab0,33,,0,documented
 0x7c0b00,33,,0,documented
 0x7c0b40,52,,1,to do
-0x7c0b80,1700,,1,to do
+0x7c0b80,1700,,1,documented
 0x7c1230,351,,3,to do
 0x7c14a0,30,DeletingDestructor,1,rewritten
 0x7c14c0,7,BaseClass::SetClass,1,rewritten
@@ -11674,7 +11674,7 @@ address,size,name,callers,status
 0x864760,711,,2,to do
 0x864a30,16,,5,to do
 0x864a40,860,,1,documented
-0x864da0,1638,,1,to do
+0x864da0,1638,,1,documented
 0x865410,113,,33,to do
 0x865490,97,,4,to do
 0x865500,115,,15,to do
@@ -11987,7 +11987,7 @@ address,size,name,callers,status
 0x88aeb0,75,,4,to do
 0x88af00,213,,1,to do
 0x88b0a0,964,,1,to do
-0x88b470,1651,,1,to do
+0x88b470,1651,,1,documented
 0x88bd80,231,,4,to do
 0x88be80,113,,1,documented
 0x88bf40,30,DeletingDestructor,2,rewritten
@@ -12534,7 +12534,7 @@ address,size,name,callers,status
 0x8e3f40,302,,3,to do
 0x8e4070,424,,5,to do
 0x8e4220,625,,1,to do
-0x8e44a0,1682,,1,to do
+0x8e44a0,1682,,1,documented
 0x8e4b40,20,,2,to do
 0x8e4c00,391,,1,to do
 0x8e4d90,23,,1,to do
@@ -12612,7 +12612,7 @@ address,size,name,callers,status
 0x8eb3e0,726,,1,to do
 0x8eb6c0,404,,9,to do
 0x8eb860,2810,,2,documented
-0x8ec360,1618,,2,to do
+0x8ec360,1618,,2,documented
 0x8ec9d0,2131,,5,documented
 0x8ed250,4513,,1,documented
 0x8ee400,851,,1,to do
@@ -12780,7 +12780,7 @@ address,size,name,callers,status
 0x906000,164,Array<20>::SetCapacity,1,rewritten
 0x9060f0,204,,1,to do
 0x9061c0,306,,1,to do
-0x906300,1603,,1,to do
+0x906300,1603,,1,documented
 0x906950,2759,,1,documented
 0x907440,447,,1,to do
 0x907600,1298,,1,to do
@@ -13043,7 +13043,7 @@ address,size,name,callers,status
 0x929700,892,,1,documented
 0x929ab0,110,,2,to do
 0x929b20,145,,1,to do
-0x929bc0,1687,,1,to do
+0x929bc0,1687,,1,documented
 0x92a260,2610,,0,documented
 0x92aca0,2925,,1,documented
 0x92b820,313,,1,to do
@@ -13198,7 +13198,7 @@ address,size,name,callers,status
 0x93da00,264,,16,to do
 0x93dbf0,205,,36,to do
 0x93dcd0,672,,0,to do
-0x93df70,1644,,2,to do
+0x93df70,1644,,2,documented
 0x93e5e0,494,,1,to do
 0x93e7d0,103,,16,to do
 0x93e840,3229,,2,documented
@@ -13390,7 +13390,7 @@ address,size,name,callers,status
 0x95b6b0,410,,1,to do
 0x95b880,73,,1,to do
 0x95b8d0,821,,1,to do
-0x95bc10,1590,,4,to do
+0x95bc10,1590,,4,documented
 0x95c260,551,,1,to do
 0x95c490,4075,,3,to do
 0x95dc10,57,,1,to do
@@ -13414,7 +13414,7 @@ address,size,name,callers,status
 0x95fce0,1870,,1,documented
 0x960480,229,,1,to do
 0x960570,651,,2,to do
-0x960810,1646,,2,to do
+0x960810,1646,,2,documented
 0x960e90,1574,,2,to do
 0x9614c0,1316,,0,to do
 0x9619f0,2460,,1,documented
@@ -13461,7 +13461,7 @@ address,size,name,callers,status
 0x965b10,182,,1,to do
 0x965bd0,216,,2,to do
 0x965d30,85,,1,documented
-0x965d90,1713,,0,to do
+0x965d90,1713,,0,documented
 0x966450,9,,2,to do
 0x966460,7,SetTable,6,rewritten
 0x9664b0,88,,1,to do
@@ -13499,7 +13499,7 @@ address,size,name,callers,status
 0x9685a0,30,DeletingDestructor,1,rewritten
 0x9685d0,20,,1,documented
 0x968630,109,,0,documented
-0x9686a0,1678,,1,to do
+0x9686a0,1678,,1,documented
 0x968d30,30,DeletingDestructor,1,rewritten
 0x968d60,42,,2,documented
 0x968d90,20,,1,documented
@@ -13636,7 +13636,7 @@ address,size,name,callers,status
 0x970e90,143,,2,documented
 0x970f20,204,,2,to do
 0x971000,85,,1,to do
-0x971060,1685,,1,to do
+0x971060,1685,,1,documented
 0x971700,414,,2,to do
 0x9718a0,278,,1,to do
 0x9719c0,766,,1,to do
@@ -13664,7 +13664,7 @@ address,size,name,callers,status
 0x974080,30,DeletingDestructor,1,rewritten
 0x9740c0,79,,1,documented
 0x974140,368,,1,to do
-0x9742b0,1616,,2,to do
+0x9742b0,1616,,2,documented
 0x974900,192,,2,to do
 0x9749c0,891,,2,to do
 0x974d60,30,DeletingDestructor,2,rewritten
@@ -14374,10 +14374,10 @@ address,size,name,callers,status
 0x9b94b0,2023,,1,documented
 0x9b9cd0,71,,0,documented
 0x9b9d40,356,,1,documented
-0x9b9eb0,1720,,1,to do
+0x9b9eb0,1720,,1,documented
 0x9ba570,1823,,1,documented
 0x9bac90,1417,,1,to do
-0x9bb220,1722,,1,to do
+0x9bb220,1722,,1,documented
 0x9bb8e0,261,,5,to do
 0x9bb9f0,148,,5,to do
 0x9bba90,30,DeletingDestructor,3,rewritten
@@ -14866,7 +14866,7 @@ address,size,name,callers,status
 0x9e63c0,314,,1,to do
 0x9e6500,305,,1,to do
 0x9e6640,105,,1,documented
-0x9e66b0,1705,,2,to do
+0x9e66b0,1705,,2,documented
 0x9e6d60,1241,,2,to do
 0x9e7240,1937,,1,to do
 0x9e79e0,2091,,2,to do
@@ -15055,7 +15055,7 @@ address,size,name,callers,status
 0x9f90a0,76,,2,to do
 0x9f90f0,61,,1,documented
 0x9f9130,118,,2,documented
-0x9f91b0,1636,,1,to do
+0x9f91b0,1636,,1,documented
 0x9f98a0,302,,2,to do
 0x9f99d0,290,,2,to do
 0x9f9b00,68,,0,to do
@@ -15301,7 +15301,7 @@ address,size,name,callers,status
 0xa0f190,860,,1,to do
 0xa0f590,347,,4,to do
 0xa0f6f0,663,,1,to do
-0xa0f990,1606,,4,to do
+0xa0f990,1606,,4,documented
 0xa0ffe0,537,,3,to do
 0xa10350,30,DeletingDestructor,1,rewritten
 0xa10370,7,BaseClass::SetClass,1,rewritten
@@ -15376,7 +15376,7 @@ address,size,name,callers,status
 0xa17520,87,,3,documented
 0xa17580,294,,1,to do
 0xa176b0,901,,2,to do
-0xa17a40,1639,,1,to do
+0xa17a40,1639,,1,documented
 0xa180c0,194,,2,documented
 0xa18190,30,DeletingDestructor,2,rewritten
 0xa181b0,937,,4,documented
@@ -16695,7 +16695,7 @@ address,size,name,callers,status
 0xaa4580,232,,1,documented
 0xaa4700,58,,1,to do
 0xaa4920,39,,1,to do
-0xaa4950,1585,,1,to do
+0xaa4950,1585,,1,documented
 0xaa4f90,95,,1,to do
 0xaa4ff0,697,,3,to do
 0xaa52b0,272,,1,to do
@@ -16762,7 +16762,7 @@ address,size,name,callers,status
 0xaaafd0,271,,0,to do
 0xaab1f0,110,,1,documented
 0xaab260,30,DeletingDestructor,0,rewritten
-0xaab280,1702,,1,to do
+0xaab280,1702,,1,documented
 0xaab930,703,,1,to do
 0xaabc20,49,,0,to do
 0xaabc60,212,,23,to do
@@ -17147,7 +17147,7 @@ address,size,name,callers,status
 0xacf5c0,199,,1,documented
 0xacf690,1544,,0,documented
 0xacfcb0,159,,1,to do
-0xacfdb0,1641,,1,to do
+0xacfdb0,1641,,1,documented
 0xad0630,219,,1,documented
 0xad0710,323,,1,to do
 0xad0860,30,DeletingDestructor,3,rewritten
@@ -17420,7 +17420,7 @@ address,size,name,callers,status
 0xaf60e0,928,,1,to do
 0xaf6480,864,,3,to do
 0xaf67e0,1403,,1,to do
-0xaf6d60,1596,,2,to do
+0xaf6d60,1596,,2,documented
 0xaf73a0,432,,2,to do
 0xaf7570,24,,1,to do
 0xaf75d0,86,,0,documented
@@ -18033,7 +18033,7 @@ address,size,name,callers,status
 0xb35670,61,,2,to do
 0xb356b0,81,,3,to do
 0xb35710,81,,4,to do
-0xb35770,1722,,1,to do
+0xb35770,1722,,1,documented
 0xb35e30,73,,3,to do
 0xb36640,30,DeletingDestructor,1,rewritten
 0xb36660,7,BaseClass::SetClass,1,rewritten
@@ -18251,7 +18251,7 @@ address,size,name,callers,status
 0xb51990,167,,0,to do
 0xb51a40,57,,3,documented
 0xb51a90,46,,1,to do
-0xb51ad0,1708,,3,to do
+0xb51ad0,1708,,3,documented
 0xb52180,164,,1,to do
 0xb522e0,786,,1,to do
 0xb52630,113,,1,documented
@@ -19243,7 +19243,7 @@ address,size,name,callers,status
 0xbaa4f0,201,,2,to do
 0xbaa5e0,758,,2,to do
 0xbaa9d0,30,DeletingDestructor,2,rewritten
-0xbaa9f0,1712,,1,to do
+0xbaa9f0,1712,,1,documented
 0xbab1b0,1306,,6,to do
 0xbab6f0,77,,4,to do
 0xbab740,822,,1,to do
@@ -19433,7 +19433,7 @@ address,size,name,callers,status
 0xbb9090,891,,0,to do
 0xbb9410,2194,,1,documented
 0xbb9cb0,200,,1,to do
-0xbb9d80,1700,,1,to do
+0xbb9d80,1700,,1,documented
 0xbba430,3997,,1,documented
 0xbbb3d0,695,,0,to do
 0xbbb690,1727,,0,documented
@@ -19635,7 +19635,7 @@ address,size,name,callers,status
 0xbc78a0,73,,2,to do
 0xbc78f0,19,,33,documented
 0xbc7910,43,,1,to do
-0xbc7940,1601,,2,to do
+0xbc7940,1601,,2,documented
 0xbc7f90,73,,0,to do
 0xbc80c0,18,,2,documented
 0xbc8110,998,,2,to do
@@ -19963,7 +19963,7 @@ address,size,name,callers,status
 0xbd76b0,8,,8,documented
 0xbd76c0,247,,0,to do
 0xbd77c0,215,,2,to do
-0xbd78a0,1656,,3,to do
+0xbd78a0,1656,,3,documented
 0xbd7f30,257,,1,to do
 0xbd8040,30,DeletingDestructor,0,rewritten
 0xbd8060,32,,0,documented
@@ -20099,7 +20099,7 @@ address,size,name,callers,status
 0xbe29e0,836,,1,to do
 0xbe2d30,650,,2,to do
 0xbe2fd0,264,,1,to do
-0xbe30e0,1615,,1,to do
+0xbe30e0,1615,,1,documented
 0xbe3740,218,,1,to do
 0xbe3820,381,,3,to do
 0xbe3ad0,7,SetTable,5,rewritten
@@ -21574,7 +21574,7 @@ address,size,name,callers,status
 0xc55580,636,,2,to do
 0xc55800,264,,1,documented
 0xc55910,2545,,2,documented
-0xc56320,1668,,2,to do
+0xc56320,1668,,2,documented
 0xc569b0,83,,43,documented
 0xc56a10,247,,1,to do
 0xc56b20,145,,1,documented
@@ -21944,7 +21944,7 @@ address,size,name,callers,status
 0xc70620,211,,1,to do
 0xc70770,391,,2,to do
 0xc70da0,673,,1,to do
-0xc71070,1693,,1,to do
+0xc71070,1693,,1,documented
 0xc719f0,26,OwnedPointer::Reset,2,rewritten
 0xc71a10,130,Array<4>::SetCapacity,1,rewritten
 0xc71aa0,93,,6,to do
@@ -21981,7 +21981,7 @@ address,size,name,callers,status
 0xc75fe0,155,,1,to do
 0xc760f0,119,,1,documented
 0xc765a0,673,,1,to do
-0xc76870,1693,,1,to do
+0xc76870,1693,,1,documented
 0xc76f70,820,,1,to do
 0xc77340,24,,1,to do
 0xc77360,16,,1,documented
@@ -21998,7 +21998,7 @@ address,size,name,callers,status
 0xc8b660,44,,1,to do
 0xc8b760,142,,1,to do
 0xc8b8e0,396,,1,to do
-0xc8ba70,1719,,3,to do
+0xc8ba70,1719,,3,documented
 0xc8c160,6372,,1,to do
 0xc8da50,3500,,1,documented
 0xc8e800,6080,,1,to do
@@ -22030,7 +22030,7 @@ address,size,name,callers,status
 0xc947f0,1803,,2,documented
 0xc94f00,109,,1,documented
 0xc95510,673,,1,to do
-0xc957e0,1693,,1,to do
+0xc957e0,1693,,1,documented
 0xc95ee0,818,,1,to do
 0xc96350,26,OwnedPointer::Reset,2,rewritten
 0xc96370,130,Array<4>::SetCapacity,1,rewritten
@@ -22315,7 +22315,7 @@ address,size,name,callers,status
 0xcae420,271,,0,to do
 0xcae530,549,,1,documented
 0xcae870,488,,1,to do
-0xcaea60,1584,,1,to do
+0xcaea60,1584,,1,documented
 0xcaf090,659,,2,documented
 0xcaf330,659,,1,to do
 0xcaf5d0,260,,1,to do
@@ -22935,11 +22935,11 @@ address,size,name,callers,status
 0xcdf4c0,457,,2,to do
 0xcdf690,198,,12,to do
 0xcdf760,200,,0,to do
-0xcdf840,1667,,0,to do
-0xcdfed0,1641,,2,to do
+0xcdf840,1667,,0,documented
+0xcdfed0,1641,,2,documented
 0xce0540,301,,0,to do
-0xce0670,1684,,0,to do
-0xce0d10,1652,,0,to do
+0xce0670,1684,,0,documented
+0xce0d10,1652,,0,documented
 0xce1390,650,,7,documented
 0xce1640,34,,1,to do
 0xce1670,64,,1,to do
@@ -22997,7 +22997,7 @@ address,size,name,callers,status
 0xce35f0,53,,0,to do
 0xce3630,30,DeletingDestructor,0,rewritten
 0xce3650,70,,0,to do
-0xce36a0,1718,,1,to do
+0xce36a0,1718,,1,documented
 0xce3d60,388,,1,to do
 0xce3ef0,142,,3,documented
 0xce3f80,94,,1,to do

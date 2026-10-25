@@ -395,3 +395,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9f91b0` | Firework::Ground9F91B0 | In outline: works out where a firework part meets the terrain, cell by cell (rounded) |
 | `0x9742b0` | Particles::Draw9742B0 | In outline: when particles are on (`0x12F018C` +0x24 +1), draws a particle list for the current device (ForCurrent(3)), each quad from its direction and its colour times a fade (+0x40) |
 | `0xaf6d60` | Effect::BlendAF6D60 | In outline: when not flagged (+0x60), makes a blender for an effect (Blender::Blender, FloatBlenderElement) and starts it (`0x98A770`) |
+| `0x85e7b0` | Scenery::HitTest85E7B0 | In outline: whether a ray hits a scenery item's pieces (`0xCDEB10`), checking each one (`0x827530`) and keeping the nearest within a distance |
+| `0xcb63c0` | Batches::SortKeyCB63C0 | In outline: a draw batch's sort key by the renderer's mode (`0x13D0DB8`): from its material (`0xCB5BE0`) or its depth, rounded |
+| `0x92eef0` | Water::Jets92EEF0 | In outline: makes a water jet's geometry (`0x92E7F0` with its counts): points it (Matrix::LookAlongZSide) and checks its owner (`0x92E8B0`) |
+| `0x486da0` | Model::FindParts486DA0 | In outline: for a kind 3 model, finds its parts by name (`0xCC8EE0`) and sets each one up (`0x485690`, 0x60 bytes each) |
+| `0x97bce0` | Shapes::Draw97BCE0 | In outline: draws a set of shapes (+0x4C, count +0x50) with a batch (`0x499160`), counting it (Counter::Increment) |
