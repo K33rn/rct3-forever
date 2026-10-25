@@ -35,15 +35,15 @@ runs), **documented** (understood and described, next to rewrite), or **to do**.
 and pieces the compiler split off from functions are counted separately; they don't need rewriting.
 
 <!-- progress -->
-`░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **1.19% rewritten**, 0.49% understood and documented (by code size)
+`█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **1.30% rewritten**, 0.54% understood and documented (by code size)
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 1,203 | 108,515 bytes | 1.19% |
-| Documented | 59 | 44,992 bytes | 0.49% |
-| To do | 26,830 | 8,953,423 bytes | 98.31% |
-| **Game total** | **28,092** | **9,106,930 bytes** | |
-| Library code Ghidra recognised (stays as is) | 476 | 83,778 bytes | |
+| Rewritten | 1,203 | 108,515 bytes | 1.30% |
+| Documented | 59 | 44,992 bytes | 0.54% |
+| To do | 24,456 | 8,163,160 bytes | 98.15% |
+| **Game total** | **25,718** | **8,316,667 bytes** | |
+| Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |
 | Compiler-made pieces (go with their function) | 42,200 | 506,334 bytes | |
 
 Details: [docs/progress.md](docs/progress.md).

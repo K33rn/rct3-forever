@@ -7,8 +7,10 @@ function's status, docs/progress.md is rewritten and the README's progress secti
 
 Status:
   rewritten   a REWRITE(...) in forever/src/rewrite/*.cpp replaces it
-  documented  named in docs/exe-map.md or docs/research-physics-and-guests.md (understood, not rewritten yet)
-  library     C / C++ runtime or MFC code Ghidra recognised by its signature: stays as it is
+  documented  understood, not rewritten yet: described in a table row of docs/notes/*.md (the address in the row's
+              first column), or named in docs/exe-map.md or docs/research-physics-and-guests.md
+  library     Microsoft's code linked into the exe: what Ghidra recognised by its signature, and the ranges in
+              docs/notes/library.md. It stays as it is
   generated   pieces the compiler made, not functions of their own: exception clean-up blocks (Unwind@, Catch@)
               and split-off switch cases; they go with the function they belong to
   to do       everything else
@@ -22,6 +24,7 @@ import sys
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FUNCS = os.path.join(HERE, 'docs', 'functions.csv')
 DOCS = [os.path.join(HERE, 'docs', 'exe-map.md'), os.path.join(HERE, 'docs', 'research-physics-and-guests.md')]
+NOTES = os.path.join(HERE, 'docs', 'notes')
 ORDER = ['rewritten', 'documented', 'to do', 'library', 'generated']
 
 
@@ -63,6 +66,24 @@ def documented(addrs):
     return seen & addrs
 
 
+def noted(addrs):
+    """addresses in the first column of the tables in docs/notes/*.md (library.md: ranges)"""
+    found, ranges = set(), []
+    for p in glob.glob(os.path.join(NOTES, '*.md')):
+        for line in open(p, encoding='utf-8'):
+            m = re.match(r'\|([^|]*)\|', line)
+            if not m:
+                continue
+            first = m.group(1)
+            if os.path.basename(p) == 'library.md':
+                r = re.match(r'\s*`0x([0-9a-fA-F]+)`\s*[–-]\s*`0x([0-9a-fA-F]+)`', first)
+                if r:
+                    ranges.append((int(r.group(1), 16), int(r.group(2), 16)))
+                continue
+            found |= {int(h, 16) for h in re.findall(r'`0x([0-9a-fA-F]+)`', first)}
+    return found & addrs, ranges
+
+
 def generated(name):
     return name.startswith(('Unwind@', 'Catch@', 'caseD_', 'switchD_'))
 
@@ -72,14 +93,17 @@ def main():
     rw = rewritten()
     addrs = {int(r['address'], 16) for r in rows}
     doc = documented(addrs)
+    notes, lib_ranges = noted(addrs)
     for r in rows:
         a = int(r['address'], 16)
         if a in rw:
             r['status'], r['name'] = 'rewritten', rw[a]
-        elif a in doc:
-            r['status'] = 'documented'
         elif generated(r['name']):
             r['status'] = 'generated'
+        elif any(lo <= a < hi for lo, hi in lib_ranges):
+            r['status'] = 'library'
+        elif a in doc or a in notes:
+            r['status'] = 'documented'
         elif r['name'] and r['name'] != 'entry':
             r['status'] = 'library'
         else:
@@ -113,7 +137,7 @@ def main():
     for s in game:
         summary.append(f'| {s.capitalize()} | {count[s]:,} | {size[s]:,} bytes | {pct(size[s], total_b)} |')
     summary.append(f'| **Game total** | **{total_n:,}** | **{total_b:,} bytes** | |')
-    summary.append(f'| Library code Ghidra recognised (stays as is) | {count["library"]:,} | {size["library"]:,} bytes | |')
+    summary.append(f'| Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | {count["library"]:,} | {size["library"]:,} bytes | |')
     summary.append(f'| Compiler-made pieces (go with their function) | {count["generated"]:,} | {size["generated"]:,} bytes | |')
 
     def table(status, limit=None, key=None):
@@ -130,8 +154,8 @@ def main():
            'is never part of this project.', '', *summary, '',
            '## Rewritten', '', *table('rewritten', key=lambda r: int(r['address'], 16)), '',
            '## Understood and documented, not rewritten yet', '',
-           'Described in [the exe map](exe-map.md) or [the research notes](research-physics-and-guests.md): the '
-           'next ones to rewrite.', '', *table('documented', key=lambda r: int(r['address'], 16)), '',
+           'Described in [the notes](notes/), [the exe map](exe-map.md) or '
+           '[the research notes](research-physics-and-guests.md): the next ones to rewrite.', '', *table('documented', key=lambda r: int(r['address'], 16)), '',
            '## To do: the most-called functions', '',
            'The game functions called from the most places. Small ones high on this list are good next targets; '
            'the full list is in functions.csv.', '',
