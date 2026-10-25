@@ -146,3 +146,25 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x438f70` | FrontEnd::LoadStartup | Loads the front end's start-up park (`startup.dat`). Called from `FrontEnd::Start` |
 | `0xb38740` | WildAnimal::Log | Writes a line to the developer's animal log (`AnimalLog.txt`, `%4.2f: %12s: %s`) |
 | `0xa565d0` | DatDesc::Load | Loads a file's description for the file lists (`GUI2_DatDesc`). Called from two places |
+| `0xbce010` | Memory::FreeAligned | Frees a block from the aligned allocator (through the C runtime's `free`). Called from 17,743 places; `OwnedPointer::Reset` and the array rewrites use it |
+| `0xbcdfd0` | Memory::AllocAligned | Allocates a block 16-byte aligned (`_aligned_malloc` of the size rounded up to 16), returning it placed so it ends at the end of the rounded block. Called from 1,813 places |
+| `0xcc4d60` | Colour::Colour | Makes a colour from red, green and blue: stored as blue, green, red, 0. Called from 3,008 places (most of them start-up colour tables) |
+| `0x8087e0` | FieldRegistry::Add | Adds a saved field's description to the registry, which keeps them sorted by name (`0x8085D0`). Called from 2,734 places (every class's field registration) |
+| `0x8085d0` | SortedMap::Insert | Inserts a key and value into a sorted pair of arrays (growing them by their step when full), shifting the later entries up. Called from `FieldRegistry::Add` |
+| `0xbd0490` | WideString::Empty | Returns the shared empty wide string, made on first use (and freed at exit). Called from 2,507 places |
+| `0xbd1880` | TextRef::~TextRef | Destroys a reference to a text (table `0xFA14D0`): lets go of what it refers to and releases its wide string, freeing it with the last reference. Called from 2,418 places |
+| `0xbd14e0` | TextRef::Assign | Makes a text reference refer to what another one does, releasing its old wide string. Called from 625 places |
+| `0x40f730` | ObjectRef::~ObjectRef | Destroys a reference to an object (the reference class `0xF26AE0`, see `ObjectRef::Construct`): leaves its handle's list of references (a broken list stops at a breakpoint). Called from 2,022 places |
+| `0x800860` | ManagedObject::Activate | Makes sure a managed object is set up: the first time (flags at +0x2C), runs its virtual slot 2 (set up) and then slot 3 (after set up). Called from 1,464 places |
+| `0xbcdf40` | Error::ThrowIf | Throws an engine error (`Error::Throw`) when given an error number other than -1. Called from 1,361 places (start-up registrations among them) |
+| `0xbcf7d0` | WideString::FromWide | Makes a reference-counted wide string from a wide C string (count 1, length, capacity rounded up to 16). Called from 1,348 places |
+| `0x403be0` | WideString::AssignC | Sets a wide string from C text (its length, then `0xBD0720`). Called from 1,170 places |
+| `0xbd0720` | WideString::Append | Appends characters to a wide string, copying it first when it is shared (a new block of the combined length rounded up to 16). Called from `WideString::AssignC` and others |
+| `0x403bb0` | WideString::AssignWide | Sets a wide string from another one's characters (`0xBD0640`). Called from 1,034 places |
+| `0xbcffe0` | WideString::MakeUnique | Makes a wide string's text its own before changing it: when shared, copies it into a new string and lets go of the old one. Called from 865 places |
+| `0x805750` | Handle::Null | Returns the handle that refers to nothing, with one more reference (made on first use: 0x28 bytes). Called from 730 places; `ObjectRef::Construct` and the other reference rewrites use it |
+| `0x41c740` | WideString::Copy | Copies a wide string (or the empty one). Called from 618 places |
+| `0xbeca40` | Name::Assign | Sets a name entry from another (copying its number at +0xC) with a value. Called from 611 places |
+| `0xbecc10` | NameTable::Set | Stores a value under a name's number in a table, growing the table (by 4) to fit. Called from 611 places |
+| `0x40a090` | Terrain::Get | Returns the park's terrain (`0x1311650`), creating it (`RCT3Terrain`, 0x98 bytes, 90 x 90) and activating it the first time. Called from 526 places |
+| `0xbd99e0` | ResourceRef::~ResourceRef | Destroys a reference to a resource (tables `0xFA5388` / `0xFA5380`). Called from 714 places |

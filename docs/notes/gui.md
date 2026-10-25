@@ -306,3 +306,10 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xac8300` | Designer::Instructions | Shows the laser and water-jet designers' instructions (`BlenderUIIntsructions_TT`). Called from three places |
 | `0x7eedc0` | StaffWindow::Title | The staff window's title (`Man_Staff`). Called from `0x619B10` |
 | `0x98e070` | MixMaster::NoScrub | The mix master's music that can't be scrubbed (`Fireworks_MixMaster_MusicNoScrub`). Called from two places |
+| `0x6b0990` | Window::Layout | Lays a window out again when it needs it (flags at +0x94): recalculates its size and position. Called from 617 places |
+| `0x6b0ea0` | Window::~Window | Destroys a window (tables `0xF607D8` / `0xF607C0`): takes it out of the window tree and destroys its children. Called from 608 places |
+| `0x6ad000` | Window::DrawHighlight | Draws a window's highlight when the desktop has highlighting on (a translucent blue tint). Called from 607 places |
+| `0x6b0940` | Window::SetHeight | Sets a window's height from its text height (`0x6ADCC0`), keeping its position. Called from 602 places |
+| `0x6afe10` | Window::SendClick | Sends a window a click event (event table `0xF60700`), telling the tutorial when it is watching (`0xA1F8A0`). Called from 592 places; `0x6AFDC0` sends the other click event |
+| `0x6afdc0` | Window::SendRelease | Sends a window its other click event (event table `0xF606F8`), telling the tutorial when it is watching (`0xA1F890`). Called from 588 places |
+| `0x6ad520` | Window::HandleEvent | Gives a window an event (virtual slot 0x31), passing it to its parent window when it doesn't handle it. Called from 557 places |
