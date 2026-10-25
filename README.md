@@ -13,9 +13,6 @@ Forever has rewritten then runs Forever's code instead of the original, and the 
 before. As more functions are rewritten, more of the game becomes open source that anyone can read, fix and
 improve.
 
-It also comes with the **Park & Peep Editor** built in. Press F9 in a park to view and change any guest, edit the
-park's live statistics and money, lock values, and spawn guests.
-
 **No game files are included.** You need your own RollerCoaster Tycoon 3. RCT3 Forever doesn't change anything in
 the game folder: everything happens in memory while the game runs, and closing it leaves the game exactly as it was.
 
