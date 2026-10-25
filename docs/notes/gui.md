@@ -359,3 +359,11 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x67ac00` | Panel::ChildrenSlot4ThenLayout | Passes slot 4 on to every child (`0x6AFD90`), then lays the window out when it has a related window (+0xF8). Shared by the same panels |
 | `0x490000` | Window::RectFromSize | Sets the window's rectangle (Window::UpdateRect) to start at 0,0 with its own width and height (from +0x7C..+0x88) |
 | `0xac7fb0` | Window::PointToScreen | Turns a point inside the window into a screen position: the window's offset (-0x48 from this interface) plus the point plus Window::ScreenPosition |
+| `0x5f7890` | AttractionPersonStrategy::PointSlot20 | Turns the given point into one relative to the window (its position +0x7C plus offset +0x8C) and hands it to slot 20 of the window kept in `0x12F83F0` |
+| `0x5f7750` | AttractionPersonStrategy::PointSlot35 | The same, handing the point to slot 35 of the window in `0x12F83F0` |
+| `0x5f77b0` | AttractionPersonStrategy::PointSlot38 | The same, handing the point to slot 38 |
+| `0x5f7810` | AttractionPersonStrategy::PointSlot41 | The same, handing the point to slot 41 |
+| `0x99b2b0` | Window::PointToScreen2 | The same as `0xAC7FB0`: the window's offset plus the point plus Window::ScreenPosition. Shared by window classes such as InventibleAnimation |
+| `0xac7020` | FloatBlenderElement::Blend | Sets its value (+0x40) between those of two elements (their interface `0x13CE434`) by the weight given: w x second + (1 - w) x first. Slot 8 of FloatBlenderElement |
+| `0x63acb0` | Window::DeleteChild40 | Deletes the window kept at +0x40 (deleting destructor with 1), then `0x6A1E20`. Shared by several dialogs and panels |
+| `0x63b4e0` | Window::DestroyMember28 | Clears +0x24, and destroys and frees the object kept at +0x28, then `0x6A1E20`. Shared by several dialogs and panels |

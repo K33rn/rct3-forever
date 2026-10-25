@@ -121,3 +121,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4e6600` | TrackedRidePersonInfo::Slot7 | Runs `0x4D1AA0`, then copies +0xB8 into +0xF0. Slot 7 of the tracked ride, mini golf and walk-along-track person infos |
 | `0x84b2e0` | TrackPiece::Slot18 | Asks slot 18 of the part at +0x40 of the piece's interface (`0x130BBCC`), or 0 when it has none. Shared by TrackPiece and PoolPiece |
 | `0x84b300` | TrackPiece::Slot17 | The same for slot 17. Shared by TrackPiece and PoolPiece |
+| `0x424e70` | CustomPersistingSpline::Length | The spline's length: when it has changed (+0x1C) recomputes it (after `0x423DE0` and `0x424540`) as the sum of the segment lengths (slot 5) from +0x10 to the last point, keeping it at +0x20 and clearing the flag; returns it. Slot 3 of CustomPersistingSpline |

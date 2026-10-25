@@ -65,3 +65,17 @@
 | `0x704e20` | Park::BumpTerrainCount | Adds one to the terrain's counter at +0x58, then `0x704A50`. Slots 3-5 of Park |
 | `0xabc210` | PoolSegment::Matches | True when the given object's +0x120 is 0 and its +0x138 is this segment's +4. Slots 5, 15 and 16 of PoolSegment |
 | `0x7290a0` | PathQueue::Slot7 | Hands its two arguments to `0x726D60` when the queue's kind (slot 12) is 3, otherwise to `0x728A50`. Slots 7 and 8 of PathQueue |
+| `0x4c14b0` | AttractionInstance::AddToList | Adds the given object to the end of the attraction's list at +0xCC (a new 12-byte node). Shared by the attraction instance classes (slots 30, 31, 66) |
+| `0x4c0680` | AttractionInstance::Slot12 | While `0x12F54C0` is set: runs `0x58F740`, then calls slot 9 of every object in the attraction's list at +0xCC. Shared by AttractionInstance classes |
+| `0x4aede0` | RideInstance::Slot57 | What the ride's slot 33 gives times `0x4BFA20`'s value when it is positive, else 0 (the same as ChangingRoomInstance's `0xA7B3B0`). Shared by the ride instance classes |
+| `0x52fa30` | RideInstance::Get294Plus4 | Returns the value at +4 of the object at +0x294. Shared by the ride instance classes (slots 94, 95, 130) |
+| `0x52fa70` | RideInstance::SumOfItems | Adds up, over the items the ride's slot 55 gives for each index below its slot 78 count, a quarter of each item's slot 11 value. Shared by the ride instance classes |
+| `0x4bf190` | AttractionInstance::Slot51 | The type's value at +0x20 divided by 32, less `0x7F49C0`'s value divided by 4. Shared by the attraction instance classes |
+| `0x984000` | ResearchCategoryInstance::Percent | The category's progress (+0x80) as a whole percentage (times 100, rounded). Slots 4 and 12 of ResearchCategoryInstance |
+| `0x9843b0` | ResearchCategoryInstance::TitleText | The value of the text `Man_Research` (looked up through `0x41CB90`). Slot 3 of ResearchCategoryInstance |
+| `0x506320` | RideCarCrash::Reset | When a crash is under way (+0xF0), clears it and its value at +0xDC. Slots 3 and 4 of RideCarCrash |
+| `0x786d20` | GuestInjectionPoint::Register | Registers the object with `0xCDEE80`, keeping the handle it gives at +0x58, then `0x833890`. Slots 9 and 10 of GuestInjectionPoint |
+| `0x819200` | LitterBinBehaviour::Register | The same registration for a litter bin (handle at +0x58). Slot 9 of LitterBinBehaviour |
+| `0x818f80` | LitterBinBehaviour::Unregister | When it has a handle (+0x58 not negative), releases it with `0xCDEDE0`, sets it to -1 and runs `0x8338B0`. Slot 11 of LitterBinBehaviour |
+| `0x40ddc0` | ManagedObject::Slot19 | Calls `0x771F90` with 0, then deletes the object kept at +0x2C (its deleting destructor with 1) and clears it. Slot 19 of ManagedObject |
+| `0x40df10` | ManagedObject::Slot28 | Calls `0x771E50` with 0, then deletes the object at +0x2C and clears it. Slot 28 of ManagedObject |

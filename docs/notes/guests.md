@@ -65,3 +65,8 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7e9ee0` | Staff::ResetSlot70 | Calls `0x7C3850`, then clears +0x410 and +0x4D8 and sets +0x4DC to 0.5. Slot 70 of the staff classes |
 | `0x7c3850` | Person::ClearSlot70 | Clears the person's values at +0x310, +0x2E8, +0x2DC, +0x2E0 and the flag at +0x314. Slot 70 of Person |
 | `0x7d56c0` | Person::Slot48 | Calls `0x7CE430` with -1. Slot 48 of Person |
+| `0x754fd0` | Entertainer::ScaleSlot55 | Sets +0x118 to +0x114 times the entertainer type's factor for the current costume (`0xFC4288` by +0xB8, from `0x7578C0`), or times 1 when the type has no such entry. Slot 55 of Entertainer |
+| `0x756ab0` | Entertainer::UpdateTimer | Runs the entertainer's update for the frame (`0x756790` in state 0xD, otherwise `0x7EEC00`), then counts its timer (+0x500) down by the frame time. Slot 39 of Entertainer |
+| `0x797230` | Handyman::SetSpeedFactor | Sets the handyman's factor at +0x114 by his level (+0x414): 1.0 at level 1, 1.1 at 2, 1.2 at 3, 0.9 otherwise; then `0x7D63E0` with the argument and more for a handyman with a task (+0x51C). Slot 40 of Handyman |
+| `0x799750` | LifeGuard::Slot37 | In state 0xD: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of LifeGuard |
+| `0x7a0e50` | Mechanic::Slot37 | In states 0xE, 0xF or 0x14: `0x7A0000` and clears +0x1A4, returning 1; otherwise `0x7ECD90`. Slot 37 of Mechanic |
