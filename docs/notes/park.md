@@ -106,3 +106,10 @@
 | `0xa2c8e0` | CIDDatabaseEntry::Name | The entry's name: the text at +0xC of its data (+0x7C), or `<missing data>` when it has no data. Slots 2, 10 and 17 of CEDDatabaseEntry and CIDDatabaseEntry |
 | `0x4a4860` | AIDDatabaseEntry::MissingDependency | Reports a missing dependency: formats the text `Missing dependency for Attraction`, makes it a wide text and hands it to `0xC211C0` (with `0x10FE634`). Slots 5 and 13 of AIDDatabaseEntry |
 | `0xa2c7b0` | CIDDatabaseEntry::MissingDependency | The same report with the text `Missing dependency for Carriedtem` (spelt so in the game). Slots 5, 13 and 20 of CEDDatabaseEntry and CIDDatabaseEntry |
+| `0x843c30` | SceneryItem::FootprintCentre | The world position of the middle of an object's footprint: the centre of its grid rectangle (its slot 7) times the grid's cell size plus its origin (the terrain grid at +0x54 of `0x40A090`, activated first when needed), with the height of that point (`0x85CAE0`, `0x85CB20`) |
+| `0x4aeb40` | AttractionInstance::Centre | Gives the middle of the attraction's footprint (SceneryItem::FootprintCentre). Slot 5 of the attraction instance classes |
+| `0xb8d930` | AnimalShelter::Centre | Gives the middle of the shelter's footprint (SceneryItem::FootprintCentre). Slot 5 of AnimalShelter |
+| `0x4bf3b0` | AttractionInstance::CentreAndTrue | Writes the middle of the attraction's footprint into the given point and returns 1. Shared by the attraction instance classes (slots 27, 28, 63) |
+| `0x4bfa20` | AttractionInstance::RecentTotal | The total of the attraction's ten-entry history (the table at +0x9C, 12 bytes apart) times 90 / 300 |
+| `0x4bfb10` | AttractionInstance::ResetStats | Starts the attraction's statistics again: the start time (+0x7C) from the game clock (`0x1106C54`, +0x48), its counters cleared and +0x88 set to -1, the ten-entry history made afresh (`0x4BF730`) and cleared |
+| `0x4c35e0` | AttractionInstance::ResetAll | AttractionInstance::ResetStats, then slots 34 and 35 of the object at +0x140. Shared by the ride and attraction instance classes (slots 45, 46, 81) |
