@@ -314,6 +314,17 @@ static void __fastcall stub_field_load(void *self, void *, void *item, void *str
     record(0x31, item);
     record(0x31, loader);
 }
+// the runtime's vector destructor iterator (destroys `count` items of `size` bytes) and a handle for an object
+static void __stdcall stub_vector_destroy(void *items, uint32_t size, int32_t count, void *dtor) {
+    record(0xddcf39, items);
+    record(0xddcf39, (void *)(uintptr_t)size);
+    record(0xddcf39, (void *)(uintptr_t)count);
+    record(0xddcf39, dtor);
+}
+static void *__fastcall stub_handle_of(void *object) {
+    record(0x805700, object);
+    return arena<void>(0x380);
+}
 static uintptr_t g_query_id;   // the global holding the id the copy being checked asks for
 
 // start-up globals: the module list's start-up (fills {table, error} from the arena), the global's constructor
@@ -350,6 +361,7 @@ static void install_stubs() {
     stub(0xbe4060, (void *)stub_writer_write);
     stub(0xbcdf40, (void *)stub_global_from_start);
     stub(0xddc870, (void *)stub_atexit);
+    stub(0xddcf39, (void *)stub_vector_destroy);
 }
 
 // ---- the tests ----------------------------------------------------------------------------------------------
@@ -542,6 +554,25 @@ static std::vector<Test> tests() {
         arena<void *>(0x180)[0] = vt;
         link(0x180, 0x380);
     };
+    // reference constructors: a new reference at 0x600 (filled with noise), joining the null handle's list
+    // (0x400) or the list of the handle 0x805700 gives for the object at 0x500 (0x380, which has a reference)
+    Test reference_null{0x460440, [=](Rng &r) {
+                            handles(r);
+                            for (int i = 0; i < 8; i++) arena<uint32_t>(0x600)[i] = r.next();
+                        },
+                        [](void *fn) {
+                            return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x600))};
+                        }};
+    Test reference_to{0x410330, [=](Rng &r) {
+                          handles(r);
+                          for (int i = 0; i < 8; i++) arena<uint32_t>(0x600)[i] = r.next();
+                      },
+                      [](void *fn) {
+                          return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *))fn)(
+                              arena<void>(0x600), nullptr, arena<void>(0x500))};
+                      }};
+    reference_to.prepare = [](const rewrite::Entry *) { stub_for_now(0x805700, (void *)stub_handle_of); };
+    reference_to.finish = [](const rewrite::Entry *) { unstub(); };
     Test assign{0x410100, handles, [](void *fn) {
                     return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *))fn)(
                         arena<void>(0x100), nullptr, arena<void>(0x180))};
@@ -792,10 +823,21 @@ static std::vector<Test> tests() {
         cleanup_g = rewrite::cleanup_global(e->at);
         cleanup_saved = *(uint32_t *)cleanup_g;
     };
+    // freeing arrays of objects: the pointer at 0x100 is null or points at items at 0x204 (count at 0x200)
+    Test array_free{0x420b40,
+                    [=](Rng &r) {
+                        fresh(r);
+                        *arena<int32_t>(0x200) = r.range(0, 6);
+                        *arena<void *>(0x100) = r.next() % 4 ? arena<void>(0x204) : nullptr;
+                    },
+                    [](void *fn) {
+                        ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                        return Result{*arena<uint32_t>(0x100)};
+                    }};
     cleanup.finish = [](const rewrite::Entry *) { *(uint32_t *)cleanup_g = cleanup_saved; };
 
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
-                    &deleting, &query, &module, &cached, &array_load, &cleanup}) {
+                    &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free}) {
         x->iterations = (x == &deleting || x == &query || x == &module) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

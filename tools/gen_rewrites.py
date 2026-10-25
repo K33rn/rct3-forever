@@ -53,6 +53,26 @@ def main():
         ins = [i for i in md.disasm(mem[a - BASE:a - BASE + n], a) if i.mnemonic not in ('int3', 'nop')]
         return ' ; '.join(i.mnemonic + ' ' + re.sub(r'\b\d+\b', 'N', re.sub(r'0x[0-9a-f]+', 'N', i.op_str)) for i in ins)
     LOAD = sig_at(0x425470)
+
+    # strict shapes: every offset and small constant as in the representative; only addresses (code, tables,
+    # globals: 0x400000 and up) may differ, and the instructions listed in `loose` may differ in any constant
+    def strict(ins, loose=()):
+        return [i.mnemonic + ' ' + (re.sub(r'0x[0-9a-f]+', 'N', i.op_str) if k in loose else
+                                    re.sub(r'0x[0-9a-f]{6,}', lambda m: 'G' if int(m.group(0), 16) >= BASE else m.group(0), i.op_str))
+                for k, i in enumerate(ins)]
+
+    def body(a):
+        n = next(int(r['size']) for r in funcs if int(r['address'], 16) == a)
+        return [i for i in md.disasm(mem[a - BASE:a - BASE + n], a) if i.mnemonic not in ('int3', 'nop')]
+
+    def addresses(ins):
+        return [v for i in ins for o in i.operands if o.type == X.X86_OP_IMM
+                for v in [o.imm & 0xffffffff] if v >= BASE]
+
+    REF_NULL, REF_TO = strict(body(0x460440)), strict(body(0x410330))
+    FREE_LOOSE = (10,)   # push <item size>
+    ARRAY_FREE = strict(body(0x420B40), FREE_LOOSE)
+    n_rn = n_rt = n_af = 0
     # functions the hand-written rewrites already replace (REWRITE and the arrays of REWRITE_COPIES)
     handwritten = set()
     for p in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')):
@@ -67,6 +87,24 @@ def main():
         ins = [i for i in md.disasm(mem[va - BASE:va - BASE + n], va) if i.mnemonic not in ('int3', 'nop')]
         s = ' ; '.join(i.mnemonic + ' ' + re.sub(r'\b\d+\b', 'N', re.sub(r'0x[0-9a-f]+', 'N', i.op_str)) for i in ins)
         first = ', '.join(f'0x{b:02x}' for b in mem[va - BASE:va - BASE + 8])
+        st = strict(ins)
+        if st == REF_NULL or st == REF_TO:
+            a = addresses(ins)
+            if a[0] != 0xF26AE0 or a[1] != (0x805750 if st == REF_NULL else 0x805700):
+                continue
+            out.append(f'{"REF_NULL" if st == REF_NULL else "REF_TO"}({va:#x}, {a[2]:#x}, {first})')
+            if st == REF_NULL:
+                n_rn += 1
+            else:
+                n_rt += 1
+            continue
+        if strict(ins, FREE_LOOSE) == ARRAY_FREE:
+            a = addresses(ins)   # the branch, the item destructor, the iterator, the free
+            if a[2:] != [0xDDCF39, 0xBCE010]:
+                continue
+            out.append(f'ARRAY_FREE({va:#x}, {ins[10].operands[0].imm:#x}, {a[1]:#x}, {first})')
+            n_af += 1
+            continue
         if s == DELETING:
             calls = [i.operands[0].imm & 0xffffffff for i in ins if i.mnemonic == 'call']
             test = next(i for i in ins if i.mnemonic == 'test')
@@ -115,7 +153,8 @@ def main():
             out.append(f'QUERY({va:#x}, {ins_id.operands[1].mem.disp & 0xffffffff:#x}, {first})')
             n_q += 1
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
-    print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups')
+    print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
+          'reference constructors,', n_af, 'object array frees')
 
 
 if __name__ == '__main__':

@@ -139,6 +139,62 @@ template <uint32_t GLOBAL> static void __cdecl global_cleanup() {
     *(void **)GLOBAL = nullptr;
 }
 
+// ---- reference constructors ----------------------------------------------------------------------------------
+// A reference class built on the reference base (table 0xF26AE0): +4 the handle referred to, +8 its node in the
+// handle's list of references (the list's head at handle +0x20; new nodes go first), +0x10 the reference itself,
+// +0x14 the value, +0x18 a flag set. Either refers to nothing (the null handle, 0x805750) with the value cleared, or
+// to a given object (its handle from 0x805700), the object also kept as the value. Then the class's own table.
+
+static void join_list(uint32_t *self, uint8_t *handle) {
+    self[1] = (uint32_t)(uintptr_t)handle;
+    uint32_t **head = *(uint32_t ***)(handle + 0x20);
+    uint32_t *node = self + 2;
+    node[0] = (uint32_t)(uintptr_t)head[0];
+    head[0][1] = (uint32_t)(uintptr_t)node;
+    node[1] = (uint32_t)(uintptr_t)head;
+    head[0] = node;
+}
+
+static volatile long g_references;
+
+template <uint32_t TABLE> static void *__fastcall reference_null(uint32_t *self) {
+    g_references++;
+    self[0] = 0xf26ae0;
+    self[4] = (uint32_t)(uintptr_t)self;
+    join_list(self, ((uint8_t * (__fastcall *)(void *))0x805750)(self));
+    self[0] = TABLE;
+    self[5] = 0;
+    ((uint8_t *)self)[0x18] = 1;
+    return self;
+}
+
+template <uint32_t TABLE> static void *__fastcall reference_to(uint32_t *self, void *, void *object) {
+    g_references++;
+    self[0] = 0xf26ae0;
+    self[4] = (uint32_t)(uintptr_t)self;
+    join_list(self, ((uint8_t * (__fastcall *)(void *))0x805700)(object));
+    self[5] = (uint32_t)(uintptr_t)object;
+    self[0] = TABLE;
+    ((uint8_t *)self)[0x18] = 1;
+    return self;
+}
+
+// ---- freeing arrays of objects -------------------------------------------------------------------------------
+// An array of objects made with new[]: the count is kept just in front of the items. Destroys every item (the
+// runtime's vector destructor iterator, 0xDDCF39), frees the block (aligned free) and clears the pointer.
+
+static volatile long g_array_frees;
+
+template <uint32_t SIZE, uint32_t DTOR> static void __fastcall object_array_free(uint8_t **array) {
+    g_array_frees++;
+    uint8_t *items = *array;
+    if (!items) return;
+    ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(items, SIZE, *(int32_t *)(items - 4),
+                                                                     (void *)DTOR);
+    ((void(__cdecl *)(void *))0xbce010)(items - 4);
+    *array = nullptr;
+}
+
 // ---- module globals ---------------------------------------------------------------------------------------------
 // A global object built before main from the start-up of a list of modules: `start` (0xBCE1A0, 0x805AB0, ...)
 // runs the list's initialisers in turn (undoing them if one fails) and gives {table, error}; the global's
@@ -173,7 +229,16 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
 #define CACHED(at, flag, ref, obj, id, cache, ...)                                                                   static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("CachedInterface", at, REWRITE_CAT(original_, at), 8,                                                          (void *)&cached_interface<flag, ref, obj, id, cache>, &g_cached);
 #define LOAD(at, stride, resize, ...)                                                                                static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("StructArrayLoad", at, REWRITE_CAT(original_, at), 8,                                                          (void *)&struct_array_load<stride, resize>, &g_array_loads);
 #define CLEANUP(at, global, ...)                                                                                     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("GlobalCleanup", at, REWRITE_CAT(original_, at), 8,                                                            (void *)&global_cleanup<global>, &g_cleanups);
+#define REF_NULL(at, table, ...)                                                                                     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("Reference::Reference", at, REWRITE_CAT(original_, at), 8,                                                     (void *)&reference_null<table>, &g_references);
+#define REF_TO(at, table, ...)                                                                                       static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("Reference::Reference(object)", at,                                                                            REWRITE_CAT(original_, at), 8, (void *)&reference_to<table>,                                                     &g_references);
+#define ARRAY_FREE(at, size, dtor, ...)                                                                              static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Free", at, REWRITE_CAT(original_, at), 8,                                                        (void *)&object_array_free<size, dtor>, &g_array_frees);
 #include "generated.inc"
+#undef REF_NULL
+#undef REF_TO
+#undef ARRAY_FREE
+#define REF_NULL(...)
+#define REF_TO(...)
+#define ARRAY_FREE(...)
 
 // the cached interfaces' constants, for the equivalence test
 #undef DELETING
