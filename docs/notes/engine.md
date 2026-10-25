@@ -1210,3 +1210,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc07f80` | MainWindow::Create | Creates the game's main window: registers the window class `Main` (with the arrow cursor), sizes it for the client area (AdjustWindowRectEx) and centres it on the desktop, unless a window of that class already exists (FindWindowExA) |
 | `0x82a4e0` | SoundGroup::CheckLooping | Checks a group of sounds; when it mixes looping and non-looping sounds, shows a message box `Mixed loop and non-loop sounds` (`It shouldn't happen`) |
 | `0x69b690` | TextInput::SetImeOpen | Turns the Windows input method (for Asian text) on or off with ImmSetOpenStatus, reporting `SetOpenStatus(` with the result |
+| `0xc56bc0` | Stream::CreateIoEvent | Sets up a file stream's reading: among others creates its event `Stream%02dIoEvent` (CreateEventA, numbered by the stream) |

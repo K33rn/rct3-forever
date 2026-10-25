@@ -463,3 +463,12 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9b26b0` | FireworkMode::ShowInstructions | Shows the firework display mode's instructions in the identification bar (the game text `FireworkIdentbarInstructions`) |
 | `0xaef810` | WaterJetDesigner::OpenFiles | Opens the file window for saved water jet displays (folder `WaterJets`) next to the water jet designer |
 | `0xad6460` | LaserDesigner::OpenFiles | Opens the file window for saved laser shows (folder `Lasers`) next to the laser designer |
+| `0x69a6e0` | Sound::GUIClick | Plays the interface sound `GUIClick` (a sound made with `0x47CEE0`, one of its variations picked at random) |
+| `0x69a830` | Sound::GUIBClick | Plays the interface sound `GUIBClick` the same way |
+| `0x69a980` | Sound::GUIBRelease | Plays the interface sound `GUIBRelease` the same way |
+| `0x69aad0` | Sound::GUIWarning | Plays the interface sound `GUIWarning` the same way |
+| `0x607d00` | Options::ShowCantSave | Shows the game text `CantSaveOptionsTxt` (in a message window) when the options could not be saved |
+| `0x9bc740` | ParticleDesigner::Title | The particle designer window's title, `Advanced Particle Designer` |
+| `0x674180` | AdMenu::AddCustomImage | Adds the `Custom` image entry to the ad menu (AdMenu::BuildCustomImage) and relates it to the menu |
+| `0xb4f7c0` | AnimalCamera::BuildWindow | Builds the animal camera's window area (`AnimalCamWindowArea`, RideCamera::BuildGUI) |
+| `0x7573e0` | Entertainer::AddCostumeMenu | Adds the entertainer's `Costume` menu (Entertainer::BuildCostumeMenu) |

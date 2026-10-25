@@ -135,3 +135,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0xbb42a0` | OpMode::FromName | The number of the ride operating mode whose name (OpMode::Names, `0xBB40E0`) matches the text given, case ignored (the text made plain from wide, `OpMode` meanwhile) |
 | `0x5538e0` | RideSeating::FromName | The number of the seating type whose name (RideSeating::Names, prefix `RideSeating_`) matches the text given, case ignored |
 | `0xbbfc20` | RideAnimation::FromName2 | The number of the ride animation whose name (RideAnimation::FromName's list) matches the text given, case ignored |
+| `0x52c350` | RideCar::CheckPivot | Finds the `Pivot` dummy in a ride car's shape; when it is missing, shows a message box `'Pivot' dummy is missing in the shape` |
