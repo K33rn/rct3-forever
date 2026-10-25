@@ -27,3 +27,4 @@
 | `0x916b40` | Water::Delete | Deletes water, asking first when a waterfall depends on it (`Water_DeleteResponse_WaterfallPrompt`) |
 | `0x9455c0` | Water::FloodPrompt | Asks before flooding when a waterfall depends on the water (`Water_FloodResponse_WaterfallPrompt`). Called from `0x948220` |
 | `0xae4ac0` | LaserWriting::DefaultName | Gives a new laser writing design its default name (`LaserWritingDesigner_DefaultName`). Called from `0xAE4ED0` |
+| `0xada110` | LaserDesc::Activate | A laser effect's activation (virtual slot 3 of LaserDesc and LaserBaseDesc): builds the blenders that animate its values and colours over time (`Blender`, `FloatBlenderElement`, `ColourBlenderElement`) |

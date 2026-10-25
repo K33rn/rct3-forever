@@ -99,3 +99,7 @@ Tracked rides, flat rides and their cars and trains.
 | `0x88c920` | Sign::NoEntry | Sets up a no entry sign (`Sign_NoEntry`). Called from `0x88CD90` |
 | `0xa3dc00` | TrackImporter::ReadTD | Reads a RollerCoaster Tycoon 1 or 2 track design for importing (`.td4`, `.td6`). Called from `TrackImporter::Import` |
 | `0x5e4970` | TrackedRide::CreateTrains | Creates a tracked ride's trains (each a `RideTrainInstance` of 0x3F0 bytes) on its track, through the ride's track interface (`0x59ACC0`, `0x5D4870`), placing them by the 4-way kind of ride. Called from `TrackedRide::CheckTrains` |
+| `0x5964f0` | StallInstance::Activate | A stall's activation (virtual slot 3, run once by `ManagedObject::Activate`): finds and activates its definition by name, and finds where its customers stand (`Stall::FindPeepBones`) |
+| `0x4b2660` | AnimatedRideInstance::Activate | An animated (flat) ride's activation (virtual slot 3): finds and activates its definition, sets up its stations (`0x539090`) and, for the whale show, the show (`WhaleShow::Setup`) |
+| `0x5874c0` | SpecialAttractionInstance::Activate | A special attraction's activation (virtual slot 3): finds and activates its definition by name and sets up its parts |
+| `0x59cf00` | Track::Activate | A ride track's activation (virtual slot 3): checks its track sections (`TrackSection::Check`) and builds its pieces and splines |
