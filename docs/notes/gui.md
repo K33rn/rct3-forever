@@ -592,3 +592,8 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xca7c00` | FloatSlider::SetValue4 | The same, into the bound object's +4 |
 | `0xca7a30` | FloatSlider::SetValue | The same, into the bound value itself |
 | `0xc637c0` | Items::SizeAt | The width or height (+0xD0 or +0xD4, by the flag at +0x1C) of item n of the list (+0xB0), or 0 |
+| `0xca83d0` | UShortSlider::SetValue | Sets the bound 16-bit number (unsigned) from a fraction between the minimum (+8) and maximum (+0xA) |
+| `0xca82c0` | ShortSlider::SetValue | Sets the bound 16-bit number (signed) from a fraction between the minimum (+8) and maximum (+0xA) |
+| `0x5fcb10` | Toggles::ClearIfNone | Clears the shared flag (+0x13C) of the window's bit unless one of its options (+0x148, count +0x150) still has its bit set |
+| `0x682cd0` | Drag::Start | Marks a drag started (+0x258) and keeps the pointer's place relative to the GUI root (`0x12F83F0`, +0xDC), then updates (`0x6B0990`) |
+| `0x61dca0` | List::ScrollToRow | Sets the first shown row (+0xE0) from a position, by the row height, and tells the scroll bar (+0x3C) |

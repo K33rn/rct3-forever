@@ -294,3 +294,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc193e0` | Sound::VolumeToHundredthsDb2 | The same volume conversion (another copy) |
 | `0xb96f90` | Colour::PackArgs | Packs a colour from four values between 0 and 1 (red, green, blue, alpha) into one value (alpha, red, green, blue) |
 | `0x856640` | Draw::CallByType | Calls the drawing routine for an item's type from the table `0x10F2DB0` (eight per mode `0x13D2888`), with a default rectangle of 0, 0, 1, 1 |
+| `0x94de60` | Animations::SetMove | Sets animation n (0xD0 bytes each at +0x1A4) to mode 3, moving from one point to another |
+| `0x425700` | Colour::PackTo | Packs a colour of four values from 0 to 1 into one value (alpha, red, green, blue) |
+| `0x8645c0` | Model::Bounds | A model's box: the stored corners when its bit 10 is set (none when empty), otherwise worked out (`0x864150`) |
+| `0x9eb350` | Sequence::Advance | Moves a running sequence's time on (+4) and steps to its next item (12 bytes each at +0x14) when its time passes, starting it (`0x9EAF50`) or ending the sequence (time -1) after the last |

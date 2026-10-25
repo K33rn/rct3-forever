@@ -140,3 +140,7 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xb34fa0` | Progress::Advance2 | Adds time to a progress value (+0x138, up to 1); gives whether it is past a threshold |
 | `0xcc4890` | Vector4::Add | Adds a four-value vector to this one |
 | `0x912c20` | Spring::Constants | Works out a spring's two constants from its length (+4 minus +0xC), and a third when asked |
+| `0xc5a860` | Vector::Lerp3 | The point between two points by a fraction (another copy) |
+| `0xaf8e30` | Contact::Make | Fills a contact record: two points, a value and a pair |
+| `0xaf75d0` | Contact::Make2 | The same contact record (another copy) |
+| `0xa17520` | Particle::Launch | Starts a particle at a point raised by the height given, with its two values, and marks it active |

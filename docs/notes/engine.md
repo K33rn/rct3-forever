@@ -1424,3 +1424,16 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x9f4da0` | List::MinimumValues | Clears the first entry's value and raises every entry's value below 0.5 to 0.1 |
 | `0x7a9150` | Timers::Tick55 | For each object of a list (+0x50C), counts down its 55 timers that are flagged (+0x14 bits, values from +0x18), clearing the flag of each that runs out |
 | `0x80e340` | SortedTable::LowerBound1C | The place in a sorted table (0x1C bytes each at +0x40, count +0x48) for a value |
+| `0xc505b0` | Slots32::Add | When the table is open (`0x13E6C9C`), puts an entry in the current free slot of 32 (`0x13E6BB8`), counts it and moves on to the next free one (bit 13 of its +0x10); gives the slot, or 0xFF |
+| `0x9465e0` | Queue::HasId | Whether a queue (+0x64, from +0x7C to +0x80) holds an active entry with the id given (+0x3C) |
+| `0x8e0c30` | Values4::Snap | Snaps each of four values to an earlier one when they are within a tolerance, so near-equal values become equal |
+| `0xc44360` | Bytes3List::Equal | Whether a list of three-byte values matches the one given |
+| `0xbdd0d0` | PackedRef::Resolve | Turns a packed reference into an address: the top two bits pick one of three bases, else bit 13 picks a block and the low bits are the offset |
+| `0xc51260` | Request::CopyFrom | Constructor of a request record from another: copies its values and joins the owner's list (+0x10) |
+| `0x9fca90` | ActiveList::Remove | Clears entry n's active flag (0x30 bytes each, +0xC) and takes it out of the active list (+0x64, count +0x6C) |
+| `0xc5f510` | Window::AllowedMoves | Takes off the allowed directions or actions that the window's flags (+0x1C) forbid, for windows of style 3 without bit 0x40 |
+| `0x9885e0` | Object::SetAxes | Copies a matrix's three axes and position into the object (+0x70), leaving their fourth values |
+| `0x988500` | Object::SetAxes2 | The same (another copy) |
+| `0x80e1a0` | SortedPointers::LowerBound8 | The place in a sorted list of objects (+8, count +0x10) for a value of their +8 |
+| `0xc50140` | Stream::Fail | Records a stream's error and its code (+0xC4, +0xC8) the first time (bit 2 of +0x10), calling the handler `0x13E6BB4` for error 0x1004 |
+| `0xaae2d0` | Object::CopyArea | Copies another object's area (+0x148 to +0x154) when it has one (+0x144), otherwise marks it as having none |
