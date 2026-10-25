@@ -169,7 +169,8 @@ def describe(ins, ops, fn):
                 return f'Set +{off:#x}', f'Sets the member at +{off:#x} to its argument' + ra
     # scalar deleting destructor
     calls = [i for i in ins if i.mnemonic == 'call' and imm(i) is not None]
-    if len(calls) == 2 and any(i.mnemonic == 'test' for i in ins) and imm(calls[1]) in FREE and len(ins) <= 12:
+    shape = [i.mnemonic for i in ins]
+    if shape == ['push', 'mov', 'call', 'test', 'je', 'push', 'call', 'add', 'mov', 'pop', 'ret'] and             ins[1].op_str == 'esi, ecx' and imm(calls[1]) in FREE and ins[3].op_str == 'byte ptr [esp + 8], 1':
         return 'Deleting destructor', (f'Destroys the object ({fn(imm(calls[0]))}) and frees its memory when '
                                        f'its argument has bit 0 set; returns the object' + ra)
     return None

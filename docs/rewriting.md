@@ -86,6 +86,11 @@ A rewrite calls other game functions through their addresses (for example
 
 ## Rewritten so far
 
+Template rewrites (`forever/src/rewrite/templates.cpp`) cover functions the compiler made hundreds of times that
+differ only in an address; `tools/gen_rewrites.py` lists each exact copy from your exe in `generated.inc`
+(addresses and first bytes only), and the equivalence test checks every copy, with the game function each one
+calls stood in for while it is checked.
+
 All rewrites pass the equivalence test: 300 random cases at each of the three FPU precisions, or 20 for each copy of a
 function with many copies.
 
@@ -118,6 +123,8 @@ function with many copies.
 | `Pool::Free` | 20 copies (e.g. `0x8501c0`) | Puts an item back on its pool's free list; when every item of the pool is free, the pool's blocks go back to memory | Vanilla Hills: 2,877,853 calls in 6 minutes |
 | `StructArrayField<size>::Size` | 62 copies for structs of 3 to 116 bytes (e.g. `0x460a90` for 28) | Bytes an array of structs saves as: 8 (its length and count) plus each struct's fields' sizes | Vanilla Hills saved: 3,600 calls over 11 struct sizes |
 | `StructArrayField<size>::Save` | 59 copies for structs of 3 to 116 bytes (e.g. `0x460960` for 28) | Saves an array of structs: its length, its count, then each struct's fields, keeping the save file's running checksum | Vanilla Hills saved through it (1.5 MB) and loaded back intact |
+| `DeletingDestructor` | 2,321 copies (template `deleting<destructor>`, listed in `generated.inc`) | What `delete` calls through a class's table: runs the class's destructor, frees the object when bit 0 of the flag is set, returns it | Vanilla Hills: 1,011,518 calls |
+| `QueryInterface` | 194 copies (template `query<id>`) | Asks an object's class (virtual slot 1) for the interface with the id in a global: the class's table by id (+0x14, count +0x18), the interface's offset (+0x10); null when missing | Vanilla Hills: 486,554 calls |
 | `Attraction::IdealGuests` | `0xa88450` | A non-ride attraction's share of IdealGuests: 3 x its value at +0x70 | (equivalence test; the parks tried have no such attraction) |
 
 ## Good next candidates

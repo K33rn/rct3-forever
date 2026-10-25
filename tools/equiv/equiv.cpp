@@ -126,6 +126,8 @@ struct Test {
     int iterations = 0;   // 0: the number given on the command line
     bool data = true;     // also compare the game's .data section (slow; not needed for helpers that only touch
                           // their arguments)
+    // for template rewrites: set up for the copy being checked (its own constants), and undo that afterwards
+    std::function<void(const rewrite::Entry *)> prepare, finish;
 };
 
 static std::vector<uint8_t> g_data0, g_arena0, g_data1, g_arena1;
@@ -140,7 +142,15 @@ static LONG WINAPI crashed(EXCEPTION_POINTERS *x) {
     ExitProcess(3);
 }
 
+static bool check_copy(const rewrite::Entry *e, const Test &t, int iterations, uint64_t seed);
 static bool check(const rewrite::Entry *e, const Test &t, int iterations, uint64_t seed) {
+    if (t.prepare) t.prepare(e);
+    bool same = check_copy(e, t, iterations, seed);
+    if (t.finish) t.finish(e);
+    return same;
+}
+
+static bool check_copy(const rewrite::Entry *e, const Test &t, int iterations, uint64_t seed) {
     static const struct { unsigned short bits; const char *name; } fpu[] = {{0x000, "24"}, {0x200, "53"}, {0x300, "64"}};
     Rng rng{seed};
     if (getenv("EQUIV_VERBOSE")) printf("    0x%06x\n", (unsigned)e->at);
@@ -267,6 +277,27 @@ static void stub(uintptr_t at, void *with) {
     p[0] = 0xe9;
     *(int32_t *)(p + 1) = (int32_t)((uintptr_t)with - (at + 5));
 }
+
+// a stand-in put over one game function for one copy's test, and taken off again
+static uint8_t g_saved[5];
+static uintptr_t g_saved_at;
+static void stub(uintptr_t at, void *with);
+static void stub_for_now(uintptr_t at, void *with) {
+    memcpy(g_saved, (void *)at, 5);
+    g_saved_at = at;
+    stub(at, with);
+}
+static void unstub() {
+    if (g_saved_at) memcpy((void *)g_saved_at, g_saved, 5);
+    g_saved_at = 0;
+}
+// the destructor a deleting destructor calls, and the virtual slot 1 of a test object (its class's interfaces)
+static void __fastcall stub_destructor(void *self) { record(0x10, self); }
+static void *__fastcall stub_class_of(void *self) {
+    record(0x11, self);
+    return *arena<void *>(0x1f0);
+}
+static uintptr_t g_query_id;   // the global holding the id the copy being checked asks for
 
 static void install_stubs() {
     stub(0xbce000, (void *)stub_free);
@@ -577,8 +608,51 @@ static std::vector<Test> tests() {
         t.push_back(x);
     }
 
-    for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free}) {
-        x->iterations = 20;
+    // deleting destructors: each copy calls its own destructor (stood in for while it is checked) and frees the
+    // object when bit 0 of its flag is set
+    Test deleting{0x402ff0,
+                  [=](Rng &r) {
+                      fresh(r);
+                      arena<uint32_t>(0)[0] = r.next() & 3;
+                  },
+                  [](void *fn) {
+                      return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, uint32_t))fn)(
+                          arena<void>(0x100), nullptr, arena<uint32_t>(0)[0])};
+                  }};
+    deleting.prepare = [](const rewrite::Entry *e) {
+        uint8_t *p = (uint8_t *)e->at;   // push esi; mov esi, ecx; call destructor
+        stub_for_now(e->at + 8 + *(int32_t *)(p + 4), (void *)stub_destructor);
+    };
+    deleting.finish = [](const rewrite::Entry *) { unstub(); };
+
+    // QueryInterface: a test object at 0x100 whose class (virtual slot 1) is sometimes missing; the class's table of
+    // interfaces at 0x240 (some empty) with entries at 0x300; the id is set in the copy's own global (sometimes out
+    // of range), and sometimes the object is null
+    Test query{0x40a140,
+               [=](Rng &r) {
+                   fresh(r);
+                   static void *vt[2] = {nullptr, (void *)stub_class_of};
+                   arena<void *>(0x100)[0] = vt;
+                   uint8_t *cls = arena<uint8_t>(0x200);
+                   *arena<void *>(0x1f0) = r.next() % 5 ? cls : nullptr;
+                   *(void **)(cls + 0x14) = arena<void>(0x240);
+                   *(int32_t *)(cls + 0x18) = r.range(0, 8);
+                   for (int i = 0; i < 8; i++) {
+                       arena<void *>(0x240)[i] = r.next() % 4 ? arena<void>(0x300 + 0x20 * i) : nullptr;
+                       *(int32_t *)arena<uint8_t>(0x300 + 0x20 * i + 0x10) = r.range(-64, 64) * 4;
+                   }
+                   *(int32_t *)g_query_id = r.range(0, 9);
+                   arena<uint32_t>(0)[0] = r.next() % 6 ? 0x100 : 0;
+               },
+               [](void *fn) {
+                   uint32_t o = arena<uint32_t>(0)[0];
+                   return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(o ? arena<void>(o) : nullptr)};
+               }};
+    query.prepare = [](const rewrite::Entry *e) { g_query_id = *(uint32_t *)(e->at + 0x12); };
+
+    for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
+                    &deleting, &query}) {
+        x->iterations = (x == &deleting || x == &query) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);
     }

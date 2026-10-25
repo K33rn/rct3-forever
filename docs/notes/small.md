@@ -7,42 +7,37 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | Address | Name | What it does |
 |---|---|---|
 | `0x401030` | Returns 0 | Returns 0 (or false / null) |
-| `0x4029c0` | Deleting destructor | Destroys the object (`0xbd36c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x402a40` | Set table | Sets the object's virtual function table to `0xf264b4` |
 | `0x402ff0` | Deleting destructor | Destroys the object (`0x6a3bf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4034a0` | Deleting destructor | Destroys the object (`0x402930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4034c0` | Deleting destructor | Destroys the object (`0x402bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x403f10` | Deleting destructor | Destroys the object (`0x402940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4042b0` | Deleting destructor | Destroys the object (`0x402bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x404b80` | Deleting destructor | Destroys the object (`0x403610`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4054f0` | Deleting destructor | Destroys the object (`0x403860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x404b80` | Deleting destructor | Destroys the object (`0x403610` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4054f0` | Deleting destructor | Destroys the object (`0x403860` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4073b0` | Get +0x0 | Returns the float at +0x0 |
 | `0x4073c0` | Get +0x8 | Returns the float at +0x8 |
 | `0x4073d0` | Get +0x4 | Returns the float at +0x4 |
 | `0x4073e0` | Get +0xc | Returns the float at +0xc |
-| `0x407720` | Deleting destructor | Destroys the object (`0xcc2090`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x407720` | Deleting destructor | Destroys the object (`0xcc2090` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x408100` | Empty | Does nothing |
-| `0x4085f0` | Deleting destructor | Destroys the object (`0xcc2090`) and frees its memory when its argument has bit 0 set; returns the object |
 | `0x409590` | Deleting destructor | Destroys the object (`0x4085f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x409810` | Deleting destructor | Destroys the object (`0x409450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x409a30` | Deleting destructor | Destroys the object (`0x409980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x409db0` | Deleting destructor | Destroys the object (`0x409980`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x409de0` | Deleting destructor | Destroys the object (`0x409ba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x409ec0` | Deleting destructor | Destroys the object (`0x409ba0`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x40a850` | Deleting destructor | Destroys the object (`0x40a230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x409810` | Deleting destructor | Destroys the object (`0x409450` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x409a30` | Deleting destructor | Destroys the object (`0x409980` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x409de0` | Deleting destructor | Destroys the object (`0x409ba0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x40a850` | Deleting destructor | Destroys the object (`0x40a230` (BodyGuard::~BodyGuard)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x40aeb0` | Get +0x0 | Returns the float at +0x0 |
 | `0x40aec0` | Get +0x4 | Returns the float at +0x4 |
 | `0x40aed0` | Get +0x8 | Returns the float at +0x8 |
-| `0x40b390` | Deleting destructor | Destroys the object (`0xcc61a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x40b390` | Deleting destructor | Destroys the object (`0xcc61a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x40c4e0` | Empty | Does nothing, taking 1 argument off the stack |
-| `0x40d520` | Deleting destructor | Destroys the object (`0x40c980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x40d980` | Deleting destructor | Destroys the object (`0x40c980`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x40d520` | Deleting destructor | Destroys the object (`0x40c980` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x40d9e0` | Set table | Sets the object's virtual function table to `0xf2694c` |
 | `0x40f050` | Deleting destructor | Destroys the object (`0x40da60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x40f180` | Deleting destructor | Destroys the object (`0x40db80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x40f1a0` | Deleting destructor | Destroys the object (`0x40dca0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x40f1c0` | Deleting destructor | Destroys the object (`0x40ddf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x40f1e0` | Deleting destructor | Destroys the object (`0x40f200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x40f180` | Deleting destructor | Destroys the object (`0x40db80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x40f1a0` | Deleting destructor | Destroys the object (`0x40dca0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x40f1c0` | Deleting destructor | Destroys the object (`0x40ddf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x40f1e0` | Deleting destructor | Destroys the object (`0x40f200` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x40f220` | Deleting destructor | Destroys the object (`0x40f240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x40f250` | Deleting destructor | Destroys the object (`0x40f270`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x40f280` | Deleting destructor | Destroys the object (`0x40f2a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -68,56 +63,55 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x40f930` | Deleting destructor | Destroys the object (`0x40da70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x40fad0` | Deleting destructor | Destroys the object (`0x40faf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4100f0` | Thunk | Jumps to `0x40f730` (ObjectRef::~ObjectRef) |
-| `0x410400` | Deleting destructor | Destroys the object (`0x40fd00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x410570` | Deleting destructor | Destroys the object (`0x410590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x412e80` | Deleting destructor | Destroys the object (`0x410ac0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x413870` | Deleting destructor | Destroys the object (`0x4136c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x416360` | Deleting destructor | Destroys the object (`0x4152f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x410400` | Deleting destructor | Destroys the object (`0x40fd00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x410570` | Deleting destructor | Destroys the object (`0x410590` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x412e80` | Deleting destructor | Destroys the object (`0x410ac0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x413870` | Deleting destructor | Destroys the object (`0x4136c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x416360` | Deleting destructor | Destroys the object (`0x4152f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x417130` | Set +0x50 | Sets the member at +0x50 to its argument, taking 1 argument off the stack |
 | `0x417160` | Empty | Does nothing |
-| `0x418980` | Deleting destructor | Destroys the object (`0x4188f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x419900` | Deleting destructor | Destroys the object (`0x419410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x41b560` | Deleting destructor | Destroys the object (`0xbe69d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x418980` | Deleting destructor | Destroys the object (`0x4188f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x419900` | Deleting destructor | Destroys the object (`0x419410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x41b560` | Deleting destructor | Destroys the object (`0xbe69d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x41b820` | Deleting destructor | Destroys the object (`0x41ae40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x41bf70` | Deleting destructor | Destroys the object (`0x41b1a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x41c4d0` | Deleting destructor | Destroys the object (`0x41b5b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x41bf70` | Deleting destructor | Destroys the object (`0x41b1a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x41c4d0` | Deleting destructor | Destroys the object (`0x41b5b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x41cb70` | Deleting destructor | Destroys the object (`0x41ae50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x41d030` | Deleting destructor | Destroys the object (`0x41d050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x41d700` | Deleting destructor | Destroys the object (`0x41d720`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x41d030` | Deleting destructor | Destroys the object (`0x41d050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x41d700` | Deleting destructor | Destroys the object (`0x41d720` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x41f960` | Returns 0x1 | Returns 0x1, taking 1 argument off the stack |
 | `0x41f970` | Returns 0 | Returns 0 (or false / null), taking 1 argument off the stack |
 | `0x41f990` | Returns 0x8876086c | Returns 0x8876086c, taking 2 arguments off the stack |
 | `0x41f9a0` | Returns 0 | Returns 0 (or false / null), taking 1 argument off the stack |
 | `0x41f9c0` | Returns 0x1 | Returns 0x1, taking 1 argument off the stack |
 | `0x41f9e0` | Returns 0 | Returns 0 (or false / null), taking 2 arguments off the stack |
-| `0x4237d0` | Deleting destructor | Destroys the object (`0x421160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4237d0` | Deleting destructor | Destroys the object (`0x421160` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x423ba0` | Empty | Does nothing |
 | `0x423c70` | Set table | Sets the object's virtual function table to `0xf27b40` |
 | `0x424260` | Deleting destructor | Destroys the object (`0x424280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4255d0` | Deleting destructor | Destroys the object (`0x424da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4255d0` | Deleting destructor | Destroys the object (`0x424da0` (CustomPersistingSpline::~CustomPersistingSpline)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x426130` | Empty | Does nothing |
 | `0x4261d0` | Get global 0xf27c64 | Returns the float in the global `0xf27c64` |
 | `0x4261e0` | Get global 0xf27c68 | Returns the float in the global `0xf27c68` |
-| `0x427890` | Deleting destructor | Destroys the object (`0x426c90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x427930` | Deleting destructor | Destroys the object (`0x426de0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x42aa10` | Deleting destructor | Destroys the object (`0x42a5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x42aec0` | Deleting destructor | Destroys the object (`0x42a650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x427890` | Deleting destructor | Destroys the object (`0x426c90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x427930` | Deleting destructor | Destroys the object (`0x426de0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x42aa10` | Deleting destructor | Destroys the object (`0x42a5c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x42aec0` | Deleting destructor | Destroys the object (`0x42a650` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x42b7e0` | Deleting destructor | Destroys the object (`0x42b800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x42bac0` | Deleting destructor | Destroys the object (`0x42bae0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x42bac0` | Deleting destructor | Destroys the object (`0x42bae0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x42c9a0` | Thunk | Calls `0x42c7d0` on `this` +0x24 |
 | `0x42c9b0` | Thunk | Calls `0x42c870` on `this` +0x2c |
-| `0x42d890` | Deleting destructor | Destroys the object (`0x42d350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x42dde0` | Deleting destructor | Destroys the object (`0x42d350`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x42e390` | Deleting destructor | Destroys the object (`0x42e3b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x42d890` | Deleting destructor | Destroys the object (`0x42d350` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x42e390` | Deleting destructor | Destroys the object (`0x42e3b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x42ed20` | Get +0xc | Returns the float at +0xc |
-| `0x430d90` | Deleting destructor | Destroys the object (`0x42ff30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4335e0` | Deleting destructor | Destroys the object (`0x432e90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x430d90` | Deleting destructor | Destroys the object (`0x42ff30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4335e0` | Deleting destructor | Destroys the object (`0x432e90` (FlatTagManager::~FlatTagManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x435190` | Deleting destructor | Destroys the object (`0x434050` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4359f0` | Set table | Sets the object's virtual function table to `0xf284e0` |
 | `0x435a00` | Set table | Sets the object's virtual function table to `0xf284e0` |
 | `0x435ad0` | Set table | Sets the object's virtual function table to `0xf28510` |
 | `0x435c10` | Set table | Sets the object's virtual function table to `0xf284e0` |
-| `0x436270` | Deleting destructor | Destroys the object (`0x618f10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x436270` | Deleting destructor | Destroys the object (`0x618f10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x436ac0` | Deleting destructor | Destroys the object (`0x435c10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x436b00` | Set table | Sets the object's virtual function table to `0xf28534` |
 | `0x436dd0` | Set table | Sets the object's virtual function table to `0xf28528` |
@@ -126,25 +120,25 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x437940` | Deleting destructor | Destroys the object (`0x436b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4379f0` | Deleting destructor | Destroys the object (`0x436dd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x438c00` | Thunk | Calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x4 |
-| `0x43eaa0` | Deleting destructor | Destroys the object (`0x43eac0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x43fba0` | Deleting destructor | Destroys the object (`0x43ef00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x43fef0` | Deleting destructor | Destroys the object (`0x43fbc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x440370` | Deleting destructor | Destroys the object (`0x43ff30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x43eaa0` | Deleting destructor | Destroys the object (`0x43eac0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x43fba0` | Deleting destructor | Destroys the object (`0x43ef00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x43fef0` | Deleting destructor | Destroys the object (`0x43fbc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x440370` | Deleting destructor | Destroys the object (`0x43ff30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4411f0` | Get +0x48 | Returns the float at +0x48 |
-| `0x441780` | Deleting destructor | Destroys the object (`0x441350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x441780` | Deleting destructor | Destroys the object (`0x441350` (GameTime::~GameTime)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x441fa0` | Deleting destructor | Destroys the object (`0x441fc0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x441ff0` | Deleting destructor | Destroys the object (`0x442010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x442020` | Deleting destructor | Destroys the object (`0x442040` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x442050` | Deleting destructor | Destroys the object (`0x442070` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x442080` | Deleting destructor | Destroys the object (`0x4420a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4420b0` | Deleting destructor | Destroys the object (`0x4420d0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x446420` | Deleting destructor | Destroys the object (`0x446020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4465f0` | Deleting destructor | Destroys the object (`0xbe4f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x448760` | Deleting destructor | Destroys the object (`0x4482a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x44ac20` | Deleting destructor | Destroys the object (`0x44a0f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x44bd00` | Deleting destructor | Destroys the object (`0x44b930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x446420` | Deleting destructor | Destroys the object (`0x446020` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4465f0` | Deleting destructor | Destroys the object (`0xbe4f30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x448760` | Deleting destructor | Destroys the object (`0x4482a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x44ac20` | Deleting destructor | Destroys the object (`0x44a0f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x44bd00` | Deleting destructor | Destroys the object (`0x44b930` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44cd90` | Deleting destructor | Destroys the object (`0x44cd80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x44cdb0` | Deleting destructor | Destroys the object (`0x86a0d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x44cdb0` | Deleting destructor | Destroys the object (`0x86a0d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44cf10` | Deleting destructor | Destroys the object (`0x44ca40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44dfc0` | Deleting destructor | Destroys the object (`0x44dfe0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44dff0` | Deleting destructor | Destroys the object (`0x44e010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -152,97 +146,96 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x44e050` | Deleting destructor | Destroys the object (`0x44e070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44e460` | Deleting destructor | Destroys the object (`0x44ca50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44ebc0` | Set +0x18 | Sets the member at +0x18 to 0x0 |
-| `0x44fb80` | Deleting destructor | Destroys the object (`0x44e640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x44fb80` | Deleting destructor | Destroys the object (`0x44e640` (Helicopter::~Helicopter)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x452d60` | Get global 0x1106d44 | Returns the byte in the global `0x1106d44` |
 | `0x4558c0` | Deleting destructor | Destroys the object (`0x4558e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x456a80` | Deleting destructor | Destroys the object (`0x456980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x456a80` | Deleting destructor | Destroys the object (`0x456980` (LoadFileCacheSave::~LoadFileCacheSave)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4571b0` | Get global 0x1106dc0 | Returns the byte in the global `0x1106dc0` |
-| `0x457350` | Deleting destructor | Destroys the object (`0x4837e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x457350` | Deleting destructor | Destroys the object (`0x4837e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45b060` | Deleting destructor | Destroys the object (`0x45af40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45b150` | Deleting destructor | Destroys the object (`0x45b170` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x45c1a0` | Deleting destructor | Destroys the object (`0x45c1c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x45c760` | Deleting destructor | Destroys the object (`0x45c3b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x45cdc0` | Thunk | Jumps to `0x45cc90` |
+| `0x45c1a0` | Deleting destructor | Destroys the object (`0x45c1c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x45c760` | Deleting destructor | Destroys the object (`0x45c3b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x45cdc0` | Thunk | Jumps to `0x45cc90` (Destructor) |
 | `0x45d060` | Deleting destructor | Destroys the object (`0x45d080`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x45f1e0` | Deleting destructor | Destroys the object (`0x45f200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x45f1e0` | Deleting destructor | Destroys the object (`0x45f200` (IEUV::~IEUV)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45f860` | Deleting destructor | Destroys the object (`0x45f880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45f890` | Deleting destructor | Destroys the object (`0x45f8b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45f8c0` | Deleting destructor | Destroys the object (`0x45f8e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45f8f0` | Deleting destructor | Destroys the object (`0x45f910` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4632c0` | Deleting destructor | Destroys the object (`0x461540`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x463f70` | Deleting destructor | Destroys the object (`0x463f90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x464040` | Deleting destructor | Destroys the object (`0x4624a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x465990` | Deleting destructor | Destroys the object (`0x463940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x466060` | Deleting destructor | Destroys the object (`0x4649e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4632c0` | Deleting destructor | Destroys the object (`0x461540` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x463f70` | Deleting destructor | Destroys the object (`0x463f90` (MADatabaseSave::~MADatabaseSave)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x464040` | Deleting destructor | Destroys the object (`0x4624a0` (IEUVProvider::~IEUVProvider)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x465990` | Deleting destructor | Destroys the object (`0x463940` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x466060` | Deleting destructor | Destroys the object (`0x4649e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x466960` | Empty | Does nothing |
-| `0x467840` | Deleting destructor | Destroys the object (`0x4676d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x468210` | Deleting destructor | Destroys the object (`0x468230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x469af0` | Deleting destructor | Destroys the object (`0x469b10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x46a8f0` | Deleting destructor | Destroys the object (`0x46a910`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x46b890` | Deleting destructor | Destroys the object (`0x46b490`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x467840` | Deleting destructor | Destroys the object (`0x4676d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x468210` | Deleting destructor | Destroys the object (`0x468230` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x469af0` | Deleting destructor | Destroys the object (`0x469b10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x46a8f0` | Deleting destructor | Destroys the object (`0x46a910` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x46b890` | Deleting destructor | Destroys the object (`0x46b490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46c3d0` | Deleting destructor | Destroys the object (`0x46c140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46cf30` | Deleting destructor | Destroys the object (`0x46c6b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46cf50` | Deleting destructor | Destroys the object (`0x46cf70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46cf80` | Deleting destructor | Destroys the object (`0x46cfa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x46d180` | Deleting destructor | Destroys the object (`0x46c5d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x46e2d0` | Deleting destructor | Destroys the object (`0x46d230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x46e460` | Deleting destructor | Destroys the object (`0x46d650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x46d180` | Deleting destructor | Destroys the object (`0x46c5d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x46e2d0` | Deleting destructor | Destroys the object (`0x46d230` (GlobalPassportData::~GlobalPassportData)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x46e460` | Deleting destructor | Destroys the object (`0x46d650` (PassportPostBehaviour::~PassportPostBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46f230` | Set +0xc | Sets the member at +0xc to 0x0 |
 | `0x470510` | Deleting destructor | Destroys the object (`0x470530` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x471c10` | Deleting destructor | Destroys the object (`0x471c30` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x471c40` | Deleting destructor | Destroys the object (`0x471c60` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x471c70` | Deleting destructor | Destroys the object (`0x471c90` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x471ca0` | Deleting destructor | Destroys the object (`0x471cc0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x471fe0` | Deleting destructor | Destroys the object (`0x471480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x473b10` | Deleting destructor | Destroys the object (`0x473b30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x473be0` | Deleting destructor | Destroys the object (`0x471d80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x474520` | Deleting destructor | Destroys the object (`0x4743b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x471fe0` | Deleting destructor | Destroys the object (`0x471480` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x473b10` | Deleting destructor | Destroys the object (`0x473b30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x473be0` | Deleting destructor | Destroys the object (`0x471d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x474520` | Deleting destructor | Destroys the object (`0x4743b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4749e0` | Set table | Sets the object's virtual function table to `0xf2ceb4` |
 | `0x4754c0` | Deleting destructor | Destroys the object (`0x4754e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x476430` | Deleting destructor | Destroys the object (`0x476160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x476910` | Deleting destructor | Destroys the object (`0x476100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x477160` | Deleting destructor | Destroys the object (`0x752380`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4772b0` | Deleting destructor | Destroys the object (`0xba5e50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4772d0` | Deleting destructor | Destroys the object (`0xaf0a10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x477350` | Deleting destructor | Destroys the object (`0x4456e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x477370` | Deleting destructor | Destroys the object (`0x811a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x476430` | Deleting destructor | Destroys the object (`0x476160` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x476910` | Deleting destructor | Destroys the object (`0x476100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x477160` | Deleting destructor | Destroys the object (`0x752380` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4772b0` | Deleting destructor | Destroys the object (`0xba5e50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4772d0` | Deleting destructor | Destroys the object (`0xaf0a10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x477350` | Deleting destructor | Destroys the object (`0x4456e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x477370` | Deleting destructor | Destroys the object (`0x811a00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x477390` | Deleting destructor | Destroys the object (`0x76e000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4774a0` | Deleting destructor | Destroys the object (`0xcdcf10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x477560` | Deleting destructor | Destroys the object (`0xae7cf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x477780` | Deleting destructor | Destroys the object (`0x7321d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4777c0` | Deleting destructor | Destroys the object (`0x7be130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4778e0` | Deleting destructor | Destroys the object (`0xac3e40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x477970` | Deleting destructor | Destroys the object (`0x73ab90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4779a0` | Deleting destructor | Destroys the object (`0x48b990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x477a40` | Deleting destructor | Destroys the object (`0xa04380`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4781a0` | Deleting destructor | Destroys the object (`0x4781c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x478340` | Deleting destructor | Destroys the object (`0x4782d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x478700` | Deleting destructor | Destroys the object (`0x478630`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x47c950` | Deleting destructor | Destroys the object (`0x47be70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x47d140` | Deleting destructor | Destroys the object (`0x47cba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4774a0` | Deleting destructor | Destroys the object (`0xcdcf10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x477560` | Deleting destructor | Destroys the object (`0xae7cf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x477780` | Deleting destructor | Destroys the object (`0x7321d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4777c0` | Deleting destructor | Destroys the object (`0x7be130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4778e0` | Deleting destructor | Destroys the object (`0xac3e40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x477970` | Deleting destructor | Destroys the object (`0x73ab90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4779a0` | Deleting destructor | Destroys the object (`0x48b990` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x477a40` | Deleting destructor | Destroys the object (`0xa04380` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4781a0` | Deleting destructor | Destroys the object (`0x4781c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x478340` | Deleting destructor | Destroys the object (`0x4782d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x478700` | Deleting destructor | Destroys the object (`0x478630` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x47c950` | Deleting destructor | Destroys the object (`0x47be70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x47d140` | Deleting destructor | Destroys the object (`0x47cba0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x47e360` | Deleting destructor | Destroys the object (`0x47e110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x47e470` | Deleting destructor | Destroys the object (`0x4359f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x47e6e0` | Deleting destructor | Destroys the object (`0x47e4e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x47eb50` | Deleting destructor | Destroys the object (`0x47e4e0`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x481190` | Deleting destructor | Destroys the object (`0x480fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x482d40` | Deleting destructor | Destroys the object (`0x482950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x484860` | Deleting destructor | Destroys the object (`0x484210`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x47e6e0` | Deleting destructor | Destroys the object (`0x47e4e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x481190` | Deleting destructor | Destroys the object (`0x480fe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x482d40` | Deleting destructor | Destroys the object (`0x482950` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x484860` | Deleting destructor | Destroys the object (`0x484210` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4855a0` | Deleting destructor | Destroys the object (`0x484ce0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4855f0` | Deleting destructor | Destroys the object (`0x484cf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4875e0` | Deleting destructor | Destroys the object (`0x485b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4875e0` | Deleting destructor | Destroys the object (`0x485b40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x487b60` | Deleting destructor | Destroys the object (`0x487b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x489980` | Deleting destructor | Destroys the object (`0x488d90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x48ad50` | Deleting destructor | Destroys the object (`0x48a420`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x48d900` | Deleting destructor | Destroys the object (`0x48d920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x48dd50` | Deleting destructor | Destroys the object (`0x48dd70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x48e0e0` | Deleting destructor | Destroys the object (`0x48d940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x489980` | Deleting destructor | Destroys the object (`0x488d90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48ad50` | Deleting destructor | Destroys the object (`0x48a420` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48d900` | Deleting destructor | Destroys the object (`0x48d920` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48dd50` | Deleting destructor | Destroys the object (`0x48dd70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48e0e0` | Deleting destructor | Destroys the object (`0x48d940` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x48e7a0` | Deleting destructor | Destroys the object (`0x48e7c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x48e7d0` | Deleting destructor | Destroys the object (`0x48e7f0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x48eaa0` | Deleting destructor | Destroys the object (`0x48eac0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x48ee60` | Deleting destructor | Destroys the object (`0x48e100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x48f970` | Deleting destructor | Destroys the object (`0x48e210`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x490050` | Deleting destructor | Destroys the object (`0x490070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x490700` | Deleting destructor | Destroys the object (`0x490720`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48eaa0` | Deleting destructor | Destroys the object (`0x48eac0` (WayPoint::~WayPoint)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48ee60` | Deleting destructor | Destroys the object (`0x48e100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48f970` | Deleting destructor | Destroys the object (`0x48e210` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x490050` | Deleting destructor | Destroys the object (`0x490070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x490700` | Deleting destructor | Destroys the object (`0x490720` (PreviewWayPointList::~PreviewWayPointList)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x493a30` | Deleting destructor | Destroys the object (`0x4913d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x493a50` | Deleting destructor | Destroys the object (`0x491720`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x493a70` | Deleting destructor | Destroys the object (`0x491ab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -252,31 +245,28 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x494080` | Deleting destructor | Destroys the object (`0x491e20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4940a0` | Deleting destructor | Destroys the object (`0x492280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x494300` | Deleting destructor | Destroys the object (`0x492320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x494ec0` | Deleting destructor | Destroys the object (`0x494380`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x494ec0` | Deleting destructor | Destroys the object (`0x494380` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x495680` | Deleting destructor | Destroys the object (`0x4956a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x495bb0` | Set table | Sets the object's virtual function table to `0xf2ea14` |
-| `0x4960b0` | Deleting destructor | Destroys the object (`0x495e90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4965e0` | Deleting destructor | Destroys the object (`0x495e90`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x496ad0` | Deleting destructor | Destroys the object (`0x496690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4960b0` | Deleting destructor | Destroys the object (`0x495e90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x496ad0` | Deleting destructor | Destroys the object (`0x496690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x496b50` | Deleting destructor | Destroys the object (`0xc091b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x496b70` | Deleting destructor | Destroys the object (`0xc091b0`) and frees its memory when its argument has bit 0 set; returns the object |
 | `0x498160` | Deleting destructor | Destroys the object (`0x45c390`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x498180` | Deleting destructor | Destroys the object (`0x497d90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4982c0` | Deleting destructor | Destroys the object (`0x45c3a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x498300` | Deleting destructor | Destroys the object (`0x497da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x499e20` | Deleting destructor | Destroys the object (`0x4999c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x499fe0` | Deleting destructor | Destroys the object (`0x499f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x49a480` | Deleting destructor | Destroys the object (`0x49a060`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x49ab20` | Deleting destructor | Destroys the object (`0x49a980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x49abb0` | Deleting destructor | Destroys the object (`0x49a980`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x499e20` | Deleting destructor | Destroys the object (`0x4999c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x499fe0` | Deleting destructor | Destroys the object (`0x499f00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x49a480` | Deleting destructor | Destroys the object (`0x49a060` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x49ab20` | Deleting destructor | Destroys the object (`0x49a980` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x49ac50` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x49ad20` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x49b5f0` | Deleting destructor | Destroys the object (`0x49ad20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x49bc10` | Deleting destructor | Destroys the object (`0x49b6e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x49bc10` | Deleting destructor | Destroys the object (`0x49b6e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x49c9e0` | Get global 0x10ee248 | Returns the value in the global `0x10ee248` |
-| `0x49e060` | Deleting destructor | Destroys the object (`0x49df40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x49ede0` | Deleting destructor | Destroys the object (`0x49ecb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4a0260` | Deleting destructor | Destroys the object (`0x49f570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x49e060` | Deleting destructor | Destroys the object (`0x49df40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x49ede0` | Deleting destructor | Destroys the object (`0x49ecb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4a0260` | Deleting destructor | Destroys the object (`0x49f570` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4a09c0` | Set table | Sets the object's virtual function table to `0xf306b8` |
 | `0x4a12b0` | Deleting destructor | Destroys the object (`0x4a09d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4a12d0` | Deleting destructor | Destroys the object (`0x4a09f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -304,29 +294,29 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4a33b0` | Deleting destructor | Destroys the object (`0x4a0ae0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4a4940` | Thunk | Calls `0x4a35b0` on `this` +0xc |
 | `0x4a5da0` | Deleting destructor | Destroys the object (`0x4a4940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4a7a20` | Deleting destructor | Destroys the object (`0x4a6ac0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4a81a0` | Deleting destructor | Destroys the object (`0x4a71f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4a7a20` | Deleting destructor | Destroys the object (`0x4a6ac0` (AIDDatabaseEntry::~AIDDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4a81a0` | Deleting destructor | Destroys the object (`0x4a71f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4a8af0` | Get +0x414 | Returns the value at +0x414 |
 | `0x4a8b00` | Set +0x414 | Sets the member at +0x414 to its argument, taking 1 argument off the stack |
 | `0x4a9fd0` | Deleting destructor | Destroys the object (`0x4a9ff0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4aa000` | Deleting destructor | Destroys the object (`0x4aa020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4aa030` | Deleting destructor | Destroys the object (`0x4aa050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4aa060` | Deleting destructor | Destroys the object (`0x4aa080` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4afed0` | Deleting destructor | Destroys the object (`0x4af4f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4b7070` | Deleting destructor | Destroys the object (`0x4b6ab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4afed0` | Deleting destructor | Destroys the object (`0x4af4f0` (AnimatedRideInstance::~AnimatedRideInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4b7070` | Deleting destructor | Destroys the object (`0x4b6ab0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4b7330` | Get global 0x12f4b8c | Returns the value in the global `0x12f4b8c` |
 | `0x4b7660` | Thunk | Calls `0x4c9e50` on the object at +0x12c |
 | `0x4b7830` | Deleting destructor | Destroys the object (`0x4b7850`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4b7860` | Deleting destructor | Destroys the object (`0x4b7220`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4b8740` | Deleting destructor | Destroys the object (`0x4b8640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4bb3c0` | Deleting destructor | Destroys the object (`0x4b9b20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4b7860` | Deleting destructor | Destroys the object (`0x4b7220` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4b8740` | Deleting destructor | Destroys the object (`0x4b8640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4bb3c0` | Deleting destructor | Destroys the object (`0x4b9b20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4bbbb0` | Set +0x2dc | Sets the member at +0x2dc to its argument, taking 1 argument off the stack |
 | `0x4bbde0` | Set +0x374 | Sets the member at +0x374 to its argument, taking 1 argument off the stack |
-| `0x4bcf60` | Deleting destructor | Destroys the object (`0x4bb7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4bdb60` | Deleting destructor | Destroys the object (`0x4bda00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4bcf60` | Deleting destructor | Destroys the object (`0x4bb7b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4bdb60` | Deleting destructor | Destroys the object (`0x4bda00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4beb20` | Set table | Sets the object's virtual function table to `0xf31e20` |
 | `0x4bec20` | Set table | Sets the object's virtual function table to `0xf31e20` |
-| `0x4bee00` | Deleting destructor | Destroys the object (`0x443fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4bee00` | Deleting destructor | Destroys the object (`0x443fe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4bee40` | Virtual thunk | Calls the object's virtual function at slot 52 |
 | `0x4bee80` | Empty | Does nothing, taking 1 argument off the stack |
 | `0x4bee90` | Empty | Does nothing, taking 1 argument off the stack |
@@ -334,7 +324,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4c01b0` | Deleting destructor | Destroys the object (`0x4c01d0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c01e0` | Deleting destructor | Destroys the object (`0x4c0200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c0210` | Deleting destructor | Destroys the object (`0x4c0230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c3460` | Deleting destructor | Destroys the object (`0x4c23e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3460` | Deleting destructor | Destroys the object (`0x4c23e0` (AttractionInstance::~AttractionInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c3d50` | Deleting destructor | Destroys the object (`0x4c3d70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c3d80` | Deleting destructor | Destroys the object (`0x4c3da0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c3db0` | Deleting destructor | Destroys the object (`0x4c3dd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -342,78 +332,78 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4c3e10` | Deleting destructor | Destroys the object (`0x4c3e30` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c3e40` | Deleting destructor | Destroys the object (`0x4c3e60` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c3e70` | Deleting destructor | Destroys the object (`0x4c3e90` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c49e0` | Deleting destructor | Destroys the object (`0x4c48d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c49e0` | Deleting destructor | Destroys the object (`0x4c48d0` (AttractionInstanceFI::~AttractionInstanceFI)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c5180` | Deleting destructor | Destroys the object (`0x4c51a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c68b0` | Deleting destructor | Destroys the object (`0x4c68d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c68b0` | Deleting destructor | Destroys the object (`0x4c68d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c8c90` | Set table | Sets the object's virtual function table to `0xf328c0` |
-| `0x4c8f20` | Deleting destructor | Destroys the object (`0x4c8cc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4ca880` | Deleting destructor | Destroys the object (`0x4ca3a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c8f20` | Deleting destructor | Destroys the object (`0x4c8cc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4ca880` | Deleting destructor | Destroys the object (`0x4ca3a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4ca8c0` | Set +0x0 | Sets the member at +0x0 to its argument, taking 1 argument off the stack |
-| `0x4cc070` | Deleting destructor | Destroys the object (`0x4cb8a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4cc070` | Deleting destructor | Destroys the object (`0x4cb8a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4cc420` | Get +0x20 | Returns the byte at +0x20 |
 | `0x4cc430` | Get +0x88 | Returns the value at +0x88 |
 | `0x4cc440` | Member +0x24 address | Returns the address of the member at +0x24 |
 | `0x4cc450` | Get +0x2c | Returns the float at +0x2c |
 | `0x4cc460` | Set +0x2c | Sets the member at +0x2c to its argument, taking 1 argument off the stack |
-| `0x4ccd30` | Deleting destructor | Destroys the object (`0x4ccd50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d0f40` | Deleting destructor | Destroys the object (`0x4d0ba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d1770` | Deleting destructor | Destroys the object (`0x4d1100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4ccd30` | Deleting destructor | Destroys the object (`0x4ccd50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d0f40` | Deleting destructor | Destroys the object (`0x4d0ba0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d1770` | Deleting destructor | Destroys the object (`0x4d1100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4d2420` | Deleting destructor | Destroys the object (`0x4d2440` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d38e0` | Deleting destructor | Destroys the object (`0x4d3280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d3b30` | Deleting destructor | Destroys the object (`0x4d3b50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d3d80` | Deleting destructor | Destroys the object (`0x4d3c20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d4070` | Deleting destructor | Destroys the object (`0x4d3f20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d4ef0` | Deleting destructor | Destroys the object (`0x4d4f10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d6300` | Deleting destructor | Destroys the object (`0x4d6320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d6510` | Deleting destructor | Destroys the object (`0x6af760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d6c40` | Deleting destructor | Destroys the object (`0x4d6c60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d71b0` | Deleting destructor | Destroys the object (`0x4d71d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d7b50` | Deleting destructor | Destroys the object (`0x4d7b70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4dd010` | Deleting destructor | Destroys the object (`0x4d7fc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d38e0` | Deleting destructor | Destroys the object (`0x4d3280` (AttractionPersonInfo::~AttractionPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d3b30` | Deleting destructor | Destroys the object (`0x4d3b50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d3d80` | Deleting destructor | Destroys the object (`0x4d3c20` (AttractionPersonStrategy::~AttractionPersonStrategy)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d4070` | Deleting destructor | Destroys the object (`0x4d3f20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d4ef0` | Deleting destructor | Destroys the object (`0x4d4f10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d6300` | Deleting destructor | Destroys the object (`0x4d6320` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d6510` | Deleting destructor | Destroys the object (`0x6af760` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d6c40` | Deleting destructor | Destroys the object (`0x4d6c60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d71b0` | Deleting destructor | Destroys the object (`0x4d71d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d7b50` | Deleting destructor | Destroys the object (`0x4d7b70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4dd010` | Deleting destructor | Destroys the object (`0x4d7fc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4dd130` | Get global 0x12f4f10 | Returns the value in the global `0x12f4f10` |
 | `0x4dd200` | Deleting destructor | Destroys the object (`0x4dd220`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4dd230` | Deleting destructor | Destroys the object (`0x4dd140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4dd230` | Deleting destructor | Destroys the object (`0x4dd140` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4dd9c0` | Get global 0x12f4f18 | Returns the value in the global `0x12f4f18` |
-| `0x4dda30` | Deleting destructor | Destroys the object (`0x4dd930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4dda30` | Deleting destructor | Destroys the object (`0x4dd930` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4de220` | Set table | Sets the object's virtual function table to `0xf347cc` |
-| `0x4dfaf0` | Deleting destructor | Destroys the object (`0x4def00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4e1190` | Deleting destructor | Destroys the object (`0xa06a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4dfaf0` | Deleting destructor | Destroys the object (`0x4def00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4e1190` | Deleting destructor | Destroys the object (`0xa06a30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e13a0` | Deleting destructor | Destroys the object (`0x4e1180`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e1530` | Deleting destructor | Destroys the object (`0x4e1550`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e1620` | Deleting destructor | Destroys the object (`0x4e1560`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4e2610` | Deleting destructor | Destroys the object (`0x4e1a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4e28b0` | Deleting destructor | Destroys the object (`0x4e27c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4e2610` | Deleting destructor | Destroys the object (`0x4e1a30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4e28b0` | Deleting destructor | Destroys the object (`0x4e27c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e29e0` | Get global 0x12f4f88 | Returns the value in the global `0x12f4f88` |
 | `0x4e2d30` | Deleting destructor | Destroys the object (`0x4e2d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4e2d60` | Deleting destructor | Destroys the object (`0x4e29f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4e2d60` | Deleting destructor | Destroys the object (`0x4e29f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e3050` | Deleting destructor | Destroys the object (`0x4e3070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4e4190` | Deleting destructor | Destroys the object (`0x4e4110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4e4190` | Deleting destructor | Destroys the object (`0x4e4110` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e43e0` | Deleting destructor | Destroys the object (`0x4e4400`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e4670` | Get global 0x12f4f94 | Returns the value in the global `0x12f4f94` |
 | `0x4e4780` | Get global 0x12f4fa8 | Returns the value in the global `0x12f4fa8` |
-| `0x4e4a80` | Deleting destructor | Destroys the object (`0x4e4680`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4e4a80` | Deleting destructor | Destroys the object (`0x4e4680` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e4d80` | Deleting destructor | Destroys the object (`0x4e4da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e6080` | Deleting destructor | Destroys the object (`0x4e5d90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e6350` | Deleting destructor | Destroys the object (`0x4e6370` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e6550` | Deleting destructor | Destroys the object (`0x4e5da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4ea920` | Deleting destructor | Destroys the object (`0x4e6570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4ec1f0` | Deleting destructor | Destroys the object (`0x4ec210`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4ec490` | Deleting destructor | Destroys the object (`0x4ec4b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4ed220` | Deleting destructor | Destroys the object (`0x4ec5e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4edbd0` | Deleting destructor | Destroys the object (`0x5a0000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4ea920` | Deleting destructor | Destroys the object (`0x4e6570` (MiniGolfPersonInfo::~MiniGolfPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4ec1f0` | Deleting destructor | Destroys the object (`0x4ec210` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4ec490` | Deleting destructor | Destroys the object (`0x4ec4b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4ed220` | Deleting destructor | Destroys the object (`0x4ec5e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4edbd0` | Deleting destructor | Destroys the object (`0x5a0000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4edc10` | Get global 0x12f4fe4 | Returns the value in the global `0x12f4fe4` |
-| `0x4ee320` | Deleting destructor | Destroys the object (`0x5d0c80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4ee320` | Deleting destructor | Destroys the object (`0x5d0c80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4efff0` | Deleting destructor | Destroys the object (`0x4f0010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4f02c0` | Deleting destructor | Destroys the object (`0x4f02e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4f02c0` | Deleting destructor | Destroys the object (`0x4f02e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4f0680` | Deleting destructor | Destroys the object (`0x4f06a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4fe1f0` | Deleting destructor | Destroys the object (`0x4f78f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4fe1f0` | Deleting destructor | Destroys the object (`0x4f78f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4fe570` | Empty | Does nothing |
-| `0x5027b0` | Deleting destructor | Destroys the object (`0x5021b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5027b0` | Deleting destructor | Destroys the object (`0x5021b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x503f30` | Deleting destructor | Destroys the object (`0x503f50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x506300` | Deleting destructor | Destroys the object (`0xa79ee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x506300` | Deleting destructor | Destroys the object (`0xa79ee0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x506470` | Deleting destructor | Destroys the object (`0x5061a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5067e0` | Deleting destructor | Destroys the object (`0x506800` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x508260` | Deleting destructor | Destroys the object (`0x506820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x508260` | Deleting destructor | Destroys the object (`0x506820` (RideCarCrash::~RideCarCrash)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x50be10` | Empty | Does nothing |
 | `0x50c030` | Set +0x8e8 | Sets the member at +0x8e8 to 0x1 |
 | `0x50ee00` | Deleting destructor | Destroys the object (`0x50cda0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -424,17 +414,16 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x50fe00` | Deleting destructor | Destroys the object (`0x50fe20` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x50fe30` | Deleting destructor | Destroys the object (`0x50fe50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x50fe60` | Deleting destructor | Destroys the object (`0x50fe80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x512480` | Deleting destructor | Destroys the object (`0x50cda0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object |
 | `0x5138b0` | Deleting destructor | Destroys the object (`0x510f80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x517500` | Thunk | Calls `0x5137f0` on `this` +0x190 |
-| `0x51de70` | Deleting destructor | Destroys the object (`0x519eb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x524090` | Deleting destructor | Destroys the object (`0x5230f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x51de70` | Deleting destructor | Destroys the object (`0x519eb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x524090` | Deleting destructor | Destroys the object (`0x5230f0` (RideCarInstance::~RideCarInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5298f0` | Deleting destructor | Destroys the object (`0x529910`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x52b9e0` | Thunk | Calls `0x86cfb0` on the object at +0xf4 |
 | `0x52b9f0` | Thunk | Calls `0x86d000` on the object at +0xf4 |
 | `0x52ba00` | Thunk | Calls `0x86d050` on the object at +0xf4 |
 | `0x52ba10` | Thunk | Calls `0x86d0a0` on the object at +0xf4 |
-| `0x52c330` | Deleting destructor | Destroys the object (`0x52c240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x52c330` | Deleting destructor | Destroys the object (`0x52c240` (RideCarSpinSwingPart::~RideCarSpinSwingPart)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x52d2f0` | Deleting destructor | Destroys the object (`0x52d310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x52f7e0` | Member +0x220 address | Returns the address of the member at +0x220 |
 | `0x52fa60` | Virtual thunk | Calls the object's virtual function at slot 81 |
@@ -444,19 +433,19 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x530ee0` | Deleting destructor | Destroys the object (`0x530f00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x530f10` | Deleting destructor | Destroys the object (`0x530f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x533fd0` | Deleting destructor | Destroys the object (`0x4100f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x53a210` | Deleting destructor | Destroys the object (`0x539c40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x53a470` | Deleting destructor | Destroys the object (`0x53a2c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x53c330` | Deleting destructor | Destroys the object (`0x53b930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x53c500` | Deleting destructor | Destroys the object (`0x53b6a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x53a210` | Deleting destructor | Destroys the object (`0x539c40` (RideInstance::~RideInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x53a470` | Deleting destructor | Destroys the object (`0x53a2c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x53c330` | Deleting destructor | Destroys the object (`0x53b930` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x53c500` | Deleting destructor | Destroys the object (`0x53b6a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x53c550` | Empty | Does nothing |
 | `0x53c790` | Get +0x34 | Returns the value at +0x34 |
-| `0x53e150` | Deleting destructor | Destroys the object (`0x53cbd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x53e170` | Deleting destructor | Destroys the object (`0x53cc60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5405f0` | Deleting destructor | Destroys the object (`0x53ecb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x53e150` | Deleting destructor | Destroys the object (`0x53cbd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x53e170` | Deleting destructor | Destroys the object (`0x53cc60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5405f0` | Deleting destructor | Destroys the object (`0x53ecb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x543840` | Deleting destructor | Destroys the object (`0x543860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5445b0` | Deleting destructor | Destroys the object (`0x5445d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5486f0` | Deleting destructor | Destroys the object (`0x5449b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5487d0` | Deleting destructor | Destroys the object (`0x548730`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5486f0` | Deleting destructor | Destroys the object (`0x5449b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5487d0` | Deleting destructor | Destroys the object (`0x548730` (GeneralEntry::~GeneralEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54ae70` | Deleting destructor | Destroys the object (`0x54ae90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54aea0` | Deleting destructor | Destroys the object (`0x54aec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54aed0` | Deleting destructor | Destroys the object (`0x54aef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -467,75 +456,75 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x54afc0` | Deleting destructor | Destroys the object (`0x54afe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54aff0` | Deleting destructor | Destroys the object (`0x54b010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54c6b0` | Deleting destructor | Destroys the object (`0x40f730` (ObjectRef::~ObjectRef)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x54eb20` | Deleting destructor | Destroys the object (`0x54b6d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x54f180` | Deleting destructor | Destroys the object (`0x54ba40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x54eb20` | Deleting destructor | Destroys the object (`0x54b6d0` (RideCarEntry::~RideCarEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x54f180` | Deleting destructor | Destroys the object (`0x54ba40` (RideCarSplashEntry::~RideCarSplashEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5503f0` | Deleting destructor | Destroys the object (`0x54e110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x550410` | Deleting destructor | Destroys the object (`0x54e120`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x550430` | Deleting destructor | Destroys the object (`0x54e130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x550450` | Deleting destructor | Destroys the object (`0x54e140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x550f40` | Deleting destructor | Destroys the object (`0x550f60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x552110` | Deleting destructor | Destroys the object (`0x550a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x552760` | Deleting destructor | Destroys the object (`0x552130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x552d50` | Deleting destructor | Destroys the object (`0x552b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x554110` | Deleting destructor | Destroys the object (`0x553ba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x555c40` | Deleting destructor | Destroys the object (`0x6a1df0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x555d50` | Deleting destructor | Destroys the object (`0x555d70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x556160` | Deleting destructor | Destroys the object (`0x556180`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x557a60` | Deleting destructor | Destroys the object (`0x555e10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x550f40` | Deleting destructor | Destroys the object (`0x550f60` (WaterfallSplashEntry::~WaterfallSplashEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x552110` | Deleting destructor | Destroys the object (`0x550a00` (AnimatedRideEntry::~AnimatedRideEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x552760` | Deleting destructor | Destroys the object (`0x552130` (RideParticleManager::~RideParticleManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x552d50` | Deleting destructor | Destroys the object (`0x552b40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x554110` | Deleting destructor | Destroys the object (`0x553ba0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x555c40` | Deleting destructor | Destroys the object (`0x6a1df0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x555d50` | Deleting destructor | Destroys the object (`0x555d70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x556160` | Deleting destructor | Destroys the object (`0x556180` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x557a60` | Deleting destructor | Destroys the object (`0x555e10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x557bb0` | Member +0x38 address | Returns the address of the member at +0x38 |
 | `0x557bc0` | Member +0x38 address | Returns the address of the member at +0x38 |
 | `0x55b750` | Deleting destructor | Destroys the object (`0x55b770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x55c050` | Deleting destructor | Destroys the object (`0x55c070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x55c610` | Deleting destructor | Destroys the object (`0x55c1c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x55c630` | Deleting destructor | Destroys the object (`0x55c3d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x55c050` | Deleting destructor | Destroys the object (`0x55c070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x55c610` | Deleting destructor | Destroys the object (`0x55c1c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x55c630` | Deleting destructor | Destroys the object (`0x55c3d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x55f4f0` | Set +0x68 | Sets the member at +0x68 to its argument, taking 1 argument off the stack |
 | `0x55f580` | Get global 0xf264dc | Returns the float in the global `0xf264dc` |
 | `0x55f590` | Get +0x68 | Returns the float at +0x68 |
-| `0x55faf0` | Deleting destructor | Destroys the object (`0x579cc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x55faf0` | Deleting destructor | Destroys the object (`0x579cc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x560c00` | Deleting destructor | Destroys the object (`0x560c20` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x560c30` | Deleting destructor | Destroys the object (`0x560c50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x560ef0` | Thunk | Calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x24 |
-| `0x574720` | Deleting destructor | Destroys the object (`0x56ecf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x574720` | Deleting destructor | Destroys the object (`0x56ecf0` (RideTrainInstance::~RideTrainInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x577ba0` | Deleting destructor | Destroys the object (`0x577bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x57af80` | Deleting destructor | Destroys the object (`0x57afa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x57e160` | Deleting destructor | Destroys the object (`0x57b880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x57f960` | Deleting destructor | Destroys the object (`0x57c7a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x580100` | Deleting destructor | Destroys the object (`0x57feb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x584480` | Deleting destructor | Destroys the object (`0x5831c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x584dc0` | Deleting destructor | Destroys the object (`0x584950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x588a00` | Deleting destructor | Destroys the object (`0x5880e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x588e00` | Deleting destructor | Destroys the object (`0x588a60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x57e160` | Deleting destructor | Destroys the object (`0x57b880` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x57f960` | Deleting destructor | Destroys the object (`0x57c7a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x580100` | Deleting destructor | Destroys the object (`0x57feb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x584480` | Deleting destructor | Destroys the object (`0x5831c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x584dc0` | Deleting destructor | Destroys the object (`0x584950` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x588a00` | Deleting destructor | Destroys the object (`0x5880e0` (SpecialAttractionInstance::~SpecialAttractionInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x588e00` | Deleting destructor | Destroys the object (`0x588a60` (SpecialAttractionPersonInfo::~SpecialAttractionPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x588f70` | Get +0x104 | Returns the value at +0x104 |
-| `0x58a5b0` | Deleting destructor | Destroys the object (`0x58a2b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x58a5b0` | Deleting destructor | Destroys the object (`0x58a2b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x58a880` | Deleting destructor | Destroys the object (`0x58a8a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x58a8a0` | Set table | Sets the object's virtual function table to `0xf27b40` |
 | `0x58c590` | Deleting destructor | Destroys the object (`0x58c5b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x58c5b0` | Set table | Sets the object's virtual function table to `0xf27b40` |
-| `0x58d0e0` | Deleting destructor | Destroys the object (`0x58c610`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x58eca0` | Deleting destructor | Destroys the object (`0x58ea10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5906e0` | Deleting destructor | Destroys the object (`0x58fe50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x58d0e0` | Deleting destructor | Destroys the object (`0x58c610` (SplinePathPersonInfo::~SplinePathPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x58eca0` | Deleting destructor | Destroys the object (`0x58ea10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5906e0` | Deleting destructor | Destroys the object (`0x58fe50` (StallPersonInfo::~StallPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x590fc0` | Deleting destructor | Destroys the object (`0x590fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x590ff0` | Deleting destructor | Destroys the object (`0x591010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x591020` | Deleting destructor | Destroys the object (`0x591040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x591050` | Deleting destructor | Destroys the object (`0x591070` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x594770` | Deleting destructor | Destroys the object (`0x594000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x594790` | Deleting destructor | Destroys the object (`0x594050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x595db0` | Deleting destructor | Destroys the object (`0x594f70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x594770` | Deleting destructor | Destroys the object (`0x594000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x594790` | Deleting destructor | Destroys the object (`0x594050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x595db0` | Deleting destructor | Destroys the object (`0x594f70` (StallInstance::~StallInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x597d30` | Deleting destructor | Destroys the object (`0x597d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5985a0` | Deleting destructor | Destroys the object (`0x597ec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5988f0` | Deleting destructor | Destroys the object (`0x5986c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5985a0` | Deleting destructor | Destroys the object (`0x597ec0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5988f0` | Deleting destructor | Destroys the object (`0x5986c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x598c70` | Deleting destructor | Destroys the object (`0x598c90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x598cf0` | Deleting destructor | Destroys the object (`0x598610`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x59a100` | Member +0xa4 address | Returns the address of the member at +0xa4, taking 1 argument off the stack |
 | `0x59a390` | Deleting destructor | Destroys the object (`0x4ed470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x59a7b0` | Deleting destructor | Destroys the object (`0x4ed480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x59cee0` | Deleting destructor | Destroys the object (`0x59a7d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x59cee0` | Deleting destructor | Destroys the object (`0x59a7d0` (Track::~Track)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x59ea90` | Empty | Does nothing |
 | `0x59ed10` | Deleting destructor | Destroys the object (`0x4ee120`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x59f0c0` | Deleting destructor | Destroys the object (`0x59ed50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x59ffe0` | Deleting destructor | Destroys the object (`0x59f490`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5a0360` | Deleting destructor | Destroys the object (`0x5a0070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5a0b10` | Deleting destructor | Destroys the object (`0x5a0a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x59f0c0` | Deleting destructor | Destroys the object (`0x59ed50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x59ffe0` | Deleting destructor | Destroys the object (`0x59f490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5a0360` | Deleting destructor | Destroys the object (`0x5a0070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5a0b10` | Deleting destructor | Destroys the object (`0x5a0a30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a1750` | Thunk | Calls `0xbb41e0` on the object at +0x38c |
 | `0x5a1b40` | Get +0x3d8 | Returns the value at +0x3d8 |
 | `0x5a2350` | Deleting destructor | Destroys the object (`0x5a1470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -546,82 +535,79 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x5a3320` | Deleting destructor | Destroys the object (`0x5a3340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a36d0` | Deleting destructor | Destroys the object (`0x5a1480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a38c0` | Thunk | Calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x1e0 |
-| `0x5b5c30` | Deleting destructor | Destroys the object (`0x5b4ff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5b5c30` | Deleting destructor | Destroys the object (`0x5b4ff0` (TrackedRideInstance::~TrackedRideInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5b7a50` | Deleting destructor | Destroys the object (`0x5b7a70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5b7a80` | Deleting destructor | Destroys the object (`0x5b7aa0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5b90d0` | Deleting destructor | Destroys the object (`0x5b8f90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5b99b0` | Deleting destructor | Destroys the object (`0x5b9140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5b90d0` | Deleting destructor | Destroys the object (`0x5b8f90` (TrackedRideInstanceSaveHeader::~TrackedRideInstanceSaveHeader)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5b99b0` | Deleting destructor | Destroys the object (`0x5b9140` (TrackedRidePersonInfo::~TrackedRidePersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5ba2a0` | Deleting destructor | Destroys the object (`0x5ba2c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5ba660` | Deleting destructor | Destroys the object (`0x5b9ba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5ba660` | Deleting destructor | Destroys the object (`0x5b9ba0` (TrackedRidePreview::~TrackedRidePreview)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5bad90` | Thunk | Calls `0x5bbfb0` on `this` +0xa0 |
-| `0x5bcab0` | Deleting destructor | Destroys the object (`0x5bcad0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5bd5e0` | Deleting destructor | Destroys the object (`0x826a80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5bd600` | Deleting destructor | Destroys the object (`0x581970`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5bcab0` | Deleting destructor | Destroys the object (`0x5bcad0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5bd5e0` | Deleting destructor | Destroys the object (`0x826a80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5bd600` | Deleting destructor | Destroys the object (`0x581970` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5bf320` | Deleting destructor | Destroys the object (`0x5be010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5bfdf0` | Deleting destructor | Destroys the object (`0x5bfe10` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5bfe20` | Deleting destructor | Destroys the object (`0x5bfe40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5bfe50` | Deleting destructor | Destroys the object (`0x5bfe70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5c7430` | Deleting destructor | Destroys the object (`0x5c3dc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5c7430` | Deleting destructor | Destroys the object (`0x5c3dc0` (TrackPiece::~TrackPiece)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5cdf10` | Deleting destructor | Destroys the object (`0x5cddd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5ce000` | Deleting destructor | Destroys the object (`0x5cdde0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5cf510` | Deleting destructor | Destroys the object (`0x5cf530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5d03d0` | Thunk | Calls `0xbc78f0` on the object at +0x8 |
-| `0x5d0700` | Deleting destructor | Destroys the object (`0x4ee120`) and frees its memory when its argument has bit 0 set; returns the object |
 | `0x5d1000` | Deleting destructor | Destroys the object (`0x5d1020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5d1020` | Deleting destructor | Destroys the object (`0xbd1880` (TextRef::~TextRef)) and frees its memory when its argument has bit 0 set; returns the object |
 | `0x5d16b0` | Returns 0x12600 | Returns 0x12600 |
 | `0x5d16c0` | Returns 0x12240 | Returns 0x12240 |
-| `0x5d4050` | Deleting destructor | Destroys the object (`0x4ee120`) and frees its memory when its argument has bit 0 set; returns the object |
 | `0x5d4270` | Deleting destructor | Destroys the object (`0x5d4290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5d63f0` | Deleting destructor | Destroys the object (`0x5d4120`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5e5a70` | Deleting destructor | Destroys the object (`0x5e2130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5ea900` | Deleting destructor | Destroys the object (`0x5ea870`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5d63f0` | Deleting destructor | Destroys the object (`0x5d4120` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5e5a70` | Deleting destructor | Destroys the object (`0x5e2130` (TrackSegment::~TrackSegment)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5ea900` | Deleting destructor | Destroys the object (`0x5ea870` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5eb7f0` | Deleting destructor | Destroys the object (`0x5eb810` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5eb820` | Deleting destructor | Destroys the object (`0x5eb840` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5edfe0` | Deleting destructor | Destroys the object (`0x5eced0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5efca0` | Deleting destructor | Destroys the object (`0x5ef9b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f0500` | Deleting destructor | Destroys the object (`0x5f0520`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5edfe0` | Deleting destructor | Destroys the object (`0x5eced0` (WalkAlongTrackPersonInfo::~WalkAlongTrackPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5efca0` | Deleting destructor | Destroys the object (`0x5ef9b0` (WalkAlongTrackPersonInfoInteractionStrategy::~WalkAlongTrackPersonInfoInteractionStrategy)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f0500` | Deleting destructor | Destroys the object (`0x5f0520` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f17c0` | Deleting destructor | Destroys the object (`0x5f17a0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f17e0` | Get +0xa0 | Returns the value at +0xa0 |
 | `0x5f1990` | Deleting destructor | Destroys the object (`0x5f19b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f2ee0` | Deleting destructor | Destroys the object (`0x5f2b20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f4040` | Deleting destructor | Destroys the object (`0x5f3b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f4960` | Deleting destructor | Destroys the object (`0x5f4980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f4e80` | Deleting destructor | Destroys the object (`0x5f4ea0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f4fe0` | Deleting destructor | Destroys the object (`0x5f5000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f70f0` | Deleting destructor | Destroys the object (`0x5f6fc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f7c30` | Deleting destructor | Destroys the object (`0x5f7b70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f2ee0` | Deleting destructor | Destroys the object (`0x5f2b20` (WalkAlongTrackPersonInfosOnTrackPiece::~WalkAlongTrackPersonInfosOnTrackPiece)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f4040` | Deleting destructor | Destroys the object (`0x5f3b80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f4960` | Deleting destructor | Destroys the object (`0x5f4980` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f4e80` | Deleting destructor | Destroys the object (`0x5f4ea0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f4fe0` | Deleting destructor | Destroys the object (`0x5f5000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f70f0` | Deleting destructor | Destroys the object (`0x5f6fc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f7c30` | Deleting destructor | Destroys the object (`0x5f7b70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f8030` | Get global 0x12f56e8 | Returns the value in the global `0x12f56e8` |
 | `0x5f80c0` | Get global 0x12f7e84 | Returns the value in the global `0x12f7e84` |
-| `0x5f8210` | Deleting destructor | Destroys the object (`0x5f7f10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f8210` | Deleting destructor | Destroys the object (`0x5f7f10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f8230` | Deleting destructor | Destroys the object (`0x5f8250`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f8260` | Deleting destructor | Destroys the object (`0x5f8280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f8510` | Deleting destructor | Destroys the object (`0x5f8530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f8510` | Deleting destructor | Destroys the object (`0x5f8530` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f9740` | Deleting destructor | Destroys the object (`0x5f9760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5facd0` | Deleting destructor | Destroys the object (`0x5f99b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5facd0` | Deleting destructor | Destroys the object (`0x5f99b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5fc4c0` | Deleting destructor | Destroys the object (`0x5fc4e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5fc5e0` | Deleting destructor | Destroys the object (`0x5fb480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5fc600` | Deleting destructor | Destroys the object (`0x5fb540`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5fc620` | Deleting destructor | Destroys the object (`0x5fb8e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5fc750` | Deleting destructor | Destroys the object (`0x5fbd10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5fc770` | Deleting destructor | Destroys the object (`0x5fbf70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5fc7f0` | Deleting destructor | Destroys the object (`0x5fc010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5fcb70` | Deleting destructor | Destroys the object (`0x5fcb90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x608110` | Deleting destructor | Destroys the object (`0x5fcc30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x610d10` | Deleting destructor | Destroys the object (`0x609140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5fc5e0` | Deleting destructor | Destroys the object (`0x5fb480` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5fc600` | Deleting destructor | Destroys the object (`0x5fb540` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5fc620` | Deleting destructor | Destroys the object (`0x5fb8e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5fc750` | Deleting destructor | Destroys the object (`0x5fbd10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5fc770` | Deleting destructor | Destroys the object (`0x5fbf70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5fc7f0` | Deleting destructor | Destroys the object (`0x5fc010` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5fcb70` | Deleting destructor | Destroys the object (`0x5fcb90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x608110` | Deleting destructor | Destroys the object (`0x5fcc30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x610d10` | Deleting destructor | Destroys the object (`0x609140` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x611b70` | Set +0x4 | Sets the member at +0x4 to its argument, taking 1 argument off the stack |
 | `0x611b80` | Set +0xc | Sets the member at +0xc to its argument, taking 1 argument off the stack |
-| `0x615980` | Deleting destructor | Destroys the object (`0x6157f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x615d50` | Deleting destructor | Destroys the object (`0x615cc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x615980` | Deleting destructor | Destroys the object (`0x6157f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x615d50` | Deleting destructor | Destroys the object (`0x615cc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x616260` | Thunk | Calls `0x4d7e70` on the object at +0xd8 |
-| `0x6164d0` | Deleting destructor | Destroys the object (`0x616350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6165d0` | Deleting destructor | Destroys the object (`0x6165f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x616730` | Deleting destructor | Destroys the object (`0x616750`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x617f20` | Deleting destructor | Destroys the object (`0x6177c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6164d0` | Deleting destructor | Destroys the object (`0x616350` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6165d0` | Deleting destructor | Destroys the object (`0x6165f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x616730` | Deleting destructor | Destroys the object (`0x616750` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x617f20` | Deleting destructor | Destroys the object (`0x6177c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x618310` | Deleting destructor | Destroys the object (`0x618330`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x619470` | Deleting destructor | Destroys the object (`0x619490`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x619470` | Deleting destructor | Destroys the object (`0x619490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x619800` | Get global 0x12f5788 | Returns the value in the global `0x12f5788` |
-| `0x619ef0` | Deleting destructor | Destroys the object (`0x619630`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x619ef0` | Deleting destructor | Destroys the object (`0x619630` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x619f10` | Deleting destructor | Destroys the object (`0x619f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x619f40` | Deleting destructor | Destroys the object (`0x619f60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x619f70` | Deleting destructor | Destroys the object (`0x619f90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -633,35 +619,34 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x61a090` | Deleting destructor | Destroys the object (`0x61a0b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x61bb30` | Set +0x8 | Sets the member at +0x8 to its argument, taking 1 argument off the stack |
 | `0x61bc50` | Thunk | Calls `0x6b0990` (Window::Layout) on the object at +0x50 |
-| `0x61c0a0` | Deleting destructor | Destroys the object (`0x61bc60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x61c240` | Deleting destructor | Destroys the object (`0x61bed0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x61dd20` | Deleting destructor | Destroys the object (`0x61dd40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x61e380` | Deleting destructor | Destroys the object (`0x61e3a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x61e430` | Deleting destructor | Destroys the object (`0x61d680`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x61e790` | Deleting destructor | Destroys the object (`0x61e650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x61c0a0` | Deleting destructor | Destroys the object (`0x61bc60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x61c240` | Deleting destructor | Destroys the object (`0x61bed0` (MessageConsoleEntry::~MessageConsoleEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x61dd20` | Deleting destructor | Destroys the object (`0x61dd40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x61e380` | Deleting destructor | Destroys the object (`0x61e3a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x61e430` | Deleting destructor | Destroys the object (`0x61d680` (PersonStateMessageConsoleEntry::~PersonStateMessageConsoleEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x61e790` | Deleting destructor | Destroys the object (`0x61e650` (MessageConsole::~MessageConsole)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x620c00` | Deleting destructor | Destroys the object (`0x620bd0` (SharedBuffer::Release)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x620d90` | Deleting destructor | Destroys the object (`0x620bd0` (SharedBuffer::Release)) and frees its memory when its argument has bit 0 set; returns the object |
 | `0x6210d0` | Deleting destructor | Destroys the object (`0x6210f0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x621ad0` | Deleting destructor | Destroys the object (`0x6213f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x621af0` | Deleting destructor | Destroys the object (`0x621520`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x621b10` | Deleting destructor | Destroys the object (`0x6215e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x621b30` | Deleting destructor | Destroys the object (`0x6217d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x623d90` | Deleting destructor | Destroys the object (`0x623bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x621ad0` | Deleting destructor | Destroys the object (`0x6213f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x621af0` | Deleting destructor | Destroys the object (`0x621520` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x621b10` | Deleting destructor | Destroys the object (`0x6215e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x621b30` | Deleting destructor | Destroys the object (`0x6217d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x623d90` | Deleting destructor | Destroys the object (`0x623bc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x624670` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x624680` | Deleting destructor | Destroys the object (`0x624670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6279b0` | Deleting destructor | Destroys the object (`0x626130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x62afe0` | Deleting destructor | Destroys the object (`0x62b000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x62b9c0` | Deleting destructor | Destroys the object (`0x62b9e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x62c8e0` | Deleting destructor | Destroys the object (`0x62c5b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x62e390` | Deleting destructor | Destroys the object (`0x62dfb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6279b0` | Deleting destructor | Destroys the object (`0x626130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x62afe0` | Deleting destructor | Destroys the object (`0x62b000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x62b9c0` | Deleting destructor | Destroys the object (`0x62b9e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x62c8e0` | Deleting destructor | Destroys the object (`0x62c5b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x62e390` | Deleting destructor | Destroys the object (`0x62dfb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x62e4c0` | Deleting destructor | Destroys the object (`0x62e4e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x62e530` | Deleting destructor | Destroys the object (`0x62e4f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x62e5f0` | Deleting destructor | Destroys the object (`0x62e610`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x62e840` | Deleting destructor | Destroys the object (`0x62e670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x62e530` | Deleting destructor | Destroys the object (`0x62e4f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x62e5f0` | Deleting destructor | Destroys the object (`0x62e610` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x62e840` | Deleting destructor | Destroys the object (`0x62e670` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x630390` | Set +0x100 | Sets the member at +0x100 to its argument, taking 1 argument off the stack |
-| `0x630760` | Deleting destructor | Destroys the object (`0x6301b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x630760` | Deleting destructor | Destroys the object (`0x6301b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x630ce0` | Deleting destructor | Destroys the object (`0x5f3b50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x630f20` | Deleting destructor | Destroys the object (`0x630e20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x630f20` | Deleting destructor | Destroys the object (`0x630e20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x631200` | Deleting destructor | Destroys the object (`0x631220`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x631270` | Deleting destructor | Destroys the object (`0x630d70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6323b0` | Deleting destructor | Destroys the object (`0x631a50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -677,9 +662,9 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x632610` | Deleting destructor | Destroys the object (`0x631fd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x632810` | Deleting destructor | Destroys the object (`0x631a20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6328f0` | Deleting destructor | Destroys the object (`0x631a60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x632910` | Deleting destructor | Destroys the object (`0x631ad0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x632ed0` | Deleting destructor | Destroys the object (`0x631ea0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6330f0` | Deleting destructor | Destroys the object (`0x631fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x632910` | Deleting destructor | Destroys the object (`0x631ad0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x632ed0` | Deleting destructor | Destroys the object (`0x631ea0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6330f0` | Deleting destructor | Destroys the object (`0x631fe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x633640` | Deleting destructor | Destroys the object (`0x632a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x633660` | Deleting destructor | Destroys the object (`0x632a10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x633680` | Deleting destructor | Destroys the object (`0x632ba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -687,29 +672,29 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x6336c0` | Deleting destructor | Destroys the object (`0x632bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6336e0` | Deleting destructor | Destroys the object (`0x632d90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x633700` | Deleting destructor | Destroys the object (`0x632fb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6338b0` | Deleting destructor | Destroys the object (`0x633860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6338b0` | Deleting destructor | Destroys the object (`0x633860` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x633b00` | Deleting destructor | Destroys the object (`0x633b20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x633c20` | Deleting destructor | Destroys the object (`0x633c40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x633f30` | Deleting destructor | Destroys the object (`0x633f50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x633c20` | Deleting destructor | Destroys the object (`0x633c40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x633f30` | Deleting destructor | Destroys the object (`0x633f50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x634400` | Deleting destructor | Destroys the object (`0x634420`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x634700` | Deleting destructor | Destroys the object (`0x634720`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6347a0` | Deleting destructor | Destroys the object (`0x632a20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6347c0` | Deleting destructor | Destroys the object (`0x632bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6347e0` | Deleting destructor | Destroys the object (`0x632da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x634800` | Deleting destructor | Destroys the object (`0x632fc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x634ef0` | Deleting destructor | Destroys the object (`0x634f10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6392c0` | Deleting destructor | Destroys the object (`0x639160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x634700` | Deleting destructor | Destroys the object (`0x634720` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6347a0` | Deleting destructor | Destroys the object (`0x632a20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6347c0` | Deleting destructor | Destroys the object (`0x632bd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6347e0` | Deleting destructor | Destroys the object (`0x632da0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x634800` | Deleting destructor | Destroys the object (`0x632fc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x634ef0` | Deleting destructor | Destroys the object (`0x634f10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6392c0` | Deleting destructor | Destroys the object (`0x639160` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63a060` | Get global 0x12f7e80 | Returns the value in the global `0x12f7e80` |
-| `0x63a280` | Deleting destructor | Destroys the object (`0x63a030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63a380` | Deleting destructor | Destroys the object (`0x63a2a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63ad20` | Deleting destructor | Destroys the object (`0x63a700`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63b4a0` | Deleting destructor | Destroys the object (`0x63a9c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63b4c0` | Deleting destructor | Destroys the object (`0x63ab90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63a280` | Deleting destructor | Destroys the object (`0x63a030` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63a380` | Deleting destructor | Destroys the object (`0x63a2a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ad20` | Deleting destructor | Destroys the object (`0x63a700` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63b4a0` | Deleting destructor | Destroys the object (`0x63a9c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63b4c0` | Deleting destructor | Destroys the object (`0x63ab90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63b750` | Deleting destructor | Destroys the object (`0x63b770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63ca10` | Deleting destructor | Destroys the object (`0x63c960`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63d2e0` | Deleting destructor | Destroys the object (`0x63d190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ca10` | Deleting destructor | Destroys the object (`0x63c960` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63d2e0` | Deleting destructor | Destroys the object (`0x63d190` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63dad0` | Deleting destructor | Destroys the object (`0x63daf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63e2f0` | Deleting destructor | Destroys the object (`0x63e010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63e2f0` | Deleting destructor | Destroys the object (`0x63e010` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63ed00` | Deleting destructor | Destroys the object (`0x63ed20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63ed30` | Deleting destructor | Destroys the object (`0x63ed50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63ed60` | Deleting destructor | Destroys the object (`0x63ed80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -718,36 +703,36 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x63edf0` | Deleting destructor | Destroys the object (`0x63ee10` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63ee20` | Deleting destructor | Destroys the object (`0x63ee40` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63ee50` | Deleting destructor | Destroys the object (`0x63ee70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63ffb0` | Deleting destructor | Destroys the object (`0x63f6b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x641150` | Deleting destructor | Destroys the object (`0x641060`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ffb0` | Deleting destructor | Destroys the object (`0x63f6b0` (GUI2_CurrentDatDesc::~GUI2_CurrentDatDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x641150` | Deleting destructor | Destroys the object (`0x641060` (GUI2_DatDesc::~GUI2_DatDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6412d0` | Deleting destructor | Destroys the object (`0x641230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6413e0` | Deleting destructor | Destroys the object (`0x641240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x641400` | Deleting destructor | Destroys the object (`0x641250`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x641420` | Deleting destructor | Destroys the object (`0x6411a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x641420` | Deleting destructor | Destroys the object (`0x6411a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x641550` | Deleting destructor | Destroys the object (`0x641570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x641b90` | Deleting destructor | Destroys the object (`0x641690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x641bb0` | Deleting destructor | Destroys the object (`0x6416f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x641b90` | Deleting destructor | Destroys the object (`0x641690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x641bb0` | Deleting destructor | Destroys the object (`0x6416f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x641e10` | Deleting destructor | Destroys the object (`0x641e30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x643ae0` | Deleting destructor | Destroys the object (`0x643b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x643eb0` | Thunk | Calls `0x6435f0` on the object at +0x114 |
 | `0x644140` | Deleting destructor | Destroys the object (`0x644160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x644c60` | Deleting destructor | Destroys the object (`0x643b10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x644c60` | Deleting destructor | Destroys the object (`0x643b10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x644d20` | Get +0x10 | Returns the value at +0x10 |
-| `0x644f00` | Deleting destructor | Destroys the object (`0x644d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6459c0` | Deleting destructor | Destroys the object (`0x6459e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x644f00` | Deleting destructor | Destroys the object (`0x644d50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6459c0` | Deleting destructor | Destroys the object (`0x6459e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x646a40` | Deleting destructor | Destroys the object (`0x645cd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x646a60` | Deleting destructor | Destroys the object (`0x645d10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x646a80` | Deleting destructor | Destroys the object (`0x645d20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x646d40` | Deleting destructor | Destroys the object (`0x645cc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6472c0` | Deleting destructor | Destroys the object (`0x645d30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x647490` | Deleting destructor | Destroys the object (`0x645fc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x647510` | Deleting destructor | Destroys the object (`0x646120`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x647610` | Deleting destructor | Destroys the object (`0x6462b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x647770` | Deleting destructor | Destroys the object (`0x6463a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x647790` | Deleting destructor | Destroys the object (`0x6463e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x647900` | Deleting destructor | Destroys the object (`0x646490`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x647920` | Deleting destructor | Destroys the object (`0x646590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x647940` | Deleting destructor | Destroys the object (`0x646710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6472c0` | Deleting destructor | Destroys the object (`0x645d30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x647490` | Deleting destructor | Destroys the object (`0x645fc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x647510` | Deleting destructor | Destroys the object (`0x646120` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x647610` | Deleting destructor | Destroys the object (`0x6462b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x647770` | Deleting destructor | Destroys the object (`0x6463a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x647790` | Deleting destructor | Destroys the object (`0x6463e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x647900` | Deleting destructor | Destroys the object (`0x646490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x647920` | Deleting destructor | Destroys the object (`0x646590` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x647940` | Deleting destructor | Destroys the object (`0x646710` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x647c00` | Deleting destructor | Destroys the object (`0x645ce0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x647c60` | Deleting destructor | Destroys the object (`0x645cf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x647cc0` | Deleting destructor | Destroys the object (`0x645d00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -762,220 +747,217 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x648240` | Deleting destructor | Destroys the object (`0x648260`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6484c0` | Deleting destructor | Destroys the object (`0x6484e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x648750` | Deleting destructor | Destroys the object (`0x648770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x648780` | Deleting destructor | Destroys the object (`0x646da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6488e0` | Deleting destructor | Destroys the object (`0x646f20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x648900` | Deleting destructor | Destroys the object (`0x647070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x648920` | Deleting destructor | Destroys the object (`0x647180`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x64b3e0` | Deleting destructor | Destroys the object (`0x6477b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x64b640` | Deleting destructor | Destroys the object (`0x647960`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x648780` | Deleting destructor | Destroys the object (`0x646da0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6488e0` | Deleting destructor | Destroys the object (`0x646f20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x648900` | Deleting destructor | Destroys the object (`0x647070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x648920` | Deleting destructor | Destroys the object (`0x647180` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x64b3e0` | Deleting destructor | Destroys the object (`0x6477b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x64b640` | Deleting destructor | Destroys the object (`0x647960` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x64c030` | Deleting destructor | Destroys the object (`0x64c050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x64e4e0` | Deleting destructor | Destroys the object (`0x64e500`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x64e510` | Deleting destructor | Destroys the object (`0x649d00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x64e530` | Deleting destructor | Destroys the object (`0x64ac60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x650a40` | Deleting destructor | Destroys the object (`0x64b400`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x651280` | Deleting destructor | Destroys the object (`0x64bf60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x654c30` | Deleting destructor | Destroys the object (`0x654410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x654c50` | Deleting destructor | Destroys the object (`0x654c70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x64e510` | Deleting destructor | Destroys the object (`0x649d00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x64e530` | Deleting destructor | Destroys the object (`0x64ac60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x650a40` | Deleting destructor | Destroys the object (`0x64b400` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x651280` | Deleting destructor | Destroys the object (`0x64bf60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x654c30` | Deleting destructor | Destroys the object (`0x654410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x654c50` | Deleting destructor | Destroys the object (`0x654c70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x654f70` | Deleting destructor | Destroys the object (`0x654f90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6551d0` | Deleting destructor | Destroys the object (`0x6551f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x659410` | Deleting destructor | Destroys the object (`0x6572f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x659410` | Deleting destructor | Destroys the object (`0x6572f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x659630` | Thunk | Calls `0x5f3d70` on the object at +0x30 |
-| `0x659750` | Deleting destructor | Destroys the object (`0x659450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x659c50` | Deleting destructor | Destroys the object (`0x659b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x659750` | Deleting destructor | Destroys the object (`0x659450` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x659c50` | Deleting destructor | Destroys the object (`0x659b40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x65a2a0` | Deleting destructor | Destroys the object (`0x65a2c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x65afb0` | Deleting destructor | Destroys the object (`0x65a710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65aff0` | Deleting destructor | Destroys the object (`0x65a7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65aff0` | Deleting destructor | Destroys the object (`0x65a7b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x65b7a0` | Deleting destructor | Destroys the object (`0x65b7c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65b7d0` | Deleting destructor | Destroys the object (`0x65b690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65c070` | Deleting destructor | Destroys the object (`0x65bd60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65cc20` | Deleting destructor | Destroys the object (`0x65b590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65d320` | Deleting destructor | Destroys the object (`0x65d0d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65b7d0` | Deleting destructor | Destroys the object (`0x65b690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65c070` | Deleting destructor | Destroys the object (`0x65bd60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65cc20` | Deleting destructor | Destroys the object (`0x65b590` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65d320` | Deleting destructor | Destroys the object (`0x65d0d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x65db40` | Deleting destructor | Destroys the object (`0x65db60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65e570` | Deleting destructor | Destroys the object (`0x65d440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65ee00` | Deleting destructor | Destroys the object (`0x65ee20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65ee80` | Deleting destructor | Destroys the object (`0x65e910`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65fb80` | Deleting destructor | Destroys the object (`0x65f520`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x65ff90` | Deleting destructor | Destroys the object (`0x65f5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x660500` | Deleting destructor | Destroys the object (`0x65f670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x661010` | Deleting destructor | Destroys the object (`0x661030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x661580` | Deleting destructor | Destroys the object (`0x6612a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65e570` | Deleting destructor | Destroys the object (`0x65d440` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65ee00` | Deleting destructor | Destroys the object (`0x65ee20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65ee80` | Deleting destructor | Destroys the object (`0x65e910` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65fb80` | Deleting destructor | Destroys the object (`0x65f520` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x65ff90` | Deleting destructor | Destroys the object (`0x65f5c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x660500` | Deleting destructor | Destroys the object (`0x65f670` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x661010` | Deleting destructor | Destroys the object (`0x661030` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x661580` | Deleting destructor | Destroys the object (`0x6612a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x661b50` | Deleting destructor | Destroys the object (`0x661b70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x661c20` | Deleting destructor | Destroys the object (`0x661c40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x662fc0` | Deleting destructor | Destroys the object (`0x661e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x663cd0` | Deleting destructor | Destroys the object (`0x6631c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x664420` | Deleting destructor | Destroys the object (`0x664320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x664d30` | Deleting destructor | Destroys the object (`0x664d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6656d0` | Deleting destructor | Destroys the object (`0x664840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x666d90` | Deleting destructor | Destroys the object (`0x6664e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x667460` | Deleting destructor | Destroys the object (`0x666e70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6675b0` | Deleting destructor | Destroys the object (`0x666f40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x667660` | Deleting destructor | Destroys the object (`0x667000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x662fc0` | Deleting destructor | Destroys the object (`0x661e60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x663cd0` | Deleting destructor | Destroys the object (`0x6631c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x664420` | Deleting destructor | Destroys the object (`0x664320` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x664d30` | Deleting destructor | Destroys the object (`0x664d50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6656d0` | Deleting destructor | Destroys the object (`0x664840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x666d90` | Deleting destructor | Destroys the object (`0x6664e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x667460` | Deleting destructor | Destroys the object (`0x666e70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6675b0` | Deleting destructor | Destroys the object (`0x666f40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x667660` | Deleting destructor | Destroys the object (`0x667000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6676f0` | Deleting destructor | Destroys the object (`0x666de0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x667c10` | Deleting destructor | Destroys the object (`0x666dd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6686c0` | Deleting destructor | Destroys the object (`0x6685a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6686e0` | Deleting destructor | Destroys the object (`0x668620`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x669cd0` | Deleting destructor | Destroys the object (`0x669660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x66a600` | Deleting destructor | Destroys the object (`0x669e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x66a840` | Deleting destructor | Destroys the object (`0x66a020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6686c0` | Deleting destructor | Destroys the object (`0x6685a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6686e0` | Deleting destructor | Destroys the object (`0x668620` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x669cd0` | Deleting destructor | Destroys the object (`0x669660` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x66a600` | Deleting destructor | Destroys the object (`0x669e60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x66a840` | Deleting destructor | Destroys the object (`0x66a020` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x66c7a0` | Deleting destructor | Destroys the object (`0x66c7c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x66ccc0` | Deleting destructor | Destroys the object (`0x66b190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x66d070` | Deleting destructor | Destroys the object (`0x66b920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x66d0d0` | Deleting destructor | Destroys the object (`0x66c5d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x66ccc0` | Deleting destructor | Destroys the object (`0x66b190` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x66d070` | Deleting destructor | Destroys the object (`0x66b920` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x66d0d0` | Deleting destructor | Destroys the object (`0x66c5d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6705c0` | Deleting destructor | Destroys the object (`0x6705e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x670be0` | Deleting destructor | Destroys the object (`0x6707b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x670be0` | Deleting destructor | Destroys the object (`0x6707b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x671620` | Empty | Does nothing |
 | `0x671630` | Empty | Does nothing |
-| `0x675580` | Deleting destructor | Destroys the object (`0x672d00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x678290` | Deleting destructor | Destroys the object (`0x675ad0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6782b0` | Deleting destructor | Destroys the object (`0x676220`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6782d0` | Deleting destructor | Destroys the object (`0x676e40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x678790` | Deleting destructor | Destroys the object (`0x6786b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x67a250` | Deleting destructor | Destroys the object (`0x679330`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x675580` | Deleting destructor | Destroys the object (`0x672d00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x678290` | Deleting destructor | Destroys the object (`0x675ad0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6782b0` | Deleting destructor | Destroys the object (`0x676220` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6782d0` | Deleting destructor | Destroys the object (`0x676e40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x678790` | Deleting destructor | Destroys the object (`0x6786b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67a250` | Deleting destructor | Destroys the object (`0x679330` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x67ab80` | Set +0x118 | Sets the member at +0x118 to its argument, taking 1 argument off the stack |
-| `0x67b960` | Deleting destructor | Destroys the object (`0x67ad40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x67c300` | Deleting destructor | Destroys the object (`0x67b9f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67b960` | Deleting destructor | Destroys the object (`0x67ad40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67c300` | Deleting destructor | Destroys the object (`0x67b9f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x67c5c0` | Set +0x114 | Sets the member at +0x114 to its argument, taking 1 argument off the stack |
-| `0x67cab0` | Deleting destructor | Destroys the object (`0x67c600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x67cb40` | Deleting destructor | Destroys the object (`0x67c6a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x67d040` | Deleting destructor | Destroys the object (`0x67d000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67cab0` | Deleting destructor | Destroys the object (`0x67c600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67cb40` | Deleting destructor | Destroys the object (`0x67c6a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67d040` | Deleting destructor | Destroys the object (`0x67d000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x67dce0` | Deleting destructor | Destroys the object (`0x67c5b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x67dd00` | Deleting destructor | Destroys the object (`0x67d390`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x67ed60` | Deleting destructor | Destroys the object (`0x67eae0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x67f5e0` | Deleting destructor | Destroys the object (`0x67f260`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x67f7d0` | Deleting destructor | Destroys the object (`0x67f640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67dd00` | Deleting destructor | Destroys the object (`0x67d390` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67ed60` | Deleting destructor | Destroys the object (`0x67eae0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67f5e0` | Deleting destructor | Destroys the object (`0x67f260` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67f7d0` | Deleting destructor | Destroys the object (`0x67f640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x680810` | Deleting destructor | Destroys the object (`0x619010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6817f0` | Deleting destructor | Destroys the object (`0x680be0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x681fe0` | Deleting destructor | Destroys the object (`0x682000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6817f0` | Deleting destructor | Destroys the object (`0x680be0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x681fe0` | Deleting destructor | Destroys the object (`0x682000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6828a0` | Get global 0x12f840c | Returns the value in the global `0x12f840c` |
 | `0x682900` | Get global 0x12f8414 | Returns the value in the global `0x12f8414` |
 | `0x682eb0` | Deleting destructor | Destroys the object (`0x682970`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x682ed0` | Deleting destructor | Destroys the object (`0x682980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x682f10` | Deleting destructor | Destroys the object (`0x682a20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x682f10` | Deleting destructor | Destroys the object (`0x682a20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x683570` | Deleting destructor | Destroys the object (`0x683590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x684c20` | Deleting destructor | Destroys the object (`0x683ce0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x684c20` | Deleting destructor | Destroys the object (`0x683ce0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x685160` | Set +0x10 | Sets the member at +0x10 to 0x2 |
 | `0x685170` | Deleting destructor | Destroys the object (`0x414190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6854d0` | Deleting destructor | Destroys the object (`0x4560b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6857d0` | Deleting destructor | Destroys the object (`0x685340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6854d0` | Deleting destructor | Destroys the object (`0x4560b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6857d0` | Deleting destructor | Destroys the object (`0x685340` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x685e00` | Deleting destructor | Destroys the object (`0x685e20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x686c20` | Deleting destructor | Destroys the object (`0x686c40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6876a0` | Deleting destructor | Destroys the object (`0x6876c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x688160` | Deleting destructor | Destroys the object (`0x688180`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6881d0` | Deleting destructor | Destroys the object (`0x686130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6881f0` | Deleting destructor | Destroys the object (`0x686fd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x688210` | Deleting destructor | Destroys the object (`0x687350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x686c20` | Deleting destructor | Destroys the object (`0x686c40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6876a0` | Deleting destructor | Destroys the object (`0x6876c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x688160` | Deleting destructor | Destroys the object (`0x688180` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6881d0` | Deleting destructor | Destroys the object (`0x686130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6881f0` | Deleting destructor | Destroys the object (`0x686fd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x688210` | Deleting destructor | Destroys the object (`0x687350` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6888a0` | Deleting destructor | Destroys the object (`0x6888c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x68c640` | Deleting destructor | Destroys the object (`0x68a3d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x68c660` | Deleting destructor | Destroys the object (`0x68c680`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x68c640` | Deleting destructor | Destroys the object (`0x68a3d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x68c660` | Deleting destructor | Destroys the object (`0x68c680` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x68cfc0` | Deleting destructor | Destroys the object (`0x68cfe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x68d1b0` | Deleting destructor | Destroys the object (`0x68d010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x68f1a0` | Deleting destructor | Destroys the object (`0x68ec00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x68f620` | Deleting destructor | Destroys the object (`0x68f430`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x690130` | Deleting destructor | Destroys the object (`0x68f8a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x68d1b0` | Deleting destructor | Destroys the object (`0x68d010` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x68f1a0` | Deleting destructor | Destroys the object (`0x68ec00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x68f620` | Deleting destructor | Destroys the object (`0x68f430` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x690130` | Deleting destructor | Destroys the object (`0x68f8a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x690550` | Deleting destructor | Destroys the object (`0x690570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x690b50` | Deleting destructor | Destroys the object (`0x690930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6914f0` | Deleting destructor | Destroys the object (`0x6914a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6926e0` | Deleting destructor | Destroys the object (`0x6914a0`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x690b50` | Deleting destructor | Destroys the object (`0x690930` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6914f0` | Deleting destructor | Destroys the object (`0x6914a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x69a4b0` | Deleting destructor | Destroys the object (`0x4edb10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x69ac90` | Deleting destructor | Destroys the object (`0x69ac30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x69b030` | Deleting destructor | Destroys the object (`0x69ac40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x69d9b0` | Deleting destructor | Destroys the object (`0x69b5b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x69d9b0` | Deleting destructor | Destroys the object (`0x69b5b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x69e940` | Set +0xd4 | Sets the member at +0xd4 to its argument, taking 1 argument off the stack |
-| `0x69eb90` | Deleting destructor | Destroys the object (`0x69e8a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x69fc00` | Deleting destructor | Destroys the object (`0x69f600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x69fe70` | Deleting destructor | Destroys the object (`0x69fe90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a0b70` | Deleting destructor | Destroys the object (`0x69f570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a0d20` | Deleting destructor | Destroys the object (`0x6a0c80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x69eb90` | Deleting destructor | Destroys the object (`0x69e8a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x69fc00` | Deleting destructor | Destroys the object (`0x69f600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x69fe70` | Deleting destructor | Destroys the object (`0x69fe90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a0b70` | Deleting destructor | Destroys the object (`0x69f570` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a0d20` | Deleting destructor | Destroys the object (`0x6a0c80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a1ae0` | Deleting destructor | Destroys the object (`0x45cdc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a1d90` | Deleting destructor | Destroys the object (`0x6a1db0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a2600` | Deleting destructor | Destroys the object (`0x6a2040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a2a50` | Deleting destructor | Destroys the object (`0x6a28b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a3240` | Deleting destructor | Destroys the object (`0x6a2ab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a3260` | Deleting destructor | Destroys the object (`0x6a3070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a3280` | Deleting destructor | Destroys the object (`0x6a3160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a2600` | Deleting destructor | Destroys the object (`0x6a2040` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a2a50` | Deleting destructor | Destroys the object (`0x6a28b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a3240` | Deleting destructor | Destroys the object (`0x6a2ab0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a3260` | Deleting destructor | Destroys the object (`0x6a3070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a3280` | Deleting destructor | Destroys the object (`0x6a3160` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a3bf0` | Empty | Does nothing |
-| `0x6a4240` | Deleting destructor | Destroys the object (`0x6a3df0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a4af0` | Deleting destructor | Destroys the object (`0x6a4760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a4240` | Deleting destructor | Destroys the object (`0x6a3df0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a4af0` | Deleting destructor | Destroys the object (`0x6a4760` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a5640` | Deleting destructor | Destroys the object (`0x6a5660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a59e0` | Deleting destructor | Destroys the object (`0x6a5a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a5e00` | Deleting destructor | Destroys the object (`0x6a5a80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a59e0` | Deleting destructor | Destroys the object (`0x6a5a00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a5e00` | Deleting destructor | Destroys the object (`0x6a5a80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a6300` | Get global 0x1305c9c | Returns the value in the global `0x1305c9c` |
 | `0x6a6320` | Deleting destructor | Destroys the object (`0x6a6340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a6580` | Deleting destructor | Destroys the object (`0x6a65a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a7790` | Deleting destructor | Destroys the object (`0x6a69d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a7790` | Deleting destructor | Destroys the object (`0x6a69d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a77b0` | Deleting destructor | Destroys the object (`0x6a77d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a7910` | Thunk | Calls `0x6a9e50` on the object at +0xe4 |
-| `0x6a8160` | Deleting destructor | Destroys the object (`0x6a7820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a8160` | Deleting destructor | Destroys the object (`0x6a7820` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a8710` | Deleting destructor | Destroys the object (`0x6a8730`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a8f40` | Deleting destructor | Destroys the object (`0x6a8f60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a9500` | Deleting destructor | Destroys the object (`0x45ba90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a9df0` | Deleting destructor | Destroys the object (`0x6a9c70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ab150` | Deleting destructor | Destroys the object (`0x45cc90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ab4c0` | Deleting destructor | Destroys the object (`0x69f500`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ab710` | Deleting destructor | Destroys the object (`0x65f570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6a9df0` | Deleting destructor | Destroys the object (`0x6a9c70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ab150` | Deleting destructor | Destroys the object (`0x45cc90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ab4c0` | Deleting destructor | Destroys the object (`0x69f500` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ab710` | Deleting destructor | Destroys the object (`0x65f570` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6ab970` | Deleting destructor | Destroys the object (`0x6ab990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6ac010` | Deleting destructor | Destroys the object (`0x4e4660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ac710` | Deleting destructor | Destroys the object (`0x6ac050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ac710` | Deleting destructor | Destroys the object (`0x6ac050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6ace00` | Empty | Does nothing, taking 1 argument off the stack |
 | `0x6ace10` | Empty | Does nothing, taking 1 argument off the stack |
 | `0x6ad0b0` | Set +0xd0 | Sets the member at +0xd0 to its argument, taking 1 argument off the stack |
-| `0x6b0720` | Deleting destructor | Destroys the object (`0x6b0690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b0b30` | Deleting destructor | Destroys the object (`0x6b0a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b0720` | Deleting destructor | Destroys the object (`0x6b0690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b0b30` | Deleting destructor | Destroys the object (`0x6b0a90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b1790` | Deleting destructor | Destroys the object (`0x6b0ea0` (Window::~Window)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b1e90` | Deleting destructor | Destroys the object (`0x6b1eb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b20c0` | Deleting destructor | Destroys the object (`0x6b20e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b2350` | Deleting destructor | Destroys the object (`0x6b2370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b25e0` | Deleting destructor | Destroys the object (`0x6b2600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b26e0` | Deleting destructor | Destroys the object (`0xbd3170`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b34b0` | Deleting destructor | Destroys the object (`0x6b2db0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b38d0` | Deleting destructor | Destroys the object (`0x6b32f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b3a50` | Deleting destructor | Destroys the object (`0x6b36d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b1e90` | Deleting destructor | Destroys the object (`0x6b1eb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b20c0` | Deleting destructor | Destroys the object (`0x6b20e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b2350` | Deleting destructor | Destroys the object (`0x6b2370` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b25e0` | Deleting destructor | Destroys the object (`0x6b2600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b34b0` | Deleting destructor | Destroys the object (`0x6b2db0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b38d0` | Deleting destructor | Destroys the object (`0x6b32f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b3a50` | Deleting destructor | Destroys the object (`0x6b36d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b3bc0` | Deleting destructor | Destroys the object (`0x680880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b3d50` | Get global 0x1305d88 | Returns the value in the global `0x1305d88` |
 | `0x6b3d60` | Thunk | Calls `0x6b8580` on the object at +0x168 |
-| `0x6b3df0` | Deleting destructor | Destroys the object (`0x6b3c30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b3df0` | Deleting destructor | Destroys the object (`0x6b3c30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b4270` | Deleting destructor | Destroys the object (`0x6b4290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b4bb0` | Deleting destructor | Destroys the object (`0x6b4bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b58c0` | Deleting destructor | Destroys the object (`0xbe69d0`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x6b63e0` | Deleting destructor | Destroys the object (`0x6b5a60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b63e0` | Deleting destructor | Destroys the object (`0x6b5a60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b6490` | Deleting destructor | Destroys the object (`0x6b5fa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b8860` | Thunk | Calls `0x6b6fc0` on the object at +0x130 |
-| `0x6b89e0` | Deleting destructor | Destroys the object (`0x6b8870`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b89e0` | Deleting destructor | Destroys the object (`0x6b8870` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b8cc0` | Get global 0x1305dc0 | Returns the value in the global `0x1305dc0` |
-| `0x6b8d20` | Deleting destructor | Destroys the object (`0x6b8ab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b8d40` | Deleting destructor | Destroys the object (`0x6b8c00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ba270` | Deleting destructor | Destroys the object (`0x6b9c10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6baa40` | Deleting destructor | Destroys the object (`0x6ba0c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b8d20` | Deleting destructor | Destroys the object (`0x6b8ab0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b8d40` | Deleting destructor | Destroys the object (`0x6b8c00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ba270` | Deleting destructor | Destroys the object (`0x6b9c10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6baa40` | Deleting destructor | Destroys the object (`0x6ba0c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6bab50` | Deleting destructor | Destroys the object (`0x6bab70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6bac90` | Deleting destructor | Destroys the object (`0x6bacb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6bc790` | Deleting destructor | Destroys the object (`0x6bc7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6bcd40` | Deleting destructor | Destroys the object (`0x6bcd60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6bcd70` | Deleting destructor | Destroys the object (`0x6bcd90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6c1e10` | Deleting destructor | Destroys the object (`0x6c1ac0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6c1e10` | Deleting destructor | Destroys the object (`0x6c1ac0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6c2090` | Set +0x10c | Sets the member at +0x10c to 0x0 |
-| `0x6c32f0` | Deleting destructor | Destroys the object (`0x6c3310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6c61c0` | Deleting destructor | Destroys the object (`0x6c4820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6c32f0` | Deleting destructor | Destroys the object (`0x6c3310` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6c61c0` | Deleting destructor | Destroys the object (`0x6c4820` (Challenge::~Challenge)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6c6770` | Get global 0x1305e14 | Returns the value in the global `0x1305e14` |
 | `0x6c6860` | Get global 0x1305e18 | Returns the value in the global `0x1305e18` |
-| `0x6c68e0` | Deleting destructor | Destroys the object (`0x6c6650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6c6bf0` | Deleting destructor | Destroys the object (`0x6c67c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6c83e0` | Deleting destructor | Destroys the object (`0x6c7ee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6c68e0` | Deleting destructor | Destroys the object (`0x6c6650` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6c6bf0` | Deleting destructor | Destroys the object (`0x6c67c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6c83e0` | Deleting destructor | Destroys the object (`0x6c7ee0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6c8430` | Deleting destructor | Destroys the object (`0x6c8450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6c8b40` | Get global 0x1305e38 | Returns the value in the global `0x1305e38` |
 | `0x6c8c10` | Get global 0x1305e34 | Returns the value in the global `0x1305e34` |
-| `0x6c8c90` | Deleting destructor | Destroys the object (`0x6c8880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6c8cb0` | Deleting destructor | Destroys the object (`0x6c8b70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6cc930` | Deleting destructor | Destroys the object (`0x6cc580`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6cca60` | Deleting destructor | Destroys the object (`0x6cc840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6c8c90` | Deleting destructor | Destroys the object (`0x6c8880` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6c8cb0` | Deleting destructor | Destroys the object (`0x6c8b70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6cc930` | Deleting destructor | Destroys the object (`0x6cc580` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6cca60` | Deleting destructor | Destroys the object (`0x6cc840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6d0290` | Deleting destructor | Destroys the object (`0x6d02b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6d0d40` | Deleting destructor | Destroys the object (`0x6cfdd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6d4600` | Deleting destructor | Destroys the object (`0x6d43a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6d4670` | Deleting destructor | Destroys the object (`0x6d4430`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6d4850` | Deleting destructor | Destroys the object (`0x6d4520`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6d5bb0` | Deleting destructor | Destroys the object (`0x6d57c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6d6410` | Deleting destructor | Destroys the object (`0x6d5fa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6d6440` | Deleting destructor | Destroys the object (`0x6d6250`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6d7610` | Deleting destructor | Destroys the object (`0x6d6320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6d0d40` | Deleting destructor | Destroys the object (`0x6cfdd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6d4600` | Deleting destructor | Destroys the object (`0x6d43a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6d4670` | Deleting destructor | Destroys the object (`0x6d4430` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6d4850` | Deleting destructor | Destroys the object (`0x6d4520` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6d5bb0` | Deleting destructor | Destroys the object (`0x6d57c0` (Objective::~Objective)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6d6410` | Deleting destructor | Destroys the object (`0x6d5fa0` (ObjectiveCondition::~ObjectiveCondition)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6d6440` | Deleting destructor | Destroys the object (`0x6d6250` (GenericConsistantCondition::~GenericConsistantCondition)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6d7610` | Deleting destructor | Destroys the object (`0x6d6320` (GenericConsistantCondition::~GenericConsistantCondition)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6d8cf0` | Set table | Sets the object's virtual function table to `0xf328c0` |
 | `0x6d8d00` | Deleting destructor | Destroys the object (`0x6d8cf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6d9410` | Set table | Sets the object's virtual function table to `0xf328c0` |
@@ -989,79 +971,79 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x6da490` | Deleting destructor | Destroys the object (`0x6da4b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6da600` | Deleting destructor | Destroys the object (`0x6da620`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6daae0` | Deleting destructor | Destroys the object (`0x6dab00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6dab10` | Deleting destructor | Destroys the object (`0x6d85a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6dab10` | Deleting destructor | Destroys the object (`0x6d85a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6dad40` | Deleting destructor | Destroys the object (`0x6dad60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6db1c0` | Deleting destructor | Destroys the object (`0x6d8840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6db1c0` | Deleting destructor | Destroys the object (`0x6d8840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6db440` | Deleting destructor | Destroys the object (`0x6db460`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6db4e0` | Deleting destructor | Destroys the object (`0x6d8b60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6db4e0` | Deleting destructor | Destroys the object (`0x6d8b60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6db920` | Deleting destructor | Destroys the object (`0x6db940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6dbb80` | Deleting destructor | Destroys the object (`0x6dbba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6dbc70` | Deleting destructor | Destroys the object (`0x6d8ff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6dbb80` | Deleting destructor | Destroys the object (`0x6dbba0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6dbc70` | Deleting destructor | Destroys the object (`0x6d8ff0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6dbdb0` | Deleting destructor | Destroys the object (`0x6dbdd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6dbf20` | Deleting destructor | Destroys the object (`0x6dbf40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6dbff0` | Deleting destructor | Destroys the object (`0x6d9480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6dbff0` | Deleting destructor | Destroys the object (`0x6d9480` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6dc1e0` | Deleting destructor | Destroys the object (`0x6dc200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6debb0` | Deleting destructor | Destroys the object (`0x6da630`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6e1b10` | Deleting destructor | Destroys the object (`0x6dad70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6e3a60` | Deleting destructor | Destroys the object (`0x6e3a80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6e6770` | Deleting destructor | Destroys the object (`0x6e6790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6e8260` | Deleting destructor | Destroys the object (`0x6e8280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6e8ac0` | Deleting destructor | Destroys the object (`0x6e8ae0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6e91b0` | Deleting destructor | Destroys the object (`0x6e91d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6e9340` | Deleting destructor | Destroys the object (`0x6e9270`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6e9b60` | Deleting destructor | Destroys the object (`0x6e9790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6debb0` | Deleting destructor | Destroys the object (`0x6da630` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6e1b10` | Deleting destructor | Destroys the object (`0x6dad70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6e3a60` | Deleting destructor | Destroys the object (`0x6e3a80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6e6770` | Deleting destructor | Destroys the object (`0x6e6790` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6e8260` | Deleting destructor | Destroys the object (`0x6e8280` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6e8ac0` | Deleting destructor | Destroys the object (`0x6e8ae0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6e91b0` | Deleting destructor | Destroys the object (`0x6e91d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6e9340` | Deleting destructor | Destroys the object (`0x6e9270` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6e9b60` | Deleting destructor | Destroys the object (`0x6e9790` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6ea330` | Deleting destructor | Destroys the object (`0x6ea350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6ea580` | Deleting destructor | Destroys the object (`0x6ea5a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6ea780` | Get global 0x13060d8 | Returns the value in the global `0x13060d8` |
 | `0x6eaa40` | Get global 0x13060e0 | Returns the value in the global `0x13060e0` |
-| `0x6eaae0` | Deleting destructor | Destroys the object (`0x6ea620`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6eab00` | Deleting destructor | Destroys the object (`0x6ea7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6eabd0` | Deleting destructor | Destroys the object (`0x6ea890`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ead30` | Deleting destructor | Destroys the object (`0x6ea960`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ed420` | Deleting destructor | Destroys the object (`0x6ed3c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ed970` | Deleting destructor | Destroys the object (`0x6ed820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ef5b0` | Deleting destructor | Destroys the object (`0x6ef430`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6eaae0` | Deleting destructor | Destroys the object (`0x6ea620` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6eab00` | Deleting destructor | Destroys the object (`0x6ea7b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6eabd0` | Deleting destructor | Destroys the object (`0x6ea890` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ead30` | Deleting destructor | Destroys the object (`0x6ea960` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ed420` | Deleting destructor | Destroys the object (`0x6ed3c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ed970` | Deleting destructor | Destroys the object (`0x6ed820` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ef5b0` | Deleting destructor | Destroys the object (`0x6ef430` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6f0fa0` | Empty | Does nothing |
-| `0x6f14c0` | Deleting destructor | Destroys the object (`0x6f1050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f14c0` | Deleting destructor | Destroys the object (`0x6f1050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6f1990` | Deleting destructor | Destroys the object (`0x6f19b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6f2250` | Deleting destructor | Destroys the object (`0x6f21f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6f26a0` | Deleting destructor | Destroys the object (`0x6f2640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6f2cb0` | Deleting destructor | Destroys the object (`0x6f2cd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6f7a90` | Deleting destructor | Destroys the object (`0x6f7140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6f9580` | Deleting destructor | Destroys the object (`0x6f8240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6f95a0` | Deleting destructor | Destroys the object (`0x6f9160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f2250` | Deleting destructor | Destroys the object (`0x6f21f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f26a0` | Deleting destructor | Destroys the object (`0x6f2640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f2cb0` | Deleting destructor | Destroys the object (`0x6f2cd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f7a90` | Deleting destructor | Destroys the object (`0x6f7140` (VIPCondition::~VIPCondition)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f9580` | Deleting destructor | Destroys the object (`0x6f8240` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f95a0` | Deleting destructor | Destroys the object (`0x6f9160` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6fc870` | Thunk | Calls `0x6f0ee0` on the object at +0x48 |
-| `0x6fc8a0` | Deleting destructor | Destroys the object (`0x435790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6fc8a0` | Deleting destructor | Destroys the object (`0x435790` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6fcb90` | Deleting destructor | Destroys the object (`0x6fcbb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6fd6b0` | Deleting destructor | Destroys the object (`0x6fced0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6fe260` | Deleting destructor | Destroys the object (`0x6fe100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6fe260` | Deleting destructor | Destroys the object (`0x6fe100` (VIPRoute::~VIPRoute)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6ff0c0` | Get global 0x1306160 | Returns the value in the global `0x1306160` |
-| `0x6ff1c0` | Deleting destructor | Destroys the object (`0x6feee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ff280` | Deleting destructor | Destroys the object (`0x6ff030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ff860` | Deleting destructor | Destroys the object (`0x6ff2a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6ffd40` | Deleting destructor | Destroys the object (`0x6ffbf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x700680` | Deleting destructor | Destroys the object (`0x6fffc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x700780` | Deleting destructor | Destroys the object (`0x700440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x701e50` | Deleting destructor | Destroys the object (`0x701da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7023e0` | Deleting destructor | Destroys the object (`0x701ec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ff1c0` | Deleting destructor | Destroys the object (`0x6feee0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ff280` | Deleting destructor | Destroys the object (`0x6ff030` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ff860` | Deleting destructor | Destroys the object (`0x6ff2a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6ffd40` | Deleting destructor | Destroys the object (`0x6ffbf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x700680` | Deleting destructor | Destroys the object (`0x6fffc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x700780` | Deleting destructor | Destroys the object (`0x700440` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x701e50` | Deleting destructor | Destroys the object (`0x701da0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7023e0` | Deleting destructor | Destroys the object (`0x701ec0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x703280` | Deleting destructor | Destroys the object (`0x702ee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7033d0` | Deleting destructor | Destroys the object (`0x7033f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7034c0` | Deleting destructor | Destroys the object (`0x7034e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7035a0` | Deleting destructor | Destroys the object (`0x7035c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x703690` | Deleting destructor | Destroys the object (`0x7036b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7036c0` | Deleting destructor | Destroys the object (`0x702fa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7036c0` | Deleting destructor | Destroys the object (`0x702fa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x703c50` | Deleting destructor | Destroys the object (`0x702ef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x704e40` | Deleting destructor | Destroys the object (`0x704e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x704e60` | Set table | Sets the object's virtual function table to `0xf304f0` |
-| `0x708490` | Deleting destructor | Destroys the object (`0x704e70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x708c60` | Deleting destructor | Destroys the object (`0x708800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x709df0` | Deleting destructor | Destroys the object (`0x709c50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x708490` | Deleting destructor | Destroys the object (`0x704e70` (Park::~Park)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x708c60` | Deleting destructor | Destroys the object (`0x708800` (ParkEntranceBehaviour::~ParkEntranceBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x709df0` | Deleting destructor | Destroys the object (`0x709c50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x70a1a0` | Deleting destructor | Destroys the object (`0x70a1c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x70a400` | Deleting destructor | Destroys the object (`0x70a420`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x70a6d0` | Deleting destructor | Destroys the object (`0x70a4d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x70ec10` | Deleting destructor | Destroys the object (`0x70ec30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x70eca0` | Deleting destructor | Destroys the object (`0x70e1e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x70f2b0` | Deleting destructor | Destroys the object (`0x70f090`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x70a6d0` | Deleting destructor | Destroys the object (`0x70a4d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x70ec10` | Deleting destructor | Destroys the object (`0x70ec30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x70eca0` | Deleting destructor | Destroys the object (`0x70e1e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x70f2b0` | Deleting destructor | Destroys the object (`0x70f090` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x70f650` | Deleting destructor | Destroys the object (`0x70f670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x711950` | Deleting destructor | Destroys the object (`0x711850`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x711970` | Deleting destructor | Destroys the object (`0x711820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1070,113 +1052,109 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x711ed0` | Deleting destructor | Destroys the object (`0x711aa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x711ef0` | Deleting destructor | Destroys the object (`0x711a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x712140` | Deleting destructor | Destroys the object (`0x712160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x712170` | Deleting destructor | Destroys the object (`0x711ab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x712170` | Deleting destructor | Destroys the object (`0x711ab0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x714330` | Thunk | Calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x10 |
-| `0x718f10` | Deleting destructor | Destroys the object (`0x718c60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x719e80` | Deleting destructor | Destroys the object (`0x719d80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x719f90` | Deleting destructor | Destroys the object (`0x719f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x71a890` | Deleting destructor | Destroys the object (`0x71a830`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x718f10` | Deleting destructor | Destroys the object (`0x718c60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x719e80` | Deleting destructor | Destroys the object (`0x719d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x719f90` | Deleting destructor | Destroys the object (`0x719f30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x71a890` | Deleting destructor | Destroys the object (`0x71a830` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x71cb30` | Deleting destructor | Destroys the object (`0x71cb50` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x71cb60` | Deleting destructor | Destroys the object (`0x71aee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x724180` | Deleting destructor | Destroys the object (`0x7235b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x725ce0` | Deleting destructor | Destroys the object (`0x725b90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7260c0` | Deleting destructor | Destroys the object (`0x725de0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7260e0` | Deleting destructor | Destroys the object (`0x725de0`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x724180` | Deleting destructor | Destroys the object (`0x7235b0` (PathManager::~PathManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x725ce0` | Deleting destructor | Destroys the object (`0x725b90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7260c0` | Deleting destructor | Destroys the object (`0x725de0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x729510` | Deleting destructor | Destroys the object (`0x7266a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x72c620` | Deleting destructor | Destroys the object (`0x7299f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x72d710` | Deleting destructor | Destroys the object (`0x72b7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x72d730` | Deleting destructor | Destroys the object (`0x72c5f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x72e780` | Deleting destructor | Destroys the object (`0x72d750`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x72e7a0` | Deleting destructor | Destroys the object (`0x72dd90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x72c620` | Deleting destructor | Destroys the object (`0x7299f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x72d710` | Deleting destructor | Destroys the object (`0x72b7b0` (PathTile::~PathTile)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x72d730` | Deleting destructor | Destroys the object (`0x72c5f0` (PathGround::~PathGround)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x72e780` | Deleting destructor | Destroys the object (`0x72d750` (PathFlying::~PathFlying)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x72e7a0` | Deleting destructor | Destroys the object (`0x72dd90` (PathQueue::~PathQueue)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7305e0` | Thunk | Jumps to `0x72f400` |
 | `0x730980` | Deleting destructor | Destroys the object (`0x7306f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x730d80` | Deleting destructor | Destroys the object (`0x730da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7332b0` | Deleting destructor | Destroys the object (`0x732310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7357d0` | Deleting destructor | Destroys the object (`0x733f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x735f40` | Deleting destructor | Destroys the object (`0x735c60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7377d0` | Deleting destructor | Destroys the object (`0x736510`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x737a50` | Deleting destructor | Destroys the object (`0x736860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x738010` | Deleting destructor | Destroys the object (`0x7373b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7332b0` | Deleting destructor | Destroys the object (`0x732310` (PathTypeDatabaseEntry::~PathTypeDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7357d0` | Deleting destructor | Destroys the object (`0x733f00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x735f40` | Deleting destructor | Destroys the object (`0x735c60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7377d0` | Deleting destructor | Destroys the object (`0x736510` (BaseQueueLine::~BaseQueueLine)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x737a50` | Deleting destructor | Destroys the object (`0x736860` (QueueLine::~QueueLine)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x738010` | Deleting destructor | Destroys the object (`0x7373b0` (FakeQueueLine::~FakeQueueLine)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x738420` | Deleting destructor | Destroys the object (`0x738190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x738a10` | Deleting destructor | Destroys the object (`0x738a30` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x738b00` | Deleting destructor | Destroys the object (`0x738b20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x73a4b0` | Deleting destructor | Destroys the object (`0x738b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x73b800` | Deleting destructor | Destroys the object (`0x73acd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x73a4b0` | Deleting destructor | Destroys the object (`0x738b40` (QueueTypeGroundSurface::~QueueTypeGroundSurface)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x73b800` | Deleting destructor | Destroys the object (`0x73acd0` (QueueTypeDatabaseEntry::~QueueTypeDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x73d790` | Deleting destructor | Destroys the object (`0x73d7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x73d7c0` | Deleting destructor | Destroys the object (`0x73d7e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x741da0` | Deleting destructor | Destroys the object (`0x741170`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x744070` | Deleting destructor | Destroys the object (`0x7425e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x744a70` | Deleting destructor | Destroys the object (`0x743f60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x744f00` | Deleting destructor | Destroys the object (`0x743f60`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x7467f0` | Deleting destructor | Destroys the object (`0x7462b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x741da0` | Deleting destructor | Destroys the object (`0x741170` (AnimalKeeper::~AnimalKeeper)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x744070` | Deleting destructor | Destroys the object (`0x7425e0` (AvatarDatabaseEntry::~AvatarDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x744a70` | Deleting destructor | Destroys the object (`0x743f60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7467f0` | Deleting destructor | Destroys the object (`0x7462b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x747380` | Deleting destructor | Destroys the object (`0x7473a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x747e80` | Deleting destructor | Destroys the object (`0x747ea0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x74d880` | Deleting destructor | Destroys the object (`0x74d8a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x74e0d0` | Deleting destructor | Destroys the object (`0x74dd20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x74e0f0` | Deleting destructor | Destroys the object (`0x74e110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x74e310` | Deleting destructor | Destroys the object (`0xcc2090`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x74ec40` | Deleting destructor | Destroys the object (`0x74e540`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7516c0` | Deleting destructor | Destroys the object (`0x7512e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x753420` | Deleting destructor | Destroys the object (`0x7533d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x753ab0` | Deleting destructor | Destroys the object (`0x753490`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x754650` | Deleting destructor | Destroys the object (`0x753ce0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x754770` | Deleting destructor | Destroys the object (`0x753e40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7548e0` | Deleting destructor | Destroys the object (`0x7547c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x747e80` | Deleting destructor | Destroys the object (`0x747ea0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x74d880` | Deleting destructor | Destroys the object (`0x74d8a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x74e0d0` | Deleting destructor | Destroys the object (`0x74dd20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x74e0f0` | Deleting destructor | Destroys the object (`0x74e110` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x74ec40` | Deleting destructor | Destroys the object (`0x74e540` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7516c0` | Deleting destructor | Destroys the object (`0x7512e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x753420` | Deleting destructor | Destroys the object (`0x7533d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x753ab0` | Deleting destructor | Destroys the object (`0x753490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x754650` | Deleting destructor | Destroys the object (`0x753ce0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x754770` | Deleting destructor | Destroys the object (`0x753e40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7548e0` | Deleting destructor | Destroys the object (`0x7547c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7549d0` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x754a30` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x754a60` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x755310` | Deleting destructor | Destroys the object (`0x7549d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x755330` | Deleting destructor | Destroys the object (`0x754a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x755350` | Deleting destructor | Destroys the object (`0x754a60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x757320` | Deleting destructor | Destroys the object (`0x757340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x757560` | Deleting destructor | Destroys the object (`0x756cb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x757320` | Deleting destructor | Destroys the object (`0x757340` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x757560` | Deleting destructor | Destroys the object (`0x756cb0` (Entertainer::~Entertainer)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x757770` | Deleting destructor | Destroys the object (`0x757650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7577c0` | Deleting destructor | Destroys the object (`0x757660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x757860` | Deleting destructor | Destroys the object (`0x757670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7578a0` | Deleting destructor | Destroys the object (`0x7576d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x757b10` | Deleting destructor | Destroys the object (`0x7576d0`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x757860` | Deleting destructor | Destroys the object (`0x757670` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7578a0` | Deleting destructor | Destroys the object (`0x7576d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x75a4a0` | Deleting destructor | Destroys the object (`0x75a4c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x75a4d0` | Deleting destructor | Destroys the object (`0x75a4f0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x76d220` | Deleting destructor | Destroys the object (`0x76aee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x76d220` | Deleting destructor | Destroys the object (`0x76aee0` (Guest::~Guest)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x76e000` | Empty | Does nothing |
 | `0x770340` | Get global 0x1306564 | Returns the value in the global `0x1306564` |
 | `0x770710` | Deleting destructor | Destroys the object (`0x770730`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x770740` | Deleting destructor | Destroys the object (`0x770260`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7714b0` | Deleting destructor | Destroys the object (`0x7710a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x772530` | Deleting destructor | Destroys the object (`0x772410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7726a0` | Deleting destructor | Destroys the object (`0x7726c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x770740` | Deleting destructor | Destroys the object (`0x770260` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7714b0` | Deleting destructor | Destroys the object (`0x7710a0` (GuestDemographics::~GuestDemographics)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x772530` | Deleting destructor | Destroys the object (`0x772410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7726a0` | Deleting destructor | Destroys the object (`0x7726c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x772720` | Deleting destructor | Destroys the object (`0x772740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x772750` | Deleting destructor | Destroys the object (`0x772770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x773330` | Thunk | Calls `0x7a3970` on `this` +0x1f4 |
 | `0x773340` | Thunk | Calls `0x7a39a0` on `this` +0x1f4 |
-| `0x776a70` | Deleting destructor | Destroys the object (`0x776a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x781d80` | Deleting destructor | Destroys the object (`0x77f760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x776a70` | Deleting destructor | Destroys the object (`0x776a90` (HoldHandsRouteController::~HoldHandsRouteController)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x781d80` | Deleting destructor | Destroys the object (`0x77f760` (GuestGroup::~GuestGroup)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x783be0` | Get +0xec | Returns the value at +0xec |
-| `0x786a00` | Deleting destructor | Destroys the object (`0x785f70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x786eb0` | Deleting destructor | Destroys the object (`0x786cb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x786a00` | Deleting destructor | Destroys the object (`0x785f70` (GuestHolders::~GuestHolders)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x786eb0` | Deleting destructor | Destroys the object (`0x786cb0` (GuestInjectionPoint::~GuestInjectionPoint)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x787230` | Get global 0x13069b4 | Returns the value in the global `0x13069b4` |
-| `0x7872f0` | Deleting destructor | Destroys the object (`0x787130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x788e70` | Deleting destructor | Destroys the object (`0x7883a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78a1f0` | Deleting destructor | Destroys the object (`0x789410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78a510` | Deleting destructor | Destroys the object (`0x789b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78a730` | Deleting destructor | Destroys the object (`0x78a5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7872f0` | Deleting destructor | Destroys the object (`0x787130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x788e70` | Deleting destructor | Destroys the object (`0x7883a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78a1f0` | Deleting destructor | Destroys the object (`0x789410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78a510` | Deleting destructor | Destroys the object (`0x789b00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78a730` | Deleting destructor | Destroys the object (`0x78a5c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78b750` | Get global 0x1306ac8 | Returns the value in the global `0x1306ac8` |
 | `0x78c130` | Deleting destructor | Destroys the object (`0x78b4b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78c150` | Deleting destructor | Destroys the object (`0x78b590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78c170` | Deleting destructor | Destroys the object (`0x78b5a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78c190` | Deleting destructor | Destroys the object (`0x78b5b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78c1b0` | Deleting destructor | Destroys the object (`0x78b5f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78cc30` | Deleting destructor | Destroys the object (`0x78b600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78cc50` | Deleting destructor | Destroys the object (`0x78b640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78cd50` | Deleting destructor | Destroys the object (`0x78b760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78cd70` | Deleting destructor | Destroys the object (`0x78b8d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78cd90` | Deleting destructor | Destroys the object (`0x78b970`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78cdb0` | Deleting destructor | Destroys the object (`0x78ba20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78cdd0` | Deleting destructor | Destroys the object (`0x78baf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78cdf0` | Deleting destructor | Destroys the object (`0x78bb20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78ce10` | Deleting destructor | Destroys the object (`0x78bc40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78ce30` | Deleting destructor | Destroys the object (`0x78bd30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78ce50` | Deleting destructor | Destroys the object (`0x78be40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78cc30` | Deleting destructor | Destroys the object (`0x78b600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78cc50` | Deleting destructor | Destroys the object (`0x78b640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78cd50` | Deleting destructor | Destroys the object (`0x78b760` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78cd70` | Deleting destructor | Destroys the object (`0x78b8d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78cd90` | Deleting destructor | Destroys the object (`0x78b970` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78cdb0` | Deleting destructor | Destroys the object (`0x78ba20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78cdd0` | Deleting destructor | Destroys the object (`0x78baf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78cdf0` | Deleting destructor | Destroys the object (`0x78bb20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78ce10` | Deleting destructor | Destroys the object (`0x78bc40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78ce30` | Deleting destructor | Destroys the object (`0x78bd30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78ce50` | Deleting destructor | Destroys the object (`0x78be40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78d0a0` | Deleting destructor | Destroys the object (`0x78b5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78d150` | Deleting destructor | Destroys the object (`0x78c340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78d170` | Deleting destructor | Destroys the object (`0x78c350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1188,64 +1166,64 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x78d230` | Deleting destructor | Destroys the object (`0x78c710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78d250` | Deleting destructor | Destroys the object (`0x78cb10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x78d270` | Deleting destructor | Destroys the object (`0x78cb20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78d8f0` | Deleting destructor | Destroys the object (`0x78c360`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78dfa0` | Deleting destructor | Destroys the object (`0x78c4c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78e650` | Deleting destructor | Destroys the object (`0x78c5f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78ed00` | Deleting destructor | Destroys the object (`0x78c720`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78f1a0` | Deleting destructor | Destroys the object (`0x78c830`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78f470` | Deleting destructor | Destroys the object (`0x78c920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78f9d0` | Deleting destructor | Destroys the object (`0x78ca00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x78fea0` | Deleting destructor | Destroys the object (`0x78cb30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x791520` | Deleting destructor | Destroys the object (`0x791540`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x799610` | Deleting destructor | Destroys the object (`0x797bb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78d8f0` | Deleting destructor | Destroys the object (`0x78c360` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78dfa0` | Deleting destructor | Destroys the object (`0x78c4c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78e650` | Deleting destructor | Destroys the object (`0x78c5f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78ed00` | Deleting destructor | Destroys the object (`0x78c720` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78f1a0` | Deleting destructor | Destroys the object (`0x78c830` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78f470` | Deleting destructor | Destroys the object (`0x78c920` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78f9d0` | Deleting destructor | Destroys the object (`0x78ca00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x78fea0` | Deleting destructor | Destroys the object (`0x78cb30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x791520` | Deleting destructor | Destroys the object (`0x791540` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x799610` | Deleting destructor | Destroys the object (`0x797bb0` (Handyman::~Handyman)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x799e90` | Deleting destructor | Destroys the object (`0x799eb0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x79a690` | Deleting destructor | Destroys the object (`0x799ed0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x79af30` | Deleting destructor | Destroys the object (`0x79af50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x79a690` | Deleting destructor | Destroys the object (`0x799ed0` (LifeGuard::~LifeGuard)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x79af30` | Deleting destructor | Destroys the object (`0x79af50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x79b310` | Deleting destructor | Destroys the object (`0x79b330` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x79b420` | Deleting destructor | Destroys the object (`0x79b440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x79d1e0` | Deleting destructor | Destroys the object (`0x79b4a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x79b420` | Deleting destructor | Destroys the object (`0x79b440` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x79d1e0` | Deleting destructor | Destroys the object (`0x79b4a0` (Litter::~Litter)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x79e580` | Deleting destructor | Destroys the object (`0x79e5a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7a0540` | Deleting destructor | Destroys the object (`0x79fa30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7a0840` | Deleting destructor | Destroys the object (`0x79fe60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7a0540` | Deleting destructor | Destroys the object (`0x79fa30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7a0840` | Deleting destructor | Destroys the object (`0x79fe60` (Mechanic::~Mechanic)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7a2080` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x7a2160` | Deleting destructor | Destroys the object (`0x7a2080`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7a3000` | Deleting destructor | Destroys the object (`0x7a3020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7a3de0` | Deleting destructor | Destroys the object (`0x7a37c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7a3e70` | Deleting destructor | Destroys the object (`0x7a3d80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7a4a70` | Deleting destructor | Destroys the object (`0x7a4170`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7a3de0` | Deleting destructor | Destroys the object (`0x7a37c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7a3e70` | Deleting destructor | Destroys the object (`0x7a3d80` (PersistentObjectsSeen::~PersistentObjectsSeen)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7a4a70` | Deleting destructor | Destroys the object (`0x7a4170` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7a6600` | Set table | Sets the object's virtual function table to `0xf708c8` |
 | `0x7a68d0` | Set table | Sets the object's virtual function table to `0xf708c8` |
 | `0x7a7010` | Deleting destructor | Destroys the object (`0x7a7030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7a9a40` | Deleting destructor | Destroys the object (`0x7a9a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7a9a60` | Deleting destructor | Destroys the object (`0x7a7200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7a9a40` | Deleting destructor | Destroys the object (`0x7a9a30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7a9a60` | Deleting destructor | Destroys the object (`0x7a7200` (ParkInspectorManager::~ParkInspectorManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7a9b10` | Deleting destructor | Destroys the object (`0x7a7e30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7ab7f0` | Deleting destructor | Destroys the object (`0x7ab680`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7ab7f0` | Deleting destructor | Destroys the object (`0x7ab680` (ParkInspector::~ParkInspector)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7addb0` | Deleting destructor | Destroys the object (`0x7addd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7ae9b0` | Deleting destructor | Destroys the object (`0x7ae900`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7aecc0` | Deleting destructor | Destroys the object (`0x7aece0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7ae9b0` | Deleting destructor | Destroys the object (`0x7ae900` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7aecc0` | Deleting destructor | Destroys the object (`0x7aece0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7aee50` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x7aef00` | Deleting destructor | Destroys the object (`0x7aee50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7afc70` | Deleting destructor | Destroys the object (`0x7aefd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7afc70` | Deleting destructor | Destroys the object (`0x7aefd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7b0ad0` | Deleting destructor | Destroys the object (`0x7b0450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7b2460` | Deleting destructor | Destroys the object (`0x7b23d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7b24d0` | Deleting destructor | Destroys the object (`0x7e7410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7b2460` | Deleting destructor | Destroys the object (`0x7b23d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7b24d0` | Deleting destructor | Destroys the object (`0x7e7410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7b28e0` | Thunk | Calls `0x7c05d0` on the object at +0x18 |
 | `0x7b2960` | Thunk | Calls `0x7b23a0` on the object at +0x48 |
 | `0x7b29a0` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x7b29f0` | Deleting destructor | Destroys the object (`0x7b29a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7b6660` | Deleting destructor | Destroys the object (`0x7b4f10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7b7a60` | Deleting destructor | Destroys the object (`0x7b6680`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7b9a80` | Deleting destructor | Destroys the object (`0x7b8e10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7b6660` | Deleting destructor | Destroys the object (`0x7b4f10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7b7a60` | Deleting destructor | Destroys the object (`0x7b6680` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7b9a80` | Deleting destructor | Destroys the object (`0x7b8e10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7bb790` | Set table | Sets the object's virtual function table to `0xf306b8` |
 | `0x7bb7c0` | Set table | Sets the object's virtual function table to `0xf306b8` |
 | `0x7bbba0` | Deleting destructor | Destroys the object (`0x754990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7bbd80` | Deleting destructor | Destroys the object (`0x7bb790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7bbda0` | Deleting destructor | Destroys the object (`0x7bb7c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7bbdc0` | Deleting destructor | Destroys the object (`0x7bb910`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7bbdc0` | Deleting destructor | Destroys the object (`0x7bb910` (PPGStringTable::~PPGStringTable)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7bc040` | Deleting destructor | Destroys the object (`0x7549a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7bc6a0` | Deleting destructor | Destroys the object (`0x7bc690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7bc6c0` | Deleting destructor | Destroys the object (`0x7bc4c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7bea90` | Deleting destructor | Destroys the object (`0x7be740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7bea90` | Deleting destructor | Destroys the object (`0x7be740` (PPGDatabaseEntry::~PPGDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7c14a0` | Deleting destructor | Destroys the object (`0x7c14c0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7c1ed0` | Set table | Sets the object's virtual function table to `0xf708c8` |
 | `0x7c1f10` | Set table | Sets the object's virtual function table to `0xf708c8` |
@@ -1268,56 +1246,55 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x7c7cb0` | Deleting destructor | Destroys the object (`0x7c7cd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7c7ce0` | Deleting destructor | Destroys the object (`0x7c7d00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7c7d10` | Deleting destructor | Destroys the object (`0x7c7d30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7d4350` | Deleting destructor | Destroys the object (`0x7cd180`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7d43f0` | Deleting destructor | Destroys the object (`0x7cd1d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e1470` | Deleting destructor | Destroys the object (`0x7dc940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e1c80` | Deleting destructor | Destroys the object (`0x7e1ca0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e2250` | Deleting destructor | Destroys the object (`0x7e1f80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e2bc0` | Deleting destructor | Destroys the object (`0x7e22c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e2be0` | Deleting destructor | Destroys the object (`0x7e2850`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e2c00` | Deleting destructor | Destroys the object (`0x7e29f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e3510` | Deleting destructor | Destroys the object (`0x7e2b30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7d4350` | Deleting destructor | Destroys the object (`0x7cd180` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7d43f0` | Deleting destructor | Destroys the object (`0x7cd1d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e1470` | Deleting destructor | Destroys the object (`0x7dc940` (Person::~Person)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e1c80` | Deleting destructor | Destroys the object (`0x7e1ca0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e2250` | Deleting destructor | Destroys the object (`0x7e1f80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e2bc0` | Deleting destructor | Destroys the object (`0x7e22c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e2be0` | Deleting destructor | Destroys the object (`0x7e2850` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e2c00` | Deleting destructor | Destroys the object (`0x7e29f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e3510` | Deleting destructor | Destroys the object (`0x7e2b30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7e3530` | Deleting destructor | Destroys the object (`0x7e3550`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7e3920` | Deleting destructor | Destroys the object (`0x7e3940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7e3d60` | Deleting destructor | Destroys the object (`0x7e3d80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7e3fc0` | Deleting destructor | Destroys the object (`0x7e3fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e4c40` | Deleting destructor | Destroys the object (`0x7e4230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e4e00` | Deleting destructor | Destroys the object (`0x772ab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e6f00` | Deleting destructor | Destroys the object (`0x7e68e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7e99b0` | Deleting destructor | Destroys the object (`0x7e9350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e4c40` | Deleting destructor | Destroys the object (`0x7e4230` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e4e00` | Deleting destructor | Destroys the object (`0x772ab0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e6f00` | Deleting destructor | Destroys the object (`0x7e68e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7e99b0` | Deleting destructor | Destroys the object (`0x7e9350` (SecurityGuard::~SecurityGuard)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7ea150` | Deleting destructor | Destroys the object (`0x6bc440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7ea170` | Deleting destructor | Destroys the object (`0x7ea0f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7eaaf0` | Deleting destructor | Destroys the object (`0x7eab10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7ea170` | Deleting destructor | Destroys the object (`0x7ea0f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7eaaf0` | Deleting destructor | Destroys the object (`0x7eab10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7ed1e0` | Deleting destructor | Destroys the object (`0x7ed200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7ee900` | Deleting destructor | Destroys the object (`0x7ee920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7eea40` | Deleting destructor | Destroys the object (`0x7eb450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7ee900` | Deleting destructor | Destroys the object (`0x7ee920` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7eea40` | Deleting destructor | Destroys the object (`0x7eb450` (Staff::~Staff)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7eecc0` | Get global 0x130a8c4 | Returns the value in the global `0x130a8c4` |
-| `0x7eed20` | Deleting destructor | Destroys the object (`0x7eec40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7eed20` | Deleting destructor | Destroys the object (`0x7eec40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7ef2f0` | Deleting destructor | Destroys the object (`0x7ef110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7ef360` | Deleting destructor | Destroys the object (`0x7ef1c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7ef970` | Deleting destructor | Destroys the object (`0x7ef990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7effd0` | Deleting destructor | Destroys the object (`0x7efa20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7f0a80` | Deleting destructor | Destroys the object (`0x7f0350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7f0aa0` | Deleting destructor | Destroys the object (`0x7f0550`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7f1260` | Deleting destructor | Destroys the object (`0x7f08f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7ef360` | Deleting destructor | Destroys the object (`0x7ef1c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7ef970` | Deleting destructor | Destroys the object (`0x7ef990` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7effd0` | Deleting destructor | Destroys the object (`0x7efa20` (StaffSettings::~StaffSettings)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f0a80` | Deleting destructor | Destroys the object (`0x7f0350` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f0aa0` | Deleting destructor | Destroys the object (`0x7f0550` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f1260` | Deleting destructor | Destroys the object (`0x7f08f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7f2ed0` | Deleting destructor | Destroys the object (`0x7f2ef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7f4520` | Deleting destructor | Destroys the object (`0x7f4420`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7f5f80` | Deleting destructor | Destroys the object (`0x7f4e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7f7090` | Deleting destructor | Destroys the object (`0x7f6000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7f7600` | Deleting destructor | Destroys the object (`0x7f7620`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f4520` | Deleting destructor | Destroys the object (`0x7f4420` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f5f80` | Deleting destructor | Destroys the object (`0x7f4e60` (Vendor::~Vendor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f7090` | Deleting destructor | Destroys the object (`0x7f6000` (ViewingGalleryPersonInfo::~ViewingGalleryPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f7600` | Deleting destructor | Destroys the object (`0x7f7620` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7f8350` | Get +0x41c | Returns the float at +0x41c |
 | `0x7f85f0` | Returns 1 | Returns true, taking 1 argument off the stack |
 | `0x7f88b0` | Deleting destructor | Destroys the object (`0x7f88d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7f88d0` | Set table | Sets the object's virtual function table to `0xf304f0` |
-| `0x7f9590` | Deleting destructor | Destroys the object (`0x7f8c80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7fa6f0` | Deleting destructor | Destroys the object (`0x7fa5d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7fa710` | Deleting destructor | Destroys the object (`0x7fa630`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7fa7c0` | Deleting destructor | Destroys the object (`0x7fa630`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x7faf10` | Deleting destructor | Destroys the object (`0x7faed0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f9590` | Deleting destructor | Destroys the object (`0x7f8c80` (VIP::~VIP)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7fa6f0` | Deleting destructor | Destroys the object (`0x7fa5d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7fa710` | Deleting destructor | Destroys the object (`0x7fa630` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7faf10` | Deleting destructor | Destroys the object (`0x7faed0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fb3c0` | Set table | Sets the object's virtual function table to `0xf75170` |
 | `0x7fbab0` | Deleting destructor | Destroys the object (`0x7fb1d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fbc00` | Deleting destructor | Destroys the object (`0x7fbc20` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7fbce0` | Deleting destructor | Destroys the object (`0x7fbad0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7fbce0` | Deleting destructor | Destroys the object (`0x7fbad0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fc700` | Deleting destructor | Destroys the object (`0x7fc720`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fc720` | Set table | Sets the object's virtual function table to `0xf75170` |
 | `0x7fc820` | Deleting destructor | Destroys the object (`0x7fc840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1339,16 +1316,16 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x7fd410` | Deleting destructor | Destroys the object (`0x7fd430`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fd430` | Set table | Sets the object's virtual function table to `0xf75170` |
 | `0x7fd4a0` | Thunk | Jumps to `0x7fbd00` |
-| `0x7fd6d0` | Deleting destructor | Destroys the object (`0x7fd6f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7fe510` | Deleting destructor | Destroys the object (`0x7fe530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7fe8a0` | Deleting destructor | Destroys the object (`0x7fe8c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7ff3b0` | Deleting destructor | Destroys the object (`0x7ff3d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7ffbd0` | Deleting destructor | Destroys the object (`0x7ffbf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x800ba0` | Deleting destructor | Destroys the object (`0x800940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x801c70` | Deleting destructor | Destroys the object (`0x801860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8061a0` | Deleting destructor | Destroys the object (`0x805d80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x806210` | Deleting destructor | Destroys the object (`0x806130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8065b0` | Deleting destructor | Destroys the object (`0x808900`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7fd6d0` | Deleting destructor | Destroys the object (`0x7fd6f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7fe510` | Deleting destructor | Destroys the object (`0x7fe530` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7fe8a0` | Deleting destructor | Destroys the object (`0x7fe8c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7ff3b0` | Deleting destructor | Destroys the object (`0x7ff3d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7ffbd0` | Deleting destructor | Destroys the object (`0x7ffbf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x800ba0` | Deleting destructor | Destroys the object (`0x800940` (ManagedObject::~ManagedObject)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x801c70` | Deleting destructor | Destroys the object (`0x801860` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8061a0` | Deleting destructor | Destroys the object (`0x805d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x806210` | Deleting destructor | Destroys the object (`0x806130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8065b0` | Deleting destructor | Destroys the object (`0x808900` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x807a30` | Deleting destructor | Destroys the object (`0x807a50` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x807a60` | Deleting destructor | Destroys the object (`0x807a80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x807a90` | Deleting destructor | Destroys the object (`0x807ab0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1359,185 +1336,180 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x807b80` | Deleting destructor | Destroys the object (`0x807ba0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x807bb0` | Deleting destructor | Destroys the object (`0x807bd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x807fd0` | Deleting destructor | Destroys the object (`0x807ff0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x808d70` | Deleting destructor | Destroys the object (`0x807e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x809410` | Deleting destructor | Destroys the object (`0xbe4f30`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x808d70` | Deleting destructor | Destroys the object (`0x807e60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8097e0` | Deleting destructor | Destroys the object (`0x809660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x80ba60` | Deleting destructor | Destroys the object (`0x80b990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x80bb10` | Deleting destructor | Destroys the object (`0x80ba80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x80bc00` | Deleting destructor | Destroys the object (`0x80bb50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x80ba60` | Deleting destructor | Destroys the object (`0x80b990` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x80bb10` | Deleting destructor | Destroys the object (`0x80ba80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x80bc00` | Deleting destructor | Destroys the object (`0x80bb50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x80dab0` | Deleting destructor | Destroys the object (`0x80d820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x80dd50` | Deleting destructor | Destroys the object (`0x80dbe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x811260` | Deleting destructor | Destroys the object (`0x80fc60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x811800` | Deleting destructor | Destroys the object (`0x811760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x80dd50` | Deleting destructor | Destroys the object (`0x80dbe0` (FlexiColourGroupCache::~FlexiColourGroupCache)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x811260` | Deleting destructor | Destroys the object (`0x80fc60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x811800` | Deleting destructor | Destroys the object (`0x811760` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8141f0` | Deleting destructor | Destroys the object (`0x4e40f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x814460` | Deleting destructor | Destroys the object (`0x814240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x814460` | Deleting destructor | Destroys the object (`0x814240` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x815110` | Deleting destructor | Destroys the object (`0x815130` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x815140` | Deleting destructor | Destroys the object (`0x815160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x815170` | Deleting destructor | Destroys the object (`0x815190` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8160e0` | Deleting destructor | Destroys the object (`0x8153c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x816300` | Deleting destructor | Destroys the object (`0x815670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x816b60` | Deleting destructor | Destroys the object (`0x815850`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x817830` | Deleting destructor | Destroys the object (`0x8158c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x818190` | Deleting destructor | Destroys the object (`0x8173b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x818ef0` | Deleting destructor | Destroys the object (`0x818920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8160e0` | Deleting destructor | Destroys the object (`0x8153c0` (JumpingFountainDisplay::~JumpingFountainDisplay)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x816300` | Deleting destructor | Destroys the object (`0x815670` (JFDisplay_Chasers::~JFDisplay_Chasers)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x816b60` | Deleting destructor | Destroys the object (`0x815850` (JFDisplay_Bloom::~JFDisplay_Bloom)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x817830` | Deleting destructor | Destroys the object (`0x8158c0` (JFDisplay_Race::~JFDisplay_Race)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x818190` | Deleting destructor | Destroys the object (`0x8173b0` (JFDisplay_Split::~JFDisplay_Split)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x818ef0` | Deleting destructor | Destroys the object (`0x818920` (JFDisplay_CyclicSquares::~JFDisplay_CyclicSquares)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8190f0` | Deleting destructor | Destroys the object (`0x818f40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x819220` | Deleting destructor | Destroys the object (`0x819000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x819220` | Deleting destructor | Destroys the object (`0x819000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8192d0` | Deleting destructor | Destroys the object (`0x819140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8195b0` | Deleting destructor | Destroys the object (`0x819150`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8195b0` | Deleting destructor | Destroys the object (`0x819150` (LitterBinBehaviour::~LitterBinBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81a8d0` | Deleting destructor | Destroys the object (`0x81a730`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81aaf0` | Deleting destructor | Destroys the object (`0x81a960`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x81c7d0` | Deleting destructor | Destroys the object (`0x81b360`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x81ca00` | Deleting destructor | Destroys the object (`0x81c900`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x81c7d0` | Deleting destructor | Destroys the object (`0x81b360` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x81ca00` | Deleting destructor | Destroys the object (`0x81c900` (LoudSpeakerBehaviour::~LoudSpeakerBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81d0e0` | Deleting destructor | Destroys the object (`0x81d100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x81e420` | Deleting destructor | Destroys the object (`0x81df80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x81e420` | Deleting destructor | Destroys the object (`0x81df80` (ParkBenchBehaviour::~ParkBenchBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81edb0` | Deleting destructor | Destroys the object (`0x81edd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81ede0` | Deleting destructor | Destroys the object (`0x81ee00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81ee10` | Deleting destructor | Destroys the object (`0x81ee30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81ee40` | Deleting destructor | Destroys the object (`0x81ee60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x822c90` | Deleting destructor | Destroys the object (`0x8219e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x824090` | Deleting destructor | Destroys the object (`0x823bb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x824450` | Deleting destructor | Destroys the object (`0x824470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x822c90` | Deleting destructor | Destroys the object (`0x8219e0` (FountainGroup::~FountainGroup)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x824090` | Deleting destructor | Destroys the object (`0x823bb0` (PathFountainBehaviour::~PathFountainBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x824450` | Deleting destructor | Destroys the object (`0x824470` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x824810` | Deleting destructor | Destroys the object (`0x824600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8249b0` | Deleting destructor | Destroys the object (`0x824840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8250c0` | Deleting destructor | Destroys the object (`0x8250e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8255e0` | Deleting destructor | Destroys the object (`0x825600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8256b0` | Deleting destructor | Destroys the object (`0x824d40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8266f0` | Deleting destructor | Destroys the object (`0x825bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x827660` | Thunk | Calls `0x47cba0` on `this` +0xc |
+| `0x8255e0` | Deleting destructor | Destroys the object (`0x825600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8256b0` | Deleting destructor | Destroys the object (`0x824d40` (RideEventBehaviour::~RideEventBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8266f0` | Deleting destructor | Destroys the object (`0x825bd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x827660` | Thunk | Calls `0x47cba0` (Destructor) on `this` +0xc |
 | `0x8277f0` | Thunk | Calls `0x864a30` on the object at +0x84 |
 | `0x827930` | Get +0xa8 | Returns the value at +0xa8 |
 | `0x827990` | Set +0x130 | Sets the member at +0x130 to its argument, taking 1 argument off the stack |
 | `0x828520` | Deleting destructor | Destroys the object (`0x827480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8285e0` | Deleting destructor | Destroys the object (`0x827660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8286c0` | Deleting destructor | Destroys the object (`0x8286e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8286c0` | Deleting destructor | Destroys the object (`0x8286e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x82a180` | Deleting destructor | Destroys the object (`0x82a1a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x82a1b0` | Deleting destructor | Destroys the object (`0x82a1d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x82a1e0` | Deleting destructor | Destroys the object (`0x82a200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x832c10` | Deleting destructor | Destroys the object (`0x831700`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x832c10` | Deleting destructor | Destroys the object (`0x831700` (SceneryItem::~SceneryItem)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8338a0` | Empty | Does nothing |
 | `0x8338f0` | Deleting destructor | Destroys the object (`0x8338e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x834520` | Deleting destructor | Destroys the object (`0x833c50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8361b0` | Deleting destructor | Destroys the object (`0x835840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x836240` | Deleting destructor | Destroys the object (`0x836050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x837a80` | Deleting destructor | Destroys the object (`0x837790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x834520` | Deleting destructor | Destroys the object (`0x833c50` (SceneryItemBehaviour::~SceneryItemBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8361b0` | Deleting destructor | Destroys the object (`0x835840` (SceneryMechanicInfo::~SceneryMechanicInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x836240` | Deleting destructor | Destroys the object (`0x836050` (SceneryItemBehaviourFI::~SceneryItemBehaviourFI)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x837a80` | Deleting destructor | Destroys the object (`0x837790` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x839190` | Set +0xfc | Sets the member at +0xfc to its argument, taking 1 argument off the stack |
 | `0x839240` | Deleting destructor | Destroys the object (`0x838940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x83cf90` | Deleting destructor | Destroys the object (`0x83c290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x83cf90` | Deleting destructor | Destroys the object (`0x83c290` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x83ff60` | Set +0xd4 | Sets the member at +0xd4 to 0x1 |
-| `0x8408e0` | Deleting destructor | Destroys the object (`0x840100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8417c0` | Deleting destructor | Destroys the object (`0x840bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x844c20` | Deleting destructor | Destroys the object (`0x8449d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8408e0` | Deleting destructor | Destroys the object (`0x840100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8417c0` | Deleting destructor | Destroys the object (`0x840bc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x844c20` | Deleting destructor | Destroys the object (`0x8449d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x845ee0` | Deleting destructor | Destroys the object (`0x4bec20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x846160` | Deleting destructor | Destroys the object (`0x4bede0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8465f0` | Deleting destructor | Destroys the object (`0x846370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x846160` | Deleting destructor | Destroys the object (`0x4bede0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8465f0` | Deleting destructor | Destroys the object (`0x846370` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x846ae0` | Get +0x20 | Returns the value at +0x20 |
 | `0x847830` | Deleting destructor | Destroys the object (`0x846860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x847850` | Deleting destructor | Destroys the object (`0x846a40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x848750` | Deleting destructor | Destroys the object (`0x848770` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x848780` | Deleting destructor | Destroys the object (`0x8487a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x84d0e0` | Deleting destructor | Destroys the object (`0x84c320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x84d100` | Deleting destructor | Destroys the object (`0x5bc610`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x84d200` | Deleting destructor | Destroys the object (`0x855960`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x851b60` | Deleting destructor | Destroys the object (`0x84f220`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8536a0` | Deleting destructor | Destroys the object (`0x851a50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8545c0` | Deleting destructor | Destroys the object (`0x851a50`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x84d0e0` | Deleting destructor | Destroys the object (`0x84c320` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x84d100` | Deleting destructor | Destroys the object (`0x5bc610` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x84d200` | Deleting destructor | Destroys the object (`0x855960` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x851b60` | Deleting destructor | Destroys the object (`0x84f220` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8536a0` | Deleting destructor | Destroys the object (`0x851a50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x85a550` | Empty | Does nothing, taking 1 argument off the stack |
-| `0x85abc0` | Deleting destructor | Destroys the object (`0x85a410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x85b040` | Deleting destructor | Destroys the object (`0x85abe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x85bce0` | Deleting destructor | Destroys the object (`0x85abe0`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x85abc0` | Deleting destructor | Destroys the object (`0x85a410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x85b040` | Deleting destructor | Destroys the object (`0x85abe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x860530` | Set +0xfc | Sets the member at +0xfc to its argument, taking 1 argument off the stack |
 | `0x860540` | Set +0xf9 | Sets the member at +0xf9 to its argument, taking 1 argument off the stack |
 | `0x86ddf0` | Thunk | Calls `0x864a30` on the object at +0x30 |
-| `0x86e130` | Deleting destructor | Destroys the object (`0x86e090`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x86e130` | Deleting destructor | Destroys the object (`0x86e090` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x86e4d0` | Get global 0x1310ebc | Returns the value in the global `0x1310ebc` |
-| `0x86e7f0` | Deleting destructor | Destroys the object (`0x86e450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x86f590` | Deleting destructor | Destroys the object (`0x86f310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x86fc80` | Deleting destructor | Destroys the object (`0x86f7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x86fef0` | Deleting destructor | Destroys the object (`0x86fcc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x86e7f0` | Deleting destructor | Destroys the object (`0x86e450` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x86f590` | Deleting destructor | Destroys the object (`0x86f310` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x86fc80` | Deleting destructor | Destroys the object (`0x86f7b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x86fef0` | Deleting destructor | Destroys the object (`0x86fcc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8709e0` | Get global 0x1310ee4 | Returns the value in the global `0x1310ee4` |
 | `0x870b60` | Deleting destructor | Destroys the object (`0x870b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8718c0` | Get global 0x1310edc | Returns the value in the global `0x1310edc` |
 | `0x871910` | Deleting destructor | Destroys the object (`0x871930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x871a70` | Deleting destructor | Destroys the object (`0x871940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x871b80` | Deleting destructor | Destroys the object (`0x871b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x874a50` | Deleting destructor | Destroys the object (`0x8742d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8755c0` | Deleting destructor | Destroys the object (`0x874c60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x877f10` | Deleting destructor | Destroys the object (`0x877c00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x87a5d0` | Deleting destructor | Destroys the object (`0xcdf3f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x87ec30` | Deleting destructor | Destroys the object (`0x87c9a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x871a70` | Deleting destructor | Destroys the object (`0x871940` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x871b80` | Deleting destructor | Destroys the object (`0x871b00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x874a50` | Deleting destructor | Destroys the object (`0x8742d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8755c0` | Deleting destructor | Destroys the object (`0x874c60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x877f10` | Deleting destructor | Destroys the object (`0x877c00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x87a5d0` | Deleting destructor | Destroys the object (`0xcdf3f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x87ec30` | Deleting destructor | Destroys the object (`0x87c9a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x87f320` | Thunk | Calls `0xbe83b0` on `this` +0x4 |
-| `0x882640` | Deleting destructor | Destroys the object (`0x87f8c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x883a20` | Deleting destructor | Destroys the object (`0x883020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x884310` | Deleting destructor | Destroys the object (`0x883020`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x884340` | Deleting destructor | Destroys the object (`0x883a40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x886090` | Deleting destructor | Destroys the object (`0x884910`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8860b0` | Deleting destructor | Destroys the object (`0x885050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8860d0` | Deleting destructor | Destroys the object (`0x885360`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x886570` | Deleting destructor | Destroys the object (`0x885ec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x882640` | Deleting destructor | Destroys the object (`0x87f8c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x883a20` | Deleting destructor | Destroys the object (`0x883020` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x884340` | Deleting destructor | Destroys the object (`0x883a40` (SIDDatabaseEntry::~SIDDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x886090` | Deleting destructor | Destroys the object (`0x884910` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8860b0` | Deleting destructor | Destroys the object (`0x885050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8860d0` | Deleting destructor | Destroys the object (`0x885360` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x886570` | Deleting destructor | Destroys the object (`0x885ec0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x888020` | Deleting destructor | Destroys the object (`0x888040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x88a5d0` | Deleting destructor | Destroys the object (`0x887b20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x88a9a0` | Deleting destructor | Destroys the object (`0x887c90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x88a5d0` | Deleting destructor | Destroys the object (`0x887b20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x88a9a0` | Deleting destructor | Destroys the object (`0x887c90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x88bf40` | Deleting destructor | Destroys the object (`0x88bd60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x88bfb0` | Deleting destructor | Destroys the object (`0x88be80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x88bfb0` | Deleting destructor | Destroys the object (`0x88be80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x88c010` | Deleting destructor | Destroys the object (`0x88bf80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x88c740` | Deleting destructor | Destroys the object (`0x88c320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x88c740` | Deleting destructor | Destroys the object (`0x88c320` (SignBehaviour::~SignBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x88d120` | Deleting destructor | Destroys the object (`0x87a7d0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x89cbe0` | Deleting destructor | Destroys the object (`0x89ca70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8a08b0` | Deleting destructor | Destroys the object (`0x89fda0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x89cbe0` | Deleting destructor | Destroys the object (`0x89ca70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8a08b0` | Deleting destructor | Destroys the object (`0x89fda0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8a08d0` | Empty | Does nothing, taking 5 arguments off the stack |
 | `0x8ae2d0` | Get +0xb8 | Returns the float at +0xb8 |
 | `0x8ae2e0` | Get +0xbc | Returns the value at +0xbc |
-| `0x8aefb0` | Deleting destructor | Destroys the object (`0x8ae4d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8b0450` | Deleting destructor | Destroys the object (`0x8b0400`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8aefb0` | Deleting destructor | Destroys the object (`0x8ae4d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8b0450` | Deleting destructor | Destroys the object (`0x8b0400` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8b06e0` | Deleting destructor | Destroys the object (`0x8b0310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8b09b0` | Deleting destructor | Destroys the object (`0x8b0400`) and frees its memory when its argument has bit 0 set; returns the object |
 | `0x8b0e70` | Deleting destructor | Destroys the object (`0x8b07a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8b0e90` | Deleting destructor | Destroys the object (`0x8b0eb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8b0ec0` | Deleting destructor | Destroys the object (`0x8b0ee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8b1d20` | Thunk | Jumps to `0x40f730` (ObjectRef::~ObjectRef) |
 | `0x8b3a30` | Deleting destructor | Destroys the object (`0x8b1d20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8b3e50` | Deleting destructor | Destroys the object (`0x8b2dd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8b4440` | Deleting destructor | Destroys the object (`0x8b4160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8b4b50` | Deleting destructor | Destroys the object (`0x8b4930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8b3e50` | Deleting destructor | Destroys the object (`0x8b2dd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8b4440` | Deleting destructor | Destroys the object (`0x8b4160` (VistaPointBehaviour::~VistaPointBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8b4b50` | Deleting destructor | Destroys the object (`0x8b4930` (WaterableBehaviour::~WaterableBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8b5650` | Deleting destructor | Destroys the object (`0x8b51f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8b64c0` | Deleting destructor | Destroys the object (`0x8b5870`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8b6700` | Deleting destructor | Destroys the object (`0x8b5810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8b9fc0` | Deleting destructor | Destroys the object (`0x8b7640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8bb110` | Deleting destructor | Destroys the object (`0x8b7e90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8bb290` | Deleting destructor | Destroys the object (`0x8b8940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8c5340` | Deleting destructor | Destroys the object (`0x8c0080`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8c7640` | Deleting destructor | Destroys the object (`0x8c0b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8b6700` | Deleting destructor | Destroys the object (`0x8b5810` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8b9fc0` | Deleting destructor | Destroys the object (`0x8b7640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8bb110` | Deleting destructor | Destroys the object (`0x8b7e90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8bb290` | Deleting destructor | Destroys the object (`0x8b8940` (WaterCannonBehaviour::~WaterCannonBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8c5340` | Deleting destructor | Destroys the object (`0x8c0080` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8c7640` | Deleting destructor | Destroys the object (`0x8c0b00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8cb9b0` | Deleting destructor | Destroys the object (`0x8cb970`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8cba30` | Deleting destructor | Destroys the object (`0x8cba50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8cba60` | Deleting destructor | Destroys the object (`0x8cb840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8cba80` | Deleting destructor | Destroys the object (`0x8cb940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8cba60` | Deleting destructor | Destroys the object (`0x8cb840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8cba80` | Deleting destructor | Destroys the object (`0x8cb940` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8cbae0` | Deleting destructor | Destroys the object (`0x8cbb00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8cc5b0` | Deleting destructor | Destroys the object (`0x8cc5d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8cd610` | Deleting destructor | Destroys the object (`0x8cd200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8cc5b0` | Deleting destructor | Destroys the object (`0x8cc5d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8cd610` | Deleting destructor | Destroys the object (`0x8cd200` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8cde40` | Deleting destructor | Destroys the object (`0x8cdd40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8cde60` | Deleting destructor | Destroys the object (`0x8cdd50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8cde80` | Deleting destructor | Destroys the object (`0x8cdd60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8cdea0` | Deleting destructor | Destroys the object (`0x8cdd70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8cdf20` | Deleting destructor | Destroys the object (`0x8cdb50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8cdf40` | Deleting destructor | Destroys the object (`0x8cdcd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8cdf20` | Deleting destructor | Destroys the object (`0x8cdb50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8cdf40` | Deleting destructor | Destroys the object (`0x8cdcd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8ce060` | Deleting destructor | Destroys the object (`0x8ce080`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8ce090` | Deleting destructor | Destroys the object (`0x8ce0b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8ce0c0` | Deleting destructor | Destroys the object (`0x8ce0e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8ce0f0` | Deleting destructor | Destroys the object (`0x8ce110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8ce5e0` | Deleting destructor | Destroys the object (`0x8ce600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8cf3c0` | Deleting destructor | Destroys the object (`0x8cf3e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8d0030` | Deleting destructor | Destroys the object (`0x8d0050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8d0b20` | Deleting destructor | Destroys the object (`0x8d0b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8d3070` | Deleting destructor | Destroys the object (`0x8db030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8d3090` | Deleting destructor | Destroys the object (`0x8f4a40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8d30b0` | Deleting destructor | Destroys the object (`0x419490`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8ce5e0` | Deleting destructor | Destroys the object (`0x8ce600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8cf3c0` | Deleting destructor | Destroys the object (`0x8cf3e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d0030` | Deleting destructor | Destroys the object (`0x8d0050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d0b20` | Deleting destructor | Destroys the object (`0x8d0b40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d3070` | Deleting destructor | Destroys the object (`0x8db030` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d3090` | Deleting destructor | Destroys the object (`0x8f4a40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d30b0` | Deleting destructor | Destroys the object (`0x419490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8d3c70` | Deleting destructor | Destroys the object (`0x8d2ec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8d3c90` | Deleting destructor | Destroys the object (`0x8d2f20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8d3cb0` | Deleting destructor | Destroys the object (`0x8d3cd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8d66b0` | Deleting destructor | Destroys the object (`0x8d4070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d66b0` | Deleting destructor | Destroys the object (`0x8d4070` (RCT3Terrain::~RCT3Terrain)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8d9de0` | Deleting destructor | Destroys the object (`0x8d9e00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8d9e10` | Deleting destructor | Destroys the object (`0x8d9c60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8da260` | Deleting destructor | Destroys the object (`0x8da1b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8da260` | Deleting destructor | Destroys the object (`0x8da1b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8db6d0` | Set table | Sets the object's virtual function table to `0xf7c2f0` |
 | `0x8db700` | Set table | Sets the object's virtual function table to `0xf7c2f0` |
 | `0x8db710` | Deleting destructor | Destroys the object (`0x8db700`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1552,77 +1524,75 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x8dbce0` | Deleting destructor | Destroys the object (`0x8db6d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8dca40` | Empty | Does nothing |
 | `0x8dd6a0` | Deleting destructor | Destroys the object (`0x8dd6c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8de940` | Deleting destructor | Destroys the object (`0x8de5f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8de940` | Deleting destructor | Destroys the object (`0x8de5f0` (TerrainFlattener::~TerrainFlattener)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8df030` | Set table | Sets the object's virtual function table to `0xf7c2f0` |
 | `0x8df6e0` | Deleting destructor | Destroys the object (`0x8df030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8dfe20` | Deleting destructor | Destroys the object (`0x8df8a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8e1ed0` | Deleting destructor | Destroys the object (`0x8e12a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8e3370` | Deleting destructor | Destroys the object (`0x8e31e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8e5490` | Deleting destructor | Destroys the object (`0x8e4e00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8e6030` | Deleting destructor | Destroys the object (`0x8e5d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8dfe20` | Deleting destructor | Destroys the object (`0x8df8a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8e1ed0` | Deleting destructor | Destroys the object (`0x8e12a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8e3370` | Deleting destructor | Destroys the object (`0x8e31e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8e5490` | Deleting destructor | Destroys the object (`0x8e4e00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8e6030` | Deleting destructor | Destroys the object (`0x8e5d50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8e80e0` | Deleting destructor | Destroys the object (`0x435a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8ea310` | Deleting destructor | Destroys the object (`0x8e9650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8ea3a0` | Deleting destructor | Destroys the object (`0x8e9c80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8ea310` | Deleting destructor | Destroys the object (`0x8e9650` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8ea3a0` | Deleting destructor | Destroys the object (`0x8e9c80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8f88f0` | Set table | Sets the object's virtual function table to `0xf306b8` |
 | `0x8f89e0` | Deleting destructor | Destroys the object (`0x8f88f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8f8ed0` | Deleting destructor | Destroys the object (`0x8f8880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8f8ef0` | Deleting destructor | Destroys the object (`0x8f8a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8f9310` | Deleting destructor | Destroys the object (`0x8f8a00`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x8f9b50` | Deleting destructor | Destroys the object (`0x8f96d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8f8ef0` | Deleting destructor | Destroys the object (`0x8f8a00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8f9b50` | Deleting destructor | Destroys the object (`0x8f96d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8fc920` | Deleting destructor | Destroys the object (`0x8fb300`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8fcf10` | Deleting destructor | Destroys the object (`0x8fb310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8fd240` | Empty | Does nothing |
-| `0x905120` | Deleting destructor | Destroys the object (`0x904cf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x90c350` | Deleting destructor | Destroys the object (`0xce3ef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x905120` | Deleting destructor | Destroys the object (`0x904cf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x90c350` | Deleting destructor | Destroys the object (`0xce3ef0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x911be0` | Get global 0x10f0b34 | Returns the float in the global `0x10f0b34` |
-| `0x9164d0` | Deleting destructor | Destroys the object (`0x9147c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x916b20` | Deleting destructor | Destroys the object (`0x916a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9164d0` | Deleting destructor | Destroys the object (`0x9147c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x916b20` | Deleting destructor | Destroys the object (`0x916a30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x919500` | Empty | Does nothing |
 | `0x919b10` | Empty | Does nothing |
 | `0x91c5d0` | Deleting destructor | Destroys the object (`0x91c5f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x91c600` | Deleting destructor | Destroys the object (`0x91c620`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9208f0` | Deleting destructor | Destroys the object (`0x91f600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x925520` | Deleting destructor | Destroys the object (`0x923e10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9208f0` | Deleting destructor | Destroys the object (`0x91f600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x925520` | Deleting destructor | Destroys the object (`0x923e10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x92c2f0` | Deleting destructor | Destroys the object (`0x923e00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x92ddb0` | Deleting destructor | Destroys the object (`0x92d2d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x92eb50` | Deleting destructor | Destroys the object (`0x92e240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x930f10` | Deleting destructor | Destroys the object (`0x92ed90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x935a10` | Deleting destructor | Destroys the object (`0x9339f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9373a0` | Deleting destructor | Destroys the object (`0x936fc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x939ec0` | Deleting destructor | Destroys the object (`0x939d40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93c2c0` | Deleting destructor | Destroys the object (`0x93c100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93d650` | Deleting destructor | Destroys the object (`0x90b3b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93d670` | Deleting destructor | Destroys the object (`0x905c80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93d690` | Deleting destructor | Destroys the object (`0x8fcfe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93d6b0` | Deleting destructor | Destroys the object (`0x958a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93d6d0` | Deleting destructor | Destroys the object (`0x911bf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93d6f0` | Deleting destructor | Destroys the object (`0x90dc10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93d710` | Deleting destructor | Destroys the object (`0x95a410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x93d790` | Deleting destructor | Destroys the object (`0x9127f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x92ddb0` | Deleting destructor | Destroys the object (`0x92d2d0` (WaterfallManager::~WaterfallManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x92eb50` | Deleting destructor | Destroys the object (`0x92e240` (WaterFlowManager::~WaterFlowManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x930f10` | Deleting destructor | Destroys the object (`0x92ed90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x935a10` | Deleting destructor | Destroys the object (`0x9339f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9373a0` | Deleting destructor | Destroys the object (`0x936fc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x939ec0` | Deleting destructor | Destroys the object (`0x939d40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93c2c0` | Deleting destructor | Destroys the object (`0x93c100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93d650` | Deleting destructor | Destroys the object (`0x90b3b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93d670` | Deleting destructor | Destroys the object (`0x905c80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93d690` | Deleting destructor | Destroys the object (`0x8fcfe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93d6b0` | Deleting destructor | Destroys the object (`0x958a90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93d6d0` | Deleting destructor | Destroys the object (`0x911bf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93d6f0` | Deleting destructor | Destroys the object (`0x90dc10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93d710` | Deleting destructor | Destroys the object (`0x95a410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x93d790` | Deleting destructor | Destroys the object (`0x9127f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9401d0` | Empty | Does nothing |
 | `0x9401e0` | Thunk | Calls `0x8fe300` on the object at +0x154 |
 | `0x9401f0` | Thunk | Calls `0x900020` (Whirlpool::Update) on the object at +0x154 |
 | `0x940970` | Deleting destructor | Destroys the object (`0x940990` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x940e80` | Deleting destructor | Destroys the object (`0x93d570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x948200` | Deleting destructor | Destroys the object (`0x942700`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x955950` | Deleting destructor | Destroys the object (`0x950b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x964b60` | Deleting destructor | Destroys the object (`0x963f10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x948200` | Deleting destructor | Destroys the object (`0x942700` (WaterManager::~WaterManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x955950` | Deleting destructor | Destroys the object (`0x950b00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x964b60` | Deleting destructor | Destroys the object (`0x963f10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x964f10` | Set table | Sets the object's virtual function table to `0xf7e4f4` |
 | `0x9652b0` | Set +0x10 | Sets the member at +0x10 to 0x0 |
 | `0x9652c0` | Set +0x1c | Sets the member at +0x1c to 0x0 |
 | `0x9652d0` | Set +0x28 | Sets the member at +0x28 to 0x0 |
-| `0x965420` | Deleting destructor | Destroys the object (`0x964fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9655a0` | Deleting destructor | Destroys the object (`0x964fe0`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x965420` | Deleting destructor | Destroys the object (`0x964fe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9655e0` | Set table | Sets the object's virtual function table to `0xf7e4f8` |
 | `0x965670` | Set table | Sets the object's virtual function table to `0xf7e52c` |
 | `0x9656a0` | Set table | Sets the object's virtual function table to `0xf7e568` |
 | `0x966460` | Set table | Sets the object's virtual function table to `0xf7e56c` |
-| `0x966d30` | Deleting destructor | Destroys the object (`0x966510`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x966d30` | Deleting destructor | Destroys the object (`0x966510` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x967c40` | Set table | Sets the object's virtual function table to `0xf7e654` |
-| `0x967f00` | Deleting destructor | Destroys the object (`0x967cc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x967fe0` | Deleting destructor | Destroys the object (`0x967d90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9680c0` | Deleting destructor | Destroys the object (`0x967e50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x968550` | Deleting destructor | Destroys the object (`0x968160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x967f00` | Deleting destructor | Destroys the object (`0x967cc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x967fe0` | Deleting destructor | Destroys the object (`0x967d90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9680c0` | Deleting destructor | Destroys the object (`0x967e50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x968550` | Deleting destructor | Destroys the object (`0x968160` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9685a0` | Deleting destructor | Destroys the object (`0x9685c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x968d30` | Deleting destructor | Destroys the object (`0x968d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x968db0` | Deleting destructor | Destroys the object (`0x968dd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1630,405 +1600,403 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x9691f0` | Deleting destructor | Destroys the object (`0x969210`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x969b10` | Deleting destructor | Destroys the object (`0x969b30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x969da0` | Deleting destructor | Destroys the object (`0x969dc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x96afc0` | Deleting destructor | Destroys the object (`0x96aea0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x96b1b0` | Deleting destructor | Destroys the object (`0x96b0a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x96b6b0` | Deleting destructor | Destroys the object (`0x96b290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x96ba60` | Deleting destructor | Destroys the object (`0x96b790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x96be10` | Deleting destructor | Destroys the object (`0x96bb40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x96c070` | Deleting destructor | Destroys the object (`0x96bef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x96c390` | Deleting destructor | Destroys the object (`0x96c150`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x96afc0` | Deleting destructor | Destroys the object (`0x96aea0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x96b1b0` | Deleting destructor | Destroys the object (`0x96b0a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x96b6b0` | Deleting destructor | Destroys the object (`0x96b290` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x96ba60` | Deleting destructor | Destroys the object (`0x96b790` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x96be10` | Deleting destructor | Destroys the object (`0x96bb40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x96c070` | Deleting destructor | Destroys the object (`0x96bef0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x96c390` | Deleting destructor | Destroys the object (`0x96c150` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x96c900` | Deleting destructor | Destroys the object (`0x96c920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x96fd20` | Deleting destructor | Destroys the object (`0x96f0b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x970c40` | Deleting destructor | Destroys the object (`0x9709f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x96fd20` | Deleting destructor | Destroys the object (`0x96f0b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x970c40` | Deleting destructor | Destroys the object (`0x9709f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x970e20` | Deleting destructor | Destroys the object (`0x970e40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x972c50` | Deleting destructor | Destroys the object (`0x97b6b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x972c70` | Deleting destructor | Destroys the object (`0x968e20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x972c90` | Deleting destructor | Destroys the object (`0x968d60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x972cb0` | Deleting destructor | Destroys the object (`0x969dd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x972cd0` | Deleting destructor | Destroys the object (`0x96c4b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x972cf0` | Deleting destructor | Destroys the object (`0x970e90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x972c50` | Deleting destructor | Destroys the object (`0x97b6b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x972c70` | Deleting destructor | Destroys the object (`0x968e20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x972c90` | Deleting destructor | Destroys the object (`0x968d60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x972cb0` | Deleting destructor | Destroys the object (`0x969dd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x972cd0` | Deleting destructor | Destroys the object (`0x96c4b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x972cf0` | Deleting destructor | Destroys the object (`0x970e90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x974080` | Deleting destructor | Destroys the object (`0x9740a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x974d60` | Deleting destructor | Destroys the object (`0x9740c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x976190` | Deleting destructor | Destroys the object (`0x9755e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x976860` | Deleting destructor | Destroys the object (`0x976640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x976c80` | Deleting destructor | Destroys the object (`0x976b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x977090` | Deleting destructor | Destroys the object (`0x976f80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x977680` | Deleting destructor | Destroys the object (`0x9772e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x977e20` | Deleting destructor | Destroys the object (`0x977d80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x978290` | Deleting destructor | Destroys the object (`0x9781f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x978d80` | Deleting destructor | Destroys the object (`0x978740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x979c10` | Deleting destructor | Destroys the object (`0x979730`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x97a410` | Deleting destructor | Destroys the object (`0x97a370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x974d60` | Deleting destructor | Destroys the object (`0x9740c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x976190` | Deleting destructor | Destroys the object (`0x9755e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x976860` | Deleting destructor | Destroys the object (`0x976640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x976c80` | Deleting destructor | Destroys the object (`0x976b40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x977090` | Deleting destructor | Destroys the object (`0x976f80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x977680` | Deleting destructor | Destroys the object (`0x9772e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x977e20` | Deleting destructor | Destroys the object (`0x977d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x978290` | Deleting destructor | Destroys the object (`0x9781f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x978d80` | Deleting destructor | Destroys the object (`0x978740` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x979c10` | Deleting destructor | Destroys the object (`0x979730` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x97a410` | Deleting destructor | Destroys the object (`0x97a370` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x97aba0` | Deleting destructor | Destroys the object (`0x97abc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x97b680` | Deleting destructor | Destroys the object (`0x97b6a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x97d880` | Deleting destructor | Destroys the object (`0x97c770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x97dc40` | Deleting destructor | Destroys the object (`0x97ca50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x97dc60` | Deleting destructor | Destroys the object (`0x97cfa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x97e320` | Deleting destructor | Destroys the object (`0x97deb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9803e0` | Deleting destructor | Destroys the object (`0x980030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x980f70` | Deleting destructor | Destroys the object (`0x980490`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x982720` | Deleting destructor | Destroys the object (`0x982740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x982840` | Deleting destructor | Destroys the object (`0x981fd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x97d880` | Deleting destructor | Destroys the object (`0x97c770` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x97dc40` | Deleting destructor | Destroys the object (`0x97ca50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x97dc60` | Deleting destructor | Destroys the object (`0x97cfa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x97e320` | Deleting destructor | Destroys the object (`0x97deb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9803e0` | Deleting destructor | Destroys the object (`0x980030` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x980f70` | Deleting destructor | Destroys the object (`0x980490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x982720` | Deleting destructor | Destroys the object (`0x982740` (InventionGroup::~InventionGroup)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x982840` | Deleting destructor | Destroys the object (`0x981fd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x982a00` | Set table | Sets the object's virtual function table to `0xf306b8` |
 | `0x982aa0` | Deleting destructor | Destroys the object (`0x9829f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x982d30` | Deleting destructor | Destroys the object (`0x982a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x982ee0` | Deleting destructor | Destroys the object (`0x982f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x983080` | Deleting destructor | Destroys the object (`0x982dc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x983700` | Deleting destructor | Destroys the object (`0x982dc0`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0x984670` | Deleting destructor | Destroys the object (`0x984040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x983080` | Deleting destructor | Destroys the object (`0x982dc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x984670` | Deleting destructor | Destroys the object (`0x984040` (ResearchCategoryInstance::~ResearchCategoryInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x984b70` | Deleting destructor | Destroys the object (`0x984b90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x985dc0` | Deleting destructor | Destroys the object (`0x9856e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x986040` | Deleting destructor | Destroys the object (`0x985f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x988170` | Deleting destructor | Destroys the object (`0x988120`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x985dc0` | Deleting destructor | Destroys the object (`0x9856e0` (SimpleResearch::~SimpleResearch)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x986040` | Deleting destructor | Destroys the object (`0x985f00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x988170` | Deleting destructor | Destroys the object (`0x988120` (BlenderElement::~BlenderElement)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9888e0` | Set +0x3c | Sets the member at +0x3c to its argument, taking 1 argument off the stack |
 | `0x989020` | Deleting destructor | Destroys the object (`0x989040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x989040` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x989050` | Deleting destructor | Destroys the object (`0x989070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x989070` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x989080` | Get +0x108 | Returns the value at +0x108 |
-| `0x989710` | Deleting destructor | Destroys the object (`0x988a60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x989710` | Deleting destructor | Destroys the object (`0x988a60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98a330` | Deleting destructor | Destroys the object (`0x98a350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98a360` | Deleting destructor | Destroys the object (`0x98a380` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98a390` | Deleting destructor | Destroys the object (`0x98a3b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98a3c0` | Deleting destructor | Destroys the object (`0x98a3e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98a3f0` | Deleting destructor | Destroys the object (`0x98a410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98a420` | Deleting destructor | Destroys the object (`0x98a440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x98d7c0` | Deleting destructor | Destroys the object (`0x98d7e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x98d7c0` | Deleting destructor | Destroys the object (`0x98d7e0` (FireworkDisplayMessageEntry::~FireworkDisplayMessageEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98d840` | Deleting destructor | Destroys the object (`0x98a860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x991e20` | Deleting destructor | Destroys the object (`0x991e40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x992b40` | Deleting destructor | Destroys the object (`0x9916e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x993a30` | Deleting destructor | Destroys the object (`0x992060`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x993f80` | Deleting destructor | Destroys the object (`0x992e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9957f0` | Deleting destructor | Destroys the object (`0x995700`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9960a0` | Deleting destructor | Destroys the object (`0x995f80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9964a0` | Deleting destructor | Destroys the object (`0x9962a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9966f0` | Deleting destructor | Destroys the object (`0x996710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x997d60` | Deleting destructor | Destroys the object (`0x997690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9983e0` | Deleting destructor | Destroys the object (`0x997800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x99a7a0` | Deleting destructor | Destroys the object (`0x999f90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x99a8e0` | Deleting destructor | Destroys the object (`0x99a7f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x991e20` | Deleting destructor | Destroys the object (`0x991e40` (Blender::~Blender)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x992b40` | Deleting destructor | Destroys the object (`0x9916e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x993a30` | Deleting destructor | Destroys the object (`0x992060` (FireworkDisplay::~FireworkDisplay)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x993f80` | Deleting destructor | Destroys the object (`0x992e60` (FireworkSlotKeyFrame::~FireworkSlotKeyFrame)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9957f0` | Deleting destructor | Destroys the object (`0x995700` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9960a0` | Deleting destructor | Destroys the object (`0x995f80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9964a0` | Deleting destructor | Destroys the object (`0x9962a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9966f0` | Deleting destructor | Destroys the object (`0x996710` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x997d60` | Deleting destructor | Destroys the object (`0x997690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9983e0` | Deleting destructor | Destroys the object (`0x997800` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99a7a0` | Deleting destructor | Destroys the object (`0x999f90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99a8e0` | Deleting destructor | Destroys the object (`0x99a7f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x99b000` | Set table | Sets the object's virtual function table to `0xf80c30` |
-| `0x99c050` | Deleting destructor | Destroys the object (`0x99b0a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x99c140` | Deleting destructor | Destroys the object (`0x99b1f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x99c160` | Deleting destructor | Destroys the object (`0x99b320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x99c180` | Deleting destructor | Destroys the object (`0x99b3d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x99ceb0` | Deleting destructor | Destroys the object (`0x99ced0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x99d350` | Deleting destructor | Destroys the object (`0x99d370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x99d660` | Deleting destructor | Destroys the object (`0x99d680`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a0220` | Deleting destructor | Destroys the object (`0x9a0240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a0470` | Deleting destructor | Destroys the object (`0x9a0490`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a2860` | Deleting destructor | Destroys the object (`0x99f3e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a3bd0` | Deleting destructor | Destroys the object (`0x9a3bf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a5730` | Deleting destructor | Destroys the object (`0x9a4f50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99c050` | Deleting destructor | Destroys the object (`0x99b0a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99c140` | Deleting destructor | Destroys the object (`0x99b1f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99c160` | Deleting destructor | Destroys the object (`0x99b320` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99c180` | Deleting destructor | Destroys the object (`0x99b3d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99ceb0` | Deleting destructor | Destroys the object (`0x99ced0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99d350` | Deleting destructor | Destroys the object (`0x99d370` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x99d660` | Deleting destructor | Destroys the object (`0x99d680` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a0220` | Deleting destructor | Destroys the object (`0x9a0240` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a0470` | Deleting destructor | Destroys the object (`0x9a0490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a2860` | Deleting destructor | Destroys the object (`0x99f3e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a3bd0` | Deleting destructor | Destroys the object (`0x9a3bf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a5730` | Deleting destructor | Destroys the object (`0x9a4f50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9a5970` | Deleting destructor | Destroys the object (`0x9a57c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a5a50` | Deleting destructor | Destroys the object (`0x9a58a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a5a50` | Deleting destructor | Destroys the object (`0x9a58a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9a5b90` | Deleting destructor | Destroys the object (`0x9a5a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9a5bb0` | Deleting destructor | Destroys the object (`0x9a5a10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a66b0` | Deleting destructor | Destroys the object (`0x9a66d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a7060` | Deleting destructor | Destroys the object (`0x9a7080`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a7820` | Deleting destructor | Destroys the object (`0x9a6ac0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9a9fb0` | Deleting destructor | Destroys the object (`0x9a99b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9aacf0` | Deleting destructor | Destroys the object (`0x9aad10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9ab320` | Deleting destructor | Destroys the object (`0x9ab340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9ad510` | Deleting destructor | Destroys the object (`0x9ab5d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9ae180` | Deleting destructor | Destroys the object (`0x9ac230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b22e0` | Deleting destructor | Destroys the object (`0x9b21a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b2620` | Deleting destructor | Destroys the object (`0x9b2640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b43e0` | Deleting destructor | Destroys the object (`0x9b2a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b4400` | Deleting destructor | Destroys the object (`0x9b2aa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b4700` | Deleting destructor | Destroys the object (`0x9b3100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b4ba0` | Deleting destructor | Destroys the object (`0x9b33d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b5120` | Deleting destructor | Destroys the object (`0x9b3670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b5540` | Deleting destructor | Destroys the object (`0x9b38f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b5e90` | Deleting destructor | Destroys the object (`0x9b3ca0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b6300` | Deleting destructor | Destroys the object (`0x9b3ea0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9b6640` | Deleting destructor | Destroys the object (`0x9b40a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9bba90` | Deleting destructor | Destroys the object (`0x9b9d40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a66b0` | Deleting destructor | Destroys the object (`0x9a66d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a7060` | Deleting destructor | Destroys the object (`0x9a7080` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a7820` | Deleting destructor | Destroys the object (`0x9a6ac0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9a9fb0` | Deleting destructor | Destroys the object (`0x9a99b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9aacf0` | Deleting destructor | Destroys the object (`0x9aad10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9ab320` | Deleting destructor | Destroys the object (`0x9ab340` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9ad510` | Deleting destructor | Destroys the object (`0x9ab5d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9ae180` | Deleting destructor | Destroys the object (`0x9ac230` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b22e0` | Deleting destructor | Destroys the object (`0x9b21a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b2620` | Deleting destructor | Destroys the object (`0x9b2640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b43e0` | Deleting destructor | Destroys the object (`0x9b2a00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b4400` | Deleting destructor | Destroys the object (`0x9b2aa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b4700` | Deleting destructor | Destroys the object (`0x9b3100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b4ba0` | Deleting destructor | Destroys the object (`0x9b33d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b5120` | Deleting destructor | Destroys the object (`0x9b3670` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b5540` | Deleting destructor | Destroys the object (`0x9b38f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b5e90` | Deleting destructor | Destroys the object (`0x9b3ca0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b6300` | Deleting destructor | Destroys the object (`0x9b3ea0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9b6640` | Deleting destructor | Destroys the object (`0x9b40a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9bba90` | Deleting destructor | Destroys the object (`0x9b9d40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9bbf30` | Get global 0x1341464 | Returns the value in the global `0x1341464` |
-| `0x9bc260` | Deleting destructor | Destroys the object (`0x9bbea0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9bdcf0` | Deleting destructor | Destroys the object (`0x9bdd10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c01f0` | Deleting destructor | Destroys the object (`0x9bfc80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c11d0` | Deleting destructor | Destroys the object (`0x9c0b50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c1df0` | Deleting destructor | Destroys the object (`0x9c14e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9bc260` | Deleting destructor | Destroys the object (`0x9bbea0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9bdcf0` | Deleting destructor | Destroys the object (`0x9bdd10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c01f0` | Deleting destructor | Destroys the object (`0x9bfc80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c11d0` | Deleting destructor | Destroys the object (`0x9c0b50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c1df0` | Deleting destructor | Destroys the object (`0x9c14e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9c1f30` | Set +0xdc | Sets the member at +0xdc to its argument, taking 1 argument off the stack |
 | `0x9c2510` | Set +0xd4 | Sets the member at +0xd4 to its argument, taking 1 argument off the stack |
-| `0x9c2ca0` | Deleting destructor | Destroys the object (`0x9c1f40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c2cc0` | Deleting destructor | Destroys the object (`0x9c2270`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c2ce0` | Deleting destructor | Destroys the object (`0x9c24e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c2d00` | Deleting destructor | Destroys the object (`0x9c26b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c2d20` | Deleting destructor | Destroys the object (`0x9c29e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c5290` | Deleting destructor | Destroys the object (`0x9c4b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c2ca0` | Deleting destructor | Destroys the object (`0x9c1f40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c2cc0` | Deleting destructor | Destroys the object (`0x9c2270` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c2ce0` | Deleting destructor | Destroys the object (`0x9c24e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c2d00` | Deleting destructor | Destroys the object (`0x9c26b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c2d20` | Deleting destructor | Destroys the object (`0x9c29e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c5290` | Deleting destructor | Destroys the object (`0x9c4b80` (MetaParticle::~MetaParticle)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9c5340` | Empty | Does nothing |
-| `0x9c5c70` | Deleting destructor | Destroys the object (`0x9c5710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c5d30` | Deleting destructor | Destroys the object (`0x9c5c90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9c6030` | Deleting destructor | Destroys the object (`0x9c5c90`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0x9c5c70` | Deleting destructor | Destroys the object (`0x9c5710` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9c5d30` | Deleting destructor | Destroys the object (`0x9c5c90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9c70c0` | Deleting destructor | Destroys the object (`0x9c70e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9cba60` | Deleting destructor | Destroys the object (`0x9c9fa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9cbaf0` | Deleting destructor | Destroys the object (`0x9cb640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9cba60` | Deleting destructor | Destroys the object (`0x9c9fa0` (ParticleBaseDesc::~ParticleBaseDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9cbaf0` | Deleting destructor | Destroys the object (`0x9cb640` (ParticleDesc::~ParticleDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9cbb60` | Thunk | Calls `0x9c7a10` on the object at +0xa0 |
 | `0x9cbb70` | Thunk | Calls `0x9c6df0` on the object at +0xa0 |
 | `0x9cbba0` | Thunk | Calls `0x9c69d0` on the object at +0xa0 |
-| `0x9cd6f0` | Deleting destructor | Destroys the object (`0x9cd2a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9cd6f0` | Deleting destructor | Destroys the object (`0x9cd2a0` (ParticleEmitterDesc::~ParticleEmitterDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9cdab0` | Set table | Sets the object's virtual function table to `0xf306b8` |
 | `0x9cdac0` | Set +0x6c | Sets the member at +0x6c to its argument, taking 1 argument off the stack |
 | `0x9d0bf0` | Deleting destructor | Destroys the object (`0x9cdab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d10f0` | Deleting destructor | Destroys the object (`0x9d1110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d30a0` | Deleting destructor | Destroys the object (`0x9d1340` (SharedBuffer::Release)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9d30c0` | Deleting destructor | Destroys the object (`0x9d1370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9d4400` | Deleting destructor | Destroys the object (`0x9d3d70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9d4db0` | Deleting destructor | Destroys the object (`0x9d4780`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d30c0` | Deleting destructor | Destroys the object (`0x9d1370` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d4400` | Deleting destructor | Destroys the object (`0x9d3d70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d4db0` | Deleting destructor | Destroys the object (`0x9d4780` (RideCarParticleDescCache::~RideCarParticleDescCache)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d4e40` | Set +0xc0 | Sets the member at +0xc0 to its argument, taking 1 argument off the stack |
-| `0x9d5a00` | Deleting destructor | Destroys the object (`0x9d5730`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9d5f70` | Deleting destructor | Destroys the object (`0x9d5ed0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9d6430` | Deleting destructor | Destroys the object (`0x9d6390`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d5a00` | Deleting destructor | Destroys the object (`0x9d5730` (ParticleSource::~ParticleSource)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d5f70` | Deleting destructor | Destroys the object (`0x9d5ed0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d6430` | Deleting destructor | Destroys the object (`0x9d6390` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d6ee0` | Deleting destructor | Destroys the object (`0x9d6f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d6f10` | Deleting destructor | Destroys the object (`0x9d6f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d6f40` | Deleting destructor | Destroys the object (`0x9d6f60` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9d9a50` | Deleting destructor | Destroys the object (`0x9d8650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9da620` | Deleting destructor | Destroys the object (`0x9da180`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d9a50` | Deleting destructor | Destroys the object (`0x9d8650` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9da620` | Deleting destructor | Destroys the object (`0x9da180` (Campaign::~Campaign)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9dab80` | Set +0x28 | Sets the member at +0x28 to its argument, taking 1 argument off the stack |
 | `0x9dab90` | Set +0x28 | Sets the member at +0x28 to 0x0, taking 1 argument off the stack |
-| `0x9daec0` | Deleting destructor | Destroys the object (`0x9daee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9db090` | Deleting destructor | Destroys the object (`0x9dab00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9daec0` | Deleting destructor | Destroys the object (`0x9daee0` (CampaignMessageEntry::~CampaignMessageEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9db090` | Deleting destructor | Destroys the object (`0x9dab00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9dc0a0` | Deleting destructor | Destroys the object (`0x9dc0c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9dce10` | Deleting destructor | Destroys the object (`0x9dc8f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9dce10` | Deleting destructor | Destroys the object (`0x9dc8f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9ddbf0` | Deleting destructor | Destroys the object (`0x9ddc10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9de230` | Deleting destructor | Destroys the object (`0x9dd510`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9dfb80` | Deleting destructor | Destroys the object (`0x9dfa30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9e2620` | Deleting destructor | Destroys the object (`0x9e24b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9e47a0` | Deleting destructor | Destroys the object (`0xceff10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9e4920` | Deleting destructor | Destroys the object (`0x9e4740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9e5fc0` | Deleting destructor | Destroys the object (`0x9e49f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9e84b0` | Deleting destructor | Destroys the object (`0x9e84d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9e8fd0` | Deleting destructor | Destroys the object (`0x9e8670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9de230` | Deleting destructor | Destroys the object (`0x9dd510` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9dfb80` | Deleting destructor | Destroys the object (`0x9dfa30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9e2620` | Deleting destructor | Destroys the object (`0x9e24b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9e47a0` | Deleting destructor | Destroys the object (`0xceff10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9e4920` | Deleting destructor | Destroys the object (`0x9e4740` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9e5fc0` | Deleting destructor | Destroys the object (`0x9e49f0` (Sky::~Sky)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9e84b0` | Deleting destructor | Destroys the object (`0x9e84d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9e8fd0` | Deleting destructor | Destroys the object (`0x9e8670` (Weather::~Weather)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9eb8e0` | Set table | Sets the object's virtual function table to `0xf2694c` |
 | `0x9eb900` | Deleting destructor | Destroys the object (`0x9eb8e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9ebb20` | Deleting destructor | Destroys the object (`0x9eb990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9ebb20` | Deleting destructor | Destroys the object (`0x9eb990` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9ec7f0` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x9ec800` | Deleting destructor | Destroys the object (`0x9ec7f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9ec890` | Deleting destructor | Destroys the object (`0x9ec820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9ed4e0` | Deleting destructor | Destroys the object (`0x9ed4d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9ed8a0` | Deleting destructor | Destroys the object (`0x9ed740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9efb40` | Deleting destructor | Destroys the object (`0x9efac0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9f02d0` | Deleting destructor | Destroys the object (`0x9efbe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9f3e90` | Deleting destructor | Destroys the object (`0x9f3a80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9f4280` | Deleting destructor | Destroys the object (`0x9f40a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9ec890` | Deleting destructor | Destroys the object (`0x9ec820` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9ed4e0` | Deleting destructor | Destroys the object (`0x9ed4d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9ed8a0` | Deleting destructor | Destroys the object (`0x9ed740` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9efb40` | Deleting destructor | Destroys the object (`0x9efac0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f02d0` | Deleting destructor | Destroys the object (`0x9efbe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f3e90` | Deleting destructor | Destroys the object (`0x9f3a80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f4280` | Deleting destructor | Destroys the object (`0x9f40a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9f47e0` | Deleting destructor | Destroys the object (`0x9f4800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9f5730` | Deleting destructor | Destroys the object (`0x9f4b90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f5730` | Deleting destructor | Destroys the object (`0x9f4b90` (FlyingCameraRoute::~FlyingCameraRoute)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9f6000` | Thunk | Calls `0x6a3120` on the object at +0xe0 |
-| `0x9f6760` | Deleting destructor | Destroys the object (`0x9f6780`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9f6b10` | Deleting destructor | Destroys the object (`0x9f6890`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9f6e30` | Deleting destructor | Destroys the object (`0x9f6b50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f6760` | Deleting destructor | Destroys the object (`0x9f6780` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f6b10` | Deleting destructor | Destroys the object (`0x9f6890` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f6e30` | Deleting destructor | Destroys the object (`0x9f6b50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9f70b0` | Get +0x10 | Returns the float at +0x10 |
-| `0x9f7180` | Deleting destructor | Destroys the object (`0x9f7050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9f8270` | Deleting destructor | Destroys the object (`0x9f78d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9fa0c0` | Deleting destructor | Destroys the object (`0x9f9d80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9fb9b0` | Deleting destructor | Destroys the object (`0x9fadc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f7180` | Deleting destructor | Destroys the object (`0x9f7050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9f8270` | Deleting destructor | Destroys the object (`0x9f78d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9fa0c0` | Deleting destructor | Destroys the object (`0x9f9d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9fb9b0` | Deleting destructor | Destroys the object (`0x9fadc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9fba20` | Thunk | Calls `0x9faf80` on the object at +0x78 |
-| `0x9fe270` | Deleting destructor | Destroys the object (`0x9fc4b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa00270` | Deleting destructor | Destroys the object (`0x9ffb90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9fe270` | Deleting destructor | Destroys the object (`0x9fc4b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa00270` | Deleting destructor | Destroys the object (`0x9ffb90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa01870` | Deleting destructor | Destroys the object (`0xa01890`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa018a0` | Deleting destructor | Destroys the object (`0xa018c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa01cc0` | Deleting destructor | Destroys the object (`0xa00a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa03bb0` | Deleting destructor | Destroys the object (`0xa03bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa01cc0` | Deleting destructor | Destroys the object (`0xa00a90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa03bb0` | Deleting destructor | Destroys the object (`0xa03bd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa04fd0` | Deleting destructor | Destroys the object (`0xa04ff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa050b0` | Deleting destructor | Destroys the object (`0xa05070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa051a0` | Deleting destructor | Destroys the object (`0xa050e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa054b0` | Deleting destructor | Destroys the object (`0xa050f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa05bb0` | Deleting destructor | Destroys the object (`0xa051c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa06790` | Deleting destructor | Destroys the object (`0xa06290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa083d0` | Deleting destructor | Destroys the object (`0xa083f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa08ba0` | Deleting destructor | Destroys the object (`0xa08a70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa054b0` | Deleting destructor | Destroys the object (`0xa050f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa05bb0` | Deleting destructor | Destroys the object (`0xa051c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa06790` | Deleting destructor | Destroys the object (`0xa06290` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa083d0` | Deleting destructor | Destroys the object (`0xa083f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa08ba0` | Deleting destructor | Destroys the object (`0xa08a70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa090b0` | Deleting destructor | Destroys the object (`0xa09020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa09260` | Deleting destructor | Destroys the object (`0xa08fa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa09260` | Deleting destructor | Destroys the object (`0xa08fa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa09400` | Deleting destructor | Destroys the object (`0xa09280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa09840` | Deleting destructor | Destroys the object (`0xa09290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa09a10` | Deleting destructor | Destroys the object (`0xa09880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa0abc0` | Deleting destructor | Destroys the object (`0xa0a260`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa09840` | Deleting destructor | Destroys the object (`0xa09290` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa09a10` | Deleting destructor | Destroys the object (`0xa09880` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa0abc0` | Deleting destructor | Destroys the object (`0xa0a260` (Animal::~Animal)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa0ae40` | Deleting destructor | Destroys the object (`0xa0ac70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa0b100` | Deleting destructor | Destroys the object (`0xa0ac80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa0b1a0` | Deleting destructor | Destroys the object (`0xa0aee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa0b1a0` | Deleting destructor | Destroys the object (`0xa0aee0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa0bd80` | Thunk | Calls `0xa0ebc0` on the object at +0xc |
 | `0xa0bd90` | Thunk | Calls `0xa0f190` on the object at +0xc |
-| `0xa0dda0` | Deleting destructor | Destroys the object (`0xa0cb40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa0e220` | Deleting destructor | Destroys the object (`0xa0ddc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa0e940` | Deleting destructor | Destroys the object (`0xa0e2d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa0dda0` | Deleting destructor | Destroys the object (`0xa0cb40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa0e220` | Deleting destructor | Destroys the object (`0xa0ddc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa0e940` | Deleting destructor | Destroys the object (`0xa0e2d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa10350` | Deleting destructor | Destroys the object (`0xa10370` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa10900` | Deleting destructor | Destroys the object (`0xa10810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa10900` | Deleting destructor | Destroys the object (`0xa10810` (Bird::~Bird)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa11310` | Deleting destructor | Destroys the object (`0xa11330` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa14320` | Deleting destructor | Destroys the object (`0xa13d00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa14320` | Deleting destructor | Destroys the object (`0xa13d00` (Duck::~Duck)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa14b30` | Deleting destructor | Destroys the object (`0xa14b50` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa173e0` | Deleting destructor | Destroys the object (`0xa16bf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa18190` | Deleting destructor | Destroys the object (`0xa17420`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa18580` | Deleting destructor | Destroys the object (`0xa17500`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa173e0` | Deleting destructor | Destroys the object (`0xa16bf0` (Fish::~Fish)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa18190` | Deleting destructor | Destroys the object (`0xa17420` (FlightRoute::~FlightRoute)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa18580` | Deleting destructor | Destroys the object (`0xa17500` (FlightRoute::~FlightRoute)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa18780` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0xa189a0` | Deleting destructor | Destroys the object (`0xa18780`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa192f0` | Deleting destructor | Destroys the object (`0xa18c60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa19e10` | Deleting destructor | Destroys the object (`0xa19d10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa192f0` | Deleting destructor | Destroys the object (`0xa18c60` (Seagull::~Seagull)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa19e10` | Deleting destructor | Destroys the object (`0xa19d10` (UnderwaterAnimal::~UnderwaterAnimal)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa1a840` | Set +0xbc | Sets the member at +0xbc to 0x1 |
 | `0xa1b210` | Deleting destructor | Destroys the object (`0xa1b230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa1b240` | Deleting destructor | Destroys the object (`0xa1b260`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa1b270` | Deleting destructor | Destroys the object (`0xa1b290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa1bde0` | Deleting destructor | Destroys the object (`0xa1b2a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa1e7e0` | Deleting destructor | Destroys the object (`0xa1d4b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa1eda0` | Deleting destructor | Destroys the object (`0xa1eba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa1f7c0` | Deleting destructor | Destroys the object (`0xa1f550`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa1bde0` | Deleting destructor | Destroys the object (`0xa1b2a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa1e7e0` | Deleting destructor | Destroys the object (`0xa1d4b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa1eda0` | Deleting destructor | Destroys the object (`0xa1eba0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa1f7c0` | Deleting destructor | Destroys the object (`0xa1f550` (Tutorial::~Tutorial)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa1f810` | Get +0x0 | Returns the value at +0x0 |
 | `0xa1f8d0` | Empty | Does nothing |
 | `0xa1fd80` | Get global 0x1342718 | Returns the value in the global `0x1342718` |
-| `0xa20c00` | Deleting destructor | Destroys the object (`0xa1fbc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa23df0` | Deleting destructor | Destroys the object (`0xa20f90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa23ed0` | Deleting destructor | Destroys the object (`0xa21410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa24950` | Deleting destructor | Destroys the object (`0xa21690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa24a80` | Deleting destructor | Destroys the object (`0xa21ab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa24f30` | Deleting destructor | Destroys the object (`0xa24c40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa24fc0` | Deleting destructor | Destroys the object (`0xa24e40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa26060` | Deleting destructor | Destroys the object (`0xa25e70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa270d0` | Deleting destructor | Destroys the object (`0xa26850`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa28ab0` | Deleting destructor | Destroys the object (`0xa27c40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa28cc0` | Deleting destructor | Destroys the object (`0xa28600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa28d00` | Deleting destructor | Destroys the object (`0xa28950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa297b0` | Deleting destructor | Destroys the object (`0xa28f50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa20c00` | Deleting destructor | Destroys the object (`0xa1fbc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa23df0` | Deleting destructor | Destroys the object (`0xa20f90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa23ed0` | Deleting destructor | Destroys the object (`0xa21410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa24950` | Deleting destructor | Destroys the object (`0xa21690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa24a80` | Deleting destructor | Destroys the object (`0xa21ab0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa24f30` | Deleting destructor | Destroys the object (`0xa24c40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa24fc0` | Deleting destructor | Destroys the object (`0xa24e40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa26060` | Deleting destructor | Destroys the object (`0xa25e70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa270d0` | Deleting destructor | Destroys the object (`0xa26850` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa28ab0` | Deleting destructor | Destroys the object (`0xa27c40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa28cc0` | Deleting destructor | Destroys the object (`0xa28600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa28d00` | Deleting destructor | Destroys the object (`0xa28950` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa297b0` | Deleting destructor | Destroys the object (`0xa28f50` (CarriedItemInstance::~CarriedItemInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa2a2a0` | Deleting destructor | Destroys the object (`0xa2a160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa2a340` | Deleting destructor | Destroys the object (`0xa2a1b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa2a340` | Deleting destructor | Destroys the object (`0xa2a1b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa2a420` | Deleting destructor | Destroys the object (`0xa2a170`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa2ae10` | Deleting destructor | Destroys the object (`0xa2a7f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa2d270` | Deleting destructor | Destroys the object (`0xa2b4c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa2d300` | Deleting destructor | Destroys the object (`0xa2c000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa2d9b0` | Deleting destructor | Destroys the object (`0xa2d930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa2f440` | Deleting destructor | Destroys the object (`0xa2e590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa2ff30` | Deleting destructor | Destroys the object (`0xa2e910`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa2ae10` | Deleting destructor | Destroys the object (`0xa2a7f0` (CEDDatabaseEntry::~CEDDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa2d270` | Deleting destructor | Destroys the object (`0xa2b4c0` (CIDDatabaseEntry::~CIDDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa2d300` | Deleting destructor | Destroys the object (`0xa2c000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa2d9b0` | Deleting destructor | Destroys the object (`0xa2d930` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa2f440` | Deleting destructor | Destroys the object (`0xa2e590` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa2ff30` | Deleting destructor | Destroys the object (`0xa2e910` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa301b0` | Get +0x58 | Returns the value at +0x58 |
 | `0xa307b0` | Deleting destructor | Destroys the object (`0xa307d0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa307e0` | Deleting destructor | Destroys the object (`0xa30800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa32bb0` | Deleting destructor | Destroys the object (`0xa313d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa33bc0` | Deleting destructor | Destroys the object (`0xa33570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa341c0` | Deleting destructor | Destroys the object (`0xa33ce0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa35ac0` | Deleting destructor | Destroys the object (`0xa35300`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa387b0` | Deleting destructor | Destroys the object (`0xa35d20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa39940` | Deleting destructor | Destroys the object (`0xa38860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa3a020` | Deleting destructor | Destroys the object (`0xa3a040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa3c970` | Deleting destructor | Destroys the object (`0xa3c990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa3ca30` | Deleting destructor | Destroys the object (`0xa3c2e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa3d6c0` | Deleting destructor | Destroys the object (`0xa3e830`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa32bb0` | Deleting destructor | Destroys the object (`0xa313d0` (ShopExtraInstance::~ShopExtraInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa33bc0` | Deleting destructor | Destroys the object (`0xa33570` (ShopItemInstance::~ShopItemInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa341c0` | Deleting destructor | Destroys the object (`0xa33ce0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa35ac0` | Deleting destructor | Destroys the object (`0xa35300` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa387b0` | Deleting destructor | Destroys the object (`0xa35d20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa39940` | Deleting destructor | Destroys the object (`0xa38860` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa3a020` | Deleting destructor | Destroys the object (`0xa3a040` (ImportableTrack::~ImportableTrack)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa3c970` | Deleting destructor | Destroys the object (`0xa3c990` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa3ca30` | Deleting destructor | Destroys the object (`0xa3c2e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa3d6c0` | Deleting destructor | Destroys the object (`0xa3e830` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa3e550` | Deleting destructor | Destroys the object (`0xa3e570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa3e790` | Deleting destructor | Destroys the object (`0xa3e7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa3e7e0` | Set table | Sets the object's virtual function table to `0xf8a378` |
 | `0xa3ee10` | Thunk | Calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x8 |
-| `0xa409e0` | Deleting destructor | Destroys the object (`0xa40a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa43190` | Deleting destructor | Destroys the object (`0xa40a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa45840` | Deleting destructor | Destroys the object (`0xa45860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa409e0` | Deleting destructor | Destroys the object (`0xa40a00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa43190` | Deleting destructor | Destroys the object (`0xa40a90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa45840` | Deleting destructor | Destroys the object (`0xa45860` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa46840` | Deleting destructor | Destroys the object (`0xa46860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa47470` | Deleting destructor | Destroys the object (`0xa47070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa47750` | Deleting destructor | Destroys the object (`0xa47770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa47470` | Deleting destructor | Destroys the object (`0xa47070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa47750` | Deleting destructor | Destroys the object (`0xa47770` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa479a0` | Deleting destructor | Destroys the object (`0xa479c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa4b120` | Deleting destructor | Destroys the object (`0xa4b140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa4c570` | Deleting destructor | Destroys the object (`0xa4c590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa4c630` | Deleting destructor | Destroys the object (`0xa4c650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa4c7f0` | Deleting destructor | Destroys the object (`0xa494f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa50310` | Deleting destructor | Destroys the object (`0xa495e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa4b120` | Deleting destructor | Destroys the object (`0xa4b140` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa4c570` | Deleting destructor | Destroys the object (`0xa4c590` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa4c630` | Deleting destructor | Destroys the object (`0xa4c650` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa4c7f0` | Deleting destructor | Destroys the object (`0xa494f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa50310` | Deleting destructor | Destroys the object (`0xa495e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa51a00` | Deleting destructor | Destroys the object (`0xa51a20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa55030` | Deleting destructor | Destroys the object (`0xa54590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa550c0` | Deleting destructor | Destroys the object (`0xa54a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa551c0` | Deleting destructor | Destroys the object (`0xa54b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa551e0` | Deleting destructor | Destroys the object (`0xa54d60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa56130` | Deleting destructor | Destroys the object (`0xa559b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa55030` | Deleting destructor | Destroys the object (`0xa54590` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa550c0` | Deleting destructor | Destroys the object (`0xa54a30` (ManagedPlayerProfile::~ManagedPlayerProfile)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa551c0` | Deleting destructor | Destroys the object (`0xa54b40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa551e0` | Deleting destructor | Destroys the object (`0xa54d60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa56130` | Deleting destructor | Destroys the object (`0xa559b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa56ca0` | Deleting destructor | Destroys the object (`0xa55800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa571f0` | Deleting destructor | Destroys the object (`0xa56380`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa571f0` | Deleting destructor | Destroys the object (`0xa56380` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa576a0` | Deleting destructor | Destroys the object (`0xa576c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa58110` | Deleting destructor | Destroys the object (`0xa56a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa5a610` | Deleting destructor | Destroys the object (`0xa59280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa58110` | Deleting destructor | Destroys the object (`0xa56a00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa5a610` | Deleting destructor | Destroys the object (`0xa59280` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5a640` | Set +0x74 | Sets the member at +0x74 to 0xffffffff |
 | `0xa5a830` | Set table | Sets the object's virtual function table to `0xf304f0` |
-| `0xa5b7a0` | Deleting destructor | Destroys the object (`0xa5b7c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa5b7a0` | Deleting destructor | Destroys the object (`0xa5b7c0` (AwardMessageEntry::~AwardMessageEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5b9d0` | Deleting destructor | Destroys the object (`0xa5a830`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5bf40` | Deleting destructor | Destroys the object (`0xa5bf60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5bf70` | Deleting destructor | Destroys the object (`0xa5bf90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5bfa0` | Deleting destructor | Destroys the object (`0xa5bfc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa5deb0` | Deleting destructor | Destroys the object (`0xa5db60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa5e0b0` | Deleting destructor | Destroys the object (`0xa5df20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa5deb0` | Deleting destructor | Destroys the object (`0xa5db60` (Awards::~Awards)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa5e0b0` | Deleting destructor | Destroys the object (`0xa5df20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5e450` | Deleting destructor | Destroys the object (`0xa5e470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa5e810` | Deleting destructor | Destroys the object (`0xa5e740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa5e810` | Deleting destructor | Destroys the object (`0xa5e740` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5ed60` | Set table | Sets the object's virtual function table to `0xf8f6d8` |
-| `0xa5f5c0` | Deleting destructor | Destroys the object (`0xa5f3f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa5fe60` | Deleting destructor | Destroys the object (`0xa5faa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa61240` | Deleting destructor | Destroys the object (`0xa60580`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa61ef0` | Deleting destructor | Destroys the object (`0xa61b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa5f5c0` | Deleting destructor | Destroys the object (`0xa5f3f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa5fe60` | Deleting destructor | Destroys the object (`0xa5faa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa61240` | Deleting destructor | Destroys the object (`0xa60580` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa61ef0` | Deleting destructor | Destroys the object (`0xa61b80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa62ea0` | Empty | Does nothing |
-| `0xa62f70` | Deleting destructor | Destroys the object (`0xa62bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa62f70` | Deleting destructor | Destroys the object (`0xa62bc0` (MainCamera::~MainCamera)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa637b0` | Set +0x7c | Sets the member at +0x7c to its argument, taking 1 argument off the stack |
 | `0xa637c0` | Set +0x80 | Sets the member at +0x80 to its argument, taking 1 argument off the stack |
 | `0xa637d0` | Set +0x8c | Sets the member at +0x8c to its argument, taking 1 argument off the stack |
-| `0xa67be0` | Deleting destructor | Destroys the object (`0xa64650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa67de0` | Deleting destructor | Destroys the object (`0xa67160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa67be0` | Deleting destructor | Destroys the object (`0xa64650` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa67de0` | Deleting destructor | Destroys the object (`0xa67160` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa6bc90` | Deleting destructor | Destroys the object (`0xa6bcb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa753d0` | Deleting destructor | Destroys the object (`0xa6c940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa7a780` | Deleting destructor | Destroys the object (`0xa7a3a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa7afc0` | Deleting destructor | Destroys the object (`0xa7ac40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa753d0` | Deleting destructor | Destroys the object (`0xa6c940` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa7a780` | Deleting destructor | Destroys the object (`0xa7a3a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa7afc0` | Deleting destructor | Destroys the object (`0xa7ac40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa7b4a0` | Get global 0xf28958 | Returns the float in the global `0xf28958` |
 | `0xa7b8c0` | Deleting destructor | Destroys the object (`0xa7b8e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa7d2b0` | Deleting destructor | Destroys the object (`0xa7d2d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa7e870` | Deleting destructor | Destroys the object (`0xa7db10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa7f390` | Deleting destructor | Destroys the object (`0xa7eba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa80330` | Deleting destructor | Destroys the object (`0xa80350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa803c0` | Deleting destructor | Destroys the object (`0xa7fe30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa807d0` | Deleting destructor | Destroys the object (`0xa80610`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa7d2b0` | Deleting destructor | Destroys the object (`0xa7d2d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa7e870` | Deleting destructor | Destroys the object (`0xa7db10` (ChangingRoomInstance::~ChangingRoomInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa7f390` | Deleting destructor | Destroys the object (`0xa7eba0` (ChangingRoomPersonInfo::~ChangingRoomPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa80330` | Deleting destructor | Destroys the object (`0xa80350` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa803c0` | Deleting destructor | Destroys the object (`0xa7fe30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa807d0` | Deleting destructor | Destroys the object (`0xa80610` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa80a80` | Deleting destructor | Destroys the object (`0xa80aa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa80bf0` | Deleting destructor | Destroys the object (`0xa80c10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa81eb0` | Deleting destructor | Destroys the object (`0xa81be0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa82060` | Deleting destructor | Destroys the object (`0xa81d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa80bf0` | Deleting destructor | Destroys the object (`0xa80c10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa81eb0` | Deleting destructor | Destroys the object (`0xa81be0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa82060` | Deleting destructor | Destroys the object (`0xa81d50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa829e0` | Deleting destructor | Destroys the object (`0xa82a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa83df0` | Deleting destructor | Destroys the object (`0xa83ad0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa83df0` | Deleting destructor | Destroys the object (`0xa83ad0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa84c60` | Deleting destructor | Destroys the object (`0xa849a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa84ca0` | Deleting destructor | Destroys the object (`0xa84cc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa850e0` | Deleting destructor | Destroys the object (`0xa84ce0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa85100` | Deleting destructor | Destroys the object (`0xa84cf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa85120` | Deleting destructor | Destroys the object (`0xa84d00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa85140` | Deleting destructor | Destroys the object (`0xa84d10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa86640` | Deleting destructor | Destroys the object (`0xa851a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa86e30` | Deleting destructor | Destroys the object (`0xa85640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa86640` | Deleting destructor | Destroys the object (`0xa851a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa86e30` | Deleting destructor | Destroys the object (`0xa85640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa872a0` | Deleting destructor | Destroys the object (`0xa872c0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa87cc0` | Deleting destructor | Destroys the object (`0xa879c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa87cc0` | Deleting destructor | Destroys the object (`0xa879c0` (LifeguardChairBehaviour::~LifeguardChairBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa886f0` | Returns 0 | Returns 0 (or false / null) |
-| `0xa8baf0` | Deleting destructor | Destroys the object (`0xa8b4b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa8c5a0` | Deleting destructor | Destroys the object (`0xa8bf70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa8cbe0` | Deleting destructor | Destroys the object (`0xa8c600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa8baf0` | Deleting destructor | Destroys the object (`0xa8b4b0` (PoolComplex::~PoolComplex)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa8c5a0` | Deleting destructor | Destroys the object (`0xa8bf70` (PoolComplexCollection::~PoolComplexCollection)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa8cbe0` | Deleting destructor | Destroys the object (`0xa8c600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa8d020` | Deleting destructor | Destroys the object (`0xa8d040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa8d050` | Deleting destructor | Destroys the object (`0xa8d070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa8ea60` | Deleting destructor | Destroys the object (`0xa8e080`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa8eb50` | Deleting destructor | Destroys the object (`0xa8ea80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa8ea60` | Deleting destructor | Destroys the object (`0xa8e080` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa8eb50` | Deleting destructor | Destroys the object (`0xa8ea80` (PoolComplexSaveData::~PoolComplexSaveData)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa8eea0` | Deleting destructor | Destroys the object (`0xa8eec0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa8eed0` | Deleting destructor | Destroys the object (`0xa8eef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa90530` | Deleting destructor | Destroys the object (`0xa902e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa90530` | Deleting destructor | Destroys the object (`0xa902e0` (PoolComplexSaveHeader::~PoolComplexSaveHeader)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa90560` | Set table | Sets the object's virtual function table to `0xf918e0` |
-| `0xa91160` | Deleting destructor | Destroys the object (`0xa90a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa93a30` | Deleting destructor | Destroys the object (`0xa91a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa95220` | Deleting destructor | Destroys the object (`0xa94e20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa91160` | Deleting destructor | Destroys the object (`0xa90a30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa93a30` | Deleting destructor | Destroys the object (`0xa91a90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa95220` | Deleting destructor | Destroys the object (`0xa94e20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa975b0` | Deleting destructor | Destroys the object (`0xa975d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa99b80` | Deleting destructor | Destroys the object (`0xa993d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa9c990` | Deleting destructor | Destroys the object (`0xa9bf00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa9cb90` | Deleting destructor | Destroys the object (`0xa9cb10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa9d760` | Deleting destructor | Destroys the object (`0xa9d390`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa9da80` | Deleting destructor | Destroys the object (`0xa9d7e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaa0fb0` | Deleting destructor | Destroys the object (`0xa9fd90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaa1ea0` | Deleting destructor | Destroys the object (`0xaa1a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaa2630` | Deleting destructor | Destroys the object (`0xaa2310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa99b80` | Deleting destructor | Destroys the object (`0xa993d0` (PoolExtraBehaviour::~PoolExtraBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa9c990` | Deleting destructor | Destroys the object (`0xa9bf00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa9cb90` | Deleting destructor | Destroys the object (`0xa9cb10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa9d760` | Deleting destructor | Destroys the object (`0xa9d390` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa9da80` | Deleting destructor | Destroys the object (`0xa9d7e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaa0fb0` | Deleting destructor | Destroys the object (`0xa9fd90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaa1ea0` | Deleting destructor | Destroys the object (`0xaa1a00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaa2630` | Deleting destructor | Destroys the object (`0xaa2310` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaa4570` | Thunk | Calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x4 |
-| `0xaa57f0` | Deleting destructor | Destroys the object (`0xaa4580`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaa57f0` | Deleting destructor | Destroys the object (`0xaa4580` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaa5b10` | Deleting destructor | Destroys the object (`0xaa5b30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaa5b40` | Deleting destructor | Destroys the object (`0xaa5b60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaa63e0` | Deleting destructor | Destroys the object (`0xaa6400`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaa6410` | Deleting destructor | Destroys the object (`0xaa5c80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaa6410` | Deleting destructor | Destroys the object (`0xaa5c80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaa8ac0` | Empty | Does nothing |
 | `0xaa8d90` | Deleting destructor | Destroys the object (`0xaa8db0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaa96c0` | Deleting destructor | Destroys the object (`0xaa8e30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaa96c0` | Deleting destructor | Destroys the object (`0xaa8e30` (PoolPiece::~PoolPiece)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaaa060` | Deleting destructor | Destroys the object (`0x7a68d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaab260` | Deleting destructor | Destroys the object (`0xaaaed0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaacbd0` | Deleting destructor | Destroys the object (`0xaac5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaab260` | Deleting destructor | Destroys the object (`0xaaaed0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaacbd0` | Deleting destructor | Destroys the object (`0xaac5c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaaf1b0` | Deleting destructor | Destroys the object (`0xaaf1d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaaf1e0` | Deleting destructor | Destroys the object (`0xaaf200` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaaf210` | Deleting destructor | Destroys the object (`0xaaf230` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xabb0c0` | Deleting destructor | Destroys the object (`0xab9bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xabb0c0` | Deleting destructor | Destroys the object (`0xab9bc0` (PoolSegment::~PoolSegment)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xabc640` | Deleting destructor | Destroys the object (`0xabc660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xabc660` | Set table | Sets the object's virtual function table to `0xf933c0` |
 | `0xabc670` | Deleting destructor | Destroys the object (`0xabc690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2036,229 +2004,229 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xabc6a0` | Deleting destructor | Destroys the object (`0xabc6c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xabc6c0` | Set table | Sets the object's virtual function table to `0xf933c0` |
 | `0xabce10` | Deleting destructor | Destroys the object (`0xabce30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac2550` | Deleting destructor | Destroys the object (`0xac18d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac2550` | Deleting destructor | Destroys the object (`0xac18d0` (PoolSurface::~PoolSurface)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xac2b30` | Deleting destructor | Destroys the object (`0xac2a50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xac2ea0` | Deleting destructor | Destroys the object (`0xac2ec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac49c0` | Deleting destructor | Destroys the object (`0xac3f80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac52e0` | Deleting destructor | Destroys the object (`0xac5300`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac5370` | Deleting destructor | Destroys the object (`0xac4d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac5960` | Deleting destructor | Destroys the object (`0xac5980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac49c0` | Deleting destructor | Destroys the object (`0xac3f80` (PoolTypeDatabaseEntry::~PoolTypeDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac52e0` | Deleting destructor | Destroys the object (`0xac5300` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac5370` | Deleting destructor | Destroys the object (`0xac4d50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac5960` | Deleting destructor | Destroys the object (`0xac5980` (PoolWaypointList::~PoolWaypointList)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xac5b30` | Deleting destructor | Destroys the object (`0xac5b50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac7090` | Deleting destructor | Destroys the object (`0xac70b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac74c0` | Deleting destructor | Destroys the object (`0xac74e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac8020` | Deleting destructor | Destroys the object (`0xac7eb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac94d0` | Deleting destructor | Destroys the object (`0xac8620`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac97f0` | Deleting destructor | Destroys the object (`0xac9810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xac9cd0` | Deleting destructor | Destroys the object (`0xac9cf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac7090` | Deleting destructor | Destroys the object (`0xac70b0` (BlenderElement::~BlenderElement)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac74c0` | Deleting destructor | Destroys the object (`0xac74e0` (BlenderElement::~BlenderElement)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac8020` | Deleting destructor | Destroys the object (`0xac7eb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac94d0` | Deleting destructor | Destroys the object (`0xac8620` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac97f0` | Deleting destructor | Destroys the object (`0xac9810` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xac9cd0` | Deleting destructor | Destroys the object (`0xac9cf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaca0e0` | Set table | Sets the object's virtual function table to `0xf93e50` |
-| `0xacab60` | Deleting destructor | Destroys the object (`0xacab80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xacb250` | Deleting destructor | Destroys the object (`0xacac00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xacab60` | Deleting destructor | Destroys the object (`0xacab80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xacb250` | Deleting destructor | Destroys the object (`0xacac00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xacc010` | Set table | Sets the object's virtual function table to `0xf941ec` |
-| `0xacc0c0` | Deleting destructor | Destroys the object (`0xacc0e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xacc8b0` | Deleting destructor | Destroys the object (`0xacc8d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaccbb0` | Deleting destructor | Destroys the object (`0xaccbd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xacd960` | Deleting destructor | Destroys the object (`0xacd980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xace6e0` | Deleting destructor | Destroys the object (`0xace700`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xacf5a0` | Deleting destructor | Destroys the object (`0xacf5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xad0860` | Deleting destructor | Destroys the object (`0xad0880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xad1200` | Deleting destructor | Destroys the object (`0xad1220`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xad12c0` | Deleting destructor | Destroys the object (`0xacd450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xad6440` | Deleting destructor | Destroys the object (`0xad16a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xad7760` | Deleting destructor | Destroys the object (`0xad6a10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xacc0c0` | Deleting destructor | Destroys the object (`0xacc0e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xacc8b0` | Deleting destructor | Destroys the object (`0xacc8d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaccbb0` | Deleting destructor | Destroys the object (`0xaccbd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xacd960` | Deleting destructor | Destroys the object (`0xacd980` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xace6e0` | Deleting destructor | Destroys the object (`0xace700` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xacf5a0` | Deleting destructor | Destroys the object (`0xacf5c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad0860` | Deleting destructor | Destroys the object (`0xad0880` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad1200` | Deleting destructor | Destroys the object (`0xad1220` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad12c0` | Deleting destructor | Destroys the object (`0xacd450` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad6440` | Deleting destructor | Destroys the object (`0xad16a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad7760` | Deleting destructor | Destroys the object (`0xad6a10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xad7b50` | Deleting destructor | Destroys the object (`0xad7b70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xad93b0` | Deleting destructor | Destroys the object (`0xad8400`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xad94a0` | Deleting destructor | Destroys the object (`0xad8b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad93b0` | Deleting destructor | Destroys the object (`0xad8400` (LaserBaseDesc::~LaserBaseDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad94a0` | Deleting destructor | Destroys the object (`0xad8b80` (LaserDesc::~LaserDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xadb080` | Deleting destructor | Destroys the object (`0xadb0a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xadb0b0` | Deleting destructor | Destroys the object (`0xadb0d0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xadb0e0` | Deleting destructor | Destroys the object (`0xadb100` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xadb110` | Deleting destructor | Destroys the object (`0xadb130` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xadb140` | Deleting destructor | Destroys the object (`0xadb160` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xadb170` | Deleting destructor | Destroys the object (`0xadb190` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xadfab0` | Deleting destructor | Destroys the object (`0xadb1c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xadfab0` | Deleting destructor | Destroys the object (`0xadb1c0` (LaserSource::~LaserSource)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xae0f90` | Deleting destructor | Destroys the object (`0xae0fb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xae0fc0` | Deleting destructor | Destroys the object (`0xae0fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xae0ff0` | Deleting destructor | Destroys the object (`0xae1010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xae32d0` | Deleting destructor | Destroys the object (`0xae12e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xae4aa0` | Deleting destructor | Destroys the object (`0xae1e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xae6ca0` | Deleting destructor | Destroys the object (`0xae6cc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xae7bb0` | Deleting destructor | Destroys the object (`0xae7bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xae7da0` | Deleting destructor | Destroys the object (`0xae62a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xae8af0` | Deleting destructor | Destroys the object (`0xae7690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaea630` | Deleting destructor | Destroys the object (`0xaea650`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaeb3f0` | Deleting destructor | Destroys the object (`0xaeb410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaec100` | Deleting destructor | Destroys the object (`0xaec120`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaeca80` | Deleting destructor | Destroys the object (`0xaecaa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaecb40` | Deleting destructor | Destroys the object (`0xae9430`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaef7f0` | Deleting destructor | Destroys the object (`0xaed6a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaf07a0` | Deleting destructor | Destroys the object (`0xaefe80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xae32d0` | Deleting destructor | Destroys the object (`0xae12e0` (LaserWritingLetter::~LaserWritingLetter)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xae4aa0` | Deleting destructor | Destroys the object (`0xae1e60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xae6ca0` | Deleting destructor | Destroys the object (`0xae6cc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xae7bb0` | Deleting destructor | Destroys the object (`0xae7bd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xae7da0` | Deleting destructor | Destroys the object (`0xae62a0` (LaserWritingWord::~LaserWritingWord)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xae8af0` | Deleting destructor | Destroys the object (`0xae7690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaea630` | Deleting destructor | Destroys the object (`0xaea650` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaeb3f0` | Deleting destructor | Destroys the object (`0xaeb410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaec100` | Deleting destructor | Destroys the object (`0xaec120` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaeca80` | Deleting destructor | Destroys the object (`0xaecaa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaecb40` | Deleting destructor | Destroys the object (`0xae9430` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaef7f0` | Deleting destructor | Destroys the object (`0xaed6a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf07a0` | Deleting destructor | Destroys the object (`0xaefe80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaf08b0` | Set +0x96 | Sets the member at +0x96 to 0x1 |
 | `0xaf0e60` | Deleting destructor | Destroys the object (`0xaf0e80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaf2540` | Deleting destructor | Destroys the object (`0xaf1da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaf26d0` | Deleting destructor | Destroys the object (`0xaf2010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaf3990` | Deleting destructor | Destroys the object (`0xaf2e40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaf5070` | Deleting destructor | Destroys the object (`0xaf3d80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaf5d30` | Deleting destructor | Destroys the object (`0xaf3f10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaf5e20` | Deleting destructor | Destroys the object (`0xaf4b90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaf8da0` | Deleting destructor | Destroys the object (`0xaf7ad0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xafdf80` | Deleting destructor | Destroys the object (`0xafdd70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xafed80` | Deleting destructor | Destroys the object (`0xafe310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaffa80` | Deleting destructor | Destroys the object (`0xaff6d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaffc00` | Deleting destructor | Destroys the object (`0xaffae0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb01a40` | Deleting destructor | Destroys the object (`0xb00e70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf2540` | Deleting destructor | Destroys the object (`0xaf1da0` (InventibleAnimation::~InventibleAnimation)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf26d0` | Deleting destructor | Destroys the object (`0xaf2010` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf3990` | Deleting destructor | Destroys the object (`0xaf2e40` (ShowController::~ShowController)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf5070` | Deleting destructor | Destroys the object (`0xaf3d80` (WaterJetSource::~WaterJetSource)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf5d30` | Deleting destructor | Destroys the object (`0xaf3f10` (WaterJetBaseDesc::~WaterJetBaseDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf5e20` | Deleting destructor | Destroys the object (`0xaf4b90` (WaterJetDesc::~WaterJetDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf8da0` | Deleting destructor | Destroys the object (`0xaf7ad0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xafdf80` | Deleting destructor | Destroys the object (`0xafdd70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xafed80` | Deleting destructor | Destroys the object (`0xafe310` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaffa80` | Deleting destructor | Destroys the object (`0xaff6d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaffc00` | Deleting destructor | Destroys the object (`0xaffae0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb01a40` | Deleting destructor | Destroys the object (`0xb00e70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb02090` | Deleting destructor | Destroys the object (`0xb020b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb05360` | Deleting destructor | Destroys the object (`0xb03470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb06f20` | Deleting destructor | Destroys the object (`0xb046c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb05360` | Deleting destructor | Destroys the object (`0xb03470` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb06f20` | Deleting destructor | Destroys the object (`0xb046c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb071b0` | Deleting destructor | Destroys the object (`0xb070c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb07390` | Deleting destructor | Destroys the object (`0xb071e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb07430` | Deleting destructor | Destroys the object (`0xb071f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb08480` | Deleting destructor | Destroys the object (`0xb07460`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb08c10` | Deleting destructor | Destroys the object (`0xb08a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb0a8f0` | Deleting destructor | Destroys the object (`0xb08c90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb0d990` | Deleting destructor | Destroys the object (`0xb0ac30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb0e130` | Deleting destructor | Destroys the object (`0xb0e090`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb07430` | Deleting destructor | Destroys the object (`0xb071f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb08480` | Deleting destructor | Destroys the object (`0xb07460` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb08c10` | Deleting destructor | Destroys the object (`0xb08a00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb0a8f0` | Deleting destructor | Destroys the object (`0xb08c90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb0d990` | Deleting destructor | Destroys the object (`0xb0ac30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb0e130` | Deleting destructor | Destroys the object (`0xb0e090` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb0e790` | Deleting destructor | Destroys the object (`0xb0e7b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb0f7b0` | Deleting destructor | Destroys the object (`0xb0f7d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb0f840` | Deleting destructor | Destroys the object (`0xb0f0a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb105d0` | Deleting destructor | Destroys the object (`0xb100a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb0f7b0` | Deleting destructor | Destroys the object (`0xb0f7d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb0f840` | Deleting destructor | Destroys the object (`0xb0f0a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb105d0` | Deleting destructor | Destroys the object (`0xb100a0` (TroughFood::~TroughFood)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb10750` | Deleting destructor | Destroys the object (`0xb10770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb10a60` | Deleting destructor | Destroys the object (`0xb10930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb10c40` | Deleting destructor | Destroys the object (`0xb10940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb11c20` | Thunk | Calls `0xb11790` on `this` +0x4c |
-| `0xb12570` | Deleting destructor | Destroys the object (`0xb11f20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb12830` | Deleting destructor | Destroys the object (`0xb12370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb12570` | Deleting destructor | Destroys the object (`0xb11f20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb12830` | Deleting destructor | Destroys the object (`0xb12370` (WAIDatabaseEntry::~WAIDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb12bf0` | Set table | Sets the object's virtual function table to `0xf328c0` |
 | `0xb12c00` | Deleting destructor | Destroys the object (`0xb12bf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb12c80` | Set table | Sets the object's virtual function table to `0xf328c0` |
 | `0xb12c90` | Deleting destructor | Destroys the object (`0xb12c80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb13e30` | Deleting destructor | Destroys the object (`0xb13e50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb13e30` | Deleting destructor | Destroys the object (`0xb13e50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb14f20` | Deleting destructor | Destroys the object (`0xb14f40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb151f0` | Deleting destructor | Destroys the object (`0xb15210` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb15a10` | Deleting destructor | Destroys the object (`0xb15320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb15a10` | Deleting destructor | Destroys the object (`0xb15320` (WAS_EatCarcass::~WAS_EatCarcass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb16750` | Deleting destructor | Destroys the object (`0xb16770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb17170` | Deleting destructor | Destroys the object (`0xb17190` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb17af0` | Set +0x18 | Sets the member at +0x18 to 0x0 |
-| `0xb180a0` | Deleting destructor | Destroys the object (`0xb171b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb180a0` | Deleting destructor | Destroys the object (`0xb171b0` (WAS_Follow::~WAS_Follow)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb18a70` | Deleting destructor | Destroys the object (`0xb18a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb19550` | Deleting destructor | Destroys the object (`0xb19110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb1a9f0` | Deleting destructor | Destroys the object (`0xb1a8c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb1ace0` | Deleting destructor | Destroys the object (`0xb1ad00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb1b0c0` | Deleting destructor | Destroys the object (`0xb1b0e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb19550` | Deleting destructor | Destroys the object (`0xb19110` (WAS_JoinHerd::~WAS_JoinHerd)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1a9f0` | Deleting destructor | Destroys the object (`0xb1a8c0` (WildAnimalLocomotorMove::~WildAnimalLocomotorMove)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1ace0` | Deleting destructor | Destroys the object (`0xb1ad00` (WAL_Kill::~WAL_Kill)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1b0c0` | Deleting destructor | Destroys the object (`0xb1b0e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb1b5c0` | Set table | Sets the object's virtual function table to `0xf328c0` |
 | `0xb1b690` | Deleting destructor | Destroys the object (`0xb1b5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb1b8f0` | Deleting destructor | Destroys the object (`0xb1b910` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb1c1f0` | Deleting destructor | Destroys the object (`0xb1c210`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1c1f0` | Deleting destructor | Destroys the object (`0xb1c210` (WAS_Mate::~WAS_Mate)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb1e740` | Deleting destructor | Destroys the object (`0xb1e760` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb1efb0` | Deleting destructor | Destroys the object (`0xb1efd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb1f450` | Deleting destructor | Destroys the object (`0xb1f470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1efb0` | Deleting destructor | Destroys the object (`0xb1efd0` (WALMoveSpline::~WALMoveSpline)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1f450` | Deleting destructor | Destroys the object (`0xb1f470` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb211c0` | Deleting destructor | Destroys the object (`0xb211e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb22fd0` | Deleting destructor | Destroys the object (`0xb22ff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb22fd0` | Deleting destructor | Destroys the object (`0xb22ff0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb24100` | Deleting destructor | Destroys the object (`0xb24120` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb24130` | Deleting destructor | Destroys the object (`0xb24150`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb24160` | Deleting destructor | Destroys the object (`0xb24180` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb25060` | Deleting destructor | Destroys the object (`0xb25080`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb25b60` | Deleting destructor | Destroys the object (`0xb24450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb275d0` | Deleting destructor | Destroys the object (`0xb275f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb29450` | Deleting destructor | Destroys the object (`0xb29470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb25060` | Deleting destructor | Destroys the object (`0xb25080` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb25b60` | Deleting destructor | Destroys the object (`0xb24450` (WAS_PlayWithItem::~WAS_PlayWithItem)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb275d0` | Deleting destructor | Destroys the object (`0xb275f0` (WAL_RunAway::~WAL_RunAway)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb29450` | Deleting destructor | Destroys the object (`0xb29470` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb29930` | Deleting destructor | Destroys the object (`0xb29950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb29a50` | Deleting destructor | Destroys the object (`0xb29870`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb2c610` | Deleting destructor | Destroys the object (`0xb2c630`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb2c610` | Deleting destructor | Destroys the object (`0xb2c630` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2d290` | Deleting destructor | Destroys the object (`0xb2d2b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb2da30` | Deleting destructor | Destroys the object (`0xb2d2d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb2da30` | Deleting destructor | Destroys the object (`0xb2d2d0` (WAS_ShowOff::~WAS_ShowOff)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2eb40` | Deleting destructor | Destroys the object (`0xb2eb60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2eda0` | Deleting destructor | Destroys the object (`0xb2edc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2f090` | Deleting destructor | Destroys the object (`0xb2f0b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2fb80` | Deleting destructor | Destroys the object (`0xb2fba0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb309d0` | Deleting destructor | Destroys the object (`0xb309f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb313b0` | Deleting destructor | Destroys the object (`0xb313d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb309d0` | Deleting destructor | Destroys the object (`0xb309f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb313b0` | Deleting destructor | Destroys the object (`0xb313d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb32900` | Deleting destructor | Destroys the object (`0xb32620`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb329f0` | Thunk | Calls `0xbe83b0` on `this` +0x4 |
 | `0xb32b40` | Deleting destructor | Destroys the object (`0xb32630`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb333d0` | Empty | Does nothing, taking 1 argument off the stack |
-| `0xb33af0` | Deleting destructor | Destroys the object (`0xb32f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb33e40` | Deleting destructor | Destroys the object (`0xb33680`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb34160` | Deleting destructor | Destroys the object (`0xb33b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb33af0` | Deleting destructor | Destroys the object (`0xb32f30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb33e40` | Deleting destructor | Destroys the object (`0xb33680` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb34160` | Deleting destructor | Destroys the object (`0xb33b80` (WASDatabaseEntry::~WASDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb34480` | Set table | Sets the object's virtual function table to `0xf99150` |
 | `0xb34b80` | Get +0xe8 | Returns the value at +0xe8 |
 | `0xb353e0` | Deleting destructor | Destroys the object (`0xb34940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb36640` | Deleting destructor | Destroys the object (`0xb36660` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb36670` | Deleting destructor | Destroys the object (`0xb36690` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb366a0` | Deleting destructor | Destroys the object (`0xb366c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb3acf0` | Deleting destructor | Destroys the object (`0xb367b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb415d0` | Deleting destructor | Destroys the object (`0xb3e540`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb3acf0` | Deleting destructor | Destroys the object (`0xb367b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb415d0` | Deleting destructor | Destroys the object (`0xb3e540` (WildAnimal::~WildAnimal)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb42380` | Thunk | Calls `0xb81c80` on the object at +0x124 |
 | `0xb42400` | Set +0x130 | Sets the member at +0x130 to its argument, taking 1 argument off the stack |
-| `0xb43360` | Deleting destructor | Destroys the object (`0xb43380`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb43790` | Deleting destructor | Destroys the object (`0xb42ce0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb43360` | Deleting destructor | Destroys the object (`0xb43380` (WildAnimalLocomotorMoveTest::~WildAnimalLocomotorMoveTest)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb43790` | Deleting destructor | Destroys the object (`0xb42ce0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb44070` | Deleting destructor | Destroys the object (`0xb44090`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb44790` | Deleting destructor | Destroys the object (`0xb447b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb447c0` | Deleting destructor | Destroys the object (`0xb447e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb447f0` | Deleting destructor | Destroys the object (`0xb44810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb47750` | Deleting destructor | Destroys the object (`0xb46ef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb4c640` | Deleting destructor | Destroys the object (`0xb4bca0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb47750` | Deleting destructor | Destroys the object (`0xb46ef0` (WildAnimalBase::~WildAnimalBase)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb4c640` | Deleting destructor | Destroys the object (`0xb4bca0` (WildAnimalCrate::~WildAnimalCrate)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4ced0` | Deleting destructor | Destroys the object (`0xb4cdb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb4cf30` | Deleting destructor | Destroys the object (`0xb4cb30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb4cf50` | Deleting destructor | Destroys the object (`0xb4cb70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb4cf70` | Deleting destructor | Destroys the object (`0xb4ccd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb4cf30` | Deleting destructor | Destroys the object (`0xb4cb30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb4cf50` | Deleting destructor | Destroys the object (`0xb4cb70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb4cf70` | Deleting destructor | Destroys the object (`0xb4ccd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4d3d0` | Deleting destructor | Destroys the object (`0xb4cf90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4d3f0` | Deleting destructor | Destroys the object (`0xb4cfa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4d410` | Deleting destructor | Destroys the object (`0xb4cfb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4d430` | Deleting destructor | Destroys the object (`0xb4cfc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4d450` | Deleting destructor | Destroys the object (`0xb4cfd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4f790` | Deleting destructor | Destroys the object (`0xb4f7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb4f900` | Deleting destructor | Destroys the object (`0xb4cfe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb4fa50` | Deleting destructor | Destroys the object (`0xb4d6c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb52cf0` | Deleting destructor | Destroys the object (`0xb52630`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb4f900` | Deleting destructor | Destroys the object (`0xb4cfe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb4fa50` | Deleting destructor | Destroys the object (`0xb4d6c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb52cf0` | Deleting destructor | Destroys the object (`0xb52630` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb535a0` | Deleting destructor | Destroys the object (`0xb535c0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb535d0` | Deleting destructor | Destroys the object (`0xb535f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb53690` | Deleting destructor | Destroys the object (`0xb36790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb55000` | Deleting destructor | Destroys the object (`0xb53b90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb556d0` | Deleting destructor | Destroys the object (`0xb547d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb55000` | Deleting destructor | Destroys the object (`0xb53b90` (WildAnimalFamily::~WildAnimalFamily)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb556d0` | Deleting destructor | Destroys the object (`0xb547d0` (WildAnimalFamilyMember::~WildAnimalFamilyMember)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb55b40` | Get +0x84 | Returns the value at +0x84 |
 | `0xb56e60` | Deleting destructor | Destroys the object (`0xb56e80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb56e90` | Deleting destructor | Destroys the object (`0xb56eb0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb597f0` | Deleting destructor | Destroys the object (`0xb570b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb5af80` | Deleting destructor | Destroys the object (`0xb5a760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb5b270` | Deleting destructor | Destroys the object (`0xb5aff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb5de40` | Deleting destructor | Destroys the object (`0xb5d460`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb5f250` | Deleting destructor | Destroys the object (`0xb5e9e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb597f0` | Deleting destructor | Destroys the object (`0xb570b0` (WildAnimalItem::~WildAnimalItem)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb5af80` | Deleting destructor | Destroys the object (`0xb5a760` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb5b270` | Deleting destructor | Destroys the object (`0xb5aff0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb5de40` | Deleting destructor | Destroys the object (`0xb5d460` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb5f250` | Deleting destructor | Destroys the object (`0xb5e9e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb5f790` | Empty | Does nothing |
 | `0xb5f7a0` | Set +0x54 | Sets the member at +0x54 to its argument, taking 1 argument off the stack |
-| `0xb5fea0` | Deleting destructor | Destroys the object (`0xb5f760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb60980` | Deleting destructor | Destroys the object (`0xb609a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb60d90` | Deleting destructor | Destroys the object (`0xb60db0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb60f10` | Deleting destructor | Destroys the object (`0xb60f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb5fea0` | Deleting destructor | Destroys the object (`0xb5f760` (WildAnimalLocomotor::~WildAnimalLocomotor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb60980` | Deleting destructor | Destroys the object (`0xb609a0` (WildAnimalLocomotor::~WildAnimalLocomotor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb60d90` | Deleting destructor | Destroys the object (`0xb60db0` (WildAnimalLocomotor::~WildAnimalLocomotor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb60f10` | Deleting destructor | Destroys the object (`0xb60f30` (WildAnimalLocomotor::~WildAnimalLocomotor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb63d90` | Deleting destructor | Destroys the object (`0xb63db0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb6ae20` | Deleting destructor | Destroys the object (`0xb6aca0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb6b3e0` | Deleting destructor | Destroys the object (`0xb6ae50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb6b580` | Deleting destructor | Destroys the object (`0xb75d10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb6ae20` | Deleting destructor | Destroys the object (`0xb6aca0` (WildAnimalLocomotorMoveTo::~WildAnimalLocomotorMoveTo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb6b3e0` | Deleting destructor | Destroys the object (`0xb6ae50` (WildAnimalLocomotorTurnTo::~WildAnimalLocomotorTurnTo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb6b580` | Deleting destructor | Destroys the object (`0xb75d10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb6b5b0` | Thunk | Calls `0xb75ed0` on the object at +0x50 |
-| `0xb6cf40` | Deleting destructor | Destroys the object (`0xb6b710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb73cd0` | Deleting destructor | Destroys the object (`0xb71870`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb75550` | Deleting destructor | Destroys the object (`0xb74ae0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb6cf40` | Deleting destructor | Destroys the object (`0xb6b710` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb73cd0` | Deleting destructor | Destroys the object (`0xb71870` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb75550` | Deleting destructor | Destroys the object (`0xb74ae0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb75c90` | Set table | Sets the object's virtual function table to `0xf9b654` |
-| `0xb79180` | Deleting destructor | Destroys the object (`0xb790d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb7a9f0` | Deleting destructor | Destroys the object (`0xb7a4c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb79180` | Deleting destructor | Destroys the object (`0xb790d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb7a9f0` | Deleting destructor | Destroys the object (`0xb7a4c0` (WildAnimalState::~WildAnimalState)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb7b780` | Deleting destructor | Destroys the object (`0xb7b7a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb7c980` | Deleting destructor | Destroys the object (`0xb7b9d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb7cf80` | Deleting destructor | Destroys the object (`0xb7cfa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb7c980` | Deleting destructor | Destroys the object (`0xb7b9d0` (WAS_Locomotors::~WAS_Locomotors)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb7cf80` | Deleting destructor | Destroys the object (`0xb7cfa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb7d280` | Deleting destructor | Destroys the object (`0xb7d2a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb7d500` | Deleting destructor | Destroys the object (`0xb23a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb7d610` | Deleting destructor | Destroys the object (`0xb7d630`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb7dc40` | Deleting destructor | Destroys the object (`0xb7c360`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb7dc40` | Deleting destructor | Destroys the object (`0xb7c360` (WAS_MoveTo::~WAS_MoveTo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb7de90` | Deleting destructor | Destroys the object (`0xb7deb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb7e170` | Deleting destructor | Destroys the object (`0xb7e190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb7e170` | Deleting destructor | Destroys the object (`0xb7e190` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb7e680` | Deleting destructor | Destroys the object (`0xb7e6a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb80280` | Deleting destructor | Destroys the object (`0xb802a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb818e0` | Deleting destructor | Destroys the object (`0xb81660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb81d20` | Deleting destructor | Destroys the object (`0xbbd540`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb81d40` | Deleting destructor | Destroys the object (`0xbbd200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb81d60` | Deleting destructor | Destroys the object (`0xbbd100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb81d80` | Deleting destructor | Destroys the object (`0xc1ab50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb80280` | Deleting destructor | Destroys the object (`0xb802a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb818e0` | Deleting destructor | Destroys the object (`0xb81660` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb81d20` | Deleting destructor | Destroys the object (`0xbbd540` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb81d40` | Deleting destructor | Destroys the object (`0xbbd200` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb81d60` | Deleting destructor | Destroys the object (`0xbbd100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb81d80` | Deleting destructor | Destroys the object (`0xc1ab50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb82f20` | Deleting destructor | Destroys the object (`0xb82f40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb830d0` | Deleting destructor | Destroys the object (`0xb830f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb84d70` | Deleting destructor | Destroys the object (`0xb84240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb84d90` | Deleting destructor | Destroys the object (`0xb84db0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb85190` | Deleting destructor | Destroys the object (`0xb85140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb830d0` | Deleting destructor | Destroys the object (`0xb830f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb84d70` | Deleting destructor | Destroys the object (`0xb84240` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb84d90` | Deleting destructor | Destroys the object (`0xb84db0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb85190` | Deleting destructor | Destroys the object (`0xb85140` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb85630` | Empty | Does nothing, taking 1 argument off the stack |
 | `0xb85780` | Returns 0x9c4 | Returns 0x9c4 |
 | `0xb86f20` | Deleting destructor | Destroys the object (`0xb86f40` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2269,24 +2237,24 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb87010` | Deleting destructor | Destroys the object (`0xb87030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb87040` | Deleting destructor | Destroys the object (`0xb87060`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb87070` | Deleting destructor | Destroys the object (`0xb87090` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb8f8b0` | Deleting destructor | Destroys the object (`0xb8e1b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb8f8d0` | Deleting destructor | Destroys the object (`0xb8e760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb8f8f0` | Deleting destructor | Destroys the object (`0xb8f1a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb90d10` | Deleting destructor | Destroys the object (`0xb909e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb91060` | Deleting destructor | Destroys the object (`0xb90f90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb924c0` | Deleting destructor | Destroys the object (`0xb91810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb8f8b0` | Deleting destructor | Destroys the object (`0xb8e1b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb8f8d0` | Deleting destructor | Destroys the object (`0xb8e760` (FoodTrough::~FoodTrough)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb8f8f0` | Deleting destructor | Destroys the object (`0xb8f1a0` (AnimalShelter::~AnimalShelter)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb90d10` | Deleting destructor | Destroys the object (`0xb909e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb91060` | Deleting destructor | Destroys the object (`0xb90f90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb924c0` | Deleting destructor | Destroys the object (`0xb91810` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb926f0` | Deleting destructor | Destroys the object (`0xb92520`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb92840` | Get +0x54 | Returns the value at +0x54 |
 | `0xb92850` | Thunk | Calls `0xbe83b0` on `this` +0xc |
 | `0xb929d0` | Deleting destructor | Destroys the object (`0xb92530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb93590` | Thunk | Calls `0xb92bb0` on `this` +0xc |
 | `0xb941c0` | Deleting destructor | Destroys the object (`0xb93590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb94370` | Deleting destructor | Destroys the object (`0xb93f50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb944e0` | Deleting destructor | Destroys the object (`0xb943f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb94c40` | Deleting destructor | Destroys the object (`0xb94550`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb967c0` | Deleting destructor | Destroys the object (`0xb962b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb96ed0` | Deleting destructor | Destroys the object (`0xb96810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb97230` | Deleting destructor | Destroys the object (`0xb97030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb94370` | Deleting destructor | Destroys the object (`0xb93f50` (ASDDatabaseEntry::~ASDDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb944e0` | Deleting destructor | Destroys the object (`0xb943f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb94c40` | Deleting destructor | Destroys the object (`0xb94550` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb967c0` | Deleting destructor | Destroys the object (`0xb962b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb96ed0` | Deleting destructor | Destroys the object (`0xb96810` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb97230` | Deleting destructor | Destroys the object (`0xb97030` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb99820` | Deleting destructor | Destroys the object (`0xb982c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb99840` | Deleting destructor | Destroys the object (`0xb98410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb99860` | Deleting destructor | Destroys the object (`0xb98530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2297,32 +2265,32 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb9ba30` | Deleting destructor | Destroys the object (`0xb9ba50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb9ba60` | Deleting destructor | Destroys the object (`0xb9ba80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb9ba90` | Deleting destructor | Destroys the object (`0xb9bab0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb9d090` | Deleting destructor | Destroys the object (`0xb9cde0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb9e900` | Deleting destructor | Destroys the object (`0xb9e820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xba0a50` | Deleting destructor | Destroys the object (`0xba0a70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xba4530` | Deleting destructor | Destroys the object (`0xba3d70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xba4aa0` | Deleting destructor | Destroys the object (`0xba4270`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb9d090` | Deleting destructor | Destroys the object (`0xb9cde0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb9e900` | Deleting destructor | Destroys the object (`0xb9e820` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xba0a50` | Deleting destructor | Destroys the object (`0xba0a70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xba4530` | Deleting destructor | Destroys the object (`0xba3d70` (EnclosureManager::~EnclosureManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xba4aa0` | Deleting destructor | Destroys the object (`0xba4270` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba4c60` | Deleting destructor | Destroys the object (`0xba4b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba4fd0` | Deleting destructor | Destroys the object (`0xba4ff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xba6910` | Deleting destructor | Destroys the object (`0xba5f90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xba6910` | Deleting destructor | Destroys the object (`0xba5f90` (EnclosureTypeDatabaseEntry::~EnclosureTypeDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba69d0` | Deleting destructor | Destroys the object (`0xba6950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba6c70` | Deleting destructor | Destroys the object (`0xba6a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba6c90` | Deleting destructor | Destroys the object (`0xba6a10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xba6cb0` | Deleting destructor | Destroys the object (`0xba6a20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xba6cb0` | Deleting destructor | Destroys the object (`0xba6a20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba7310` | Deleting destructor | Destroys the object (`0xba7230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba76d0` | Deleting destructor | Destroys the object (`0xba7340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba76f0` | Deleting destructor | Destroys the object (`0xba7350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba7710` | Deleting destructor | Destroys the object (`0xba7360`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba7730` | Deleting destructor | Destroys the object (`0xba7370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xba8280` | Deleting destructor | Destroys the object (`0xba7780`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xba90e0` | Deleting destructor | Destroys the object (`0xba9100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xba91b0` | Deleting destructor | Destroys the object (`0xba88b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbaa350` | Deleting destructor | Destroys the object (`0xbaa020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbaa9d0` | Deleting destructor | Destroys the object (`0xbaa3b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbac970` | Deleting destructor | Destroys the object (`0xbabee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xba8280` | Deleting destructor | Destroys the object (`0xba7780` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xba90e0` | Deleting destructor | Destroys the object (`0xba9100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xba91b0` | Deleting destructor | Destroys the object (`0xba88b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbaa350` | Deleting destructor | Destroys the object (`0xbaa020` (RegionFI::~RegionFI)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbaa9d0` | Deleting destructor | Destroys the object (`0xbaa3b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbac970` | Deleting destructor | Destroys the object (`0xbabee0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbad490` | Deleting destructor | Destroys the object (`0xbad4b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbb1770` | Deleting destructor | Destroys the object (`0xbb0aa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbb1940` | Deleting destructor | Destroys the object (`0xbb17b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbb1770` | Deleting destructor | Destroys the object (`0xbb0aa0` (ViewingGalleryInstance::~ViewingGalleryInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbb1940` | Deleting destructor | Destroys the object (`0xbb17b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbb27e0` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbb2810` | Empty | Does nothing |
 | `0xbb28b0` | Deleting destructor | Destroys the object (`0xbb28d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2385,7 +2353,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbbec20` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbbec30` | Deleting destructor | Destroys the object (`0xbbe820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbbf5b0` | Empty | Does nothing |
-| `0xbbf5e0` | Deleting destructor | Destroys the object (`0xbbf840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbbf5e0` | Deleting destructor | Destroys the object (`0xbbf840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbbf670` | Deleting destructor | Destroys the object (`0xbbf690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbbf690` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbbf800` | Deleting destructor | Destroys the object (`0xbbf5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2407,7 +2375,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbc0950` | Deleting destructor | Destroys the object (`0xbc0690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbc2cb0` | Empty | Does nothing |
 | `0xbc3a80` | Empty | Does nothing |
-| `0xbc3b20` | Deleting destructor | Destroys the object (`0xbc80c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbc3b20` | Deleting destructor | Destroys the object (`0xbc80c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbc3bc0` | Deleting destructor | Destroys the object (`0xbc3be0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbc3be0` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbc3d50` | Deleting destructor | Destroys the object (`0xbc3a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2446,7 +2414,6 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbcb720` | Deleting destructor | Destroys the object (`0xbcb740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbcb740` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbcb8b0` | Deleting destructor | Destroys the object (`0xbcb670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbcbb50` | Deleting destructor | Destroys the object (`0xbce010` (Memory::FreeAligned)) and frees its memory when its argument has bit 0 set; returns the object |
 | `0xbcbe10` | Empty | Does nothing |
 | `0xbcc810` | Empty | Does nothing |
 | `0xbcc8b0` | Deleting destructor | Destroys the object (`0xbcc8d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2485,9 +2452,9 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbcdd70` | Deleting destructor | Destroys the object (`0xbcd980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbcdf80` | Returns 0 | Returns 0 (or false / null) |
 | `0xbd1900` | Deleting destructor | Destroys the object (`0xbd1880` (TextRef::~TextRef)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbd6a80` | Deleting destructor | Destroys the object (`0xbd41d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbd6a80` | Deleting destructor | Destroys the object (`0xbd41d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbd76b0` | Thunk | Calls `0xbd14e0` (TextRef::Assign) on `this` +0x74 |
-| `0xbd8040` | Deleting destructor | Destroys the object (`0xbd6fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbd8040` | Deleting destructor | Destroys the object (`0xbd6fe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbd9b00` | Deleting destructor | Destroys the object (`0xbd99e0` (ResourceRef::~ResourceRef)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbda0a0` | Get global 0x13d0df1 | Returns the byte in the global `0x13d0df1` |
 | `0xbda0b0` | Returns 0x13d0dfc | Returns 0x13d0dfc |
@@ -2497,116 +2464,116 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbdbe90` | Thunk | Calls `0xc43d10` on the object at +0x34 |
 | `0xbdbeb0` | Deleting destructor | Destroys the object (`0x402fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbdd840` | Deleting destructor | Destroys the object (`0xbdc260`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbded00` | Deleting destructor | Destroys the object (`0xbdead0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbdf650` | Deleting destructor | Destroys the object (`0xbde530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbdf910` | Deleting destructor | Destroys the object (`0xbdf830`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbdf930` | Deleting destructor | Destroys the object (`0xbdf6a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbe2840` | Deleting destructor | Destroys the object (`0xbe2860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbded00` | Deleting destructor | Destroys the object (`0xbdead0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbdf650` | Deleting destructor | Destroys the object (`0xbde530` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbdf910` | Deleting destructor | Destroys the object (`0xbdf830` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbdf930` | Deleting destructor | Destroys the object (`0xbdf6a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbe2840` | Deleting destructor | Destroys the object (`0xbe2860` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe3ad0` | Set table | Sets the object's virtual function table to `0xfa5600` |
-| `0xbe3eb0` | Deleting destructor | Destroys the object (`0xc51040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbe3eb0` | Deleting destructor | Destroys the object (`0xc51040` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe4420` | Deleting destructor | Destroys the object (`0xbe4440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe4780` | Deleting destructor | Destroys the object (`0xbe47a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe47a0` | Set table | Sets the object's virtual function table to `0xfa5600` |
 | `0xbe4800` | Deleting destructor | Destroys the object (`0xbe4260`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbe5800` | Deleting destructor | Destroys the object (`0xbe4aa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbe5b00` | Deleting destructor | Destroys the object (`0xbe4ea0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbe6800` | Deleting destructor | Destroys the object (`0xbe6680`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbe5800` | Deleting destructor | Destroys the object (`0xbe4aa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbe5b00` | Deleting destructor | Destroys the object (`0xbe4ea0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbe6800` | Deleting destructor | Destroys the object (`0xbe6680` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe7840` | Set table | Sets the object's virtual function table to `0xfa56c4` |
 | `0xbe8230` | Thunk | Calls `0xbe80b0` on the object at +0x4 |
 | `0xbe82b0` | Thunk | Calls `0xbe8240` on the object at +0x4 |
 | `0xbe83b0` | Thunk | Calls `0xbe82c0` on the object at +0x4 |
 | `0xbe86e0` | Thunk | Calls `0xbe8680` on the object at +0x4 |
-| `0xbe8790` | Deleting destructor | Destroys the object (`0xbe7880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbe8790` | Deleting destructor | Destroys the object (`0xbe7880` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe8900` | Set table | Sets the object's virtual function table to `0xfa56dc` |
 | `0xbe9400` | Set table | Sets the object's virtual function table to `0xfa5718` |
 | `0xbe98b0` | Deleting destructor | Destroys the object (`0xbe9400`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe9900` | Empty | Does nothing, taking 2 arguments off the stack |
-| `0xbea390` | Deleting destructor | Destroys the object (`0xbe9480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbea660` | Deleting destructor | Destroys the object (`0xbe9780`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbea740` | Deleting destructor | Destroys the object (`0xbea760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbea810` | Deleting destructor | Destroys the object (`0xbea830`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbebf50` | Deleting destructor | Destroys the object (`0xbebf70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbec390` | Deleting destructor | Destroys the object (`0xbeadd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbea390` | Deleting destructor | Destroys the object (`0xbe9480` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbea660` | Deleting destructor | Destroys the object (`0xbe9780` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbea740` | Deleting destructor | Destroys the object (`0xbea760` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbea810` | Deleting destructor | Destroys the object (`0xbea830` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbebf50` | Deleting destructor | Destroys the object (`0xbebf70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbec390` | Deleting destructor | Destroys the object (`0xbeadd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbec980` | Deleting destructor | Destroys the object (`0xbec5e0` (String::~String)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbecad0` | Deleting destructor | Destroys the object (`0x40a220`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbecb20` | Deleting destructor | Destroys the object (`0xbec9a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbecf70` | Deleting destructor | Destroys the object (`0xbecb50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbecf70` | Deleting destructor | Destroys the object (`0xbecb50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbf4750` | Set table | Sets the object's virtual function table to `0xf2694c` |
 | `0xbf51c0` | Deleting destructor | Destroys the object (`0xbf4750`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbf5730` | Deleting destructor | Destroys the object (`0xbf53a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbf6dc0` | Deleting destructor | Destroys the object (`0xbf6bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbf5730` | Deleting destructor | Destroys the object (`0xbf53a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbf6dc0` | Deleting destructor | Destroys the object (`0xbf6bc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbf9d10` | Set table | Sets the object's virtual function table to `0xfa5998` |
-| `0xbfac90` | Deleting destructor | Destroys the object (`0xbfa980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfac90` | Deleting destructor | Destroys the object (`0xbfa980` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbfb4c0` | Set table | Sets the object's virtual function table to `0xfa5a58` |
-| `0xbfcb40` | Deleting destructor | Destroys the object (`0xbfc840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbfcc00` | Deleting destructor | Destroys the object (`0xbfc8e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbfcd10` | Deleting destructor | Destroys the object (`0xbfc920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbfcea0` | Deleting destructor | Destroys the object (`0xbfc9c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbfcff0` | Deleting destructor | Destroys the object (`0xbfca60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfcb40` | Deleting destructor | Destroys the object (`0xbfc840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfcc00` | Deleting destructor | Destroys the object (`0xbfc8e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfcd10` | Deleting destructor | Destroys the object (`0xbfc920` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfcea0` | Deleting destructor | Destroys the object (`0xbfc9c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfcff0` | Deleting destructor | Destroys the object (`0xbfca60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbfd0f0` | Set table | Sets the object's virtual function table to `0xfa5c8c` |
 | `0xbfd620` | Empty | Does nothing, taking 2 arguments off the stack |
-| `0xbfdfb0` | Deleting destructor | Destroys the object (`0xbfd170`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbfe180` | Deleting destructor | Destroys the object (`0xbfd450`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbfe280` | Deleting destructor | Destroys the object (`0xbfe2a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfdfb0` | Deleting destructor | Destroys the object (`0xbfd170` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfe180` | Deleting destructor | Destroys the object (`0xbfd450` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbfe280` | Deleting destructor | Destroys the object (`0xbfe2a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbfe300` | Deleting destructor | Destroys the object (`0xbfd0f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbff930` | Deleting destructor | Destroys the object (`0xbff950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbffc80` | Deleting destructor | Destroys the object (`0xbfe7c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc01700` | Deleting destructor | Destroys the object (`0xbffd40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbff930` | Deleting destructor | Destroys the object (`0xbff950` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbffc80` | Deleting destructor | Destroys the object (`0xbfe7c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc01700` | Deleting destructor | Destroys the object (`0xbffd40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc018c0` | Deleting destructor | Destroys the object (`0xc018e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc01970` | Deleting destructor | Destroys the object (`0xc01990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc01a80` | Deleting destructor | Destroys the object (`0xc01aa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc01b60` | Deleting destructor | Destroys the object (`0xc01b80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc02770` | Deleting destructor | Destroys the object (`0xc02720`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc01b60` | Deleting destructor | Destroys the object (`0xc01b80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc02770` | Deleting destructor | Destroys the object (`0xc02720` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc027d0` | Set table | Sets the object's virtual function table to `0xf28510` |
 | `0xc02820` | Set table | Sets the object's virtual function table to `0xf28510` |
 | `0xc02cc0` | Deleting destructor | Destroys the object (`0xc027d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc02ce0` | Deleting destructor | Destroys the object (`0xc02820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc02d40` | Deleting destructor | Destroys the object (`0xc02840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc02d60` | Deleting destructor | Destroys the object (`0xc029d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc02d40` | Deleting destructor | Destroys the object (`0xc02840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc02d60` | Deleting destructor | Destroys the object (`0xc029d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc03a80` | Returns 0x13d3058 | Returns 0x13d3058 |
-| `0xc044c0` | Deleting destructor | Destroys the object (`0xc03c00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc04a20` | Deleting destructor | Destroys the object (`0xc9c110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc04a40` | Deleting destructor | Destroys the object (`0xbfa860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc04a60` | Deleting destructor | Destroys the object (`0xc2f1d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc044c0` | Deleting destructor | Destroys the object (`0xc03c00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc04a20` | Deleting destructor | Destroys the object (`0xc9c110` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc04a40` | Deleting destructor | Destroys the object (`0xbfa860` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc04a60` | Deleting destructor | Destroys the object (`0xc2f1d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc04a80` | Deleting destructor | Destroys the object (`0xc5cd60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc04aa0` | Deleting destructor | Destroys the object (`0xbfc750`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc059a0` | Deleting destructor | Destroys the object (`0xca14f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc05c30` | Deleting destructor | Destroys the object (`0xc049c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc079a0` | Deleting destructor | Destroys the object (`0xc07750`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc04aa0` | Deleting destructor | Destroys the object (`0xbfc750` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc059a0` | Deleting destructor | Destroys the object (`0xca14f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc05c30` | Deleting destructor | Destroys the object (`0xc049c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc079a0` | Deleting destructor | Destroys the object (`0xc07750` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc08130` | Get global 0x13d3248 | Returns the value in the global `0x13d3248` |
-| `0xc0b880` | Deleting destructor | Destroys the object (`0xc0b4e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0b8a0` | Deleting destructor | Destroys the object (`0xc0b570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0b8c0` | Deleting destructor | Destroys the object (`0xc0b600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0b8e0` | Deleting destructor | Destroys the object (`0xc0b670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0b900` | Deleting destructor | Destroys the object (`0xc0b700`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0b920` | Deleting destructor | Destroys the object (`0xc0b790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0b940` | Deleting destructor | Destroys the object (`0xc0b820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0dbd0` | Deleting destructor | Destroys the object (`0xc0d740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0dbf0` | Deleting destructor | Destroys the object (`0xc0d840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0dc10` | Deleting destructor | Destroys the object (`0xc0d9d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0dc30` | Deleting destructor | Destroys the object (`0xc0dad0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc0e080` | Deleting destructor | Destroys the object (`0xc0e010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc10f70` | Deleting destructor | Destroys the object (`0xc0fdb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0b880` | Deleting destructor | Destroys the object (`0xc0b4e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0b8a0` | Deleting destructor | Destroys the object (`0xc0b570` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0b8c0` | Deleting destructor | Destroys the object (`0xc0b600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0b8e0` | Deleting destructor | Destroys the object (`0xc0b670` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0b900` | Deleting destructor | Destroys the object (`0xc0b700` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0b920` | Deleting destructor | Destroys the object (`0xc0b790` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0b940` | Deleting destructor | Destroys the object (`0xc0b820` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0dbd0` | Deleting destructor | Destroys the object (`0xc0d740` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0dbf0` | Deleting destructor | Destroys the object (`0xc0d840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0dc10` | Deleting destructor | Destroys the object (`0xc0d9d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0dc30` | Deleting destructor | Destroys the object (`0xc0dad0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc0e080` | Deleting destructor | Destroys the object (`0xc0e010` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc10f70` | Deleting destructor | Destroys the object (`0xc0fdb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc169f0` | Thunk | Calls `0xc16750` on the object at +0x2c |
-| `0xc18cd0` | Deleting destructor | Destroys the object (`0xc16f60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc192f0` | Deleting destructor | Destroys the object (`0xc18980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc18cd0` | Deleting destructor | Destroys the object (`0xc16f60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc192f0` | Deleting destructor | Destroys the object (`0xc18980` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc19310` | Deleting destructor | Destroys the object (`0xc19330`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc193b0` | Set table | Sets the object's virtual function table to `0xfafcf0` |
-| `0xc1a2f0` | Deleting destructor | Destroys the object (`0xc195e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc1a4d0` | Deleting destructor | Destroys the object (`0xc1a420`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc1afe0` | Deleting destructor | Destroys the object (`0xc1ae10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc1b330` | Deleting destructor | Destroys the object (`0xc1b350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc1b3f0` | Deleting destructor | Destroys the object (`0xc1b130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc1c900` | Deleting destructor | Destroys the object (`0xc1c3b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc1a2f0` | Deleting destructor | Destroys the object (`0xc195e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc1a4d0` | Deleting destructor | Destroys the object (`0xc1a420` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc1afe0` | Deleting destructor | Destroys the object (`0xc1ae10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc1b330` | Deleting destructor | Destroys the object (`0xc1b350` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc1b3f0` | Deleting destructor | Destroys the object (`0xc1b130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc1c900` | Deleting destructor | Destroys the object (`0xc1c3b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc20da0` | Get +0x1c | Returns the value at +0x1c |
-| `0xc21000` | Deleting destructor | Destroys the object (`0xc20ef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc210e0` | Deleting destructor | Destroys the object (`0xc21040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc2ad10` | Deleting destructor | Destroys the object (`0xc25690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc21000` | Deleting destructor | Destroys the object (`0xc20ef0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc210e0` | Deleting destructor | Destroys the object (`0xc21040` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc2ad10` | Deleting destructor | Destroys the object (`0xc25690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc2c5e0` | Set table | Sets the object's virtual function table to `0xfb01c8` |
 | `0xc2c790` | Deleting destructor | Destroys the object (`0xc9e880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc2ead0` | Set table | Sets the object's virtual function table to `0xfb021c` |
-| `0xc2f5b0` | Deleting destructor | Destroys the object (`0xc2f2f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc30180` | Deleting destructor | Destroys the object (`0xc30070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc2f5b0` | Deleting destructor | Destroys the object (`0xc2f2f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc30180` | Deleting destructor | Destroys the object (`0xc30070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc321b0` | Deleting destructor | Destroys the object (`0xc5e730`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc32ab0` | Deleting destructor | Destroys the object (`0xc32ad0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc32ae0` | Deleting destructor | Destroys the object (`0xc32b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2614,26 +2581,26 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xc33170` | Deleting destructor | Destroys the object (`0xc33190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc33290` | Deleting destructor | Destroys the object (`0xc332b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc332d0` | Empty | Does nothing |
-| `0xc332e0` | Deleting destructor | Destroys the object (`0xc32c00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc332e0` | Deleting destructor | Destroys the object (`0xc32c00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc339c0` | Deleting destructor | Destroys the object (`0xc325f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc33b90` | Deleting destructor | Destroys the object (`0xc33bb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc35dd0` | Deleting destructor | Destroys the object (`0xc313e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc35dd0` | Deleting destructor | Destroys the object (`0xc313e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc361c0` | Deleting destructor | Destroys the object (`0xbf9e20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc36bb0` | Deleting destructor | Destroys the object (`0xc36710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc37200` | Deleting destructor | Destroys the object (`0xc37070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc37200` | Deleting destructor | Destroys the object (`0xc37070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc375e0` | Set table | Sets the object's virtual function table to `0xf2694c` |
 | `0xc37620` | Deleting destructor | Destroys the object (`0xc375e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc37b90` | Deleting destructor | Destroys the object (`0xc37bb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc37bb0` | Set table | Sets the object's virtual function table to `0xf2694c` |
-| `0xc382b0` | Deleting destructor | Destroys the object (`0xc38170`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc38b90` | Deleting destructor | Destroys the object (`0xc38bb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc3a850` | Deleting destructor | Destroys the object (`0xc3a7f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc382b0` | Deleting destructor | Destroys the object (`0xc38170` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc38b90` | Deleting destructor | Destroys the object (`0xc38bb0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc3a850` | Deleting destructor | Destroys the object (`0xc3a7f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc3abd0` | Get +0x58 | Returns the value at +0x58 |
 | `0xc3abe0` | Get +0x50 | Returns the value at +0x50 |
 | `0xc3abf0` | Get +0x2c | Returns the value at +0x2c |
 | `0xc3b7b0` | Thunk | Calls `0xc569b0` on the object at +0x28 |
 | `0xc3b7c0` | Thunk | Calls `0xc56320` on the object at +0x28 |
-| `0xc41040` | Deleting destructor | Destroys the object (`0xc3f060`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc41040` | Deleting destructor | Destroys the object (`0xc3f060` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc41370` | Get global 0x13e6b54 | Returns the value in the global `0x13e6b54` |
 | `0xc424f0` | Set table | Sets the object's virtual function table to `0xf2694c` |
 | `0xc429c0` | Deleting destructor | Destroys the object (`0xc424f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2641,29 +2608,29 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xc42c20` | Set table | Sets the object's virtual function table to `0xf2694c` |
 | `0xc437f0` | Thunk | Calls `0xbd99e0` (ResourceRef::~ResourceRef) on `this` +0xc |
 | `0xc43820` | Deleting destructor | Destroys the object (`0xc437f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc43bc0` | Deleting destructor | Destroys the object (`0xc439e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc481d0` | Deleting destructor | Destroys the object (`0xc481f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc48220` | Deleting destructor | Destroys the object (`0xc46f50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc4c2c0` | Deleting destructor | Destroys the object (`0xc4a6a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc4d510` | Deleting destructor | Destroys the object (`0xc4c4e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc4f930` | Deleting destructor | Destroys the object (`0xc4f800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc52980` | Deleting destructor | Destroys the object (`0xc51600`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc532b0` | Deleting destructor | Destroys the object (`0xc51950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc53670` | Deleting destructor | Destroys the object (`0xc521f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc53690` | Deleting destructor | Destroys the object (`0xc52220`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc536b0` | Deleting destructor | Destroys the object (`0xc52230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc53960` | Deleting destructor | Destroys the object (`0xc52900`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc53aa0` | Deleting destructor | Destroys the object (`0xc529d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc53ac0` | Deleting destructor | Destroys the object (`0xc52d20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc53ae0` | Deleting destructor | Destroys the object (`0xc53210`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc575b0` | Deleting destructor | Destroys the object (`0xc573b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc43bc0` | Deleting destructor | Destroys the object (`0xc439e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc481d0` | Deleting destructor | Destroys the object (`0xc481f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc48220` | Deleting destructor | Destroys the object (`0xc46f50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc4c2c0` | Deleting destructor | Destroys the object (`0xc4a6a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc4d510` | Deleting destructor | Destroys the object (`0xc4c4e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc4f930` | Deleting destructor | Destroys the object (`0xc4f800` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc52980` | Deleting destructor | Destroys the object (`0xc51600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc532b0` | Deleting destructor | Destroys the object (`0xc51950` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc53670` | Deleting destructor | Destroys the object (`0xc521f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc53690` | Deleting destructor | Destroys the object (`0xc52220` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc536b0` | Deleting destructor | Destroys the object (`0xc52230` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc53960` | Deleting destructor | Destroys the object (`0xc52900` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc53aa0` | Deleting destructor | Destroys the object (`0xc529d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc53ac0` | Deleting destructor | Destroys the object (`0xc52d20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc53ae0` | Deleting destructor | Destroys the object (`0xc53210` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc575b0` | Deleting destructor | Destroys the object (`0xc573b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc57930` | Deleting destructor | Destroys the object (`0xc57900`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc57c50` | Deleting destructor | Destroys the object (`0xc57be0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc587d0` | Deleting destructor | Destroys the object (`0xc57e00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc589b0` | Deleting destructor | Destroys the object (`0xc57e10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc58b30` | Deleting destructor | Destroys the object (`0xc57f20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc58f20` | Deleting destructor | Destroys the object (`0xc57ff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc59e30` | Deleting destructor | Destroys the object (`0xc59e50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc57c50` | Deleting destructor | Destroys the object (`0xc57be0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc587d0` | Deleting destructor | Destroys the object (`0xc57e00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc589b0` | Deleting destructor | Destroys the object (`0xc57e10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc58b30` | Deleting destructor | Destroys the object (`0xc57f20` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc58f20` | Deleting destructor | Destroys the object (`0xc57ff0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc59e30` | Deleting destructor | Destroys the object (`0xc59e50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc5c180` | Empty | Does nothing |
 | `0xc5d3d0` | Thunk | Calls `0xbd1880` (TextRef::~TextRef) on `this` +0x10 |
 | `0xc5e730` | Set table | Sets the object's virtual function table to `0xfb0350` |
@@ -2680,66 +2647,66 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xc65cf0` | Set table | Sets the object's virtual function table to `0xfb0350` |
 | `0xc65d00` | Deleting destructor | Destroys the object (`0xc65d20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc65d20` | Set table | Sets the object's virtual function table to `0xfb0350` |
-| `0xc69540` | Deleting destructor | Destroys the object (`0xc65790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc69810` | Deleting destructor | Destroys the object (`0xc66010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc69830` | Deleting destructor | Destroys the object (`0xc662a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc69540` | Deleting destructor | Destroys the object (`0xc65790` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc69810` | Deleting destructor | Destroys the object (`0xc66010` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc69830` | Deleting destructor | Destroys the object (`0xc662a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc69850` | Deleting destructor | Destroys the object (`0xc69870`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc69880` | Deleting destructor | Destroys the object (`0xc66560`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc698a0` | Deleting destructor | Destroys the object (`0xc669e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc698c0` | Deleting destructor | Destroys the object (`0xc66b90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc69880` | Deleting destructor | Destroys the object (`0xc66560` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc698a0` | Deleting destructor | Destroys the object (`0xc669e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc698c0` | Deleting destructor | Destroys the object (`0xc66b90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc698e0` | Deleting destructor | Destroys the object (`0xc69900`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc699a0` | Deleting destructor | Destroys the object (`0xc67520`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc699a0` | Deleting destructor | Destroys the object (`0xc67520` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc69a90` | Deleting destructor | Destroys the object (`0xc66d90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc69e90` | Deleting destructor | Destroys the object (`0xc32420`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc69ee0` | Deleting destructor | Destroys the object (`0xc322b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6a010` | Deleting destructor | Destroys the object (`0xc6a030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6a6f0` | Deleting destructor | Destroys the object (`0xc6a710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6abd0` | Deleting destructor | Destroys the object (`0xc6abf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6ac00` | Deleting destructor | Destroys the object (`0xc687e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6ac20` | Deleting destructor | Destroys the object (`0xc68fd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6ac00` | Deleting destructor | Destroys the object (`0xc687e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6ac20` | Deleting destructor | Destroys the object (`0xc68fd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6b280` | Deleting destructor | Destroys the object (`0xc322c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6b3e0` | Deleting destructor | Destroys the object (`0xc690b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6b3e0` | Deleting destructor | Destroys the object (`0xc690b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6c1e0` | Deleting destructor | Destroys the object (`0xc6c200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6c4d0` | Deleting destructor | Destroys the object (`0xc69a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6c4d0` | Deleting destructor | Destroys the object (`0xc69a30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6c4f0` | Deleting destructor | Destroys the object (`0xc69ce0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6c510` | Deleting destructor | Destroys the object (`0xc6c210`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6c510` | Deleting destructor | Destroys the object (`0xc6c210` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6ca50` | Deleting destructor | Destroys the object (`0xc32bf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6ca70` | Deleting destructor | Destroys the object (`0xc6ca90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6cb10` | Thunk | Jumps to `0xc6c210` |
+| `0xc6cb10` | Thunk | Jumps to `0xc6c210` (Destructor) |
 | `0xc6dd90` | Deleting destructor | Destroys the object (`0xc6ddb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6e9b0` | Deleting destructor | Destroys the object (`0xc6e9d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6e9b0` | Deleting destructor | Destroys the object (`0xc6e9d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6eac0` | Deleting destructor | Destroys the object (`0xc325e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6eae0` | Deleting destructor | Destroys the object (`0xc6eb00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6eb10` | Deleting destructor | Destroys the object (`0xc6eb30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6ee30` | Deleting destructor | Destroys the object (`0xc6ee50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6ee30` | Deleting destructor | Destroys the object (`0xc6ee50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6eec0` | Deleting destructor | Destroys the object (`0xc6eee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6eef0` | Deleting destructor | Destroys the object (`0xc6c3e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6eef0` | Deleting destructor | Destroys the object (`0xc6c3e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6ef10` | Deleting destructor | Destroys the object (`0xc6ef30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6ef30` | Thunk | Jumps to `0xc6c210` |
+| `0xc6ef30` | Thunk | Jumps to `0xc6c210` (Destructor) |
 | `0xc6ef40` | Deleting destructor | Destroys the object (`0xc6cb10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc6ef60` | Deleting destructor | Destroys the object (`0xc6ef80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc6ef80` | Thunk | Jumps to `0xc6c210` |
+| `0xc6ef80` | Thunk | Jumps to `0xc6c210` (Destructor) |
 | `0xc6ef90` | Set table | Sets the object's virtual function table to `0xfb951c` |
-| `0xc6f3d0` | Deleting destructor | Destroys the object (`0xbe20e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc73380` | Deleting destructor | Destroys the object (`0xc72810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc73640` | Deleting destructor | Destroys the object (`0xc73280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc6f3d0` | Deleting destructor | Destroys the object (`0xbe20e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc73380` | Deleting destructor | Destroys the object (`0xc72810` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc73640` | Deleting destructor | Destroys the object (`0xc73280` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc73840` | Get +0x4 | Returns the value at +0x4 |
 | `0xc775d0` | Deleting destructor | Destroys the object (`0xc775f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc90880` | Set table | Sets the object's virtual function table to `0xfbee30` |
 | `0xc966f0` | Deleting destructor | Destroys the object (`0xc96710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc96730` | Deleting destructor | Destroys the object (`0xc90880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xc9b570` | Deleting destructor | Destroys the object (`0xc9b590`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc9b570` | Deleting destructor | Destroys the object (`0xc9b590` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc9bab0` | Set +0x20 | Sets the member at +0x20 to 0xf284e0 |
 | `0xca21b0` | Set table | Sets the object's virtual function table to `0xfbf298` |
-| `0xca24b0` | Deleting destructor | Destroys the object (`0xca24d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca2530` | Deleting destructor | Destroys the object (`0xca2400`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca2850` | Deleting destructor | Destroys the object (`0xca2710`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca2cd0` | Deleting destructor | Destroys the object (`0xca2990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca2ef0` | Deleting destructor | Destroys the object (`0xca2e70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca34c0` | Deleting destructor | Destroys the object (`0xca34e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca24b0` | Deleting destructor | Destroys the object (`0xca24d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca2530` | Deleting destructor | Destroys the object (`0xca2400` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca2850` | Deleting destructor | Destroys the object (`0xca2710` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca2cd0` | Deleting destructor | Destroys the object (`0xca2990` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca2ef0` | Deleting destructor | Destroys the object (`0xca2e70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca34c0` | Deleting destructor | Destroys the object (`0xca34e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xca3580` | Set table | Sets the object's virtual function table to `0xfa589c` |
 | `0xca40d0` | Set table | Sets the object's virtual function table to `0xfa589c` |
-| `0xca4460` | Deleting destructor | Destroys the object (`0xca43c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca4460` | Deleting destructor | Destroys the object (`0xca43c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xca45a0` | Deleting destructor | Destroys the object (`0xcb77f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xca4670` | Thunk | Calls `0xcb73d0` on the object at +0x10 |
 | `0xca4680` | Thunk | Calls `0xcb7140` on the object at +0x10 |
@@ -2748,11 +2715,11 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xca5510` | Set table | Sets the object's virtual function table to `0xfbf5b0` |
 | `0xca5760` | Set table | Sets the object's virtual function table to `0xfbf5b0` |
 | `0xca6080` | Deleting destructor | Destroys the object (`0xca5760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca60e0` | Deleting destructor | Destroys the object (`0xca57b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca6480` | Deleting destructor | Destroys the object (`0xca6150`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca64a0` | Deleting destructor | Destroys the object (`0xca6250`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca60e0` | Deleting destructor | Destroys the object (`0xca57b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca6480` | Deleting destructor | Destroys the object (`0xca6150` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca64a0` | Deleting destructor | Destroys the object (`0xca6250` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xca8690` | Deleting destructor | Destroys the object (`0xca86b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca86c0` | Deleting destructor | Destroys the object (`0xca7930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xca86c0` | Deleting destructor | Destroys the object (`0xca7930` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xca87a0` | Deleting destructor | Destroys the object (`0xca87c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xca8800` | Deleting destructor | Destroys the object (`0xca8820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xca8d90` | Deleting destructor | Destroys the object (`0xca8db0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2770,11 +2737,11 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xcacdd0` | Deleting destructor | Destroys the object (`0xcacdf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcad160` | Deleting destructor | Destroys the object (`0xcad180`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcad560` | Deleting destructor | Destroys the object (`0xcad580`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcaf860` | Deleting destructor | Destroys the object (`0xcae530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcaf860` | Deleting destructor | Destroys the object (`0xcae530` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcafb00` | Deleting destructor | Destroys the object (`0x403010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcb18d0` | Deleting destructor | Destroys the object (`0xcb13e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcb18d0` | Deleting destructor | Destroys the object (`0xcb13e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcb1cb0` | Set table | Sets the object's virtual function table to `0xfc0ab4` |
-| `0xcb2c40` | Deleting destructor | Destroys the object (`0xcb2a70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcb2c40` | Deleting destructor | Destroys the object (`0xcb2a70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcb8db0` | Deleting destructor | Destroys the object (`0xcb8dd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcb8e50` | Deleting destructor | Destroys the object (`0xcb8340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcb8ee0` | Deleting destructor | Destroys the object (`0xcb8f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2793,8 +2760,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xcc0e90` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xcc0ea0` | Deleting destructor | Destroys the object (`0xcc0ca0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcc6270` | Get +0x4 | Returns the value at +0x4 |
-| `0xcc7360` | Deleting destructor | Destroys the object (`0xe02840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcc7380` | Deleting destructor | Destroys the object (`0xcdf440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcc7360` | Deleting destructor | Destroys the object (`0xe02840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcc7380` | Deleting destructor | Destroys the object (`0xcdf440` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xccb300` | Empty | Does nothing |
 | `0xccb460` | Deleting destructor | Destroys the object (`0xccb480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xccb480` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
@@ -2823,8 +2790,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xcd8150` | Set +0xe8 | Sets the member at +0xe8 to its argument, taking 1 argument off the stack |
 | `0xcd8160` | Set +0xf0 | Sets the member at +0xf0 to its argument, taking 1 argument off the stack |
 | `0xcd8170` | Set +0xf4 | Sets the member at +0xf4 to its argument, taking 1 argument off the stack |
-| `0xcd8f70` | Deleting destructor | Destroys the object (`0xcd83b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcdc280` | Deleting destructor | Destroys the object (`0xcdbb00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcd8f70` | Deleting destructor | Destroys the object (`0xcd83b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcdc280` | Deleting destructor | Destroys the object (`0xcdbb00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce1b20` | Empty | Does nothing |
 | `0xce1ce0` | Deleting destructor | Destroys the object (`0xce1b30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce1db0` | Deleting destructor | Destroys the object (`0xce1dd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2833,48 +2800,43 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xce1f20` | Deleting destructor | Destroys the object (`0xce1f40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce1f40` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xce20b0` | Deleting destructor | Destroys the object (`0xce1df0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xce21d0` | Deleting destructor | Destroys the object (`0xce2130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xce2230` | Deleting destructor | Destroys the object (`0xccb130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xce21d0` | Deleting destructor | Destroys the object (`0xce2130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xce2230` | Deleting destructor | Destroys the object (`0xccb130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce2940` | Empty | Does nothing |
 | `0xce2b20` | Deleting destructor | Destroys the object (`0xce2b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce2b40` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xce2b50` | Deleting destructor | Destroys the object (`0xce2950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce3630` | Deleting destructor | Destroys the object (`0xce33e0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xce5e20` | Deleting destructor | Destroys the object (`0xce5c40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xce5e20` | Deleting destructor | Destroys the object (`0xce5c40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce5e40` | Empty | Does nothing |
 | `0xce5ee0` | Deleting destructor | Destroys the object (`0xce5f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce5f00` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xce6070` | Deleting destructor | Destroys the object (`0xce5e50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xce7430` | Deleting destructor | Destroys the object (`0xce7300`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xce7d10` | Deleting destructor | Destroys the object (`0xce7bf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xce9280` | Deleting destructor | Destroys the object (`0xce8a10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xce92a0` | Deleting destructor | Destroys the object (`0xce8a10`) and frees its memory when its argument has bit 0 set; returns the object |
-| `0xce96f0` | Deleting destructor | Destroys the object (`0xe040e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcec530` | Deleting destructor | Destroys the object (`0xcec270`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcedf60` | Deleting destructor | Destroys the object (`0xced240`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcee290` | Deleting destructor | Destroys the object (`0xced240`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0xce7430` | Deleting destructor | Destroys the object (`0xce7300` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xce7d10` | Deleting destructor | Destroys the object (`0xce7bf0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xce9280` | Deleting destructor | Destroys the object (`0xce8a10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xce96f0` | Deleting destructor | Destroys the object (`0xe040e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcec530` | Deleting destructor | Destroys the object (`0xcec270` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xcedf60` | Deleting destructor | Destroys the object (`0xced240` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcee2f0` | Empty | Does nothing |
 | `0xcee3d0` | Deleting destructor | Destroys the object (`0xcee3f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcee3f0` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xcee560` | Deleting destructor | Destroys the object (`0xcee300`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcefc20` | Deleting destructor | Destroys the object (`0xcef7e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xcefda0` | Deleting destructor | Destroys the object (`0xcef7e0`) and frees its memory when its argument has bit 0 set; returns the object |
+| `0xcefc20` | Deleting destructor | Destroys the object (`0xcef7e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcf1770` | Empty | Does nothing |
 | `0xcf1800` | Deleting destructor | Destroys the object (`0xcf1820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcf1820` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xcf1990` | Deleting destructor | Destroys the object (`0xcf1780`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xdf62a0` | Deleting destructor | Destroys the object (`0xdf62c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xdf62a0` | Deleting destructor | Destroys the object (`0xdf62c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xdf6630` | Get +0x14 | Returns the value at +0x14 |
 | `0xdf6d90` | Set +0x68 | Sets the member at +0x68 to 0x0 |
 | `0xdf7870` | Deleting destructor | Destroys the object (`0xdf7890`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xdf7d30` | Deleting destructor | Destroys the object (`0xdf7d50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xdf9bb0` | Deleting destructor | Destroys the object (`0xdf9be0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xdf9fa0` | Deleting destructor | Destroys the object (`0xdf9fc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xdf7d30` | Deleting destructor | Destroys the object (`0xdf7d50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xdf9bb0` | Deleting destructor | Destroys the object (`0xdf9be0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xdf9fa0` | Deleting destructor | Destroys the object (`0xdf9fc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xdfa920` | Returns 0 | Returns 0 (or false / null), taking 1 argument off the stack |
 | `0xdfae60` | Returns 0 | Returns 0 (or false / null), taking 1 argument off the stack |
-| `0xdfb900` | Deleting destructor | Destroys the object (`0xdfb920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xdfc120` | Deleting destructor | Destroys the object (`0xdfc140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xdff0c0` | Deleting destructor | Destroys the object (`0xdff0f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xdffa50` | Deleting destructor | Destroys the object (`0xdffa80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xdfb900` | Deleting destructor | Destroys the object (`0xdfb920` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xdfc120` | Deleting destructor | Destroys the object (`0xdfc140` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xe01a80` | Get +0x0 | Returns the value at +0x0 |
 | `0xe01a90` | Get +0x4 | Returns the value at +0x4 |
