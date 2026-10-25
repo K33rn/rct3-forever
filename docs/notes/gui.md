@@ -460,3 +460,6 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x690030` | OptionList::Set690030 | Checks that the index is below the number of options (+0x164; an assertion `out of range` otherwise) and sets the option's text (`0x67a8a0`) |
 | `0x6baae0` | Window::SetText FinancialSummary_MonthlySummaryHelp | Passes slot 2 on to every child (Window::ChildrenSlot2), then sets the window's text to the game text `FinancialSummary_MonthlySummaryHelp` |
 | `0x97d9b0` | FilteredList::Build | Fills a filtered item list; when nothing matches it shows the game text `NoItemsMeetFilterCriteria` instead |
+| `0x9b26b0` | FireworkMode::ShowInstructions | Shows the firework display mode's instructions in the identification bar (the game text `FireworkIdentbarInstructions`) |
+| `0xaef810` | WaterJetDesigner::OpenFiles | Opens the file window for saved water jet displays (folder `WaterJets`) next to the water jet designer |
+| `0xad6460` | LaserDesigner::OpenFiles | Opens the file window for saved laser shows (folder `Lasers`) next to the laser designer |

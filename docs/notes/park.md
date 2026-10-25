@@ -174,3 +174,19 @@
 | `0x596e10` | StallInstance::ReportMissingCID | When a carried item the stall should sell is missing, shows a message box `Missing CID` with `Missing CID '%d' for stall '%s'` (the item's number and the stall's name), then `0x595DD0` |
 | `0x6e4cd0` | EscapedAnimalsCondition::CurrentText | The objective's current-state text: the game text `EscapedAnimalsCondition_Current` with the count written in (`%d`) |
 | `0x72c280` | PathTile::CheckOwned | Checks a path tile as it is placed; among other checks, shows the game text `NotOwned` (in a message window) when the land is not the park's |
+| `0x6e6c30` | ReleaseAnimalsCondition::CurrentText | The objective's progress text: the game text `ReleaseAnimalsCondition_Current` with the current count written in (`%d`), and its timing (ObjectiveCondition::DescribeTiming) |
+| `0x6e55d0` | ViewingGalleriesCondition::CurrentText | The same for the viewing galleries objective (`ViewingGalleriesCondition_Current`, `%d`) |
+| `0x6e46b0` | DungTargetCondition::CurrentText | The same for the dung target objective (`DungTargetCondition_Current`, `%d`) |
+| `0x6df560` | NumSceneryItemsOfClassificationCondition::CurrentText | The same for the scenery items objective (`NumSceneryItemsOfClassificationCondition_Current`, `%d`) |
+| `0x6e5bf0` | MinAnimalHealthCondition::CurrentText | The same for the animal health objective (`MinAnimalHealthCondition_Current`, the health written as `%.2f`) |
+| `0x6616d0` | EntranceExitMenu::StandardEntrance | Builds the entrance menu with the standard entrance of the `Style\Vanilla` style (`StandardEntrance`) as its default |
+| `0x6618c0` | EntranceExitMenu::StandardExit | Builds the exit menu with the standard exit of the `Style\Vanilla` style (`StandardExit`) as its default |
+| `0x456200` | ManagedObject::LoadRCT3fc | Loads the file `RCT3.fc` (ManagedObject::LoadFile) into the object given |
+| `0xa51d90` | Scenario::TitleText | The title text of scenario n: the game text `Scenario` + its lookup name + `_Title` (Scenario::LookupText) |
+| `0x6e7190` | EnclosureVisitorsCondition::CurrentText | The objective's progress text: the game text `EnclosureVisitorsCondition_Current` with the current number written in, and its timing (ObjectiveCondition::DescribeTiming) |
+| `0x4d9940` | AttractionRenameDialog::Apply | Applies a new name typed for an attraction: when it is empty, shows the game text `NoEmptyAttractionNames` (in a message window) and puts the old name back (`0x4C0850`); otherwise sets it (`0x4C2100`); then, for a pool attraction (+0x40), refreshes it (`0xA7C440`, `0xA8AC30`) |
+| `0x4ec760` | RideRenameDialog::Apply | The same check for a ride's new name (`NoEmptyAttractionNames` when empty, else `0x4C2100`) |
+| `0xb91980` | AnimalShelterRenameDialog::Apply | The same check for an animal shelter's new name (`NoEmptyAttractionNames` when empty, else `0xB8BA60`) |
+| `0xa2ccf0` | CarriedItem::MakeGolfBall | Makes the mini golf `GolfBall` carried item (CarriedItemInstance) |
+| `0xa2cea0` | CarriedItem::MakeGolfClub | Makes the mini golf `GolfClub` carried item (CarriedItemInstance) |
+| `0xa2d050` | CarriedItem::MakeKidsGolfClub | Makes the mini golf `KidsGolfClub` carried item (CarriedItemInstance) |
