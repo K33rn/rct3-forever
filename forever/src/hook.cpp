@@ -13,7 +13,6 @@ bool replace_function(const char *name, uintptr_t at, const uint8_t *expect, siz
     *(int32_t *)(p + 1) = (int32_t)((uintptr_t)with - (at + 5));
     VirtualProtect(p, 5, old, &old);
     FlushInstructionCache(GetCurrentProcess(), p, 5);
-    flog("replaced: %s at 0x%x", name, (unsigned)at);
     return true;
 }
 

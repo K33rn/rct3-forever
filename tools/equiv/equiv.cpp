@@ -1,6 +1,6 @@
 // equiv.exe: proves rewritten functions do exactly what the game's own ones do.
 //
-// usage: equiv.exe "<game folder>\RCT3plus.exe" [iterations]
+// usage: equiv.exe "<game folder>\\RCT3plus.exe" [iterations]
 //
 // It loads your RCT3plus.exe into memory at the address the game runs at (0x400000), the way Windows would but
 // without starting it, so the game's own functions can be called there. For every rewrite that has a test below it
@@ -117,10 +117,14 @@ static void set_fpu(unsigned short precision_bits) {
     __asm__ volatile("fldcw %0" : : "m"(cw));
 }
 
+// A test for the rewrite at `at`; for a rewrite of many copies (REWRITE_COPIES) it runs on every copy.
 struct Test {
     uintptr_t at;
     std::function<void(Rng &)> setup;
     std::function<Result(void *fn)> call;
+    int iterations = 0;   // 0: the number given on the command line
+    bool data = true;     // also compare the game's .data section (slow; not needed for helpers that only touch
+                          // their arguments)
 };
 
 static std::vector<uint8_t> g_data0, g_arena0, g_data1, g_arena1;
@@ -130,19 +134,19 @@ static bool check(const rewrite::Entry *e, const Test &t, int iterations, uint64
     Rng rng{seed};
     for (int it = 0; it < iterations; it++) {
         t.setup(rng);
-        memcpy(g_data0.data(), (void *)DATA, DATA_SIZE);
+        if (t.data) memcpy(g_data0.data(), (void *)DATA, DATA_SIZE);
         memcpy(g_arena0.data(), g_arena, sizeof g_arena);
         for (auto &p : fpu) {
             set_fpu(p.bits);
             Result a = t.call((void *)e->at);
-            memcpy(g_data1.data(), (void *)DATA, DATA_SIZE);
+            if (t.data) memcpy(g_data1.data(), (void *)DATA, DATA_SIZE);
             memcpy(g_arena1.data(), g_arena, sizeof g_arena);
-            memcpy((void *)DATA, g_data0.data(), DATA_SIZE);
+            if (t.data) memcpy((void *)DATA, g_data0.data(), DATA_SIZE);
             memcpy(g_arena, g_arena0.data(), sizeof g_arena);
             Result b = t.call(e->with);
-            bool same = a == b && !memcmp(g_data1.data(), (void *)DATA, DATA_SIZE) &&
+            bool same = a == b && (!t.data || !memcmp(g_data1.data(), (void *)DATA, DATA_SIZE)) &&
                         !memcmp(g_arena1.data(), g_arena, sizeof g_arena);
-            memcpy((void *)DATA, g_data0.data(), DATA_SIZE);
+            if (t.data) memcpy((void *)DATA, g_data0.data(), DATA_SIZE);
             memcpy(g_arena, g_arena0.data(), sizeof g_arena);
             if (!same) {
                 // (the C runtime's printf has no 80-bit long double, so the float results are shown as doubles)
@@ -158,6 +162,34 @@ static bool check(const rewrite::Entry *e, const Test &t, int iterations, uint64
 }
 
 template <class T> static T &at(uintptr_t a) { return *(T *)a; }
+
+// ---- stand-ins for game functions the rewrites call -----------------------------------------------------------
+// The game's memory functions can't run here (its C runtime isn't started), and what matters is what gets freed,
+// in which order: these record each call at the end of the arena, which is compared.
+
+static const size_t CALL_LOG = sizeof g_arena - 0x1000;   // {count, then (function, argument) pairs}
+
+static void record(uint32_t fn, void *arg) {
+    uint32_t *log = arena<uint32_t>(CALL_LOG);
+    if (log[0] < 500) {
+        log[1 + 2 * log[0]] = fn;
+        log[2 + 2 * log[0]] = (uint32_t)(uintptr_t)arg;
+        log[0]++;
+    }
+}
+static void __cdecl stub_free(void *p) { record(0xbce000, p); }
+static void __cdecl stub_free_aligned(void *p) { record(0xbce010, p); }
+
+static void stub(uintptr_t at, void *with) {
+    uint8_t *p = (uint8_t *)at;
+    p[0] = 0xe9;
+    *(int32_t *)(p + 1) = (int32_t)((uintptr_t)with - (at + 5));
+}
+
+static void install_stubs() {
+    stub(0xbce000, (void *)stub_free);
+    stub(0xbce010, (void *)stub_free_aligned);
+}
 
 // ---- the tests ----------------------------------------------------------------------------------------------
 
@@ -263,6 +295,42 @@ static std::vector<Test> tests() {
     t.push_back({0x49ac80, object(0x13cde74), lookup});
     t.push_back({0x4bd9d0, object(0x13d0680), lookup});
 
+    // Helpers with many copies: each copy is checked, 20 cases each, arguments only
+    auto block = [](Rng &r) -> void * { return r.next() % 3 ? arena<void>(0x400 + (r.next() % 64) * 16) : nullptr; };
+    auto obj_call = [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; };
+    auto fresh = [](Rng &r) {
+        for (int i = 0; i < 64; i++) arena<uint32_t>(0x100)[i] = r.next();
+        arena<uint32_t>(CALL_LOG)[0] = 0;
+    };
+    Test owned{0x410960, [=](Rng &r) { fresh(r); arena<void *>(0x100)[0] = block(r); }, obj_call};
+    Test pair{0x408190, [=](Rng &r) { fresh(r); arena<void *>(0x100)[0] = block(r); arena<void *>(0x100)[1] = block(r); },
+              obj_call};
+    Test shared{0x4012e0,
+                [=](Rng &r) {
+                    fresh(r);
+                    uint8_t *b = arena<uint8_t>(0x200);
+                    *(int32_t *)b = r.range(0, 3);   // 1: this was the last reference
+                    *(void **)(b + 0xc) = block(r);
+                    arena<void *>(0x100)[0] = b;
+                },
+                obj_call};
+    // a properly linked node between two neighbours (a broken list stops the game at a breakpoint, not tested)
+    Test unlink{0x40a890,
+                [=](Rng &r) {
+                    fresh(r);
+                    void **node = arena<void *>(0x100), **prev = arena<void *>(0x200), **next = arena<void *>(0x300);
+                    prev[0] = (void *)(uintptr_t)r.next(); prev[1] = node;
+                    next[0] = node; next[1] = (void *)(uintptr_t)r.next();
+                    node[0] = prev; node[1] = next;
+                },
+                obj_call};
+    Test base{0x441fc0, fresh, obj_call};
+    for (Test *x : {&owned, &pair, &shared, &unlink, &base}) {
+        x->iterations = 20;
+        x->data = false;
+        t.push_back(*x);
+    }
+
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
@@ -295,19 +363,37 @@ int main(int argc, char **argv) {
     int iterations = argc > 2 ? atoi(argv[2]) : 300;
     g_data0.resize(DATA_SIZE); g_data1.resize(DATA_SIZE);
     g_arena0.resize(sizeof g_arena); g_arena1.resize(sizeof g_arena);
-    auto all = tests();
-    int ok = 0, bad = 0, untested = 0;
-    for (const rewrite::Entry *e = rewrite::list(); e; e = e->next) {
+    // check the code before the stubs change any of it
+    int bad = 0, ok = 0, untested = 0;
+    for (const rewrite::Entry *e = rewrite::list(); e; e = e->next)
         if (memcmp((void *)e->at, e->original, e->original_len)) {
             printf("  %-34s 0x%06x  the exe's code there isn't the known version\n", e->name, (unsigned)e->at);
             bad++;
-            continue;
         }
+    install_stubs();
+    auto all = tests();
+    // one line per rewrite; a rewrite of many copies is checked on each copy
+    std::vector<const char *> done;
+    for (const rewrite::Entry *e = rewrite::list(); e; e = e->next) {
+        bool seen = false;
+        for (auto n : done) if (!strcmp(n, e->name)) seen = true;
+        if (seen) continue;
+        done.push_back(e->name);
         const Test *t = nullptr;
-        for (auto &x : all) if (x.at == e->at) t = &x;
+        for (auto &x : all)
+            for (const rewrite::Entry *c = rewrite::list(); c; c = c->next)
+                if (c->at == x.at && !strcmp(c->name, e->name)) t = &x;
+        int copies = 0;
+        for (const rewrite::Entry *c = e; c; c = c->next) if (!strcmp(c->name, e->name)) copies++;
         if (!t) { printf("  %-34s 0x%06x  NO TEST\n", e->name, (unsigned)e->at); untested++; continue; }
-        bool same = check(e, *t, iterations, 0x9e3779b97f4a7c15ull ^ e->at);
-        if (same) printf("  %-34s 0x%06x  same in %d cases x 3 FPU precisions\n", e->name, (unsigned)e->at, iterations);
+        int n = t->iterations ? t->iterations : iterations;
+        bool same = true;
+        for (const rewrite::Entry *c = e; c && same; c = c->next)
+            if (!strcmp(c->name, e->name)) same = check(c, *t, n, 0x9e3779b97f4a7c15ull ^ c->at);
+        if (same && copies == 1)
+            printf("  %-34s 0x%06x  same in %d cases x 3 FPU precisions\n", e->name, (unsigned)e->at, n);
+        else if (same)
+            printf("  %-34s %3d copies  each the same in %d cases x 3 FPU precisions\n", e->name, copies, n);
         same ? ok++ : bad++;
     }
     printf("%d the same, %d different, %d without a test\n", ok, bad, untested);

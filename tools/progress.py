@@ -45,8 +45,14 @@ def load():
 def rewritten():
     found = {}
     for p in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')):
-        for m in re.finditer(r'REWRITE\("([^"]+)",\s*(0x[0-9a-fA-F]+)', open(p, encoding='utf-8').read()):
+        src = open(p, encoding='utf-8').read()
+        for m in re.finditer(r'REWRITE\("([^"]+)",\s*(0x[0-9a-fA-F]+)', src):
             found[int(m.group(2), 16)] = m.group(1)
+        # REWRITE_COPIES("name", array, ...): every address in that array
+        arrays = {m.group(1): m.group(2) for m in re.finditer(r'uint32_t\s+(\w+)\[\]\s*=\s*\{([^}]*)\}', src)}
+        for m in re.finditer(r'REWRITE_COPIES\("([^"]+)",\s*(\w+)', src):
+            for a in re.findall(r'0x[0-9a-fA-F]+', arrays.get(m.group(2), '')):
+                found[int(a, 16)] = m.group(1)
     return found
 
 

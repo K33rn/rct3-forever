@@ -50,6 +50,20 @@ At start-up `forever.dll` checks that the game's function at that address still 
 and logs `not replaced`. `RCT3Forever.log` reports how often each rewrite has run. `Rewrites=0` in
 `RCT3Forever.ini` turns every rewrite off, which is useful for comparing.
 
+**Functions with many copies.** The compiler made a separate copy of a template function for every type that uses
+it, so many functions exist dozens or hundreds of times, identical apart from where they sit.
+`python tools/dupes.py "<game folder>\RCT3plus.exe"` lists the biggest groups of copies still to do; with an address
+after it, it prints every copy of that function as a C array. One rewrite then replaces them all:
+
+```cpp
+static const uint32_t unlink_copies[] = { 0x40a890, 0x468370, /* ... */ };
+REWRITE_COPIES("ListNode::Unlink", unlink_copies, unlink_original, unlink, &g_unlinks);
+```
+
+The equivalence test runs on every copy. Rewrites that call the game's memory functions (`0xbce000` free,
+`0xbce010` free of an aligned block) are tested with stand-ins that record each call, so what gets freed and in which
+order is compared too.
+
 **Calling conventions** (the game was built with Microsoft Visual C++ 2003, 32-bit):
 
 | The game's function | Write it as |
@@ -68,7 +82,8 @@ A rewrite calls other game functions through their addresses (for example
 
 ## Rewritten so far
 
-All rewrites pass the equivalence test (300 random cases at each of the three FPU precisions).
+All rewrites pass the equivalence test: 300 random cases at each of the three FPU precisions, or 20 for each copy of a
+function with many copies.
 
 | Function | Address | What it does | Checked in the game |
 |---|---|---|---|
@@ -85,6 +100,11 @@ All rewrites pass the equivalence test (300 random cases at each of the three FP
 | `Object::WeatherInterface` | `0x49ac80` | The object's weather interface (id at `0x13cde74`), or null | Vanilla Hills: 1,334 calls |
 | `Object::FitInterface` | `0x4bd9d0` | The object's fit interface (id at `0x13d0680`), or null | Vanilla Hills: 777 calls |
 | `Ride::LogScorePart` | `0x4bfc00` | Running average of a part of the guests' score for the ride: (5 x log + value) / 6 | Vanilla Hills: 4,319 calls |
+| `OwnedPointer::Reset` | 345 copies (e.g. `0x410960`) | Frees what an owned pointer holds and clears it | Vanilla Hills: called |
+| `OwnedPair::Free` | 20 copies (e.g. `0x408190`) | Frees the two blocks an object owns | (equivalence test on every copy) |
+| `SharedBuffer::Release` | 16 copies (e.g. `0x4012e0`), 12,475 call sites | Drops a reference to a shared buffer; the last one frees its data and the buffer | Vanilla Hills: 2,592 calls while the park opened |
+| `ListNode::Unlink` | 26 copies (e.g. `0x40a890`) | Takes a node out of a two-way list and clears it; a broken list stops at a breakpoint, as in the game | Vanilla Hills: 2,838 calls |
+| `BaseClass::SetClass` | 140 copies (e.g. `0x441fc0`) | Sets an object's virtual function table to one base class's (`0xf28db8`) | Vanilla Hills: 819,660 calls |
 | `Attraction::IdealGuests` | `0xa88450` | A non-ride attraction's share of IdealGuests: 3 x its value at +0x70 | (equivalence test; the parks tried have no such attraction) |
 
 ## Good next candidates
