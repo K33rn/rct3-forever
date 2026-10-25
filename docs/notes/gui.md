@@ -622,3 +622,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x64f8d0` | GuestDetails::Build64F8D0 | In outline: another guest details page built like GuestDetails::Build650180, from its title and the guest's thoughts (GuestDetails::BuildThoughts) |
 | `0x9b70c0` | Window::Build9B70C0 | In outline: builds a window like Window::Build9B7940, from a title and the shared texts `0x13049E4` and `0x1302A9C` |
 | `0x691d80` | Layout::Snap691D80 | In outline: snaps a box's position to whole pixels and checks it against the boxes given (overlap tests), giving 1 when it fits |
+| `0x6bbae0` | Window::Build6BBAE0 | In outline: builds a window from a shared title (`0x1305DD0`) and a list (Listener440) |

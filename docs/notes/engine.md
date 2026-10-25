@@ -1478,3 +1478,7 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xae5400` | Resources::FindByName | In outline: finds a loaded resource whose name matches the one given (WideString::Compare), loading the file when needed (ManagedObject::LoadFile) |
 | `0x993fa0` | Event::Update993FA0 | In outline: a timed event's update: checks the date (GameTime::Get) against its start and, for kind 0x16, starts it (`0x4767D0`) |
 | `0x49f810` | Table256::Build49F810 | In outline: fills a 256-entry table (`0x49F7B0` first) with rounded values worked out from a curve |
+| `0x900da0` | Table::Build900DA0 | In outline: builds a shared lookup (`0x133A044`, up to `0x133A048` entries, at most 0x80) from a list (+0x18) and links each entry's parts |
+| `0x4153c0` | Grid::Build4153C0 | In outline: builds a grid of at least 3 by 3 (+0x18, +0x1C): its cells (0x50 bytes each), its links (12 bytes each, `0x414D20`) and their rows |
+| `0xba1e90` | PathGrid::BuildBA1E90 | In outline: builds the links of a path grid's cells within a rectangle: lists each cell's parts and makes a 200-byte record for each link |
+| `0x41a090` | Regions::Update41A090 | In outline: goes over a list of regions and finds the ones that overlap a rectangle (their bounds at +0x38, +0x3C), releasing and rebuilding them (`0xBE79B0`) |

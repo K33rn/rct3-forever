@@ -352,3 +352,10 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbc0f10` | Model::BuildLodBC0F10 | In outline: builds the draw data for a model's detail level (Lod::LevelFor): finds its material (`0xBD6E10`), allocates its buffers (`0xBC0A00`, 64 bytes per part) and fills them |
 | `0xc06910` | Texture::LoadC06910 | In outline: loads a texture described by a record: its scale (1 over its first value), its name (from +0x28, `0xCA1B10`) and its kind (+0x3C), or another load (`0xBD51C0`) |
 | `0x8ec9d0` | Water::BuildAll8EC9D0 | In outline: builds the water pieces (Water::Build8EB860 for each) in groups of up to 100 and 0x1000 points, then fills them for the current device (ForCurrent(3)) |
+| `0x96c930` | Water::DrawJets96C930 | In outline: another water jet drawing pass like Water::DrawJets96D180, for the jets with work at +0x14 and +0x34 |
+| `0x92c990` | Water::DebugDraw92C990 | In outline: in debug mode 1 (+0x310), draws the water pieces with the developers' shader (Debug::DrawSolidColourNoZ2) and their links (`0x92BFD0`, `0x919A50`) |
+| `0xc03170` | Device::BuildModesC03170 | In outline: builds the list of a device's sizes or modes (`0x13D301C` made when needed), halving down from the largest, and rounds each one's values |
+| `0x426f40` | Sky::UpdateLight | In outline: works out the sky and sun lighting for the time of day from curves (`0x426950`), the weather (Weather::Get) and the sun's angle (`0x426560`, `0x4266A0`), with a special case for mode 2 (`0x10ED780`) |
+| `0x9ecc50` | Firework::Update9ECC50 | In outline: a firework's update: moves it on (`0x9EC8B0`), and when its time is up (+0x40) and it has a part to fire (`0x4751E0`), fires it and works out its direction |
+| `0x9592d0` | Water::DrawReflections9592D0 | In outline: for more than ten items, draws the water reflections over the terrain with the water manager (WaterManager::Get, `0x940FB0`, `0x959020`) |
+| `0xbc1860` | Model::BuildPartsBC1860 | In outline: builds the parts of a model up to a count (+4), when it is ready (+0xDD): goes over its lists and adds the parts that fit |

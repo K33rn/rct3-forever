@@ -87,3 +87,5 @@
 | `0xb2c680` | Animal::CheckEnclosure | In outline: when flagged (+0x150), checks which enclosure an animal is in (EnclosureManager::Get, `0xB9AAE0`) against the one it belongs to and acts by its state (+0x7C) |
 | `0xb63260` | WildAnimal::FindSpot | In outline: looks for a free terrain cell near a point for an animal (Grid::CellAt), inside a search square (`0x10F294C`, `0x10F2948`), that it can stand on (`0x493200`, Terrain::CellFlag12) |
 | `0xb774b0` | WildAnimal::CanReach | In outline: whether an animal can get from its cell to another: checks its enclosure (EnclosureManager::Get), the corner positions (Terrain::CornerPosition) and the distance against its reach, then the cell it lands in (Grid::CellAt) |
+| `0xb5fec0` | WildAnimal::StepB5FEC0 | In outline: when flagged (+0x51), moves an animal toward a point inside the terrain (Grid::Contains), rounding its cell |
+| `0xb619b0` | WildAnimal::PathClear | In outline: whether the way between two points is clear for an animal: finds their cells (Grid::CellAt), measures the way and runs the cell-by-cell check (`0x494960`) |

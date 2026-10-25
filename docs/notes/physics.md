@@ -167,3 +167,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x9619f0` | Particles::Scatter9619F0 | In outline: scatters points over the triangles of a shape (`0x960E90`, up to three tries each) with random positions and directions |
 | `0x9feb90` | Particles::Bounce9FEB90 | In outline: keeps particles inside a box (+0x58): turns their speed around when they pass its sides (abs or minus abs) and checks the terrain under them |
 | `0xbb9410` | PointSet::Walk2 | In outline: another pass like PointSet::Walk over a list of points, measuring lengths and passing them to `0xC2F650` |
+| `0xcda7f0` | Ray::BoxSlabs | In outline: whether a ray meets a box, by the slab method: the entry and exit distances along each axis, giving 0 when it misses |
