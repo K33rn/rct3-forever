@@ -249,3 +249,5 @@
 | `0x838c00` | Grid::RotateCoords | Turns a cell's coordinates by the grid's rotation (+0x17C: 0 to 3) within its size |
 | `0x913620` | Mover::StepBack | Counts down a time (+0x58) and sets the position back along a direction from its node (in `0x133A0F4`, 0x98 bytes each); flags it done (bit 1) when the node is gone |
 | `0xafa0e0` | Terrain::CellColourAt | The colour for a terrain cell at a height (dark grey `0xFF333333` by default), from the flagged layers of the cell (0x2C bytes each) that the height reaches |
+| `0x8750c0` | Grid3::Rotate | Turns a position in a 3x3 grid by a rotation (0 to 3) |
+| `0x875020` | Grid3::RotateBack | Turns a position in a 3x3 grid the other way (0 to 3) |

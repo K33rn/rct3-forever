@@ -272,3 +272,4 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc946d0` | Renderer::SetMaterial | When the material given changes: keeps it and its texture set (+0x28), clears the cached states and points one slot to each of its textures (0x14 bytes each, count +0xCA), marking them unset |
 | `0x8f35b0` | Terrain::LodDistance | A terrain patch's distance for detail: half its smaller side plus its cell size times (2 to the level minus 1), capped |
 | `0x8f8660` | Sound::SetVolumeScale | Sets the volume scale of the current sound (`0x1339F58`, kept between 0.2 and 1) and its volume from its kind's level (`0x10EDD40`), or 0 when that kind is muted (`0x12F0168`) |
+| `0x6b6400` | Terrain::SlopeShade | A grey for a terrain cell (0x18 bytes each) from the height difference across it, from black up to `0x7F7F7F` |

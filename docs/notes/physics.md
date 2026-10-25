@@ -86,3 +86,14 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x493930` | Grid::Contains | Whether a point falls in a cell of a grid (origin +0xC, +0x10; cell size +0x14, +0x18; width +4, height +5) |
 | `0x7455f0` | Camera::SetFromHeight | Works out a camera distance from the height given and the field of view (+0x290, tan of half of it), sets the camera's offset (+0x260 to +0x268) from its direction and marks it changed (bits 2, and 1 when +0x2A7 is set) |
 | `0x4141e0` | FrameTime::Smooth | Smooths the frame time: the first 100 frames are added up and their average used from then on, unless a cap is set (+0x11C), when the time is doubled and capped |
+| `0xc20830` | Matrix::RotateX | Turns a matrix about the x axis by an angle (each row's second and third values) |
+| `0xbedee0` | Matrix::RotateX2 | The same turn about the x axis (another copy) |
+| `0xc1c2e0` | Triangle::FromBase | Three points of a triangle (an arrow head) from a base point, a direction and a side offset |
+| `0x5bcee0` | Segment::MiddleOfEnds2 | The point halfway between the last points of the end lists of the parts at +0x2C and +0x28 (points of 0x24 bytes) |
+| `0x50bd80` | Frame::Flip | Flips a frame: negates its value at +0x10, its direction (+0xD0 to +0xD8) and its other axis (+0xE0 to +0xE8), and toggles the flag at +0xC |
+| `0x8ae2f0` | Curve::Falloff | A value past a limit, eased back by its kind: 0 half the overshoot, 1 the whole overshoot, 2 the overshoot squared, 3 squared over the limit |
+| `0xb6bb70` | SphereQuery::Set | Sets up a sphere query: its centre, radius squared, a value, and the box around the sphere (centre minus and plus the radius) |
+| `0xb5b740` | SphereQuery::Set2 | The same sphere query setup (another copy) |
+| `0x7b2e30` | SphereQuery::Set3 | The same sphere query setup (another copy) |
+| `0x488660` | SphereQuery::Set4 | The same sphere query setup (another copy) |
+| `0x8e7130` | Bounds::Grow | Grows a box (+0x190 to +0x19C) to take in the one given and keeps the value given (+0x1A0) |

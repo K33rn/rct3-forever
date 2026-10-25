@@ -1309,3 +1309,15 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcb78e0` | Buffer::LayOut | Lays out a buffer's parts one after another, each start rounded up to the alignment (+4), from the start given by its owner; counts the parts of kinds 1 and 2 |
 | `0xbcedc0` | WideString::Find | The place of a wide text inside a wide string, searching from the place given, or -1 |
 | `0xa5fd90` | Speed::Scale | Applies a change to a speed factor (+0x20): times it when the factor is above 1, added otherwise; kept between 1 and 1000, ignored when the change is near 1 |
+| `0x87a6d0` | SortedPointers::Find | Binary search of a sorted list of objects for one matching the key's +4 and +0xC values: gives whether it was found and its place (or where it would go) |
+| `0xcea9b0` | IdMap::Find | The value for an id in a pair of sorted arrays (ids at +8, values at +0xC, count +0x10): checks the first and last, then halves; -1 when missing |
+| `0xcea5a0` | IdMap::Find2 | The same id lookup (another copy) |
+| `0xcea180` | IdMap::Find3 | The same id lookup (another copy) |
+| `0x40b7d0` | IdMap::Find4 | The same id lookup (another copy) |
+| `0x5eb1b0` | Object::SetMatrix | Copies a 4x4 matrix into the object (+0x70) |
+| `0x42c910` | Buckets::Init | Sets up 64 buckets (0x5C bytes each) with empty lists and no owner (-1), and keeps the value given (+0x1704) |
+| `0xbeecb0` | Indices::CopyOffset | Copies 16-bit indices, adding an offset to each when one is given |
+| `0xceaa40` | IdMap::Compact | Removes the empty entries of an id map's arrays, keeping the order, and renumbers its index list (through the table `0x1412AF0`) |
+| `0xcea630` | IdMap::Compact2 | The same for another id map (table `0x140EAF0`) |
+| `0xcea210` | IdMap::Compact3 | The same for another id map (table `0x140AAF0`) |
+| `0xc51870` | Request::Request | Constructor of a request record: joins its owner's list (+0x10), keeps its range (start, start plus length), flags and callback, and takes the next number of `0x13E6C94` (never 0) |
