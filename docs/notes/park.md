@@ -252,3 +252,6 @@
 | `0x8750c0` | Grid3::Rotate | Turns a position in a 3x3 grid by a rotation (0 to 3) |
 | `0x875020` | Grid3::RotateBack | Turns a position in a 3x3 grid the other way (0 to 3) |
 | `0x4ee3a0` | Gate::SetState | Sets a gate's two state values (+0x20, +0x24) for an action 0 to 4 (open or shut, and which side) |
+| `0xabc300` | Tile::EdgePoint | The point at the middle of a tile's edge for a direction (1, 2, 4 or 8), or its centre for any other |
+| `0x95b610` | Mesh::CountForId | Adds up the vertex and index counts of a mesh's parts with the id given (16 bytes each at +0x14, count +0x1C): 3 and 3 for one shape kind, 4 and 6 for the other |
+| `0xb987e0` | TrackPiece::Direction | A direction (0 to 3, or 4) from a piece's kind bits, when its slope values are big enough; -1 otherwise (the piece is passed in a register) |

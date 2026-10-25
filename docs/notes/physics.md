@@ -107,3 +107,10 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x5d3970` | Ease::Out | Eases a time over a total: straight at first, slowing down (squared) over the last stretch; unchanged when the total is too short |
 | `0x9e85f0` | Value::MoveToward | Moves a value toward a target by a rate times the time, stopping at it; gives 1 once it is there |
 | `0xce4920` | Curve::LogBlend | A value between two points' values at a position, eased on a log scale (the factor log10 2) toward one end |
+| `0x581530` | Frame::PickAxis | Copies one of a frame's axes: the first when +4 is set, otherwise the second |
+| `0x80e090` | Box::ThinnestAxis | Which axis (0, 1 or 2) a box is thinnest along |
+| `0x5bce60` | Segment::Middle2 | The point halfway between the points of the parts at +0x2C and +0x28 |
+| `0x5bc0b0` | Colour::Blend | Blends four whole-number values toward another set by a fraction, rounded |
+| `0xce47b0` | Curve::LinearBlend | A value between two points' values at a position, in a straight line |
+| `0x7c32f0` | Average::AddCell | Adds a cell's position (+0x88, +0x89) to a running average (count +0x1D0, values +0x1D4 and +0x1D8) |
+| `0xa637e0` | Object::PartMatrix | Copies the matrix of the object's part (+0xE0, its matrix at +0x60) |

@@ -1357,3 +1357,19 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x7fb9c0` | SortedInts::Find | Binary search of a sorted list of numbers: gives whether the number was found and its place (or where it would go) |
 | `0xbc2a30` | Pairs::IndexOf | The number of a pair of ids: finds the first id (+0x24), then the second among its partners (+0x28), and gives their slot (from +0x18) |
 | `0x7e5050` | Key::Matches | Whether an entry matches a search key, by the entry's kind bits (+0xF): kinds 4 and 6 never; kind 0 by its two bytes and the optional third; otherwise by its whole value |
+| `0x9f9130` | SortedTable::Find64 | Binary search of a sorted list (+0x84, count +0x8C) for a 64-bit key: gives whether it was found and its place |
+| `0x90c5c0` | SortedTable::Find20 | Binary search of a sorted table of 20-byte entries for a number: gives whether it was found and its place (or where it would go) |
+| `0xa90980` | SortedPointers::FindBy8 | Binary search of a sorted list of objects by their +8 value: gives whether it was found and its place |
+| `0x8feda0` | SortedPointers::FindXY2 | Binary search of a sorted list of entries (+0x14, count +0x18) for the one at a position (x, y); gives it and its place |
+| `0xc22b60` | Pairs::FindSorted | Finds a pair of numbers in a sorted list of pairs by power-of-two steps, or -1 |
+| `0x84db70` | Record::Copy13 | Copies a record of 18 values |
+| `0xbfef90` | Pools::ResetCounts | Resets the use counts of each pool of a list (refilling the ones used past a share `0xFA5C88`) and of a second list |
+| `0xa1ce90` | List::MoveAllTo | Moves every entry of a list into the list at +0x88 |
+| `0x799780` | Object::SetMatrix50 | Copies a 4x4 matrix into the object (+0x50) |
+| `0xe042b0` | Keys::RemoveAt | Removes entry n of a list of 12-byte entries (+0x10, count +0x14), moving the later ones down and joining its span onto the one before |
+| `0xc47750` | KeyMap::Clear | Clears every entry of a key map (48 bytes each at +0x10, with their bucket marks at +0x14) and sets its count (+8) to 0 |
+| `0x4453d0` | SortedTable::Find8 | Binary search of a sorted table of 8-byte entries for a number: gives whether it was found and its place (or where it would go) |
+| `0x80e3a0` | SortedIndex::LowerBound | The place in a sorted index (+0x44, count +0x48; entries of 0x1C bytes at +0x40, sorted by +8 from high to low) for an entry's +8 value |
+| `0xbfb2b0` | Vector::Compare | A sort comparison of two vectors, x then y then z: -1, 0 or 1 |
+| `0xae0980` | Shape::SameAs | Whether two shapes are the same: their point counts (+0x50), their values at +0x54 and their points (+0x40) |
+| `0xca77b0` | IntSlider::SetValue | Sets the bound whole number (+4) from a fraction between the minimum (+8) and maximum (+0xC) |
