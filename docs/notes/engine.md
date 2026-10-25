@@ -1419,3 +1419,8 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbd2780` | TypeLists::Contains | Whether a list holds a type list the same as the one given (same count and the same values) |
 | `0x80e200` | SortedIndex::LowerBound2 | The place in a sorted index (+0xC into +8, count +0x10, sorted by +8) for a value |
 | `0x772990` | Slots::ValueFor | The value for an id among the object's slots (+0xAC, +0xC0, +0xD4, ... with values at +0x9C, +0xA0, ...), or the default (+0x78) |
+| `0x988f60` | Keys::FindTime | The key (32 bytes each at +0x40, count +0x4C) a time falls in, by halving; -1 when there are none |
+| `0x8bfef0` | FreeList::Release | Takes entry n out of a chain (16-byte entries, next at +4) and puts it on the free list (+8) |
+| `0x9f4da0` | List::MinimumValues | Clears the first entry's value and raises every entry's value below 0.5 to 0.1 |
+| `0x7a9150` | Timers::Tick55 | For each object of a list (+0x50C), counts down its 55 timers that are flagged (+0x14 bits, values from +0x18), clearing the flag of each that runs out |
+| `0x80e340` | SortedTable::LowerBound1C | The place in a sorted table (0x1C bytes each at +0x40, count +0x48) for a value |

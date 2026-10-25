@@ -261,3 +261,8 @@
 | `0x703170` | Grid::GrowChanged | Grows a grid's changed area (+0x74 to +0x80) to take in a rectangle, with the rectangle kept inside the grid (+0x6C by +0x70) |
 | `0xafa080` | TerrainLayers::SetFlag | Sets the value (+0x24) and the flag (bit 2 of +0x10) of each terrain layer of a list |
 | `0x7339b0` | Area::Move | Moves an area's rectangles (+0x40 to +0x5C) and every one of its items (+0x68) by an offset |
+| `0x71bfe0` | Rect::AddCell | Grows a byte rectangle (+0x92 to +0x95) to take in a cell |
+| `0xabc6d0` | GridArea::ValueAt | The value (+0x4C) of the cell at a position inside an area (bounds +0x4C to +0x58, cells of 0x58 bytes at +0x5C), when the cell has its part set |
+| `0x5bc050` | Counts::AddByLevel | Adds one to one of four counts by which of four levels a value reaches |
+| `0x55fbb0` | Attraction::SpeedScale | For the attraction kinds 0x2E to 0x31 and 0x44, its value (+0x184) times `0x10EE8F4`, kept between a minimum and 1; 0 for other kinds |
+| `0x9375c0` | Grid::ContainsId | Whether a rectangle of a grid of 16-bit ids (+0x38, width +0x30) holds the id given |

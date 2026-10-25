@@ -586,3 +586,9 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x619890` | Window::PartFor | One of ten parts of a window by number (0 to 9), or null |
 | `0xca8560` | UIntSlider::SetValue | Sets the bound whole number (+4, unsigned) from a fraction between the minimum (+8) and maximum (+0xC) |
 | `0x621370` | ProgramInfo::MinSize | The program info window's size, at least 530 by 200 |
+| `0x682b30` | Drag::Move | Keeps the last drag position (+0xF0) and sets the new one (+0xF8) relative to the start (+0xE0), then tells the owner (+0xDC) |
+| `0x483f40` | Screen::ToUnit | Turns a screen position into -1 to 1 across the GUI area |
+| `0xca7dd0` | FloatSlider::SetValue8 | Sets the bound decimal number (+4, its +8) from a fraction between the minimum (+8) and maximum (+0xC) |
+| `0xca7c00` | FloatSlider::SetValue4 | The same, into the bound object's +4 |
+| `0xca7a30` | FloatSlider::SetValue | The same, into the bound value itself |
+| `0xc637c0` | Items::SizeAt | The width or height (+0xD0 or +0xD4, by the flag at +0x1C) of item n of the list (+0xB0), or 0 |

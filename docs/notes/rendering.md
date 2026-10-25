@@ -290,3 +290,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x8ef180` | Vertices::SetSecond | Copies a list of values into the second value of each 16-byte vertex (count twice the sum of +8 and +0xC) |
 | `0x94dec0` | Animations::Set | Sets animation n (0xD0 bytes each at +0x1A4): its three values, frame count and rate, the frame time ((count - 1) / rate), its mode (4) and a cleared position |
 | `0x9f7110` | Firework::SetFade | Sets a firework's fade value (+0xC) from a level between 0 and 1, along a curve |
+| `0xce45f0` | Sound::VolumeToHundredthsDb | Turns a volume from 0 to 1 into hundredths of a decibel for DirectSound: -10000 (silent) below a floor, 0 at 1 or more, otherwise from log10 of it |
+| `0xc193e0` | Sound::VolumeToHundredthsDb2 | The same volume conversion (another copy) |
+| `0xb96f90` | Colour::PackArgs | Packs a colour from four values between 0 and 1 (red, green, blue, alpha) into one value (alpha, red, green, blue) |
+| `0x856640` | Draw::CallByType | Calls the drawing routine for an item's type from the table `0x10F2DB0` (eight per mode `0x13D2888`), with a default rectangle of 0, 0, 1, 1 |

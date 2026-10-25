@@ -136,3 +136,7 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xa6b240` | VerletPoint::Velocity | A Verlet point's velocity: its position minus its previous one, over the time step `0xF8F980` |
 | `0x5bada0` | Damping::For | A damping amount for a speed: half of it when fast, a falling share when slower, a fixed share when stopped (scaled by `0x12F55CC`) |
 | `0x4664e0` | Matrix::Ortho | Makes an orthographic projection: x and y scaled by 2 over the width and height, depth by one over (far - near) and moved by near |
+| `0xb47a30` | Vector::LerpInto | Writes the point between two points by a fraction into the third one given |
+| `0xb34fa0` | Progress::Advance2 | Adds time to a progress value (+0x138, up to 1); gives whether it is past a threshold |
+| `0xcc4890` | Vector4::Add | Adds a four-value vector to this one |
+| `0x912c20` | Spring::Constants | Works out a spring's two constants from its length (+4 minus +0xC), and a third when asked |
