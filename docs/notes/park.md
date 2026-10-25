@@ -165,3 +165,7 @@
 | `0x5bd120` | ValueIfKind2 0x154 | The value at +0x154 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
 | `0x92de30` | ValueIfKind2 0x170 | The value at +0x170 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
 | `0x92de60` | ValueIfKind2 0x174 | The value at +0x174 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x7313c0` | PathTypeDatabaseEntry::MissingDependency | When the entry has data (+0x8C), formats `Missing dependency for PathType` and reports it (`0xC211C0`), like AIDDatabaseEntry::MissingDependency. Slot 5 of PathTypeDatabaseEntry |
+| `0x7396e0` | QueueTypeDatabaseEntry::MissingDependency | The same with `Missing dependency for QueueType` (data at +0x8C). Slots 5 and 7 of QueueTypeDatabaseEntry |
+| `0xac3420` | PoolTypeDatabaseEntry::MissingDependency | The same with `Missing dependency for PoolType` (data at +0x80). Slots 5 and 13 of PoolTypeDatabaseEntry |
+| `0xac3320` | PoolTypeDatabaseEntry::Name | The pool type's name: the text at +4 of its data (+0x80), or `<unknown pool type>` when it has no data. Slots 2 and 10 of PoolTypeDatabaseEntry |

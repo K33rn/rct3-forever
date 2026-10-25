@@ -931,3 +931,6 @@ and leaves it with `0x46F990`). See the script for how they are recognised.
 | `0xbf9c50` | ModuleList::Start10F2E6C | Starts the module list at `0x10f2e6c` (ModuleList::Run) for a start-up global, filling in the result passed in and returning it |
 | `0xc03a50` | ModuleList::Start10F2EE4 | Starts the module list at `0x10f2ee4` (ModuleList::Run) for a start-up global, filling in the result passed in and returning it |
 | `0xc1a890` | ModuleList::Start10F2F90 | Starts the module list at `0x10f2f90` (ModuleList::Run) for a start-up global, filling in the result passed in and returning it |
+| `0xed88b0` | HandymanTools::Brush | Makes the handyman's brush tool at start-up (`People\HandyMan\Tools`, `Brush`), like HandymanTools::Sponge |
+| `0xed8a20` | HandymanTools::WaterCan | Makes the handyman's watering can tool at start-up (`People\HandyMan\Tools`, `WaterCan`), like HandymanTools::Sponge |
+| `0xed8e70` | HandymanTools::Hoe | Makes the handyman's hoe tool at start-up (`People\HandyMan\Tools`, `Ho`, `Hoe`), like HandymanTools::Sponge |
