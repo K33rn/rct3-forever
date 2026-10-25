@@ -324,3 +324,8 @@
 | `0x7e55d0` | Enclosure::CheckCell7E55D0 | In outline: checks a cell against an enclosure's rules: its kind (4 checked against a size), its enclosure (EnclosureManager::Get, its width +0x64 and height +0x68) and the case for the side given |
 | `0x8c2590` | Terrain::Shade8C2590 | In outline: works out shading values for a rectangle of terrain cells (blocks of 32), from the heights around each, as bytes |
 | `0x725150` | Path::Connect725150 | In outline: connects the path tiles of a rectangle (+0x14 to +0x17): finds each tile (PathManager::Get) and checks its four neighbours over the terrain |
+| `0x83c520` | Scenery::Check83C520 | In outline: for scenery of kind 0x1C (+0x16C +0x48), checks its cells on the terrain (a 90 by 90 grid, `0x838AC0`, `0x838B60`) by its rotation (+0x17C) |
+| `0x72a4d0` | Terrain::TileShape72A4D0 | In outline: works out a terrain tile's shape from its packed corners (+0x32: the flat patterns 0, 0x1111, 0x2222, 0x3333 and 0x4444 handled first), with its quarters' corners and edge middles (Tile::QuarterCorners, Quad::EdgeMiddles, TileQuarter::Corners) |
+| `0xb9e920` | PathGrid::RebuildB9E920 | In outline: a timed rebuild of a path grid inside a critical section, over the terrain (a 90 by 90 grid), for the size given |
+| `0x8e16e0` | Terrain::Level8E16E0 | In outline: evens out a set of terrain heights (+0x196 of them): joins the ones within a small step of each other and snaps them (Values4::Snap with 0.01) when flagged (+0x194) |
+| `0x7162e0` | Path::Build7162E0 | In outline: builds a path piece from a description (`0x7141A0`), making the path manager when needed and giving an error by case (the text `ERROR_OUTOFMEMORY` among them) |

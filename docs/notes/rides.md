@@ -185,3 +185,6 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4e7590` | AttractionPerson::Update4E7590 | In outline: the update of a person on an attraction (AttractionPersonInfo::Person): unless flagged (+0x118), checks its box against the ride's parts (`0xBCC740`) by its state (+0x13C) |
 | `0x5ee150` | AttractionPerson::Update5EE150 | In outline: another attraction person update: finds the person (AttractionPersonInfo::Person) and its place (`0x5EBEB0`, `0x5F2460`), and acts by its slot (+0x11C: -1, -2 or a slot) and flags (+0x190) |
 | `0x5dbd70` | TrackedRide::Update5DBD70 | In outline: a tracked ride's update for the selected one (`0x12F5608`, kind 3 or flag 0x40): its track (TrackedRide::Interface2, TrackInterface), its two ends (`0x5CA360` for 1 and 0) and its sections (+0x118) |
+| `0xc248e0` | Skeleton::AimC248E0 | In outline: turns a chain of bones toward a target point (arctangents, Vector::RotateAround), like Skeleton::PoseC29300 |
+| `0xc2adf0` | Skeleton::DebugDrawC2ADF0 | In outline: draws a model's bones for the developers: each bone and its links in greys and reds (`0xBF6E70` with colours 0xFFBFBFBF, 0xFF7F7F7F, 0xFFBF0000, 0xFFFF0000) |
+| `0xc286d0` | Skeleton::UpdateAllC286D0 | In outline: another whole-skeleton bone update like Skeleton::UpdateAllC26EF0 |

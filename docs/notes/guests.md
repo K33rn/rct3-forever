@@ -115,3 +115,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x73cc10` | Staff::UpdateWork73CC10 | In outline: a staff member's work update for stages 0xB and up (+0x194): sets its state (Person::SetState), does the step (`0x73BBD0`) and checks its box against what it works on (`0xBCC740`) |
 | `0xbadef0` | Peep::SetupParts | In outline: goes over a peep model's parts (+0x1D4, count +0x1D8), naming their top and bottom halves (`PeepTop%02d`, `PeepBottom%02d`) and setting up the ones not yet done |
 | `0x763f80` | Guest::Update763F80 | In outline: a guest's update in one of its states: sets its state (Person::SetState), checks the things it is linked to (by their kinds) and, in state 10 stage 0 or stage 2, moves on |
+| `0x7b1ba0` | Guest::Pickup7B1BA0 | In outline: picks up a guest with the hand tool (Pincer::Load) when nothing is held (+0x130), unless it is already the one held or flagged (+0x176, +0x148) |

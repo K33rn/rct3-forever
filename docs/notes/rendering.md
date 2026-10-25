@@ -359,3 +359,5 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9ecc50` | Firework::Update9ECC50 | In outline: a firework's update: moves it on (`0x9EC8B0`), and when its time is up (+0x40) and it has a part to fire (`0x4751E0`), fires it and works out its direction |
 | `0x9592d0` | Water::DrawReflections9592D0 | In outline: for more than ten items, draws the water reflections over the terrain with the water manager (WaterManager::Get, `0x940FB0`, `0x959020`) |
 | `0xbc1860` | Model::BuildPartsBC1860 | In outline: builds the parts of a model up to a count (+4), when it is ready (+0xDD): goes over its lists and adds the parts that fit |
+| `0x926780` | Water::DebugDraw926780 | In outline: when the developers' water view is on (`0x1103B9C`, +0x315), draws the water's lines and points in green, red, yellow and magenta (Colour::ToARGB) by the view mode (+0x310) |
+| `0x58dfd0` | Placement::DebugDraw58DFD0 | In outline: when the developers' view is on (`0x12F54C0`), draws a placement's points and links in magenta (Colour::ToARGB, Registry::Ensure, `0x481620`) for a few kinds |

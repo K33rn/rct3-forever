@@ -168,3 +168,7 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x9feb90` | Particles::Bounce9FEB90 | In outline: keeps particles inside a box (+0x58): turns their speed around when they pass its sides (abs or minus abs) and checks the terrain under them |
 | `0xbb9410` | PointSet::Walk2 | In outline: another pass like PointSet::Walk over a list of points, measuring lengths and passing them to `0xC2F650` |
 | `0xcda7f0` | Ray::BoxSlabs | In outline: whether a ray meets a box, by the slab method: the entry and exit distances along each axis, giving 0 when it misses |
+| `0xbb88a0` | PointSet::Walk3 | In outline: another pass like PointSet::Walk over points, measuring lengths and passing them to `0xC2F650` |
+| `0xbc8aa0` | Object::AimBC8AA0 | In outline: works out an object's facing toward a point (`0xBC8500`), normalising the way to it, and applies it (`0xBC5D50`) |
+| `0xa19e30` | Camera::MoveA19E30 | In outline: moves a camera toward a point: measures the way, slows down near the end (under a distance and above a limit, +0x10C) and eases its speed (`0xDDEBC0`) |
+| `0xb02a00` | Animal::BlendPoseB02A00 | In outline: when not flagged (+0x2FC), blends an animal's pose toward the next (`0xB01420`, `0xC2F650`) and its positions (Vector::LerpInto), the blend kept between 0 and 1 |

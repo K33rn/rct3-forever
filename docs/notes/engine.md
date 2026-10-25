@@ -1482,3 +1482,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x4153c0` | Grid::Build4153C0 | In outline: builds a grid of at least 3 by 3 (+0x18, +0x1C): its cells (0x50 bytes each), its links (12 bytes each, `0x414D20`) and their rows |
 | `0xba1e90` | PathGrid::BuildBA1E90 | In outline: builds the links of a path grid's cells within a rectangle: lists each cell's parts and makes a 200-byte record for each link |
 | `0x41a090` | Regions::Update41A090 | In outline: goes over a list of regions and finds the ones that overlap a rectangle (their bounds at +0x38, +0x3C), releasing and rebuilding them (`0xBE79B0`) |
+| `0xa62340` | Sound::UpdateA62340 | In outline: another sound update like Sound::UpdateA61260: for kind 1 (not 2), sets the pitch from its value (`0xA62230`) and keeps a change between -12 and 12 |
