@@ -53,3 +53,11 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0xa883a0` | Guest::Band | Which band a value falls in once divided by the unit in `0x13CDF20`: below 1 gives 0, below 2 1, below 3 2, below 4 3, below 5 4, otherwise 5. Called from Guest::Update |
 | `0xb9ab80` | Guest::EntryRemaining | The part still left of entry n of the table at +0x74 (184 bytes each, from +0x20): 1 - used (+0x14) / total (+0xC), at least 0, when the entry is in use and has a total; 1 otherwise. Called from Guest::PandaCheat |
 | `0x7c2f40` | Person::FaceDirection | Turns a person to face along a direction (atan2 of its x and z, through `0x7C2D40`) when its flat length is above a small limit. Used by Person::Swim and Person::UpdateSwimming |
+| `0x773760` | GuestGroup::AnyMemberFlag404 | Whether any member of the group (+0x20, 20 bytes each, count +8; each through its interface `0x130654C`) has its flag at +0x404 set. Slot 4 of GuestGroup |
+| `0x773a60` | GuestGroup::AnyMemberCount45C | Whether any member of the group has a positive count at +0x45C. Slot 10 of GuestGroup |
+| `0x774830` | GuestGroup::AnyMemberSlot16 | Whether slot 16 of any member's part at +0x400 is true. Slot 16 of GuestGroup |
+| `0x7748b0` | GuestGroup::AnyMemberSlot5And16 | Whether any member's part at +0x400 answers true to slot 5 with the given argument and also to slot 16. Slot 15 of GuestGroup |
+| `0x774940` | GuestGroup::MostOfMembers | The largest value slot 17 of the members' parts at +0x400 gives (0 when there are none). Slot 17 of GuestGroup |
+| `0x7749e0` | GuestGroup::AverageOfMembers4B0 | The average of the members' values at +0x4B0, or 1 when the group is empty. Slot 18 of GuestGroup |
+| `0x774a80` | GuestGroup::AverageOfMembersSlot20 | The average of what slot 20 of the members' parts at +0x400 gives, or 0.5 when the group is empty. Slot 20 of GuestGroup |
+| `0x774b20` | GuestGroup::AverageOfMembersSlot21 | The average of what slot 21 of the members' parts at +0x400 gives, or 0 when the group is empty. Slot 21 of GuestGroup |
