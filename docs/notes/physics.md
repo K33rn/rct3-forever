@@ -158,3 +158,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x9f21d0` | Fireworks::HitTest9F21D0 | In outline: whether a ray passes through a firework part: works out its points (`0x9EEA50`), checks the ray against their spheres and then the triangles between them (`0x9F1FA0`), keeping the nearest |
 | `0x9177b0` | Water::Flow9177B0 | In outline: a long run of maths on a water piece's values (+0 on), ending in a comparison; uses a translucent white (Colour::FromARGB 0x3FFFFFFF) |
 | `0x92aca0` | Water::Split92ACA0 | In outline: splits a list of points by height: finds the points lower than their neighbours, then groups the rest into pieces (`0x926360`) |
+| `0x8ef1e0` | Normals::Smooth8EF1E0 | In outline: goes over two lists of points (+0, +4) normalising their directions and then over their groups |
+| `0x4284b0` | Curves::Setup4284B0 | In outline: fills a set of curves with fixed key points (`0x426790`: time, value) and three marks (`0x428450` at 9.0), with a different set when +0x669 is set |
+| `0x906950` | Points::Merge906950 | In outline: merges two lists of points and groups (+0, and the one given) into one, keeping their order |

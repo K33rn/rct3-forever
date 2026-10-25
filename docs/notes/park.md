@@ -296,3 +296,6 @@
 | `0x8c2e10` | Terrain::EdgeFlags8C2E10 | In outline: goes over a rectangle of terrain cells setting flags for each cell's four sides from its neighbours, with the grid edges (+4, +5) handled apart |
 | `0x7e8100` | Park::Rebuild7E8100 | In outline: another timed rebuild like Park::Rebuild7E7440 (path manager, terrain, a 90 by 90 grid, entries refreshed), with a flag to skip part of it |
 | `0x466b30` | PairIds::Update | In outline: goes over the pair records (`0x1106E90`, count `0x12DFFE8`) and the table `0x111EFE0`, marking and joining pairs (PairIds::Get) by their flags |
+| `0xabf250` | Fence::RebuildRect | In outline: rebuilds the pieces of an area (bounds +0x4C to +0x58) over a rectangle, cell by cell: clears the old ones and makes the new ones (`0xAAF4E0`) |
+| `0x941090` | Water::HitTest941090 | In outline: whether a ray hits water, by the kind of thing it is (1 to 6): checks each part (`0x93D140`) and keeps the nearest hit |
+| `0x945ae0` | Water::HeightAt945AE0 | In outline: the water height at a terrain cell: checks the water bodies (+0x24, count +0x40) and the cell (0x30 bytes each at +0x1C) and its neighbours (`0x90C240`) for the highest surface above the point |

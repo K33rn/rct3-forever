@@ -173,3 +173,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0xc29ed0` | Skeleton::PoseC29ED0 | In outline: another bone posing pass like Skeleton::PoseC29300: finds each bone of a chain (`0xC23470`), sets it up (`0xC21380`, `0xC220E0`, `0xC258A0`) and turns the bones toward a target |
 | `0x50d310` | Car::UpdateVisual50D310 | In outline: updates a ride car's look each frame (when shown, +0x250): its lights (Model::UpdateLights), its two sides (`0x50B7E0`), its parts' matrices (`0x869400`) and its animated parts (+0x8B4) |
 | `0xcc76c0` | Skeleton::BuildMatricesCC76C0 | In outline: builds the matrices of a model's bones, children first (it calls itself), for the bones that use the part given |
+| `0x7bf550` | Track::HitTest7BF550 | In outline: whether a ray or point hits a track piece's parts: checks each part of the piece and its extra parts (`0xBBE5C0`), with special cases for kinds 2 and 3 |
