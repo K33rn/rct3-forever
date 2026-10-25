@@ -56,3 +56,9 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x444100` | Language::LoadFonts | Loads the fonts for the language: special ones for Korean, Japanese, Chinese and simplified Chinese, and Danish and Norwegian. Called from `0x444780` and `0x444C30` |
 | `0x412ef0` | Cheats::Names | Makes the names that switch cheats on when given to a guest: `David Braben`, `Andrew Thomas`, `Andrew Gillett`, `FPS`, `Ghost Town`, `Isambard Kingdom Brunel`, `Rick Griffiths`, `Alvin Swazonegger`, `Mornington Crescent`, `M Brookes`, `Alistair Lindsay`, `David Walsh`, ... (case-insensitive compares). Called from `0x7CD6E0` and `0x7CD9B0` |
 | `0xa1c6b0` | Tutorial::LoadSteps | Loads a tutorial's text: its title and each step's title and text (`TutorialText_`, `_Title`, `_Step%d_`). Called from `0xA1DFE0` and `0xA1E000` |
+| `0xc547e0` | FileSystem::ResolveDevice | Works out which device a path is on: a folder (`.dir/`), the CD (`cdrom0:`) or the host (`host1:`). Called from three places |
+| `0x442570` | Language::LoadDayFonts | Loads the fonts for the days and dates of the Asian languages (`Day_Korean`, `Day_Chinese`, `Day_Japanese`, `Day_SChinese`). Called from `Language::LoadFonts` and `0x48D5B0` |
+| `0x446b80` | Graphics::CheckDriver | Identifies the graphics card and driver (`VendorId`, `DeviceId`, `DriverId`, printed `%4x` / `%8x%8x`) and Windows version (`Win98`, `WinMe`, `Win2000`, `WinXP`) and looks up known fixes (`Fix`). Called from `0x4470B0` |
+| `0xc1b6d0` | CommandLine::Parse | Reads the command line's options (`.\Code\Common\CLIOpts.cpp`), reporting `Too few arguments :` and `Unrecognised argument :`. Called from `0xC1BBB0` |
+| `0x744090` | AvatarDatabase::Load | Reads the saved avatars: each one's version and name |
+| `0x743500` | AvatarDatabaseEntry::Read | Reads an avatar's parts: member, type, sub-type, part, palette, swimsuit and ride intensity. Called from `0x745070` |

@@ -22,3 +22,10 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x85b3c0` | SceneryRenderer::DrawShadows | Draws the scenery's shadows and blueprint pass (`ShapeBlueprintOpaque`, `BillboardShadowAlphaMask`), each part inside a profiling section (`Section::Enter` / `Leave`). Called from `0x85BD40` |
 | `0x9723e0` | Renderer::SetupAlphaRefs | Sets up the alpha reference values for drawing scenery items and billboards (`AlphaRefSI`, `AlphaRefSILow`, `AlphaRefBillboard`) and the terrain it needs |
 | `0x94e790` | WaterEffects::LoadShaders | Loads the water effects' shaders: water jets and blobs (`WaterJet`, `WaterJetRefraction`, `WaterBlobAlpha`, `WaterBlobAdditive`, `WaterBlobRefraction`, `WaterBlobPerPixelRefraction`). Called from `0x477CC0` |
+| `0x8c7030` | Terrain::SetupHorizonShadow | Sets up the terrain's horizon shadow texture coordinates (`HorizonShadowUV`, `HorizonShadowUVHalf`). Called from `0x8C8BA0` |
+| `0x8410f0` | SceneryItemVisual::CheckResolved | Reports what a scenery item's visual is missing: `Unresolved SceneryItemVisualDesc`, `StaticShapeData`, `FlexiTexture`, `TextureStyle`, `BoneShape`, `BoneAnim`, `Inconsistent number of animations in LODs`, `No animations for BoneShape`. Called from `0x842870` |
+| `0xcee580` | ShapeMaterial::FromName | Turns a shape material's name into its kind: `AlphaMask`, `Alpha`, `Glass`, `FillZ`, `Caustics`, `Water`, `SIGlass`, `SIAlphaMaskSpecular100Reflection`, `SIAlphaText`, `SIOpaqueText`, `Mask`, ... |
+| `0xccb610` | ShapeMaterial::FromName (2) | The same as `0xCEE580`, a second copy for another kind of shape |
+| `0xcd8a60` | Shape::Draw | Draws a shape by its material kind (`AlphaMask`, `Alpha`, `Glass`), through the shape commands. Called from `SceneryRenderer::DrawShadows` and two others |
+| `0x8e96b0` | Terrain::SetupShadowShader | Sets up the shader that adds the terrain's horizon shadow (`AddToDest`, `TerrainShadowHorizon`). Called from `0x8EA330` |
+| `0x963910` | WaterParticles::LoadTextures | Loads the water particle textures (`WaterParticle.bmp`, `WaterParticleAlpha.bmp`), seeding the random number generator for their variations |

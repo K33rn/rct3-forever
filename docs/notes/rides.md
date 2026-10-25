@@ -37,3 +37,10 @@ Tracked rides, flat rides and their cars and trains.
 | `0x562520` | RideTrain::SetupSounds | Sets up a train's track sounds: slow, medium and fast (left and right), the chain lift and water plumes (`TrackSlowSound`, `TrackMedSound`, `TrackFastSound`, `ChainSound`, `WaterPlume`). Called from `0x564AF0` and `0x5AA920` |
 | `0x4a4030` | Attraction::LoadIcon | Loads an attraction's icon, reporting `No :sid`, `Icon missing texture for attraction` and `unknown attraction type`. Called from `0xA7FF10` |
 | `0xa30ae0` | FlexiColours::Load | Reads an object's colour choices (`DefaultFlexiColours`, `Flexicolour_`). Called from `0xA2E200` |
+| `0x5370b5` | Ride::CheckEntrances | Checks that a ride has the right entrances and exits and says what is wrong (`MissingEntrance`, `NoEntrance`, `MissingExit`, `NoExit`, with developer messages such as `XXX Must have exactly 1 entrance`), for rides and pool rides |
+| `0x5819e0` | RideCar::FindWheels | Finds a ride car's four wheels (`WheelFR`, `WheelFL`, `WheelRR`, `WheelRL`). Called from `0x581F20` |
+| `0x564af0` | FixedRide::LoadCar | Loads the cars of the fixed-track rides: elevator, launcher free fall and roto drop (`Cars\TrackedRideCars\<name>\<name>`, `:rit`) |
+| `0x532110` | RideBreakdown::Names | Makes the names of the kinds of breakdown: none, emergency stop, restraints or doors that fail to open or close, ... (`RideBreakdownType*`). Called from `0x4B9D60` and `0x53A490` |
+| `0x4e9e50` | MiniGolfHole::SetupStrokes | Sets up a mini golf hole's stroke animations (`%02dStroke%02d`, walk, ball). Called from `0x4EB1F0` and `0x4EB650` |
+| `0x5a6db0` | RideTrain::Load | Loads a ride's trains from `Cars\CoasterCars` or `Cars\TrackedRideCars`, reporting `Unresolved RideTrain`. Called from three places |
+| `0x7218e0` | PathType::FromName | Turns a path type's name into its kind (`Asphalt`, `Crazy`, ...) |

@@ -122,3 +122,30 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6b42a0` | MapDialog::Build | Builds the park map window with its people, rides and scenery tabs (`MapDialog_PeopleTabTitle`, `_RidesTabTitle`, `_SceneryTabTitle`). Called from `0x6B4BE0` |
 | `0x8cbeb0` | LandDialog::BuildTextureList | Builds the land window's list of terrain textures (`LandType`, with empty slots `Land_Empty`). Called from `LandDialog::BuildPaint` |
 | `0x66bc30` | TrackBrowser::Locked | Tells the player a saved track is locked until a scenario level is completed (`TrackBrowser_LockedHelp`, `%SCENARIO%`, `%LEVEL%`) |
+| `0xae9830` | WaterJetDesigner::BuildSizeTool | Builds the water-jet designer's size tool (`WaterJetDesigner_Tool_Size_TT`), with its OK button |
+| `0xaeb4f0` | WaterJetDesigner::BuildPressureTool | Builds the water-jet designer's pressure tool, in `m/s` (`WaterJetDesigner_Tool_Pressure_TT`) |
+| `0xace7e0` | LaserDesigner::BuildSpreadTool | Builds the laser designer's beam-spread tool (`LaserDesigner_Tool_Spread_TT`) |
+| `0xa4a750` | FrontScreen::BuildTitle | Writes the game's short name and the expansion packs' names on the front screen (`RCTName_short`, `AOP_Name_`) |
+| `0x819f90` | BinWindow::Build | Builds a litter bin's window: how full it is and when it was last emptied (`Bin_AmountFull`, `Bin_LastEmptied`). Called from `0x81A570` |
+| `0x870c60` | StyleMenu::Build | Builds the scenery style choices: each style's icon and name (`StyleInternalName`, `StyleIcon`, `StyleName_`) |
+| `0x638790` | AttractionDetails::BuildCoasterTabs | Builds the graphs and track tabs of a coaster's window, with the ride tabs (`AttractionDetails_GraphsHelp`, `_ConstructionHelp`). Called from three places |
+| `0x637250` | AttractionDetails::BuildGalleryTabs | Builds the maintenance and editing tabs of a viewing gallery's window. Called from `0xBACB70` |
+| `0x9eda70` | FlyingCameraRoute::FileMenu | Loads and saves a flying camera route (`.fcr`; `Load Flying Camera Route`, `Save Flying Camera Route`) |
+| `0xa255b0` | TutorialEditor::FileMenu | Loads and saves a tutorial (`\Tutorials`, `.tut`; `Load Tutorial`, `Save Tutorial`) |
+| `0x9bd360` | ParticleDesigner::BuildTree | Draws the particle designer's tree of effects with its connecting lines (`GUI2_ParticleDesigner_Tree*`), calling itself for each branch |
+| `0xba8320` | EnclosureEditor::Build | Builds the enclosure editor's rotate button. Called from `0xBA74C0` |
+| `0xa44570` | FrontScreen::SaveBeforeLoad | Asks whether to save before loading another game (`FSM_SaveBeforeLoad_Title`, `_Message`). Called from `0xA44B00` and `0xA450D0` |
+| `0x78f490` | StaffWindow::BuildEntertainer | Builds an entertainer's statistics and costume tabs (`Staff_Costume_Colours`). Called from `0x754DE0` |
+| `0x78f9f0` | StaffWindow::BuildTabs (4) | Builds the statistics and tasks tabs of another kind of staff member. Called from `0x7A68F0` |
+| `0x63d4e0` | ColourSwatch::Build | Builds a colour swatch button with its surround (`ColourSwatchButton`, `FlexiColourSurround`). Called from `0x63DB00` |
+| `0x5fe390` | GameOptionsDialog::BuildUnits | Fills in the units and screen options: Celsius / Fahrenheit, metric / imperial / SI and full screen. Called from `0x610D30` |
+| `0x6b8d60` | FinanceWindow::BuildTabs | Builds the finance window's monthly summary and graphs tabs. Called from `0x6B9270` |
+| `0x80bdb0` | ObjectMenu::BuildAvailability | Builds the all / only available choice of an object menu (`ASM_All`, `ASM_OnlyAvailable`) |
+| `0x792c50` | StaffWindow::AnimalKeeperStats | Writes an animal keeper's work: dung cleared and troughs filled. Called from `0x796EE0` |
+| `0x792130` | StaffWindow::MechanicStats | Writes a mechanic's work: rides inspected and fixed. Called from `0x796D20` |
+| `0x6755a0` | RideSelectionWindow::BuildItem | Makes an item of the ride selection list, with showing its children and rotation (`ShowChildren`, `Rota`). Called from three places |
+| `0x642160` | DeleteSelection::Build | Builds the delete-selection tool: clear and delete (`GUI2_DeleteSelection_*`) |
+| `0x997ef0` | FireworkDisplaysWindow::Build | Builds the list of firework displays, with adding one (`TT_FireworkDisplaysWindow_AddDisplay`). Called from `0x9A5AA0` |
+| `0x99da30` | FireworkDisplayDialog::BuildGlyphs | Makes the small pictures of the effects in a display (`.\Code\Common\Particles\GUI2_FireworkDisplayDialog.cpp`: water jet, laser and firework glyphs). Called from `0x99FF30` |
+| `0xc6a720` | DebugConsole::BuildTitleBar | Builds the title bar of a debug console window, with close and maximise. Called from `DebugConsole::BuildWindow` |
+| `0x670c00` | RideSelectionWindow::LoadResources | Loads the ride selection window's resources, with a Chinese special case |
