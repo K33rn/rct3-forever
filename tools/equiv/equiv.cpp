@@ -297,6 +297,18 @@ static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
     return *arena<void *>(0x1f0);
 }
+// loading arrays of structs: the item type's resize (gives the array data at 0x3000) and the fields' Load
+static void *__fastcall stub_array_resize(void **array, void *, int32_t count) {
+    record(0x30, (void *)(uintptr_t)count);
+    array[0] = arena<void>(0x3000);
+    array[1] = (void *)(uintptr_t)count;
+    return (void *)(uintptr_t)count;
+}
+static void __fastcall stub_field_load(void *self, void *, void *item, void *stream, void *loader) {
+    record(0x31, self);
+    record(0x31, item);
+    record(0x31, loader);
+}
 static uintptr_t g_query_id;   // the global holding the id the copy being checked asks for
 
 // start-up globals: the module list's start-up (fills {table, error} from the arena), the global's constructor
@@ -720,8 +732,44 @@ static std::vector<Test> tests() {
                 }};
     cached.prepare = [](const rewrite::Entry *e) { cached_c = rewrite::cached_constants(e->at); };
 
+    // struct-array loads: the field at 0x600 (its description at 0x640, offset 0..0xFC; fields at 0x680, up to 3),
+    // the object at 0x800, the stream at 0xA00 (position sometimes inside its buffer), the loader 0x900; the
+    // count is kept small so the items stay in the arena
+    Test array_load{0x425470,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *field_vt[2] = {nullptr, (void *)stub_field_load};
+                        uint8_t *f = arena<uint8_t>(0x600);
+                        *(void **)(f + 4) = arena<void>(0x640);
+                        int offset = r.range(0, 0x3f) * 4;
+                        *(int32_t *)arena<uint8_t>(0x640 + 0x28) = offset;
+                        *(void **)(f + 0xc) = arena<void>(0x6c0);
+                        *(int32_t *)(f + 0x10) = r.range(0, 3);
+                        for (int j = 0; j < 3; j++) {
+                            *(void **)arena<uint8_t>(0x680 + 0x10 * j) = field_vt;
+                            arena<void *>(0x6c0)[j] = arena<void>(0x680 + 0x10 * j);
+                        }
+                        for (int i = 0; i < 64; i++) arena<uint32_t>(0xa00)[i] = r.next();
+                        uint8_t *s = arena<uint8_t>(0xa00);
+                        int start = r.range(0, 20);
+                        *(int32_t *)(s + 4) = r.range(0, 40);
+                        *(int32_t *)(s + 8) = start;
+                        *(int32_t *)(s + 0xc) = start + r.range(0, 40);
+                        // the count comes from the stream: keep it small where it is read from the buffer
+                        for (int k = 0; k < 64; k++) arena<int32_t>(0xa14)[k] = r.range(-1, 5);
+                    },
+                    [](void *fn) {
+                        ((void(__fastcall *)(void *, void *, void *, void *, void *))fn)(
+                            arena<void>(0x600), nullptr, arena<void>(0x800), arena<void>(0xa00), arena<void>(0x900));
+                        return Result{};
+                    }};
+    array_load.prepare = [](const rewrite::Entry *e) {
+        stub_for_now(rewrite::load_constants(e->at)[2], (void *)stub_array_resize);
+    };
+    array_load.finish = [](const rewrite::Entry *) { unstub(); };
+
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
-                    &deleting, &query, &module, &cached}) {
+                    &deleting, &query, &module, &cached, &array_load}) {
         x->iterations = (x == &deleting || x == &query || x == &module) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

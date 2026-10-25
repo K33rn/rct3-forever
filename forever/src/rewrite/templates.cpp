@@ -71,6 +71,61 @@ static void *__fastcall cached_interface(uint8_t *self) {
     return *(void **)(self + CACHE);
 }
 
+// ---- loading arrays of structs ---------------------------------------------------------------------------------
+// The counterpart of StructArrayField::Save (saved_arrays.cpp) for another field class: Load(object, stream,
+// loader). The array {data, count} sits in the object at the field's description's offset (+4 -> +0x28); it reads
+// the saved length (unused) and count, has the array resized by its item type's own function, then has every
+// field (+0xC, count +0x10, virtual slot 1) load itself into every struct.
+
+struct LoadStream {
+    void **vtable;
+    int32_t position;       // +0x4
+    int32_t buffer_start;   // +0x8
+    int32_t buffer_end;     // +0xc
+    char unknown[4];
+    uint8_t buffer[4];      // +0x14 (longer)
+};
+
+struct LoadField {
+    void **vtable;          // [1] Load(item, stream, loader)
+};
+
+struct StructArrayLoader {
+    void **vtable;
+    uint8_t *info;          // +0x4: the field's description, its offset at +0x28
+    char unknown[4];
+    LoadField **fields;     // +0xc
+    int32_t field_count;    // +0x10
+};
+
+static void read4(LoadStream *s, void *into) {
+    int32_t at = s->position;
+    if (at < s->buffer_start || at + 4 > s->buffer_end) {
+        ((void(__fastcall *)(LoadStream *, void *, void *, int32_t))0x809210)(s, nullptr, into, 4);
+    } else {
+        *(uint32_t *)into = *(uint32_t *)(s->buffer + (at - s->buffer_start));
+        s->position = at + 4;
+    }
+}
+
+static volatile long g_array_loads;
+
+template <uint32_t STRIDE, uint32_t RESIZE>
+static void __fastcall struct_array_load(StructArrayLoader *f, void *, uint8_t *object, LoadStream *s, void *loader) {
+    g_array_loads++;
+    uint8_t **array = (uint8_t **)(object + *(int32_t *)(f->info + 0x28));
+    int32_t length, count;
+    read4(s, &length);
+    read4(s, &count);
+    ((void(__fastcall *)(void *, void *, int32_t))RESIZE)(array, nullptr, count);
+    for (int32_t i = 0; i < count; i++)
+        for (int32_t j = 0; j < f->field_count; j++) {
+            LoadField *x = f->fields[j];
+            ((void(__fastcall *)(LoadField *, void *, uint8_t *, LoadStream *, void *))x->vtable[1])(
+                x, nullptr, *array + i * STRIDE, s, loader);
+        }
+}
+
 // ---- module globals ---------------------------------------------------------------------------------------------
 // A global object built before main from the start-up of a list of modules: `start` (0xBCE1A0, 0x805AB0, ...)
 // runs the list's initialisers in turn (undoing them if one fails) and gives {table, error}; the global's
@@ -103,6 +158,7 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
                                                   (void *)&query<id>, &g_queries);
 #define MODULE(at, start, global, dtor, ...)                                                                         static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("ModuleGlobal", at, REWRITE_CAT(original_, at), 8,                                                             (void *)&module_global<start, global, dtor>, &g_module_globals);
 #define CACHED(at, flag, ref, obj, id, cache, ...)                                                                   static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("CachedInterface", at, REWRITE_CAT(original_, at), 8,                                                          (void *)&cached_interface<flag, ref, obj, id, cache>, &g_cached);
+#define LOAD(at, stride, resize, ...)                                                                                static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("StructArrayLoad", at, REWRITE_CAT(original_, at), 8,                                                          (void *)&struct_array_load<stride, resize>, &g_array_loads);
 #include "generated.inc"
 
 // the cached interfaces' constants, for the equivalence test
@@ -110,6 +166,8 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
 #undef QUERY
 #undef MODULE
 #undef CACHED
+#undef LOAD
+#define LOAD(...)
 #define DELETING(...)
 #define QUERY(...)
 #define MODULE(...)
@@ -121,6 +179,23 @@ static const uint32_t cached_table[][6] = {
 namespace rewrite {
 const uint32_t *cached_constants(uintptr_t at) {
     for (auto &c : cached_table)
+        if (c[0] == at) return c;
+    return nullptr;
+}
+}
+
+// the struct-array loads' constants, for the equivalence test
+#undef CACHED
+#undef LOAD
+#define CACHED(...)
+#define LOAD(at, stride, resize, ...) {at, stride, resize},
+static const uint32_t load_table[][3] = {
+#include "generated.inc"
+};
+
+namespace rewrite {
+const uint32_t *load_constants(uintptr_t at) {
+    for (auto &c : load_table)
         if (c[0] == at) return c;
     return nullptr;
 }
