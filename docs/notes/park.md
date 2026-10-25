@@ -133,3 +133,7 @@
 | `0xbc78f0` | Span::Middle | The middle of the values at +0xC of the objects at +0x20 and +0x24 (their sum halved) |
 | `0x85cae0` | Terrain::HeightLevel | The terrain height level for a height: the height times the scale in `0x1310E78`, rounded up to a whole number |
 | `0x72f060` | Path::Points | Gives a path's points and their count: with its flag (+6) set, from the first point and one more than its count (+0xA); otherwise from the second |
+| `0x8438e0` | Sides::Rotate | Turns a 4-bit set of sides (one bit per side) round by n quarter turns: ((v << 4 | v) >> (4 - n)) & 0xF |
+| `0x8275d0` | Footprint::RotateCell | Turns cell coordinates within a footprint by its orientation (0-3, a quarter turn each), using the footprint's size (+0x10 of the one given) |
+| `0x494920` | Terrain::CellFlag12 | The terrain cell's byte at +0x12 shifted down one bit, for the cell at the given column and row of the grid (24 bytes each) |
+| `0x4948d0` | EnclosureManager::CellAt | The first value of the enclosure manager's grid cell at the given column and row (24 bytes each, at +0x6C, its width +0x64 and height +0x68), or -1 outside the grid |

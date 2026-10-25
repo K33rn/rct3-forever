@@ -327,3 +327,14 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc374c0` | Static::EnsureC374C0 | Sets up a static object once (`0xC365A0`, freed at exit) and returns it |
 | `0x48caf0` | Call44CC40And489A10 | `0x44CC40` then `0x489A10`, both with the same three arguments |
 | `0xcdb780` | Scroller::Reset | Sets both of its value triples to (0.1, 100, 0) |
+| `0xcded30` | SlotPool::Init | Sets up a slot pool for n slots, growing by the step given: the slots cleared, the free list holding every slot (the highest first, so the lowest is taken first), the used range empty |
+| `0xbd0e90` | String::Substring | A new text holding the part of this one from the start position for the given length (kept within the text) |
+| `0x46f560` | Array8::SetCapacity | Resizes an array of 8-byte items to n: a new aligned block whose items are constructed (`0x402AE0`, through ArrayConstruct), the old items that fit copied over and the old block freed; returns n |
+| `0x423de0` | Array4::SetCapacity | Resizes an array of 4-byte items to n, copying over those that fit; returns n |
+| `0x41cab0` | NamedTextRef2::NamedTextRef2 | Constructor of a text reference found by name (table `0xF27364`; the name made from C text when asked, with `0xF27398`), like NamedTextRef |
+| `0xcd27d0` | WideString::ToLower | A new wide text holding this one with every character made lower-case (tolower) |
+| `0xbd12c0` | String::AssignString | Sets a text to a copy of another text's characters (`0xBD0720` with its data and length); returns it |
+| `0xbe4030` | SaveWriter::Finish | Runs `0xC50250`, waits for the writing to finish (SaveWriter::Wait) and gives the stream's value at +0x44 (0 when it is -1) |
+| `0x808700` | IdMap::IdMap | Constructor of an id map: two empty arrays and a growth step of 32 |
+| `0x7e50e0` | Buffer16::Buffer16 | Clears a buffer header: no block, and its three 16-bit counts 0 |
+| `0x67a3b0` | Window::Slot48Self | Calls the window's slot 48 with its value at +0xE0 and itself |
