@@ -81,3 +81,9 @@
 | `0x40df10` | ManagedObject::Slot28 | Calls `0x771E50` with 0, then deletes the object at +0x2C and clears it. Slot 28 of ManagedObject |
 | `0x87ef00` | SIDDatabaseEntry::ScaledValue | Ten times what the entry's slot 0 gives, at most 10,000. Slot 4 of SIDDatabaseEntry |
 | `0x87f270` | SIDDatabaseEntry::Kind | 0x13 when `0xBD1420` with 0 is true and bit 25 of the entry data's +4 is set, otherwise 0x12. Slots 4 and 10 of SIDDatabaseEntry |
+| `0x58fdc0` | StallInstance::Slot54 | A quarter of the first item's slot 11 value (the item the stall's slot 55 gives for 0), or 0 when there is none. Slot 54 of StallInstance |
+| `0x585af0` | SpecialAttractionInstance::Slot57 | When the attraction's type kind is 0xB, `0x4BFA20`'s value times +0x1F0; otherwise 0. Slot 57 of SpecialAttractionInstance |
+| `0x585bd0` | SpecialAttractionInstance::Slot45 | Runs `0x4C35E0`, then clears +0x1F4 and +0x1F8. Slot 45 of SpecialAttractionInstance |
+| `0x588b40` | SpecialAttractionPersonInfo::Slot20 | By the attraction type's kind: 0xB calls `0x4D2800` with 10, 0xC with 11, 0xD with 12; nothing for others. Slot 20 of SpecialAttractionPersonInfo |
+| `0x7312d0` | PathTypeDatabaseEntry::Name | The path type's name: the text at +8 of its data (+0x8C), or `<unknown path type>` when there is none. Slot 2 of PathTypeDatabaseEntry |
+| `0x7395f0` | QueueTypeDatabaseEntry::Name | The queue type's name: the text at +4 of its data (+0x8C), or `<unknown queue type>`. Slots 2 and 4 of QueueTypeDatabaseEntry |

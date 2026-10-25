@@ -72,3 +72,8 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7a0e50` | Mechanic::Slot37 | In states 0xE, 0xF or 0x14: `0x7A0000` and clears +0x1A4, returning 1; otherwise `0x7ECD90`. Slot 37 of Mechanic |
 | `0x7eec00` | Staff::UpdateState | In state 0xC runs `0x7EC8F0`; in any other state Person::UpdateState. Shared by the staff classes (slots 39, 40, 47) |
 | `0x7e8fc0` | SecurityGuard::Slot37 | In state 0xD: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of SecurityGuard |
+| `0x7418a0` | AnimalKeeper::SetSpeedFactor | Sets the keeper's factor at +0x114 by his level (+0x414): 1.1 at level 1, 1.2 at 2, 1.3 at 3, 1.0 otherwise; then, in state 0xD, more work (`0x73EE90`, ...). Slot 39 of AnimalKeeper |
+| `0x756b00` | Entertainer::StateName | The name of the entertainer's state: in state 0xD the text kept in `0x12FB234`, otherwise Person::StateName. Slot 36 of Entertainer |
+| `0x799ff0` | LifeGuard::StateName | The name of the lifeguard's state: in state 0xD the text kept in `0x12F8FC0`, otherwise Person::StateName. Slot 36 of LifeGuard |
+| `0x7f8ef0` | VIP::StateName | The name of the VIP's state: in state 0x16 the text kept in `0x12F98B8`, otherwise Guest::StateName. Slot 36 of VIP |
+| `0x7f8810` | VIP::Slot37 | In state 0x16: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x761440`. Slot 37 of VIP |

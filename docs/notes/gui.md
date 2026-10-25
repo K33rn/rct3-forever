@@ -367,3 +367,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xac7020` | FloatBlenderElement::Blend | Sets its value (+0x40) between those of two elements (their interface `0x13CE434`) by the weight given: w x second + (1 - w) x first. Slot 8 of FloatBlenderElement |
 | `0x63acb0` | Window::DeleteChild40 | Deletes the window kept at +0x40 (deleting destructor with 1), then `0x6A1E20`. Shared by several dialogs and panels |
 | `0x63b4e0` | Window::DestroyMember28 | Clears +0x24, and destroys and frees the object kept at +0x28, then `0x6A1E20`. Shared by several dialogs and panels |
+| `0x58fbe0` | StallInstance::OpenDetails | Opens the stall's details window: makes a 576-byte window with StallDetails::BuildTabs for this stall, then calls its slot 2 with the argument. Slot 2 of StallInstance |
+| `0x52f4c0` | RideInstance::OpenDetails | Opens the ride's details window: a 748-byte window made by AttractionDetails::BuildRideTabs for this ride, then its slot 2 with the argument. Slot 2 of RideInstance and AnimatedRideInstance |
+| `0xa7b310` | ChangingRoomInstance::OpenDetails | Opens the changing room's details window: a 656-byte window made by AttractionDetails::BuildPoolTabs, then its slot 2 with the argument. Slot 2 of ChangingRoomInstance |
+| `0x4beea0` | AttractionInstance::OpenDetails | Opens an attraction's details window: a 400-byte window made by AttractionDetails::BuildTabs, then, unless the argument is -1, its slot 2 with it. Slot 2 of AttractionInstance and SpecialAttractionInstance |
