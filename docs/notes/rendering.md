@@ -336,3 +336,11 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9525d0` | Water::DrawPieces9525D0 | In outline: draws the water pieces with the id given for the current device (ForCurrent(3)): for each, works out its direction and its colours from a table by angle |
 | `0xa00bf0` | Shadows::FitA00BF0 | In outline: fits a shadow view to a list of points (+0x6C): finds their range, the terrain, and the light direction (`0x85CB30`, normalised from `0xF86DE0`) |
 | `0x933a20` | WaterFlow::Draw933A20 | In outline: draws a water flow for the current device (ForCurrent(1)) with the flow manager (WaterFlowManager::Get) and its colours (`0x10F0C2C`, `0x10F0C30`) |
+| `0x80ce90` | Frustum::Cull80CE90 | In outline: culls a list of boxes against a view's planes (normalised, Box::NearFarOffsets2 for each plane's near and far corners) and keeps the ones inside (`0x80C8B0`) |
+| `0xbd5360` | Draw::QuadBD5360 | In outline: a long run of maths building a drawn shape from a position, sizes and colours, ending with the device setup (`0xC1FC30`) |
+| `0x83a8c0` | SceneryRenderer::DrawItems83A8C0 | In outline: draws a list of scenery items (+0xE4, count +0xE8): turns each one (Matrix::TurnColumnsAboutY), looks up its texture (`0x463530`) and draws it with the shared shader (`0x10F2FA0`) |
+| `0x962390` | Mesh::Build962390 | In outline: builds a mesh from a grid of points: makes its vertices (16 bytes each) and triangles (12 bytes each) and works out the normals (Mesh::ComputeNormals) |
+| `0x863140` | Scenery::CollectVisible863140 | In outline: goes over a scenery set's parts by kind (0 or 3) and keeps the ones within the view distances (+0x168, +0x178) |
+| `0x9c8390` | Particles::Update9C8390 | In outline: updates a particle system's emitters (+0x54, count +0x5C): turns them by their spins (Matrix::TurnAboutX, Matrix::TurnAboutY), points them (Matrix::LookAlongZSide, LookAlongYSide) and spawns particles (Particles::Spawn9CBDF0) |
+| `0x96d180` | Water::DrawJets96D180 | In outline: draws water jets with work to do (+0x24, +0x44) for the current device (ForCurrent(3)), building their shapes (`0x9F8B40`) |
+| `0x9052a0` | Water::Visible9052A0 | In outline: finds the water parts the camera sees (MainCamera::Get) over the terrain, checking each one (`0x903AA0`) |

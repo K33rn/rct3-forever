@@ -313,3 +313,7 @@
 | `0x8c8100` | Terrain::Strips8C8100 | In outline: goes over a terrain patch's pieces (+0x7C) by their side bit (bit 28 against +0xE4) and joins them into strips |
 | `0x5e5a90` | Scenery::Update5E5A90 | In outline: a placed item's update: checks it (`0x5D9720`), its owner's parts (`0x5E3F00`) and, when it is the selected one (`0x12F5608`), refreshes its link (`0x4E6410`) |
 | `0x58d400` | Placement::Step58D400 | In outline: one step of a placement tool by its mode (+0x100): works out where it goes (`0x58ECF0`, `0x58CA20`, `0x58D200`) and gives whether it is done |
+| `0x5cb500` | Placement::Ground5CB500 | In outline: finds the ground for a thing being placed: the terrain (a 90 by 90 grid) and what is there (`0xAFD9D0`, `0xAF7890`, `0xAF7830`) |
+| `0x848e30` | Scenery::PlaceAt848E30 | In outline: places a scenery item at a cell: sets up (`0x843A30`), checks the cell is inside the terrain, makes the item and checks whether a key is held (KeyState::Held) |
+| `0x839870` | Scenery::Update839870 | In outline: a scenery item's update when it has work to do (+0x184, +0x1E8): works with the terrain and its target (+0x16C) and may show a message (`0x6C1DA0`) |
+| `0x942a70` | Water::Flood942A70 | In outline: whether water at a height can spread from a cell: compares the heights around it and spreads to the neighbours (`0x941EF0`) |

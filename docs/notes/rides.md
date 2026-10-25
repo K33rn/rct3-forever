@@ -179,3 +179,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0xc220e0` | Skeleton::UpdateBone | In outline: updates one bone and then its children (it calls itself): blends its pose (`0xC5A1F0`) when its blend is under 1 and builds its matrix |
 | `0x861ae0` | Model::BoneMatrix861AE0 | In outline: the matrix of a model's bone n: from its animation (`0xCEF080`) when it has one, otherwise from its node (Table2C::Value, Nodes::MatrixFor) |
 | `0xc27d80` | Skeleton::UpdateAllC27D80 | In outline: another whole-skeleton bone update like Skeleton::UpdateAllC26EF0 |
+| `0xbbbfe0` | Track::BuildBBBFE0 | In outline: builds a track's sections from a list (or all of them): counts them (List::Count), sets each up (`0xBB65A0`) and, for kind 2, joins them (`0xBBBD60`, `0xBBBE30`) |
