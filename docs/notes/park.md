@@ -113,3 +113,11 @@
 | `0x4bfa20` | AttractionInstance::RecentTotal | The total of the attraction's ten-entry history (the table at +0x9C, 12 bytes apart) times 90 / 300 |
 | `0x4bfb10` | AttractionInstance::ResetStats | Starts the attraction's statistics again: the start time (+0x7C) from the game clock (`0x1106C54`, +0x48), its counters cleared and +0x88 set to -1, the ten-entry history made afresh (`0x4BF730`) and cleared |
 | `0x4c35e0` | AttractionInstance::ResetAll | AttractionInstance::ResetStats, then slots 34 and 35 of the object at +0x140. Shared by the ride and attraction instance classes (slots 45, 46, 81) |
+| `0x4bf730` | HistoryArray::Resize | Resizes an array of 12-byte entries ({data, count}) to n: a new aligned block, the entries that fit copied over, the old block freed; returns the new count. Used by AttractionInstance::ResetStats |
+| `0x7f49c0` | Attraction::KindValue | A value for a kind (in ecx): 100 for kind 0, 300 for kind 2, 200 otherwise. Used by AttractionInstance::Slot51 |
+| `0xbb5120` | Entry::IsSet | Whether the entry's first value is not -1 |
+| `0x846ae0` | SceneryItem::Get20 | Returns the value at +0x20 (the object a part belongs to, as the parted-object requests use it) |
+| `0x833890` | SceneryBehaviour::SetActive | Sets flag 1 of the behaviour's flags (+0x54). Called when litter bins, signs, fountains and other behaviours register |
+| `0x8338b0` | SceneryBehaviour::ClearActive | Clears flag 1 of the behaviour's flags (+0x54). Called when they unregister |
+| `0x833850` | SceneryBehaviour::Owner | The scenery item a behaviour belongs to: the interface (id in `0x130B5C8`) of the object its reference at +0x44 points to, or null |
+| `0x4d18c0` | AttractionPersonInfo::Attraction | The attraction a person info belongs to: the interface (id in `0x12F4C64`) of the object its reference at +0x44 points to, or null |
