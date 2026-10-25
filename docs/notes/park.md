@@ -425,3 +425,12 @@
 | `0x4d0490` | Ride::Link4D0490 | In outline: links a ride part (`0x501F80`, `0x4B52D0`) when not flagged (+0x4C) |
 | `0x797d70` | Guest::FindPathNear | In outline: finds a path near a guest on the terrain (a 90 by 90 grid, `0x7C2FF0`) with the path manager |
 | `0x592da0` | Shop::Refresh592DA0 | In outline: when not flagged (+0x204) and with a slot (+0x23C), refreshes a shop's items (`0x4CDE30`, `0x4D0CB0` with 4 and the next rotation) |
+| `0xab23c0` | PoolComplex::PlaceAB23C0 | In outline: places a pool part by its kind (0, ...) when asked, with its record (`0xAAE430`, `0x13CE3F8`) |
+| `0x8bea40` | Terrain::Blocks8BEA40 | In outline: another terrain block pass like Terrain::Blocks8BF330, keeping the lowest values |
+| `0x6b6fc0` | Path::Check6B6FC0 | In outline: checks the path (PathManager::Get) over the terrain by its result (1, ...) |
+| `0xaba180` | Fence::UpdateABA180 | In outline: goes over a border's pieces while not flagged (+0x1B0) and it has some (+0x1AC) |
+| `0x7a13c0` | Path::CanUse7A13C0 | In outline: whether a path tile can be used, by its kind (0, 4, 0xE, 0xF, 0x13 handled) and the mask (+0x408) |
+| `0xb9d510` | PathGrid::RebuildB9D510 | In outline: another path grid rebuild over the terrain (a 90 by 90 grid) |
+| `0xabe3c0` | Fence::CopyABE3C0 | In outline: copies a border's values into a new buffer for its range (+0x50 to +0x58) |
+| `0x9026f0` | Water::SetMode9026F0 | In outline: switches the water's mode (+0x40) by case (1, ...) with the water manager |
+| `0x4ce150` | Shop::NameText4CE150 | In outline: a shop's name text, or an empty text when it has none (`0x4CDF90`) |

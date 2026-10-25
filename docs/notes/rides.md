@@ -224,3 +224,7 @@ Tracked rides, flat rides and their cars and trains.
 | `0xabbc00` | PoolComplex::CheckABBC00 | In outline: for kinds outside 2 to 4, when not flagged (+0x178), checks a pool piece (`0xABC990`) and its first part (`0xAB1020`) |
 | `0x5c0200` | TrackedRide::EndPoints5C0200 | In outline: works out a ride piece's end points (used by TrackedRide::Ends5C58B0) unless flagged (+0xAC), with its slot (+0x26C) |
 | `0x4d50a0` | AttractionPerson::Place4D50A0 | In outline: when not flagged (+0x74), places a person on an attraction (AttractionPersonInfo::Person) with its matrix (Matrix::Copy) and tile (OffsetRef::Owner2) |
+| `0x5e2550` | TrackedRide::Rebuild5E2550 | In outline: refreshes a ride (`0x5A3A30`) and goes over the selected ride's pieces (`0x12F5608`, +0x16C chain) making each one again (TrackPiece::TrackPiece) |
+| `0x4f2cb0` | Ride::Linked4F2CB0 | In outline: for rides in mode 3, checks a part with flag 0x400000 and more than two ends (+0xE4) against the shared list (`0x130BBEC`) |
+| `0x5eba30` | TrackedRide::Check5EBA30 | In outline: when not flagged (+0x118), checks the ride's piece (kind 3 or flag 0x40 only) |
+| `0x5b9c60` | Ride::Place5B9C60 | In outline: places a ride part on the terrain along a direction (normalised from `0xF3EF30`) |

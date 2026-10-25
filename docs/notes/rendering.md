@@ -450,3 +450,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xccbda0` | Particles::DrawCCBDA0 | In outline: draws particles for the current device (ForCurrent(3)), each from its direction |
 | `0xcde1a0` | Mesh::JoinCDE1A0 | In outline: another mesh join like Mesh::JoinCDC480 |
 | `0x484f60` | Model::Draw484F60 | In outline: draws a model turned by its angle (Matrix::TurnColumnsAboutY) with the shared shader (`0x10F2FA0`, Table10::Lookup) and its texture |
+| `0x9278d0` | Water::Distance9278D0 | In outline: the nearest distance from a point to a water piece's planes (shown in translucent white in debug) |
+| `0xc75310` | Effect::SetByKindC75310 | In outline: sets an effect's value n by kind (0, ...) (`0xC5C7F0`) |
+| `0x89f460` | Billboard::Make89F460 | In outline: makes a billboard for a scenery part (Billboard::Create) at its rounded size, when within a distance (+0x30) |
+| `0xa7ed40` | Animal::DrawA7ED40 | In outline: sets an animal's look: its box (`0xA7EBE0`, `0xBCC740`), its direction (Matrix::LookAlongYSide) and its parts (`0xA7BF80`) |
+| `0xb48330` | WildAnimal::PoseB48330 | In outline: works out an animal's pose when it moved more than its kind's step (`0x10F27DC` by +0xAC, 0x1C bytes each) and builds its parts' matrices (`0x869400`) |

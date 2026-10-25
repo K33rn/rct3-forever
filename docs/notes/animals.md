@@ -117,3 +117,5 @@
 | `0xb38a30` | Animal::CanActB38A30 | In outline: whether an animal can act now: not flagged (+0xFC, the owner's bit 8), and its slot and links in order |
 | `0xb30a40` | Animal::UpdateB30A40 | In outline: an animal's update when not flagged (+0xB0): checks with the shared manager (`0x13CEE84`) and, when done, acts (`0xB7AAD0`) |
 | `0xb16010` | WildAnimal::PoseB16010 | In outline: sets an animal's pose by its mode (+0x84: 1, ...), pointing it (Matrix::LookAlongYSide with `0x10F2EA0`) on the terrain |
+| `0xb13700` | Animal::HandleB13700 | In outline: an animal's handling by its state (+0x78: 0, ...) of the thing given |
+| `0xa16f30` | Bird::PlaceA16F30 | In outline: places a bird at a cell over the terrain (a 90 by 90 grid, `0x492CD0`) |

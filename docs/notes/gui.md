@@ -681,3 +681,9 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x438140` | Camera::Focus438140 | In outline: focuses the camera (MainCamera::Get, `0xCD7BB0`, `0xCD6850`) on a target (+0x308) over the terrain |
 | `0xa95240` | Window::LayoutA95240 | In outline: places a window's parts (`0x63AAB0`, Window::UpdateRect) |
 | `0x59fac0` | Placement::Wait59FAC0 | In outline: waits for a placement plan for the selected thing (`0x12F5608`) inside a timed loop (Timer::Milliseconds) |
+| `0x6621b0` | Window::SetShown6621B0 | In outline: shows or hides a window part (+0x64) when it changes, refreshing its links when not flagged (+0x44) |
+| `0x97fa40` | Window::Build97FA40 | In outline: builds a window from the shared title `0x1341290` |
+| `0x74e710` | AvatarEditor::Pick74E710 | In outline: sets up the avatar editor's five parts (`0x746390`) and the animation name text (AvatarEditor::AnimationName) |
+| `0x9b5a00` | Dial::Build9B5A00 | In outline: builds a dial window's parts (Window::UpdateRect, Window::SetRelation) and sets its value (`0x9C8E10`) |
+| `0x6ccf70` | List::Clear6CCF70 | In outline: releases a list's parts (+0xE0, count +0xE4) |
+| `0x473320` | Camera::Select473320 | In outline: when the thing given is the selected one (+0x64) in mode 1 and not flagged (+0x88), moves the camera to it (`0x130654C`, MainCamera::Get) |

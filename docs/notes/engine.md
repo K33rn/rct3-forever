@@ -1504,3 +1504,9 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xa83e10` | Folder::RescanA83E10 | In outline: releases a list of entries and builds a folder path from the install folder text (`0x1106DC4`) to read again |
 | `0xca2f10` | Path::MatchCA2F10 | In outline: compares a path with patterns (`0xF27998`, `0xF2E7A4`) and makes the match's parts |
 | `0xb0e7c0` | Path::LoadNodesB0E7C0 | In outline: reads saved path nodes from a block (`0x809210`, four bytes at a time, checking the block's size) and makes them (`0xB0E0F0`) |
+| `0xcac5a0` | Loader::OpenCAC5A0 | In outline: opens a resource by name (`0xBD05B0`, Object69E with 4), making its name text when none is given |
+| `0xcac0d0` | Loader::OpenCAC0D0 | In outline: the same resource open (another copy) |
+| `0xcabc00` | Loader::OpenCABC00 | In outline: the same resource open (another copy) |
+| `0xbe5b20` | Module::LoadBE5B20 | In outline: runs the module list (ModuleList::Run), stops on an error (Error::ThrowIf) and makes the module's name text |
+| `0xbce410` | WideString::FormatBCE410 | In outline: formats a wide text with `%` codes: reads each code's width digits and kind (0 to `l`, ...) and writes its value |
+| `0x470560` | Save::Write470560 | In outline: writes a record's values to a save, four bytes at a time (SaveWriter::Write), including its parts when it has them |

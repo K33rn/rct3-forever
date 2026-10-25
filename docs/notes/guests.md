@@ -146,3 +146,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7e93d0` | Guest::PickRandom7E93D0 | In outline: picks a random thing for a guest of kind 0 or 1 over the terrain (a 90 by 90 grid, Random::Ran0, `0x7C2FF0`) |
 | `0x79eb70` | Guest::PickRandom79EB70 | In outline: the same random pick as Guest::PickRandom7E93D0 (another copy) |
 | `0x77abe0` | GuestGroup::Setup77ABE0 | In outline: sets up a group (`0x779D20`, `0x76DFF0` into `0x1306554`) and, when it can (`0x76F0D0`), its members (`0x777660`) |
+| `0x76f0d0` | GuestGroup::CanPlace76F0D0 | In outline: whether a group can be placed: checks the terrain under it |
