@@ -10,8 +10,10 @@ Before main, the compiler runs one small function for each global the game defin
 Each is recognised from its calls and described by the name it registers and the global it fills.
 """
 import csv
+import glob
 import os
 import pickle
+import re
 import sys
 
 import capstone
@@ -29,12 +31,16 @@ def main():
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     md.detail = True
     rows = []
+    described = set()   # functions another notes file already describes
+    for p in glob.glob(os.path.join(HERE, 'docs', 'notes', '*.md')):
+        if os.path.basename(p) != 'initializers.md':
+            described |= {int(h, 16) for h in re.findall(r'^\| `0x([0-9a-fA-F]+)`', open(p, encoding='utf-8').read(), re.M)}
     for va, i in sorted(a.items()):
-        if funcs[va]['status'] != 'to do' or not i['strings']:
+        if funcs[va]['status'] not in ('to do', 'documented') or va in described or not i['strings']:
             continue
         name = i['strings'][0].strip('"')
         if 0xBECA70 in i['calls'] and 0xBEC4B0 in i['calls'] and len(i['calls']) == 3:
-            glob = None
+            target = None
             code = list(md.disasm(mem[va - BASE:va - BASE + int(funcs[va]['size'])], va))
             for k, ins in enumerate(code):
                 if ins.mnemonic == 'call' and ins.operands[0].type == capstone.x86.X86_OP_IMM and \
@@ -42,8 +48,8 @@ def main():
                     for x in code[k + 1:k + 3]:
                         if x.mnemonic == 'mov' and x.operands[0].type == capstone.x86.X86_OP_MEM and \
                                 x.operands[0].mem.base == 0 and x.op_str.endswith('eax'):
-                            glob = x.operands[0].mem.disp & 0xffffffff
-            where = f', kept in `{glob:#x}`' if glob else ''
+                            target = x.operands[0].mem.disp & 0xffffffff
+            where = f", kept in `{target:#x}`" if target else ""
             rows.append(f'| `{va:#x}` | Name {name} | Registers the name `{name}` at start-up (`0xBECA70`){where} |')
         elif 0x46FAD0 in i['calls'] and 0xBCF850 in i['calls']:
             rows.append(f'| `{va:#x}` | Section {name} | Creates the named section `{name}` at start-up (`0x46FAD0`) '

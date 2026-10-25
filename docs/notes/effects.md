@@ -19,3 +19,5 @@
 | `0x82ddb0` | FireworkLauncher::FindSlots (2) | Finds a launcher's slots (`Slot %d in %s`, `Missing firework slot matrix`), for the display editor. Called from three places |
 | `0xa280a0` | Darts::Effects | The effects of a dart hitting: dust (`ParticleEffects\Dust.frw`), a gun shot and a balloon pop (`GunShot1`, `BalloonPop`). Called from three places |
 | `0x825780` | FountainShape::Names | Recognises the special fountain display names `shark`, `truck` and `doom` |
+| `0x939870` | WaterJet::DebugText | Writes a water jet's developer statistics (`Speed`, `DistForSpeed`, numbers of points and emitters, start, end and ID). Called from `WaterJetManager::DebugText` |
+| `0xede240` | FountainKinds::Names | Makes the fountain kinds' names at start-up (`splash`, `jet`, `fountain`) |

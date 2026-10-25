@@ -7,12 +7,17 @@ usage: python tools/families.py      (uses tools/describe.py's cache)
     game's, or `FGDK`, Frontier's engine's);
   - condition names: for each kind of objective condition, a function looks up the text `ObjectiveCondition_<name>`
     in the game's text table (0x410C90, table 0x1303CFC);
-  - start-up texts: an initializer that looks up the text `<prefix><key>` (0x410C90) into a global before main.
+  - start-up texts: an initializer that looks up the text `<prefix><key>` (0x410C90) into a global before main;
+  - key commands: an initializer that defines a key command by its name, the setting its key is kept under
+    (`KeySetting_<name>`) and its group (`KeyGroup_DuringPlay`, `KeyGroup_Universal`, `KeyGroup_ProgrammerAids`, the
+    developers' own commands).
 Each is recognised from its calls and strings, and described by those strings.
 """
 import csv
+import glob
 import os
 import pickle
+import re
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WSTRING, TEXT_LOOKUP = 0xBCF850, 0x410C90
@@ -21,9 +26,13 @@ WSTRING, TEXT_LOOKUP = 0xBCF850, 0x410C90
 def main():
     a, imports = pickle.load(open(os.path.join(HERE, 'out', 'describe.cache'), 'rb'))
     funcs = {int(r['address'], 16): r for r in csv.DictReader(open(os.path.join(HERE, 'docs', 'functions.csv')))}
-    res, cond, text = [], [], []
+    res, cond, text, keys = [], [], [], []
+    described = set()   # functions another notes file already describes
+    for p in glob.glob(os.path.join(HERE, 'docs', 'notes', '*.md')):
+        if os.path.basename(p) != 'families.md':
+            described |= {int(h, 16) for h in re.findall(r'^\| `0x([0-9a-fA-F]+)`', open(p, encoding='utf-8').read(), re.M)}
     for va, i in sorted(a.items()):
-        if funcs[va]['status'] != 'to do':
+        if funcs[va]['status'] not in ('to do', 'documented') or va in described:
             continue
         s = list(dict.fromkeys(i['strings']))
         calls = [c for c in i['calls'] if isinstance(c, int)]
@@ -34,6 +43,11 @@ def main():
         elif len(s) == 2 and s[1] == 'ObjectiveCondition_' and TEXT_LOOKUP in calls:
             cond.append(f'| `{va:#x}` | {s[0]}Condition::Name | Looks up the name of the objective condition '
                         f'{s[0]} (the text `ObjectiveCondition_{s[0]}`) |')
+        elif va >= 0xE00000 and len(s) == 3 and s[1].startswith('KeySetting_') and s[2].startswith('KeyGroup_'):
+            group = {'KeyGroup_DuringPlay': 'used during play', 'KeyGroup_Universal': 'used everywhere',
+                     'KeyGroup_ProgrammerAids': "one of the developers' own commands"}.get(s[2], s[2])
+            keys.append(f'| `{va:#x}` | Key {s[0]} | Defines the key command `{s[0]}` at start-up: its key is kept as '
+                        f'`{s[1]}`, in `{s[2]}` ({group}) |')
         elif va >= 0xE00000 and len(s) == 2 and TEXT_LOOKUP in calls and s[0].endswith('_'):
             text.append(f'| `{va:#x}` | Text {s[0]}{s[1]} | Looks up the text `{s[0]}{s[1]}` at start-up and keeps it '
                         f'in a global |')
@@ -42,10 +56,11 @@ def main():
            '(see the script for how they are recognised).', '',
            '## Resource types', '', '| Address | Name | What it does |', '|---|---|---|'] + res + [
            '', '## Objective condition names', '', '| Address | Name | What it does |', '|---|---|---|'] + cond + [
-           '', '## Texts looked up at start-up', '', '| Address | Name | What it does |', '|---|---|---|'] + text
+           '', '## Texts looked up at start-up', '', '| Address | Name | What it does |', '|---|---|---|'] + text + [
+           '', '## Key commands', '', '| Address | Name | What it does |', '|---|---|---|'] + keys
     open(os.path.join(HERE, 'docs', 'notes', 'families.md'), 'w', encoding='utf-8', newline='\n').write(
         '\n'.join(out) + '\n')
-    print(len(res), 'resource types,', len(cond), 'condition names,', len(text), 'texts')
+    print(len(res), 'resource types,', len(cond), 'condition names,', len(text), 'texts,', len(keys), 'keys')
 
 
 if __name__ == '__main__':

@@ -55,3 +55,5 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9de680` | EnvironmentMap::LoadShaders | Loads the environment cube map shaders (`EnvCubemap`, `EnvCubemapColour`). Called from `0x9DF0E0` |
 | `0x85b060` | Shadows::LoadShaders | Loads the shadow shaders (`ShadowDrawSolidColour`, `ShadowCopy`). Called from `0x85BC70` |
 | `0x914660` | WaterDrop::LoadShaders | Loads the water drop shaders (`WaterDrop`, `WaterDropWash`). Called from `0x477BD0` |
+| `0xc9c210` | Shadows::LoadShaders (2) | Loads the shadow projection shaders (`GE_Shadows_ShadowProject`, `GE_Shadows_DebugShadowBuffer`). Called from `GE_Device::LoadPassShaders` |
+| `0x964d70` | WaterWake::LoadShaders | Loads the water wake shaders (`WaterWakeBump`, `WaterWakeAlpha`). Called from `0x964EB0` |

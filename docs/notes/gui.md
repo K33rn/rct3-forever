@@ -226,3 +226,24 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xbb5310` | AttractionDetails::ButtonFlags | Turns the attraction window's button flag names into values (`ButtonFlagStateChooser`, `View`, `Thoughts`, `Finances`, `Customers`, `StallItems`, `Adverts`, `StallExtras`, ...). Called from `0xBB5470` |
 | `0x874840` | EntranceExitMenu::Build | Builds the entrance and exit buttons (exit first). Called from `0x6616D0` |
 | `0x8746a0` | EntranceExitMenu::Build (2) | The same with the entrance first. Called from `0x6618C0` |
+| `0x4c9140` | AttractionList::Categories | Makes the extra categories of the attraction list (`Pools`, `Animals`) |
+| `0x4cb940` | AttractionList::ParameterNames | Makes the attraction list's column names: status, popularity, satisfaction, profit, ... (`AttractionListDialogParameter*`). Called from two places |
+| `0x4e4790` | RideCarEditor::BoneNames | Lists a ride car's bones for the developer's car editor (`TransformCar`, `BoneCarFront`, `BoneCarRear`, `BoneLinkFront`, `BoneLinkRear`, `BoneCamera*`, `BoneWheel*`). Called from a window builder |
+| `0xae9330` | WaterJetDesigner::FileButtons | The water jet designer's load and save buttons (`WaterJetDesigner_LoadWaterJet`, `_SaveWaterJet`) |
+| `0xacd350` | LaserDesigner::FileButtons | The laser designer's load and save buttons (`LaserDesigner_LoadLaser`, `_SaveLaser`) |
+| `0x9bdd70` | ParticleDesigner::FileButtons | The particle designer's load and save buttons (`TT_ParticleDesignerDialog_Load`, `_Save`) |
+| `0x98c210` | FireworkDisplay::LookButtons | The firework display's automatic and free look buttons (`FireworkDisplay_AutoLook`, `_FreeLook`) |
+| `0xa06ec0` | SavedSelectionGrabber::Buttons | The saved selection grabber's save and list buttons (`SavedSelectionGrabber_TT_Save`, `SavedSelection_ListHelp`) |
+| `0x8b6810` | PhotoSpotWindow::Buttons | A photo spot's details button (`Staff_InfoIcon`, `PhotoSpot_Details`) |
+| `0x8b14b0` | PhotoSpotWindow::Buttons (2) | The same as `0x8B6810` for another kind of photo spot |
+| `0x66b7f0` | RideCategories::Icons | Gives the ride categories' icons: transport, gentle, water, roller coasters, thrill, other, junior (`Obj_Rides_*`). Called from `0x66FA40` |
+| `0x88c3d0` | SignWindow::Buttons | A sign's options button (`Obj_Scenery`, `Sign_Options`) |
+| `0x65c090` | ColourSwatch::Highlight (2) | Draws a colour swatch's white or blue highlight. Called from `0x65C170` |
+| `0x63d3f0` | ColourSwatch::Highlight (3) | Draws a colour swatch's blue or white highlight. Called from `0x63D4B0` |
+| `0x789be0` | StaffList::Columns | The staff list's thoughts and status columns |
+| `0x7894e0` | StaffList::Columns (2) | The same as `0x789BE0`. Called from a window builder |
+| `0xb9fbd0` | ViewMenu::AnimalWalkingGrid | Switches the grid showing where animals can walk on or off (`AnimalWalkingGridOn`, `Off`). Called from `ViewMenu::Build` and two others |
+| `0xaa5f80` | PoolPathBuilder::CameraButtons | The pool path builder's guest camera and exit buttons. Called from `PoolPathBuilder::Build` |
+| `0x712040` | PathMenu::CameraButtons | The path menu's guest camera and exit buttons. Called from `PathMenu::Build` |
+| `0x9da3a0` | CampaignDialog::Kinds | The kinds of marketing campaign: attraction vouchers, advertising, park vouchers (`Campaign_*`). Called from `0x9DDC20` |
+| `0x617740` | LoadingScreen::Name | Picks the loading screen (`LoadingScreen`, `_Chinese`, `_SChinese`). Called from `0x618C70` |

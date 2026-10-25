@@ -70,3 +70,14 @@ Tracked rides, flat rides and their cars and trains.
 | `0x532600` | RideBreakdown::StateName | Writes a breakdown's state: awaiting breakdown, calling a mechanic, waiting for them to arrive, being fixed, fixed (`BreakdownState*`) |
 | `0x5117e0` | RideCar::MissingBone | Reports a bone missing from a ride car (`missing bone ... for car`). Called from `RideCar::FindBones` |
 | `0xb93330` | Attraction::LoadIcon (2) | Loads an attraction's icon, reporting a missing texture. Called from `0xBA89A0` |
+| `0x553760` | RideSeating::Names | Makes the ride seating kinds' names: stand, sit, sledge, lay, bike, car, horse, row with oars, ... (`RideSeating_*`). Called from `0x5538E0` |
+| `0xbc4c80` | TrackPiece::Flags | Turns a track piece's flag names into values (`Car`, `Join`, `Alt`, `Travel`, `Water`, `AltJoin`, `Speed0` ... `Speed5`). Called from `0x59A500` |
+| `0x81d120` | Seats::Names | Makes the seat bone names (`peep%d`, `peep0%d`). Called from `0x81E050` |
+| `0x591220` | Seats::Names (2) | The same, as `Peep%d` / `Peep0%d`. Called from `0x5912C0` |
+| `0x510520` | RideCar::SeatNames | A ride car's seat bone names (`Peep%d`, `Peep0%d`). Called from `RideCar::FindBones` and `0x5105C0` |
+| `0xbbf8a0` | RideAnimation::FromName | Turns a ride animation's name into its kind: starting, running, stopping, idle, restraints opening / closing / idle, doors, ... (`Anim*`). Called from `0xBBFC20` |
+| `0x50b390` | RideCar::StateName | Writes a ride car's state: travel starting, travelling, slowing, aligning, aligned, crashing, off the track, restraints closing, ... (`State*`) |
+| `0xbb40e0` | OpMode::Names | Makes the operating mode names: continuous circuit, powered launch, reverse inclined launch, boat, race, shuttle, upwards launch, free-fall drop, ... (`OpMode*`). Called from `RideOpModeDialog::Build` and `0xBB42A0` |
+| `0x5a92f0` | Ride::RouteErrors | Reports that a ride has no route between its stations or back to a station (`RideNoRouteBetweenStations`, `RideNoRouteBackToStation`). Called from `0x56A660` |
+| `0xbc4da0` | Ride::StateNames | Makes a ride's state names: stopped, starting, running, stopping, and the special states (in motion, holding, releasing, returning, water tank, ...). Called from `0xBC6940` |
+| `0x59a080` | RideSplines::RenderModeNames | Makes the developer's spline drawing modes' names: off, lines, track, block sections, stations, segments, points, ... (`RenderSplines*`). Called from `0x59A500` |

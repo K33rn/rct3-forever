@@ -96,3 +96,24 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcbb7e0` | Inflate::BuildTrees | zlib's building of the inflate code trees, with its errors (`oversubscribed distance tree`, `incomplete distance tree`, `empty distance tree with lengths`, ...). Called from `Inflate` |
 | `0xcd65a0` | DebugInfo::ResourceStats | Writes the developer's resource statistics, one line per resource type (`RS: %20s   PL: %10d   BT: %5d   DB: %10d   TC: %5d   MIN: %8d   MAX: %8d`) and the total. Called from `DebugInfo::Draw` |
 | `0x707530` | Scenario::DefaultText | Gives a new scenario its default name and description (`Scenario_DefaultName`, `_DefaultDescription`). Called from `Park::Park` and `NewGame::Start` |
+| `0x4c12a0` | Attraction::DebugFlags | Writes an attraction's flags for the developer (`NEVO`, `INSP`, `CRSH`, `BDP`, `MFD`, joined as `%s:%s:%s:...`). Called from `0x4B9D60` |
+| `0x7ff060` | RideTrainInstance::FileFields | Registers the fields a saved ride train is found by in a file (`RideTrainSymbolName`, `RideTrainOverlayName`). Called from `0x7FFDF0` |
+| `0x7fd5b0` | SIDDatabaseEntry::FileFields | Registers the fields a saved scenery definition is found by (`OVERLAYFILENAME`, `SYMBOLNAME`). Called from `0x7FFDF0` |
+| `0x7ffd20` | PPGDatabaseEntry::FileFields | Registers the fields a saved people part group definition is found by (`SymbolName`). Called from `0x7FFDF0` |
+| `0x7fe9a0` | CarriedItemInstance::FileFields | Registers a saved carried item's link to its definition (`CIDEntry`). Called from `0x7FFDF0` |
+| `0x7fe7d0` | CIDDatabaseEntry::FileFields | Registers the fields a saved carried item definition is found by (`SymbolName`). Called from `0x7FFDF0` |
+| `0x7fe640` | AttractionInstance::FileFields | Registers a saved attraction's link to its definition (`AIDDatabaseEntry`). Called from `0x7FFDF0` |
+| `0x7fd800` | SceneryItem::FileFields | Registers a saved scenery item's link to its definition (`DATABASEENTRY`). Called from `0x7FFDF0` |
+| `0x47c840` | DebugInfo::Sounds | Writes the developer's sound statistics (`NumSounds: %d`, `NumRideTrainSounds: %d`, per category). Called from `DebugInfo::Draw` |
+| `0xdfeae0` | Control::LoadTypeLibrary | Loads a COM type library (`control.tlb`, `LoadRegTypeLib` / `LoadTypeLib`). Called from `0xE00BA0` |
+| `0xcc0400` | ShaderPreprocessor::ReadSource | Reads a shader source file for the preprocessor (`source`, `unexpected end of file`). Called from `0xCC04E0` |
+| `0xcbb740` | Inflate::BuildBitLengthTree | zlib's building of the bit-length code tree (`oversubscribed dynamic bit lengths tree`, `incomplete dynamic bit lengths tree`). Called from `Inflate` |
+| `0x9e88b0` | DebugInfo::Weather | The developer's manual weather change: sunny, sunny and cloudy, cloudy, light rain, heavy rain, thunderstorm, snowstorm. Called from `DebugInfo::Draw` |
+| `0xc65e90` | Framework::RemoveWidget | Removes a widget from the debug framework's list (`Widget %p removed from CL`). Called from two places |
+| `0xc60d70` | Framework::AddWidget | Adds a widget to the debug framework's list (`Widget %p added to CL`). Called from two places |
+| `0x440010` | GameState::Name | Writes the game state's name: banner sequence, front screen, attract sequence, career map, tutorial, in game, scenario start, ... (`State*`). Called from `DebugInfo::Draw` |
+| `0x4533c0` | Language::IsAsian | Checks for Chinese, Korean, Japanese, simplified Chinese or Thai. Called from 11 places |
+| `0x457fa0` | Resources::LoadMain | Loads the main resource files (`Main.common.ovl`, `Main.unique.ovl`, `Style\Vanilla\Style.common.ovl`, `Style.unique.ovl`). Called from `Game::Initialise` |
+| `0xca53a0` | Platform::Name | Names the target platform: `windows`, `PS2`, `Xbox`, `GameCube`, `PSP`, `unknown_target` |
+| `0xc19685` | MovieDecoder::Format | Checks a movie's video format (`vids`, `YV12`) |
+| `0xf03880` | TexCoords::Names | Makes the texture coordinate names at start-up (`TexCoord0` ... `TexCoord3`) |
