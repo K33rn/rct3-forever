@@ -920,3 +920,116 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xce92a0` | DeleteGlobal 0x1400b70 | Destroys (`0xce8a10` (Destructor)) and frees the object the global `0x1400b70` points to, if any, and clears the global |
 | `0xcee290` | DeleteGlobal 0x1408b80 | Destroys (`0xced240` (Destructor)) and frees the object the global `0x1408b80` points to, if any, and clears the global |
 | `0xcefda0` | DeleteGlobal 0x141ab2c | Destroys (`0xcef7e0` (Destructor)) and frees the object the global `0x141ab2c` points to, if any, and clears the global |
+| `0x4027f0` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0x41f850` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0x429fb0` | ClearThree | Clears three values (an empty array) |
+| `0x439740` | ShareText2E0 | Gives a shared copy of the text kept at +0x2e0 (its use count raised) |
+| `0x448170` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0x478360` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x484cd0` | ClearThree | Clears three values (an empty array) |
+| `0x4884b0` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0x4885f0` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0x4b5040` | ShareText380 | Gives a shared copy of the text kept at +0x380 (its use count raised) |
+| `0x4caab0` | ShareText6C | Gives a shared copy of the text kept at +0x6c (its use count raised) |
+| `0x4e63e0` | ShareText138 | Gives a shared copy of the text kept at +0x138 (its use count raised) |
+| `0x510500` | ShareTextD4 | Gives a shared copy of the text kept at +0xd4 (its use count raised) |
+| `0x510690` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0x530130` | Call4BEE40Then52F780 | `0x4bee40` (Virtual thunk) then `0x52f780` |
+| `0x530140` | Call4C10A0Then52F780 | `0x4c10a0` then `0x52f780` |
+| `0x53cb80` | ShareText34 | Gives a shared copy of the text kept at +0x34 (its use count raised) |
+| `0x53cba0` | ShareText38 | Gives a shared copy of the text kept at +0x38 (its use count raised) |
+| `0x552cd0` | Call552BC0Then4D2B20 | `0x552bc0` then `0x4d2b20` |
+| `0x591170` | ShareText64 | Gives a shared copy of the text kept at +0x64 (its use count raised) |
+| `0x597c10` | Call4C1680Then597030 | `0x4c1680` then `0x597030` |
+| `0x598ca0` | Call67B820Then598910 | `0x67b820` then `0x598910` |
+| `0x5a0060` | Call59FA20Then59FA80 | `0x59fa20` then `0x59fa80` |
+| `0x5ce020` | ShareText6B8 | Gives a shared copy of the text kept at +0x6b8 (its use count raised) |
+| `0x68e8b0` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0x691d50` | ClearThree | Clears three values (an empty array) |
+| `0x6a0730` | Call6A0560Then6A41C0 | `0x6a0560` then `0x6a41c0` |
+| `0x6bcda0` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0x6c4b10` | ShareText7C | Gives a shared copy of the text kept at +0x7c (its use count raised) |
+| `0x6c6d20` | Call6C6C10Then6ACE50 | `0x6c6c10` then `0x6ace50` |
+| `0x6c9ca0` | Call6C9B80Then6ACE50 | `0x6c9b80` then `0x6ace50` |
+| `0x6eb610` | Call6EB470Then6ACE50 | `0x6eb470` then `0x6ace50` |
+| `0x7321c0` | ClearThree | Clears three values (an empty array) |
+| `0x73ab80` | ClearThree | Clears three values (an empty array) |
+| `0x751230` | ClearThree | Clears three values (an empty array) |
+| `0x79f8d0` | Call79F810Then7CF900 | `0x79f810` then `0x7cf900` |
+| `0x7b2c10` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0x7b2c80` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0x7b2dc0` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0x7b2ec0` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0x7b2f30` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0x7ea780` | ShareText1B0 | Gives a shared copy of the text kept at +0x1b0 (its use count raised) |
+| `0x7f6050` | Call4D1900Then4D1840 | `0x4d1900` then `0x4d1840` (AttractionPersonInfo::Person) |
+| `0x7fba40` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x7fbd00` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x801ce0` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x807c90` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x81ab10` | ShareText20 | Gives a shared copy of the text kept at +0x20 (its use count raised) |
+| `0x81ab30` | ShareText60 | Gives a shared copy of the text kept at +0x60 (its use count raised) |
+| `0x851c70` | Release8501C0 | When its slot (+0xc) is not negative, `0x8501c0` with it and +0x0 |
+| `0x851e60` | Release8503D0 | When its slot (+0xc) is not negative, `0x8503d0` with it and +0x0 |
+| `0x852060` | Release8505E0 | When its slot (+0xc) is not negative, `0x8505e0` with it and +0x0 |
+| `0x852260` | Release8507F0 | When its slot (+0xc) is not negative, `0x8507f0` with it and +0x0 |
+| `0x852460` | Release850A00 | When its slot (+0xc) is not negative, `0x850a00` with it and +0x0 |
+| `0x852630` | Release850C10 | When its slot (+0xc) is not negative, `0x850c10` with it and +0x0 |
+| `0x852840` | Release850E20 | When its slot (+0xc) is not negative, `0x850e20` with it and +0x0 |
+| `0x852a40` | Release851030 | When its slot (+0xc) is not negative, `0x851030` with it and +0x0 |
+| `0x852c40` | Release851240 | When its slot (+0xc) is not negative, `0x851240` with it and +0x0 |
+| `0x8530a0` | Release8516A0 | When its slot (+0xc) is not negative, `0x8516a0` with it and +0x0 |
+| `0x8532a0` | Release8518B0 | When its slot (+0xc) is not negative, `0x8518b0` with it and +0x0 |
+| `0x87a7c0` | ClearThree | Clears three values (an empty array) |
+| `0x91ca60` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x947670` | ClearThree | Clears three values (an empty array) |
+| `0x94dbc0` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x982d50` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x99cc10` | ShareText18 | Gives a shared copy of the text kept at +0x18 (its use count raised) |
+| `0x9c1280` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x9c6f00` | FreeTwoBlocks | Frees the blocks kept at +0x8 and +0x0, when there are any, and clears them |
+| `0x9d1570` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0xa26190` | ShareText7C | Gives a shared copy of the text kept at +0x7c (its use count raised) |
+| `0xa39f40` | ShareTextB4 | Gives a shared copy of the text kept at +0xb4 (its use count raised) |
+| `0xa39f60` | ShareTextB8 | Gives a shared copy of the text kept at +0xb8 (its use count raised) |
+| `0xa4c560` | Call6ACE50ThenA48CA0 | `0x6ace50` then `0xa48ca0` |
+| `0xac3e30` | ClearThree | Clears three values (an empty array) |
+| `0xb10f80` | ShareText44 | Gives a shared copy of the text kept at +0x44 (its use count raised) |
+| `0xb5b7d0` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0xb5b840` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0xb6bc00` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0xb6bc70` | SetTwoVectorsAndValue | Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments |
+| `0xb870a0` | ShareText16C | Gives a shared copy of the text kept at +0x16c (its use count raised) |
+| `0xba5e40` | ClearThree | Clears three values (an empty array) |
+| `0xbd2110` | FreeList13D0D9C::Take | Takes an item from the free list `0x13d0d9c` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbe8e40` | FreeList13D0EB4::Take | Takes an item from the free list `0x13d0eb4` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbea270` | FreeList13D0F4C::Take | Takes an item from the free list `0x13d0f4c` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbea840` | FreeList13D0EE0::Take | Takes an item from the free list `0x13d0ee0` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbea8a0` | FreeList13D0F28::Take | Takes an item from the free list `0x13d0f28` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbea900` | FreeList13D0F04::Take | Takes an item from the free list `0x13d0f04` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbfde90` | FreeList13D2A0C::Take | Takes an item from the free list `0x13d2a0c` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbfe320` | FreeList13D2A30::Take | Takes an item from the free list `0x13d2a30` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbfe380` | FreeList13D2A78::Take | Takes an item from the free list `0x13d2a78` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xbfe3e0` | FreeList13D2A54::Take | Takes an item from the free list `0x13d2a54` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xc50920` | FreeList13E6CC0::Take | Takes an item from the free list `0x13e6cc0` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xc9bda0` | FreeList13E6DF4::Take | Takes an item from the free list `0x13e6df4` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xc9ef10` | FreeList13E6E28::Take | Takes an item from the free list `0x13e6e28` (making a new block of items with `0xbd2050` when it is empty), counting it among the used ones and keeping the most ever used; null when none can be made |
+| `0xca40b0` | DeletingDestructorBF4680 | Deleting destructor: runs `0xbf4680` (Memory::FreePlain) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4100` | DeletingDestructorCA38A0 | Deleting destructor: runs `0xca38a0` (ChainMember::~ChainMember) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4120` | DeletingDestructorCA3A20 | Deleting destructor: runs `0xca3a20` (ChainMember::~ChainMember) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4140` | DeletingDestructorCA3AE0 | Deleting destructor: runs `0xca3ae0` (ChainMember::~ChainMember) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4160` | DeletingDestructorCA3BE0 | Deleting destructor: runs `0xca3be0` (ChainMember::~ChainMember) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4180` | DeletingDestructorCA3DA0 | Deleting destructor: runs `0xca3da0` (ChainMember::~ChainMember) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca41a0` | DeletingDestructorCA3EA0 | Deleting destructor: runs `0xca3ea0` (ChainMember::~ChainMember) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca41c0` | DeletingDestructorBF4680 | Deleting destructor: runs `0xbf4680` (Memory::FreePlain) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4210` | DeletingDestructorBF4680 | Deleting destructor: runs `0xbf4680` (Memory::FreePlain) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4260` | DeletingDestructorBF4680 | Deleting destructor: runs `0xbf4680` (Memory::FreePlain) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca42b0` | DeletingDestructorBF4680 | Deleting destructor: runs `0xbf4680` (Memory::FreePlain) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4300` | DeletingDestructorBF4680 | Deleting destructor: runs `0xbf4680` (Memory::FreePlain) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xca4350` | DeletingDestructorBF4680 | Deleting destructor: runs `0xbf4680` (Memory::FreePlain) and, when bit 0 of the flag is set, frees the object (Memory::FreePlain); returns it |
+| `0xcb2a60` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0xcbcfe0` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0xcbd010` | ShareText1C | Gives a shared copy of the text kept at +0x1c (its use count raised) |
+| `0xcbd030` | ShareTextC | Gives a shared copy of the text kept at +0xc (its use count raised) |
+| `0xcc9640` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
+| `0xcdba70` | ClearThree | Clears three values (an empty array) |

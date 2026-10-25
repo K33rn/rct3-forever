@@ -399,3 +399,42 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6a3120` | Window::Set10C | Sets +0x10C and clears flag 0x1000000 of +0x94 |
 | `0x67bb20` | Window::ShowContent | Sets the content (`0x4D7E70`), then updates the window (`0x6AFC20`) when there is content, otherwise `0x6B0990` |
 | `0x63a8e0` | Window::Reattach | `0x6B0990`, the window updated (`0x6AFC20`), then Window::SetRelationAndLayout with 0, +0xF4 and the position (+0x7C) of the window at +0xE0 |
+| `0x41f210` | Text AdMenu_CustomImageBrowser | Makes the given text a copy of the game text `AdMenu_CustomImageBrowser` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x4c9090` | Text AttractionListDialog_Title | Makes the given text a copy of the game text `AttractionListDialog_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x607c50` | Text GameOptionsDialog_Title | Makes the given text a copy of the game text `GameOptionsDialog_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x619510` | Text LGD_Title | Makes the given text a copy of the game text `LGD_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x622fe0` | Text ProgramInfoDialog_Title | Makes the given text a copy of the game text `ProgramInfoDialog_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x62b910` | Text SGD_Title | Makes the given text a copy of the game text `SGD_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x65d6d0` | Text MusicGenre_Title | Makes the given text a copy of the game text `MusicGenre_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x65f440` | Text PID_Title | Makes the given text a copy of the game text `PID_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x66ba40` | Text TrackBrowser_Title | Makes the given text a copy of the game text `TrackBrowser_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x6b48f0` | Text MapDialog_Title | Makes the given text a copy of the game text `MapDialog_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x6b9710` | Text FinancialManagement_Title | Makes the given text a copy of the game text `FinancialManagement_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x6f95c0` | Text VIPConditionSetupDialog_Title | Makes the given text a copy of the game text `VIPConditionSetupDialog_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x6ff580` | Text VIPRouteDialog_Title | Makes the given text a copy of the game text `VIPRouteDialog_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x787520` | Text Man_GuestsHelp | Makes the given text a copy of the game text `Man_GuestsHelp` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x888050` | Text SIDSE_Title | Makes the given text a copy of the game text `SIDSE_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x97d900` | Text IED_Title | Makes the given text a copy of the game text `IED_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x980600` | Text Research_Title | Makes the given text a copy of the game text `Research_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x98c370` | Text FireworkDisplay_NextDisplayTT | Makes the given text a copy of the game text `FireworkDisplay_NextDisplayTT` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x9a5ff0` | Text FireworkMaster_Save_Title | Makes the given text a copy of the game text `FireworkMaster_Save_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x9a60a0` | Text FireworkMaster_Save_Title | Makes the given text a copy of the game text `FireworkMaster_Save_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x9a6150` | Text FireworkMaster_Load_Title | Makes the given text a copy of the game text `FireworkMaster_Load_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x9a6200` | Text FireworkMaster_Delete | Makes the given text a copy of the game text `FireworkMaster_Delete` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x9a6730` | Text FireworkMaster_Load_Title | Makes the given text a copy of the game text `FireworkMaster_Load_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x9a67e0` | Text FireworkMaster_Save_Title | Makes the given text a copy of the game text `FireworkMaster_Save_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x9a6890` | Text FireworkMaster_Load_Title | Makes the given text a copy of the game text `FireworkMaster_Load_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x9a6940` | Text FireworkMaster_Delete | Makes the given text a copy of the game text `FireworkMaster_Delete` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xa08450` | Text SavedSelection_Load | Makes the given text a copy of the game text `SavedSelection_Load` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xa08500` | Text SavedSelection_Save | Makes the given text a copy of the game text `SavedSelection_Save` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xa085b0` | Text SavedSelection_Delete | Makes the given text a copy of the game text `SavedSelection_Delete` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xacd140` | Text LaserDesigner_LoadLaser | Makes the given text a copy of the game text `LaserDesigner_LoadLaser` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xacd1f0` | Text LaserDesigner_SaveLaser | Makes the given text a copy of the game text `LaserDesigner_SaveLaser` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xacd2a0` | Text LaserDesigner_DeleteLaser | Makes the given text a copy of the game text `LaserDesigner_DeleteLaser` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xacd610` | Text LaserDesigner_Title | Makes the given text a copy of the game text `LaserDesigner_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xae9120` | Text WaterJetDesigner_LoadWaterJet | Makes the given text a copy of the game text `WaterJetDesigner_LoadWaterJet` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xae91d0` | Text WaterJetDesigner_SaveWaterJet | Makes the given text a copy of the game text `WaterJetDesigner_SaveWaterJet` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xae9280` | Text WaterJetDesigner_DeleteWaterJet | Makes the given text a copy of the game text `WaterJetDesigner_DeleteWaterJet` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xae95f0` | Text WaterJetDesigner_Title | Makes the given text a copy of the game text `WaterJetDesigner_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xb02400` | Text DartCamName | Makes the given text a copy of the game text `DartCamName` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0xb15680` | Text WildAnimalState_Eat | Makes the given text a copy of the game text `WildAnimalState_Eat` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |

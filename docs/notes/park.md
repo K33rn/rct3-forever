@@ -154,3 +154,14 @@
 | `0x8bb210` | WaterCannonBehaviour::Create | Makes a new object (512 bytes, constructed by `0x8b82a0` (WaterCannonBehaviour::WaterCannonBehaviour)), hands it to `0x833CC0` with the argument and activates it; returns it |
 | `0xa87c40` | LifeguardChairBehaviour::Create | Makes a new object (136 bytes, constructed by `0xa87740` (LifeguardChairBehaviour::LifeguardChairBehaviour)), hands it to `0x833CC0` with the argument and activates it; returns it |
 | `0xa99b00` | PoolExtraBehaviour::Create | Makes a new object (160 bytes, constructed by `0xa99050` (PoolExtraBehaviour::PoolExtraBehaviour)), hands it to `0x833CC0` with the argument and activates it; returns it |
+| `0x4ed4e0` | ValueIfKind2 0x198 | The value at +0x198 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x50a820` | ValueIfKind2 0x160 | The value at +0x160 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x50a850` | ValueIfKind2 0x164 | The value at +0x164 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x50a880` | ValueIfKind2 0x188 | The value at +0x188 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x50a8b0` | ValueIfKind2 0x190 | The value at +0x190 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x55ef20` | ValueIfKind2 0x18c | The value at +0x18c when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x55ef50` | ValueIfKind2 0x194 | The value at +0x194 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x5a1120` | ValueIfKind2 0x144 | The value at +0x144 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x5bd120` | ValueIfKind2 0x154 | The value at +0x154 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x92de30` | ValueIfKind2 0x170 | The value at +0x170 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
+| `0x92de60` | ValueIfKind2 0x174 | The value at +0x174 when the entry's kind (+1 of OffsetRef::Owner2) is 2 or more, otherwise 0 |
