@@ -926,3 +926,8 @@ and leaves it with `0x46F990`). See the script for how they are recognised.
 | `0xf137c0` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
 | `0xf137f0` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
 | `0xf13850` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0x437620` | ModuleList::Start10EC72C | Starts the module list at `0x10ec72c` (ModuleList::Run) for a start-up global, filling in the result passed in and returning it |
+| `0xbd3bf0` | ModuleList::Start10F2B94 | Starts the module list at `0x10f2b94` (ModuleList::Run) for a start-up global, filling in the result passed in and returning it |
+| `0xbf9c50` | ModuleList::Start10F2E6C | Starts the module list at `0x10f2e6c` (ModuleList::Run) for a start-up global, filling in the result passed in and returning it |
+| `0xc03a50` | ModuleList::Start10F2EE4 | Starts the module list at `0x10f2ee4` (ModuleList::Run) for a start-up global, filling in the result passed in and returning it |
+| `0xc1a890` | ModuleList::Start10F2F90 | Starts the module list at `0x10f2f90` (ModuleList::Run) for a start-up global, filling in the result passed in and returning it |

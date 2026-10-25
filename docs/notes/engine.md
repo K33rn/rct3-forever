@@ -1167,3 +1167,43 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcbc4f0` | Math::NextPrime | The smallest prime number above n (at least 2), found by trial division: the size given to hash tables |
 | `0xcc47a0` | GetC | Returns the value at +0xC |
 | `0xcc5670` | GetC | Returns the value at +0xC |
+| `0x42bd60` | Chain504::DeletingDestructor | Deleting destructor of a chain of blocks: deletes the next one (+0x504) the same way first, then frees this one when bit 0 of the flag is set; returns it |
+| `0x42bd90` | Chain504::DeletingDestructor | Deleting destructor of a chain of blocks: deletes the next one (+0x504) the same way first, then frees this one when bit 0 of the flag is set; returns it |
+| `0x42bdc0` | Chain1704::DeletingDestructor | Deleting destructor of a chain of blocks: deletes the next one (+0x1704) the same way first, then frees this one when bit 0 of the flag is set; returns it |
+| `0x42c1e0` | Chain504::Free | Frees the chain of blocks this points to: each block's next (+0x504) deleted first, then the block |
+| `0x42c210` | Chain504::Free | Frees the chain of blocks this points to: each block's next (+0x504) deleted first, then the block |
+| `0x42c240` | Chain1704::Free | Frees the chain of blocks this points to: each block's next (+0x1704) deleted first, then the block |
+| `0x453ed0` | ListMemberF296F8::DeletingDestructor | Deleting destructor of a list member (table `0xf296f8`): leaves its list (stopping the program if the list is found broken) and frees the object when bit 0 of the flag is set |
+| `0x4ef1b0` | FreeMember4 | Frees the block kept at +0x4, when there is one, and clears it |
+| `0x7c4670` | FreeMember4 | Frees the block kept at +0x4, when there is one, and clears it |
+| `0x7c75e0` | FreeMember4 | Frees the block kept at +0x4, when there is one, and clears it |
+| `0x7e6b80` | Array::SetCount | Sets an array's count (+8), first making room for it (`0x417C20`) when its capacity (+4) is smaller |
+| `0x7f0cd0` | Array::SetCount | Sets an array's count (+8), first making room for it (`0x417C20`) when its capacity (+4) is smaller |
+| `0x7faf30` | ListMemberF75138::DeletingDestructor | Deleting destructor of a list member (table `0xf75138`): leaves its list (stopping the program if the list is found broken) and frees the object when bit 0 of the flag is set |
+| `0x80ce70` | Array::SetCount | Sets an array's count (+8), first making room for it (`0x417C20`) when its capacity (+4) is smaller |
+| `0x84db10` | ChainC04::DeletingDestructor | Deleting destructor of a chain of blocks: deletes the next one (+0xc04) the same way first, then frees this one when bit 0 of the flag is set; returns it |
+| `0x84db40` | Chain1004::DeletingDestructor | Deleting destructor of a chain of blocks: deletes the next one (+0x1004) the same way first, then frees this one when bit 0 of the flag is set; returns it |
+| `0x84f620` | ChainC04::Free | Frees the chain of blocks this points to: each block's next (+0xc04) deleted first, then the block |
+| `0x84f650` | Chain1004::Free | Frees the chain of blocks this points to: each block's next (+0x1004) deleted first, then the block |
+| `0x872120` | ListMemberF78B60::DeletingDestructor | Deleting destructor of a list member (table `0xf78b60`): leaves its list (stopping the program if the list is found broken) and frees the object when bit 0 of the flag is set |
+| `0x87b650` | Variant::Set1D | Sets a tagged value: its 16-bit type to 0x1d and its value (+4) to the one given |
+| `0x8ea2b0` | ListMemberF7CCBC::DeletingDestructor | Deleting destructor of a list member (table `0xf7ccbc`): leaves its list (stopping the program if the list is found broken) and frees the object when bit 0 of the flag is set |
+| `0x9408f0` | FreeMember4 | Frees the block kept at +0x4, when there is one, and clears it |
+| `0x9491b0` | ListMemberF7E29C::DeletingDestructor | Deleting destructor of a list member (table `0xf7e29c`): leaves its list (stopping the program if the list is found broken) and frees the object when bit 0 of the flag is set |
+| `0x96fef0` | Array::SetCount | Sets an array's count (+8), first making room for it (`0x417C20`) when its capacity (+4) is smaller |
+| `0xa30820` | FreeMember4 | Frees the block kept at +0x4, when there is one, and clears it |
+| `0xb78d20` | Array::SetCount | Sets an array's count (+8), first making room for it (`0x417C20`) when its capacity (+4) is smaller |
+| `0xbe8940` | FreeList13D0EB4::Put | Puts an item back on the free list `0x13d0eb4` and counts it |
+| `0xbe9910` | FreeList13D0EE0::Put | Puts an item back on the free list `0x13d0ee0` and counts it |
+| `0xbe9c70` | FreeList13D0F04::Put | Puts an item back on the free list `0x13d0f04` and counts it |
+| `0xbfd630` | FreeList13D2A30::Put | Puts an item back on the free list `0x13d2a30` and counts it |
+| `0xbfd990` | FreeList13D2A54::Put | Puts an item back on the free list `0x13d2a54` and counts it |
+| `0xc0a270` | Variant::Set21 | Sets a tagged value: its 16-bit type to 0x21 and its value (+4) to the one given |
+| `0xc0a290` | Variant::Set1F | Sets a tagged value: its 16-bit type to 0x1f and its value (+4) to the one given |
+| `0xc0a2b0` | Variant::Set24 | Sets a tagged value: its 16-bit type to 0x24 and its value (+4) to the one given |
+| `0xc0a310` | Variant::Set25 | Sets a tagged value: its 16-bit type to 0x25 and its value (+4) to the one given |
+| `0xcc1cd0` | DeletingDestructorCC1B90 | Deleting destructor: runs `0xcc1b90` and, when bit 0 of the flag is set, frees the object; returns it |
+| `0xcc4480` | DeletingDestructorCC4140 | Deleting destructor: runs `0xcc4140` and, when bit 0 of the flag is set, frees the object; returns it |
+| `0xcc4700` | DeletingDestructorCC2ED0 | Deleting destructor: runs `0xcc2ed0` and, when bit 0 of the flag is set, frees the object; returns it |
+| `0xcc5530` | DeletingDestructorCC5240 | Deleting destructor: runs `0xcc5240` and, when bit 0 of the flag is set, frees the object; returns it |
+| `0xcc5570` | DeletingDestructorCC57D0 | Deleting destructor: runs `0xcc57d0` and, when bit 0 of the flag is set, frees the object; returns it |
