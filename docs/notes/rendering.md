@@ -285,3 +285,5 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xceb590` | Materials::CompareOpacity | A sort comparison of two drawn parts by their materials' opacity (+0x54, 1 when not see-through), for parts that have one (+0x58) |
 | `0x47c470` | Sound::UnmuteKind | Counts a mute off a kind of sound (`0x12F0168`, to 0 when asked or below 0) and gives each sound of that kind its volume back (pairs with Sound::MuteKind) |
 | `0x47dd10` | Sound::SetLevels | Sets two levels of a sound (+0x5C, +0x60), each kept between 0 and 1 |
+| `0x9e84e0` | Colour::Pack | Packs a colour of four values from 0 to 1 into one value (alpha, red, green, blue) at +8 |
+| `0x489a10` | Mesh::PointAndNormal | The position and normal of a mesh point by its packed number (part in the high half, point in the low half) |

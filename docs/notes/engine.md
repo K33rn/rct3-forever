@@ -1388,3 +1388,18 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x8386a0` | Grid::Range | The smallest of the cells' first values and the largest of their second values over a whole grid (+0x10 by +0x14, cells of 0x14 bytes at +0x18) |
 | `0x80eee0` | List::SortBy28 | Sorts a list of objects (+0x8C, count +0x94) by their +0x28 value (bubble sort) |
 | `0x80edc0` | List::SortBy34 | Sorts a list of objects (+0x5C, count +0x64) by their +0x34 value, largest first (bubble sort) |
+| `0x49a740` | Heap::Swap | Swaps entry n with the last entry of a heap list and keeps their places (+0xC) in the shared table `0x12F46DC` up to date |
+| `0x88fa10` | SortedTable::FindKind | Binary search of a sorted table (12-byte entries at +0x50, count +0x54) for a number of a kind (the byte at +4): gives whether it was found and its place |
+| `0xce7260` | SortedPointers::FindFlagged | Binary search of a sorted list (+0x18, count +0x1C) for a number, with or without its flag (+4): gives whether it was found and its place |
+| `0xc47490` | Table::Clear | Clears every entry of a table (20 bytes each at +0x10, with their marks at +0x14), its count (+8) and its buckets (+0xC) |
+| `0xc166e0` | Bits::SetRange | Sets the bit of every block of a range (the block size at +4) in the bit list (+0xC), counting the ones newly set (+0x14) |
+| `0x50a550` | Object::CopySettings | Copies a set of settings (+0xF8 to past +0x128) from another object |
+| `0x4d4460` | Matrix::Copy | Copies a 4x4 matrix |
+| `0x4277e0` | List678::Remove | Removes an item from the list at +0x678 (count +0x680), keeping the order |
+| `0xcc4a30` | Bytes3::Equal | Whether two three-byte values are the same |
+| `0xbebee0` | ResourceRefFA57D0::ResourceRefFA57D0 | Constructor (table `0xFA57D0`): keeps its owner, values and kind and joins the owner's list at +0x244 |
+| `0xbeb9a0` | ResourceRefFA5798::ResourceRefFA5798 | Constructor (table `0xFA5798`): the same, joining the owner's list at +0x214 |
+| `0x4edd00` | FlagSlots::SlotFor | The slot number for a flag (1, 2 and 4 by the value given, then 8 to 0x200 to 14 to 19), or 32 for any other |
+| `0x557e70` | Entries::Differs | Whether the entry with the three values given (16 bytes each at +0x94, count +0x98) has a different third value from the one given (or the one given is not 0 when there is none) |
+| `0x88f9a0` | SortedTable::LowerBoundKind | The place for a number of a kind (the low bit of each 0x150-byte entry at +0x14, count +0x18) in a sorted table |
+| `0xbd5110` | NamedList::Find2 | Finds the entry of a list (+0x204) whose name (+0x24) matches the text given |

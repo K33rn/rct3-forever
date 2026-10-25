@@ -122,3 +122,13 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x4668d0` | Matrix::ScaleOffset2D | Makes a matrix that scales x and y by the values given and moves by minus the origin times the scale |
 | `0xa17470` | Vector::DeadZone | Sets each part of a vector that lies between two small limits to 0 |
 | `0xbc3f20` | Object::Scale | An object's scale value: its own (+0x100) when positive, the default (`0x10F2B28` or `0x10F2B2C`) times minus it when negative, or the default |
+| `0xbc3eb0` | Object::Scale2 | The same as Object::Scale for its other value (+0xFC, defaults `0x10F2B20` and `0x10F2B24`) |
+| `0xa6b2a0` | VerletPoint::SetVelocity | Sets a Verlet point's previous position (+0x20) to its position minus the velocity given times the time step `0xF8F954` |
+| `0xa67ee0` | VerletPoint::Interpolated | The point between a Verlet point's previous and current positions by the global fraction `0x13429E0` |
+| `0x4bb400` | Vector::TransformPointInPlace | Transforms a point by a 4x4 matrix in place, translation included |
+| `0xce16b0` | Vector::Lerp | The point between two points by a fraction |
+| `0x466a60` | Vector::Lerp2 | The same point between two points (another copy) |
+| `0xa67e40` | Vector::LerpMarked | The point between two points by a fraction, with its fifth value set to not-a-number |
+| `0x788140` | List::SortByDC | Sorts part of a list (+0x18C) of objects by their +0xDC value, largest first |
+| `0xa88680` | Motion::DistanceAt | The distance covered by a time when speeding steadily from one speed to another over a set time, then going on at the second speed |
+| `0x5d3900` | Ease::In | Eases a time over a total: slow at first (squared over the first stretch), straight after; unchanged when the total is too short |
