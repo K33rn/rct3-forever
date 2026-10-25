@@ -1292,3 +1292,20 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbe63b0` | VertexData::SetElement | Copies element n of a vertex layout (its size from the type table `0x10F2BA8`) into the record at its offset |
 | `0xbfcb60` | Object0FA5B08::Object0FA5B08 | Constructor (tables `0xFA5AA8`, then `0xFA5B08`): joins its owner's list (+0x46C, +0x14) and sets its mode (+0x7C) to 6 or 7 (by the setting `0x13D3175`), with 8 added when flagged |
 | `0xa517c0` | Slots::Reserve | Works out how many of the first slots (8 bytes each at +0xC, count +0x10) to keep: 6, or 3 when +0x14 is set, plus the slots of kinds 3, 4 and 5, kept below the count; then marks the empty ones (kind 0) among them as kind 1 |
+| `0x9f8430` | Key::FromSmallList | Sorts a short list of numbers and packs each plus one into the 16-bit parts of a 64-bit key (up to four) |
+| `0x4ff3a0` | Value::Band | Which of seven bands (0 to 6) a value falls in, by six fixed limits (`0xF36898` up to `0xF28218`) |
+| `0xcc4aa0` | Key::CompareMasked | Compares two three-part keys, only on the parts both masks have (bits 1, 2, 4): -1, 0 or 1 |
+| `0xbb5880` | Condition::Test | Tests a value against a condition's number (+8) by its operator (+0: 2 equal, 3 not equal, 4 less, 5 at most, 6 more, 7 at least) |
+| `0xcd5750` | String::CompareRaw | Compares two plain texts character by character: -1, 0 or 1 (an empty or missing one counts as the smallest) |
+| `0xa3fb60` | Table::Map16 | Maps a number (0 to 7) through one of two fixed eight-entry tables, picked by the flag |
+| `0xce6f80` | Record::Copy4 | Copies a record (the first byte and the values from +0x10 on) |
+| `0x9c6170` | Record::Copy5 | Copies a record value by value |
+| `0x40ba70` | Record::Copy6 | Copies a record (the first byte and the values from +4 on) |
+| `0xb07010` | Object::GetMatrix | Copies the object's 4x4 matrix (+0xD0) |
+| `0xcc75a0` | Nodes::MarkChain | Marks node n and the nodes it leads to (0x60 bytes each, next at +0x50) with bit 0x800, stopping at one already marked; with the flag clear it first checks node n can start a chain |
+| `0x5bc310` | Record::Clear | Sets the 40 values of a record to 0 |
+| `0xbd28a0` | Node::Unlink | Takes a node out of its list, clears its totals (+0x30 to +0x40) and does the same for each of its children |
+| `0x413e40` | VertexLayout::Add | Adds an element to a vertex layout (up to 16, count +0x20) and grows its size (+0x24) by the element's size (from the type table `0x10F2BA8`) |
+| `0xcb78e0` | Buffer::LayOut | Lays out a buffer's parts one after another, each start rounded up to the alignment (+4), from the start given by its owner; counts the parts of kinds 1 and 2 |
+| `0xbcedc0` | WideString::Find | The place of a wide text inside a wide string, searching from the place given, or -1 |
+| `0xa5fd90` | Speed::Scale | Applies a change to a speed factor (+0x20): times it when the factor is above 1, added otherwise; kept between 1 and 1000, ignored when the change is near 1 |

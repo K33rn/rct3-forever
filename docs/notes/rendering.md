@@ -268,3 +268,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x7aeb50` | Mask::ToPixels | Writes the rows of a bit mask into an image: white with full alpha for set bits, white with no alpha for clear ones |
 | `0x911c80` | Animation::FrameAt | Advances an animation's time (+0x20, wrapping at 1) and from it the frame: the start and end of the frame's span (+0x24, +0x28) and how far into it (+0x2C) |
 | `0x9cbbb0` | Particles::SetCount | Sets the number of particles to draw (+0xBC), scaled by the detail setting and a fade (+0xB8), and the spacing between them (+0xC0) |
+| `0x7c3d50` | Fog::Setup | Sets the global fog values: one over the distance given (or -1 when it is too small), and from the object given either its single value (+0x198, when +0x1A6 is set) or its three colour values (+0x160 to +0x168) |
+| `0xc946d0` | Renderer::SetMaterial | When the material given changes: keeps it and its texture set (+0x28), clears the cached states and points one slot to each of its textures (0x14 bytes each, count +0xCA), marking them unset |
+| `0x8f35b0` | Terrain::LodDistance | A terrain patch's distance for detail: half its smaller side plus its cell size times (2 to the level minus 1), capped |
+| `0x8f8660` | Sound::SetVolumeScale | Sets the volume scale of the current sound (`0x1339F58`, kept between 0.2 and 1) and its volume from its kind's level (`0x10EDD40`), or 0 when that kind is muted (`0x12F0168`) |

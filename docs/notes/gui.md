@@ -574,3 +574,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6acb30` | Screen::AreaScale | The width and height of the GUI's area (`0x12F83F0`) divided by the screen's, or 1 and 1 when there is no area |
 | `0x49cac0` | Units::Convert | Converts a value for showing by its kind: 0 and 1 unchanged, 2 through `0x49CA10`, 3 and 4 by the unit setting (`0x10EE248`), 5 times `0x12F4AF4`, anything else 0 |
 | `0x749120` | AvatarEditor::Tick | Advances two looping timers of the avatar editor: one wrapping at +0xD10 and, when not paused (+0xD6C), one wrapping at 1 |
+| `0x61c280` | Tabs::Animate | Moves the tab offsets (+0xE4, count +0xE8) by the time: the selected tab (+0xE0) comes forward, the others go back to at most 0 |

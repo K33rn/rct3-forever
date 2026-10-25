@@ -78,3 +78,11 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbc4ff0` | Grid::SnapIndex | The number of the nearest whole step for a value (steps of a given size); when the value is not within a tolerance of that step, gives the step it lies in instead and sets the flag |
 | `0x8e30c0` | Bits::MergeLowest | Compares a cost with the best so far: a lower one replaces it and its four two-bit fields; an equal one keeps the lower of each two-bit field (register-passed arguments) |
 | `0x4262f0` | Vector::SideDirection | The unit vector across the vector at +0x3F0 in the ground plane (up crossed with it), or its unnormalised value with 1 as the last part when that is zero |
+| `0x481220` | Matrix::RotateVector2 | Rotates a vector by this matrix (no translation) into the one given (another copy of Matrix::RotateVector) |
+| `0x47d7d0` | Matrix::InverseTransformPoint | Takes a point into a frame: subtracts the frame's position (+0x30) and multiplies by its rows (each with its own fourth value added) |
+| `0xc219d0` | Lerp::Current | The current point of a blend between two points (+0x20 and +0x10) by its amount (+0x30), or the end point once the amount reaches 1 |
+| `0x92dfd0` | Points::MidpointLength | The length of the point halfway between point n of two lists (0x24 bytes each) |
+| `0xbd4c90` | Frame::Turn | Turns a frame's two axis pairs (+0x10/+0x14 and +0x20/+0x24) by an angle (cosine and sine) and updates the values that follow from them |
+| `0x493930` | Grid::Contains | Whether a point falls in a cell of a grid (origin +0xC, +0x10; cell size +0x14, +0x18; width +4, height +5) |
+| `0x7455f0` | Camera::SetFromHeight | Works out a camera distance from the height given and the field of view (+0x290, tan of half of it), sets the camera's offset (+0x260 to +0x268) from its direction and marks it changed (bits 2, and 1 when +0x2A7 is set) |
+| `0x4141e0` | FrameTime::Smooth | Smooths the frame time: the first 100 frames are added up and their average used from then on, unless a cap is set (+0x11C), when the time is doubled and capped |

@@ -509,7 +509,7 @@ address,size,name,callers,status
 0x4261d0,7,,10,documented
 0x4261e0,7,,10,documented
 0x4261f0,64,,13,documented
-0x4262f0,172,,3,to do
+0x4262f0,172,,3,documented
 0x4263a0,435,,2,to do
 0x426560,315,,3,to do
 0x4266a0,181,,2,to do
@@ -15891,7 +15891,7 @@ address,size,name,callers,status
 0xa51740,26,OwnedPointer::Reset,0,rewritten
 0xa51760,61,Array<4>::Allocate,0,rewritten
 0xa517a0,32,,4,to do
-0xa517c0,174,,2,to do
+0xa517c0,174,,2,documented
 0xa51870,123,,1,to do
 0xa518f0,45,,1,to do
 0xa51a00,30,DeletingDestructor,1,rewritten
