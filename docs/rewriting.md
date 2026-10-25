@@ -61,8 +61,9 @@ REWRITE_COPIES("ListNode::Unlink", unlink_copies, unlink_original, unlink, &g_un
 ```
 
 The equivalence test runs on every copy. Rewrites that call the game's memory functions (`0xbce000` free,
-`0xbce010` free of an aligned block) are tested with stand-ins that record each call, so what gets freed and in which
-order is compared too.
+`0xbce010` free of an aligned block, `0xbcdfd0` aligned allocation) or the handle functions (`0x8055c0` release,
+`0x805750` the null handle) are tested with stand-ins that record each call, so what gets allocated and freed, and in
+which order, is compared too.
 
 **Calling conventions** (the game was built with Microsoft Visual C++ 2003, 32-bit):
 
@@ -105,6 +106,10 @@ function with many copies.
 | `SharedBuffer::Release` | 16 copies (e.g. `0x4012e0`), 12,475 call sites | Drops a reference to a shared buffer; the last one frees its data and the buffer | Vanilla Hills: 2,592 calls while the park opened |
 | `ListNode::Unlink` | 26 copies (e.g. `0x40a890`) | Takes a node out of a two-way list and clears it; a broken list stops at a breakpoint, as in the game | Vanilla Hills: 2,838 calls |
 | `BaseClass::SetClass` | 140 copies (e.g. `0x441fc0`) | Sets an object's virtual function table to one base class's (`0xf28db8`) | Vanilla Hills: 819,660 calls |
+| `Array32::SetCapacity` | 114 copies (e.g. `0x417c20`) | Reallocates a growable array of 4-byte items to n, keeping the first min(n, capacity) | Vanilla Hills: 45,409 calls |
+| `Array32::Allocate` | 53 copies (e.g. `0x41b910`) | Drops an array's contents and makes room for n items | Vanilla Hills: called |
+| `ObjectRef::Assign` | 108 copies (e.g. `0x410100`) | Makes a reference point at what another one points at: leaves the old handle's list of references, releases it, joins the new one's | Vanilla Hills: 130,831 calls |
+| `ObjectRef::DeleteTarget` | 31 copies (e.g. `0x490800`) | Deletes the object a reference points at and points it at nothing | Vanilla Hills: 191 objects deleted through it |
 | `Attraction::IdealGuests` | `0xa88450` | A non-ride attraction's share of IdealGuests: 3 x its value at +0x70 | (equivalence test; the parks tried have no such attraction) |
 
 ## Good next candidates

@@ -180,6 +180,35 @@ static void record(uint32_t fn, void *arg) {
 static void __cdecl stub_free(void *p) { record(0xbce000, p); }
 static void __cdecl stub_free_aligned(void *p) { record(0xbce010, p); }
 
+// allocations come from the arena in order (offset 0x2000 on; the next free offset is kept in the arena too)
+static const size_t ALLOC_NEXT = sizeof g_arena - 0x1004, ALLOC_START = 0x2000;
+static void *__cdecl stub_alloc_aligned(uint32_t size) {
+    record(0xbcdfd0, (void *)(uintptr_t)size);
+    uint32_t &next = *arena<uint32_t>(ALLOC_NEXT);
+    if (next < ALLOC_START) next = ALLOC_START;
+    void *p = arena<void>(next);
+    next += (size + 15) & ~15u;
+    return p;
+}
+static void __fastcall stub_release_handle(void *handle, void *, int32_t flag) {
+    record(0x8055c0, handle);
+    record(0x8055c0, (void *)(uintptr_t)flag);
+}
+static void *g_null_handle;
+static void *__cdecl stub_null_handle() {
+    record(0x805750, g_null_handle);
+    return g_null_handle;
+}
+// virtual functions of test objects: record who was called with what, return something recognisable
+static uint32_t __fastcall stub_virtual0(void *self) {
+    record(0x1, self);
+    return 0x5ca1ab1e;
+}
+static void __fastcall stub_destroy(void *self, void *, int32_t flag) {
+    record(0x2, self);
+    record(0x2, (void *)(uintptr_t)flag);
+}
+
 static void stub(uintptr_t at, void *with) {
     uint8_t *p = (uint8_t *)at;
     p[0] = 0xe9;
@@ -189,6 +218,9 @@ static void stub(uintptr_t at, void *with) {
 static void install_stubs() {
     stub(0xbce000, (void *)stub_free);
     stub(0xbce010, (void *)stub_free_aligned);
+    stub(0xbcdfd0, (void *)stub_alloc_aligned);
+    stub(0x8055c0, (void *)stub_release_handle);
+    stub(0x805750, (void *)stub_null_handle);
 }
 
 // ---- the tests ----------------------------------------------------------------------------------------------
@@ -325,7 +357,63 @@ static std::vector<Test> tests() {
                 },
                 obj_call};
     Test base{0x441fc0, fresh, obj_call};
-    for (Test *x : {&owned, &pair, &shared, &unlink, &base}) {
+
+    // Arrays of 4-byte items {data, capacity}; data null means capacity 0 (the game never has items without data)
+    auto array = [=](Rng &r) {
+        fresh(r);
+        *arena<uint32_t>(ALLOC_NEXT) = 0;
+        int cap = r.range(0, 8);
+        uint32_t *items = arena<uint32_t>(0x800);
+        for (int i = 0; i < 16; i++) items[i] = r.next();
+        arena<void *>(0x100)[0] = cap ? items : nullptr;
+        arena<int32_t>(0x100)[1] = cap;
+        *arena<int32_t>(0) = r.next() % 4 ? r.range(0, 10) : cap;
+    };
+    auto array_call = [](void *fn) {
+        return Result{(uint32_t)((int32_t(__fastcall *)(void *, void *, int32_t))fn)(arena<void>(0x100), nullptr,
+                                                                                     *arena<int32_t>(0))};
+    };
+    Test set_capacity{0x417c20, array, array_call};
+    Test allocate{0x41b910, array, array_call};
+
+    // References: handles at 0x300 (current), 0x380 (the other reference's), 0x400 (the null handle), each with a
+    // circular list whose head node is at handle + 0x40; the reference at 0x100 sits in the current handle's list
+    auto handles = [=](Rng &r) {
+        fresh(r);
+        static void *vt[2] = {(void *)stub_virtual0, nullptr};
+        static void *object_vt[1] = {(void *)stub_destroy};
+        for (uint32_t h : {0x300u, 0x380u, 0x400u}) {
+            uint8_t *hp = arena<uint8_t>(h);
+            for (int i = 0; i < 8; i++) ((uint32_t *)hp)[i] = r.next();
+            *(int32_t *)(hp + 8) = r.range(1, 5);
+            *(void **)(hp + 0xc) = nullptr;
+            void **head = (void **)(hp + 0x40);
+            head[0] = head; head[1] = head;
+            *(void ***)(hp + 0x20) = head;
+        }
+        g_null_handle = arena<void>(0x400);
+        // the current handle's object: sometimes none
+        void **object = arena<void *>(0x500);
+        object[0] = object_vt;
+        *(void **)arena<uint8_t>(0x30c) = r.next() % 3 ? object : nullptr;
+        auto link = [](uint32_t ref, uint32_t handle) {
+            void **node = arena<void *>(ref + 8), **head = arena<void *>(handle + 0x40);
+            node[0] = head; node[1] = head; head[0] = node; head[1] = node;
+            arena<void *>(ref)[1] = arena<void>(handle);
+        };
+        arena<void *>(0x100)[0] = vt;
+        link(0x100, 0x300);
+        arena<void *>(0x180)[0] = vt;
+        link(0x180, 0x380);
+    };
+    Test assign{0x410100, handles, [](void *fn) {
+                    return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *))fn)(
+                        arena<void>(0x100), nullptr, arena<void>(0x180))};
+                }};
+    Test delete_target{0x490800, handles,
+                       [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+
+    for (Test *x : {&owned, &pair, &shared, &unlink, &base, &set_capacity, &allocate, &assign, &delete_target}) {
         x->iterations = 20;
         x->data = false;
         t.push_back(*x);

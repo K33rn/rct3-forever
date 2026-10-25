@@ -26,7 +26,7 @@ the game folder: everything happens in memory while the game runs, and closing i
 | `RCT3Forever.exe` (launcher) | Finds the game (Steam, or asks once), checks it's the supported version, starts it with Forever loaded before any of the game's own code runs |
 | `forever.dll` | Runs inside the game: checks the version again, turns on the Park & Peep Editor, puts the rewritten functions in place |
 | Park & Peep Editor | The in-game editor (F9), on by default |
-| Rewritten functions | 561 so far: the game's random number generator, the park's statistics graphs, park entrances, guests' taste for intense rides, parts of how they choose rides, and the memory and list helpers the compiler copied hundreds of times. Each one is proven bit-for-bit identical to the original by the equivalence test. See [the rewrite list](docs/rewriting.md#rewritten-so-far) |
+| Rewritten functions | 867 so far: the game's random number generator, the park's statistics graphs, park entrances, guests' taste for intense rides, parts of how they choose rides, growable arrays, references between objects, and the memory and list helpers the compiler copied hundreds of times. Each one is proven bit-for-bit identical to the original by the equivalence test. See [the rewrite list](docs/rewriting.md#rewritten-so-far) |
 
 ## Progress
 
@@ -35,13 +35,13 @@ runs), **documented** (understood and described, next to rewrite), or **to do**.
 and pieces the compiler split off from functions are counted separately; they don't need rewriting.
 
 <!-- progress -->
-`░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **0.14% rewritten**, 0.49% understood and documented (by code size)
+`░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **0.53% rewritten**, 0.49% understood and documented (by code size)
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 560 | 13,121 bytes | 0.14% |
+| Rewritten | 866 | 48,440 bytes | 0.53% |
 | Documented | 59 | 44,992 bytes | 0.49% |
-| To do | 27,473 | 9,048,817 bytes | 99.36% |
+| To do | 27,167 | 9,013,498 bytes | 98.97% |
 | **Game total** | **28,092** | **9,106,930 bytes** | |
 | Library code Ghidra recognised (stays as is) | 476 | 83,778 bytes | |
 | Compiler-made pieces (go with their function) | 42,200 | 506,334 bytes | |
