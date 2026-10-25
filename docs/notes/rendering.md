@@ -370,3 +370,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x857be0` | SceneryRenderer::DrawRange857BE0 | In outline: draws a range of scenery parts (under 0x3FFF) for the current device (ForCurrent(3)) |
 | `0xc947f0` | Renderer::CopyStateC947F0 | In outline: copies a renderer's state from another, value by value |
 | `0x98ed30` | Effect::Update98ED30 | In outline: an effect's update when not flagged (+0x54, +0x211): finds its target (`0x98AEC0`) and starts it (`0x98E9A0`) |
+| `0xc199b0` | Texture::RebuildC199B0 | In outline: when a texture's size changed (+0x170 vs +0x17C), works out its levels and makes it again (Device::CreateTexture) |
+| `0xbd89e0` | Text::LayoutBD89E0 | In outline: another text layout like Text::LayoutBD82A0 (when Flags::Bit0 is set), measuring its parts (`0xBD80A0`) |
+| `0x986060` | Effect::Place986060 | In outline: places an effect over the terrain as seen from the camera (MainCamera::Get), rounding its cells |
+| `0x8ea650` | Water::Shape8EA650 | In outline: works out a water shape's surface over the terrain: normalises its direction (+0x20 to +0x28) and compares its corner heights |

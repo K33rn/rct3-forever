@@ -177,3 +177,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xc75800` | Effect::SetParamC75800 | In outline: sets one of an effect's settings by number (0 to 0xB and up) from the value given, kept between 0 and 1 for some |
 | `0xcd0cf0` | Shapes::JoinCD0CF0 | In outline: works out the points joining two shapes (`0xCD0510`), the distance between them and a count of steps from it (`0xFC3484` per unit), eased (`0xDDEBC0`) |
 | `0x95fce0` | Grid::Walk95FCE0 | In outline: steps through grid cells along a direction by the signs of its parts, counting the cells crossed on each axis |
+| `0x7af0a0` | Camera::Orbit7AF0A0 | In outline: when not flagged (+0x54), points a camera along its target's direction (Matrix::LookAlongZSide) and turns it by its angles (Matrix::TurnAboutY, Matrix::TurnAboutX) |

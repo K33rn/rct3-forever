@@ -119,3 +119,7 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x73fa60` | Staff::Update73FA60 | In outline: a staff member's update: its work (Staff::UpdateWork73CC10) first, then for stage 6 its next task (`0x73E6B0`) |
 | `0x782d10` | GuestGroup::Spawn782D10 | In outline: makes new guests for a group now and then (Random::Ran0, when +0x1A1 is set): places them (Guest::Place777990 with 4000) and adds them (`0x7778E0`, `0x77B750`) |
 | `0x7c9f50` | Person::FindTask7C9F50 | In outline: goes over the tasks of a list (+0xD0) and picks one for the person (`0xA89450`, `0x49C4A0`) |
+| `0x7aae80` | Person::FindTask7AAE80 | In outline: another task search like Person::FindTask7C9F50 for a person, from the place it is (`0x7AD8A0`) |
+| `0x75d9e0` | Guest::OnRide75D9E0 | In outline: a guest's update while on an attraction (state other than -1, kinds 0x14 and 0x1C handled): checks its attraction (AttractionPersonInfo::Attraction) |
+| `0x7ab810` | Person::Route7AB810 | In outline: works out a route for a person to its target: the path manager (made when needed) and the target's place |
+| `0x775b30` | Guest::Watch775B30 | In outline: a guest's update while watching or waiting: checks the thing it is linked to (state 0x10 stage 2, Interface1F0::Get) and turns toward it (`0xCDF020`) |

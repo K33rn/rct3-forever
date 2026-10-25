@@ -340,3 +340,8 @@
 | `0xa0cbd0` | Weather::UpdateA0CBD0 | In outline: a timed weather or event update inside a critical section (skipped when `0x10EDAD8` is set): counts down, picks at random (Random::Ran0, `0x4751E0`) by the date (GameTime::Get) |
 | `0xafa7c0` | TerrainLayers::BuildAFA7C0 | In outline: when needed (+0x1078), builds the terrain layer grid: its size from the terrain's size and cell size, rounded, and its cells (0x2C bytes each) |
 | `0x565030` | Path::Queue565030 | In outline: goes over a queue's path pieces (+0xC0, count +0xC4) with their neighbours and checks the ones of kind 5 (+0x164) against a length |
+| `0x4c6a40` | Tool::Update4C6A40 | In outline: the selected tool's update (`0x12F5638`): finds its slot (`0x5E1010`) and, when found and not flagged (+0x74), acts on it |
+| `0x82b5c0` | Scenery::Refresh82B5C0 | In outline: refreshes a scenery item: rebuilds its parts (`0x828CB0`, `0x827B40`, `0x876660`, `0x840620`) and, with a slot (+0x190) and not flagged (+0x18C), its link |
+| `0x4f1050` | Ride::Placing4F1050 | In outline: while a ride or shop is being placed (+0x60C), makes its name and acts by its kind (+0x144: 1, 2, ...) when the thing under the mouse changes (+0x618, +0x61C) |
+| `0x9489a0` | Water::Bodies9489A0 | In outline: goes over the water cells (+0x5C) and finds which body each belongs to (`0x95BC10`), joining bodies at the same height |
+| `0x7e5fa0` | Park::Rebuild7E5FA0 | In outline: another timed rebuild like Park::Rebuild7E7440 over the terrain (a 90 by 90 grid) for an entry, with kind 2 tiles handled (`0x7E5350` with 0x40) |

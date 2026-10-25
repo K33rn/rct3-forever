@@ -194,3 +194,9 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5c4740` | TrackedRide::Select5C4740 | In outline: selects or highlights a ride's part at a cell (for rides of kind 3 or flag 0x40 only, otherwise `0x5C2590`), by its flags (+0x190, +0x18C) |
 | `0x932160` | TrackedRide::WaterSplash932160 | In outline: for a water ride's track (TrackedRide::TrackInterface) on a tile of kind 2 or more (OffsetRef::Owner2), works out the splash from the car's height and speed with the water flow manager (WaterFlowManager::Get) |
 | `0x5094b0` | Car::Attach5094B0 | In outline: attaches a ride car to its place on the track (+0xDC, Table310::Entry, kinds 2 and 3), pointing it the right way (Matrix::LookAlongZSide) |
+| `0x517c10` | Car::SetSeat517C10 | In outline: moves a ride car's rider to seat n (below the seat count `0x50E6D0`) when it changes (+0x318), refreshing the link (`0x4E6410`) |
+| `0x4e6ca0` | AttractionPerson::Update4E6CA0 | In outline: another attraction person update like AttractionPerson::Update4E7590: for the selected attraction, measures the way to its spot and checks its parts |
+| `0x4f7140` | TrackEditor::Update4F7140 | In outline: the track editor's update: refreshes the ride (`0x4EDF70`) for the selected one (`0x12F5608`), and in mode 5 with a piece (+0x52C) works out the cost of finishing the track (TrackEditor::AutoCompleteCost) |
+| `0x553060` | TrackedRide::Sections553060 | In outline: goes over a ride's track sections (`0x12F5338`) and lays out each one (`0x559D10`, Interface20::GetCached, `0x552BC0`) |
+| `0x4ff730` | Ride::Footprint4FF730 | In outline: when the ride is not being moved (+0xC4 +0xD4), finds the cells its parts cover (Grid::Range) on the terrain |
+| `0xbbb690` | Track::BuildBBB690 | In outline: goes over a track's sections (+0x50) measuring them (PointSet::Walk2) and flags the ones past the limits |
