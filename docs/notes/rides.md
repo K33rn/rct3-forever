@@ -28,3 +28,12 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4e8730` | MiniGolfHole::SetupPlayers | Sets up a mini golf hole's player animations (walk on / off, `%02dStroke%02d`, walk, ball). Called from `0x4EA940` |
 | `0xa3cb60` | TrackImporter::Import | Imports a track design from `\Coasters\`, with its errors: file not found, unknown file format, unsupported ride type, unsupported or misfit ride part (`TrackImporter_Error_*`) |
 | `0xa98400` | Pool::PartFromName | Turns a pool part's name into its kind: `divingboard`, `ladder`, `shower`, `sunlounger`, `light`, `lifeguard`, `wavemachine`, `underwaterwall`, `centralsolid`, `centralwater`, `side`, `wholetile`, ... |
+| `0x5a63b0` | Platform::ReadSettings | Reads a station platform's settings from its overlay: `PlatformHeight`, `PlatformOffset`, `WalkAlongPlatform`, `StepXOffset`, `StepXBase`, `InsideEntranceExitXOffset`, reporting the missing ones. Called from `0x5B5710` |
+| `0x5956c0` | Stall::AddCarriedItem | Adds a carried item to a stall's extras (`ShopExtraInstance`), reporting `Missing CED '%d' for CID '%S'` and `No CID for carried item`. Called from four places |
+| `0x519ef0` | RideCar::FindCameras | Finds a ride car's cameras (`camera01`, `camera02`). Called from `0x5274B0` |
+| `0x5df4a0` | ThrillLiftTrain::Setup | Sets up a thrill lift's train and its left and right splines, reporting `No ThrillLiftTrain for ...`, `ThrillLiftTrain: missing lspline` / `rspline`. Called from `0x59C840` and `0x5E92A0` |
+| `0x5cc010` | Ride::SetupWaterSpray | Sets up a ride's water spray particles (`ParticleStart05_rsWaterSpray`, `ParticleEnd05_...`, `ParticleStart11_...`) |
+| `0x59b230` | TrackSection::Check | Checks a ride's track sections, reporting unresolved ones (`Unresolved TrackSection`, `see trr file`) and missing resources (`Track Section '%s' - '%s' is missing water spline resources!`, `... is missing resources!`). Called from five places |
+| `0x562520` | RideTrain::SetupSounds | Sets up a train's track sounds: slow, medium and fast (left and right), the chain lift and water plumes (`TrackSlowSound`, `TrackMedSound`, `TrackFastSound`, `ChainSound`, `WaterPlume`). Called from `0x564AF0` and `0x5AA920` |
+| `0x4a4030` | Attraction::LoadIcon | Loads an attraction's icon, reporting `No :sid`, `Icon missing texture for attraction` and `unknown attraction type`. Called from `0xA7FF10` |
+| `0xa30ae0` | FlexiColours::Load | Reads an object's colour choices (`DefaultFlexiColours`, `Flexicolour_`). Called from `0xA2E200` |

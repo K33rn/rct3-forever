@@ -100,3 +100,25 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x4ec9a0` | AttractionNameMusic::Build | Builds the name and music fields of an attraction's window. Called from `0x4E15A0` |
 | `0x662750` | SceneryEditor::Build | Builds the scenery editor's window: rotate, exposing scenery, viewport and colour. Called from `0x41B0B0` |
 | `0x4f1e60` | TrackEditor::BuildSpecialPieces | Builds the buttons of the special track pieces: station, photo section, vertical, brakes and block brakes (`SpecialOptButton`). Called from `0x4F8100` |
+| `0xaec200` | WaterJetDesigner::Save | Saves a water-jet design (`.wjt`) with the save dialog's name checks and overwrite question (`SGD_*`, `%FILENAME%`) |
+| `0xad0980` | LaserDesigner::Save | Saves a laser design (`.las`) with the save dialog's name checks and overwrite question (`SGD_*`) |
+| `0x9a7100` | FireworkDisplay::Save | Saves a firework display (`.fwd`) with the save dialog's name checks and overwrite question (`SGD_*`) |
+| `0xacb7a0` | LaserDesigner::BuildColourTool | Builds the laser designer's colour tool, with its OK button (`LaserDesigner_Tool_Colour_TT`, `LaserWritingDesigner_Ok`) |
+| `0xacf690` | LaserDesigner::BuildRotationTool | Builds the laser designer's rotation-speed tool, with its OK button (`LaserDesigner_Tool_RotVel_TT`) |
+| `0x9b94b0` | ParticleDescWindow::Build | Builds the firework particle editor's window, with editing the particle's texture (`Fireworks_Small_Star`, `TT_GUI2_ParticleDescWindow_EditTexture`). Called from `0x9BB220` |
+| `0x653aa0` | GuestGroupWindow::Build | Builds a guest group's member list (`GUI2_Guest_Group_Avatar`, on a curved background). Called from `0x654340` |
+| `0x64b660` | Passport::Update | Fills in a guest's passport: the stamps (`PassportStamp`) and the messages to place posts to get stamps, that the gift is already got, or how many more stamps are needed for which gift (`%NUMBER%`, `%GIFT%`). Called from `0x650A60` |
+| `0x9ad530` | ExpansionMessage::Build | Builds the message that an expansion pack is needed (`AOP_Name_0`, `AOP_RequiredMessage`) |
+| `0xa9cca0` | PoolEditor::BuildSegmentTypes | Builds the pool editor's special segment buttons: high dive and jacuzzi (`SegmentTypeHighDive`, `SegmentTypeJacuzzi`). Called from `0xA9D4A0` |
+| `0x554a30` | RideSelectionWindow::Fill | Fills in the ride selection window: building a saved track (`BuildSaved`, `RideSelectionWindow_BuildSavedTrack`), the number of designs available (`%NUMBER%`) and sizes as `%d x %d`. Called from `0x677110` |
+| `0x7507d0` | AvatarEditor::BuildTypes | Builds the people designer's type buttons: child, teenage and adult, male and female (`PersonEditor_*Icon`). Called from `0x750F90` |
+| `0x9ee050` | CameraSequenceEditor::BuildFile | Builds the load and save buttons of the camera recorder. Called from `0x9F3FD0` |
+| `0xa4bc80` | FrontScreen::BuildExpansionBadges | Builds the front screen's badges of the installed expansion packs (`FrontScreen_AOPBadge_`, `AOP_InstalledMessage`, `AOP_Name_`). Called from `0xA4C320` |
+| `0x78e670` | StaffWindow::BuildTabs (1) | Builds the tabs of a staff member's window: statistics, tasks and costume / uniform colours (`Staff_Stats`, `Staff_Tasks`, `Staff_Uniform_Colours`). Called from `0x73BA10`; `0x78DFC0` and `0x78D910` are the same for other kinds of staff |
+| `0x78dfc0` | StaffWindow::BuildTabs (2) | The same as `0x78E670` for another kind of staff. Called from `0x7971C0` |
+| `0x78d910` | StaffWindow::BuildTabs (3) | The same as `0x78E670` for another kind of staff (`Staff_Uniform_Colour`). Called from `0x79DE70` |
+| `0x78d290` | StaffWindow::BuildCommon | Builds the parts every staff member's window has: thoughts, name, details and the viewport (`Staff_Thoughts`, `Staff_Details`). Called from the three above and four others |
+| `0xa021f0` | SavedSelectionMenu::BuildItem | Makes an item of the saved selection menu with its icon (`GUIIcon`, `SavedSelection_SubMenuHelp`). Called from `0xA04420` |
+| `0x6b42a0` | MapDialog::Build | Builds the park map window with its people, rides and scenery tabs (`MapDialog_PeopleTabTitle`, `_RidesTabTitle`, `_SceneryTabTitle`). Called from `0x6B4BE0` |
+| `0x8cbeb0` | LandDialog::BuildTextureList | Builds the land window's list of terrain textures (`LandType`, with empty slots `Land_Empty`). Called from `LandDialog::BuildPaint` |
+| `0x66bc30` | TrackBrowser::Locked | Tells the player a saved track is locked until a scenario level is completed (`TrackBrowser_LockedHelp`, `%SCENARIO%`, `%LEVEL%`) |
