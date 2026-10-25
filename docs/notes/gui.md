@@ -438,3 +438,12 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xae95f0` | Text WaterJetDesigner_Title | Makes the given text a copy of the game text `WaterJetDesigner_Title` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
 | `0xb02400` | Text DartCamName | Makes the given text a copy of the game text `DartCamName` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
 | `0xb15680` | Text WildAnimalState_Eat | Makes the given text a copy of the game text `WildAnimalState_Eat` (looked up by name with `0x4040F0`), or the empty text when it has none; returns it |
+| `0x67d320` | Window::PointToScreenB0 | The same as Window::PointToScreen with the window's offset at -0x50 from this interface |
+| `0x67f300` | Window::PointToScreen78 | The same as Window::PointToScreen with the window's offset at -0x88 from this interface |
+| `0x996680` | Window::PointToScreen50 | The same as Window::PointToScreen with the window's offset at -0xb0 from this interface |
+| `0x9973d0` | Window::PointToScreenA0 | The same as Window::PointToScreen with the window's offset at -0x60 from this interface |
+| `0x9b9cd0` | Window::PointToScreenB8 | The same as Window::PointToScreen with the window's offset at -0x48 from this interface |
+| `0xa213a0` | Window::PointToScreenB8 | The same as Window::PointToScreen with the window's offset at -0x48 from this interface |
+| `0xa21a40` | Window::PointToScreenB8 | The same as Window::PointToScreen with the window's offset at -0x48 from this interface |
+| `0xaccb40` | Window::PointToScreenB8 | The same as Window::PointToScreen with the window's offset at -0x48 from this interface |
+| `0xae2090` | Window::PointToScreenB0 | The same as Window::PointToScreen with the window's offset at -0x50 from this interface |

@@ -1033,3 +1033,87 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcbd030` | ShareTextC | Gives a shared copy of the text kept at +0xc (its use count raised) |
 | `0xcc9640` | String::MakeEmpty | Makes the given text the shared empty text; returns it |
 | `0xcdba70` | ClearThree | Clears three values (an empty array) |
+| `0x408210` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0x40b520` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0x423fb0` | Array4::Assign | Makes an array of 4-byte values a copy of another (its old block freed, a new one of the other's count); returns it |
+| `0x476830` | List::InsertBefore | Makes a new 12-byte node holding the value given and links it in before the given node; gives the new node |
+| `0x47cac0` | List::InsertBefore | Makes a new 12-byte node holding the value given and links it in before the given node; gives the new node |
+| `0x49a120` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0x4b4a90` | Array4::Assign | Makes an array of 4-byte values a copy of another (its old block freed, a new one of the other's count); returns it |
+| `0x4c1e80` | SetA8AndUpdate | Sets the value at +0xa8 and runs `0x4c0c90` |
+| `0x59e020` | SetB0AndUpdate | Sets the value at +0xb0 and runs `0x59be00` |
+| `0x63ee80` | Array4::Assign | Makes an array of 4-byte values a copy of another (its old block freed, a new one of the other's count); returns it |
+| `0x6a60b0` | List::InsertBefore | Makes a new 12-byte node holding the value given and links it in before the given node; gives the new node |
+| `0x6d96f0` | Array4::Assign | Makes an array of 4-byte values a copy of another (its old block freed, a new one of the other's count); returns it |
+| `0x704c50` | Set1A8AndUpdate | Sets the value at +0x1a8 and runs `0x704a50` |
+| `0x704c70` | Set1ACAndUpdate | Sets the value at +0x1ac and runs `0x704a50` |
+| `0x704cb0` | Set1B4AndUpdate | Sets the value at +0x1b4 and runs `0x704a50` |
+| `0x704cd0` | Set1B8AndUpdate | Sets the value at +0x1b8 and runs `0x704a50` |
+| `0x7337d0` | Array4::Assign | Makes an array of 4-byte values a copy of another (its old block freed, a new one of the other's count); returns it |
+| `0x733880` | Array4::Assign | Makes an array of 4-byte values a copy of another (its old block freed, a new one of the other's count); returns it |
+| `0x7404f0` | ObjectArray28::Construct | Constructor of an array of n 28-byte objects made with new[] (the count kept in front, each constructed) |
+| `0x772360` | ObjectArray28::Construct | Constructor of an array of n 28-byte objects made with new[] (the count kept in front, each constructed) |
+| `0x7c0a60` | Array::AddOne7C06E0 | Makes room for one more item (growing by 16 with `0x7c06e0` when full) and counts it |
+| `0x7c0ab0` | Array::AddOne7C0780 | Makes room for one more item (growing by 16 with `0x7c0780` when full) and counts it |
+| `0x7c0b00` | Array::AddOne7C0830 | Makes room for one more item (growing by 16 with `0x7c0830` when full) and counts it |
+| `0x80ed30` | PointerArray::Push64 | Appends a value to the array at +0x0 (count +0x64), doubling it (at least 32) when full |
+| `0x80ee30` | PointerArray::Push94 | Appends a value to the array at +0x0 (count +0x94), doubling it (at least 32) when full |
+| `0x817bd0` | ObjectArray44::Construct | Constructor of an array of n 44-byte objects made with new[] (the count kept in front, each constructed) |
+| `0x820460` | ObjectArray28::Construct | Constructor of an array of n 28-byte objects made with new[] (the count kept in front, each constructed) |
+| `0x8e7740` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0x8e7ad0` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0x9cdd40` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0x9f9060` | PointerArray::Push74 | Appends a value to the array at +0x0 (count +0x74), doubling it (at least 32) when full |
+| `0x9f90f0` | PointerArray::Push80 | Appends a value to the array at +0x0 (count +0x80), doubling it (at least 32) when full |
+| `0xa0ee90` | Array::AddOneA0ECB0 | Makes room for one more item (growing by 16 with `0xa0ecb0` when full) and counts it |
+| `0xa0eee0` | Array::AddOneA0ED40 | Makes room for one more item (growing by 16 with `0xa0ed40` when full) and counts it |
+| `0xa0ef30` | Array::AddOneA0EDF0 | Makes room for one more item (growing by 16 with `0xa0edf0` when full) and counts it |
+| `0xa46590` | List::InsertBefore | Makes a new 12-byte node holding the value given and links it in before the given node; gives the new node |
+| `0xa5b5e0` | Array4::Assign | Makes an array of 4-byte values a copy of another (its old block freed, a new one of the other's count); returns it |
+| `0xa6bcc0` | PointerArray::Push48 | Appends a value to the array at +0x0 (count +0x48), doubling it (at least 32) when full |
+| `0xa6bda0` | PointerArray::Push5C | Appends a value to the array at +0x0 (count +0x5c), doubling it (at least 32) when full |
+| `0xa6bde0` | PointerArray::Push68 | Appends a value to the array at +0x0 (count +0x68), doubling it (at least 32) when full |
+| `0xacd810` | List::InsertBefore | Makes a new 12-byte node holding the value given and links it in before the given node; gives the new node |
+| `0xb3a990` | List::InsertBefore | Makes a new 12-byte node holding the value given and links it in before the given node; gives the new node |
+| `0xb467a0` | ObjectArray28::Construct | Constructor of an array of n 28-byte objects made with new[] (the count kept in front, each constructed) |
+| `0xb75db0` | Array::AddOneB75BA0 | Makes room for one more item (growing by 16 with `0xb75ba0` when full) and counts it |
+| `0xb76260` | Array::AddOneB76170 | Makes room for one more item (growing by 16 with `0xb76170` when full) and counts it |
+| `0xb83320` | Set54AndUpdate | Sets the value at +0x54 and runs `0xb83140` |
+| `0xb83330` | Set58AndUpdate | Sets the value at +0x58 and runs `0xb83140` |
+| `0xb83340` | Set5CAndUpdate | Sets the value at +0x5c and runs `0xb83140` |
+| `0xb8cb80` | ObjectArray28::Construct | Constructor of an array of n 28-byte objects made with new[] (the count kept in front, each constructed) |
+| `0xb8cd40` | ObjectArray28::Construct | Constructor of an array of n 28-byte objects made with new[] (the count kept in front, each constructed) |
+| `0xb99500` | Array4::Assign | Makes an array of 4-byte values a copy of another (its old block freed, a new one of the other's count); returns it |
+| `0xbbcc40` | List::InsertBefore | Makes a new 12-byte node holding the value given and links it in before the given node; gives the new node |
+| `0xbe8fb0` | FreeListItem13D0EB4::Delete | Destroys the item (`0xbe8b10`) and, when bit 0 of the flag is set, puts it back on the free list `0x13d0eb4`; returns it |
+| `0xbebac0` | FreeListItem13D0F28::Delete | Destroys the item (`0xbeba10`) and, when bit 0 of the flag is set, puts it back on the free list `0x13d0f28`; returns it |
+| `0xbff3b0` | FreeListItem13D2A78::Delete | Destroys the item (`0xbff310`) and, when bit 0 of the flag is set, puts it back on the free list `0x13d2a78`; returns it |
+| `0xc0ccf0` | FindByName0 | Finds the entry of the list at +0x0 whose name (+4) matches the given text, ignoring case; null when there is none or no name is given |
+| `0xc0cd50` | FindByName0 | Finds the entry of the list at +0x0 whose name (+4) matches the given text, ignoring case; null when there is none or no name is given |
+| `0xc0cdb0` | FindByName0 | Finds the entry of the list at +0x0 whose name (+4) matches the given text, ignoring case; null when there is none or no name is given |
+| `0xc0ce10` | FindByName0 | Finds the entry of the list at +0x0 whose name (+4) matches the given text, ignoring case; null when there is none or no name is given |
+| `0xc0ce70` | FindByName0 | Finds the entry of the list at +0x0 whose name (+4) matches the given text, ignoring case; null when there is none or no name is given |
+| `0xc0ced0` | FindByName0 | Finds the entry of the list at +0x0 whose name (+4) matches the given text, ignoring case; null when there is none or no name is given |
+| `0xc0cf30` | FindByName0 | Finds the entry of the list at +0x0 whose name (+4) matches the given text, ignoring case; null when there is none or no name is given |
+| `0xc0cf90` | FindByName0 | Finds the entry of the list at +0x0 whose name (+4) matches the given text, ignoring case; null when there is none or no name is given |
+| `0xc479c0` | Array4::Reset | Empties an array of 4-byte values and gives it room for n (its old block freed) |
+| `0xc47a50` | Array4::Reset | Empties an array of 4-byte values and gives it room for n (its old block freed) |
+| `0xc47ae0` | Array4::Reset | Empties an array of 4-byte values and gives it room for n (its old block freed) |
+| `0xc47b70` | Array4::Reset | Empties an array of 4-byte values and gives it room for n (its old block freed) |
+| `0xc47c00` | Array4::Reset | Empties an array of 4-byte values and gives it room for n (its old block freed) |
+| `0xc47c90` | Array4::Reset | Empties an array of 4-byte values and gives it room for n (its old block freed) |
+| `0xc9be00` | FreeListItem13E6DF4::Delete | Destroys the item (`0xc9bab0`) and, when bit 0 of the flag is set, puts it back on the free list `0x13e6df4`; returns it |
+| `0xcb22a0` | Array4::Reset | Empties an array of 4-byte values and gives it room for n (its old block freed) |
+| `0xcb2330` | Array4::Reset | Empties an array of 4-byte values and gives it room for n (its old block freed) |
+| `0xcc1d70` | DestroyBE86E0 | Runs `0xbe86e0` (Thunk) on the object |
+| `0xcc1f00` | DestroyBE88B0 | Runs `0xbe88b0` on the object |
+| `0xcc2630` | DestroyCC25D0 | Runs `0xcc25d0` on the object |
+| `0xcc4520` | DestroyBE86E0 | Runs `0xbe86e0` (Thunk) on the object |
+| `0xcc45b0` | DestroyBE86E0 | Runs `0xbe86e0` (Thunk) on the object |
+| `0xcc49d0` | DestroyBE88B0 | Runs `0xbe88b0` on the object |
+| `0xcc4a00` | DestroyBE88B0 | Runs `0xbe88b0` on the object |
+| `0xcc5610` | DestroyBE86E0 | Runs `0xbe86e0` (Thunk) on the object |
+| `0xcc56d0` | DestroyBE88B0 | Runs `0xbe88b0` on the object |
+| `0xce9ed0` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0xcea2f0` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0xcea700` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
