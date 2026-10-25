@@ -376,3 +376,9 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6a0b20` | ListWindow::SetCount | Changes the number of entries (+0x170): `0x460F20` with it, the selection cleared (ListWindow::SetSelection -1) when it is no longer inside, then `0x6A0560` |
 | `0x6835a0` | WindowOwner::~WindowOwner | Puts its table back (`0xF270F4`), clears the window's back pointer (+0xDC) and deletes the window unless it is already being deleted (+0x264) |
 | `0x6af6c0` | WindowList::WindowList | Constructor of a window list (table `0xF60794`): an empty list (head at +4 / +0x10) and the value given at +0x1C |
+| `0x6b0150` | WindowList::~WindowList | Puts its table back (`0xF60794`) and removes every entry (`0x6AF760`) until the list is empty |
+| `0x6abd60` | CheckBox::BindFlag | Ties a check box to a flag: keeps the address (+0x13C) and the bit (+0x140) and sets the box from it (Window::SetChecked; unticked when there is no address) |
+| `0x67a580` | Window::SetChecked | Sets the window's ticked state (slots 62 and 63) when it differs, then redraws it (`0x67A410`). Used by about 40 functions |
+| `0x67a8c0` | Window::SetRelatedValue | Sets +0xF0 of the related window (+0xF8), when there is one |
+| `0x6a1e20` | Window::UpdateEntries | Runs `0x6A1E70` for each entry of the window's list (+4) |
+| `0x63b3d0` | Window::AddWithText | `0x67B4B0` with the third argument and 0, then `0x63B270` with the first two |

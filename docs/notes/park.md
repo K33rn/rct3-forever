@@ -121,3 +121,4 @@
 | `0x8338b0` | SceneryBehaviour::ClearActive | Clears flag 1 of the behaviour's flags (+0x54). Called when they unregister |
 | `0x833850` | SceneryBehaviour::Owner | The scenery item a behaviour belongs to: the interface (id in `0x130B5C8`) of the object its reference at +0x44 points to, or null |
 | `0x4d18c0` | AttractionPersonInfo::Attraction | The attraction a person info belongs to: the interface (id in `0x12F4C64`) of the object its reference at +0x44 points to, or null |
+| `0xb7a5a0` | Interface48::Get | The interface (id in `0x13CE968`) of the object its reference at +0x48 points to, looked up once (kept at +0x58, flag +0x5C) |

@@ -284,3 +284,12 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x48a400` | IdSet::IdSet | Constructor of a set of ids: clears its first value and sets its storage up with `0xCDED30` (256 slots, growing by 128) |
 | `0xbdf160` | LookupValue | The first value of the entry `0xBDD210` finds for the key, or 0 when there is none |
 | `0xce4770` | Flags::Set20Clear21 | Sets the byte at +0x20 and clears the one at +0x21 |
+| `0x4882d0` | ResourceHolder::~ResourceHolder | Puts its table back (`0xF2E308`) and, when it holds something (+0x18), releases it with the class's release function (`0xF2E30C`) and clears it. Used by about 55 destructors |
+| `0x843900` | Zero6 | Clears six values. Used by about 50 functions |
+| `0x40f6e0` | Reference::ToObject | Makes this a reference (the reference base class `0xF26AE0`) to the given object: its handle (`0x805700`) at +4, joining the handle's list of references first |
+| `0x481560` | Registry::Ensure | Makes the global at `0x12F4604` (36 bytes, all zero) the first time it is needed |
+| `0xcd6480` | Counter::Increment | Adds one to the value at +0xC. Used by about 45 functions |
+| `0xbcf710` | WideString::FromWideN | Makes a shared wide text from up to n characters of wide text (stopping at a 0): use count 1, length n, a capacity rounded up to 16 characters |
+| `0xbd1550` | TextRef::TextRefEmpty | Constructor of a text reference (table `0xFA14D0`) that refers to no text (`0xBD0C50` with 0) |
+| `0xbe47b0` | Callback::~Callback | Deletes the object it holds at +4 (its deleting destructor with 1, given this), then `0xBCDDF0` |
+| `0x4042d0` | Forwarder::Slot3 | Calls slot 3 of the object at +4 with the value and returns the value |
