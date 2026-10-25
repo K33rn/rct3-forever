@@ -123,3 +123,4 @@
 | `0x4d18c0` | AttractionPersonInfo::Attraction | The attraction a person info belongs to: the interface (id in `0x12F4C64`) of the object its reference at +0x44 points to, or null |
 | `0xb7a5a0` | Interface48::Get | The interface (id in `0x13CE968`) of the object its reference at +0x48 points to, looked up once (kept at +0x58, flag +0x5C) |
 | `0x8bcf80` | Terrain::CellHeightRange | The lowest and highest of the four corner heights of a terrain cell (24 bytes each, the grid's width at +4 and cells at +0x24) |
+| `0x726930` | PathTile::Centre | The world position of the middle of a path tile: its grid cell (+0x22, +0x89) times the grid's cell size plus its origin, with the height the tile's slot 7 gives there |

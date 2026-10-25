@@ -297,3 +297,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbec8a0` | ReportMissingInterface | Reports `Failed to get interface in %s (line %d).` with the source file and line given (`0xC34850`). Used by about 35 functions |
 | `0x458150` | SharedText::Copy1106DC4 | Makes this hold the shared text kept in `0x1106DC4`, raising its use count |
 | `0xbe40b0` | Get8Then40 | The value at +0x40 of the object at +8 of the object this points to |
+| `0x6d6180` | RegisteredItem::RegisteredItem | Constructor of a base class (table `0xF63F2C`) whose objects all go in one global list (`0x1305F44`, count `0x1305F4C`, growing to twice its size plus 10): keeps its place in the list at +4. Used by about 45 constructors |

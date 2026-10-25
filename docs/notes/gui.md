@@ -388,3 +388,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6a8380` | Window::SetMode2 | With a value: keeps it (+0xF4), sets the mode to 2 and rebuilds; without one the mode becomes 0 |
 | `0x6a82d0` | Window::SetThree | Keeps three values (+0xF8, +0xFC, +0x100) and rebuilds (`0x6A8220`) |
 | `0x6a8350` | Window::SetThree2 | The same (another copy of the code) |
+| `0x67b4f0` | Label::SetText | Sets the text of the window's text part (+0x114 of the window at +0xF0, sharing the text given) and updates the window (`0x6AFC20`) |
