@@ -18,6 +18,8 @@ original, so the rest of the game keeps working while more and more of it become
    `python build.py test`. The tester loads your RCT3plus.exe at the address the game runs at, runs the original and
    the rewrite on hundreds of random inputs, and requires the same result and the same memory afterwards, bit for
    bit, with the FPU at 24-, 53- and 64-bit precision. A rewrite without a test, or a test that crashes, fails the run.
+   To check only some rewrites, set `EQUIV_ONLY` to part of their name (`EQUIV_ONLY=Pool`); `EQUIV_VERBOSE=1` prints
+   each copy's address as it is checked (useful when a test hangs).
 5. **Prove it in the game.** Run the game with the rewrite until `RCT3Forever.log` shows it being called, and check
    the game behaves normally. Write down how in the table below.
 6. **Update the progress:** `python tools/progress.py` picks up the new `REWRITE(...)` and refreshes
