@@ -80,9 +80,9 @@ REPS = [
     (0x463060, 'ObjectArray::SetCapacity', 'Resizes an array of objects: allocates the new count (with the count kept '
      'in front), constructs them, copies over the old ones that fit, then destroys and frees the old array'),
     (0x460540, 'ObjectArrayField::Save', 'Saves an array field of objects: writes its length (from its own size, '
-     'virtual slot 2) and its count, keeping the save file's running checksum, then has each object save itself'),
-    (0x533250, 'ListField::Save', 'Saves a list field: counts the list's items, writes the length (virtual slot 2) and '
-     'the count with the save file's running checksum, then has each item save itself'),
+     'virtual slot 2) and its count, keeping the running checksum of the save file, then has each object save itself'),
+    (0x533250, 'ListField::Save', 'Saves a list field: counts the items of the list, writes the length (virtual slot 2) and '
+     'the count with the running checksum of the save file, then has each item save itself'),
 ]
 
 
