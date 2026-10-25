@@ -20,3 +20,12 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7f55a0` | Vendor::Sell | A vendor selling: the till sound (`VendorKerching1` / `2`, at random) and the money going to the park's finances |
 | `0x7ebd40` | Staff::CheckResign | Checks whether a staff member wants to resign, and resigns them, with the messages `StaffMessage_WantsToResign` and `StaffMessage_Resigned` |
 | `0x742e50` | AvatarDatabaseEntry::Describe | Writes an avatar's description for the developer: member, type, sub-type, part, palette, swimsuit and ride intensity. Called from `0x7446D5` |
+| `0x7adde0` | ParkInspector::Thoughts | Makes the park inspector's complaints: no maintenance staff near, a ride with no exit, no entrance, no path to the entrance or exit, inappropriate music, ... (`Thought_PI_*`). Called from `0x7A8DA0` |
+| `0x4737b0` | PhotoManager::Message | Tells the player a photo was taken: of a coaster, a group at a vista point, a group, or any (`PhotoManagerMessage_*`). Called from `0x473F30` |
+| `0x7e4940` | Pincer::Load | Loads the pincer that picks guests up (`Characters\Pincer\Claw`, `Claw`, `Peep01`). Called from `0x7B1BA0` |
+| `0x472000` | PhotoSpot::Name | Writes a photo spot's name (`Custom group` / `photo spot` ` at ` ...) |
+| `0x473c30` | Photo::Name | Writes a photo's name (`Custom guest` / `coaster` ` on ` ...) |
+| `0x75e4c0` | Guest::NameCheats | Applies the guest name cheats `hungry joe` and `mustafa p`. Called from `Guest::Update` |
+| `0x7fec50` | Person::PartGroupNames | Makes the names of the saved person part groups (`HeadPartGroup`, `BodyPartGroup`, `LegsPartGroup`, `SwimSuitBodyPartGroup`, `SwimSuitLegsPartGroup`). Called from `0x7FFDF0` |
+| `0x7bfff0` | Person::CheckParts | Reports a person's model parts per level of detail: fixed parts unresolved, optional parts missing (`Main`, `SwimSuit`). Called from `0x7BD4A0` |
+| `0x7446d5` | AvatarDatabaseEntry::Write | Writes an avatar's version, name and leader for saving |

@@ -38,3 +38,15 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x738d10` | QueueType::LoadTexture | Loads a queue type's ground texture, reporting `Missing texture for queue type`. Called from `0x71AB90` and `0x71F4C0` |
 | `0x9e2070` | Rain::LoadResources | Loads the rain's resources: its particles and shaders (`Rain\Rain`, `RainAdditive`, `ParticleAdditive`, `Flare_00`). Called from five places |
 | `0x986990` | WaterBlobs::LoadShaders | Loads the shaders of water blobs and bubbles (`WaterBlobAlpha`, `WaterBlobAlphaAdditive`, `Bubble0`). Called from `0x47E700` |
+| `0x8ffc90` | WaterManager::LoadShaders | Loads the simulated water's shaders (`WaterSimulated`, `...Shader`, `...Caustics`, `...Refraction`, `PoolStencilMask`). Called from `WaterManager::WaterManager` |
+| `0x911d30` | Water::LoadReflectionShaders | Loads the water reflection and ripple shaders (`WaterReflectionAnimatedBumpMap`, `WaterRippleNeg`, `WaterRipplePos`, `WaterTest`, `WaterStencil`). Called from `0x94AE40` |
+| `0x936a90` | WaterFlowManager::DebugText | Writes the water flow manager's render mode for the developer (`RenderMode_WireFrame`, `_DisableTessellation`, `_Normal`). Called from `ParkRenderer::Render` |
+| `0x950830` | WaterJet::LoadShaders | Loads the water jet's shaders (`WaterJet`, `WaterJetRefraction`). Called from `0x955750` |
+| `0x47e700` | Renderer::SetupTransforms | Sets up the environment cube map and light map transforms (`EnvCubemapTransform`, `LightmapTransform`). Called from `0x47EAE0` |
+| `0x40d010` | Model::CheckBoneAnimations | Reports a bone shape's missing animations (`BoneShape '%s' is missing animations`, `Animation %d missing`). Called from nine places |
+| `0xce1390` | ShapeShaders::Load | Loads the shape shaders (`ShapeAll`, `ShapeAlphaMask`, `ShapeShadowOpaque`, `ShapeShadowAlphaMask`, `ShapeShadowAlpha`). Called from three places |
+| `0xcb1650` | DepthOfField::LoadShaders | Loads the depth-of-field shaders (`GE_DOF_ApplyRamp`, `GE_DOF_Apply2`, `GE_DOF_Apply3`, `GE_OpaqueTexture`). Called from `0xCB18F0` |
+| `0x9ffff0` | LightVolumes::LoadShaders | Loads the light volume shaders (`LightVolumeFront`, `LightVolumeBack`, `LightVolumeBackAlways`, `Lightsphere`). Called from `0x47DB20` |
+| `0xc061d0` | GE_Device::LoadPassShaders | Loads the device's depth-of-field, shadow and occlusion query shaders (`GE_Device_DofFill`, `GE_Device_ShadowRender`, `GE_Device_OcclusionQuery`). Called from three places |
+| `0x703c70` | Terrain::LoadGridShaders | Loads the terrain grid shaders: billboards and the owned, construction-rights and selected grids (`TerrainOwnedGrid`, `TerrainConstructionOwnedGrid`, `TerrainSelectedGrid`). Called from `0x7048E0` |
+| `0x8e4ee0` | Terrain::DebugChess | The developer's chessboard terrain patterns (`Chess: Odd`, `Chess: Even`) |

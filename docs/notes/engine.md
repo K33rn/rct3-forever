@@ -68,3 +68,18 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x47a3a0` | KeyBinding::Name | Writes a key binding's name: `ctrl`, `shift`, `alt` and the key (`Key_`, from the `:txt` text) |
 | `0xcaff20` | Inflate::Stream | Decompresses a zlib stream: checks its header (`unknown compression method`, `invalid window size`, `incorrect header check`, `need dictionary`), inflates it (`Inflate`) and checks the result (`incorrect data check`) |
 | `0x496130` | Resources::LoadTextures | Loads a resource folder's textures, with stand-ins for missing ones (`nullbmp`, `Demo`). Called from `0x496610` |
+| `0x43eb90` | Resources::LoadEnvironment | Loads the environment and shadow maps (`EnvMapShiny`, `EnvMapChrome`, `ShadowMapHorizon`) and shows the cache-warming message (`CacheWarmingMessage`). Called from `Resources::LoadStartup` |
+| `0xc045a0` | Graphics::Initialise | Starts the graphics: checks for DirectX 9 (`DirectX9 not found.`), creates the Direct3D device (`Failed to create Direct3D Device.`, `Your graphics hardware or drivers do not meet the minimum requirements ...`) and builds the vertex shader fragments (`VertexShaderFragments::Build`). Called from `Game::Initialise` |
+| `0x457880` | CrashDump::Write | Writes `CrashDump.txt` when the game crashes: the exception (`Unhandled exception "%s" in "%s" at %04x:%08x`), the version and the address read or written. Called from `0x45AD60` |
+| `0x452ed0` | Resources::LanguageFolder | Picks the resource folders for Chinese, Korean, simplified Chinese, Japanese and Thai. Called from `Resources::LoadCommon` |
+| `0x800460` | ManagedObject::ContentError | Reports content that can't be loaded (`ManagedObject_ContentError`, `ManagedObject_Unloadable`, `%NAME%`). Called from seven places |
+| `0xcaf090` | OverlayData::FindFiles | Finds a resource's overlay files (common and unique), reporting `no overlay file for %s`. Called from `0xC36880` and `0xCAF6E0` |
+| `0x464690` | GameZone::Setup | Sets up the online game zone (`roller_coaster_tycoon_pc_na`, `RCT3_GameZone`, `Sample Game`, `Sample Zone`). Called from `0x456F60` |
+| `0x49cfb0` | Units::SpeedName | Writes a speed unit: `m/s`, `mph`, `km/h` (`km/t` in Danish and Norwegian), or `???`. Called from `0x49D7D0` |
+| `0x413f00` | DebugInfo::GameState | Writes the developer's game state text: the cloth manager, front screen or in game, waiting for a stable frame rate (`State: Off`, `WaitingForFrameRate`, `On`, ...) |
+| `0x69b230` | IMEManager::KnownIMEs | Recognises the Chinese input methods by file name (`TINTLGNT.IME`, `CINTLGNT.IME`, `MSTCIPHA.IME`, `PINTLGNT.IME`, `MSSCIPYA.IME`). Called from `0x69D5A0` |
+| `0x69cac0` | IMEManager::LoadIMM | Loads the input method functions from `IMM32.DLL` (`ImmLockIMC`, `ImmUnlockIMC`, `GetReadingString`, `ShowReadingWindow`, ...). Called from `FrontEnd::Start` and `0x457C00` |
+| `0x405510` | StartupScreen::Start | Starts the start-up screens (`RCT3Startup`, with simplified Chinese) |
+| `0xc35a20` | Messages::Redirect | Sends the engine's messages to the developer's IDE or to a file (`Redirecting to IDE`, `Redirecting to file`) |
+| `0xc4f590` | Shaders::LoadDefaults | Loads the default vertex and pixel shader sources (`vsdefault`, `psdefault`). Called from `GE_Device::SetupDepthOfField` |
+| `0xaac130` | PathFinder::DebugText | Writes a path search's developer statistics (`Cost: %.1f:`, `Nodes Visited: %d`) |

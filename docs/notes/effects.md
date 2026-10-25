@@ -14,3 +14,8 @@
 | `0x9ea840` | Weather::Thunder | Plays thunder (`Thunder1`, `Thunder2`). Called from `0x9EAF50` and `0x9EAFA0` |
 | `0x999ac0` | FireworkSlot::Highlight | Draws the highlight of a firework launcher's slot (`FireworkSlotHighlight`, `SlotVectorLocus`). Called from `0x99E160` |
 | `0x929700` | WaterfallManager::DebugText | Writes the waterfalls' developer statistics and render modes (`WaterfallManager:`, `Num waterfalls: %d`, `RenderMode_Normal`, `_WireFrame`, `_Rasterization`, ...). Called from `0x92C990` |
+| `0x93c6f0` | WaterJetManager::DebugText | Writes the water jets' developer statistics (`WaterJetManager:`, `Wibble: %s`, `Num WaterJets: %d`, render modes, particle kinds). Called from `0x93CA60` |
+| `0x98a870` | FireworkDisplay::Check | Checks a firework show's attraction (`Error: Show has invalid attraction`) and its default name (`FireworkDisplayDefaultName`). Called from two places |
+| `0x82ddb0` | FireworkLauncher::FindSlots (2) | Finds a launcher's slots (`Slot %d in %s`, `Missing firework slot matrix`), for the display editor. Called from three places |
+| `0xa280a0` | Darts::Effects | The effects of a dart hitting: dust (`ParticleEffects\Dust.frw`), a gun shot and a balloon pop (`GunShot1`, `BalloonPop`). Called from three places |
+| `0x825780` | FountainShape::Names | Recognises the special fountain display names `shark`, `truck` and `doom` |

@@ -176,3 +176,38 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa08010` | SavedSelectionMenu::FileMenu | Loads and saves a saved building (`*.dat`, default `MyBuilding.dat`). Called from the SavedSelectionGrabber window and `SavedSelectionMenu::Build` |
 | `0x4237f0` | AdMenu::BuildCustomImage | Makes the custom image button of the advert window (`CustObj_Icon`, `AdMenu_CustomImage`). Called from `0x674180` |
 | `0xcab640` | StructViewer::Build | Builds the debug structure viewer's window (`StructCompositor`, `Struct border1`). Called from `0xCACA70` and `0xCACE00` |
+| `0x8cd720` | LandDialog::BuildRadius | Builds the land window's brush radius slider (`GUI2_RadiusSliderBackground`, `CircularViewSolid`). Called from three places |
+| `0x7485b0` | AvatarEditor::BuildLeader | Builds the people designer's group leader buttons (`AvatarEditor_TT_CurrentIsLeader`, `_MakeCurrentLeader`). Called from two places |
+| `0x57d170` | AttractionVehicleDialog::Capacity | Writes a ride's passengers per car and per ride (`AttractionVehicleDialogLabelPassengersPerCar`, `...PerRide`, `%NUMBER%`). Called from `AttractionVehicleDialog::Build` |
+| `0x701590` | VIPRouteDialog::BuildDrag | Builds the drag button of the VIP route editor (`ArrowsUpDown`, `VIPRouteDialog_TT_DragButton`) |
+| `0x667c30` | ColourSwatch::Highlight | Draws a colour swatch's surround and highlight (`FlexiColourSurround`, `FlexiColourHighlightBlue`, `...White`). Called from `0x668300` |
+| `0x41f2c0` | AdMenu::Caching | Shows that downloaded content is being cached (`MassiveWaiting_1`, `Caching_LiveContent_TT`). Called from a window builder |
+| `0x652940` | VIPDetails::BuildTabs | Builds the statistics tab of a VIP's window (`GuestDetails_VIPStatsHelp`). Called from `0x7F82C0` |
+| `0xacb270` | LaserDesigner::BuildColourWheel | Builds the laser designer's colour wheel (`ColourSelection_CircF`, `_CircO`). Called from `LaserDesigner::BuildColourTool` |
+| `0x66b360` | TrackBrowser::ItemName | Writes a track's name in the track browser: custom tracks and locked ones (`TrackBrowser_CustomTrack`, `TrackBrowser_LockedSuffix`). Called from `0x66CCE0` |
+| `0xaf04a0` | WaterJetDesigner::BuildIdentBar | Builds the water jet's bar in the display editor (`WaterJetIdentbar`). Called from two places |
+| `0xad7460` | LaserDesigner::BuildIdentBar | Builds the laser's bar in the display editor (`LaserIdentbar`). Called from two places |
+| `0x686260` | FileDialog::DeleteCampaign | The button that deletes a career profile (`CampaignDelete`, `FD_TT_CampaignDelete`) |
+| `0xa20c50` | TutorialSetup::TriggerNames | Makes the names of the tutorial triggers: open, close, click (buttons only), scenery item placed, window already open (`On Open`, `On Close`, ...). Called from `0xA21490` |
+| `0x6c4f40` | ChallengeSetupDialog::PublicityList | Makes the list of publicity boosts for a challenge prize: none, small, medium, large, huge (`Challenge_PublicityBoostList*`). Called from `ChallengeSetupDialog::Build` |
+| `0x6c4b30` | ChallengeSetupDialog::StartConditions | Makes the list of when a challenge starts: a time after the game starts, or after achieving apprentice or entrepreneur (`ChallengeSetupDialog_StartCondition*`). Called from `ChallengeSetupDialog::Build` |
+| `0x78f1c0` | StaffWindow::BuildStats | Builds a staff member's statistics tab (`Staff_Stats`) |
+| `0x640b20` | ObjectIcon::ExpansionGlyph | Puts an expansion pack's glyph on an object's icon (`AOP_GlyphTexture_`, `AOP_Name_`). Called from three places |
+| `0x607e70` | GameOptionsDialog::KeyBindingHelp | Shows the key binding help (`GameOptionsDialog_KeyBindingHelp`, `_NoKeyBindingHelp`). Called from `0x6084F0` |
+| `0xac8060` | LaserDesigner::Selection | Draws a laser designer selection box (`Blender_SelectionF`, `_SelectionO`). Called from two places |
+| `0xac86e0` | LaserDesigner::BuildBar | Builds a bar of the laser designer from its pieces (`Blender_Bar_Left`, `_Mid`, `_Right`). Called from `0xAC8A30` |
+| `0x5f6d70` | FileMenu::ConfirmExit | Asks whether to quit, or go back to the career map (`FSM_ConfirmExit_Message`, `FSM_ConfirmExitToCareerMap_Message`) |
+| `0x5f9220` | FileMenu::SaveBeforeLoad | Asks whether to save before loading (`FSM_SaveBeforeLoad_Title`, `_Message`) |
+| `0x9db8f0` | CampaignDialog::BuildSelect | Builds the choosing of an attraction for a marketing campaign, with cancel (`Campaign_Select_Attraction`, `SMB_Label_Cancel`) |
+| `0x6ae890` | GUIHighlight::LoadMasks | Loads the shapes used to darken around a highlighted window (`GUIHighlightMask_Circle_Darken`, `_Dialog_Darken`, `_LozengeWithShadow_Darken`). Called from `0x6AFE60` |
+| `0x660e20` | PersonIcon::Get | Picks a person's icon: child, teenage or adult, male or female, or VIP (`PersonEditor_*Icon`, `VIP_Icon`). Called from four places |
+| `0x70f870` | PathEditor::CutIntoTerrainButton | Switches the path editor's cutting into the terrain on or off (`PathEditor_CutIntoTerrain_on` / `_off`) |
+| `0x4f1a70` | TrackEditor::RideHeightsButton | Switches showing ride heights in the track editor (`AttractionEditor_IconRideHeights`, `...On`). Called from two places |
+| `0xb6fe70` | AnimalCamera::ModeNames | Makes the animal camera's mode names: static, head and follow (`AnimalCam_*`). Called from `0xB72BE0` |
+| `0xc6be00` | DebugConsole::BuildListBox | Builds a debug console list box (`DDHelper`, `DDListBox`). Called from `0xC6EB40` |
+| `0xc6a480` | DebugConsole::BuildMenu | Builds a debug console menu (`Menu compositor`, `menu filler`). Called from `0xC6CB20` |
+| `0xcab9c0` | StructEditor::Build | Builds the debug structure editor's window (`StructEditor`, `Struct border2`) |
+| `0xc6b400` | DebugConsole::BuildSlider | Builds a debug console slider (`Slider`, `Track`). Called from 11 places |
+| `0xc32f60` | DebugConsole::BuildWatch | Builds the debug console's watch window: names and values (`Watch enviro`). Called from `DebugConsole::Build` |
+| `0xa1f060` | WindowArea::Names | Makes the names of the window areas used by tutorials (`WindowArea:Dragger`, `WindowArea:ToolTipDialog`). Called from `0xA58C10`; `0xA1F350` is the same |
+| `0xa1f350` | WindowArea::Names (2) | The same as `0xA1F060` |

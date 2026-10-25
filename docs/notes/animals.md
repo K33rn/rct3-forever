@@ -32,3 +32,12 @@
 | `0xb21f60` | AnimalPlay::StateNames | Makes the names of the animal play states (`State_Finished`, `State_StandWait`, `State_StandOnce`, `State_SitWait`, `State_MoveTo`, `State_OrientSelf`, `State_Play`, `State_PlayTimeout`, `State_PlayIn1`, ...) |
 | `0xb49100` | AnimalCrate::LoadModels | Loads the animal crates' models (`WildAnimals\Crates\Crates`, `Crate02Small`, `Crate%02d`). Called from `0xB4B540` and `0xB4C660` |
 | `0xbbf1d0` | AnimalFood::Names | Writes the names of the animal food kinds: foliage, hay and meat. Called from `WildAnimal::DebugStats` and `AnimalInfoPanel::Build` |
+| `0xb8e240` | AnimalShelter::TroughNames | Makes the names of a shelter's troughs: eat, drink, sleep, male, female. Called from `0xB8E820` |
+| `0xb71e30` | WildAnimal::ConfirmRelease | Asks before releasing an animal and reports when it can't be (`ReleaseAnimalConfirmMessage`, `ReleaseAnimalFailMessageBoxMessage`). Called from `0xB08E70` |
+| `0xb6fbd0` | WildAnimal::Release | Releases an animal and tells the player, or says why it failed (`ReleaseAnimalReleasedMessage`, `ReleaseAnimalFailMessageBoxMessage`) |
+| `0xa14040` | Duck::Models | Picks a duck's model (`Duck01` ... `Duck03`) |
+| `0xa19830` | Seagull::Models | Picks a seagull's model (`Seagull01` ... `Seagull03`) |
+| `0xa0db30` | Duck::LoadFeathers | Loads the duck feather particles (`DuckFeather`, `BillboardStandard`). Called from `0xA0E1B0` |
+| `0xb03220` | Darts::Load | Loads the darts and the safari T. rex model (`WildAnimals\Darts\Darts`, `SafariTrex`). Called from `0xB05170` |
+| `0xbbefa0` | WildAnimal::SpeciesStats | Writes a species' statistics for the developer: number of prey, prey, breeding happiness and space needs, vertical step reach, ... (`WildAnimalSpeciesStat_*`). Called from `WildAnimal::DebugStats` |
+| `0xb4b290` | AnimalCrate::StateName | Writes an animal crate's state: closed, dropping, fading in, opening, opened, waiting to be picked up |

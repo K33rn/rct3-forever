@@ -50,3 +50,14 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5a7380` | RideCar::Name | Gets a ride car's name (`Name`, `CarName`, or `<car name undefined>`). Called from `0x5A78D0` and `0x66CE00` |
 | `0x5defd0` | CableLiftTrain::Setup | Sets up a cable lift's train (`RideTrainInstance`), reporting `No CableLiftTrain for ...`. Called from `0x59C7E0` and `0x5E92A0` |
 | `0x5deb00` | CableLiftTrain::Setup (2) | The same as `0x5DEFD0` for the other direction. Called from `0x59C780` and `0x5E92A0` |
+| `0x519b30` | RideTrain::LoadCarModel | Loads a ride car's model (its `.shp`), reporting `missing .shp for car` / `no .shp for car`. Called from `RideTrain::BuildCars` |
+| `0xbc4240` | TrackPiece::SpecialNames | Makes the names of the special track pieces: straight brakes and block brakes, station middle, photo section, S-bends (also tilted), corkscrews, half and quarter loops, loops, ... Called from the TrackSpecial window and two others |
+| `0x5a3f50` | Ride::FindInspectionPoints | Finds a ride's inspection points for mechanics (`InspectionPointLeft`, `InspectionPointRight`) |
+| `0x66db80` | CoasterStats::LoadExample | Loads the example track for the statistics window (`[Giga]Expedition GeForce.trk`, read through `TrackedRideInstanceSaveHeader` / `TrackedRidePreview`). Called from `0x66FA40` |
+| `0xa82700` | PoolComplex::LoadPreview | Reads a saved pool's preview (`PoolComplexSaveHeader`, `TrackedRidePreview`). Called from `0xA84580` |
+| `0x544740` | RideOpModeDialog::ModeText | Looks up the text of an operating mode (`RideOpModeDialog_` + the mode's name), reporting `Undefined symbol`. Called from `RideOpModeDialog::Build` |
+| `0x544250` | RideOpModeDialog::LoadIcon | Loads an operating mode's icon, with `SquarePlusSign` and `missing icon` as fall-backs. Called from `RideOpModeDialog::Build` |
+| `0x4d14b0` | AttractionNumbers::Rate | Writes an attraction's figures per hour or per week (`AttractionNumberArea_PerHour`, `_PerWeek`). Called from three places |
+| `0xbbfa30` | SwingMode::FromName | Turns a ride car's swing mode name into its value: none, free, about R, about F, spinning about U (`SwingMode*`) |
+| `0xbb3e90` | AtStation::FromName | Turns a station condition's name into its value: at station, all, any, exactly one, at least one, none (`AtStation*`) |
+| `0x589180` | TrackSpecial::Directions | Makes the special track pieces' up, down, left and right buttons (`TrackSpecial_*`). Called from three places |
