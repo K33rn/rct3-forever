@@ -14,3 +14,8 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7a4a90` | GuestStats::Fill | Fills in the guest statistics: the numbers of guests and groups and the groups with ... (`GuestStats_NumGuests`, `_NumGroups`, `_GroupsWith`). Called from `0x7875D0` |
 | `0x7b9ee0` | Crowd::UpdateMurmur | Plays the murmur of the crowd: picks among `Murmur1L` / `R` ... `Murmur3L` / `R` (left and right) by how many people are around and where, at random. Called from `0x7BAE80` |
 | `0x7d47d0` | Person::Vomit | Makes a person be sick: the `Vomit` effect (random), its puddle (with `PeopleShadowBlob`). Called from `0x7E9B50` |
+| `0x75cdf0` | Guest::StateName | Writes the name of a guest's state (virtual slot 36 of Guest): its own following states (`Follow - Wait`, `- Follow Leader`, `- Flock`, `- Set Piece : Start` / `Travel` / `Gather` / `Play`), the group's state (`0x7824C0`) and otherwise the person's (`Person::StateName`) |
+| `0x7824c0` | GuestGroup::StateName | Writes a guest group's state: loved up, wobbly, taking a photo, play fighting, heading for an attraction, on a ride, split up (`GuestGroup_State_*`). Called from `Guest::StateName` and `0x7E3C60` |
+| `0x7c7de0` | Person::TypeName | Writes a person's type: `Child`, `Teenage`, `Adult`, `VIP`, `Handyman`, `Mechanic`, `Security Guard`, `Entertainer`, `Vendor`, `Animal Keeper`, `Paramedic`, `ParkInspector`. Called from `0x7CD9B0` |
+| `0x7f55a0` | Vendor::Sell | A vendor selling: the till sound (`VendorKerching1` / `2`, at random) and the money going to the park's finances |
+| `0x7ebd40` | Staff::CheckResign | Checks whether a staff member wants to resign, and resigns them, with the messages `StaffMessage_WantsToResign` and `StaffMessage_Resigned` |

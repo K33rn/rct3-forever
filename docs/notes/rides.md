@@ -24,3 +24,7 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5af800` | TrackedRide::CheckTrains | Checks that a tracked ride has trains with seats, reporting `No RideTrains for ...` and `RideTrain with no seats` (with the ride and train names). Called from eight places |
 | `0x572c50` | Ride::FillWithWater | Fills a ride with water (a water ride's start): plays `StartSound`, `FillWithWaterLoopFader` and `StopSound` |
 | `0x4b0bd0` | WhaleShow::Setup | Sets up the whale show: its icon (`WhaleShowIcon`), its fixed parts (`static0`) and camera (`Camera0`). Called from `0x4B22A0` and `0x4B2660` |
+| `0xbb47d0` | TrackPiece::ParseFlags | Reads a track piece's flags from its name: inverted (`inv`), chain lift (`chain`), down, booster, capped, joined (`joined`, `joined_r`). Called from `0x4F1050` and `0x849F70` |
+| `0x4e8730` | MiniGolfHole::SetupPlayers | Sets up a mini golf hole's player animations (walk on / off, `%02dStroke%02d`, walk, ball). Called from `0x4EA940` |
+| `0xa3cb60` | TrackImporter::Import | Imports a track design from `\Coasters\`, with its errors: file not found, unknown file format, unsupported ride type, unsupported or misfit ride part (`TrackImporter_Error_*`) |
+| `0xa98400` | Pool::PartFromName | Turns a pool part's name into its kind: `divingboard`, `ladder`, `shower`, `sunlounger`, `light`, `lifeguard`, `wavemachine`, `underwaterwall`, `centralsolid`, `centralwater`, `side`, `wholetile`, ... |

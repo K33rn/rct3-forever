@@ -35,13 +35,13 @@ runs), **documented** (understood and described, next to rewrite), or **to do**.
 and pieces the compiler split off from functions are counted separately; they don't need rewriting.
 
 <!-- progress -->
-`█▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **1.30% rewritten**, 24.09% understood and documented (by code size)
+`█▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **1.30% rewritten**, 25.29% understood and documented (by code size)
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
 | Rewritten | 1,203 | 108,515 bytes | 1.30% |
-| Documented | 2,084 | 2,003,582 bytes | 24.09% |
-| To do | 22,431 | 6,204,570 bytes | 74.60% |
+| Documented | 2,126 | 2,103,162 bytes | 25.29% |
+| To do | 22,389 | 6,104,990 bytes | 73.41% |
 | **Game total** | **25,718** | **8,316,667 bytes** | |
 | Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |
 | Compiler-made pieces (go with their function) | 42,200 | 506,334 bytes | |

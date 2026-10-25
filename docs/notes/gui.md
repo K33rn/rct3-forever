@@ -80,3 +80,23 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x68a640` | FileDialog::Confirm | The file dialog's confirmations: renaming (`FD_RenameFile`, `%OLDNAME%` / `%NEWNAME%`) and deleting a file (`FD_ConfirmDelete`, `FD_DeleteFile`, `%FILENAME%`), checking the file exists |
 | `0xc6cee0` | MessageBox::Build | Builds the engine's message box: `Message`, `Warning` or `Error`, with a `Continue` button |
 | `0xc6ddc0` | QuestionBox::Build | Builds the engine's yes / no question box (`Question`, `Why yes`, `Heck no`; `find me` names a part of it). Called from `0xC6EA40` |
+| `0x7473b0` | AvatarEditor::BuildList | Builds the people designer's list of avatars and group members: value, create, save and delete buttons with their icons and tooltips (`AvatarEditor_TT_*`). Called from `0x7507D0` |
+| `0x62ba60` | SaveGameDialog::Save | Saves the game from the save dialog: needs a name (`SGD_NeedAName`), refuses names starting with a dot or a space, asks before overwriting (`SGD_ConfirmSave`, `%FILENAME%`) and reports `SGD_SaveSuccessful` (`.dat`) |
+| `0xa07350` | SaveBuildingDialog::Save | Saves a building made of scenery (`MyBuilding%d.dat` as the default name), with the same name checks and overwrite question (`SGD_*`) |
+| `0x6367b0` | AttractionDetails::BuildPoolTabs | Builds the tabs of a pool's window: editing the pool, details, maintenance, operating mode, stall items and construction. Called from `0xA7B310` |
+| `0x8cc740` | LandDialog::BuildPaint | Builds the land window's paint page: brush radius, base and cliff textures (`Land_Brush_Paint_Base`, `_Cliff`). Called from `0x616520` |
+| `0x41d9c0` | AdMenu::Layout | Lays out the advert window, with the queue and unqueue image buttons (`AdMenu_QueueImage`, `AdMenu_UnQueueImage`) |
+| `0x651f40` | GuestDetails::BuildStatsTabs | Builds the statistics, group, cash and passport tabs of a guest's window (`GuestDetails_*Help`) |
+| `0x64d250` | VIPDetails::Build | Builds a VIP's details: temperament and opinion of the park (`VIPDetails_Temprement_TT`, `VIPDetails_ParkOpinion_TT`). Called from `0x6510E0` |
+| `0xba78d0` | EnclosureDetails::BuildTabs | Builds the tabs of an animal enclosure's window: editor, shelter, gallery, item and viewport. Called from three places |
+| `0x6ee3b0` | SandboxScenario::Layout | Lays out a sandbox scenario's entry: its name and description (`SandboxScenario_Name`, `_Description`, `#SANDBOX#`) |
+| `0x4e1ca0` | TerrainEditor::Build | Builds an editor window with view, rotate and colour (and the terrain flattener under the edited object). Called from three places |
+| `0x606960` | GameOptionsDialog::BuildPhotos | Fills in the photo and scrolling options (`GameOptionsDialog_AllowAllPhotos`, `_AllowVistaPhotos`, `_AllowCoasterPhotos`, `_AutoScrollAtEdge`, with their tooltips). Called from `0x610D30` |
+| `0x664da0` | SceneryDetails::BuildTabs | Builds a scenery item's window: colour, destroy, the firework mix master and adverts (`Scenery_SetFlexiColours`, `FireworkMaster_MixMaster_TT`, `AdMenu_SelectCustomImage_TT`). Called from `0x473320` |
+| `0x635e90` | StallDetails::BuildTabs | Builds the tabs of a stall's window: items, extras and adverts. Called from `0x58FBE0` |
+| `0x46e810` | Passport::Build | Builds the passport window: the stamps still needed and choosing a gift (`Passport_StampsNeededLabelText`, `Passport_ChooseGiftLabelText`). Called from `0x46F120` |
+| `0x41fca0` | AdMenu::BuildFolderList | Builds the custom picture browser's folder list: up, back and folders (`AdMenu_DirUp`, `CustObj_FolderBack`, `CustObj_Folder`) |
+| `0xbac0f0` | SceneryFilter::Build | Builds the scenery filter buttons for large, medium and small props (`ObjectFilter_Colour_Scenery_`, `ObjectFilter_TT_Scenery_`). Called from `0xBA7570` |
+| `0x4ec9a0` | AttractionNameMusic::Build | Builds the name and music fields of an attraction's window. Called from `0x4E15A0` |
+| `0x662750` | SceneryEditor::Build | Builds the scenery editor's window: rotate, exposing scenery, viewport and colour. Called from `0x41B0B0` |
+| `0x4f1e60` | TrackEditor::BuildSpecialPieces | Builds the buttons of the special track pieces: station, photo section, vertical, brakes and block brakes (`SpecialOptButton`). Called from `0x4F8100` |
