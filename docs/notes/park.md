@@ -309,3 +309,7 @@
 | `0x8bd5b0` | Terrain::RayMarch8BD5B0 | In outline: walks a ray across the terrain cell by cell (Grid::CellAt) by the signs of its direction, checking each cell's heights for a hit |
 | `0x4b2f50` | Shop::Update4B2F50 | In outline: a shop's update: goes over the people at it (kind 3 waiting, 2 done), lets the next one in (`0x4D2800`), refreshes it (`0x4B0A20`) and acts by its state (+0x354) |
 | `0x8aefd0` | Scenery::DebugRating | Draws the developers' readout of a spot's rating: lines (Registry::Ensure) and text rows `Distance: %f, SD: %f`, `Slope: %f, SD: %f`, `Height: %f, SD: %f`, `Points: %d` and `Scenery: %f, Nice: %f, Built %f` (`0x496C60`) |
+| `0x4f41c0` | Placement::Check4F41C0 | In outline: checks a thing being placed against what is around it (`0x5890F0` over a list, `0x5D04A0`, `0x5D1370`, `0x5D1D30`) and sets its state by the kind found (1, 3 or 6) |
+| `0x8c8100` | Terrain::Strips8C8100 | In outline: goes over a terrain patch's pieces (+0x7C) by their side bit (bit 28 against +0xE4) and joins them into strips |
+| `0x5e5a90` | Scenery::Update5E5A90 | In outline: a placed item's update: checks it (`0x5D9720`), its owner's parts (`0x5E3F00`) and, when it is the selected one (`0x12F5608`), refreshes its link (`0x4E6410`) |
+| `0x58d400` | Placement::Step58D400 | In outline: one step of a placement tool by its mode (+0x100): works out where it goes (`0x58ECF0`, `0x58CA20`, `0x58D200`) and gives whether it is done |

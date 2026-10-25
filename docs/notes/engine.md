@@ -1471,3 +1471,5 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc8abc0` | Device::CheckModeC8ABC0 | In outline: checks one mode or format entry against what the device offers (flags from +0x20E8, the stage at +0x1A00, numbers under 0xAA), case by case; gives 1 when it is usable |
 | `0xc55910` | Stream::UpdateC55910 | In outline: a stream's update by its state (+0x1C): starts a read when idle, checks the time (Timer::Milliseconds) and the request's state (5, bit 0x20) and moves on |
 | `0x7fdb30` | Loader::Step7FDB30 | In outline: one step of a loader by its stage (+0x10): opens and reads a resource (`0xBDAC20`, `0xBDADC0`, `0xBD9F00`, `0xBD9D20`) and releases what it no longer needs |
+| `0x53fbd0` | TextList::Parse | In outline: reads a text list line by line: skips spaces, lines starting `#` are comments and lines starting `*` start a new section, other lines become entries |
+| `0xcc3470` | Atlas::PackCC3470 | In outline: lays out rectangles in an image (CRect, 0x55 slots, a 0x100-entry table, `0xCC4D20` for each) |

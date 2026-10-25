@@ -333,3 +333,6 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x927d60` | Water::DebugDraw927D60 | In outline: draws water debugging shapes in translucent white, green and yellow (Colour::FromARGB 0x3FFFFFFF, 0x3F00FF00, 0x3FFFFF00) for the points of a water piece (+0x32C) |
 | `0x908c00` | Water::Colours908C00 | In outline: works out the colours of a water piece's points from their directions and a time factor (`0xDDD040`), as alphas |
 | `0x9757d0` | Particles::Draw9757D0 | In outline: draws a particle list for the current device (ForCurrent(3)) inside a timed critical section, building each one's quad from its direction and colour |
+| `0x9525d0` | Water::DrawPieces9525D0 | In outline: draws the water pieces with the id given for the current device (ForCurrent(3)): for each, works out its direction and its colours from a table by angle |
+| `0xa00bf0` | Shadows::FitA00BF0 | In outline: fits a shadow view to a list of points (+0x6C): finds their range, the terrain, and the light direction (`0x85CB30`, normalised from `0xF86DE0`) |
+| `0x933a20` | WaterFlow::Draw933A20 | In outline: draws a water flow for the current device (ForCurrent(1)) with the flow manager (WaterFlowManager::Get) and its colours (`0x10F0C2C`, `0x10F0C30`) |

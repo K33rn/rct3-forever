@@ -164,3 +164,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x506ed0` | Car::Break506ED0 | In outline: breaks a model apart: checks its shapes (Model::CheckShapes), makes a rigid body for it (RigidBody::RigidBody) and sets its pieces flying with random speeds (VerletPoint::SetVelocity) |
 | `0x92a260` | Water::Group92A260 | In outline: groups water points (sorted by height) into pieces, joining the ones close enough together and refreshing them (`0x417C20`) |
 | `0x87a7f0` | Cuts::Split87A7F0 | In outline: cuts shapes along pairs of points (PairIds::Get): where a pair crosses the cut, adds a point at the crossing (`0x87A370` at the fraction between them) and sorts the pieces by side |
+| `0x9619f0` | Particles::Scatter9619F0 | In outline: scatters points over the triangles of a shape (`0x960E90`, up to three tries each) with random positions and directions |

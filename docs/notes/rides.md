@@ -177,3 +177,5 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5c79a0` | TrackedRide::HitTest5C79A0 | In outline: whether a ray hits a tracked ride's track (TrackedRide::TrackInterface): goes over its pieces (`0xCDEB10`) and their triangles, keeping the nearest hit |
 | `0x56a660` | Ride::PlaceEntrance56A660 | In outline: places a ride part at a terrain cell (RCT3Terrain, a 90 by 90 grid, Grid::CellAt) facing the right way (Vector::Quadrant), with a special case for kind 0x2F |
 | `0xc220e0` | Skeleton::UpdateBone | In outline: updates one bone and then its children (it calls itself): blends its pose (`0xC5A1F0`) when its blend is under 1 and builds its matrix |
+| `0x861ae0` | Model::BoneMatrix861AE0 | In outline: the matrix of a model's bone n: from its animation (`0xCEF080`) when it has one, otherwise from its node (Table2C::Value, Nodes::MatrixFor) |
+| `0xc27d80` | Skeleton::UpdateAllC27D80 | In outline: another whole-skeleton bone update like Skeleton::UpdateAllC26EF0 |

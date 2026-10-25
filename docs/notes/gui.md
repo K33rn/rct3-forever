@@ -613,3 +613,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6f8360` | Window::Layout6F8360 | Places each of the window's parts (+0x12C to past +0x1A0) at fixed positions and sizes worked out from the window's width and height (its rectangle at +0x7C), with Window::UpdateRect |
 | `0xa1fdb0` | Window::LayoutA1FDB0 | Places the window's parts at positions and sizes worked out from its size (Window::UpdateRect for each) |
 | `0x7f1fc0` | ListWindow::Build7F1FC0 | In outline: builds a window with a titled list box (ListBox::ListBox, ListWindow::SetCount) filled from the items given |
+| `0x5fa250` | NumberSpinner::Update5FA250 | In outline: a number control's update by its mode (+0xF0): steps its value by the time held (`0x6A7CB0`, `0x6A7C70`), kept within its limits (with money checked against -100000 and the park's cash) |
+| `0xa23fd0` | Window::BuildA23FD0 | In outline: builds a window from a shared title text (`0x134271C`): a 0x220-byte part (`0x6846F0`), a 0x13C-byte part (`0x67BE80`) and others |
+| `0x6c2500` | Gauge::Draw6C2500 | In outline: draws a gauge or meter when shown (+0x101): its colours (Colour::ToARGB, a grey-green and a red), its scale (Node::TotalScale) and its marks (`0x6C2260`) up to its value |
+| `0x9b7940` | Window::Build9B7940 | In outline: builds a window from a title text: a part from the shared text `0x13049E4` and others (`0x6A8D00`) |
