@@ -638,3 +638,9 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9b9eb0` | Window::Build9B9EB0 | In outline: builds a window from its title like Window::Build9B7940 |
 | `0x7a86f0` | Toolbar::Build7A86F0 | In outline: builds a row of image buttons (Button::SetImages with five images each) with their texts (TextRef::Assign: `0x12FDF08`, `0x12FAFE0`, `0x12FD5A0`, ...) |
 | `0x67dfd0` | Window::Build67DFD0 | In outline: builds a window from the shared title `0x12F83C8` (`0x67DAC0`) |
+| `0x4a3820` | Info::Text4A3820 | In outline: makes an info text by its kind (+0xBC): from a named game text (NamedTextRefF30778) and the values of the thing (`0x496610`) |
+| `0x6ac080` | Window::Draw6AC080 | In outline: draws a window: when shown (+0xD4), renders its background (`0x694E90`, GUIRenderer::Render) and works out its screen corners (Window::ScreenPosition), rounded |
+| `0x6957f0` | Layout::Apply6957F0 | In outline: applies a layout by its kind: one box, or several (at +0, +0x18, +0xA8 and the last) laid out with `0x6950B0` |
+| `0x88b470` | List::Draw88B470 | In outline: draws a list of parts (+0xE0) at its scale (Node::TotalScale), each with its background (`0x694E90`) |
+| `0x6cd960` | Window::Build6CD960 | In outline: builds a window from the shared title `0x1305E48` |
+| `0x5c6610` | TrackedRide::Height5C6610 | In outline: a ride piece's height at a point (`0x5C14D0`), or, when below 0 and not flagged (+0x170), from the middle of its span (Span::Middle) |

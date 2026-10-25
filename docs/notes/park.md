@@ -348,3 +348,6 @@
 | `0x4ea9c0` | Ride::Select4EA9C0 | In outline: after an update (`0x4D29D0`), when the ride is not being placed (+0x378), makes it the selected one with the current tool (`0x12F5638`, `0x12F5608`, `0x4E6410`) |
 | `0xaab280` | PathGrid::RebuildAAB280 | In outline: a timed rebuild inside a critical section (unless a count `0x13CE030` is too high): clears (`0xA9F7E0`), sets up (`0x7CD120`, `0xAAA470`) and goes over a range of entries |
 | `0x42ca70` | Groups::Merge42CA70 | In outline: goes over groups (`0x42C9C0`, `0x42BFF0`) joining the smaller ones into the larger (`0x42C490`), like Water::MergeBodies965D90 |
+| `0x8e44a0` | Terrain::Mark8E44A0 | In outline: goes over a rectangle of terrain cells (+4 to +0x10) and marks the ones whose value (+0x14) is set |
+| `0x49ee80` | Curve::Sample49EE80 | In outline: samples a curve at a point (scaled by `0xF2EACC`) into the values given |
+| `0x56b690` | Ride::UpdateTool56B690 | In outline: when not flagged (+0x5C) and the ride is not being placed (+0x378), acts by the tool's mode (`0x12F5638`: 2, 6 and 7 with entries at +0x78) |

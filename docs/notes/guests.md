@@ -124,3 +124,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7ab810` | Person::Route7AB810 | In outline: works out a route for a person to its target: the path manager (made when needed) and the target's place |
 | `0x775b30` | Guest::Watch775B30 | In outline: a guest's update while watching or waiting: checks the thing it is linked to (state 0x10 stage 2, Interface1F0::Get) and turns toward it (`0xCDF020`) |
 | `0x73da00` | Staff::Update73DA00 | In outline: a staff member's update by stage (+0x194: 6 handled): finds its next task within 100 (`0x79B9F0` with 0x20) from its place (+0x52C) |
+| `0x75c3b0` | Guest::Update75C3B0 | In outline: a guest's update in one of its states (0x12 handled): sets its state (Person::SetState), checks what it is linked to (`0x7F8360`) and uses the path manager |
+| `0x76d890` | Guest::Update76D890 | In outline: a guest's timed update (while +0x4A0 is above 0, not flagged +0x4D0): checks the thing it is linked to (+0x4CC, Interface50::Get) and its next step (`0x772F40`) |

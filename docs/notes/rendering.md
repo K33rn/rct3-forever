@@ -382,3 +382,11 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc957e0` | Effect::SetParamC957E0 | In outline: sets one of an effect's settings by number from the value given (the same shape as Effect::SetParamC75800) |
 | `0xc76870` | Effect::SetParamC76870 | In outline: the same setting-by-number for another kind of effect |
 | `0xc71070` | Effect::SetParamC71070 | In outline: the same setting-by-number for another kind of effect |
+| `0x971060` | Water::FillBuffers971060 | In outline: fills water vertex and index buffers for the current device (ForCurrent(3), `0xBFFB60`) for a range of pieces, from their directions |
+| `0xce0670` | Mesh::BuildCE0670 | In outline: builds a mesh's tables from its parts (+0x18): 16-byte and 32-byte entries filled in groups of four |
+| `0xcdf840` | Mesh::BuildCDF840 | In outline: the same mesh table build as Mesh::BuildCE0670 (another copy) |
+| `0x9686a0` | Water::DrawRipples9686A0 | In outline: draws water ripples for the current device (ForCurrent(3)) with an alpha from the value given, for each one (+0x24) |
+| `0xbd78a0` | Text::LayoutBD78A0 | In outline: another text layout like Text::LayoutBD82A0 (when Flags::Bit0 is set), breaking lines at the newline character |
+| `0xce0d10` | Mesh::BuildCE0D10 | In outline: the same mesh table build as Mesh::BuildCE0670 (another copy) |
+| `0x5725d0` | Ride::DebugDraw5725D0 | In outline: in the developers' view mode 3 (`0x12F54C0`), draws a ride's points (+0x192 of them) and links (Registry::Ensure, `0x481620`) |
+| `0x93df70` | Water::Clip93DF70 | In outline: clips a water piece to the view: transforms its points (`0xCD78A0`) and keeps their range |

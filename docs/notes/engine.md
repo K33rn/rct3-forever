@@ -1487,3 +1487,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x7bd760` | Characters::FindStubs | In outline: for the `Characters\` folder, lists its `*_Stub.common.ovl` files and loads each one found |
 | `0x478a30` | Game::ShutDownPark | In outline: clears up a park's systems: `0x814B00`, the object at `0x12F503C` (`0x988A40`), the one at `0x13417D0`, the clean-up of `0x1341C50`, the crowd sounds (Crowd::Sounds(0)) and more (`0x7B50D0`) |
 | `0x58ee80` | Placement::Collect58EE80 | In outline: gathers a list of entries (`0x58EA70`) into a new array and sorts or trims it |
+| `0xc56320` | Stream::ProcessC56320 | In outline: runs a stream's update (Stream::UpdateC55910), then for state 7 takes request records from a free list (FreeList13E6CC0::Take, Request::CopyFrom) and starts them, timed (Timer::Milliseconds) |
