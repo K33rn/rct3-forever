@@ -16,6 +16,15 @@ original, so the rest of the game keeps working while more and more of it become
    same order of effects, the same calling convention.
 4. **Prove it in the game.** Run the game with the rewrite and show it behaves the same, with something you can see
    or measure. Write down how in the table below.
+5. **Update the progress:** `python tools/progress.py` picks up the new `REWRITE(...)` and refreshes
+   [progress.md](progress.md) and the README.
+
+## Studying a function
+
+Use a disassembler or decompiler on **your own copy** of RCT3plus.exe (Ghidra is free). Keep its project and any
+output outside this repository. Read it, take notes in your own words, then close it and write the rewrite.
+The function list in [functions.csv](functions.csv) has every function's address and size; give
+`tools/progress.py` a fresh `functions.csv` exported from Ghidra (address, size, name, callers) to rebuild it.
 
 ## How a rewrite is put in
 

@@ -3,3 +3,8 @@ out/
 dist/
 __pycache__/
 *.log
+# never commit decompiled game code or disassembler projects
+decomp/
+*.gpr
+*.rep/
+*.gzf

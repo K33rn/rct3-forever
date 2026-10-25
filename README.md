@@ -28,6 +28,27 @@ the game folder: everything happens in memory while the game runs, and closing i
 | Park & Peep Editor | The in-game editor (F9), on by default |
 | Rewritten functions | 1 so far: `GraphedValue::Push`, which records the park's statistics (rating, guests, cash, profit...) for its graphs. See [the rewrite list](docs/rewriting.md#rewritten-so-far) |
 
+## Progress
+
+How much of the game is rewritten. Every function in RCT3plus.exe is counted: **rewritten** (Forever's code
+runs), **documented** (understood and described, next to rewrite), or **to do**. The compiler's runtime library is
+counted separately; it doesn't need rewriting.
+
+<!-- progress -->
+`░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **0.00% rewritten**, 0.50% understood and documented (by code size)
+
+| Status | Functions | Code | Share of the game's code |
+|---|---:|---:|---:|
+| Rewritten | 1 | 39 bytes | 0.00% |
+| Documented | 67 | 45,340 bytes | 0.50% |
+| To do | 28,024 | 9,061,551 bytes | 99.50% |
+| **Game total** | **28,092** | **9,106,930 bytes** | |
+| Library code Ghidra recognised (stays as is) | 476 | 83,778 bytes | |
+| Compiler-made pieces (go with their function) | 42,200 | 506,334 bytes | |
+
+Details: [docs/progress.md](docs/progress.md).
+<!-- /progress -->
+
 ## Install and play
 
 1. Download `RCT3Forever-0.1.zip` and unzip it anywhere, e.g. `Documents\RCT3Forever`. Keep the three files
@@ -100,7 +121,8 @@ This makes `out/forever.dll`, `out/RCT3Forever.exe` and `dist/RCT3Forever-0.1.zi
 | `forever/src/` | `forever.dll`: start-up, version check, function replacement |
 | `forever/src/rewrite/` | The rewritten game functions, one file per part of the game |
 | `peepeditor/` | The Park & Peep Editor (built with `FOREVER` defined for Forever; its own `build.py` makes the standalone `d3d9.dll`) |
-| `docs/` | [Rewriting functions](docs/rewriting.md), [the map of RCT3plus.exe](docs/exe-map.md), [research notes](docs/research-physics-and-guests.md) |
+| `docs/` | [Progress](docs/progress.md) and [the function list](docs/functions.csv), [rewriting functions](docs/rewriting.md), [the map of RCT3plus.exe](docs/exe-map.md), [research notes](docs/research-physics-and-guests.md) |
+| `tools/progress.py` | Updates the progress numbers: run it after adding a rewrite or documenting a function |
 
 ## Contributing a rewritten function
 

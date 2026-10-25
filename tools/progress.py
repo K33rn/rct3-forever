@@ -1,0 +1,144 @@
+"""RCT3 Forever progress: which of RCT3plus.exe's functions are rewritten, documented or still to do.
+
+usage: python tools/progress.py [functions.csv from the local Ghidra export]
+With a path, the function list (address, size, Ghidra's name for library functions, callers) is refreshed into
+docs/functions.csv first; the decompiled code itself never comes into the repo. Then docs/functions.csv gets each
+function's status, docs/progress.md is rewritten and the README's progress section updated.
+
+Status:
+  rewritten   a REWRITE(...) in forever/src/rewrite/*.cpp replaces it
+  documented  named in docs/exe-map.md or docs/research-physics-and-guests.md (understood, not rewritten yet)
+  library     C / C++ runtime or MFC code Ghidra recognised by its signature: stays as it is
+  generated   pieces the compiler made, not functions of their own: exception clean-up blocks (Unwind@, Catch@)
+              and split-off switch cases; they go with the function they belong to
+  to do       everything else
+"""
+import csv
+import glob
+import os
+import re
+import sys
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FUNCS = os.path.join(HERE, 'docs', 'functions.csv')
+DOCS = [os.path.join(HERE, 'docs', 'exe-map.md'), os.path.join(HERE, 'docs', 'research-physics-and-guests.md')]
+ORDER = ['rewritten', 'documented', 'to do', 'library', 'generated']
+
+
+def import_list(src):
+    rows = []
+    with open(src, newline='') as f:
+        for r in csv.DictReader(f):
+            name = r['name']
+            # Ghidra's placeholder names carry no information; library names it recognised are kept
+            if re.match(r'(FUN|thunk_FUN|SUB|LAB)_', name):
+                name = ''
+            rows.append({'address': r['address'], 'size': r['size'], 'name': name, 'callers': r['callers']})
+    return rows
+
+
+def load():
+    with open(FUNCS, newline='') as f:
+        return list(csv.DictReader(f))
+
+
+def rewritten():
+    found = {}
+    for p in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')):
+        for m in re.finditer(r'REWRITE\("([^"]+)",\s*(0x[0-9a-fA-F]+)', open(p, encoding='utf-8').read()):
+            found[int(m.group(2), 16)] = m.group(1)
+    return found
+
+
+def documented(addrs):
+    text = ' '.join(open(p, encoding='utf-8').read() for p in DOCS if os.path.exists(p))
+    text = re.sub(r'## Program layout.*?(?=\n## )', '', text, flags=re.S)   # section addresses, not functions
+    seen = {int(h, 16) for h in re.findall(r'0x([0-9a-fA-F]{6,7})\b', text)}
+    return seen & addrs
+
+
+def generated(name):
+    return name.startswith(('Unwind@', 'Catch@', 'caseD_', 'switchD_'))
+
+
+def main():
+    rows = import_list(sys.argv[1]) if len(sys.argv) > 1 else load()
+    rw = rewritten()
+    addrs = {int(r['address'], 16) for r in rows}
+    doc = documented(addrs)
+    for r in rows:
+        a = int(r['address'], 16)
+        if a in rw:
+            r['status'], r['name'] = 'rewritten', rw[a]
+        elif a in doc:
+            r['status'] = 'documented'
+        elif generated(r['name']):
+            r['status'] = 'generated'
+        elif r['name'] and r['name'] != 'entry':
+            r['status'] = 'library'
+        else:
+            r['status'] = 'to do'
+    with open(FUNCS, 'w', newline='') as f:
+        w = csv.DictWriter(f, ['address', 'size', 'name', 'callers', 'status'], lineterminator='\n')
+        w.writeheader()
+        w.writerows(rows)
+
+    count = {s: 0 for s in ORDER}
+    size = {s: 0 for s in ORDER}
+    for r in rows:
+        count[r['status']] += 1
+        size[r['status']] += int(r['size'])
+    game = ['rewritten', 'documented', 'to do']
+    total_n, total_b = sum(count[s] for s in game), sum(size[s] for s in game)
+    pct = lambda v, t: f'{100 * v / t:.2f}%' if t else '-'
+
+    bar_w = 40
+    done = round(bar_w * size['rewritten'] / total_b) if total_b else 0
+    known = round(bar_w * size['documented'] / total_b) if total_b else 0
+    bar = '█' * done + '▓' * known + '░' * (bar_w - done - known)
+
+    summary = [
+        f'`{bar}` **{pct(size["rewritten"], total_b)} rewritten**, {pct(size["documented"], total_b)} understood '
+        f'and documented (by code size)',
+        '',
+        '| Status | Functions | Code | Share of the game\'s code |',
+        '|---|---:|---:|---:|',
+    ]
+    for s in game:
+        summary.append(f'| {s.capitalize()} | {count[s]:,} | {size[s]:,} bytes | {pct(size[s], total_b)} |')
+    summary.append(f'| **Game total** | **{total_n:,}** | **{total_b:,} bytes** | |')
+    summary.append(f'| Library code Ghidra recognised (stays as is) | {count["library"]:,} | {size["library"]:,} bytes | |')
+    summary.append(f'| Compiler-made pieces (go with their function) | {count["generated"]:,} | {size["generated"]:,} bytes | |')
+
+    def table(status, limit=None, key=None):
+        sel = [r for r in rows if r['status'] == status]
+        if key: sel.sort(key=key)
+        lines = ['| Address | Size | Name | Called from |', '|---|---:|---|---:|']
+        for r in sel[:limit]:
+            lines.append(f'| `{r["address"]}` | {int(r["size"]):,} | {r["name"] or "-"} | {r["callers"]} |')
+        return lines
+
+    out = ['# RCT3 Forever progress', '',
+           'Generated by `tools/progress.py` from [functions.csv](functions.csv), the list of every function in '
+           'RCT3plus.exe (address, size, how many places call it, status). Only the list is here: the game\'s code '
+           'is never part of this project.', '', *summary, '',
+           '## Rewritten', '', *table('rewritten', key=lambda r: int(r['address'], 16)), '',
+           '## Understood and documented, not rewritten yet', '',
+           'Described in [the exe map](exe-map.md) or [the research notes](research-physics-and-guests.md): the '
+           'next ones to rewrite.', '', *table('documented', key=lambda r: int(r['address'], 16)), '',
+           '## To do: the most-called functions', '',
+           'The game functions called from the most places. Small ones high on this list are good next targets; '
+           'the full list is in functions.csv.', '',
+           *table('to do', 100, key=lambda r: -int(r['callers'])), '']
+    open(os.path.join(HERE, 'docs', 'progress.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(out))
+
+    readme = os.path.join(HERE, 'README.md')
+    text = open(readme, encoding='utf-8').read()
+    block = '<!-- progress -->\n' + '\n'.join(summary) + '\n\nDetails: [docs/progress.md](docs/progress.md).\n<!-- /progress -->'
+    text = re.sub(r'<!-- progress -->.*?<!-- /progress -->', lambda m: block, text, flags=re.S)
+    open(readme, 'w', encoding='utf-8', newline='\n').write(text)
+    print(f'{total_n} game functions: ' + ', '.join(f'{count[s]} {s}' for s in ORDER))
+
+
+if __name__ == '__main__':
+    main()
