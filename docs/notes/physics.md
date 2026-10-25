@@ -47,3 +47,7 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x481360` | Vector::TransformPoint | Transforms a point by a 4x4 matrix, translation included |
 | `0xbb6050` | Vector::TransformPoint2 | The same point transform (another copy) |
 | `0x9f8340` | Box::Overshoot2D | How far a point lies outside a box in x and y (0 inside) |
+| `0xbe75e0` | Rect::UnionInto | Writes into the rectangle given (the second argument) the smallest one holding this one and the third (the smaller left and top, the larger right and bottom) |
+| `0xbe7470` | Rect::IntersectInto | Writes into the rectangle given (the second argument) the overlap of this one and the third (the larger left and top, the smaller right and bottom) |
+| `0xc73730` | Matrix::Transpose | Writes the transpose of a 4x4 matrix into another |
+| `0xc73680` | Matrix::Transpose2 | The same 4x4 transpose (another copy) |

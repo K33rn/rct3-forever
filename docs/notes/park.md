@@ -229,3 +229,7 @@
 | `0x6e5e00` | ReleaseAnimalsCondition::Name | The game text `ObjectiveCondition_ReleaseAnimals` |
 | `0x6e5860` | MinAnimalHealthCondition::Name | The game text `ObjectiveCondition_MinAnimalHealth` |
 | `0xb10fa0` | WildAnimal::ItemName | In outline: a wild animal item's name (`WildAnimalItem_` + name) |
+| `0x874e40` | GridMarks::MarkRect | Marks every cell of a rectangle of a grid (width +0x48, height +0x4C, cells of 0x34 bytes at +0x50; byte +1 set to 1), with the rectangle kept inside the grid, and grows the changed area (+0x54 to +0x60) to take it in |
+| `0x874d90` | GridMarks::MarkRect2 | The same marking of a rectangle inside the grid, setting byte +2 of each cell instead (without growing the changed area) |
+| `0xb9a810` | PathGrid::SetEdges | Sets edge bits on a grid cell (width +0x64, cells of 0x18 bytes at +0x6C, bits at +0x14) and the matching bits on the neighbouring cells for bits 1, 2, 4 and 8 |
+| `0xb9a8c0` | PathGrid::ClearEdges | Clears those edge bits on a cell and its neighbours |

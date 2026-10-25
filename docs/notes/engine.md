@@ -1258,3 +1258,6 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x4e6050` | Field::managedobjectptr2 | Another `managedobjectptr` field constructor (8 bytes) |
 | `0xc90830` | Colour::DefaultFormat | Sets up a colour value's format (3) |
 | `0x98ac70` | HandleRef::FromRef | Makes the given reference (the reference base `0xF26AE0`) refer to the same handle as another reference (its +4): counts a use of it and joins its list first |
+| `0x5d10f0` | FlagSlots::Set | Stores a value in the slot of the flag given: 1, 2, 4, ... 0x200 go to slots 0 to 9; other values are ignored |
+| `0x84d2d0` | Entry::Compare | A sort comparison: by kind (+8) first, then within the kind by the first value (kind 0), the first value and the +0x18 flag (kind 1) or the second value (kind 2), then by +0xC, +0x14 (reversed) and +0x10; gives -1, 0 or 1 |
+| `0x6b9a90` | GlobalTable::ByIndex | Gives one of 25 fixed game objects by number (0 to 24, e.g. 0 is `0x1301AF8`), or null for any other number |
