@@ -369,3 +369,8 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x4749d0` | SetTableF2CEB4 | Puts the table `0xF2CEB4` back (what is left of a destructor) |
 | `0x4535c0` | ListMember453::ListMember453 | Constructor (table `0xF296F8`) of a member of the global list at `0x10EC7E4`, joined first |
 | `0x4535f0` | ListMember453::~ListMember453 | Puts its table back and leaves that list (stopping the program if the list is found broken) |
+| `0x436100` | TerrainFlattener::Get | The terrain flattener (kept in `0x1313C60`): made the first time (136 bytes, TerrainFlattener::TerrainFlattener) and activated; returns it |
+| `0xbcf940` | WideString::Reserve | Makes an empty shared wide text with room for n characters: use count 1, length 0, a capacity rounded up to 16 characters, the block starting with 0 |
+| `0xcec560` | Table10::Lookup | The entry of the table at +0x10 whose index `0xCEB190` works out from the given object's +0x28 and +0x24 and the two values given |
+| `0xb44da0` | Table7C::Current | The interface of the object entry n of the table at +0x7C (28 bytes each, n at +0x78) refers to, looked up once per entry; null when n is negative |
+| `0xb36e30` | Interface44c::Get | The interface (id in `0x13CE94C`) of the object its reference at +0x44 points to, looked up once (flag +0x58) |

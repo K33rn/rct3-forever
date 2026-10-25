@@ -88,3 +88,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x758b10` | Guest::Group | The guest's group: the interface (id in `0x1306920`) of the object its reference at +0x4F0 points to, or null (used before GuestDetails::BuildGroupTabs and by group members) |
 | `0x773710` | GuestGroup::Member | Member n of a group (+0x60, 20 bytes each): the guest interface (id in `0x130654C`) of the object it refers to, or null |
 | `0x7c31e0` | Person::SetAnimation | Starts an animation: unless forced, only when the person's slot 51 allows it; sets the animation (+0xB8), its time to 0 (+0xBC) and the flag at +0x1E0, clearing +0x398 for animation 0x2A |
+| `0x7c2f90` | Person::UpdateGroundHeight | Sets the person's height (+0x84) to the ground height at their position (`0x7C22E0` with the terrain grid and the path manager) |
