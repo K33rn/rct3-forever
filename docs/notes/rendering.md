@@ -466,3 +466,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9f79f0` | Fireworks::Fire9F79F0 | In outline: fires the parts of a list (+0x18) that are on (`0x9F7370`) |
 | `0x975190` | Particles::Draw975190 | In outline: another timed particle draw like Particles::Draw9757D0, for kind 3 entries within limits (under 10001 and 15001) |
 | `0xc6a040` | ScrollBar::DrawC6A040 | In outline: draws a scroll bar with its colours (Colour::ToRGB, ScrollBar::Draw) |
+| `0x9c75e0` | Particles::Update9C75E0 | In outline: another emitter update like Particles::Update9C8390 over the emitters (+0x54, count +0x5C) |
+| `0xccf100` | Vertices::ColourCCF100 | In outline: writes colours into a list of vertices, four at a time |
+| `0x938e90` | Water::DrawStrip938E90 | In outline: builds a water piece's strip (Water::Strip938720) and draws it for the current device (ForCurrent(0)) |
+| `0x474580` | Draw::Box474580 | In outline: draws a box with its colour (values scaled into bytes) with the shared line drawer (Registry::Ensure, `0x481790`) |

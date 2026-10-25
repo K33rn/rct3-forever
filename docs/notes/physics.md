@@ -207,3 +207,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x938030` | Water::Nearest938030 | In outline: the nearest of a list of water points to a point, four at a time |
 | `0x9084e0` | Water::Cell9084E0 | In outline: the water cell of a point within a grid of pieces (+0, edges checked) |
 | `0xc617f0` | Particles::EmitC617F0 | In outline: when moving (+0xBC), launches up to four particles (`0xC21230`) |
+| `0x8bbef0` | Ray::Triangle8BBEF0 | In outline: whether a ray meets a triangle: its distance and barycentric values (each at least 0, adding to under 1) |

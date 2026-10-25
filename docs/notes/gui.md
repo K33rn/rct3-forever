@@ -692,3 +692,8 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9b5eb0` | Dial::Layout9B5EB0 | In outline: another dial layout like Dial::Layout9B4BC0, up to the dial's count (+0x140) |
 | `0x9da640` | Text::Join9DA640 | In outline: joins texts (`0x9DA5E0`) into one |
 | `0x9db4c0` | Window::Layout9DB4C0 | In outline: places a window's parts (Window::SetRelationAndLayout) by its mode (+0x130, 2, ...) |
+| `0x6942a0` | Layout::Fit6942A0 | In outline: fits a box by its flags (bit 0x4000), checking the shared tables (`0x12F85FC`, `0x12F84D8`, `0x691830`) |
+| `0x68d840` | Window::Close68D840 | In outline: closes a window when allowed (+0xE4, `0x10EDBB0`), the plain way (`0x68D750`) or by making the next one (`0x1305BE4`) |
+| `0x747fe0` | AvatarEditor::Layout747FE0 | In outline: lays out the avatar editor's parts (`0xA455D0`, `0xA45310` with 300 by 250, `0xA457A0`, `0xA45700`) |
+| `0x63eed0` | Options::ResolutionText | In outline: makes the text of a screen size, `%d x %d` from its width and height (+0x48, +0x4C), for mode 1 |
+| `0x81f5c0` | SceneryBehaviour::Text81F5C0 | In outline: makes a scenery behaviour's text by its owner's case (SceneryBehaviour::Owner) |

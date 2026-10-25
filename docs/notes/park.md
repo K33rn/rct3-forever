@@ -449,4 +449,12 @@
 | `0x4b1920` | Shop::Queue4B1920 | In outline: another shop queue pass like Shop::Update4B2F50: lets the next waiting person in (kind 3, `0x4D2800`) when there is room |
 | `0x8e7260` | Terrain::Cell8E7260 | In outline: the terrain cell under a point, rounded (register-passed point) |
 | `0xafccc0` | TerrainLayers::CornersAFCCC0 | In outline: works out the corner points of the terrain layers at a cell (`0xAFB160`) into a four-entry table |
-| `0x6bce00` | Money::CheckCost | In outline: whether the park can pay an amount: always when a key (0x2D) is held and money is on (+0x68 bit 1 clear), otherwise checks the amount against the money (+0x58) and shows a message when it cannot |
+| `0x6bce00` | Money::CheckCost | In outline: whether the park can pay an amount: the case of a held key (0x2D) with +0x68 bit 1 clear is handled first; otherwise, unless told not to check, gives 0 when the amount is above the money (+0x58) |
+| `0x8b1d30` | Scenery::Links8B1D30 | In outline: goes over a scenery item's links (`0x771DD0`) |
+| `0x849f70` | Scenery::Update849F70 | In outline: a scenery item's update when not flagged (+0x1C), with no time passing handled |
+| `0x7a7e40` | Park::Spot7A7E40 | In outline: unless set (`0x1306C6C`), finds a spot on the terrain (a 90 by 90 grid, `0x7BE2F0`) |
+| `0x82e8f0` | Scenery::UpdateList82E8F0 | In outline: goes over a list of scenery items updating the ones not flagged (+0x1C) |
+| `0x7096e0` | Terrain::Edit7096E0 | In outline: a terrain edit over a rectangle when not flagged (+0x30) |
+| `0x5db4e0` | TrackedRide::Walk5DB4E0 | In outline: walks a ride's track pieces until the end (+0x14 vs +0xC +0x20) when not flagged (+0x18C) |
+| `0x872210` | Scenery::Kind1A872210 | In outline: unless off (Flags::Bit0), handles a scenery item of kind 0x1A |
+| `0x79b5d0` | Path::Distance79B5D0 | In outline: the distance along the path from a point (PathManager, `0x71B370`) on the terrain |

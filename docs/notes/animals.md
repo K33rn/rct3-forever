@@ -127,3 +127,4 @@
 | `0xa11f70` | Duck::MakeFlock | In outline: makes n ducks (Duck::Duck), activates them and spreads them at random (Random::Ran0) |
 | `0xb23050` | WildAnimal::UpdateB23050 | In outline: an animal's update when not flagged (+0xED, +0x94): with its owner (Interface48::Get) checks (`0xB35710`) |
 | `0xa16740` | Duck::Swim | In outline: a duck's update on the water (WaterManager::Get, `0x941D00`): swims (`0xA151F0`) or does something else (`0xA15EA0`) |
+| `0xad6ac0` | Animal::UpdateAD6AC0 | In outline: another animal update when not flagged (+0x10C) |
