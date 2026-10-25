@@ -1373,3 +1373,18 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbfb2b0` | Vector::Compare | A sort comparison of two vectors, x then y then z: -1, 0 or 1 |
 | `0xae0980` | Shape::SameAs | Whether two shapes are the same: their point counts (+0x50), their values at +0x54 and their points (+0x40) |
 | `0xca77b0` | IntSlider::SetValue | Sets the bound whole number (+4) from a fraction between the minimum (+8) and maximum (+0xC) |
+| `0xa9f450` | Direction::Dispatch | Calls `0xA9F360` for a direction of 1, 2, 4 or 8; 0 for any other |
+| `0xc94f00` | Record::Copy14 | Copies a record of 17 values |
+| `0x9e1340` | Record::Copy15 | Copies a record of 17 values (another copy) |
+| `0x46c480` | Record::Copy16 | Copies a record of 17 values (another copy) |
+| `0x94d9c0` | Record::Copy17 | Copies a record (the first byte and some values from +0x10 on) |
+| `0xbb6970` | SortedShorts::Find | Finds the place for a number in a sorted list of 16-bit numbers, starting from a guess by the count times a ratio (+0x2C) |
+| `0x8fd720` | SortedPointers::FindInt | Binary search of a sorted list of objects by their first value; gives it and its place (or where it would go) |
+| `0x713110` | Description::Compare | Whether two descriptions match: 0 when they differ, 1 when they match, -1 when only their second byte differs |
+| `0x4cc880` | Entries::FindByKey | The value of the active entry (0x2C bytes each at +0x94, count +0x9C) whose flags meet the mask and whose four values match, or 0 |
+| `0x940a20` | Entries::Remove | Removes the entry (16 bytes each) with the id given by moving the last one into its place; gives whether it was there |
+| `0xca7620` | IntSlider::SetValue2 | Sets the bound whole number (+4) from a fraction between the minimum (+8) and maximum (+0xC), signed |
+| `0x8ff150` | SortedPointers::FindXY3 | Binary search of a sorted list of entries (+0x3C, count +0x40) for the one at a position (x, y); gives it and its place |
+| `0x8386a0` | Grid::Range | The smallest of the cells' first values and the largest of their second values over a whole grid (+0x10 by +0x14, cells of 0x14 bytes at +0x18) |
+| `0x80eee0` | List::SortBy28 | Sorts a list of objects (+0x8C, count +0x94) by their +0x28 value (bubble sort) |
+| `0x80edc0` | List::SortBy34 | Sorts a list of objects (+0x5C, count +0x64) by their +0x34 value, largest first (bubble sort) |

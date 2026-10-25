@@ -255,3 +255,5 @@
 | `0xabc300` | Tile::EdgePoint | The point at the middle of a tile's edge for a direction (1, 2, 4 or 8), or its centre for any other |
 | `0x95b610` | Mesh::CountForId | Adds up the vertex and index counts of a mesh's parts with the id given (16 bytes each at +0x14, count +0x1C): 3 and 3 for one shape kind, 4 and 6 for the other |
 | `0xb987e0` | TrackPiece::Direction | A direction (0 to 3, or 4) from a piece's kind bits, when its slope values are big enough; -1 otherwise (the piece is passed in a register) |
+| `0x727cc0` | Tile::QuarterCorners | The four corner points of a tile half, picked by two bits (another form of TileQuarter::Corners) |
+| `0x5d13c0` | Settings::Downgrade | Lowers the values that only a higher setting allows (7 to 3, 8 to 4, 2 to 0 or 1, 3 to 2) in a list of ten settings |

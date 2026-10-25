@@ -283,3 +283,5 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x7c3080` | Value::Band2 | Which band a value falls in by fixed limits (1, 2, ...) |
 | `0xa35440` | Lights::ColourFor | The colour (4 values) of the light with the id given among the object's lights (+0xF0, count +0x108), or all 0 |
 | `0xceb590` | Materials::CompareOpacity | A sort comparison of two drawn parts by their materials' opacity (+0x54, 1 when not see-through), for parts that have one (+0x58) |
+| `0x47c470` | Sound::UnmuteKind | Counts a mute off a kind of sound (`0x12F0168`, to 0 when asked or below 0) and gives each sound of that kind its volume back (pairs with Sound::MuteKind) |
+| `0x47dd10` | Sound::SetLevels | Sets two levels of a sound (+0x5C, +0x60), each kept between 0 and 1 |

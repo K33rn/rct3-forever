@@ -114,3 +114,11 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xce47b0` | Curve::LinearBlend | A value between two points' values at a position, in a straight line |
 | `0x7c32f0` | Average::AddCell | Adds a cell's position (+0x88, +0x89) to a running average (count +0x1D0, values +0x1D4 and +0x1D8) |
 | `0xa637e0` | Object::PartMatrix | Copies the matrix of the object's part (+0xE0, its matrix at +0x60) |
+| `0x577940` | Object::Bounds | Copies the object's bounds (four points from +0x220), with their fourth values set to the largest float |
+| `0x4259f0` | Vector::LerpPoint | The point between two points by a fraction, with 1 as its fourth value |
+| `0xcd0660` | SinTable::Sin | The sine of an angle from a table of a quarter turn (256 entries), with the sign by the quadrant |
+| `0x96ea70` | Box::NearFarOffsets | For a direction, the byte offsets of a box's nearest and furthest corner values (minimum at 0, 4, 8; maximum at +0x10, +0x14, +0x18) |
+| `0x80c340` | Box::NearFarOffsets2 | The same near and far corner offsets (another copy) |
+| `0x4668d0` | Matrix::ScaleOffset2D | Makes a matrix that scales x and y by the values given and moves by minus the origin times the scale |
+| `0xa17470` | Vector::DeadZone | Sets each part of a vector that lies between two small limits to 0 |
+| `0xbc3f20` | Object::Scale | An object's scale value: its own (+0x100) when positive, the default (`0x10F2B28` or `0x10F2B2C`) times minus it when negative, or the default |
