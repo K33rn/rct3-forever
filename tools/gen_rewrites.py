@@ -72,7 +72,7 @@ def main():
     REF_NULL, REF_TO = strict(body(0x460440)), strict(body(0x410330))
     FREE_LOOSE = (10,)   # push <item size>
     ARRAY_FREE = strict(body(0x420B40), FREE_LOOSE)
-    n_rn = n_rt = n_af = 0
+    n_rn = n_rt = n_af = n_st = 0
     # functions the hand-written rewrites already replace (REWRITE and the arrays of REWRITE_COPIES)
     handwritten = set()
     for p in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')):
@@ -104,6 +104,12 @@ def main():
                 continue
             out.append(f'ARRAY_FREE({va:#x}, {ins[10].operands[0].imm:#x}, {a[1]:#x}, {first})')
             n_af += 1
+            continue
+        if [(i.mnemonic, i.op_str.split(',')[0]) for i in ins] == [('mov', 'dword ptr [ecx]'), ('ret', '')] and                 n >= 7 and ins[0].operands[1].type == X.X86_OP_IMM:
+            t = ins[0].operands[1].imm & 0xffffffff
+            if 0xF26000 <= t < 0x10E7000:
+                out.append(f'SET_TABLE({va:#x}, {t:#x}, {first})')
+                n_st += 1
             continue
         if s == DELETING:
             calls = [i.operands[0].imm & 0xffffffff for i in ins if i.mnemonic == 'call']
@@ -154,7 +160,7 @@ def main():
             n_q += 1
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
-          'reference constructors,', n_af, 'object array frees')
+          'reference constructors,', n_af, 'object array frees,', n_st, 'table setters')
 
 
 if __name__ == '__main__':

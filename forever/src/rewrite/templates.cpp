@@ -195,6 +195,16 @@ template <uint32_t SIZE, uint32_t DTOR> static void __fastcall object_array_free
     *array = nullptr;
 }
 
+// ---- table setters ---------------------------------------------------------------------------------------------
+// Sets the object's virtual function table: what's left of a destructor with nothing else to undo.
+
+static volatile long g_table_sets;
+
+template <uint32_t TABLE> static void __fastcall set_table(uint32_t *self) {
+    g_table_sets++;
+    self[0] = TABLE;
+}
+
 // ---- module globals ---------------------------------------------------------------------------------------------
 // A global object built before main from the start-up of a list of modules: `start` (0xBCE1A0, 0x805AB0, ...)
 // runs the list's initialisers in turn (undoing them if one fails) and gives {table, error}; the global's
@@ -232,7 +242,10 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
 #define REF_NULL(at, table, ...)                                                                                     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("Reference::Reference", at, REWRITE_CAT(original_, at), 8,                                                     (void *)&reference_null<table>, &g_references);
 #define REF_TO(at, table, ...)                                                                                       static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("Reference::Reference(object)", at,                                                                            REWRITE_CAT(original_, at), 8, (void *)&reference_to<table>,                                                     &g_references);
 #define ARRAY_FREE(at, size, dtor, ...)                                                                              static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Free", at, REWRITE_CAT(original_, at), 8,                                                        (void *)&object_array_free<size, dtor>, &g_array_frees);
+#define SET_TABLE(at, table, ...)                                                                                    static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("SetTable", at, REWRITE_CAT(original_, at), 7,                                                                 (void *)&set_table<table>, &g_table_sets);
 #include "generated.inc"
+#undef SET_TABLE
+#define SET_TABLE(...)
 #undef REF_NULL
 #undef REF_TO
 #undef ARRAY_FREE

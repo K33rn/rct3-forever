@@ -834,10 +834,16 @@ static std::vector<Test> tests() {
                         ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
                         return Result{*arena<uint32_t>(0x100)};
                     }};
+    // table setters: an object at 0x100 filled with noise
+    Test set_table{0x402a40, [=](Rng &r) { fresh(r); },
+                   [](void *fn) {
+                       ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                       return Result{};
+                   }};
     cleanup.finish = [](const rewrite::Entry *) { *(uint32_t *)cleanup_g = cleanup_saved; };
 
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
-                    &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free}) {
+                    &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table}) {
         x->iterations = (x == &deleting || x == &query || x == &module) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);
