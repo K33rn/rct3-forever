@@ -264,3 +264,13 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbd9fa0` | UpdateAndCheck | Runs `0xC374C0` and `0xC37220`, then whether `0x13D0DF0` is 0 |
 | `0x67b800` | Window::SetAllSix | `0x67B710` with the first argument for all six of its values and the second as the last |
 | `0x67b4b0` | Thunk67B3C0 | Calls `0x67B3C0` |
+| `0xa63450` | MainCamera::Get | The main camera (kept in `0x13429A8`): made the first time it is asked for (1,056 bytes, MainCamera::MainCamera) and activated; returns it. Used by about 150 functions |
+| `0x491140` | EnclosureManager::Get | The enclosure manager (kept in `0x13D0258`): made the first time (216 bytes, EnclosureManager::EnclosureManager) and activated; returns it. Used by about 115 functions |
+| `0xbd0520` | String::SharedEmpty | The shared empty text (at `0x13D0D6C`): made once (use count 1, length 0, a 16-byte block holding 0; freed at exit), its use count raised when asked; returns it. Used by about 105 functions |
+| `0x410c90` | NamedTextRef::NamedTextRef | Constructor of a text reference found by name (tables `0xF264EC`, then `0xF26530`): makes the name from C text when asked (`0x403E10`) and looks it up with `0xBD15A0`. Used by about 115 functions |
+| `0x805650` | Handle::ForId | The handle for a 64-bit object id: the one in the handle map (`0xBE82B0`) with its use count raised, or a new 40-byte handle (the id, use count 1, an empty list of references) added to the map (`0xBE8230`); the next free id (`0x10F06C8`) is moved past it when needed. Used by about 95 functions |
+| `0x808840` | IdMap::Resolve | Turns an id from a save file into the id it has in this game: the one already chosen for it in the map, or a new mapping to the next free id (`0x10F06C8`, 64-bit, then advanced). Used by about 95 load functions |
+| `0x40a010` | PathManager::Get | The path manager (kept in `0x130625C`): made the first time (208 bytes, PathManager::PathManager) and activated; returns it. Used by about 90 functions |
+| `0xbd02b0` | String::Append | Appends text to a shared text: in place when this is its only user (`0xBCFC30`), otherwise into a new copy (`0xBCFB80`) that this then holds. Used by about 90 functions |
+| `0xbd0810` | WideString::Substring | A new wide text holding the part of this one from the start position for the given length (kept within the text). Used by about 90 functions |
+| `0x403ce0` | WideString::FromCAndWide | A new wide text made of the C text given followed by the wide text given. Used by about 90 functions |
