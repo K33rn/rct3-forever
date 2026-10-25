@@ -377,3 +377,8 @@
 | `0x8d68e0` | Terrain::ReadCell8D68E0 | In outline: reads a saved terrain cell from a block (`0x809210`, 4 and 1 bytes at a time), checking the block's size and its kind (+0x12, +0x1A) |
 | `0x8d9060` | Terrain::GrowRows8D9060 | In outline: adds n rows to the terrain (kept under 255): sets it up (`0xAFA6B0`, `0x8C8BA0`) and makes each new row's cells |
 | `0x566e00` | Path::Check566E00 | In outline: for kinds other than 0x3A to 0x3C, when not flagged (+0x98, +0xF0), checks the piece (`0x5DBCD0`) |
+| `0x755bf0` | Park::Spot755BF0 | In outline: for entry n of a list (`0x1306530`), works out its spot on the terrain (a 90 by 90 grid, `0x7578C0`, `0x7BE2F0`) |
+| `0x8d85c0` | Terrain::GrowColumns8D85C0 | In outline: the column form of Terrain::GrowRows8D9060: adds n columns (kept under 255) |
+| `0x715170` | Path::Rebuild715170 | In outline: rebuilds a path piece from its description (`0x7141A0` on +0x23C, `0x7134C0`), or the plain way (`0x714F30`) |
+| `0x841f70` | Scenery::Grow841F70 | In outline: grows a scenery list (`0x130BB24`, ObjectArray28::Resize) to n and makes the new entries (`0x733A90`) |
+| `0x4b9d60` | Shop::Stats4B9D60 | In outline: works out a shop's figures from its values (`0x4BF100`, `0x4BF0B0`, `0x4B9C20`, `0x4B9CC0`) and the date (GameTime::Get) |

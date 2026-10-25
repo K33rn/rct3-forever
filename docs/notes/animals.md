@@ -101,3 +101,5 @@
 | `0xb130b0` | Enclosure::RebuildB130B0 | In outline: another enclosure cell rebuild like Enclosure::RebuildB13F60 |
 | `0xa158d0` | Animal::ChooseA158D0 | In outline: another animal action pick like Animal::ChooseA123B0 (`0xA14B70`) |
 | `0xb180c0` | WildAnimal::PlaceB180C0 | In outline: places an animal on the terrain (a 90 by 90 grid, WildAnimal::Interface60) |
+| `0xaf67e0` | Animal::ReleaseAF67E0 | In outline: another release of an animal's parts like Animal::ReleaseAD9A00 (+0x5C, +0x7C) |
+| `0xb62ce0` | WildAnimal::GroundB62CE0 | In outline: an animal's ground check: the cell under it (Grid::CellAt) and its height and speed values (+0x74, +0xDC) |

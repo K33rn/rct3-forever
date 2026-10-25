@@ -413,3 +413,12 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x890b50` | Scenery::Shadow890B50 | In outline: works out a scenery part's shadow corners in a shared eight-point table (`0x1311190`), six sides at a time |
 | `0x923350` | Waterfall::Build923350 | In outline: builds a waterfall's shape when flagged (+0x300): checks it (Water::DebugDraw927D60) and fills its two sides (`0x9197A0`, `0x919C80`) |
 | `0x4988c0` | Scenery::Visible4988C0 | In outline: goes over a set's parts (+0x14, +0x24) marking the shown ones and, when flagged (+0x7C), refreshes (`0x498630`) |
+| `0x8905d0` | Scenery::Shadow8905D0 | In outline: another shadow corner pass like Scenery::Shadow890B50 (table `0x1311100`) |
+| `0x85eee0` | Scenery::Visible85EEE0 | In outline: whether a scenery part should be drawn by its kind (low 16 bits of +8: 0, ...) and its sub-kinds (4, 5, 7) |
+| `0xc92db0` | Device::CheckModesC92DB0 | In outline: when asked or flagged (+0x4E8), checks the device's modes (`0xBDCBD0`, up to 8 and 0xA0 entries) |
+| `0x903bf0` | Water::Setup903BF0 | In outline: sets up the water parts that need it (+0x2C): builds their table (Table::Build900DA0) and handles kind 8 pieces |
+| `0x861340` | Scenery::Lod861340 | In outline: picks a scenery item's detail by its camera distance (MainCamera::Get) and, for kind 0x12, sets it up (`0x860790`) |
+| `0x86d880` | Scenery::Bounds86D880 | In outline: when not flagged (+0x40), works out a scenery item's box from its shapes (`0x864620`, Model::CheckShapes) |
+| `0xbc34f0` | Resource::CopyNameBC34F0 | In outline: copies a resource's name and data (`0xBCE1D0`, `0xBE5020`) |
+| `0xce4cc0` | Sound::UpdateCE4CC0 | In outline: a sound's update when playing (+0x20): checks its buffer (`0xCE63E0`) and its state flags |
+| `0x88d700` | SceneryRenderer::Pass88D700 | In outline: another scenery drawing pass like SceneryRenderer::Pass89E620 (`0x856400`, `0x855A20`) |

@@ -1495,3 +1495,5 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x4405f0` | NamedObject::Register4405F0 | In outline: joins a named object to its list (ListMember with `0x10EC9E8`) and, when it has a name, adds it to the name table (Name::Assign on `0x1400128`, NameTable::Set) |
 | `0xa52cb0` | Campaign::FindFiles | In outline: lists the files in the campaign folder (Campaign::FolderName, `0xBE5570`) |
 | `0xa3efe0` | Text::ReadLinesA3EFE0 | In outline: reads a text resource's lines into a list, skipping empty ones |
+| `0xc3bb50` | ResourcePath::SplitC3BB50 | In outline: splits a resource path at its last `:` and looks up the part after it (`0xBCEC90`), for files in state 5 (+0x60) |
+| `0x7a2710` | Path::Refresh7A2710 | In outline: goes over the things of a list (`0x1306C2C`) refreshing each (`0x7A06D0`) with the path manager |

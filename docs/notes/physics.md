@@ -190,3 +190,8 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x970040` | Points::Sort970040 | In outline: sorts a list of 24-byte points by their first value (from the top down) |
 | `0x85d520` | Box::RayHit85D520 | In outline: whether a ray meets a box: inside already, or where it crosses each face plane, checking the point is within the face |
 | `0x95ec30` | Water::Edge95EC30 | In outline: works out where water meets a height along an edge, by case (kind 3, `0x95DE00`) |
+| `0xcd06d0` | Shapes::JoinCD06D0 | In outline: another shape join like Shapes::JoinCD0CF0: the distance between two points and a step count from it (`0xFC3484` per unit) |
+| `0x9095b0` | Water::Colours9095B0 | In outline: another water colour pass like Water::Colours908C00 for pieces of two or more points |
+| `0x8c4ac0` | Terrain::RayHeight8C4AC0 | In outline: walks a ray along the terrain heights until it drops below them, unless the direction is flat |
+| `0xcc69a0` | Animation::SampleCC69A0 | In outline: samples an animation's tracks at a time: finds each key (Keys::Find2) and blends between keys |
+| `0xccfab0` | Points::TransformCCFAB0 | In outline: transforms a list of points by a matrix, four at a time |

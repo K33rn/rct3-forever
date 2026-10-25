@@ -133,3 +133,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x75fa30` | Guest::TryAction75FA30 | In outline: whether a guest can do something now: when free (+0x334), checks the target (`0x784840`, `0x783B30`) |
 | `0x7d59c0` | Person::Swim7D59C0 | In outline: checks the water under a person (WaterManager::Get, `0x93E7D0`) and, when not flagged (+0x3C0) and in stage 2, acts on it |
 | `0x7ac710` | Crowd::Update7AC710 | In outline: updates the crowd sounds (Crowd::Sounds, `0x7B5010`) by the sizes of three groups of people (+0x548 to +0x550) |
+| `0x7fa020` | Guest::Need7FA020 | In outline: a guest's need check when not flagged (+0x444): compares a value (+0x5BC +0x144) with four times another (+0x310) scaled, acting on it (`0x75E740`) |
+| `0x77faf0` | Guest::OnRide77FAF0 | In outline: a guest's update on a ride it is on (+0x118 +0xC): when the ride kind allows it (`0xFC4C78`), moves along (`0x7C6280`) by its mode (+0xE4, +0xE8) |

@@ -654,3 +654,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6a9ef0` | Window::Draw6A9EF0 | In outline: draws a window's frame (`0x6ACE50`) and its title text, cut to fit its width (`0x6AE070`) |
 | `0xa5c260` | Texts::LookupA5C260 | In outline: gives one of a set of game texts by number (each checked loaded, `0x12FDDC0`, `0x12FA3FC`, `0x1305B88`, `0x12FADB8`, ...) |
 | `0x9bac90` | Window::Build9BAC90 | In outline: builds a window from the shared title `0x1341448` |
+| `0x99b6a0` | Window::Layout99B6A0 | In outline: lays out a window from a list (`0x1103C58` +0x50, up to 0x400 entries, `0x6A4AB0`) |
+| `0x8854b0` | List::Scroll8854B0 | In outline: keeps a list's shown rows (+0x108 +0xF4, +0x110 +0xF8) in range and finds the row under a point (+0xE0 rows) |
+| `0x5fcce0` | KeyBinding::Read5FCCE0 | In outline: reads a key combination (KeyCombination::Set) from the window's keys when flagged (+0x94 bit 4): each key of kind 0x2000000 by its code (0x200001D, ...) |
+| `0x4bcf80` | PlacementCursor::Update4BCF80 | In outline: another placement cursor update like PlacementCursor::Update583360, skipped when the GUI is in the way (`0x12F8404` +0x258) or flagged (+0x50, +0x94, +0x98, +0xDC, +0x120, +0x168) |
