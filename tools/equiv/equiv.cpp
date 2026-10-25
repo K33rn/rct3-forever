@@ -691,8 +691,37 @@ static std::vector<Test> tests() {
     };
     module.finish = [](const rewrite::Entry *) { unstub(); };
 
+    // cached interfaces: the object at 0x4000 (its flag sometimes already set), the reference's handle at 0x3000,
+    // the referenced object at 0x3100 (sometimes none) with the class and interfaces of the QueryInterface test
+    static const uint32_t *cached_c;
+    Test cached{0x4ab6f0,
+                [=](Rng &r) {
+                    fresh(r);
+                    const uint32_t *c = cached_c;
+                    for (int i = 0; i < 0x1400 / 4; i++) arena<uint32_t>(0x3000)[i] = r.next();
+                    static void *vt[2] = {nullptr, (void *)stub_class_of};
+                    uint8_t *self = arena<uint8_t>(0x4000);
+                    self[c[1]] = r.next() % 4 == 0;
+                    *(void **)(self + c[2]) = arena<void>(0x3000);
+                    *(void **)arena<uint8_t>(0x3000 + c[3]) = r.next() % 5 ? arena<void>(0x3100) : nullptr;
+                    arena<void *>(0x3100)[0] = vt;
+                    uint8_t *cls = arena<uint8_t>(0x200);
+                    *arena<void *>(0x1f0) = r.next() % 5 ? cls : nullptr;
+                    *(void **)(cls + 0x14) = arena<void>(0x240);
+                    *(int32_t *)(cls + 0x18) = r.range(0, 8);
+                    for (int i = 0; i < 8; i++) {
+                        arena<void *>(0x240)[i] = r.next() % 4 ? arena<void>(0x300 + 0x20 * i) : nullptr;
+                        *(int32_t *)arena<uint8_t>(0x300 + 0x20 * i + 0x10) = r.range(-64, 64) * 4;
+                    }
+                    *(int32_t *)c[4] = r.range(0, 9);
+                },
+                [](void *fn) {
+                    return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x4000))};
+                }};
+    cached.prepare = [](const rewrite::Entry *e) { cached_c = rewrite::cached_constants(e->at); };
+
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
-                    &deleting, &query, &module}) {
+                    &deleting, &query, &module, &cached}) {
         x->iterations = (x == &deleting || x == &query || x == &module) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

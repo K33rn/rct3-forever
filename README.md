@@ -26,7 +26,7 @@ the game folder: everything happens in memory while the game runs, and closing i
 | `RCT3Forever.exe` (launcher) | Finds the game (Steam, or asks once), checks it's the supported version, starts it with Forever loaded before any of the game's own code runs |
 | `forever.dll` | Runs inside the game: checks the version again, turns on the Park & Peep Editor, puts the rewritten functions in place |
 | Park & Peep Editor | The in-game editor (F9), on by default |
-| Rewritten functions | 4,589 so far: every deleting destructor, interface lookup and start-up module global (templates checked on each of their 3,386 copies), the game's random number generator, the park's statistics graphs, park entrances, guests' taste for intense rides, parts of how they choose rides, growable arrays of every item size, references between objects and reading them from save files, saving arrays of structs (with the save file's checksum), object pools, and the memory and list helpers the compiler copied hundreds of times. Each one is proven bit-for-bit identical to the original by the equivalence test. See [the rewrite list](docs/rewriting.md#rewritten-so-far) |
+| Rewritten functions | 4,648 so far: every deleting destructor, interface lookup (also cached) and start-up module global (templates checked on each of their 3,445 copies), the game's random number generator, the park's statistics graphs, park entrances, guests' taste for intense rides, parts of how they choose rides, growable arrays of every item size, references between objects and reading them from save files, saving arrays of structs (with the save file's checksum), object pools, and the memory and list helpers the compiler copied hundreds of times. Each one is proven bit-for-bit identical to the original by the equivalence test. See [the rewrite list](docs/rewriting.md#rewritten-so-far) |
 
 ## Progress
 
@@ -35,12 +35,12 @@ runs), **documented** (understood and described, next to rewrite), or **to do**.
 and pieces the compiler split off from functions are counted separately; they don't need rewriting.
 
 <!-- progress -->
-`█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░` **2.59% rewritten**, 38.79% understood and documented (by code size)
+`█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░` **2.65% rewritten**, 38.73% understood and documented (by code size)
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 4,589 | 215,329 bytes | 2.59% |
-| Documented | 6,167 | 3,226,315 bytes | 38.79% |
+| Rewritten | 4,648 | 220,618 bytes | 2.65% |
+| Documented | 6,108 | 3,221,026 bytes | 38.73% |
 | To do | 14,962 | 4,875,023 bytes | 58.62% |
 | **Game total** | **25,718** | **8,316,667 bytes** | |
 | Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |

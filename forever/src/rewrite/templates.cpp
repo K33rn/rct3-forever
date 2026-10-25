@@ -46,6 +46,31 @@ template <uint32_t ID> static void *__fastcall query(void *object) {
     return (uint8_t *)object + e->offset;
 }
 
+// ---- cached interfaces ---------------------------------------------------------------------------------------------
+// The interface (as QueryInterface) of the object a reference held at +REF points to (the handle's object at +OBJ),
+// looked up the first time only: the result (or null) is kept at +CACHE and the byte at +FLAG set.
+
+static volatile long g_cached;
+
+template <uint32_t FLAG, uint32_t REF, uint32_t OBJ, uint32_t ID, uint32_t CACHE>
+static void *__fastcall cached_interface(uint8_t *self) {
+    g_cached++;
+    if (!self[FLAG]) {
+        void *object = *(void **)(*(uint8_t **)(self + REF) + OBJ);
+        void *found = nullptr;
+        if (object) {
+            ClassInterfaces *c = ((ClassInterfaces * (__fastcall *)(void *))(*(void ***)object)[1])(object);
+            if (c) {
+                int32_t id = *(int32_t *)ID;
+                if (id < c->count && c->by_id[id]) found = (uint8_t *)object + c->by_id[id]->offset;
+            }
+        }
+        *(void **)(self + CACHE) = found;
+        self[FLAG] = 1;
+    }
+    return *(void **)(self + CACHE);
+}
+
 // ---- module globals ---------------------------------------------------------------------------------------------
 // A global object built before main from the start-up of a list of modules: `start` (0xBCE1A0, 0x805AB0, ...)
 // runs the list's initialisers in turn (undoing them if one fails) and gives {table, error}; the global's
@@ -77,4 +102,26 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
                                                   (void *)&query<id>, &g_queries);
 #define MODULE(at, start, global, dtor, ...)                                                                         static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("ModuleGlobal", at, REWRITE_CAT(original_, at), 8,                                                             (void *)&module_global<start, global, dtor>, &g_module_globals);
+#define CACHED(at, flag, ref, obj, id, cache, ...)                                                                   static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("CachedInterface", at, REWRITE_CAT(original_, at), 8,                                                          (void *)&cached_interface<flag, ref, obj, id, cache>, &g_cached);
 #include "generated.inc"
+
+// the cached interfaces' constants, for the equivalence test
+#undef DELETING
+#undef QUERY
+#undef MODULE
+#undef CACHED
+#define DELETING(...)
+#define QUERY(...)
+#define MODULE(...)
+#define CACHED(at, flag, ref, obj, id, cache, ...) {at, flag, ref, obj, id, cache},
+static const uint32_t cached_table[][6] = {
+#include "generated.inc"
+};
+
+namespace rewrite {
+const uint32_t *cached_constants(uintptr_t at) {
+    for (auto &c : cached_table)
+        if (c[0] == at) return c;
+    return nullptr;
+}
+}
