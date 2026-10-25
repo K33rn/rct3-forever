@@ -827,7 +827,7 @@ address,size,name,callers,status
 0x4414f0,306,,4,to do
 0x441690,39,,57,to do
 0x441780,30,DeletingDestructor,2,rewritten
-0x4417a0,446,,1,to do
+0x4417a0,446,,1,documented
 0x441960,289,,3,to do
 0x441fa0,30,DeletingDestructor,1,rewritten
 0x441fc0,7,BaseClass::SetClass,1,rewritten
@@ -9425,7 +9425,7 @@ address,size,name,callers,status
 0x79d200,412,,4,to do
 0x79d3a0,330,,1,to do
 0x79d4f0,586,,1,to do
-0x79d7c0,193,,1,to do
+0x79d7c0,193,,1,documented
 0x79d890,105,,1,documented
 0x79d920,1136,,1,to do
 0x79dde0,48,QueryInterface,0,rewritten
