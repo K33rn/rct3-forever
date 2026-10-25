@@ -8,7 +8,7 @@ An in-game menu with two tabs:
            cash, loan, entrance fee, park value...) and spawn new guests.
 
 INSTALL
-  With RCT3 Workshop: Mod Loader > Install content... > pick PeepEditor.zip > Install. It goes in as a
+  With the RCT3 OVL viewer: Mod Loader > Install content... > pick PeepEditor.zip > Install. It goes in as a
   "Code mod" beside RCT3plus.exe; Disable / Uninstall there take it out again.
 
   By hand:
