@@ -114,3 +114,10 @@ Tracked rides, flat rides and their cars and trains.
 | `0x94e000` | WaterDrops::EmitterCount | How many drops emitter n (208 bytes each at +0x1A4) gives: its +0x10 divided by its interval (+0xC), rounded up; 0 when the interval is not positive. Called from Model::DebugReport |
 | `0xbcef20` | WideString::FindLast | Searches a wide text backwards from the given position (or from its last character when it is -1) for a character: its position, or -1. Used by MiniGolfHole::Setup, FindSplines and SetupPlayers |
 | `0xa3fa60` | TrackImporter::OppositeDirection | The direction opposite the one given (in eax), of eight: 0-3 become 4-7 and 4-7 become 0-3. Called from TrackImporter::AddPiece |
+| `0x424d10` | CustomPersistingSpline::StartDirection | The direction at the spline's start: the first point's +0x18 vector, reversed. Slot 14 of CustomPersistingSpline |
+| `0x424d50` | CustomPersistingSpline::EndDirection | The direction at the spline's end: the last point's (36 bytes each, count +8) vector at -0x18 from its end, reversed. Slot 15 of CustomPersistingSpline |
+| `0xa7b3b0` | ChangingRoomInstance::Slot57 | What the object's slot 33 gives times `0x4BFA20`'s value when it is positive, else 0. Slot 57 of ChangingRoomInstance |
+| `0xa7b3e0` | ChangingRoomInstance::Slot45 | Runs `0x4C35E0`, then sets +0x1E8 to 1. Slot 45 of ChangingRoomInstance |
+| `0x4e6600` | TrackedRidePersonInfo::Slot7 | Runs `0x4D1AA0`, then copies +0xB8 into +0xF0. Slot 7 of the tracked ride, mini golf and walk-along-track person infos |
+| `0x84b2e0` | TrackPiece::Slot18 | Asks slot 18 of the part at +0x40 of the piece's interface (`0x130BBCC`), or 0 when it has none. Shared by TrackPiece and PoolPiece |
+| `0x84b300` | TrackPiece::Slot17 | The same for slot 17. Shared by TrackPiece and PoolPiece |

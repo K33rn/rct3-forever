@@ -52,3 +52,16 @@
 | `0x8456e0` | PartedObject::Slot21Request | The slot 21 request's visit: calls the part's slot 21 with the kept arguments, clearing the result when it returns false |
 | `0x4bee20` | AttractionInstance::TypeKindIs0Or21 | True when the first byte of the attraction's type (+0xA8) is 0 or 0x15, false otherwise. Shared by the attraction instance classes (slots 14, 15, 50) |
 | `0x4bef90` | AttractionInstance::SetValue70 | Sets the value at +0x70 when it changes and then calls the object's slot 50; returns 1 when it changed. Shared by the attraction instance classes (slots 18, 19, 54) |
+| `0x8451d0` | PartedObject::Slot1 | Slot 1 of objects made of parts (pool complexes, animal shelters): passes the call with its two arguments on to slot 1 of every part (request table `0xF77BA4`, its visit `0x8451B0`), through the object's slot 32 |
+| `0x845240` | PartedObject::Slot2 | The same for slot 2 (request table `0xF77BA8`, visit `0x845220`) |
+| `0x8452b0` | PartedObject::Slot3 | The same for slot 3 (request table `0xF77BAC`, visit `0x845290`) |
+| `0x845320` | PartedObject::Slot4 | The same for slot 4 (request table `0xF77BB0`, visit `0x845300`) |
+| `0x845c30` | PartedObject::Slot27 | Slot 27 of objects made of parts: the sum of what slot 27 of every part gives for the argument (request table `0xF77BE8`, visit `0x845C00`) |
+| `0x4a9210` | AnimatedRideInstance::Slot30 | Asks slot 30 of each part that has an object (`0x846AE0`), starting from the value passed in, and keeps the largest value any of them gives (request table `0xF30A7C`, visit `0x4A8F70`); when one answered, writes it back and returns 1 |
+| `0x6d6340` | ValueCondition::IsMet | Whether a value condition is met: its current value (slot 26) compared with its target (+0x70) by its mode (+0x74): at most the target when the mode is 0, at least the target otherwise. Shared by the value conditions (animal sales profit, enclosure visitors, items bought, ...; slot 23) |
+| `0x4bf1c0` | AttractionInstance::StoreSlot51 | Keeps what the object's slot 51 gives at +0xA4, at least 0. Shared by the attraction instance classes |
+| `0x6d8530` | NumWellThemedAttractionsCondition::IsMet | Whether the number of well-themed attractions (`0x4CD9A0` for the theme +0x70 and +0x78) reaches the target (+0x74). Slot 23 of the condition |
+| `0x6d8990` | NumAnimalsOfSpeciesCondition::Value | The condition's current value: 0 when no species is chosen (+0x88 is -1), otherwise the number of animals of it, counted by `0xB6C2E0` into +0x8C. Slot 26 of the condition |
+| `0x704e20` | Park::BumpTerrainCount | Adds one to the terrain's counter at +0x58, then `0x704A50`. Slots 3-5 of Park |
+| `0xabc210` | PoolSegment::Matches | True when the given object's +0x120 is 0 and its +0x138 is this segment's +4. Slots 5, 15 and 16 of PoolSegment |
+| `0x7290a0` | PathQueue::Slot7 | Hands its two arguments to `0x726D60` when the queue's kind (slot 12) is 3, otherwise to `0x728A50`. Slots 7 and 8 of PathQueue |

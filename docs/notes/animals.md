@@ -62,3 +62,4 @@
 | `0xb41870` | WildAnimal::NameBaby | Names a newborn animal: a random name with its species and suffix (`%NAME%`, `%SPECIES%`, `%SUFFIX%`). Called from `WildAnimal::Birth` |
 | `0x44fc80` | Helicopter::Activate | The helicopter's activation (virtual slot 3, run once by `ManagedObject::Activate`): sets up its model and lights (`0x86D3A0`, `0x869400`), its rope as a spline (`CustomPersistingSpline`) and its place over the terrain |
 | `0xb23990` | WAS_PlayWithItem::AddProgress | Adds to the animal's play progress (+0x130), kept between 0 and 1. Called from WAS_PlayWithItem::Update |
+| `0xa0a5d0` | Animal::Slot1 | False when the animal's value at +0x98 is above 2; otherwise what `0x48CA90` says for the five arguments. Slot 1 of Animal, Bird, Duck, Fish, ... |

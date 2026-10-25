@@ -61,3 +61,7 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7749e0` | GuestGroup::AverageOfMembers4B0 | The average of the members' values at +0x4B0, or 1 when the group is empty. Slot 18 of GuestGroup |
 | `0x774a80` | GuestGroup::AverageOfMembersSlot20 | The average of what slot 20 of the members' parts at +0x400 gives, or 0.5 when the group is empty. Slot 20 of GuestGroup |
 | `0x774b20` | GuestGroup::AverageOfMembersSlot21 | The average of what slot 21 of the members' parts at +0x400 gives, or 0 when the group is empty. Slot 21 of GuestGroup |
+| `0x7e9b50` | Staff::CountDownTimer | Counts the staff member's timer (+0x418) down by the frame time; when it runs out it starts again 16 seconds later and the member's slot 88 is called; then Person::Vomit's update for the frame. Slot 7 of the staff classes (animal keeper, entertainer, handyman, lifeguard, ...) |
+| `0x7e9ee0` | Staff::ResetSlot70 | Calls `0x7C3850`, then clears +0x410 and +0x4D8 and sets +0x4DC to 0.5. Slot 70 of the staff classes |
+| `0x7c3850` | Person::ClearSlot70 | Clears the person's values at +0x310, +0x2E8, +0x2DC, +0x2E0 and the flag at +0x314. Slot 70 of Person |
+| `0x7d56c0` | Person::Slot48 | Calls `0x7CE430` with -1. Slot 48 of Person |

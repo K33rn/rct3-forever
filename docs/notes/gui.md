@@ -338,3 +338,24 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xbe7780` | Rect::Contains | Whether a point lies in a rectangle (left, top, right, bottom), edges included. Called from GUIRenderer::Render |
 | `0x543b90` | RideOpModeDialog::DefaultSecondValue | When the dialog has its second setting control (+0x190): if its value (+0x19C) is negative, sets it and the control's value (+0x28C) to 20 and refreshes the control (`0x6AFC20`); otherwise `0x6B0990`. Called from RideOpModeDialog::Build |
 | `0x543b40` | RideOpModeDialog::DefaultFirstValue | The same for the first setting control (+0x17C, value +0x188, the control's +0x288). Called from RideOpModeDialog::Build |
+| `0x6ae7c0` | Window::ForEachChild | Hands a request to every child window (the list at +0x24), keeping its place with a cursor node in the list so children can be removed while it runs (stopping the program if the list is found broken) |
+| `0x681280` | WindowRequest::Visit | The visit shared by the window requests: gets the child's window interface (`0x6812A0`) and, when it has one, calls the request's own slot 1 with it |
+| `0x6812a0` | QueryInterface 0x1305d10 | Returns the given object's interface with the id in `0x1305D10` (the window interface; asking its class through virtual slot 1), or null |
+| `0x6ad740` | WindowRequest::CallSlot2 | A window request's own function: calls the child's slot 2 with the request's value (+4) |
+| `0x6ad780` | WindowRequest::CallSlot4 | Calls the child's slot 4 with the request's value |
+| `0x6adaa0` | WindowRequest::CallSlot7 | Calls the child's slot 7 with the request's value |
+| `0x6adae0` | WindowRequest::CallSlot6 | Calls the child's slot 6 with the request's value |
+| `0x6ade00` | WindowRequest::CallSlot9 | Calls the child's slot 9 with the request's value |
+| `0x6ade40` | WindowRequest::CallSlot10 | Calls the child's slot 10 with the request's value |
+| `0x6afd60` | Window::ChildrenSlot2 | Passes the call on to slot 2 of every child (request table `0xF606E8`), then `0x6A1E20`. Shared by the window classes |
+| `0x6afd90` | Window::ChildrenSlot4 | Passes the call on to slot 4 of every child (request table `0xF606F0`), then `0x6A1E20`. Shared by the window classes |
+| `0x6af3a0` | Window::ChildrenSlot7 | Passes the call on to slot 7 of every child (request table `0xF60708`). Shared by the window classes |
+| `0x6af3c0` | Window::ChildrenSlot6 | Passes the call on to slot 6 of every child (request table `0xF60710`). Shared by the window classes |
+| `0x6af420` | Window::ChildrenSlot9 | Passes the call on to slot 9 of every child (request table `0xF60718`). Shared by the window classes |
+| `0x6af440` | Window::ChildrenSlot10 | Passes the call on to slot 10 of every child (request table `0xF60720`). Shared by the window classes |
+| `0x6acda0` | Window::ZeroPair | Gives (0, 0). Shared by the window classes |
+| `0x63aa90` | Window::ChildrenSlot4ThenDelete | Passes slot 4 on to every child (`0x6AFD90`), then deletes the window (its deleting destructor with 1). Shared by several dialogs |
+| `0x67abe0` | Panel::ChildrenSlot2ThenRelate | Passes slot 2 on to every child (`0x6AFD60`), then, when it has a related window (+0xF8), Window::SetRelation with 2. Shared by panels such as ChangingRoomPickPanel and RidesVisitedArea |
+| `0x67ac00` | Panel::ChildrenSlot4ThenLayout | Passes slot 4 on to every child (`0x6AFD90`), then lays the window out when it has a related window (+0xF8). Shared by the same panels |
+| `0x490000` | Window::RectFromSize | Sets the window's rectangle (Window::UpdateRect) to start at 0,0 with its own width and height (from +0x7C..+0x88) |
+| `0xac7fb0` | Window::PointToScreen | Turns a point inside the window into a screen position: the window's offset (-0x48 from this interface) plus the point plus Window::ScreenPosition |
