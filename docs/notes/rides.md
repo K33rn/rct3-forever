@@ -174,3 +174,6 @@ Tracked rides, flat rides and their cars and trains.
 | `0x50d310` | Car::UpdateVisual50D310 | In outline: updates a ride car's look each frame (when shown, +0x250): its lights (Model::UpdateLights), its two sides (`0x50B7E0`), its parts' matrices (`0x869400`) and its animated parts (+0x8B4) |
 | `0xcc76c0` | Skeleton::BuildMatricesCC76C0 | In outline: builds the matrices of a model's bones, children first (it calls itself), for the bones that use the part given |
 | `0x7bf550` | Track::HitTest7BF550 | In outline: whether a ray or point hits a track piece's parts: checks each part of the piece and its extra parts (`0xBBE5C0`), with special cases for kinds 2 and 3 |
+| `0x5c79a0` | TrackedRide::HitTest5C79A0 | In outline: whether a ray hits a tracked ride's track (TrackedRide::TrackInterface): goes over its pieces (`0xCDEB10`) and their triangles, keeping the nearest hit |
+| `0x56a660` | Ride::PlaceEntrance56A660 | In outline: places a ride part at a terrain cell (RCT3Terrain, a 90 by 90 grid, Grid::CellAt) facing the right way (Vector::Quadrant), with a special case for kind 0x2F |
+| `0xc220e0` | Skeleton::UpdateBone | In outline: updates one bone and then its children (it calls itself): blends its pose (`0xC5A1F0`) when its blend is under 1 and builds its matrix |

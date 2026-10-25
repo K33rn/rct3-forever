@@ -330,3 +330,6 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x8c0cf0` | Terrain::DrawPass8C0CF0 | In outline: draws a terrain pass for the visible rows (`0x8BEEF0` on `0x1400160`), counting each batch (Counter::Increment, RenderStats::AddBatch) |
 | `0xc1d7e0` | Particles::BuildC1D7E0 | In outline: builds a particle's quad (Triangle::FromBase, turned by its angle) and works out its size from its values (+0x90) and a time factor (`0xDDD040`) |
 | `0x447740` | Terrain::DrawGrid447740 | In outline: draws the terrain grid overlay: two scaled views (Matrix::ScaleOffset2D) and a pass of batches (`0x447610`) |
+| `0x927d60` | Water::DebugDraw927D60 | In outline: draws water debugging shapes in translucent white, green and yellow (Colour::FromARGB 0x3FFFFFFF, 0x3F00FF00, 0x3FFFFF00) for the points of a water piece (+0x32C) |
+| `0x908c00` | Water::Colours908C00 | In outline: works out the colours of a water piece's points from their directions and a time factor (`0xDDD040`), as alphas |
+| `0x9757d0` | Particles::Draw9757D0 | In outline: draws a particle list for the current device (ForCurrent(3)) inside a timed critical section, building each one's quad from its direction and colour |
