@@ -206,3 +206,5 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xb75060` | QuadTree::TakeVisible | The partial walk of the tree culled by `0xb756b0`: tests the items of a node cut by the view against the planes and goes on into its children (those wholly inside with `0xb74250`, the rest with itself), collecting items with `0xb44a30` |
 | `0x92b9e0` | Water::AskTileChange | When a change to the ground would affect a waterfall, asks the player first, with the game text `Water_AllowTileChangeResponse_WaterfallPrompt` (in a message window), the water manager made when needed |
 | `0xcb0e70` | Shader::DumpBad | Writes a shader that failed to compile to `ShaderBad.sha`, between `Shader Start` and `Shader End` lines |
+| `0xc484a0` | ShaderCache::Save | Writes the compiled shader cache to `SCCache.bin` (through Writer::Write4 and the writer helpers) |
+| `0x9256a0` | Waterfall::ConfirmDelete | Asks before deleting a waterfall, with the game text `Waterfall_Delete` (in a message window), keeping a reference to the waterfall for the answer |

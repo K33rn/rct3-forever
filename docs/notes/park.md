@@ -190,3 +190,14 @@
 | `0xa2ccf0` | CarriedItem::MakeGolfBall | Makes the mini golf `GolfBall` carried item (CarriedItemInstance) |
 | `0xa2cea0` | CarriedItem::MakeGolfClub | Makes the mini golf `GolfClub` carried item (CarriedItemInstance) |
 | `0xa2d050` | CarriedItem::MakeKidsGolfClub | Makes the mini golf `KidsGolfClub` carried item (CarriedItemInstance) |
+| `0xa2cb40` | CarriedItem::MakeCamcorder | Makes the `Camcorder` carried item (CarriedItemInstance) |
+| `0xa2c990` | CarriedItem::MakeCamera | Makes the `Camera` carried item (CarriedItemInstance) |
+| `0x7f8f90` | CarriedItem::MakeAutograph | Makes the `Autograph` carried item (CarriedItemInstance), as a VIP gives |
+| `0x6e0870` | NumItemsBoughtCondition::CurrentText | The objective's progress text: the game text `NumItemsBoughtCondition_Current` with the current number written in, and its timing (ObjectiveCondition::DescribeTiming) |
+| `0x6c85f0` | Challenges::DebugText | Writes the challenges' state for the developer: `Don't offer challenges timer: %.2f`, `Challenge publicity boosts: %d`, then each challenge (`Challenge %d: %s, %.2f`, with Challenge::StateName) |
+| `0x6c4990` | Challenge::ShowFailure | Shows a challenge's failure message, the game text `Challenge_DefaultFailureText` (in a message window) |
+| `0x819b70` | LitterBin::FillText | The litter bin's fill text: how full it is (`%d%%`), or the game text `Bin_NeverEmptied` |
+| `0x88c4c0` | Sign::Text | The text a sign shows, such as the game text `Sign_NoEntry` |
+| `0x8b6900` | WaterCannon::Name | The water cannon's name text (the game text `SceneryItem_WaterCannon`) |
+| `0x8b1330` | VistaPoint::Name | The vista point's name text (the game text `SceneryItem_Vistapoint`) |
+| `0x9823e0` | InventionGroup::NameText | The research group's name text: the game text `InventionGroup_` + the group's name |

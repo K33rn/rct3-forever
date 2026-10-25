@@ -1207,3 +1207,6 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcc4700` | DeletingDestructorCC2ED0 | Deleting destructor: runs `0xcc2ed0` and, when bit 0 of the flag is set, frees the object; returns it |
 | `0xcc5530` | DeletingDestructorCC5240 | Deleting destructor: runs `0xcc5240` and, when bit 0 of the flag is set, frees the object; returns it |
 | `0xcc5570` | DeletingDestructorCC57D0 | Deleting destructor: runs `0xcc57d0` and, when bit 0 of the flag is set, frees the object; returns it |
+| `0xc07f80` | MainWindow::Create | Creates the game's main window: registers the window class `Main` (with the arrow cursor), sizes it for the client area (AdjustWindowRectEx) and centres it on the desktop, unless a window of that class already exists (FindWindowExA) |
+| `0x82a4e0` | SoundGroup::CheckLooping | Checks a group of sounds; when it mixes looping and non-looping sounds, shows a message box `Mixed loop and non-loop sounds` (`It shouldn't happen`) |
+| `0x69b690` | TextInput::SetImeOpen | Turns the Windows input method (for Asian text) on or off with ImmSetOpenStatus, reporting `SetOpenStatus(` with the result |

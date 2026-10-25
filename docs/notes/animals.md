@@ -70,3 +70,4 @@
 | `0xb44910` | WildAnimal::Interface60Raw | The interface (id in `0x13D0168`) of the object its reference at +0x60 points to, looked up once (kept at +0x70, flag +0x74), without the +0x50 that WildAnimal::Interface60 adds |
 | `0xb7fd50` | WildAnimal::StatusText | The text for a wild animal's status (+0x114): 0 asks the animal itself, 1 is WildAnimal::Escaped, 2 the text `WildAnimal_Rescued` (for a rescued animal, +0xFE), and others for states 3 and 4 |
 | `0xb71bc0` | WildAnimal::ConfirmSell | Opens the confirmation for selling a wild animal, with the game text `SellAnimalConfirmMessage` and the animal's details, acting on the animal's reference when confirmed |
+| `0xb6fa30` | WildAnimal::ShowSold | After a wild animal is sold, shows the game text `SellAnimalSoldMessage` (in a message window) with its details |
