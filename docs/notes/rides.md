@@ -110,3 +110,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0xbbf9f0` | RideCar::WheelName | Name of a car's wheel bone (used by RideCar::FindBones): 0 `WheelFR`, 1 `WheelFL`, 2 `WheelRR`, 3 `WheelRL`; null otherwise |
 | `0x4de1c0` | Ride::BreakdownStatusName | Name of a ride's breakdown status: 0 `BreakStatus_Fixed`, 1 `BreakStatus_AwaitingBreak`, 2 `BreakStatus_CallMechanic`, 3 `BreakStatus_WaitMechanicArrive`, 4 `BreakStatus_BeingFixed`; null otherwise |
 | `0x4bef70` | Ride::StateName | Name of a ride's open state: 0 `StateClosed`, 1 `StateTesting`, 2 `StateOpen`; null otherwise |
+| `0xa3fab0` | TrackImporter::MapPieceCode | Maps an imported piece code (0-9) to the game's, by one of two tables: normally 0 1 2 3 4 5 6 7 3 6, with the flag 0 1 1 2 4 4 5 7 3 6. Called from TrackImporter::AddPiece |
