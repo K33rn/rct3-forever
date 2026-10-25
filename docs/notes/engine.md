@@ -262,7 +262,6 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbe8fe0` | Call10IfReady | When `0xBE8E40` gives something, `0xBE8EA0` with all ten arguments; otherwise 0 |
 | `0xbec340` | ForCurrent | `0xBEC1A0` with the first value of what `0xBD9670` gives and the argument |
 | `0xbd9fa0` | UpdateAndCheck | Runs `0xC374C0` and `0xC37220`, then whether `0x13D0DF0` is 0 |
-| `0x67b800` | Window::SetAllSix | `0x67B710` with the first argument for all six of its values and the second as the last |
 | `0x67b4b0` | Thunk67B3C0 | Calls `0x67B3C0` |
 | `0xa63450` | MainCamera::Get | The main camera (kept in `0x13429A8`): made the first time it is asked for (1,056 bytes, MainCamera::MainCamera) and activated; returns it. Used by about 150 functions |
 | `0x491140` | EnclosureManager::Get | The enclosure manager (kept in `0x13D0258`): made the first time (216 bytes, EnclosureManager::EnclosureManager) and activated; returns it. Used by about 115 functions |
@@ -279,8 +278,8 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcd23d0` | String::FromNumber | A new shared text holding a whole number written in decimal (`%d`). Used by about 80 functions |
 | `0x403e10` | String::AssignC | Sets a shared text to a copy of C text (its length found, then `0xBD0CE0`); returns it. Used by about 75 functions |
 | `0xbd15a0` | TextRef::TextRef | Constructor of a reference to a text (table `0xFA14D0`): keeps the text table's entry (+0x24 of the table given), the name (its use count raised) and joins the entry's list of references. Used by about 65 functions |
-| `0x441030` | GameTimeListener::GameTimeListener | Constructor of an object (table `0xF28CC4`) that joins the list of listeners of the object `0x440FD0` gives (its list at +0x1C), first |
-| `0x440ed0` | GameTimeListener::~GameTimeListener | Puts its table back and leaves that list (stopping the program if the list is found broken) |
+| `0x441030` | Listener440::Listener440 | Constructor of an object (table `0xF28CC4`) that joins the list of listeners of the object `0x440FD0` gives (its list at +0x1C), first |
+| `0x440ed0` | Listener440::~Listener440 | Puts its table back and leaves that list (stopping the program if the list is found broken) |
 | `0x48a400` | IdSet::IdSet | Constructor of a set of ids: clears its first value and sets its storage up with `0xCDED30` (256 slots, growing by 128) |
 | `0xbdf160` | LookupValue | The first value of the entry `0xBDD210` finds for the key, or 0 when there is none |
 | `0xce4770` | Flags::Set20Clear21 | Sets the byte at +0x20 and clears the one at +0x21 |
@@ -298,3 +297,5 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x458150` | SharedText::Copy1106DC4 | Makes this hold the shared text kept in `0x1106DC4`, raising its use count |
 | `0xbe40b0` | Get8Then40 | The value at +0x40 of the object at +8 of the object this points to |
 | `0x6d6180` | RegisteredItem::RegisteredItem | Constructor of a base class (table `0xF63F2C`) whose objects all go in one global list (`0x1305F44`, count `0x1305F4C`, growing to twice its size plus 10): keeps its place in the list at +4. Used by about 45 constructors |
+| `0x468450` | ShowMessageBox | Shows a Windows message box (MessageBoxA) with two wide texts, first turning each into plain text in spare room at the end of its own buffer. Used by about 60 functions to report problems |
+| `0x49b9f0` | ReportMissingResourceSymbol | When the flag (Flags::Bit0) is clear, shows a message box `Missing Resource Symbol` with the symbol's name |
