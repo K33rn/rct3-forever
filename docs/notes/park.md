@@ -321,3 +321,6 @@
 | `0x4f5950` | Ride::Buy4F5950 | In outline: when a ride or shop is placed (+0x60C): checks the cost against the park's money (`0x6C1DA0`, +0x58, unless money is off, +0x68 bit 1), finishes its placement (`0x5D0950`, `0x59DC60`, `0x4BBC80`) |
 | `0x5e0350` | Placement::Clearance5E0350 | In outline: for most kinds (not 0x26, 0x2C, 0x32), checks a thing being placed against each of its neighbours (+0x13C, count +0x140, `0x5DBBF0`) and the ride car given |
 | `0x5d7d70` | Placement::CanPlace5D7D70 | In outline: whether something can be placed with the options given: checks the selected tool (`0x12F5638`, its flags +0xA0, +0x84), its rotation (Clamp0To3) and several cases |
+| `0x7e55d0` | Enclosure::CheckCell7E55D0 | In outline: checks a cell against an enclosure's rules: its kind (4 checked against a size), its enclosure (EnclosureManager::Get, its width +0x64 and height +0x68) and the case for the side given |
+| `0x8c2590` | Terrain::Shade8C2590 | In outline: works out shading values for a rectangle of terrain cells (blocks of 32), from the heights around each, as bytes |
+| `0x725150` | Path::Connect725150 | In outline: connects the path tiles of a rectangle (+0x14 to +0x17): finds each tile (PathManager::Get) and checks its four neighbours over the terrain |

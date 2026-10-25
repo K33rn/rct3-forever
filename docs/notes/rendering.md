@@ -347,3 +347,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x857340` | SceneryRenderer::DrawList857340 | In outline: draws a list of scenery parts for the current device (ForCurrent(3)): sets each one's matrix (`0x42D200`, `0x42DEA0`) and skips the faded ones (flag 0x4000 with a small value) |
 | `0xccce30` | Shapes::DrawCCCE30 | In outline: draws a set of shapes (+0x44) with their shaders (ShapeShaders::Load, `0xCC1F30`), counting the batches (Counter::Increment) and releasing them after |
 | `0x94ce10` | Water::MakeSphereTexture | In outline: makes a 64 by 64 texture (Device::CreateTexture) from a hemisphere: each pixel's normal from its distance from the centre (the square root of 1 minus it squared) |
+| `0x9d0200` | Particles::FillBuffers9D0200 | In outline: fills the particle vertex and index buffers for the current device (ForCurrent(3), `0xBFFB60`) from the systems with particles to draw (+0x38 above 1) |
+| `0xcd1660` | Shapes::BuildCD1660 | In outline: builds two shapes' points (`0xCD0C60`) and joins them by a detail level (`0x13FE0F4`, 0 to 3) over their lists |
+| `0xbc0f10` | Model::BuildLodBC0F10 | In outline: builds the draw data for a model's detail level (Lod::LevelFor): finds its material (`0xBD6E10`), allocates its buffers (`0xBC0A00`, 64 bytes per part) and fills them |
+| `0xc06910` | Texture::LoadC06910 | In outline: loads a texture described by a record: its scale (1 over its first value), its name (from +0x28, `0xCA1B10`) and its kind (+0x3C), or another load (`0xBD51C0`) |
+| `0x8ec9d0` | Water::BuildAll8EC9D0 | In outline: builds the water pieces (Water::Build8EB860 for each) in groups of up to 100 and 0x1000 points, then fills them for the current device (ForCurrent(3)) |

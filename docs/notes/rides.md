@@ -182,3 +182,5 @@ Tracked rides, flat rides and their cars and trains.
 | `0xbbbfe0` | Track::BuildBBBFE0 | In outline: builds a track's sections from a list (or all of them): counts them (List::Count), sets each up (`0xBB65A0`) and, for kind 2, joins them (`0xBBBD60`, `0xBBBE30`) |
 | `0x56fb20` | Train::Update56FB20 | In outline: a train's update: checks its first and last cars (RideTrainInstance::Car: speed +0x74C, flag +0x744) and goes over all its cars, with special cases for kind 6 and ride kind 0x2D |
 | `0x7c6580` | Model::Draw7C6580 | In outline: draws a model by its kind (+0xB8: 0x112, 0x11F, 0x13C to 0x13E have their own case), setting up the matrices and device (`0xBEE460`, `0xC1FC30`) |
+| `0x4e7590` | AttractionPerson::Update4E7590 | In outline: the update of a person on an attraction (AttractionPersonInfo::Person): unless flagged (+0x118), checks its box against the ride's parts (`0xBCC740`) by its state (+0x13C) |
+| `0x5ee150` | AttractionPerson::Update5EE150 | In outline: another attraction person update: finds the person (AttractionPersonInfo::Person) and its place (`0x5EBEB0`, `0x5F2460`), and acts by its slot (+0x11C: -1, -2 or a slot) and flags (+0x190) |

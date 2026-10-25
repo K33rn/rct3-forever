@@ -1476,3 +1476,5 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xa61260` | Sound::UpdateA61260 | In outline: a sound's update by its kind (+0x38 = 1): works out its pitch as a power of two (f2xm1, fscale) and its volume (`0xA60C10`, `0xA5ED70`) and applies them (`0xA609D0`) |
 | `0xe030b0` | Keys::RemoveBefore | In outline: drops the keys of a list (times at +8, count +4) older than a time, keeping one before it, and moves the rest down |
 | `0xae5400` | Resources::FindByName | In outline: finds a loaded resource whose name matches the one given (WideString::Compare), loading the file when needed (ManagedObject::LoadFile) |
+| `0x993fa0` | Event::Update993FA0 | In outline: a timed event's update: checks the date (GameTime::Get) against its start and, for kind 0x16, starts it (`0x4767D0`) |
+| `0x49f810` | Table256::Build49F810 | In outline: fills a 256-entry table (`0x49F7B0` first) with rounded values worked out from a curve |
