@@ -687,3 +687,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9b5a00` | Dial::Build9B5A00 | In outline: builds a dial window's parts (Window::UpdateRect, Window::SetRelation) and sets its value (`0x9C8E10`) |
 | `0x6ccf70` | List::Clear6CCF70 | In outline: releases a list's parts (+0xE0, count +0xE4) |
 | `0x473320` | Camera::Select473320 | In outline: when the thing given is the selected one (+0x64) in mode 1 and not flagged (+0x88), moves the camera to it (`0x130654C`, MainCamera::Get) |
+| `0x7187a0` | Window::Build7187A0 | In outline: builds a window from the shared title `0x130623C` |
+| `0x99e8e0` | Fireworks::List99E8E0 | In outline: lays out the firework display list from its parts (Get_+0x108, Table104::Entry) |
+| `0x9b5eb0` | Dial::Layout9B5EB0 | In outline: another dial layout like Dial::Layout9B4BC0, up to the dial's count (+0x140) |
+| `0x9da640` | Text::Join9DA640 | In outline: joins texts (`0x9DA5E0`) into one |

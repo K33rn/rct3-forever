@@ -147,3 +147,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x79eb70` | Guest::PickRandom79EB70 | In outline: the same random pick as Guest::PickRandom7E93D0 (another copy) |
 | `0x77abe0` | GuestGroup::Setup77ABE0 | In outline: sets up a group (`0x779D20`, `0x76DFF0` into `0x1306554`) and, when it can (`0x76F0D0`), its members (`0x777660`) |
 | `0x76f0d0` | GuestGroup::CanPlace76F0D0 | In outline: whether a group can be placed: checks the terrain under it |
+| `0x776600` | Guest::LookAt776600 | In outline: whether a guest looks at a thing: the same one as its target (+0xAC), turned by its angle (+0x70) |
+| `0x7771f0` | Guest::Update7771F0 | In outline: a guest's update when not flagged (+0x1BC) with a target (+0x1B8), in state 0xB (+0x7C) and others |
+| `0x72e7c0` | Path::Refresh72E7C0 | In outline: refreshes a path piece's parts (`0x42E8B0`) unless flagged (+0x8C) |

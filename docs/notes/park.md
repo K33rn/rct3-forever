@@ -434,3 +434,14 @@
 | `0xabe3c0` | Fence::CopyABE3C0 | In outline: copies a border's values into a new buffer for its range (+0x50 to +0x58) |
 | `0x9026f0` | Water::SetMode9026F0 | In outline: switches the water's mode (+0x40) by case (1, ...) with the water manager |
 | `0x4ce150` | Shop::NameText4CE150 | In outline: a shop's name text, or an empty text when it has none (`0x4CDF90`) |
+| `0x847c90` | Scenery::Place847C90 | In outline: places a scenery item (`0x827510`, `0x8470F0`) when its parts are given, with its pieces (+0x14) |
+| `0x581f20` | Tool::Make581F20 | In outline: makes a tool's preview object (`0x581660`, `0x12F5638`, `0x5D4930`, `0xBCD1F0`, `0x86D3A0` with kind 0x17) |
+| `0xafb2d0` | TerrainLayers::FindAFB2D0 | In outline: finds the terrain layers at a cell (`0xAFB160`) and keeps the ones above a height |
+| `0x8c0680` | Terrain::Edge8C0680 | In outline: builds a terrain edge piece between two heights (`0x8C0170`, `0x8BE610`) |
+| `0x7d5f80` | Person::Ground7D5F80 | In outline: when flagged (+0x120), keeps a person above the terrain height under it, rounded |
+| `0x576270` | Ride::Update576270 | In outline: a ride part's update when not flagged (+0x5C), except for kind 0x44 |
+| `0x8195d0` | Path::Near8195D0 | In outline: finds the path tile at a point (PathManager, `0x71B370`) on the terrain (a 90 by 90 grid) |
+| `0x71dfb0` | Path::CanPlace71DFB0 | In outline: whether a path piece can go at a cell inside the grid (+0x5C, +0x5D), checking heights (+0xA8) over the terrain |
+| `0x595ff0` | Ride::RefreshLinks595FF0 | In outline: goes over a ride's links and refreshes the ones not flagged (+0x18) |
+| `0x876810` | Scenery::Load876810 | In outline: goes over a list of scenery items loading each one (`0x8826F0`) |
+| `0x5a05c0` | Ride::CanOpen5A05C0 | In outline: whether a ride can open (`0x5CFB10`), showing a message when not |

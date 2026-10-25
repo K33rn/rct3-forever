@@ -119,3 +119,7 @@
 | `0xb16010` | WildAnimal::PoseB16010 | In outline: sets an animal's pose by its mode (+0x84: 1, ...), pointing it (Matrix::LookAlongYSide with `0x10F2EA0`) on the terrain |
 | `0xb13700` | Animal::HandleB13700 | In outline: an animal's handling by its state (+0x78: 0, ...) of the thing given |
 | `0xa16f30` | Bird::PlaceA16F30 | In outline: places a bird at a cell over the terrain (a 90 by 90 grid, `0x492CD0`) |
+| `0xaf1460` | Animal::UpdateAF1460 | In outline: another animal update when not flagged (+0x74), checking its parts (+0x50) and its owner's flag (+0x70 +0xFC) |
+| `0xad95a0` | Animal::CopyAD95A0 | In outline: makes a managed copy of an animal (ManagedObject with `0x13CE51C`) from another when it is not flagged (+0x74), with its parts (`0x9D8210`) |
+| `0xb8c290` | Animal::PickSpotB8C290 | In outline: picks a random free spot (`0x4751E0`) from a list (0x1C bytes each at +0x48) |
+| `0xb42410` | WildAnimal::DrawB42410 | In outline: draws an animal turned by its angle (Matrix::TurnColumnsAboutY) with its blob shadow (Shadows::BlobSetup) |

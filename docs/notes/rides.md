@@ -228,3 +228,7 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4f2cb0` | Ride::Linked4F2CB0 | In outline: for rides in mode 3, checks a part with flag 0x400000 and more than two ends (+0xE4) against the shared list (`0x130BBEC`) |
 | `0x5eba30` | TrackedRide::Check5EBA30 | In outline: when not flagged (+0x118), checks the ride's piece (kind 3 or flag 0x40 only) |
 | `0x5b9c60` | Ride::Place5B9C60 | In outline: places a ride part on the terrain along a direction (normalised from `0xF3EF30`) |
+| `0x736d50` | Ride::Part736D50 | In outline: refreshes a ride's part (`0x5316A0` on +0xA4), or the plain way (`0x72D2D0`) |
+| `0x563e20` | Ride::Spin563E20 | In outline: for ride kinds 0x2E and 0x2F, turns the ride by its speed (+0x184) over time (Matrix::TurnAboutY) |
+| `0x5ea110` | TrackedRide::Update5EA110 | In outline: a tracked ride's update when not flagged (+0x68): its track (TrackedRide::TrackInterface) and its train's flag (+0x64 +0xB4) |
+| `0xbc6f00` | Track::JoinBC6F00 | In outline: whether two track pieces join: their ends (flag 0x400000, at least three) and their kinds (`0xBC4B50`, not 7) |

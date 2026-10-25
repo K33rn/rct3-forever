@@ -1510,3 +1510,7 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbe5b20` | Module::LoadBE5B20 | In outline: runs the module list (ModuleList::Run), stops on an error (Error::ThrowIf) and makes the module's name text |
 | `0xbce410` | WideString::FormatBCE410 | In outline: formats a wide text with `%` codes: reads each code's width digits and kind (0 to `l`, ...) and writes its value |
 | `0x470560` | Save::Write470560 | In outline: writes a record's values to a save, four bytes at a time (SaveWriter::Write), including its parts when it has them |
+| `0x79d920` | SlotPool::Make79D920 | In outline: adds an entry to a slot pool (SlotPool::Add), finds its owner (`0x79D4F0`) and makes a 400-byte record for it when it has parts (+0x50) |
+| `0x90cf00` | SortedTable::Insert90CF00 | In outline: adds an entry to a sorted table (+0x80): grows it when full (`0x90C510`), finds its place (SortedTable::Find20) and moves the rest up |
+| `0xa02a00` | Objects::CollectA02A00 | In outline: makes a list of the things of a set (+0x64, ObjectArray::SetCapacity, Interface8C::Get) |
+| `0xc18df0` | Stream::OpenC18DF0 | In outline: opens a stream for a path (Path::SplitRecursive) and starts its request (`0xC55050`, `0xC501D0`) |

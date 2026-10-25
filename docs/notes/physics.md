@@ -203,3 +203,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x44a750` | Effect::Bounds44A750 | In outline: grows a box to take in an effect's values when they are positive (+0, +4, +0x30) |
 | `0x812110` | Regions::Find812110 | In outline: finds a region in a list (+0x48) and measures it (`0x80FF10`) |
 | `0x8df1c0` | Water::Clamp8DF1C0 | In outline: keeps a list of water values within limits (1, and 1 less a margin) |
+| `0xbb8430` | PointSet::StepBB8430 | In outline: one step of a point walk (like PointSet::Walk) when a length is given, passing it on (`0xC2F650`) |
+| `0x938030` | Water::Nearest938030 | In outline: the nearest of a list of water points to a point, four at a time |
+| `0x9084e0` | Water::Cell9084E0 | In outline: the water cell of a point within a grid of pieces (+0, edges checked) |

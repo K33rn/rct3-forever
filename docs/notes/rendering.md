@@ -455,3 +455,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x89f460` | Billboard::Make89F460 | In outline: makes a billboard for a scenery part (Billboard::Create) at its rounded size, when within a distance (+0x30) |
 | `0xa7ed40` | Animal::DrawA7ED40 | In outline: sets an animal's look: its box (`0xA7EBE0`, `0xBCC740`), its direction (Matrix::LookAlongYSide) and its parts (`0xA7BF80`) |
 | `0xb48330` | WildAnimal::PoseB48330 | In outline: works out an animal's pose when it moved more than its kind's step (`0x10F27DC` by +0xAC, 0x1C bytes each) and builds its parts' matrices (`0x869400`) |
+| `0x97a700` | Particles::Collect97A700 | In outline: when particles are on (`0x12F018C` +0x24 +2), collects the ones to draw (`0x97A4F0`) |
+| `0x869400` | Model::PartMatrices869400 | In outline: builds the matrices of a model's shown parts (+0x104, count +0x108, `0x8625D0`) and its slot (+0x100) |
+| `0x938720` | Water::Strip938720 | In outline: builds an index strip for a water piece's points (+0x3C) above 0 |
+| `0xbf3500` | Text::DrawBF3500 | In outline: draws a text with an alpha (rounded, kept between 0 and 255) |
