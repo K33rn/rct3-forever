@@ -274,3 +274,8 @@
 | `0x8bcff0` | Rect::GrowByOne | Grows a byte rectangle by one cell each way, kept inside the grid (+4, +5) |
 | `0x5061b0` | Ride::Offset | The ride's offset (+0x1E0) for kinds 2 and 3 (+0x1C8), or none |
 | `0xaad5a0` | Grid3::RotateIndex | Turns a cell number of a 3x3 grid (0 to 8) by a direction (passed in registers) |
+| `0xabc790` | GridArea::ValueAt2 | Another value of the cell at a position inside an area (bounds +0x4C to +0x58, cells of 0x58 bytes at +0x5C) |
+| `0x55f940` | Ride::InRange | Sets a flag (+0x7C) when the value given (+0x24) lies between the object's limit (+0x70) and the other's (+0x18) |
+| `0xa56b30` | Queue::Next | Takes the next entry of a list (+0x24's +0xD8) and starts it (`0xA565D0`), or clears it when the list is empty |
+| `0x71bf70` | Cell::StepInside | Moves a cell position one step in a direction (0 to 3) and gives whether it is still inside the grid (+0x5C, +0x5D) |
+| `0x829440` | Ride::IsBusy | Whether a ride has anything going on: people on it (its part's +0x70), a queue (+0x198), a pending change (+0x7C bit 2 with +0x58 bit 1 clear) or +0x1A0; otherwise looks further (+0x84) |

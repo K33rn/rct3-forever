@@ -1451,3 +1451,18 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x84f1a0` | SortedPointers::FindFirst2 | The same search over a list given (unsigned values) |
 | `0x966e40` | List::TakeAll | Makes a list empty and moves every node of another list into it |
 | `0x9cedb0` | PackedSlots::Set | Sets the values of a slot found by a packed number (block in the top 12 bits, slot of 64 bytes in the low 20) |
+| `0xbff2b0` | ResourceRefFA5CF0::ResourceRefFA5CF0 | Constructor (table `0xFA5CF0`): keeps its owner and value and joins the owner's list at +0x94 |
+| `0xdfe1a0` | Memory::Move | Copies bytes between places that may overlap (backwards when the target is after the source), like memmove |
+| `0xcb2a00` | Pairs::InsertionSort | Sorts a list of 8-byte pairs (+0xC, count +0) by their 16-bit second value (insertion sort) |
+| `0x884680` | Values::SumFirst | The sum of the first n values of a list (+0xC) |
+| `0x9e2e60` | Lists::ClearMarks | Clears the mark of every entry of two lists (0x30 bytes at +0x20, count +0x28; 0x20 bytes at +0x2C, count +0x34) |
+| `0x9883d0` | Object7FC84::Object7FC84 | Constructor (table `0xF7FC84`): keeps its owner, a point, a value and three flags, with size 0xF0 |
+| `0xcdb720` | Counter::AddFraction | Sets a rate and adds it (scaled) to a running fraction, keeping the whole steps (+4) and the rest (+8) |
+| `0x73ee30` | List::MoveIn | Takes an entry out of its list and puts it into the object's list |
+| `0xbe7a90` | Tree::UpdateUp | Copies a node's values (+8, +0xC) up to its parents while it is their first child (+0x10), and then to the parent it is the other child of (+0x1C) |
+| `0xbd3240` | Updatable::SetActive2 | Switches an object on or off (+0x118): joins the shared list at `0x13D0D84` +0x5C, or leaves it (`0xBD29E0`) |
+| `0x95a510` | Mesh::ResetParts | Clears every part's id (-1) and flag (16 bytes each at +0x14, count +0x1C) and the second list (+0x5C, count +0x60) |
+| `0x8bff50` | Ranges::FindFrom | From entry n on (16 bytes each), the first of the kind given whose range (+8 to +0xC) holds the value |
+| `0x7a7040` | HandleRef::FromRefBit | Makes a reference (table `0xF26AE0`) to the same handle as another and keeps the bit for the number given |
+| `0xc46e20` | Segment3D::Segment3D | Constructor (tables `0xFB7158`, then `0xFB715C`): keeps two values and two points |
+| `0xa402b0` | ObjectA402B0::ObjectA402B0 | Constructor: keeps its owner, sets its table to `0xF8B730` and clears its values |

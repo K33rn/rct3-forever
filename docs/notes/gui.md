@@ -600,3 +600,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6b60a0` | Blink::Advance | Moves a looping time (+0x6010) on and keeps it below 1 |
 | `0xca81b0` | ByteSlider::SetValue | Sets the bound byte (unsigned) from a fraction between the minimum (+8) and maximum (+9) |
 | `0xca80a0` | CharSlider::SetValue | Sets the bound byte (signed) from a fraction between the minimum (+8) and maximum (+9) |
+| `0x436d70` | Bar::Fill | How full a bar is: its value (+0x2E8) over the maximum `0x10EDA7C`, kept between 0 and 1 |
+| `0x682910` | Drag::Offset | The drag's offset (+0x25C) while dragging (+0x258), otherwise 0 |
+| `0xc5e3c0` | ScrollBar::SetPageSize | Sets a scroll bar's page size (+0xDC, at most 1) and keeps the position (+0xE0) from going past the end |
+| `0x99d300` | Graph::PointFor | A point of a graph from a value pair: x across from its scale and offset (+0xDC), y up or down the height |

@@ -145,3 +145,7 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xaf75d0` | Contact::Make2 | The same contact record (another copy) |
 | `0xa17520` | Particle::Launch | Starts a particle at a point raised by the height given, with its two values, and marks it active |
 | `0x55fc10` | Vector::Quadrant | Which of four directions a flat vector mostly points (0 to 3), by its larger part and its sign (the vector is passed in a register) |
+| `0xbc4f90` | Angle::Sector | Which sector an angle falls in: moved by an offset, wrapped to one turn and scaled, rounded down |
+| `0xcc48f0` | Vector4::Scale | Multiplies a four-value vector by a number |
+| `0x925d20` | Points::Within | Whether two points are closer than the distance given |
+| `0x4412c0` | Angle::Octant | Which of eight directions an angle (+0x48 less +0x54) points in |
