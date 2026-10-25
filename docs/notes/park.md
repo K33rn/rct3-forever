@@ -169,3 +169,8 @@
 | `0x7396e0` | QueueTypeDatabaseEntry::MissingDependency | The same with `Missing dependency for QueueType` (data at +0x8C). Slots 5 and 7 of QueueTypeDatabaseEntry |
 | `0xac3420` | PoolTypeDatabaseEntry::MissingDependency | The same with `Missing dependency for PoolType` (data at +0x80). Slots 5 and 13 of PoolTypeDatabaseEntry |
 | `0xac3320` | PoolTypeDatabaseEntry::Name | The pool type's name: the text at +4 of its data (+0x80), or `<unknown pool type>` when it has no data. Slots 2 and 10 of PoolTypeDatabaseEntry |
+| `0x592600` | StallInstance::Vendor | Gives the stall's vendor (through its scenery item, interfaces `0x130BBEC` and `0x130B5C8`); when there is none, shows a message box `No Vendor for stall` with the stall's name |
+| `0xa51a80` | Scenario::LookupText | Makes the text key `Scenario%02d_Lookup` for scenario n (with the number of the given entry added when it is not negative) and looks the text up |
+| `0x596e10` | StallInstance::ReportMissingCID | When a carried item the stall should sell is missing, shows a message box `Missing CID` with `Missing CID '%d' for stall '%s'` (the item's number and the stall's name), then `0x595DD0` |
+| `0x6e4cd0` | EscapedAnimalsCondition::CurrentText | The objective's current-state text: the game text `EscapedAnimalsCondition_Current` with the count written in (`%d`) |
+| `0x72c280` | PathTile::CheckOwned | Checks a path tile as it is placed; among other checks, shows the game text `NotOwned` (in a message window) when the land is not the park's |

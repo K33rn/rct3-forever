@@ -97,3 +97,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0xa97770` | Text Peep%02d | Makes a text from the format `Peep%02d` with the number given plus one |
 | `0xbaddd0` | Text PeepBottom%02d | Makes a text from the format `PeepBottom%02d` with the number given plus one |
 | `0xbade60` | Text PeepTop%02d | Makes a text from the format `PeepTop%02d` with the number given plus one |
+| `0x7bd4a0` | Person::CheckCharacterParts | Prepares a person's body part (entry +0x54 of the table at +0x14, 36 bytes each) and checks the character's parts (Person::CheckParts); when they are broken, shows a message box `Broken Character Resource` with `Body Part: %s` and the errors |
+| `0x7816f0` | GuestGroup::StateText | The text for a guest group's state, such as the game text `GuestGroup_State_Wandering` |
