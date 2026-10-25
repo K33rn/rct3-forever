@@ -354,3 +354,18 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x85cb20` | IntToFloat | The whole number given as a float |
 | `0x8439b0` | Box::Assign | Copies six values (a box's corners) |
 | `0x4a1880` | Offset138 | The value at +0x138, plus 0x38 when `0xBB5150` is true and it is not 0 |
+| `0xca55f0` | Writer::Write4 | Writes a 4-byte value at the writer's position (+0xC, through its own slot 3) and moves the position on by 4 |
+| `0xbdf180` | LookupValue2 | The first value of the entry `0xBDD210` finds for the key, or 0 (the same code as `0xBDF160`) |
+| `0xbb4230` | Entry::IsSet2 | Whether the first value is not -1 (the same as `0xBB5120`) |
+| `0x967c10` | Object967::Object967 | Constructor that sets the table `0xF7E654` and keeps its argument at +8 |
+| `0x964f30` | Object964::Object964 | Constructor (table `0xF7E4F4`): its argument at +4, 3 at +8, itself at +0x14 and 0 at +0x18 |
+| `0x7fa730` | PointerTable::Value44 | The value at +0x44 of entry n of the pointer table at +4, or 0 when that entry is empty |
+| `0x5d3d00` | ArrayDestroy | Calls the given function with 1 once for each of the n items of an array (the compiler's array delete loop) |
+| `0x581220` | SmallArray::SmallArray | Clears its flag, sets its capacity to 4 and gives it a 16-byte block |
+| `0x59ac60` | Interface54b::Get | The interface (id in `0x12F5544`) of the object its reference at +0x54 points to, looked up once (flag +0x68) |
+| `0x558f20` | Interface04b::Get | The same as `0x558F80`: the interface (id in `0x130BBEC`) of the object its reference at +4 points to, looked up once |
+| `0x4c5890` | Interface60::Get | The interface (id in `0x12F5300`) of the object its reference at +0x60 points to, looked up once (flag +0x74) |
+| `0x484c70` | Node::TotalScale | The node's own scale (+0xC4) times that of every parent up the chain (+0x3C) |
+| `0x4749d0` | SetTableF2CEB4 | Puts the table `0xF2CEB4` back (what is left of a destructor) |
+| `0x4535c0` | ListMember453::ListMember453 | Constructor (table `0xF296F8`) of a member of the global list at `0x10EC7E4`, joined first |
+| `0x4535f0` | ListMember453::~ListMember453 | Puts its table back and leaves that list (stopping the program if the list is found broken) |
