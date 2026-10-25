@@ -371,3 +371,8 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x52f4c0` | RideInstance::OpenDetails | Opens the ride's details window: a 748-byte window made by AttractionDetails::BuildRideTabs for this ride, then its slot 2 with the argument. Slot 2 of RideInstance and AnimatedRideInstance |
 | `0xa7b310` | ChangingRoomInstance::OpenDetails | Opens the changing room's details window: a 656-byte window made by AttractionDetails::BuildPoolTabs, then its slot 2 with the argument. Slot 2 of ChangingRoomInstance |
 | `0x4beea0` | AttractionInstance::OpenDetails | Opens an attraction's details window: a 400-byte window made by AttractionDetails::BuildTabs, then, unless the argument is -1, its slot 2 with it. Slot 2 of AttractionInstance and SpecialAttractionInstance |
+| `0x67a8a0` | Window::SetValueEC | Sets the window's value at +0xEC and calls its slot 57. Used by about 70 window builders |
+| `0x6a0040` | ListWindow::SetSelection | Changes the selected entry (+0x174): when it differs, tells every child the old selection is going (request table `0xF5E5D0`), stores the new one, then tells every child the new one (request table `0xF5E5C0`). Used by about 55 functions |
+| `0x6a0b20` | ListWindow::SetCount | Changes the number of entries (+0x170): `0x460F20` with it, the selection cleared (ListWindow::SetSelection -1) when it is no longer inside, then `0x6A0560` |
+| `0x6835a0` | WindowOwner::~WindowOwner | Puts its table back (`0xF270F4`), clears the window's back pointer (+0xDC) and deletes the window unless it is already being deleted (+0x264) |
+| `0x6af6c0` | WindowList::WindowList | Constructor of a window list (table `0xF60794`): an empty list (head at +4 / +0x10) and the value given at +0x1C |

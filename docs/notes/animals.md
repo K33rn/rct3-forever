@@ -66,3 +66,4 @@
 | `0xbaa100` | RegionFI::ReportBroken | Clears +0x14 and shows the enclosure maintenance message `EnclosureMaintenance_Broken` (through `0xBA9700`). Slot 28 of RegionFI |
 | `0xbaa180` | RegionFI::ReportStillBroken | Clears +0x14 and shows the message `EnclosureMaintenance_StillBroken`. Slot 29 of RegionFI |
 | `0xbaa200` | RegionFI::ReportFixed | Shows the message `EnclosureMaintenance_Fixed`. Slot 30 of RegionFI |
+| `0xb448b0` | WildAnimal::Species | The species data of a wild animal: the interface (id in `0x13D0168`) of the object its reference at +0x60 points to, looked up once (kept at +0x70, flag +0x74), plus 0x50 |

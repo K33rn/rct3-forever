@@ -274,3 +274,13 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbd02b0` | String::Append | Appends text to a shared text: in place when this is its only user (`0xBCFC30`), otherwise into a new copy (`0xBCFB80`) that this then holds. Used by about 90 functions |
 | `0xbd0810` | WideString::Substring | A new wide text holding the part of this one from the start position for the given length (kept within the text). Used by about 90 functions |
 | `0x403ce0` | WideString::FromCAndWide | A new wide text made of the C text given followed by the wide text given. Used by about 90 functions |
+| `0x444090` | GameTime::Get | The game clock (kept in `0x1106C54`): made when asked for (96 bytes, GameTime::GameTime) and activated; returns it. Used by about 80 functions |
+| `0x436770` | WaterManager::Get | The water manager (kept in `0x133A270`): made the first time (376 bytes, WaterManager::WaterManager) and activated; returns it. Used by about 75 functions |
+| `0xcd23d0` | String::FromNumber | A new shared text holding a whole number written in decimal (`%d`). Used by about 80 functions |
+| `0x403e10` | String::AssignC | Sets a shared text to a copy of C text (its length found, then `0xBD0CE0`); returns it. Used by about 75 functions |
+| `0xbd15a0` | TextRef::TextRef | Constructor of a reference to a text (table `0xFA14D0`): keeps the text table's entry (+0x24 of the table given), the name (its use count raised) and joins the entry's list of references. Used by about 65 functions |
+| `0x441030` | GameTimeListener::GameTimeListener | Constructor of an object (table `0xF28CC4`) that joins the list of listeners of the object `0x440FD0` gives (its list at +0x1C), first |
+| `0x440ed0` | GameTimeListener::~GameTimeListener | Puts its table back and leaves that list (stopping the program if the list is found broken) |
+| `0x48a400` | IdSet::IdSet | Constructor of a set of ids: clears its first value and sets its storage up with `0xCDED30` (256 slots, growing by 128) |
+| `0xbdf160` | LookupValue | The first value of the entry `0xBDD210` finds for the key, or 0 when there is none |
+| `0xce4770` | Flags::Set20Clear21 | Sets the byte at +0x20 and clears the one at +0x21 |
