@@ -818,3 +818,105 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xf257b0` | CallCC56D0 | Calls `0xcc56d0` |
 | `0xf257d0` | Call401020 | Calls `0x401020` |
 | `0xf257f0` | Call401020 | Calls `0x401020` |
+| `0x409db0` | DeleteGlobal 0x10ff9c8 | Destroys (`0x409980` (Destructor)) and frees the object the global `0x10ff9c8` points to, if any, and clears the global |
+| `0x409ec0` | DeleteGlobal 0x10ff9c4 | Destroys (`0x409ba0` (Destructor)) and frees the object the global `0x10ff9c4` points to, if any, and clears the global |
+| `0x40d980` | DeleteGlobal 0x10ffa14 | Destroys (`0x40c980` (Destructor)) and frees the object the global `0x10ffa14` points to, if any, and clears the global |
+| `0x42dde0` | DeleteGlobal 0x1103be0 | Destroys (`0x42d350` (Destructor)) and frees the object the global `0x1103be0` points to, if any, and clears the global |
+| `0x436b20` | DeleteMember2E4 | Deletes the object kept at +0x2e4 (its deleting destructor with 1), when there is one, and clears it |
+| `0x4371b0` | DeleteMember1B0 | Deletes the object kept at +0x1b0 (its deleting destructor with 1), when there is one, and clears it |
+| `0x47eb50` | DeleteGlobal 0x12f018c | Destroys (`0x47e4e0` (Destructor)) and frees the object the global `0x12f018c` points to, if any, and clears the global |
+| `0x4965e0` | DeleteGlobal 0x12f4694 | Destroys (`0x495e90` (Destructor)) and frees the object the global `0x12f4694` points to, if any, and clears the global |
+| `0x496b70` | DeleteGlobal 0x12f469c | Destroys (`0xc091b0`) and frees the object the global `0x12f469c` points to, if any, and clears the global |
+| `0x49abb0` | DeleteGlobal 0x12f46dc | Destroys (`0x49a980` (Destructor)) and frees the object the global `0x12f46dc` points to, if any, and clears the global |
+| `0x512480` | DeleteGlobal 0x12f50b4 | Destroys (`0x50cda0`) and frees the object the global `0x12f50b4` points to, if any, and clears the global |
+| `0x548f40` | DeleteMember70 | Deletes the object kept at +0x70 (its deleting destructor with 1), when there is one, and clears it |
+| `0x5490e0` | DeleteMember70 | Deletes the object kept at +0x70 (its deleting destructor with 1), when there is one, and clears it |
+| `0x5908f0` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0x620d90` | DeleteGlobal 0x12f57d0 | Destroys (`0x620bd0`) and frees the object the global `0x12f57d0` points to, if any, and clears the global |
+| `0x63a840` | DeleteMemberD8 | Deletes the object kept at +0xd8 (its deleting destructor with 1), when there is one, and clears it |
+| `0x6926e0` | DeleteGlobal 0x12f84c8 | Destroys (`0x6914a0` (Destructor)) and frees the object the global `0x12f84c8` points to, if any, and clears the global |
+| `0x6d6160` | DeleteMember58 | Deletes the object kept at +0x58 (its deleting destructor with 1), when there is one, and clears it |
+| `0x6f0ea0` | DeleteMemberA0 | Deletes the object kept at +0xa0 (its deleting destructor with 1), when there is one, and clears it |
+| `0x6f0ec0` | DeleteMemberA4 | Deletes the object kept at +0xa4 (its deleting destructor with 1), when there is one, and clears it |
+| `0x6fd3a0` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0x713740` | DeleteMember224 | Deletes the object kept at +0x224 (its deleting destructor with 1), when there is one, and clears it |
+| `0x7260e0` | DeleteGlobal 0x1306344 | Destroys (`0x725de0` (Destructor)) and frees the object the global `0x1306344` points to, if any, and clears the global |
+| `0x744f00` | DeleteGlobal 0x13064a4 | Destroys (`0x743f60` (Destructor)) and frees the object the global `0x13064a4` points to, if any, and clears the global |
+| `0x757b10` | DeleteGlobal 0x1306530 | Destroys (`0x7576d0` (Destructor)) and frees the object the global `0x1306530` points to, if any, and clears the global |
+| `0x79fb90` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0x7a96e0` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0x7fa7c0` | DeleteGlobal 0x130abd8 | Destroys (`0x7fa630` (Destructor)) and frees the object the global `0x130abd8` points to, if any, and clears the global |
+| `0x8245b0` | DeleteMember140 | Deletes the object kept at +0x140 (its deleting destructor with 1), when there is one, and clears it |
+| `0x82e340` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0x8545c0` | DeleteGlobal 0x130bbf8 | Destroys (`0x851a50` (Destructor)) and frees the object the global `0x130bbf8` points to, if any, and clears the global |
+| `0x85bce0` | DeleteGlobal 0x130bc98 | Destroys (`0x85abe0` (Destructor)) and frees the object the global `0x130bc98` points to, if any, and clears the global |
+| `0x884310` | DeleteGlobal 0x1310f74 | Destroys (`0x883020` (Destructor)) and frees the object the global `0x1310f74` points to, if any, and clears the global |
+| `0x8b09b0` | DeleteGlobal 0x1311230 | Destroys (`0x8b0400` (Destructor)) and frees the object the global `0x1311230` points to, if any, and clears the global |
+| `0x8b1a00` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0x8f9310` | DeleteGlobal 0x1339fb4 | Destroys (`0x8f8a00` (Destructor)) and frees the object the global `0x1339fb4` points to, if any, and clears the global |
+| `0x9655a0` | DeleteGlobal 0x133b4d4 | Destroys (`0x964fe0` (Destructor)) and frees the object the global `0x133b4d4` points to, if any, and clears the global |
+| `0x983700` | DeleteGlobal 0x13412dc | Destroys (`0x982dc0` (Destructor)) and frees the object the global `0x13412dc` points to, if any, and clears the global |
+| `0x9c6030` | DeleteGlobal 0x13414ec | Destroys (`0x9c5c90` (Destructor)) and frees the object the global `0x13414ec` points to, if any, and clears the global |
+| `0x9f55b0` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0xa1d5f0` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0xa1d810` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0xa1da30` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0xa84b50` | DeleteMember2C | Deletes the object kept at +0x2c (its deleting destructor with 1), when there is one, and clears it |
+| `0xa8db80` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0xb17b50` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0xbb7cf0` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0xbc0e50` | DeletingDestructorBC0C70 | Deleting destructor: runs `0xbc0c70` and, when bit 0 of the flag is set, frees the object (Memory::FreeCounted); returns it |
+| `0xbd6750` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xbd67f0` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xbd8060` | PointerArray::PushBD7580 | Appends a value to an array (making room with `0xbd7580`) |
+| `0xbd8080` | PointerArray::PushBD75E0 | Appends a value to an array (making room with `0xbd75e0`) |
+| `0xc0a840` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0a8b0` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0a970` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0aa30` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0aab0` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0aaf0` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0ab30` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0ab70` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0abb0` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0abf0` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0ac30` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0ac70` | Parser::FreeIfAny | Gives the block back to the parser (Parser::Free) when there is one |
+| `0xc0dd30` | ListNode::UnlinkCheckedC0DD70 | When the node is properly linked (its neighbours point back at it), runs `0xc0dd70` and clears its links |
+| `0xc0de70` | ListNode::UnlinkCheckedC0DEB0 | When the node is properly linked (its neighbours point back at it), runs `0xc0deb0` and clears its links |
+| `0xc0df90` | ListNode::UnlinkCheckedC0DFD0 | When the node is properly linked (its neighbours point back at it), runs `0xc0dfd0` and clears its links |
+| `0xc0e340` | ListNode::UnlinkCheckedC0E380 | When the node is properly linked (its neighbours point back at it), runs `0xc0e380` and clears its links |
+| `0xc0e650` | ListNode::UnlinkCheckedC0E690 | When the node is properly linked (its neighbours point back at it), runs `0xc0e690` and clears its links |
+| `0xc0e9a0` | ListNode::UnlinkCheckedC0E9E0 | When the node is properly linked (its neighbours point back at it), runs `0xc0e9e0` and clears its links |
+| `0xc0ed70` | ListNode::UnlinkCheckedC0EDB0 | When the node is properly linked (its neighbours point back at it), runs `0xc0edb0` and clears its links |
+| `0xc0f090` | ListNode::UnlinkCheckedC0F0D0 | When the node is properly linked (its neighbours point back at it), runs `0xc0f0d0` and clears its links |
+| `0xc0f350` | ListNode::UnlinkCheckedC0F390 | When the node is properly linked (its neighbours point back at it), runs `0xc0f390` and clears its links |
+| `0xc0f550` | ListNode::UnlinkCheckedC0F590 | When the node is properly linked (its neighbours point back at it), runs `0xc0f590` and clears its links |
+| `0xc0f720` | ListNode::UnlinkCheckedC0F760 | When the node is properly linked (its neighbours point back at it), runs `0xc0f760` and clears its links |
+| `0xc1ad10` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xc1b040` | PointerArray::PushC1AF80 | Appends a value to an array (making room with `0xc1af80`) |
+| `0xc32ee0` | List::Count | The number of nodes in a linked list (counting until the sentinel) |
+| `0xc47d30` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xc47dd0` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xc47e70` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xc47f10` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xc47fb0` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xc48050` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xc4cd20` | PointerArray::PushC48BD0 | Appends a value to an array (making room with `0xc48bd0`) |
+| `0xc4cd40` | PointerArray::PushC48C30 | Appends a value to an array (making room with `0xc48c30`) |
+| `0xc4cd60` | PointerArray::PushC48C90 | Appends a value to an array (making room with `0xc48c90`) |
+| `0xc4cd80` | PointerArray::PushC48CF0 | Appends a value to an array (making room with `0xc48cf0`) |
+| `0xc4cda0` | PointerArray::PushC48D50 | Appends a value to an array (making room with `0xc48d50`) |
+| `0xc4cdc0` | PointerArray::PushC48DB0 | Appends a value to an array (making room with `0xc48db0`) |
+| `0xc96da0` | DeletingDestructorC964D0 | Deleting destructor: runs `0xc964d0` and, when bit 0 of the flag is set, frees the object (Memory::FreeCounted); returns it |
+| `0xc9bcc0` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xc9d0d0` | PointerArray::PushC9BF70 | Appends a value to an array (making room with `0xc9bf70`) |
+| `0xcb23d0` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xcb2470` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xcb2b00` | PointerArray::PushCB28E0 | Appends a value to an array (making room with `0xcb28e0`) |
+| `0xcb2b20` | PointerArray::PushCB2940 | Appends a value to an array (making room with `0xcb2940`) |
+| `0xcbc5a0` | PointerArray::Resize | Resizes an array of 4-byte values ({count, capacity, ..., data}) to the capacity given, copying over those that fit |
+| `0xcbd490` | PointerArray::PushCBCE60 | Appends a value to an array (making room with `0xcbce60`) |
+| `0xce92a0` | DeleteGlobal 0x1400b70 | Destroys (`0xce8a10` (Destructor)) and frees the object the global `0x1400b70` points to, if any, and clears the global |
+| `0xcee290` | DeleteGlobal 0x1408b80 | Destroys (`0xced240` (Destructor)) and frees the object the global `0x1408b80` points to, if any, and clears the global |
+| `0xcefda0` | DeleteGlobal 0x141ab2c | Destroys (`0xcef7e0` (Destructor)) and frees the object the global `0x141ab2c` points to, if any, and clears the global |

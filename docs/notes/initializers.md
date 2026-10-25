@@ -900,3 +900,29 @@ and leaves it with `0x46F990`). See the script for how they are recognised.
 | `0xbce1a0` | ModuleList::Start | Starts the module list at `0x10F2B88` (`0xBCDE60`: its initialisers in turn) for a start-up global, filling in the result passed in and returning it. Used by 742 of the start-up module globals |
 | `0x805ab0` | ModuleList::Start2 | The same for the module list at `0x10F06F0`. Used by the other 128 start-up module globals |
 | `0xbcde60` | ModuleList::Run | Starts a module list once (its start count at +0 is raised; later starts just give success): runs its initialisers in order (pairs of start-up and shut-down functions, from +4); when one fails (an error other than -1) runs the shut-down of each one already started, in reverse, and gives that error; otherwise -1. The result (a table `0xF270D4` and the error) is what the start-up globals check (`0xBCDF40`); `0x13D0D3C` counts starts under way |
+| `0xeaaad0` | Register behaviour PassportPost | At start-up registers the scenery behaviour `PassportPost` with its factory `0x46dfa0` (PassportPostBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xed5d80` | Register behaviour ParkEntrance | At start-up registers the scenery behaviour `ParkEntrance` with its factory `0x708ec0` (ParkEntranceBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xed7bc0` | Register behaviour GuestInjectionPoint | At start-up registers the scenery behaviour `GuestInjectionPoint` with its factory `0x786e10` (GuestInjectionPoint::Create) (`0x833F90`), the registration undone at exit |
+| `0xedc420` | Register behaviour LitterBin | At start-up registers the scenery behaviour `LitterBin` with its factory `0x819d80` (LitterBinBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xedc620` | Register behaviour LoudSpeaker | At start-up registers the scenery behaviour `LoudSpeaker` with its factory `0x81b7c0` (LoudSpeakerBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xedc800` | Register behaviour ParkBench | At start-up registers the scenery behaviour `ParkBench` with its factory `0x81e3b0` (ParkBenchBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xedca50` | Register behaviour PathFountain | At start-up registers the scenery behaviour `PathFountain` with its factory `0x824010` (PathFountainBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xedcc20` | Register behaviour QueueLineEntertainer | At start-up registers the scenery behaviour `QueueLineEntertainer` with its factory `0x8243e0` (QueueLineEntertainerBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xedce10` | Register behaviour RideEvent | At start-up registers the scenery behaviour `RideEvent` with its factory `0x825250` (RideEventBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xeded00` | Register behaviour Sign | At start-up registers the scenery behaviour `Sign` with its factory `0x88c6c0` (SignBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xedefb0` | Register behaviour VistaPoint | At start-up registers the scenery behaviour `VistaPoint` with its factory `0x8b40e0` (VistaPointBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xedf1b0` | Register behaviour Waterable | At start-up registers the scenery behaviour `Waterable` with its factory `0x8b4aa0` (WaterableBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xedf3b0` | Register behaviour WaterCannon | At start-up registers the scenery behaviour `WaterCannon` with its factory `0x8bb210` (WaterCannonBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xeeaa00` | Register behaviour LifeguardChair | At start-up registers the scenery behaviour `LifeguardChair` with its factory `0xa87c40` (LifeguardChairBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xeeb0e0` | Register behaviour PoolExtra | At start-up registers the scenery behaviour `PoolExtra` with its factory `0xa99b00` (PoolExtraBehaviour::Create) (`0x833F90`), the registration undone at exit |
+| `0xf042f0` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf04350` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf04380` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf043d0` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf04400` | Static start-up CC26D0 | At start-up runs `0xcc26d0` (FlexiTextureType::FlexiTextureType) and registers its clean-up with atexit |
+| `0xf04430` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf04460` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf044f0` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf137c0` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf137f0` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
+| `0xf13850` | Static start-up 401000 | At start-up runs `0x401000` and registers its clean-up with atexit |
