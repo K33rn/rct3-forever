@@ -68,13 +68,17 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x754fd0` | Entertainer::ScaleSlot55 | Sets +0x118 to +0x114 times the entertainer type's factor for the current costume (`0xFC4288` by +0xB8, from `0x7578C0`), or times 1 when the type has no such entry. Slot 55 of Entertainer |
 | `0x756ab0` | Entertainer::UpdateTimer | Runs the entertainer's update for the frame (`0x756790` in state 0xD, otherwise `0x7EEC00`), then counts its timer (+0x500) down by the frame time. Slot 39 of Entertainer |
 | `0x797230` | Handyman::SetSpeedFactor | Sets the handyman's factor at +0x114 by his level (+0x414): 1.0 at level 1, 1.1 at 2, 1.2 at 3, 0.9 otherwise; then `0x7D63E0` with the argument and more for a handyman with a task (+0x51C). Slot 40 of Handyman |
-| `0x799750` | LifeGuard::Slot37 | In state 0xD: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of LifeGuard |
+| `0x799750` | LifeGuard::Slot37 | In state 0xD: back to state 0 (Person::SetState 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of LifeGuard |
 | `0x7a0e50` | Mechanic::Slot37 | In states 0xE, 0xF or 0x14: `0x7A0000` and clears +0x1A4, returning 1; otherwise `0x7ECD90`. Slot 37 of Mechanic |
 | `0x7eec00` | Staff::UpdateState | In state 0xC runs `0x7EC8F0`; in any other state Person::UpdateState. Shared by the staff classes (slots 39, 40, 47) |
-| `0x7e8fc0` | SecurityGuard::Slot37 | In state 0xD: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of SecurityGuard |
+| `0x7e8fc0` | SecurityGuard::Slot37 | In state 0xD: back to state 0 (Person::SetState 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of SecurityGuard |
 | `0x7418a0` | AnimalKeeper::SetSpeedFactor | Sets the keeper's factor at +0x114 by his level (+0x414): 1.1 at level 1, 1.2 at 2, 1.3 at 3, 1.0 otherwise; then, in state 0xD, more work (`0x73EE90`, ...). Slot 39 of AnimalKeeper |
 | `0x756b00` | Entertainer::StateName | The name of the entertainer's state: in state 0xD the text kept in `0x12FB234`, otherwise Person::StateName. Slot 36 of Entertainer |
 | `0x799ff0` | LifeGuard::StateName | The name of the lifeguard's state: in state 0xD the text kept in `0x12F8FC0`, otherwise Person::StateName. Slot 36 of LifeGuard |
 | `0x7f8ef0` | VIP::StateName | The name of the VIP's state: in state 0x16 the text kept in `0x12F98B8`, otherwise Guest::StateName. Slot 36 of VIP |
-| `0x7f8810` | VIP::Slot37 | In state 0x16: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x761440`. Slot 37 of VIP |
+| `0x7f8810` | VIP::Slot37 | In state 0x16: back to state 0 (Person::SetState 0, 0), clearing +0x1A4, and returns 1; otherwise `0x761440`. Slot 37 of VIP |
 | `0x7a0e90` | Mechanic::SetSpeedFactor | Sets the mechanic's factor at +0x114 by his level (+0x414): 1.0 at level 1, 1.1 at 2, 1.2 at 3, 0.9 otherwise; then `0x7D63E0` with the argument and more. Slot 40 of Mechanic |
+| `0x7cd220` | Person::SetState | Sets a person's state (+0x190) and sub-state (+0x194); while the person's debug text is on (+0x29E) it also keeps the state's text (+0x2A0, made by `0x7C9C60`) up to date, refreshing the debug display (`0x6206F0`) when it changes |
+| `0x7ecd90` | Staff::ReturnToIdle | Slot 37 of the staff classes: in state 0xC, when the staff member has a task object (+0x1C0) and a sub-state above 1, releases each of the task's references (`0x75A550`, through its interface `0x130B4D0`); then back to state 0 (Person::SetState 0, 0) with +0x1A4 cleared, returning 1. In other states Person's own slot 37 (`0x7CF960`) |
+| `0x75a550` | Guest::ReleaseReference | Makes reference n of the table at +0x64 (96 bytes each, from +0x40) refer to nothing: takes it out of its handle's list, releases the handle (`0x8055C0`) and joins the null handle's list, then notifies it |
+| `0x7c9c60` | Person::DebugStateText | Builds the text shown for a person's state on the debug display: its state name (slot 36) with the state and sub-state numbers between separators |
