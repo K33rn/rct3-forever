@@ -118,3 +118,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7b1ba0` | Guest::Pickup7B1BA0 | In outline: picks up a guest with the hand tool (Pincer::Load) when nothing is held (+0x130), unless it is already the one held or flagged (+0x176, +0x148) |
 | `0x73fa60` | Staff::Update73FA60 | In outline: a staff member's update: its work (Staff::UpdateWork73CC10) first, then for stage 6 its next task (`0x73E6B0`) |
 | `0x782d10` | GuestGroup::Spawn782D10 | In outline: makes new guests for a group now and then (Random::Ran0, when +0x1A1 is set): places them (Guest::Place777990 with 4000) and adds them (`0x7778E0`, `0x77B750`) |
+| `0x7c9f50` | Person::FindTask7C9F50 | In outline: goes over the tasks of a list (+0xD0) and picks one for the person (`0xA89450`, `0x49C4A0`) |

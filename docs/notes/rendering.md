@@ -366,3 +366,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x999310` | FireworkLauncher::Fire999310 | In outline: fires from a firework launcher: finds its free slots (FireworkLauncher::FindSlots_(2)), aims the shot (`0x445270`, `0x445D40`) along its direction and launches it (`0xC21230`) |
 | `0x858e50` | SceneryRenderer::DrawList858E50 | In outline: another scenery draw list like SceneryRenderer::DrawList857340, over the parts at +0xC0 |
 | `0xbd82a0` | Text::LayoutBD82A0 | In outline: lays out a text with its markup: when on (Flags::Bit0), goes over its characters and splits out the parts in braces (`{`, WideString::Substring) to handle them (`0xBD77C0`) |
+| `0x89e620` | SceneryRenderer::Pass89E620 | In outline: a scenery drawing pass over a set's lists (kind 2 entries, flag bit 3): sets up (`0x87B480`, `0x853AE0`) and draws each group (`0x855A20`, `0x8536C0`, `0x89C9D0`) |
+| `0x857be0` | SceneryRenderer::DrawRange857BE0 | In outline: draws a range of scenery parts (under 0x3FFF) for the current device (ForCurrent(3)) |
+| `0xc947f0` | Renderer::CopyStateC947F0 | In outline: copies a renderer's state from another, value by value |
+| `0x98ed30` | Effect::Update98ED30 | In outline: an effect's update when not flagged (+0x54, +0x211): finds its target (`0x98AEC0`) and starts it (`0x98E9A0`) |

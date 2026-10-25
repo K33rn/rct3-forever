@@ -91,3 +91,4 @@
 | `0xb619b0` | WildAnimal::PathClear | In outline: whether the way between two points is clear for an animal: finds their cells (Grid::CellAt), measures the way and runs the cell-by-cell check (`0x494960`) |
 | `0xb21400` | WildAnimal::UpdateB21400 | In outline: an animal's update when active (+0xE0): its movement values (`0xB355F0`, `0xB35670`) when it has not stopped (+0x94, +0xB0) |
 | `0xb31c90` | Animal::Inspect | In outline: checks an animal for the inspector: its enclosure (EnclosureManager::Get, `0xB9AAE0`, `0xB91550`) and the park inspector manager |
+| `0xad9a00` | Animal::ReleaseAD9A00 | In outline: releases an animal's parts and links when not flagged (+0x74): its parts at +0x70, +0x8C, +0xA8 and others |

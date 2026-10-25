@@ -333,3 +333,10 @@
 | `0xbb0d30` | Shop::ServeBB0D30 | In outline: serves at a shop when not flagged (+0x1C8) and at least two are given: checks the slot (+0x1C4, +0x1E4) and the queue (+0x1D8) and starts the sale (`0x4AD740`) |
 | `0x702400` | Tool::Area702400 | In outline: finds the ground under the mouse (MainCamera::Get, `0xCD79C0`, `0x8C5360`) and the rectangle of cells it covers (`0x702110`) for an area tool |
 | `0x7227f0` | Path::FindLink7227F0 | In outline: goes over a path's points (Path::Points) and finds the one that links up with the kind given, by case (`0x71EA30`, `0x71EAE0`) |
+| `0x94a5f0` | Water::FillRect94A5F0 | In outline: goes over a rectangle of water cells (within +0x18 by +0x19) and, where the surface is above the terrain, sets the cell's body (`0x947680`) |
+| `0x668de0` | Park::List668DE0 | In outline: builds a list of the park's things (`0x49B930`, `0x665E90`, `0x49B050`) with their names |
+| `0x5c83a0` | TrackedRide::Check5C83A0 | In outline: checks the selected tool's ride piece (`0x12F5638`, `0x5D4950`) on its tile (OffsetRef::Owner2, kinds below 3) and its parts (+0xE4, +0x16C) (`0x5C6E30`) |
+| `0x597030` | Ride::Update597030 | In outline: a ride's update: goes over its parts (+0x1CC) updating each (`0x9817B0`) and refreshes the ones linked to it |
+| `0xa0cbd0` | Weather::UpdateA0CBD0 | In outline: a timed weather or event update inside a critical section (skipped when `0x10EDAD8` is set): counts down, picks at random (Random::Ran0, `0x4751E0`) by the date (GameTime::Get) |
+| `0xafa7c0` | TerrainLayers::BuildAFA7C0 | In outline: when needed (+0x1078), builds the terrain layer grid: its size from the terrain's size and cell size, rounded, and its cells (0x2C bytes each) |
+| `0x565030` | Path::Queue565030 | In outline: goes over a queue's path pieces (+0xC0, count +0xC4) with their neighbours and checks the ones of kind 5 (+0x164) against a length |

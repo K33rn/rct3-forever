@@ -193,3 +193,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5c4eb0` | TrackedRide::HitTest5C4EB0 | In outline: whether a ray hits a ride's part (`0xBC7940`) when it is shown (`0x5C1590`, not flag 0x10000), turning the test half a turn (Matrix::TurnAboutZ by pi) for parts flagged 0x10 |
 | `0x5c4740` | TrackedRide::Select5C4740 | In outline: selects or highlights a ride's part at a cell (for rides of kind 3 or flag 0x40 only, otherwise `0x5C2590`), by its flags (+0x190, +0x18C) |
 | `0x932160` | TrackedRide::WaterSplash932160 | In outline: for a water ride's track (TrackedRide::TrackInterface) on a tile of kind 2 or more (OffsetRef::Owner2), works out the splash from the car's height and speed with the water flow manager (WaterFlowManager::Get) |
+| `0x5094b0` | Car::Attach5094B0 | In outline: attaches a ride car to its place on the track (+0xDC, Table310::Entry, kinds 2 and 3), pointing it the right way (Matrix::LookAlongZSide) |

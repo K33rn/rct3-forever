@@ -629,3 +629,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa31430` | Label::FormatValueA31430 | In outline: makes a value's text by its kind (+0x54: 1, ...): the number scaled by its unit (+0x58 +0x10, `0xCD2520`, `0x442120`) |
 | `0xa236b0` | Window::BuildA236B0 | In outline: builds a window like Window::BuildA23FD0 from the shared title `0x1342724` |
 | `0x9b6980` | ListWindow::Fill9B6980 | In outline: fills a list window with up to 8 rows (ListWindow::SetCount), each with its text, and lays them out (Window::UpdateRect) |
+| `0x48ee80` | Marker::Update48EE80 | In outline: an on-screen marker's update by its state (+0xC): places it on the GUI root (Window::SetRelationAndLayout with `0x12F83F0`) over its target (`0x48EBC0`) |
+| `0x9ba570` | Window::Build9BA570 | In outline: builds a window from the shared title `0x134145C` with a part of style 0x5010 (`0x6A8D00`) |
+| `0xa41c40` | ScenarioList::FillA41C40 | In outline: fills a list with the scenarios (+0x244): each row numbered `%02d` in place of `%NUMBER%` in its text, and its title (Scenario::TitleText) |
+| `0x837060` | Window::Build837060 | In outline: builds a window from the shared title `0x130B624` (`0x67BE80` with 4) and a list (Listener440) |
