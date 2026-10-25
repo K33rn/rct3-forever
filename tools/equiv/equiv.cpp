@@ -299,6 +299,28 @@ static void *__fastcall stub_class_of(void *self) {
 }
 static uintptr_t g_query_id;   // the global holding the id the copy being checked asks for
 
+// start-up globals: the module list's start-up (fills {table, error} from the arena), the global's constructor
+// 0xBCDF40 (takes that pair by value) and the game's atexit
+struct StartResult {
+    uint32_t table;
+    int32_t error;
+};
+static StartResult *__fastcall stub_module_start(StartResult *out) {
+    record(0x20, nullptr);
+    out->table = arena<uint32_t>(0x10)[0];
+    out->error = arena<int32_t>(0x10)[1];
+    return out;
+}
+static void __fastcall stub_global_from_start(void *global, void *, StartResult r) {
+    record(0x21, global);
+    record(0x21, (void *)(uintptr_t)r.table);
+    record(0x21, (void *)(uintptr_t)r.error);
+}
+static int __cdecl stub_atexit(void *fn) {
+    record(0x22, fn);
+    return 0;
+}
+
 static void install_stubs() {
     stub(0xbce000, (void *)stub_free);
     stub(0xbce010, (void *)stub_free_aligned);
@@ -309,6 +331,8 @@ static void install_stubs() {
     stub(0x808840, (void *)stub_resolve_id);
     stub(0x805650, (void *)stub_handle_for);
     stub(0xbe4060, (void *)stub_writer_write);
+    stub(0xbcdf40, (void *)stub_global_from_start);
+    stub(0xddc870, (void *)stub_atexit);
 }
 
 // ---- the tests ----------------------------------------------------------------------------------------------
@@ -650,9 +674,26 @@ static std::vector<Test> tests() {
                }};
     query.prepare = [](const rewrite::Entry *e) { g_query_id = *(uint32_t *)(e->at + 0x12); };
 
+    // start-up globals: the copy's module start-up is stood in for while it is checked (sub esp, 8; mov ecx, esp;
+    // call start); its result's error is sometimes -1 (no error)
+    Test module{0xea85e0,
+                [=](Rng &r) {
+                    fresh(r);
+                    arena<uint32_t>(0x10)[0] = r.next();
+                    arena<int32_t>(0x10)[1] = r.next() % 2 ? -1 : r.range(0, 100);
+                },
+                [](void *fn) {
+                    ((void(__cdecl *)())fn)();
+                    return Result{};
+                }};
+    module.prepare = [](const rewrite::Entry *e) {
+        stub_for_now(e->at + 10 + *(int32_t *)(e->at + 6), (void *)stub_module_start);
+    };
+    module.finish = [](const rewrite::Entry *) { unstub(); };
+
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
-                    &deleting, &query}) {
-        x->iterations = (x == &deleting || x == &query) ? 4 : 20;   // thousands of copies: fewer cases each
+                    &deleting, &query, &module}) {
+        x->iterations = (x == &deleting || x == &query || x == &module) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);
     }

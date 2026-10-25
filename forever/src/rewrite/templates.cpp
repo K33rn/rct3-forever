@@ -46,6 +46,28 @@ template <uint32_t ID> static void *__fastcall query(void *object) {
     return (uint8_t *)object + e->offset;
 }
 
+// ---- module globals ---------------------------------------------------------------------------------------------
+// A global object built before main from the start-up of a list of modules: `start` (0xBCE1A0, 0x805AB0, ...)
+// runs the list's initialisers in turn (undoing them if one fails) and gives {table, error}; the global's
+// constructor (0xBCDF40) throws that error unless it is -1; the global's destructor is registered with atexit.
+
+struct StartResult {
+    void *table;
+    int32_t error;
+};
+
+static volatile long g_module_globals;
+static int(__cdecl *const game_atexit)(void(__cdecl *)()) = (int(__cdecl *)(void(__cdecl *)()))0xddc870;
+typedef void(__fastcall *GlobalFromStart)(void *global, void *, StartResult result);   // 0xBCDF40: ret 8
+
+template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl module_global() {
+    g_module_globals++;
+    StartResult r;
+    ((void(__fastcall *)(StartResult *))START)(&r);
+    ((GlobalFromStart)0xbcdf40)((void *)GLOBAL, nullptr, r);
+    game_atexit((void(__cdecl *)())DTOR);
+}
+
 #define DELETING(at, dtor, freefn, ...)                                                                          \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("DeletingDestructor", at, REWRITE_CAT(original_, at), 8,     \
@@ -54,4 +76,5 @@ template <uint32_t ID> static void *__fastcall query(void *object) {
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
                                                   (void *)&query<id>, &g_queries);
+#define MODULE(at, start, global, dtor, ...)                                                                         static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("ModuleGlobal", at, REWRITE_CAT(original_, at), 8,                                                             (void *)&module_global<start, global, dtor>, &g_module_globals);
 #include "generated.inc"
