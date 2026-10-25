@@ -398,3 +398,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6a2b80` | Window::SetPairE4 | Sets +0xE4 and +0xE8 and clears flag 0x1000000 of +0x94 |
 | `0x6a3120` | Window::Set10C | Sets +0x10C and clears flag 0x1000000 of +0x94 |
 | `0x67bb20` | Window::ShowContent | Sets the content (`0x4D7E70`), then updates the window (`0x6AFC20`) when there is content, otherwise `0x6B0990` |
+| `0x63a8e0` | Window::Reattach | `0x6B0990`, the window updated (`0x6AFC20`), then Window::SetRelationAndLayout with 0, +0xF4 and the position (+0x7C) of the window at +0xE0 |

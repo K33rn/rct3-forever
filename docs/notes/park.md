@@ -131,3 +131,5 @@
 | `0x43ffb0` | KeyState::Held | Whether the key (its code minus 0x1A as a bit) is set in either of two bit masks of the table at +0x84 (entries +0x70 and +0x74) |
 | `0x560f80` | Interface48b::Get | The interface (id in `0x12F5544`) of the object its reference at +0x48 points to, looked up once (flag +0x5C) |
 | `0xbc78f0` | Span::Middle | The middle of the values at +0xC of the objects at +0x20 and +0x24 (their sum halved) |
+| `0x85cae0` | Terrain::HeightLevel | The terrain height level for a height: the height times the scale in `0x1310E78`, rounded up to a whole number |
+| `0x72f060` | Path::Points | Gives a path's points and their count: with its flag (+6) set, from the first point and one more than its count (+0xA); otherwise from the second |

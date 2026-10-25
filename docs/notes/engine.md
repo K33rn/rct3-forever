@@ -317,3 +317,13 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc1a8c0` | Timer::Milliseconds | The time in milliseconds from the high-resolution counter (QueryPerformanceCounter times 1000, divided by the counter's frequency kept at `0x13E47C0`) |
 | `0xbcfa40` | String::FromCN | Makes a shared text from n characters of C text: use count 1, length n, a capacity rounded up to 16 bytes, an aligned block holding the copy |
 | `0xbce020` | Memory::AllocCounted | Allocates a 16-byte-aligned block, counting it among the live blocks (`0x13D0D48`) |
+| `0xbe8400` | SortedTree::LastValue | Follows the tree's +0x10 links from its root (+4) down to the last node holding data and returns that node's value (+0xC); 0 for an empty tree |
+| `0xbb5130` | OffsetRef::Owner4 | When the first value is not -1, this - 0x18; otherwise the object at +0x14 |
+| `0x8fb150` | PooledObject::PooledObject | Constructor (table `0xF7CF54`) that puts the object in the slot pool (SlotPool::Add) and keeps its slot at +4 |
+| `0x8fb110` | PooledObject::~PooledObject | Puts its table back and empties its slot in the pool (SlotPool::Remove) |
+| `0x7fade0` | ListMember7F::ListMember7F | Constructor (table `0xF75138`) of a member of the given object's list (its +0x14, joined first), keeping the object (+0x10) and the value given (+0x14) |
+| `0x7e5100` | Buffer::Free | Frees the block this points to (aligned free) |
+| `0x7e5110` | Buffer16::Reserve | Makes room for n 16-byte entries when its capacity (a 16-bit count at +4) is smaller: the old block freed and a new one allocated |
+| `0xc374c0` | Static::EnsureC374C0 | Sets up a static object once (`0xC365A0`, freed at exit) and returns it |
+| `0x48caf0` | Call44CC40And489A10 | `0x44CC40` then `0x489A10`, both with the same three arguments |
+| `0xcdb780` | Scroller::Reset | Sets both of its value triples to (0.1, 100, 0) |
