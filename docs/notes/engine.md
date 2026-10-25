@@ -338,3 +338,11 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x808700` | IdMap::IdMap | Constructor of an id map: two empty arrays and a growth step of 32 |
 | `0x7e50e0` | Buffer16::Buffer16 | Clears a buffer header: no block, and its three 16-bit counts 0 |
 | `0x67a3b0` | Window::Slot48Self | Calls the window's slot 48 with its value at +0xE0 and itself |
+| `0x475230` | Random::Ran0Range | A random number between two values (Random::Ran0): the first when the second is not larger, otherwise first + (second - first) x Ran0 |
+| `0xbf4680` | Memory::FreePlain | Frees a block with the runtime's free |
+| `0xc69eb0` | Object69E::Object69E | Constructor built on `0xC69910` (with three of its arguments) that sets its table `0xFB82A8` and keeps the fourth argument at +0xD0 |
+| `0x558f80` | Interface04::Get | The interface (id in `0x130BBEC`) of the object its reference at +4 points to, looked up once (flag +0x18) |
+| `0x7a66b0` | Interface44::Get | The interface (id in `0x1306C7C`) of the object its reference at +0x44 points to, or null |
+| `0xb44970` | Interface44b::Get | The interface (id in `0x13CE94C`) of the object its reference at +0x44 points to, looked up once (flag +0x58) |
+| `0x772b50` | Interface50::Get | When +0x48 is set, the guest interface (id in `0x130654C`) of the object its reference at +0x50 points to; otherwise null |
+| `0x510d90` | Table310::Entry | Entry n of the table at +0x310 (28 bytes each): the interface (id in `0x12F515C`) of the object it refers to, looked up once per entry |

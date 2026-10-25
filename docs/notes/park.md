@@ -137,3 +137,4 @@
 | `0x8275d0` | Footprint::RotateCell | Turns cell coordinates within a footprint by its orientation (0-3, a quarter turn each), using the footprint's size (+0x10 of the one given) |
 | `0x494920` | Terrain::CellFlag12 | The terrain cell's byte at +0x12 shifted down one bit, for the cell at the given column and row of the grid (24 bytes each) |
 | `0x4948d0` | EnclosureManager::CellAt | The first value of the enclosure manager's grid cell at the given column and row (24 bytes each, at +0x6C, its width +0x64 and height +0x68), or -1 outside the grid |
+| `0xaa3240` | PoolPiece::SideData | The part of a pool piece's data for one side: side bit 1 gives +0x30, 2 gives +0x48, 4 gives +0x3C, 8 gives +0x54; anything else, or a piece whose first byte is 0, gives +0x60 |
