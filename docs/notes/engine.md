@@ -177,3 +177,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x5d4870` | TrackedRide::Interface2 | The same as `0x59ACC0` with the interface id `0x12F54E0` |
 | `0xbce000` | Memory::Free | Frees a block from the game's allocator (`0xBCDFC0`): jumps to the C runtime's `free`. Called from thousands of places, most of all destructors |
 | `0x805700` | Handle::For | Returns the handle of a given object, with one more reference: looks it up by the object's id (+0x20, +0x24) through `0x805650` (or the null handle for no object). Used by the reference constructors |
+| `0xc41460` | OverlayFile::ReadDebugData | Reads a resource overlay's debug data: its version (1 to 5, else `Unable to locate debug data - file version is not 1, 2, 3, 4 or 5`) and byte order (a flag byte; values are byte-swapped when it is set), then steps over its sections by their sizes. Called from `0xC42C30` and `0xC430F0` |
