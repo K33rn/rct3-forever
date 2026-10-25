@@ -81,7 +81,7 @@
 | `0xb201a0` | WildAnimal::Move | In outline: an animal's movement step: works out its speed and turn (`0xB355F0`, `0xB35670`, `0xB355B0`), its new position and checks that it stays on the terrain and inside its area |
 | `0xb76970` | Enclosure::ScoreCell | In outline: a score for a terrain cell for an animal: checks its height range, flags and enclosure (Terrain::CellHeightRange, Terrain::CellFlag12, EnclosureManager::CellAt), and its neighbours the same way |
 | `0xb19e20` | WildAnimal::Steer | In outline: an animal's steering step: when it has a target, measures the way to it and its speed (+0x144), avoids what is ahead (`0xB66290`) and checks the terrain cell it is heading into (Grid::CellAt) |
-| `0xadb3a0` | Animal::UpdateAdb3a0 | In outline: an animal's timed update (when +0x70 is set): works out a chance (`0xAD88E0`), sometimes shows a message (`0x6BCE00` with 0x12) and makes an effect object (Object7FC84) |
+| `0xadb3a0` | Animal::UpdateAdb3a0 | In outline: an animal's timed update (when +0x70 is set): works out a chance (`0xAD88E0`), sometimes checks a cost (Money::CheckCost with 0x12) and makes an effect object (Object7FC84) |
 | `0xb651d0` | WildAnimal::CheckMove | In outline: whether an animal can move from one point to another: finds the terrain cells of the start, middle and end (Grid::CellAt), checks they are in its enclosure (EnclosureManager::Get) and runs the path check (`0xB619B0`) |
 | `0xb36ea0` | WildAnimal::DebugDrawB36EA0 | In outline: draws lines around a wild animal (WildAnimal::Interface60Raw) with the shared line drawer (Registry::Ensure, `0x481620`, six lines) for the developers |
 | `0xb2c680` | Animal::CheckEnclosure | In outline: when flagged (+0x150), checks which enclosure an animal is in (EnclosureManager::Get, `0xB9AAE0`) against the one it belongs to and acts by its state (+0x7C) |
@@ -123,3 +123,7 @@
 | `0xad95a0` | Animal::CopyAD95A0 | In outline: makes a managed copy of an animal (ManagedObject with `0x13CE51C`) from another when it is not flagged (+0x74), with its parts (`0x9D8210`) |
 | `0xb8c290` | Animal::PickSpotB8C290 | In outline: picks a random free spot (`0x4751E0`) from a list (0x1C bytes each at +0x48) |
 | `0xb42410` | WildAnimal::DrawB42410 | In outline: draws an animal turned by its angle (Matrix::TurnColumnsAboutY) with its blob shadow (Shadows::BlobSetup) |
+| `0xb4c660` | Animal::UpdateB4C660 | In outline: unless off (Flags::Bit0), an animal's update for its parts |
+| `0xa11f70` | Duck::MakeFlock | In outline: makes n ducks (Duck::Duck), activates them and spreads them at random (Random::Ran0) |
+| `0xb23050` | WildAnimal::UpdateB23050 | In outline: an animal's update when not flagged (+0xED, +0x94): with its owner (Interface48::Get) checks (`0xB35710`) |
+| `0xa16740` | Duck::Swim | In outline: a duck's update on the water (WaterManager::Get, `0x941D00`): swims (`0xA151F0`) or does something else (`0xA15EA0`) |

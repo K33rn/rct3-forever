@@ -691,3 +691,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x99e8e0` | Fireworks::List99E8E0 | In outline: lays out the firework display list from its parts (Get_+0x108, Table104::Entry) |
 | `0x9b5eb0` | Dial::Layout9B5EB0 | In outline: another dial layout like Dial::Layout9B4BC0, up to the dial's count (+0x140) |
 | `0x9da640` | Text::Join9DA640 | In outline: joins texts (`0x9DA5E0`) into one |
+| `0x9db4c0` | Window::Layout9DB4C0 | In outline: places a window's parts (Window::SetRelationAndLayout) by its mode (+0x130, 2, ...) |

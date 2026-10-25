@@ -445,3 +445,8 @@
 | `0x595ff0` | Ride::RefreshLinks595FF0 | In outline: goes over a ride's links and refreshes the ones not flagged (+0x18) |
 | `0x876810` | Scenery::Load876810 | In outline: goes over a list of scenery items loading each one (`0x8826F0`) |
 | `0x5a05c0` | Ride::CanOpen5A05C0 | In outline: whether a ride can open (`0x5CFB10`), showing a message when not |
+| `0x8db050` | Terrain::Setup8DB050 | In outline: sets up a terrain edit over the terrain (a 90 by 90 grid) with its record (+0x7C) and a fresh id set (`0x12F4634`, IdSet::IdSet) |
+| `0x4b1920` | Shop::Queue4B1920 | In outline: another shop queue pass like Shop::Update4B2F50: lets the next waiting person in (kind 3, `0x4D2800`) when there is room |
+| `0x8e7260` | Terrain::Cell8E7260 | In outline: the terrain cell under a point, rounded (register-passed point) |
+| `0xafccc0` | TerrainLayers::CornersAFCCC0 | In outline: works out the corner points of the terrain layers at a cell (`0xAFB160`) into a four-entry table |
+| `0x6bce00` | Money::CheckCost | In outline: whether the park can pay an amount: always when a key (0x2D) is held and money is on (+0x68 bit 1 clear), otherwise checks the amount against the money (+0x58) and shows a message when it cannot |

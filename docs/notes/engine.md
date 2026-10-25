@@ -1514,3 +1514,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x90cf00` | SortedTable::Insert90CF00 | In outline: adds an entry to a sorted table (+0x80): grows it when full (`0x90C510`), finds its place (SortedTable::Find20) and moves the rest up |
 | `0xa02a00` | Objects::CollectA02A00 | In outline: makes a list of the things of a set (+0x64, ObjectArray::SetCapacity, Interface8C::Get) |
 | `0xc18df0` | Stream::OpenC18DF0 | In outline: opens a stream for a path (Path::SplitRecursive) and starts its request (`0xC55050`, `0xC501D0`) |
+| `0xbe1bd0` | VertexDeclaration::FindBE1BD0 | In outline: the slot for a vertex element in a declaration (from +0x1C1E), or by its kind (+4: 0, ...) |

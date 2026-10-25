@@ -459,3 +459,10 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x869400` | Model::PartMatrices869400 | In outline: builds the matrices of a model's shown parts (+0x104, count +0x108, `0x8625D0`) and its slot (+0x100) |
 | `0x938720` | Water::Strip938720 | In outline: builds an index strip for a water piece's points (+0x3C) above 0 |
 | `0xbf3500` | Text::DrawBF3500 | In outline: draws a text with an alpha (rounded, kept between 0 and 255) |
+| `0xbf8100` | Draw::LinesBF8100 | In outline: draws lines for the current device (ForCurrent(3), Call10IfReady) |
+| `0xa002d0` | Lighting::ApplyA002D0 | In outline: applies the lights of a list (+0x14): their colours (`0x438C10`, `0x454B20`) scaled into bytes |
+| `0xbf2e70` | Text::DrawBF2E70 | In outline: another text draw like Text::DrawBF3500, with an alpha kept between 0 and 255 |
+| `0x8beef0` | Terrain::VisibleRows | In outline: works out the range of terrain rows and columns in view (used by the terrain passes, on `0x1400160`), rounded |
+| `0x9f79f0` | Fireworks::Fire9F79F0 | In outline: fires the parts of a list (+0x18) that are on (`0x9F7370`) |
+| `0x975190` | Particles::Draw975190 | In outline: another timed particle draw like Particles::Draw9757D0, for kind 3 entries within limits (under 10001 and 15001) |
+| `0xc6a040` | ScrollBar::DrawC6A040 | In outline: draws a scroll bar with its colours (Colour::ToRGB, ScrollBar::Draw) |
