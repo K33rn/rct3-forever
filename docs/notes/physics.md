@@ -156,3 +156,5 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xa64800` | Camera::UpdateA64800 | In outline: a camera's update from the object it follows (Object::PartMatrix): picks the main axis, blends toward the new view by a time factor (`0xDDD040`, `0xCC5C80`) and points along it (Matrix::LookAlongZSide) |
 | `0xa6ca10` | Constraint::SolveA6CA10 | In outline: solves a constraint between points by its kind (+0: 1, ...), measuring the distances between them and moving them back to their lengths |
 | `0x9f21d0` | Fireworks::HitTest9F21D0 | In outline: whether a ray passes through a firework part: works out its points (`0x9EEA50`), checks the ray against their spheres and then the triangles between them (`0x9F1FA0`), keeping the nearest |
+| `0x9177b0` | Water::Flow9177B0 | In outline: a long run of maths on a water piece's values (+0 on), ending in a comparison; uses a translucent white (Colour::FromARGB 0x3FFFFFFF) |
+| `0x92aca0` | Water::Split92ACA0 | In outline: splits a list of points by height: finds the points lower than their neighbours, then groups the rest into pieces (`0x926360`) |
