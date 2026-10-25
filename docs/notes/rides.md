@@ -97,3 +97,5 @@ Tracked rides, flat rides and their cars and trains.
 | `0xa3fc20` | TrackImporter::AddPiece | Adds an imported track piece, matching its curve and flags (lift chain, enclosed, station), reporting `No match for track piece %d`. Called from two places |
 | `0x65e590` | TrackImporter::Music | Sets an imported ride's music (`Attraction_Music`). Called from `TrackImporter::Load` |
 | `0x88c920` | Sign::NoEntry | Sets up a no entry sign (`Sign_NoEntry`). Called from `0x88CD90` |
+| `0xa3dc00` | TrackImporter::ReadTD | Reads a RollerCoaster Tycoon 1 or 2 track design for importing (`.td4`, `.td6`). Called from `TrackImporter::Import` |
+| `0x5e4970` | TrackedRide::CreateTrains | Creates a tracked ride's trains (each a `RideTrainInstance` of 0x3F0 bytes) on its track, through the ride's track interface (`0x59ACC0`, `0x5D4870`), placing them by the 4-way kind of ride. Called from `TrackedRide::CheckTrains` |

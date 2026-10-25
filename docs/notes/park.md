@@ -30,3 +30,4 @@
 | `0x6bdba0` | Money::Format | Writes an amount of money in the player's currency (`Money`). `0x6BD830` and `0x6BD4C0` are the other formats |
 | `0x6bd830` | Money::Format (2) | Another format of an amount of money (`Money`). Called from four places |
 | `0x6bd4c0` | Money::Format (3) | Another format of an amount of money (`Money`). Called from two places |
+| `0x85db30` | Placement::Footprint | Works out the ground an object takes up on the terrain grid for its kind of shape (+8) and rotation (0 to 3), a 64-case switch, using the terrain (`Terrain::Get`). Called from 15 places (scenery, paths, rides) |
