@@ -30,3 +30,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbeddc0` | Matrix::TurnAboutY | The same turn of rows 0 and 2 by an angle. Used by Helicopter::Activate, Waterfall::Update and RideCarSpinningPart::Update |
 | `0xc208c0` | Matrix::TurnColumnsAboutY | Turns a matrix about the y axis from the other side: the x and z values of each row rotated into each other by the angle. Called from WALMoveSpline::Update |
 | `0x8fed20` | Whirlpool::FindCell | Binary search of the whirlpool's cells (+0x10, count +0x18), sorted by row then column, for the given column and row: gives the cell and, when asked, its position; null when there is none. Called from Whirlpool::Update |
+| `0x529200` | Angle::Wrap | Brings an angle into the range 0 to 2 pi by adding or taking away whole turns. Called from RideCarSpinningPart::Update |
