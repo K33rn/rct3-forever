@@ -47,3 +47,6 @@
 | `0xb13c50` | WAS_Chase::StateName | Writes a chasing animal's state: chasing, fleeing, finished |
 | `0xa19140` | Seagull::Models (2) | Picks between two seagull models |
 | `0xa11810` | Duck::Models (2) | Picks between two duck models |
+| `0xb3d8b0` | WildAnimal::Name | Gives an animal its name for its species (random names, `AnimalNames::Load` / `Pick`), reporting `MISSING SPECIES STRING!`. Called from two places |
+| `0xb3b700` | WildAnimal::FullName | Writes an animal's full name (`%NAME%`, `%SPECIES%`, `%SUFFIX%`), with the `sad panda` cheat |
+| `0xb03590` | Dart::Hit | A dart hitting an animal (`DartHit`): where it lands on the terrain |

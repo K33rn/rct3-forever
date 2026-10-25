@@ -81,3 +81,11 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5a92f0` | Ride::RouteErrors | Reports that a ride has no route between its stations or back to a station (`RideNoRouteBetweenStations`, `RideNoRouteBackToStation`). Called from `0x56A660` |
 | `0xbc4da0` | Ride::StateNames | Makes a ride's state names: stopped, starting, running, stopping, and the special states (in motion, holding, releasing, returning, water tank, ...). Called from `0xBC6940` |
 | `0x59a080` | RideSplines::RenderModeNames | Makes the developer's spline drawing modes' names: off, lines, track, block sections, stations, segments, points, ... (`RenderSplines*`). Called from `0x59A500` |
+| `0x5cc7b0` | TrackPiece::Activate | Activates a track piece: resolves its symbols in its overlay (`TrackPiece::Activation(): failed to resolve symbol`), its car transform (`CarTransform`) and scenery |
+| `0x485fb0` | RideCar::SetupModel | Sets up a ride car's model and its front camera (`CameraFront`), checking its shapes. Called from two places |
+| `0x880fb0` | SceneryItem::Activate | Activates a scenery item definition: finds its visual (`No :svd for :sid`) and checks its models' shapes. Called from `0x8826F0` |
+| `0x5c9a90` | RideSound::RotateStop | Plays a ride's rotation stop sound (`RTCRotateStop`) |
+| `0x4b5ce0` | Aquarium::Setup | Sets up the aquarium's track (`Aquarium:trr`) |
+| `0x4aae00` | FlatRide::Screams | Plays the guests' screams on a flat ride, at random (`FlatRideGuestScream`). Called from `0x4AF910` |
+| `0x5341d0` | Ride::CheckReliability | Checks a ride's reliability and warns when it is low (`RideReliabilityLow`). Called from `0x4AF910` |
+| `0x583ef0` | PathArrow::Build | Makes the arrow showing a path's direction (`PathArrow`). Called from five places |

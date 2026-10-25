@@ -57,3 +57,9 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x914660` | WaterDrop::LoadShaders | Loads the water drop shaders (`WaterDrop`, `WaterDropWash`). Called from `0x477BD0` |
 | `0xc9c210` | Shadows::LoadShaders (2) | Loads the shadow projection shaders (`GE_Shadows_ShadowProject`, `GE_Shadows_DebugShadowBuffer`). Called from `GE_Device::LoadPassShaders` |
 | `0x964d70` | WaterWake::LoadShaders | Loads the water wake shaders (`WaterWakeBump`, `WaterWakeAlpha`). Called from `0x964EB0` |
+| `0x4323f0` | SceneryRenderer::BuildAlphaBatches | Builds the scenery's alpha-blended draw batches (`SIAlpha`). Called from `0x433120` |
+| `0x704160` | Terrain::DrawBillboards | Draws the far-away billboards over the terrain (`BillboardStandard`). Called from `0x439280` and `DebugInfo::Draw` |
+| `0x9df240` | Sky::Render | Draws the sky and the environment cube map (`Sky`, `EnvCubemap`) |
+| `0x9de820` | Sky::LoadEnvMaps | Loads the sky's environment cube maps (`Sky\EnvCubemap_`). Called from `0x9DF140` |
+| `0x421db0` | AdMenu::DrawPreview | Draws an advert's preview picture (`SIOpaque`) |
+| `0xcbab50` | Inflate::Codes | zlib's decoding of literal / length and distance codes (`invalid literal/length code`, `invalid distance code`). Called from `Inflate` |

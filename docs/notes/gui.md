@@ -247,3 +247,20 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x712040` | PathMenu::CameraButtons | The path menu's guest camera and exit buttons. Called from `PathMenu::Build` |
 | `0x9da3a0` | CampaignDialog::Kinds | The kinds of marketing campaign: attraction vouchers, advertising, park vouchers (`Campaign_*`). Called from `0x9DDC20` |
 | `0x617740` | LoadingScreen::Name | Picks the loading screen (`LoadingScreen`, `_Chinese`, `_SChinese`). Called from `0x618C70` |
+| `0x6c8cd0` | ChallengeSetupDialog::Layout | Lays out the challenge setup dialog (29 rectangles; a Norwegian special case). |
+| `0x6bacc0` | FinanceWindow::BuildSummary | Builds the finance window's monthly summary (25 controls), noting when the entrance fee can't be changed (`FinancialSummary_EntranceFee_CannotBeChanged_TT`). Called from `0x6BBAE0` |
+| `0x4caad0` | AttractionList::BuildItem | Makes an attraction's line in the attraction list, with its figures (`AttractionNumbers::Rate`), and pools (`Obj_Pools`). Called from three places |
+| `0xa49ab0` | FrontScreen::BuildTutorialSelect | Builds the front screen's tutorial selection (`FrontScreen_SelectTutorial`, 46 controls) |
+| `0x677110` | RideSelectionWindow::BuildList | Builds the ride selection list: rides, saved designs, animals (`WildAnimal::Describe`), and guest groups by kind (`Group_Containing_`, `_AdultMale`, `_AdultFemale`, `_ChildMale`, `_ChildFemale`). Called from three places |
+| `0x78a960` | ParkDialog::BuildGuestWants | Builds the park window's page of what guests want, such as pools (`PeepsWantPools`). Called from `0x65F830` |
+| `0x64c060` | VIPDetails::BuildStats | Builds a VIP's statistics page (on a curved background). Called from `0x64C950` and `VIPDetails::Build` |
+| `0x9b8290` | ParticleDescWindow::BuildMotion | Builds the particle editor's motion page (`Particle Relative`). Called from `0x9BB220` |
+| `0x9b8b40` | ParticleDescWindow::BuildAppearance | Builds the particle editor's appearance page. Called from `0x9BB220` |
+| `0x64ea20` | GuestDetails::BuildStats | Builds a guest's statistics page. Called from `0x650F20` |
+| `0x6de470` | ThemedAttractionsCondition::Build | Builds the scenario editor's list of styles for a themed attractions condition (`StylesListBox`). Called from `0x6DEF40` |
+| `0x64f1c0` | GuestDetails::BuildThoughts | Builds a guest's thoughts page. Called from `0x64F8D0` and `0x650180` |
+| `0x68b800` | FileDialog::BuildFileName | Builds the file dialog's file name box (`FD_TT_filename`). Called from `0x68C370` |
+| `0x611460` | GameOptionsDialog::BuildTabs | Builds the options window's tabs, with the camera settings tab (`GameOptionsDialog_CameraSettingsTabHelp`). Called from `0x5F8160` |
+| `0x675be0` | ObjectSelection::BuildItem | Makes an object's item in an object selection window, with its expansion pack badge (`ObjectSelectionWindow_AOPBadge_`). Called from five places |
+| `0x669750` | DetailsWindow::BuildBackground | Builds a details window's curved background. Called from four places |
+| `0x448790` | AttractionDetails::RideCamButton | Builds the double-click ride camera button of an attraction's window (`DoubleClickRideCam`). Called from `AttractionDetails::BuildTabs` |

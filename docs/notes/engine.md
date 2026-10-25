@@ -117,3 +117,16 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xca53a0` | Platform::Name | Names the target platform: `windows`, `PS2`, `Xbox`, `GameCube`, `PSP`, `unknown_target` |
 | `0xc19685` | MovieDecoder::Format | Checks a movie's video format (`vids`, `YV12`) |
 | `0xf03880` | TexCoords::Names | Makes the texture coordinate names at start-up (`TexCoord0` ... `TexCoord3`) |
+| `0xc49300` | ShaderSource::WriteStruct | Writes a shader's input or output structure as source text: `struct name {`, each member with its `: register(v...)` or semantic, `};`. Called from `ShaderSource::Write` |
+| `0x4a49b0` | Resources::FindTrackStyles | Searches the styles' track folders (`*\Tracks\*\track*`, `Style`) for their `.common.ovl` / `.unique.ovl` files, calling itself for sub-folders. Called from `0x4A5A40` |
+| `0xc3f330` | OverlayFile::LoadHeader | Reads a resource overlay file's header and its types' loaders, reporting `file "%s" not opened`, `No handler for type '%s' (version %s) in overlay '%s'`, `Bad version %s in overlay '%s'`, `Bad header (missing file?) '%s'`. Called from `0xC41060` |
+| `0xc40730` | OverlayFile::LoadStructuredData | Loads an overlay's structured data, reporting `Failed to allocate memory for structured resource in overlay '%s'`. Called from `0xC41060` |
+| `0xc3c850` | OverlayFile::Relocate | Applies an overlay's relocation table, reporting entries that don't map within it (`Relocation table entry %s (%s) doesn't map within the overlay '%s'`). Called from three places |
+| `0x626b90` | Screenshot::Save | Saves a screenshot as the next free `Shot%04d.bmp` (counting the existing `Shot*.bmp`). Called from `DebugInfo::Draw` and two others |
+| `0x7cd9b0` | Person::PickBodyParts | Picks a person's body parts at random from the suitable ones, reporting `Can't find any suitable body parts for %s %s` and `Missing People Resources`. Called from `0x762A10` and `0x7EB590` |
+| `0x53e280` | TrackImporter::Load | Loads a track file for importing, with the error box (`TrackImporter_Error_Title`). Called from two places |
+| `0xae6e40` | LaserWriting::List | Lists the laser writing files (`\LaserWriting\*.lwr`). Called from `0xAE7920` |
+| `0xa51f80` | Campaign::ListScenarios | Lists the campaign's scenarios (`Campaigns\Base\Scenario%02d.dat`, with the expansions' `AOP_FSName_`). Called from `0xA41870` |
+| `0xa2ba10` | CarriedItems::Load | Loads the carried item definitions (`CarriedItems`, `*:cid`, `*.common.ovl`). Called from `0xA2D290` |
+| `0x66ddd0` | TrackFile::ReadHeader | Reads a saved track's header (`TrackedRideInstanceSaveHeader`, `:trr`). Called from two places |
+| `0x995810` | FireworkDisplay::Load | Loads a firework display, refusing one that is too big (`FireworksTooBig`). Called from `0x9A57D0` |

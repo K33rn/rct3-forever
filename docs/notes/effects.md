@@ -21,3 +21,7 @@
 | `0x825780` | FountainShape::Names | Recognises the special fountain display names `shark`, `truck` and `doom` |
 | `0x939870` | WaterJet::DebugText | Writes a water jet's developer statistics (`Speed`, `DistForSpeed`, numbers of points and emitters, start, end and ID). Called from `WaterJetManager::DebugText` |
 | `0xede240` | FountainKinds::Names | Makes the fountain kinds' names at start-up (`splash`, `jet`, `fountain`) |
+| `0x8b8ea0` | WaterCannon::Update | A water cannon guests fire: aims and fires it (`WaterCannon`), making water particles (`0x94DDD0`, `0x94EF60`), with random spread |
+| `0x900020` | Whirlpool::Update | Runs a whirlpool in a pool: its water and sound (`Whirlpool`). Called from `0x9052A0` and `0x9401F0` |
+| `0x93b5f0` | MasterBlasterJet::Update | The water jets of a master blaster ride (`MasterBlasterJet`), along the ride's track. Called from `0x93BD50` and `0x93C9B0` |
+| `0x916b40` | Water::Delete | Deletes water, asking first when a waterfall depends on it (`Water_DeleteResponse_WaterfallPrompt`) |

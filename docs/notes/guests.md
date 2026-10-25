@@ -32,3 +32,9 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0xed8d00` | HandymanTools::Mower | Makes the handyman's lawnmower tool at start-up (`People\HandyMan\Tools`, `MoterMower`, `Lawnmower`) |
 | `0xed8b90` | HandymanTools::Sponge | Makes the handyman's sponge tool at start-up (`People\HandyMan\Tools`, `Spunge`, `Sponge`) |
 | `0x7f92c0` | VIP::ProblemMessages | Makes a VIP's complaints: an attraction closed, broken or crashed, can't get to a waypoint (`VIP_*`). Called from two places |
+| `0x761b30` | Guest::PandaCheat | The `panda` guest name cheat, with random effects. Called from `0x76A450` |
+| `0x769df0` | Guest::DebugPosition | Writes a guest's grid position for the developer (`Col: `, `, Row: `). Called from `0x76D890` |
+| `0x769180` | Guest::Laugh | Makes a guest laugh (`Male laugh`, `Female/child laugh`), at random |
+| `0x7f95b0` | VIP::Arrive | Brings a VIP into the park and announces it (`VIP_ArrivedInPark`). Called from `0x6F7330` |
+| `0xa673d0` | Person::DrawShadow | Draws a person's shadow blob (`PeopleShadowBlob`) and updates their lights |
+| `0x5f0b70` | Person::LookAt | Turns a person's head to look at something (`LookAt`), at random intervals. Called from two places |
