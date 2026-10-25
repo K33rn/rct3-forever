@@ -69,6 +69,20 @@ REPS = [
     (0x410330, 'Reference::Reference', 'Constructor of a reference class (built on the reference class `0xF26AE0`) '
      'that refers to the given object (`0x805700` gives the handle of the object), joining the list of references of the '
      'handle, keeping its second argument at +0x14 and setting its flag'),
+    (0x408240, 'SortedMap::Find', 'Looks a key up in a sorted map (keys at +8, values at +0xC, count at +0x10): '
+     'checks the first and last keys, then a binary search; returns the value found'),
+    (0x850240, 'PoolSet::EnsurePool', 'Makes sure a pool set has the pool for size class n (items of 2^n x 0x50 bytes), '
+     'adding the missing pools with as many items per block as fit in 4 KB (at least 1); returns that pool'),
+    (0x850030, 'PoolSet::EnsurePool', 'Makes sure a pool set has the pool for a size class, adding the missing pools '
+     'with as many items per block as fit in 4 KB'),
+    (0x455CE0, 'ObjectArray::SetCapacity', 'Resizes an array of objects: allocates the new count (with the count kept '
+     'in front), constructs them, copies over the old ones that fit, then destroys and frees the old array'),
+    (0x463060, 'ObjectArray::SetCapacity', 'Resizes an array of objects: allocates the new count (with the count kept '
+     'in front), constructs them, copies over the old ones that fit, then destroys and frees the old array'),
+    (0x460540, 'ObjectArrayField::Save', 'Saves an array field of objects: writes its length (from its own size, '
+     'virtual slot 2) and its count, keeping the save file's running checksum, then has each object save itself'),
+    (0x533250, 'ListField::Save', 'Saves a list field: counts the list's items, writes the length (virtual slot 2) and '
+     'the count with the save file's running checksum, then has each item save itself'),
 ]
 
 
