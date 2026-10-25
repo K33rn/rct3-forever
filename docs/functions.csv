@@ -2109,7 +2109,7 @@ address,size,name,callers,status
 0x4a4030,1628,,3,documented
 0x4a46d0,200,,1,to do
 0x4a47b0,126,ObjectRef::Assign,13,rewritten
-0x4a4860,214,,1,to do
+0x4a4860,214,,1,documented
 0x4a4940,8,,1,documented
 0x4a4950,88,,7,to do
 0x4a49b0,3117,,5,documented
@@ -9465,7 +9465,7 @@ address,size,name,callers,status
 0x7a0930,541,,2,to do
 0x7a0b50,271,,11,to do
 0x7a0e50,56,,1,documented
-0x7a0e90,179,,1,to do
+0x7a0e90,179,,1,documented
 0x7a0f50,63,,1,to do
 0x7a0f90,63,,1,to do
 0x7a0fd0,224,,1,to do
@@ -15602,7 +15602,7 @@ address,size,name,callers,status
 0xa2c410,364,,0,to do
 0xa2c580,213,,10,to do
 0xa2c660,335,,2,to do
-0xa2c7b0,211,,1,to do
+0xa2c7b0,211,,1,documented
 0xa2c8e0,162,,1,documented
 0xa2c990,421,,1,to do
 0xa2cb40,421,,2,to do

@@ -77,3 +77,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x799ff0` | LifeGuard::StateName | The name of the lifeguard's state: in state 0xD the text kept in `0x12F8FC0`, otherwise Person::StateName. Slot 36 of LifeGuard |
 | `0x7f8ef0` | VIP::StateName | The name of the VIP's state: in state 0x16 the text kept in `0x12F98B8`, otherwise Guest::StateName. Slot 36 of VIP |
 | `0x7f8810` | VIP::Slot37 | In state 0x16: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x761440`. Slot 37 of VIP |
+| `0x7a0e90` | Mechanic::SetSpeedFactor | Sets the mechanic's factor at +0x114 by his level (+0x414): 1.0 at level 1, 1.1 at 2, 1.2 at 3, 0.9 otherwise; then `0x7D63E0` with the argument and more. Slot 40 of Mechanic |
