@@ -12014,8 +12014,8 @@ address,size,name,callers,status
 0x88dc60,564,,0,to do
 0x88dea0,519,,2,to do
 0x88e0b0,333,,1,to do
-0x88e200,1430,,2,to do
-0x88e7b0,2058,,2,to do
+0x88e200,1430,,2,documented
+0x88e7b0,2058,,2,documented
 0x88efe0,499,,7,to do
 0x88f1e0,516,,7,to do
 0x88f3f0,241,,2,to do
