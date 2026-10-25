@@ -293,6 +293,11 @@ static void unstub() {
 }
 // the destructor a deleting destructor calls, and the virtual slot 1 of a test object (its class's interfaces)
 static void __fastcall stub_destructor(void *self) { record(0x10, self); }
+static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
+    record(0x11, self);
+    record(0x11, (void *)(uintptr_t)flags);
+    return self;
+}
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
     return *arena<void *>(0x1f0);
@@ -768,8 +773,29 @@ static std::vector<Test> tests() {
     };
     array_load.finish = [](const rewrite::Entry *) { unstub(); };
 
+    // global clean-ups: the copy's global points at an object at 0x100 (or is null) whose slot 0 records its call;
+    // the global is game data, so each run sets it from the arena (0x1f8); it is saved and put back around each copy
+    static uint32_t cleanup_g, cleanup_saved;
+    Test cleanup{0x40e050,
+                 [=](Rng &r) {
+                     fresh(r);
+                     static void *vt[1] = {(void *)stub_deleting};
+                     arena<void *>(0x100)[0] = vt;
+                     *arena<void *>(0x1f8) = r.next() % 4 ? arena<void>(0x100) : nullptr;
+                 },
+                 [](void *fn) {
+                     *(void **)cleanup_g = *arena<void *>(0x1f8);
+                     ((void(__cdecl *)())fn)();
+                     return Result{*(uint32_t *)cleanup_g};
+                 }};
+    cleanup.prepare = [](const rewrite::Entry *e) {
+        cleanup_g = rewrite::cleanup_global(e->at);
+        cleanup_saved = *(uint32_t *)cleanup_g;
+    };
+    cleanup.finish = [](const rewrite::Entry *) { *(uint32_t *)cleanup_g = cleanup_saved; };
+
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
-                    &deleting, &query, &module, &cached, &array_load}) {
+                    &deleting, &query, &module, &cached, &array_load, &cleanup}) {
         x->iterations = (x == &deleting || x == &query || x == &module) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

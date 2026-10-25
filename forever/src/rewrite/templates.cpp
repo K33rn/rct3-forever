@@ -126,6 +126,19 @@ static void __fastcall struct_array_load(StructArrayLoader *f, void *, uint8_t *
         }
 }
 
+// ---- global clean-ups -----------------------------------------------------------------------------------------
+// Deletes the object a global points to, if any (its deleting destructor, virtual slot 0, with 1: destroy and free),
+// and clears the global. Run at exit for the globals made on first use.
+
+static volatile long g_cleanups;
+
+template <uint32_t GLOBAL> static void __cdecl global_cleanup() {
+    g_cleanups++;
+    void *object = *(void **)GLOBAL;
+    if (object) ((void(__fastcall *)(void *, void *, uint32_t))(*(void ***)object)[0])(object, nullptr, 1);
+    *(void **)GLOBAL = nullptr;
+}
+
 // ---- module globals ---------------------------------------------------------------------------------------------
 // A global object built before main from the start-up of a list of modules: `start` (0xBCE1A0, 0x805AB0, ...)
 // runs the list's initialisers in turn (undoing them if one fails) and gives {table, error}; the global's
@@ -159,6 +172,7 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
 #define MODULE(at, start, global, dtor, ...)                                                                         static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("ModuleGlobal", at, REWRITE_CAT(original_, at), 8,                                                             (void *)&module_global<start, global, dtor>, &g_module_globals);
 #define CACHED(at, flag, ref, obj, id, cache, ...)                                                                   static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("CachedInterface", at, REWRITE_CAT(original_, at), 8,                                                          (void *)&cached_interface<flag, ref, obj, id, cache>, &g_cached);
 #define LOAD(at, stride, resize, ...)                                                                                static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("StructArrayLoad", at, REWRITE_CAT(original_, at), 8,                                                          (void *)&struct_array_load<stride, resize>, &g_array_loads);
+#define CLEANUP(at, global, ...)                                                                                     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("GlobalCleanup", at, REWRITE_CAT(original_, at), 8,                                                            (void *)&global_cleanup<global>, &g_cleanups);
 #include "generated.inc"
 
 // the cached interfaces' constants, for the equivalence test
@@ -167,6 +181,8 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
 #undef MODULE
 #undef CACHED
 #undef LOAD
+#undef CLEANUP
+#define CLEANUP(...)
 #define LOAD(...)
 #define DELETING(...)
 #define QUERY(...)
@@ -183,6 +199,27 @@ const uint32_t *cached_constants(uintptr_t at) {
     return nullptr;
 }
 }
+
+// the global clean-ups' globals, for the equivalence test
+#undef LOAD
+#undef CLEANUP
+#undef CACHED
+#define CACHED(...)
+#define LOAD(...)
+#define CLEANUP(at, global, ...) {at, global},
+static const uint32_t cleanup_table[][2] = {
+#include "generated.inc"
+};
+
+namespace rewrite {
+uint32_t cleanup_global(uintptr_t at) {
+    for (auto &c : cleanup_table)
+        if (c[0] == at) return c[1];
+    return 0;
+}
+}
+#undef CLEANUP
+#define CLEANUP(...)
 
 // the struct-array loads' constants, for the equivalence test
 #undef CACHED

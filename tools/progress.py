@@ -59,7 +59,7 @@ def rewritten():
     # template rewrites: one line per copy in generated.inc (see tools/gen_rewrites.py)
     inc = os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc')
     if os.path.exists(inc):
-        names = {'DELETING': 'DeletingDestructor', 'QUERY': 'QueryInterface', 'MODULE': 'ModuleGlobal', 'CACHED': 'CachedInterface', 'LOAD': 'StructArrayLoad'}
+        names = {'DELETING': 'DeletingDestructor', 'QUERY': 'QueryInterface', 'MODULE': 'ModuleGlobal', 'CACHED': 'CachedInterface', 'LOAD': 'StructArrayLoad', 'CLEANUP': 'GlobalCleanup'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found

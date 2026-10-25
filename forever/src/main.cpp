@@ -55,6 +55,12 @@ static DWORD WINAPI reporter(void *) {
 }
 
 BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
+    if (why == DLL_PROCESS_DETACH && g_self) {
+        // the game's own exit work (atexit) has run by now: report the calls made since the last report
+        rewrite::report();
+        flog("game closed");
+        return TRUE;
+    }
     if (why != DLL_PROCESS_ATTACH) return TRUE;
     g_self = h;
     DisableThreadLibraryCalls(h);
