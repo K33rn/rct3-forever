@@ -426,3 +426,6 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xced5f0` | Mesh::BuildCED5F0 | In outline: builds a mesh's parts (+0x70 of them, each with +0x28 pieces, `0xCE9470`) |
 | `0xccc720` | Ads::DrawCCC720 | In outline: draws a list of shapes (+0x44) with their textures, using the advert texture (Ad::Texture with `0x13D0E34`) for flagged ones |
 | `0x44b360` | Effects::Update44B360 | In outline: goes over a list of effects (+0x10) and, unless off (+0x21 and the owner's +0x1A6), updates each one by its kind (+0x30: 1, ...) |
+| `0xce3fe0` | Mesh::SplitCE3FE0 | In outline: splits a mesh's parts into a new list (12 bytes, `0xCE35A0` for each), or none when it is empty |
+| `0xaf3000` | FireworkDisplay::MakeAF3000 | In outline: when not flagged (+0x74), makes a firework display (FireworkDisplay::FireworkDisplay) and starts it (`0x98BC00`) |
+| `0xc250e0` | Skeleton::AimC250E0 | In outline: turns a bone toward a direction, when it is long enough, and builds its matrix |

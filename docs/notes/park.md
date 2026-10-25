@@ -392,3 +392,14 @@
 | `0x71b500` | Path::TileAt71B500 | In outline: finds a path tile at a cell by case, checking what is already there (Entries::FindByKey kind 0x1F) |
 | `0x567720` | Path::Update567720 | In outline: a path piece's update when not flagged (+0x5C), by its kind (+0x10 values 5, 7, 8; queues 0xD) |
 | `0xaba730` | Fence::RebuildABA730 | In outline: rebuilds a border when on (+0xE8): clears it (`0xAB6050`), builds it (Fence::Build) and finishes (`0xAC67C0`), with a case for kind 4 |
+| `0x8e6330` | Terrain::Blend8E6330 | In outline: works out blend values for a terrain point, each kept between 0 and 1 |
+| `0x83d1f0` | Scenery::Check83D1F0 | In outline: checks a scenery item at a place (+0x16C) and whether a key is held (KeyState::Held) |
+| `0x439760` | Files::Find439760 | In outline: lists files matching a pattern (`0xBE5570`) like Files::FindB936D0 |
+| `0x811be0` | Scenery::Insert811BE0 | In outline: adds a scenery entry to the sorted table and index (SortedTable::LowerBound1C, SortedIndex::LowerBound), with its box (Rect::Assign) |
+| `0x552240` | Ride::Parts552240 | In outline: goes over a ride's parts and refreshes the ones not flagged (+0x18, +0x14 +0x40 bit 1) |
+| `0x8de960` | Water::Fill8DE960 | In outline: fills water over the terrain up to a level (WaterManager::Get), within a count (+0x44) |
+| `0xac0b70` | Fence::RebuildAreaAC0B70 | In outline: rebuilds the border pieces of an area (+0x24 to +0x30, Fence::RebuildRect) and checks the terrain under them |
+| `0xaac670` | GridTool::PickAAC670 | In outline: finds the cell under the mouse for a grid tool (MainCamera::Get, `0xCD79C0`) on the terrain (a 90 by 90 grid) and makes a 0x24-byte record for it |
+| `0x8d8b40` | Terrain::GrowColumns8D8B40 | In outline: another column growing pass like Terrain::GrowColumns8D85C0 |
+| `0x8bf330` | Terrain::Blocks8BF330 | In outline: goes over the 32-cell blocks of a rectangle and the layers of each (+0x44), keeping the height ranges |
+| `0x8ae830` | Scenery::RatingValue8AE830 | In outline: a spot's rating value: the falloffs of its values (Curve::Falloff with 1 and 0.5) multiplied together |

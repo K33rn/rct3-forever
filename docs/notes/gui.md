@@ -662,3 +662,6 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9b4bc0` | Dial::Layout9B4BC0 | In outline: lays out ten parts round a circle (cosine and sine of their angles) and sets each one's value (`0x1B0` +0x18) |
 | `0xa48ca0` | Graph::LabelsA48CA0 | In outline: lays out a graph's labels from shared texts (`0x12FE4F8`, `0x12FCB28`, `0x12F9FD4`) at fixed positions (`0xA455D0`, `0xA45310`: 663, 32, 250, ...) |
 | `0x7e22e0` | Info::Text7E22E0 | In outline: makes an info text for a thing (+0x114) from its values (`0x758C30`, `0x7739D0`, `0x4FF4A0`) |
+| `0xa56cc0` | Window::BuildA56CC0 | In outline: builds a window from the shared title `0x1342968` |
+| `0x6ed990` | Objectives::Draw6ED990 | In outline: draws the objectives list (+0x108): finds each objective (Objectives::Find) and shows its tick or cross (SkinItem::Texture) when not done (+0x55) |
+| `0x45c780` | Window::Layout45C780 | In outline: lays out a window's parts by the terrain size (Window::UpdateRect) |

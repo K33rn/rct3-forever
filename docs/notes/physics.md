@@ -197,3 +197,5 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xccfab0` | Points::TransformCCFAB0 | In outline: transforms a list of points by a matrix, four at a time |
 | `0x8133c0` | Boxes::Overlap8133C0 | In outline: finds the boxes of a list that overlap box n |
 | `0xc1e970` | Polygon::SideC1E970 | In outline: which side of a plane a polygon's points lie on, by the signs of their distances |
+| `0x9614c0` | Grid::Points9614C0 | In outline: goes over a grid of points (+0 by +4), joining each row's last point and normalising their directions |
+| `0x907600` | Water::Spread907600 | In outline: spreads values along a water piece's points, keeping them at least 0 |

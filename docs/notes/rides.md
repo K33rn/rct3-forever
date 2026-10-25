@@ -221,3 +221,5 @@ Tracked rides, flat rides and their cars and trains.
 | `0xbc7350` | Track::CompareBC7350 | In outline: a sort comparison of two track pieces by their snapped height (Grid::SnapIndex with `0x10F2B30`, `0x13D0A80`), then `0xBC5480` |
 | `0x5c7450` | TrackedRide::Special5C7450 | In outline: for ride kinds 0x4A to 0x4C, when not flagged (+0x18C), sets up their special part (`0x5BD5A0`) |
 | `0x516e90` | Car::Move516E90 | In outline: moves a ride car on by a time (`0x10EE444`) when on (+0xC0), with its train's cars (+0x7B4, `0x50E6A0`) |
+| `0xabbc00` | PoolComplex::CheckABBC00 | In outline: for kinds outside 2 to 4, when not flagged (+0x178), checks a pool piece (`0xABC990`) and its first part (`0xAB1020`) |
+| `0x5c0200` | TrackedRide::EndPoints5C0200 | In outline: works out a ride piece's end points (used by TrackedRide::Ends5C58B0) unless flagged (+0xAC), with its slot (+0x26C) |

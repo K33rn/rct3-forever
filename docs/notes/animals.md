@@ -108,3 +108,7 @@
 | `0xb2de20` | WildAnimal::SetupB2DE20 | In outline: sets up an animal on the terrain (a 90 by 90 grid) in its enclosure (EnclosureManager::Get, WildAnimal::Interface60) |
 | `0xb024b0` | Animal::IdleB024B0 | In outline: when not flagged (+0x2FC), picks an animal's idle move at random (Random::Ran0, `0xDDD39A`) |
 | `0xb66e70` | WildAnimal::TurnB66E70 | In outline: works out the angle between an animal's way and its target's (`0xB66910`) and eases its turn (`0xDDEBC0`) |
+| `0xb65d60` | WildAnimal::MoveB65D60 | In outline: moves an animal toward a free spot (WildAnimal::FindSpot) when it has room (more than three) and is not flagged (+0xFD, +0xB0) |
+| `0xa19310` | Bird::LandA19310 | In outline: for kind 0x201 not in mode 2, makes a landing route (LandingRoute) and a particle puff (Particle::Launch with 10, 20, 0.3) and starts it (`0xA103F0`) |
+| `0xbab1b0` | Enclosure::CellOKBAB1B0 | In outline: whether a cell lies inside an enclosure's grid with a margin (EnclosureManager::Get, its width +0x64 and height +0x68) |
+| `0xa16210` | Bird::UpdateA16210 | In outline: for kind 0x100 not flagged (+0x14C), the plain update (`0xA161D0`), otherwise half the time (Random::Ran0) picks by case |
