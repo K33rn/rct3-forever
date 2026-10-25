@@ -539,3 +539,282 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcb8c20` | QueryInterfaceReport 0x13e6f80 | The interface (id in `0x13e6f80`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
 | `0xcb8c70` | QueryInterfaceReport 0x13e6f94 | The interface (id in `0x13e6f94`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
 | `0xe03ae0` | QueryInterfaceReport 0x141dcd4 | The interface (id in `0x141dcd4`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x403e50` | NamedTextRefF26520::NamedTextRefF26520 | Constructor of a text reference found by name (tables `0xf264e4`, then `0xf26520`; the name made from C text when asked), like NamedTextRef |
+| `0x40f870` | NamedTextRefF26AE4::NamedTextRefF26AE4 | Constructor of a text reference found by name (tables `0xf26ad4`, then `0xf26ae4`; the name made from C text when asked), like NamedTextRef |
+| `0x420b70` | ObjectArray44::Resize | Makes an array of 44-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe06cfb`, `0x420bb1`, `0x41d990`, `0xddcf39`, `0x420bf0`, `0x420bee`, `0x41f850`, `0xddcf99` |
+| `0x460de0` | WithReference45FA50 | Calls `0x45fa50` with a temporary reference (table `0xf2a7cc`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x471ef0` | ConstructorF2CD0C | Constructor: builds the base part (`0x471df0`), then sets its own table `0xf2cd0c`; returns the object |
+| `0x473c00` | ConstructorF2CE64 | Constructor: builds the base part (`0x471df0`), then sets its own table `0xf2ce64`; returns the object |
+| `0x485560` | ConstructorF2E034 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf2e034`; returns the object |
+| `0x4855d0` | ConstructorF2E03C | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf2e03c`; returns the object |
+| `0x498080` | ConstructorF2EAAC | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf2eaac`; returns the object |
+| `0x4980a0` | ConstructorF2EAB4 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf2eab4`; returns the object |
+| `0x4982a0` | ConstructorF2EABC | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf2eabc`; returns the object |
+| `0x4982e0` | ConstructorF2EAC4 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf2eac4`; returns the object |
+| `0x49c850` | ObjectArray52::Resize | Makes an array of 52-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe0fc0b`, `0x49c891`, `0x49bbc0`, `0xddcf39`, `0x49c8d0`, `0x49c8ce`, `0x49b780`, `0xddcf99` |
+| `0x4a1df0` | NamedTextRefF30778::NamedTextRefF30778 | Constructor of a text reference found by name (tables `0xf306e8`, then `0xf30778`; the name made from C text when asked), like NamedTextRef |
+| `0x4a2090` | NamedTextRefF30788::NamedTextRefF30788 | Constructor of a text reference found by name (tables `0xf306f0`, then `0xf30788`; the name made from C text when asked), like NamedTextRef |
+| `0x4a2330` | NamedTextRefF30798::NamedTextRefF30798 | Constructor of a text reference found by name (tables `0xf306f8`, then `0xf30798`; the name made from C text when asked), like NamedTextRef |
+| `0x4a25d0` | NamedTextRefF307A8::NamedTextRefF307A8 | Constructor of a text reference found by name (tables `0xf30700`, then `0xf307a8`; the name made from C text when asked), like NamedTextRef |
+| `0x4a2870` | NamedTextRefF307B8::NamedTextRefF307B8 | Constructor of a text reference found by name (tables `0xf30708`, then `0xf307b8`; the name made from C text when asked), like NamedTextRef |
+| `0x4a2b10` | NamedTextRefF307C8::NamedTextRefF307C8 | Constructor of a text reference found by name (tables `0xf30710`, then `0xf307c8`; the name made from C text when asked), like NamedTextRef |
+| `0x4a2db0` | NamedTextRefF307D8::NamedTextRefF307D8 | Constructor of a text reference found by name (tables `0xf30718`, then `0xf307d8`; the name made from C text when asked), like NamedTextRef |
+| `0x4a3050` | NamedTextRefF307E8::NamedTextRefF307E8 | Constructor of a text reference found by name (tables `0xf30720`, then `0xf307e8`; the name made from C text when asked), like NamedTextRef |
+| `0x4a32f0` | NamedTextRefF307F8::NamedTextRefF307F8 | Constructor of a text reference found by name (tables `0xf30728`, then `0xf307f8`; the name made from C text when asked), like NamedTextRef |
+| `0x4a6150` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe10c5b`, `0x4a6191`, `0x4a47a0`, `0xddcf39`, `0x4a61d0`, `0x4a61ce`, `0x4a59d0`, `0xddcf99` |
+| `0x4b4a70` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x4e6490` | NamedTextRefF35540::NamedTextRefF35540 | Constructor of a text reference found by name (tables `0xf3551c`, then `0xf35540`; the name made from C text when asked), like NamedTextRef |
+| `0x536ee0` | WithReference530FE0 | Calls `0x530fe0` with a temporary reference (table `0xf38160`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x53b7b0` | ConstructorF264EC | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf264ec`; returns the object |
+| `0x53b7d0` | ConstructorF26530 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf26530`; returns the object |
+| `0x55ad30` | WithReference4AA7E0 | Calls `0x4aa7e0` with a temporary reference (table `0xf30b3c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x55b7c0` | ObjectArray224::Resize | Makes an array of 224-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe1e8bb`, `0x55b804`, `0x55af30`, `0xddcf39`, `0x55b849`, `0x55b847`, `0x55a090`, `0xddcf99` |
+| `0x560c60` | NamedTextRefF2E03C::NamedTextRefF2E03C | Constructor of a text reference found by name (tables `0xf2e034`, then `0xf2e03c`; the name made from C text when asked), like NamedTextRef |
+| `0x56bee0` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe1f2cb`, `0x56bf21`, `0x506810`, `0xddcf39`, `0x56bf60`, `0x56bf5e`, `0x507b60`, `0xddcf99` |
+| `0x59d710` | WithReference4B52D0 | Calls `0x4b52d0` with a temporary reference (table `0xf2cd3c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5a2140` | ConstructorF26AD4 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf26ad4`; returns the object |
+| `0x5a25c0` | ConstructorF26AE4 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf26ae4`; returns the object |
+| `0x5bfe80` | NamedTextRefF3D9F4::NamedTextRefF3D9F4 | Constructor of a text reference found by name (tables `0xf3d9d8`, then `0xf3d9f4`; the name made from C text when asked), like NamedTextRef |
+| `0x5c6560` | WithReference510800 | Calls `0x510800` with a temporary reference (table `0xf36f64`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5c71d0` | WithReference4E6410 | Calls `0x4e6410` with a temporary reference (table `0xf35618`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5d78d0` | WithReference4E6410 | Calls `0x4e6410` with a temporary reference (table `0xf35618`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5d7980` | WithReference4E6410 | Calls `0x4e6410` with a temporary reference (table `0xf35618`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5d7bc0` | WithReference560F00 | Calls `0x560f00` with a temporary reference (table `0xf3b08c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5d7c70` | WithReference560F00 | Calls `0x560f00` with a temporary reference (table `0xf3b08c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5e1500` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe25d2b`, `0x5e1541`, `0x5d78a0`, `0xddcf39`, `0x5e1580`, `0x5e157e`, `0x5dad50`, `0xddcf99` |
+| `0x5ecfe0` | WithReference5EB870 | Calls `0x5eb870` with a temporary reference (table `0xf3fadc`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5ed090` | WithReference5EB9B0 | Calls `0x5eb9b0` with a temporary reference (table `0xf3fae0`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5ed140` | WithReference5EB9B0 | Calls `0x5eb9b0` with a temporary reference (table `0xf3fae0`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x5efcc0` | WithReference5EB9B0 | Calls `0x5eb9b0` with a temporary reference (table `0xf3fae0`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x640320` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe318fb`, `0x640361`, `0x63fea0`, `0xddcf39`, `0x6403a0`, `0x64039e`, `0x63fe50`, `0xddcf99` |
+| `0x66a350` | ForwardBE79B0 | `0xbe79b0` with its two arguments; returns the first argument it was given |
+| `0x6cf7b0` | ConstructorF63488 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63488`; returns the object |
+| `0x6cf800` | ConstructorF63498 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63498`; returns the object |
+| `0x6cf840` | ConstructorF634A8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf634a8`; returns the object |
+| `0x6cf880` | ConstructorF634B8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf634b8`; returns the object |
+| `0x6cf8c0` | ConstructorF634C8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf634c8`; returns the object |
+| `0x6cf900` | ConstructorF634D8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf634d8`; returns the object |
+| `0x6cf940` | ConstructorF634E8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf634e8`; returns the object |
+| `0x6cf980` | ConstructorF634F8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf634f8`; returns the object |
+| `0x6cf9c0` | ConstructorF63508 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63508`; returns the object |
+| `0x6cfa00` | ConstructorF63518 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63518`; returns the object |
+| `0x6cfa40` | ConstructorF63528 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63528`; returns the object |
+| `0x6cfa80` | ConstructorF63538 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63538`; returns the object |
+| `0x6cfac0` | ConstructorF63548 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63548`; returns the object |
+| `0x6cfb00` | ConstructorF63558 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63558`; returns the object |
+| `0x6cfb40` | ConstructorF63568 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63568`; returns the object |
+| `0x6cfb80` | ConstructorF63578 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63578`; returns the object |
+| `0x6cfbc0` | ConstructorF63588 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63588`; returns the object |
+| `0x6cfc00` | ConstructorF63598 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf63598`; returns the object |
+| `0x6cfc40` | ConstructorF635A8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf635a8`; returns the object |
+| `0x6cfc80` | ConstructorF635B8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf635b8`; returns the object |
+| `0x6cfcc0` | ConstructorF635C8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf635c8`; returns the object |
+| `0x6cfd00` | ConstructorF635D8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf635d8`; returns the object |
+| `0x6cfd40` | ConstructorF635E8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf635e8`; returns the object |
+| `0x6cfd80` | ConstructorF635F8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf635f8`; returns the object |
+| `0x6d79b0` | ConstructorF64260 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64260`; returns the object |
+| `0x6d7b20` | ConstructorF64308 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64308`; returns the object |
+| `0x6d7c80` | ConstructorF643B0 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf643b0`; returns the object |
+| `0x6d7de0` | ConstructorF64458 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64458`; returns the object |
+| `0x6d7f40` | ConstructorF64500 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64500`; returns the object |
+| `0x6d80b0` | ConstructorF645A8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf645a8`; returns the object |
+| `0x6d8220` | ConstructorF64650 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64650`; returns the object |
+| `0x6d8390` | ConstructorF646F8 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf646f8`; returns the object |
+| `0x6d8500` | ConstructorF64798 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64798`; returns the object |
+| `0x6d86a0` | ConstructorF648EC | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf648ec`; returns the object |
+| `0x6d87c0` | ConstructorF648FC | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf648fc`; returns the object |
+| `0x6d8950` | ConstructorF64A4C | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64a4c`; returns the object |
+| `0x6d8a20` | ConstructorF64A5C | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64a5c`; returns the object |
+| `0x6d8c60` | ConstructorF64C44 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64c44`; returns the object |
+| `0x6d8d70` | ConstructorF64C5C | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64c5c`; returns the object |
+| `0x6d8f10` | ConstructorF64D00 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64d00`; returns the object |
+| `0x6d90a0` | ConstructorF64E1C | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64e1c`; returns the object |
+| `0x6d9280` | ConstructorF64ED0 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf64ed0`; returns the object |
+| `0x6d9580` | ConstructorF650C4 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf650c4`; returns the object |
+| `0x6d9630` | ConstructorF650D4 | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf650d4`; returns the object |
+| `0x6dcdf0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6dd2a0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6dd5f0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6dd920` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6ddc50` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6de0e0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6de3d0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6df2f0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6df940` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e1da0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e2da0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e3160` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e4370` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e4930` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e4f40` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e7660` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e7720` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6f0ce0` | ConstructorF66EBC | Constructor: builds the base part (`0x6d6180` (RegisteredItem::RegisteredItem)), then sets its own table `0xf66ebc`; returns the object |
+| `0x6f19c0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x72b000` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x730cc0` | NamedTextRefF6A874::NamedTextRefF6A874 | Constructor of a text reference found by name (tables `0xf6a86c`, then `0xf6a874`; the name made from C text when asked), like NamedTextRef |
+| `0x738a40` | NamedTextRefF6AACC::NamedTextRefF6AACC | Constructor of a text reference found by name (tables `0xf6aaa8`, then `0xf6aacc`; the name made from C text when asked), like NamedTextRef |
+| `0x745d80` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x746060` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x753300` | NamedTextRefF5323C::NamedTextRefF5323C | Constructor of a text reference found by name (tables `0xf5322c`, then `0xf5323c`; the name made from C text when asked), like NamedTextRef |
+| `0x755630` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x757710` | ConstructorF6C514 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf6c514`; returns the object |
+| `0x7577a0` | ConstructorF6C51C | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf6c51c`; returns the object |
+| `0x786d40` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x799b60` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x79b090` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x7b3ae0` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x7b3d10` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x7be680` | NamedTextRefF719B4::NamedTextRefF719B4 | Constructor of a text reference found by name (tables `0xf71994`, then `0xf719b4`; the name made from C text when asked), like NamedTextRef |
+| `0x7c53b0` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x7c86a0` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x7dc790` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe5875b`, `0x7dc7d1`, `0x6fd630`, `0xddcf39`, `0x7dc810`, `0x7dc80e`, `0x77a500`, `0xddcf99` |
+| `0x7fcaa0` | NamedTextRefF751B0::NamedTextRefF751B0 | Constructor of a text reference found by name (tables `0xf751b8`, then `0xf751b0`; the name made from C text when asked), like NamedTextRef |
+| `0x805500` | ForwardBE79B0 | `0xbe79b0` with its two arguments; returns the first argument it was given |
+| `0x80f700` | ClearPair | Clears two values |
+| `0x80f710` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x816100` | WithReference8155F0 | Calls `0x8155f0` with a temporary reference (table `0xf75b0c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x819240` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x81cfc0` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x81e8f0` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x820f70` | WithReference8155F0 | Calls `0x8155f0` with a temporary reference (table `0xf75b0c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x83cef0` | ObjectArray52::Resize | Makes an array of 52-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe605cb`, `0x83cf31`, `0x83b340`, `0xddcf39`, `0x83cf70`, `0x83cf6e`, `0x83b2e0`, `0xddcf99` |
+| `0x841ed0` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe60b8b`, `0x841f11`, `0x41d920`, `0xddcf39`, `0x841f50`, `0x841f4e`, `0x734070`, `0xddcf99` |
+| `0x84f550` | ClearPair | Clears two values |
+| `0x84f560` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84f730` | ClearPair | Clears two values |
+| `0x84f740` | ClearPair | Clears two values |
+| `0x84f750` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84f810` | ClearPair | Clears two values |
+| `0x84f820` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84f8e0` | ClearPair | Clears two values |
+| `0x84f8f0` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84f9b0` | ClearPair | Clears two values |
+| `0x84f9c0` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84fa80` | ClearPair | Clears two values |
+| `0x84fa90` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84fb50` | ClearPair | Clears two values |
+| `0x84fb60` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84fc20` | ClearPair | Clears two values |
+| `0x84fc30` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84fcf0` | ClearPair | Clears two values |
+| `0x84fd00` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84fdc0` | ClearPair | Clears two values |
+| `0x84fdd0` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84fe90` | ClearPair | Clears two values |
+| `0x84fea0` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x84ff60` | ClearPair | Clears two values |
+| `0x84ff70` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x863b60` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x87bbe0` | ClearPair | Clears two values |
+| `0x87bbf0` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x8ae4b0` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x8b0ae0` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x8b49f0` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x8b6380` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x8f8cf0` | ConstructorF7CDB8 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf7cdb8`; returns the object |
+| `0x8fb1a0` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x8ff690` | ClearPair | Clears two values |
+| `0x909b40` | ClearPair | Clears two values |
+| `0x909b50` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x909e40` | ClearPair | Clears two values |
+| `0x909e50` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x90b310` | ConstructorF264E4 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf264e4`; returns the object |
+| `0x90b390` | ConstructorF26520 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf26520`; returns the object |
+| `0x969220` | ClearPair | Clears two values |
+| `0x969230` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x969500` | ClearPair | Clears two values |
+| `0x969510` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x969e10` | ClearPair | Clears two values |
+| `0x969e20` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x96a0f0` | ClearPair | Clears two values |
+| `0x96a100` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x96da60` | ClearPair | Clears two values |
+| `0x96da70` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x96dd40` | ClearPair | Clears two values |
+| `0x96dd50` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x96e020` | ClearPair | Clears two values |
+| `0x96e030` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x96e300` | ClearPair | Clears two values |
+| `0x96e310` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x97b930` | ClearPair | Clears two values |
+| `0x97b940` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x97ba00` | ClearPair | Clears two values |
+| `0x97ba10` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x97bad0` | ClearPair | Clears two values |
+| `0x97bae0` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0x981600` | ForwardBE79B0 | `0xbe79b0` with its two arguments; returns the first argument it was given |
+| `0x9835e0` | NamedTextRefF7F764::NamedTextRefF7F764 | Constructor of a text reference found by name (tables `0xf7f744`, then `0xf7f764`; the name made from C text when asked), like NamedTextRef |
+| `0x9868d0` | NamedTextRefF7CF80::NamedTextRefF7CF80 | Constructor of a text reference found by name (tables `0xf7cf78`, then `0xf7cf80`; the name made from C text when asked), like NamedTextRef |
+| `0x99fff0` | WithReference98A6E0 | Calls `0x98a6e0` with a temporary reference (table `0xf7ff20`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x9a7ee0` | WithReference98BC00 | Calls `0x98bc00` with a temporary reference (table `0xf7ff18`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x9c4890` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0x9d7a50` | WithReference98A770 | Calls `0x98a770` with a temporary reference (table `0xf7ff1c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0x9d8170` | ObjectArray52::Resize | Makes an array of 52-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe7528b`, `0x9d81b1`, `0x9955d0`, `0xddcf39`, `0x9d81f0`, `0x9d81ee`, `0x9d7050`, `0xddcf99` |
+| `0x9e12f0` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0x9e1310` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0xa2a360` | NamedTextRefF8926C::NamedTextRefF8926C | Constructor of a text reference found by name (tables `0xf8925c`, then `0xf8926c`; the name made from C text when asked), like NamedTextRef |
+| `0xa591e0` | ObjectArray68::Resize | Makes an array of 68-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe8228b`, `0xa59221`, `0xa58e00`, `0xddcf39`, `0xa59260`, `0xa5925e`, `0xa58d90`, `0xddcf99` |
+| `0xa65670` | NamedTextRefF2951C::NamedTextRefF2951C | Constructor of a text reference found by name (tables `0xf29484`, then `0xf2951c`; the name made from C text when asked), like NamedTextRef |
+| `0xa7e700` | WithReference7CBF50 | Calls `0x7cbf50` with a temporary reference (table `0xf72040`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xa8f540` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe857cb`, `0xa8f581`, `0x471cf0`, `0xddcf39`, `0xa8f5c0`, `0xa8f5be`, `0x4c5f30`, `0xddcf99` |
+| `0xaa1000` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe86c2b`, `0xaa1041`, `0xa9a020`, `0xddcf39`, `0xaa1080`, `0xaa107e`, `0xa9ab80`, `0xddcf99` |
+| `0xab42d0` | WithReferenceAAF2E0 | Calls `0xaaf2e0` with a temporary reference (table `0xf92a9c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xab4380` | WithReferenceAAF2E0 | Calls `0xaaf2e0` with a temporary reference (table `0xf92a9c`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xab5e10` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe880fb`, `0xab5e51`, `0x7a7090`, `0xddcf39`, `0xab5e90`, `0xab5e8e`, `0xa7ca10`, `0xddcf99` |
+| `0xabfec0` | ObjectArray88::Resize | Makes an array of 88-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe885ab`, `0xabff01`, `0xabed50`, `0xddcf39`, `0xabff40`, `0xabff3e`, `0xabee60`, `0xddcf99` |
+| `0xac2de0` | NamedTextRefF93478::NamedTextRefF93478 | Constructor of a text reference found by name (tables `0xf93470`, then `0xf93478`; the name made from C text when asked), like NamedTextRef |
+| `0xad7780` | WithReferenceAD6EF0 | Calls `0xad6ef0` with a temporary reference (table `0xf952e0`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xadfba0` | WithReference98BC00 | Calls `0x98bc00` with a temporary reference (table `0xf7ff18`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xae4f40` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe8bf6b`, `0xae4f81`, `0x4785f0`, `0xddcf39`, `0xae4fc0`, `0xae4fbe`, `0xae3290`, `0xddcf99` |
+| `0xaf07c0` | WithReferenceAEFF30 | Calls `0xaeff30` with a temporary reference (table `0xf96618`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xaf2490` | WithReference4AAD80 | Calls `0x4aad80` with a temporary reference (table `0xf30b40`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xaf5160` | WithReference98BC00 | Calls `0x98bc00` with a temporary reference (table `0xf7ff18`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xb01930` | ConstructorF29484 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf29484`; returns the object |
+| `0xb01a20` | ConstructorF2951C | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf2951c`; returns the object |
+| `0xb10990` | ConstructorF97EAC | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf97eac`; returns the object |
+| `0xb10c20` | ConstructorF97EB4 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf97eb4`; returns the object |
+| `0xb10d80` | ConstructorF97EB4 | Constructor: builds the base part (`0xbd1550` (TextRef::TextRefEmpty)), then sets its own table `0xf97eb4`; returns the object |
+| `0xb22f20` | WithReferenceB21200 | Calls `0xb21200` with a temporary reference (table `0xf98758`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xb306d0` | WithReferenceB2FBC0 | Calls `0xb2fbc0` with a temporary reference (table `0xf98f98`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xb32a80` | NamedTextRefF990A8::NamedTextRefF990A8 | Constructor of a text reference found by name (tables `0xf990a0`, then `0xf990a8`; the name made from C text when asked), like NamedTextRef |
+| `0xb531a0` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0xb54a30` | WithReferenceB53610 | Calls `0xb53610` with a temporary reference (table `0xf9a9a0`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xb7d000` | WithReferenceB24230 | Calls `0xb24230` with a temporary reference (table `0xf975cc`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xb7d0b0` | WithReferenceB1B930 | Calls `0xb1b930` with a temporary reference (table `0xf98464`, built on the reference base `0xF26AE0`) to the given object, then destroys the reference (`0x40f730`) |
+| `0xb86270` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0xb8cae0` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe98e9b`, `0xb8cb21`, `0x4aa730`, `0xddcf39`, `0xb8cb60`, `0xb8cb5e`, `0xb897f0`, `0xddcf99` |
+| `0xb92910` | NamedTextRefF9C774::NamedTextRefF9C774 | Constructor of a text reference found by name (tables `0xf9c76c`, then `0xf9c774`; the name made from C text when asked), like NamedTextRef |
+| `0xb99660` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0xb99720` | FreeMember0 | Frees the block kept at +0x0, when there is one, and clears it |
+| `0xba4f10` | NamedTextRefF9D0EC::NamedTextRefF9D0EC | Constructor of a text reference found by name (tables `0xf9d0e4`, then `0xf9d0ec`; the name made from C text when asked), like NamedTextRef |
+| `0xbad310` | ForwardCDED30 | `0xcded30` (SlotPool::Init) with its two arguments; returns the first argument it was given |
+| `0xbb0370` | ObjectArray28::Resize | Makes an array of 28-byte objects hold n new ones: destroys and frees the old ones (the count kept in front), then allocates n, constructs them and keeps the count in front; returns n. Item functions: `0xe9c01b`, `0xbb03b1`, `0xbafa20`, `0xddcf39`, `0xbb03f0`, `0xbb03ee`, `0xbb0300`, `0xddcf99` |
+| `0xbe3d50` | ConstructorFA5614 | Constructor: builds the base part (`0xc57b00`), then sets its own table `0xfa5614`; returns the object |
+| `0xbf9dd0` | ConstructorFA59E8 | Constructor: builds the base part (`0xc31000`), then sets its own table `0xfa59e8`; returns the object |
+| `0xc189f0` | ConstructorFAFCD0 | Constructor: builds the base part (`0xc16e90`), then sets its own table `0xfafcd0`; returns the object |
+| `0xc46960` | ClearPair | Clears two values |
+| `0xc77360` | ClearPair | Clears two values |
+| `0xc77390` | ForwardBE79B0 | `0xbe79b0` with its two arguments; returns the first argument it was given |
+| `0xcc17f0` | CallCC1D70 | Calls `0xcc1d70` |
+| `0xcc2ce0` | CallCC4520 | Calls `0xcc4520` |
+| `0xcc3e40` | CallCC45B0 | Calls `0xcc45b0` |
+| `0xcc4f10` | CallCC5610 | Calls `0xcc5610` |
+| `0xce75e0` | ClearPair | Clears two values |
+| `0xce75f0` | Table20::Free | Frees a table of 20-byte entries (count at +4): for each entry the blocks of its pointer array (+4, count +8), that array and its block at +0xC; then the table itself, clearing the pointer |
+| `0xf043b0` | CallCC2660 | Calls `0xcc2660` |
+| `0xf25630` | CallCC1F00 | Calls `0xcc1f00` |
+| `0xf25650` | Call401020 | Calls `0x401020` |
+| `0xf25670` | Call401020 | Calls `0x401020` |
+| `0xf25690` | Call401020 | Calls `0x401020` |
+| `0xf256b0` | CallCC2930 | Calls `0xcc2930` |
+| `0xf256d0` | Call401020 | Calls `0x401020` |
+| `0xf256f0` | Call401020 | Calls `0x401020` |
+| `0xf25710` | CallCC49D0 | Calls `0xcc49d0` |
+| `0xf25730` | CallCC4A00 | Calls `0xcc4a00` |
+| `0xf25750` | Call401020 | Calls `0x401020` |
+| `0xf25770` | Call401020 | Calls `0x401020` |
+| `0xf25790` | Call401020 | Calls `0x401020` |
+| `0xf257b0` | CallCC56D0 | Calls `0xcc56d0` |
+| `0xf257d0` | Call401020 | Calls `0x401020` |
+| `0xf257f0` | Call401020 | Calls `0x401020` |
