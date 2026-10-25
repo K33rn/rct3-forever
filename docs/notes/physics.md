@@ -172,3 +172,8 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbc8aa0` | Object::AimBC8AA0 | In outline: works out an object's facing toward a point (`0xBC8500`), normalising the way to it, and applies it (`0xBC5D50`) |
 | `0xa19e30` | Camera::MoveA19E30 | In outline: moves a camera toward a point: measures the way, slows down near the end (under a distance and above a limit, +0x10C) and eases its speed (`0xDDEBC0`) |
 | `0xb02a00` | Animal::BlendPoseB02A00 | In outline: when not flagged (+0x2FC), blends an animal's pose toward the next (`0xB01420`, `0xC2F650`) and its positions (Vector::LerpInto), the blend kept between 0 and 1 |
+| `0xc1f1b0` | Polygon::ClipC1F1B0 | In outline: clips a polygon against a plane: keeps the points on the inside and adds a point where an edge crosses (by the signs of their distances) |
+| `0xa63d10` | Camera::ZoomA63D10 | In outline: moves a camera's two values (+0x34 toward +0x3C, +0x38 toward +0x40) by steps when they differ by more than a little (`0xA6B430`) |
+| `0xc75800` | Effect::SetParamC75800 | In outline: sets one of an effect's settings by number (0 to 0xB and up) from the value given, kept between 0 and 1 for some |
+| `0xcd0cf0` | Shapes::JoinCD0CF0 | In outline: works out the points joining two shapes (`0xCD0510`), the distance between them and a count of steps from it (`0xFC3484` per unit), eased (`0xDDEBC0`) |
+| `0x95fce0` | Grid::Walk95FCE0 | In outline: steps through grid cells along a direction by the signs of its parts, counting the cells crossed on each axis |

@@ -188,3 +188,8 @@ Tracked rides, flat rides and their cars and trains.
 | `0xc248e0` | Skeleton::AimC248E0 | In outline: turns a chain of bones toward a target point (arctangents, Vector::RotateAround), like Skeleton::PoseC29300 |
 | `0xc2adf0` | Skeleton::DebugDrawC2ADF0 | In outline: draws a model's bones for the developers: each bone and its links in greys and reds (`0xBF6E70` with colours 0xFFBFBFBF, 0xFF7F7F7F, 0xFFBF0000, 0xFFFF0000) |
 | `0xc286d0` | Skeleton::UpdateAllC286D0 | In outline: another whole-skeleton bone update like Skeleton::UpdateAllC26EF0 |
+| `0x509c50` | Car::SetMode509C50 | In outline: switches a ride car's mode (+0xE0, 3 handled first) to the one given, checking its parts (`0x5094B0`) |
+| `0x5e77c0` | TrackedRide::CheckPlace5E77C0 | In outline: checks a track piece being placed (when +0x68 is clear) with its two rotations (Clamp0To3), the ride's track (TrackedRide::TrackInterface) and the tile it is on (OffsetRef::Owner2) |
+| `0x5c4eb0` | TrackedRide::HitTest5C4EB0 | In outline: whether a ray hits a ride's part (`0xBC7940`) when it is shown (`0x5C1590`, not flag 0x10000), turning the test half a turn (Matrix::TurnAboutZ by pi) for parts flagged 0x10 |
+| `0x5c4740` | TrackedRide::Select5C4740 | In outline: selects or highlights a ride's part at a cell (for rides of kind 3 or flag 0x40 only, otherwise `0x5C2590`), by its flags (+0x190, +0x18C) |
+| `0x932160` | TrackedRide::WaterSplash932160 | In outline: for a water ride's track (TrackedRide::TrackInterface) on a tile of kind 2 or more (OffsetRef::Owner2), works out the splash from the car's height and speed with the water flow manager (WaterFlowManager::Get) |

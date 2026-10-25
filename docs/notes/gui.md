@@ -624,3 +624,8 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x691d80` | Layout::Snap691D80 | In outline: snaps a box's position to whole pixels and checks it against the boxes given (overlap tests), giving 1 when it fits |
 | `0x6bbae0` | Window::Build6BBAE0 | In outline: builds a window from a shared title (`0x1305DD0`) and a list (Listener440) |
 | `0x9dc0d0` | Window::Build9DC0D0 | In outline: builds a window from a title with a list box (`0x65A2D0`, `0x6AB2A0`, ListBox::ListBox) |
+| `0x9d8740` | DatWindow::Open9D8740 | In outline: when not already open (+0x9C), makes a 0x70-byte GUI description (GUI2_DatDesc) for the object (+0x98) and opens it (`0x9D7430`) |
+| `0x9c3b50` | Window::Build9C3B50 | In outline: builds a window from a shared title (`0x13414A0`, `0x67DAC0`) and a part with the shared text `0x12FEF8C` (`0x6AB4E0`, 0x210 wide) |
+| `0xa31430` | Label::FormatValueA31430 | In outline: makes a value's text by its kind (+0x54: 1, ...): the number scaled by its unit (+0x58 +0x10, `0xCD2520`, `0x442120`) |
+| `0xa236b0` | Window::BuildA236B0 | In outline: builds a window like Window::BuildA23FD0 from the shared title `0x1342724` |
+| `0x9b6980` | ListWindow::Fill9B6980 | In outline: fills a list window with up to 8 rows (ListWindow::SetCount), each with its text, and lays them out (Window::UpdateRect) |

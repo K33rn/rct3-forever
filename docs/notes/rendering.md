@@ -361,3 +361,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbc1860` | Model::BuildPartsBC1860 | In outline: builds the parts of a model up to a count (+4), when it is ready (+0xDD): goes over its lists and adds the parts that fit |
 | `0x926780` | Water::DebugDraw926780 | In outline: when the developers' water view is on (`0x1103B9C`, +0x315), draws the water's lines and points in green, red, yellow and magenta (Colour::ToARGB) by the view mode (+0x310) |
 | `0x58dfd0` | Placement::DebugDraw58DFD0 | In outline: when the developers' view is on (`0x12F54C0`), draws a placement's points and links in magenta (Colour::ToARGB, Registry::Ensure, `0x481620`) for a few kinds |
+| `0x8595a0` | SceneryRenderer::DrawFaded8595A0 | In outline: draws scenery parts (+0xE0) for the current device (ForCurrent(3)) with a fade amount below 1 scaled into a byte, skipping parts with flag 0x10 |
+| `0x8ca830` | Terrain::DrawPass8CA830 | In outline: another terrain pass: visible rows (`0x8BEEF0` on `0x1400160`), a scaled view (Matrix::ScaleOffset2D) and batches (`0x8C49D0`, `0x8534A0`) |
+| `0x999310` | FireworkLauncher::Fire999310 | In outline: fires from a firework launcher: finds its free slots (FireworkLauncher::FindSlots_(2)), aims the shot (`0x445270`, `0x445D40`) along its direction and launches it (`0xC21230`) |
+| `0x858e50` | SceneryRenderer::DrawList858E50 | In outline: another scenery draw list like SceneryRenderer::DrawList857340, over the parts at +0xC0 |
+| `0xbd82a0` | Text::LayoutBD82A0 | In outline: lays out a text with its markup: when on (Flags::Bit0), goes over its characters and splits out the parts in braces (`{`, WideString::Substring) to handle them (`0xBD77C0`) |

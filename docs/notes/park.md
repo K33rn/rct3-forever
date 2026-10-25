@@ -329,3 +329,7 @@
 | `0xb9e920` | PathGrid::RebuildB9E920 | In outline: a timed rebuild of a path grid inside a critical section, over the terrain (a 90 by 90 grid), for the size given |
 | `0x8e16e0` | Terrain::Level8E16E0 | In outline: evens out a set of terrain heights (+0x196 of them): joins the ones within a small step of each other and snaps them (Values4::Snap with 0.01) when flagged (+0x194) |
 | `0x7162e0` | Path::Build7162E0 | In outline: builds a path piece from a description (`0x7141A0`), making the path manager when needed and giving an error by case (the text `ERROR_OUTOFMEMORY` among them) |
+| `0xa7de70` | Shop::UpdateA7DE70 | In outline: a shop or stall's update when not flagged (+0x1C4): with its slot (+0x1F4) set, refreshes its items (`0x4CDE30`, `0x4D0CB0`) |
+| `0xbb0d30` | Shop::ServeBB0D30 | In outline: serves at a shop when not flagged (+0x1C8) and at least two are given: checks the slot (+0x1C4, +0x1E4) and the queue (+0x1D8) and starts the sale (`0x4AD740`) |
+| `0x702400` | Tool::Area702400 | In outline: finds the ground under the mouse (MainCamera::Get, `0xCD79C0`, `0x8C5360`) and the rectangle of cells it covers (`0x702110`) for an area tool |
+| `0x7227f0` | Path::FindLink7227F0 | In outline: goes over a path's points (Path::Points) and finds the one that links up with the kind given, by case (`0x71EA30`, `0x71EAE0`) |
