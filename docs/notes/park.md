@@ -74,9 +74,9 @@
 | `0x984000` | ResearchCategoryInstance::Percent | The category's progress (+0x80) as a whole percentage (times 100, rounded). Slots 4 and 12 of ResearchCategoryInstance |
 | `0x9843b0` | ResearchCategoryInstance::TitleText | The value of the text `Man_Research` (looked up through `0x41CB90`). Slot 3 of ResearchCategoryInstance |
 | `0x506320` | RideCarCrash::Reset | When a crash is under way (+0xF0), clears it and its value at +0xDC. Slots 3 and 4 of RideCarCrash |
-| `0x786d20` | GuestInjectionPoint::Register | Registers the object with `0xCDEE80`, keeping the handle it gives at +0x58, then `0x833890`. Slots 9 and 10 of GuestInjectionPoint |
+| `0x786d20` | GuestInjectionPoint::Register | Registers the object in a slot pool (SlotPool::Add, `0xCDEE80`), keeping the handle it gives at +0x58, then `0x833890`. Slots 9 and 10 of GuestInjectionPoint |
 | `0x819200` | LitterBinBehaviour::Register | The same registration for a litter bin (handle at +0x58). Slot 9 of LitterBinBehaviour |
-| `0x818f80` | LitterBinBehaviour::Unregister | When it has a handle (+0x58 not negative), releases it with `0xCDEDE0`, sets it to -1 and runs `0x8338B0`. Slot 11 of LitterBinBehaviour |
+| `0x818f80` | LitterBinBehaviour::Unregister | When it has a handle (+0x58 not negative), releases it (SlotPool::Remove, `0xCDEDE0`), sets it to -1 and runs `0x8338B0`. Slot 11 of LitterBinBehaviour |
 | `0x40ddc0` | ManagedObject::Slot19 | Calls `0x771F90` with 0, then deletes the object kept at +0x2C (its deleting destructor with 1) and clears it. Slot 19 of ManagedObject |
 | `0x40df10` | ManagedObject::Slot28 | Calls `0x771E50` with 0, then deletes the object at +0x2C and clears it. Slot 28 of ManagedObject |
 | `0x87ef00` | SIDDatabaseEntry::ScaledValue | Ten times what the entry's slot 0 gives, at most 10,000. Slot 4 of SIDDatabaseEntry |
