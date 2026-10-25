@@ -22,7 +22,7 @@ struct ObjectRef {
     void **vtable;
     Handle *handle;   // +0x4
     ListNode node;    // +0x8: in handle->refs
-    int32_t unknown;  // +0x10: not touched here
+    void *owner;      // +0x10: the reference itself, set when it's made
     int32_t extra;    // +0x14
     uint8_t flag;     // +0x18
 };
@@ -57,6 +57,27 @@ static void join(ObjectRef *r, Handle *h) {
 }
 
 static void changed(ObjectRef *r) { ((void(__fastcall *)(ObjectRef *))r->vtable[0])(r); }   // the class's own reaction
+
+// ---- Construct: a new reference, to nothing (the null handle); returns this ---------------------------------
+// One class of reference (vtable 0xf26ae0) has its constructor copied 13 times.
+
+static volatile long g_constructs;
+
+static ObjectRef *__fastcall construct(ObjectRef *r) {
+    g_constructs++;
+    r->vtable = (void **)0xf26ae0;
+    r->owner = r;
+    join(r, null_handle());
+    return r;
+}
+
+static const uint32_t construct_copies[] = {
+    0x42e030, 0x6e7580, 0x6fcf20, 0x71f480, 0x746550, 0x762940, 0x77a500, 0x7a3370,
+    0x7bd350, 0x876460, 0x876500, 0xa02100, 0xa8dea0,
+};
+static const uint8_t construct_original[] = {0x56, 0x8b, 0xf1, 0xc7, 0x06, 0xe0, 0x6a, 0xf2,
+                                             0x00, 0x89, 0x76, 0x10, 0xe8};
+REWRITE_COPIES("ObjectRef::Construct", construct_copies, construct_original, construct, &g_constructs);
 
 // ---- Assign(other): refer to what `other` refers to; returns this ------------------------------------------
 

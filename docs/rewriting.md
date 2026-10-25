@@ -112,6 +112,10 @@ function with many copies.
 | `ObjectRef::Assign` | 108 copies (e.g. `0x410100`) | Makes a reference point at what another one points at: leaves the old handle's list of references, releases it, joins the new one's | Vanilla Hills: 130,831 calls |
 | `ObjectRef::DeleteTarget` | 31 copies (e.g. `0x490800`) | Deletes the object a reference points at and points it at nothing | Vanilla Hills: 191 objects deleted through it |
 | `ReferenceField::Load` | 90 copies (e.g. `0x44eeb0`) | Reads a reference from a save file: the saved object id (from the stream's buffer, or by the stream's read `0x809210`), turned into the loaded object's id (`0x808840`), then points the reference at that object's handle (`0x805650`) | Vanilla Hills: 4,631 references loaded through it while the scenario opened |
+| `ObjectRef::Construct` | 13 copies (e.g. `0x42e030`) | Makes a new reference (class `0xf26ae0`) pointing at nothing: joins the null handle's list of references | Vanilla Hills: 100,805 references made |
+| `Pool::Free` | 20 copies (e.g. `0x8501c0`) | Puts an item back on its pool's free list; when every item of the pool is free, the pool's blocks go back to memory | Vanilla Hills: 2,877,853 calls in 6 minutes |
+| `StructArrayField<size>::Size` | 62 copies for structs of 3 to 116 bytes (e.g. `0x460a90` for 28) | Bytes an array of structs saves as: 8 (its length and count) plus each struct's fields' sizes | Vanilla Hills saved: 3,600 calls over 11 struct sizes |
+| `StructArrayField<size>::Save` | 59 copies for structs of 3 to 116 bytes (e.g. `0x460960` for 28) | Saves an array of structs: its length, its count, then each struct's fields, keeping the save file's running checksum | Vanilla Hills saved through it (1.5 MB) and loaded back intact |
 | `Attraction::IdealGuests` | `0xa88450` | A non-ride attraction's share of IdealGuests: 3 x its value at +0x70 | (equivalence test; the parks tried have no such attraction) |
 
 ## Good next candidates

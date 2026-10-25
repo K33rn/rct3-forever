@@ -10,6 +10,7 @@
 // your copy each time.
 #include "../../forever/src/rewrite/rewrite.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <vector>
 #include <functional>
@@ -142,6 +143,7 @@ static LONG WINAPI crashed(EXCEPTION_POINTERS *x) {
 static bool check(const rewrite::Entry *e, const Test &t, int iterations, uint64_t seed) {
     static const struct { unsigned short bits; const char *name; } fpu[] = {{0x000, "24"}, {0x200, "53"}, {0x300, "64"}};
     Rng rng{seed};
+    if (getenv("EQUIV_VERBOSE")) printf("    0x%06x\n", (unsigned)e->at);
     for (int it = 0; it < iterations; it++) {
         t.setup(rng);
         if (t.data) memcpy(g_data0.data(), (void *)DATA, DATA_SIZE);
@@ -237,6 +239,29 @@ static void __fastcall stub_destroy(void *self, void *, int32_t flag) {
     record(0x2, (void *)(uintptr_t)flag);
 }
 
+// the save writer: record what is written (lengths and counts, 4 bytes at a time)
+static void __fastcall stub_writer_write(void *writer, void *, const void *data, int32_t size) {
+    record(0xbe4060, writer);
+    record(0xbe4060, (void *)(uintptr_t)size);
+    record(0xbe4060, (void *)(uintptr_t)(size == 4 ? *(const uint32_t *)data : 0));
+}
+// fields of saved structs
+static int32_t __fastcall stub_field_size(void *self, void *, void *item) {
+    record(0x3, self);
+    record(0x3, item);
+    return (int32_t)(((uintptr_t)self ^ (uintptr_t)item) & 0xfff);
+}
+static void __fastcall stub_field_save(void *self, void *, void *item, void *writer) {
+    record(0x4, self);
+    record(0x4, item);
+    record(0x4, writer);
+}
+static int32_t __fastcall stub_own_size(void *self, void *, void *object) {
+    record(0x5, self);
+    record(0x5, object);
+    return *arena<int32_t>(8);
+}
+
 static void stub(uintptr_t at, void *with) {
     uint8_t *p = (uint8_t *)at;
     p[0] = 0xe9;
@@ -252,6 +277,7 @@ static void install_stubs() {
     stub(0x809210, (void *)stub_stream_read);
     stub(0x808840, (void *)stub_resolve_id);
     stub(0x805650, (void *)stub_handle_for);
+    stub(0xbe4060, (void *)stub_writer_write);
 }
 
 // ---- the tests ----------------------------------------------------------------------------------------------
@@ -473,7 +499,85 @@ static std::vector<Test> tests() {
                       arena<void>(0x900))};
               }};
 
-    for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load}) {
+    // a new reference: joins the null handle's list
+    Test construct{0x42e030, handles, [](void *fn) {
+                       return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                   }};
+
+    // a pool set at 0x100 of 4 pools at 0x200 (20 bytes each), each with up to 3 blocks of up to 4 items and a free
+    // list with room for all of them; freeing the last item of a pool frees its blocks
+    Test pool_free{0x8501c0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       arena<void *>(0x100)[0] = arena<void>(0x200);
+                       for (int k = 0; k < 4; k++) {
+                           int32_t *p = arena<int32_t>(0x200 + 20 * k);
+                           int per = r.range(0, 4), blocks = r.range(0, 3);
+                           p[0] = per;
+                           p[1] = (int32_t)(uintptr_t)arena<void>(0x300 + 0x10 * k);
+                           for (int i = 0; i < 4; i++) arena<uint32_t>(0x300 + 0x10 * k)[i] = r.next();
+                           p[2] = blocks;
+                           p[3] = (int32_t)(uintptr_t)arena<void>(0x400 + 0x40 * k);
+                           p[4] = per * blocks ? r.range(per * blocks - 2 > 0 ? per * blocks - 2 : 0, per * blocks - 1)
+                                               : 0;
+                       }
+                       arena<int32_t>(0)[0] = r.range(0, 3);
+                       arena<uint32_t>(0)[1] = r.next();
+                   },
+                   [](void *fn) {
+                       ((void(__fastcall *)(void *, void *, int32_t, uint32_t))fn)(
+                           arena<void>(0x100), nullptr, arena<int32_t>(0)[0], arena<uint32_t>(0)[1]);
+                       return Result{};
+                   }};
+
+    // a struct array field at 0x600 (its fields: up to 3 at 0x680), the array {data, count} `offset` into the object
+    // at 0x800, items at 0x3000; the save writer at 0xa00
+    auto struct_array = [=](Rng &r) {
+        fresh(r);
+        static void *own_vt[3] = {nullptr, nullptr, (void *)stub_own_size};
+        static void *field_vt[4] = {nullptr, nullptr, (void *)stub_field_size, (void *)stub_field_save};
+        uint8_t *f = arena<uint8_t>(0x600);
+        *(void **)f = own_vt;
+        *(void **)(f + 0xc) = arena<void>(0x6c0);
+        *(int32_t *)(f + 0x18) = r.range(0, 3);
+        int offset = r.range(0, 0x40) * 4;
+        *(int32_t *)(f + 0x28) = offset;
+        for (int j = 0; j < 3; j++) {
+            *(void **)arena<uint8_t>(0x680 + 0x10 * j) = field_vt;
+            arena<void *>(0x6c0)[j] = arena<void>(0x680 + 0x10 * j);
+        }
+        uint8_t *array = arena<uint8_t>(0x800 + offset);
+        *(void **)array = arena<void>(0x3000);
+        *(int32_t *)(array + 4) = r.range(-1, 6);
+        for (int i = 0; i < 16; i++) arena<uint32_t>(0xa00)[i] = r.next();
+        *arena<int32_t>(8) = r.range(8, 0x1000);
+    };
+    auto struct_array_size = [](void *fn) {
+        return Result{(uint32_t)((int32_t(__fastcall *)(void *, void *, void *))fn)(arena<void>(0x600), nullptr,
+                                                                                   arena<void>(0x800))};
+    };
+    auto struct_array_save = [](void *fn) {
+        ((void(__fastcall *)(void *, void *, void *, void *))fn)(arena<void>(0x600), nullptr, arena<void>(0x800),
+                                                                 arena<void>(0xa00));
+        return Result{};
+    };
+    // one copy of each struct size
+    for (uintptr_t at : {0x63fa30, 0x4c17d0, 0x54cd80, 0x512d40, 0x455970, 0x460960, 0x44ec90, 0x425260, 0x512b30,
+                         0x815ac0, 0x4c19e0, 0x46da20, 0x98cd50, 0x81d860, 0xb248b0, 0x6be040}) {
+        Test x{at, struct_array, struct_array_save};
+        x.iterations = 20;
+        x.data = false;
+        t.push_back(x);
+    }
+    for (uintptr_t at : {0x63fb60, 0x4c1900, 0x54ceb0, 0x512e70, 0x455aa0, 0x460a90, 0x44edc0, 0x425390, 0x512c60,
+                         0x815bf0, 0x4c1b10, 0xa02020, 0x46db50, 0x98ce80, 0x81d990, 0xb249e0, 0x6be170}) {
+        Test x{at, struct_array, struct_array_size};
+        x.iterations = 20;
+        x.data = false;
+        t.push_back(x);
+    }
+
+    for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free}) {
         x->iterations = 20;
         x->data = false;
         t.push_back(*x);
@@ -502,6 +606,8 @@ static std::vector<Test> tests() {
     return t;
 }
 
+static const char *g_only = getenv("EQUIV_ONLY");   // only the rewrites whose name has this in it
+
 int main(int argc, char **argv) {
     if (argc < 2) { printf("usage: equiv.exe \"<game folder>\\RCT3plus.exe\" [iterations]\n"); return 2; }
     if (strcmp(argv[argc - 1], "--child")) return run_child(argc, argv);
@@ -528,6 +634,7 @@ int main(int argc, char **argv) {
         for (auto n : done) if (!strcmp(n, e->name)) seen = true;
         if (seen) continue;
         done.push_back(e->name);
+        if (g_only && !strstr(e->name, g_only)) continue;
         const Test *t = nullptr;
         for (auto &x : all)
             for (const rewrite::Entry *c = rewrite::list(); c; c = c->next)
