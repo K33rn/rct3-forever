@@ -240,3 +240,24 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x46b5a0` | MoviePlayback::Setup | In outline: looks up the `MoviePlayback` shader by name |
 | `0x90b640` | Water::Puddle | In outline: sets up puddles (`Puddle`, looked up by name) through the water manager |
 | `0xbd4e20` | ResourceTable::MarkBlocked | In outline: marks `BLOCKED` entries of a resource table |
+| `0x753630` | Billboards::Setup3 | In outline: sets up a billboard list with the `BillboardStandard` shader |
+| `0x97bba0` | ShaderSetup::SIFillZ | In outline: compares a shader's name with `SIFillZ` |
+| `0x96a3d0` | ShaderSetup::SIFillZ2 | In outline: compares a shader's name with `SIFillZ` |
+| `0x836aa0` | StyleWindow::Name | In outline: the style name text (`StyleName`) |
+| `0x465860` | Ad::Texture | Looks up the `AdTexture` texture style by name |
+| `0x93c390` | Debug::DrawSolidColourNoZ | Looks up the `DrawSolidColourNoZ` shader (as a list member) |
+| `0x4823c0` | Debug::DrawSolidColourNoZ2 | Looks up the `DrawSolidColourNoZ` shader |
+| `0x45b400` | GUIIcon::Load2 | In outline: loads a `GUIIcon:txs` texture |
+| `0x6b5800` | GUIIcon::Load3 | In outline: loads a `GUIIcon:txs` texture |
+| `0x7aea40` | Terrain::SelectedGrid | In outline: the selected terrain grid's drawing (`TerrainSelectedGrid`) |
+| `0x958dc0` | Water::Reflection | Looks up the `WaterReflection` shader by name and sets it up |
+| `0x430c10` | FlatTag::Setup | Looks up the `FlatTag` shader by name for the GUI renderer |
+| `0x447530` | Terrain::Grid2Stage | Looks up the `TerrainGrid2Stage` shader by name |
+| `0x92fc60` | Debug::NumPolys | Writes `NumPolys: %d` for each item of a list (developer text) |
+| `0x463640` | Ad::StandardBitmap | The `StandardAdBitmap` texture's first texture |
+| `0x9f8130` | Fireworks::Flare2 | In outline: the `Flare2_00` firework flare (as a list member) |
+| `0x8fcf30` | Fireworks::Flares | In outline: the `FWFlares01_02` flares |
+| `0x9bfb70` | ParticleEffects::Find | In outline: compares names with `ParticleEffects` |
+| `0x57bb10` | ParticleEffects::Path | In outline: builds a path in `ParticleEffects` |
+| `0x9a5c00` | Fireworks::MixMasterFile | In outline: the `MixMaster Display.fwd` file |
+| `0x43a730` | Movies::Attract | The `Movies//Attract` folder name |

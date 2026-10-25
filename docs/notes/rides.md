@@ -152,3 +152,18 @@ Tracked rides, flat rides and their cars and trains.
 | `0x85c890` | EarthThump::Sound | In outline: makes the `EarthThump` sound at a random time |
 | `0x54ed80` | Burn::Sound | In outline: makes the `Burn` sound |
 | `0x9d26f0` | PMSound::Data | In outline: the `PMSoundData` entries (numbered) |
+| `0x4cd2b0` | Developer::BreakAllRides | The developers' BreakAllRides command: goes over every attraction and sets each one to break down on its next loop, reporting `All rides set to break on next loop...` |
+| `0xbb5cb0` | TrackSection::TKSCount | In outline: reads a `TKSCount` value from a track section's name |
+| `0xbbe6d0` | Model::HandAttachment | In outline: finds the `attachmentdummyrhand` attachment point (case ignored) |
+| `0x82a3d0` | Ride::RunningSound | In outline: makes a ride's `RunningSound` |
+| `0x882f20` | Resources::StyleFolder | In outline: finds the styles (`style`) with Resources::FindStyles |
+| `0x875e40` | Supports::Path | In outline: builds a path in the `Supports` folder |
+| `0x44e930` | Helicopter::Setup | In outline: sets up the `Helicopter` |
+| `0xad0630` | RotationSpeed::Text | Writes a rotation speed with the unit `rads/s` |
+| `0xcc1020` | Model::FindHead | Finds the `Bip01 Head` bone by name |
+| `0xc23570` | Model::BoneName | A bone's name, or `Unknown bone` |
+| `0xc28e90` | Model::BoneName2 | A bone's name from the model's list, or `Unknown bone` |
+| `0xb0e2f0` | Path::LoadNodes | Reads a `pathnodearray` from the data |
+| `0x4efb90` | Track::Name | The `Track_` name text |
+| `0x4c1000` | Attraction::ClosedText | The `Closed` text |
+| `0xa67b40` | Buggy::Name | The `Buggy` name text |

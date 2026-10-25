@@ -1224,3 +1224,36 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc3ad70` | OverlayFile::ReportBlocked | In outline: builds and reports a message about `BLOCKED` entries |
 | `0x498ec0` | ShaderText::Setup | In outline: sets up text drawing with the `SIOpaqueText` shader (looked up by name) |
 | `0xdfe7e0` | Thread::WaitWithMessages | Waits on handles while still handling the thread's window messages (WaitForMultipleObjects with a timeout, PeekMessage / DispatchMessage), raising the thread's priority meanwhile; `AMUnblock` is its private message |
+| `0xc10d20` | ScannerLexer::GetNextBuffer | The script scanner's yy_get_next_buffer (flex): refills the input buffer, reporting `fatal flex scanner internal error--end of buffer missed` when the buffer's end was passed |
+| `0xcbe360` | ShaderPreprocessorLexer::GetNextBuffer | The same flex yy_get_next_buffer for the shader preprocessor (the same fatal error text) |
+| `0xcbc8e0` | ShaderPreprocessorLexer::PushState | flex's yy_push_state: grows the start-condition stack by 25 (malloc / realloc), reporting `out of memory expanding start-condition stack` when that fails |
+| `0xc0ae30` | ScannerLexer::PushState | The same yy_push_state for the script scanner |
+| `0xc09ae0` | Parser::Error | Formats a parser error (vsnprintf) and makes `unexpected T_SYMBOL` messages readable by cutting them and adding the symbol |
+| `0xc16180` | Parser::ParseText | Parses a script text: sets the scanner's input to the text given, runs the parser and clears the input afterwards |
+| `0xc10e30` | Parser::StartDefault | Starts parsing in the `default` state (looked up by name) and allocates a node (196 bytes, Parser::Allocate) |
+| `0xc0f940` | Parser::NodeDefault | Looks up the `default` state and allocates a parser node |
+| `0xc12680` | Parser::NodeDefault2 | The same for another node kind (`default` state, Parser::Allocate, a constructor) |
+| `0xc12400` | Parser::NodeDefault3 | The same for another node kind |
+| `0xc0f850` | Parser::NodeDefault4 | The same for another node kind |
+| `0xa3e960` | Log::Error | Writes `Error: ` and the message given to the log (SaveWriter::Write), when there is a log |
+| `0xa3e8e0` | Log::Warning | Writes `Warning: ` and the message to the log |
+| `0xa3e860` | Log::Trace | Writes `Trace: ` and the message to the log |
+| `0xbf9a00` | Error::StatusText | Writes an error's text `Status:0x%08x at %s:%d: %s` into the buffer given (at most its size) |
+| `0xc08170` | Application::Ask | Shows a message box titled `Application` (OK, or OK and Cancel when asked) and gives 1 for OK, 2 for Abort, 3 for Retry, 4 for Ignore, 0 otherwise |
+| `0xc08110` | MainWindow::Destroy | Destroys the main window and unregisters the `Main` window class |
+| `0xdfd8d0` | OleAut::Load | Loads `OleAut32.dll` the first time it is needed |
+| `0xc56b20` | Stream::IoEventName | Names a stream's event `Stream%02dIoEvent` |
+| `0xc435c0` | Resource::NullName | Makes the name `Null` |
+| `0xc38520` | Debug::FilesAndLines | The `FilesAndLines` setting text |
+| `0xbe4940` | FileSystem::Zip | Looks up the `ZipFS` file system by name |
+| `0x805cd0` | PersistenceInfo::Register | Registers the `PersistenceInfo` class name and keeps it |
+| `0xc55800` | Resource::Proxy | Looks up the `PROXY` resource type by name |
+| `0x7feac0` | Characters::Load | In outline: loads the `Characters` resources (the text set and the shared texts) |
+| `0xcb27c0` | Text::AppendMain | Appends `Main` (and others) to a text |
+| `0x9eba70` | TestMode::OpenLog | Opens `TestModeLogFile.txt` and writes a start line with the time in milliseconds (Timer::Milliseconds) |
+| `0xc3b860` | ResourceFile::ReadBlocked | Reads a 4-byte value from a resource file (swapping its bytes when the file needs it), for its `BLOCKED` entries |
+| `0x423b70` | Field::float32 | Constructor of a saved field of type `float32` (4 bytes; the field base `0x8088C0` and its table) |
+| `0x44cac0` | Field::bool | Constructor of a saved field of type `bool` (1 byte) |
+| `0x50c680` | Field::managedobjectptr | Constructor of a saved field of type `managedobjectptr` (8 bytes) |
+| `0x4e6050` | Field::managedobjectptr2 | Another `managedobjectptr` field constructor (8 bytes) |
+| `0xc90830` | Colour::DefaultFormat | Sets up a colour value's format (3) |

@@ -219,3 +219,13 @@
 | `0x88c780` | Sign::ReadNoEntry | In outline: reads a sign's `enablenoentry` setting |
 | `0x6b6df0` | PathPlacement::Check2 | In outline: another path placement check with the path manager and terrain (`DFAIL`) |
 | `0x6b67a0` | PathPlacement::Check3 | In outline: another path placement check (`DFAIL`) |
+| `0x6bf870` | Category::Other | Makes the category named `Other` |
+| `0x6bf800` | Category::Clear | Clears a category's values |
+| `0x881db0` | SceneryItem::MissingDependency | Reports `Missing dependency for SceneryItem` (like the other database entries) |
+| `0x771570` | Report::MissingResourceSymbol1 | When the flag (Flags::Bit0) is clear, shows a message box `Missing Resource Symbol` |
+| `0x696130` | Report::MissingResourceSymbol2 | The same `Missing Resource Symbol` report |
+| `0x431360` | Report::MissingResourceSymbol3 | The same `Missing Resource Symbol` report |
+| `0x6e6e40` | EnclosureVisitorsCondition::Name | The game text `ObjectiveCondition_EnclosureVisitors` |
+| `0x6e5e00` | ReleaseAnimalsCondition::Name | The game text `ObjectiveCondition_ReleaseAnimals` |
+| `0x6e5860` | MinAnimalHealthCondition::Name | The game text `ObjectiveCondition_MinAnimalHealth` |
+| `0xb10fa0` | WildAnimal::ItemName | In outline: a wild animal item's name (`WildAnimalItem_` + name) |

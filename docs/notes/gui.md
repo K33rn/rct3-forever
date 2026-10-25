@@ -535,3 +535,38 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x86f3e0` | ObjectGroup::Name | In outline: an object group's name (`Obj_Group`) |
 | `0x4f0a70` | TrackDesigner::StateText | In outline: a state text (`State` + number) |
 | `0x8dc760` | HelpButton::Build | In outline: builds a `Help` button with its images and text |
+| `0xc6c280` | Desktop::Desktop | In outline: the `Desktop` window |
+| `0xa1e6a0` | Ride::SpecialName | In outline: the `Special` name text |
+| `0xbb5470` | AttractionDetails::ButtonFlagName | In outline: a details button flag's name (`ButtonFlag` + name, AttractionDetails::ButtonFlags) |
+| `0x6bdf10` | Money::ShowNoMoney | Shows the game text `NoMoney` (in a message window) when the park cannot afford something |
+| `0x5a49a0` | TrackedRide::ShowCannotEdit | Shows the game text `CannotEditTrackedRideWhileOpen` (in a message window) |
+| `0x61b7a0` | HelpButton::Build2 | In outline: builds a `Help` button with its image and text |
+| `0x993830` | FireworkDisplay::WatchMessage | In outline: a message window with the game text `FireworkDisplay_WatchDisplay` |
+| `0x46d8b0` | PassportPost::SetupPanel | In outline: opens the passport post's setup panel (`Passport_SetupPanel`) |
+| `0x819ab0` | LitterBin::StatisticsPanel | In outline: opens the litter bin's statistics panel (`Bin_Statistics`) |
+| `0x748910` | AvatarEditor::Title | The avatar editor's title (the game text `AvatarEditor_Title`) |
+| `0x6ed440` | Objectives::Button | In outline: the objectives button with the game text `Man_Objectives` |
+| `0x8256d0` | RideEvent::Panel | In outline: the ride events panel with the game text `Obj_Scenery_RideEvents` |
+| `0x622b70` | ProgramInfo::CreditsHelp | Passes slot 2 to every child, then sets the window's text to the game text `ProgramInfoDialog_CreditsPanelTabHelp` |
+| `0x621b50` | ProgramInfo::InfoHelp | The same with `ProgramInfoDialog_ProgramInfoTabHelp` |
+| `0xb70110` | WildAnimalCam::NextRideText | The game text `WAM_NextRide` |
+| `0xb700e0` | WildAnimalCam::PrevRideText | The game text `WAM_PrevRide` |
+| `0xb700b0` | WildAnimalCam::NextCamText | The game text `WAM_NextCam` |
+| `0xb70080` | WildAnimalCam::PrevCamText | The game text `WAM_PrevCam` |
+| `0x496ba0` | Font::System | Looks up the `SystemFont` text resource |
+| `0xc661d0` | Font::Arial | Makes the `Arial` font at the size the GUI settings give |
+| `0x68fc50` | OptionList::SetValue | Sets the value of option n (8 bytes each at +0x190), asserting `_index < m_numOptions` (`out of range`) |
+| `0x68fea0` | OptionList::Set2 | Another option setter with the same `out of range` assertion |
+| `0x6902d0` | OptionList::SetText | Sets option n's text, with the `out of range` assertion |
+| `0x68fd60` | OptionList::SetImage | Sets option n's image (Button::SetSingleImage), with the `out of range` assertion |
+| `0x68ff90` | OptionList::Set3 | Another option setter with the `out of range` assertion |
+| `0x68fdb0` | OptionList::SetImage2 | Another option image setter with the `out of range` assertion |
+| `0x68fd10` | OptionList::Set4 | Another option setter with the `out of range` assertion |
+| `0x68fcc0` | OptionList::Set5 | Another option setter (`0x67B3C0`) with the `out of range` assertion |
+| `0x672440` | Rota::Check | In outline: compares names with `Rota` |
+| `0x672380` | Frontier::Name | The `Frontier` name text |
+| `0x5fe280` | Window::SizeForLanguage2 | A window size that depends on the game's language: 500 wide in German, 460 otherwise, the height from the part at +0x154 (like Window::SizeForLanguage) |
+| `0x5fd4b0` | Window::SizeForLanguage3 | The same, the height from the part at +0xE0 |
+| `0x607570` | Window::SizeForLanguage4 | The same language-dependent width (500 in German, 460 otherwise) |
+| `0x605880` | Window::SizeForLanguage5 | The same language-dependent width (500 in German, 460 otherwise) |
+| `0xb6f920` | WildAnimalList::FixForLanguage | When the game's language is not English, goes over the list's entries (+0x54, count +0x60) and changes the marked ones (`0xB3E390`) |
