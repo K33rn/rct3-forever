@@ -416,3 +416,126 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x809520` | GUI2_CurrentDatDesc::Get | The object kept in `0x12f7eb4`: made the first time it is needed (88 bytes, constructed by `0x63f550` (GUI2_CurrentDatDesc::GUI2_CurrentDatDesc)) and activated; returns it |
 | `0x87ecd0` | FlexiColourGroupCache::Get | The object kept in `0x130ac4c`: made the first time it is needed (72 bytes, constructed by `0x80d930` (FlexiColourGroupCache::FlexiColourGroupCache)) and activated; returns it |
 | `0xa5de40` | Awards::Get | The object kept in `0x134297c`: made the first time it is needed (136 bytes, constructed by `0xa5d6f0` (Awards::Awards)) and activated; returns it |
+| `0x42a430` | QueryInterfaceReport 0x12f0088 | The interface (id in `0x12f0088`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x42a480` | QueryInterfaceReport 0x12f464c | The interface (id in `0x12f464c`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x440f10` | ListMember::LeaveF28CC8 | Destructor (table `0xf28cc8`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x440f50` | ListMember::LeaveF28CCC | Destructor (table `0xf28ccc`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x440f90` | ListMember::LeaveF28CD4 | Destructor (table `0xf28cd4`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x483de0` | ListMember::LeaveF2DFD0 | Destructor (table `0xf2dfd0`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x484020` | QueryInterfaceReport 0x12f0020 | The interface (id in `0x12f0020`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x4ca9b0` | InterfaceD8::Get | The interface (id in `0x12f4c64`) of the object its reference at +0xd8 points to, or null |
+| `0x4ca9f0` | InterfaceD8::Get | The interface (id in `0x13cdf10`) of the object its reference at +0xd8 points to, or null |
+| `0x4caa30` | InterfaceD8::Get | The interface (id in `0x13ce968`) of the object its reference at +0xd8 points to, or null |
+| `0x4ce710` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x4d3ae0` | QueryInterfaceReport 0x12f4f30 | The interface (id in `0x12f4f30`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x4de920` | QueryInterfaceReport 0x12f4f44 | The interface (id in `0x12f4f44`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x4df7b0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x503c90` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x593f60` | ListMember::LeaveF3CF10 | Destructor (table `0xf3cf10`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x620a80` | ListMember::LeaveF43E60 | Destructor (table `0xf43e60`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x670740` | QueryInterfaceReport 0x13412b8 | The interface (id in `0x13412b8`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x678e70` | QueryInterfaceReport 0x12f81fc | The interface (id in `0x12f81fc`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x67b9a0` | QueryInterfaceReport 0x12f8218 | The interface (id in `0x12f8218`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x6a0760` | QueryInterfaceReport 0x1305c18 | The interface (id in `0x1305c18`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x6cd8e0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d2f00` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d2f80` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3000` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3080` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3100` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3180` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3200` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3280` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3300` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3380` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3400` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3480` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3500` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3580` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3600` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3680` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3700` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3780` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3800` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3880` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3900` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3980` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3a00` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6d3a80` | NameText 0x0 | Makes the given text a new copy of the text at +8 of the object `0x0` points to (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6e9360` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6ebca0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x6f26c0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x7291a0` | InterfaceD8::Get | The interface (id in `0x1306444`) of the object its reference at +0xd8 points to, or null |
+| `0x735fd0` | Interface94::Get | The interface (id in `0x12f51b4`) of the object its reference at +0x94 points to, or null |
+| `0x741fb0` | Interface4C::Get | The interface (id in `0x1306920`) of the object its reference at +0x4c points to, or null |
+| `0x757520` | ListMember::LeaveF6C374 | Destructor (table `0xf6c374`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x772c00` | Interface6C::Get | The interface (id in `0x13064bc`) of the object its reference at +0x6c points to, or null |
+| `0x772f70` | Interface104::Get | The interface (id in `0x13063bc`) of the object its reference at +0x104 points to, or null |
+| `0x788eb0` | InterfaceDC::Get | The interface (id in `0x130654c`) of the object its reference at +0xdc points to, or null |
+| `0x7b0750` | Interface138::Get | The interface (id in `0x1309020`) of the object its reference at +0x138 points to, or null |
+| `0x7c3430` | Interface1F0::Get | The interface (id in `0x1309e10`) of the object its reference at +0x1f0 points to, or null |
+| `0x7c44f0` | QueryInterfaceReport 0x1306c0c | The interface (id in `0x1306c0c`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x7eed40` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x7fae20` | ListMember::LeaveF75138 | Destructor (table `0xf75138`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x824790` | QueryInterfaceReport 0x130b598 | The interface (id in `0x130b598`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x827eb0` | Interface8C::Get | The interface (id in `0x1310f90`) of the object its reference at +0x8c points to, or null |
+| `0x828120` | QueryInterfaceReport 0x1103b60 | The interface (id in `0x1103b60`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x8720c0` | ListMember::LeaveF78B60 | Destructor (table `0xf78b60`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x8e94e0` | ListMember::LeaveF7CCBC | Destructor (table `0xf7ccbc`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x946f80` | ListMember::LeaveF7E29C | Destructor (table `0xf7e29c`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0x99bd10` | QueryInterfaceReport 0x13413e8 | The interface (id in `0x13413e8`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0x9b6900` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0x9c4370` | QueryInterfaceReport 0x13414b4 | The interface (id in `0x13414b4`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xa56bd0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xa82680` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb12cb0` | QueryInterfaceReport 0x13ce74c | The interface (id in `0x13ce74c`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xb17a30` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb19c40` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb2d630` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb2f590` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb70140` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb701c0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb7b950` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb7c070` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb7c2e0` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xb7c720` | NameText 0x0 | Makes the given text a new copy of the wide text kept in `0x0` (WideString::FromWide), or the empty text when there is none; returns it |
+| `0xbda9f0` | QueryInterfaceReport 0x13e6b08 | The interface (id in `0x13e6b08`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xbf4f10` | QueryInterfaceReport 0x13e4904 | The interface (id in `0x13e4904`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xc0a5b0` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc09bf0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0a860` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0a750`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0dc50` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0dc80`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0ddb0` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0dde0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0def0` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0df20`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0e2a0` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0e2d0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0e5b0` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0e5e0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0e8b0` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0e8e0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0eca0` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0ecd0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0efb0` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0efe0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0f290` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0f2c0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0f480` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0f4b0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0f680` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0f6b0`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc0f820` | ParserNode::DeletingDestructor | Destroys the parser node (`0xc0d460`) and, when bit 0 of the flag is set, gives its memory back to the parser (Parser::Free); returns it |
+| `0xc1b060` | ListMember::LeaveFAFF14 | Destructor (table `0xfaff14`) of a list member: leaves its list (stopping the program if the list is found broken) |
+| `0xc37970` | QueryInterfaceReport 0x13e6b34 | The interface (id in `0x13e6b34`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xc379c0` | QueryInterfaceReport 0x13e6b34 | The interface (id in `0x13e6b34`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xc37a10` | QueryInterfaceReport 0x13e6b44 | The interface (id in `0x13e6b44`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xc37a60` | QueryInterfaceReport 0x13e6b44 | The interface (id in `0x13e6b44`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xca3810` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca38a0` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca3a20` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca3ae0` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca3be0` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca3da0` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca3ea0` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca41e0` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca4230` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca4280` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca42d0` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca4320` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xca4370` | ChainMember::~ChainMember | Destructor (table `0xfbf370`): takes the object out of its owner's chain (the owner at +0x10, the chain from its +0x3C through each member's +0x14) by linking past it, then puts back the base table `0xfa589c` |
+| `0xcb8b30` | QueryInterfaceReport 0x13e6fdc | The interface (id in `0x13e6fdc`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xcb8b80` | QueryInterfaceReport 0x13e6fcc | The interface (id in `0x13e6fcc`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xcb8bd0` | QueryInterfaceReport 0x13e6fb8 | The interface (id in `0x13e6fb8`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xcb8c20` | QueryInterfaceReport 0x13e6f80 | The interface (id in `0x13e6f80`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xcb8c70` | QueryInterfaceReport 0x13e6f94 | The interface (id in `0x13e6f94`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
+| `0xe03ae0` | QueryInterfaceReport 0x141dcd4 | The interface (id in `0x141dcd4`) of the given object (asking its class through slot 1); when it has none and the second argument is set, reports it (ReportMissingInterface); null when missing |
