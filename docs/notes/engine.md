@@ -1336,3 +1336,24 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x90b410` | Timers::CountDown | Counts each timer (20 bytes each at +4, count +0xC) down by the time times a rate (+0) and removes the ones that run out by moving the last one into their place |
 | `0x940ae0` | Pairs::SortOnce | Sorts a list of pairs (8 bytes each) by their second value, once (marked sorted at +0xC) |
 | `0xc16660` | Bits::AllSet | Whether every block of a range (the block size at +4) has its bit set in the bit list (+0xC, words +0x10) |
+| `0x8fef80` | SortedPointers::FindXY | Binary search of a sorted list of entries (+0x30, count +0x34) for the one at a position (x, y), only among the flagged ones (+8) when asked; gives it and its place |
+| `0x58a6c0` | Object3CC90::Object3CC90 | Constructor (table `0xF3CC90`): keeps the owner given and a copy of a 4x4 matrix |
+| `0xc71b30` | Slots4::Clear | Clears four slots (0x90 bytes each from +0x10), each marked as 1 with every other value 0 |
+| `0xbbd210` | Object::SetMatrixAndMore | Copies a 4x4 matrix into the object (+0x10) and more values after it |
+| `0x713310` | Entries::ClearFlags | Clears a run of flag bytes and values from +0x168 on |
+| `0xb78630` | Entries::FindMatching | Finds the entry (0x70 bytes each) of a list whose +0xC and +0x10 match the object's, and gives its first value |
+| `0x7a2cf0` | SortedTable::FindVersion | Binary search of a sorted table (24-byte entries at +8, count +4) for a 64-bit key (+0x20, +0x24): gives whether it was found and its place |
+| `0x5d11c0` | FlagSlots::Get | The value in the slot of the flag given (1, 2, 4, ... 0x200 for slots 0 to 9), or -1 (pairs with FlagSlots::Set) |
+| `0xe02670` | Keys::Find | The key (16 bytes each, time first; at +0x10, count +0xC) a time falls in: 0 before the first, the last after the last, otherwise by halving |
+| `0xe025f0` | Keys::Find2 | The same key search for another key list (at +8, count +4) |
+| `0xc517a0` | Range::Clip | Writes the overlap of two ranges (an empty range at the start when they do not meet) |
+| `0xbc0b00` | Lod::LevelFor | The detail level to use for the number given, within the object's levels (+4) less the ones held back (+5), or -1 when there are none |
+| `0xc32c60` | NamedList::Find | Finds the entry of a list whose name matches the text given (an empty text when none is given) |
+| `0xbce310` | WideString::FromInt | Writes a whole number as wide text in the base given (digits `0-9a-z`), with a minus sign when negative and at most the length given |
+| `0x8fde70` | Record::Copy9 | Copies a record (the first byte and some values from +4 on) |
+| `0x84dc70` | Record::Copy10 | Copies a record of 19 values |
+| `0x84dbf0` | Record::Copy11 | Copies a record of 19 values (another copy) |
+| `0xc760f0` | Record::Copy12 | Copies a record of 18 values |
+| `0x7fb9c0` | SortedInts::Find | Binary search of a sorted list of numbers: gives whether the number was found and its place (or where it would go) |
+| `0xbc2a30` | Pairs::IndexOf | The number of a pair of ids: finds the first id (+0x24), then the second among its partners (+0x28), and gives their slot (from +0x18) |
+| `0x7e5050` | Key::Matches | Whether an entry matches a search key, by the entry's kind bits (+0xF): kinds 4 and 6 never; kind 0 by its two bytes and the optional third; otherwise by its whole value |

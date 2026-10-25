@@ -580,3 +580,5 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x758880` | Filter::Accepts | Whether an item passes a filter by its kind (+0x120) and option (+0x121): the bits tested in the item's flags (+0x2C) are 1 or 2, 4 or 8, 0x10 or 0x20, or any |
 | `0x63a920` | Window::OutsideEllipse | Whether a point lies outside the ellipse filling the window's area, shrunk by its margin (+0xD4) |
 | `0x9f6490` | List::FindSelected | Looks through a list (+0xE4) for the entry with the id given, keeps its value in the owner (+0xDC, +0x15C) and clears +0x160 |
+| `0x884890` | Columns::Hit | Whether a point falls in column n of a list (column positions at +0xFC), scaled by the list's width |
+| `0x58fd30` | Style::ColourFor | One of six colours of a style (+0x1CC) for a state (0 to 2) and whether it is highlighted; 5 for any other state |

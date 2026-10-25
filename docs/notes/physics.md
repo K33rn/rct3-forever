@@ -103,3 +103,7 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x875160` | UnitSquare::Rotate | Turns a position in a unit square (0 to 1) by a rotation (0 to 3) |
 | `0x47bd90` | Sound::DistanceFade | How loud a sound is from its distance to the listener (`0x10F4620`): 1 inside its near distance (+0x80), 0 beyond its far one (+0x84), straight in between |
 | `0xb1f750` | Matrix::Copy3x4 | Copies the first twelve values of a matrix |
+| `0x94ca00` | Vector::NormaliseFast | Normalises a vector with the fast inverse square root (`0x5F3759DF` and one Newton step), leaving tiny ones as they are |
+| `0x5d3970` | Ease::Out | Eases a time over a total: straight at first, slowing down (squared) over the last stretch; unchanged when the total is too short |
+| `0x9e85f0` | Value::MoveToward | Moves a value toward a target by a rate times the time, stopping at it; gives 1 once it is there |
+| `0xce4920` | Curve::LogBlend | A value between two points' values at a position, eased on a log scale (the factor log10 2) toward one end |

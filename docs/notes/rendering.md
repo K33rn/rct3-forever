@@ -278,3 +278,6 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x959f30` | Light::FadeAlpha | An alpha for a point from its distance to a light's centre (+0x3C, +0x40): full inside its near radius (+0x44), none beyond the far one (+0x48), times its strength (+0x38), in the top byte of a colour |
 | `0xcc68c0` | Nodes::MatrixFor | The matrix (64 bytes) for node n, from the local list (+0x18) or the shared one (+4) by the node's flags, and which one it was |
 | `0x8fdb30` | Quad::UpdateCounts | Sets a shape's vertex and index counts (+0x18, +0x1C) to 4 and 6 when all four of its corners are set, otherwise 0, and keeps the totals `0x133A028` and `0x133A02C` up to date |
+| `0x47c3f0` | Sound::MuteKind | Counts a mute on a kind of sound (`0x12F0168`, or sets it to 10000 when asked) and sets each sound of that kind to silent |
+| `0x9d9c40` | Sizes::Pick | A size in pixels from two choices: one of three bases (0 to 2) times one of three scales (1, 0.5 or `0xF28420`) |
+| `0x7c3080` | Value::Band2 | Which band a value falls in by fixed limits (1, 2, ...) |
