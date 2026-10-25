@@ -234,3 +234,18 @@
 | `0xb9a810` | PathGrid::SetEdges | Sets edge bits on a grid cell (width +0x64, cells of 0x18 bytes at +0x6C, bits at +0x14) and the matching bits on the neighbouring cells for bits 1, 2, 4 and 8 |
 | `0xb9a8c0` | PathGrid::ClearEdges | Clears those edge bits on a cell and its neighbours |
 | `0x874cf0` | GridMarks::MarkRect0 | The same marking of a rectangle as GridMarks::MarkRect, setting byte 0 of each cell |
+| `0x727890` | TileCorners::Pack | Packs eight two-bit corner values into +0x30 and four looked-up four-bit values (from `0xF6A500`) into +0x32 |
+| `0xbd2ca0` | Groups::Totals | For each group, adds up its members' counts (+0x40) into +0x38 and +0x3C, joins their flags into +0x40 and keeps the largest of their +0x44 and +0x48 values |
+| `0xba30b0` | Grid::QueueCell | Moves the flagged objects (+0x60) of a grid cell into the list at +0x8C and sets their +0x58 to 1 |
+| `0x99c2a0` | Grid::SnapToRow | Snaps a position's height down to a whole row (`0x13413B0` apart, kept between 0 and the last row) and keeps its first value at least a minimum |
+| `0x71cb80` | Grid::MarkRectForOwner | For each layer (32 bytes at +0x68, count +0x70) of the object given, sets byte +0x18 of every cell (0x4C bytes) in the rectangle given (coordinates divided by 16) |
+| `0x8dc0c0` | HeightPatch::Average | For each cell of a rectangle (bounds at +4 to +7), averages the four corner heights of the terrain and writes the average to all four corners of the output |
+| `0x8db7a0` | HeightPatch::Flatten | Writes one height to all four corners of each cell of a rectangle: the height given, rounded to steps when a step count is set (+8) |
+| `0x7ea210` | Ticker::Update | Counts a tick (+0x410); while a timer (+0x4D8) is above 0.5 it counts it down, otherwise lowers +0x4DC by an amount that depends on the kind (+0x414) |
+| `0x727d30` | TileQuarter::Corners | The four corner points of a quarter of a tile, picked by the bits of a packed value and the quarter number |
+| `0x727b00` | TileCorners::Count | Counts a tile into one of three totals by its packed corner value (+0x32): the even patterns as the first kind, the higher ones as the second, mixed ones corner by corner; flagged tiles (+0x34) go to the third |
+| `0x729530` | Cell::Quad | The four corner points of a terrain cell (+0x88, +0x89): positions from the cell size and origin, heights from the terrain |
+| `0xbad250` | Rect::SideCell | The cell beside place n along one side (+0x1E4: 0 to 3) of a rectangle at +0x1DC, +0x1E0, when n is within its length (+0x1EC) |
+| `0x838c00` | Grid::RotateCoords | Turns a cell's coordinates by the grid's rotation (+0x17C: 0 to 3) within its size |
+| `0x913620` | Mover::StepBack | Counts down a time (+0x58) and sets the position back along a direction from its node (in `0x133A0F4`, 0x98 bytes each); flags it done (bit 1) when the node is gone |
+| `0xafa0e0` | Terrain::CellColourAt | The colour for a terrain cell at a height (dark grey `0xFF333333` by default), from the flagged layers of the cell (0x2C bytes each) that the height reaches |

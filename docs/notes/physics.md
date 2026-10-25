@@ -57,3 +57,23 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xca35d0` | Matrix::RotateVector | Rotates a vector by this matrix (no translation) into the one given |
 | `0xbc6140` | Segment::Middle | The point halfway between an object's two end points (+0x10C and +0x110, when it has them) |
 | `0x9731c0` | Key::Compare | A sort comparison of two keys of nine values, value by value: -1, 0 or 1 |
+| `0x4cc210` | Object::Matrix | Copies the matrix of the object's part (+0x41C, its matrix at +0x60), or the identity matrix when there is none |
+| `0x4240b0` | Spline::SegmentPoints | The four control points of segment n (points of 0x24 bytes at +0x44): the start, the start plus its out-handle (+0x18), the end plus its in-handle (+0xC) and the end |
+| `0x90c170` | Polygon::Area | The area of a polygon (points of 8 bytes at +0x24, count +0x28), by the shoelace sum |
+| `0x7c3370` | Grid::CurvedOffsets | Turns a position on a grid (width +4, height +5) into two offsets: each from -0.5 to 0.5 across the grid, scaled, squared with its sign kept and scaled again |
+| `0xc1e7e0` | Plane::BoxCornerDistance | Takes the box corner furthest along a plane's normal and gives how far along a direction it lies from the plane; 0 when the direction runs along the plane, otherwise 1 or -1 for the side |
+| `0xb35000` | Grid::SpiralStep | Moves one step along a square spiral out from a cell of a grid (width +4, height +5) and gives whether the new cell is inside the grid |
+| `0x727de0` | Quad::EdgeMiddles | Gives five points made from the averages of pairs of a quad's corner values (its edge middles and centre) |
+| `0xbc61e0` | Segment::MiddleOfEnds | The point halfway between the last points of an object's two end lists (+0x10C and +0x110, points of 0x24 bytes) |
+| `0x5be7f0` | Segment::Direction | The unit direction from the point of the part at +0x2C to that of the part at +0x28, or straight up (0, 0, 1) when they are the same |
+| `0x856550` | Matrix::From4x3 | Expands a matrix of four rows of three into a 4x4 matrix (last column 0, 0, 0, 1) |
+| `0x414270` | Wobble::Update | Sets three wobble values (+0x130 to +0x138) from sines of a phase (+0x150, reset to 5 when it runs out) with their amplitudes (+0x140 to +0x148) |
+| `0x5d3850` | Ease::InOut | Eases a time over a total: slow at the start and the end (squared over the first and last stretch), straight in between; unchanged when the total is too short |
+| `0x7c4690` | SinCos::Lookup | Sine and cosine of an angle from a table of a quarter turn (256 entries), with the signs and order set by the quadrant |
+| `0x7c28a0` | Angle::TurnToward | Turns an angle (+0x110) toward the one given by at most a step (the difference brought into -pi to pi); gives 1 when it turned only part of the way |
+| `0x7a2180` | Objects::AnyNear | Whether any object of the list `0x10EFB90` is closer than a set distance to the point given |
+| `0xa6b190` | VerletPoint::Init | Sets up a moving point for Verlet steps: its position, its previous position (the position minus the velocity given times the time step `0xF8F980`), a damping of 0.99, a weight of 1 and no force |
+| `0xa6eff0` | VerletPoints::AllSettled | Whether every point of a set is nearly still: gives 0 and the squared speed of the first point moving faster than the limit `0x13C2A04`, 1 when none is |
+| `0x505e90` | Vector4::Transform | Transforms a four-value vector by a 4x4 matrix in place |
+| `0xbc4ff0` | Grid::SnapIndex | The number of the nearest whole step for a value (steps of a given size); when the value is not within a tolerance of that step, gives the step it lies in instead and sets the flag |
+| `0x8e30c0` | Bits::MergeLowest | Compares a cost with the best so far: a lower one replaces it and its four two-bit fields; an equal one keeps the lower of each two-bit field (register-passed arguments) |

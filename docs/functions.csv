@@ -1593,7 +1593,7 @@ address,size,name,callers,status
 0x480fe0,142,,1,documented
 0x481190,30,DeletingDestructor,0,rewritten
 0x481220,153,,0,to do
-0x4812c0,156,,0,to do
+0x4812c0,156,,0,documented
 0x481360,175,,0,documented
 0x481450,76,,0,to do
 0x481560,68,,202,documented
@@ -1990,7 +1990,7 @@ address,size,name,callers,status
 0x49c9e0,6,,3,documented
 0x49ca10,45,,2,to do
 0x49cab0,13,,3,to do
-0x49cac0,159,,3,to do
+0x49cac0,159,,3,documented
 0x49cbe0,55,,2,to do
 0x49cc80,107,,1,to do
 0x49ccf0,93,,3,to do
@@ -4081,7 +4081,7 @@ address,size,name,callers,status
 0x584de0,92,,1,to do
 0x584e40,2376,,1,documented
 0x585820,57,,1,to do
-0x585870,157,,2,to do
+0x585870,157,,2,documented
 0x585920,206,,1,to do
 0x5859f0,103,,1,to do
 0x585a60,43,,1,to do
@@ -4127,7 +4127,7 @@ address,size,name,callers,status
 0x58a3d0,43,,1,to do
 0x58a400,255,,1,to do
 0x58a5b0,30,DeletingDestructor,2,rewritten
-0x58a620,155,,0,to do
+0x58a620,155,,0,documented
 0x58a6c0,124,,2,to do
 0x58a7a0,137,,9,to do
 0x58a830,80,,2,to do
@@ -6966,7 +6966,7 @@ address,size,name,callers,status
 0x6ac730,508,,6,to do
 0x6acac0,7,,1,to do
 0x6acad0,13,,4,to do
-0x6acb30,156,,2,to do
+0x6acb30,156,,2,documented
 0x6acbd0,132,,2,to do
 0x6acc60,260,,1,to do
 0x6acd70,43,,18,to do
@@ -11594,7 +11594,7 @@ address,size,name,callers,status
 0x85a5e0,61,,2,to do
 0x85a620,912,,1,to do
 0x85a9c0,265,,1,to do
-0x85aad0,155,,1,to do
+0x85aad0,155,,1,documented
 0x85abc0,30,DeletingDestructor,2,rewritten
 0x85abe0,191,,2,documented
 0x85aca0,120,,1,to do
@@ -11794,7 +11794,7 @@ address,size,name,callers,status
 0x874aa0,40,,0,documented
 0x874c30,27,GlobalCleanup,1,rewritten
 0x874c60,128,,1,documented
-0x874cf0,155,,8,to do
+0x874cf0,155,,8,documented
 0x874d90,161,,1,documented
 0x874e40,161,,2,documented
 0x874f20,234,,1,to do
@@ -13472,7 +13472,7 @@ address,size,name,callers,status
 0x966ba0,109,,0,to do
 0x966d30,30,DeletingDestructor,1,rewritten
 0x966d50,6,,1,to do
-0x966da0,157,,2,to do
+0x966da0,157,,2,documented
 0x966e40,84,,1,to do
 0x966ec0,455,,0,documented
 0x9670d0,75,,2,to do
@@ -13653,7 +13653,7 @@ address,size,name,callers,status
 0x972d70,63,,0,to do
 0x973040,207,,1,to do
 0x973140,127,,1,to do
-0x9731c0,155,,1,to do
+0x9731c0,155,,1,documented
 0x9732b0,313,,0,to do
 0x9733f0,165,,0,to do
 0x9734a0,84,,1,to do
@@ -19617,7 +19617,7 @@ address,size,name,callers,status
 0xbc5eb0,95,,5,to do
 0xbc5fd0,187,,2,to do
 0xbc60c0,22,,1,to do
-0xbc6140,155,,0,to do
+0xbc6140,155,,0,documented
 0xbc61e0,181,,0,to do
 0xbc62a0,270,,0,to do
 0xbc63b0,293,,0,to do
@@ -19908,7 +19908,7 @@ address,size,name,callers,status
 0xbd3dc0,293,,7,to do
 0xbd3fc0,14,,2,to do
 0xbd3fd0,17,,2,to do
-0xbd4060,155,,11,to do
+0xbd4060,155,,11,documented
 0xbd41d0,231,,4,documented
 0xbd4490,25,,3,to do
 0xbd44b0,17,,7,to do
@@ -20217,7 +20217,7 @@ address,size,name,callers,status
 0xbe9420,54,,0,to do
 0xbe9480,142,,1,documented
 0xbe9510,126,,5,to do
-0xbe9590,157,,2,to do
+0xbe9590,157,,2,documented
 0xbe9630,319,,0,to do
 0xbe9780,16,,1,documented
 0xbe97a0,118,,0,to do
@@ -20491,7 +20491,7 @@ address,size,name,callers,status
 0xbfd110,54,,0,to do
 0xbfd170,142,,1,documented
 0xbfd200,112,,5,to do
-0xbfd270,157,,2,to do
+0xbfd270,157,,2,documented
 0xbfd310,306,,0,to do
 0xbfd450,16,,1,documented
 0xbfd560,101,,0,to do
@@ -21404,7 +21404,7 @@ address,size,name,callers,status
 0xc47630,35,,3,documented
 0xc47660,239,,3,to do
 0xc47750,113,,1,to do
-0xc477d0,156,,1,to do
+0xc477d0,156,,1,documented
 0xc478d0,76,,3,documented
 0xc47920,76,,3,documented
 0xc479b0,11,,2,to do
@@ -22121,7 +22121,7 @@ address,size,name,callers,status
 0xca34e0,96,,1,documented
 0xca3540,56,,4,to do
 0xca3580,7,SetTable,2,rewritten
-0xca35d0,153,,0,to do
+0xca35d0,153,,0,documented
 0xca3680,112,,0,to do
 0xca36f0,87,,1,to do
 0xca3750,179,,3,to do
@@ -23106,7 +23106,7 @@ address,size,name,callers,status
 0xceaa40,133,,1,to do
 0xceab10,61,,1,to do
 0xceab50,912,,1,to do
-0xceb030,157,,1,to do
+0xceb030,157,,1,documented
 0xceb140,72,,2,to do
 0xceb190,556,,4,to do
 0xceb3c0,73,,1,to do

@@ -1267,3 +1267,27 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x966da0` | List::Merge | Merges two sorted lists into the one given, using the comparison passed in |
 | `0x85aad0` | Arrays::Compact | Removes the empty entries of a set of parallel arrays, keeping the order, and renumbers the references to them (through the table `0x130CDB0`) |
 | `0xceb030` | Record::Copy | Copies a record (the first byte and the values from +0x10 on) |
+| `0xbf4910` | GroupedList::MoveAcross | Moves an object across the boundary of its group in its owner's list (+0x94, count +0x8C; six groups whose bounds are 12 bytes apart from +0x4C): it swaps places with the entry at the boundary and the boundary moves by one, into the first part on true, out of it on false |
+| `0xbb2220` | Key::MatchesPattern | Whether a key matches a pattern of 16-byte parts (at 0, +0x10, +0x2C, ...): each part must be equal, unless the pattern's part is the wildcard `0xF9EBB4` |
+| `0x87b700` | Record::Copy2 | Copies a record (the first byte and the values from +4 on, skipping +0x18 and +0x1C) |
+| `0x9f89b0` | Record::Copy3 | Copies a record value by value |
+| `0xe03cd0` | SortedTable::Find | Binary search of the table `0x141DCE4` (32-byte entries, count `0x141DCDC`) for a six-part key; gives whether it was found and its place (or where it would go) |
+| `0xb786b0` | Entries::UpdateMatching | Copies the record given over each entry of a list (0x70 bytes each) whose +0xC and +0x10 match its own |
+| `0xaadfc0` | Slots::Clear | Sets every slot value from +0x58 to +0xE4 to -1 (none) |
+| `0xc52060` | Span::Clip | Fills a 32-byte span record for the part of this range (start +0x14 minus +0x10, length +0xC) that lies inside the range given |
+| `0x466970` | PairIds::Get | The number of an unordered pair of numbers: looked up in `0x111EFE0` (by the smaller one), or a new record is added to `0x1106E90` (count `0x12DFFE8`) and its number given |
+| `0xe02530` | Keys::FindFrom | The key (16 bytes each, time first; at +0x10, count +0xC) for a time, starting from a guess: checks the next two, then searches between them and the end |
+| `0xe02470` | Keys::FindFrom2 | The same key search for another key list (at +8, count +4) |
+| `0xc5e9f0` | Object::SetHeld | Switches a mode (+0x110): switched on, it saves the flags (+0x1C), sets bits 0x180 and saves and clears +0xD8 (also in +0x104), +0xF0 and +0xF4; switched off, it puts them back |
+| `0xcd60e0` | WideString::CompareRaw | Compares a wide string with a plain wide text, character by character: -1, 0 or 1 (an empty or missing one counts as the smallest) |
+| `0xca45c0` | PairMap::Find | The value stored for a pair of numbers in a sorted table (12-byte entries at +0x20, count +0x14), found by halving steps; -1 when it is not there |
+| `0x90c710` | Timers::Advance | Adds time to each timer (32-byte entries at +0x40, count +0x48) and removes the ones that have reached their end (+0x10) by moving the last one into their place; then goes over a second list (+0x54) |
+| `0xc197d0` | Bits::PackScaled | Packs the whole part of a number times a constant into three bit fields (10, 9 and 9 bits) of one value |
+| `0xb34ef0` | Progress::Advance | Adds time to a progress value (+0x134, up to 1) and a share of the change times a count (+0xD8) to a second one (+0x150, up to 1); gives whether the first is past a threshold |
+| `0xa6bfd0` | Lists::Remove | Removes an item from the first list (+0x6C, count +0x74) where it is found, keeping the order, or else from the second list (8-byte entries at +0x78, count +0x80) |
+| `0x9c60c0` | Record::CopyResetLimits | Copies a record, setting three of its values (+0x3C, +0x4C, +0x5C) to the largest float instead |
+| `0x970c80` | Description::Differs | Whether two descriptions differ, compared by their kind (1 or 2 compare more of their values); 1 also when the first is missing |
+| `0x59f270` | Object59F270::Object59F270 | Constructor (table `0xF3DC68`): copies a 4x4 matrix's rows, three values, a point and a flag, and starts an empty list |
+| `0x46c6c0` | Entries::CountNegative | How many entries (0x50 bytes each at +0x6C, count +0x70) have a value below 0 at +0x40 |
+| `0xbe63b0` | VertexData::SetElement | Copies element n of a vertex layout (its size from the type table `0x10F2BA8`) into the record at its offset |
+| `0xbfcb60` | Object0FA5B08::Object0FA5B08 | Constructor (tables `0xFA5AA8`, then `0xFA5B08`): joins its owner's list (+0x46C, +0x14) and sets its mode (+0x7C) to 6 or 7 (by the setting `0x13D3175`), with 8 added when flagged |

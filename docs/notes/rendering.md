@@ -263,3 +263,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x43a730` | Movies::Attract | The `Movies//Attract` folder name |
 | `0x9c6210` | Particle::SetColours | Sets a particle description's two colours (+0xAC and +0xB8) from two 0xRRGGBB values, each part from 0 to 1 |
 | `0xbd4060` | Vertex::SizeFromFormat | The size in bytes of a vertex from its format bits: the position (12 or 16), normal and colour parts, texture coordinates (8 bytes each, count in bits 12 to 15) and the rest |
+| `0x42ff50` | Points::UpdateDepth | For point n (0x70 bytes each) sets its depth (+0x24) from the sum of its two vectors and the view matrix, the point at +0x40 from the first vector plus the second scaled, and marks it done (+0x28) |
+| `0xbe8ba0` | Mesh::SetPrimitiveCount | Sets a mesh part's vertex count (from its buffers when given 0x40000000) and from it the number of primitives by its type: 0 points, 1 lines (/2), 2 a line strip (-1), 3 triangles (/3), 4 and 5 a strip or fan (-2) |
+| `0x7aeb50` | Mask::ToPixels | Writes the rows of a bit mask into an image: white with full alpha for set bits, white with no alpha for clear ones |
+| `0x911c80` | Animation::FrameAt | Advances an animation's time (+0x20, wrapping at 1) and from it the frame: the start and end of the frame's span (+0x24, +0x28) and how far into it (+0x2C) |
+| `0x9cbbb0` | Particles::SetCount | Sets the number of particles to draw (+0xBC), scaled by the detail setting and a fade (+0xB8), and the spacing between them (+0xC0) |

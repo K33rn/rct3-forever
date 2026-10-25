@@ -573,3 +573,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6a8220` | NumberField::Update | Keeps the value a number field is bound to (+0xF4) inside its limits, by its kind (+0xF0): 1 a float between +0xF8 and +0xFC, 2 a whole number between +0xF8 and +0xFC, 3 a byte between +0xF8 and +0xF9; then redraws the field (`0x6A7DF0`) |
 | `0x6acb30` | Screen::AreaScale | The width and height of the GUI's area (`0x12F83F0`) divided by the screen's, or 1 and 1 when there is no area |
 | `0x49cac0` | Units::Convert | Converts a value for showing by its kind: 0 and 1 unchanged, 2 through `0x49CA10`, 3 and 4 by the unit setting (`0x10EE248`), 5 times `0x12F4AF4`, anything else 0 |
+| `0x749120` | AvatarEditor::Tick | Advances two looping timers of the avatar editor: one wrapping at +0xD10 and, when not paused (+0xD6C), one wrapping at 1 |
