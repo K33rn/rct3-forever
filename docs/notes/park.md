@@ -361,3 +361,11 @@
 | `0x8af980` | Scenery::RateSpot8AF980 | In outline: works out a spot's rating: sets up (`0x8AED60`), finds what is near it (`0x48C300`, `0x7B9BB0`) and the terrain, keeping the nearest |
 | `0x8fe4e0` | Terrain::Points8FE4E0 | In outline: picks the points of a list inside a box (+0x10 to +0x18) after growing the list when needed (`0x8FDF70`) |
 | `0x82f120` | Footprint::Check82F120 | In outline: checks a footprint's cells (+0x14 of them) turned by a rotation (Footprint::RotateCell) against the terrain heights within a tolerance |
+| `0xa8fcb0` | PoolComplex::SaveA8FCB0 | In outline: makes a pool complex's save data (PoolComplexSaveData) and fills it (`0xA8EF10`), and, when not flagged (+0x78), the rest (`0xA8E970`) |
+| `0x8dc170` | Terrain::Smooth8DC170 | In outline: goes over a rectangle of terrain cells (bounds at +4 to +7) evening out the heights around each |
+| `0xb96820` | PathGrid::CellB96820 | In outline: works out a path grid cell for a point on the terrain by its kind (+4: 0, ...), rounded |
+| `0x565dc0` | Path::Queue565DC0 | In outline: for a queue (kind 0xD), goes over its pieces (+0x114 of them, `0x5D6E80`) when not flagged (+0xF0) |
+| `0x4b0190` | Shop::ItemText4B0190 | In outline: makes a shop item's text when it is set (Entry::IsSet): its name, with its price when it has one |
+| `0x95ad40` | Water::Spread95AD40 | In outline: spreads water from a cell by its kind (+8: 0, ...) to its neighbours (`0x95A570`), growing a shared list by 0x200 when full (`0x95A2C0`, `0x133B4B8`, `0x133B4C4`) |
+| `0x728120` | Terrain::TileShape728120 | In outline: another tile shape builder like Terrain::TileShape72A4D0: edge middles (Quad::EdgeMiddles) and quarter corners (TileQuarter::Corners) by the quarter given |
+| `0x8d7ac0` | Terrain::Rows8D7AC0 | In outline: rebuilds terrain row n (within the grid, +0x54): sets it up (`0xAFA6B0`, `0x8C8BA0`) and builds each of its cells (`0x8D67A0`) |

@@ -212,3 +212,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5ed1f0` | Ride::Update5ED1F0 | In outline: a ride's update by its part's kind (`0x5316A0`, +0xAC: 0, ...) |
 | `0x5cd4f0` | TrackedRide::Sounds5CD4F0 | In outline: turns a ride's sounds with it (RideSound::Rotate, +0x21C and +0x224) when on (+0x218), and refreshes (`0x5C1070`, `0x5D4940`) |
 | `0x5ca360` | TrackedRide::End5CA360 | In outline: sets up one end of a ride's track (by the flag given) from the middle of its span (Span::Middle) with the current tool (`0x12F5638`, +0x114) |
+| `0xab51d0` | PoolPiece::PlaceAB51D0 | In outline: places a pool piece (PoolPiece::PoolPiece) when not flagged (+0x194), with its kind (`0xBCA7E0`) and its owner (`0xAA96E0`) |

@@ -129,3 +129,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x76d240` | Guest::PickSpot76D240 | In outline: picks a random spot for a guest within a cell area on the terrain (a 90 by 90 grid, Random::Ran0, `0x4751E0`) |
 | `0x77b820` | GuestGroup::Pick77B820 | In outline: half the time (Random::Ran0), picks something for a guest of a group to do (`0x784700`) when it is free (+0x334) |
 | `0x7790f0` | GuestGroup::Update7790F0 | In outline: a group's update by its state (+0x44: 2, ...): with two members, checks the first (GuestGroup::Member) is in state 0x10 stage 2 and free (+0x3EC bit 28) |
+| `0x7cfee0` | Person::HandleEvent7CFEE0 | In outline: a person's handling of an event by its number (0x100 and below): sets its state (Person::SetState(2, 0)) when not flagged (+0x2D4) |
+| `0x75fa30` | Guest::TryAction75FA30 | In outline: whether a guest can do something now: when free (+0x334), checks the target (`0x784840`, `0x783B30`) |

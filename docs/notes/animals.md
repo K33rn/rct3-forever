@@ -96,3 +96,7 @@
 | `0xbaa9f0` | Enclosure::UpdateBAA9F0 | In outline: when on (+0x28) and not paused (`0x13D05FC`), checks a thing's place in the enclosures (`0xBAA5E0`, EnclosureManager::Get, its height +0x68) |
 | `0xb51ad0` | Animal::PlaceB51AD0 | In outline: places an animal at the ground point under the mouse (MainCamera::Get, `0xCD79C0`) on the terrain (a 90 by 90 grid) |
 | `0xb13f60` | Enclosure::RebuildB13F60 | In outline: rebuilds an enclosure's cells on the terrain (a 90 by 90 grid) from the enclosure manager (EnclosureManager::Get, `0xB9AAE0`) |
+| `0xb31440` | Animal::UpdateB31440 | In outline: an animal's update when not flagged (+0x98) by its state (+0x78: 1, ...): finds its target (`0xB856E0`, `0xB87EB0`) and checks its box (`0xBCC740`) |
+| `0xa123b0` | Animal::ChooseA123B0 | In outline: half the time (Random::Ran0), when not flagged (+0x138), picks an animal's next action (`0xA11350`) |
+| `0xb130b0` | Enclosure::RebuildB130B0 | In outline: another enclosure cell rebuild like Enclosure::RebuildB13F60 |
+| `0xa158d0` | Animal::ChooseA158D0 | In outline: another animal action pick like Animal::ChooseA123B0 (`0xA14B70`) |

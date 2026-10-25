@@ -650,3 +650,6 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6084f0` | Window::Fill6084F0 | In outline: fills a window's list from a list of things (`0x1305D54`), finding each by name (stricmp) and skipping hidden ones unless the developers' view is on (`0x1103B9C`) |
 | `0x9ddc20` | Window::Build9DDC20 | In outline: builds a window from its title like Window::Build9B7940 |
 | `0x7a4380` | Window::Layout7A4380 | In outline: places a window's parts (Window::UpdateRect) and, with items (+0x17C), lays out each of its rows |
+| `0x5f4060` | Window::Layout5F4060 | In outline: lays out a window by the screen (`0x13D0DB8`, narrower than 700 handled) and places it (Window::SetRelation) |
+| `0x6a9ef0` | Window::Draw6A9EF0 | In outline: draws a window's frame (`0x6ACE50`) and its title text, cut to fit its width (`0x6AE070`) |
+| `0xa5c260` | Texts::LookupA5C260 | In outline: gives one of a set of game texts by number (each checked loaded, `0x12FDDC0`, `0x12FA3FC`, `0x1305B88`, `0x12FADB8`, ...) |

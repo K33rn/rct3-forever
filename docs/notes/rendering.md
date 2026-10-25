@@ -400,3 +400,10 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x92eef0` | Water::Jets92EEF0 | In outline: makes a water jet's geometry (`0x92E7F0` with its counts): points it (Matrix::LookAlongZSide) and checks its owner (`0x92E8B0`) |
 | `0x486da0` | Model::FindParts486DA0 | In outline: for a kind 3 model, finds its parts by name (`0xCC8EE0`) and sets each one up (`0x485690`, 0x60 bytes each) |
 | `0x97bce0` | Shapes::Draw97BCE0 | In outline: draws a set of shapes (+0x4C, count +0x50) with a batch (`0x499160`), counting it (Counter::Increment) |
+| `0xcdc480` | Mesh::JoinCDC480 | In outline: joins two meshes' parts by their counts (+0x7C tables) into one |
+| `0x92d560` | Waterfall::Draw92D560 | In outline: draws a waterfall (`0x92C710`, `0x92BF40`) unless off (WaterfallManager::Get +0x314), with its times (+0x1F0, +0x1F4) rounded to frames |
+| `0xc74ac0` | Device::PickFormatC74AC0 | In outline: another format picker like Device::PickFormatC8DA50, with flag 2 and the device's version numbers |
+| `0x407af0` | Draw::Lines407AF0 | In outline: draws lines between points for the current device (ForCurrent(3), Call10IfReady), each quad from the line's direction, counting the batch (RenderStats::AddBatch) |
+| `0x926fa0` | Water::LinkPoints926FA0 | In outline: links two water points when their directions agree, and in debug draws the link in green (Colour::FromARGB 0x3F00FF00) |
+| `0x971cd0` | Water::Draw971CD0 | In outline: draws a water piece by its kind (0, ...), filling its buffers (Water::FillBuffers971060) when flagged (+0xB5) |
+| `0xcdbcb0` | Shapes::HitCDBCB0 | In outline: checks a shape's parts (up to 0x80) against a box (`0xBCC740`) |
