@@ -11617,7 +11617,7 @@ address,size,name,callers,status
 0x85cc50,738,,9,to do
 0x85cfd0,536,,3,to do
 0x85d200,228,,0,to do
-0x85d2f0,551,,3,to do
+0x85d2f0,551,,3,documented
 0x85d520,1457,,1,to do
 0x85db30,2942,,20,documented
 0x85e7b0,1579,,5,to do
@@ -13410,7 +13410,7 @@ address,size,name,callers,status
 0x95f650,613,,1,to do
 0x95f910,327,,0,to do
 0x95fa60,62,,2,to do
-0x95faa0,570,,2,to do
+0x95faa0,570,,2,documented
 0x95fce0,1870,,1,to do
 0x960480,229,,1,to do
 0x960570,651,,2,to do
@@ -22480,7 +22480,7 @@ address,size,name,callers,status
 0xcbab10,64,,2,to do
 0xcbab50,1728,,1,documented
 0xcbb240,10,,3,to do
-0xcbb250,1244,,3,to do
+0xcbb250,1244,,3,documented
 0xcbb740,159,,1,documented
 0xcbb7e0,346,,1,documented
 0xcbb940,40,,1,to do
@@ -22544,7 +22544,7 @@ address,size,name,callers,status
 0xcbec90,5510,,1,documented
 0xcc0400,219,,1,documented
 0xcc04e0,386,,1,to do
-0xcc0670,957,,1,to do
+0xcc0670,957,,1,documented
 0xcc0a40,1,,1,documented
 0xcc0ae0,30,DeletingDestructor,1,rewritten
 0xcc0b00,7,SetTable,1,rewritten

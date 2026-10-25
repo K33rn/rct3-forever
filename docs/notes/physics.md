@@ -33,3 +33,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x529200` | Angle::Wrap | Brings an angle into the range 0 to 2 pi by adding or taking away whole turns. Called from RideCarSpinningPart::Update |
 | `0xbedf70` | Matrix::TurnColumnsAboutY | Turns a matrix about the y axis from the other side: the x and z values of each row rotated into each other by the angle (the same code as `0xc208c0`) |
 | `0xa6b140` | Particle::Particle | Sets a particle up: its inverse mass, its position and previous position both at the given point, damping 0.99, +0x34 1 and no force. Called from RigidBody::RigidBody |
+| `0x85d2f0` | Box::Transform | The axis-aligned box around a box once it is transformed by a matrix: starts both corners at the matrix's translation, then for each matrix entry adds the smaller of the two corner coordinates times it to the minimum and the larger to the maximum. Called from SceneryModel::FindLightsAndWater |

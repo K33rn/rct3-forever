@@ -88,3 +88,4 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x454850` | Colour::FromARGB | Unpacks a 32-bit 0xAARRGGBB colour into red, green, blue and alpha floats from 0 to 1 (the same code as `0x435a40`) |
 | `0x402bf0` | Colour::ToRGB | Packs red, green and blue values from 0 to 1 into an opaque 32-bit 0xFFRRGGBB colour. Used by StartupScreen::Draw, TrackEditor::Build and Messages::Redirect |
 | `0x4261f0` | Lighting::DownwardDirection | Gives the vector at +0x120 with its y (+0x124) made negative when it is positive, so it points down. Used by DebugInfo::Draw, Renderer::SetupAlphaRefs and WaterParticles::Update |
+| `0x95faa0` | Mesh::ComputeNormals | Works out a mesh's vertex normals: clears them, adds each triangle's unit face normal (its height scaled by 0.4) to its three corners, then makes each normal unit length (0,0,1 when it is zero). Called from WaterParticles::MakeBlob |
