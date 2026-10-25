@@ -107,3 +107,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x490880` | WayPoint::Name | In outline: makes way points named `Way Point ` + number |
 | `0x77c090` | Guest::Update77C090 | In outline: one of a guest's state updates by its mode (+0xE4): checks its group (`0x7742B0`), plays crowd sounds (Crowd::Sounds) at random and acts on what it is next to (`0x7B9AA0`) |
 | `0x73ee90` | Staff::UpdateInspector | In outline: a staff member's update by its stage (+0x194, up to 5): sets its state (Person::SetState), follows its path (Person::FollowPath) and, for inspectors (kind 0xE), works with the park inspector manager |
+| `0x780070` | GuestGroup::Update780070 | In outline: a group's update by its state (+0x44): keeps its member count (+0x48) in step, sometimes (Random::Ran0) splits or regroups (`0x77CC80`) and goes over its members |
+| `0x763440` | Guest::UpdateAction763440 | In outline: a guest's update while doing an action (state 0x11, stages 0 to 4 at +0x194): faces the right way (Person::FaceDirection), plays its steps (`0x8B0350`, `0x8B23B0`, `0x8B6E60`) and sometimes moves on at random |

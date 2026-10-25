@@ -1467,3 +1467,5 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc46e20` | Segment3D::Segment3D | Constructor (tables `0xFB7158`, then `0xFB715C`): keeps two values and two points |
 | `0xa402b0` | ObjectA402B0::ObjectA402B0 | Constructor: keeps its owner, sets its table to `0xF8B730` and clears its values |
 | `0x469c00` | Movies::FindAll | In outline: lists the movie files (`Movie*.avi`) in the game's movie folder and reads the number in each name (the characters after `Movie`), keeping them in order |
+| `0x5e92a0` | LayeredObjects::Gather5E92A0 | In outline: goes over a list of objects (+0x130) by their layered kinds (tables `0xF3F714`, `0xF3AF70`, `0xF3F71C`, `0xF3AFD0`, `0xF3AFC0`), copying each kind into its own new array (20, 36 and 32 bytes each) |
+| `0xc8abc0` | Device::CheckModeC8ABC0 | In outline: checks one mode or format entry against what the device offers (flags from +0x20E8, the stage at +0x1A00, numbers under 0xAA), case by case; gives 1 when it is usable |

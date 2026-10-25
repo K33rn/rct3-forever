@@ -79,3 +79,6 @@
 | `0xb8e820` | AnimalShelter::FoodNames | In outline: the names of a shelter's troughs (`food` + number, AnimalShelter::TroughNames) |
 | `0x4b6570` | Aquarium::Check | In outline: checks for an aquarium (`Aquarium:trr`) by its name |
 | `0xb201a0` | WildAnimal::Move | In outline: an animal's movement step: works out its speed and turn (`0xB355F0`, `0xB35670`, `0xB355B0`), its new position and checks that it stays on the terrain and inside its area |
+| `0xb76970` | Enclosure::ScoreCell | In outline: a score for a terrain cell for an animal: checks its height range, flags and enclosure (Terrain::CellHeightRange, Terrain::CellFlag12, EnclosureManager::CellAt), and its neighbours the same way |
+| `0xb19e20` | WildAnimal::Steer | In outline: an animal's steering step: when it has a target, measures the way to it and its speed (+0x144), avoids what is ahead (`0xB66290`) and checks the terrain cell it is heading into (Grid::CellAt) |
+| `0xadb3a0` | Animal::UpdateAdb3a0 | In outline: an animal's timed update (when +0x70 is set): works out a chance (`0xAD88E0`), sometimes shows a message (`0x6BCE00` with 0x12) and makes an effect object (Object7FC84) |
