@@ -12077,10 +12077,10 @@ address,size,name,callers,status
 0x8a08e0,259,,12,to do
 0x8a09f0,199,,0,to do
 0x8a0ac0,190,,0,to do
-0x8a0b90,1866,,7,to do
-0x8a12e0,2811,,14,to do
-0x8a1de0,2165,,3,to do
-0x8a2660,2181,,9,to do
+0x8a0b90,1866,,7,documented
+0x8a12e0,2811,,14,documented
+0x8a1de0,2165,,3,documented
+0x8a2660,2181,,9,documented
 0x8a2ef0,33271,,1,documented
 0x8ab170,11773,,1,documented
 0x8ae2d0,7,,1,to do
