@@ -22,7 +22,7 @@ Forever's launcher warns when both are installed.
 | `forever.dll` (runs inside the game, puts the rewritten functions in place, leaves the game folder untouched) | Done |
 | Equivalence tester (checks every rewritten function against the original before it is used) | Done |
 | Rewriting the game, one function at a time | **In progress**: 5,205 functions, 3.04% of the game's code |
-| Understanding and documenting the game's code (`docs/notes`) | **In progress**: 39.76% of the game's code |
+| Understanding and documenting the game's code (`docs/notes`) | **In progress**: 50.03% of the game's code |
 
 The [progress page](docs/progress.md) has the current numbers, updated with every change.
 
