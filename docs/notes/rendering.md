@@ -298,3 +298,6 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x425700` | Colour::PackTo | Packs a colour of four values from 0 to 1 into one value (alpha, red, green, blue) |
 | `0x8645c0` | Model::Bounds | A model's box: the stored corners when its bit 10 is set (none when empty), otherwise worked out (`0x864150`) |
 | `0x9eb350` | Sequence::Advance | Moves a running sequence's time on (+4) and steps to its next item (12 bytes each at +0x14) when its time passes, starting it (`0x9EAF50`) or ending the sequence (time -1) after the last |
+| `0x9c6330` | Particle::SecondColour | Packs a particle description's second colour (+0xB8) into one opaque value |
+| `0x9c62d0` | Particle::FirstColour | Packs a particle description's first colour (+0xAC) into one opaque value |
+| `0xbd3190` | Updatable::SetActive | Switches an object on or off (+0x11): joins the shared update list (`0x13D0D84`) when it has work (+0x24), or leaves it (`0xBD2850`) |

@@ -597,3 +597,6 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x5fcb10` | Toggles::ClearIfNone | Clears the shared flag (+0x13C) of the window's bit unless one of its options (+0x148, count +0x150) still has its bit set |
 | `0x682cd0` | Drag::Start | Marks a drag started (+0x258) and keeps the pointer's place relative to the GUI root (`0x12F83F0`, +0xDC), then updates (`0x6B0990`) |
 | `0x61dca0` | List::ScrollToRow | Sets the first shown row (+0xE0) from a position, by the row height, and tells the scroll bar (+0x3C) |
+| `0x6b60a0` | Blink::Advance | Moves a looping time (+0x6010) on and keeps it below 1 |
+| `0xca81b0` | ByteSlider::SetValue | Sets the bound byte (unsigned) from a fraction between the minimum (+8) and maximum (+9) |
+| `0xca80a0` | CharSlider::SetValue | Sets the bound byte (signed) from a fraction between the minimum (+8) and maximum (+9) |

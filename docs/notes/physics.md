@@ -144,3 +144,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xaf8e30` | Contact::Make | Fills a contact record: two points, a value and a pair |
 | `0xaf75d0` | Contact::Make2 | The same contact record (another copy) |
 | `0xa17520` | Particle::Launch | Starts a particle at a point raised by the height given, with its two values, and marks it active |
+| `0x55fc10` | Vector::Quadrant | Which of four directions a flat vector mostly points (0 to 3), by its larger part and its sign (the vector is passed in a register) |

@@ -1437,3 +1437,17 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x80e1a0` | SortedPointers::LowerBound8 | The place in a sorted list of objects (+8, count +0x10) for a value of their +8 |
 | `0xc50140` | Stream::Fail | Records a stream's error and its code (+0xC4, +0xC8) the first time (bit 2 of +0x10), calling the handler `0x13E6BB4` for error 0x1004 |
 | `0xaae2d0` | Object::CopyArea | Copies another object's area (+0x148 to +0x154) when it has one (+0x144), otherwise marks it as having none |
+| `0x7a6710` | Bits::FromIndex | The bit for a number from 1 to 8 (1 to 0x80), or 0 |
+| `0xcbbd70` | ShaderPreprocessorLexer::FlushBuffer | flex's yy_flush_buffer: empties a buffer, and reloads the scanner's state when it is the current one |
+| `0xc09740` | ScannerLexer::FlushBuffer | The same yy_flush_buffer for the script scanner |
+| `0xca06a0` | List::Clear | Returns every node of a list to the shared free list (`0x13E6E28`, count `0x13E6E30`) and leaves it empty |
+| `0xbff8d0` | ResourceRefFA5D28::ResourceRefFA5D28 | Constructor (table `0xFA5D28`): keeps its owner and value and joins the owner's list at +0xC4 |
+| `0x965d30` | Lists::Init | Sets up an object's four empty lists and its other values (one to -1) |
+| `0x7a8f30` | Objects::HasWithBit | Whether the list at +0x50C holds an object with the same id (+4) and, when a bit is given, that bit set in its flags (+0x14) |
+| `0x560460` | Object3AFD0::CopyFrom | Copies an object made of layered parts (tables `0xF3AFD0` and `0xF3AFC8`) and its values from another |
+| `0xbe8aa0` | MeshPart::CopyFrom | Constructor (table `0xFA56F8`): copies another mesh part's 19 values and counts one more use of each of its buffers |
+| `0xbbcce0` | RefList::Find | Finds the entry of a list with the two values given, counts one more use of it and gives its value (+0xC), or 0 |
+| `0x9734a0` | SortedPointers::FindFirst | Binary search of a sorted list of objects (+0xC, count +0x10) by their first value: gives whether it was found and its place |
+| `0x84f1a0` | SortedPointers::FindFirst2 | The same search over a list given (unsigned values) |
+| `0x966e40` | List::TakeAll | Makes a list empty and moves every node of another list into it |
+| `0x9cedb0` | PackedSlots::Set | Sets the values of a slot found by a packed number (block in the top 12 bits, slot of 64 bytes in the low 20) |

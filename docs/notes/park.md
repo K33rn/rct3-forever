@@ -266,3 +266,11 @@
 | `0x5bc050` | Counts::AddByLevel | Adds one to one of four counts by which of four levels a value reaches |
 | `0x55fbb0` | Attraction::SpeedScale | For the attraction kinds 0x2E to 0x31 and 0x44, its value (+0x184) times `0x10EE8F4`, kept between a minimum and 1; 0 for other kinds |
 | `0x9375c0` | Grid::ContainsId | Whether a rectangle of a grid of 16-bit ids (+0x38, width +0x30) holds the id given |
+| `0x4e4a00` | Car::SpeedFactor | A car's speed factor (by `0x10EE2FC`) from its part n: one value when flagged (+0x148, with `0x10EE2F8` set), 1 when +0x144 is set, otherwise a third |
+| `0x9892a0` | Cars::TotalLoad | Adds up, for each car (0x58 bytes at +0x104, count +0x108), its load (+0xCC, +0xC4) divided by 10 |
+| `0x548b40` | Object::Position | The position (+0x90) of the object's part (+0x41C), or of its other part (+0x418) when there is none |
+| `0xabc730` | GridArea::PartAt | The part of the cell at a position inside an area (bounds +0x4C to +0x58, cells of 0x58 bytes at +0x5C) |
+| `0x713650` | Walker::Step | Moves a position (+4, +8) one cell in its direction (+0x28: 0 to 3) and its height (+0x2C) by its slope kind (+0x24) |
+| `0x8bcff0` | Rect::GrowByOne | Grows a byte rectangle by one cell each way, kept inside the grid (+4, +5) |
+| `0x5061b0` | Ride::Offset | The ride's offset (+0x1E0) for kinds 2 and 3 (+0x1C8), or none |
+| `0xaad5a0` | Grid3::RotateIndex | Turns a cell number of a 3x3 grid (0 to 8) by a direction (passed in registers) |
