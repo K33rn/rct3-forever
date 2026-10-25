@@ -29,3 +29,12 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xcd8a60` | Shape::Draw | Draws a shape by its material kind (`AlphaMask`, `Alpha`, `Glass`), through the shape commands. Called from `SceneryRenderer::DrawShadows` and two others |
 | `0x8e96b0` | Terrain::SetupShadowShader | Sets up the shader that adds the terrain's horizon shadow (`AddToDest`, `TerrainShadowHorizon`). Called from `0x8EA330` |
 | `0x963910` | WaterParticles::LoadTextures | Loads the water particle textures (`WaterParticle.bmp`, `WaterParticleAlpha.bmp`), seeding the random number generator for their variations |
+| `0x864150` | Model::CheckShapes | Reports a model's missing parts: `Missing StaticShapeData for '%s'`, `No BoneShapeData for '%s'` (`Broken Boned Shape`), `Missing BoneShape for '%s'`. Called from 14 places |
+| `0x863c30` | Model::CheckShapes (2) | The same checks as `0x864150`, for another kind of model. Called from `0x864010` and `0x880FB0` |
+| `0xce24d0` | Model::CheckAnimations | Reports a model's missing animations and bone shapes per level of detail (`Anim %d in '%s'`, `Missing animation`, `Lod %d in %s`, `Missing bone shape`). Called from three places |
+| `0x9fe5a0` | Lighting::LoadResources | Loads the lighting resources: the light map, lights (`Lights\Lights`), the full-screen effects (`FullscreenModulateX2`, `FullscreenFadeToBlack`) and the terrain light map. Called from three places |
+| `0xc1c4b0` | GlareEffect::LoadShaders | Loads the glare effect's shaders: threshold ramps, streak blur, Kawase blur and applying the glare (`GE_GlareEffect_*`). Called from `0xC1C920` |
+| `0xc96960` | GE_Device::SetupDepthOfField | Sets up the depth-of-field fill (`GE_Device_DofFill`) and its colour target. Called from `0xC045A0` |
+| `0x738d10` | QueueType::LoadTexture | Loads a queue type's ground texture, reporting `Missing texture for queue type`. Called from `0x71AB90` and `0x71F4C0` |
+| `0x9e2070` | Rain::LoadResources | Loads the rain's resources: its particles and shaders (`Rain\Rain`, `RainAdditive`, `ParticleAdditive`, `Flare_00`). Called from five places |
+| `0x986990` | WaterBlobs::LoadShaders | Loads the shaders of water blobs and bubbles (`WaterBlobAlpha`, `WaterBlobAlphaAdditive`, `Bubble0`). Called from `0x47E700` |

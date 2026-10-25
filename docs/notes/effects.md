@@ -12,3 +12,5 @@
 | `0x831d20` | SceneryItem::SetupEffects | Sets up a scenery item's effects from its model's bones: particle effects (`particlestart%d` / `particleend%d`, loaded from `ParticleEffects\*.frw`) and firework launchers (`fireworkstart%d` / `fireworkend%d`), and the vendor of a stall (`Vendor`, complaining `Vendor's matrix has gone AWOL`). Called from `0x832C30` and `0x8335E0` |
 | `0x82d7f0` | FireworkLauncher::FindSlots | Finds a firework launcher's slots in its model (`Slot %d in %s`), reporting `Missing firework slot matrix`. Called from `0x82F710` and `0x989440` |
 | `0x9ea840` | Weather::Thunder | Plays thunder (`Thunder1`, `Thunder2`). Called from `0x9EAF50` and `0x9EAFA0` |
+| `0x999ac0` | FireworkSlot::Highlight | Draws the highlight of a firework launcher's slot (`FireworkSlotHighlight`, `SlotVectorLocus`). Called from `0x99E160` |
+| `0x929700` | WaterfallManager::DebugText | Writes the waterfalls' developer statistics and render modes (`WaterfallManager:`, `Num waterfalls: %d`, `RenderMode_Normal`, `_WireFrame`, `_Rasterization`, ...). Called from `0x92C990` |

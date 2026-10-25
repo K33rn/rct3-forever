@@ -149,3 +149,30 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x99da30` | FireworkDisplayDialog::BuildGlyphs | Makes the small pictures of the effects in a display (`.\Code\Common\Particles\GUI2_FireworkDisplayDialog.cpp`: water jet, laser and firework glyphs). Called from `0x99FF30` |
 | `0xc6a720` | DebugConsole::BuildTitleBar | Builds the title bar of a debug console window, with close and maximise. Called from `DebugConsole::BuildWindow` |
 | `0x670c00` | RideSelectionWindow::LoadResources | Loads the ride selection window's resources, with a Chinese special case |
+| `0xbb1960` | RideMaintenanceDialog::BuildMechanic | Builds the button that assigns a mechanic in a ride's maintenance page (`TT_RideMaintenanceDialog_MechanicButton`) |
+| `0x78ed20` | StaffWindow::BuildTabs (5) | Builds the statistics and uniform tabs of another kind of staff member (`Staff_Uniform_Colours`). Called from `0x7E8F50` |
+| `0x649e90` | GuestWindow::AvatarHighlight | Switches the avatar-style highlight of a person on or off (`Person_AvatarStyleHighlight_On` / `_Off`), refusing in land the park doesn't own (`Pincer_NotOwned`) |
+| `0x787810` | ParkGuestsSummary::Build | Builds the park's guest summary with its actions and thoughts pages (`ParkGuestsSummary`). Called from `0x619D50` |
+| `0x617a00` | ProgressBar::Build | Builds a progress bar from its left, middle and right pieces (`Blender_Bar_Left`, `_Mid`, `_Right`). Called from `Language::LoadProgress` |
+| `0x41d080` | AdMenu::FileTypes | Makes the list of picture and movie file types adverts can use: `JPEG`, `BMP`, `DDS`, `DIB`, `HDR`, `JPG`, `PFM`, `PNG`, `PPM`, `TGA`, `WMV`, `MPG`, ... Called from `0x4214F0` |
+| `0xa8c7b0` | PoolEditor::BuildRotate | Builds the pool editor's rotate button. Called from `0xA85540` |
+| `0xa26970` | TutorialWindow::BuildButtons | Builds the tutorial window's continue and quit buttons (`TutorialWindow_Continue`, `_Quit`). Called from `0xA26DA0` |
+| `0x4351b0` | CircleArrow::Draw | Draws the circular rotate arrow, active or not (`CircleArrowActive`, `CircleArrowDeActive`). Called from `0x435850` |
+| `0xa09420` | SavedSelectionDialog::Build | Builds the window for placing a saved selection: its title icon, rotate and colours (`SavedSelectionDialog_TitleIcon`, `PlaceSavedSelection_FlexiColour_Tooltip`). Called from `0xA07E00` |
+| `0xa44140` | CareerMap::BuildScenarioIcon | Makes a scenario's icon on the career map, with its padlock locked or unlocked (`ScenarioIcon_`, `GUI2PadlockLocked`, `GUI2PadlockUnlocked`). Called from `ParkView::HandleCommands` |
+| `0x9dd050` | CampaignDialog::Build | Builds the marketing campaign window: park vouchers, attraction vouchers, advertising, and choosing the attraction (`Campaign_Dialog_*`, `Campaign_Select_Attraction`) |
+| `0x57ca10` | AttractionVehicleDialog::UpdateCounts | Updates a ride's numbers of trains and cars, saying when the station is too short for more cars or the ride allows no more (`RideStationTooShortForMoreCars`, `RideDoesNotAllowMoreCars`). Called from `AttractionVehicleDialog::Build` |
+| `0x66d1c0` | CoasterStatsDialog::BuildGForce | Builds the G-force part of the track statistics window (`ExpeditionGeForceText`, `ExpeditionGeForceIcon`). Called from `0x66FA40` |
+| `0x4f3150` | TrackDesigner::BuildCarSettings | Builds the track designer's car spin and holding time settings (`TrackDesigner_CarSpin_TT`, `TrackDesigner_HoldingTime_TT`). Called from `0x4F3CF0` |
+| `0x99efe0` | ParticleDesigner::BuildTimeStrip | Builds the particle designer's time strip (`GUI2_ParticleDesigner_TimeStrip`, `%.2d:%.2d`, slider arrows) |
+| `0x622bf0` | ProgramInfoDialog::BuildTabs | Builds the About window's tabs: program information and credits (`File_AboutRCT`, `File_Credits_Stars`). Called from the ProgramInfoDialog window builder |
+| `0x4d9b10` | AttractionDialog::PlacementErrors | Tells the player why an entrance, exit or fence can't be placed: the ride has no station or isn't placed (`CantPlaceEntranceAsRideHasNoStation`, `CantPlaceExitAsRideHasNoStation`, `CantChooseFenceAsRideIsNotPlaced`). Called from `AttractionDialog::BuildIcons` |
+| `0x6884c0` | FileDialog::BuildButtons | Builds the file dialog's buttons: save, open, cancel and delete (`FD_Label_*`) |
+| `0x659770` | MainWindow::Build | Builds the main corner windows of the park view (`MainBottomRight`, `MainBottomLeft`) and the top toolbar (`TopToolbar::Build`). Called from 80 places |
+| `0xa94a30` | PoolEditor::BuildGrid | Makes the pool placement grid (`PoolPlacementGrid`, `PoolPlacementGrid2`). Called from `PoolEditor::Build` |
+| `0x844220` | PlaceObject::ErrorText | Says why an object can't be placed: land not owned, it intersects something or the ground, too high, must be on water, can't be under water, must end on a pool edge (`PlaceObject_*`). Called from `0x4EC920` and `0xA956F0` |
+| `0x7f2a50` | StaffWindow::BuildHire | Builds the staff window's hire buttons: handyman, mechanic, security guard, entertainer, animal keeper (`Staff_Hire_*`). Called from the Staff window |
+| `0x62b290` | SaveGameDialog::DefaultName | Picks a free default name for a saved game: `MyGame.dat`, `MyGame%d.dat`. Called from `SaveGameDialog::Save` |
+| `0xa08010` | SavedSelectionMenu::FileMenu | Loads and saves a saved building (`*.dat`, default `MyBuilding.dat`). Called from the SavedSelectionGrabber window and `SavedSelectionMenu::Build` |
+| `0x4237f0` | AdMenu::BuildCustomImage | Makes the custom image button of the advert window (`CustObj_Icon`, `AdMenu_CustomImage`). Called from `0x674180` |
+| `0xcab640` | StructViewer::Build | Builds the debug structure viewer's window (`StructCompositor`, `Struct border1`). Called from `0xCACA70` and `0xCACE00` |

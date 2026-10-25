@@ -44,3 +44,9 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4e9e50` | MiniGolfHole::SetupStrokes | Sets up a mini golf hole's stroke animations (`%02dStroke%02d`, walk, ball). Called from `0x4EB1F0` and `0x4EB650` |
 | `0x5a6db0` | RideTrain::Load | Loads a ride's trains from `Cars\CoasterCars` or `Cars\TrackedRideCars`, reporting `Unresolved RideTrain`. Called from three places |
 | `0x7218e0` | PathType::FromName | Turns a path type's name into its kind (`Asphalt`, `Crazy`, ...) |
+| `0x5c9640` | RideSound::Rotate | Plays a ride's rotation start and loop sounds (`RTCRotateStart`, `RTCRotateLoop`). Called from four places |
+| `0xa8a240` | PoolComplex::PeopleText | Writes how many people are in a pool complex (`PeopleInPoolComplex0` ... `4`, `X`). Called from `0xA8AE20` |
+| `0x5b5710` | TrackedRide::SetTrains | Sets a tracked ride's trains from its `SETTRAIN` lines (`None`), then checks them (`TrackedRide::CheckTrains`). Called from `TrackedRideInstance::SetupTrack` and two others |
+| `0x5a7380` | RideCar::Name | Gets a ride car's name (`Name`, `CarName`, or `<car name undefined>`). Called from `0x5A78D0` and `0x66CE00` |
+| `0x5defd0` | CableLiftTrain::Setup | Sets up a cable lift's train (`RideTrainInstance`), reporting `No CableLiftTrain for ...`. Called from `0x59C7E0` and `0x5E92A0` |
+| `0x5deb00` | CableLiftTrain::Setup (2) | The same as `0x5DEFD0` for the other direction. Called from `0x59C780` and `0x5E92A0` |

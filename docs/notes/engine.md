@@ -62,3 +62,9 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc1b6d0` | CommandLine::Parse | Reads the command line's options (`.\Code\Common\CLIOpts.cpp`), reporting `Too few arguments :` and `Unrecognised argument :`. Called from `0xC1BBB0` |
 | `0x744090` | AvatarDatabase::Load | Reads the saved avatars: each one's version and name |
 | `0x743500` | AvatarDatabaseEntry::Read | Reads an avatar's parts: member, type, sub-type, part, palette, swimsuit and ride intensity. Called from `0x745070` |
+| `0x64a3c0` | Cheats::Names2 | Makes more of the guest names that switch cheats on: `Sound Aficionado`, `Challenge Man`, `No debug please`, `I want to be alone`, `Mono Man`, `Stereo Dude`, `Three Ears`, `When Seagulls Attack` (`To The Max`), `When Ducks Attack`, ... (case-insensitive compares) |
+| `0xa1c290` | Tutorial::ExportText | Writes the tutorials' text out to the developer's text file (`c:\coding\rct3\resource\gui\english\Tutorials.txt`): `; Text for`, `TutorialText_`, `_Title:`, `_Step%d_`, `StepTitle:`, `Text:` |
+| `0x802410` | ManagedObject::TypeNames | Makes the names of the kinds of saved object, for loading them from a file (30 names: `QueueLine`, `PathTile`, `PathGround`, `PathFlying`, `PathQueue`, `PathGroundVisual`, `PathTypeDatabaseEntry`, `QueueTypeDatabaseEntry`, `QueueTypeGroundSurface`, `GuestGroup`, `Guest`, `VIP`, ...). Called from `ManagedObject::LoadFile` |
+| `0x47a3a0` | KeyBinding::Name | Writes a key binding's name: `ctrl`, `shift`, `alt` and the key (`Key_`, from the `:txt` text) |
+| `0xcaff20` | Inflate::Stream | Decompresses a zlib stream: checks its header (`unknown compression method`, `invalid window size`, `incorrect header check`, `need dictionary`), inflates it (`Inflate`) and checks the result (`incorrect data check`) |
+| `0x496130` | Resources::LoadTextures | Loads a resource folder's textures, with stand-ins for missing ones (`nullbmp`, `Demo`). Called from `0x496610` |
