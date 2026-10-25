@@ -192,7 +192,7 @@
 | `0xa2d050` | CarriedItem::MakeKidsGolfClub | Makes the mini golf `KidsGolfClub` carried item (CarriedItemInstance) |
 | `0xa2cb40` | CarriedItem::MakeCamcorder | Makes the `Camcorder` carried item (CarriedItemInstance) |
 | `0xa2c990` | CarriedItem::MakeCamera | Makes the `Camera` carried item (CarriedItemInstance) |
-| `0x7f8f90` | CarriedItem::MakeAutograph | Makes the `Autograph` carried item (CarriedItemInstance), as a VIP gives |
+| `0x7f8f90` | CarriedItem::MakeAutograph | Makes the `Autograph` carried item (CarriedItemInstance); called from guest code (`0x75C3B0`) |
 | `0x6e0870` | NumItemsBoughtCondition::CurrentText | The objective's progress text: the game text `NumItemsBoughtCondition_Current` with the current number written in, and its timing (ObjectiveCondition::DescribeTiming) |
 | `0x6c85f0` | Challenges::DebugText | Writes the challenges' state for the developer: `Don't offer challenges timer: %.2f`, `Challenge publicity boosts: %d`, then each challenge (`Challenge %d: %s, %.2f`, with Challenge::StateName) |
 | `0x6c4990` | Challenge::ShowFailure | Shows a challenge's failure message, the game text `Challenge_DefaultFailureText` (in a message window) |
