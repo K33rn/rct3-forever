@@ -90,7 +90,7 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x61c9b0` | MessageConsoleEntry::Fields | Registers a message console entry's saved fields (a `resourcesymbol` `Text` and a `float32` `Time`). Called from `0x6203A0` |
 | `0x7fd9d0` | AIDDatabaseEntry::Fields | Registers an attraction definition's saved fields (`OVERLAYFILENAME`, `SYMBOLNAME`, `ATTRTYPE`). Called from `0x7FFDF0` |
 | `0x552950` | PersonInfo::Fields | Registers the saved fields shared by the ride person infos (`StationIndex`, `SeatState`). Called by the MiniGolf, SplinePath, TrackedRide and WalkAlongTrack person infos |
-| `0x699ea0` | GUIRenderer::Shaders | Gets the GUI renderer's shaders (`GUIRendererColour`, `GUIRendererBitmap`, `GUIRendererZMask`). Called from 37 places |
+| `0x699ea0` | GUIRenderer::GUIRenderer | Constructs the GUI renderer and makes it the current one (`0x12F84C8`): its shaders (`GUIRendererColour`, `GUIRendererBitmap`, `GUIRendererZMask`) and empty draw lists (`0x10EEDB4`, `0x10EEDCC`, `0x10EEDCE` set to 0xFFFF). Called from 37 places |
 | `0x6b0230` | SkinItem::Texture | Gets a GUI skin item's texture, reporting `No texture for skin item` / `Missing skin texture`. Called from 73 places |
 | `0x456fd0` | CrashDump::ExceptionName | Turns an exception code into its name (`Access Violation`, `Datatype Misalignment`, `Breakpoint`, `In Page Error`, `Illegal Instruction`, `No Memory`, ...). Called from `CrashDump::Write` |
 | `0xcbb7e0` | Inflate::BuildTrees | zlib's building of the inflate code trees, with its errors (`oversubscribed distance tree`, `incomplete distance tree`, `empty distance tree with lengths`, ...). Called from `Inflate` |
