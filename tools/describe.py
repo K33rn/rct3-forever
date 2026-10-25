@@ -46,6 +46,15 @@ def vtable_slots(img):
             if not TEXT[0] <= f < TEXT[1]:
                 break
             slots[f].append((m.group(1), k))
+    # any other table of function pointers in .rdata (classes the game doesn't describe to itself)
+    for va in range(RDATA[0], RDATA[1] - 4, 4):
+        f = img.u32(va)
+        if TEXT[0] <= f < TEXT[1] and not any(True for _ in ()):
+            start = va
+            while TEXT[0] <= img.u32(start - 4) < TEXT[1]:
+                start -= 4
+            if not any(c == f'table {start:#x}' for c, _ in slots[f]) and                     not any(not c.startswith('table ') for c, _ in slots[f]):
+                slots[f].append((f'table {start:#x}', (va - start) // 4))
     return slots
 
 

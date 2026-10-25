@@ -1,6 +1,6 @@
 # Rendering
 
-The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\codinggdk3\Code\Windows\GE_*` appear in its error messages) and what the game draws with it.
+The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\coding\fgdk3\Code\Windows\GE_*` appear in its error messages) and what the game draws with it.
 
 | Address | Name | What it does |
 |---|---|---|
@@ -10,3 +10,9 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x891f40` | SceneryRenderer::CollectInstances (pass 1) | The same as `0x8A2EF0` for another pass (slot 2 of `0xF7A1EC`) |
 | `0xc96dc0` | GE_Device::RenderScene | Draws a frame's scene on the graphics device (called from `0xC9B600`): first sorts the scene's enabled lights (0x90-byte entries) into lists by type, then sets up and draws each part of the scene through the device, with a 38-way switch over what is being drawn |
 | `0xadbe60` | LaserShow::DrawBeams | Draws a laser show's beams (`0x13CE508` is the current laser display): takes the beam colour (`0xAD8AA0`), measures the distance from the camera, and builds the beam geometry with its spread, rotation and trails (random flicker from `_rand`). Called from `0xADA8D0` |
+| `0x8ab170` | SceneryRenderer::CollectInstances (pass 4) | The same as `0x8A2EF0` for another pass (slot 8 of `0xF7A1EC`) |
+| `0xc2cb20` | Shape::RunCommands | Runs a shape's list of drawing commands, a switch over the command codes; an unknown one is reported (`Bad command %d encountered in shape`). Called from `0xCD8520` |
+| `0x865c40` | Model::DebugReport | Writes a model's statistics as text: its levels of detail, and for each its meshes by kind (`Static`, `Alpha`, `Billboard`, `SBone`, `Bone`, `Morph`, `Unknown`) with their triangle counts, warning when a level keeps more than 60% of the previous one's triangles; and the number of water particles. Called from `0x86E1D0` |
+| `0x86a430` | SceneryModel::FindLightsAndWater | Reads a scenery model's special bones: lights (`lightstart%d`, `lightend%d`, `lightcolour%d`, with `radius`, `simple` / `medium`, `flexi`) and water effects (`watertrail%d`, `waterwake%d`, `waterstart%d` / `waterend%d`), complaining about bones without a partner and lights with too many colour bones (`Static light for '%s' has %d colour bones!`). Called from `0x86D3A0` and `0x86D5E0` |
+| `0x87cf90` | ParkRenderer::SetupScenery | Sets up the drawing state for the park's scenery each frame: the shadow-map horizon and the alpha reference values for scenery items (`AlphaRefSI`, `AlphaRefSILow`) and billboards, from the detail settings. Called from `0x47EB80` |
+| `0x47eb80` | ParkRenderer::Render | Draws the park: the terrain (`RCT3Terrain`), water (`WaterManager`), the sky (`Sky`), scenery (`0x87A130`, set up by `0x87CF90`) and the effects, for the camera `0x13D0DB8`. Called from `0x480E40` |
