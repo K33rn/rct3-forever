@@ -99,3 +99,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0xbade60` | Text PeepTop%02d | Makes a text from the format `PeepTop%02d` with the number given plus one |
 | `0x7bd4a0` | Person::CheckCharacterParts | Prepares a person's body part (entry +0x54 of the table at +0x14, 36 bytes each) and checks the character's parts (Person::CheckParts); when they are broken, shows a message box `Broken Character Resource` with `Body Part: %s` and the errors |
 | `0x7816f0` | GuestGroup::StateText | The text for a guest group's state, such as the game text `GuestGroup_State_Wandering` |
+| `0x798650` | Handyman::Sweep | In outline: the handyman's sweeping: walks the path (Person::FollowPath), faces his work and uses the `Brush` tool, then changes state |
+| `0x798be0` | Handyman::Water | In outline: the handyman's watering: goes to the flower bed (its scenery behaviour's owner) and uses the `WaterCan` tool, then changes state |

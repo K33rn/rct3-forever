@@ -477,3 +477,20 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9d83d0` | FireworkDisplay::NewDefaults | Sets up a new firework display's details: its name from the game text `FireworkDisplayDefaultName`, an empty second text, 0x528 and 0xFFFF, and a reference that refers to nothing |
 | `0xa5c090` | ProgramInfo::AddAwardsTab | Adds the awards tab to the program information window, with the tooltip game text `PID_TT_AwardsTabPopUp` |
 | `0x9db1c0` | ProgramInfo::AddCampaignsTab | Adds the campaigns tab to the program information window, with the tooltip game text `PID_TT_CampaignsTabPopUp` |
+| `0x6be770` | Money::FormatOrUnlimited | Writes an amount of money as text (Money::Format and its variants), or the game text `Cash_Unlimited` for a park with unlimited money |
+| `0x6c8cd0` | LanguageList::Build | In outline: fills the list of languages (with `Norwegian` among them) in a list window, its count and selection, the label and the layout |
+| `0x6a6ac0` | ButtonBar::Build | In outline: builds a row of buttons named `Button%d`, each with its image (Button::SetSingleImage), placed and related to the bar |
+| `0x5027d0` | CustomButtons::Build | In outline: builds the `CustomButton` buttons of a window, numbering them, with their images and related values |
+| `0x4f8100` | TrackDesigner::BuildBrakeSpeed | In outline: rebuilds the track designer's special pieces panel, with the brake speed tooltip `TrackDesigner_BrakeSpeed_TT` |
+| `0xa46870` | TextSizeWindow::TextSizeWindow | In outline: a window part with the `LargeText` and `SmallText` choices (its name `0x13428F4` by default) |
+| `0x4b8760` | Window::LayoutForLanguage | In outline: lays a window out differently for `Korean`, `Dutch` and `BrazilianPortuguese` (wider texts) |
+| `0xa2ede0` | IconNameWindow::IconNameWindow | In outline: a window part showing an `Icon` and a `Name` |
+| `0x6a4d20` | SpinBox::SpinBox | In outline: a number field with `IncButton` and `DecButton` buttons and their images |
+| `0x610e30` | Window::BuildForGerman | In outline: builds a window, laid out differently when the language is `German` |
+| `0x67faf0` | BorderedWindow::Build | In outline: builds a window with the `GUI2SolidGreyBorder` border and its buttons |
+| `0x69f710` | ListBox::ListBox | In outline: a list box window with its `ListBoxButton` buttons |
+| `0x9adc90` | ResearchTree::BuildRoot | In outline: builds the root of the research tree view (`SpecialTreeRoot`) and its numbered items |
+| `0x9ae410` | ResearchTree::Item | In outline: an item of the research tree view with its icon (`GUIIcon:txs`) |
+| `0x433120` | Swatch::DrawBackground | In outline: draws a colour swatch's background (`GUI2Swatch_Background`) through the alpha batches |
+| `0x7519b0` | Swatch::DrawTick | In outline: draws a colour swatch's tick (`GUI2Swatch_Tick`) |
+| `0x465180` | CustomContent::OpenMovie | In outline: opens a movie from the `CustomContent` folder (MovieDecoder::Open) |

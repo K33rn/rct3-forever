@@ -136,3 +136,6 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5538e0` | RideSeating::FromName | The number of the seating type whose name (RideSeating::Names, prefix `RideSeating_`) matches the text given, case ignored |
 | `0xbbfc20` | RideAnimation::FromName2 | The number of the ride animation whose name (RideAnimation::FromName's list) matches the text given, case ignored |
 | `0x52c350` | RideCar::CheckPivot | Finds the `Pivot` dummy in a ride car's shape; when it is missing, shows a message box `'Pivot' dummy is missing in the shape` |
+| `0x4d4650` | Slide::Update | In outline: updates a slide ride (`Slide`), timing riders with the game clock and Random::Ran0 |
+| `0x487b90` | RideTrain::LoadCars | In outline: loads a train's cars (RideTrain::Load), turning their parts with the shape turns, `None` when a car has no part |
+| `0x9c7b00` | Particle::NameText | In outline: the name text of a particle effect, made from `ParticleName_` and the effect's name |

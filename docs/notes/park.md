@@ -201,3 +201,7 @@
 | `0x8b6900` | WaterCannon::Name | The water cannon's name text (the game text `SceneryItem_WaterCannon`) |
 | `0x8b1330` | VistaPoint::Name | The vista point's name text (the game text `SceneryItem_Vistapoint`) |
 | `0x9823e0` | InventionGroup::NameText | The research group's name text: the game text `InventionGroup_` + the group's name |
+| `0x4a7380` | SoakedIdentbar::Build | In outline: builds the Soaked expansion's identification bar entries (`SpecialSoakedIdentbar`) and their animations (InventibleAnimation) |
+| `0x4a6d20` | InventibleAnimation::LoadSkins | In outline: loads the `Skin` entries of an animation that can be invented (InventibleAnimation) |
+| `0x7b6180` | Crowd::Sounds | In outline: sets up the crowd sounds (`CheatBonusCheer1Fade`, `CheatBonusCheer1Lp`, ...) in a slot pool |
+| `0x7b6790` | Stall::SwimSuitStall | In outline: sets up the `SwimSuitStall` stall item |

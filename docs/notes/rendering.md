@@ -210,3 +210,14 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9256a0` | Waterfall::ConfirmDelete | Asks before deleting a waterfall, with the game text `Waterfall_Delete` (in a message window), keeping a reference to the waterfall for the answer |
 | `0x924f60` | Waterfall::ShowLandNotOwned | Shows the game text `Waterfall_DeletionFailure_LandNotOwned` (in a message window) when a waterfall cannot be deleted because the land is not the park's |
 | `0x87f5b0` | Model::ReportMissingLOD | Shows a message box `Missing mesh data for LOD` with the model's name (+4) |
+| `0xbe6d40` | TextureResource::TextureResource | Makes a texture resource from a texture style (looked up by name in the map at `0x13D0E04`), with the size, mipmap and format settings given; creates its textures on the device (Device::CreateTexture) |
+| `0x9fe380` | Terrain::MakeLightFalloffTexture | Makes the procedural texture `TerrainLightFalloff` (32 x 32, kept at +0x8C): for each pixel the light falls off with the squared distance from the middle, 0 outside the circle |
+| `0x8ed250` | Terrain::Build | In outline: builds the terrain's drawing data (4.5 KB), marking `BLOCKED` cells, through the terrain and the current device |
+| `0xb57590` | Shadows::DrawBlobs | In outline: draws the round shadow blobs under people (`PeopleShadowBlob`), placed with their facing (Matrix::LookAlongZSide) |
+| `0xb83510` | Shadows::BlobSetup | In outline: sets up the `PeopleShadowBlob` shadow texture and its values |
+| `0x9493a0` | Water::DrawDebug | In outline: the water and waterfall drawing pass with its debug drawing (`DrawSolidColourNoZ`), counting its draw calls (RenderStats::AddBatch) |
+| `0x43a0c0` | Renderer::SetTextureStages | In outline: sets up the eight texture stages (`Texture0`-`Texture7`) for drawing from the main camera |
+| `0x87ca90` | Billboards::Draw | In outline: draws billboards with the `BillboardStandard` shader (looked up by name) through Shape::Draw |
+| `0x83b8a0` | Billboards::Setup | In outline: sets up a billboard list with the `BillboardStandard` shader |
+| `0xccdd90` | ResourceFile::Load | In outline: loads a resource file's data, swapping byte order when the file's flag (`0x13D0DF2`) says so, marking `BLOCKED` entries |
+| `0xbfb7b0` | ResourceFile::Save | In outline: writes a resource's data to a save stream (SaveWriter::Write), marking `BLOCKED` entries |
