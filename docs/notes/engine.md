@@ -293,3 +293,7 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbd1550` | TextRef::TextRefEmpty | Constructor of a text reference (table `0xFA14D0`) that refers to no text (`0xBD0C50` with 0) |
 | `0xbe47b0` | Callback::~Callback | Deletes the object it holds at +4 (its deleting destructor with 1, given this), then `0xBCDDF0` |
 | `0x4042d0` | Forwarder::Slot3 | Calls slot 3 of the object at +4 with the value and returns the value |
+| `0x4363d0` | Timer::Ticks | Reads the processor's time-stamp counter (rdtsc). Used by about 35 timing functions |
+| `0xbec8a0` | ReportMissingInterface | Reports `Failed to get interface in %s (line %d).` with the source file and line given (`0xC34850`). Used by about 35 functions |
+| `0x458150` | SharedText::Copy1106DC4 | Makes this hold the shared text kept in `0x1106DC4`, raising its use count |
+| `0xbe40b0` | Get8Then40 | The value at +0x40 of the object at +8 of the object this points to |

@@ -382,3 +382,9 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x67a8c0` | Window::SetRelatedValue | Sets +0xF0 of the related window (+0xF8), when there is one |
 | `0x6a1e20` | Window::UpdateEntries | Runs `0x6A1E70` for each entry of the window's list (+4) |
 | `0x63b3d0` | Window::AddWithText | `0x67B4B0` with the third argument and 0, then `0x63B270` with the first two |
+| `0x6b01e0` | Window::SetContent | Sets the window's content (+0xCC) and, when asked, sizes the window to it (its position plus the content's size, `0x6AFAF0`) |
+| `0x6afd40` | Window::SetRectAndRefresh | `0x6AFAF0` with the rectangle given, then `0x6AFC20` |
+| `0x6a8300` | Window::SetMode1 | With a value: keeps it (+0xF4), sets the mode (+0xF0) to 1, `0x6A9E50` with 0x800, 0x800 and rebuilds (`0x6A8220`); without one the mode becomes 0 |
+| `0x6a8380` | Window::SetMode2 | With a value: keeps it (+0xF4), sets the mode to 2 and rebuilds; without one the mode becomes 0 |
+| `0x6a82d0` | Window::SetThree | Keeps three values (+0xF8, +0xFC, +0x100) and rebuilds (`0x6A8220`) |
+| `0x6a8350` | Window::SetThree2 | The same (another copy of the code) |

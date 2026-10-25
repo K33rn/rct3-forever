@@ -128,3 +128,5 @@ Tracked rides, flat rides and their cars and trains.
 | `0x52f560` | RideInstance::Slot18 | When the ride's slot 19 agrees to the value (with 0), sets it with AttractionInstance::SetValue70. Slot 18 of RideInstance |
 | `0x5749e0` | RideTrainInstance::Slot9 | Runs the train's slots 14 and 15 with the argument, then for each car (count +0xC4) `0x561240` and `0x526A70`, then slot 16 and `0x5725D0`. Slots 9-11 of RideTrainInstance |
 | `0x551210` | RideParticleManager::Update | Passes the frame time on to its four members (+8, +0x38, +0x80 and +0x98) through their update functions. Slot 0 of RideParticleManager's update table |
+| `0x561240` | RideTrainInstance::Car | Car n of a train: the interface (id in `0x12F50D4`) of the object entry n of the car table (+0xC0, 28 bytes each, count +0xC4) refers to, looked up once per entry; null past the end |
+| `0x5a7300` | TrackedRideInstance::Entry | Entry n of the table at +0x6AC (28 bytes each, count +0x6B0): the interface (id in `0x12F537C`) of the object it refers to, looked up once per entry; null past the end |
