@@ -195,3 +195,5 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x8c4ac0` | Terrain::RayHeight8C4AC0 | In outline: walks a ray along the terrain heights until it drops below them, unless the direction is flat |
 | `0xcc69a0` | Animation::SampleCC69A0 | In outline: samples an animation's tracks at a time: finds each key (Keys::Find2) and blends between keys |
 | `0xccfab0` | Points::TransformCCFAB0 | In outline: transforms a list of points by a matrix, four at a time |
+| `0x8133c0` | Boxes::Overlap8133C0 | In outline: finds the boxes of a list that overlap box n |
+| `0xc1e970` | Polygon::SideC1E970 | In outline: which side of a plane a polygon's points lie on, by the signs of their distances |

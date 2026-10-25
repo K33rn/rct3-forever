@@ -382,3 +382,13 @@
 | `0x715170` | Path::Rebuild715170 | In outline: rebuilds a path piece from its description (`0x7141A0` on +0x23C, `0x7134C0`), or the plain way (`0x714F30`) |
 | `0x841f70` | Scenery::Grow841F70 | In outline: grows a scenery list (`0x130BB24`, ObjectArray28::Resize) to n and makes the new entries (`0x733A90`) |
 | `0x4b9d60` | Shop::Stats4B9D60 | In outline: works out a shop's figures from its values (`0x4BF100`, `0x4BF0B0`, `0x4B9C20`, `0x4B9CC0`) and the date (GameTime::Get) |
+| `0x8bd050` | Terrain::HighestIn8BD050 | In outline: the highest terrain height inside a square around a point (Grid::CellAt for its corners) |
+| `0x8d9600` | Terrain::GrowRows8D9600 | In outline: another row growing pass like Terrain::GrowRows8D9060 |
+| `0x762a10` | Guest::Remember762A10 | In outline: when not flagged (+0x530), makes a record of the things a guest has seen (PersistentObjectsSeen) and fills it (`0x75AB70`) |
+| `0x7143c0` | Path::Build7143C0 | In outline: builds a path piece (`0x714120`, `0x713460`) and links it |
+| `0xb9dee0` | PathGrid::RectB9DEE0 | In outline: makes a list of the path grid cells in a rectangle (within its height, +0x68) |
+| `0x8d7580` | Terrain::ShrinkColumns8D7580 | In outline: another terrain column pass like Terrain::Columns8D6FC0, removing columns from n on |
+| `0x8d8080` | Terrain::ShrinkRows8D8080 | In outline: the row form of Terrain::ShrinkColumns8D7580 |
+| `0x71b500` | Path::TileAt71B500 | In outline: finds a path tile at a cell by case, checking what is already there (Entries::FindByKey kind 0x1F) |
+| `0x567720` | Path::Update567720 | In outline: a path piece's update when not flagged (+0x5C), by its kind (+0x10 values 5, 7, 8; queues 0xD) |
+| `0xaba730` | Fence::RebuildABA730 | In outline: rebuilds a border when on (+0xE8): clears it (`0xAB6050`), builds it (Fence::Build) and finishes (`0xAC67C0`), with a case for kind 4 |

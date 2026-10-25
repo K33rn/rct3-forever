@@ -103,3 +103,8 @@
 | `0xb180c0` | WildAnimal::PlaceB180C0 | In outline: places an animal on the terrain (a 90 by 90 grid, WildAnimal::Interface60) |
 | `0xaf67e0` | Animal::ReleaseAF67E0 | In outline: another release of an animal's parts like Animal::ReleaseAD9A00 (+0x5C, +0x7C) |
 | `0xb62ce0` | WildAnimal::GroundB62CE0 | In outline: an animal's ground check: the cell under it (Grid::CellAt) and its height and speed values (+0x74, +0xDC) |
+| `0xb5a1e0` | Animal::PlaceB5A1E0 | In outline: another animal placement like Animal::PlaceB51AD0 at the point under the mouse |
+| `0xb3c420` | Animal::CheckB3C420 | In outline: checks an animal's spot on the terrain when not flagged (+0x74), comparing two values |
+| `0xb2de20` | WildAnimal::SetupB2DE20 | In outline: sets up an animal on the terrain (a 90 by 90 grid) in its enclosure (EnclosureManager::Get, WildAnimal::Interface60) |
+| `0xb024b0` | Animal::IdleB024B0 | In outline: when not flagged (+0x2FC), picks an animal's idle move at random (Random::Ran0, `0xDDD39A`) |
+| `0xb66e70` | WildAnimal::TurnB66E70 | In outline: works out the angle between an animal's way and its target's (`0xB66910`) and eases its turn (`0xDDEBC0`) |

@@ -218,3 +218,6 @@ Tracked rides, flat rides and their cars and trains.
 | `0xa9b950` | PoolComplex::SceneryA9B950 | In outline: refreshes a pool's parts (`0xA9B800`, `0xA9AA60`) and makes a scenery item for it (SceneryItem::SceneryItem) |
 | `0xbc2330` | Track::BuildMeshBC2330 | In outline: builds a track's mesh: its sections (Track::BuildBBBFE0) and their vertices (64 bytes each, `0xBEE8C0`) |
 | `0xab45d0` | PoolComplex::BuildAB45D0 | In outline: builds a pool complex's parts (`0xA9A440`, `0xAC2BC0`, `0xA85410`) when not flagged (+0x194) |
+| `0xbc7350` | Track::CompareBC7350 | In outline: a sort comparison of two track pieces by their snapped height (Grid::SnapIndex with `0x10F2B30`, `0x13D0A80`), then `0xBC5480` |
+| `0x5c7450` | TrackedRide::Special5C7450 | In outline: for ride kinds 0x4A to 0x4C, when not flagged (+0x18C), sets up their special part (`0x5BD5A0`) |
+| `0x516e90` | Car::Move516E90 | In outline: moves a ride car on by a time (`0x10EE444`) when on (+0xC0), with its train's cars (+0x7B4, `0x50E6A0`) |

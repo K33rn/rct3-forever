@@ -658,3 +658,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x8854b0` | List::Scroll8854B0 | In outline: keeps a list's shown rows (+0x108 +0xF4, +0x110 +0xF8) in range and finds the row under a point (+0xE0 rows) |
 | `0x5fcce0` | KeyBinding::Read5FCCE0 | In outline: reads a key combination (KeyCombination::Set) from the window's keys when flagged (+0x94 bit 4): each key of kind 0x2000000 by its code (0x200001D, ...) |
 | `0x4bcf80` | PlacementCursor::Update4BCF80 | In outline: another placement cursor update like PlacementCursor::Update583360, skipped when the GUI is in the way (`0x12F8404` +0x258) or flagged (+0x50, +0x94, +0x98, +0xDC, +0x120, +0x168) |
+| `0x9c2f50` | Window::Build9C2F50 | In outline: builds a window from its title (copied when none is given) like the other window builders |
+| `0x9b4bc0` | Dial::Layout9B4BC0 | In outline: lays out ten parts round a circle (cosine and sine of their angles) and sets each one's value (`0x1B0` +0x18) |
+| `0xa48ca0` | Graph::LabelsA48CA0 | In outline: lays out a graph's labels from shared texts (`0x12FE4F8`, `0x12FCB28`, `0x12F9FD4`) at fixed positions (`0xA455D0`, `0xA45310`: 663, 32, 250, ...) |
+| `0x7e22e0` | Info::Text7E22E0 | In outline: makes an info text for a thing (+0x114) from its values (`0x758C30`, `0x7739D0`, `0x4FF4A0`) |

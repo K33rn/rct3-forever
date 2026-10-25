@@ -422,3 +422,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbc34f0` | Resource::CopyNameBC34F0 | In outline: copies a resource's name and data (`0xBCE1D0`, `0xBE5020`) |
 | `0xce4cc0` | Sound::UpdateCE4CC0 | In outline: a sound's update when playing (+0x20): checks its buffer (`0xCE63E0`) and its state flags |
 | `0x88d700` | SceneryRenderer::Pass88D700 | In outline: another scenery drawing pass like SceneryRenderer::Pass89E620 (`0x856400`, `0x855A20`) |
+| `0x812650` | Scenery::DrawSorted812650 | In outline: draws a list (+0x64) sorted by depth (List::SortBy34) inside a timed critical section |
+| `0xced5f0` | Mesh::BuildCED5F0 | In outline: builds a mesh's parts (+0x70 of them, each with +0x28 pieces, `0xCE9470`) |
+| `0xccc720` | Ads::DrawCCC720 | In outline: draws a list of shapes (+0x44) with their textures, using the advert texture (Ad::Texture with `0x13D0E34`) for flagged ones |
+| `0x44b360` | Effects::Update44B360 | In outline: goes over a list of effects (+0x10) and, unless off (+0x21 and the owner's +0x1A6), updates each one by its kind (+0x30: 1, ...) |
