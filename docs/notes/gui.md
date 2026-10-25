@@ -571,3 +571,5 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x605880` | Window::SizeForLanguage5 | The same language-dependent width (500 in German, 460 otherwise) |
 | `0xb6f920` | WildAnimalList::FixForLanguage | When the game's language is not English, goes over the list's entries (+0x54, count +0x60) and changes the marked ones (`0xB3E390`) |
 | `0x6a8220` | NumberField::Update | Keeps the value a number field is bound to (+0xF4) inside its limits, by its kind (+0xF0): 1 a float between +0xF8 and +0xFC, 2 a whole number between +0xF8 and +0xFC, 3 a byte between +0xF8 and +0xF9; then redraws the field (`0x6A7DF0`) |
+| `0x6acb30` | Screen::AreaScale | The width and height of the GUI's area (`0x12F83F0`) divided by the screen's, or 1 and 1 when there is no area |
+| `0x49cac0` | Units::Convert | Converts a value for showing by its kind: 0 and 1 unchanged, 2 through `0x49CA10`, 3 and 4 by the unit setting (`0x10EE248`), 5 times `0x12F4AF4`, anything else 0 |

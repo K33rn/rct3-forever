@@ -51,3 +51,9 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbe7470` | Rect::IntersectInto | Writes into the rectangle given (the second argument) the overlap of this one and the third (the larger left and top, the smaller right and bottom) |
 | `0xc73730` | Matrix::Transpose | Writes the transpose of a 4x4 matrix into another |
 | `0xc73680` | Matrix::Transpose2 | The same 4x4 transpose (another copy) |
+| `0x585870` | Matrix::FacingRotation | Makes the 4x4 matrix for one of four facings (quarter turns about the vertical axis: 1, 2 and 3; anything else is no turn) |
+| `0x4812c0` | Vector::Rotate | Rotates a vector by a 4x4 matrix (no translation) into the one given |
+| `0x58a620` | Vector::RotateInPlace | Rotates a vector by a 4x4 matrix in place (no translation) |
+| `0xca35d0` | Matrix::RotateVector | Rotates a vector by this matrix (no translation) into the one given |
+| `0xbc6140` | Segment::Middle | The point halfway between an object's two end points (+0x10C and +0x110, when it has them) |
+| `0x9731c0` | Key::Compare | A sort comparison of two keys of nine values, value by value: -1, 0 or 1 |

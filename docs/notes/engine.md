@@ -1261,3 +1261,9 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x5d10f0` | FlagSlots::Set | Stores a value in the slot of the flag given: 1, 2, 4, ... 0x200 go to slots 0 to 9; other values are ignored |
 | `0x84d2d0` | Entry::Compare | A sort comparison: by kind (+8) first, then within the kind by the first value (kind 0), the first value and the +0x18 flag (kind 1) or the second value (kind 2), then by +0xC, +0x14 (reversed) and +0x10; gives -1, 0 or 1 |
 | `0x6b9a90` | GlobalTable::ByIndex | Gives one of 25 fixed game objects by number (0 to 24, e.g. 0 is `0x1301AF8`), or null for any other number |
+| `0xbfd270` | BlockPool::Free | Frees a block of a pool: merges it with a free block before and after it and returns the merged ones' records to a free list (`0x13D2A0C`, count `0x13D2A14`) |
+| `0xbe9590` | BlockPool::Free2 | The same for another pool (free list `0x13D0F4C`, count `0x13D0F54`) |
+| `0xc477d0` | KeyMap::Find | Finds the value stored for a key of 48 bytes (12 values xored together as the hash, buckets at +0xC, entries of 0x30 bytes at +0x10) |
+| `0x966da0` | List::Merge | Merges two sorted lists into the one given, using the comparison passed in |
+| `0x85aad0` | Arrays::Compact | Removes the empty entries of a set of parallel arrays, keeping the order, and renumbers the references to them (through the table `0x130CDB0`) |
+| `0xceb030` | Record::Copy | Copies a record (the first byte and the values from +0x10 on) |

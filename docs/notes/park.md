@@ -233,3 +233,4 @@
 | `0x874d90` | GridMarks::MarkRect2 | The same marking of a rectangle inside the grid, setting byte +2 of each cell instead (without growing the changed area) |
 | `0xb9a810` | PathGrid::SetEdges | Sets edge bits on a grid cell (width +0x64, cells of 0x18 bytes at +0x6C, bits at +0x14) and the matching bits on the neighbouring cells for bits 1, 2, 4 and 8 |
 | `0xb9a8c0` | PathGrid::ClearEdges | Clears those edge bits on a cell and its neighbours |
+| `0x874cf0` | GridMarks::MarkRect0 | The same marking of a rectangle as GridMarks::MarkRect, setting byte 0 of each cell |
