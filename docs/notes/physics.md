@@ -199,3 +199,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xc1e970` | Polygon::SideC1E970 | In outline: which side of a plane a polygon's points lie on, by the signs of their distances |
 | `0x9614c0` | Grid::Points9614C0 | In outline: goes over a grid of points (+0 by +4), joining each row's last point and normalising their directions |
 | `0x907600` | Water::Spread907600 | In outline: spreads values along a water piece's points, keeping them at least 0 |
+| `0x4180e0` | Polygon::Simplify4180E0 | In outline: removes points of a polygon (+0xC) that add nothing (`0x418090`), down to three |
+| `0x44a750` | Effect::Bounds44A750 | In outline: grows a box to take in an effect's values when they are positive (+0, +4, +0x30) |
+| `0x812110` | Regions::Find812110 | In outline: finds a region in a list (+0x48) and measures it (`0x80FF10`) |

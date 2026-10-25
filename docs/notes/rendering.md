@@ -437,3 +437,10 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc5b220` | Animation::StepC5B220 | In outline: moves an animation on by a time: works out the frame by its length and wraps or holds at the end |
 | `0xc5b710` | Animation::StepC5B710 | In outline: the same animation step for another kind of track |
 | `0xbd5c70` | Draw::QuadBD5C70 | In outline: draws a shape (Draw::QuadBD5360) and finishes it (`0xC1E790`) |
+| `0xcf1290` | Shapes::DrawCF1290 | In outline: another shape set draw like Shapes::DrawCCCE30 (ShapeShaders::Load, `0xCC1F30`, Counter::Increment) |
+| `0x8583e0` | SceneryRenderer::DrawFaded8583E0 | In outline: another faded scenery draw like SceneryRenderer::DrawFaded8595A0, for sets under 0x10001 parts |
+| `0x9640f0` | Fireworks::Update9640F0 | In outline: goes over a firework list's parts (+0x10) that are on (+8), aiming them (`0x445270`) and checking their distances |
+| `0xc90990` | Device::CheckStateC90990 | In outline: checks the device's state against what was last set (+0x4EC vs +0x21A8, +0x420, flags at +0x1CB8 and +0x1CAC) |
+| `0x8cafd0` | Terrain::DrawPass8CAFD0 | In outline: another terrain pass like Terrain::DrawPass8C0CF0 for mode 3 |
+| `0xc25b50` | Skeleton::BuildC25B50 | In outline: builds the matrices of a model's bones (+0x20), four at a time |
+| `0xc912c0` | Device::ResetC912C0 | In outline: when asked or flagged (+0x4E8, +0x1CB4), goes over the device's resources and resets them |

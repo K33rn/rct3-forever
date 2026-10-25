@@ -143,3 +143,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x75b160` | Guest::FindPath75B160 | In outline: finds where a guest goes next on the paths (`0x1306960`, `0x786AD0`, `0x7089E0`, PathTile::Centre, `0x7C9E60`) |
 | `0x7c5cb0` | Person::Wander7C5CB0 | In outline: unless busy (`0x7C3480`), sometimes (Random::Ran0, by a rate) turns a person to wander |
 | `0x7aa230` | Staff::Inspector7AA230 | In outline: an inspector's update (kind 0xE stage 0): finds where to go (`0x7C9E60`) when it has no place (+0x52C = -1) |
+| `0x7e93d0` | Guest::PickRandom7E93D0 | In outline: picks a random thing for a guest of kind 0 or 1 over the terrain (a 90 by 90 grid, Random::Ran0, `0x7C2FF0`) |
+| `0x79eb70` | Guest::PickRandom79EB70 | In outline: the same random pick as Guest::PickRandom7E93D0 (another copy) |
+| `0x77abe0` | GuestGroup::Setup77ABE0 | In outline: sets up a group (`0x779D20`, `0x76DFF0` into `0x1306554`) and, when it can (`0x76F0D0`), its members (`0x777660`) |

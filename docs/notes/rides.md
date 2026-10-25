@@ -223,3 +223,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0x516e90` | Car::Move516E90 | In outline: moves a ride car on by a time (`0x10EE444`) when on (+0xC0), with its train's cars (+0x7B4, `0x50E6A0`) |
 | `0xabbc00` | PoolComplex::CheckABBC00 | In outline: for kinds outside 2 to 4, when not flagged (+0x178), checks a pool piece (`0xABC990`) and its first part (`0xAB1020`) |
 | `0x5c0200` | TrackedRide::EndPoints5C0200 | In outline: works out a ride piece's end points (used by TrackedRide::Ends5C58B0) unless flagged (+0xAC), with its slot (+0x26C) |
+| `0x4d50a0` | AttractionPerson::Place4D50A0 | In outline: when not flagged (+0x74), places a person on an attraction (AttractionPersonInfo::Person) with its matrix (Matrix::Copy) and tile (OffsetRef::Owner2) |

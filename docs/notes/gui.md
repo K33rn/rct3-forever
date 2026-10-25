@@ -674,3 +674,8 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6edeb0` | Objectives::Clear6EDEB0 | In outline: releases the objectives list's parts (+0x104, count +0x108) and rebuilds it (`0x6E9D70`) |
 | `0x6cca80` | List::DrawRows6CCA80 | In outline: draws a list's rows (+0xE4): each row's item (`0x6C8180`) and, when not done, its image (SkinItem::Texture) |
 | `0x68e3c0` | Bar::Layout68E3C0 | In outline: lays out a bar by its fill (above 1 handled), sets its value (Set_+0xd0), draws its frame (`0x6ACE50`) and its marks (+0x104) |
+| `0x9e6d60` | Keys::Camera9E6D60 | In outline: when not flagged (+0x408), checks keys 0x2F and 0x30 (KeyState::Held) to move the camera |
+| `0x64dc40` | Window::Build64DC40 | In outline: builds a window from the shared title `0x12F8040` |
+| `0x643030` | Window::Layout643030 | In outline: when not flagged (+0x152), places a window (Window::SetRectAndRefresh, Window::UpdateRect) and finds its selected entry (+0x124) |
+| `0x79f040` | Info::Text79F040 | In outline: makes an info text for the selected thing (Interface44::Get, `0x4C0850`) |
+| `0x438140` | Camera::Focus438140 | In outline: focuses the camera (MainCamera::Get, `0xCD7BB0`, `0xCD6850`) on a target (+0x308) over the terrain |

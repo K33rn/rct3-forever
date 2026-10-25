@@ -116,3 +116,4 @@
 | `0xa13340` | Bird::UpdateA13340 | In outline: another bird update: for kind 0x200 not in mode 2, by its stage (+0x6C: 0, 2) and flag (+0x15C), checks (`0xA113D0`) |
 | `0xb38a30` | Animal::CanActB38A30 | In outline: whether an animal can act now: not flagged (+0xFC, the owner's bit 8), and its slot and links in order |
 | `0xb30a40` | Animal::UpdateB30A40 | In outline: an animal's update when not flagged (+0xB0): checks with the shared manager (`0x13CEE84`) and, when done, acts (`0xB7AAD0`) |
+| `0xb16010` | WildAnimal::PoseB16010 | In outline: sets an animal's pose by its mode (+0x84: 1, ...), pointing it (Matrix::LookAlongYSide with `0x10F2EA0`) on the terrain |

@@ -408,3 +408,14 @@
 | `0x9a43b0` | Fireworks::List9A43B0 | In outline: fills a list from a firework display's parts (+0xF4, Get_+0x108; `0x98DEB0`) |
 | `0xa91e70` | GridTool::CellUnderMouse | In outline: the grid cell under the mouse (MainCamera::Get, `0xCD79C0`) on the terrain, with its side and corner |
 | `0x813910` | Regions::Add813910 | In outline: adds a region with its box (Rect::Assign): makes its records (0x20 bytes, `0x80E260`) and its list |
+| `0x7a2230` | Animal::FindHome7A2230 | In outline: finds the enclosure for something (`0xAA0840`, EnclosureManager::Get, `0xB98D50`) |
+| `0x8da280` | Water::Make8DA280 | In outline: makes water over an area (WaterManager): its size from the area (half the sum of its sides, square-rooted), a random value and its part (`0x8277A0`) |
+| `0x6f5a50` | Park::Refresh6F5A50 | In outline: refreshes a list of things (`0x6F5680`, `0x6F11E0` with 50) and the ones linked to it (`0x12F51B4`) |
+| `0x8b79c0` | SceneryBehaviour::Aim8B79C0 | In outline: when not flagged (+0x54), points a scenery behaviour along its owner's direction (SceneryBehaviour::Owner, Matrix::LookAlongZSide) |
+| `0x9a05e0` | Fireworks::Load9A05E0 | In outline: for a firework entry (Table104::Entry on +0x194) high enough, builds its file path from the install folder text (`0x1106DC4`) and loads it |
+| `0xa92520` | GridTool::UpdateA92520 | In outline: another grid tool update like GridTool::UpdateA92E40, when not flagged (+0x1E0, +0x114) and not in mode 1 |
+| `0xb70450` | WildAnimal::CountB70450 | In outline: counts the animals (`0x6C3BE0`) on the terrain (a 90 by 90 grid), giving 0 when there are none |
+| `0x891100` | Scenery::Fit891100 | In outline: checks a scenery item's box against the area (+0x30 to +0x40) and places it (`0x88F4F0`) within its slots (+0x394) |
+| `0x91df50` | Water::Cell91DF50 | In outline: the water cell for a point on the terrain, rounded |
+| `0x843d60` | Scenery::Flatten843D60 | In outline: flattens the ground for a scenery item when its option is on (TerrainFlattener::Get, `0x10EDC38`, `0x1313C64` bit 2) |
+| `0x7c53e0` | Terrain::HeightAt7C53E0 | In outline: a terrain height at a point (a 90 by 90 grid), rounded to its cell |

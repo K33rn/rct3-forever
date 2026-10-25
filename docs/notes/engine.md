@@ -1500,3 +1500,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x9a50a0` | Text::Split9A50A0 | In outline: splits a text (from `0x13D3058`) into parts (WideString::Substring) into a new list |
 | `0xc17070` | Path::SplitRecursive | In outline: splits a path or name at a separator (`0xBE84F0`, String::Substring) and handles the rest the same way (it calls itself) |
 | `0x59f520` | Placement::Plan59F520 | In outline: plans a placement inside a timed step (Timer::Milliseconds): releases the old plan (`0xBE79B0`), works out the new one (`0x5BEB30`, `0x5C07F0`) |
+| `0xc4ea20` | Strings::BuildC4EA20 | In outline: builds a table of texts (8-byte entries) for up to four kinds by flags (0x10 shifted) and makes empty strings for them |
