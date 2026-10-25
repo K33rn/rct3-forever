@@ -132,3 +132,7 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x788140` | List::SortByDC | Sorts part of a list (+0x18C) of objects by their +0xDC value, largest first |
 | `0xa88680` | Motion::DistanceAt | The distance covered by a time when speeding steadily from one speed to another over a set time, then going on at the second speed |
 | `0x5d3900` | Ease::In | Eases a time over a total: slow at first (squared over the first stretch), straight after; unchanged when the total is too short |
+| `0x8b5230` | Tracker::SetVelocity | Sets a velocity (+0xC to +0x14) from the move from the last position (+0x1C) to the one given times a rate, and counts an update (+0x2C) |
+| `0xa6b240` | VerletPoint::Velocity | A Verlet point's velocity: its position minus its previous one, over the time step `0xF8F980` |
+| `0x5bada0` | Damping::For | A damping amount for a speed: half of it when fast, a falling share when slower, a fixed share when stopped (scaled by `0x12F55CC`) |
+| `0x4664e0` | Matrix::Ortho | Makes an orthographic projection: x and y scaled by 2 over the width and height, depth by one over (far - near) and moved by near |

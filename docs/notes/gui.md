@@ -585,3 +585,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6adc50` | Window::FirstFocusable | The first child of the window's lists (+0x64, then +0x4C) whose flags (+0x94) have bit 4 set, or null |
 | `0x619890` | Window::PartFor | One of ten parts of a window by number (0 to 9), or null |
 | `0xca8560` | UIntSlider::SetValue | Sets the bound whole number (+4, unsigned) from a fraction between the minimum (+8) and maximum (+0xC) |
+| `0x621370` | ProgramInfo::MinSize | The program info window's size, at least 530 by 200 |

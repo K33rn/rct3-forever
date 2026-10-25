@@ -1403,3 +1403,19 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x557e70` | Entries::Differs | Whether the entry with the three values given (16 bytes each at +0x94, count +0x98) has a different third value from the one given (or the one given is not 0 when there is none) |
 | `0x88f9a0` | SortedTable::LowerBoundKind | The place for a number of a kind (the low bit of each 0x150-byte entry at +0x14, count +0x18) in a sorted table |
 | `0xbd5110` | NamedList::Find2 | Finds the entry of a list (+0x204) whose name (+0x24) matches the text given |
+| `0x939550` | Matrix::Copy3x3Pos | Copies the three axes and the position of a matrix (leaving their fourth values) |
+| `0xcdc420` | SortedPointers::Find64 | Binary search of a sorted list of objects by their two first values: gives whether it was found and its place |
+| `0xbd2170` | TypeList::Copy | Copies a list of up to four types, looking up each one's size from its top four bits in `0xFA14D8`, and clears the rest |
+| `0xdf88f0` | Math::IntSqrt | The whole-number square root of a number (a first guess by powers of two, then three Newton steps; 0x8000 for very large ones) |
+| `0xcc21f0` | ListNode::IsLinked | Whether a list node is properly in a list (its neighbours point back to it) |
+| `0xcbc740` | ShaderPreprocessorLexer::SwitchToBuffer | flex's yy_switch_to_buffer: saves the current buffer's place and characters and makes the buffer given current |
+| `0xc0ac90` | ScannerLexer::SwitchToBuffer | The same yy_switch_to_buffer for the script scanner |
+| `0x827e00` | Entries::EarlierSame | Whether any of the entries before n (0x58 bytes each) has the same id (+0x54) and its two bits set in the object's mask (+0x134) |
+| `0xc64ce0` | Items::SetValueAt | Sets the value (+0xD0) of item n of the owner's list (+0xF0, +0xB0) and clears +0x9C |
+| `0xa93990` | Object::SetKind | Sets a kind (+0x144) and from it a group (+0x140): 1 for none (-1), 2 for 0 and 1, 4 for 5, 3 for 2 to 9, 0 otherwise |
+| `0xaad7f0` | Object::KindCode | A code for the object's kind (+0x120): 0x10 by default, 0x30 for 5, 0x2F for 6, 8 and 9, 0x2E for 7, and for 2 and 3 its value (+0x124) plus 0x10, at most 0x30 |
+| `0xbc5eb0` | Pieces::PairAllowed | Whether two pieces make an allowed pair: one of kind 0x4A or 0x4C with the other of kind 0 and type 1, 2, 4 or 5 |
+| `0xc9e7f0` | Slots::Reset | Marks every slot of a table empty (-1, 0) and chains the free list through the shared count `0x10F3410`, ending it with -1 |
+| `0xbd2780` | TypeLists::Contains | Whether a list holds a type list the same as the one given (same count and the same values) |
+| `0x80e200` | SortedIndex::LowerBound2 | The place in a sorted index (+0xC into +8, count +0x10, sorted by +8) for a value |
+| `0x772990` | Slots::ValueFor | The value for an id among the object's slots (+0xAC, +0xC0, +0xD4, ... with values at +0x9C, +0xA0, ...), or the default (+0x78) |

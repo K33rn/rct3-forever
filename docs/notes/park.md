@@ -259,3 +259,5 @@
 | `0x5d13c0` | Settings::Downgrade | Lowers the values that only a higher setting allows (7 to 3, 8 to 4, 2 to 0 or 1, 3 to 2) in a list of ten settings |
 | `0x5bc150` | Counts::AddByKind | Adds one to the count that matches a thing's kind (+0x10): 1 and 2, 4, 0x15 to 0x17, 0x23, 0x24, 0x25, 0x27 (only above a level), 0x28, 0x29, ... |
 | `0x703170` | Grid::GrowChanged | Grows a grid's changed area (+0x74 to +0x80) to take in a rectangle, with the rectangle kept inside the grid (+0x6C by +0x70) |
+| `0xafa080` | TerrainLayers::SetFlag | Sets the value (+0x24) and the flag (bit 2 of +0x10) of each terrain layer of a list |
+| `0x7339b0` | Area::Move | Moves an area's rectangles (+0x40 to +0x5C) and every one of its items (+0x68) by an offset |

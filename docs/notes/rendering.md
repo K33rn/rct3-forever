@@ -287,3 +287,6 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x47dd10` | Sound::SetLevels | Sets two levels of a sound (+0x5C, +0x60), each kept between 0 and 1 |
 | `0x9e84e0` | Colour::Pack | Packs a colour of four values from 0 to 1 into one value (alpha, red, green, blue) at +8 |
 | `0x489a10` | Mesh::PointAndNormal | The position and normal of a mesh point by its packed number (part in the high half, point in the low half) |
+| `0x8ef180` | Vertices::SetSecond | Copies a list of values into the second value of each 16-byte vertex (count twice the sum of +8 and +0xC) |
+| `0x94dec0` | Animations::Set | Sets animation n (0xD0 bytes each at +0x1A4): its three values, frame count and rate, the frame time ((count - 1) / rate), its mode (4) and a cleared position |
+| `0x9f7110` | Firework::SetFade | Sets a firework's fade value (+0xC) from a level between 0 and 1, along a curve |
