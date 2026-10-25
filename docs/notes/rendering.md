@@ -374,3 +374,11 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbd89e0` | Text::LayoutBD89E0 | In outline: another text layout like Text::LayoutBD82A0 (when Flags::Bit0 is set), measuring its parts (`0xBD80A0`) |
 | `0x986060` | Effect::Place986060 | In outline: places an effect over the terrain as seen from the camera (MainCamera::Get), rounding its cells |
 | `0x8ea650` | Water::Shape8EA650 | In outline: works out a water shape's surface over the terrain: normalises its direction (+0x20 to +0x28) and compares its corner heights |
+| `0xc8ba70` | Device::ApplyC8BA70 | In outline: applies a device mode when it can (`0xBE90C0`): resets (`0xBE9040`), sets it (`0xBDCF60`, +0x4EC) and refreshes the resources when it changed (+0x1A44) |
+| `0xce36a0` | Mesh::WeldCE36A0 | In outline: joins a mesh's points that lie within a small distance (sorted by one axis), making new index and point tables |
+| `0x965d90` | Water::MergeBodies965D90 | In outline: goes over the water bodies (`0x9653C0`, `0x9651D0`, `0x9654F0`) joining the smaller ones into the larger (`0x965A50`) |
+| `0x9e66b0` | Firework::Draw9E66B0 | In outline: draws a firework part over its time (+0x1B8, rounded to frames) with a batch (`0x4377E0`) |
+| `0x7c0b80` | Effects::Draw7C0B80 | In outline: draws a list of effects (+0x20) inside a timed critical section, counting the batches (Counter::Increment) and building each one's shape (`0x9F8B40`) |
+| `0xc957e0` | Effect::SetParamC957E0 | In outline: sets one of an effect's settings by number from the value given (the same shape as Effect::SetParamC75800) |
+| `0xc76870` | Effect::SetParamC76870 | In outline: the same setting-by-number for another kind of effect |
+| `0xc71070` | Effect::SetParamC71070 | In outline: the same setting-by-number for another kind of effect |

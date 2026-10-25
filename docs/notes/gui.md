@@ -634,3 +634,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa41c40` | ScenarioList::FillA41C40 | In outline: fills a list with the scenarios (+0x244): each row numbered `%02d` in place of `%NUMBER%` in its text, and its title (Scenario::TitleText) |
 | `0x837060` | Window::Build837060 | In outline: builds a window from the shared title `0x130B624` (`0x67BE80` with 4) and a list (Listener440) |
 | `0x6a1120` | Window::HandleKey6A1120 | In outline: handles a window message by its number: 0x9000 (`0x443B70`), above 0x5000 (`0x444F10`), and passes others on (`0x442C60`) |
+| `0x9bb220` | Window::Build9BB220 | In outline: builds a window from the shared title `0x1341450` |
+| `0x9b9eb0` | Window::Build9B9EB0 | In outline: builds a window from its title like Window::Build9B7940 |
+| `0x7a86f0` | Toolbar::Build7A86F0 | In outline: builds a row of image buttons (Button::SetImages with five images each) with their texts (TextRef::Assign: `0x12FDF08`, `0x12FAFE0`, `0x12FD5A0`, ...) |
+| `0x67dfd0` | Window::Build67DFD0 | In outline: builds a window from the shared title `0x12F83C8` (`0x67DAC0`) |

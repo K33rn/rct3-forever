@@ -200,3 +200,5 @@ Tracked rides, flat rides and their cars and trains.
 | `0x553060` | TrackedRide::Sections553060 | In outline: goes over a ride's track sections (`0x12F5338`) and lays out each one (`0x559D10`, Interface20::GetCached, `0x552BC0`) |
 | `0x4ff730` | Ride::Footprint4FF730 | In outline: when the ride is not being moved (+0xC4 +0xD4), finds the cells its parts cover (Grid::Range) on the terrain |
 | `0xbbb690` | Track::BuildBBB690 | In outline: goes over a track's sections (+0x50) measuring them (PointSet::Walk2) and flags the ones past the limits |
+| `0x4e7e00` | AttractionPerson::Update4E7E00 | In outline: another attraction person update like AttractionPerson::Update4E7590, checking its box against the ride (`0xBCC740`) |
+| `0x526100` | Car::Splash526100 | In outline: when shown (+0x250), checks the water under a ride car (Grid::CellAt, WaterManager::Get, `0x93DBF0`) to make a splash |

@@ -345,3 +345,6 @@
 | `0x4f1050` | Ride::Placing4F1050 | In outline: while a ride or shop is being placed (+0x60C), makes its name and acts by its kind (+0x144: 1, 2, ...) when the thing under the mouse changes (+0x618, +0x61C) |
 | `0x9489a0` | Water::Bodies9489A0 | In outline: goes over the water cells (+0x5C) and finds which body each belongs to (`0x95BC10`), joining bodies at the same height |
 | `0x7e5fa0` | Park::Rebuild7E5FA0 | In outline: another timed rebuild like Park::Rebuild7E7440 over the terrain (a 90 by 90 grid) for an entry, with kind 2 tiles handled (`0x7E5350` with 0x40) |
+| `0x4ea9c0` | Ride::Select4EA9C0 | In outline: after an update (`0x4D29D0`), when the ride is not being placed (+0x378), makes it the selected one with the current tool (`0x12F5638`, `0x12F5608`, `0x4E6410`) |
+| `0xaab280` | PathGrid::RebuildAAB280 | In outline: a timed rebuild inside a critical section (unless a count `0x13CE030` is too high): clears (`0xA9F7E0`), sets up (`0x7CD120`, `0xAAA470`) and goes over a range of entries |
+| `0x42ca70` | Groups::Merge42CA70 | In outline: goes over groups (`0x42C9C0`, `0x42BFF0`) joining the smaller ones into the larger (`0x42C490`), like Water::MergeBodies965D90 |
