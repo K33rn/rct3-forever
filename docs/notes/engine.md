@@ -1466,3 +1466,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x7a7040` | HandleRef::FromRefBit | Makes a reference (table `0xF26AE0`) to the same handle as another and keeps the bit for the number given |
 | `0xc46e20` | Segment3D::Segment3D | Constructor (tables `0xFB7158`, then `0xFB715C`): keeps two values and two points |
 | `0xa402b0` | ObjectA402B0::ObjectA402B0 | Constructor: keeps its owner, sets its table to `0xF8B730` and clears its values |
+| `0x469c00` | Movies::FindAll | In outline: lists the movie files (`Movie*.avi`) in the game's movie folder and reads the number in each name (the characters after `Movie`), keeping them in order |

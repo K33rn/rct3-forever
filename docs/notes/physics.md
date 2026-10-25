@@ -149,3 +149,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xcc48f0` | Vector4::Scale | Multiplies a four-value vector by a number |
 | `0x925d20` | Points::Within | Whether two points are closer than the distance given |
 | `0x4412c0` | Angle::Octant | Which of eight directions an angle (+0x48 less +0x54) points in |
+| `0xbba430` | PointSet::Walk | In outline: goes over lists of points (from `0xBB69E0`), measuring lengths (square roots of four-value differences) and passing the totals to `0xC2F650`; called from `0xBBBFE0` |
+| `0x4dfe40` | Camera::Follow4DFE40 | In outline: points a camera along a direction (Matrix::LookAlongZSide), tilts it (Matrix::TurnAboutX), turns it toward its target, keeps it above the terrain height (`0x8F6760`) and adds a random shake when moving fast |
+| `0x90a290` | Grid::Solve90A290 | In outline: a pass over a square grid (+0, +4) of values: sets up its rows and columns (`0x909DC0`, `0x90A0D0`, `0x909C10`, `0x909F10`) and then works out each cell (`0x9060F0`) |

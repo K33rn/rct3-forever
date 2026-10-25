@@ -301,3 +301,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9c6330` | Particle::SecondColour | Packs a particle description's second colour (+0xB8) into one opaque value |
 | `0x9c62d0` | Particle::FirstColour | Packs a particle description's first colour (+0xAC) into one opaque value |
 | `0xbd3190` | Updatable::SetActive | Switches an object on or off (+0x11): joins the shared update list (`0x13D0D84`) when it has work (+0x24), or leaves it (`0xBD2850`) |
+| `0xbe0a50` | VertexDeclaration::Build | In outline: builds a vertex layout for a shader by adding elements (`0xBDC770`, each a stream byte and a usage) by the kinds of the shader's inputs (2, 0xC to 0x10, 0x16, 0x17, 0x19, 0x1A, ...) |
+| `0x9148a0` | Water::Build9148A0 | In outline: works through a grid of water cells building its geometry and colours, with the water manager (WaterManager::Get) and the developers' draw shader (Debug::DrawSolidColourNoZ2) |
+| `0x91fa80` | Water::Trace91FA80 | In outline: from a point, finds the terrain cell (Grid::CellAt) and goes over the water system's bodies (+0x1B4, +0x138), measuring directions and distances case by case |
+| `0x9225b0` | Water::UpdateWaterfalls | In outline: updates the waterfalls (Waterfall::Update) or, over the water system's bodies (+0x1B0, +0x1B4), checks each cell's edges against the terrain (`0x8FB1F0`) and makes waterfalls where water spills (WaterfallManager::Get, `0x925DD0`) |

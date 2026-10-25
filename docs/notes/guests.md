@@ -105,3 +105,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7cbfd0` | Person::Splash | In outline: makes a person's splash sound (`PeepSplash`), chosen at random |
 | `0xbaeb30` | Person::InspectionPoint | In outline: the `InspectionPoint01` point name |
 | `0x490880` | WayPoint::Name | In outline: makes way points named `Way Point ` + number |
+| `0x77c090` | Guest::Update77C090 | In outline: one of a guest's state updates by its mode (+0xE4): checks its group (`0x7742B0`), plays crowd sounds (Crowd::Sounds) at random and acts on what it is next to (`0x7B9AA0`) |
+| `0x73ee90` | Staff::UpdateInspector | In outline: a staff member's update by its stage (+0x194, up to 5): sets its state (Person::SetState), follows its path (Person::FollowPath) and, for inspectors (kind 0xE), works with the park inspector manager |

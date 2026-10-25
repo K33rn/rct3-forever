@@ -78,3 +78,4 @@
 | `0xb3cf30` | WildAnimal::BecomePregnant | In outline: at random (Random::Ran0) makes an animal pregnant and shows `WildAnimalMessage_Pregnant` |
 | `0xb8e820` | AnimalShelter::FoodNames | In outline: the names of a shelter's troughs (`food` + number, AnimalShelter::TroughNames) |
 | `0x4b6570` | Aquarium::Check | In outline: checks for an aquarium (`Aquarium:trr`) by its name |
+| `0xb201a0` | WildAnimal::Move | In outline: an animal's movement step: works out its speed and turn (`0xB355F0`, `0xB35670`, `0xB355B0`), its new position and checks that it stays on the terrain and inside its area |

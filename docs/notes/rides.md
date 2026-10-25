@@ -167,3 +167,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4efb90` | Track::Name | The `Track_` name text |
 | `0x4c1000` | Attraction::ClosedText | The `Closed` text |
 | `0xa67b40` | Buggy::Name | The `Buggy` name text |
+| `0xc29300` | Skeleton::PoseC29300 | In outline: works out a pose for a set of bones: makes 0x90-byte working entries, finds each bone (Pairs::FindSorted, `0xC23470`), and turns bones toward a target (Vector::RotateAround, arctangents) |

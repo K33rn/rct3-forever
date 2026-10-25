@@ -279,3 +279,10 @@
 | `0xa56b30` | Queue::Next | Takes the next entry of a list (+0x24's +0xD8) and starts it (`0xA565D0`), or clears it when the list is empty |
 | `0x71bf70` | Cell::StepInside | Moves a cell position one step in a direction (0 to 3) and gives whether it is still inside the grid (+0x5C, +0x5D) |
 | `0x829440` | Ride::IsBusy | Whether a ride has anything going on: people on it (its part's +0x70), a queue (+0x198), a pending change (+0x7C bit 2 with +0x58 bit 1 clear) or +0x1A0; otherwise looks further (+0x84) |
+| `0x708520` | Park::Get | The park (`0x1306194`): makes it (a 0x1F0-byte Park) the first time and activates it when it is not active yet |
+| `0x434070` | Path::Place434070 | In outline: placing on a path: gets the path manager (PathManager::Get) and the terrain, finds the tile (`0x71B370`) and acts by its kind (+0x8B: 1 or 2) and a mode (0 and up) |
+| `0x8fa0b0` | Terrain::Adjust8FA0B0 | In outline: changes terrain corner heights inside a rectangle (from +0x157 on), case by case, keeping the smallest difference between neighbouring corners, then checks the result (`0x8FB1F0`) |
+| `0x842870` | Scenery::LoadStep842870 | In outline: a loading step over scenery items by a stage (+0xD0: 1 to 3): resolves each item's visual (SceneryItemVisual::CheckResolved), builds names, and saves a screenshot (Screenshot::Save) in one stage |
+| `0x7b0af0` | Park::ClickAt7B0AF0 | In outline: works out what lies under a point in the park: the terrain (made if needed), the path manager, water (WaterManager), and other things found along the line (`0x8C5360`, `0x944250`, `0x900B40`, `0x48C300`), with the enclosure manager for animals |
+| `0x777990` | Guest::Place777990 | In outline: places a guest or group on the path at a point (PathManager::Get, `0x71B370`, Grid::CellAt), makes it (`0x7E8100`) and goes over the group's members (GuestGroup::Member) |
+| `0xab8210` | Fence::Build | In outline: builds the pieces along a border (+0x120 kind 2), looking up each piece by its side and corner (`0xA9F4E0` with six sides from +0xFD to +0x103) and making them (`0x7CBF50`) |

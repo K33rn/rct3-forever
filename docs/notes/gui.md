@@ -604,3 +604,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x682910` | Drag::Offset | The drag's offset (+0x25C) while dragging (+0x258), otherwise 0 |
 | `0xc5e3c0` | ScrollBar::SetPageSize | Sets a scroll bar's page size (+0xDC, at most 1) and keeps the position (+0xE0) from going past the end |
 | `0x99d300` | Graph::PointFor | A point of a graph from a value pair: x across from its scale and offset (+0xDC), y up or down the height |
+| `0x65f830` | ParkDialog::ShowPage | Switches the park dialog to page n (current at +0x15C): builds that page (ParkDialog::Build, the guest wants page, `0x70A6F0`, the landscape and wild animal settings windows and others), titles it from the table `0x10EEC70` and lays it out |
+| `0x70a6f0` | ParkDialog::BuildFlagsPage | In outline: one page of the park dialog: a list and a column of check boxes, each bound to a bit (1, 4, 0x10, ...) of the park's flags (+0x5C of Park::Get) and labelled with a game text, and a weather list set to the current weather (Weather::Get) |
+| `0x6ce2c0` | Window::Build6CE2C0 | In outline: lays out a window with a skinned background, a row of parts (+0xE4) sized to fit, and number texts made with String::FromNumber |
+| `0x693460` | Layout::Place693460 | In outline: places a box among its neighbours (`0x690EE0`) along one axis by its flag (bit 0x4000), moving its edges (the Set_ helpers) until they fit, and refreshes them (`0x6931F0`, `0x417C20`) |
