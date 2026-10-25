@@ -31,8 +31,8 @@ the game folder: everything happens in memory while the game runs, and closing i
 ## Progress
 
 How much of the game is rewritten. Every function in RCT3plus.exe is counted: **rewritten** (Forever's code
-runs), **documented** (understood and described, next to rewrite), or **to do**. The compiler's runtime library is
-counted separately; it doesn't need rewriting.
+runs), **documented** (understood and described, next to rewrite), or **to do**. Library code that ships inside the exe
+and pieces the compiler split off from functions are counted separately; they don't need rewriting.
 
 <!-- progress -->
 `░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░` **0.00% rewritten**, 0.50% understood and documented (by code size)
