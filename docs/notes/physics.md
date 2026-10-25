@@ -34,3 +34,16 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbedf70` | Matrix::TurnColumnsAboutY | Turns a matrix about the y axis from the other side: the x and z values of each row rotated into each other by the angle (the same code as `0xc208c0`) |
 | `0xa6b140` | Particle::Particle | Sets a particle up: its inverse mass, its position and previous position both at the given point, damping 0.99, +0x34 1 and no force. Called from RigidBody::RigidBody |
 | `0x85d2f0` | Box::Transform | The axis-aligned box around a box once it is transformed by a matrix: starts both corners at the matrix's translation, then for each matrix entry adds the smaller of the two corner coordinates times it to the minimum and the larger to the maximum. Called from SceneryModel::FindLightsAndWater |
+| `0xa61b90` | CameraAngles::Clamp | Keeps a camera's two tilt angles (+0x30, +0x34) between -1.5677 and 1.5677 (just under a quarter turn) and brings its turning angle (+0x38) into 0 to 2 pi by taking away whole turns |
+| `0xb00c00` | Quaternion::ToMatrix | Turns a rotation quaternion (x, y, z, w) into the rotation part of a matrix (rows at 0, 4 and 8) |
+| `0xcb5690` | Vector::TransformTwice | Transforms a point by one 4x4 matrix and the result by another (both with their translations) |
+| `0x97abd0` | Vertices::Transform | Transforms n vertices (each a position and a normal, 6 floats) by a matrix: the position with the translation, the normal without |
+| `0x856830` | Vertices::Transform2 | The same transform of positions and normals (the same code as `0x97ABD0`) |
+| `0xc35e50` | Entries::Highest | The entry (12 bytes each, at +0xA0, count +0xB4) whose second value is the largest, or null when there are none |
+| `0xceefb0` | Matrices::Get | Copies matrix n (64 bytes each, at +0x30, count +0x2C) into the one given, when n is in range |
+| `0xbe7690` | Rect::Union | Grows a rectangle to take in another (the smaller left and top, the larger right and bottom) |
+| `0xbe7520` | Rect::Intersect | Shrinks a rectangle to its overlap with another (the larger left and top, the smaller right and bottom) |
+| `0x88cfd0` | Box::ClosestPoint | The point of a box (between its two corners) nearest the point given: each coordinate kept between the box's minimum and maximum |
+| `0x481360` | Vector::TransformPoint | Transforms a point by a 4x4 matrix, translation included |
+| `0xbb6050` | Vector::TransformPoint2 | The same point transform (another copy) |
+| `0x9f8340` | Box::Overshoot2D | How far a point lies outside a box in x and y (0 inside) |

@@ -1257,3 +1257,4 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x50c680` | Field::managedobjectptr | Constructor of a saved field of type `managedobjectptr` (8 bytes) |
 | `0x4e6050` | Field::managedobjectptr2 | Another `managedobjectptr` field constructor (8 bytes) |
 | `0xc90830` | Colour::DefaultFormat | Sets up a colour value's format (3) |
+| `0x98ac70` | HandleRef::FromRef | Makes the given reference (the reference base `0xF26AE0`) refer to the same handle as another reference (its +4): counts a use of it and joins its list first |

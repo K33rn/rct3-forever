@@ -384,10 +384,10 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x63b3d0` | Window::AddWithText | `0x67B4B0` with the third argument and 0, then `0x63B270` with the first two |
 | `0x6b01e0` | Window::SetContent | Sets the window's content (+0xCC) and, when asked, sizes the window to it (its position plus the content's size, `0x6AFAF0`) |
 | `0x6afd40` | Window::SetRectAndRefresh | `0x6AFAF0` with the rectangle given, then `0x6AFC20` |
-| `0x6a8300` | Window::SetMode1 | With a value: keeps it (+0xF4), sets the mode (+0xF0) to 1, `0x6A9E50` with 0x800, 0x800 and rebuilds (`0x6A8220`); without one the mode becomes 0 |
-| `0x6a8380` | Window::SetMode2 | With a value: keeps it (+0xF4), sets the mode to 2 and rebuilds; without one the mode becomes 0 |
-| `0x6a82d0` | Window::SetThree | Keeps three values (+0xF8, +0xFC, +0x100) and rebuilds (`0x6A8220`) |
-| `0x6a8350` | Window::SetThree2 | The same (another copy of the code) |
+| `0x6a8300` | NumberField::BindFloat | With a value: keeps it (+0xF4), sets the mode (+0xF0) to 1, `0x6A9E50` with 0x800, 0x800 and rebuilds (`0x6A8220`); without one the mode becomes 0 |
+| `0x6a8380` | NumberField::BindInt | With a value: keeps it (+0xF4), sets the mode to 2 and rebuilds; without one the mode becomes 0 |
+| `0x6a82d0` | NumberField::SetLimits | Keeps three values (+0xF8, +0xFC, +0x100) and rebuilds (`0x6A8220`) |
+| `0x6a8350` | NumberField::SetLimits2 | The same (another copy of the code) |
 | `0x67b4f0` | Label::SetText | Sets the text of the window's text part (+0x114 of the window at +0xF0, sharing the text given) and updates the window (`0x6AFC20`) |
 | `0x67b710` | Button::SetImages | Sets a button's images: two pairs (+0x104/+0x10C unticked, +0x108/+0x110 ticked, the second of each pair while highlighted (flag 0x20)), +0x114 and a seventh at +0x128; shows the one for its state now (Window::SetContent) and, when asked, sizes the button to the first image |
 | `0x67b800` | Button::SetSingleImage | Gives a button the same image for every state (Button::SetImages with it six times) and the last value given. Used by about 95 window builders |
@@ -570,3 +570,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x607570` | Window::SizeForLanguage4 | The same language-dependent width (500 in German, 460 otherwise) |
 | `0x605880` | Window::SizeForLanguage5 | The same language-dependent width (500 in German, 460 otherwise) |
 | `0xb6f920` | WildAnimalList::FixForLanguage | When the game's language is not English, goes over the list's entries (+0x54, count +0x60) and changes the marked ones (`0xB3E390`) |
+| `0x6a8220` | NumberField::Update | Keeps the value a number field is bound to (+0xF4) inside its limits, by its kind (+0xF0): 1 a float between +0xF8 and +0xFC, 2 a whole number between +0xF8 and +0xFC, 3 a byte between +0xF8 and +0xF9; then redraws the field (`0x6A7DF0`) |

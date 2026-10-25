@@ -261,3 +261,4 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x57bb10` | ParticleEffects::Path | In outline: builds a path in `ParticleEffects` |
 | `0x9a5c00` | Fireworks::MixMasterFile | In outline: the `MixMaster Display.fwd` file |
 | `0x43a730` | Movies::Attract | The `Movies//Attract` folder name |
+| `0x9c6210` | Particle::SetColours | Sets a particle description's two colours (+0xAC and +0xB8) from two 0xRRGGBB values, each part from 0 to 1 |
