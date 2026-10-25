@@ -65,7 +65,7 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7e9ee0` | Staff::ResetSlot70 | Calls `0x7C3850`, then clears +0x410 and +0x4D8 and sets +0x4DC to 0.5. Slot 70 of the staff classes |
 | `0x7c3850` | Person::ClearSlot70 | Clears the person's values at +0x310, +0x2E8, +0x2DC, +0x2E0 and the flag at +0x314. Slot 70 of Person |
 | `0x7d56c0` | Person::Slot48 | Calls `0x7CE430` with -1. Slot 48 of Person |
-| `0x754fd0` | Entertainer::ScaleSlot55 | Sets +0x118 to +0x114 times the entertainer type's factor for the current costume (`0xFC4288` by +0xB8, from `0x7578C0`), or times 1 when the type has no such entry. Slot 55 of Entertainer |
+| `0x754fd0` | Entertainer::ScaleSlot55 | Sets +0x118 to +0x114 times the entertainer type's factor for its current animation (`0xFC4288` by +0xB8, from `0x7578C0`), or times 1 when the type has no such entry. Slot 55 of Entertainer |
 | `0x756ab0` | Entertainer::UpdateTimer | Runs the entertainer's update for the frame (`0x756790` in state 0xD, otherwise `0x7EEC00`), then counts its timer (+0x500) down by the frame time. Slot 39 of Entertainer |
 | `0x797230` | Handyman::SetSpeedFactor | Sets the handyman's factor at +0x114 by his level (+0x414): 1.0 at level 1, 1.1 at 2, 1.2 at 3, 0.9 otherwise; then `0x7D63E0` with the argument and more for a handyman with a task (+0x51C). Slot 40 of Handyman |
 | `0x799750` | LifeGuard::Slot37 | In state 0xD: back to state 0 (Person::SetState 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of LifeGuard |
@@ -87,3 +87,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7ad730` | ParkInspector::Slot53 | One time in ten (Random::Ran0) tries `0x7AD360` first and stops if it succeeds; otherwise Person's slot 53 (`0x7DAD70`). Slot 53 of ParkInspector |
 | `0x758b10` | Guest::Group | The guest's group: the interface (id in `0x1306920`) of the object its reference at +0x4F0 points to, or null (used before GuestDetails::BuildGroupTabs and by group members) |
 | `0x773710` | GuestGroup::Member | Member n of a group (+0x60, 20 bytes each): the guest interface (id in `0x130654C`) of the object it refers to, or null |
+| `0x7c31e0` | Person::SetAnimation | Starts an animation: unless forced, only when the person's slot 51 allows it; sets the animation (+0xB8), its time to 0 (+0xBC) and the flag at +0x1E0, clearing +0x398 for animation 0x2A |

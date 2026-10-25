@@ -346,3 +346,11 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xb44970` | Interface44b::Get | The interface (id in `0x13CE94C`) of the object its reference at +0x44 points to, looked up once (flag +0x58) |
 | `0x772b50` | Interface50::Get | When +0x48 is set, the guest interface (id in `0x130654C`) of the object its reference at +0x50 points to; otherwise null |
 | `0x510d90` | Table310::Entry | Entry n of the table at +0x310 (28 bytes each): the interface (id in `0x12F515C`) of the object it refers to, looked up once per entry |
+| `0x5d10b0` | Settings5D::Defaults | Sets ten values to 3, 3, 4, 0, 0, 0, 0, 0, 1, 2 |
+| `0x454800` | Static::Ensure1106D50 | Sets up the static object at `0x1106D50` once (`0x453F30`) and returns it |
+| `0xbb5190` | OffsetRef::Owner5 | When the first value is not 2, this - 0x38; otherwise the object at +4 |
+| `0xaa0250` | Table30::Entry | Entry n of the table at +0x30 (44 bytes each, the reference at +0x10 of each, count +0x34): the interface of the object it refers to, looked up once per entry; null outside the table |
+| `0x989090` | Table104::Entry | Entry n (88 bytes each) of the table at +0x104 (count +0x108), or null outside it |
+| `0x85cb20` | IntToFloat | The whole number given as a float |
+| `0x8439b0` | Box::Assign | Copies six values (a box's corners) |
+| `0x4a1880` | Offset138 | The value at +0x138, plus 0x38 when `0xBB5150` is true and it is not 0 |
