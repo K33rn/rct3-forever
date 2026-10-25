@@ -1501,3 +1501,6 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc17070` | Path::SplitRecursive | In outline: splits a path or name at a separator (`0xBE84F0`, String::Substring) and handles the rest the same way (it calls itself) |
 | `0x59f520` | Placement::Plan59F520 | In outline: plans a placement inside a timed step (Timer::Milliseconds): releases the old plan (`0xBE79B0`), works out the new one (`0x5BEB30`, `0x5C07F0`) |
 | `0xc4ea20` | Strings::BuildC4EA20 | In outline: builds a table of texts (8-byte entries) for up to four kinds by flags (0x10 shifted) and makes empty strings for them |
+| `0xa83e10` | Folder::RescanA83E10 | In outline: releases a list of entries and builds a folder path from the install folder text (`0x1106DC4`) to read again |
+| `0xca2f10` | Path::MatchCA2F10 | In outline: compares a path with patterns (`0xF27998`, `0xF2E7A4`) and makes the match's parts |
+| `0xb0e7c0` | Path::LoadNodesB0E7C0 | In outline: reads saved path nodes from a block (`0x809210`, four bytes at a time, checking the block's size) and makes them (`0xB0E0F0`) |

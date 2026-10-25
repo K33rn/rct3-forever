@@ -202,3 +202,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x4180e0` | Polygon::Simplify4180E0 | In outline: removes points of a polygon (+0xC) that add nothing (`0x418090`), down to three |
 | `0x44a750` | Effect::Bounds44A750 | In outline: grows a box to take in an effect's values when they are positive (+0, +4, +0x30) |
 | `0x812110` | Regions::Find812110 | In outline: finds a region in a list (+0x48) and measures it (`0x80FF10`) |
+| `0x8df1c0` | Water::Clamp8DF1C0 | In outline: keeps a list of water values within limits (1, and 1 less a margin) |

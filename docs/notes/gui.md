@@ -679,3 +679,5 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x643030` | Window::Layout643030 | In outline: when not flagged (+0x152), places a window (Window::SetRectAndRefresh, Window::UpdateRect) and finds its selected entry (+0x124) |
 | `0x79f040` | Info::Text79F040 | In outline: makes an info text for the selected thing (Interface44::Get, `0x4C0850`) |
 | `0x438140` | Camera::Focus438140 | In outline: focuses the camera (MainCamera::Get, `0xCD7BB0`, `0xCD6850`) on a target (+0x308) over the terrain |
+| `0xa95240` | Window::LayoutA95240 | In outline: places a window's parts (`0x63AAB0`, Window::UpdateRect) |
+| `0x59fac0` | Placement::Wait59FAC0 | In outline: waits for a placement plan for the selected thing (`0x12F5608`) inside a timed loop (Timer::Milliseconds) |

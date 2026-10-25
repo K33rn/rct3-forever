@@ -444,3 +444,9 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x8cafd0` | Terrain::DrawPass8CAFD0 | In outline: another terrain pass like Terrain::DrawPass8C0CF0 for mode 3 |
 | `0xc25b50` | Skeleton::BuildC25B50 | In outline: builds the matrices of a model's bones (+0x20), four at a time |
 | `0xc912c0` | Device::ResetC912C0 | In outline: when asked or flagged (+0x4E8, +0x1CB4), goes over the device's resources and resets them |
+| `0x439280` | Lighting::Update439280 | In outline: a timed lighting update inside a critical section: makes the shared light (`0x1106D8C`) and sets it from the sun's downward direction (Lighting::DownwardDirection) |
+| `0x99a270` | Fireworks::Draw99A270 | In outline: draws a firework display's shots when it has some (+0x1BC, +0x1CC, +0x1F8) |
+| `0xcde660` | Shapes::HitCDE660 | In outline: checks a shape's parts (up to 0x80) against a box for an object with flag 0x200000 |
+| `0xccbda0` | Particles::DrawCCBDA0 | In outline: draws particles for the current device (ForCurrent(3)), each from its direction |
+| `0xcde1a0` | Mesh::JoinCDE1A0 | In outline: another mesh join like Mesh::JoinCDC480 |
+| `0x484f60` | Model::Draw484F60 | In outline: draws a model turned by its angle (Matrix::TurnColumnsAboutY) with the shared shader (`0x10F2FA0`, Table10::Lookup) and its texture |

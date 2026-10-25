@@ -419,3 +419,9 @@
 | `0x91df50` | Water::Cell91DF50 | In outline: the water cell for a point on the terrain, rounded |
 | `0x843d60` | Scenery::Flatten843D60 | In outline: flattens the ground for a scenery item when its option is on (TerrainFlattener::Get, `0x10EDC38`, `0x1313C64` bit 2) |
 | `0x7c53e0` | Terrain::HeightAt7C53E0 | In outline: a terrain height at a point (a 90 by 90 grid), rounded to its cell |
+| `0x8e0db0` | Terrain::Even8E0DB0 | In outline: another height evening like Terrain::Level8E16E0, over +0x197 heights, joining the ones within a small tolerance |
+| `0x46fca0` | Tile::Corners46FCA0 | In outline: works out a tile's corner heights from its packed bits (four levels less the bits set) |
+| `0x7f1a20` | Park::Step7F1A20 | In outline: a step over a list when not started (+0x44 below 0, `0x7EA190`), up to 0xB entries |
+| `0x4d0490` | Ride::Link4D0490 | In outline: links a ride part (`0x501F80`, `0x4B52D0`) when not flagged (+0x4C) |
+| `0x797d70` | Guest::FindPathNear | In outline: finds a path near a guest on the terrain (a 90 by 90 grid, `0x7C2FF0`) with the path manager |
+| `0x592da0` | Shop::Refresh592DA0 | In outline: when not flagged (+0x204) and with a slot (+0x23C), refreshes a shop's items (`0x4CDE30`, `0x4D0CB0` with 4 and the next rotation) |
