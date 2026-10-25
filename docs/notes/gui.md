@@ -447,3 +447,15 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa21a40` | Window::PointToScreenB8 | The same as Window::PointToScreen with the window's offset at -0x48 from this interface |
 | `0xaccb40` | Window::PointToScreenB8 | The same as Window::PointToScreen with the window's offset at -0x48 from this interface |
 | `0xae2090` | Window::PointToScreenB0 | The same as Window::PointToScreen with the window's offset at -0x50 from this interface |
+| `0x5fd440` | Window::SetText GameOptionsDialog_KeyBindingsHelp | Passes slot 2 on to every child (Window::ChildrenSlot2), then sets the window's text to the game text `GameOptionsDialog_KeyBindingsHelp` |
+| `0x5fe210` | Window::SetText GameOptionsDialog_GameSettingsTabHelp | Passes slot 2 on to every child (Window::ChildrenSlot2), then sets the window's text to the game text `GameOptionsDialog_GameSettingsTabHelp` |
+| `0x601980` | Window::SetText GameOptionsDialog_GraphicSettingsTabHelp | Passes slot 2 on to every child (Window::ChildrenSlot2), then sets the window's text to the game text `GameOptionsDialog_GraphicSettingsTabHelp` |
+| `0x605810` | Window::SetText GameOptionsDialog_CameraSettingsTabHelp | Passes slot 2 on to every child (Window::ChildrenSlot2), then sets the window's text to the game text `GameOptionsDialog_CameraSettingsTabHelp` |
+| `0x607500` | Window::SetText GameOptionsDialog_ScenicSettingsTabHelp | Passes slot 2 on to every child (Window::ChildrenSlot2), then sets the window's text to the game text `GameOptionsDialog_ScenicSettingsTabHelp` |
+| `0x68fe00` | OptionList::Set68FE00 | Checks that the index is below the number of options (+0x164; an assertion `out of range` otherwise) and sets the option's text (`0x6ae070`) |
+| `0x68fe50` | OptionList::Set68FE50 | Checks that the index is below the number of options (+0x164; an assertion `out of range` otherwise) and sets the option's text (`0x67a7a0`) |
+| `0x68fef0` | OptionList::Set68FEF0 | Checks that the index is below the number of options (+0x164; an assertion `out of range` otherwise) and sets the option's text (`0x67bb20`) |
+| `0x68ff40` | OptionList::Set68FF40 | Checks that the index is below the number of options (+0x164; an assertion `out of range` otherwise) and sets the option's text (`0x67b4f0`) |
+| `0x68ffe0` | OptionList::Set68FFE0 | Checks that the index is below the number of options (+0x164; an assertion `out of range` otherwise) and sets the option's text (`0x67a8c0`) |
+| `0x690030` | OptionList::Set690030 | Checks that the index is below the number of options (+0x164; an assertion `out of range` otherwise) and sets the option's text (`0x67a8a0`) |
+| `0x6baae0` | Window::SetText FinancialSummary_MonthlySummaryHelp | Passes slot 2 on to every child (Window::ChildrenSlot2), then sets the window's text to the game text `FinancialSummary_MonthlySummaryHelp` |

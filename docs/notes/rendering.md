@@ -118,3 +118,9 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc904c0` | RenderState::SetAlpharef | Sets the Direct3D render state 24 (D3DRS_ALPHAREF) to the value given (the device's SetRenderState, slot 57), only when it differs from the value kept at +0x2288, which it then keeps |
 | `0xc90520` | RenderState::SetZfunc | Sets the Direct3D render state 23 (D3DRS_ZFUNC) to the value given (the device's SetRenderState, slot 57), only when it differs from the value kept at +0x2290, which it then keeps |
 | `0xc90550` | RenderState::SetZwriteenable | Sets the Direct3D render state 14 (D3DRS_ZWRITEENABLE) to the value given (the device's SetRenderState, slot 57), only when it differs from the value kept at +0x2294, which it then keeps |
+| `0x42f670` | QuadTree::MarkChanged | Marks node n of a four-way tree (28-byte nodes at +8) and each node above it (parent (n - 1) / 4) with flag 0x10, stopping at the first one already marked |
+| `0x488320` | QuadTree::MarkChanged | Marks node n of a four-way tree (28-byte nodes at +8) and each node above it (parent (n - 1) / 4) with flag 0x10, stopping at the first one already marked |
+| `0x7b2a40` | QuadTree::MarkChanged | Marks node n of a four-way tree (28-byte nodes at +8) and each node above it (parent (n - 1) / 4) with flag 0x10, stopping at the first one already marked |
+| `0xa0be40` | QuadTree::MarkChanged | Marks node n of a four-way tree (28-byte nodes at +8) and each node above it (parent (n - 1) / 4) with flag 0x10, stopping at the first one already marked |
+| `0xb5b5d0` | QuadTree::MarkChanged | Marks node n of a four-way tree (28-byte nodes at +8) and each node above it (parent (n - 1) / 4) with flag 0x10, stopping at the first one already marked |
+| `0xb6b880` | QuadTree::MarkChanged | Marks node n of a four-way tree (28-byte nodes at +8) and each node above it (parent (n - 1) / 4) with flag 0x10, stopping at the first one already marked |

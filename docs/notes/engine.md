@@ -1117,3 +1117,53 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xce9ed0` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
 | `0xcea2f0` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
 | `0xcea700` | FreeFourBlocks | Frees the four blocks the object holds (+0, +4, +8, +0xC) |
+| `0x4141a0` | FreeThreeBlocks | Frees the blocks kept at +0x14, +0x80, +0x94 |
+| `0x423bb0` | Field::struct | Constructor of a saved field of type `struct`: the field base (`0x8088c0` with the name given, the type text and the argument) and its table `0xf27b20` |
+| `0x42f6f0` | SlotTable::Free | Frees slot n of a table (32-byte slots at +0x18, clearing its +0x1C), keeping the lowest free slot (+0xC) and moving the end of the used slots (+0x10) back past the free ones |
+| `0x455710` | Field::string | Constructor of a saved field of type `string`: the field base (`0x8088c0` with the name given, the type text and the argument) and its table `0xf29780` |
+| `0x4883c0` | SlotTable::Free | Frees slot n of a table (32-byte slots at +0x18, clearing its +0x1C), keeping the lowest free slot (+0xC) and moving the end of the used slots (+0x10) back past the free ones |
+| `0x4a8bf0` | Field::array | Constructor of a saved field of type `array`: the field base (`0x8088c0` with the name given, the type text and the argument) and its table `0xf30a40` |
+| `0x531060` | List8::Add | Adds the value given to the end of the list at +0x8 (a new 12-byte node) |
+| `0x59ab30` | List8::Add | Adds the value given to the end of the list at +0x8 (a new 12-byte node) |
+| `0x59c780` | ForEach5DEB00 | Runs `0x5deb00` (CableLiftTrain::Setup (2)) on every item, from `0x59b030` and moving on with `0x5d49d0` until there are no more |
+| `0x59c7b0` | ForEach5DEE90 | Runs `0x5dee90` on every item, from `0x59b030` and moving on with `0x5d49d0` until there are no more |
+| `0x59c7e0` | ForEach5DEFD0 | Runs `0x5defd0` (CableLiftTrain::Setup) on every item, from `0x59b030` and moving on with `0x5d49d0` until there are no more |
+| `0x59c810` | ForEach5DF360 | Runs `0x5df360` on every item, from `0x59b030` and moving on with `0x5d49d0` until there are no more |
+| `0x59c840` | ForEach5DF4A0 | Runs `0x5df4a0` (ThrillLiftTrain::Setup) on every item, from `0x59b030` and moving on with `0x5d49d0` until there are no more |
+| `0x59c870` | ForEach5DFB60 | Runs `0x5dfb60` on every item, from `0x59b030` and moving on with `0x5d49d0` until there are no more |
+| `0x5a22b0` | Field::array | Constructor of a saved field of type `array`: the field base (`0x8088c0` with the name given, the type text and the argument) and its table `0xf3de30` |
+| `0x5a22e0` | Field::array | Constructor of a saved field of type `array`: the field base (`0x8088c0` with the name given, the type text and the argument) and its table `0xf3de44` |
+| `0x5c20a0` | List8::Add | Adds the value given to the end of the list at +0x8 (a new 12-byte node) |
+| `0x7b2ac0` | SlotTable::Free | Frees slot n of a table (32-byte slots at +0x18, clearing its +0x1C), keeping the lowest free slot (+0xC) and moving the end of the used slots (+0x10) back past the free ones |
+| `0x7fbd70` | SortedMap::SortedMap | Constructor of a sorted map with room for n keys and n values (two blocks), growing by the step given (128 when it is not positive) |
+| `0x7fbdf0` | SortedMap::FindValue7FB900 | Looks the key up in the sorted keys (+0x14, `0x7fb900`) and gives the address of its value in the values (+0x0), or null |
+| `0x7fbed0` | SortedMap::SortedMap | Constructor of a sorted map with room for n keys and n values (two blocks), growing by the step given (128 when it is not positive) |
+| `0x7fd920` | SortedMap::FindValue7FB9C0 | Looks the key up in the sorted keys (+0x14, `0x7fb9c0`) and gives the address of its value in the values (+0x0), or null |
+| `0x802840` | SortedMap::SortedMap | Constructor of a sorted map with room for n keys and n values (two blocks), growing by the step given (128 when it is not positive) |
+| `0x8028c0` | SortedMap::FindValue801450 | Looks the key up in the sorted keys (+0x14, `0x801450`) and gives the address of its value in the values (+0x0), or null |
+| `0x805df0` | SortedMap::SortedMap | Constructor of a sorted map with room for n keys and n values (two blocks), growing by the step given (128 when it is not positive) |
+| `0x805e80` | SortedMap::FindValue805C10 | Looks the key up in the sorted keys (+0x14, `0x805c10`) and gives the address of its value in the values (+0x0), or null |
+| `0x808510` | SortedMap::SortedMap | Constructor of a sorted map with room for n keys and n values (two blocks), growing by the step given (128 when it is not positive) |
+| `0x808590` | SortedMap::FindValue807970 | Looks the key up in the sorted keys (+0x14, `0x807970`) and gives the address of its value in the values (+0x0), or null |
+| `0x80b670` | List8::Add | Adds the value given to the end of the list at +0x8 (a new 12-byte node) |
+| `0x846410` | List8::Add | Adds the value given to the end of the list at +0x8 (a new 12-byte node) |
+| `0x8464a0` | List8::Add | Adds the value given to the end of the list at +0x8 (a new 12-byte node) |
+| `0x8e7200` | FreeThreeBlocks | Frees the blocks kept at +0x10, +0x1c, +0x20 |
+| `0x8eee50` | FreeThreeBlocks | Frees the blocks kept at +0x10, +0x28, +0x2c |
+| `0x982f10` | SortedMap::SortedMap | Constructor of a sorted map with room for n keys and n values (two blocks), growing by the step given (128 when it is not positive) |
+| `0xa0bec0` | SlotTable::Free | Frees slot n of a table (32-byte slots at +0x18, clearing its +0x1C), keeping the lowest free slot (+0xC) and moving the end of the used slots (+0x10) back past the free ones |
+| `0xb0e270` | Field::pathnodearray | Constructor of a saved field of type `pathnodearray`: the field base (`0x8088c0` with the name given, the type text and the argument) and its table `0xf97b3c` |
+| `0xb11c30` | SortedMap::FindValueB117E0 | Looks the key up in the sorted keys (+0x14, `0xb117e0`) and gives the address of its value in the values (+0x0), or null |
+| `0xb5b650` | SlotTable::Free | Frees slot n of a table (32-byte slots at +0x18, clearing its +0x1C), keeping the lowest free slot (+0xC) and moving the end of the used slots (+0x10) back past the free ones |
+| `0xb6b900` | SlotTable::Free | Frees slot n of a table (32-byte slots at +0x18, clearing its +0x1C), keeping the lowest free slot (+0xC) and moving the end of the used slots (+0x10) back past the free ones |
+| `0xbd6510` | FreeThreeBlocks | Frees the blocks kept at +0xc, +0x10, +0x14 |
+| `0xbd6620` | Math::NextPrime | The smallest prime number above n (at least 2), found by trial division: the size given to hash tables |
+| `0xbdd460` | Math::NextPrime | The smallest prime number above n (at least 2), found by trial division: the size given to hash tables |
+| `0xbdd4b0` | Math::NextPrime | The smallest prime number above n (at least 2), found by trial division: the size given to hash tables |
+| `0xc47350` | FreeThreeBlocks | Frees the blocks kept at +0xc, +0x10, +0x14 |
+| `0xc47630` | FreeThreeBlocks | Frees the blocks kept at +0xc, +0x10, +0x14 |
+| `0xc478d0` | Math::NextPrime | The smallest prime number above n (at least 2), found by trial division: the size given to hash tables |
+| `0xc47920` | Math::NextPrime | The smallest prime number above n (at least 2), found by trial division: the size given to hash tables |
+| `0xcbc4f0` | Math::NextPrime | The smallest prime number above n (at least 2), found by trial division: the size given to hash tables |
+| `0xcc47a0` | GetC | Returns the value at +0xC |
+| `0xcc5670` | GetC | Returns the value at +0xC |
