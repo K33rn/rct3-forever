@@ -25,3 +25,5 @@
 | `0x900020` | Whirlpool::Update | Runs a whirlpool in a pool: its water and sound (`Whirlpool`). Called from `0x9052A0` and `0x9401F0` |
 | `0x93b5f0` | MasterBlasterJet::Update | The water jets of a master blaster ride (`MasterBlasterJet`), along the ride's track. Called from `0x93BD50` and `0x93C9B0` |
 | `0x916b40` | Water::Delete | Deletes water, asking first when a waterfall depends on it (`Water_DeleteResponse_WaterfallPrompt`) |
+| `0x9455c0` | Water::FloodPrompt | Asks before flooding when a waterfall depends on the water (`Water_FloodResponse_WaterfallPrompt`). Called from `0x948220` |
+| `0xae4ac0` | LaserWriting::DefaultName | Gives a new laser writing design its default name (`LaserWritingDesigner_DefaultName`). Called from `0xAE4ED0` |

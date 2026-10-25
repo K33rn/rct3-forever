@@ -63,3 +63,8 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9de820` | Sky::LoadEnvMaps | Loads the sky's environment cube maps (`Sky\EnvCubemap_`). Called from `0x9DF140` |
 | `0x421db0` | AdMenu::DrawPreview | Draws an advert's preview picture (`SIOpaque`) |
 | `0xcbab50` | Inflate::Codes | zlib's decoding of literal / length and distance codes (`invalid literal/length code`, `invalid distance code`). Called from `Inflate` |
+| `0x959ae0` | Shadows::DrawDebugBuffer | Draws the shadow buffer for the developer (`GE_Shadows_DebugShadowBuffer`). Called from `0x9493A0` |
+| `0x869bf0` | SceneryVisual::CheckLODs | Reports a scenery visual's levels of detail missing their shapes (`Missing shp for svd LOD '%s'`, `Broken SVD`, `Missing BoneShape for svd LOD '%s'`). Called from two places |
+| `0x8f7870` | Terrain::DetailShader | Gets the terrain detail shader (`TerrainDetail`). Called from ten places |
+| `0x864a40` | Model::CheckAnimationEnd | Reports an animation whose end time isn't positive. Called from `Model::UpdateLights` |
+| `0x644fc0` | SceneryVisual::CheckLOD | Reports a missing scenery visual for a level of detail (`%s LOD %d`, `Missing svd`). Called from `0x6455C0` |

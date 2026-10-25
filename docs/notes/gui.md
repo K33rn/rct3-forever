@@ -264,3 +264,46 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x675be0` | ObjectSelection::BuildItem | Makes an object's item in an object selection window, with its expansion pack badge (`ObjectSelectionWindow_AOPBadge_`). Called from five places |
 | `0x669750` | DetailsWindow::BuildBackground | Builds a details window's curved background. Called from four places |
 | `0x448790` | AttractionDetails::RideCamButton | Builds the double-click ride camera button of an attraction's window (`DoubleClickRideCam`). Called from `AttractionDetails::BuildTabs` |
+| `0x6888d0` | FileDialog::Rename | Renames a file from the file dialog, reporting `FD_RenameFailed`. Called from `0xAD11A0` |
+| `0xaf4150` | WaterJetDesigner::DefaultName | Gives a new water jet design its default name (`WaterJetName_`) |
+| `0xad7e10` | LaserDesigner::DefaultName | Gives a new laser design its default name (`LaserName_`) |
+| `0x6e78c0` | NumSceneryCondition::Build | Builds the scenario editor's list of scenery kinds for a scenery condition (`ClassesListBox`). Called from `0x6E8100` |
+| `0x66ac40` | TrackBrowser::DesignName | Writes a track design's name (`TrackDesign_`, `Design(`...). Called from `TrackBrowser::ItemName` and `0x66C250` |
+| `0x7469d0` | AvatarEditor::AnimationName | Looks up a person animation's display name (`PeopleAnim_Name_%d`). Called from six places in the people designer |
+| `0x6eedb0` | CareerMap::Padlock | Draws a scenario's padlock (`GUI2Padlock`). Called from `0x6E93E0` |
+| `0x756d60` | Entertainer::BuildCostumeMenu | Builds an entertainer's costume menu (`Entertainer_Costume_Menu`). Called from `0x7573E0` |
+| `0xca9ca0` | DebugEditor::UInt16 | The debug console's editor for a 16-bit unsigned value (`UInt16Editor`); `0xCA97A0`, `0xCAA690`, `0xCAA1A0`, `0xCA92B0`, `0xCA8DC0`, `0xCA88D0`, `0xCAAB80` and `0xCAB070` are the same for the other value types |
+| `0xca97a0` | DebugEditor::Int16 | The debug console's editor for a 16-bit value (`Int16Editor`) |
+| `0xcaa690` | DebugEditor::UInt8 | The debug console's editor for an 8-bit unsigned value (`UInt8Editor`) |
+| `0xcaa1a0` | DebugEditor::Int8 | The debug console's editor for an 8-bit value (`Int8Editor`) |
+| `0xca92b0` | DebugEditor::UInt32 | The debug console's editor for a 32-bit unsigned value (`UInt32Editor`) |
+| `0xca8dc0` | DebugEditor::Int32 | The debug console's editor for a 32-bit value (`Int32Editor`) |
+| `0xca88d0` | DebugEditor::Int | The debug console's editor for an integer (`IntEditor`) |
+| `0xcaab80` | DebugEditor::Float | The debug console's editor for a float (`FloatEditor`). Called from `0xCACE00` |
+| `0xcab070` | DebugEditor::Bool | The debug console's editor for a true / false value (`BoolEditor`) |
+| `0xcace00` | DebugEditor::Vector | The debug console's editor for a vector: x, y, z and a zero button. `0xCACA70` is another version |
+| `0xcaca70` | DebugEditor::Vector (2) | The same as `0xCACE00` |
+| `0x6b9270` | FinanceWindow::Build | Builds the finance management window (`FinancialManagement_Title`). Called from `0x619960` and `0x6B97C0` |
+| `0x6e5f30` | SpeciesCondition::Build | Builds the scenario editor's species list for an animal condition (`SpeciesListBox`). Called from `0x6E6BC0` |
+| `0x6e3400` | SpeciesCondition::Build (2) | The same as `0x6E5F30` for another condition. Called from `0x6E3E50` |
+| `0xa371a0` | StallItemsWindow::BuildItem | Makes an item of a stall's items window, dragged on to add it (`StallItemsWindow_DragOn`, `%ITEM%`). Called from a window builder |
+| `0xa37610` | StallItemsWindow::SelectType | Builds the stall type choice (`Stall_SelectType`). Called from a window builder |
+| `0x68c930` | FileDialog::NoFiles | Shows that a folder has no files (`FD_NoFiles`) |
+| `0x63db00` | ColourSwatches::Build | Builds a row of colour swatches (`Swatch`). Called from `0x65A720` |
+| `0x65cc40` | ColourSwatches::Build (2) | The same as `0x63DB00`. Called from `0x65B5F0` |
+| `0x53bf80` | AttractionMusic::Build | Builds an attraction's music button and tooltip (`AttractionViewDialogMusicToolTip`). Called from six places |
+| `0x53ba70` | AttractionMusic::None | Shows that an attraction plays no music (`AttractionViewDialogNoMusic`) |
+| `0xb94fd0` | EnclosureWindow::WalkInfo | The button that shows where animals can walk in an enclosure (`ToggleEnclosureWalkInfo_TT`). Called from a window builder |
+| `0x9c37a0` | ParticleDesigner::BarIcon | Makes the particle designer's bar icons (`GUI2_ParticleDesigner_BarIcon`) |
+| `0x9c1af0` | ParticleDesigner::BuildBar | Builds a particle designer bar (`GUI2_ParticleDesigner_Bar`). Called from three places |
+| `0x6b17b0` | WindowArea::SetRelation | Places a window area in the window tree like `Window::SetRelation` (`.\Code\Common\Gui\WindowArea.cpp`; a broken link stops at a breakpoint with the assert `_relation`, whose message is a joke). Called from `0xA3B660` |
+| `0xa2de90` | StallItemLine::Profit | Writes a stall item's profit line (`StallItemLine_Profit`, `%NAME%`, `%PROFIT%`). Called from `0xA2EB70`; `0xA35F80` is the same |
+| `0xa35f80` | StallItemLine::Profit (2) | The same as `0xA2DE90`. Called from the StallItemLine window |
+| `0x686c70` | LoadSaveDialog::NoPacks | Says an expansion pack the file needs is missing (`LoadSaveDialog_Error_NoPacks`) |
+| `0x63ccb0` | Window::BuildCloseButton | Makes a window's close button (`CloseButton`). Called from a window builder |
+| `0x62aca0` | Editor::RotateButton | Makes an editor's rotate button (`ATE_TT_Rotate`). Called from seven editors |
+| `0x4ebeb0` | AttractionEditor::NewSegmentButton | Makes the new track segment button (`ATE_TT_NewTrackSegment`). Called from `AttractionEditor::Build` |
+| `0x4bdb80` | AttractionFinances::Labels | Writes the labels of an attraction's finances page (`AttractionFinancesDialogLabel_`). Called from a window builder |
+| `0xac8300` | Designer::Instructions | Shows the laser and water-jet designers' instructions (`BlenderUIIntsructions_TT`). Called from three places |
+| `0x7eedc0` | StaffWindow::Title | The staff window's title (`Man_Staff`). Called from `0x619B10` |
+| `0x98e070` | MixMaster::NoScrub | The mix master's music that can't be scrubbed (`Fireworks_MixMaster_MusicNoScrub`). Called from two places |

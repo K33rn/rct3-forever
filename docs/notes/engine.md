@@ -130,3 +130,20 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xa2ba10` | CarriedItems::Load | Loads the carried item definitions (`CarriedItems`, `*:cid`, `*.common.ovl`). Called from `0xA2D290` |
 | `0x66ddd0` | TrackFile::ReadHeader | Reads a saved track's header (`TrackedRideInstanceSaveHeader`, `:trr`). Called from two places |
 | `0x995810` | FireworkDisplay::Load | Loads a firework display, refusing one that is too big (`FireworksTooBig`). Called from `0x9A57D0` |
+| `0x46aa90` | MovieDecoder::Open | Opens a movie for playing (`.\Code\Windows\MovieDecoder.cpp`), finding its video stream (`vids`). Called from `AdMenu::DrawPreview` and two others |
+| `0xc4e200` | ShaderCache::Load | Loads the compiled shader cache (`STCache.bin`). Called from `0xC4F0C0` |
+| `0xc48640` | ShaderCache::Save | Writes the compiled shader cache (`STCache.bin`). Called from three places |
+| `0xc4f280` | ShaderCache::LoadSource | Loads the shader source cache (`SCCache.bin`). Called from `Shaders::LoadDefaults` |
+| `0x476b40` | MovieDecoder::OpenAudio | Opens a movie's sound through a DirectShow sample grabber (`Sample Grabber`, `auds`). Called from `0x476FB0` |
+| `0x8821a0` | Resources::FindStyles | Searches for the style folders' resource files (`Style`, `*.common.ovl`), calling itself for sub-folders. Called from `0x882F20` |
+| `0x439c90` | Music::Load | Loads the music (`music`). Called from `0x43D940` |
+| `0x45bb70` | FileMenu::DefaultName | Makes a default file name (`default.` + extension). Called from `FlyingCameraRoute::FileMenu` and `TutorialEditor::FileMenu` |
+| `0xa41870` | NewGame::Load | Loads a saved game (`MyGame.dat` by default). Called from `0xA431B0` and `0xA44B00` |
+| `0xc3d1d0` | OverlayFile::CheckTypeIndex | Reports a bad resource type index in an overlay (`Bad Resource Type index ... for item ... in overlay '%s'`). Called from two places |
+| `0x803040` | ManagedObject::ReportUnloadable | Reports an object that can't be loaded (`ManagedObject_Unloadable`, `%NAME%`). Called from five places |
+| `0x4a5a40` | Resources::FindStyleFolders | Finds the styles' track, enclosure and fence folders (`Style`, `Tracks\Coasters`, `Tracks\TrackedRides`, `Enclosures\Fences`). Called from `0x4A7190` |
+| `0xa52740` | Campaign::FolderName | Writes a campaign's folder name (`\Campaigns\`, the expansions' `AOP_FSName_`). Called from six places |
+| `0x9d2d40` | Particles::Load | Loads the particle skins and sounds (`Particles\Particles`, `*:psi`, `*:snd`, `BurnTrail`). Called from `0x477680` |
+| `0x438f70` | FrontEnd::LoadStartup | Loads the front end's start-up park (`startup.dat`). Called from `FrontEnd::Start` |
+| `0xb38740` | WildAnimal::Log | Writes a line to the developer's animal log (`AnimalLog.txt`, `%4.2f: %12s: %s`) |
+| `0xa565d0` | DatDesc::Load | Loads a file's description for the file lists (`GUI2_DatDesc`). Called from two places |

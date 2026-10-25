@@ -50,3 +50,12 @@
 | `0xb3d8b0` | WildAnimal::Name | Gives an animal its name for its species (random names, `AnimalNames::Load` / `Pick`), reporting `MISSING SPECIES STRING!`. Called from two places |
 | `0xb3b700` | WildAnimal::FullName | Writes an animal's full name (`%NAME%`, `%SPECIES%`, `%SUFFIX%`), with the `sad panda` cheat |
 | `0xb03590` | Dart::Hit | A dart hitting an animal (`DartHit`): where it lands on the terrain |
+| `0xb08e70` | AnimalCamWindow::Build | Builds the animal camera's window (`AnimalCamWindowArea`) |
+| `0xb14570` | WildAnimal::Killed | Tells the player an animal was killed (`WildAnimalMessage_Killed`) |
+| `0xb37860` | WildAnimal::Escaped | Handles an animal escaping (`WildAnimalState_Escaped`). Called from three places |
+| `0xbaba80` | ViewingGallery::NoEnclosure | Says a viewing gallery has no suitable enclosure (`NoSuitableEnclosureForVG`) |
+| `0xb83ae0` | WildAnimal::Sound | Plays an animal's sound (`AnimalSound`). Called from `0xB84800` |
+| `0xb41ee0` | WildAnimal::Birth | Tells the player an animal gave birth (`WildAnimalMessage_GiveBirth`). Called from `WildAnimal::GiveBirth` and `0xB30A40` |
+| `0xb04200` | HelicopterDartCam::Setup | Sets up the dart camera in the helicopter (`HelicopterDartCamMode`, `WildAnimals\Helicopter\Helicopter`). Called from `0xB04840` |
+| `0x452800` | WildAnimal::Confiscated | Tells the player an animal was confiscated (`WildAnimalMessage_Confiscated`). Called from `WildAnimal::Check` |
+| `0xb8f570` | AnimalShelter::Load | Loads an animal shelter's model (`Enclosures\Shelters\Shelters`, `invisibleproxy`). Called from `0xB90900` |
