@@ -429,3 +429,11 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xce3fe0` | Mesh::SplitCE3FE0 | In outline: splits a mesh's parts into a new list (12 bytes, `0xCE35A0` for each), or none when it is empty |
 | `0xaf3000` | FireworkDisplay::MakeAF3000 | In outline: when not flagged (+0x74), makes a firework display (FireworkDisplay::FireworkDisplay) and starts it (`0x98BC00`) |
 | `0xc250e0` | Skeleton::AimC250E0 | In outline: turns a bone toward a direction, when it is long enough, and builds its matrix |
+| `0x90fbb0` | Water::Draw90FBB0 | In outline: draws water pieces over the terrain when there are some (+4 vs +0x10), through each part's draw slot (+0x2C) |
+| `0x414770` | Grid::Normals414770 | In outline: works out the normals of a grid's rows (+0x1C), normalising each one |
+| `0x414d20` | Grid::Visible414D20 | In outline: finds the grid cells the camera sees (MainCamera::Get) from its direction (+0x78) |
+| `0xa5fe80` | Sound::UpdateA5FE80 | In outline: another sound update like Sound::UpdateA61260, for kind 1: its volume (`0xA5ED70`) and fade (+0x40, `0xA5FC30`) |
+| `0x979220` | Particles::Draw979220 | In outline: when particles are on (`0x12F018C` +0x24 +2), draws a list inside a timed critical section |
+| `0xc5b220` | Animation::StepC5B220 | In outline: moves an animation on by a time: works out the frame by its length and wraps or holds at the end |
+| `0xc5b710` | Animation::StepC5B710 | In outline: the same animation step for another kind of track |
+| `0xbd5c70` | Draw::QuadBD5C70 | In outline: draws a shape (Draw::QuadBD5360) and finishes it (`0xC1E790`) |

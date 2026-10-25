@@ -112,3 +112,7 @@
 | `0xa19310` | Bird::LandA19310 | In outline: for kind 0x201 not in mode 2, makes a landing route (LandingRoute) and a particle puff (Particle::Launch with 10, 20, 0.3) and starts it (`0xA103F0`) |
 | `0xbab1b0` | Enclosure::CellOKBAB1B0 | In outline: whether a cell lies inside an enclosure's grid with a margin (EnclosureManager::Get, its width +0x64 and height +0x68) |
 | `0xa16210` | Bird::UpdateA16210 | In outline: for kind 0x100 not flagged (+0x14C), the plain update (`0xA161D0`), otherwise half the time (Random::Ran0) picks by case |
+| `0xb62460` | Animal::FollowB62460 | In outline: an animal's follow update: with no slot (+0x60 below 0) and flagged (+0x48), done; otherwise checks its target (+0x64, `0xB848F0`) |
+| `0xa13340` | Bird::UpdateA13340 | In outline: another bird update: for kind 0x200 not in mode 2, by its stage (+0x6C: 0, 2) and flag (+0x15C), checks (`0xA113D0`) |
+| `0xb38a30` | Animal::CanActB38A30 | In outline: whether an animal can act now: not flagged (+0xFC, the owner's bit 8), and its slot and links in order |
+| `0xb30a40` | Animal::UpdateB30A40 | In outline: an animal's update when not flagged (+0xB0): checks with the shared manager (`0x13CEE84`) and, when done, acts (`0xB7AAD0`) |

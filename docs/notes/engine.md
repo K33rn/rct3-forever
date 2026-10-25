@@ -1497,3 +1497,6 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xa3efe0` | Text::ReadLinesA3EFE0 | In outline: reads a text resource's lines into a list, skipping empty ones |
 | `0xc3bb50` | ResourcePath::SplitC3BB50 | In outline: splits a resource path at its last `:` and looks up the part after it (`0xBCEC90`), for files in state 5 (+0x60) |
 | `0x7a2710` | Path::Refresh7A2710 | In outline: goes over the things of a list (`0x1306C2C`) refreshing each (`0x7A06D0`) with the path manager |
+| `0x9a50a0` | Text::Split9A50A0 | In outline: splits a text (from `0x13D3058`) into parts (WideString::Substring) into a new list |
+| `0xc17070` | Path::SplitRecursive | In outline: splits a path or name at a separator (`0xBE84F0`, String::Substring) and handles the rest the same way (it calls itself) |
+| `0x59f520` | Placement::Plan59F520 | In outline: plans a placement inside a timed step (Timer::Milliseconds): releases the old plan (`0xBE79B0`), works out the new one (`0x5BEB30`, `0x5C07F0`) |

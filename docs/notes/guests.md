@@ -142,3 +142,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7ce8b0` | Person::BoardCar7CE8B0 | In outline: a person boarding a ride car: finds its seat (RideCar::PeepSlot) and moves to it (`0x7C6280`) when not flagged (+0x2D4) |
 | `0x75b160` | Guest::FindPath75B160 | In outline: finds where a guest goes next on the paths (`0x1306960`, `0x786AD0`, `0x7089E0`, PathTile::Centre, `0x7C9E60`) |
 | `0x7c5cb0` | Person::Wander7C5CB0 | In outline: unless busy (`0x7C3480`), sometimes (Random::Ran0, by a rate) turns a person to wander |
+| `0x7aa230` | Staff::Inspector7AA230 | In outline: an inspector's update (kind 0xE stage 0): finds where to go (`0x7C9E60`) when it has no place (+0x52C = -1) |

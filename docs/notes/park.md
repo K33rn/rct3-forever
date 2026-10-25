@@ -403,3 +403,8 @@
 | `0x8d8b40` | Terrain::GrowColumns8D8B40 | In outline: another column growing pass like Terrain::GrowColumns8D85C0 |
 | `0x8bf330` | Terrain::Blocks8BF330 | In outline: goes over the 32-cell blocks of a rectangle and the layers of each (+0x44), keeping the height ranges |
 | `0x8ae830` | Scenery::RatingValue8AE830 | In outline: a spot's rating value: the falloffs of its values (Curve::Falloff with 1 and 0.5) multiplied together |
+| `0x8295a0` | Scenery::Move8295A0 | In outline: moves a scenery item when not flagged (+0x1C, +0x24) and the move is long enough (`0x9D4EA0`) |
+| `0x79b9f0` | Staff::FindTaskNear | In outline: finds a task near a point within a distance for a staff member: the path tile there (PathManager, `0x71B370`) on the terrain |
+| `0x9a43b0` | Fireworks::List9A43B0 | In outline: fills a list from a firework display's parts (+0xF4, Get_+0x108; `0x98DEB0`) |
+| `0xa91e70` | GridTool::CellUnderMouse | In outline: the grid cell under the mouse (MainCamera::Get, `0xCD79C0`) on the terrain, with its side and corner |
+| `0x813910` | Regions::Add813910 | In outline: adds a region with its box (Rect::Assign): makes its records (0x20 bytes, `0x80E260`) and its list |

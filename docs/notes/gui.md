@@ -663,5 +663,14 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa48ca0` | Graph::LabelsA48CA0 | In outline: lays out a graph's labels from shared texts (`0x12FE4F8`, `0x12FCB28`, `0x12F9FD4`) at fixed positions (`0xA455D0`, `0xA45310`: 663, 32, 250, ...) |
 | `0x7e22e0` | Info::Text7E22E0 | In outline: makes an info text for a thing (+0x114) from its values (`0x758C30`, `0x7739D0`, `0x4FF4A0`) |
 | `0xa56cc0` | Window::BuildA56CC0 | In outline: builds a window from the shared title `0x1342968` |
-| `0x6ed990` | Objectives::Draw6ED990 | In outline: draws the objectives list (+0x108): finds each objective (Objectives::Find) and shows its tick or cross (SkinItem::Texture) when not done (+0x55) |
+| `0x6ed990` | Objectives::Draw6ED990 | In outline: draws the objectives list (+0x108): finds each objective (Objectives::Find) and, when not done (+0x55), sets its image (SkinItem::Texture) |
 | `0x45c780` | Window::Layout45C780 | In outline: lays out a window's parts by the terrain size (Window::UpdateRect) |
+| `0x9abd00` | Window::Build9ABD00 | In outline: builds a window from the shared title `0x1341420` |
+| `0xc68870` | Text::FormatC68870 | In outline: makes a text sized by the GUI settings (`0x13E6D00` +0x19C) into a new buffer |
+| `0x809be0` | Game::ShowStart809BE0 | In outline: shows a start screen: `0x617E40` with `0x12F575C`, `0x9B0890`, an empty text faded in over 0.1 (`0x617EB0`) and `0x733270` |
+| `0x672df0` | Window::Layout672DF0 | In outline: when not flagged (+0xF2), sets a part's value (Set_+0xd0) and lays the window out (Window::Layout) |
+| `0x6bef60` | Money::Text6BEF60 | In outline: makes a money text (Money::Format_(2)) and trims it when the amount is a whole number of units (n % 100 = 0) |
+| `0x467cb0` | Window::Build467CB0 | In outline: builds a window from the shared title `0x12EFFF8` |
+| `0x6edeb0` | Objectives::Clear6EDEB0 | In outline: releases the objectives list's parts (+0x104, count +0x108) and rebuilds it (`0x6E9D70`) |
+| `0x6cca80` | List::DrawRows6CCA80 | In outline: draws a list's rows (+0xE4): each row's item (`0x6C8180`) and, when not done, its image (SkinItem::Texture) |
+| `0x68e3c0` | Bar::Layout68E3C0 | In outline: lays out a bar by its fill (above 1 handled), sets its value (Set_+0xd0), draws its frame (`0x6ACE50`) and its marks (+0x104) |
