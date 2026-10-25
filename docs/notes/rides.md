@@ -122,3 +122,9 @@ Tracked rides, flat rides and their cars and trains.
 | `0x84b2e0` | TrackPiece::Slot18 | Asks slot 18 of the part at +0x40 of the piece's interface (`0x130BBCC`), or 0 when it has none. Shared by TrackPiece and PoolPiece |
 | `0x84b300` | TrackPiece::Slot17 | The same for slot 17. Shared by TrackPiece and PoolPiece |
 | `0x424e70` | CustomPersistingSpline::Length | The spline's length: when it has changed (+0x1C) recomputes it (after `0x423DE0` and `0x424540`) as the sum of the segment lengths (slot 5) from +0x10 to the last point, keeping it at +0x20 and clearing the flag; returns it. Slot 3 of CustomPersistingSpline |
+| `0x52bc80` | RideCarSpinSwingPart::ResetMotion | Forgets the part's tracked motion: clears the count of known values (+0x1C8) and the position, velocity and acceleration kept by RideCarSpinningPart::TrackMotion (+0x1D0 to +0x1F8). Slot 14 of RideCarSpinSwingPart |
+| `0x5292a0` | RideCarSpinningPart::Reset | RideCarSpinSwingPart::ResetMotion, then clears +0x214, +0x218 and the flag at +0x1C0. Slot 14 of RideCarSpinningPart |
+| `0x52ce80` | RideCarSwingingPart::Reset | RideCarSpinSwingPart::ResetMotion, then clears +0x2A0 to +0x2AC and the flag at +0x1C0. Slot 14 of RideCarSwingingPart |
+| `0x52f560` | RideInstance::Slot18 | When the ride's slot 19 agrees to the value (with 0), sets it with AttractionInstance::SetValue70. Slot 18 of RideInstance |
+| `0x5749e0` | RideTrainInstance::Slot9 | Runs the train's slots 14 and 15 with the argument, then for each car (count +0xC4) `0x561240` and `0x526A70`, then slot 16 and `0x5725D0`. Slots 9-11 of RideTrainInstance |
+| `0x551210` | RideParticleManager::Update | Passes the frame time on to its four members (+8, +0x38, +0x80 and +0x98) through their update functions. Slot 0 of RideParticleManager's update table |

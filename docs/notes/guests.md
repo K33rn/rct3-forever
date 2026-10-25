@@ -70,3 +70,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x797230` | Handyman::SetSpeedFactor | Sets the handyman's factor at +0x114 by his level (+0x414): 1.0 at level 1, 1.1 at 2, 1.2 at 3, 0.9 otherwise; then `0x7D63E0` with the argument and more for a handyman with a task (+0x51C). Slot 40 of Handyman |
 | `0x799750` | LifeGuard::Slot37 | In state 0xD: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of LifeGuard |
 | `0x7a0e50` | Mechanic::Slot37 | In states 0xE, 0xF or 0x14: `0x7A0000` and clears +0x1A4, returning 1; otherwise `0x7ECD90`. Slot 37 of Mechanic |
+| `0x7eec00` | Staff::UpdateState | In state 0xC runs `0x7EC8F0`; in any other state Person::UpdateState. Shared by the staff classes (slots 39, 40, 47) |
+| `0x7e8fc0` | SecurityGuard::Slot37 | In state 0xD: back to state 0 (`0x7CD220` with 0, 0), clearing +0x1A4, and returns 1; otherwise `0x7ECD90`. Slot 37 of SecurityGuard |

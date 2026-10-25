@@ -79,3 +79,5 @@
 | `0x818f80` | LitterBinBehaviour::Unregister | When it has a handle (+0x58 not negative), releases it with `0xCDEDE0`, sets it to -1 and runs `0x8338B0`. Slot 11 of LitterBinBehaviour |
 | `0x40ddc0` | ManagedObject::Slot19 | Calls `0x771F90` with 0, then deletes the object kept at +0x2C (its deleting destructor with 1) and clears it. Slot 19 of ManagedObject |
 | `0x40df10` | ManagedObject::Slot28 | Calls `0x771E50` with 0, then deletes the object at +0x2C and clears it. Slot 28 of ManagedObject |
+| `0x87ef00` | SIDDatabaseEntry::ScaledValue | Ten times what the entry's slot 0 gives, at most 10,000. Slot 4 of SIDDatabaseEntry |
+| `0x87f270` | SIDDatabaseEntry::Kind | 0x13 when `0xBD1420` with 0 is true and bit 25 of the entry data's +4 is set, otherwise 0x12. Slots 4 and 10 of SIDDatabaseEntry |
