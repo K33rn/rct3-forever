@@ -85,3 +85,4 @@
 | `0xb651d0` | WildAnimal::CheckMove | In outline: whether an animal can move from one point to another: finds the terrain cells of the start, middle and end (Grid::CellAt), checks they are in its enclosure (EnclosureManager::Get) and runs the path check (`0xB619B0`) |
 | `0xb36ea0` | WildAnimal::DebugDrawB36EA0 | In outline: draws lines around a wild animal (WildAnimal::Interface60Raw) with the shared line drawer (Registry::Ensure, `0x481620`, six lines) for the developers |
 | `0xb2c680` | Animal::CheckEnclosure | In outline: when flagged (+0x150), checks which enclosure an animal is in (EnclosureManager::Get, `0xB9AAE0`) against the one it belongs to and acts by its state (+0x7C) |
+| `0xb63260` | WildAnimal::FindSpot | In outline: looks for a free terrain cell near a point for an animal (Grid::CellAt), inside a search square (`0x10F294C`, `0x10F2948`), that it can stand on (`0x493200`, Terrain::CellFlag12) |

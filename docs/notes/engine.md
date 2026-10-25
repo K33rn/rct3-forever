@@ -1473,3 +1473,6 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x7fdb30` | Loader::Step7FDB30 | In outline: one step of a loader by its stage (+0x10): opens and reads a resource (`0xBDAC20`, `0xBDADC0`, `0xBD9F00`, `0xBD9D20`) and releases what it no longer needs |
 | `0x53fbd0` | TextList::Parse | In outline: reads a text list line by line: skips spaces, lines starting `#` are comments and lines starting `*` start a new section, other lines become entries |
 | `0xcc3470` | Atlas::PackCC3470 | In outline: lays out rectangles in an image (CRect, 0x55 slots, a 0x100-entry table, `0xCC4D20` for each) |
+| `0xa61260` | Sound::UpdateA61260 | In outline: a sound's update by its kind (+0x38 = 1): works out its pitch as a power of two (f2xm1, fscale) and its volume (`0xA60C10`, `0xA5ED70`) and applies them (`0xA609D0`) |
+| `0xe030b0` | Keys::RemoveBefore | In outline: drops the keys of a list (times at +8, count +4) older than a time, keeping one before it, and moves the rest down |
+| `0xae5400` | Resources::FindByName | In outline: finds a loaded resource whose name matches the one given (WideString::Compare), loading the file when needed (ManagedObject::LoadFile) |

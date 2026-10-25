@@ -344,3 +344,6 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9c8390` | Particles::Update9C8390 | In outline: updates a particle system's emitters (+0x54, count +0x5C): turns them by their spins (Matrix::TurnAboutX, Matrix::TurnAboutY), points them (Matrix::LookAlongZSide, LookAlongYSide) and spawns particles (Particles::Spawn9CBDF0) |
 | `0x96d180` | Water::DrawJets96D180 | In outline: draws water jets with work to do (+0x24, +0x44) for the current device (ForCurrent(3)), building their shapes (`0x9F8B40`) |
 | `0x9052a0` | Water::Visible9052A0 | In outline: finds the water parts the camera sees (MainCamera::Get) over the terrain, checking each one (`0x903AA0`) |
+| `0x857340` | SceneryRenderer::DrawList857340 | In outline: draws a list of scenery parts for the current device (ForCurrent(3)): sets each one's matrix (`0x42D200`, `0x42DEA0`) and skips the faded ones (flag 0x4000 with a small value) |
+| `0xccce30` | Shapes::DrawCCCE30 | In outline: draws a set of shapes (+0x44) with their shaders (ShapeShaders::Load, `0xCC1F30`), counting the batches (Counter::Increment) and releasing them after |
+| `0x94ce10` | Water::MakeSphereTexture | In outline: makes a 64 by 64 texture (Device::CreateTexture) from a hemisphere: each pixel's normal from its distance from the centre (the square root of 1 minus it squared) |

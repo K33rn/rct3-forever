@@ -618,3 +618,5 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6c2500` | Gauge::Draw6C2500 | In outline: draws a gauge or meter when shown (+0x101): its colours (Colour::ToARGB, a grey-green and a red), its scale (Node::TotalScale) and its marks (`0x6C2260`) up to its value |
 | `0x9b7940` | Window::Build9B7940 | In outline: builds a window from a title text: a part from the shared text `0x13049E4` and others (`0x6A8D00`) |
 | `0x64c950` | VIPDetails::Build64C950 | In outline: builds a VIP's details window with a shared title (`0x12F8000`) and its stats (VIPDetails::BuildStats) |
+| `0x650180` | GuestDetails::Build650180 | In outline: builds a guest's details page from its title and the guest's thoughts (GuestDetails::BuildThoughts) |
+| `0x64f8d0` | GuestDetails::Build64F8D0 | In outline: another guest details page built like GuestDetails::Build650180, from its title and the guest's thoughts (GuestDetails::BuildThoughts) |

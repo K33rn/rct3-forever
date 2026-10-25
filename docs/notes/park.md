@@ -317,3 +317,7 @@
 | `0x848e30` | Scenery::PlaceAt848E30 | In outline: places a scenery item at a cell: sets up (`0x843A30`), checks the cell is inside the terrain, makes the item and checks whether a key is held (KeyState::Held) |
 | `0x839870` | Scenery::Update839870 | In outline: a scenery item's update when it has work to do (+0x184, +0x1E8): works with the terrain and its target (+0x16C) and may show a message (`0x6C1DA0`) |
 | `0x942a70` | Water::Flood942A70 | In outline: whether water at a height can spread from a cell: compares the heights around it and spreads to the neighbours (`0x941EF0`) |
+| `0xa9c040` | Fence::BuyA9C040 | In outline: when a fence or border piece can be built (`0xA97800`), checks the park can pay for it (`0x6C1DA0`, its money at +0x58 against the cost) and builds it |
+| `0x4f5950` | Ride::Buy4F5950 | In outline: when a ride or shop is placed (+0x60C): checks the cost against the park's money (`0x6C1DA0`, +0x58, unless money is off, +0x68 bit 1), finishes its placement (`0x5D0950`, `0x59DC60`, `0x4BBC80`) |
+| `0x5e0350` | Placement::Clearance5E0350 | In outline: for most kinds (not 0x26, 0x2C, 0x32), checks a thing being placed against each of its neighbours (+0x13C, count +0x140, `0x5DBBF0`) and the ride car given |
+| `0x5d7d70` | Placement::CanPlace5D7D70 | In outline: whether something can be placed with the options given: checks the selected tool (`0x12F5638`, its flags +0xA0, +0x84), its rotation (Clamp0To3) and several cases |
