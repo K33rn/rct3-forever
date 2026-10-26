@@ -1092,3 +1092,42 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9dd9b0` | Window::Build9DD9B0 | In outline: builds a window from the shared title `0x1341834` |
 | `0x9dbe60` | Window::Build9DBE60 | In outline: builds a window from the shared title `0x1341828` |
 | `0x5551c0` | Window::Narrow5551C0 | In outline: a step when the GUI root's width (`0x12F83F0` +0x88 minus +0x80) is under a limit |
+| `0x7ea4e0` | List::Pass7EA4E0 | In outline: goes over a list (+0x4F0) |
+| `0x6a6370` | Window::Build6A6370 | In outline: builds a window from the shared title `0x1305CA0` |
+| `0x654fc0` | Window::Build654FC0 | In outline: builds a window from the shared title `0x12F8078` |
+| `0x654d60` | Window::Build654D60 | In outline: builds a window from the shared title `0x12F8070` |
+| `0x6aa8b0` | Window::Size6AA8B0 | In outline: a window size for values up to 0x100 |
+| `0x6aa4d0` | Window::Size6AA4D0 | In outline: a window size for values up to 0x100 |
+| `0x991c30` | List::Add991C30 | In outline: adds a list entry when there is room (+0x44 vs +0x4C) |
+| `0x6b49a0` | Window::Build6B49A0 | In outline: builds a window from the shared title `0x1305D78` |
+| `0x6180b0` | Window::Build6180B0 | In outline: builds a window from the shared title `0x12F5778` |
+| `0x69b830` | Window::Text69B830 | In outline: makes a window text from an empty one |
+| `0xc63ed0` | Window::PassC63ED0 | In outline: goes over a window's parts |
+| `0x9f6920` | Window::Place9F6920 | In outline: places a window part (Window::SetRelationAndLayout with 6) |
+| `0x6f2830` | Window::Update6F2830 | In outline: a window step when a value is negative |
+| `0xb8ba60` | Info::TextB8BA60 | In outline: makes an info text from a shared text (`0xF31F48`) |
+| `0xa8ac30` | Info::TextA8AC30 | In outline: makes an info text from a shared text (`0xF31F48`) |
+| `0x73e790` | Toolbar::Button73E790 | In outline: builds a button (Constructor with 0x22) |
+| `0x687480` | Window::Build687480 | In outline: builds a window from the shared title `0x12F845C` |
+| `0x4efdf0` | Window::Build4EFDF0 | In outline: builds a window from the shared title `0x12F8144` |
+| `0x638f80` | Window::Value638F80 | In outline: a value from `0x638DA0` |
+| `0xa533a0` | Window::ModeA533A0 | In outline: a step in mode 3 |
+| `0xa33800` | Window::LinkA33800 | In outline: a step with a part when it has one |
+| `0xa7f870` | Window::ModeA7F870 | In outline: a step in mode 2 |
+| `0xa1be00` | Window::LoopA1BE00 | In outline: a window loop |
+| `0xa58130` | Window::MessageA58130 | In outline: handles a message by its handler |
+| `0xa1e230` | Window::UpdateA1E230 | In outline: a step when on (+0xA4) with a part (+0x84) |
+| `0x990400` | Window::Text990400 | In outline: a window text when not flagged (+0x88) |
+| `0x968370` | Window::Text968370 | In outline: makes a window text from an empty one |
+| `0x65be40` | List::Pass65BE40 | In outline: goes over a list (+0xD8) |
+| `0xa1cf10` | Window::LinkA1CF10 | In outline: a step with a part (+0x3C) |
+| `0xc62ff0` | Window::ChildC62FF0 | In outline: a step for another window that passes its check |
+| `0x686550` | Window::Text686550 | In outline: makes a text (`0x53B850`) |
+| `0x420630` | AdMenu::Hide420630 | In outline: hides the ad menu's media (AdMenu::ShowMedia(-1)) |
+| `0x6276e0` | Labels::Click6276E0 | In outline: a step with the label under the mouse (Labels::Pick474A40) |
+| `0x985ae0` | Window::Link985AE0 | In outline: links a window part |
+| `0x6c2e80` | Window::Money6C2E80 | In outline: shows a money text (Money::Text6BEF60) |
+| `0xa3b690` | Window::MakeA3B690 | In outline: makes a part |
+| `0x479850` | Window::Make479850 | In outline: makes a part |
+| `0x458840` | Window::Make458840 | In outline: makes a part |
+| `0x9eea50` | Window::Mode9EEA50 | In outline: a step in mode 1 |

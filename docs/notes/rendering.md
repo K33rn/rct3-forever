@@ -708,3 +708,19 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x94ca80` | Water::Length94CA80 | In outline: a water direction's length |
 | `0xbfbee0` | Device::StepBFBEE0 | In outline: a device step (`0xBD3DC0`) |
 | `0x9c5dc0` | Particles::Loop9C5DC0 | In outline: a particle loop |
+| `0xac72a0` | PoolComplex::DrawAC72A0 | In outline: a draw step with an object (`0x13CE468`) |
+| `0x9aa4a0` | Particles::Fill9AA4A0 | In outline: fills particle buffers for the current device |
+| `0xcc66b0` | Model::PartsCC66B0 | In outline: goes over a model's parts when not flagged (+8) |
+| `0xbf1410` | Text::DrawBF1410 | In outline: draws a text, character by character |
+| `0xbf0e70` | Text::DrawBF0E70 | In outline: the same text draw (another copy) |
+| `0x96eae0` | Effect::Matrix96EAE0 | In outline: works out a matrix (`0xCD78A0`) |
+| `0x7b5880` | Effect::Pass7B5880 | In outline: goes over an effect's parts (+0x10) |
+| `0x7b4320` | Effect::Pass7B4320 | In outline: goes over an effect's parts (+0x10) |
+| `0x7b3690` | Effect::Check7B3690 | In outline: an effect check unless told not to |
+| `0xc5f7a0` | Device::StepC5F7A0 | In outline: a device step when on (+0xF8) |
+| `0xbf08e0` | Text::DrawBF08E0 | In outline: draws a text, character by character |
+| `0xbf0340` | Text::DrawBF0340 | In outline: the same text draw (another copy) |
+| `0x8b5f60` | Scenery::Flat8B5F60 | In outline: a flat (x, z) length step |
+| `0xbf5d00` | Text::WidthBF5D00 | In outline: a text width when on (+0xEC) |
+| `0x9aa2d0` | Particles::Make9AA2D0 | In outline: makes a part |
+| `0x9f3b30` | Fireworks::Step9F3B30 | In outline: a firework step with a part |

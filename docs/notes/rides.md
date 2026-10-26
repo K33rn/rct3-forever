@@ -369,3 +369,39 @@ Tracked rides, flat rides and their cars and trains.
 | `0x70f680` | Ride::Step70F680 | In outline: a ride step (`0x4F06B0`) |
 | `0x5516d0` | Ride::List5516D0 | In outline: goes over a ride's list |
 | `0x416650` | Ride::Mode416650 | In outline: a step in modes other than 0 and 1 (+0x174) |
+| `0x5e6a40` | TrackPiece::Link5E6A40 | In outline: links a piece when given one |
+| `0x4ee130` | Ride::Part4EE130 | In outline: a ride step with its part (+0x5CC) |
+| `0x511e90` | Car::Pass511E90 | In outline: goes over a car's parts (+0x314) |
+| `0x5bab50` | TrackPiece::Table5BAB50 | In outline: sets up a two-entry shared table (`0x12F5580`, 0x10 bytes each) |
+| `0x7bf360` | Ride::Check7BF360 | In outline: a check when not flagged (+0x77) |
+| `0x512550` | Car::Pass512550 | In outline: goes over a car's parts (+8) |
+| `0x5da330` | TrackedRide::Selected5DA330 | In outline: acts on the selected ride (`0x12F5608`) |
+| `0x58c320` | Ride::All58C320 | In outline: goes over the rides from the selected one (`0x12F5608`, next at +0x188) |
+| `0x555520` | Ride::Step555520 | In outline: a ride step (`0x4A1800`) |
+| `0x5a3b80` | TrackedRide::Refresh5A3B80 | In outline: a refresh (`0x5D06C0` with 1) |
+| `0x58d200` | Ride::Case58D200 | In outline: acts by a value (+0xB4) |
+| `0x5c5f80` | TrackPiece::Refresh5C5F80 | In outline: a piece refresh (`0x5C5EE0`) |
+| `0x5c1590` | TrackPiece::Has5C1590 | In outline: whether a piece's ride has both parts (+0x30, +0x34) |
+| `0x5a6bd0` | Ride::Text5A6BD0 | In outline: makes a text from a shared one (`0xF265E4`) |
+| `0x50eb50` | Car::Update50EB50 | In outline: a car update when not flagged (+0x250) |
+| `0x58c140` | Ride::All58C140 | In outline: goes over the rides from the selected one (`0x12F5608`, next at +0x16C) |
+| `0x5edbe0` | AttractionPerson::Select5EDBE0 | In outline: a step with the selected ride (`0x12F5608`) |
+| `0x7ac530` | Attraction::First7AC530 | In outline: a step with the first attraction (AttractionInstance::FirstOf(0)) |
+| `0x7ac350` | Attraction::First7AC350 | In outline: the same (another copy) |
+| `0x5db080` | TrackedRide::Extent5DB080 | In outline: works out an extent, clearing it first (Extent::Clear) |
+| `0x58f560` | Ride::Check58F560 | In outline: a ride check (`0x58EA70`) |
+| `0x5bae10` | TrackPiece::Time5BAE10 | In outline: a step with a non-negative time when on (+0x98) |
+| `0x567c60` | Ride::Update567C60 | In outline: a ride update when not flagged (+0xF0) |
+| `0x4eb1f0` | AttractionPerson::Update4EB1F0 | In outline: an attraction person update when not flagged (+0x118) |
+| `0x5d6220` | TrackedRide::Slot5D6220 | In outline: a step with a parted object's slot (PartedObject::Slot4) |
+| `0x5d6050` | TrackedRide::Slot5D6050 | In outline: a step with a parted object's slot (PartedObject::Slot2) |
+| `0x5d5e80` | TrackedRide::Slot5D5E80 | In outline: the same (another copy) |
+| `0x5d5cb0` | TrackedRide::Slot5D5CB0 | In outline: a step with a parted object's slot (PartedObject::Slot1) |
+| `0x4f3cf0` | Ride::SetMode4F3CF0 | In outline: changes a ride's mode, with modes 6 and 3 handled unless the new one is 5 |
+| `0x4c3eb0` | Shop::Case4C3EB0 | In outline: a value by case |
+| `0x5e3f00` | TrackPiece::Link5E3F00 | In outline: a step when given a piece |
+| `0x5f1fd0` | TrackPiece::Check5F1FD0 | In outline: a check with the current tool (`0x12F565C`) |
+| `0x59d540` | Ride::Refresh59D540 | In outline: gathers a ride's parts (Ride::Gather59C270(0, 1)) |
+| `0x582af0` | Ride::Terrain582AF0 | In outline: a ride step over the terrain |
+| `0x526a70` | Car::Mode526A70 | In outline: a car step in mode 0x10 (+0x384) |
+| `0xa3d7a0` | Ride::CanOpenA3D7A0 | In outline: a step when a ride can open (`0x5CFB10`) |

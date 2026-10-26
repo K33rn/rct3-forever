@@ -837,3 +837,58 @@
 | `0x724580` | Terrain::Rect724580 | In outline: a terrain step over a byte rectangle |
 | `0x98eb30` | Scenery::Refresh98EB30 | In outline: a refresh (`0x501FB0`) |
 | `0x7a8270` | Terrain::Mode7A8270 | In outline: acts by a mode (+0x524) |
+| `0x9933f0` | Fireworks::Check9933F0 | In outline: a check when not flagged (+0x1C) |
+| `0x93e5e0` | Water::Find93E5E0 | In outline: a water find when it has a part (+0xB0) and is asked |
+| `0x783e40` | GuestGroup::Slot783E40 | In outline: a group step for slot 0 to 6 |
+| `0x759070` | Guest::Part759070 | In outline: a guest step with its part |
+| `0x74fde0` | Guest::Part74FDE0 | In outline: a guest step with its part (+0xEE4) |
+| `0x913e10` | Water::Grow913E10 | In outline: grows a list (Array8::SetCapacity) |
+| `0x735d20` | Path::Find735D20 | In outline: finds an entry (+0x14) |
+| `0x978000` | Water::Show978000 | In outline: a step when the shared flag (`0x12F018C` +0x24 +2) is set |
+| `0x912a30` | Water::Light912A30 | In outline: a water step with the downward light direction (Lighting::DownwardDirection) |
+| `0x912840` | Water::Light912840 | In outline: the same (another copy) |
+| `0x8e2850` | Terrain::Step8E2850 | In outline: a terrain step |
+| `0x7776e0` | Park::Link7776E0 | In outline: links a part |
+| `0x730210` | Path::Slot730210 | In outline: a path value for a positive n |
+| `0x72fe30` | Path::Slot72FE30 | In outline: a path value for a positive n |
+| `0x730020` | Path::Slot730020 | In outline: a path value for a positive n |
+| `0x7264a0` | Path::Count7264A0 | In outline: a path step for a positive count |
+| `0x941d00` | Water::Find941D00 | In outline: a water find when it has a part (+0xB0) |
+| `0x8436d0` | Scenery::Load8436D0 | In outline: a scenery load step (Scenery::LoadStep842870 with +0xC) |
+| `0x908060` | Water::Cell908060 | In outline: a water cell step inside bounds |
+| `0x71c040` | Path::Terrain71C040 | In outline: a path step over the terrain |
+| `0x8e59c0` | Terrain::Step8E59C0 | In outline: a terrain step |
+| `0x8dfc30` | Terrain::Step8DFC30 | In outline: a terrain step (`0x475220`) |
+| `0x8d3a90` | Terrain::Slot8D3A90 | In outline: a step for n under the shared count (`0x1311618`) |
+| `0x8d41b0` | Terrain::Activate8D41B0 | In outline: activates a terrain part |
+| `0x729640` | Path::Make729640 | In outline: makes a path record (`0x48C9C0`) |
+| `0xb94970` | Enclosure::ClickB94970 | In outline: a click on an enclosure cell (Enclosure::PickB94650) |
+| `0xa12cf0` | Bird::StepA12CF0 | In outline: a bird step (`0x90F5A0`) |
+| `0x9e3450` | Fireworks::Step9E3450 | In outline: a step when a value (+0xC) is 0 |
+| `0x94f060` | Water::Case94F060 | In outline: a water step for cases under 0xE |
+| `0xa634c0` | Animal::FarA634C0 | In outline: a step when a value (+0x368) is over 1000 |
+| `0x84a3a0` | Scenery::Update84A3A0 | In outline: a scenery update when not flagged (+0x6C) |
+| `0x901810` | Water::Terrain901810 | In outline: a water step over the terrain |
+| `0x87b250` | Scenery::Cell87B250 | In outline: a cell from a point, rounded |
+| `0x721fb0` | Path::InGrid721FB0 | In outline: a check that a cell is inside the path grid (+0x5C, +0x5D) |
+| `0xac2570` | Fence::PassAC2570 | In outline: goes over a list (+0x54) |
+| `0x99f6b0` | Folder::Path99F6B0 | In outline: builds a path from the install folder text |
+| `0x96f900` | List::Sort96F900 | In outline: a list sort step |
+| `0x80c9c0` | List::Sort80C9C0 | In outline: the same sort step (another copy) |
+| `0x8e33b0` | Terrain::Refresh8E33B0 | In outline: a terrain refresh (`0x8E3250` with 1) |
+| `0x8bbb60` | Terrain::Below8BBB60 | In outline: a step when a height is below 0 |
+| `0x8771b0` | Scenery::Terrain8771B0 | In outline: a scenery step over the terrain |
+| `0x77d970` | Park::Update77D970 | In outline: an update when not flagged (+0x1BC) |
+| `0x72ad20` | Path::Count72AD20 | In outline: a step past a count (+0x114) |
+| `0x730400` | Path::Slot730400 | In outline: a path value for a positive n |
+| `0x901a00` | Water::Terrain901A00 | In outline: a water step over the terrain |
+| `0x708c80` | Path::Shared708C80 | In outline: a step with the shared count (`0x13061A8`) |
+| `0x727550` | Path::Case727550 | In outline: a path check for cases under 5 |
+| `0x721d80` | Path::Check721D80 | In outline: a path check |
+| `0x941ef0` | Water::Range941EF0 | In outline: a water step over a byte range |
+| `0x80ff10` | Regions::Value80FF10 | In outline: a region value in mode 1 (+0x48) |
+| `0x7a8490` | Terrain::Link7A8490 | In outline: a step with a part |
+| `0x872770` | Scenery::List872770 | In outline: goes over a scenery list |
+| `0x75eaa0` | Guest::Part75EAA0 | In outline: a guest step with a part |
+| `0x75ec70` | Guest::Part75EC70 | In outline: a guest step with a part |
+| `0xafd7f0` | Animal::ModeAFD7F0 | In outline: a step unless in mode 1 |

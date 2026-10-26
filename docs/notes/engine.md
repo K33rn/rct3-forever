@@ -1753,3 +1753,27 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x743c20` | Text::Make743C20 | In outline: makes a text record |
 | `0x784be0` | Text::Make784BE0 | In outline: makes a text record |
 | `0xe04348` | Math::LoopE04348 | In outline: a loop over n values |
+| `0xbc9f30` | List::PassBC9F30 | In outline: a step past the shared count (`0x13D0B10`) |
+| `0xcedf80` | Shapes::GrowCEDF80 | In outline: grows a shape list (+8) |
+| `0x55a090` | Record::Make55A090 | In outline: makes a record with an empty handle |
+| `0xcae870` | ResourceFile::FindCAE870 | In outline: a resource file step by the shared flag (`0x13D0DF1`) |
+| `0xc01120` | Device::StepC01120 | In outline: a step with the shared device (`0x13D0D84` +0x144) |
+| `0x809020` | Save::Write809020 | In outline: writes values to a save (SaveWriter::Write, four bytes) |
+| `0xc2eb20` | Resource::FindC2EB20 | In outline: a resource step (`0xC5C990`) |
+| `0xc0c9b0` | Resource::ReleaseAllC0C9B0 | In outline: releases every entry of a list (+0x7C) |
+| `0x403930` | Record::Make403930 | In outline: makes a part |
+| `0x5f02b0` | Array::Resize5F02B0 | In outline: resizes a list to n |
+| `0x4aa090` | Array::Resize4AA090 | In outline: resizes a list to n |
+| `0xc53340` | Stream::StepC53340 | In outline: a stream step for a non-negative slot |
+| `0xc1bff0` | Callback::CallC1BFF0 | In outline: calls a handler when it has one (+0x14) |
+| `0x9e1c50` | List::Copy9E1C50 | In outline: copies a list (Array::Resize9E17E0) |
+| `0xce80a0` | Registry::StepCE80A0 | In outline: a step with the registry (Registry::Ensure2) |
+| `0xc1bbb0` | Text::MakeC1BBB0 | In outline: makes a text from a C string when it is not empty |
+| `0x757b40` | Array::Make757B40 | In outline: makes an array |
+| `0x7fa7f0` | Array::Make7FA7F0 | In outline: makes an array |
+| `0xcb1480` | ShaderFile::StepCB1480 | In outline: a shader file step (`0xCB1360`) |
+| `0x40fdd0` | Record::Make40FDD0 | In outline: makes a 0x30-byte record |
+| `0xcadf80` | ResourceFile::NameCADF80 | In outline: a file name step (`0xCADDF0`) |
+| `0xbe6b70` | Table::FillBE6B70 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0xc36d80` | Resource::SlotC36D80 | In outline: a step for a slot in range (`0xCADA40`) |
+| `0xcdf4c0` | Loop::StepCDF4C0 | In outline: a loop |

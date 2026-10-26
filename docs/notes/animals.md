@@ -238,3 +238,22 @@
 | `0xab0520` | Animal::ModeAB0520 | In outline: acts by an animal's mode (+0x120) |
 | `0xb98aa0` | PathGrid::FlagB98AA0 | In outline: a step when a table entry is not flagged (`0x10F29BB`) |
 | `0xb30090` | Animal::GetB30090 | In outline: a step with an object (Interface48::Get) |
+| `0xb369d0` | Animal::CountB369D0 | In outline: an animal step for a positive count |
+| `0xb9ce90` | PathGrid::CountB9CE90 | In outline: a step for a positive count |
+| `0xb8be80` | Animal::UpdateB8BE80 | In outline: an animal update when not flagged (+0xF8) |
+| `0xb56ec0` | Animal::TerrainB56EC0 | In outline: an animal step over the terrain |
+| `0xb48060` | WildAnimal::PartB48060 | In outline: a step with a part when it has one |
+| `0xb87cd0` | Animal::CheckB87CD0 | In outline: an animal check when not flagged (+0x98) |
+| `0xb719b0` | Animal::PassB719B0 | In outline: goes over an animal's entries (+0xB4) |
+| `0xa88470` | Animal::ValueA88470 | In outline: an animal value above 1 |
+| `0xaf3640` | Animal::PassAF3640 | In outline: goes over entries (+0x50) |
+| `0xa0a3d0` | Bird::TimeA0A3D0 | In outline: a step with a non-negative time |
+| `0xba5820` | Animal::PassBA5820 | In outline: goes over entries (+8) |
+| `0xb83140` | Animal::PathB83140 | In outline: a path step (`0x703A90` with +0x68) |
+| `0xa8b8b0` | Animal::CheckA8B8B0 | In outline: an animal check (`0xA8A150`) |
+| `0xaa15a0` | PoolComplex::CountAA15A0 | In outline: a step for a positive count |
+| `0x998d10` | Fireworks::Count998D10 | In outline: a step for a positive count |
+| `0xbb6b10` | Animal::StepBB6B10 | In outline: a step unless told not to |
+| `0xb3cd60` | Animal::LoopB3CD60 | In outline: goes over a linked list |
+| `0xb9bc90` | PathGrid::CountB9BC90 | In outline: a step for a positive count |
+| `0xaf1290` | Animal::ValueAF1290 | In outline: an animal value when not flagged (+0x74) |

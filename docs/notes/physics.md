@@ -265,3 +265,11 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x95e160` | Water::Edge95E160 | In outline: another water edge case, the fraction kept between 0 and 1 |
 | `0x95f650` | Water::Walk95F650 | In outline: a water walk for a count |
 | `0x7e4360` | Person::Move7E4360 | In outline: moves a person when its speed (+0x144) is small |
+| `0xcd79c0` | Camera::ScreenRay | In outline: turns a screen point into a ray from the camera, using the tangent of half its field of view (+0x190) |
+| `0x7c2d40` | Person::Flat7C2D40 | In outline: a flat (x, z) distance check |
+| `0x7527e0` | Guest::Direction7527E0 | In outline: a direction step when its length is not 0 |
+| `0x71c470` | Path::Below71C470 | In outline: whether a point is below a path surface |
+| `0x4168b0` | Random::Point4168B0 | In outline: a random point (Random::Ran0) |
+| `0x5f1ab0` | TrackPiece::Walk5F1AB0 | In outline: a walk along a piece |
+| `0x749810` | Guest::Turn749810 | In outline: turns a guest's pose (Matrix::TurnColumnsAboutY by +0xDF4 times a rate) |
+| `0x4a0280` | Grid::Cell4A0280 | In outline: a grid cell from a point, rounded |
