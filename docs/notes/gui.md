@@ -1456,3 +1456,31 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9b93a0` | Window::Event9B93A0 | In outline: for event 0x13 only, a step with the shared object's part (+0x100 +0x278) |
 | `0x6f1280` | Window::Make6F1280 | In outline: with no part (+0xA4), makes a 0x160-byte one |
 | `0x44a560` | NamedObject::Make44A560 | In outline: makes a list member object (ListMember with `0x10EC9E8`, Listener440) |
+| `0x6663d0` | List::Visible6663D0 | In outline: a step over entries (+0x178) in a range (+0x17C, +0x180) |
+| `0x68d640` | Window::Scroll68D640 | In outline: with a part (+0xE0), moves its value (+0x128) by a change |
+| `0x9bb8e0` | Window::Set9BB8E0 | In outline: sets a part (+0xFC) and its slot (+0x100) from the shared id (`0x1341508`) |
+| `0x68d090` | Window::Layout68D090 | In outline: with a part (+0xEC), lays it out by the window's size |
+| `0x6acc60` | Screen::Scale6ACC60 | In outline: a value scaled by the screen's area (Screen::AreaScale), rounded |
+| `0x6a4820` | Window::Layout6A4820 | In outline: works out a part's place from the window's size and two values (+0xE4, +0xE8) |
+| `0x479b20` | Text::Slot479B20 | In outline: a text for 0 to 0x1D when two shared values differ (`0x10ED860`, `0x10ED864`) |
+| `0xc67600` | Window::AddChild | In outline: sets up a child (`0xC675A0`), points it at its parent (+0x18) and tells it (slot 0x40) |
+| `0xa20aa0` | ListWindow::FillA20AA0 | In outline: clears a list window (ListWindow::SetCount(0)) and fills it from its part (+0xF0) |
+| `0x9d5b20` | NamedObject::Make9D5B20 | In outline: makes a list member object (ListMember with `0x10EC9E4`) with its table (`0xF850AC`) |
+| `0x620c20` | Window::Text620C20 | In outline: a text from a message (Message::Result4040F0 with `0x1303CFC`) |
+| `0xc5eb00` | Window::HitC5EB00 | In outline: gives 1 when a check passes (slot 0xC) |
+| `0xc5f260` | Window::HitC5F260 | In outline: the same with slot 0x24 |
+| `0xc5f020` | Window::HitC5F020 | In outline: the same with slot 0x14 |
+| `0xbd7f30` | Device::RectBD7F30 | In outline: a rectangle with its ends in order |
+| `0xc60080` | Window::ShowC60080 | In outline: when a flag changes (+0x105 vs +0x104), acts by it |
+| `0xc5f410` | Window::HitC5F410 | In outline: a hit test against its rectangle (slot 0x70, Rect::Contains) |
+| `0xa532a0` | Window::CountA532A0 | In outline: counts up through entries |
+| `0x6e9ec0` | Window::Case6E9EC0 | In outline: a step by case (1: 0x24, ...) |
+| `0x694fb0` | Layout::Draw694FB0 | In outline: a draw step with the layout table (`0x10EEDB4`, `0x12F84D0`) |
+| `0xc62510` | Window::DrawC62510 | In outline: a draw step with the window system's device (`0x13E6D00` +0x108) |
+| `0x615870` | Window::Place615870 | In outline: places a part from another part's rectangle (+0xD4) |
+| `0xc5ed20` | Window::HitC5ED20 | In outline: gives 1 when a check passes (slot 0x1C) |
+| `0xc5ef20` | Window::HitC5EF20 | In outline: gives 1 when a check passes (slot 0x10) |
+| `0xc5ee20` | Window::HitC5EE20 | In outline: gives 1 when a check passes (slot 0x2C) |
+| `0x544cf0` | Window::Text544CF0 | In outline: a text from its part (+0xF0, slot 0x188) |
+| `0x9bd260` | Window::Update9BD260 | In outline: an update when not flagged (+0x38) |
+| `0x7efb60` | Staff::LoadUniforms | In outline: loads from the "\Uniforms" folder |

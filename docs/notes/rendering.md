@@ -887,3 +887,20 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x489310` | Effect::Pass489310 | In outline: goes over entries (+0x10) |
 | `0xbb7470` | Track::PassBB7470 | In outline: goes over indexed entries (+0x10 +0x20) |
 | `0x727bb0` | Path::Values727BB0 | In outline: fills values, with the shared one (`0x13063C0`) when flagged (bit 0) |
+| `0x9ef370` | Fireworks::Pick9EF370 | In outline: picks a firework (Fireworks::Pick9EEF30) into +0x140 |
+| `0x9ea1f0` | Fireworks::Text9EA1F0 | In outline: in mode 1 (`0x10ED6E0`), a number from a scaled value, rounded |
+| `0xac9f90` | Graph::MarkAC9F90 | In outline: when on (+0x25), a step at the centre of its part |
+| `0x9ceb91` | Particles::Step9CEB91 | In outline: a step with entries (+0x84) |
+| `0x489c50` | Effect::Part489C50 | In outline: goes over a part's entries |
+| `0x9e4d50` | Fireworks::Make9E4D50 | In outline: makes parts (`0xBDADC0`, Constructor on +0x58) |
+| `0x958b40` | Water::Device958B40 | In outline: a step with the shared device's value (slot 0xCC), counting its bits |
+| `0x7b9aa0` | Person::Point7B9AA0 | In outline: a point step from values (+0x70 on) |
+| `0x420da0` | Effect::Release420DA0 | In outline: releases each entry's part (+0x118, +0x11C) |
+| `0xcedb50` | Shapes::StepCEDB50 | In outline: a step for entry n (0x70 bytes) not flagged (+0x50) |
+| `0x9fcbf0` | Fireworks::Draw9FCBF0 | In outline: a draw step with the shared device over entries (+0x6C) |
+| `0x47ccd0` | Effects::Loop47CCD0 | In outline: goes over the shared list (`0x10EDDA8`) |
+| `0xbf8b50` | Text::WaveBF8B50 | In outline: a cosine step |
+| `0xcd8f90` | Camera::PassCD8F90 | In outline: goes over entries (+0xE0, +0xE4) that are set |
+| `0xccf530` | Model::BlendCCF530 | In outline: a blend by a fraction with fixed scales |
+| `0xc776d0` | Device::SetC776D0 | In outline: when not flagged (+0x4C1), sets a value when it changes |
+| `0xcf1190` | Shapes::DrawCF1190 | In outline: a draw step with the shared device (slot 0xB8) over entries |

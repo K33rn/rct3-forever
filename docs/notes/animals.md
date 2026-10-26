@@ -471,3 +471,17 @@
 | `0xb1f4d0` | WildAnimal::MoveSpline | In outline: makes a spline move (WALMoveSpline) with a flag (+0x111) |
 | `0xa89f30` | Animal::TextA89F30 | In outline: makes an info text (`0xF31F48`) |
 | `0x9d11b0` | Fireworks::Sort9D11B0 | In outline: sorts value pairs, two at a time |
+| `0xa86710` | Animal::UpdateA86710 | In outline: an update when not flagged (+0x48) |
+| `0xa11680` | Bird::CheckA11680 | In outline: a check when not flagged (+0x154) |
+| `0xa11570` | Bird::CheckA11570 | In outline: a check when not flagged (+0x138) |
+| `0xae16a0` | Animal::FindAE16A0 | In outline: finds an entry not flagged |
+| `0xba04d0` | Animal::InitBA04D0 | In outline: sets up a record with handles |
+| `0xb33290` | Animal::MakeB33290 | In outline: makes a part (+0x44) |
+| `0xa85540` | Animal::ReleaseA85540 | In outline: releases a part (+0x2C) and makes a new one |
+| `0xa32440` | Animal::ValueA32440 | In outline: a value from its part (+0x9C +0x3C) over entries (+0x5C) |
+| `0xa32320` | Animal::ValueA32320 | In outline: the same with +0x38 |
+| `0xa32200` | Animal::ValueA32200 | In outline: the same with +0x34 |
+| `0xb72270` | Animal::ResetB72270 | In outline: a reset (`0x501FB0`), clears a flag (+0x27C) and a handle |
+| `0xa1e8b0` | Window::AddA1E8B0 | In outline: when not found (`0xA1ACF0`), makes a 0xC-byte record |
+| `0xaa18e0` | NamedObject::MakeAA18E0 | In outline: makes a list member object (ListMember with `0x10EC9E8`) |
+| `0xaf18c0` | Animal::UpdateAF18C0 | In outline: an update when not flagged (+0x74) |

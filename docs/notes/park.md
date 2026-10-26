@@ -1360,3 +1360,53 @@
 | `0x84aa80` | Scenery::Update84AA80 | In outline: an update when not flagged (+0x6C) |
 | `0x7f5490` | Person::Link7F5490 | In outline: a step with a linked part (+0x544) |
 | `0x7dc680` | Person::Pass7DC680 | In outline: goes over n people with an object (`0x13CE94C`) |
+| `0x414320` | Effect::Pass414320 | In outline: goes over entries (+0x20) by distance from a point |
+| `0x8b9eb0` | Scenery::Make8B9EB0 | In outline: makes a list member part (ListMember with `0x10EC9F8`) |
+| `0x826c60` | Scenery::Check826C60 | In outline: a check with its part |
+| `0x74e3a0` | Guest::Load74E3A0 | In outline: a guest part (Guest::Part744550), a loader find (Loader::Find744A90) and more |
+| `0x6bc580` | Attractions::Pass6BC580 | In outline: goes over the attractions from the first (AttractionInstance::FirstOf(0)) |
+| `0x49a4b0` | Effects::Add49A4B0 | In outline: for 0x10, makes a 0x1C-byte record for an id (IdMap::Remove7) when there is none |
+| `0x444780` | Effects::Time444780 | In outline: a value from the shared object's time (`0x1106C54` +0x54), rounded |
+| `0x8f34a0` | Terrain::Centre8F34A0 | In outline: a terrain patch's centre from its size and place |
+| `0x862df0` | Scenery::Part862DF0 | In outline: a value for part n (0x48 bytes) under a count (+0x108) |
+| `0xb9be60` | PathGrid::EntryB9BE60 | In outline: a step for entry n (0xB8 bytes) not flagged |
+| `0xaa1d90` | PoolComplex::PassAA1D90 | In outline: goes over entries (+0x30) |
+| `0x8499a0` | Scenery::Set8499A0 | In outline: sets a value (+0x94) when it changes and not flagged |
+| `0x82e740` | Scenery::Load82E740 | In outline: reads four-byte values from a saved block (Load::ReadBytes) |
+| `0x82af50` | Scenery::Link82AF50 | In outline: a step with a linked part (+0x150) |
+| `0x77be30` | Guest::Kind77BE30 | In outline: for kind 0xB (+0x7C), a check on a person not flagged (+0x334) |
+| `0x938d80` | Water::Add938D80 | In outline: grows a list by 0x100 when full (`0x937890`) and adds an entry from two points |
+| `0x867b70` | Scenery::Value867B70 | In outline: for entry n of kind 3, a table value (Table2C::Value) |
+| `0x863030` | Scenery::Reset863030 | In outline: with a slot (+0x28), a step (SceneryRenderer::Step8A0530) and clears it |
+| `0x852d60` | Scenery::Bit852D60 | In outline: a step with a bit from a count (+0xC) |
+| `0x445c30` | Effects::Slot445C30 | In outline: a step with a slot (SortedTable::Add445AF0 with 3, 3) of 0x1FB4 bytes |
+| `0xb88d10` | Animal::FindB88D10 | In outline: finds an entry among entries (+0x48, +0x4C) |
+| `0x9fa6b0` | Fireworks::Count9FA6B0 | In outline: a count from entry n (0x24 bytes) |
+| `0x98dda0` | Window::Update98DDA0 | In outline: clears a value (+0x110) and an update when not flagged (+0xB0) |
+| `0x8f2480` | Terrain::Scale8F2480 | In outline: a point scaled by a grid's size (+8, +0xC) |
+| `0x977f00` | Water::Draw977F00 | In outline: when two cells differ, a draw step with the shared device |
+| `0x943570` | Water::Draw943570 | In outline: a draw step with the shared device |
+| `0x935910` | Water::Release935910 | In outline: takes one off a part's count (+0x28 +4) and frees it at 0 |
+| `0x877980` | Scenery::Load877980 | In outline: a scenery load step (Scenery::Load876810) |
+| `0x7f6440` | Person::Attraction7F6440 | In outline: when not flagged (+0xC0), a step with its attraction and person (AttractionPersonInfo) |
+| `0x7bec40` | Person::Part7BEC40 | In outline: picks a record (+0x1C or +0x38) when not flagged (+0x77) |
+| `0x9fb360` | Fireworks::Set9FB360 | In outline: for entry n (0x90 bytes) with no slot (+0x6C = -1), sets values |
+| `0x8e6880` | Water::Time8E6880 | In outline: a fraction of the shared day (`0x1103B6C` +0x110 between +0x20 and +0x200), kept between 0 and 1 |
+| `0x835910` | Scenery::Link835910 | In outline: a step with a linked part (+0x4C) |
+| `0x7a3860` | Terrain::Version7A3860 | In outline: the entry for a version (SortedTable::FindVersion), or adds one |
+| `0x7856c0` | GuestGroup::Slot7856C0 | In outline: goes over slots 0 to 6 (+0x60) |
+| `0x724e60` | Path::Buffer724E60 | In outline: makes a device buffer of n four-byte entries (ForCurrent(0)) and fills it |
+| `0xaf3820` | Animal::PassAF3820 | In outline: goes over entries (+0x50) |
+| `0xa75700` | Animal::PoseA75700 | In outline: a pose (`0xA6D7B0`) and a point step |
+| `0x8f2380` | Terrain::Near8F2380 | In outline: a step over grid entries within a distance |
+| `0x8be510` | Terrain::Fill8BE510 | In outline: fills values from a list |
+| `0x86eab0` | Scenery::Count86EAB0 | In outline: counts up (+0xF8) and goes over a list (+0x130) |
+| `0x852e90` | Scenery::Bit852E90 | In outline: a step with a bit from a count (+0xC) |
+| `0x802f40` | Regions::Loop802F40 | In outline: goes over the shared list (`0x10F06D0`) |
+| `0xac1a00` | Fence::GrowAC1A00 | In outline: grows a list (Fence::GrowAC11D0) and acts |
+| `0x725e30` | Path::Init725E30 | In outline: clears a value, makes a part and a step (`0x730B30`) |
+| `0xaa02d0` | PoolComplex::FindAA02D0 | In outline: a find (`0xA9F360`) and a step |
+| `0x884540` | Scenery::Range884540 | In outline: a step for n within a range (+4, +8) |
+| `0x827a40` | Scenery::Activate827A40 | In outline: activates a part when not flagged |
+| `0x7e9dd0` | Person::Step7E9DD0 | In outline: moves a cell one step by direction, within bounds |
+| `0x7cafc0` | Person::Event7CAFC0 | In outline: when not flagged (+0xC7, bit 0x800000 of +0x3EC), acts by an event (9, ...) |

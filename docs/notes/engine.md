@@ -2180,3 +2180,55 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbe2fd0` | List::CountBE2FD0 | In outline: counts a linked list (+0x30) |
 | `0x734250` | Record::Make734250 | In outline: sets up a record with cleared bytes and a handle |
 | `0x42c340` | Array::Free42C340 | In outline: frees each of its entries (+0x3C, +0x44) |
+| `0x788030` | List::BinarySearch788030 | In outline: a binary search over a sorted list (+0x180) between two places |
+| `0x4c9f20` | List::BinarySearch4C9F20 | In outline: the same over +0x174 |
+| `0x47e9d0` | Array::Resize47E9D0 | In outline: resizes a list of 0xE0-byte entries to n |
+| `0xcdeb10` | SortedPointers::GetOrAdd | In outline: gives the entry for a key when found (SortedPointers::Find64), else makes a 0x94-byte one |
+| `0xcd5260` | Text::CompareCD5260 | In outline: compares two texts |
+| `0xcd5150` | Text::CompareCD5150 | In outline: the same (another copy) |
+| `0xc440c0` | Table::ReadDEFN | In outline: reads a block marked "DEFN" (0x4E464544) and two two-byte values (`0xBE5020`) |
+| `0xbe9a60` | Memory::StepBE9A60 | In outline: a step with a count (+0x20) and sizes (+0x28, +0x2C, +0xC) |
+| `0xa5d5e0` | Array::ResizeA5D5E0 | In outline: resizes a list to n |
+| `0xa3e680` | Object::MakeA3E680 | In outline: when on (+0xC) with parts (+0x10, +0x1C), makes a 0x78-byte one |
+| `0x464510` | Array::Resize464510 | In outline: resizes a list to n |
+| `0x424540` | Array::Resize424540 | In outline: resizes a list to n |
+| `0x438960` | Text::Scan438960 | In outline: goes over a C string |
+| `0xc59040` | Stream::NameC59040 | In outline: a stream's name, empty when it has none (+0xC) |
+| `0xc21b40` | Matrix::TransformC21B40 | Transforms a point by a matrix |
+| `0xbbde40` | Track::MakeBBDE40 | In outline: fills a record from its arguments |
+| `0xcd9730` | Vector::ConeCD9730 | In outline: a test against a cone around a direction (cross product against a scaled length) |
+| `0xcafc70` | ResourceFile::NameCAFC70 | In outline: a name record when there is none (+0x34) |
+| `0xcaf5d0` | ResourceFile::NameCAF5D0 | In outline: the same for +0x5C |
+| `0xc36720` | Resource::FindC36720 | In outline: finds by a file name (ResourceFile::NameCAF330) in a list (+0x64) |
+| `0x9fa5a0` | Fireworks::Count9FA5A0 | In outline: a count from entry n (0x24 bytes) |
+| `0xcc1880` | Shader::CompareCC1880 | Compares two records by their first value, then by more when the shared flag (`0x13F7084`) is unset |
+| `0xc5a0e0` | Vector::OntoC5A0E0 | In outline: a step with a point's place along a direction, kept in range |
+| `0xcb6070` | Shader::InitCB6070 | In outline: sets values (+0x1C to the largest float, others to 0) and makes a four-byte buffer |
+| `0xb82520` | Array::ResizeB82520 | In outline: resizes a list of 20-byte entries to n |
+| `0x913ca0` | Array::Resize913CA0 | In outline: the same (another copy) |
+| `0x90b4a0` | Array::Resize90B4A0 | In outline: the same (another copy) |
+| `0x7e5400` | Array::Resize7E5400 | In outline: the same (another copy) |
+| `0x4ba2c0` | Text::Once4BA2C0 | In outline: once (`0x12F4BC8`), makes a shared text record |
+| `0xbfa1e0` | Text::FindBFA1E0 | In outline: when it has none (+0x28), finds one (Device::FindC5C7F0) |
+| `0xc23470` | BoneManager::GetMatrixIDFromName | Gives a bone's matrix id from its name; reports "Calling BoneManager::GetMatrixIDFromName with an ID! You already HAVE an ID!" and gives -1 when handed a small number |
+| `0xcafe00` | Zlib::InitCheck | In outline: zlib's stream start check: gives -6 (version error) unless the version text starts with '1' and the stream size is 0x38, -2 with no stream |
+| `0xcbd4e0` | HashTable::InitCBD4E0 | In outline: sizes a table to a prime (Math::NextPrime), clears its count and makes its buckets |
+| `0xc33450` | Text::FormatC33450 | In outline: formats a message by name (NamedList::Find) into a 4096-character buffer |
+| `0xcb6b90` | Mesh::SizeCB6B90 | In outline: a buffer size from a vertex format (Vertex::SizeFromFormat), rounded up to 64 |
+| `0xc18cf0` | Resource::MakeC18CF0 | In outline: sets up a record with its table (`0xFAFC60`) and a callback (`0xC167C0`) |
+| `0xc01600` | Device::MakeC01600 | In outline: sets up a device record (0x254 bytes of work space) |
+| `0xbd70b0` | Text::SumBD70B0 | In outline: adds up two-byte values |
+| `0xcb1d50` | ShaderFile::ReadCB1D50 | In outline: reads a value from a buffer when there is room |
+| `0xc089a0` | Timer::CountdownC089A0 | In outline: counts a shared value down (`0x13D3274`) and when it reaches 0, resets it (`0x10F2F70`) and acts |
+| `0xcd3bb0` | Text::FindCD3BB0 | In outline: a text find |
+| `0xcd3ab0` | Text::FindCD3AB0 | In outline: the same (another copy) |
+| `0xcd3800` | Text::FindCD3800 | In outline: the same (another copy) |
+| `0xcd3700` | Text::FindCD3700 | In outline: the same (another copy) |
+| `0xca6bc0` | Table::TakeCA6BC0 | In outline: takes a free slot from a list (+0xA) or makes room |
+| `0xc10840` | Resource::MakeC10840 | In outline: makes parts (Constructor on +4, +0x18) |
+| `0xbfee90` | List::LoopBFEE90 | In outline: goes over a linked list (+0x24) |
+| `0x8ffb90` | Array::Resize8FFB90 | In outline: resizes a list to n |
+| `0x8f8bf0` | Array::Resize8F8BF0 | In outline: resizes a list to n |
+| `0xc38810` | Record::MakeC38810 | In outline: makes a 0x2C-byte record |
+| `0x5aef00` | Array::Free5AEF00 | In outline: frees an array of 0x1C-byte entries (+0x20), tearing each down |
+| `0x46e6a0` | List::Pop46E6A0 | In outline: takes one off a count (+8) |

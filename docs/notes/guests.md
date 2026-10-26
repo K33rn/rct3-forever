@@ -224,3 +224,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7e4030` | Person::Pose7E4030 | In outline: a pose from its part's values (+0xA4 +0x60 on) |
 | `0x7caa00` | Person::Find7CAA00 | In outline: a find over a linked list (+0x2EC), 0 when empty |
 | `0x7ce320` | Person::Mode7CE320 | In outline: in modes 2 or 3, when on (+0x3F0), updates a target (Person::UpdateTarget7CB120) |
+| `0x7adc90` | Person::Make7ADC90 | In outline: makes a record from its arguments |

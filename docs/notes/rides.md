@@ -633,3 +633,31 @@ Tracked rides, flat rides and their cars and trains.
 | `0x58af90` | Ride::Time58AF90 | In outline: a timed step (`0x58A7A0`) |
 | `0x4cf470` | Shop::Reset4CF470 | In outline: a reset (`0x501FB0`), a camera step and clears a slot (+0x84 = -1) |
 | `0x463530` | Scenery::Check463530 | In outline: a check when not flagged (+0x3C) |
+| `0x584bb0` | Ride::Slot584BB0 | In outline: a step (Offset138 or `0x4A18B0`) |
+| `0x4aa3e0` | Ride::Check4AA3E0 | In outline: a check when not flagged (+0x200) |
+| `0x555740` | Ride::Check555740 | In outline: a check (`0x4A1800`, Offset138) |
+| `0x50c3d0` | Car::Cross50C3D0 | In outline: a cross product step when a length is above 0.5 |
+| `0x4f7030` | TrackEditor::AutoComplete4F7030 | In outline: with a part (+0x4EC), shows the auto-complete cost (TrackEditor::AutoCompleteCost(1)) and gives 0 |
+| `0x4cc710` | Shop::Terrain4CC710 | In outline: clears a flag (+0xA4) and a step when the terrain is not flagged |
+| `0x4c7e40` | Shop::Check4C7E40 | In outline: a check when not flagged (+0x74) |
+| `0x5aa810` | Ride::Check5AA810 | In outline: a check when not flagged (+0x378) |
+| `0x5c0e30` | TrackPiece::Make5C0E30 | In outline: makes a 0xC-byte record |
+| `0x83a7b0` | Scenery::Ride83A7B0 | In outline: a step with its part's selected ride (`0x12F5608`) |
+| `0xbc65d0` | Track::LastBC65D0 | In outline: for rides not flagged 0x400000 or with fewer than two stations, the last 0x24-byte entry |
+| `0x472b40` | Ride::Mode472B40 | In outline: a value by a mode (+0xE0) |
+| `0x71c730` | Path::Case71C730 | In outline: a path piece by case |
+| `0x5a79e0` | TrackedRide::Text5A79E0 | In outline: a text when it has none (+0x700) |
+| `0x5a78d0` | TrackedRide::Text5A78D0 | In outline: the same (another copy) |
+| `0x573af0` | Ride::Reset573AF0 | In outline: clears a slot (+0x228 = -1) and, when a check passes, sets a time (+0x68) |
+| `0x536c90` | Ride::Terrain536C90 | In outline: a step when the terrain is not flagged and not flagged (+0x21C) |
+| `0x4df040` | Ride::Next4DF040 | In outline: steps a counter (+0x250) around |
+| `0x58a400` | Ride::Station58A400 | In outline: finds a station (`0x5D1D80` with +0xF4, +0xF8) into +0x104 |
+| `0x5f2460` | TrackPiece::End5F2460 | In outline: picks an end record (-2: +0xA4, -1: +0xB0) |
+| `0x5eaad0` | AttractionPerson::Reset5EAAD0 | In outline: clears a flag (+0x16D) and goes over its list (+0x170) |
+| `0x50d1b0` | Car::Time50D1B0 | In outline: adds a time to a value (+0x96C) and acts |
+| `0x4b79d0` | Shop::Set4B79D0 | In outline: when not flagged (+0x15C), sets a value (+0x138) for 0 to 10 |
+| `0x5bc210` | TrackPiece::Lerp5BC210 | Blends two integer pairs by a fraction, rounded |
+| `0x5b55c0` | TrackedRide::Step5B55C0 | In outline: a step and, with no part (+0x70) and not flagged (+0x861), more (`0x5B0370`) |
+| `0x5a8a80` | TrackedRide::Reset5A8A80 | In outline: clears slots (+0x3E4 to +0x3EC = -1) and goes over its stations |
+| `0x592130` | Ride::Check592130 | In outline: a check when not flagged (+0x204) |
+| `0x4d2700` | Shop::Link4D2700 | In outline: a step with a linked part (+0x48) |
