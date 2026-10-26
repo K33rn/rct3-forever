@@ -677,3 +677,32 @@
 | `0x8e4220` | Terrain::Cell8E4220 | In outline: a terrain cell step |
 | `0x8656e0` | Scenery::Make8656E0 | In outline: makes a scenery part when it has a slot |
 | `0x8eef10` | Water::Points8EEF10 | In outline: goes over a water piece's points (+8) |
+| `0x8de6d0` | Water::Same8DE6D0 | In outline: whether two water ranges are the same (+0x48 vs +0x4C) |
+| `0x88fcd0` | Scenery::Update88FCD0 | In outline: unless the global flag `0x1400306` is set, goes over a scenery list (+0x54) |
+| `0xa29e80` | Guest::LinkA29E80 | In outline: links a guest's part |
+| `0x80e650` | Regions::Find80E650 | In outline: finds a region within bounds |
+| `0x7266b0` | Path::Update7266B0 | In outline: a path update with what is there (`0xAFD9D0`) |
+| `0x92db40` | Water::List92DB40 | In outline: goes over water entries not flagged (+0x18) |
+| `0x8ff1c0` | Whirlpool::Cell | In outline: finds a whirlpool's cell (Whirlpool::FindCell) unless told not to |
+| `0xa7d8a0` | Animal::ActivateA7D8A0 | In outline: links (`0x4AA760`) and activates an animal |
+| `0x7036e0` | Grid::Refresh7036E0 | In outline: refreshes a grid rectangle (negative starts handled) |
+| `0x82b350` | Scenery::Cell82B350 | In outline: turns a scenery cell (Footprint::RotateCell by +0xAC) |
+| `0x8bca20` | Terrain::Rect8BCA20 | In outline: goes over a byte rectangle of terrain cells |
+| `0x849730` | Scenery::Pass849730 | In outline: goes over n scenery entries when not flagged (+0x6C) |
+| `0x462b40` | Scenery::Slot462B40 | In outline: a scenery slot (0 to 6) value |
+| `0x8b1690` | Scenery::Camera8B1690 | In outline: when on (+0x108), a scenery item's update by the camera (MainCamera::Get) |
+| `0x715cc0` | Path::InGrid715CC0 | In outline: a path check for a cell inside the path manager's grid (+0x5C, +0x5D) |
+| `0x5d5a40` | TrackPiece::Range5D5A40 | In outline: a track piece check within a count |
+| `0x566390` | Path::Queue566390 | In outline: a queue (kind 0xD) pass |
+| `0x7838d0` | GuestGroup::Slot7838D0 | In outline: a group's slot step |
+| `0xa9a4c0` | PoolComplex::RoundA9A4C0 | In outline: a pool step when not flagged (+0x1B0), rounded |
+| `0x589440` | Track::NameText | In outline: makes a track's name text (Track::Name) |
+| `0x90aef0` | Water::Cell90AEF0 | In outline: a water cell from a point, rounded |
+| `0x900b40` | Water::Below900B40 | In outline: whether a point is below a water surface |
+| `0x833d30` | Scenery::Activate833D30 | In outline: activates a scenery item |
+| `0x759280` | Guest::Value759280 | In outline: a guest's value step when its value (+0x40C) is above 0.5 |
+| `0x89f200` | Scenery::Terrain89F200 | In outline: a scenery pass over the terrain |
+| `0x8bc4a0` | Terrain::Height8BC4A0 | In outline: a terrain height at a point, rounded |
+| `0x55af30` | Ride::List55AF30 | In outline: goes over a ride's list |
+| `0x726a10` | Terrain::Tile726A10 | In outline: a terrain tile step |
+| `0x80fcc0` | Regions::Point80FCC0 | In outline: a region check for a point when there are regions (+0x48, `0x130ACA4`) |

@@ -298,3 +298,10 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4e84c0` | AttractionPerson::Check4E84C0 | In outline: the same attraction person check (another copy) |
 | `0x552dd0` | Ride::Kind552DD0 | In outline: acts by a ride part's kind (+0xB4: 1, ...) |
 | `0x4c8740` | Shop::Mode4C8740 | In outline: a shop step by its mode (+0xC4 = 2) and a value's sign |
+| `0x4c5620` | AttractionPerson::Face4C5620 | In outline: points a person on an attraction (Matrix::LookAlongXUp on its +0x30) and turns it (Matrix::TurnAboutY by +0x8C) |
+| `0x834de0` | Ride::Mode834DE0 | In outline: in mode 1 (+0xB0) when its check passes, acts by its second mode (+0xB4) |
+| `0x4b22a0` | Shop::Refresh4B22A0 | In outline: refreshes a shop (`0x52F710`) unless told not to |
+| `0x7888d0` | List::Find7888D0 | In outline: finds an entry in a list range (`0x7881B0`, `0x788030` up to +0x188) |
+| `0x53de10` | Ride::Camera53DE10 | In outline: a ride step by the camera over its list |
+| `0x573c00` | Ride::Hit573C00 | In outline: a ride hit test with the current tool (`0x12F5638`, `0x5DA220` within 0.5) |
+| `0x500ab0` | Car::Update500AB0 | In outline: a car update (`0x59AB70`) with its part (+0xB4 +0x70) |

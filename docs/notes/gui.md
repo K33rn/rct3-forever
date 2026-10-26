@@ -926,3 +926,38 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xacad60` | Graph::DrawACAD60 | In outline: draws a graph's frame (`0x6ACE50`) and contents when not flagged (+0x100) |
 | `0x6b2880` | Window::Update6B2880 | In outline: a window update (`0xBD36C0`) with no entries (+0x34) |
 | `0x601710` | Window::Part601710 | In outline: makes a 0x130-byte window part |
+| `0x6c3050` | Window::Build6C3050 | In outline: builds a window from the shared title `0x1305DF4` |
+| `0x6a9600` | Window::Layout6A9600 | In outline: places a window when its owner is not flagged (+0xD8 +0xD8) |
+| `0x633c90` | Window::Build633C90 | In outline: builds a window from the shared title `0x12F7E58` |
+| `0xa217a0` | Window::BuildA217A0 | In outline: builds a window from the shared title `0x1342714` |
+| `0xa21100` | Window::BuildA21100 | In outline: builds a window from the shared title `0x1342720` |
+| `0xac94f0` | Window::BuildAC94F0 | In outline: builds a window from the shared title `0x13CE4A0` |
+| `0x9a36b0` | Window::Build9A36B0 | In outline: builds a window from the shared title `0x13413D4` |
+| `0x9a3440` | Window::Build9A3440 | In outline: builds a window from the shared title `0x13413C4` |
+| `0x9a31d0` | Window::Build9A31D0 | In outline: builds a window from the shared title `0x13413C0` |
+| `0x6abd90` | Window::Build6ABD90 | In outline: builds a window from the shared title `0x1305CE0` |
+| `0x666870` | Window::Part666870 | In outline: makes a window part (Window::Part666570) with its child |
+| `0x619180` | Window::Build619180 | In outline: builds a window from the shared title `0x12F5780` |
+| `0x4c2100` | Info::Text4C2100 | In outline: makes an info text from two shared texts (`0xF31F48`, `0xF31FA8`) |
+| `0xa49240` | Window::BuildA49240 | In outline: builds a window from the shared title `0x1342910` |
+| `0x6a2620` | Window::Build6A2620 | In outline: builds a window from the shared title `0x1305C4C` |
+| `0x9dd650` | Window::List9DD650 | In outline: fills a window from a shared list (`0x134180C` +0x14) |
+| `0xc65490` | Window::MessageC65490 | In outline: handles a window message by kind (not 8; 0x10005, ...) |
+| `0x4787c0` | Game::Fade4787C0 | In outline: starts a fade over 0.1 (`0x617600`) and `0xA1F980` |
+| `0x6e1b30` | Objectives::Event6E1B30 | In outline: handles an event from its own part (+8 +0x104) (`0xA2C580`) |
+| `0x48fd90` | Window::Build48FD90 | In outline: builds a window from the shared title `0x12F4670` |
+| `0xa55b30` | Window::LayoutA55B30 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x6ba290` | Window::Event6BA290 | In outline: for event 7, lays the window out |
+| `0x8868b0` | Window::Build8868B0 | In outline: builds a window from the shared title `0x1310FB0` |
+| `0x99cf40` | Window::Build99CF40 | In outline: builds a window from its title |
+| `0xac9a00` | Window::BuildAC9A00 | In outline: builds a window from the shared title `0x13CE494` |
+| `0x67b0e0` | Window::Update67B0E0 | In outline: with the GUI root (`0x12F83F0`), refreshes a window (`0xA1F8B0`) |
+| `0xa70180` | Window::MakeA70180 | In outline: makes a list member window part (ListMember with `0x10EC9FC`, Listener440) |
+| `0x98c4d0` | Window::Build98C4D0 | In outline: builds a window from the shared title `0x1341320` |
+| `0x6072a0` | Window::Build6072A0 | In outline: builds a window from the shared title `0x12F5708` |
+| `0x69a000` | Window::Part69A000 | In outline: makes a window part with a value |
+| `0x61da30` | Window::Build61DA30 | In outline: builds a window from the shared title `0x12F579C` |
+| `0x888140` | Window::Build888140 | In outline: builds a window from the shared title `0x1310FA0` |
+| `0x69ccf0` | List::Sort69CCF0 | In outline: sorts a list's entries (a 0x337-entry counted buffer, Memory::AllocCounted) |
+| `0x668300` | Window::Event668300 | In outline: handles an event from itself by its mode (+0x16C = 1) |
+| `0xa55200` | PlayerProfile::Make | In outline: makes the player profile (ManagedPlayerProfile) and activates it |

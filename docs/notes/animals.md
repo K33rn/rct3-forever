@@ -194,3 +194,12 @@
 | `0xb3b480` | Animal::LinkB3B480 | In outline: sets an animal's link (+0x4C) when it changes |
 | `0xb46080` | WildAnimal::Decide | In outline: with nothing to do (+0x78), makes an animal decision (WAS_Decision) |
 | `0xb47380` | WildAnimal::CheckB47380 | In outline: an animal check when flagged (+0xAD) |
+| `0xb46530` | WildAnimal::LinkB46530 | In outline: links an animal's parts |
+| `0xa7e890` | Animal::UpdateA7E890 | In outline: an animal update when not flagged (+0x100) |
+| `0xb8dbd0` | Animal::LinkB8DBD0 | In outline: links an animal's part |
+| `0xb94650` | Enclosure::PickB94650 | In outline: finds an enclosure cell under the mouse (MainCamera::Get) on the terrain |
+| `0xb72be0` | Animal::TextB72BE0 | In outline: an animal text when not flagged (+0xB8) |
+| `0xb42910` | WildAnimal::SwayB42910 | In outline: works out an animal's sway from a fixed angle (sine of `0xF2E180`) |
+| `0x98bc80` | Animal::Turn98BC80 | In outline: a turn when big enough |
+| `0xb67700` | WildAnimal::StepB67700 | In outline: an animal step when not flagged (+0xC2) (`0xB62430`) |
+| `0xa96ee0` | Animal::ValueA96EE0 | In outline: an animal value by its state (+0x7C) unless in mode 1 (+0x90) |

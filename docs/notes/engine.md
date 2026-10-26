@@ -1674,3 +1674,19 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc4d7a0` | Text::FindC4D7A0 | In outline: finds a text entry (`0xC47500`) |
 | `0xc31770` | Mesh::SetFormatC31770 | In outline: sets a mesh buffer's format by its kind (0x40, ...) |
 | `0x8d3140` | Terrain::TimedUpdate | In outline: a timed terrain update inside a critical section |
+| `0xbe5fd0` | Module::LoadBE5FD0 | In outline: another module load like Module::LoadBE5B20 (ModuleList::Run, Error::ThrowIf) |
+| `0xbe90c0` | Device::CanApply | In outline: whether a device setting can be applied (used by Device::ApplyC8BA70): resets (`0xBE9040`) and compares its value (+0x3C8) |
+| `0xc36880` | Resource::ReleaseAllC36880 | In outline: releases every entry of a list (+0x7C, `0xC30890`) |
+| `0xbcbb70` | Table::MakeBCBB70 | In outline: makes a table of 0x18-byte entries |
+| `0xa6ff20` | Array::ResizeA6FF20 | In outline: resizes a list of 0x30-byte entries to n |
+| `0x96f560` | Array::Resize96F560 | In outline: resizes a list of 0x30-byte entries to n |
+| `0x94e4b0` | Array::Resize94E4B0 | In outline: resizes a list of 0x30-byte entries to n |
+| `0xbd9670` | Text::FindBD9670 | In outline: finds a text entry (`0xBD65D0`) |
+| `0xc18a70` | List::CopyC18A70 | In outline: copies a list (+0x10) into a new array |
+| `0xcb2c60` | ShaderFile::HeaderCB2C60 | In outline: reads a shader file's 12-byte header (`0xCB2660`, `0xBE5020`) |
+| `0x47cee0` | NamedObject::Make47CEE0 | In outline: makes a list member object (ListMember with `0x10EC9E8`) with its part (`0xCE59B0`) |
+| `0xa91240` | Fence::TablesA91240 | In outline: makes a 0x14-byte record at start-up |
+| `0x42a050` | Array::Resize42A050 | In outline: resizes a list of 32-byte entries to n |
+| `0x4900f0` | NamedObject::Make4900F0 | In outline: makes a list member object (ListMember with `0x10EC9E8`) with its part (`0x48E000`) |
+| `0x7c1780` | Load::Read7C1780 | In outline: reads a saved record from a block (`0x809210`, four bytes at a time) |
+| `0xc18700` | Path::MatchC18700 | In outline: another path match (`0xBE84F0`, String::Substring) |

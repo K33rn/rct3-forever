@@ -195,3 +195,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0xa27df0` | Guest::ListA27DF0 | In outline: goes over a list of guests not flagged (+0xC8) |
 | `0x7cf350` | Person::Update7CF350 | In outline: a person's update with no stage (+0x194 = -1) and a part |
 | `0x8b5cc0` | Person::Face8B5CC0 | In outline: points a person (Matrix::LookAlongZSide) when it is the one given (+0x104) |
+| `0x75c150` | Guest::Update75C150 | In outline: a guest update setting its state (Person::SetState) |
+| `0x7d2d00` | Person::Leave7D2D00 | In outline: when its check fails (`0xAB3A80`), sets a person's state to 0x103 |

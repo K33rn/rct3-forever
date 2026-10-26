@@ -635,3 +635,18 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x481910` | Draw::Line481910 | In outline: draws a line with the shared line drawer (`0x481620`) |
 | `0xce8d80` | Shapes::GrowCE8D80 | In outline: grows a shape list (+0x10) |
 | `0xcf0740` | Shapes::TexturesCF0740 | In outline: another shape textures pass like Shapes::TexturesCF0400 |
+| `0x485c10` | Model::Animations485C10 | In outline: for kind 3 models, checks their animations (Model::CheckAnimations) |
+| `0x86d5e0` | SceneryModel::Setup | In outline: sets up a scenery model, finding its lights and water when asked (SceneryModel::FindLightsAndWater) |
+| `0x9ae1a0` | Fireworks::Link9AE1A0 | In outline: links a firework part when given one |
+| `0x7c24b0` | Model::Pose7C24B0 | In outline: sets a model's pose (`0x7BEDB0` on +0xD0, +0x50) |
+| `0x481ef0` | Draw::RedLine | In outline: draws a red line (0xFFFF0000) with the shared line drawer |
+| `0xac8a30` | LaserDesigner::Bar | In outline: builds the laser designer's bar (LaserDesigner::BuildBar) |
+| `0x48a7c0` | Effect::HitTest48A7C0 | In outline: whether a ray hits an effect's parts (Ray::BoxSlabs) |
+| `0x582390` | Ride::Lights582390 | In outline: updates a ride's lights (Model::UpdateLights) |
+| `0x8b7370` | SceneryBehaviour::Particles | In outline: makes a meta particle (MetaParticle) for a behaviour's owner |
+| `0x9cee10` | Particles::Fill9CEE10 | In outline: fills particle buffers for the current device |
+| `0x99c800` | Fireworks::Time99C800 | In outline: a firework time value (`0x4756A0`) |
+| `0x9c6b90` | Particles::Camera9C6B90 | In outline: when on (+0x114) with emitters (+0x9C), a step by the camera |
+| `0xc08dc0` | Text::MeasureC08DC0 | In outline: measures a text to its end |
+| `0xbdd9a0` | VertexDeclaration::FillBDD9A0 | In outline: fills a vertex declaration from its elements (kind 1, under 0xFF) |
+| `0x426950` | Curves::Sample | In outline: samples a curve at a time (used by Sky::UpdateLight), with one or no keys handled |

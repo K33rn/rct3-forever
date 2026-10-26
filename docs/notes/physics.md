@@ -261,3 +261,7 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x407870` | Draw::Length407870 | In outline: a line length (square root) for drawing |
 | `0xce55d0` | Sound::Direction | In outline: a sound's direction from the listener, normalised |
 | `0x9f7370` | Firework::Aim9F7370 | In outline: a firework's aim from its direction (+0x28) |
+| `0x95e3d0` | Water::Edge95E3D0 | In outline: another water edge case, the fraction kept between 0 and 1 |
+| `0x95e160` | Water::Edge95E160 | In outline: another water edge case, the fraction kept between 0 and 1 |
+| `0x95f650` | Water::Walk95F650 | In outline: a water walk for a count |
+| `0x7e4360` | Person::Move7E4360 | In outline: moves a person when its speed (+0x144) is small |
