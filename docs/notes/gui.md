@@ -1547,3 +1547,42 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x700060` | Window::Place700060 | In outline: a step with the window's height |
 | `0x6be4c0` | Money::Text6BE4C0 | In outline: a money text with two decimals (Money::Format_(2)), with zero handled |
 | `0x476950` | Effects::Loop476950 | In outline: goes over the shared list (`0x10ECA38`) |
+| `0x6a49d0` | Window::Place6A49D0 | In outline: places a part by the window's size unless flagged (bit 22) |
+| `0xa550e0` | Window::FreeA550E0 | In outline: unless the shared value is set (`0x1342958`), frees the shared buffer (`0x1342954`) |
+| `0x69f420` | Window::Text69F420 | In outline: a text (`0x53B850`) with its part (+0x314) |
+| `0xc63570` | Window::FocusC63570 | In outline: when its check passes, tells the window system (`0x13E6D00`, slot 0xF4) |
+| `0x6af460` | Window::Root6AF460 | In outline: with no window, uses the GUI root's part (`0x12F83F0` +0xDC) |
+| `0xac7a40` | Window::DrawAC7A40 | In outline: draws a window's frame (Window::DrawFrame6ACE50) and more when not flagged (+0xF4) |
+| `0x9b3550` | Window::Bind9B3550 | In outline: sets the object it shows (+0xD4); with none, clears a number field's binding |
+| `0x661c50` | Window::Check661C50 | In outline: clears a value (+0xE4) and a check with its part (+0xE0, slot 0x148) |
+| `0x68d1d0` | Window::SetCount68D1D0 | In outline: sets a count (+0xEC) when it changes, freeing its buffer (+0xE8) at 0 |
+| `0x9be500` | ParticleDesigner::Tree | In outline: with a part (+0x140), builds the particle designer tree (ParticleDesigner::BuildTree) |
+| `0xa2c580` | Window::TextA2C580 | In outline: a text from entries (+0x1C) |
+| `0x9a7f80` | Window::Handle9A7F80 | In outline: makes a handle and links it |
+| `0x6c3d50` | Window::Value6C3D50 | In outline: a value, reversed in mode 5 (+0x44) |
+| `0x42b9b0` | NamedObject::Make42B9B0 | In outline: makes a list member object (Listener440, ListMember with `0x10EC9E8`) |
+| `0x48e000` | NamedObject::Make48E000 | In outline: makes a list member object (ListMember with `0x10EC9E8`) |
+| `0xb5ca50` | NamedObject::MakeB5CA50 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
+| `0x9c0d30` | Window::Source9C0D30 | In outline: makes a particle source, refreshes (Window::Refresh9D5510) and acts |
+| `0x6c3570` | Window::Countdown6C3570 | In outline: counts a shared value down (`0x1305DE8`) and at 0 with another set makes a 0x120-byte part |
+| `0x467950` | Window::Screen467950 | In outline: a step with the GUI root's size |
+| `0xc639e0` | Window::HitC639E0 | In outline: a hit test with points |
+| `0x7f0440` | Window::Place7F0440 | In outline: places a part at the bottom of the window |
+| `0x68ee40` | Window::Text68EE40 | In outline: a step with a text at least 4 long |
+| `0x6a21c0` | Window::Release6A21C0 | In outline: plays the button release sound (Sound::GUIBRelease) and acts with its part (+0xD4) |
+| `0x6a20e0` | Window::Release6A20E0 | In outline: the same (another copy) |
+| `0xa2acc0` | Window::TextA2ACC0 | In outline: a text from entries (+0x1C) with a shared one (`0xF89274`) |
+| `0x6abc90` | Window::Flag6ABC90 | In outline: with a part (+0x13C), sets or clears a flag (bit 24 of +0x94) |
+| `0x69b160` | Input::ImeStep | In outline: a step with the window's input context (+0x14) |
+| `0x483ad0` | Labels::Set483AD0 | In outline: when a value changes (+0xC) and on, a step with a screen point |
+| `0x6620e0` | Window::Text6620E0 | In outline: a text when flagged (+0x58) and not flagged (+0x54) |
+| `0x6202d0` | Window::Make6202D0 | In outline: with the shared value (`0x10EDD18`), makes a 0x70-byte part |
+| `0x67e960` | Window::Scale67E960 | In outline: a fraction from part n's width |
+| `0x67af00` | Window::Make67AF00 | In outline: makes a part with a value (+0xE8) |
+| `0x6fd190` | Window::Nth6FD190 | In outline: walks to entry n (+0x40) of a list (+0x4C) |
+| `0x6b0d50` | Window::SetParent6B0D50 | In outline: sets a part (+0x3C) when it changes, by a flag (bit 2) |
+| `0x6644d0` | Window::Make6644D0 | In outline: builds a window (Window::Build83D730) with its tables (`0xF4E628`, `0xF4E614`) |
+| `0x61b8a0` | Window::Values61B8A0 | In outline: sets a window's values (Window::SetRelatedValue, Window::SetValueEC) and a step (`0x67A7A0`) |
+| `0xc66100` | Window::LinkC66100 | In outline: a step with a linked part (+0x74) |
+| `0x9c1a20` | Window::Check9C1A20 | In outline: a check when not flagged (+0x128) |
+| `0xa431b0` | Window::CaseA431B0 | In outline: unless given its own part, clears a value (+0xC4) and acts by a mode (+0xC0) |

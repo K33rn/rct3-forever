@@ -939,3 +939,25 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9c4a90` | Particles::Fill9C4A90 | In outline: fills a record from its arguments |
 | `0x8db980` | Terrain::Case8DB980 | In outline: sets a shared callback (`0x10F0AD8`) and acts by it |
 | `0x9bc2d0` | Particles::Pass9BC2D0 | In outline: goes over entries (+0x3C) from n |
+| `0xa9a980` | PoolComplex::SetA9A980 | In outline: sets values (+0x1C4 on) |
+| `0x45b520` | Resource::Reset45B520 | In outline: with a part, tears it down and acts |
+| `0xb02320` | Animal::CameraB02320 | In outline: a reset (`0x501FB0`) and a step with the camera unless the shared value is set |
+| `0xad89c0` | Animal::FloatAD89C0 | In outline: makes a float blend element (FloatBlenderElement) and acts when not flagged (+0xAC) |
+| `0xaf49c0` | Animal::FloatAF49C0 | In outline: the same when not flagged (+0xB4) |
+| `0xad88e0` | Animal::FloatAD88E0 | In outline: the same when not flagged (+0xC8) |
+| `0xa60e40` | Animal::DirectionA60E40 | In outline: a direction between two points |
+| `0x978da0` | Water::Make978DA0 | In outline: makes a part (Object967) |
+| `0xcb7060` | Mesh::StepCB7060 | In outline: a step with parts (+0x54, +0xAC) |
+| `0x44d180` | Effect::Length44D180 | In outline: a step when a direction's length is above a limit |
+| `0x44c5f0` | Effect::Make44C5F0 | In outline: makes parts |
+| `0x974d80` | Water::Make974D80 | In outline: makes a part (Object967) |
+| `0x48a6e0` | Effect::Part48A6E0 | In outline: goes over a part's entries |
+| `0x9fbc60` | Fireworks::Draw9FBC60 | In outline: a draw step with the shared device (`0x454930`) |
+| `0xbc5d50` | Track::TurnBC5D50 | In outline: a matrix turned by (n + 2) times a step (Matrix::TurnColumnsAboutY) |
+| `0xa5edc0` | Animal::ClampA5EDC0 | In outline: keeps a value under 1000 |
+| `0x470eb0` | Draw::Step470EB0 | In outline: a draw step |
+| `0x473e60` | Labels::Add473E60 | In outline: adds a label when there is room (+8, +0xC) |
+| `0xbf8980` | Text::FillBF8980 | In outline: a fill step with a value |
+| `0xbf7130` | Text::FillBF7130 | In outline: the same (another copy) |
+| `0x9c6780` | Particles::Step9C6780 | In outline: a step with three values |
+| `0x476fb0` | Effects::Find476FB0 | In outline: unless told not to, a find over the shared list (`0x10ECA14`) |

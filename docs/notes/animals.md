@@ -537,3 +537,26 @@
 | `0xa808b0` | Animal::CaseA808B0 | In outline: a table entry (Table30::Entry) and a step by a mode (+0x158) |
 | `0xb88c30` | Animal::CheckB88C30 | In outline: sets a result to 3 and a check |
 | `0xac6320` | PoolComplex::UpdateAC6320 | In outline: an update when not flagged (+0x1C) |
+| `0xb478c0` | WildAnimal::CheckB478C0 | In outline: 0 unless a check passes (slot 0x24) |
+| `0xae09f0` | Animal::CheckAE09F0 | In outline: 0 with no part (+0x50) |
+| `0xa5f5e0` | Animal::CopyA5F5E0 | In outline: copies values from its owner (+4 +0x160, +0x140) |
+| `0xb45fa0` | WildAnimal::SetB45FA0 | In outline: sets a flag (+0xAC) and makes a part with no slot (+0x78) |
+| `0xaabc60` | PoolComplex::MakeAABC60 | In outline: sets a byte (+4) and makes a part |
+| `0xaa5910` | PoolComplex::PassAA5910 | In outline: when given a value, goes over entries (+0x27C) |
+| `0xaa0680` | PoolComplex::PassAA0680 | In outline: goes over entries (+0x28) |
+| `0xa9f7e0` | PoolComplex::PassA9F7E0 | In outline: the same (another copy) |
+| `0xb87370` | Animal::MakeB87370 | In outline: makes a record |
+| `0xb556f0` | Animal::MakeB556F0 | In outline: makes a 0x68-byte part |
+| `0xb9afb0` | PathGrid::ModeB9AFB0 | In outline: with a value of 0.4, a step for parts in modes 1 to 3 (+0x414) |
+| `0xb81e50` | Animal::SumB81E50 | In outline: a step with the sum of three values (+0xA4 +8 on) |
+| `0xb6ae80` | Animal::ClearB6AE80 | In outline: clears a flag (+0x58) and acts with a part (+0x64) |
+| `0x9fea10` | Animal::Add9FEA10 | In outline: adds an entry, growing a list (+0x5C, +0x60) when full |
+| `0xb93490` | Animal::PartB93490 | In outline: a part from +0x48 when it has none (+0x68) |
+| `0xb235c0` | WildAnimal::SexAgeCheck | In outline: compares two sex and age texts (WildAnimal::SexAgeText) |
+| `0xb18e70` | WildAnimal::PointB18E70 | In outline: a step with its part (+0x108) |
+| `0xaf48f0` | Animal::FloatAF48F0 | In outline: makes a float blend element (FloatBlenderElement) and acts when not flagged (+0x7C) |
+| `0xaa5400` | PoolComplex::CaseAA5400 | In outline: a step by case (0: `0xAA3970` on +0x140, ...) |
+| `0xb891a0` | Animal::EntryB891A0 | In outline: a step for entry n (0x1C bytes at +0x60) not flagged |
+| `0xb33590` | Animal::TextB33590 | In outline: unless a flag is set (Flags::Bit0), makes a text |
+| `0xa905f0` | Fence::CrossA905F0 | In outline: a cross product of two directions |
+| `0xa86e50` | Animal::UpdateA86E50 | In outline: updates (Animal::UpdateA86710 with an object) and acts by a value (+0x120) |

@@ -1557,3 +1557,71 @@
 | `0x7241e0` | Path::Slot7241E0 | In outline: the same with Path::Slot72F610 and +0x9C |
 | `0x9454e0` | Water::Remove9454E0 | In outline: removes entry n (+0x64) from its list (Entries::Remove) |
 | `0x9761b0` | Water::Step9761B0 | In outline: a step with a value or the shared one (`0x1310E60`) |
+| `0xb53fb0` | Animal::LoopB53FB0 | In outline: goes over the shared list (`0x13CEA54`) |
+| `0x82a7b0` | Scenery::Handle82A7B0 | In outline: makes a handle and links it |
+| `0x47cdd0` | Effects::Reset47CDD0 | In outline: with the shared value (`0x10ED6F4`), goes over the effects (Effects::Loop47CCD0) and clears a shared value |
+| `0x476a30` | Effects::Reset476A30 | In outline: with the shared value (`0x10ED708`), goes over (Effects::Loop476950) |
+| `0x8b9dd0` | Scenery::Mode8B9DD0 | In outline: unless in mode 2 or 3 (+0x1F0), a handle step |
+| `0x8b6730` | Scenery::Release8B6730 | In outline: with a slot (+0xA4), removes it from its pool (SlotPool::Remove) and clears it |
+| `0x7a03a0` | Terrain::List7A03A0 | In outline: goes over a list (+0x540) |
+| `0x77fa10` | GuestGroup::Pass77FA10 | In outline: when a group check passes (GuestGroup::Check778580(1)), goes over entries |
+| `0x772590` | Park::Make772590 | In outline: a step (`0x7724A0`) and fills a record |
+| `0x750f90` | Guest::Make750F90 | In outline: with no part (+0x3C), makes a 0x224-byte one |
+| `0x7731f0` | Guest::Mode7731F0 | In outline: a step for modes under 7 (+0x190) |
+| `0x9ed8c0` | Fireworks::Release9ED8C0 | In outline: releases its part (+0x148) and clears it |
+| `0x965bd0` | Water::Step965BD0 | In outline: a step with a count (+0x20) |
+| `0x83f900` | Scenery::Same83F900 | In outline: a step when a value matches its own (+0xE8) |
+| `0x726c70` | Path::Terrain726C70 | In outline: a terrain step finding the nearest |
+| `0x89caf0` | Scenery::Cell89CAF0 | In outline: a step for a cell of a grid (16 per cell) that is set |
+| `0x84a9a0` | Scenery::Check84A9A0 | In outline: a check when not flagged (+0xC8) |
+| `0x7526a0` | Guests::Step7526A0 | In outline: when not flagged (+0x6C, +0x84), a step with the shared value (`0x14002F8`) |
+| `0x4413d0` | Park::Value4413D0 | In outline: a value from the park (Park::Get) or the shared one (`0x1306194`) |
+| `0x42c610` | Sky::Step42C610 | In outline: a step with a count (+0x1C) |
+| `0x416c90` | Effect::Make416C90 | In outline: makes parts |
+| `0xaa0760` | PoolComplex::CountAA0760 | In outline: counts entries (+0x34) |
+| `0x929590` | Water::Set929590 | In outline: sets two points (+0x3D0, +0x3E0) and acts |
+| `0x82b060` | Scenery::Set82B060 | In outline: a step (`0x829B70`), sets a value (+0xA4) and acts when not flagged (+0x130) |
+| `0x7f4810` | Person::Value7F4810 | In outline: with no part (+0x194), sets a value to 0xF3 (+0xB8) and acts by a time (+0xBC) |
+| `0x85edf0` | Scenery::Find85EDF0 | In outline: a find (`0x827530`) |
+| `0x7ca650` | Person::Slot7CA650 | In outline: a step for slot n (0x14 bytes at +0x128) when its cell changes |
+| `0x88af00` | Scenery::Camera88AF00 | In outline: unless the shared value is set (`0x13429A8`), a step with the camera |
+| `0x49c740` | Effects::Shared49C740 | In outline: a step with the shared object (`0x1106C54`) |
+| `0x42e2b0` | Effect::Link42E2B0 | In outline: a step with a linked part (+0x144) |
+| `0x90b230` | Water::Cell90B230 | In outline: a cell from a value's place within a range, scaled by a count |
+| `0x9ee710` | Fireworks::Reset9EE710 | In outline: releases (`0x9ED8C0`) and goes over the shared list (`0x1341CFC` +4) |
+| `0xb88030` | Animal::LinkB88030 | In outline: a step with a linked part (+8) |
+| `0x90b150` | Water::Cell90B150 | In outline: a cell from a value's place within a range (+8 to +0x10), scaled by a count |
+| `0x852550` | Scenery::Bit852550 | In outline: a step with a bit from a count (+0xC) |
+| `0x851d60` | Scenery::Bit851D60 | In outline: the same (another copy) |
+| `0x83fda0` | Scenery::Rect83FDA0 | In outline: a terrain step over a byte rectangle |
+| `0x7ae5a0` | Terrain::Step7AE5A0 | In outline: a step when the terrain is not flagged |
+| `0x774620` | Park::Pass774620 | In outline: when given a value, goes over entries |
+| `0x44fba0` | Effects::Reset44FBA0 | In outline: when given an object, clears its flag (+0x100) and tells it (slot 0x30) |
+| `0x925830` | Water::Camera925830 | In outline: when on (+0x170) and the shared value is unset, a camera step |
+| `0x8e9520` | Water::Make8E9520 | In outline: sets up a record with its tables (`0xF7CCBC`) |
+| `0x881b80` | Scenery::Text881B80 | In outline: unless a flag is set (Flags::Bit0), makes a text |
+| `0x808340` | Regions::Copy808340 | In outline: copies an entry's values (+0x28 + n) |
+| `0x801a00` | Regions::Init801A00 | In outline: sets up a record with cleared values |
+| `0x9fb280` | Fireworks::Entry9FB280 | In outline: for entry n (0x90 bytes) with a slot (+0x6C), a step |
+| `0x98aec0` | Fireworks::Count98AEC0 | In outline: counts over the shared list (`0x10F0CE8`) |
+| `0x801d50` | Regions::Bytes801D50 | In outline: a step over a 16-byte buffer |
+| `0x709590` | Path::Make709590 | In outline: makes a record |
+| `0x876cd0` | Scenery::Make876CD0 | In outline: makes a 0x14-byte record |
+| `0x7bc9b0` | Person::Check7BC9B0 | In outline: a step when a value (`0x749B60`, `0x495220`) passes a count (+0x30) |
+| `0x7a6c70` | Terrain::Mode7A6C70 | In outline: when on (+0x538), sets a mode to 0xF (+0x190) and clears a value (+0x194) |
+| `0x750ea0` | Guest::Case750EA0 | In outline: a step by a mode (+0x18) |
+| `0x9e8ec0` | Fireworks::Time9E8EC0 | In outline: with a positive time (+8), a step (`0x9FBED0`) |
+| `0x973040` | Water::Step973040 | In outline: a step with many values |
+| `0x93cc50` | Water::Set93CC50 | In outline: clears a flag with no part (+4), else a step with its value (+0x30) |
+| `0x91f9a0` | Water::Grow91F9A0 | In outline: grows a list (ObjectArray::SetCapacity to +0x154) and fills it |
+| `0x8b09e0` | Scenery::Shared8B09E0 | In outline: a step (`0x682D50`) and once (`0x1311284`) more |
+| `0x85ad90` | Scenery::Make85AD90 | In outline: makes a part (`0x8E9480`) |
+| `0x83da90` | Scenery::Init83DA90 | In outline: sets up a record with its tables (`0xF77398`, `0xF77380`, `0xF77378`) |
+| `0x7a9270` | Terrain::Mode7A9270 | In outline: for an entry in mode 2 (+0x70), a handle step |
+| `0x90f770` | Water::Find90F770 | In outline: a find over entries (+0x4C, +0x54) |
+| `0x8dcb70` | Terrain::Step8DCB70 | In outline: a step when the terrain is not flagged |
+| `0x8dcaa0` | Terrain::Step8DCAA0 | In outline: the same (another copy) |
+| `0x840d90` | Scenery::Terrain840D90 | In outline: a step when the terrain is not flagged |
+| `0x73c240` | Guest::Terrain73C240 | In outline: a step with a value (+0x80) when the terrain is not flagged |
+| `0x92e070` | Water::Fraction92E070 | In outline: a value from n over a count minus one |
+| `0x882c10` | Scenery::Clear882C10 | In outline: tears down texts and more |

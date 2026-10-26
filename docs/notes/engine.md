@@ -2349,3 +2349,85 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc550b0` | Stream::MakeC550B0 | In outline: makes a record |
 | `0x981ee0` | Record::Make981EE0 | In outline: sets up a record with its table (`0xF7F6B8`) |
 | `0x6b0370` | Window::Make6B0370 | In outline: sets up a record with its tables (`0xF60640`, `0xF60794`) |
+| `0xc46300` | Table::WriteCDCL | In outline: writes a block marked "CDCL" (0x4C434443) with its count (+0x10) and entries (Writer::Write4) |
+| `0xc9fad0` | Batches::BuildC9FAD0 | In outline: for a value of at least 0.5, builds batches (Batches::BuildC9EF70) |
+| `0xbd2440` | List::LoopBD2440 | In outline: goes over a list (+0x4C) |
+| `0x9cd960` | Record::Fill9CD960 | In outline: fills a record from its arguments |
+| `0x9c1e10` | Window::Clear9C1E10 | In outline: clears a list (Array4::SetCapacity(0)) and acts with parts (+0xFC, +0x100) |
+| `0x802330` | Load::Step802330 | In outline: a load step (`0x809430`) |
+| `0x53c920` | Record::Make53C920 | In outline: makes a record |
+| `0x42b4b0` | Record::Make42B4B0 | In outline: makes a 0x78-byte record |
+| `0xcd3470` | Text::FindCD3470 | In outline: a find over a two-byte text |
+| `0xcd3390` | Text::FindCD3390 | In outline: the same (another copy) |
+| `0xcd39d0` | Text::FindCD39D0 | In outline: a text find |
+| `0xcd3150` | Text::FindCD3150 | In outline: a find over a C string |
+| `0xcd3070` | Text::FindCD3070 | In outline: the same (another copy) |
+| `0xcd5370` | Text::CompareCD5370 | In outline: compares a text with a C string |
+| `0xc63c70` | Record::MakeC63C70 | In outline: makes a 0x1C-byte record |
+| `0xbe3740` | Text::StepBE3740 | In outline: 0 for an empty text |
+| `0x98b360` | Record::Make98B360 | In outline: sets up a record with handles |
+| `0xcb8630` | Resource::MakeCB8630 | In outline: makes a part from its argument, or the shared one (`0x13E6F98`) |
+| `0xcb8420` | Resource::MakeCB8420 | In outline: the same with `0x13E6FA4` |
+| `0xc5cc70` | Device::LoopC5CC70 | In outline: goes over a list (+0x1C) |
+| `0x540610` | Text::Check540610 | In outline: a check with a 1024-character buffer |
+| `0x403780` | Record::Make403780 | In outline: when not flagged (+0x24), makes parts |
+| `0x403130` | Record::Make403130 | In outline: when not flagged (+0x1C), makes parts |
+| `0xbd77c0` | Text::BraceBD77C0 | In outline: for a text whose second character is '{', makes a record |
+| `0xbcc660` | Array::GrowBCC660 | In outline: makes a list one larger (0x24-byte entries) and copies the old one |
+| `0xbc30f0` | Memory::StepBC30F0 | In outline: a step with a value (+0x40) |
+| `0xb33e60` | Record::MakeB33E60 | In outline: sets up a record with its table (`0xF99120`) and a callback (`0xB32760`) |
+| `0x455fd0` | Record::Make455FD0 | In outline: sets up a record with cleared values |
+| `0x44a120` | List::Add44A120 | In outline: grows a list (double) when full and adds a 0x30-byte record |
+| `0x40cbc0` | List::Loop40CBC0 | In outline: a loop over entry n (0x70 bytes) |
+| `0xc96610` | Device::IndexC96610 | In outline: makes an index buffer the size of a sum (Text::SumBD70B0) |
+| `0xc751b0` | Device::IndexC751B0 | In outline: the same (another copy) |
+| `0xc6fc70` | Device::IndexC6FC70 | In outline: the same (another copy) |
+| `0xbe4450` | Record::MakeBE4450 | In outline: sets up a record with its table (`0xF270D4`) and a slot of -1 |
+| `0x968290` | List::Add968290 | In outline: adds an entry, growing (100 at first) when full |
+| `0x9651d0` | List::Add9651D0 | In outline: the same with +0x10, +0x14 |
+| `0x81dac0` | Record::Copy81DAC0 | Copies a record's values from another |
+| `0x762860` | List::Copy762860 | In outline: copies a list |
+| `0x49bae0` | List::Copy49BAE0 | In outline: the same (another copy) |
+| `0xcc2b50` | Table::FreeSlotCC2B50 | In outline: finds a free slot among 0x400 |
+| `0x851970` | Array::Make851970 | In outline: sets up three 0xC-byte entries |
+| `0x808f40` | Load::Read808F40 | In outline: reads eight-byte values from a saved block (Load::ReadBytes) |
+| `0xc060f0` | Record::InitC060F0 | In outline: sets up a record pointing at its own storage |
+| `0xbe5140` | Module::StepBE5140 | In outline: a module step (ModuleList::Run, Error::ThrowIf) |
+| `0xa39bb0` | Record::MakeA39BB0 | In outline: makes a record |
+| `0x9d6f70` | Record::Make9D6F70 | In outline: sets up a record with an empty text |
+| `0x809430` | Text::Make809430 | In outline: makes a text record |
+| `0x4178d0` | Array::Resize4178D0 | In outline: resizes a list to n |
+| `0xcc1ab0` | Shader::MakeCC1AB0 | In outline: fills a record from its arguments |
+| `0xc70620` | Device::StagesC70620 | In outline: sets texture stages from a count up to 4 (slot 0x10C) |
+| `0xbd33a0` | List::LoopBD33A0 | In outline: goes over entries (+0xC) |
+| `0xc56d80` | Stream::MakeC56D80 | In outline: makes a 0x104-byte part |
+| `0xbd0640` | Text::MakeBD0640 | In outline: makes a text record |
+| `0xbd0350` | Text::MakeBD0350 | In outline: the same (another copy) |
+| `0xbc9490` | Memory::StepBC9490 | In outline: a step with many values |
+| `0x98b000` | Record::Make98B000 | In outline: sets up a record with handles |
+| `0x9650e0` | List::Add9650E0 | In outline: adds an entry, growing (100 at first) when full |
+| `0x42d400` | List::Pass42D400 | In outline: goes over entries (+8) |
+| `0xcd3620` | Text::FindCD3620 | In outline: a text find |
+| `0xcd3900` | Text::FindCD3900 | In outline: the same (another copy) |
+| `0xcd1450` | Table::StepCD1450 | In outline: a step (`0xCD0C60`) |
+| `0xcb2fa0` | ShaderFile::FindCB2FA0 | In outline: a find by a value (`0xCF6B63`) in a list (+0x24) |
+| `0xcb2ec0` | ShaderFile::FindCB2EC0 | In outline: the same with +0x14 |
+| `0xbffdc0` | Device::StepBFFDC0 | In outline: when not flagged (+0x21C), a step (slot 0x20) and 0 |
+| `0xc463f0` | ShaderFile::CheckC463F0 | In outline: 0 unless a count matches (+8) |
+| `0xbd62e0` | Record::MakeBD62E0 | In outline: sets up a record with its table (`0xFA5338`) |
+| `0xcbe430` | Shader::InitCBE430 | In outline: clears values and an empty text |
+| `0xc43d10` | Resource::LoopC43D10 | In outline: goes over entries (+0x24) |
+| `0xc3b3c0` | Resource::SlotC3B3C0 | In outline: a step for slot n under a count (+0x2C) with a part (+0x6C) |
+| `0xc0aee0` | Parser::MakeC0AEE0 | In outline: makes a parser node (Parser::Allocate(4, 0xC)) |
+| `0xbd0ce0` | Text::MakeBD0CE0 | In outline: makes a text record |
+| `0xcadb10` | ResourceFile::SlotCADB10 | In outline: a step for a non-negative slot |
+| `0xc3ac00` | Resource::FindC3AC00 | In outline: a search over entries (+0x2C) |
+| `0xc0d640` | Text::StepC0D640 | In outline: a step with two texts |
+| `0xc0ba00` | Parser::MakeC0BA00 | In outline: sets up a node with its table (`0xFAFAAC`) |
+| `0xce59b0` | NamedObject::PartCE59B0 | In outline: sets up a record with its table (`0xFC7FAC`) |
+| `0xcc5380` | Shader::StepCC5380 | In outline: a shader step (`0xCC4820`, GetC) |
+| `0xc5c060` | Device::CountC5C060 | In outline: a count over entries (+0x24) |
+| `0xc57040` | Stream::MakeC57040 | In outline: makes a 0x12C-byte part |
+| `0xc43840` | Array::GrowC43840 | In outline: grows a list of four-byte entries to hold n |
+| `0xc21520` | Curves::StepC21520 | In outline: past a count (+0x34) with a value under 1, makes a record |
+| `0x9d2910` | Record::Make9D2910 | In outline: makes a 16-byte record |
