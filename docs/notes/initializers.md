@@ -940,3 +940,7 @@ and leaves it with `0x46F990`). See the script for how they are recognised.
 | `0xee1010` | Init::SharedEE1010 | In outline: sets a shared value (`0x133A104`) from a scaled one (`0xC21230`) at start-up |
 | `0xef2ac0` | Init::ModulesEF2AC0 | In outline: starts the module list (ModuleList::Start) at start-up |
 | `0xef3070` | Init::CpuSseEF3070 | Sets a shared flag (`0x13D2888`) when the CPU has SSE (cpuid 1, EDX bit 25) |
+| `0xf13820` | Init::ShaderTableF13820 | At start-up, sets up a shared table with a compare function (Shader::CompareCC4F80) and registers its clean-up at exit |
+| `0xf044c0` | Init::ShaderTableF044C0 | The same with Shader::CompareCC3EB0 |
+| `0xf04490` | Init::ShaderTableF04490 | The same with Shader::CompareCC2D40 |
+| `0xf04320` | Init::ShaderTableF04320 | The same with `0xCC1880` |

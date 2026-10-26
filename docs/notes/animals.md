@@ -1365,3 +1365,107 @@
 | `0xa63c00` | Animal::CountA63C00 | In outline: a step with a count (+0x1F0) less one |
 | `0xa45180` | Window::CaseA45180 | In outline: a value by case |
 | `0xa04c20` | Bird::InitA04C20 | In outline: sets up a record with its table (`0xF86EA4`) pointing at itself |
+| `0xa6c9e0` | Animals::PassA6C9E0 | In outline: goes over entries (+0x10) |
+| `0xa539a0` | Animals::PassA539A0 | In outline: goes over entries (+0x10) |
+| `0xa1f980` | Animals::MakeA1F980 | In outline: makes a 0x8-byte part |
+| `0xb82870` | Animals::PassB82870 | In outline: goes over entries (+0x8) |
+| `0xa1dc90` | Animals::InitA1DC90 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0xb17c50` | Animals::ListB17C50 | In outline: a step with a list (+0x94) |
+| `0xa3e7c0` | Animals::InitA3E7C0 | In outline: sets up a record with its table (`0xF8A378`) |
+| `0xb34cb0` | WildAnimal::RandomB34CB0 | In outline: a random check with a scaled count (+0xE0) |
+| `0xb1cea0` | Animal::FindB1CEA0 | In outline: a find (Animal::FindB848F0) and adds (Animal::AddB84800) |
+| `0xac94a0` | Graph::EntryAC94A0 | In outline: a firework entry step (Fireworks::Entry9A3140) and an index (Animal::IndexAC8900) |
+| `0xaabd40` | PoolComplex::CheckAABD40 | In outline: a step when a check passes (Animals::CheckAC5FA0) |
+| `0xa0d670` | Bird::RingA0D670 | In outline: a step with a ring buffer's entry |
+| `0xb74da0` | Effect::StepB74DA0 | In outline: a step with values |
+| `0xb5eaa0` | Effect::StepB5EAA0 | In outline: the same (another copy) |
+| `0xb5b230` | Animal::CheckB5B230 | In outline: with a part (+0x120), a check (slot 0x110) |
+| `0xb3b450` | WildAnimal::TargetB3B450 | In outline: a target check (Animal::TargetB54AE0) with an object (`0x13CEA98`) |
+| `0xb1fa80` | WildAnimal::MakeB1FA80 | In outline: makes a part with an interface (Interface48::Get) |
+| `0xaf7800` | Animal::InitAF7800 | In outline: clears a record |
+| `0xba9500` | Track::ValueBA9500 | In outline: one less a scaled count (+0xCC), at least 0 |
+| `0xb1f6e0` | WildAnimal::SetPointB1F6E0 | In outline: copies a point into its values (+0xB0 on) |
+| `0xb169a0` | Animal::LinkB169A0 | In outline: a link step (Guest::Link73E520) and sets a flag (+0x110) |
+| `0xa91a60` | Fence::NextA91A60 | In outline: an update (Fence::UpdateAAF4E0) and the next (Fence::NextAAF680) |
+| `0xa0bc30` | Bird::FreeA0BC30 | In outline: a table step (Table::Entry409C80 on +0x54) and frees when asked |
+| `0xb6b6e0` | Effect::CycleB6B6E0 | Moves a value (+0x298) to the next of three and acts (slot 0x14) |
+| `0xb1fa50` | WildAnimal::AddB1FA50 | Adds n to a value (+0xE8) and acts |
+| `0xb12b40` | Animal::SharedB12B40 | In outline: with a shared object (`0x1106C54`), copies its value (+0x48) into +0x1CC |
+| `0xaae210` | PoolComplex::CheckAAE210 | In outline: 1 when on (+0x1C0), else a check |
+| `0xaae1e0` | PoolComplex::CheckAAE1E0 | In outline: the same (another copy) |
+| `0xaae1b0` | PoolComplex::CheckAAE1B0 | In outline: the same (another copy) |
+| `0xaae180` | PoolComplex::CheckAAE180 | In outline: the same (another copy) |
+| `0xaae080` | PoolComplex::MoveAAE080 | Adds two values to a position (+0x128, +0x12C) and acts |
+| `0xaa9dd0` | PoolComplex::RandomAA9DD0 | In outline: a random check against a value (+0x1C) |
+| `0xaa4920` | PoolPiece::SidesAA4920 | In outline: a pool piece's sides (PoolPiece::SidesAA3970) and copies a value (+0x218 into +0x164) |
+| `0xaa3210` | PoolPiece::SameAA3210 | In outline: whether two pool pieces match (byte, +4, +8) |
+| `0xa9f110` | PoolComplex::EntryA9F110 | In outline: a step with a table entry (IndexedTable::Entry) |
+| `0xa96e10` | Animal::CaseA96E10 | In outline: a value by case (1, ...) |
+| `0xb9abf0` | Animal::CellB9ABF0 | In outline: a value for a cell (row times a width plus column) |
+| `0xb61580` | WildAnimal::ResetB61580 | In outline: sets a slot to -1 (+0x60) and clears a value (+0x74) |
+| `0xa972c0` | Animal::FindA972C0 | In outline: a find (Animal::FindA96DA0) and fence pieces (Fence::PiecesAAD930) |
+| `0xa96e60` | Animal::CaseA96E60 | In outline: a value by case |
+| `0xa558b0` | Window::FilesA558B0 | In outline: with a part (+0xE8), finds campaign files (Campaign::FindFiles) |
+| `0xa38f40` | Animal::ReleaseA38F40 | In outline: releases a part (+0x54) |
+| `0xb557d0` | Animal::ObjectB557D0 | In outline: steps with an object (`0x13CEA98`) |
+| `0xb01100` | Window::RefreshB01100 | In outline: refreshes (Window::Refresh6AFC20) |
+| `0xb010d0` | Window::LayoutB010D0 | In outline: lays out (Window::Layout) |
+| `0xaae260` | PoolComplex::SlotAAE260 | In outline: with a slot (+0x13C), a step (`0xA9EF40`) |
+| `0xa62d60` | Animal::ListA62D60 | In outline: when asked, points a list (+0x48) at its own storage (+0x50) |
+| `0xa5a730` | Window::InitA5A730 | In outline: fills a record with 0xF0 and -1 |
+| `0xb82840` | Animal::FreeB82840 | In outline: with a part, clears it (Track::ClearBBCDC0) and frees when asked |
+| `0xa88340` | Animal::SharedA88340 | In outline: with no shared value (`0x1305DD8`), a step |
+| `0xa51d60` | Window::TextA51D60 | In outline: a scenario text (Scenario::LookupText) |
+| `0xa28df0` | Window::BytesA28DF0 | Gives two bytes (+0x98, +0x99) as values |
+| `0xa28a10` | Window::DartsA28A10 | In outline: darts effects (Darts::Effects on +0x30) and more |
+| `0xa0dea0` | Bird::MoveA0DEA0 | In outline: moves an object in a tree (QuadTree::Move) by its slot (+0xE8) |
+| `0xb7a3f0` | Animal::ResetB7A3F0 | In outline: when on (+0x40), clears a value (+0x64) |
+| `0xb34ac0` | WildAnimal::CheckB34AC0 | In outline: a step (slot 8 with -1, 0) and a check (WildAnimal::CheckB478C0 with 0x15) |
+| `0xaadf90` | PoolComplex::EntryAADF90 | In outline: for an object that is flagged, entry n (8 bytes at +0xA0) by its byte |
+| `0xa9ef10` | PoolComplex::FlagA9EF10 | In outline: for n not negative, sets entry n's flag (0x2C bytes at +0x30) |
+| `0xa7aef0` | Animal::StepA7AEF0 | In outline: a step (Animal::StepA84D20) with an object's part |
+| `0xa5a6a0` | Window::CaseA5A6A0 | In outline: a value by case (0x14, ...) |
+| `0xb6b490` | Effect::CallB6B490 | In outline: with a count (+0x104), a call (its first slot) with its stack |
+| `0xb5b4c0` | Effect::CallB5B4C0 | In outline: the same (another copy) |
+| `0xac54e0` | Graph::SameAC54E0 | In outline: whether two records are both of kind 4 and flagged |
+| `0xa475b0` | Window::PartA475B0 | In outline: with a part (+0x3C), a step with n (slot 8) |
+| `0xa3b660` | Window::RefreshA3B660 | In outline: sets a flag (+0x185) and refreshes (Window::RefreshA3AA10) |
+| `0xb90c40` | Animal::SceneryB90C40 | In outline: a scenery step (Track::SceneryBA7380) with an object |
+| `0xb83350` | Animal::SetPointB83350 | In outline: copies a point into its values (+0x54 on) |
+| `0xb55f40` | Animal::RoundB55F40 | In outline: a rounded value |
+| `0xae1100` | Animal::SlotAE1100 | In outline: gives slot n's part (+8) |
+| `0xaae400` | PoolComplex::ThirdAAE400 | Whether n is positive and divisible by 3 |
+| `0xaa9f70` | PoolComplex::RandomAA9F70 | In outline: a random check against a value (+0x1C) |
+| `0xaa3590` | PoolComplex::SharedAA3590 | In outline: with a shared value (`0x10EDCC8`) and no shared object (`0x13429A8`), a step |
+| `0xa97180` | Animal::IsA97180 | When flagged (bit 3 of +0x88), whether n equals a value (+0x7C) |
+| `0xa88370` | Animal::AddA88370 | Adds n to a value (+0x50) and acts |
+| `0xa415f0` | Window::TextA415F0 | In outline: a scenario text step (Window::TextA51D60) |
+| `0xa2e8e0` | Window::UpdateA2E8E0 | In outline: an update (Window::UpdateA2E430) |
+| `0xa2e8b0` | Window::UpdateA2E8B0 | In outline: an update (Window::UpdateA2E2D0) |
+| `0xb98d50` | Animal::CheckB98D50 | In outline: a step when a value (slot 0x14) is set |
+| `0xb615b0` | WildAnimal::StepB615B0 | In outline: a step with a value (`0xB2E960`) |
+| `0xb2e940` | WildAnimal::DiffB2E940 | In outline: a step when two values differ by more than a limit |
+| `0xb0e0f0` | Animal::GrowB0E0F0 | In outline: grows (Array::ResizeB0DEF0) when n passes a count (+8) |
+| `0xb08c50` | Animal::CheckB08C50 | Whether on (+0x100) and not flagged (bit 3 of +0xA8) |
+| `0xb00e50` | Window::LayoutB00E50 | In outline: lays out (Window::Layout) |
+| `0xa86f60` | Animal::OwnerA86F60 | In outline: with its owner (SceneryBehaviour::Owner), a step |
+| `0xa517a0` | Window::FindA517A0 | In outline: a find over entries (+0x10) |
+| `0xa50620` | Window::PartA50620 | In outline: with a part (+0x40), a step (Window::Assign9BEAD0) |
+| `0xa1adb0` | Bird::CountA1ADB0 | In outline: a count with a part (+0x84) |
+| `0xb88460` | Animal::CheckB88460 | In outline: when a check (Animal::CheckB87F70) gives n, a step |
+| `0xb6b650` | Effect::CheckB6B650 | In outline: a step when a part's check passes (+0x68, slot 0x114) |
+| `0xb46ed0` | WildAnimal::ReleaseB46ED0 | In outline: takes one from a count and frees at zero |
+| `0xb341e8` | WildAnimal::FragmentB341E8 | In outline: a fragment that tears down (Destructor) |
+| `0xa35250` | Animal::ReleaseA35250 | In outline: releases a part (+4) |
+| `0xa1f820` | Bird::AssignA1F820 | In outline: when a value differs, a step |
+| `0xa1dfe0` | Window::TutorialA1DFE0 | In outline: when flagged (bit 0 of +0x80), loads tutorial steps (Tutorial::LoadSteps) |
+| `0xa174e0` | Bird::DeadZoneA174E0 | In outline: a dead-zone step (Vector::DeadZone) |
+| `0xa0ef70` | Bird::InitA0EF70 | In outline: clears a record |
+| `0xaf08c0` | Animal::CheckAF08C0 | Whether one flag is on (+0x95) and another off (+0x96) |
+| `0xa9ef40` | PoolComplex::EntryA9EF40 | In outline: for n not negative, a step with entry n (0x2C bytes at +0x30) |
+| `0xa96ec0` | Animal::IsA96EC0 | Whether a positive value (+0x90) equals n |
+| `0xa96ea0` | Animal::IsNotA96EA0 | Whether a positive value (+0x90) differs from n |
+| `0xacc260` | Graph::PartACC260 | In outline: with a part (+0x130), a step |
+| `0xa20930` | Bird::MakeA20930 | In outline: with a part (+0x84), makes a record (Record::MakeA1EA60) |
+| `0xa1f7f0` | Bird::ReleaseA1F7F0 | In outline: releases a part (+4) |
+| `0xb0e0d0` | Animal::SharedB0E0D0 | In outline: a step with a shared table (`0x10F274C`) and a value (+0x10) |

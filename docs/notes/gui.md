@@ -2136,3 +2136,83 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6554d0` | Window::Part6554D0 | In outline: with a part (+0x100), a value |
 | `0x63d4b0` | Window::Set63D4B0 | In outline: sets a value (+0x24) when it changes and acts with a part (+0x20) |
 | `0x5fcae0` | Window::Flags5FCAE0 | In outline: clears a flag (+0x154) and adds flags (+0x140) into a part (+0x13C) |
+| `0x6fd260` | Gui::List6FD260 | In outline: a step with a list (+0x4C) |
+| `0x66c6f0` | Gui::Release66C6F0 | In outline: takes one from a count (+0x8) and frees at zero |
+| `0x66b330` | Gui::Release66B330 | In outline: takes one from a count (+0x8) and frees at zero |
+| `0x6defb0` | Gui::Make6DEFB0 | In outline: makes a 0x10-byte part |
+| `0x701910` | Window::Nth701910 | In outline: a list step (Window::List700E90) and the nth entry (Window::Nth6FDD50) |
+| `0x6acd70` | Window::Scale6ACD70 | In outline: sets a value (+0x8C) from a scaled point (Window::Scale6ACBD0) |
+| `0x6ab170` | Window::Step6AB170 | In outline: a step with a work value |
+| `0x62e810` | Window::Terrain62E810 | In outline: a terrain step (Terrain::Get, `0x8D30D0`) |
+| `0x62e790` | Window::Terrain62E790 | In outline: the same (another copy) |
+| `0x70b6f0` | Grid::Case70B6F0 | In outline: a case step (Window::Case701F50) and acts when its part (+0x148) is current |
+| `0x6a1ed0` | Window::Check6A1ED0 | In outline: when flagged (0x80 of +0x140), checks a box (Window::SetChecked) from a flag (+0x160) |
+| `0x69efa0` | Window::Layout69EFA0 | In outline: lays out (Window::Layout) and a step with its owner (slot 0xC0) |
+| `0x69e990` | Window::Flag69E990 | In outline: sets or clears a flag (0x400000 of +0x94) |
+| `0x66c6c0` | Window::Compare66C6C0 | In outline: a step when two texts match (Text::CompareCD5640) |
+| `0x467780` | Window::Loop467780 | In outline: a loop (Window::Loop6B0740) and acts with a part (+0xE4) |
+| `0x6a0c50` | Window::Slot6A0C50 | In outline: with a slot (+0xD8), a step |
+| `0x682800` | Window::Screen682800 | In outline: a screen position (Window::ScreenPosition) and points |
+| `0x62e460` | Window::Shared62E460 | In outline: with a shared object's part (`0x12F4620` +0x58), takes it (Window::Take484780) |
+| `0x7018e0` | Window::List7018E0 | In outline: a list step (Window::List700E90) and acts when on (+0xE4) |
+| `0x6ea040` | Window::Panel6EA040 | In outline: a panel step (Panel::ChildrenSlot2ThenRelate) and acts when flagged |
+| `0x6c3650` | Window::Init6C3650 | In outline: fills a record from an object (slot 0xC) |
+| `0x6c7fd0` | Window::Kind6C7FD0 | In outline: a value from an object's kind (+0x58) |
+| `0x6a2bb0` | Window::Set6A2BB0 | Sets a value (+0xE4) and a flag (0x1000000 of +0x94) |
+| `0x6ed2e0` | Window::Text6ED2E0 | In outline: a text (Window::Text6EB620) and makes a part (Gui::Make6ECF90) |
+| `0x6428e0` | Window::Key6428E0 | In outline: for key 0x1B (escape), lays out (Window::Layout) |
+| `0x62e7c0` | Window::Terrain62E7C0 | In outline: when the terrain is on (+0x5D), a step |
+| `0x6a9570` | Window::Event6A9570 | In outline: tells a part (+0xD4, slot 4 with 0x24) and acts when on (+0xEC) |
+| `0x6a4b10` | Window::Set6A4B10 | In outline: sets a value (+0xE0) and lays out (Window::Layout6A4820) |
+| `0x68d7a0` | Window::Shared68D7A0 | In outline: with a shared value (`0x1305BE4`) of -1, a step (`0x69B140`) |
+| `0x685ba0` | Window::Slot685BA0 | In outline: gives slot n's part (+0x580 by +0x278) |
+| `0x685b70` | Window::Slot685B70 | In outline: the same with +0x578 |
+| `0x67b910` | Window::Handle67B910 | In outline: a step with a handle (`0xF50614`) |
+| `0x631c20` | Window::Step631C20 | In outline: a step with the largest float |
+| `0x62b0b0` | Window::Part62B0B0 | In outline: with a part (+0x2F0), a step with a value (+0x2F4) |
+| `0x6ef4a0` | Window::Value6EF4A0 | In outline: 3 with a part (+0x38), else another value |
+| `0x6d44f0` | Window::Case6D44F0 | In outline: for kind 7 with its own value (+0xE4), a step |
+| `0x6c3940` | Window::Value6C3940 | In outline: a value with a part (+0x44), none handled |
+| `0x6854f0` | Window::Step6854F0 | In outline: a step (Window::Step642700) and acts when on (+0x2CC) |
+| `0x672350` | Window::Entry672350 | In outline: gives entry n's part (0x4C bytes at +0x10) |
+| `0x65bbe0` | Window::Release65BBE0 | In outline: releases a part and frees when asked |
+| `0x6e1e40` | Window::Slot6E1E40 | In outline: gives slot n's part (+0x80) |
+| `0x6b26e0` | Window::Free6B26E0 | In outline: sets its table (`0xF60C64`), a step (`0xBD3170`) and frees when asked |
+| `0x6aba30` | Window::Part6ABA30 | In outline: with a part (+0x13C), a step |
+| `0x6a4ab0` | Window::Value6A4AB0 | In outline: a value from a part's part when flagged (bit 22) |
+| `0x6854a0` | Window::Set6854A0 | In outline: a step (slot 0xF0 with 4.0) and acts with a part (+0x3C) |
+| `0x682d80` | Window::Size682D80 | In outline: gives a size from its edges (+0xEC, +0xFC, ...) |
+| `0x682d50` | Window::Size682D50 | In outline: the same with +0xF4 |
+| `0x681330` | Window::Pass681330 | In outline: passes n to a part (+0xD4, slot 0xF4) |
+| `0x648710` | Window::Pass648710 | In outline: a step (Window::Slot48Self) and a pass (Park::Pass774340) |
+| `0x544570` | Window::Children544570 | In outline: children (Window::Children67ACA0) and acts with a part (+0x140) |
+| `0x483d80` | Window::List483D80 | In outline: a step with a list |
+| `0x477ea0` | Window::Make477EA0 | In outline: makes a part and a step (`0x6ACAC0`) |
+| `0x6e6740` | Window::Step6E6740 | In outline: a step with two values (+0xC, +0x18) |
+| `0x68d560` | Window::Offset68D560 | In outline: a value from parts' values less another (+0xFC) |
+| `0x65bd00` | Window::Part65BD00 | In outline: with a part (+0x20), a step |
+| `0x63d280` | Window::Part63D280 | In outline: the same (another copy) |
+| `0x5fb220` | Window::Shared5FB220 | In outline: a shared step (Window::Shared6B2D00) and sets inactive (Updatable::SetActive2) |
+| `0x6f0e70` | Window::Text6F0E70 | In outline: a find (Text::FindBCEC90) with a wild animal value (WildAnimal::ValueB44EF0) |
+| `0x6c3e40` | Window::Check6C3E40 | In outline: for none, a step |
+| `0x6a66e0` | Window::Take6A66E0 | In outline: with a part (+0x70), takes it (Window::Take6A65B0) |
+| `0x69ef40` | Window::Set69EF40 | In outline: sets a value (+0x570) and acts unless flagged (bit 22) |
+| `0x655430` | Window::Children655430 | In outline: children (Window::ChildrenSlot2) and goes over entries |
+| `0x617590` | Window::Free617590 | In outline: with a buffer (+0x1C), frees it |
+| `0x6d60c0` | Window::Slot6D60C0 | In outline: when on (+0x54), a slot step (Window::Slot6C8030) |
+| `0x6c8000` | Window::Slot6C8000 | In outline: for an object's slot under 5 (+0x58) that is this one, a step |
+| `0x6ad600` | Window::Flag6AD600 | In outline: sets a flag (0x800 of +0x94) and acts with its parent (+0x3C) |
+| `0x675550` | Window::Clear675550 | In outline: empties a list |
+| `0x673ac0` | Window::Clear673AC0 | In outline: empties a list |
+| `0x630360` | Window::SetPoint630360 | In outline: copies a point into its values (+0xF0 on) |
+| `0x62c750` | Window::Check62C750 | In outline: a step when a check fails (slot 0xFC) |
+| `0x6a9550` | Window::Sound6A9550 | In outline: releases a GUI sound (Sound::GUIBRelease) and tells a part (+0xD4, slot 4 with 0x23) |
+| `0x6a0740` | Window::Interface6A0740 | In outline: with an interface (`0x1305C18`), a step |
+| `0x680a40` | Window::Screen680A40 | In outline: a screen step (Window::Screen690B70) and sets a flag (+0x340) |
+| `0x67b980` | Window::Interface67B980 | In outline: with an interface (`0x12F8218`), a step |
+| `0x630a80` | Window::Make630A80 | In outline: makes a part and lays out (Window::Layout) |
+| `0x62e5b0` | Window::Step62E5B0 | In outline: a step with a value (+0x144) |
+| `0x9bbdf0` | Window::Rect9BBDF0 | In outline: a rectangle step (Window::Rect6A41D0) |
+| `0x9f5fe0` | Window::Flag9F5FE0 | In outline: a flag step (Window::Flag6A2BE0) with work values |
+| `0x680140` | Window::Reset680140 | In outline: a set step (Window::Set6876F0) and clears a shared value (`0x1103C58` +0x2DC) |
+| `0x67a940` | Window::Copy67A940 | In outline: copies values into a part (+0xF0, +0xE4 on) |
