@@ -470,3 +470,13 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xccf100` | Vertices::ColourCCF100 | In outline: writes colours into a list of vertices, four at a time |
 | `0x938e90` | Water::DrawStrip938E90 | In outline: builds a water piece's strip (Water::Strip938720) and draws it for the current device (ForCurrent(0)) |
 | `0x474580` | Draw::Box474580 | In outline: draws a box with its colour (values scaled into bytes) with the shared line drawer (Registry::Ensure, `0x481790`) |
+| `0xbd44d0` | Text::SetSizeBD44D0 | In outline: when a text's size changes (+0x50, +0x54), rebuilds its buffer for the current device (ForCurrent(3)) |
+| `0x998ef0` | FireworkLauncher::DebugDraw | In outline: draws a launcher's shot path (FireworkLauncher::FindSlots_(2), `0x409370`) with the shared line drawer (Registry::Ensure) for the selected one |
+| `0xbf1c40` | Text::LayoutBF1C40 | In outline: lays out a text's characters until the end |
+| `0x431fd0` | Effects::Update431FD0 | In outline: goes over a list of effects (+0x10) updating the shown ones, measuring their distances, unless the global flag `0x1400306` is set |
+| `0xc6fdb0` | Effect::SetByKindC6FDB0 | In outline: another set-by-kind like Effect::SetByKindC75310 |
+| `0xbf1600` | Text::LayoutBF1600 | In outline: another text layout like Text::LayoutBF1C40 |
+| `0xca1530` | Font::RenderGlyphs | In outline: draws a font's characters into a bitmap with Windows (TextOutA at the middle of each cell) and keeps the cells that have pixels |
+| `0xc31c70` | Mesh::FillC31C70 | In outline: fills a mesh's buffers (`0xC31770`) for a count, copying four values at a time |
+| `0x998630` | Fireworks::Aim998630 | In outline: aims a firework at the point under the mouse (MainCamera::Get, `0xCD79C0`), normalising its direction (+0x1E8) |
+| `0x4833d0` | Lights::Find4833D0 | In outline: finds the free light slots of a list and clears a 0x27-entry table |

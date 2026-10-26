@@ -458,3 +458,14 @@
 | `0x5db4e0` | TrackedRide::Walk5DB4E0 | In outline: walks a ride's track pieces until the end (+0x14 vs +0xC +0x20) when not flagged (+0x18C) |
 | `0x872210` | Scenery::Kind1A872210 | In outline: unless off (Flags::Bit0), handles a scenery item of kind 0x1A |
 | `0x79b5d0` | Path::Distance79B5D0 | In outline: the distance along the path from a point (PathManager, `0x71B370`) on the terrain |
+| `0x4ef280` | Ride::PlaceAt4EF280 | In outline: places a ride or shop by its kind (+0x144: 0, ...) at a scenery footprint's centre (SceneryItem::FootprintCentre), pointing it (Matrix::LookAlongZ) unless flagged (+0x1A7) |
+| `0x8b4b70` | Path::Distance8B4B70 | In outline: another distance along the path like Path::Distance79B5D0 |
+| `0x4f5530` | Ride::Finish4F5530 | In outline: finishes a ride's placement when it has a part (+0x5D0): refreshes (`0x5D1F20`, `0x4F3980`) and for kind 4 with a piece (+0x660) sets its defaults (Settings5D::Defaults) |
+| `0xa03630` | Terrain::FlagsA03630 | In outline: goes over terrain cells checking a flag (bit 8 of +0x12, 0x18 bytes each) over the terrain (a 90 by 90 grid) |
+| `0x559400` | Ride::Check559400 | In outline: a ride's check when not flagged (+0x18) |
+| `0x4d3440` | Ride::Act4D3440 | In outline: acts on a ride by its mode (+0xB0) when its part allows it (slot 0x108) |
+| `0x557ee0` | Ride::Cells557EE0 | In outline: the terrain cells a ride part covers (Grid::CellAt from its position) for its pieces (+0x98) |
+| `0x83b480` | Scenery::Resize83B480 | In outline: when a scenery grid's size changes (+0, +4), releases its old parts (+0x2C) and makes new ones |
+| `0xa9a030` | GridTool::PickA9A030 | In outline: another cell-under-the-mouse pick like GridTool::CellUnderMouse (MainCamera::Get, `0xCD79C0`) on the terrain |
+| `0x847870` | Scenery::Check847870 | In outline: a scenery check: passes when off (`0x10EDC68`) or its own check passes (slot 0x44), otherwise checks the terrain |
+| `0x586b40` | Shop::Refresh586B40 | In outline: when not flagged (+0x1EC), refreshes a shop's items for each of four turns (`0x4D0CB0` with 4) |

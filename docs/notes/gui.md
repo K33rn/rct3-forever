@@ -697,3 +697,8 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x747fe0` | AvatarEditor::Layout747FE0 | In outline: lays out the avatar editor's parts (`0xA455D0`, `0xA45310` with 300 by 250, `0xA457A0`, `0xA45700`) |
 | `0x63eed0` | Options::ResolutionText | In outline: makes the text of a screen size, `%d x %d` from its width and height (+0x48, +0x4C), for mode 1 |
 | `0x81f5c0` | SceneryBehaviour::Text81F5C0 | In outline: makes a scenery behaviour's text by its owner's case (SceneryBehaviour::Owner) |
+| `0xa3aa10` | Window::RefreshA3AA10 | In outline: when flagged (+0x189), refreshes a window (`0x673AC0`) from the install folder text (`0x1106DC4`) |
+| `0xa5e8a0` | Window::BuildA5E8A0 | In outline: builds a window from the shared title `0x134299C` |
+| `0xae2830` | Window::DrawAE2830 | In outline: draws a window's frame (`0x6ACE50`) and, when it has height, its background (GUIRenderer, `0x694E90`), with a case for narrow ones |
+| `0x449580` | GUI::Setup449580 | In outline: sets up a GUI renderer with a 40000-byte buffer and its matrices (`0xCD78A0`) |
+| `0x69d5a0` | List::FillTexts69D5A0 | In outline: when it has no handler, fills a list's texts from a counted buffer (Memory::AllocCounted, WideString::FromWide) |

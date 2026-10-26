@@ -1516,3 +1516,11 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc18df0` | Stream::OpenC18DF0 | In outline: opens a stream for a path (Path::SplitRecursive) and starts its request (`0xC55050`, `0xC501D0`) |
 | `0xbe1bd0` | VertexDeclaration::FindBE1BD0 | In outline: the slot for a vertex element in a declaration (from +0x1C1E), or by its kind (+4: 0, ...) |
 | `0x46b980` | Movies::FindWmv | In outline: lists the `*.wmv` files of a folder (`0xBE5570`) |
+| `0xbda190` | File::ReadFGR | In outline: reads a file that starts with the letters `FGR` and its version bytes (`0xBE5020`) |
+| `0x7884b0` | List::Grow7884B0 | In outline: adds an entry to a list (+0x184, +0x188), growing it (`0x787DC0`) when full |
+| `0x7fcc30` | Files::Find7FCC30 | In outline: lists files matching a pattern (`0xBE5570`) |
+| `0xac3600` | Names::UniqueAC3600 | In outline: makes a unique name for a new thing (`0xAC2BC0`) by adding a number to its text |
+| `0x739bc0` | Names::Unique739BC0 | In outline: the same unique name maker for another kind of thing (`0x738540`) |
+| `0x731970` | Names::Unique731970 | In outline: the same unique name maker for another kind of thing (`0x730AA0`) |
+| `0xc59170` | Stream::ReadLinesC59170 | In outline: reads lines from a stream while not done (+0x14), joining their characters (`0x7FBFF0`, String::Append) |
+| `0x4c0850` | Info::Text4C0850 | In outline: makes an info text from its parts (+0x6C), with more than two characters and two parts handled |

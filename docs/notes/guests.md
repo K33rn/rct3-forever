@@ -150,3 +150,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x776600` | Guest::LookAt776600 | In outline: whether a guest looks at a thing: the same one as its target (+0xAC), turned by its angle (+0x70) |
 | `0x7771f0` | Guest::Update7771F0 | In outline: a guest's update when not flagged (+0x1BC) with a target (+0x1B8), in state 0xB (+0x7C) and others |
 | `0x72e7c0` | Path::Refresh72E7C0 | In outline: refreshes a path piece's parts (`0x42E8B0`) unless flagged (+0x8C) |
+| `0x7f4f10` | Guest::PickRandom7F4F10 | In outline: picks one of two things at random for a guest of kind 0 or 1 (Random::Ran0) |

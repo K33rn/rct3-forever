@@ -208,3 +208,4 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x9084e0` | Water::Cell9084E0 | In outline: the water cell of a point within a grid of pieces (+0, edges checked) |
 | `0xc617f0` | Particles::EmitC617F0 | In outline: when moving (+0xBC), launches up to four particles (`0xC21230`) |
 | `0x8bbef0` | Ray::Triangle8BBEF0 | In outline: whether a ray meets a triangle: its distance and barycentric values (each at least 0, adding to under 1) |
+| `0x7c6e70` | Camera::Blend7C6E70 | In outline: points a camera along a direction (Matrix::LookAlongZSide) and blends it by a time factor (`0xCC5C80`) when close |

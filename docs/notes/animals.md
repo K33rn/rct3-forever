@@ -128,3 +128,6 @@
 | `0xb23050` | WildAnimal::UpdateB23050 | In outline: an animal's update when not flagged (+0xED, +0x94): with its owner (Interface48::Get) checks (`0xB35710`) |
 | `0xa16740` | Duck::Swim | In outline: a duck's update on the water (WaterManager::Get, `0x941D00`): swims (`0xA151F0`) or does something else (`0xA15EA0`) |
 | `0xad6ac0` | Animal::UpdateAD6AC0 | In outline: another animal update when not flagged (+0x10C) |
+| `0xb48c10` | WildAnimal::MoveB48C10 | In outline: moves an animal when not flagged (+0x1C, +0x24) and the move is long enough |
+| `0xb04ae0` | Animal::UpdateB04AE0 | In outline: goes over an animal's parts while not flagged (+0x220, +0x2DC), with a case for +0x2D4 |
+| `0xb1ca90` | Animal::TargetB1CA90 | In outline: unless in mode 1 (+0xC1), activates an animal and finds its target (`0xB856E0` on +0x60) |
