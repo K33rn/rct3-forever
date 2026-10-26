@@ -1657,3 +1657,22 @@
 | `0x94ef60` | Water::Entry94EF60 | In outline: for entry n (0xD0 bytes) of kind 4, a value by a count under 0xE |
 | `0x829b70` | Scenery::Footprint829B70 | In outline: with a part (+0x9C) in turn 0 or 2, turns its cells (Footprint::RotateCell) |
 | `0x79c0a0` | Toolbar::Find79C0A0 | In outline: a find when two shared values differ (`0x1306BCC`, `0x1306BD8`) |
+| `0x82fb30` | Scenery::SetCell82FB30 | In outline: for 0, when a cell changes (+0xCC to +0xD4), turns it (Scenery::Cell82B350) and sets it |
+| `0x61cf40` | Scenery::Make61CF40 | In outline: with a part (+0x74 +0xC) not flagged, makes a part |
+| `0xa906c0` | Fence::CellA906C0 | In outline: a cell from a point, rounded down |
+| `0x869890` | Scenery::Add869890 | In outline: a step (`0x865580`) and makes a 0xC-byte record |
+| `0x4944d0` | Ride::Clamp4944D0 | In outline: keeps a range inside a count (+8) |
+| `0x847530` | Scenery::Turn847530 | In outline: with its owner (slot 0x94), a turn (Clamp0To3) |
+| `0x833f90` | Scenery::Ref833F90 | In outline: takes a reference to a shared part and a value |
+| `0x736630` | Path::Link736630 | In outline: puts an entry at the front of a linked list (+0x54) |
+| `0x72ca50` | Path::Tick72CA50 | In outline: every fourth time (+0x8D), activates a path tile (PathTile::Activate) and sets a value |
+| `0x71dc50` | Path::Bounds71DC50 | In outline: when asked, grows byte bounds (+0x9C on) to hold a cell |
+| `0x86d0a0` | Scenery::SetPoint86D0A0 | In outline: for 0, sets a point (+0x30 to +0x38) when it changes |
+| `0x845850` | Scenery::Check845850 | In outline: a check unless flagged (slot 0x28) |
+| `0x827530` | Scenery::Turn827530 | In outline: turns a cell by a turn (+0x10) |
+| `0x8fb1f0` | Water::Find8FB1F0 | In outline: a find over the shared list (`0x1339FD8`) |
+| `0x7837d0` | GuestGroup::Slots7837D0 | In outline: goes over slots 0 to 6 (+0x60) |
+| `0x773840` | Park::Find773840 | In outline: a find over entries (+8, +0x20) |
+| `0x9e3240` | Fireworks::AddTime | In outline: adds 50 times n to a value (+0x28), kept between 0 and 2000 |
+| `0x5f7900` | Ride::Drag5F7900 | In outline: a step once the mouse has moved far enough from where it started |
+| `0x9d4eb0` | Fireworks::Time9D4EB0 | In outline: when on with a part, counts a time (+0x84) down |

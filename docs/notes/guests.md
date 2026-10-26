@@ -230,3 +230,11 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7d32d0` | Person::Update7D32D0 | In outline: a large person update with its part (+0x1C0), setting state 0x100 when the part is gone or flagged |
 | `0x7de4d0` | Person::Update7DE4D0 | In outline: with its part, in mode 9 (+0x190) and no stage, a step |
 | `0x7ce720` | Person::Link7CE720 | In outline: 0 with no part (+0x30C), else a step with it |
+| `0x7c27d0` | Person::AnimFrame7C27D0 | In outline: when a time (+0xBC) has passed a table length (`0xFC35D8` by +0xB8), the number of times it has, rounded |
+| `0x7c3df0` | Person::Check7C3DF0 | In outline: a check with its part (+0x1C0), 0 with none |
+| `0x7ec830` | Person::Stop7EC830 | In outline: in mode 0 (+0x190), clears its value (Person::Set7EC730(0)) and acts with a part (+0x4E0) at its point |
+| `0x758a30` | Guest::Check758A30 | In outline: 0 when it has a part (+0x1F0); in mode 0x11 with a part, a check |
+| `0x7632d0` | Guest::Once7632D0 | In outline: once (+0x444), a step with the park |
+| `0x759690` | Guest::AddValue759690 | In outline: adds to a value (+0x40C), kept between 0 and 1 |
+| `0x7cf960` | Person::Case7CF960 | In outline: a value by mode (+0x190, 0x100 and others) |
+| `0x4ea940` | AttractionPerson::Activate4EA940 | In outline: a step (`0x5528B0`) and activates the attraction's person |

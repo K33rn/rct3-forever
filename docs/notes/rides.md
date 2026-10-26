@@ -815,3 +815,20 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4c7f80` | Shop::Reset4C7F80 | In outline: clears values, sets one to 1.0 and a flag from a check (slot 0x144) |
 | `0x5c0720` | TrackPiece::Check5C0720 | In outline: a check when not flagged (+0xAC) |
 | `0x4a46d0` | Ride::Text4A46D0 | In outline: with no part (+0x17C), a shared text (+0x78) |
+| `0x4c10a0` | Attraction::Closed | In outline: in mode 2 (+0x70), clears a flag (bit 6) and shows the closed text (Attraction::ClosedText) |
+| `0x4c1680` | Shop::Check4C1680 | In outline: a check when not flagged (+0x100) |
+| `0x4a90f0` | Ride::Slot4A90F0 | In outline: a slot step (Ride::Slot531240) and with the shared value, goes over entries (+0x454) |
+| `0x582db0` | Ride::Next582DB0 | In outline: steps a counter (+0xD8) round 0 to 3 and acts with a part (+0x94) |
+| `0x53cad0` | Ride::Set53CAD0 | In outline: sets a scaled value (+4) and takes a shared part (+0x34) |
+| `0x59a1e0` | Ride::Compare59A1E0 | In outline: compares a value with 0 |
+| `0x5dbcd0` | TrackPiece::Time5DBCD0 | In outline: with a non-negative time, a step (`0x5D97A0`) and compares with a value (+0x108) |
+| `0x5527c0` | Ride::Part5527C0 | In outline: a step with a part (by a shared id `0x12F51B4`) |
+| `0x535520` | Ride::Section535520 | In outline: under a count (slot 0x138), a step with section n |
+| `0x5d97a0` | TrackedRide::Check5D97A0 | In outline: 1 when a check passes (`0x5D9720`), else another (`0x59AF60`) |
+| `0x531b10` | Ride::Slot531B10 | In outline: for n from 0 under a count (slot 0x138), a step when not flagged (+0x21C) |
+| `0x5294a0` | Car::Angle5294A0 | In outline: the difference of two angles kept within half a turn |
+| `0x531730` | Ride::Slot531730 | In outline: the same check for n under a count (slot 0x138) |
+| `0x5316a0` | Ride::Slot5316A0 | In outline: the same (another copy) |
+| `0x4d2800` | Shop::Event4D2800 | In outline: for 3, unless a check passes, a step with an object (`0x12F4EB0`) |
+| `0x5302a0` | Ride::Case5302A0 | In outline: false for 0, true for others |
+| `0x835350` | Scenery::Step835350 | In outline: a step (`0x4DE970`) and acts with a part |

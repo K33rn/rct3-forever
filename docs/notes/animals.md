@@ -580,3 +580,16 @@
 | `0xa7a100` | Animal::PassA7A100 | In outline: goes over entries (+0xC, +0x10) with a part's list (+0x40, +0x48) |
 | `0x992fd0` | Fireworks::CopyKey | In outline: makes a firework key frame (FireworkSlotKeyFrame) and copies a value (+0x48) |
 | `0xa7c440` | Animal::CheckA7C440 | In outline: a check when not flagged (+0x1E0) |
+| `0xb87eb0` | Animal::CheckB87EB0 | In outline: a check when not flagged (+0xB8) |
+| `0xb828d0` | Animal::AddTimeB828D0 | In outline: adds a time to each entry (+4, +8) and acts |
+| `0xa873a0` | Animal::UpdateA873A0 | In outline: an update when not flagged (+0x80) |
+| `0xb893a0` | Animal::CheckB893A0 | In outline: a check with a value from n over a count (+0x54) |
+| `0xba4890` | Enclosure::UpdateBA4890 | In outline: when its bounds are in order, updates (Enclosure::UpdateBA4550, `0xBA1E40`) and sets a slot to -2 |
+| `0xb98870` | PathGrid::RectB98870 | In outline: keeps a rectangle inside the grid (+0x64, +0x68) |
+| `0x81c7f0` | SceneryBehaviour::Ref81C7F0 | In outline: takes a reference and acts when not flagged (+0x1C) |
+| `0xb9aae0` | WildAnimal::TerrainB9AAE0 | In outline: a step with an object's value (+0x30) when the terrain is not flagged |
+| `0xa89180` | Animal::EntryA89180 | In outline: a step for entry n (0x1C bytes at +0x8C) not flagged |
+| `0xb4cdc0` | WildAnimal::CaseB4CDC0 | In outline: for 0, tells three parts (+0x38, +0x8C, +0xE0) |
+| `0x9d5970` | Window::Link9D5970 | In outline: with a value (+0xDC), a step with a linked part (+0xD0) |
+| `0xaa9250` | PoolComplex::UpdateAA9250 | In outline: an update when not flagged (+0x10C) |
+| `0x846b20` | Scenery::Check846B20 | In outline: 1 when flagged (+0xA8), else a check with its part (slot 0x44) |

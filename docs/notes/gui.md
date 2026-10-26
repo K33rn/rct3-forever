@@ -1621,3 +1621,22 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa2a8e0` | Window::TextA2A8E0 | In outline: makes a part (+0x40) and a text (`0x495BF0`) |
 | `0xa451d0` | Window::ScaleA451D0 | In outline: a value from n by case, with fixed scales and offsets |
 | `0x6f0d80` | Window::Flags6F0D80 | In outline: 0 unless flagged (+0xD0); else a step over flags from 0x80 |
+| `0x6ae070` | Window::Title6AE070 | In outline: a title text from a message (Message::Result4040F0) |
+| `0x79a090` | Window::Check79A090 | In outline: a check when not flagged (+0x4D8) |
+| `0x67a6b0` | Window::Hit67A6B0 | In outline: whether a point lies inside its rectangle (Window::Place6ADB60, Rect::Contains) |
+| `0x6a22a0` | Window::Set6A22A0 | In outline: sets a part (+0x13C) when it changes, letting go of the old one |
+| `0x981700` | Window::Check981700 | In outline: with a slot (+0x44), 1 when both flags are set (+0x4D, +0x4E) |
+| `0x67b820` | Window::Flag67B820 | In outline: a flag step (Window::Flag67A410) and lays out by its part's flag |
+| `0xa5dc30` | Window::Six | In outline: makes its list six long (Array::ResizeA5D5E0(6)) and fills new entries |
+| `0xa80290` | Window::GetA80290 | In outline: when not flagged (+0x154), takes a value (`0x12F4B34`) into +0x150 |
+| `0xae7c50` | Window::TextAE7C50 | In outline: makes an empty text record |
+| `0x9825c0` | Window::Copy9825C0 | In outline: copies parts (Window::Copy981DD0) from a list and their flags |
+| `0x6e6830` | Window::Make6E6830 | In outline: makes a part (`0x6C3BE0`) |
+| `0xc69f00` | Window::AddChildC69F00 | In outline: clears a flag (+0x9C), sets up a child, points it at its parent and tells it |
+| `0x6d5740` | Window::Make6D5740 | In outline: makes a part unless a check passes (`0x6E9890`) |
+| `0xa45670` | Window::ArcA45670 | In outline: a point on a circle (cosine and sine of an angle) scaled by the window's height |
+| `0x9dac40` | Window::Match9DAC40 | In outline: whether a part matches two values (3 matches any) |
+| `0x67aca0` | Window::Children67ACA0 | In outline: a child step (Window::ChildrenSlot10) and a check unless flagged (bit 22) |
+| `0xaf1eb0` | Window::TextAF1EB0 | In outline: a step (`0x9812F0`) and makes an empty text record |
+| `0xa39f80` | Window::TextA39F80 | In outline: the same (another copy) |
+| `0x98c730` | Fireworks::Flag98C730 | In outline: sets or clears a flag (bit 22) by whether there are fireworks (Fireworks::Count98AEC0) |

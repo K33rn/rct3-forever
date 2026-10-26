@@ -2462,3 +2462,31 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbd3c60` | Device::FormatSizeBD3C60 | In outline: a size by format number (1: 0x1E, ..., 0x100: 0x50) |
 | `0x805fd0` | Regions::Make805FD0 | In outline: makes a region record, with the shared one (`0x130AC04`) when given none |
 | `0xbcc740` | Track::PointAt | In outline: for a distance between 0 and the length (+0xC), finds the point along a track's pieces |
+| `0xc3b130` | Resource::BinarySearch | In outline: a binary search over 0x18-byte entries (+0x6C +0x10) by a value |
+| `0x454930` | Record::Copy454930 | In outline: copies a record's values from another |
+| `0x436b40` | Record::Copy436B40 | In outline: the same (another copy) |
+| `0x94ccd0` | Record::Copy94CCD0 | In outline: the same (another copy) |
+| `0x485690` | Record::Copy485690 | In outline: copies a record and takes a reference to its shared part |
+| `0x403c20` | Text::Check403C20 | In outline: a check on a text, empty when given none |
+| `0xbdadc0` | Static::Reset | In outline: clears a shared value (`0x13D0DF0`) and swaps the shared text (`0x13D0DF8`) for a new one (`0xBD05B0`) |
+| `0xbd05b0` | Static::MakeText | In outline: makes a text, empty when given none |
+| `0xbd1370` | List::ClearBD1370 | In outline: clears flags (+4) and a count (+8) and goes over entries |
+| `0x40de60` | Record::Make40DE60 | In outline: makes a 0x1C-byte record |
+| `0x40dd10` | Record::Make40DD10 | In outline: the same (another copy) |
+| `0xbd34e0` | Node::Remove | In outline: unless a type list holds it (TypeLists::Contains), unlinks it (Node::Unlink) and clears a flag (+0x10) |
+| `0xbd36c0` | Node::Detach | In outline: when on (+0x10), unlinks it (Node::Unlink) and goes over its list (+0x14) |
+| `0xcdb7b0` | Math::Round | In outline: a value rounded down from a scaled sum |
+| `0xbd9f00` | Text::Add | In outline: adds to a text (String::Append) |
+| `0x7fbf50` | List::Add7FBF50 | In outline: grows two lists when full (`0x417C20`, `0x7FB7C0`) and adds |
+| `0x7ce810` | Handle::Make7CE810 | In outline: makes a handle and links it |
+| `0x7a90c0` | Handle::Make7A90C0 | In outline: the same (another copy) |
+| `0x63ac10` | Window::Make63AC10 | In outline: with no value (+0x40), takes one (slot 8) and makes a 32-byte part |
+| `0xbdb590` | Resource::Get | In outline: makes sure of a shared resource (Static::EnsureC374C0) and finds it (Resource::FindC36720) |
+| `0x5d2970` | TrackedRide::Copy5D2970 | In outline: copies a value from another of the same kind (`0xF3AFB0`) |
+| `0xbb83a0` | Track::InitBB83A0 | In outline: fills a record from its arguments |
+| `0x40a6e0` | Text::Assign40A6E0 | In outline: lets go of a shared text and takes another |
+| `0xc516d0` | Stream::LoopC516D0 | In outline: goes over a linked list |
+| `0xbd2050` | Array::AddBlock | In outline: makes a block of n times a size and adds it to a list (`0xBD1FC0`) |
+| `0x496610` | Record::Get496610 | In outline: a value (Thunk), else makes a 0xCC-byte one |
+| `0xc96450` | Device::InitC96450 | In outline: sets up eight entries |
+| `0x4b7940` | Text::Assign4B7940 | In outline: sets texts from a shared one (`0xF27994`) and a record's |

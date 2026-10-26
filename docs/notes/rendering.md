@@ -1017,3 +1017,9 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x692710` | Text::Draw692710 | In outline: draws a text at a size, with its default font when none |
 | `0x7b3b20` | Effect::Normalise7B3B20 | In outline: scales values by one over a total (+0x44) |
 | `0x9ceca0` | Particles::Remove9CECA0 | In outline: finds and removes an entry (+0x84, +0x88) |
+| `0x424000` | Curves::Sample424000 | In outline: a value for a time between 0 and an end (+0x20) |
+| `0x48c300` | Effect::Step48C300 | In outline: a step with points |
+| `0x7b2730` | Effect::Set7B2730 | In outline: sets a point and clears a value |
+| `0xbe68a0` | Device::Size | In outline: a size from a part's value (slot 0x38) |
+| `0xa51870` | Window::SumA51870 | In outline: a value from entries (+0xC, +0x10) |
+| `0xa0a340` | Bird::ClampA0A340 | In outline: clears a value (+0xB0) outside fixed bounds |
