@@ -1070,3 +1070,63 @@ Tracked rides, flat rides and their cars and trains.
 | `0x57ac20` | Ride::Part57AC20 | In outline: a step with a part (+0x194) |
 | `0x549b10` | Ride::Part549B10 | In outline: a step with a part (+0x4C) |
 | `0x4cd910` | Shop::Find4CD910 | In outline: a find over a list (+0x64) |
+| `0x518400` | Rides::Pass518400 | In outline: goes over entries (+0x7B4) |
+| `0x531830` | Rides::Check531830 | In outline: a value when not flagged (+0x21C) |
+| `0x4d45c0` | Rides::Check4D45C0 | In outline: a value when not flagged (+0x378) |
+| `0x4ab750` | Rides::Check4AB750 | In outline: a value when not flagged (+0x3C4) |
+| `0x59ad50` | Rides::Update59AD50 | In outline: an update when not flagged (+0x84) |
+| `0x512250` | Rides::Pass512250 | In outline: goes over entries (+0x314) |
+| `0x574950` | Rides::Update574950 | In outline: an update when not flagged (+0x5C) |
+| `0x56f8a0` | Rides::Update56F8A0 | In outline: an update when not flagged (+0xF0) |
+| `0x4cca70` | Rides::Pass4CCA70 | In outline: goes over entries (+0xC4) |
+| `0x562f70` | Rides::Pass562F70 | In outline: goes over entries (+0xC4) |
+| `0x562cf0` | Rides::Pass562CF0 | In outline: goes over entries (+0xC4) |
+| `0x59da80` | Rides::Update59DA80 | In outline: an update when not flagged (+0x84) |
+| `0x4e5910` | Rides::Make4E5910 | In outline: makes a 0x21C-byte part |
+| `0x4e0bc0` | Rides::Update4E0BC0 | In outline: an update when not flagged (+0x4C) |
+| `0x59b170` | Rides::Update59B170 | In outline: an update when not flagged (+0x84) |
+| `0x59bcc0` | Ride::Set59BCC0 | In outline: for 0, sets a value (+0x64) |
+| `0x573e60` | Ride::Cars573E60 | In outline: goes over a train's cars (RideTrainInstance::Car) |
+| `0x563000` | Ride::Pass563000 | In outline: goes over entries (+0xC4) |
+| `0x549000` | Ride::Part549000 | In outline: a step with a part (+0x4C) |
+| `0x49aee2` | GameTime::Fragment49AEE2 | In outline: a fragment that takes the game time |
+| `0x49ad52` | GameTime::Fragment49AD52 | In outline: the same (another copy) |
+| `0x5f19c0` | Ride::Slot5F19C0 | In outline: for slot -2, a step with a value (+0x48) |
+| `0x58df40` | Ride::Set58DF40 | In outline: a step (slot 0x20) and sets a value |
+| `0x54dee0` | Ride::List54DEE0 | In outline: a step with a list |
+| `0x4de6a0` | Ride::Part4DE6A0 | In outline: when given, a step with its part (slot 0x54) |
+| `0x58de70` | Array::Grow58DE70 | In outline: grows a list to hold n |
+| `0x569dc0` | Ride::Tool569DC0 | In outline: a step when the current tool's value (+0x108) is at most another (+0x6C) |
+| `0x553c50` | Ride::Layout553C50 | In outline: lays out (Window::Layout673860) and acts with a point |
+| `0x4c5ea0` | Shop::Mode4C5EA0 | In outline: in mode 1 (+0xC0), a step with an interface (Interface60::Get) |
+| `0x4c5e10` | Shop::Mode4C5E10 | In outline: the same (another copy) |
+| `0x591dd0` | Ride::Find591DD0 | In outline: for n not negative, a find over a list (+0x208) |
+| `0x537b90` | Ride::Reset537B90 | In outline: copies a value (+0x118 into +0x11C) and resets (Ride::Reset4DE430) |
+| `0x532930` | Ride::Entry532930 | In outline: 0 for negative n, else a step |
+| `0x531ba0` | Ride::Entry531BA0 | In outline: the same (another copy) |
+| `0x531a80` | Ride::Entry531A80 | In outline: the same (another copy) |
+| `0x5e02c0` | TrackedRide::Check5E02C0 | In outline: a check (TrackedRide::Check5DAA80) with another ride |
+| `0x5da9f0` | TrackedRide::Entry5DA9F0 | In outline: for n under a count (+0xE0), a step |
+| `0x58a7a0` | Ride::Part58A7A0 | In outline: with a part (+8), a step with a work buffer |
+| `0x54f910` | Ride::List54F910 | In outline: a step with a list (+0x78) |
+| `0x54f880` | Ride::List54F880 | In outline: the same (another copy) |
+| `0x5105c0` | Car::Loop5105C0 | In outline: a loop |
+| `0x5c0f80` | TrackPiece::List5C0F80 | In outline: a step with a list (+0x1E4) |
+| `0x591f40` | Ride::List591F40 | In outline: a step with a list (+0x220) |
+| `0x591190` | Ride::Part591190 | In outline: a step with a part (+0x64) |
+| `0x58d100` | Ride::Slot58D100 | In outline: a value for a slot, -1 handled |
+| `0x531610` | Ride::Count531610 | In outline: a step when n reaches a count (slot 0x138) |
+| `0x531580` | Ride::Count531580 | In outline: the same (another copy) |
+| `0x50bea0` | Car::Dot50BEA0 | In outline: a dot product of two points, compared to a limit |
+| `0x5b7270` | TrackedRide::Check5B7270 | In outline: a step when a check fails (`0xBB4190`) |
+| `0x58bc50` | Ride::Point58BC50 | In outline: a point from the selected ride (Ride::Selected58BAB0) |
+| `0x53dcc0` | Ride::Free53DCC0 | In outline: when given, tears down (Destructor) |
+| `0x4eeb20` | Ride::List4EEB20 | In outline: when not flagged (+0x6C8), a step with a list (+0x4D8) |
+| `0x5890f0` | Ride::Check5890F0 | In outline: false with no part (+0x104), else a check |
+| `0x550360` | Ride::List550360 | In outline: a step with a list |
+| `0x54b0b0` | Ride::List54B0B0 | In outline: the same (another copy) |
+| `0x54b020` | Ride::List54B020 | In outline: the same (another copy) |
+| `0x5ab300` | Ride::Free5AB300 | In outline: tears down references (ObjectRef) |
+| `0x4c8dd0` | Shop::Layout4C8DD0 | In outline: lays out (Window::Layout643030) and acts with a point |
+| `0x518300` | Car::Find518300 | In outline: a step when a find passes (`0x5121D0`) |
+| `0x4afdd0` | Ride::Step4AFDD0 | In outline: a step with a value (`0x4A9430`) plus 3 |

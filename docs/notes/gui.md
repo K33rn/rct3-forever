@@ -1834,3 +1834,24 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x61c000` | Window::Check61C000 | In outline: a step unless asked and not flagged |
 | `0x65f2f0` | Window::Size65F2F0 | In outline: a step with its size |
 | `0x9bb9f0` | Window::Bind9BB9F0 | In outline: sets a value (+0x104) and binds (Window::Bind9B3240) |
+| `0x6b5770` | Gui::Terrain6B5770 | In outline: a step when the terrain is not flagged |
+| `0x6f2160` | Gui::Init6F2160 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0x633b90` | Gui::Make633B90 | In outline: makes a 0x1B0-byte part |
+| `0x660560` | Gui::Make660560 | In outline: makes a 0x160-byte part |
+| `0x67c7c0` | Window::Check67C7C0 | In outline: when on (+0xF4), a step |
+| `0x619020` | Text::Assign619020 | In outline: assigns a two-byte text (WideString::AssignWide) and acts |
+| `0x6bf770` | Window::Free6BF770 | In outline: with a part (+0x6C), frees it |
+| `0x682990` | Window::Shared682990 | In outline: a step with a shared object's value (`0x12F83F0` +0xDC) |
+| `0x6ba1e0` | Window::Width6BA1E0 | In outline: a step with a width |
+| `0x668cc0` | Window::Width668CC0 | In outline: the same (another copy) |
+| `0x687d60` | Folder::Find687D60 | In outline: a find (Folder::Find6879A0) |
+| `0x62c7b0` | Window::Case62C7B0 | In outline: a step by case (0, ...) |
+| `0x680b50` | Window::SetPoint680B50 | In outline: copies a point into its values (+0xD4 on) |
+| `0x667320` | Window::Mode667320 | In outline: in mode 1 or 2 (+0x170), a step (Thunk67B3C0 with `0x12FC394`) |
+| `0x6c34e0` | Window::Count6C34E0 | In outline: with a shared count (`0x1305DE8`), a step |
+| `0x6b84f0` | Window::Clear6B84F0 | In outline: empties a list (+0x118) |
+| `0x640a90` | Window::Pass640A90 | In outline: goes over entries (+0x64, +0x68) |
+| `0x6adf50` | Window::Check6ADF50 | In outline: a check with a work buffer |
+| `0x671ff0` | Window::Slot671FF0 | In outline: when flagged (bit 1), a step for an object's slot (+0x150) under a count (+0x128) |
+| `0x632d00` | AttractionDetails::Tab632D00 | In outline: when a tab is available (AttractionDetails::TabAvailable), a step |
+| `0x6b0470` | Window::Flag6B0470 | In outline: when not flagged (+0x2C) and the other is flagged (bit 13), a step |
