@@ -36,7 +36,7 @@ def names():
         for m in re.finditer(r'^\| `0x([0-9a-fA-F]+)` \| ([^|]+?) \|', open(p, encoding='utf-8').read(), re.M):
             n[int(m.group(1), 16)] = m.group(2)
     for r in csv.DictReader(open(os.path.join(HERE, 'docs', 'functions.csv'))):
-        if r['status'] in ('rewritten', 'library') and r['name']:
+        if r['status'] == 'library' and r['name']:
             n[int(r['address'], 16)] = r['name']
     return n
 
@@ -56,7 +56,7 @@ def main():
     rows = []
     for va, r in sorted(funcs.items()):
         n = int(r['size'])
-        if r['status'] not in ('to do', 'documented') or va in described or n > 40:
+        if r['status'] not in ('to do', 'documented', 'rewritten') or va in described or n > 64:
             continue
         ins = list(md.disasm(mem[va - BASE:va - BASE + n], va))
         while ins and ins[-1].mnemonic in ('int3', 'nop'):
@@ -92,6 +92,57 @@ def ret_args(i):
     return f', taking {v // 4} argument{"s" if v // 4 != 1 else ""} off the stack' if v else ''
 
 
+def wrapper(ins, fn):
+    """pushes, an optional change of `this` or table store, one call (or a closing jmp), then only the return."""
+    X = capstone.x86
+    tail = ins[-1]
+    if tail.mnemonic == 'jmp' and imm(tail) is not None:
+        pre, target = ins[:-1], imm(tail)
+        if not pre:
+            return None
+    else:
+        cs = [k for k, i in enumerate(ins) if i.mnemonic == 'call']
+        if len(cs) != 1 or imm(ins[cs[0]]) is None or tail.mnemonic != 'ret':
+            return None
+        pre, target, after = ins[:cs[0]], imm(ins[cs[0]]), ins[cs[0] + 1:-1]
+        if any(not ((a.mnemonic == 'add' and a.op_str.startswith('esp, ')) or a.mnemonic == 'pop') for a in after):
+            return None
+    if target in FREE:
+        return None
+    args, obj, table, depth = [], '', None, 0
+    for i in pre:
+        if i.mnemonic == 'push':
+            op = i.operands[0]
+            if op.type == X.X86_OP_IMM:
+                args.append(f'{op.imm & 0xffffffff:#x}')
+            elif op.type == X.X86_OP_MEM and op.mem.base == X.X86_REG_ESP and op.mem.index == 0:
+                args.append(f'its argument {(op.mem.disp - depth) // 4}')
+            elif op.type == X.X86_OP_MEM and op.mem.base == X.X86_REG_ECX and op.mem.index == 0:
+                args.append(f'the value at +{op.mem.disp:#x}')
+            elif op.type == X.X86_OP_MEM and op.mem.base == 0 and op.mem.index == 0:
+                args.append(f'the global `{op.mem.disp & 0xffffffff:#x}`')
+            else:
+                return None
+            depth += 4
+        elif i.mnemonic == 'mov' and i.op_str.startswith('ecx, dword ptr [ecx') and i.operands[1].mem.index == 0:
+            obj = f' on the object at +{i.operands[1].mem.disp:#x}'
+        elif i.mnemonic == 'mov' and i.op_str.startswith('ecx, ') and imm(i, 1) is not None:
+            obj = f' on the object `{imm(i, 1):#x}`'
+        elif i.mnemonic == 'add' and i.op_str.startswith('ecx, ') and imm(i, 1) is not None:
+            obj = f' on `this` {imm(i, 1):+#x}'
+        elif i.mnemonic == 'lea' and i.op_str.startswith('ecx, [ecx') and i.operands[1].mem.index == 0:
+            obj = f' on `this` {i.operands[1].mem.disp:+#x}'
+        elif i.mnemonic == 'mov' and mem_op(i, 0) and i.operands[0].mem.base == X.X86_REG_ECX and \
+                i.operands[0].mem.disp == 0 and imm(i, 1) is not None and 0xF26000 <= imm(i, 1) < 0x10E7000:
+            table = imm(i, 1)
+        else:
+            return None
+    what = f'calls {fn(target)}{obj}' + (' with ' + ', '.join(reversed(args)) if args else '')
+    if table is not None:
+        return 'Set table and call', f"Sets the object's virtual function table to `{table:#x}`, then {what}"
+    return 'Call', what[0].upper() + what[1:] + (ret_args(tail) if tail.mnemonic == 'ret' else '')
+
+
 def describe(ins, ops, fn):
     X = capstone.x86
     m0 = ops[0][0]
@@ -118,6 +169,10 @@ def describe(ins, ops, fn):
                 return 'Thunk', f'Calls {fn(imm(ins[1]))} on `this` {v:+#x}'
         if o.mnemonic == 'lea' and o.op_str.startswith('ecx, [ecx'):
             return 'Thunk', f'Calls {fn(imm(ins[1]))} on `this` {o.operands[1].mem.disp:+#x}'
+    # one call made for the caller: pushes, an optional change of the object, the call, then nothing but the return
+    w = wrapper(ins, fn)
+    if w:
+        return w
     if last.mnemonic != 'ret':
         return None
     body = ins[:-1]
@@ -167,6 +222,30 @@ def describe(ins, ops, fn):
             elif len(body) == 2 and body[0].mnemonic in ('mov', 'movzx') and mem_op(body[0], 1) and \
                     body[0].operands[1].mem.base == X.X86_REG_ESP and body[0].operands[1].mem.disp == 4:
                 return f'Set +{off:#x}', f'Sets the member at +{off:#x} to its argument' + ra
+    # member of a member: mov eax,[ecx+n] ; mov eax,[eax+m]
+    if len(body) == 2 and body[0].mnemonic == 'mov' and body[0].op_str.startswith('eax, dword ptr [ecx') and \
+            body[0].operands[1].mem.index == 0 and body[1].mnemonic == 'mov' and \
+            body[1].op_str.startswith('eax, dword ptr [eax') and body[1].operands[1].mem.index == 0:
+        n, m = body[0].operands[1].mem.disp, body[1].operands[1].mem.disp
+        return f'Get +{n:#x}+{m:#x}', f'Returns the value at +{m:#x} of the object at +{n:#x}' + ra
+    # a constant stored in a global
+    if len(body) == 1 and body[0].mnemonic == 'mov' and mem_op(body[0], 0) and body[0].operands[0].mem.base == 0 \
+            and body[0].operands[0].mem.index == 0 and imm(body[0], 1) is not None:
+        g = body[0].operands[0].mem.disp & 0xffffffff
+        return f'Set global {g:#x}', f'Sets the global `{g:#x}` to {imm(body[0], 1):#x}' + ra
+    # a float argument stored: fld [esp+4] ; fstp [ecx+n]
+    if len(body) == 2 and body[0].mnemonic == 'fld' and mem_op(body[0], 0) and \
+            body[0].operands[0].mem.base == X.X86_REG_ESP and body[0].operands[0].mem.disp == 4 and \
+            body[1].mnemonic == 'fstp' and mem_op(body[1], 0) and body[1].operands[0].mem.base == X.X86_REG_ECX:
+        off = body[1].operands[0].mem.disp
+        return f'Set +{off:#x}', f'Sets the float at +{off:#x} to its argument' + ra
+    # frees a member: mov r,[ecx+n] ; push r ; call free ; add esp,4  (or push [ecx+n] ; call free ; pop ecx)
+    sh = [i.mnemonic for i in body]
+    if sh in (['mov', 'push', 'call', 'add'], ['push', 'call', 'pop']):
+        c = body[2] if sh[0] == 'mov' else body[1]
+        src = body[0].operands[-1] if sh[0] == 'mov' else body[0].operands[0]
+        if imm(c) in FREE and src.type == X.X86_OP_MEM and src.mem.base == X.X86_REG_ECX and src.mem.index == 0:
+            return f'Free +{src.mem.disp:#x}', f'Frees the memory held at +{src.mem.disp:#x}' + ra
     # scalar deleting destructor
     calls = [i for i in ins if i.mnemonic == 'call' and imm(i) is not None]
     shape = [i.mnemonic for i in ins]

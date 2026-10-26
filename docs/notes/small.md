@@ -7,6 +7,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | Address | Name | What it does |
 |---|---|---|
 | `0x401030` | Returns 0 | Returns 0 (or false / null) |
+| `0x402970` | Set table and call | Sets the object's virtual function table to `0xf264b0`, then calls `0xbd36c0` |
 | `0x402a40` | Set table | Sets the object's virtual function table to `0xf264b4` |
 | `0x402ff0` | Deleting destructor | Destroys the object (`0x6a3bf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4034a0` | Deleting destructor | Destroys the object (`0x402930`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -21,7 +22,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4073e0` | Get +0xc | Returns the float at +0xc |
 | `0x407720` | Deleting destructor | Destroys the object (`0xcc2090` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x408100` | Empty | Does nothing |
-| `0x409590` | Deleting destructor | Destroys the object (`0x4085f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x409590` | Deleting destructor | Destroys the object (`0x4085f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x409810` | Deleting destructor | Destroys the object (`0x409450` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x409a30` | Deleting destructor | Destroys the object (`0x409980` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x409de0` | Deleting destructor | Destroys the object (`0x409ba0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -106,7 +107,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x42ed20` | Get +0xc | Returns the float at +0xc |
 | `0x430d90` | Deleting destructor | Destroys the object (`0x42ff30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4335e0` | Deleting destructor | Destroys the object (`0x432e90` (FlatTagManager::~FlatTagManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x435190` | Deleting destructor | Destroys the object (`0x434050` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x435190` | Deleting destructor | Destroys the object (`0x434050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4359f0` | Set table | Sets the object's virtual function table to `0xf284e0` |
 | `0x435a00` | Set table | Sets the object's virtual function table to `0xf284e0` |
 | `0x435ad0` | Set table | Sets the object's virtual function table to `0xf28510` |
@@ -115,6 +116,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x436ac0` | Deleting destructor | Destroys the object (`0x435c10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x436b00` | Set table | Sets the object's virtual function table to `0xf28534` |
 | `0x436dd0` | Set table | Sets the object's virtual function table to `0xf28528` |
+| `0x437640` | Call | Calls `0xbcddf0` on the object `0x10ec72c` |
 | `0x437900` | Deleting destructor | Destroys the object (`0x437920`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x437920` | Set table | Sets the object's virtual function table to `0xf28510` |
 | `0x437940` | Deleting destructor | Destroys the object (`0x436b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -126,12 +128,18 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x440370` | Deleting destructor | Destroys the object (`0x43ff30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4411f0` | Get +0x48 | Returns the float at +0x48 |
 | `0x441780` | Deleting destructor | Destroys the object (`0x441350` (GameTime::~GameTime)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x441fa0` | Deleting destructor | Destroys the object (`0x441fc0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x441ff0` | Deleting destructor | Destroys the object (`0x442010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x442020` | Deleting destructor | Destroys the object (`0x442040` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x442050` | Deleting destructor | Destroys the object (`0x442070` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x442080` | Deleting destructor | Destroys the object (`0x4420a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4420b0` | Deleting destructor | Destroys the object (`0x4420d0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x441fa0` | Deleting destructor | Destroys the object (`0x441fc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x441fc0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x441ff0` | Deleting destructor | Destroys the object (`0x442010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x442010` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x442020` | Deleting destructor | Destroys the object (`0x442040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x442040` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x442050` | Deleting destructor | Destroys the object (`0x442070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x442070` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x442080` | Deleting destructor | Destroys the object (`0x4420a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4420a0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x4420b0` | Deleting destructor | Destroys the object (`0x4420d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4420d0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x446420` | Deleting destructor | Destroys the object (`0x446020` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4465f0` | Deleting destructor | Destroys the object (`0xbe4f30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x448760` | Deleting destructor | Destroys the object (`0x4482a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -140,9 +148,12 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x44cd90` | Deleting destructor | Destroys the object (`0x44cd80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44cdb0` | Deleting destructor | Destroys the object (`0x86a0d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44cf10` | Deleting destructor | Destroys the object (`0x44ca40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x44dfc0` | Deleting destructor | Destroys the object (`0x44dfe0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x44dff0` | Deleting destructor | Destroys the object (`0x44e010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x44e020` | Deleting destructor | Destroys the object (`0x44e040` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x44dfc0` | Deleting destructor | Destroys the object (`0x44dfe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x44dfe0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x44dff0` | Deleting destructor | Destroys the object (`0x44e010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x44e010` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x44e020` | Deleting destructor | Destroys the object (`0x44e040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x44e040` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x44e050` | Deleting destructor | Destroys the object (`0x44e070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44e460` | Deleting destructor | Destroys the object (`0x44ca50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x44ebc0` | Set +0x18 | Sets the member at +0x18 to 0x0 |
@@ -152,8 +163,10 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x456a80` | Deleting destructor | Destroys the object (`0x456980` (LoadFileCacheSave::~LoadFileCacheSave)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4571b0` | Get global 0x1106dc0 | Returns the byte in the global `0x1106dc0` |
 | `0x457350` | Deleting destructor | Destroys the object (`0x4837e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x45aee0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x45b060` | Deleting destructor | Destroys the object (`0x45af40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x45b150` | Deleting destructor | Destroys the object (`0x45b170` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x45b150` | Deleting destructor | Destroys the object (`0x45b170`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x45b170` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x45c1a0` | Deleting destructor | Destroys the object (`0x45c1c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45c760` | Deleting destructor | Destroys the object (`0x45c3b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45cdc0` | Thunk | Jumps to `0x45cc90` (Destructor) |
@@ -162,7 +175,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x45f860` | Deleting destructor | Destroys the object (`0x45f880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45f890` | Deleting destructor | Destroys the object (`0x45f8b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x45f8c0` | Deleting destructor | Destroys the object (`0x45f8e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x45f8f0` | Deleting destructor | Destroys the object (`0x45f910` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x45f8f0` | Deleting destructor | Destroys the object (`0x45f910`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x45f910` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4632c0` | Deleting destructor | Destroys the object (`0x461540` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x463f70` | Deleting destructor | Destroys the object (`0x463f90` (MADatabaseSave::~MADatabaseSave)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x464040` | Deleting destructor | Destroys the object (`0x4624a0` (IEUVProvider::~IEUVProvider)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -176,22 +190,29 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x46b890` | Deleting destructor | Destroys the object (`0x46b490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46c3d0` | Deleting destructor | Destroys the object (`0x46c140`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46cf30` | Deleting destructor | Destroys the object (`0x46c6b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x46cf50` | Deleting destructor | Destroys the object (`0x46cf70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x46cf50` | Deleting destructor | Destroys the object (`0x46cf70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x46cf70` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x46cf80` | Deleting destructor | Destroys the object (`0x46cfa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46d180` | Deleting destructor | Destroys the object (`0x46c5d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46e2d0` | Deleting destructor | Destroys the object (`0x46d230` (GlobalPassportData::~GlobalPassportData)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46e460` | Deleting destructor | Destroys the object (`0x46d650` (PassportPostBehaviour::~PassportPostBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x46f230` | Set +0xc | Sets the member at +0xc to 0x0 |
-| `0x470510` | Deleting destructor | Destroys the object (`0x470530` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x471c10` | Deleting destructor | Destroys the object (`0x471c30` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x471c40` | Deleting destructor | Destroys the object (`0x471c60` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x471c70` | Deleting destructor | Destroys the object (`0x471c90` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x471ca0` | Deleting destructor | Destroys the object (`0x471cc0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x470510` | Deleting destructor | Destroys the object (`0x470530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x470530` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x471c10` | Deleting destructor | Destroys the object (`0x471c30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x471c30` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x471c40` | Deleting destructor | Destroys the object (`0x471c60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x471c60` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x471c70` | Deleting destructor | Destroys the object (`0x471c90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x471c90` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x471ca0` | Deleting destructor | Destroys the object (`0x471cc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x471cc0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x471fe0` | Deleting destructor | Destroys the object (`0x471480` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x473b10` | Deleting destructor | Destroys the object (`0x473b30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x473be0` | Deleting destructor | Destroys the object (`0x471d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x474520` | Deleting destructor | Destroys the object (`0x4743b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4749e0` | Set table | Sets the object's virtual function table to `0xf2ceb4` |
+| `0x475220` | Get global 0x10ec9e0 | Returns the value in the global `0x10ec9e0` |
 | `0x4754c0` | Deleting destructor | Destroys the object (`0x4754e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x476430` | Deleting destructor | Destroys the object (`0x476160` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x476910` | Deleting destructor | Destroys the object (`0x476100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -230,7 +251,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x48dd50` | Deleting destructor | Destroys the object (`0x48dd70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x48e0e0` | Deleting destructor | Destroys the object (`0x48d940` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x48e7a0` | Deleting destructor | Destroys the object (`0x48e7c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x48e7d0` | Deleting destructor | Destroys the object (`0x48e7f0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48e7d0` | Deleting destructor | Destroys the object (`0x48e7f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x48e7f0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x48eaa0` | Deleting destructor | Destroys the object (`0x48eac0` (WayPoint::~WayPoint)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x48ee60` | Deleting destructor | Destroys the object (`0x48e100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x48f970` | Deleting destructor | Destroys the object (`0x48e210` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -246,7 +268,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4940a0` | Deleting destructor | Destroys the object (`0x492280`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x494300` | Deleting destructor | Destroys the object (`0x492320`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x494ec0` | Deleting destructor | Destroys the object (`0x494380` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x495680` | Deleting destructor | Destroys the object (`0x4956a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x495680` | Deleting destructor | Destroys the object (`0x4956a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4956a0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x495bb0` | Set table | Sets the object's virtual function table to `0xf2ea14` |
 | `0x4960b0` | Deleting destructor | Destroys the object (`0x495e90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x496ad0` | Deleting destructor | Destroys the object (`0x496690` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -282,7 +305,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4a1900` | Get +0x1a8 | Returns the value at +0x1a8 |
 | `0x4a1950` | Thunk | Calls `0xbe83b0` on `this` +0xc |
 | `0x4a1d90` | Deleting destructor | Destroys the object (`0x4a1db0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4a1dc0` | Deleting destructor | Destroys the object (`0x4a1de0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4a1dc0` | Deleting destructor | Destroys the object (`0x4a1de0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4a1de0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4a1eb0` | Deleting destructor | Destroys the object (`0x4a09e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4a2150` | Deleting destructor | Destroys the object (`0x4a0a00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4a23f0` | Deleting destructor | Destroys the object (`0x4a0a20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -298,10 +322,12 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4a81a0` | Deleting destructor | Destroys the object (`0x4a71f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4a8af0` | Get +0x414 | Returns the value at +0x414 |
 | `0x4a8b00` | Set +0x414 | Sets the member at +0x414 to its argument, taking 1 argument off the stack |
-| `0x4a9fd0` | Deleting destructor | Destroys the object (`0x4a9ff0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4a9fd0` | Deleting destructor | Destroys the object (`0x4a9ff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4a9ff0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4aa000` | Deleting destructor | Destroys the object (`0x4aa020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4aa030` | Deleting destructor | Destroys the object (`0x4aa050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4aa060` | Deleting destructor | Destroys the object (`0x4aa080` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4aa060` | Deleting destructor | Destroys the object (`0x4aa080`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4aa080` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4afed0` | Deleting destructor | Destroys the object (`0x4af4f0` (AnimatedRideInstance::~AnimatedRideInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4b7070` | Deleting destructor | Destroys the object (`0x4b6ab0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4b7330` | Get global 0x12f4b8c | Returns the value in the global `0x12f4b8c` |
@@ -321,19 +347,28 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4bee80` | Empty | Does nothing, taking 1 argument off the stack |
 | `0x4bee90` | Empty | Does nothing, taking 1 argument off the stack |
 | `0x4befb0` | Returns 1 | Returns true, taking 2 arguments off the stack |
-| `0x4c01b0` | Deleting destructor | Destroys the object (`0x4c01d0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c01b0` | Deleting destructor | Destroys the object (`0x4c01d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c01d0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4c01e0` | Deleting destructor | Destroys the object (`0x4c0200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c0210` | Deleting destructor | Destroys the object (`0x4c0230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c3460` | Deleting destructor | Destroys the object (`0x4c23e0` (AttractionInstance::~AttractionInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c3d50` | Deleting destructor | Destroys the object (`0x4c3d70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c3d80` | Deleting destructor | Destroys the object (`0x4c3da0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c3db0` | Deleting destructor | Destroys the object (`0x4c3dd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c3de0` | Deleting destructor | Destroys the object (`0x4c3e00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c3e10` | Deleting destructor | Destroys the object (`0x4c3e30` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c3e40` | Deleting destructor | Destroys the object (`0x4c3e60` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c3e70` | Deleting destructor | Destroys the object (`0x4c3e90` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3d50` | Deleting destructor | Destroys the object (`0x4c3d70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3d70` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x4c3d80` | Deleting destructor | Destroys the object (`0x4c3da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3da0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x4c3db0` | Deleting destructor | Destroys the object (`0x4c3dd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3dd0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x4c3de0` | Deleting destructor | Destroys the object (`0x4c3e00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3e00` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x4c3e10` | Deleting destructor | Destroys the object (`0x4c3e30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3e30` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x4c3e40` | Deleting destructor | Destroys the object (`0x4c3e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3e60` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x4c3e70` | Deleting destructor | Destroys the object (`0x4c3e90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c3e90` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4c49e0` | Deleting destructor | Destroys the object (`0x4c48d0` (AttractionInstanceFI::~AttractionInstanceFI)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4c5180` | Deleting destructor | Destroys the object (`0x4c51a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c5180` | Deleting destructor | Destroys the object (`0x4c51a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4c51a0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4c68b0` | Deleting destructor | Destroys the object (`0x4c68d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4c8c90` | Set table | Sets the object's virtual function table to `0xf328c0` |
 | `0x4c8f20` | Deleting destructor | Destroys the object (`0x4c8cc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -348,7 +383,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4ccd30` | Deleting destructor | Destroys the object (`0x4ccd50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4d0f40` | Deleting destructor | Destroys the object (`0x4d0ba0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4d1770` | Deleting destructor | Destroys the object (`0x4d1100` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4d2420` | Deleting destructor | Destroys the object (`0x4d2440` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d2420` | Deleting destructor | Destroys the object (`0x4d2440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4d2440` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4d38e0` | Deleting destructor | Destroys the object (`0x4d3280` (AttractionPersonInfo::~AttractionPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4d3b30` | Deleting destructor | Destroys the object (`0x4d3b50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4d3d80` | Deleting destructor | Destroys the object (`0x4d3c20` (AttractionPersonStrategy::~AttractionPersonStrategy)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -384,7 +420,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4e4a80` | Deleting destructor | Destroys the object (`0x4e4680` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e4d80` | Deleting destructor | Destroys the object (`0x4e4da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4e6080` | Deleting destructor | Destroys the object (`0x4e5d90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x4e6350` | Deleting destructor | Destroys the object (`0x4e6370` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4e6350` | Deleting destructor | Destroys the object (`0x4e6370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4e6370` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x4e6550` | Deleting destructor | Destroys the object (`0x4e5da0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4ea920` | Deleting destructor | Destroys the object (`0x4e6570` (MiniGolfPersonInfo::~MiniGolfPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4ec1f0` | Deleting destructor | Destroys the object (`0x4ec210` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -396,22 +433,27 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x4efff0` | Deleting destructor | Destroys the object (`0x4f0010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4f02c0` | Deleting destructor | Destroys the object (`0x4f02e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4f0680` | Deleting destructor | Destroys the object (`0x4f06a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x4f80f0` | Call | Calls `0x4f5530` (Ride::Finish4F5530) with 0x0, 0x0, 0x0, 0x0 |
 | `0x4fe1f0` | Deleting destructor | Destroys the object (`0x4f78f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x4fe570` | Empty | Does nothing |
 | `0x5027b0` | Deleting destructor | Destroys the object (`0x5021b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x503f30` | Deleting destructor | Destroys the object (`0x503f50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x506300` | Deleting destructor | Destroys the object (`0xa79ee0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x506470` | Deleting destructor | Destroys the object (`0x5061a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5067e0` | Deleting destructor | Destroys the object (`0x506800` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5067e0` | Deleting destructor | Destroys the object (`0x506800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x506800` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x508260` | Deleting destructor | Destroys the object (`0x506820` (RideCarCrash::~RideCarCrash)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x50be10` | Empty | Does nothing |
 | `0x50c030` | Set +0x8e8 | Sets the member at +0x8e8 to 0x1 |
-| `0x50ee00` | Deleting destructor | Destroys the object (`0x50cda0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x50fd40` | Deleting destructor | Destroys the object (`0x50fd60` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x50ee00` | Deleting destructor | Destroys the object (`0x50cda0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x50fd40` | Deleting destructor | Destroys the object (`0x50fd60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x50fd60` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x50fd70` | Deleting destructor | Destroys the object (`0x50fd90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x50fda0` | Deleting destructor | Destroys the object (`0x50fdc0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x50fda0` | Deleting destructor | Destroys the object (`0x50fdc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x50fdc0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x50fdd0` | Deleting destructor | Destroys the object (`0x50fdf0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x50fe00` | Deleting destructor | Destroys the object (`0x50fe20` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x50fe00` | Deleting destructor | Destroys the object (`0x50fe20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x50fe20` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x50fe30` | Deleting destructor | Destroys the object (`0x50fe50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x50fe60` | Deleting destructor | Destroys the object (`0x50fe80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5138b0` | Deleting destructor | Destroys the object (`0x510f80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -427,10 +469,13 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x52d2f0` | Deleting destructor | Destroys the object (`0x52d310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x52f7e0` | Member +0x220 address | Returns the address of the member at +0x220 |
 | `0x52fa60` | Virtual thunk | Calls the object's virtual function at slot 81 |
-| `0x530e50` | Deleting destructor | Destroys the object (`0x530e70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x530e80` | Deleting destructor | Destroys the object (`0x530ea0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x530e50` | Deleting destructor | Destroys the object (`0x530e70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x530e70` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x530e80` | Deleting destructor | Destroys the object (`0x530ea0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x530ea0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x530eb0` | Deleting destructor | Destroys the object (`0x530ed0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x530ee0` | Deleting destructor | Destroys the object (`0x530f00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x530ee0` | Deleting destructor | Destroys the object (`0x530f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x530f00` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x530f10` | Deleting destructor | Destroys the object (`0x530f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x533fd0` | Deleting destructor | Destroys the object (`0x4100f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x53a210` | Deleting destructor | Destroys the object (`0x539c40` (RideInstance::~RideInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -449,12 +494,15 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x54ae70` | Deleting destructor | Destroys the object (`0x54ae90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54aea0` | Deleting destructor | Destroys the object (`0x54aec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54aed0` | Deleting destructor | Destroys the object (`0x54aef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x54af00` | Deleting destructor | Destroys the object (`0x54af20` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x54af00` | Deleting destructor | Destroys the object (`0x54af20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x54af20` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x54af30` | Deleting destructor | Destroys the object (`0x54af50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54af60` | Deleting destructor | Destroys the object (`0x54af80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x54af90` | Deleting destructor | Destroys the object (`0x54afb0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x54af90` | Deleting destructor | Destroys the object (`0x54afb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x54afb0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x54afc0` | Deleting destructor | Destroys the object (`0x54afe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x54aff0` | Deleting destructor | Destroys the object (`0x54b010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x54aff0` | Deleting destructor | Destroys the object (`0x54b010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x54b010` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x54c6b0` | Deleting destructor | Destroys the object (`0x40f730` (ObjectRef::~ObjectRef)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54eb20` | Deleting destructor | Destroys the object (`0x54b6d0` (RideCarEntry::~RideCarEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x54f180` | Deleting destructor | Destroys the object (`0x54ba40` (RideCarSplashEntry::~RideCarSplashEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -481,7 +529,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x55f580` | Get global 0xf264dc | Returns the float in the global `0xf264dc` |
 | `0x55f590` | Get +0x68 | Returns the float at +0x68 |
 | `0x55faf0` | Deleting destructor | Destroys the object (`0x579cc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x560c00` | Deleting destructor | Destroys the object (`0x560c20` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x560c00` | Deleting destructor | Destroys the object (`0x560c20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x560c20` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x560c30` | Deleting destructor | Destroys the object (`0x560c50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x560ef0` | Thunk | Calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x24 |
 | `0x574720` | Deleting destructor | Destroys the object (`0x56ecf0` (RideTrainInstance::~RideTrainInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -504,9 +553,11 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x58eca0` | Deleting destructor | Destroys the object (`0x58ea10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5906e0` | Deleting destructor | Destroys the object (`0x58fe50` (StallPersonInfo::~StallPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x590fc0` | Deleting destructor | Destroys the object (`0x590fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x590ff0` | Deleting destructor | Destroys the object (`0x591010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x590ff0` | Deleting destructor | Destroys the object (`0x591010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x591010` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x591020` | Deleting destructor | Destroys the object (`0x591040`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x591050` | Deleting destructor | Destroys the object (`0x591070` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x591050` | Deleting destructor | Destroys the object (`0x591070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x591070` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x594770` | Deleting destructor | Destroys the object (`0x594000` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x594790` | Deleting destructor | Destroys the object (`0x594050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x595db0` | Deleting destructor | Destroys the object (`0x594f70` (StallInstance::~StallInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -526,18 +577,22 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x5a0360` | Deleting destructor | Destroys the object (`0x5a0070` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a0b10` | Deleting destructor | Destroys the object (`0x5a0a30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a1750` | Thunk | Calls `0xbb41e0` on the object at +0x38c |
+| `0x5a1a10` | Get +0x6f4+0x8 | Returns the value at +0x8 of the object at +0x6f4 |
 | `0x5a1b40` | Get +0x3d8 | Returns the value at +0x3d8 |
 | `0x5a2350` | Deleting destructor | Destroys the object (`0x5a1470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a2c80` | Deleting destructor | Destroys the object (`0x5a2070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5a3290` | Deleting destructor | Destroys the object (`0x5a32b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5a3290` | Deleting destructor | Destroys the object (`0x5a32b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5a32b0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x5a32c0` | Deleting destructor | Destroys the object (`0x5a32e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a32f0` | Deleting destructor | Destroys the object (`0x5a3310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a3320` | Deleting destructor | Destroys the object (`0x5a3340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a36d0` | Deleting destructor | Destroys the object (`0x5a1480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5a38c0` | Thunk | Calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x1e0 |
 | `0x5b5c30` | Deleting destructor | Destroys the object (`0x5b4ff0` (TrackedRideInstance::~TrackedRideInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5b7a50` | Deleting destructor | Destroys the object (`0x5b7a70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5b7a80` | Deleting destructor | Destroys the object (`0x5b7aa0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5b7a50` | Deleting destructor | Destroys the object (`0x5b7a70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5b7a70` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x5b7a80` | Deleting destructor | Destroys the object (`0x5b7aa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5b7aa0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x5b90d0` | Deleting destructor | Destroys the object (`0x5b8f90` (TrackedRideInstanceSaveHeader::~TrackedRideInstanceSaveHeader)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5b99b0` | Deleting destructor | Destroys the object (`0x5b9140` (TrackedRidePersonInfo::~TrackedRidePersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5ba2a0` | Deleting destructor | Destroys the object (`0x5ba2c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -547,27 +602,31 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x5bd5e0` | Deleting destructor | Destroys the object (`0x826a80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5bd600` | Deleting destructor | Destroys the object (`0x581970` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5bf320` | Deleting destructor | Destroys the object (`0x5be010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5bfdf0` | Deleting destructor | Destroys the object (`0x5bfe10` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5bfdf0` | Deleting destructor | Destroys the object (`0x5bfe10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5bfe10` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x5bfe20` | Deleting destructor | Destroys the object (`0x5bfe40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5bfe50` | Deleting destructor | Destroys the object (`0x5bfe70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5bfe50` | Deleting destructor | Destroys the object (`0x5bfe70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5bfe70` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x5c7430` | Deleting destructor | Destroys the object (`0x5c3dc0` (TrackPiece::~TrackPiece)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5cdf10` | Deleting destructor | Destroys the object (`0x5cddd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5ce000` | Deleting destructor | Destroys the object (`0x5cdde0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5cf510` | Deleting destructor | Destroys the object (`0x5cf530`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5d03d0` | Thunk | Calls `0xbc78f0` on the object at +0x8 |
-| `0x5d1000` | Deleting destructor | Destroys the object (`0x5d1020`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5d03d0` | Thunk | Calls `0xbc78f0` (Span::Middle) on the object at +0x8 |
+| `0x5d1000` | Deleting destructor | Destroys the object (`0x5d1020` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5d16b0` | Returns 0x12600 | Returns 0x12600 |
 | `0x5d16c0` | Returns 0x12240 | Returns 0x12240 |
 | `0x5d4270` | Deleting destructor | Destroys the object (`0x5d4290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5d63f0` | Deleting destructor | Destroys the object (`0x5d4120` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5e5a70` | Deleting destructor | Destroys the object (`0x5e2130` (TrackSegment::~TrackSegment)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5ea900` | Deleting destructor | Destroys the object (`0x5ea870` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5eb7f0` | Deleting destructor | Destroys the object (`0x5eb810` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5eb820` | Deleting destructor | Destroys the object (`0x5eb840` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5eb7f0` | Deleting destructor | Destroys the object (`0x5eb810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5eb810` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x5eb820` | Deleting destructor | Destroys the object (`0x5eb840`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5eb840` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x5edfe0` | Deleting destructor | Destroys the object (`0x5eced0` (WalkAlongTrackPersonInfo::~WalkAlongTrackPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5efca0` | Deleting destructor | Destroys the object (`0x5ef9b0` (WalkAlongTrackPersonInfoInteractionStrategy::~WalkAlongTrackPersonInfoInteractionStrategy)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f0500` | Deleting destructor | Destroys the object (`0x5f0520` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x5f17c0` | Deleting destructor | Destroys the object (`0x5f17a0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x5f17c0` | Deleting destructor | Destroys the object (`0x5f17a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f17e0` | Get +0xa0 | Returns the value at +0xa0 |
 | `0x5f1990` | Deleting destructor | Destroys the object (`0x5f19b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x5f2ee0` | Deleting destructor | Destroys the object (`0x5f2b20` (WalkAlongTrackPersonInfosOnTrackPiece::~WalkAlongTrackPersonInfosOnTrackPiece)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -625,8 +684,9 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x61e380` | Deleting destructor | Destroys the object (`0x61e3a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x61e430` | Deleting destructor | Destroys the object (`0x61d680` (PersonStateMessageConsoleEntry::~PersonStateMessageConsoleEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x61e790` | Deleting destructor | Destroys the object (`0x61e650` (MessageConsole::~MessageConsole)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x620c00` | Deleting destructor | Destroys the object (`0x620bd0` (SharedBuffer::Release)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6210d0` | Deleting destructor | Destroys the object (`0x6210f0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x620c00` | Deleting destructor | Destroys the object (`0x620bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6210d0` | Deleting destructor | Destroys the object (`0x6210f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6210f0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x621ad0` | Deleting destructor | Destroys the object (`0x6213f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x621af0` | Deleting destructor | Destroys the object (`0x621520` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x621b10` | Deleting destructor | Destroys the object (`0x6215e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -697,12 +757,18 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x63e2f0` | Deleting destructor | Destroys the object (`0x63e010` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63ed00` | Deleting destructor | Destroys the object (`0x63ed20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x63ed30` | Deleting destructor | Destroys the object (`0x63ed50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63ed60` | Deleting destructor | Destroys the object (`0x63ed80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63ed90` | Deleting destructor | Destroys the object (`0x63edb0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63edc0` | Deleting destructor | Destroys the object (`0x63ede0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63edf0` | Deleting destructor | Destroys the object (`0x63ee10` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63ee20` | Deleting destructor | Destroys the object (`0x63ee40` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x63ee50` | Deleting destructor | Destroys the object (`0x63ee70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ed60` | Deleting destructor | Destroys the object (`0x63ed80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ed80` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x63ed90` | Deleting destructor | Destroys the object (`0x63edb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63edb0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x63edc0` | Deleting destructor | Destroys the object (`0x63ede0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ede0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x63edf0` | Deleting destructor | Destroys the object (`0x63ee10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ee10` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x63ee20` | Deleting destructor | Destroys the object (`0x63ee40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ee40` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x63ee50` | Deleting destructor | Destroys the object (`0x63ee70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x63ee70` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x63ffb0` | Deleting destructor | Destroys the object (`0x63f6b0` (GUI2_CurrentDatDesc::~GUI2_CurrentDatDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x641150` | Deleting destructor | Destroys the object (`0x641060` (GUI2_DatDesc::~GUI2_DatDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6412d0` | Deleting destructor | Destroys the object (`0x641230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -714,7 +780,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x641bb0` | Deleting destructor | Destroys the object (`0x6416f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x641e10` | Deleting destructor | Destroys the object (`0x641e30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x643ae0` | Deleting destructor | Destroys the object (`0x643b00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x643eb0` | Thunk | Calls `0x6435f0` on the object at +0x114 |
+| `0x643eb0` | Thunk | Calls `0x6435f0` (Window::Draw6435F0) on the object at +0x114 |
 | `0x644140` | Deleting destructor | Destroys the object (`0x644160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x644c60` | Deleting destructor | Destroys the object (`0x643b10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x644d20` | Get +0x10 | Returns the value at +0x10 |
@@ -816,6 +882,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x6782d0` | Deleting destructor | Destroys the object (`0x676e40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x678790` | Deleting destructor | Destroys the object (`0x6786b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x67a250` | Deleting destructor | Destroys the object (`0x679330` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67ab30` | Get +0xe8+0xcc | Returns the value at +0xcc of the object at +0xe8 |
 | `0x67ab80` | Set +0x118 | Sets the member at +0x118 to its argument, taking 1 argument off the stack |
 | `0x67b960` | Deleting destructor | Destroys the object (`0x67ad40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x67c300` | Deleting destructor | Destroys the object (`0x67b9f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -826,6 +893,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x67dce0` | Deleting destructor | Destroys the object (`0x67c5b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x67dd00` | Deleting destructor | Destroys the object (`0x67d390` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x67ed60` | Deleting destructor | Destroys the object (`0x67eae0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x67ede0` | Call | Calls `0x67ed80`, taking 1 argument off the stack |
 | `0x67f5e0` | Deleting destructor | Destroys the object (`0x67f260` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x67f7d0` | Deleting destructor | Destroys the object (`0x67f640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x680810` | Deleting destructor | Destroys the object (`0x619010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -863,6 +931,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x69a4b0` | Deleting destructor | Destroys the object (`0x4edb10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x69ac90` | Deleting destructor | Destroys the object (`0x69ac30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x69b030` | Deleting destructor | Destroys the object (`0x69ac40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x69b820` | Call | Calls `0x403c20` on `this` +0x24 with 0xf5e038 |
 | `0x69d9b0` | Deleting destructor | Destroys the object (`0x69b5b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x69e940` | Set +0xd4 | Sets the member at +0xd4 to its argument, taking 1 argument off the stack |
 | `0x69eb90` | Deleting destructor | Destroys the object (`0x69e8a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -888,7 +957,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x6a6580` | Deleting destructor | Destroys the object (`0x6a65a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a7790` | Deleting destructor | Destroys the object (`0x6a69d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a77b0` | Deleting destructor | Destroys the object (`0x6a77d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6a7910` | Thunk | Calls `0x6a9e50` on the object at +0xe4 |
+| `0x6a7910` | Thunk | Calls `0x6a9e50` (Window::SetFlagsDC) on the object at +0xe4 |
 | `0x6a8160` | Deleting destructor | Destroys the object (`0x6a7820` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a8710` | Deleting destructor | Destroys the object (`0x6a8730`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6a8f40` | Deleting destructor | Destroys the object (`0x6a8f60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -910,18 +979,19 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x6b20c0` | Deleting destructor | Destroys the object (`0x6b20e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b2350` | Deleting destructor | Destroys the object (`0x6b2370` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b25e0` | Deleting destructor | Destroys the object (`0x6b2600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6b26d0` | Set table and call | Sets the object's virtual function table to `0xf60c64`, then calls `0xbd3170` |
 | `0x6b34b0` | Deleting destructor | Destroys the object (`0x6b2db0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b38d0` | Deleting destructor | Destroys the object (`0x6b32f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b3a50` | Deleting destructor | Destroys the object (`0x6b36d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b3bc0` | Deleting destructor | Destroys the object (`0x680880`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b3d50` | Get global 0x1305d88 | Returns the value in the global `0x1305d88` |
-| `0x6b3d60` | Thunk | Calls `0x6b8580` on the object at +0x168 |
+| `0x6b3d60` | Thunk | Calls `0x6b8580` (Window::Mode6B8580) on the object at +0x168 |
 | `0x6b3df0` | Deleting destructor | Destroys the object (`0x6b3c30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b4270` | Deleting destructor | Destroys the object (`0x6b4290`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b4bb0` | Deleting destructor | Destroys the object (`0x6b4bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b63e0` | Deleting destructor | Destroys the object (`0x6b5a60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b6490` | Deleting destructor | Destroys the object (`0x6b5fa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6b8860` | Thunk | Calls `0x6b6fc0` on the object at +0x130 |
+| `0x6b8860` | Thunk | Calls `0x6b6fc0` (Path::Check6B6FC0) on the object at +0x130 |
 | `0x6b89e0` | Deleting destructor | Destroys the object (`0x6b8870` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6b8cc0` | Get global 0x1305dc0 | Returns the value in the global `0x1305dc0` |
 | `0x6b8d20` | Deleting destructor | Destroys the object (`0x6b8ab0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1005,7 +1075,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x6ef5b0` | Deleting destructor | Destroys the object (`0x6ef430` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6f0fa0` | Empty | Does nothing |
 | `0x6f14c0` | Deleting destructor | Destroys the object (`0x6f1050` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x6f1990` | Deleting destructor | Destroys the object (`0x6f19b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f1990` | Deleting destructor | Destroys the object (`0x6f19b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x6f19b0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x6f2250` | Deleting destructor | Destroys the object (`0x6f21f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6f26a0` | Deleting destructor | Destroys the object (`0x6f2640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x6f2cb0` | Deleting destructor | Destroys the object (`0x6f2cd0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1036,6 +1107,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x704e40` | Deleting destructor | Destroys the object (`0x704e60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x704e60` | Set table | Sets the object's virtual function table to `0xf304f0` |
 | `0x708490` | Deleting destructor | Destroys the object (`0x704e70` (Park::~Park)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x708960` | Get global 0x13061a8 | Returns the value in the global `0x13061a8` |
 | `0x708c60` | Deleting destructor | Destroys the object (`0x708800` (ParkEntranceBehaviour::~ParkEntranceBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x709df0` | Deleting destructor | Destroys the object (`0x709c50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x70a1a0` | Deleting destructor | Destroys the object (`0x70a1c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1058,7 +1130,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x719e80` | Deleting destructor | Destroys the object (`0x719d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x719f90` | Deleting destructor | Destroys the object (`0x719f30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x71a890` | Deleting destructor | Destroys the object (`0x71a830` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x71cb30` | Deleting destructor | Destroys the object (`0x71cb50` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x71cb30` | Deleting destructor | Destroys the object (`0x71cb50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x71cb50` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x71cb60` | Deleting destructor | Destroys the object (`0x71aee0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x724180` | Deleting destructor | Destroys the object (`0x7235b0` (PathManager::~PathManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x725ce0` | Deleting destructor | Destroys the object (`0x725b90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1079,12 +1152,14 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x737a50` | Deleting destructor | Destroys the object (`0x736860` (QueueLine::~QueueLine)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x738010` | Deleting destructor | Destroys the object (`0x7373b0` (FakeQueueLine::~FakeQueueLine)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x738420` | Deleting destructor | Destroys the object (`0x738190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x738a10` | Deleting destructor | Destroys the object (`0x738a30` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x738a10` | Deleting destructor | Destroys the object (`0x738a30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x738a30` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x738b00` | Deleting destructor | Destroys the object (`0x738b20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x73a4b0` | Deleting destructor | Destroys the object (`0x738b40` (QueueTypeGroundSurface::~QueueTypeGroundSurface)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x73b800` | Deleting destructor | Destroys the object (`0x73acd0` (QueueTypeDatabaseEntry::~QueueTypeDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x73d790` | Deleting destructor | Destroys the object (`0x73d7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x73d7c0` | Deleting destructor | Destroys the object (`0x73d7e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x73d7c0` | Deleting destructor | Destroys the object (`0x73d7e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x73d7e0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x741da0` | Deleting destructor | Destroys the object (`0x741170` (AnimalKeeper::~AnimalKeeper)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x744070` | Deleting destructor | Destroys the object (`0x7425e0` (AvatarDatabaseEntry::~AvatarDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x744a70` | Deleting destructor | Destroys the object (`0x743f60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1114,7 +1189,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x757860` | Deleting destructor | Destroys the object (`0x757670` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7578a0` | Deleting destructor | Destroys the object (`0x7576d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x75a4a0` | Deleting destructor | Destroys the object (`0x75a4c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x75a4d0` | Deleting destructor | Destroys the object (`0x75a4f0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x75a4d0` | Deleting destructor | Destroys the object (`0x75a4f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x75a4f0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x76d220` | Deleting destructor | Destroys the object (`0x76aee0` (Guest::~Guest)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x76e000` | Empty | Does nothing |
 | `0x770340` | Get global 0x1306564 | Returns the value in the global `0x1306564` |
@@ -1176,10 +1252,12 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x78fea0` | Deleting destructor | Destroys the object (`0x78cb30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x791520` | Deleting destructor | Destroys the object (`0x791540` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x799610` | Deleting destructor | Destroys the object (`0x797bb0` (Handyman::~Handyman)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x799e90` | Deleting destructor | Destroys the object (`0x799eb0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x799e90` | Deleting destructor | Destroys the object (`0x799eb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x799eb0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x79a690` | Deleting destructor | Destroys the object (`0x799ed0` (LifeGuard::~LifeGuard)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x79af30` | Deleting destructor | Destroys the object (`0x79af50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x79b310` | Deleting destructor | Destroys the object (`0x79b330` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x79b310` | Deleting destructor | Destroys the object (`0x79b330`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x79b330` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x79b420` | Deleting destructor | Destroys the object (`0x79b440` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x79d1e0` | Deleting destructor | Destroys the object (`0x79b4a0` (Litter::~Litter)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x79e580` | Deleting destructor | Destroys the object (`0x79e5a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1224,7 +1302,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x7bc6a0` | Deleting destructor | Destroys the object (`0x7bc690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7bc6c0` | Deleting destructor | Destroys the object (`0x7bc4c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7bea90` | Deleting destructor | Destroys the object (`0x7be740` (PPGDatabaseEntry::~PPGDatabaseEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7c14a0` | Deleting destructor | Destroys the object (`0x7c14c0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7c14a0` | Deleting destructor | Destroys the object (`0x7c14c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7c14c0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x7c1ed0` | Set table | Sets the object's virtual function table to `0xf708c8` |
 | `0x7c1f10` | Set table | Sets the object's virtual function table to `0xf708c8` |
 | `0x7c1f60` | Set table | Sets the object's virtual function table to `0xf708c8` |
@@ -1242,10 +1321,14 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x7c47f0` | Deleting destructor | Destroys the object (`0x7c2050`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7c4810` | Deleting destructor | Destroys the object (`0x7c20b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7c4830` | Deleting destructor | Destroys the object (`0x7c20f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7c7c80` | Deleting destructor | Destroys the object (`0x7c7ca0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7c7cb0` | Deleting destructor | Destroys the object (`0x7c7cd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7c7ce0` | Deleting destructor | Destroys the object (`0x7c7d00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7c7c80` | Deleting destructor | Destroys the object (`0x7c7ca0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7c7ca0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x7c7cb0` | Deleting destructor | Destroys the object (`0x7c7cd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7c7cd0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x7c7ce0` | Deleting destructor | Destroys the object (`0x7c7d00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7c7d00` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x7c7d10` | Deleting destructor | Destroys the object (`0x7c7d30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7cfed0` | Call | Calls `0x7cd220` (Person::SetState) with 0x2, 0x0 |
 | `0x7d4350` | Deleting destructor | Destroys the object (`0x7cd180` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7d43f0` | Deleting destructor | Destroys the object (`0x7cd1d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7e1470` | Deleting destructor | Destroys the object (`0x7dc940` (Person::~Person)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1275,6 +1358,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x7ef360` | Deleting destructor | Destroys the object (`0x7ef1c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7ef970` | Deleting destructor | Destroys the object (`0x7ef990` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7effd0` | Deleting destructor | Destroys the object (`0x7efa20` (StaffSettings::~StaffSettings)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7f05e0` | Get +0xe0+0x1b8 | Returns the value at +0x1b8 of the object at +0xe0 |
 | `0x7f0a80` | Deleting destructor | Destroys the object (`0x7f0350` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7f0aa0` | Deleting destructor | Destroys the object (`0x7f0550` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7f1260` | Deleting destructor | Destroys the object (`0x7f08f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1293,7 +1377,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x7faf10` | Deleting destructor | Destroys the object (`0x7faed0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fb3c0` | Set table | Sets the object's virtual function table to `0xf75170` |
 | `0x7fbab0` | Deleting destructor | Destroys the object (`0x7fb1d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x7fbc00` | Deleting destructor | Destroys the object (`0x7fbc20` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7fbc00` | Deleting destructor | Destroys the object (`0x7fbc20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x7fbc20` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x7fbce0` | Deleting destructor | Destroys the object (`0x7fbad0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fc700` | Deleting destructor | Destroys the object (`0x7fc720`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fc720` | Set table | Sets the object's virtual function table to `0xf75170` |
@@ -1315,7 +1400,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x7fd3a0` | Set table | Sets the object's virtual function table to `0xf75170` |
 | `0x7fd410` | Deleting destructor | Destroys the object (`0x7fd430`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fd430` | Set table | Sets the object's virtual function table to `0xf75170` |
-| `0x7fd4a0` | Thunk | Jumps to `0x7fbd00` |
+| `0x7fd4a0` | Thunk | Jumps to `0x7fbd00` (FreeTwoBlocks) |
 | `0x7fd6d0` | Deleting destructor | Destroys the object (`0x7fd6f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fe510` | Deleting destructor | Destroys the object (`0x7fe530` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x7fe8a0` | Deleting destructor | Destroys the object (`0x7fe8c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1326,16 +1411,26 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x8061a0` | Deleting destructor | Destroys the object (`0x805d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x806210` | Deleting destructor | Destroys the object (`0x806130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8065b0` | Deleting destructor | Destroys the object (`0x808900` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807a30` | Deleting destructor | Destroys the object (`0x807a50` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807a60` | Deleting destructor | Destroys the object (`0x807a80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807a90` | Deleting destructor | Destroys the object (`0x807ab0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807ac0` | Deleting destructor | Destroys the object (`0x807ae0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807af0` | Deleting destructor | Destroys the object (`0x807b10` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807b20` | Deleting destructor | Destroys the object (`0x807b40` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807b50` | Deleting destructor | Destroys the object (`0x807b70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807b80` | Deleting destructor | Destroys the object (`0x807ba0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807bb0` | Deleting destructor | Destroys the object (`0x807bd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x807fd0` | Deleting destructor | Destroys the object (`0x807ff0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807a30` | Deleting destructor | Destroys the object (`0x807a50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807a50` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807a60` | Deleting destructor | Destroys the object (`0x807a80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807a80` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807a90` | Deleting destructor | Destroys the object (`0x807ab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807ab0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807ac0` | Deleting destructor | Destroys the object (`0x807ae0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807ae0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807af0` | Deleting destructor | Destroys the object (`0x807b10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807b10` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807b20` | Deleting destructor | Destroys the object (`0x807b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807b40` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807b50` | Deleting destructor | Destroys the object (`0x807b70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807b70` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807b80` | Deleting destructor | Destroys the object (`0x807ba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807ba0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807bb0` | Deleting destructor | Destroys the object (`0x807bd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807bd0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x807fd0` | Deleting destructor | Destroys the object (`0x807ff0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x807ff0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x808d70` | Deleting destructor | Destroys the object (`0x807e60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8097e0` | Deleting destructor | Destroys the object (`0x809660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x80ba60` | Deleting destructor | Destroys the object (`0x80b990` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1347,9 +1442,11 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x811800` | Deleting destructor | Destroys the object (`0x811760` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8141f0` | Deleting destructor | Destroys the object (`0x4e40f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x814460` | Deleting destructor | Destroys the object (`0x814240` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x815110` | Deleting destructor | Destroys the object (`0x815130` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x815110` | Deleting destructor | Destroys the object (`0x815130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x815130` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x815140` | Deleting destructor | Destroys the object (`0x815160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x815170` | Deleting destructor | Destroys the object (`0x815190` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x815170` | Deleting destructor | Destroys the object (`0x815190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x815190` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x8160e0` | Deleting destructor | Destroys the object (`0x8153c0` (JumpingFountainDisplay::~JumpingFountainDisplay)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x816300` | Deleting destructor | Destroys the object (`0x815670` (JFDisplay_Chasers::~JFDisplay_Chasers)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x816b60` | Deleting destructor | Destroys the object (`0x815850` (JFDisplay_Bloom::~JFDisplay_Bloom)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1367,7 +1464,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x81d0e0` | Deleting destructor | Destroys the object (`0x81d100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81e420` | Deleting destructor | Destroys the object (`0x81df80` (ParkBenchBehaviour::~ParkBenchBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81edb0` | Deleting destructor | Destroys the object (`0x81edd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x81ede0` | Deleting destructor | Destroys the object (`0x81ee00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x81ede0` | Deleting destructor | Destroys the object (`0x81ee00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x81ee00` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x81ee10` | Deleting destructor | Destroys the object (`0x81ee30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x81ee40` | Deleting destructor | Destroys the object (`0x81ee60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x822c90` | Deleting destructor | Destroys the object (`0x8219e0` (FountainGroup::~FountainGroup)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1386,7 +1484,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x828520` | Deleting destructor | Destroys the object (`0x827480`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8285e0` | Deleting destructor | Destroys the object (`0x827660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8286c0` | Deleting destructor | Destroys the object (`0x8286e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x82a180` | Deleting destructor | Destroys the object (`0x82a1a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x82a180` | Deleting destructor | Destroys the object (`0x82a1a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x82a1a0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x82a1b0` | Deleting destructor | Destroys the object (`0x82a1d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x82a1e0` | Deleting destructor | Destroys the object (`0x82a200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x832c10` | Deleting destructor | Destroys the object (`0x831700` (SceneryItem::~SceneryItem)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1406,16 +1505,21 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x845ee0` | Deleting destructor | Destroys the object (`0x4bec20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x846160` | Deleting destructor | Destroys the object (`0x4bede0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8465f0` | Deleting destructor | Destroys the object (`0x846370` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x846ae0` | Get +0x20 | Returns the value at +0x20 |
 | `0x847830` | Deleting destructor | Destroys the object (`0x846860`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x847850` | Deleting destructor | Destroys the object (`0x846a40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x848750` | Deleting destructor | Destroys the object (`0x848770` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x848780` | Deleting destructor | Destroys the object (`0x8487a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x848750` | Deleting destructor | Destroys the object (`0x848770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x848770` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x848780` | Deleting destructor | Destroys the object (`0x8487a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8487a0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x84d0e0` | Deleting destructor | Destroys the object (`0x84c320` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x84d100` | Deleting destructor | Destroys the object (`0x5bc610` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x84d200` | Deleting destructor | Destroys the object (`0x855960` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x851b60` | Deleting destructor | Destroys the object (`0x84f220` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8536a0` | Deleting destructor | Destroys the object (`0x851a50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x853ab0` | Call | Calls `0x8530c0` on `this` +0x38 with 0x1 |
+| `0x853ac0` | Call | Calls `0x8531b0` on `this` +0x38 with 0x1 |
+| `0x853ad0` | Call | Calls `0x8532c0` on `this` +0x54 with 0x1 |
+| `0x853ae0` | Call | Calls `0x8533b0` on `this` +0x54 with 0x1 |
 | `0x85a550` | Empty | Does nothing, taking 1 argument off the stack |
 | `0x85abc0` | Deleting destructor | Destroys the object (`0x85a410` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x85b040` | Deleting destructor | Destroys the object (`0x85abe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1454,13 +1558,14 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x88bfb0` | Deleting destructor | Destroys the object (`0x88be80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x88c010` | Deleting destructor | Destroys the object (`0x88bf80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x88c740` | Deleting destructor | Destroys the object (`0x88c320` (SignBehaviour::~SignBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x88d120` | Deleting destructor | Destroys the object (`0x87a7d0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x88d120` | Deleting destructor | Destroys the object (`0x87a7d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x89cbe0` | Deleting destructor | Destroys the object (`0x89ca70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8a08b0` | Deleting destructor | Destroys the object (`0x89fda0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8a08d0` | Empty | Does nothing, taking 5 arguments off the stack |
 | `0x8ae2d0` | Get +0xb8 | Returns the float at +0xb8 |
 | `0x8ae2e0` | Get +0xbc | Returns the value at +0xbc |
 | `0x8aefb0` | Deleting destructor | Destroys the object (`0x8ae4d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8afff0` | Call | Calls `0x8ae830` (Scenery::RatingValue8AE830) on `this` +0x58 with 0x0 |
 | `0x8b0450` | Deleting destructor | Destroys the object (`0x8b0400` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8b06e0` | Deleting destructor | Destroys the object (`0x8b0310`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8b0e70` | Deleting destructor | Destroys the object (`0x8b07a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1505,9 +1610,11 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x8d30b0` | Deleting destructor | Destroys the object (`0x419490` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8d3c70` | Deleting destructor | Destroys the object (`0x8d2ec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8d3c90` | Deleting destructor | Destroys the object (`0x8d2f20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8d3cb0` | Deleting destructor | Destroys the object (`0x8d3cd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d3cb0` | Deleting destructor | Destroys the object (`0x8d3cd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d3cd0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x8d66b0` | Deleting destructor | Destroys the object (`0x8d4070` (RCT3Terrain::~RCT3Terrain)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x8d9de0` | Deleting destructor | Destroys the object (`0x8d9e00` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d9de0` | Deleting destructor | Destroys the object (`0x8d9e00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x8d9e00` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x8d9e10` | Deleting destructor | Destroys the object (`0x8d9c60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8da260` | Deleting destructor | Destroys the object (`0x8da1b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x8db6d0` | Set table | Sets the object's virtual function table to `0xf7c2f0` |
@@ -1573,7 +1680,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x9401d0` | Empty | Does nothing |
 | `0x9401e0` | Thunk | Calls `0x8fe300` on the object at +0x154 |
 | `0x9401f0` | Thunk | Calls `0x900020` (Whirlpool::Update) on the object at +0x154 |
-| `0x940970` | Deleting destructor | Destroys the object (`0x940990` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x940970` | Deleting destructor | Destroys the object (`0x940990`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x940990` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x940e80` | Deleting destructor | Destroys the object (`0x93d570`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x948200` | Deleting destructor | Destroys the object (`0x942700` (WaterManager::~WaterManager)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x955950` | Deleting destructor | Destroys the object (`0x950b00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1657,9 +1765,12 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x989080` | Get +0x108 | Returns the value at +0x108 |
 | `0x989710` | Deleting destructor | Destroys the object (`0x988a60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98a330` | Deleting destructor | Destroys the object (`0x98a350`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x98a360` | Deleting destructor | Destroys the object (`0x98a380` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x98a390` | Deleting destructor | Destroys the object (`0x98a3b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x98a3c0` | Deleting destructor | Destroys the object (`0x98a3e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x98a360` | Deleting destructor | Destroys the object (`0x98a380`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x98a380` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x98a390` | Deleting destructor | Destroys the object (`0x98a3b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x98a3b0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0x98a3c0` | Deleting destructor | Destroys the object (`0x98a3e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x98a3e0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x98a3f0` | Deleting destructor | Destroys the object (`0x98a410`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98a420` | Deleting destructor | Destroys the object (`0x98a440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x98d7c0` | Deleting destructor | Destroys the object (`0x98d7e0` (FireworkDisplayMessageEntry::~FireworkDisplayMessageEntry)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1741,7 +1852,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x9cdac0` | Set +0x6c | Sets the member at +0x6c to its argument, taking 1 argument off the stack |
 | `0x9d0bf0` | Deleting destructor | Destroys the object (`0x9cdab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d10f0` | Deleting destructor | Destroys the object (`0x9d1110`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9d30a0` | Deleting destructor | Destroys the object (`0x9d1340` (SharedBuffer::Release)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d30a0` | Deleting destructor | Destroys the object (`0x9d1340`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d30c0` | Deleting destructor | Destroys the object (`0x9d1370` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d4400` | Deleting destructor | Destroys the object (`0x9d3d70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d4db0` | Deleting destructor | Destroys the object (`0x9d4780` (RideCarParticleDescCache::~RideCarParticleDescCache)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1751,7 +1862,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x9d6430` | Deleting destructor | Destroys the object (`0x9d6390` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d6ee0` | Deleting destructor | Destroys the object (`0x9d6f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9d6f10` | Deleting destructor | Destroys the object (`0x9d6f30`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9d6f40` | Deleting destructor | Destroys the object (`0x9d6f60` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d6f40` | Deleting destructor | Destroys the object (`0x9d6f60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0x9d6f60` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0x9d9a50` | Deleting destructor | Destroys the object (`0x9d8650` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9da620` | Deleting destructor | Destroys the object (`0x9da180` (Campaign::~Campaign)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9dab80` | Set +0x28 | Sets the member at +0x28 to its argument, taking 1 argument off the stack |
@@ -1783,7 +1895,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x9f4280` | Deleting destructor | Destroys the object (`0x9f40a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9f47e0` | Deleting destructor | Destroys the object (`0x9f4800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9f5730` | Deleting destructor | Destroys the object (`0x9f4b90` (FlyingCameraRoute::~FlyingCameraRoute)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9f6000` | Thunk | Calls `0x6a3120` on the object at +0xe0 |
+| `0x9f6000` | Thunk | Calls `0x6a3120` (Window::Set10C) on the object at +0xe0 |
 | `0x9f6760` | Deleting destructor | Destroys the object (`0x9f6780` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9f6b10` | Deleting destructor | Destroys the object (`0x9f6890` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9f6e30` | Deleting destructor | Destroys the object (`0x9f6b50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1792,7 +1904,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0x9f8270` | Deleting destructor | Destroys the object (`0x9f78d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9fa0c0` | Deleting destructor | Destroys the object (`0x9f9d80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0x9fb9b0` | Deleting destructor | Destroys the object (`0x9fadc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0x9fba20` | Thunk | Calls `0x9faf80` on the object at +0x78 |
+| `0x9fba20` | Thunk | Calls `0x9faf80` (Fireworks::Shots9FAF80) on the object at +0x78 |
 | `0x9fe270` | Deleting destructor | Destroys the object (`0x9fc4b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa00270` | Deleting destructor | Destroys the object (`0x9ffb90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa01870` | Deleting destructor | Destroys the object (`0xa01890`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1817,15 +1929,18 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xa0b100` | Deleting destructor | Destroys the object (`0xa0ac80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa0b1a0` | Deleting destructor | Destroys the object (`0xa0aee0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa0bd80` | Thunk | Calls `0xa0ebc0` on the object at +0xc |
-| `0xa0bd90` | Thunk | Calls `0xa0f190` on the object at +0xc |
+| `0xa0bd90` | Thunk | Calls `0xa0f190` (Effects::DrawA0F190) on the object at +0xc |
 | `0xa0dda0` | Deleting destructor | Destroys the object (`0xa0cb40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa0e220` | Deleting destructor | Destroys the object (`0xa0ddc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa0e940` | Deleting destructor | Destroys the object (`0xa0e2d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa10350` | Deleting destructor | Destroys the object (`0xa10370` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa10350` | Deleting destructor | Destroys the object (`0xa10370`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa10370` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xa10900` | Deleting destructor | Destroys the object (`0xa10810` (Bird::~Bird)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa11310` | Deleting destructor | Destroys the object (`0xa11330` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa11310` | Deleting destructor | Destroys the object (`0xa11330`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa11330` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xa14320` | Deleting destructor | Destroys the object (`0xa13d00` (Duck::~Duck)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa14b30` | Deleting destructor | Destroys the object (`0xa14b50` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa14b30` | Deleting destructor | Destroys the object (`0xa14b50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa14b50` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xa173e0` | Deleting destructor | Destroys the object (`0xa16bf0` (Fish::~Fish)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa18190` | Deleting destructor | Destroys the object (`0xa17420` (FlightRoute::~FlightRoute)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa18580` | Deleting destructor | Destroys the object (`0xa17500` (FlightRoute::~FlightRoute)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1867,7 +1982,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xa2f440` | Deleting destructor | Destroys the object (`0xa2e590` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa2ff30` | Deleting destructor | Destroys the object (`0xa2e910` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa301b0` | Get +0x58 | Returns the value at +0x58 |
-| `0xa307b0` | Deleting destructor | Destroys the object (`0xa307d0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa307b0` | Deleting destructor | Destroys the object (`0xa307d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa307d0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xa307e0` | Deleting destructor | Destroys the object (`0xa30800`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa32bb0` | Deleting destructor | Destroys the object (`0xa313d0` (ShopExtraInstance::~ShopExtraInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa33bc0` | Deleting destructor | Destroys the object (`0xa33570` (ShopItemInstance::~ShopItemInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1918,6 +2034,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xa5e450` | Deleting destructor | Destroys the object (`0xa5e470`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5e810` | Deleting destructor | Destroys the object (`0xa5e740` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5ed60` | Set table | Sets the object's virtual function table to `0xf8f6d8` |
+| `0xa5f1f0` | Set table and call | Sets the object's virtual function table to `0xf8f6fc`, then calls `0x6835a0` (WindowOwner::~WindowOwner) |
 | `0xa5f5c0` | Deleting destructor | Destroys the object (`0xa5f3f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa5fe60` | Deleting destructor | Destroys the object (`0xa5faa0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa61240` | Deleting destructor | Destroys the object (`0xa60580` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1934,7 +2051,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xa7a780` | Deleting destructor | Destroys the object (`0xa7a3a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa7afc0` | Deleting destructor | Destroys the object (`0xa7ac40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa7b4a0` | Get global 0xf28958 | Returns the float in the global `0xf28958` |
-| `0xa7b8c0` | Deleting destructor | Destroys the object (`0xa7b8e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa7b8c0` | Deleting destructor | Destroys the object (`0xa7b8e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa7b8e0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xa7d2b0` | Deleting destructor | Destroys the object (`0xa7d2d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa7e870` | Deleting destructor | Destroys the object (`0xa7db10` (ChangingRoomInstance::~ChangingRoomInstance)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa7f390` | Deleting destructor | Destroys the object (`0xa7eba0` (ChangingRoomPersonInfo::~ChangingRoomPersonInfo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1955,7 +2073,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xa85140` | Deleting destructor | Destroys the object (`0xa84d10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa86640` | Deleting destructor | Destroys the object (`0xa851a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa86e30` | Deleting destructor | Destroys the object (`0xa85640` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa872a0` | Deleting destructor | Destroys the object (`0xa872c0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa872a0` | Deleting destructor | Destroys the object (`0xa872c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa872c0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xa87cc0` | Deleting destructor | Destroys the object (`0xa879c0` (LifeguardChairBehaviour::~LifeguardChairBehaviour)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa886f0` | Returns 0 | Returns 0 (or false / null) |
 | `0xa8baf0` | Deleting destructor | Destroys the object (`0xa8b4b0` (PoolComplex::~PoolComplex)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -1965,7 +2084,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xa8d050` | Deleting destructor | Destroys the object (`0xa8d070`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa8ea60` | Deleting destructor | Destroys the object (`0xa8e080` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa8eb50` | Deleting destructor | Destroys the object (`0xa8ea80` (PoolComplexSaveData::~PoolComplexSaveData)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xa8eea0` | Deleting destructor | Destroys the object (`0xa8eec0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa8eea0` | Deleting destructor | Destroys the object (`0xa8eec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xa8eec0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xa8eed0` | Deleting destructor | Destroys the object (`0xa8eef0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa90530` | Deleting destructor | Destroys the object (`0xa902e0` (PoolComplexSaveHeader::~PoolComplexSaveHeader)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xa90560` | Set table | Sets the object's virtual function table to `0xf918e0` |
@@ -1988,14 +2108,18 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xaa63e0` | Deleting destructor | Destroys the object (`0xaa6400`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaa6410` | Deleting destructor | Destroys the object (`0xaa5c80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaa8ac0` | Empty | Does nothing |
-| `0xaa8d90` | Deleting destructor | Destroys the object (`0xaa8db0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaa8d90` | Deleting destructor | Destroys the object (`0xaa8db0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaa8db0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xaa96c0` | Deleting destructor | Destroys the object (`0xaa8e30` (PoolPiece::~PoolPiece)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaaa060` | Deleting destructor | Destroys the object (`0x7a68d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaaa5a0` | Set table and call | Sets the object's virtual function table to `0xf70de0`, then calls `0x40f730` (ObjectRef::~ObjectRef) on `this` +0x4 |
 | `0xaab260` | Deleting destructor | Destroys the object (`0xaaaed0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaacbd0` | Deleting destructor | Destroys the object (`0xaac5c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaaf1b0` | Deleting destructor | Destroys the object (`0xaaf1d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaaf1e0` | Deleting destructor | Destroys the object (`0xaaf200` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xaaf210` | Deleting destructor | Destroys the object (`0xaaf230` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaaf1e0` | Deleting destructor | Destroys the object (`0xaaf200`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaaf200` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xaaf210` | Deleting destructor | Destroys the object (`0xaaf230`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaaf230` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xabb0c0` | Deleting destructor | Destroys the object (`0xab9bc0` (PoolSegment::~PoolSegment)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xabc640` | Deleting destructor | Destroys the object (`0xabc660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xabc660` | Set table | Sets the object's virtual function table to `0xf933c0` |
@@ -2033,19 +2157,27 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xad12c0` | Deleting destructor | Destroys the object (`0xacd450` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xad6440` | Deleting destructor | Destroys the object (`0xad16a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xad7760` | Deleting destructor | Destroys the object (`0xad6a10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xad7b50` | Deleting destructor | Destroys the object (`0xad7b70` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad7b50` | Deleting destructor | Destroys the object (`0xad7b70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xad7b70` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xad93b0` | Deleting destructor | Destroys the object (`0xad8400` (LaserBaseDesc::~LaserBaseDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xad94a0` | Deleting destructor | Destroys the object (`0xad8b80` (LaserDesc::~LaserDesc)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xadb080` | Deleting destructor | Destroys the object (`0xadb0a0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xadb0b0` | Deleting destructor | Destroys the object (`0xadb0d0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xadb0e0` | Deleting destructor | Destroys the object (`0xadb100` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xadb110` | Deleting destructor | Destroys the object (`0xadb130` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xadb140` | Deleting destructor | Destroys the object (`0xadb160` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xadb170` | Deleting destructor | Destroys the object (`0xadb190` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xadb080` | Deleting destructor | Destroys the object (`0xadb0a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xadb0a0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xadb0b0` | Deleting destructor | Destroys the object (`0xadb0d0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xadb0d0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xadb0e0` | Deleting destructor | Destroys the object (`0xadb100`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xadb100` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xadb110` | Deleting destructor | Destroys the object (`0xadb130`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xadb130` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xadb140` | Deleting destructor | Destroys the object (`0xadb160`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xadb160` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xadb170` | Deleting destructor | Destroys the object (`0xadb190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xadb190` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xadfab0` | Deleting destructor | Destroys the object (`0xadb1c0` (LaserSource::~LaserSource)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xae0f90` | Deleting destructor | Destroys the object (`0xae0fb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xae0fc0` | Deleting destructor | Destroys the object (`0xae0fe0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xae0ff0` | Deleting destructor | Destroys the object (`0xae1010` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xae0ff0` | Deleting destructor | Destroys the object (`0xae1010`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xae1010` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xae32d0` | Deleting destructor | Destroys the object (`0xae12e0` (LaserWritingLetter::~LaserWritingLetter)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xae4aa0` | Deleting destructor | Destroys the object (`0xae1e60` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xae6ca0` | Deleting destructor | Destroys the object (`0xae6cc0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2060,7 +2192,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xaef7f0` | Deleting destructor | Destroys the object (`0xaed6a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaf07a0` | Deleting destructor | Destroys the object (`0xaefe80` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaf08b0` | Set +0x96 | Sets the member at +0x96 to 0x1 |
-| `0xaf0e60` | Deleting destructor | Destroys the object (`0xaf0e80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf0e60` | Deleting destructor | Destroys the object (`0xaf0e80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xaf0e80` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xaf2540` | Deleting destructor | Destroys the object (`0xaf1da0` (InventibleAnimation::~InventibleAnimation)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaf26d0` | Deleting destructor | Destroys the object (`0xaf2010` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xaf3990` | Deleting destructor | Destroys the object (`0xaf2e40` (ShowController::~ShowController)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2084,7 +2217,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb0a8f0` | Deleting destructor | Destroys the object (`0xb08c90` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb0d990` | Deleting destructor | Destroys the object (`0xb0ac30` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb0e130` | Deleting destructor | Destroys the object (`0xb0e090` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb0e790` | Deleting destructor | Destroys the object (`0xb0e7b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb0e790` | Deleting destructor | Destroys the object (`0xb0e7b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb0e7b0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb0f7b0` | Deleting destructor | Destroys the object (`0xb0f7d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb0f840` | Deleting destructor | Destroys the object (`0xb0f0a0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb105d0` | Deleting destructor | Destroys the object (`0xb100a0` (TroughFood::~TroughFood)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2100,10 +2234,12 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb12c90` | Deleting destructor | Destroys the object (`0xb12c80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb13e30` | Deleting destructor | Destroys the object (`0xb13e50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb14f20` | Deleting destructor | Destroys the object (`0xb14f40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb151f0` | Deleting destructor | Destroys the object (`0xb15210` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb151f0` | Deleting destructor | Destroys the object (`0xb15210`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb15210` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb15a10` | Deleting destructor | Destroys the object (`0xb15320` (WAS_EatCarcass::~WAS_EatCarcass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb16750` | Deleting destructor | Destroys the object (`0xb16770`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb17170` | Deleting destructor | Destroys the object (`0xb17190` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb17170` | Deleting destructor | Destroys the object (`0xb17190`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb17190` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb17af0` | Set +0x18 | Sets the member at +0x18 to 0x0 |
 | `0xb180a0` | Deleting destructor | Destroys the object (`0xb171b0` (WAS_Follow::~WAS_Follow)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb18a70` | Deleting destructor | Destroys the object (`0xb18a90`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2113,16 +2249,21 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb1b0c0` | Deleting destructor | Destroys the object (`0xb1b0e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb1b5c0` | Set table | Sets the object's virtual function table to `0xf328c0` |
 | `0xb1b690` | Deleting destructor | Destroys the object (`0xb1b5c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb1b8f0` | Deleting destructor | Destroys the object (`0xb1b910` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1b8f0` | Deleting destructor | Destroys the object (`0xb1b910`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1b910` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb1c1f0` | Deleting destructor | Destroys the object (`0xb1c210` (WAS_Mate::~WAS_Mate)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb1e740` | Deleting destructor | Destroys the object (`0xb1e760` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1e740` | Deleting destructor | Destroys the object (`0xb1e760`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb1e760` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb1efb0` | Deleting destructor | Destroys the object (`0xb1efd0` (WALMoveSpline::~WALMoveSpline)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb1f450` | Deleting destructor | Destroys the object (`0xb1f470` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb211c0` | Deleting destructor | Destroys the object (`0xb211e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb211c0` | Deleting destructor | Destroys the object (`0xb211e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb211e0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb22fd0` | Deleting destructor | Destroys the object (`0xb22ff0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb24100` | Deleting destructor | Destroys the object (`0xb24120` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb24100` | Deleting destructor | Destroys the object (`0xb24120`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb24120` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb24130` | Deleting destructor | Destroys the object (`0xb24150`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb24160` | Deleting destructor | Destroys the object (`0xb24180` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb24160` | Deleting destructor | Destroys the object (`0xb24180`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb24180` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb25060` | Deleting destructor | Destroys the object (`0xb25080` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb25b60` | Deleting destructor | Destroys the object (`0xb24450` (WAS_PlayWithItem::~WAS_PlayWithItem)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb275d0` | Deleting destructor | Destroys the object (`0xb275f0` (WAL_RunAway::~WAL_RunAway)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2130,12 +2271,14 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb29930` | Deleting destructor | Destroys the object (`0xb29950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb29a50` | Deleting destructor | Destroys the object (`0xb29870`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2c610` | Deleting destructor | Destroys the object (`0xb2c630` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb2d290` | Deleting destructor | Destroys the object (`0xb2d2b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb2d290` | Deleting destructor | Destroys the object (`0xb2d2b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb2d2b0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb2da30` | Deleting destructor | Destroys the object (`0xb2d2d0` (WAS_ShowOff::~WAS_ShowOff)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2eb40` | Deleting destructor | Destroys the object (`0xb2eb60`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2eda0` | Deleting destructor | Destroys the object (`0xb2edc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb2f090` | Deleting destructor | Destroys the object (`0xb2f0b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb2fb80` | Deleting destructor | Destroys the object (`0xb2fba0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb2fb80` | Deleting destructor | Destroys the object (`0xb2fba0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb2fba0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb309d0` | Deleting destructor | Destroys the object (`0xb309f0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb313b0` | Deleting destructor | Destroys the object (`0xb313d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb32900` | Deleting destructor | Destroys the object (`0xb32620`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2148,8 +2291,10 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb34480` | Set table | Sets the object's virtual function table to `0xf99150` |
 | `0xb34b80` | Get +0xe8 | Returns the value at +0xe8 |
 | `0xb353e0` | Deleting destructor | Destroys the object (`0xb34940`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb36640` | Deleting destructor | Destroys the object (`0xb36660` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb36670` | Deleting destructor | Destroys the object (`0xb36690` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb36640` | Deleting destructor | Destroys the object (`0xb36660`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb36660` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xb36670` | Deleting destructor | Destroys the object (`0xb36690`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb36690` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb366a0` | Deleting destructor | Destroys the object (`0xb366c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb3acf0` | Deleting destructor | Destroys the object (`0xb367b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb415d0` | Deleting destructor | Destroys the object (`0xb3e540` (WildAnimal::~WildAnimal)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2158,8 +2303,10 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb43360` | Deleting destructor | Destroys the object (`0xb43380` (WildAnimalLocomotorMoveTest::~WildAnimalLocomotorMoveTest)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb43790` | Deleting destructor | Destroys the object (`0xb42ce0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb44070` | Deleting destructor | Destroys the object (`0xb44090`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb44790` | Deleting destructor | Destroys the object (`0xb447b0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb447c0` | Deleting destructor | Destroys the object (`0xb447e0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb44790` | Deleting destructor | Destroys the object (`0xb447b0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb447b0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xb447c0` | Deleting destructor | Destroys the object (`0xb447e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb447e0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb447f0` | Deleting destructor | Destroys the object (`0xb44810`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb47750` | Deleting destructor | Destroys the object (`0xb46ef0` (WildAnimalBase::~WildAnimalBase)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4c640` | Deleting destructor | Destroys the object (`0xb4bca0` (WildAnimalCrate::~WildAnimalCrate)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2176,14 +2323,17 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb4f900` | Deleting destructor | Destroys the object (`0xb4cfe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb4fa50` | Deleting destructor | Destroys the object (`0xb4d6c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb52cf0` | Deleting destructor | Destroys the object (`0xb52630` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb535a0` | Deleting destructor | Destroys the object (`0xb535c0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb535a0` | Deleting destructor | Destroys the object (`0xb535c0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb535c0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb535d0` | Deleting destructor | Destroys the object (`0xb535f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb53690` | Deleting destructor | Destroys the object (`0xb36790`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb55000` | Deleting destructor | Destroys the object (`0xb53b90` (WildAnimalFamily::~WildAnimalFamily)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb556d0` | Deleting destructor | Destroys the object (`0xb547d0` (WildAnimalFamilyMember::~WildAnimalFamilyMember)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb55b40` | Get +0x84 | Returns the value at +0x84 |
-| `0xb56e60` | Deleting destructor | Destroys the object (`0xb56e80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb56e90` | Deleting destructor | Destroys the object (`0xb56eb0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb56e60` | Deleting destructor | Destroys the object (`0xb56e80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb56e80` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xb56e90` | Deleting destructor | Destroys the object (`0xb56eb0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb56eb0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb597f0` | Deleting destructor | Destroys the object (`0xb570b0` (WildAnimalItem::~WildAnimalItem)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb5af80` | Deleting destructor | Destroys the object (`0xb5a760` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb5b270` | Deleting destructor | Destroys the object (`0xb5aff0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2195,11 +2345,12 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb60980` | Deleting destructor | Destroys the object (`0xb609a0` (WildAnimalLocomotor::~WildAnimalLocomotor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb60d90` | Deleting destructor | Destroys the object (`0xb60db0` (WildAnimalLocomotor::~WildAnimalLocomotor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb60f10` | Deleting destructor | Destroys the object (`0xb60f30` (WildAnimalLocomotor::~WildAnimalLocomotor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb63d90` | Deleting destructor | Destroys the object (`0xb63db0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb63d90` | Deleting destructor | Destroys the object (`0xb63db0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb63db0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb6ae20` | Deleting destructor | Destroys the object (`0xb6aca0` (WildAnimalLocomotorMoveTo::~WildAnimalLocomotorMoveTo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb6b3e0` | Deleting destructor | Destroys the object (`0xb6ae50` (WildAnimalLocomotorTurnTo::~WildAnimalLocomotorTurnTo)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb6b580` | Deleting destructor | Destroys the object (`0xb75d10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb6b5b0` | Thunk | Calls `0xb75ed0` on the object at +0x50 |
+| `0xb6b5b0` | Thunk | Calls `0xb75ed0` (Animals::DrawB75ED0) on the object at +0x50 |
 | `0xb6cf40` | Deleting destructor | Destroys the object (`0xb6b710` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb73cd0` | Deleting destructor | Destroys the object (`0xb71870` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb75550` | Deleting destructor | Destroys the object (`0xb74ae0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2229,14 +2380,19 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb85190` | Deleting destructor | Destroys the object (`0xb85140` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb85630` | Empty | Does nothing, taking 1 argument off the stack |
 | `0xb85780` | Returns 0x9c4 | Returns 0x9c4 |
-| `0xb86f20` | Deleting destructor | Destroys the object (`0xb86f40` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb86f20` | Deleting destructor | Destroys the object (`0xb86f40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb86f40` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb86f50` | Deleting destructor | Destroys the object (`0xb86f70`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb86f80` | Deleting destructor | Destroys the object (`0xb86fa0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb86fb0` | Deleting destructor | Destroys the object (`0xb86fd0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb86fe0` | Deleting destructor | Destroys the object (`0xb87000` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb86f80` | Deleting destructor | Destroys the object (`0xb86fa0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb86fa0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xb86fb0` | Deleting destructor | Destroys the object (`0xb86fd0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb86fd0` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xb86fe0` | Deleting destructor | Destroys the object (`0xb87000`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb87000` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb87010` | Deleting destructor | Destroys the object (`0xb87030`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb87040` | Deleting destructor | Destroys the object (`0xb87060`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb87070` | Deleting destructor | Destroys the object (`0xb87090` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb87070` | Deleting destructor | Destroys the object (`0xb87090`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb87090` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb8f8b0` | Deleting destructor | Destroys the object (`0xb8e1b0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb8f8d0` | Deleting destructor | Destroys the object (`0xb8e760` (FoodTrough::~FoodTrough)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb8f8f0` | Deleting destructor | Destroys the object (`0xb8f1a0` (AnimalShelter::~AnimalShelter)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2263,8 +2419,10 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xb9aa00` | Deleting destructor | Destroys the object (`0xb98d40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb9ba00` | Deleting destructor | Destroys the object (`0xb9ba20`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb9ba30` | Deleting destructor | Destroys the object (`0xb9ba50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb9ba60` | Deleting destructor | Destroys the object (`0xb9ba80` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xb9ba90` | Deleting destructor | Destroys the object (`0xb9bab0` (BaseClass::SetClass)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb9ba60` | Deleting destructor | Destroys the object (`0xb9ba80`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb9ba80` | Set table | Sets the object's virtual function table to `0xf28db8` |
+| `0xb9ba90` | Deleting destructor | Destroys the object (`0xb9bab0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xb9bab0` | Set table | Sets the object's virtual function table to `0xf28db8` |
 | `0xb9d090` | Deleting destructor | Destroys the object (`0xb9cde0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xb9e900` | Deleting destructor | Destroys the object (`0xb9e820` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xba0a50` | Deleting destructor | Destroys the object (`0xba0a70` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2328,8 +2486,6 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbb3ba0` | Deleting destructor | Destroys the object (`0xbb3bc0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbb3bc0` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbb3d30` | Deleting destructor | Destroys the object (`0xbb3b10`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xbb3d70` | Returns 0x18 | Returns 0x18 |
-| `0xbb51b0` | Returns 0x38 | Returns 0x38 |
 | `0xbb5e00` | Empty | Does nothing |
 | `0xbb5ea0` | Deleting destructor | Destroys the object (`0xbb5ec0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbb5ec0` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
@@ -2410,7 +2566,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbcb620` | Deleting destructor | Destroys the object (`0xbcb640`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbcb640` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbcb660` | Empty | Does nothing |
-| `0xbcb690` | Deleting destructor | Destroys the object (`0xbcbb50`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbcb690` | Deleting destructor | Destroys the object (`0xbcbb50` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbcb720` | Deleting destructor | Destroys the object (`0xbcb740`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbcb740` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbcb8b0` | Deleting destructor | Destroys the object (`0xbcb670`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2451,7 +2607,9 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbcdd60` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xbcdd70` | Deleting destructor | Destroys the object (`0xbcd980`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbcdf80` | Returns 0 | Returns 0 (or false / null) |
+| `0xbce1c0` | Call | Calls `0xbcddf0` on the object `0x10f2b88` |
 | `0xbd1900` | Deleting destructor | Destroys the object (`0xbd1880` (TextRef::~TextRef)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbd3c10` | Call | Calls `0xbcddf0` on the object `0x10f2b94` |
 | `0xbd6a80` | Deleting destructor | Destroys the object (`0xbd41d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbd76b0` | Thunk | Calls `0xbd14e0` (TextRef::Assign) on `this` +0x74 |
 | `0xbd8040` | Deleting destructor | Destroys the object (`0xbd6fe0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2471,6 +2629,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbe2840` | Deleting destructor | Destroys the object (`0xbe2860` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe3ad0` | Set table | Sets the object's virtual function table to `0xfa5600` |
 | `0xbe3eb0` | Deleting destructor | Destroys the object (`0xc51040` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xbe4410` | Call | Calls `0xbcddf0` on the object `0x10f2ce0` |
 | `0xbe4420` | Deleting destructor | Destroys the object (`0xbe4440`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe4780` | Deleting destructor | Destroys the object (`0xbe47a0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe47a0` | Set table | Sets the object's virtual function table to `0xfa5600` |
@@ -2479,7 +2638,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xbe5b00` | Deleting destructor | Destroys the object (`0xbe4ea0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe6800` | Deleting destructor | Destroys the object (`0xbe6680` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xbe7840` | Set table | Sets the object's virtual function table to `0xfa56c4` |
-| `0xbe8230` | Thunk | Calls `0xbe80b0` on the object at +0x4 |
+| `0xbe8230` | Thunk | Calls `0xbe80b0` (Regions::CaseBE80B0) on the object at +0x4 |
 | `0xbe82b0` | Thunk | Calls `0xbe8240` on the object at +0x4 |
 | `0xbe83b0` | Thunk | Calls `0xbe82c0` on the object at +0x4 |
 | `0xbe86e0` | Thunk | Calls `0xbe8680` on the object at +0x4 |
@@ -2530,6 +2689,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xc02ce0` | Deleting destructor | Destroys the object (`0xc02820`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc02d40` | Deleting destructor | Destroys the object (`0xc02840` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc02d60` | Deleting destructor | Destroys the object (`0xc029d0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc03a70` | Call | Calls `0xbcddf0` on the object `0x10f2ee4` |
 | `0xc03a80` | Returns 0x13d3058 | Returns 0x13d3058 |
 | `0xc044c0` | Deleting destructor | Destroys the object (`0xc03c00` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc04a20` | Deleting destructor | Destroys the object (`0xc9c110` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2541,6 +2701,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xc05c30` | Deleting destructor | Destroys the object (`0xc049c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc079a0` | Deleting destructor | Destroys the object (`0xc07750` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc08130` | Get global 0x13d3248 | Returns the value in the global `0x13d3248` |
+| `0xc08140` | Set global 0x13d323c | Sets the global `0x13d323c` to 0x1 |
 | `0xc0b880` | Deleting destructor | Destroys the object (`0xc0b4e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc0b8a0` | Deleting destructor | Destroys the object (`0xc0b570` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc0b8c0` | Deleting destructor | Destroys the object (`0xc0b600` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2561,6 +2722,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xc193b0` | Set table | Sets the object's virtual function table to `0xfafcf0` |
 | `0xc1a2f0` | Deleting destructor | Destroys the object (`0xc195e0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc1a4d0` | Deleting destructor | Destroys the object (`0xc1a420` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xc1a8b0` | Call | Calls `0xbcddf0` on the object `0x10f2f90` |
 | `0xc1afe0` | Deleting destructor | Destroys the object (`0xc1ae10` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc1b330` | Deleting destructor | Destroys the object (`0xc1b350` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc1b3f0` | Deleting destructor | Destroys the object (`0xc1b130` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
@@ -2598,8 +2760,8 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xc3abd0` | Get +0x58 | Returns the value at +0x58 |
 | `0xc3abe0` | Get +0x50 | Returns the value at +0x50 |
 | `0xc3abf0` | Get +0x2c | Returns the value at +0x2c |
-| `0xc3b7b0` | Thunk | Calls `0xc569b0` on the object at +0x28 |
-| `0xc3b7c0` | Thunk | Calls `0xc56320` on the object at +0x28 |
+| `0xc3b7b0` | Thunk | Calls `0xc569b0` (SaveWriter::Wait) on the object at +0x28 |
+| `0xc3b7c0` | Thunk | Calls `0xc56320` (Stream::ProcessC56320) on the object at +0x28 |
 | `0xc41040` | Deleting destructor | Destroys the object (`0xc3f060` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xc41370` | Get global 0x13e6b54 | Returns the value in the global `0x13e6b54` |
 | `0xc424f0` | Set table | Sets the object's virtual function table to `0xf2694c` |
@@ -2708,7 +2870,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xca40d0` | Set table | Sets the object's virtual function table to `0xfa589c` |
 | `0xca4460` | Deleting destructor | Destroys the object (`0xca43c0` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xca45a0` | Deleting destructor | Destroys the object (`0xcb77f0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xca4670` | Thunk | Calls `0xcb73d0` on the object at +0x10 |
+| `0xca4670` | Thunk | Calls `0xcb73d0` (ShaderFile::ReadCB73D0) on the object at +0x10 |
 | `0xca4680` | Thunk | Calls `0xcb7140` on the object at +0x10 |
 | `0xca46a0` | Thunk | Calls `0xcb7060` on the object at +0x10 |
 | `0xca46b0` | Thunk | Calls `0xcb7740` on the object at +0x10 |
@@ -2787,6 +2949,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xcd1fa0` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xcd2110` | Deleting destructor | Destroys the object (`0xcd1f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xcd6470` | Empty | Does nothing, taking 1 argument off the stack |
+| `0xcd8010` | Call | Calls `0xc26020` (Skeleton::UpdateC26020) on `this` +0xb0 with 0x0 |
 | `0xcd8150` | Set +0xe8 | Sets the member at +0xe8 to its argument, taking 1 argument off the stack |
 | `0xcd8160` | Set +0xf0 | Sets the member at +0xf0 to its argument, taking 1 argument off the stack |
 | `0xcd8170` | Set +0xf4 | Sets the member at +0xf4 to its argument, taking 1 argument off the stack |
@@ -2806,7 +2969,7 @@ simplest shapes a compiler makes (see the script). Offsets are from the object t
 | `0xce2b20` | Deleting destructor | Destroys the object (`0xce2b40`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce2b40` | Set table | Sets the object's virtual function table to `0xf9ebc4` |
 | `0xce2b50` | Deleting destructor | Destroys the object (`0xce2950`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
-| `0xce3630` | Deleting destructor | Destroys the object (`0xce33e0` (OwnedPointer::Reset)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
+| `0xce3630` | Deleting destructor | Destroys the object (`0xce33e0`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce5e20` | Deleting destructor | Destroys the object (`0xce5c40` (Destructor)) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
 | `0xce5e40` | Empty | Does nothing |
 | `0xce5ee0` | Deleting destructor | Destroys the object (`0xce5f00`) and frees its memory when its argument has bit 0 set; returns the object, taking 1 argument off the stack |
