@@ -172,3 +172,9 @@
 | `0xb437b0` | WildAnimal::UpdateB437B0 | In outline: an animal update when not flagged (+0x118) |
 | `0xb1cfc0` | WildAnimal::NearB1CFC0 | In outline: whether an animal is within a distance on the ground plane |
 | `0x9a7840` | Animal::Update9A7840 | In outline: an update when not flagged (+0x40) |
+| `0xb30280` | Animal::TextB30280 | In outline: an animal's text by its state (+0x78: 0, ...) |
+| `0xb7aba0` | Animal::UpdateB7ABA0 | In outline: when on (+0x70), an animal's update (`0xB7A620`) |
+| `0xb70920` | Enclosure::ValueB70920 | In outline: an enclosure value over its entries (+0x60) |
+| `0xb699d0` | Animal::ListB699D0 | In outline: goes over an animal's list (+0x17C, more than two) |
+| `0xb2fc40` | Animal::UpdateB2FC40 | In outline: an animal update when not flagged (+0xB0) |
+| `0x817910` | SceneryBehaviour::Update817910 | In outline: a behaviour update when not flagged (+0x60) |

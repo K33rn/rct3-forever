@@ -835,3 +835,25 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa84580` | Window::BuildA84580 | In outline: builds a window from the shared title `0x13CDEB8` |
 | `0x925250` | Window::Build925250 | In outline: builds a window from the shared title `0x133A160` |
 | `0x69e5a0` | List::Texts69E5A0 | In outline: makes a list's texts (+0x1C) from a shared text (`0xF5E1C4`) |
+| `0x7cd6e0` | Info::Text7CD6E0 | In outline: makes an info text from two shared texts (`0xF31F48`, `0xF31FA8`) |
+| `0x68c370` | Text::Join68C370 | In outline: joins a separator text (`0xF265E4`) and the text given |
+| `0xc67210` | Window::RectC67210 | In outline: sets a window's rectangle (Rect::Assign) and its own part |
+| `0x67d550` | List::Layout67D550 | In outline: lays out a list's rows |
+| `0xa82220` | Money::TextA82220 | In outline: makes a money text, or the "unlimited" one (Money::FormatOrUnlimited) |
+| `0x67bbb0` | Window::Build67BBB0 | In outline: builds a window from the shared title `0x12F8220` |
+| `0x686720` | Window::Build686720 | In outline: builds a window from the shared title `0x12F8458` |
+| `0x6a8f90` | Window::Fill6A8F90 | In outline: another list fill like Window::FillA06FC0 (`0x687DF0`, `0x685AC0`) |
+| `0x5facf0` | Window::Build5FACF0 | In outline: builds a window from the shared title `0x12F5704` |
+| `0x695220` | Layout::Place695220 | In outline: another box placement like Layout::Place6954F0 |
+| `0x665af0` | Window::Build665AF0 | In outline: builds a window from the shared title `0x12F8120` |
+| `0x750350` | AvatarEditor::Reset750350 | In outline: when flagged (+0xE49), resets the avatar editor's parts (`0x746390` with -1) |
+| `0x685e30` | Window::Build685E30 | In outline: builds a window from the shared title `0x12F843C` |
+| `0x608e50` | Window::Build608E50 | In outline: builds a window from the shared title `0x12F5720` |
+| `0xa47190` | Graph::ValueA47190 | In outline: sets a graph part's value (Window::SetRelatedValue with 1.4615) |
+| `0x641e40` | Window::Make641E40 | In outline: makes a window part (`0x6C21F0`, kind 0x200000C, 10) |
+| `0x631740` | Window::Build631740 | In outline: builds a window from the shared title `0x12F7E44` |
+| `0xa586c0` | Window::BuildA586C0 | In outline: builds a window from the shared title `0x1342960` |
+| `0x6d1260` | Label::Float6D1260 | In outline: makes a number text (`%g`) from a value (+0x78) |
+| `0xa6c0e0` | Camera::FocusA6C0E0 | In outline: when there is a shared target (`0x13429B4`), moves the camera to it (MainCamera::Get) |
+| `0x57acb0` | Window::Build57ACB0 | In outline: builds a window from the shared title `0x12F53B4` |
+| `0x666ae0` | Window::Part666AE0 | In outline: makes a window part (Window::Part666570, `0x6456F0`) |

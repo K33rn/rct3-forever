@@ -605,3 +605,37 @@
 | `0x71ef40` | Path::CanPlace71EF40 | In outline: whether a path piece can go at a cell (`0x71DCE0`), when the counts allow (`0x130634C`, `0x1306350`) |
 | `0x798370` | Guest::PathNear798370 | In outline: a guest's path within 40 (Path::Distance79B5D0 with 0x10) |
 | `0x5e7240` | Ride::Part5E7240 | In outline: a ride part by n (`0x5D3C50`) |
+| `0x4d1190` | Ride::Value4D1190 | In outline: for kind 0xE (+0x154), a value rounded from its part (+0x130 scaled) |
+| `0xb9d240` | PathGrid::CellB9D240 | In outline: sets up a path grid cell's record |
+| `0x5e40d0` | TrackedRide::Pieces5E40D0 | In outline: goes over a ride's pieces (+0xE8) when not flagged (+0x68) |
+| `0x7c59e0` | Terrain::Check7C59E0 | In outline: a check over the terrain |
+| `0x70ed50` | Name::Lookup70ED50 | In outline: acts by a name's hash value (0x1EE3A652 and others) |
+| `0x536880` | Ride::Update536880 | In outline: a ride's update when not flagged (+0x200) |
+| `0x5365b0` | Ride::Update5365B0 | In outline: a ride's update when not flagged (+0x1E4) |
+| `0x5c2220` | Ride::Find5C2220 | In outline: finds a ride entry (`0x52EDD0`) |
+| `0x4f6940` | Ride::Kind4F6940 | In outline: acts by a ride's kind (1 to 4), with a piece (+0x660) for kind 4 |
+| `0x8260b0` | Scenery::Update8260B0 | In outline: finds a scenery item (`0x825A00`) and refreshes it |
+| `0x5aa370` | Ride::Check5AA370 | In outline: a ride check when not being placed (+0x378) |
+| `0x8da980` | Water::Release8DA980 | In outline: releases water entries past a count (+0xC) |
+| `0x703e90` | Grid::Toggle703E90 | In outline: when a cell's flag changes (+0x64), refreshes the grid (`0x7036E0` over +0x6C by +0x70) |
+| `0x549c50` | Ride::Position549C50 | In outline: a ride part's position (Object::Position) and its target (+0x280, +0x260) |
+| `0xaab930` | PoolComplex::FindAAB930 | In outline: finds a pool part (`0xAC5BD0`) |
+| `0x8e8a20` | Water::Make8E8A20 | In outline: makes a 0xE0-byte water record |
+| `0x8e3a30` | Terrain::Pass8E3A30 | In outline: another terrain pass |
+| `0x7e16d0` | Scenery::Link7E16D0 | In outline: links a scenery item when it has one |
+| `0x736a90` | Ride::Refresh736A90 | In outline: refreshes a ride's part (`0x861050` with 0) when it has one (+0x44) |
+| `0xaa4ff0` | PoolComplex::UpdateAA4FF0 | In outline: refreshes a pool part (`0xAA3A40`) and acts when it is on |
+| `0x940b90` | Water::Check940B90 | In outline: a water check with the shared manager (`0x13063D0`) |
+| `0x8d4390` | Terrain::Setup8D4390 | In outline: sets a terrain value (Set_+0x50) and sets it up (`0x8D3A90` with `0x10ED71C`) |
+| `0x55b2d0` | Ride::Compare55B2D0 | In outline: compares two rides' values (`0x4AA7E0`) |
+| `0x55a6a0` | Ride::Compare55A6A0 | In outline: the same ride comparison (another copy) |
+| `0x4ffe20` | Ride::Kind4FFE20 | In outline: acts by a ride's kind (9 to 0xB, 3 or flag 0x40) |
+| `0x828cb0` | Scenery::Footprint828CB0 | In outline: works out a scenery item's footprint (Placement::Footprint on +0xA0, +0xA4) when not flagged (+0x130) |
+| `0x84bca0` | Scenery::Activate84BCA0 | In outline: activates a scenery item when not flagged (+0x5C) |
+| `0x492f40` | Terrain::Value492F40 | In outline: a terrain value at a cell |
+| `0x709e10` | Terrain::Edit709E10 | In outline: another terrain edit when not flagged (+0x30) |
+| `0x4b0760` | Shop::Item4B0760 | In outline: makes a shop item when it is not set (Entry::IsSet) |
+| `0xa9d4a0` | PoolComplex::ListA9D4A0 | In outline: goes over a pool complex's list (+0x54) |
+| `0x713960` | Path::Kind713960 | In outline: handles a path piece by its kind |
+| `0x71ec30` | Path::Kind71EC30 | In outline: handles a path piece by its kind (Interface4C::GetCached) |
+| `0x72cde0` | Path::Refresh72CDE0 | In outline: refreshes a path piece (`0x82FB30`) |

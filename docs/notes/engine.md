@@ -1607,3 +1607,15 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc93570` | Renderer::ResetC93570 | In outline: resets a renderer (`0xC056C0`) and sixteen of its slots |
 | `0xcb7d30` | Shader::LoadCB7D30 | In outline: loads a shader (`0xC536D0`) and makes its record (kind 0x12) |
 | `0x5d1840` | Ride::Range5D1840 | In outline: works out a ride's range by its kind |
+| `0xcb1966` | Table::FindCB1966 | In outline: finds an entry matching two values (register-passed table) |
+| `0xbf9390` | Model::MaterialBF9390 | In outline: finds a model part's material (`0xBD6E10`) |
+| `0xc41060` | Overlay::OpenC41060 | In outline: opens an overlay file (OverlayFile::Open with -1) |
+| `0xbf68e0` | Resource::LinkBF68E0 | In outline: links a resource when it has one |
+| `0xa048f0` | Folder::PathA048F0 | In outline: builds a folder path from the install folder text (`0x1106DC4`) |
+| `0xbfad80` | File::ReadBFAD80 | In outline: reads a file's header (`0xBE5020`, two four-byte values) |
+| `0x7b7a80` | List::Copy7B7A80 | In outline: copies a list (+0x4C) into a new array (32 bytes each) |
+| `0x9bd9f0` | Files::FindFrw | In outline: lists the `*.frw` files of a folder |
+| `0x9a5d00` | Files::FindFwd | In outline: lists the `*.fwd` firework files of a folder |
+| `0xca49f0` | Input::KeyCA49F0 | In outline: handles a key code (`0xCA4970`) by its low byte |
+| `0x8015a0` | Text::ReadText8015A0 | In outline: reads a saved text from a block (`0x809210`, two bytes at a time), checking the block's size |
+| `0x970650` | Table::Pick970650 | In outline: gives one of a set of values by number (0, ...) |

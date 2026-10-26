@@ -934,3 +934,4 @@ and leaves it with `0x46F990`). See the script for how they are recognised.
 | `0xed88b0` | HandymanTools::Brush | Makes the handyman's brush tool at start-up (`People\HandyMan\Tools`, `Brush`), like HandymanTools::Sponge |
 | `0xed8a20` | HandymanTools::WaterCan | Makes the handyman's watering can tool at start-up (`People\HandyMan\Tools`, `WaterCan`), like HandymanTools::Sponge |
 | `0xed8e70` | HandymanTools::Hoe | Makes the handyman's hoe tool at start-up (`People\HandyMan\Tools`, `Ho`, `Hoe`), like HandymanTools::Sponge |
+| `0xf04520` | Colours::InitF04520 | In outline: sets up a set of shared colours at start-up (Colour::Colour with values like 0x2F,0x43,0x43 and 0x83,0x97,0x97) |

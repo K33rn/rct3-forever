@@ -242,3 +242,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xae1850` | Graph::FindAE1850 | In outline: when on (+0x60), finds a shown entry (+0x40, count +0x44) |
 | `0xc21df0` | Skeleton::BuildC21DF0 | In outline: builds a bone's matrices (`0xBEE460` on +0x70) and goes over its children (+0x5C chain at +0x60) |
 | `0x821ae0` | SceneryBehaviour::Range821AE0 | In outline: with a reference (WithReference8155F0), checks its counts (+0x4C, +0x6C) |
+| `0x510990` | Car::Points510990 | In outline: goes over n car points |
+| `0x8100e0` | Regions::Find8100E0 | In outline: finds a region for a point, searching the children (it calls itself) |
+| `0x95e640` | Water::Edge95E640 | In outline: another water edge case, the fraction kept between 0 and 1 |

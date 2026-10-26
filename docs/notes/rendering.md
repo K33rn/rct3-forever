@@ -587,3 +587,16 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xaa3680` | PoolComplex::FillAA3680 | In outline: fills a pool's buffers for the current device (ForCurrent(3), `0xBFFB60`) |
 | `0x853af0` | Scenery::Release853AF0 | In outline: releases a scenery part's shader unless in mode 2 (+0x14) |
 | `0x9f02f0` | Firework::Time9F02F0 | In outline: a firework part's update once its time (+0x1C) is reached (`0x9F5FE0`) |
+| `0x864760` | Scenery::Shapes864760 | In outline: checks a scenery item's shapes (Model::CheckShapes) unless its kind is 4 |
+| `0xc009b0` | Effect::ValueC009B0 | In outline: an effect value from its parts (+0x164, `0xBFFDC0`) |
+| `0xc9b600` | Particles::ListC9B600 | In outline: goes over a particle list's entries |
+| `0xbf7cb0` | Draw::SetupBF7CB0 | In outline: another drawing setup for the current device (ForCurrent(3), Call10IfReady) |
+| `0xbcc1f0` | Object::NonZeroBCC1F0 | In outline: checks an object's values for non-zero ones (0x24 bytes each) |
+| `0x9ff7c0` | Fireworks::Make9FF7C0 | In outline: makes a firework part (`0xCEFF50`) |
+| `0x977770` | Particles::Shader977770 | In outline: when a particle setup changes, releases its old shader and makes the new one |
+| `0x908940` | Water::Colours908940 | In outline: another water colour pass for pieces of two or more points |
+| `0xb3c160` | Animal::DrawB3C160 | In outline: sets up an animal's drawing (`0xCD28C0`, `0xCD29F0`) |
+| `0xbbb3d0` | Track::CopyBBB3D0 | In outline: copies a track's values in blocks |
+| `0xceb670` | Batches::SortByOpacity | In outline: sorts a model's batches (+0x80) by their materials' opacity (Materials::CompareOpacity) |
+| `0xbc9c70` | Model::BuildBC9C70 | In outline: builds a model's parts unless turned off (`0x13D0B14`) |
+| `0x9fa2e0` | Fireworks::Ground9FA2E0 | In outline: a firework part check over the terrain (kinds other than 1) |

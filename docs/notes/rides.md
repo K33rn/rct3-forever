@@ -272,3 +272,5 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5359d0` | Ride::Section5359D0 | In outline: in mode 2 (+0x70), when the ride's checks fail, finds its section (`0x12F5338`) |
 | `0x5ed900` | AttractionPerson::Spots5ED900 | In outline: finds a person's spots on an attraction (`0x5F2460`) for the selected one |
 | `0x54e360` | Ride::Particles54E360 | In outline: makes a ride's particle manager (RideParticleManager) and its parts (+0x5C, `0x12F526C`) |
+| `0x51e5d0` | Car::Parts51E5D0 | In outline: goes over a car's parts handling each (`0x51B590`) |
+| `0x5f1250` | Ride::Update5F1250 | In outline: a ride's update when not flagged (+0x58) |
