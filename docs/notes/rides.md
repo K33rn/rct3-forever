@@ -479,3 +479,25 @@ Tracked rides, flat rides and their cars and trains.
 | `0x59ade0` | Ride::Update59ADE0 | In outline: an update when not flagged (+0xD8) |
 | `0x523790` | Car::Update523790 | In outline: an update when not flagged (+0x180) |
 | `0x50b9b0` | Car::Pose50B9B0 | In outline: a car pose step when a value is positive |
+| `0x5a4a90` | TrackedRide::Platforms | In outline: loads from the "Tracks\Platforms" folder |
+| `0x58aa30` | Ride::Time58AA30 | In outline: a timed step (`0x58A7A0`, Device::TimeBCC4C0) |
+| `0x58a8b0` | Ride::Time58A8B0 | In outline: a timed step (`0x58A7A0`, `0xBCC740`) |
+| `0x4b6b90` | Ride::Check4B6B90 | In outline: a step when a check fails (`0x4B51E0`) |
+| `0xaa9ab0` | PoolComplex::RideAA9AB0 | In outline: a step with a ride's section (`0x12F5338`, Ride::Get559E00) |
+| `0x4c8360` | Shop::Mode4C8360 | In outline: a step unless in mode 1 (+0xC4), with a positive value (+0x90) |
+| `0x55a530` | Ride::Link55A530 | In outline: links parts (`0x4AA7E0`) |
+| `0x5240b0` | Car::Check5240B0 | In outline: a check by a value against a limit, or mode 2 (+0x384) |
+| `0x58bfd0` | Ride::All58BFD0 | In outline: goes over the rides from the selected one (`0x12F5608`, next at +0x188), for those flagged 0x400000 with more than one station |
+| `0x58be60` | Ride::All58BE60 | In outline: the same with next at +0x16C |
+| `0x561c00` | Ride::Step561C00 | In outline: a step unless told not to, when not flagged (+0x5C) |
+| `0x7ad8a0` | Ride::Case7AD8A0 | In outline: a value by case (0x84, ...) |
+| `0x59e490` | Ride::Selected59E490 | In outline: a step with the selected ride (`0x12F5608`) when a check fails |
+| `0x53eb40` | Ride::Pass53EB40 | In outline: goes over a ride's parts (+0x34) |
+| `0x5f22f0` | TrackPiece::Ref5F22F0 | In outline: a step with the current tool (`0x12F565C`, WithReference5EB9B0) |
+| `0x5738d0` | Ride::Check5738D0 | In outline: a check when not flagged (+0x254) |
+| `0x54ef30` | Ride::Clear54EF30 | In outline: clears a part's value (Set_+0xc0(0)) when it has one |
+| `0x7ad1f0` | Attraction::First7AD1F0 | In outline: a step with the first attraction (AttractionInstance::FirstOf(0)) |
+| `0x7ad080` | Attraction::First7AD080 | In outline: the same (another copy) |
+| `0x57a4d0` | Ride::Tool57A4D0 | In outline: a step with the current tool (`0x12F5638`) and selected ride (`0x12F5608`) |
+| `0x534800` | Ride::Count534800 | In outline: a step (`0x532930`) for a positive count |
+| `0x4032d0` | Ride::Kind4032D0 | In outline: a step when flagged (+0x58) or a part's kind is 0xE |

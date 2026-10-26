@@ -1263,3 +1263,38 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6b5b90` | Colour::Value6B5B90 | In outline: a value kept within a limit |
 | `0x4e2630` | TerrainEditor::Open | In outline: builds the terrain editor window (TerrainEditor::Build) |
 | `0xc63840` | Window::CheckC63840 | In outline: a check (`0xC5FA90`) |
+| `0x9c2ae0` | Window::Point9C2AE0 | In outline: a point check against a shape with more than three points |
+| `0x9c2810` | Window::Point9C2810 | In outline: the same (another copy) |
+| `0x65ec80` | Window::Mouse65EC80 | In outline: a step (`0x65EB50`) when a value is below 0 |
+| `0x691110` | Text::Measure691110 | In outline: a loop over a text's characters |
+| `0xac9880` | Window::OpenAC9880 | In outline: builds the window titled `0x13CE4A0` (Window::BuildAC94F0) |
+| `0xa4bb00` | Window::LinkA4BB00 | In outline: sets a part when it changes |
+| `0xa40450` | Window::PlaceA40450 | In outline: places a window when asked (Window::UpdateRect) |
+| `0x84a750` | Scenery::Text84A750 | In outline: a text when not flagged (+0xC8) |
+| `0x70b860` | Window::Event70B860 | In outline: for event 7, refreshes (`0x6AFC20`) |
+| `0x6e5a80` | Objectives::MinAnimalHealthText | In outline: makes a minimum animal health condition's text with its number (MinAnimalHealthCondition::Name) |
+| `0xa2c410` | Window::TextA2C410 | In outline: a text from entries (+0x1C) |
+| `0x4161f0` | Window::Make4161F0 | In outline: makes a part with 3.0 (`0x685070`) |
+| `0xa52b40` | Window::StepA52B40 | In outline: a window step |
+| `0x6aac50` | Window::Draw6AAC50 | In outline: draws a window part (GUIRenderer) by its flags |
+| `0x691290` | Text::Words691290 | In outline: goes over a text's words (spaces, 0x20) |
+| `0x690150` | Window::Count690150 | In outline: a refresh (`0x6B0E30`) under a count |
+| `0x67eb20` | Window::Layout67EB20 | In outline: a step (Window::Mode67A960) and places the window (Window::UpdateRect) |
+| `0x4531d0` | Message::Number4531D0 | In outline: a message from a text with a four-digit number ("%s%04d") |
+| `0xb09660` | Window::DrawB09660 | In outline: draws a part (GUIRenderer, `0x692710`) |
+| `0x9be5e0` | Window::Part9BE5E0 | In outline: makes a part (`0x67BE80`) and places it (Window::SetRelationAndLayout with 6) |
+| `0x6950b0` | Layout::Step6950B0 | In outline: a step with the layout table, set up first when its value is unset (`0x10EEDB4` = 0xFFFF) |
+| `0xac9d60` | Window::OpenAC9D60 | In outline: builds the window titled `0x13CE494` (Window::BuildAC9A00) |
+| `0xa2ab50` | Window::TextA2AB50 | In outline: a text from entries (+0x1C) |
+| `0x6a4b40` | Window::Layout6A4B40 | In outline: places a window (Window::UpdateRect) and refreshes it (`0x6A4820`) |
+| `0xc64e40` | Window::HitC64E40 | In outline: a hit test against a part's rectangle (Rect::Contains) |
+| `0xa57530` | Window::SharedA57530 | In outline: a step when two shared values are set (`0x1304A24`, `0x13044AC`) |
+| `0xa2b5f0` | Window::NameA2B5F0 | In outline: makes a named text from a shared object (`0x1342788` +0x5C) |
+| `0x8df9d0` | Window::Check8DF9D0 | In outline: checks a box and lays out the window (Window::SetChecked(1), Window::Layout) |
+| `0x7c8700` | Info::Text7C8700 | In outline: makes an info text from a wide string and a shared one (`0xF31F48`) |
+| `0x6aba60` | Window::Layout6ABA60 | In outline: places a window (Window::UpdateRect) |
+| `0x67a410` | Window::Flag67A410 | In outline: a step when a flag changes (bit 25) |
+| `0xc62700` | Window::RectC62700 | In outline: a step for an empty rectangle when not flagged (+0x12) |
+| `0xaefca0` | Scrollbar::RangeAEFCA0 | In outline: a step when a range (+0x84 minus +0x7C) is above a limit |
+| `0xc65800` | Window::ScrollC65800 | In outline: a step against the window system's value (`0x13E6D00` +0xD4) |
+| `0xa644a0` | Window::MakeA644A0 | In outline: makes a list member part (ListMember with `0x10EC9F8`) |

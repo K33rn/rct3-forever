@@ -1036,3 +1036,49 @@
 | `0x8dcee0` | Terrain::Count8DCEE0 | In outline: a step for a positive count |
 | `0x815470` | SceneryBehaviour::Shared815470 | In outline: a step when one shared count passes another (`0x130B388`, `0x130B418`) |
 | `0x8917a0` | Scenery::Grid8917A0 | In outline: a step for a grid with cells |
+| `0xa90fb0` | Fence::CheckA90FB0 | In outline: a step when two checks fail (`0xA906C0`, Fence::CountA90B50) |
+| `0x715b40` | Path::MouseStep | In outline: places at the mouse (Path::PlaceAtMouse) when a value is below 0 |
+| `0xabd040` | Fence::PassABD040 | In outline: goes over entries not flagged (+0x60, +0x18) |
+| `0x8f2580` | Terrain::Case8F2580 | In outline: a terrain step by case |
+| `0x7d63e0` | Person::Mode7D63E0 | In outline: in mode 8 (+0x190) once a time passes a table value (`0xFC35D8`), updates a person (Person::Update7CF350) |
+| `0x8d6220` | Terrain::Flags8D6220 | In outline: a step for an entry flagged (+5, +4) |
+| `0x717260` | Path::Build717260 | In outline: builds a path piece (Path::Build7143C0) |
+| `0x94c610` | Water::Add94C610 | In outline: a step when adding n keeps a count (+0x59) under 0xFF |
+| `0x926600` | Water::Make926600 | In outline: makes parts (`0xBDADC0`, Constructor on +0x84) |
+| `0xafdaf0` | Animal::RangeAFDAF0 | In outline: a step inside a range (+0x30) |
+| `0x9036d0` | Whirlpool::FindAndSet | In outline: finds a whirlpool's cell (Whirlpool::FindCell) and sets it (Whirlpool::Cell) |
+| `0x89c5f0` | Scenery::Shared89C5F0 | In outline: when the global flag `0x1400306` is set, goes over entries |
+| `0x817420` | SceneryBehaviour::Slot817420 | In outline: a step for a 32-byte slot not flagged (+0x18) |
+| `0x75ae90` | Guest::Stage75AE90 | In outline: a step with no stage (+0x194 = -1) |
+| `0x84afe0` | Scenery::Step84AFE0 | In outline: a step (`0x532A80`) unless flagged (+0x1C) |
+| `0x994ce0` | Fireworks::Terrain994CE0 | In outline: a step over the terrain |
+| `0xb766d0` | Animal::TerrainB766D0 | In outline: a step over the terrain |
+| `0x7a06d0` | Terrain::Loop7A06D0 | In outline: goes over a linked list |
+| `0x8b2210` | Scenery::Slot8B2210 | In outline: a step for an entry not flagged (+0x7C, +0x18) |
+| `0x848b20` | Scenery::Step848B20 | In outline: a step (`0x82FAB0`) when not flagged (+0x6C) |
+| `0x8489b0` | Scenery::Step8489B0 | In outline: a step (`0x82FA30`) when not flagged (+0x6C) |
+| `0x848840` | Scenery::Step848840 | In outline: a step (`0x82F9C0`) when not flagged (+0x6C) |
+| `0x936d70` | Water::Loop936D70 | In outline: a loop over parts |
+| `0x72b1c0` | Path::Inside72B1C0 | In outline: a step inside the path grid (PathManager::Get, Cell::StepInside) |
+| `0x89c480` | Scenery::Shared89C480 | In outline: when the global flag `0x1400306` is set, goes over entries |
+| `0xabd790` | Fence::RectABD790 | In outline: goes over a rectangle of cells |
+| `0x9473a0` | Water::Table9473A0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x823260` | SceneryBehaviour::Slot823260 | In outline: a step (`0x94EEB0`) when it has a slot |
+| `0x76ef40` | Guest::Check76EF40 | In outline: a check unless the park is flagged (+0x5C bit 0x40), for an entry in mode 2 (+0x70) |
+| `0x929420` | Water::Pair929420 | In outline: a step when given both parts, unless told not to |
+| `0x838530` | Scenery::SetCount838530 | In outline: sets a count (+0x34) when it changes |
+| `0x834710` | Scenery::Text834710 | In outline: a check on a scenery item's text (Scenery::Link834260) |
+| `0x8345a0` | Scenery::Text8345A0 | In outline: the same (another copy) |
+| `0x7ae6f0` | Terrain::Range7AE6F0 | In outline: a check that cells lie inside a byte range |
+| `0x7861d0` | GuestGroup::Slot7861D0 | In outline: a step for slot 0 to 6 (`0x1342768`) |
+| `0xb76560` | Animal::TerrainB76560 | In outline: a step over the terrain |
+| `0x934360` | Water::Grow934360 | In outline: grows a list by 16 when full (ObjectArray::SetCapacity) |
+| `0x7b2560` | Person::Group7B2560 | In outline: a step when a person's group (Guest::Group) differs |
+| `0x94c790` | Water::Add94C790 | In outline: a step when adding n keeps a count (+0x59) under 0xFF |
+| `0x87a370` | Scenery::Normal87A370 | In outline: a normalised direction, with length 0 handled |
+| `0x830210` | Scenery::Check830210 | In outline: a check when not flagged (+0x18C) |
+| `0x7c3ff0` | Person::Water7C3FF0 | In outline: a step with the water manager when it has a slot (+0x22C) |
+| `0x7b0460` | Person::Kind7B0460 | In outline: a step when not flagged (+0x3C) for kinds other than 6 and 0x1E |
+| `0x728d70` | Path::Case728D70 | In outline: a path value by case |
+| `0x9ffcd0` | Fireworks::Terrain9FFCD0 | In outline: a step over the terrain for entries (+0x10) |
+| `0x8fafa0` | Water::Camera8FAFA0 | In outline: a step with the camera (MainCamera::Get, `0xA62D90`) |

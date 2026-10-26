@@ -206,3 +206,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x768f80` | Guest::Update768F80 | In outline: a guest update when not flagged (+0x2D4) |
 | `0x7de330` | Person::Update7DE330 | In outline: an update when not flagged (+0x2D4) |
 | `0x7e1cf0` | Person::Message | In outline: makes a person message (PersonMessage) |
+| `0x7cede0` | Person::Time7CEDE0 | In outline: a step when a time (+0xBC) is above 1 and a check fails |
+| `0x7d41e0` | Person::Value7D41E0 | In outline: a value from an object (`0x13CE3BC`) |

@@ -312,3 +312,24 @@
 | `0xb6c720` | Animal::CountB6C720 | In outline: a step for a positive count |
 | `0xa89220` | Animal::BandA89220 | In outline: a step with a guest band (Guest::Band) |
 | `0xa14660` | Bird::WaterA14660 | In outline: a step with the water manager |
+| `0xb39260` | Animal::RandomB39260 | In outline: when not flagged (+0xFE), a random value between 0.6 and 0.75 (Random::Ran0Range) |
+| `0xa87a50` | Animal::SpotA87A50 | In outline: a step with a guest spot (Guest::Spot79A6B0, `0xA87450`) |
+| `0xa06110` | Bird::MakeA06110 | In outline: makes a part when not flagged (+0x68) |
+| `0x415c00` | Animal::Pass415C00 | In outline: goes over entries (+0x98) when there is none |
+| `0xb5a840` | Animal::FlagB5A840 | In outline: a step by a flag (+0x156) |
+| `0xb7e990` | Animal::UpdateB7E990 | In outline: an update when not flagged (+0xD4) (Interface48::Get) |
+| `0xaeb280` | Animal::PlaceAEB280 | In outline: when on (+0x2C), places parts (Window::UpdateRect) |
+| `0xae5d40` | Animal::PassAE5D40 | In outline: goes over entries not flagged (+0x18) |
+| `0xafdfa0` | Animal::StepAFDFA0 | In outline: when on (+0x34), a step (`0xAFDEC0`) |
+| `0xb0f930` | Animal::CheckB0F930 | In outline: a step when a check passes and a count (+0x94) is positive |
+| `0xb51750` | Animal::StepB51750 | In outline: a step (`0xB354D0`) when its owner is not flagged (+8 +0xFF) |
+| `0xabb910` | Animal::CaseABB910 | In outline: a step by case |
+| `0xb2e770` | Animal::GetB2E770 | In outline: a step with objects (Interface48::Get, WildAnimal::Interface60) |
+| `0xb2d3f0` | Animal::FlagsB2D3F0 | In outline: a step when flagged (+0xB6) and not flagged (+0xAC) |
+| `0xb117e0` | Animal::CountB117E0 | In outline: a loop, with no entries handled |
+| `0xa065f0` | Bird::CaseA065F0 | In outline: when asked, a step by a value (+0x14) |
+| `0xb7c480` | WildAnimal::MoveTo | In outline: makes a move-to locomotor (WildAnimalLocomotorMoveTo) |
+| `0xad86a0` | Animal::UpdateAD86A0 | In outline: an update when not flagged (+0x74) |
+| `0xafb160` | Animal::SlotAFB160 | In outline: a step for a 0x2C-byte entry flagged (+0x10 bit 1), up to 0xFF |
+| `0xb31b20` | WildAnimal::UseShelter2 | In outline: makes a use-shelter decision (WAS_UseShelter) and a part (`0x73E100`) |
+| `0xb10780` | Animal::CountB10780 | In outline: a step when a count (`0xB105F0` +0x50) is under 1 |

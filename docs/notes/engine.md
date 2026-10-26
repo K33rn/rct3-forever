@@ -1883,3 +1883,45 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xa27aa0` | NamedObject::MakeA27AA0 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
 | `0xcba4e0` | Shader::StepCBA4E0 | In outline: a shader step (`0xC46720`) |
 | `0x40d2b0` | Record::Step40D2B0 | In outline: a step (`0x40C3C0`) |
+| `0xc49180` | Array::MakeC49180 | In outline: makes an array of n values |
+| `0x808bf0` | Array::Make808BF0 | In outline: makes an array of n values from a list (+0x10) |
+| `0x58eb20` | Array::Resize58EB20 | In outline: resizes a list of 20-byte entries to n |
+| `0xcebc50` | Array::SetCountCEBC50 | In outline: sets a count (+0x3C) when it changes |
+| `0xc5c670` | Device::FindModeC5C670 | In outline: finds a list entry matching two values (+0x14, +0x18) |
+| `0xc03e00` | Device::CheckC03E00 | In outline: a device step that handles the D3D "invalid call" error (0x8876086C) |
+| `0x49dad0` | Text::Decimal49DAD0 | In outline: writes a number with two decimals ("%.2f") |
+| `0x49d950` | Text::Decimal49D950 | In outline: the same (another copy) |
+| `0x49d7d0` | Text::Decimal49D7D0 | In outline: the same (another copy) |
+| `0x49d650` | Text::Decimal49D650 | In outline: the same (another copy) |
+| `0x49a5c0` | Array::Grow49A5C0 | In outline: grows an array of four-byte values |
+| `0x47d3f0` | NamedObject::Make47D3F0 | In outline: makes a list member object (ListMember with `0x10EC9E8`) with its part (NamedObject::Make47CEE0) |
+| `0xc2b950` | Resource::ClearC2B950 | In outline: clears two parts (`0xC2B7B0`, `0xC256F0`) |
+| `0x406d70` | Movies::Check | In outline: a check over the movie list (Movies::List) for empty names |
+| `0xc6ac40` | Resource::MakeC6AC40 | In outline: makes a 0xE0-byte part (`0xC65F20` with 0x80) |
+| `0xc365a0` | Resource::MakeC365A0 | In outline: makes a part (`0xBE86F0` with 0x80, `0xBE79B0`) |
+| `0x48cf20` | Folder::Find48CF20 | In outline: finds a folder by name (`0xBD0960` with `0xF28E58`) |
+| `0xce6400` | Memory::CopyCE6400 | In outline: copies n bytes, four at a time, when given both buffers |
+| `0xc109c0` | Resource::MakeC109C0 | In outline: makes a resource record (Resource::MakeC102D0) |
+| `0x9f7fc0` | Array::Grow9F7FC0 | In outline: grows a list of 64-byte entries to hold n |
+| `0x617f40` | Text::Compare617F40 | In outline: compares two C strings |
+| `0x442af0` | Text::Asian442AF0 | In outline: a step by whether the language is an Asian one (Language::IsAsian) |
+| `0xbcbe20` | List::StepBCBE20 | In outline: a step for n before the last entry |
+| `0xbc2d80` | Mesh::MakeBC2D80 | In outline: makes a mesh buffer with its format (Mesh::SetFormatC31770) |
+| `0x449aa0` | Array::Grow449AA0 | In outline: grows a list of 64-byte entries to hold n |
+| `0xc580b0` | Loop::StepC580B0 | In outline: a loop up to n |
+| `0xc0eab0` | Resource::MakeC0EAB0 | In outline: makes a part (Constructor) |
+| `0xa0acb0` | Record::MakeA0ACB0 | In outline: makes parts (`0xBDADC0`, Constructor) |
+| `0xcbe700` | Array::AddCBE700 | In outline: adds an entry, reserving room first (Array::Reserve) |
+| `0xca2cf0` | Font::StepCA2CF0 | In outline: a step when on (+0x10) |
+| `0xc4c320` | Array::MakeC4C320 | In outline: makes an array of n values |
+| `0xc00680` | Device::CaseC00680 | In outline: a step by case for values under 0x1F |
+| `0xbfdfd0` | Range::MakeBFDFD0 | In outline: makes a part for a non-empty range |
+| `0xbea3b0` | Range::MakeBEA3B0 | In outline: the same (another copy) |
+| `0xca6a50` | Memory::CopyCA6A50 | In outline: a copy into a buffer, made when there is none |
+| `0xbfab20` | Resource::StepBFAB20 | In outline: a step (`0xC31000`) when asked |
+| `0xbe80b0` | Regions::CaseBE80B0 | In outline: a step by case (`0xBE7A00`) |
+| `0xcbcc10` | Shader::SetCBCC10 | In outline: sets a shader part (`0xCBE010`, `0xCBBB00`) |
+| `0xc51b10` | Stream::StepC51B10 | In outline: a stream step under a count (+0x1C) |
+| `0xc10b30` | Resource::MakeC10B30 | In outline: makes a part (Constructor, `0xC0A110`) |
+| `0xa3e3e0` | Object::MakeA3E3E0 | In outline: when on (+0xC) with a part (+0x10), makes an object (ObjectA402B0) |
+| `0x8be610` | Terrain::Make8BE610 | In outline: a terrain step |

@@ -788,3 +788,21 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9e2cb0` | Fireworks::Make9E2CB0 | In outline: makes a part |
 | `0x43aeb0` | Effect::Step43AEB0 | In outline: a step (`0x438B20` with `0xF286F4`) |
 | `0x9ee8b0` | Fireworks::Camera9EE8B0 | In outline: a step with the camera (MainCamera::Get) |
+| `0xbf8540` | Text::FillBF8540 | In outline: fills buffers for the current device for n entries |
+| `0xbf7f80` | Text::FillBF7F80 | In outline: the same (another copy) |
+| `0xbf7770` | Text::FillBF7770 | In outline: the same (another copy) |
+| `0x986750` | Fireworks::Make986750 | In outline: makes a list of 0x30-byte entries when on (+0x1C) |
+| `0xceb410` | Shapes::PassCEB410 | In outline: goes over entries (+0x70) |
+| `0xbfb340` | Vector::AxisBFB340 | In outline: a step when the first part is the largest |
+| `0xbbd3d0` | Vector::LengthBBD3D0 | In outline: a length step with no slot (+8 negative) |
+| `0x975660` | Water::Light975660 | In outline: a water step with the downward light direction |
+| `0x974140` | Water::Light974140 | In outline: the same (another copy) |
+| `0x445d40` | Effects::Slot445D40 | In outline: a step with a slot (`0x445AF0` with 4, 6) |
+| `0x481620` | Draw::LineAdd | In outline: the shared line drawer: adds a line when there is room (+0xC) |
+| `0x959160` | Water::Table959160 | In outline: fills a 12 by 12 table with 0xFFFF (`0x416110`) |
+| `0xa187b0` | Bird::NearA187B0 | In outline: a step when close (`0x10F2014`) unless in mode 2 (+0xC4) |
+| `0xb85c20` | Animal::FaceB85C20 | In outline: points (Matrix::LookAlongZSide) for n past a count (+0x44) |
+| `0xcc73c0` | Model::StepCC73C0 | In outline: a step with no entries (+0x44) |
+| `0xbbce20` | Vector::StepBBCE20 | In outline: a step when a value is above 1 |
+| `0xbc4e20` | Vector::FlatBC4E20 | In outline: a flat length step |
+| `0xacb0e0` | Graph::ValueACB0E0 | In outline: when not flagged (+0x100), sets a value (Set_+0xd0 from +0xFC +0x40) |
