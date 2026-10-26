@@ -1066,3 +1066,6 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x7b05e0` | Effect::Value7B05E0 | In outline: when asked, a fixed value (`0xF264E0`) |
 | `0x44ea10` | Effect::Value44EA10 | In outline: a value when not flagged (+0x60) |
 | `0x9faae0` | Fireworks::Entry9FAAE0 | In outline: a step for entry n (0x90 bytes) |
+| `0xb75570` | Effect::StepB75570 | In outline: a step with points |
+| `0xb5f270` | Effect::StepB5F270 | In outline: the same (another copy) |
+| `0x7b9bb0` | Effect::Step7B9BB0 | In outline: the same (another copy) |

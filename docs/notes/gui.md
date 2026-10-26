@@ -1855,3 +1855,39 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x671ff0` | Window::Slot671FF0 | In outline: when flagged (bit 1), a step for an object's slot (+0x150) under a count (+0x128) |
 | `0x632d00` | AttractionDetails::Tab632D00 | In outline: when a tab is available (AttractionDetails::TabAvailable), a step |
 | `0x6b0470` | Window::Flag6B0470 | In outline: when not flagged (+0x2C) and the other is flagged (bit 13), a step |
+| `0x659510` | Gui::Make659510 | In outline: makes a 0x13C-byte part |
+| `0x634360` | Gui::Make634360 | In outline: makes a 0x224-byte part |
+| `0x6f2410` | Gui::Init6F2410 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0x6e5eb0` | Gui::Make6E5EB0 | In outline: makes a 0x10-byte part |
+| `0x6722d0` | Gui::Make6722D0 | In outline: makes a 0x10-byte part |
+| `0x6e3380` | Gui::Make6E3380 | In outline: makes a 0x10-byte part |
+| `0x6e75c0` | Gui::List6E75C0 | In outline: a step with a list (+8, +0xC) |
+| `0x685ac0` | Gui::Pass685AC0 | In outline: goes over entries (+0x170) |
+| `0x671ab0` | Gui::Set671AB0 | In outline: sets a size when it changes |
+| `0x673350` | Window::Check673350 | In outline: a check (slot 0x118) with 16 |
+| `0x6b0cd0` | Window::Make6B0CD0 | In outline: makes a window (Window::Make6B0370) and acts |
+| `0x6b0c50` | Window::Make6B0C50 | In outline: the same (another copy) |
+| `0x6b0bd0` | Window::Make6B0BD0 | In outline: the same (another copy) |
+| `0x6b0b50` | Window::Make6B0B50 | In outline: the same (another copy) |
+| `0x68edc0` | Window::Reset68EDC0 | In outline: clears a value (+0xF4) and sets a flag (+0xE4) |
+| `0x683c60` | Window::Shared683C60 | In outline: with a part (+0x144) and a shared value (`0x1305BE4`) of 0, a step |
+| `0x671d60` | Window::Part671D60 | In outline: a step with a part (+0x130) |
+| `0x6850c0` | Window::Mode6850C0 | In outline: in mode 1 (+0x10), a step by a value |
+| `0x6ebd40` | Window::Make6EBD40 | In outline: makes a part with a value (+0x188) |
+| `0x6a0bb0` | Window::Value6A0BB0 | In outline: a step with an object's value (+0x74) |
+| `0x665920` | Window::Set665920 | In outline: sets a size when it changes, 0 handled |
+| `0x665850` | Window::Set665850 | In outline: the same (another copy) |
+| `0x665780` | Window::Set665780 | In outline: the same (another copy) |
+| `0x62c6d0` | Window::Case62C6D0 | In outline: a step by case (7: 9, ...) |
+| `0x66a580` | Window::Shared66A580 | In outline: with no shared value (`0x1306194`), a step |
+| `0x6ad870` | Window::Flag6AD870 | In outline: when flagged (bit 11 of +0x94), a step |
+| `0x61ddd0` | Window::Array61DDD0 | In outline: makes an array of n entries of 0x14 bytes |
+| `0x6a2360` | Window::Part6A2360 | In outline: when on (+0x144), a step with a part (+0x154) |
+| `0x674af0` | Window::Slot674AF0 | In outline: when flagged (bit 1), a step for an object's slot (+0x150) under a count (+0x128) |
+| `0x641580` | Window::Count641580 | In outline: for a positive count, a step with a list (+0x28) |
+| `0x6f0ee0` | Window::Part6F0EE0 | In outline: a step with a part (+0x74) |
+| `0x642e00` | Window::Size642E00 | In outline: a step with its size |
+| `0x623d00` | Window::Point623D00 | In outline: sets a value from a point (`0x682D80`) |
+| `0x620250` | Window::Case620250 | In outline: a step by case (3, ...) |
+| `0x7003c0` | Window::Rect7003C0 | In outline: takes a rectangle from a part (+0xD4, slot 0x20) and acts |
+| `0x677090` | Window::Case677090 | In outline: for kind 7 from its part (+0x108), a step |

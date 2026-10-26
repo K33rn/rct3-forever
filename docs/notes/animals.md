@@ -875,3 +875,54 @@
 | `0xafd320` | Animal::AssignAFD320 | In outline: frees its buffer and remakes it from another |
 | `0xaf9d40` | Animal::AssignAF9D40 | In outline: the same (another copy) |
 | `0xabc440` | Fence::AssignABC440 | In outline: the same (another copy) |
+| `0xb3aba0` | Animals::InitB3ABA0 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0xa97ef0` | Animals::ListA97EF0 | In outline: a step with a list (+8, +0xC) |
+| `0xb8c070` | Animals::CheckB8C070 | In outline: a value when not flagged (+0xF8) |
+| `0xb33760` | Animals::MakeB33760 | In outline: makes a 0x4C-byte part |
+| `0xa1f8e0` | Animals::MakeA1F8E0 | In outline: makes a 0x15C-byte part |
+| `0xa35390` | Animals::PassA35390 | In outline: goes over entries (+0x108) |
+| `0xab4250` | Animals::ListAB4250 | In outline: a step with a list (+8, +0xC) |
+| `0xa8e8f0` | Animals::ListA8E8F0 | In outline: a step with a list (+8, +0xC) |
+| `0xa3d440` | Animals::SetA3D440 | In outline: sets a size when it changes |
+| `0xb7b320` | Animals::MakeB7B320 | In outline: makes a 0x98-byte part |
+| `0xa01550` | Animals::PassA01550 | In outline: goes over entries (+0x6C) |
+| `0xaaa470` | PoolComplex::MakeAAA470 | In outline: makes a record (Record::Make7CD120) |
+| `0xa06560` | Bird::PassA06560 | In outline: goes over entries |
+| `0xb11ea0` | Animal::PartB11EA0 | In outline: with a part (+8), a step |
+| `0xa9f9f0` | PoolComplex::EntryA9F9F0 | In outline: for n at most a count (+0x20), a step |
+| `0xa9c910` | PoolComplex::SetA9C910 | In outline: a scenery step (PoolComplex::SceneryA9B950) and sets a value (+0x124) |
+| `0xa60f20` | Animal::BlendA60F20 | In outline: a value blended by a fraction of values |
+| `0xa5ef50` | Animal::RayA5EF50 | In outline: a ray from the camera (Camera::ScreenRay) with the largest float |
+| `0xa06380` | Bird::CountA06380 | In outline: a count over entries |
+| `0xabfda0` | Fence::RectABFDA0 | In outline: goes over a rectangle of cells |
+| `0xb45bb0` | WildAnimal::TableB45BB0 | In outline: goes over a table's entries (Table7C::Current) |
+| `0xafeeb0` | Animal::SetAFEEB0 | In outline: sets a size when it changes, 0 handled |
+| `0xb88680` | Animal::PartB88680 | In outline: a step with a part (+0x198) |
+| `0xaf78b0` | Animal::PartAF78B0 | In outline: with a part (+8), a step |
+| `0xaa0c20` | PoolComplex::InitAA0C20 | In outline: clears a record |
+| `0xaa0600` | PoolComplex::FreeAA0600 | In outline: with a buffer (+0x44), frees it and acts |
+| `0xafda30` | Animal::SlotAFDA30 | In outline: a slot (Animal::SlotAFB160) and acts |
+| `0xab5130` | PoolComplex::CountAB5130 | In outline: when not flagged (+0x20E), a step with a count (+0x12C) plus one |
+| `0xa40960` | Window::ModeA40960 | In outline: a mode step (Window::Mode67A960) with a scaled width |
+| `0xa320b0` | Animal::ArrayA320B0 | In outline: makes an array of n entries of 12 bytes |
+| `0xb82330` | Animal::StepB82330 | In outline: a step with a part's value (+0xA4 +0x10) halved |
+| `0xb78220` | Animal::ArrayB78220 | In outline: makes an array of n entries of 0x70 bytes |
+| `0xaa0d80` | PoolComplex::StepAA0D80 | In outline: a step with 0xF |
+| `0xb6ac20` | Animal::ObjectB6AC20 | In outline: an object from a reference (Reference::ToObject) and more |
+| `0xb11710` | Animal::ArrayB11710 | In outline: makes an array of n four-byte entries |
+| `0xa58e00` | Window::ReleaseA58E00 | In outline: takes one from a count (+0x40) and frees at zero |
+| `0xaad870` | PoolComplex::StepAAD870 | In outline: a step with the difference of two values (+0x134, +0x138) |
+| `0xa9fa70` | PoolComplex::CaseA9FA70 | In outline: a value by case (1, ...) |
+| `0xa590d0` | Window::IdA590D0 | In outline: when flagged (bit 1), a step for an id in a range from 0x3AFB4C7A |
+| `0xa48c20` | Window::PartA48C20 | In outline: with no part (+0x13C), a step with a value (+0x3C) |
+| `0xaf3ad0` | Animal::EntryAF3AD0 | In outline: a step for entry n (0x1C bytes) not flagged |
+| `0xaca7d0` | Graph::PointACA7D0 | In outline: a point from an object's values and its own |
+| `0xb34740` | WildAnimal::RandomB34740 | In outline: a random step (Random::Ran0) |
+| `0xae2dc0` | Animal::EntryAE2DC0 | In outline: a value from an entry (+0x28 plus n) |
+| `0xa5d270` | Animal::EntryA5D270 | In outline: the same (another copy) |
+| `0xa5d060` | Animal::EntryA5D060 | In outline: the same (another copy) |
+| `0xa5ce50` | Animal::EntryA5CE50 | In outline: the same (another copy) |
+| `0xa537d0` | Window::EntryA537D0 | In outline: the same (another copy) |
+| `0xa01e00` | Fireworks::EntryA01E00 | In outline: the same (another copy) |
+| `0xa0bb50` | Bird::InitA0BB50 | In outline: fills a record from its arguments |
+| `0xa06db0` | Bird::StepA06DB0 | In outline: a step with many values |

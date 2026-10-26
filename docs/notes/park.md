@@ -2161,3 +2161,115 @@
 | `0x8561b0` | Scenery::Water8561B0 | In outline: a step with the water manager |
 | `0x802bb0` | Person::Count802BB0 | In outline: for a positive count, a step |
 | `0x7cad40` | Person::Mode7CAD40 | In outline: sets a mode to 3 (+0x350) and acts with a part (+0x35C) |
+| `0x81ab50` | Park::Make81AB50 | In outline: makes a 0x10-byte part |
+| `0x774340` | Park::Pass774340 | In outline: goes over entries (+0x48) |
+| `0x79ae90` | Park::Make79AE90 | In outline: sets up a window part |
+| `0x91c210` | Park::Terrain91C210 | In outline: a step when the terrain is not flagged |
+| `0x77a530` | Park::List77A530 | In outline: a step with a list (+8, +0xC) |
+| `0x749cf0` | Park::List749CF0 | In outline: a step with a list (+8, +0xC) |
+| `0x7742b0` | Park::Pass7742B0 | In outline: goes over entries (+0x48) |
+| `0x73a5e0` | Park::Make73A5E0 | In outline: makes a 0x80-byte part |
+| `0x881ee0` | Park::Make881EE0 | In outline: makes a 0x4C-byte part |
+| `0x7b3d90` | Park::Terrain7B3D90 | In outline: a step when the terrain is not flagged |
+| `0x9287c0` | Park::Pass9287C0 | In outline: goes over entries (+0x370) |
+| `0x882b90` | Park::Init882B90 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0x808760` | Park::Pass808760 | In outline: goes over entries (+0x14) |
+| `0x876190` | Park::List876190 | In outline: a step with a list (+8, +0xC) |
+| `0x8760c0` | Park::List8760C0 | In outline: a step with a list (+8, +0xC) |
+| `0x7a3030` | Park::List7A3030 | In outline: a step with a list (+8, +0xC) |
+| `0x939e40` | Park::Pass939E40 | In outline: goes over entries (+0x14) |
+| `0x840860` | Park::Pass840860 | In outline: goes over entries (+0x58) |
+| `0x9d0b40` | Park::Pass9D0B40 | In outline: goes over entries (+0x218) |
+| `0x9d0ac0` | Park::Pass9D0AC0 | In outline: goes over entries (+0x218) |
+| `0x9a3140` | Fireworks::Entry9A3140 | In outline: a step for entry n (0x20 bytes) |
+| `0x8b15a0` | Scenery::Find8B15A0 | In outline: a find over entries (+0x7C) |
+| `0x860430` | Scenery::Slot860430 | In outline: for a slot not negative, a step with a part (+0xC) |
+| `0x855490` | Scenery::Entry855490 | In outline: a step for entry n (12 bytes) |
+| `0x7336e0` | Path::Assign7336E0 | In outline: frees its buffer and takes another's values |
+| `0x702310` | Grid::Clear702310 | In outline: with a value (+0x124), clears it and acts |
+| `0x9f0220` | Fireworks::Time9F0220 | In outline: with a part (+0x15C), a step when a time (+0x160) passes a limit |
+| `0x7847b0` | GuestGroup::List7847B0 | In outline: a step with a list (+0x44) |
+| `0x754e50` | Guest::Next754E50 | In outline: a step when n differs from a value (+0x50C), the next one handled |
+| `0x92e690` | Water::Assign92E690 | In outline: frees its buffer and takes another's values |
+| `0x92bec0` | Water::Count92BEC0 | In outline: adds one to a count (+0x364) and acts with a list (+0x6C) |
+| `0x8029a0` | Person::Pass8029A0 | In outline: goes over entries |
+| `0x787240` | GuestGroup::Layout787240 | In outline: lays out (Window::Layout643030) and acts with a point |
+| `0x774dc0` | Park::Pass774DC0 | In outline: goes over entries (+0x48) |
+| `0x74de60` | Guest::Set74DE60 | In outline: with a count (+0xC), sets a value (+0x10) |
+| `0x9d0c60` | Particles::Set9D0C60 | In outline: sets a value (+8) and clears a flag |
+| `0x9c8ff0` | Particles::Entry9C8FF0 | In outline: a value from an entry (+0x28 plus n) |
+| `0x97cb00` | Water::List97CB00 | In outline: a step with a list (+0x16C) |
+| `0x89ed50` | SceneryRenderer::Billboard89ED50 | In outline: a pass (SceneryRenderer::Pass89E620) and makes a billboard (Billboard::Create) |
+| `0x840740` | Scenery::Value840740 | In outline: a value with a fixed start (`0xF264E0`) |
+| `0x76e140` | Park::Check76E140 | In outline: a check with the largest float |
+| `0x741ff0` | Guest::Part741FF0 | In outline: a step with a part (+0x4C) |
+| `0x714120` | Path::Reset714120 | In outline: clears a flag and acts with a part (+0x18) |
+| `0x942320` | Water::Grow942320 | In outline: grows when n reaches a count (+0x164) |
+| `0x90a0d0` | Water::Entry90A0D0 | In outline: for nonzero n, a step with entry n (0x14 bytes) |
+| `0x909dc0` | Water::Entry909DC0 | In outline: the same (another copy) |
+| `0x87be60` | Scenery::Entry87BE60 | In outline: the same (another copy) |
+| `0x86f6a0` | Scenery::Count86F6A0 | In outline: adds one to an object's count (+0xF8) and acts with a list (+0x40) |
+| `0x80f990` | Regions::Entry80F990 | In outline: for nonzero n, a step with entry n (0x14 bytes) |
+| `0x7bc090` | Terrain::Part7BC090 | In outline: with a part (+0x30), goes over entries |
+| `0x783850` | GuestGroup::Find783850 | In outline: a find over entries (+0x60) |
+| `0x749b60` | Guest::Next749B60 | In outline: the next entry of a list (+0x40) |
+| `0x9f9b90` | Fireworks::Slot9F9B90 | In outline: for a negative slot (+0xC), a step |
+| `0x973500` | Water::Step973500 | In outline: a step with many values |
+| `0x860340` | Scenery::Pass860340 | In outline: clears a value and goes over entries |
+| `0x92ed10` | Water::Init92ED10 | In outline: clears values (+4, +0x10, ...) |
+| `0x8b24f0` | Scenery::Find8B24F0 | In outline: a find (Scenery::Find8B15A0) with a work buffer |
+| `0x853780` | Scenery::Make853780 | In outline: makes a record (Park::Make851BD0) and sets a value (+0x24) |
+| `0x81d6e0` | SceneryBehaviour::Entry81D6E0 | In outline: a step for entry n (0x60 bytes at +0x64 +0x40) |
+| `0x7efc60` | Person::Format7EFC60 | In outline: formats into a 256-character buffer |
+| `0x7e3640` | Person::Part7E3640 | In outline: with no value (+0xF4) and a part (+0xF0), a step |
+| `0x7e2180` | Person::Pass7E2180 | In outline: goes over a part's entries (+0x158 +0x48) |
+| `0x7595f0` | Guest::Shared7595F0 | In outline: with no shared value (`0x1306194`), a step |
+| `0x759570` | Guest::Shared759570 | In outline: the same (another copy) |
+| `0x7594e0` | Guest::Shared7594E0 | In outline: the same (another copy) |
+| `0x9a9fd0` | Fireworks::Point9A9FD0 | In outline: a point from an object's values and its own |
+| `0x996330` | Fireworks::Point996330 | In outline: a step with a point |
+| `0x96a4f0` | Water::Pass96A4F0 | In outline: goes over entries (+0x30) |
+| `0x9697e0` | Water::Pass9697E0 | In outline: the same with +0x20 |
+| `0x90f6f0` | Water::Add90F6F0 | In outline: adds when there is room (+0x44, +0x48) |
+| `0x90f610` | Water::Step90F610 | In outline: a step when two values differ (+4, +0x10) |
+| `0x823180` | Scenery::Array823180 | In outline: makes an array of n entries of 12 bytes |
+| `0x821480` | Scenery::Array821480 | In outline: makes an array of n entries of 0x28 bytes |
+| `0x789390` | GuestGroup::Value789390 | In outline: a step when an object's value (slot 0x34) is at most a limit |
+| `0x7752f0` | Park::Array7752F0 | In outline: makes an array of n entries of 0x14 bytes |
+| `0x72f090` | Path::Kind72F090 | In outline: for an object of kind 3 (slot 0x30), a step |
+| `0x711f10` | Path::Object711F10 | In outline: an object from a reference (Reference::ToObject) and more |
+| `0x982860` | Record::Part982860 | In outline: with a part (+4), a step |
+| `0x9466b0` | Water::Step9466B0 | In outline: a step with a work buffer |
+| `0x92b960` | Water::List92B960 | In outline: a step with a list (+0x6C) |
+| `0x8e2bd0` | Terrain::Current8E2BD0 | In outline: when on (+0x1C) and current (`0x12F56D4`), a step |
+| `0x86eee0` | Scenery::List86EEE0 | In outline: with no part (+0xCC +0x5C), a list step (Scenery::List86EE40) |
+| `0x8288a0` | Scenery::Flags8288A0 | Sets or clears the given flags (+0x7C) and acts |
+| `0x8080d0` | Regions::Entry8080D0 | In outline: a step with an entry (+0x28 plus n) |
+| `0x7c2740` | Person::Time7C2740 | In outline: adds n times a rate (+0x114) to a value (+0xBC) |
+| `0x7a0860` | Terrain::Case7A0860 | In outline: a step by case (0, ...) |
+| `0x785840` | GuestGroup::Find785840 | In outline: a find over entries (+0x60) |
+| `0x7857c0` | GuestGroup::Find7857C0 | In outline: the same (another copy) |
+| `0x774230` | Park::Pass774230 | In outline: goes over entries (+0x48) |
+| `0x744e20` | Guest::Array744E20 | In outline: makes an array of n entries of 0x50 bytes |
+| `0x71ded0` | Path::Part71DED0 | In outline: a step (Path::Part72CAF0) and a part (+0xB0) |
+| `0x9c5fb0` | Particles::Make9C5FB0 | In outline: makes a part and acts with a list (+0x34) |
+| `0x9846f0` | Record::Case9846F0 | In outline: a value by case |
+| `0x85aca0` | Scenery::Pass85ACA0 | In outline: goes over entries |
+| `0x79bef0` | Toolbar::Find79BEF0 | In outline: a find when two shared values differ (`0x1306BCC`, `0x1306BD8`) |
+| `0x8125d0` | SceneryBehaviour::Step8125D0 | In outline: when a part is not flagged (+4 +0x24), a step |
+| `0x7fb340` | Person::Step7FB340 | In outline: a step with an object's value (+4) |
+| `0x785560` | GuestGroup::Find785560 | In outline: a find over entries (+0x60) |
+| `0x7854e0` | GuestGroup::Find7854E0 | In outline: the same (another copy) |
+| `0x98b440` | Record::Free98B440 | In outline: tears down references (ObjectRef) |
+| `0x86f810` | Scenery::Set86F810 | In outline: sets a value (+4) and acts with a part (+0x10) |
+| `0x80f610` | Regions::Compare80F610 | In outline: a step when a value (+0x1C) is at most another's |
+| `0x717e30` | Path::Reset717E30 | In outline: clears values (+0x24C, +0x230, ...) |
+| `0x713880` | Path::Shared713880 | In outline: with a shared value (`0x10EDCB8`) and no part (+0x2F0), a step |
+| `0x9a98a0` | Fireworks::Point9A98A0 | In outline: a step with points |
+| `0x801980` | Person::Read801980 | In outline: reads eight bytes when there is room |
+| `0x7d6560` | Person::Case7D6560 | In outline: for kind 10 with a part (+0x308), a step |
+| `0x9eeeb0` | Fireworks::Part9EEEB0 | In outline: a step (`0x9EEDB0`) and acts with a part (+0x124) |
+| `0x9abbd0` | Fireworks::Split9ABBD0 | In outline: splits a text (Text::Split9A50A0) |
+| `0x9851c0` | Record::Entry9851C0 | In outline: a value from an entry (+0x28 plus n) |
+| `0x80a710` | Regions::Release80A710 | In outline: takes one from a count (+0xC) and frees at zero |
+| `0x8002c0` | Person::Init8002C0 | In outline: sets up a record with its table (`0xF752D0`) |
