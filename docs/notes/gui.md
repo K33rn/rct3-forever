@@ -812,3 +812,26 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6e2560` | Objectives::Text6E2560 | In outline: an objective's text from its name (NameText_0x0) |
 | `0x6954f0` | Layout::Place6954F0 | In outline: another box placement, setting up when the shared value is unset (`0x10EEDB4` = 0xFFFF, `0x6930B0`) |
 | `0x6afe60` | Window::Update6AFE60 | In outline: a window's update with the shared object (`0x1342708`) and a value (`0xA1D240`) |
+| `0x599990` | Window::Build599990 | In outline: builds a window from the shared title `0x12F54BC` |
+| `0x5996a0` | Window::Build5996A0 | In outline: builds a window from the shared title `0x12F54BC` (another one) |
+| `0x599c80` | Window::Build599C80 | In outline: builds a window from the shared title `0x12F54BC` (another one) |
+| `0x700b00` | Window::Build700B00 | In outline: builds a window from its title |
+| `0x6c6900` | Window::Layout6C6900 | In outline: places a window's parts (Window::UpdateRect) |
+| `0xaa5500` | Window::BuildAA5500 | In outline: builds a window from the shared title `0x13CE004` |
+| `0x8e2300` | Window::Build8E2300 | In outline: builds a window from the shared title `0x1313C84` |
+| `0x6e7e10` | Objectives::Text6E7E10 | In outline: an objective's text from its name (NameText_0x0) |
+| `0x9c34b0` | Window::Build9C34B0 | In outline: builds a window from the shared title `0x134148C` |
+| `0xc6eb40` | Window::MakeC6EB40 | In outline: makes a window part (`0xC65F20`) |
+| `0xa55e40` | List::DrawA55E40 | In outline: places a list and its rows, each with the shared image `0x13049E4` (SkinItem::Texture) |
+| `0x6e93e0` | Window::Build6E93E0 | In outline: builds a window from the shared title `0x13060B4` |
+| `0x6cf110` | Window::Build6CF110 | In outline: builds a window from the shared title `0x1305E40` |
+| `0x4842e0` | Window::Layout4842E0 | In outline: lays out a window (`0x6A65B0`, Window::Layout) when given one |
+| `0x9b4420` | Window::Layout9B4420 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x62e0b0` | Window::Build62E0B0 | In outline: builds a window from the shared title `0x12F7E10` |
+| `0x6b8580` | Window::Mode6B8580 | In outline: refreshes a window (`0x6B84F0`) with a case for mode 2 (+0xD4) |
+| `0xb5aca0` | Window::BuildB5ACA0 | In outline: builds a window from the shared title `0x13CEAC8` |
+| `0x814480` | Window::Build814480 | In outline: builds a window from the shared title `0x130B384` |
+| `0x6aae60` | Window::Build6AAE60 | In outline: builds a window from the shared title `0x1305CD8` |
+| `0xa84580` | Window::BuildA84580 | In outline: builds a window from the shared title `0x13CDEB8` |
+| `0x925250` | Window::Build925250 | In outline: builds a window from the shared title `0x133A160` |
+| `0x69e5a0` | List::Texts69E5A0 | In outline: makes a list's texts (+0x1C) from a shared text (`0xF5E1C4`) |

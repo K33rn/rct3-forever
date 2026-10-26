@@ -188,3 +188,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7972a0` | Guest::Behaviour7972A0 | In outline: another guest update at a scenery behaviour (state 0xF) |
 | `0x778580` | GuestGroup::Check778580 | In outline: a group's check over its members (+0x48) unless told not to |
 | `0x76f560` | Guest::FindAttraction76F560 | In outline: goes over the attractions (AttractionInstance::FirstOf) and picks the ones a guest can use (`0xA887B0`) |
+| `0x784030` | GuestGroup::Move784030 | In outline: moves a group from slot a to slot b (0 to 6) when they differ |
+| `0x7d65f0` | Person::Update7D65F0 | In outline: a person's update unless busy (`0x7D3EA0`), when two values match (+0xB8, +0x318) |
+| `0x761610` | Guest::Spot761610 | In outline: a guest's spot (`0x7BE2F0`) and its name text |

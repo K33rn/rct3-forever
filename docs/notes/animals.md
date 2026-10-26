@@ -168,3 +168,7 @@
 | `0xb67960` | WildAnimal::CellB67960 | In outline: finds an animal's terrain cell (Grid::CellAt) |
 | `0xb526b0` | Animal::LinkB526B0 | In outline: links an animal's part when it has one (+0x138 +0xC) |
 | `0x9857e0` | Animal::Release9857E0 | In outline: releases an animal's links |
+| `0xb552a0` | Animal::CheckB552A0 | In outline: an animal check when not flagged (+0xC4) with the shared manager (`0x13CEA88`) |
+| `0xb437b0` | WildAnimal::UpdateB437B0 | In outline: an animal update when not flagged (+0x118) |
+| `0xb1cfc0` | WildAnimal::NearB1CFC0 | In outline: whether an animal is within a distance on the ground plane |
+| `0x9a7840` | Animal::Update9A7840 | In outline: an update when not flagged (+0x40) |

@@ -239,3 +239,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xc209e0` | Matrix::FromAxisAngle | In outline: makes a rotation from a turn vector (its length is the angle, using its cosine and sine), leaving tiny turns alone |
 | `0x419100` | Grid::Normal419100 | In outline: normalises a direction for a grid point |
 | `0xa6f0a0` | Points::StepA6F0A0 | In outline: moves a list of points on by a time, four at a time |
+| `0xae1850` | Graph::FindAE1850 | In outline: when on (+0x60), finds a shown entry (+0x40, count +0x44) |
+| `0xc21df0` | Skeleton::BuildC21DF0 | In outline: builds a bone's matrices (`0xBEE460` on +0x70) and goes over its children (+0x5C chain at +0x60) |
+| `0x821ae0` | SceneryBehaviour::Range821AE0 | In outline: with a reference (WithReference8155F0), checks its counts (+0x4C, +0x6C) |

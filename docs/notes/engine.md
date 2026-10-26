@@ -1599,3 +1599,11 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcc3160` | Atlas::PackCC3160 | In outline: another rectangle packing like Atlas::PackCC3470 (0x55 slots, a 0x100-entry table) |
 | `0x7397d0` | Names::Unique7397D0 | In outline: another unique name maker |
 | `0x40d540` | List::Grow40D540 | In outline: grows a list (+8) to take in an entry (`0x40C6A0`) |
+| `0xa5f700` | Sound::UpdateA5F700 | In outline: another sound update for kind 1 like Sound::UpdateA61260 |
+| `0xae8e00` | Files::FindWjt | In outline: lists the `*.wjt` files of a folder |
+| `0xacce20` | Files::FindLas | In outline: lists the `*.las` files of a folder |
+| `0x9673f0` | List::SortBy9673F0 | In outline: sorts a list with the comparison given (two items handled directly) |
+| `0x444c30` | Text::Font444C30 | In outline: picks a text's font, with a case for Asian languages (Language::IsAsian) |
+| `0xc93570` | Renderer::ResetC93570 | In outline: resets a renderer (`0xC056C0`) and sixteen of its slots |
+| `0xcb7d30` | Shader::LoadCB7D30 | In outline: loads a shader (`0xC536D0`) and makes its record (kind 0x12) |
+| `0x5d1840` | Ride::Range5D1840 | In outline: works out a ride's range by its kind |

@@ -575,3 +575,15 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xa0d300` | Effect::FaceA0D300 | In outline: turns an effect by an angle (cosine, sine) and points it (Matrix::LookAlongZ) |
 | `0x977370` | Particles::Draw977370 | In outline: draws particles for the current device (ForCurrent(3)) |
 | `0x9ae960` | Fireworks::Update9AE960 | In outline: a firework update when on (+0x154) and not flagged (+0xFC) |
+| `0x92f510` | Water::Jets92F510 | In outline: goes over a water piece's jets (`0x92E8B0`) not flagged (+0x18C) |
+| `0x42b080` | Labels::Update42B080 | In outline: finds a label (`0x474D20`) and updates it |
+| `0xc06630` | Effect::UpdateC06630 | In outline: an effect's update when not flagged (+0x4C1, +0x4C3), for its shown parts |
+| `0x474a40` | Labels::Pick474A40 | In outline: finds the label under the mouse (MainCamera::Get, `0xCD79C0`) |
+| `0xbef170` | Text::LayoutBEF170 | In outline: another text layout like Text::LayoutBF0520 |
+| `0xbeed40` | Text::LayoutBEED40 | In outline: another text layout like Text::LayoutBF0520 |
+| `0x976360` | Particles::Draw976360 | In outline: another timed particle draw inside a critical section |
+| `0xe02b70` | Animation::ApplyE02B70 | In outline: applies an animation's keys from a place to a shader (used by Shader::SetCC10F0) |
+| `0xcf0da0` | Shapes::BatchCF0DA0 | In outline: makes a shape batch (`0x8534A0`) unless told not to |
+| `0xaa3680` | PoolComplex::FillAA3680 | In outline: fills a pool's buffers for the current device (ForCurrent(3), `0xBFFB60`) |
+| `0x853af0` | Scenery::Release853AF0 | In outline: releases a scenery part's shader unless in mode 2 (+0x14) |
+| `0x9f02f0` | Firework::Time9F02F0 | In outline: a firework part's update once its time (+0x1C) is reached (`0x9F5FE0`) |

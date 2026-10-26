@@ -577,3 +577,31 @@
 | `0xb9ca60` | PathGrid::FindB9CA60 | In outline: finds an entry of a path grid matching an id (+0xAC) |
 | `0x8eb0f0` | Water::Build8EB0F0 | In outline: builds water entries up to a count (+0x120) when asked |
 | `0x95b320` | Water::Spread95B320 | In outline: spreads water from a cell over the terrain (`0x95A570`) |
+| `0xa05e10` | Path::BuildA05E10 | In outline: builds a path from a list (growing `0x417C20` past +0x60) with the path manager |
+| `0x4aa8e0` | Shop::Item4AA8E0 | In outline: makes a shop item when it is not set (Entry::IsSet) |
+| `0xba2ac0` | PathGrid::RectBA2AC0 | In outline: sets up a path grid area (`0xBA0340` for its size) and goes over its cells (+0x64 by +0x68) |
+| `0x582e70` | Ride::Ground582E70 | In outline: works out a ride part's height over the terrain (used by PlacementCursor::Update583360) |
+| `0x9ff490` | Fireworks::Terrain9FF490 | In outline: a firework pass over the terrain (growing `0x417C20`) |
+| `0x5dad90` | TrackPiece::Range5DAD90 | In outline: a track piece range check (`0x59D8C0`) |
+| `0x72e420` | Path::Check72E420 | In outline: a path check by its kind (+0xD0 above 3) |
+| `0xac2100` | PoolComplex::BoxAC2100 | In outline: sets a pool part's box (Box::Assign, `0xAC1B00`) and goes over its range when flagged (8) |
+| `0x85cc50` | Shadows::Terrain85CC50 | In outline: sets up the light view (`0x85CB30`) over the terrain |
+| `0x72d2d0` | Path::Rect72D2D0 | In outline: grows a path's changed rectangle (Rect::AddCell) with the path manager |
+| `0x6fd860` | Scenery::Link6FD860 | In outline: links a scenery item (`0x829AA0`) when given one |
+| `0x8f93a0` | Terrain::Below8F93A0 | In outline: finds the terrain under a point (`0x8D6E90`, +0x130) |
+| `0x7bb180` | Path::Rect7BB180 | In outline: goes over a rectangle of cells with the path manager |
+| `0x5844a0` | Ride::Ground5844A0 | In outline: when shown (+0x250), checks a ride part over the terrain |
+| `0xa996c0` | SceneryBehaviour::UpdateA996C0 | In outline: activates and goes over a behaviour's owner's parts (SceneryBehaviour::Owner) |
+| `0x904e30` | Water::Find904E30 | In outline: finds a water entry by its slot within its range |
+| `0x71e6c0` | Path::Kind71E6C0 | In outline: handles a path piece by its kind (0, ...) |
+| `0xac1bf0` | PoolComplex::PieceAC1BF0 | In outline: a pool piece check (`0xAC1B90`) unless told not to |
+| `0x7286f0` | Terrain::Pass7286F0 | In outline: a pass over the terrain |
+| `0x446080` | Terrain::Pass446080 | In outline: another pass over the terrain between two points |
+| `0x9645d0` | Fireworks::Update9645D0 | In outline: goes over a firework list's parts (+0x10) that are on (+8) |
+| `0x8eb3e0` | Water::Build8EB3E0 | In outline: another water build like Water::Build8EB0F0 |
+| `0x491fa0` | Terrain::Check491FA0 | In outline: checks entries up to a count (+0x23C) (`0x865410`) |
+| `0x4b7360` | Shop::Range4B7360 | In outline: checks a shop's distances against 150 and 250 |
+| `0x4c7140` | Shop::Random4C7140 | In outline: in mode 1 (+0xC0), picks a random value in a range (Random::Ran0Range) |
+| `0x71ef40` | Path::CanPlace71EF40 | In outline: whether a path piece can go at a cell (`0x71DCE0`), when the counts allow (`0x130634C`, `0x1306350`) |
+| `0x798370` | Guest::PathNear798370 | In outline: a guest's path within 40 (Path::Distance79B5D0 with 0x10) |
+| `0x5e7240` | Ride::Part5E7240 | In outline: a ride part by n (`0x5D3C50`) |
