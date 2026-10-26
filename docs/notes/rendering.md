@@ -533,3 +533,14 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9ef480` | Fireworks::DebugDraw9EF480 | In outline: when on (+0x124, +0x19C), draws a firework's path in green (0xFF00C000) with the shared line drawer |
 | `0x993a50` | FireworkSlot::KeyAt | In outline: makes a firework slot's key frame (FireworkSlotKeyFrame) for a time, finding its key (Keys::FindTime) when not flagged (+0xCC) |
 | `0x9d7b00` | FireworkDisplay::Load9D7B00 | In outline: makes a firework display (FireworkDisplay::FireworkDisplay) and fills it (`0x98D860`, `0x991000`, `0x9887A0`) |
+| `0x9e4e60` | Fireworks::Fill9E4E60 | In outline: fills a firework part's buffers for the current device (ForCurrent(3), `0xBFFB60`) |
+| `0x9f5770` | Fireworks::Update9F5770 | In outline: a firework list's update (`0x9F4480`) over its entries (+0x4C) |
+| `0xbefa90` | Text::LayoutBEFA90 | In outline: another text layout like Text::LayoutBF0520 |
+| `0x7c0240` | Draw::List7C0240 | In outline: unless told not to, draws the shown entries of a list for the current device (ForCurrent) |
+| `0xa0f190` | Effects::DrawA0F190 | In outline: draws a list of effects (+0x20) counting the batch (Counter::Increment) |
+| `0x89f8f0` | SceneryRenderer::Pass89F8F0 | In outline: runs a scenery pass (SceneryRenderer::Pass89E620) and finds its entry by kind (SortedTable::FindKind) |
+| `0x8ee400` | Water::Draw8EE400 | In outline: when on (`0x1106DC1`), draws a list of water parts (+0x14) |
+| `0xce9b30` | Shapes::FadeCE9B30 | In outline: a shape's fade, kept between 0 and 1 and scaled into a byte |
+| `0x977a30` | Particles::Draw977A30 | In outline: another particle draw (when on) within limits (under 10001, 15001) |
+| `0xbef5a0` | Text::LayoutBEF5A0 | In outline: another text layout like Text::LayoutBF0520 |
+| `0xbd4940` | Text::SetSizeBD4940 | In outline: when a text's size changes (+0x50, +0x54), clears it (`0xBD48F0`) and sets it again |

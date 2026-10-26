@@ -1562,3 +1562,12 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x66c250` | Scenario::Load66C250 | In outline: loads a file (ManagedObject::LoadFile) and checks what it holds by kind |
 | `0xcc1420` | Matrices::ResizeCC1420 | In outline: resizes a list of 4x4 matrices (64 bytes each) to n, keeping the old ones |
 | `0xce5230` | Sound::UpdateCE5230 | In outline: a sound's update when it has something (+0x24, +0x20): runs Sound::UpdateCE4CC0 and sets its value when it changed (+0x18) |
+| `0xc4d000` | File::ReadC4D000 | In outline: makes a 0x1C-byte record and reads its header (`0xBE5020`, four bytes) |
+| `0xcb73d0` | ShaderFile::ReadCB73D0 | In outline: reads a shader file's version (two bytes at +0xB6) and checks it against `0x13E6F68` when nothing is loaded yet (+0x6C, +0x70) |
+| `0x4a5dc0` | Path::Drive4A5DC0 | In outline: walks a path text to its end and checks for a drive letter (`:`) in its first characters |
+| `0xc430f0` | Overlay::ReadDebugC430F0 | In outline: another overlay debug data read like Overlay::ReadDebug |
+| `0xc52570` | Stream::FlagsC52570 | In outline: sets a stream's flag bits (`0x13E6C38`) and, unless paused (`0x13E6CA8`), handles the ones with bit 17 and bit 1 or kind 10 |
+| `0xc39f50` | Resource::ReplaceC39F50 | In outline: releases a resource and makes a 0x14-byte record for its replacement |
+| `0xbe2450` | Resource::FindBE2450 | In outline: goes over a list until it finds a match by kind (2, ...) |
+| `0x801fe0` | Values::Get801FE0 | In outline: fills the values given from a record (`0x801E30`) when they are asked for |
+| `0x45fad0` | Folder::List45FAD0 | In outline: lists a folder's entries from an empty name |

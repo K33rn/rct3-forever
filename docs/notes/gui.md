@@ -744,3 +744,17 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x660190` | Window::Build660190 | In outline: builds a window from the shared title `0x12F80D8` |
 | `0xc6ba50` | ScrollBar::DrawC6BA50 | In outline: draws a scroll bar (ScrollBar::Draw) and its parts |
 | `0x690580` | Window::Build690580 | In outline: makes a 0xD8-byte window part with the shared title `0x12F8498` |
+| `0x667f90` | Window::Build667F90 | In outline: builds a window from the shared title `0x12F812C` |
+| `0x48cbc0` | Label::Number48CBC0 | In outline: makes a number text (`%d`) for a value from 0 to 4 |
+| `0xac4ef0` | Window::BuildAC4EF0 | In outline: builds a window from the shared title `0x13CE400` |
+| `0x65b010` | Window::Build65B010 | In outline: builds a window from the shared title `0x12F80A4` |
+| `0xac8ff0` | Window::DrawAC8FF0 | In outline: draws a window's frame (`0x6ACE50`), rounded |
+| `0x7ef5e0` | Window::Build7EF5E0 | In outline: builds a window from the shared title `0x130A8CC` |
+| `0x6ba6e0` | Window::Build6BA6E0 | In outline: builds a window from the shared title `0x1305DD4` |
+| `0x7f2f00` | Window::Build7F2F00 | In outline: builds a window from the shared title `0x130AB60` |
+| `0x443b70` | Window::Message443B70 | In outline: makes a window message's result by its kind (0, ...); the handler Window::HandleKey6A1120 uses for message 0x9000 |
+| `0x4436b0` | Window::Message4436B0 | In outline: another message result maker by kind like Window::Message443B70 |
+| `0x443340` | Window::Message443340 | In outline: another message result maker by kind like Window::Message443B70 |
+| `0x442fd0` | Window::Message442FD0 | In outline: another message result maker by kind like Window::Message443B70 |
+| `0x442c60` | Window::Message442C60 | In outline: another message result maker by kind; the one Window::HandleKey6A1120 passes other messages to |
+| `0x48d240` | Window::Message48D240 | In outline: another message result maker by kind like Window::Message443B70 |

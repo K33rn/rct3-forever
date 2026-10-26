@@ -242,3 +242,9 @@ Tracked rides, flat rides and their cars and trains.
 | `0x587d00` | AttractionPerson::Link587D00 | In outline: links a person to an attraction (`0x4AA760`) when not flagged (+0x100) |
 | `0x9dca50` | Ride::Window9DCA50 | In outline: a ride window's check: the park (`0x6C1DA0`) and the first attraction of a kind (AttractionInstance::FirstOf) |
 | `0x50e210` | Car::Draw50E210 | In outline: sets up a ride car's look (not kind 6): points it (Matrix::LookAlongZSide), builds its part matrices (Model::PartMatrices869400) and its lights (Model::UpdateLights) |
+| `0x5ab770` | AttractionPerson::Link5AB770 | In outline: another attraction person link like AttractionPerson::Link587D00 |
+| `0x5a85b0` | TrackedRide::Station5A85B0 | In outline: for ride kind 0xF, finds a station entry (`0x4C5460`, TrackedRideInstance::Entry) |
+| `0x4df1c0` | Ride::Text4DF1C0 | In outline: makes a ride's text when not flagged (+0x4C) |
+| `0x5bebb0` | Ride::Frame5BEBB0 | In outline: a ride part's frame: normalises its direction and points along it (Matrix::LookAlongZ) |
+| `0x5cfda0` | Ride::Frame5CFDA0 | In outline: the same part frame (another copy) |
+| `0x537840` | Ride::Seats537840 | In outline: for a ride of kind 0x19, goes over its seats when not flagged (+0x21C) |

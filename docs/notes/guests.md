@@ -172,3 +172,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x762f60` | Guest::Wet762F60 | In outline: a guest getting wet (Person::MadeWet), by its wetness level (+0x504, above 2 handled) unless flagged (+0x334) |
 | `0x75a800` | Guest::Random75A800 | In outline: in mode 1 (+0x121), picks a random value for a guest, rounded |
 | `0x535cc0` | Guest::Swim535CC0 | In outline: a guest's swim check: its group (Guest::Group) and the section it is in (`0x12F5338`) |
+| `0x7cd380` | Person::Name7CD380 | In outline: when not flagged (+0x2B0) and with a name option (+0x2A4, `0x13064E8`), makes a person's name text |
+| `0x7d2f60` | Person::Cell7D2F60 | In outline: finds the terrain cell a person is on (Grid::CellAt) |
+| `0x7c38d0` | Person::Act7C38D0 | In outline: a person's action by its case (0, 1, ...) for a slot (below 0 handled) |

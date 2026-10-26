@@ -227,3 +227,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xa176b0` | Camera::AimA176B0 | In outline: normalises a direction for a camera's aim |
 | `0xbb9090` | PointSet::StepBB9090 | In outline: another point walk step like PointSet::StepBB8430 |
 | `0xbc5580` | Track::SnapBC5580 | In outline: snaps a track piece's height (Grid::SnapIndex with 0.1) by its kind (4 handled) |
+| `0x820740` | SceneryBehaviour::Step820740 | In outline: a behaviour's step (`0x8156C0`) |
+| `0xbb6ce0` | PointSet::StepBB6CE0 | In outline: another point walk step like PointSet::StepBB8430 |
+| `0x415d80` | Grid::Wobble415D80 | In outline: goes over a grid's entries (+0x20) and updates its wobble (Wobble::Update) |

@@ -526,3 +526,12 @@
 | `0xb9c230` | PathGrid::MarkB9C230 | In outline: goes over a path grid (+0x64 by +0x68) marking the cells that match the ids given |
 | `0xac0560` | Fence::RebuildPlay | In outline: rebuilds the border pieces around a rectangle (Fence::RebuildRect one cell wider) and plays the earth thump sound (EarthThump::Sound) |
 | `0x946be0` | Water::LoadBody | In outline: reads a water body from a saved block (`0x809210`, four bytes then single bytes), checking the block's size |
+| `0xb9dae0` | PathGrid::BuildB9DAE0 | In outline: another path grid pass over the terrain (a 90 by 90 grid) |
+| `0xab35b0` | PoolComplex::PlaceAB35B0 | In outline: places a pool part by its mode (+0x130: 1, ...) with its record (`0xAAE430`) |
+| `0xab3220` | PoolComplex::PlaceAB3220 | In outline: the same pool part placement (another copy) |
+| `0xaa4180` | PoolComplex::SidesAA4180 | In outline: when not flagged, works out a pool piece's sides (`0xAA0CE0` on +0x18, +0x1C) and turns them (Sides::Rotate) |
+| `0x565a60` | Path::Queue565A60 | In outline: a queue's update when not flagged (+0x98) and its length (+0x70) is above 0 |
+| `0x937b20` | Water::Grid937B20 | In outline: checks water grid cells (one in three of +0x18) against an id grid (Grid::ContainsId with 0xFFFF) |
+| `0x51e990` | Ride::Update51E990 | In outline: a ride's update when not flagged (+0x180) with its owner (Interface48b::Get) |
+| `0x71cc40` | Path::Ground71CC40 | In outline: finds where a ray meets the ground (`0x8BC700`) for path placement |
+| `0xb9f120` | PathGrid::AnimalB9F120 | In outline: a path grid check for an animal (WildAnimal::Interface60) on the terrain |

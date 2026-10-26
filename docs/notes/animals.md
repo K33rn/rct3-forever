@@ -145,3 +145,9 @@
 | `0xb169d0` | Animal::EnclosureB169D0 | In outline: checks an animal's enclosure (EnclosureManager::Get, `0xB9AC20`) and acts by its state (+0x78) |
 | `0x8189b0` | SceneryBehaviour::Pick8189B0 | In outline: with a reference (WithReference8155F0), picks a random value (`0x4751E0`), rounded |
 | `0xb45c30` | Animal::UpdateB45C30 | In outline: an animal's update when not flagged (+0x58, +0x74) (`0xB33D10`) |
+| `0xb1c290` | Animal::UpdateB1C290 | In outline: an animal's update with its owner (Interface48::Get) when not flagged (+0x94) |
+| `0xaf6480` | Animal::CopyAF6480 | In outline: another managed copy like Animal::CopyAD95A0 (`0x13CE60C`), when not flagged (+0x60) |
+| `0xb9ac20` | Enclosure::CellInside | In outline: whether a cell lies inside an enclosure's grid (from 1 up to its size, passed in a register) |
+| `0xb888c0` | Animal::ActB888C0 | In outline: an animal's action by case when it has parts (+0x74 +0x44) and is not flagged (+0xB8) |
+| `0xa13850` | Bird::UpdateA13850 | In outline: another bird update for kind 0x201 in stage 1 when not flagged (+0x118) |
+| `0xb18660` | WildAnimal::MoveTo | In outline: makes a move-to step for an animal (WildAnimalLocomotorMoveTo) and starts it (`0xB179B0`) when not flagged (+0xEC) |
