@@ -1466,3 +1466,94 @@
 | `0x844b30` | Scenery::Reset844B30 | In outline: clears a value (+0x2C) and goes over a list (+0xC) |
 | `0x76b790` | Guest::Load76B790 | In outline: reads values from a saved block |
 | `0x44f150` | Effects::Load44F150 | In outline: reads values from a saved block |
+| `0x739ad0` | Path::Pass739AD0 | In outline: goes over entries (+8) |
+| `0x731880` | Path::Pass731880 | In outline: the same (another copy) |
+| `0xbae8e0` | Enclosure::FindBAE8E0 | In outline: a find (`0xBAD550`, `0xBAD5C0`) |
+| `0x852650` | Scenery::Bit852650 | In outline: a step with a bit from a count (+0xC) |
+| `0x874f20` | Scenery::Add874F20 | In outline: adds an entry, growing a list (+0x7C) when full |
+| `0x811670` | Regions::Draw811670 | In outline: a draw step with the shared device (slot 0xC8) |
+| `0x7a9400` | Terrain::Shared7A9400 | In outline: a step with the shared object (`0x1106C54`), made when none |
+| `0xbadcc0` | Enclosure::CheckBADCC0 | In outline: 0 unless found (`0xBAD5C0`) |
+| `0x8850f0` | Scenery::Find8850F0 | In outline: a find over entries (+0xF8) by a value |
+| `0x8847a0` | Scenery::Slot8847A0 | In outline: a slot from a value scaled to a range |
+| `0x7a12d0` | Terrain::Step7A12D0 | In outline: a step with its part (+0x510) |
+| `0x741940` | Guest::Add741940 | In outline: grows a list by two when full (ObjectArray::SetCapacity on +0x514) and adds |
+| `0x93d870` | Water::Grid93D870 | In outline: makes a grid of 0x30-byte cells |
+| `0x8619e0` | Scenery::Case8619E0 | In outline: a value by an entry's kind |
+| `0x7a02b0` | Terrain::Step7A02B0 | In outline: a step with its part (+0x510) |
+| `0x95dd10` | Water::Fill95DD10 | In outline: fills values from a list |
+| `0x470a10` | Draw::Slot470A10 | In outline: a step for a 24-byte slot |
+| `0xada9c0` | Animal::HeightADA9C0 | In outline: a height step when the terrain is not flagged |
+| `0x8db980` | Terrain::Case8DB980 | In outline: sets a shared callback (`0x10F0AD8`) and acts by it |
+| `0x8c5250` | Terrain::Make8C5250 | In outline: fills a record with its table (`0xF7ABB8`) |
+| `0x88bd80` | SceneryBehaviour::Terrain88BD80 | In outline: a step with its owner when the terrain is not flagged |
+| `0x83fad0` | Scenery::Add83FAD0 | In outline: adds an entry, growing a list (500 at first) when full |
+| `0x72b030` | Path::Quad72B030 | In outline: a cell's quad (Cell::Quad) and a step |
+| `0x71cfa0` | Path::Terrain71CFA0 | In outline: a step when the terrain is not flagged |
+| `0xa8e970` | Animal::LoopA8E970 | In outline: goes over the shared list (`0x10F266C`) |
+| `0x9f9da0` | Fireworks::Find9F9DA0 | In outline: a find over entries (+0x1C) |
+| `0x81b260` | SceneryBehaviour::Text81B260 | In outline: with no part (+0xC8), a text check (`0x403C20`) |
+| `0x960480` | Water::Next960480 | In outline: a step for the next entry of a list (+0x60) |
+| `0x8e90e0` | Water::Remove8E90E0 | In outline: removes by id (IdMap::Remove6) and acts |
+| `0x885c80` | Scenery::Value885C80 | In outline: a value from its part (+0xFC +0xDC) and a step (`0x884B50`) |
+| `0xa1d240` | Window::ValueA1D240 | In outline: a value from a part (+0xB4) |
+| `0xb84800` | Animal::AddB84800 | In outline: adds to an entry's value (`0xB829C0`) |
+| `0x925f60` | Water::Set925F60 | In outline: sets its part's values (+0x328) |
+| `0x85d200` | Scenery::Round85D200 | In outline: a value rounded from a scale |
+| `0x8531b0` | Scenery::Bit8531B0 | In outline: a step with a bit from a count (+0xC) |
+| `0x852b50` | Scenery::Bit852B50 | In outline: the same (another copy) |
+| `0x852950` | Scenery::Bit852950 | In outline: the same (another copy) |
+| `0x852370` | Scenery::Bit852370 | In outline: the same (another copy) |
+| `0x852170` | Scenery::Bit852170 | In outline: a step with a bit from a count (+0xC) |
+| `0x851f70` | Scenery::Bit851F70 | In outline: the same (another copy) |
+| `0x8532c0` | Scenery::Bit8532C0 | In outline: the same (another copy) |
+| `0x8530c0` | Scenery::Bit8530C0 | In outline: the same (another copy) |
+| `0x852a60` | Scenery::Bit852A60 | In outline: the same (another copy) |
+| `0x852860` | Scenery::Bit852860 | In outline: the same (another copy) |
+| `0x852280` | Scenery::Bit852280 | In outline: the same (another copy) |
+| `0x852080` | Scenery::Bit852080 | In outline: the same (another copy) |
+| `0x851e80` | Scenery::Bit851E80 | In outline: the same (another copy) |
+| `0x8e6d20` | Water::Point8E6D20 | In outline: a point from a matrix's values |
+| `0x834030` | Scenery::Make834030 | In outline: unless the shared value is set (`0x130B5D0`), makes a 0xC-byte part |
+| `0x799a40` | Guest::Grow799A40 | In outline: grows a buffer (+0x10C) in steps of 8 to hold n more |
+| `0x714e40` | Path::Step714E40 | In outline: a step with the shared value (`0x1306224`, `0x713240`) and a linked part (+0x218) |
+| `0x9eade0` | Weather::Start9EADE0 | In outline: unless the shared value is set (`0x10EDAE0`), starts the weather loop (Weather::StartLoop) |
+| `0x91c630` | Array::Resize91C630 | In outline: resizes a list to n |
+| `0x91a0b0` | Array::Resize91A0B0 | In outline: resizes a list to n |
+| `0x9123e0` | Water::Make9123E0 | In outline: fills a record from its arguments |
+| `0x86f5b0` | Scenery::Pass86F5B0 | In outline: with no part value (+0xCC +0x5C), goes over a list (+0x148) |
+| `0x863a60` | Array::Resize863A60 | In outline: resizes a list to n |
+| `0x856900` | Scenery::Points856900 | In outline: goes over n points |
+| `0x74dc30` | Guest::Set74DC30 | In outline: sets its part's value (+0xE4 +4) and acts (`0x749D70`) |
+| `0xa91c80` | Fence::QuadA91C80 | In outline: fills a 0x60-byte quad record from its corners |
+| `0x989300` | Fireworks::Find989300 | In outline: a search over entries (+0x58) |
+| `0x8ff6a0` | Water::Pass8FF6A0 | In outline: goes over entries (+4) |
+| `0x97aca0` | Water::Points97ACA0 | In outline: goes over n points |
+| `0x939ac0` | Array::Resize939AC0 | In outline: resizes a list to n |
+| `0x81fa00` | SceneryBehaviour::Check81FA00 | In outline: a check when not flagged (+0xF4) |
+| `0x7a10b0` | Terrain::Step7A10B0 | In outline: a step with its part (+0x510) |
+| `0x7a0fd0` | Terrain::Step7A0FD0 | In outline: the same (another copy) |
+| `0x72c640` | Path::Text72C640 | In outline: a text record when it has none (+0xC) |
+| `0xb758e0` | Animal::TerrainB758E0 | In outline: a step when the terrain is not flagged |
+| `0xb5f5e0` | Animal::TerrainB5F5E0 | In outline: the same (another copy) |
+| `0x7bb530` | Person::Terrain7BB530 | In outline: the same (another copy) |
+| `0x910270` | Water::Device910270 | In outline: a step with the shared device's value (slot 0xCC) |
+| `0x8b3cc0` | Scenery::List8B3CC0 | In outline: goes over a list (+0x64) |
+| `0x871f20` | Scenery::Kind871F20 | In outline: when a flag is set and its part has a value, acts by its kind (+0xCC +0x48) |
+| `0x79cb60` | Toolbar::Next79CB60 | In outline: when two shared values differ, keeps a shared index (`0x1306BB8`) in range |
+| `0x73ca70` | Guest::Buffer73CA70 | In outline: reserves a buffer (Buffer16::Reserve) and fills it |
+| `0xb9f8a0` | PathGrid::EntryB9F8A0 | In outline: entry n (0xB8 bytes), 0 for a negative n |
+| `0x95a700` | Water::Entry95A700 | In outline: a value from a 16-byte entry (+0x14 by +0x1C) |
+| `0x91c0e0` | Water::Step91C0E0 | In outline: a step with three values |
+| `0x905ba0` | Water::Fill905BA0 | In outline: fills values from its arguments |
+| `0x891680` | Scenery::Add891680 | In outline: adds an entry, with a free list (+0x14) or growing |
+| `0x867ec0` | Scenery::Pass867EC0 | In outline: goes over a part's entries (+0xC) |
+| `0x73e520` | Guest::Link73E520 | In outline: a step with a linked part (+8) |
+| `0x716c30` | Path::Step716C30 | In outline: a step with its part (+0x23C) |
+| `0x876660` | Scenery::Pass876660 | In outline: goes over a part's entries (+0x9C) |
+| `0x82b220` | Scenery::Set82B220 | In outline: a step (`0x829B70`), sets a value (+0xAC) and acts with a part (+0x84) |
+| `0x7855e0` | GuestGroup::Slots7855E0 | In outline: goes over slots 0 to 6 (+0x60) |
+| `0x724300` | Path::Slot724300 | In outline: when a slot check passes (Path::Slot72FA20), a value from a count (+0x9D) |
+| `0x7241e0` | Path::Slot7241E0 | In outline: the same with Path::Slot72F610 and +0x9C |
+| `0x9454e0` | Water::Remove9454E0 | In outline: removes entry n (+0x64) from its list (Entries::Remove) |
+| `0x9761b0` | Water::Step9761B0 | In outline: a step with a value or the shared one (`0x1310E60`) |

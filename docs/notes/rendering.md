@@ -923,3 +923,19 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x488710` | Effect::Inside488710 | In outline: the same (another copy) |
 | `0x9f5db0` | Fireworks::Check9F5DB0 | In outline: 0 with no list (+0x4C) |
 | `0x9e2970` | Fireworks::Next9E2970 | In outline: steps a value (+0x1C) up to the shared count (`0x10F0E84`) |
+| `0xb5c450` | Effect::PassB5C450 | In outline: goes over entries (+0x10) |
+| `0xaa96e0` | PoolComplex::HandleAA96E0 | In outline: makes a handle and links it |
+| `0x9f5ea0` | Fireworks::Check9F5EA0 | In outline: a check (Fireworks::Check9F5DB0) at a scaled time |
+| `0x9c7a10` | Particles::Pass9C7A10 | In outline: goes over entries (+0x54, +0x58) |
+| `0xb82fd0` | Track::MakeB82FD0 | In outline: makes a part (`0xBC2CA0`) |
+| `0xbbe480` | Track::StepBBE480 | In outline: a step with two parts (+0xC) |
+| `0x9e2640` | Fireworks::Step9E2640 | In outline: a step when a value is not 0 (+0x58) |
+| `0xb5cda0` | Effect::PartB5CDA0 | In outline: goes over a part's entries |
+| `0xcd8060` | Camera::PassCD8060 | In outline: with a part (+8), goes over its values |
+| `0x9f4c80` | Fireworks::List9F4C80 | In outline: goes over a list (+0x4C) |
+| `0xaf4aa0` | Animal::ColourAF4AA0 | In outline: makes a colour blend element (ColourBlenderElement) when not flagged (+0x98) |
+| `0xad8aa0` | Animal::ColourAD8AA0 | In outline: the same when not flagged (+0x90) |
+| `0x9fbb70` | Fireworks::Draw9FBB70 | In outline: a draw step with the shared device |
+| `0x9c4a90` | Particles::Fill9C4A90 | In outline: fills a record from its arguments |
+| `0x8db980` | Terrain::Case8DB980 | In outline: sets a shared callback (`0x10F0AD8`) and acts by it |
+| `0x9bc2d0` | Particles::Pass9BC2D0 | In outline: goes over entries (+0x3C) from n |

@@ -696,3 +696,44 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4b00a0` | Ride::Check4B00A0 | In outline: 0 when its part is flagged (bit 4), more when flagged (bit 14) |
 | `0x5bcb20` | TrackPiece::Handle5BCB20 | In outline: makes a handle and links it |
 | `0x4e1410` | Ride::Make4E1410 | In outline: fills a record from its arguments |
+| `0x5d4e20` | TrackedRide::Pass5D4E20 | In outline: goes over stations (+0xE8) when not flagged (+0x68) |
+| `0x51a5c0` | Car::Pass51A5C0 | In outline: goes over entries (+0x7B4) |
+| `0xbc64e0` | Track::LengthBC64E0 | In outline: for rides not flagged 0x400000 or with fewer than two stations, a step |
+| `0x579f00` | Ride::Part579F00 | In outline: with no part (+4), a step with +0x40 |
+| `0x53b440` | Ride::Kind53B440 | In outline: unless its kind is 0x13, a step with 1.0 |
+| `0x5d9830` | TrackPiece::Find5D9830 | In outline: a find over pieces (+0x158) |
+| `0x5d6410` | TrackPiece::Step5D6410 | In outline: when given a piece, a step unless told not to |
+| `0x591af0` | Ride::Text591AF0 | In outline: an empty text filled when not flagged (+0x1C4) |
+| `0x5863f0` | Ride::Text5863F0 | In outline: the same when not flagged (+0x1AC) |
+| `0x523910` | Car::Update523910 | In outline: an update when not flagged (+0x180) |
+| `0x50bbe0` | Car::Step50BBE0 | In outline: with the shared object (`0x12F4F94`), a step for a slot |
+| `0x4f6f40` | TrackEditor::AutoComplete4F6F40 | In outline: with a part (+0x4F0), hides the auto-complete cost (TrackEditor::AutoCompleteCost(0)) |
+| `0x4acc70` | Ride::Step4ACC70 | In outline: a step (`0x4AB750`) and more when the shared flag (`0x12F4B60`) is set |
+| `0x54c290` | Ride::List54C290 | In outline: goes over a list (+0x78) |
+| `0x53e190` | Ride::Pass53E190 | In outline: goes over entries (+0x34) |
+| `0x593280` | Ride::List593280 | In outline: goes over a list (+0x208) |
+| `0x500160` | Car::Set500160 | In outline: sets a value (+0xCC) when it changes, by a mode (+0x100) |
+| `0x5a1660` | TrackedRide::Set5A1660 | In outline: sets a value (+0x6F4) and acts with its owner |
+| `0x555a60` | Ride::Loop555A60 | In outline: goes over the shared list (`0x10EE8BC`) |
+| `0x532bb0` | Ride::Check532BB0 | In outline: a check when not flagged (+0x21C) |
+| `0x5ca270` | TrackedRide::Check5CA270 | In outline: a step with a check (TrackedRide::Check5C7000) |
+| `0x568670` | Ride::Tool568670 | In outline: a step with the current tool (`0x12F5638`, `0x5D7D20`) |
+| `0x5b0370` | TrackedRide::Stations5B0370 | In outline: goes over stations (+0x6B0) with a step (`0x4C1740` with 0) |
+| `0x59ba50` | Ride::Value59BA50 | In outline: a value when not flagged (+0x84) |
+| `0x580140` | Ride::Set580140 | In outline: sets a byte (+0x100) and a list (Array4::Assign) |
+| `0x5bef10` | TrackPiece::Side5BEF10 | In outline: a step with 1 or -1 by a side |
+| `0x55fa00` | Ride::Blend55FA00 | In outline: blends three values (+0x320, +0x3DC) |
+| `0x5340e0` | Ride::Count5340E0 | In outline: counts when not flagged (+0x21C) |
+| `0x533ff0` | Ride::Count533FF0 | In outline: the same (another copy) |
+| `0x5bb2b0` | TrackPiece::Length5BB2B0 | In outline: a step with two parts' lengths (+0x18) |
+| `0x5d9a00` | TrackedRide::End5D9A00 | In outline: with the selected ride, a step (TrackedRide::End5CA360) |
+| `0x5a48b0` | TrackedRide::Section5A48B0 | In outline: a step with a ride's section (`0x12F5338`) |
+| `0x5ede30` | AttractionPerson::Select5EDE30 | In outline: a step with the selected ride from a value (+0x120, `0x5EBEB0`) |
+| `0x5de900` | TrackedRide::Track5DE900 | In outline: a step with the track interface (TrackedRide::TrackInterface) with none at +0x70 |
+| `0x56fa10` | Ride::Update56FA10 | In outline: an update when not flagged (+0x5C) |
+| `0x510c50` | Car::Slot510C50 | In outline: for a part (0x90 bytes) with no slot (+0x430), a step |
+| `0x4d1ab0` | Shop::Set4D1AB0 | In outline: sets a value (+0xB4) and a mode of 5 (+0xB0) |
+| `0x5db910` | Ride::CanOpen5DB910 | In outline: a step when a ride cannot open (`0x5CFB10`) |
+| `0x5d5450` | TrackedRide::Count5D5450 | In outline: a count from the selected ride |
+| `0x5c1330` | TrackPiece::Check5C1330 | In outline: a check when not flagged (+0x214) |
+| `0x5be100` | TrackPiece::Extent5BE100 | In outline: clears an extent (Extent::Clear) and fills it (`0x847530`) |

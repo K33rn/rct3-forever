@@ -513,3 +513,27 @@
 | `0xac3510` | Fence::PassAC3510 | In outline: the same (another copy) |
 | `0xab5f10` | PoolPiece::PlaceAB5F10 | In outline: when flagged (+0x11C bit 0), places a piece (PoolPiece::PlaceAB51D0 with 0x58) |
 | `0xa39e50` | Animal::SwapA39E50 | In outline: replaces a shared part (+0xB4) |
+| `0xaf11a0` | Animal::ValueAF11A0 | In outline: a value from entries |
+| `0xae0890` | Animal::AverageAE0890 | In outline: an average point |
+| `0xa8a150` | Animal::CheckA8A150 | In outline: a check over entries (+0xD0) |
+| `0xb7c5f0` | Animal::TerrainB7C5F0 | In outline: a step when the terrain is not flagged |
+| `0xb092d0` | Animal::UpdateB092D0 | In outline: an update when not flagged (+0x48) |
+| `0xa9f360` | PoolComplex::FindA9F360 | In outline: unless flagged (bit 4), a step with a table entry (IndexedTable::Entry) |
+| `0xae6690` | Animal::SetAE6690 | In outline: sets a flag (+0x60) and fills entry n (0x1C bytes) |
+| `0xb88110` | Animal::CheckB88110 | In outline: 0 with no part (+0x74 +0x3C) |
+| `0xb82750` | Animal::InitB82750 | In outline: sets up a record with its table (`0xF9BF84`) |
+| `0xaa3e90` | PoolComplex::CopyAA3E90 | In outline: copies a record with a linked part |
+| `0xb6f5e0` | Animal::UpdateB6F5E0 | In outline: an update when not flagged (+0xD0) |
+| `0xb61420` | WildAnimal::PointB61420 | In outline: a step with a point from another (+0x50 on) |
+| `0xa9a720` | PoolComplex::UpdateA9A720 | In outline: an update when not flagged (+0x1B0) |
+| `0xa88c80` | Animal::PassA88C80 | In outline: goes over entries (+0xD4, +0xD8) |
+| `0xb7b460` | Animal::StepB7B460 | In outline: a step (`0xB0E0F0`) and goes over entries |
+| `0xb48240` | WildAnimal::SetB48240 | In outline: when not flagged (+0xC8), sets a point (+0xE0, +0xE4) |
+| `0xb62970` | WildAnimal::TimeB62970 | In outline: when not flagged (+0xFD), adds a time to a value (+0x44) |
+| `0xb69f20` | Animal::StepB69F20 | In outline: with a value (+0x178), a step (`0xB0E0F0`) |
+| `0xb24540` | Animal::StepB24540 | In outline: the same with +0x9C |
+| `0xac2750` | Fence::StepAC2750 | In outline: a step with many values |
+| `0xaa3f80` | PoolComplex::SetAA3F80 | In outline: sets a flag and a linked part |
+| `0xa808b0` | Animal::CaseA808B0 | In outline: a table entry (Table30::Entry) and a step by a mode (+0x158) |
+| `0xb88c30` | Animal::CheckB88C30 | In outline: sets a result to 3 and a check |
+| `0xac6320` | PoolComplex::UpdateAC6320 | In outline: an update when not flagged (+0x1C) |

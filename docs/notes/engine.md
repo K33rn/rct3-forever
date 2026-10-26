@@ -2287,3 +2287,65 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x734160` | Path::Copy734160 | Copies a path record's values from another |
 | `0xcb8000` | ShaderFile::SortCB8000 | In outline: a sort step over eight-byte pairs |
 | `0x4467d0` | Effects::Find4467D0 | In outline: a find loop |
+| `0xc34700` | Debug::AssertText | In outline: builds an "Assertion failure:" message in a 4096-character buffer |
+| `0x670230` | Path::FileName670230 | In outline: the part of a path after its last '\' (WideString::FindLast, WideString::Substring) |
+| `0x82a2a0` | Array::Resize82A2A0 | In outline: resizes a list to n |
+| `0xaf7710` | Array::ResizeAF7710 | In outline: resizes a list to n |
+| `0x860e60` | Array::Resize860E60 | In outline: resizes a list to n |
+| `0x7335f0` | Array::Resize7335F0 | In outline: resizes a list to n |
+| `0xb76170` | Array::ResizeB76170 | In outline: resizes a list to n |
+| `0x63e1c0` | Array::Resize63E1C0 | In outline: resizes a list to n |
+| `0x49b820` | Record::Copy49B820 | In outline: copies a record from another |
+| `0xcdce20` | Plane::FromPoints | In outline: a plane's normal from three points (a cross product) |
+| `0xcb5ec0` | Mesh::SetCB5EC0 | In outline: frees its buffer and fills values from its arguments |
+| `0xc0aff0` | Text::StepC0AFF0 | In outline: for kind 7, when a check passes (`0xC09C50` with 8, 0x1D), counts up |
+| `0xc0b0e0` | Text::StepC0B0E0 | In outline: for kind 0x1D, the same with 0x1D, 0xFFFF |
+| `0xc4de80` | Shader::RegisterC4DE80 | In outline: registers shader names into a list (+0x2C) |
+| `0xbfcdb0` | Device::MakeBFCDB0 | In outline: fills a record from its arguments |
+| `0xcb7140` | Mesh::StepCB7140 | In outline: when its kind matches the shared one (`0x13E6F68`), a buffer step |
+| `0xc75090` | Device::CountC75090 | In outline: a step with a count |
+| `0xc2b5d0` | Text::FindC2B5D0 | In outline: a find by a C string (length worked out when -1) |
+| `0xc04ac0` | Array::MakeC04AC0 | In outline: makes a list of n eight-byte entries |
+| `0x40f990` | NamedObject::Make40F990 | In outline: makes an object (Object413) and fills it |
+| `0xc695c0` | Window::StepC695C0 | In outline: when a check passes (`0xC65310`), a step with its parent's value |
+| `0xc43000` | Resource::FindC43000 | In outline: a step (`0xC429E0`) and a find |
+| `0xc0fcc0` | Resource::NameC0FCC0 | In outline: when given a name, a find over a list (+0x1C) |
+| `0xc4ced0` | HashTable::GrowC4CED0 | In outline: when full, grows to the next prime size (Math::NextPrime, `0xC48A50`) |
+| `0xc4cde0` | HashTable::GrowC4CDE0 | In outline: the same with `0xC48950` |
+| `0xc09090` | Text::InitC09090 | In outline: a step (`0xC09020`), sets a size of 8000 and clears values |
+| `0x9f8680` | Math::Split9F8680 | In outline: splits a 64-bit value into parts |
+| `0x43a7e0` | Record::Make43A7E0 | In outline: makes a record |
+| `0x497150` | Record::Make497150 | In outline: makes a part |
+| `0xcdb2a0` | Vector::NearCDB2A0 | In outline: a test of a point's distance from another |
+| `0xc42b10` | Record::MakeC42B10 | In outline: makes a 0x14-byte record |
+| `0x9c5b80` | List::Clear9C5B80 | In outline: goes over a list |
+| `0xc3d0e0` | ResourceFile::NameC3D0E0 | In outline: a name from a table of 0xC or 0x10-byte entries |
+| `0xbf64e0` | Text::StepBF64E0 | In outline: a step with a value (+0x9C) over a list |
+| `0xb3a0b0` | Text::MakeB3A0B0 | In outline: makes a text from a shared one (`0xF28E54`) |
+| `0xc9b970` | Plane::FromPointsC9B970 | In outline: a plane's normal from three points (a cross product) |
+| `0xc46b30` | ShaderFile::ReadC46B30 | In outline: reads four bytes and two two-byte values (`0xBE5020`) |
+| `0xc36f50` | Resource::SameC36F50 | In outline: a step when given its own part (+0xA4) |
+| `0xabee60` | Record::MakeABEE60 | In outline: sets up a record with handles |
+| `0xa70400` | Window::ResetA70400 | In outline: clears a shared flag (`0x13429EC`) and goes over a 65-entry list |
+| `0x48c7f0` | Record::Make48C7F0 | In outline: fills a record |
+| `0xc668c0` | Window::MakeC668C0 | In outline: makes a window part (`0xC65F20`) |
+| `0xc539c0` | Stream::MakeC539C0 | In outline: makes a 0xFC-byte part |
+| `0xc4e120` | Shader::RegisterC4E120 | In outline: registers names into a list (+0x1C) |
+| `0xc4e040` | Shader::RegisterC4E040 | In outline: the same (another copy) |
+| `0x46cfb0` | Array::Resize46CFB0 | In outline: resizes a list to n |
+| `0xc73950` | Device::MakeC73950 | In outline: sets up a record with its table (`0xFBA0BC`) and a name |
+| `0xc385d0` | Resource::MakeC385D0 | In outline: makes a part from its argument, or the shared one (`0x13E6B24`) |
+| `0xbd81c0` | HashTable::GrowBD81C0 | In outline: when full, grows to the next prime size (Math::NextPrime, `0xBD74D0`) |
+| `0xbd0db0` | Text::MakeBD0DB0 | In outline: makes a text record |
+| `0x9e1ab0` | Array::Resize9E1AB0 | In outline: resizes a list to n |
+| `0x693300` | Array::Resize693300 | In outline: resizes a list to n |
+| `0x61c320` | Array::Resize61C320 | In outline: resizes a list to n |
+| `0x430690` | Array::Resize430690 | In outline: resizes a list to n |
+| `0x409a50` | Record::Get409A50 | In outline: a value from an entry (Thunk) |
+| `0xbe53c0` | Memory::StepBE53C0 | In outline: takes a reference and a step with the shared value (`0x13D0E98`) |
+| `0xbd0080` | Text::MakeBD0080 | In outline: makes a text record |
+| `0xcc5450` | Shader::StepCC5450 | In outline: a shader step (`0xCC4820`) |
+| `0xc57b00` | Stream::MakeC57B00 | In outline: makes a record |
+| `0xc550b0` | Stream::MakeC550B0 | In outline: makes a record |
+| `0x981ee0` | Record::Make981EE0 | In outline: sets up a record with its table (`0xF7F6B8`) |
+| `0x6b0370` | Window::Make6B0370 | In outline: sets up a record with its tables (`0xF60640`, `0xF60794`) |

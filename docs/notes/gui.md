@@ -1517,3 +1517,33 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x642740` | Window::Rect642740 | In outline: when not flagged (+0x152), a step with its rectangle |
 | `0x9dd8c0` | Window::Text9DD8C0 | In outline: a text by a shared object's value (`0x134180C` +0x14 = 4) |
 | `0x662fe0` | Window::Handle662FE0 | In outline: makes a handle and links it |
+| `0x6f2740` | Window::Check6F2740 | In outline: a check when not flagged (+0x9C) |
+| `0x6adb60` | Window::Place6ADB60 | In outline: a point from its place (+0x7C), or its parent's when it has one (+0x3C) |
+| `0xa56900` | Window::StepA56900 | In outline: with a part (+0xE8), a step (`0xA561B0`) |
+| `0x690f00` | Text::Layout690F00 | In outline: a text layout step with sizes |
+| `0x65ae80` | Window::Value65AE80 | In outline: a value (+0x170, or +0x168 when negative) |
+| `0x63d300` | Window::Width63D300 | In outline: a step with a part's width |
+| `0xa7c8c0` | Window::TextA7C8C0 | In outline: a text from shared values |
+| `0x9d5de0` | Window::Make9D5DE0 | In outline: fills a record from its arguments |
+| `0x99def0` | Window::Step99DEF0 | In outline: a step with an object (`0x1341524`) |
+| `0xa2e720` | Window::UpdateA2E720 | In outline: an update when its part is not flagged (+0x30) |
+| `0x63a5b0` | Window::Make63A5B0 | In outline: sets up a record with its tables (`0xF3A07C`) |
+| `0x61bd50` | Window::Make61BD50 | In outline: makes a 0x268-byte part |
+| `0x6a2f80` | Window::Scroll6A2F80 | In outline: unless flagged, a fraction from a value (slot 0x100) |
+| `0x6b38f0` | Window::List6B38F0 | In outline: goes over a list (+0x20) |
+| `0x9bd170` | Window::Update9BD170 | In outline: a step for a part not flagged (+0x1C) |
+| `0xc62ae0` | Window::HitC62AE0 | In outline: a hit test (`0xC5E300`) |
+| `0x67f150` | Window::Shared67F150 | In outline: with a part (+0x130), a step with the shared object (`0x1106C54`) |
+| `0x6b5fb0` | Window::Slot6B5FB0 | In outline: a step for an object with a slot (`0x130A8A0`) |
+| `0x6ade60` | Window::Flag6ADE60 | In outline: a check unless flagged (+0x94 bit 6) |
+| `0x639680` | Window::Table639680 | In outline: a step with a table entry (`0xF488B4`, 0x8C bytes) and the shared value (`0x12F4618`) |
+| `0x61f3f0` | MessageConsole::Show | In outline: makes the message console (MessageConsole::Make) and acts by a value against a limit |
+| `0x9a02f0` | Window::Build9A02F0 | In outline: builds a window from the shared title `0x1305CC4` |
+| `0x9a00a0` | Window::Build9A00A0 | In outline: the same (another copy) |
+| `0x98b9f0` | Window::Set98B9F0 | In outline: sets values (+0x44, +0x14) and a handle |
+| `0x61c0c0` | Window::Place61C0C0 | In outline: places a part by the window's height |
+| `0x4780a0` | NamedObject::Make4780A0 | In outline: makes a list member object (ListMember with `0x10EC9E8`) |
+| `0x98b280` | Window::Check98B280 | In outline: a check with a part (+4 +0xC) |
+| `0x700060` | Window::Place700060 | In outline: a step with the window's height |
+| `0x6be4c0` | Money::Text6BE4C0 | In outline: a money text with two decimals (Money::Format_(2)), with zero handled |
+| `0x476950` | Effects::Loop476950 | In outline: goes over the shared list (`0x10ECA38`) |
