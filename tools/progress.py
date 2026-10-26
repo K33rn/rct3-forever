@@ -134,15 +134,19 @@ def main():
     known = round(bar_w * size['documented'] / total_b) if total_b else 0
     bar = '█' * done + '▓' * known + '░' * (bar_w - done - known)
 
+    # documented counts every game function a note describes, rewritten ones included
+    noted_b = size['documented'] + sum(int(r['size']) for r in rows
+                                       if r['status'] == 'rewritten' and int(r['address'], 16) in notes | doc)
     summary = [
-        f'`{bar}` **{pct(size["rewritten"], total_b)} rewritten**, {pct(size["documented"], total_b)} understood '
-        f'and documented (by code size)',
+        f'`{bar}` **{pct(size["rewritten"], total_b)} rewritten**, {pct(noted_b, total_b)} understood '
+        f'and documented (by code size; the rewritten part included)',
         '',
         '| Status | Functions | Code | Share of the game\'s code |',
         '|---|---:|---:|---:|',
     ]
     for s in game:
-        summary.append(f'| {s.capitalize()} | {count[s]:,} | {size[s]:,} bytes | {pct(size[s], total_b)} |')
+        label = 'Documented, not rewritten yet' if s == 'documented' else s.capitalize()
+        summary.append(f'| {label} | {count[s]:,} | {size[s]:,} bytes | {pct(size[s], total_b)} |')
     summary.append(f'| **Game total** | **{total_n:,}** | **{total_b:,} bytes** | |')
     summary.append(f'| Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | {count["library"]:,} | {size["library"]:,} bytes | |')
     summary.append(f'| Compiler-made pieces (go with their function) | {count["generated"]:,} | {size["generated"]:,} bytes | |')

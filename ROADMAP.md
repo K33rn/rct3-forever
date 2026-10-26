@@ -22,7 +22,7 @@ Forever's launcher warns when both are installed.
 | `forever.dll` (runs inside the game, puts the rewritten functions in place, leaves the game folder untouched) | Done |
 | Equivalence tester (checks every rewritten function against the original before it is used) | Done |
 | Rewriting the game, one function at a time | **In progress**: 5,205 functions, 3.04% of the game's code |
-| Understanding and documenting the game's code (`docs/notes`) | **Done, outline level**: every function is covered: 96.96% of the game's code documented and 3.04% rewritten. Many rows are "In outline:" descriptions to revisit before rewriting |
+| Understanding and documenting the game's code (`docs/notes`) | **Done**: 100% of the game's code is documented in `docs/notes` (3.04% of it also rewritten; `tools/rewritten_notes.py` keeps notes for the rewritten copies). Many rows are "In outline:" descriptions to revisit before rewriting |
 
 The [progress page](docs/progress.md) has the current numbers, updated with every change.
 
