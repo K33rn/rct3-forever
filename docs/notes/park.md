@@ -1625,3 +1625,15 @@
 | `0x73c240` | Guest::Terrain73C240 | In outline: a step with a value (+0x80) when the terrain is not flagged |
 | `0x92e070` | Water::Fraction92E070 | In outline: a value from n over a count minus one |
 | `0x882c10` | Scenery::Clear882C10 | In outline: tears down texts and more |
+| `0xab6050` | PoolComplex::ColoursAB6050 | In outline: a pool part's colours by its kind (+0x120): fills colour bytes (0xC0, 0x48) for kinds 5 to 9 and splits a colour (+0x118) into bytes |
+| `0x878360` | Scenery::Place878360 | In outline: a large scenery place step: makes the shared terrain (`0x1311650`, RCT3Terrain, 90 by 90) when there is none, reads the enclosure manager's cell and goes over its entries (+0x7C, +0x80) |
+| `0x83dc00` | Scenery::Mouse83DC00 | In outline: a large mouse step with the GUI root (`0x12F8404`, `0x12F83F0`): when on, places items by the mouse with the camera and the shared terrain |
+| `0x8f4df0` | Terrain::Count8F4DF0 | In outline: a large terrain count: makes a list sized by the shared count (`0x1311620`) and counts entries by a byte |
+| `0x7dad70` | Person::Timed7DAD70 | In outline: a large timed person step (`0x1308CA8`, Timer::Ticks) that makes pool parts (PoolComplex::MakeAC6870) |
+| `0x939ee0` | Water::Step939EE0 | In outline: a large water step below a limit (`0x10F0C5C`), with a ride's values when asked |
+| `0x90dea0` | Water::Rebuild90DEA0 | In outline: releases its part (+0x20), frees a buffer (+0x24) and rebuilds with the shared terrain (`0x1311650`) |
+| `0x8c5360` | Terrain::Ray8C5360 | In outline: a large ray step against the ground (Terrain::RayGround) by grid steps (+0x14) |
+| `0x9344d0` | Water::Ride9344D0 | In outline: a large step with the current tool's ride (flag bit 15) and a part's values (+0x98, +0xA8) |
+| `0x734400` | Path::Terrain734400 | In outline: a large path step with the shared terrain (`0x1311650`, 90 by 90) and cell sizes |
+| `0x930f30` | Water::Build930F30 | In outline: a large water build: makes room (`0x92E7F0` for 2n and 6n-6) and fills from a part (+0x120, +0x124) |
+| `0xba0b40` | Enclosure::RectBA0B40 | In outline: a large step over a rectangle kept inside its grid (+0x64, +0x68), with the shared terrain |

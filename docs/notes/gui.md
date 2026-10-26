@@ -1586,3 +1586,4 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xc66100` | Window::LinkC66100 | In outline: a step with a linked part (+0x74) |
 | `0x9c1a20` | Window::Check9C1A20 | In outline: a check when not flagged (+0x128) |
 | `0xa431b0` | Window::CaseA431B0 | In outline: unless given its own part, clears a value (+0xC4) and acts by a mode (+0xC0) |
+| `0x6ef5d0` | Window::Count6EF5D0 | In outline: counts up entry n (+8) and acts by n, making parts and texts |

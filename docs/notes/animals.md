@@ -560,3 +560,7 @@
 | `0xb33590` | Animal::TextB33590 | In outline: unless a flag is set (Flags::Bit0), makes a text |
 | `0xa905f0` | Fence::CrossA905F0 | In outline: a cross product of two directions |
 | `0xa86e50` | Animal::UpdateA86E50 | In outline: updates (Animal::UpdateA86710 with an object) and acts by a value (+0x120) |
+| `0xa705b0` | Animal::Overlap | In outline: a large step for two objects whose boxes overlap: sets up shared 32-entry tables once (`0x13C3110`) and adds up their parts' values |
+| `0xafb740` | Animal::TerrainAFB740 | In outline: a large step over terrain cells: makes two 0x400-byte buffers and reads three neighbouring slots (Animal::SlotAFB160) |
+| `0xa6d7b0` | Animal::PoseA6D7B0 | In outline: a large pose by kind (1, ...): blends points by a shared fraction (`0x13429E0`) and works out a normalised direction |
+| `0xb29a70` | WildAnimal::TerrainB29A70 | In outline: a large step with the terrain's bounds and the enclosure manager's cell |

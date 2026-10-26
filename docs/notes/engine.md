@@ -2431,3 +2431,5 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc43840` | Array::GrowC43840 | In outline: grows a list of four-byte entries to hold n |
 | `0xc21520` | Curves::StepC21520 | In outline: past a count (+0x34) with a value under 1, makes a record |
 | `0x9d2910` | Record::Make9D2910 | In outline: makes a 16-byte record |
+| `0x612250` | Game::Step612250 | In outline: a large step over a list of entries (+0xE4, +0xF4) by their flags, with a second list of numbers (+0xE8) counted down and up (+0xF0) |
+| `0xcc96b0` | Shader::BuildCC96B0 | In outline: builds a 0x4C-byte shader record: a list of n values and 0x60-byte entries with empty names for each of its parts (+0x2C, +0x30) |

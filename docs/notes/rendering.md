@@ -961,3 +961,17 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbf7130` | Text::FillBF7130 | In outline: the same (another copy) |
 | `0x9c6780` | Particles::Step9C6780 | In outline: a step with three values |
 | `0x476fb0` | Effects::Find476FB0 | In outline: unless told not to, a find over the shared list (`0x10ECA14`) |
+| `0x955a10` | Water::Draw955A10 | In outline: the large water draw: reads the device's view matrix (slot 0xB4), draws its pieces (Water::DrawPieces9525D0, `0x954100`), works out a colour from its values (+0x1E8 on, Colour::ToARGB), grows shared buffers in 4096 steps (Array::Resize94E4B0, `0x493860`) and fills shared draw state (`0x133A3D8` on) |
+| `0x8c8d30` | Terrain::Draw8C8D30 | In outline: a large terrain draw with the shared device: sets an identity matrix (slot 0xB8), reads the view matrix (slot 0xB4) and draws |
+| `0x8d4650` | Terrain::DrawTimed8D4650 | In outline: a large timed terrain draw: once per frame (`0x13119AC`) enters a timed section (`0x1311658`, Timer::Ticks), sets device state (slot 0xA4 with 9, 0xF) and draws |
+| `0xc8c160` | Device::FlushC8C160 | In outline: when on (+0x4C1), goes over the queued draws (+0x1A60, +0x1A64) and sets state when it changes (+0x67C, +0x2088) |
+| `0xc8e800` | Device::SetStateC8E800 | In outline: a large device state set: when not flagged, compares and takes a value (+0x6D0 vs +0x20D0) and marks what changed (+0x674, +0x67C) |
+| `0x950f30` | Water::Surface950F30 | In outline: a large water surface step: works out a normalised direction from a point and fills draw values |
+| `0x954100` | Water::Sort954100 | In outline: when on (+0x14), works out each piece's distance along a direction (0x80-byte pieces) and draws them in order |
+| `0x8fb360` | Water::Fill8FB360 | In outline: a large water fill: with the water manager and a part (`0x949210`), fills a device buffer for the current device |
+| `0x9fcda0` | Fireworks::DrawMap | In outline: a large draw from above: clears the device (black, depth 1), sets an orthographic view over the terrain's size (Matrix::Ortho from 1 to 1000) and draws |
+| `0x9af4f0` | Fireworks::Draw9AF4F0 | In outline: a large firework draw with the shared device and colours (Colour::ToARGB) |
+| `0x986d40` | Fireworks::Draw986D40 | In outline: a large firework draw with the device's view matrix (slot 0xB4) and the shared object (`0x133A380`) |
+| `0xc91780` | Device::CameraC91780 | In outline: a large camera step when asked or when its values are set: works out matrices from its part (+0x2138) |
+| `0xcdcf50` | Shapes::BuildCDCF50 | In outline: a large shape build: works out vertex and index counts, makes a 16-byte-entry list filled with the largest float, and fills it (4K and 2K-entry work tables) |
+| `0x8f1060` | Terrain::Colours8F1060 | In outline: blends neighbouring colours (their red, green, blue bytes) along the edges, rounded |

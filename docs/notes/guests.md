@@ -225,3 +225,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7caa00` | Person::Find7CAA00 | In outline: a find over a linked list (+0x2EC), 0 when empty |
 | `0x7ce320` | Person::Mode7CE320 | In outline: in modes 2 or 3, when on (+0x3F0), updates a target (Person::UpdateTarget7CB120) |
 | `0x7adc90` | Person::Make7ADC90 | In outline: makes a record from its arguments |
+| `0x7d68e0` | Person::Swim7D68E0 | In outline: a large person update by stage (+0x194): sets states (0x112, 0x11F, 0x100), counts a time (+0xBC) against a table (`0xFC35D8`), swims toward a pool part's point (Person::SwimToward, PoolComplex::PartA87E00) |

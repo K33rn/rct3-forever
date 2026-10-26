@@ -792,3 +792,9 @@ Tracked rides, flat rides and their cars and trains.
 | `0x59b880` | Ride::Make59B880 | In outline: makes a 32-byte part |
 | `0x585920` | Ride::Owner585920 | In outline: a step when its owner's kind is 0xB |
 | `0x4dea30` | Ride::Set4DEA30 | In outline: a step (`0x7A0B50`) when its part differs |
+| `0x513a60` | Car::Update513A60 | In outline: a large ride car update: with no slot (+0x318), finds its ride, the current tool and its list (+0x8D0) and moves along it |
+| `0x577d00` | Ride::Update577D00 | In outline: a large ride update: adds a time (+0x64), for kind 0x33 and others acts with its ride's part (+0x38C) and the current tool's value (+0x108) by many kinds (0xD, 0x16, 0xF, 0x34, ...) |
+| `0x5274b0` | Car::Move5274B0 | In outline: a large car move: keeps 1 over a shared step (`0x10EE448`), finds its ride's section and the current tool, and works out a place along the track |
+| `0x5242e0` | Car::Update5242E0 | In outline: a large car update with its ride, when the ride is not flagged (+0x861) |
+| `0x5e2b20` | TrackPiece::Build5E2B20 | In outline: a large piece build: clears a list (Array::Resize5D77A0(0)) and values and fills from its ride |
+| `0x764790` | Guest::Case764790 | In outline: a large guest step with two parts (by shared ids `0x12F4C64`, `0x12F5494`) and a case |
