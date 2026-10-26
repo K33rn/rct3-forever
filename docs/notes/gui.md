@@ -758,3 +758,19 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x442fd0` | Window::Message442FD0 | In outline: another message result maker by kind like Window::Message443B70 |
 | `0x442c60` | Window::Message442C60 | In outline: another message result maker by kind; the one Window::HandleKey6A1120 passes other messages to |
 | `0x48d240` | Window::Message48D240 | In outline: another message result maker by kind like Window::Message443B70 |
+| `0xa367e0` | Window::LayoutA367E0 | In outline: places a window (Window::UpdateRect) and its rows (+0x13C) that pass a check (`0x981700`) |
+| `0x6a0100` | Window::Fit6A0100 | In outline: fits a window's parts by their sizes |
+| `0x9dbb10` | Window::Sizes9DBB10 | In outline: sets a window's sizes (Sizes::Pick) and its text |
+| `0x6ff880` | Window::Build6FF880 | In outline: builds a window from its title (copied when none is given) |
+| `0x83d730` | Window::Build83D730 | In outline: builds a window from the shared title `0x130B734` |
+| `0x7ea7a0` | Window::Build7EA7A0 | In outline: builds a window from the shared title `0x130A88C` |
+| `0x6cd410` | Window::Event6CD410 | In outline: handles event 0x14 for its part (+0x118) (`0x6C3870`) |
+| `0x88aa10` | Window::Build88AA10 | In outline: builds a window from the shared title `0x1310FB8` |
+| `0xbab740` | Window::BuildBAB740 | In outline: builds a window from the shared title `0x13D063C` |
+| `0xc6af40` | Window::MakeC6AF40 | In outline: makes a window part (`0xC65F20`, `0xC69F90` with 0x84) |
+| `0xc6b710` | Window::MakeC6B710 | In outline: makes a window part (`0xC66D30`) |
+| `0x61e040` | Window::Build61E040 | In outline: builds a window from the shared title `0x12F57AC` |
+| `0xa7cea0` | Window::LayoutA7CEA0 | In outline: lays out a window (`0x6A65B0`, Window::Layout, Window::SetRectAndRefresh) |
+| `0xa364a0` | List::RowOKA364A0 | In outline: whether row n of a list is usable (more than six rows handled, within its count +0x108) |
+| `0x6fc2a0` | Window::Build6FC2A0 | In outline: builds a window from the shared title `0x1306138` |
+| `0x57ce30` | Window::Layout57CE30 | In outline: lays out a ride window when it has a ride (+0xF8) and it passes a check (`0x5A1A10`) |

@@ -248,3 +248,8 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5bebb0` | Ride::Frame5BEBB0 | In outline: a ride part's frame: normalises its direction and points along it (Matrix::LookAlongZ) |
 | `0x5cfda0` | Ride::Frame5CFDA0 | In outline: the same part frame (another copy) |
 | `0x537840` | Ride::Seats537840 | In outline: for a ride of kind 0x19, goes over its seats when not flagged (+0x21C) |
+| `0x5b8c40` | Ride::Link5B8C40 | In outline: links a ride part (`0x4B52D0`) and its owner (+0x380) |
+| `0x4d5d40` | Ride::Text4D5D40 | In outline: makes a ride's text by its kind (+0x114) |
+| `0x535610` | Ride::Owner535610 | In outline: with entries and not flagged (+0x74), finds the ride's owner (Interface04::Get) |
+| `0x515890` | Car::Update515890 | In outline: a ride car's update when shown (+0x250), with the shared ride state (`0x12F4F94`) |
+| `0xa018d0` | Ride::KindA018D0 | In outline: for n above 0, acts by the selected ride's kind (`0x130B5C8`, +0x9C +0x48) |

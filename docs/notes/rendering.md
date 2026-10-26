@@ -544,3 +544,13 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x977a30` | Particles::Draw977A30 | In outline: another particle draw (when on) within limits (under 10001, 15001) |
 | `0xbef5a0` | Text::LayoutBEF5A0 | In outline: another text layout like Text::LayoutBF0520 |
 | `0xbd4940` | Text::SetSizeBD4940 | In outline: when a text's size changes (+0x50, +0x54), clears it (`0xBD48F0`) and sets it again |
+| `0x482d60` | Draw::Lines482D60 | In outline: draws lines for the current device (ForCurrent) |
+| `0x453b80` | Texture::Load453B80 | In outline: reads a resource (`0xBDADC0`) and, when small enough (under 0x281), makes its record |
+| `0xc76f70` | Effect::CopyKeysC76F70 | In outline: copies an effect's key n (below +0x498) |
+| `0xc95ee0` | Renderer::CopySlotC95EE0 | In outline: copies a renderer slot n (below 0x40) |
+| `0xcf0400` | Shapes::TexturesCF0400 | In outline: goes over a shape list's parts (+4) setting their textures from the shared table (`0x1106E38`) |
+| `0xc5abc0` | Animation::StepC5ABC0 | In outline: another animation step like Animation::StepC5B220 |
+| `0x93bd50` | Water::Jet93BD50 | In outline: a water jet's update when not flagged (bit 1 of +8, +0xD4) (MasterBlasterJet::Update) |
+| `0x974e60` | Particles::Same974E60 | In outline: whether two particle setups are the same (their first values and flag) |
+| `0x420800` | Texture::Make420800 | In outline: makes a 256-wide texture (Device::CreateTexture) for entry n of a list (+0x11C) and fills it (`0x41F910`) |
+| `0x85f4f0` | Scenery::HitTest85F4F0 | In outline: another scenery hit test like Scenery::HitTest85E7B0 (`0xCDEB10`) |

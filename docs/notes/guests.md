@@ -175,3 +175,7 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7cd380` | Person::Name7CD380 | In outline: when not flagged (+0x2B0) and with a name option (+0x2A4, `0x13064E8`), makes a person's name text |
 | `0x7d2f60` | Person::Cell7D2F60 | In outline: finds the terrain cell a person is on (Grid::CellAt) |
 | `0x7c38d0` | Person::Act7C38D0 | In outline: a person's action by its case (0, 1, ...) for a slot (below 0 handled) |
+| `0x77d630` | GuestGroup::Members77D630 | In outline: goes over a group's members (+0x48) handling the ones not in state 4 |
+| `0x7eb590` | Person::Dress7EB590 | In outline: unless of kind 5 (+0x120), picks a person's body parts (Person::PickBodyParts) and its look (`0x6C3650`) |
+| `0x75ba90` | Guest::Update75BA90 | In outline: a guest's update when it has a target |
+| `0x781910` | GuestGroup::Ride781910 | In outline: a group's update on a ride (state 0x10) when not flagged (+0x1BC), over its members (+0x48) |

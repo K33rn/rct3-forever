@@ -1571,3 +1571,13 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbe2450` | Resource::FindBE2450 | In outline: goes over a list until it finds a match by kind (2, ...) |
 | `0x801fe0` | Values::Get801FE0 | In outline: fills the values given from a record (`0x801E30`) when they are asked for |
 | `0x45fad0` | Folder::List45FAD0 | In outline: lists a folder's entries from an empty name |
+| `0xbe29e0` | Resource::CollectBE29E0 | In outline: finds a resource (Resource::FindBE2450) and gathers its entries into a new array |
+| `0x52ee80` | List::Find52EE80 | In outline: sets up (`0x52EDD0`) and finds an entry in a list |
+| `0xc1a4f0` | Com::CreateC1A4F0 | In outline: starts COM (CoInitializeEx) and makes an object (CoCreateInstance with the class at `0x10461E4`) and uses it when made |
+| `0xa89bf0` | Info::TextA89BF0 | In outline: another info text maker like Info::Text4C0850, from its parts (+0x68) |
+| `0xc72410` | Effect::InitC72410 | In outline: sets up an effect (`0xC07350`), clears its four slots (Slots4::Clear) and handles up to four entries (+0x2F0) |
+| `0xc07350` | Effect::BaseC07350 | In outline: sets up an effect's base (`0xBD6930`, `0xBD90D0`) with an empty text |
+| `0x493b60` | Points::Fill493B60 | In outline: fills a list of n points (8 bytes each) from their pairs (Call44CC40And489A10) |
+| `0xa045c0` | Files::FindDat | In outline: lists the `*.dat` files of a folder |
+| `0xdfe200` | Math::ClipDFE200 | In outline: clips ranges given as start and size against limits (negative starts handled) |
+| `0xc3d560` | ResourceFile::CheckC3D560 | In outline: for files with fewer than three parts (+0x6C +0x30), loads one when none is loaded (+0x9C, `0xC3B8E0`) |

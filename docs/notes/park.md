@@ -535,3 +535,17 @@
 | `0x51e990` | Ride::Update51E990 | In outline: a ride's update when not flagged (+0x180) with its owner (Interface48b::Get) |
 | `0x71cc40` | Path::Ground71CC40 | In outline: finds where a ray meets the ground (`0x8BC700`) for path placement |
 | `0xb9f120` | PathGrid::AnimalB9F120 | In outline: a path grid check for an animal (WildAnimal::Interface60) on the terrain |
+| `0xaad930` | Fence::PiecesAAD930 | In outline: another pass over a border's packed piece values by their turn bits (0xC0) like Fence::PiecesAAFC00 |
+| `0xab2ec0` | PoolComplex::PlaceAB2EC0 | In outline: another pool part placement by mode like PoolComplex::PlaceAB35B0 |
+| `0xabff60` | Fence::CellsABFF60 | In outline: goes over a rectangle's cells inside an area (bounds +0x4C to +0x58) handling each (used by the grid tool) |
+| `0x4c7750` | Tool::Slot4C7750 | In outline: finds the current tool's slot (`0x12F5638`, `0x5E1010`) and acts when there is one |
+| `0x86f890` | Scenery::Near86F890 | In outline: goes over the cells within seven of a point |
+| `0x5d2170` | Ride::CanOpen5D2170 | In outline: whether a ride can open (`0x5CFB10` on its +0x18) |
+| `0x80ef60` | Scenery::Find80EF60 | In outline: finds scenery near a point over the terrain (a 90 by 90 grid) |
+| `0x95b8d0` | Water::Body95B8D0 | In outline: sets up a water body (`0x95A150`, `0x493860`) over n cells |
+| `0xba4550` | Enclosure::UpdateBA4550 | In outline: goes over an enclosure's entries (+0x68) |
+| `0x494590` | Water::At494590 | In outline: whether there is water at a cell (WaterManager, `0x93DBF0`) |
+| `0x55a960` | Scenery::PlaceSingle | In outline: places one scenery item (SceneryItemPlacementSingle) when its part is not flagged (+0x18) |
+| `0xba05d0` | Scenery::SetupBA05D0 | In outline: sets up a scenery item (`0x86DF00`, `0x865500`, Set_+0xfc) |
+| `0x82a890` | Scenery::Kind82A890 | In outline: handles a scenery item by its kind (+0x48) with what is there (`0xAFD9D0`) |
+| `0xabb3c0` | Fence::RebuildABB3C0 | In outline: clears a border's list (ObjectArray28::Resize) and builds its pieces again (Fence::PiecesAAFC00 on +0x128, +0x12C) |

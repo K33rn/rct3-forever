@@ -230,3 +230,5 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x820740` | SceneryBehaviour::Step820740 | In outline: a behaviour's step (`0x8156C0`) |
 | `0xbb6ce0` | PointSet::StepBB6CE0 | In outline: another point walk step like PointSet::StepBB8430 |
 | `0x415d80` | Grid::Wobble415D80 | In outline: goes over a grid's entries (+0x20) and updates its wobble (Wobble::Update) |
+| `0x9eef30` | Fireworks::Pick9EEF30 | In outline: finds the firework part under the mouse (MainCamera::Get, `0xCD79C0`) |
+| `0x81f120` | SceneryBehaviour::Parts81F120 | In outline: goes over a behaviour's parts (+0x6C) not flagged (+0x18) |

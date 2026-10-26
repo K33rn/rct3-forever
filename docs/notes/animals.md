@@ -151,3 +151,10 @@
 | `0xb888c0` | Animal::ActB888C0 | In outline: an animal's action by case when it has parts (+0x74 +0x44) and is not flagged (+0xB8) |
 | `0xa13850` | Bird::UpdateA13850 | In outline: another bird update for kind 0x201 in stage 1 when not flagged (+0x118) |
 | `0xb18660` | WildAnimal::MoveTo | In outline: makes a move-to step for an animal (WildAnimalLocomotorMoveTo) and starts it (`0xB179B0`) when not flagged (+0xEC) |
+| `0xb18aa0` | WildAnimal::MakeB18AA0 | In outline: makes an animal's step over the terrain |
+| `0xb19570` | WildAnimal::CheckB19570 | In outline: another animal check over the terrain (a 90 by 90 grid) |
+| `0xb47040` | WildAnimal::UpdateB47040 | In outline: another animal update when not flagged (+0x9C) |
+| `0xb015e0` | Animal::PoseB015E0 | In outline: builds an animal's part matrices (Model::PartMatrices869400) |
+| `0xb487b0` | WildAnimal::StepB487B0 | In outline: when a time (+0xF4) is below another (+0x118), moves an animal on (`0xB47AD0`, `0xB48060`) |
+| `0xb17300` | WildAnimal::PlaceB17300 | In outline: places an animal on the terrain with its record |
+| `0xa15ea0` | Duck::Other | In outline: a duck's other action when not flagged (+0x128) (`0xA14B70`) |
