@@ -854,3 +854,12 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbedc00` | Vector::NormalBEDC00 | In outline: a normalised direction from values (+0x20 ...), with length 0 handled |
 | `0x98bad0` | Animal::Value98BAD0 | In outline: a value with a part (+0x48) and an object (`0x13CE508`) |
 | `0xc72210` | Device::StepC72210 | In outline: when on (+0x4C1), a step with a check |
+| `0x430db0` | Effect::Shared430DB0 | In outline: when on (+8) and the global flag `0x1400306` is unset, a step |
+| `0x9ec410` | Fireworks::Timer9EC410 | In outline: when on (+0x1F0), a timed step (Timer::Milliseconds) |
+| `0x485e80` | Model::Draw485E80 | In outline: draws two models (Model::Draw484F60 on +0x1F4, +0x20C) |
+| `0xbcc090` | Vector::StepBCC090 | In outline: a step with points |
+| `0xce5ce0` | Sound::NearCE5CE0 | In outline: a step when a point is within a distance (+0x84) |
+| `0xbf8e00` | Text::FillBF8E00 | In outline: fills buffers for the current device (Call10IfReady) |
+| `0xbc63b0` | Track::LengthBC63B0 | In outline: a length step with fewer than two stations |
+| `0xbb69e0` | Track::RoundBB69E0 | In outline: a value rounded from a scale (+0x2C) |
+| `0xac8d20` | LaserDesigner::RandomColour | In outline: a random value (_rand) and a colour blend element (ColourBlenderElement) |

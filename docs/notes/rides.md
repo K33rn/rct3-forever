@@ -590,3 +590,19 @@ Tracked rides, flat rides and their cars and trains.
 | `0x50b690` | Car::Check50B690 | In outline: a step for rides not flagged 0x400000 or with fewer than two stations |
 | `0x5cf540` | TrackedRide::Platforms5CF540 | In outline: finds a platform's pieces (Platform::FindPieces) |
 | `0x4eef50` | Ride::Clear4EEF50 | In outline: a step (`0x4BCF30`) and empties a list |
+| `0x56a530` | Ride::Check56A530 | In outline: a check when not flagged (+0x5C) |
+| `0x5b5c50` | TrackedRide::Shared5B5C50 | In outline: a step when it is the shared object's part (`0x12F4FE4` +0x5C4) |
+| `0x416380` | Ride::Case416380 | In outline: a step by a value (+0x174) |
+| `0x4bb620` | Shop::Round4BB620 | In outline: a value rounded |
+| `0x577bd0` | Ride::Tool577BD0 | In outline: a step with the current tool (`0x12F5638`, `0x5D4940`) |
+| `0x5bf510` | TrackPiece::Value5BF510 | In outline: a value (`0x5BEB30`) above 1 |
+| `0x586880` | Ride::Owner586880 | In outline: a step unless its owner's kind is 0xB (OffsetRef::Owner5) |
+| `0x586750` | Ride::Owner586750 | In outline: the same (another copy) |
+| `0x53db90` | Ride::Text53DB90 | In outline: a shared text (ShareText34) for each of a ride's parts (+0x34) |
+| `0x5a7fa0` | Ride::Update5A7FA0 | In outline: a step and an update when not flagged (+0x378) |
+| `0x564550` | Ride::Check564550 | In outline: a check when not flagged (+0xF0) |
+| `0x4d4f70` | Shop::Step4D4F70 | In outline: a step (`0x4B52D0`, `0x4C5240`) |
+| `0xbc5090` | Track::StepBC5090 | In outline: for rides not flagged 0x400000 or with fewer than two stations, goes over entries (+0x70) |
+| `0x56a400` | Ride::Check56A400 | In outline: a check when not flagged (+0x254) |
+| `0x5604c0` | Ride::Clear5604C0 | In outline: tears down a part and more (+0x2DC) |
+| `0x491260` | Ride::Count491260 | In outline: a loop up to n when not flagged (+0x428) |

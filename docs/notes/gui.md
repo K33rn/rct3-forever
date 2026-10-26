@@ -1384,3 +1384,22 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6e4580` | Objectives::NumberText6E4580 | In outline: the same (another copy) |
 | `0x98f7c0` | Window::Text98F7C0 | In outline: a text when not flagged (+0x4C) |
 | `0xa4c6c0` | WindowList::MakeA4C6C0 | In outline: makes a window list (WindowList, `0x6AF710`) |
+| `0x7af770` | Window::Text7AF770 | In outline: a text when not flagged (+0x4C) |
+| `0x659de0` | Window::Layout659DE0 | In outline: places a window (Window::UpdateRect) |
+| `0xc64220` | Window::RectC64220 | In outline: sets a rectangle (Rect::Assign, `0xC5E300`) |
+| `0x9c8c80` | Window::Make9C8C80 | In outline: when on (+0x1B4), makes a part |
+| `0xc61200` | Window::DrawC61200 | In outline: clears a flag (Flags::Bit0) and draws in black (`0xC5DAE0` with 0xFF000000) |
+| `0x6b37a0` | Window::Make6B37A0 | In outline: makes a list member part (ListMember with `0x10EC9E8`) |
+| `0xa5d3c0` | Text::NameA5D3C0 | In outline: fills a text's "%NAME%" marker (Texts::LookupA5C260) |
+| `0x9db2d0` | Text::Name9DB2D0 | In outline: fills a text's "%NAME%" marker (Window::Shared9DA260) |
+| `0x64b060` | Window::List64B060 | In outline: goes over a list (Window::List64AEE0, `0x7E3AC0`) |
+| `0x61fc00` | Window::Activate61FC00 | In outline: activates a part and acts on a negative value |
+| `0x683420` | Window::Keys683420 | In outline: sets key combinations (KeyCombination::Set) |
+| `0x7eead0` | Info::Event7EEAD0 | In outline: for event 0x34426822, makes info texts (Info::Texts7EB930) |
+| `0x7e2870` | Window::Case7E2870 | In outline: a value by a part's value (+0x114 +0x440) |
+| `0x6c81b0` | Window::Random6C81B0 | In outline: a random step with a positive value (+0xC) and entries (+0xC4) |
+| `0xc5f130` | Window::HitC5F130 | In outline: a hit test (Rect::Contains) |
+| `0x6b0540` | Window::Make6B0540 | In outline: makes a part when not flagged (+4) |
+| `0x682f30` | Window::Round682F30 | In outline: a value rounded when not flagged (+0x269) |
+| `0x670ab0` | WindowList::Make670AB0 | In outline: makes a window list (WindowList) |
+| `0x441960` | Window::Set441960 | In outline: sets a part (+0x58) when it changes |

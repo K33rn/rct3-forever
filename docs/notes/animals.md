@@ -409,3 +409,12 @@
 | `0xb0aa90` | Animal::StepB0AA90 | In outline: a step (`0x6A2BE0`) when a value is below 0 |
 | `0xa61dc0` | Animal::AngleA61DC0 | In outline: a direction from angles (cosine of +0x34, sine of +0x38) |
 | `0xb55960` | Animal::InsideB55960 | In outline: a step when a value is inside fixed bounds (`0xF6FD60`, `0xF6FD64`) |
+| `0xb69c90` | Animal::FarB69C90 | In outline: a step over the terrain when a point is far enough |
+| `0xa9f570` | PoolComplex::PassA9F570 | In outline: goes over entries (+0x28) not flagged |
+| `0xb33d10` | Animal::CountB33D10 | In outline: a step with a part and no entry (+0x68) |
+| `0x9ca2d0` | Fireworks::Find9CA2D0 | In outline: finds an entry among entries (+0xD0) |
+| `0xa5f400` | Animal::TurnA5F400 | In outline: a turn step (sine of +0x20) when a direction is long enough |
+| `0xb567f0` | Animal::FlatB567F0 | In outline: a flat length step, with no second point handled |
+| `0xb1b140` | Animal::StepB1B140 | In outline: a step (`0x44E540`) with a part |
+| `0xac8900` | Animal::IndexAC8900 | In outline: a step (`0xAC7D90`) and makes an index of four-byte entries |
+| `0xa17580` | Bird::DeadZoneA17580 | In outline: a length step with a dead zone (Vector::DeadZone) |

@@ -1255,3 +1255,38 @@
 | `0x7542e0` | Guests::Find7542E0 | In outline: a find comparing pairs (`0xCD5640`) |
 | `0x83cd30` | Scenery::Make83CD30 | In outline: makes a part when it has one (+0x16C) and is on (+0x184) |
 | `0x8b6e80` | Scenery::Update8B6E80 | In outline: an update when not flagged (+0xD8) |
+| `0x7a0180` | Terrain::Link7A0180 | In outline: a step with a part |
+| `0x778fc0` | Park::Pass778FC0 | In outline: a step (`0x7745B0`) and goes over entries (+0x48) |
+| `0x916110` | Water::Camera916110 | In outline: a step with the camera over the terrain |
+| `0x8f2780` | Terrain::Fill8F2780 | In outline: with a part, a step for the device (ForCurrent(1)) |
+| `0x8e6150` | Water::Normal8E6150 | In outline: a normalise step when a value is big enough |
+| `0x87c330` | Scenery::Count87C330 | In outline: a step with a part's positive count (+8 +0x24) |
+| `0x80b6b0` | Scenery::Place80B6B0 | In outline: places a scenery item (Scenery::Place80B260) |
+| `0x799910` | Guest::Make799910 | In outline: makes a 32-byte part with a length |
+| `0x564270` | Ride::Pass564270 | In outline: goes over entries not flagged (+0x18) whose part is not in mode 4 (+0x388) |
+| `0x836bd0` | Scenery::Update836BD0 | In outline: an update when not flagged (+0x194) |
+| `0x788270` | GuestGroup::Find788270 | In outline: finds an entry by name (WideString::Compare) among a count (+0x194) |
+| `0x71bb40` | Path::Tile71BB40 | In outline: for 2, a step with a path tile's centre (PathTile::Centre) |
+| `0x713de0` | Path::Terrain713DE0 | In outline: a step over the terrain |
+| `0x4839a0` | Grid::Same4839A0 | In outline: a step when a cell matches (+4, +8) |
+| `0x98fd00` | List::Pass98FD00 | In outline: goes over entries (+0x44) other than 0x3424E9D9 |
+| `0x80df00` | Regions::Texture80DF00 | In outline: creates a 64-wide texture (Device::CreateTexture(0x40, 0, 0, 1)) and fills cells inside it |
+| `0x91a4a0` | Water::Copy91A4A0 | In outline: copies a list (Array::Resize417A20) |
+| `0x7453a0` | Guest::Leader7453A0 | In outline: a step with a group's leader (AvatarGroup::Leader) |
+| `0x704cf0` | Park::Awards704CF0 | In outline: a loop with the park awards (Awards::Get) |
+| `0x862f00` | Scenery::Slot862F00 | In outline: a step (`0x498360`) when it has a slot (+0x144) |
+| `0xb982d0` | PathGrid::MakeB982D0 | In outline: sets up a 100-entry path table (`0x488290`) over the terrain |
+| `0x7aad50` | Terrain::Check7AAD50 | In outline: a check unless the park is flagged (+0x5C bit 0x40), for an entry in mode 2 (+0x70) |
+| `0x7021e0` | Path::Terrain7021E0 | In outline: a step with the terrain for entries (+0x124) |
+| `0x8a0530` | SceneryRenderer::Step8A0530 | In outline: a step (`0x89CAF0`) and a pass (SceneryRenderer::Pass89F8F0) |
+| `0x716160` | Path::Terrain716160 | In outline: a step over the terrain |
+| `0x44b170` | Terrain::Step44B170 | In outline: a terrain step |
+| `0x958c90` | Water::Count958C90 | In outline: a step for counts above 10 |
+| `0x81d370` | SceneryBehaviour::Shared81D370 | In outline: a step when two shared values differ (`0x130B4A0`, `0x130B4AC`) |
+| `0x79a150` | Guest::Make79A150 | In outline: a step (`0x7CADD0`) and makes a part (`0x799910`) |
+| `0x7798f0` | Park::Pass7798F0 | In outline: goes over entries (+0x48) in mode 4 or others |
+| `0x725f30` | Path::Link725F30 | In outline: a step when given a part |
+| `0xafaed0` | Animal::TerrainAFAED0 | In outline: a step over the terrain |
+| `0x784840` | GuestGroup::Check784840 | In outline: a check (`0x7847B0`) when not flagged (+0x11C) |
+| `0x77dd90` | Park::Link77DD90 | In outline: a step with a part |
+| `0x7156e0` | Path::Link7156E0 | In outline: links a path part (Path::Link7141A0) |

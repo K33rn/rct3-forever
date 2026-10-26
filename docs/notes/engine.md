@@ -2051,3 +2051,51 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcb79b0` | ShaderFile::OpenCB79B0 | In outline: makes a part (6) and opens a file (`0xC51360` with 4) |
 | `0xc02540` | Timer::StepC02540 | In outline: a timed step (Timer::Milliseconds, `0xC50080`) |
 | `0x818480` | Array::Resize818480 | In outline: resizes a list of 0x2C-byte entries to n |
+| `0xcbe010` | HashTable::Grow | In outline: when full (+8 = +4), grows to the next prime size (Math::NextPrime) |
+| `0xceee80` | Shapes::PassCEEE80 | In outline: goes over entries (+0x24) |
+| `0xcec0c0` | IdMap::StepCEC0C0 | In outline: a step when an id is found (IdMap::Find3 with +0x28) |
+| `0xbeac90` | Memory::MakeBEAC90 | In outline: a loop with a 0x1000-byte part (`0xBEA150`) |
+| `0x6bf640` | Array::Free6BF640 | In outline: frees an array of 24-byte entries, tearing each down (`0x6BCDB0`) |
+| `0xbfb680` | Module::LoadBFB680 | In outline: a module load (Module::LoadBE5B20 with 1) and a check (`0xBE40D0`) |
+| `0xb6d270` | Array::GrowB6D270 | In outline: grows a list of 0xC-byte entries to hold n |
+| `0x9722b0` | Description::Check9722B0 | In outline: a step when descriptions differ (Description::Differs) |
+| `0xc964d0` | Device::LoopC964D0 | In outline: a step (`0xC051F0`) over entries (+0x2190) |
+| `0x684300` | Text::Split684300 | In outline: splits a text into two parts (WideString::Substring) |
+| `0xc73150` | Table::FillC73150 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0xb9ff30` | Save::WriteB9FF30 | In outline: writes four four-byte values to a save (SaveWriter::Write) |
+| `0x9c8ec0` | Save::Write9C8EC0 | In outline: the same (another copy) |
+| `0x55bcd0` | Save::Write55BCD0 | In outline: the same (another copy) |
+| `0x533460` | Save::Write533460 | In outline: the same (another copy) |
+| `0x94e380` | Array::Grow94E380 | In outline: grows a list of 0x60-byte entries to hold n |
+| `0x947540` | Array::Resize947540 | In outline: resizes a list of 16-byte entries to n |
+| `0x8ffa60` | Array::Grow8FFA60 | In outline: grows a list of 0x60-byte entries to hold n |
+| `0x8c8a70` | Table::Fill8C8A70 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x696000` | Table::Fill696000 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x536030` | Reference::Make536030 | In outline: makes a 0xC-byte reference (Reference) |
+| `0xc1cc20` | Table::FillC1CC20 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0xc08ba0` | Text::LoopC08BA0 | In outline: a loop over a list (`0xC08890`) |
+| `0xbdce30` | VertexDeclaration::LoopBDCE30 | In outline: goes over n elements, with 0xFF handled |
+| `0x87c800` | Table::Fill87C800 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x85b290` | Table::Fill85B290 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x455510` | Array::Resize455510 | In outline: resizes a list of 0x90-byte entries to n |
+| `0xcd28c0` | Loop::StepCD28C0 | In outline: a loop |
+| `0xcc7200` | Model::FindCC7200 | In outline: finds an entry matching a value |
+| `0xc00c80` | Device::VersionC00C80 | In outline: a value by a version number (0x30000, ...) |
+| `0x5aeda0` | Array::Resize5AEDA0 | In outline: resizes a list of 0x28-byte entries to n |
+| `0x4b6760` | Array::Resize4B6760 | In outline: resizes a list of 20-byte entries to n |
+| `0x447610` | Table::Fill447610 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0xbd3dc0` | Device::CaseBD3DC0 | In outline: a value by case (0x3C, ...) |
+| `0x9fa0e0` | SortedTable::Step9FA0E0 | In outline: a step when an entry is found (SortedTable::Find64) |
+| `0x8f8ac0` | Text::Colon8F8AC0 | In outline: reads a text up to a ':' |
+| `0xcd1530` | Table::StepCD1530 | In outline: a step (`0xCD0C60`) over entries |
+| `0xc291d0` | Resource::SlotC291D0 | In outline: a step (`0xC21380`) for a slot under a count (+0xC) |
+| `0x9f46b0` | Load::Read9F46B0 | In outline: reads a four-byte value from a saved block (Load::ReadBytes) |
+| `0xcba000` | ShaderFile::CheckCBA000 | In outline: a step for a buffer of more than 0x15AF bytes |
+| `0xc63b40` | Record::MakeC63B40 | In outline: makes a 0x1C-byte record |
+| `0xc48240` | Loop::StepC48240 | In outline: a loop while more than one is left |
+| `0xaf9dd0` | Array::ResizeAF9DD0 | In outline: resizes a list of 0x2C-byte entries to n |
+| `0x9f99d0` | Array::Grow9F99D0 | In outline: grows a list of 0x24-byte entries to hold n |
+| `0x8cb5c0` | Array::Resize8CB5C0 | In outline: resizes a list of 20-byte entries to n |
+| `0x513490` | Array::Resize513490 | In outline: resizes a list of 20-byte entries to n |
+| `0xc2f480` | Resource::LoopC2F480 | In outline: a loop and a step for a slot under a count (+0x18) |
+| `0xa1d0f0` | Name::FindA1D0F0 | In outline: a find by comparing names (WideString::Compare) |
