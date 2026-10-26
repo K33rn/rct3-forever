@@ -1327,3 +1327,89 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5f7690` | Ride::Current5F7690 | In outline: when not the current object (`0x12F56D4`), a step |
 | `0x5826d0` | Ride::Value5826D0 | In outline: a value from a part (+0x1B8, slot 0x6C) with another (+0x210) |
 | `0x667550` | Window::Id667550 | In outline: for an id in a range from 0x5B3280B, a step with a part (+0xD8) |
+| `0x5e64f0` | Rides::Pass5E64F0 | In outline: goes over entries (+0x114) |
+| `0x510710` | Rides::Free510710 | In outline: tears down references (ObjectRef) |
+| `0x4cee70` | Rides::List4CEE70 | In outline: a step with a list (+0x64) |
+| `0x4c4220` | Rides::Free4C4220 | In outline: tears down references (ObjectRef) |
+| `0x4ccf00` | Rides::List4CCF00 | In outline: a step with a list (+0x64) |
+| `0x4cc830` | Rides::Pass4CC830 | In outline: goes over entries (+0x9C) |
+| `0x50edb0` | Rides::Pass50EDB0 | In outline: goes over entries (+0x8C0) |
+| `0x59fa20` | Rides::Clear59FA20 | In outline: empties a list (+0x6C) |
+| `0x4c1740` | Rides::List4C1740 | In outline: a step with a list (+0xCC) |
+| `0x5f3d70` | Ride::Release5F3D70 | In outline: tells two parts (+0x110, +0x118) with their values |
+| `0x5d3ff0` | TrackPiece::Check5D3FF0 | In outline: for a shared record (`0xF3F73C`), a step, none handled |
+| `0x5bf360` | TrackPiece::Copy5BF360 | In outline: copies a flag (+0x234) and an array (Array4::Assign) |
+| `0x5b5b60` | TrackedRide::Step5B5B60 | In outline: steps (Thunk, `0x531200`) |
+| `0x5b5b00` | TrackedRide::Step5B5B00 | In outline: the same (another copy) |
+| `0x54f610` | Ride::Part54F610 | In outline: a part step (Ride::Part54C550 with +0x60 and shared values) |
+| `0x501bf0` | Car::Case501BF0 | In outline: a step by case (+0xB0) |
+| `0x4de100` | Ride::Check4DE100 | In outline: a step when a check fails (slot 0x3C) |
+| `0x4cc470` | Shop::Kind4CC470 | In outline: for none, a car kind (Car::Kind50E6D0) |
+| `0x5d6e80` | TrackedRide::Track5D6E80 | In outline: a step with the tracked ride's track interface |
+| `0x5936a0` | Ride::Part5936A0 | In outline: a step with a part (+0x44) |
+| `0x57abc0` | Ride::Shared57ABC0 | In outline: sets a shared flag (`0x12F53A8`) and a step with a part (+0x158, slot 0xF8) |
+| `0x565850` | Ride::Check565850 | In outline: a step when a check fails (Ride::Check5657D0) |
+| `0x530150` | Ride::Compare530150 | In outline: compares a text (+0x220) (WideString::Compare) |
+| `0x5cfce0` | TrackedRide::Point5CFCE0 | In outline: a step with a clamped value (Clamp0To3) |
+| `0x59da20` | Ride::Interface59DA20 | In outline: a step with an interface's part (Interface54b::Get +0x6F4) |
+| `0x4d65a0` | Shop::Point4D65A0 | In outline: with a part (+0x40), sets a point (Ride::SetPoint532CA0) |
+| `0x593fa0` | Ride::Free593FA0 | In outline: sets its table (`0xF3CF10`), tears down a list and frees when asked |
+| `0x52f7f0` | Car::Slot52F7F0 | In outline: a value (slot 0x74), negatives handled |
+| `0x4f0c10` | Ride::Pass4F0C10 | In outline: with a part (+0x80C), goes over entries |
+| `0x4cd030` | Shop::Count4CD030 | In outline: a count from a part (+0x74 +4) |
+| `0x4ccf50` | Shop::Count4CCF50 | In outline: the same (another copy) |
+| `0x4c8ec0` | Shop::Point4C8EC0 | In outline: a step with a point |
+| `0x5a1b70` | TrackedRide::Owner5A1B70 | In outline: a value with owners (OffsetRef::Owner3, OffsetRef::Owner2) |
+| `0x58eda0` | Ride::Init58EDA0 | In outline: clears a record |
+| `0x4c4c80` | Shop::Random4C4C80 | Sets a value (+0x90) to a random value between 1 and 2 (Random::Ran0Range) and more |
+| `0x5b04e0` | TrackedRide::Check5B04E0 | In outline: a step when a check fails (Rides::Check5A3EB0) |
+| `0x5a2c20` | TrackedRide::Handle5A2C20 | In outline: a step with a handle (`0xF30A7C`) |
+| `0x58de20` | Ride::Assign58DE20 | In outline: frees its buffer (+8) and takes another's values |
+| `0x58a830` | Ride::Init58A830 | In outline: sets up a record with its table (`0xF3CC90`) and a value |
+| `0x57bbf0` | Ride::Assign57BBF0 | In outline: when a part (+0x164) differs, a step |
+| `0x4ef940` | Ride::List4EF940 | In outline: a step with a list (+0x7C8) |
+| `0x597c30` | Ride::Part597C30 | In outline: with no part (+0x154), a step |
+| `0x577a70` | Ride::Cars577A70 | In outline: goes over a train's cars (RideTrainInstance::Car) |
+| `0x54bab0` | Ride::Clear54BAB0 | In outline: when flagged (bit 2 of +0x40), clears a value (+0x74) |
+| `0x54b740` | Ride::Clear54B740 | In outline: the same with bit 3 |
+| `0x548a90` | Ride::Flip548A90 | Negates two values (+0, +0x28) and more |
+| `0x510150` | Car::Array510150 | In outline: makes an aligned array of n entries of 64 bytes |
+| `0x4bf0b0` | Ride::Shared4BF0B0 | In outline: with no shared count (`0x1106C54`), a step |
+| `0x4a9430` | Ride::Flag4A9430 | In outline: when a part is flagged (bit 4 of +0xA8 +0x30), a value |
+| `0x5e69f0` | AttractionPerson::Step5E69F0 | In outline: a step with an object's value (+0x1B8) and a check (TrackPiece::Check5C0120) |
+| `0x5a0ab0` | TrackedRide::Width5A0AB0 | In outline: a step with a width |
+| `0x59a500` | Ride::Shared59A500 | In outline: with a shared value (`0x12F54C0`), a step with a shared table (`0x10EE9B4`) |
+| `0x5d20c0` | TrackPiece::Step5D20C0 | In outline: a step with a handle |
+| `0x5bad40` | TrackPiece::Reset5BAD40 | In outline: clears values (+0x84, +4, ...) |
+| `0x5b56c0` | TrackedRide::Set5B56C0 | In outline: sets a flag (+0x861) when it changes |
+| `0x581490` | Ride::Pass581490 | In outline: goes over entries with one less a value |
+| `0x50af10` | Car::Mode50AF10 | In outline: in mode 3 (+0x1C8), a step |
+| `0x4edc80` | Ride::Step4EDC80 | In outline: when given, a step |
+| `0x576ba0` | Ride::Init576BA0 | In outline: clears a flag and acts with a part (+0x24) |
+| `0x513160` | Car::Init513160 | In outline: sets up a handle pointing at itself |
+| `0x4cd600` | Shop::Count4CD600 | In outline: a count over a list (+0x64) |
+| `0x5fa1b0` | Window::Case5FA1B0 | In outline: a step by case (+0xF0: 0, ...) |
+| `0x5f84c0` | Ride::Part5F84C0 | In outline: with a part (+0x24), a step |
+| `0x5d7d20` | TrackPiece::Selected5D7D20 | In outline: when not asked, a step with the selected ride (`0x12F5608`) |
+| `0x5bd620` | TrackPiece::Part5BD620 | In outline: with a part (+0x31C), a list step (`0xAFD9D0`) |
+| `0x5b75d0` | TrackedRide::Count5B75D0 | In outline: a step with counts (+0x6F4 +8, +0x3CC) |
+| `0x5b0460` | TrackedRide::Make5B0460 | In outline: with a part (+0x700) and a different value (+0x3D8), a step (TrackedRide::Make5AE990) |
+| `0x58c7b0` | Ride::Mode58C7B0 | In outline: sets a mode to 3 (+0x100) and a step (slot 0x58) |
+| `0x585aa0` | Ride::Count585AA0 | Adds one to a count (+0x90) and n to a total (+0x1F4) |
+| `0x4ee8f0` | Ride::Shared4EE8F0 | In outline: with a shared value (`0x10EDC98`), a step |
+| `0x4e1120` | Ride::Part4E1120 | In outline: with a part (+0x164), a pass (Bird::PassA06560) |
+| `0x4cdae0` | Shop::Find4CDAE0 | In outline: a find over a list (+0x64) |
+| `0x4c4e30` | Shop::Random4C4E30 | In outline: for a range, a random value in it (Random::Ran0Range) |
+| `0x5528b0` | Ride::Case5528B0 | In outline: with no part (+0xF4), a step by case (+0xB0) |
+| `0x548bf0` | Ride::Part548BF0 | In outline: a step with a part (+0x4C) |
+| `0x52f730` | Car::Part52F730 | In outline: with a part (+0x258), a step with the largest float |
+| `0x5f48f0` | Ride::Part5F48F0 | In outline: with no part (+0x54), a step |
+| `0x5d24e0` | TrackPiece::Handle5D24E0 | In outline: a step with a handle (`0xF3F6DC`) |
+| `0x58cd40` | Ride::Near58CD40 | In outline: whether two points are within a distance |
+| `0x4bf3f0` | Ride::Find4BF3F0 | In outline: -1 for none, else a find |
+| `0x5d1fd0` | TrackPiece::Step5D1FD0 | In outline: a step with a handle |
+| `0x576b00` | Ride::Value576B00 | In outline: one less a value (+8) when at least a half |
+| `0x4f68b0` | Ride::Mode4F68B0 | In outline: in mode 1, 3 or 4 (+0x144), a step |
+| `0x5dbba0` | TrackedRide::Diff5DBBA0 | In outline: a step with the difference of two values |
+| `0x5d1b40` | TrackPiece::Count5D1B40 | In outline: a count by bits |
+| `0x540570` | Ride::Step540570 | In outline: a step with values |

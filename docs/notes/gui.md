@@ -1952,3 +1952,56 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6b2d00` | Window::Shared6B2D00 | In outline: goes over entries with a shared value (`0x1305D54`) |
 | `0x6708b0` | Window::Image6708B0 | In outline: when a part is on (+0x58 +0x140), adds a custom image (AdMenu::AddCustomImage) |
 | `0x6246c0` | Window::Shared6246C0 | In outline: with no shared object (`0x13429A8`), a step |
+| `0x69f230` | Gui::Pass69F230 | In outline: goes over entries (+0x57C) |
+| `0x634660` | Gui::Make634660 | In outline: makes a 0x170-byte part |
+| `0x6b0180` | Window::Point6B0180 | In outline: a step with a point |
+| `0x69e9c0` | Window::Step69E9C0 | In outline: a step with a work value |
+| `0x65ec20` | Window::Point65EC20 | In outline: a step when a point (`0x682D50`) is not zero |
+| `0x646880` | Window::Group646880 | In outline: goes over a guest group (Guest::Group) |
+| `0x6bc7f0` | Window::Value6BC7F0 | In outline: a step (Thunk) and a value (+0x70) |
+| `0x68b400` | Window::Point68B400 | In outline: a step with a point plus values |
+| `0x685400` | Window::Shared685400 | In outline: when on (+0xF9), a step with a shared value (`0x10EED88`) |
+| `0x641600` | Window::Count641600 | In outline: for a positive n, a step with an object (`0x13063D0`) |
+| `0x616270` | Window::Format616270 | In outline: formats into a 256-character buffer |
+| `0x69eea0` | Window::Value69EEA0 | In outline: a step with a value (+0x1D4) |
+| `0x682b90` | Window::Copy682B90 | Copies two values (+0xF8, +0xFC into +0xF0, +0xF4) |
+| `0x6a5f40` | Window::Layout6A5F40 | In outline: with a part (+0x7C), lays out (Window::Layout) |
+| `0x6a41d0` | Window::Rect6A41D0 | In outline: takes a rectangle (slot 0xF4) and acts |
+| `0x671ea0` | Window::Point671EA0 | In outline: a step with an object's point (+0xF8, +0xFC) |
+| `0x642da0` | Window::Point642DA0 | In outline: the same (another copy) |
+| `0x666f90` | Window::Part666F90 | In outline: with a part's part (+0x1C +0x174), a step |
+| `0x611a80` | Window::Array611A80 | In outline: makes an aligned buffer of n four-byte entries |
+| `0x6c38b0` | Window::Step6C38B0 | In outline: a step (`0x6C3870`) and a value (+0x5C) |
+| `0x6b9ba0` | Window::Case6B9BA0 | In outline: a value by case (6, ...) |
+| `0x5fc790` | Window::Rect5FC790 | In outline: takes two rectangles (slot 0x20) and acts |
+| `0x6cca10` | Window::Set6CCA10 | In outline: sets a value (+0xDC) and acts, 0 handled |
+| `0x6ba070` | Window::Pass6BA070 | In outline: goes over entries (4, 0x1D0) |
+| `0x62c900` | Window::Pass62C900 | In outline: goes over entries (+0x30) |
+| `0x6e9910` | Window::Slot6E9910 | In outline: for a slot under 8 (+0x50), a step |
+| `0x67cad0` | Window::Point67CAD0 | In outline: a step with a part's point (+0xDC) |
+| `0x6595d0` | Window::Case6595D0 | In outline: a step by case (0, ...) |
+| `0x6c82e0` | Window::Reset6C82E0 | In outline: clears a value (+0xD8) and acts with a list (+0x30) |
+| `0x68ed50` | Window::Reset68ED50 | In outline: clears a value (+0xF4) and sets a flag (+0xE4) |
+| `0x6837c0` | Window::Children6837C0 | In outline: a step with children (Window::ChildrenSlot6) and clears a flag (bit 27) |
+| `0x683770` | Window::Flag683770 | In outline: when flagged (bit 0 of +0x97), a step with a part (+0x130) |
+| `0x6695b0` | List::Free6695B0 | In outline: goes over a list's entries and frees them |
+| `0x65fb30` | Window::Init65FB30 | In outline: clears a value and points a list at its own storage |
+| `0x654280` | List::Free654280 | In outline: goes over a list's entries and frees them |
+| `0x6bc4d0` | Window::Make6BC4D0 | In outline: makes a part with 0x2D |
+| `0x6a00b0` | Window::Slot6A00B0 | In outline: with a slot (+0x174), a step |
+| `0x6809f0` | Window::Flag6809F0 | In outline: sets a flag (0x80000) on a part and acts when n passes a value (+0x358) |
+| `0x67df20` | Window::Entry67DF20 | In outline: for n under a part's count (+0x104 +4), a step (`0x67CD80`) |
+| `0x6645b0` | Window::Part6645B0 | In outline: with a part (+0xD8 +0xC), a step with an object (`0x130B5C8`) |
+| `0x6ad4c0` | Window::Value6AD4C0 | In outline: with a value, a step |
+| `0x67cd80` | Window::Next67CD80 | In outline: for n plus one under a count (+4), a step |
+| `0x6a8180` | Window::List6A8180 | In outline: a step with a part's list (+0xDC +0x124) |
+| `0x68d750` | Window::Part68D750 | In outline: with a part (+0xE0), a step |
+| `0x615d70` | Window::List615D70 | In outline: a step with a part's list (+0xD8 +0x114) |
+| `0x6092c0` | Window::Fill6092C0 | In outline: fills (Window::Fill6084F0) and acts |
+| `0x6db740` | Window::Free6DB740 | In outline: with a buffer (+0x7C), frees it |
+| `0x6d4620` | Window::Width6D4620 | In outline: a step with a part's width (+0xD4) |
+| `0x678ec0` | Window::Flag678EC0 | In outline: 0 unless flagged (bit 0 of +0x94), else a value |
+| `0x6a7da0` | Window::Mode6A7DA0 | In outline: a step by mode (+0xF0: 1, ...) |
+| `0x688230` | Window::Part688230 | In outline: with a part (+0x178 +0xE4), a step (`0x685BA0`) |
+| `0x660630` | Window::Fraction660630 | In outline: a fraction from values |
+| `0x67edf0` | Window::Check67EDF0 | In outline: a step (Window::Slot48Self) and a check (slot 0x10C) |
