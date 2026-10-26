@@ -283,3 +283,14 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x9f4e10` | Bezier::Point9F4E10 | In outline: a point on a cubic curve at t from four points (the 1-t and t cubes, scaled by 3) |
 | `0x466660` | Vector::Toward466660 | In outline: a normalised direction between two points when they are far enough apart |
 | `0xc22d30` | Skeleton::MatrixC22D30 | In outline: works out a bone matrix from its part's matrix (+0x54 +0xC0 on) |
+| `0xc21770` | Matrix::TransformPointC21770 | Transforms a point by a matrix's rotation and adds an offset |
+| `0x5bd3d0` | Matrix::Rotate5BD3D0 | Turns a point by a 3x3 matrix in place |
+| `0xc21610` | Matrix::InverseTransformC21610 | Takes an offset from a point and turns it by a matrix |
+| `0x42f0b0` | Matrix::Transform42F0B0 | In outline: a point times a matrix |
+| `0xcc5900` | Matrix::RotateCC5900 | Turns two points by a 3x3 matrix in place |
+| `0xbd6bb0` | Matrix::BuildBD6BB0 | In outline: builds a matrix from two values |
+| `0xcd78a0` | Camera::InverseView | In outline: the inverse of the camera's view matrix (Matrix::Invert4 from its values +0x120 on) |
+| `0x85cb30` | Track::Turn85CB30 | In outline: a matrix turned by (n + 2) times a step (Matrix::TurnColumnsAboutY) |
+| `0xbc6aa0` | Track::FlatBC6AA0 | In outline: a flat length (Vector::FlatBC4E20) |
+| `0x7c6280` | Person::Toward7C6280 | In outline: a step toward a point when it is far enough (a flat distance) |
+| `0xb1ced0` | WildAnimal::NearB1CED0 | In outline: a step when a point is within a flat distance |

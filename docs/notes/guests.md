@@ -229,3 +229,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7dd270` | Person::Update7DD270 | In outline: a large person update: with no part, sets its state to 0; acts by a part's mode (2, ...) |
 | `0x7d32d0` | Person::Update7D32D0 | In outline: a large person update with its part (+0x1C0), setting state 0x100 when the part is gone or flagged |
 | `0x7de4d0` | Person::Update7DE4D0 | In outline: with its part, in mode 9 (+0x190) and no stage, a step |
+| `0x7ce720` | Person::Link7CE720 | In outline: 0 with no part (+0x30C), else a step with it |

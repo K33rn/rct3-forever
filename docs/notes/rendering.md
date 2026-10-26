@@ -1005,3 +1005,15 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xcd75c0` | Camera::Projection | In outline: works out the camera's projection from its near and far values (+0x188, +0x18C), a zoom (+0x19C) and the tangent of half the field of view |
 | `0x438600` | Screen::Size438600 | In outline: the GUI root's size rounded to whole pixels and a step |
 | `0x8f0d30` | Terrain::Indices8F0D30 | In outline: for a square grid of more than one cell, fills a short index list |
+| `0x919610` | Water::Fade919610 | In outline: a fade from a value (+0x31C) between two limits unless told not to |
+| `0xcd6850` | Camera::CopyFrom | Copies a camera's field of view and distances from another and clears its slot |
+| `0x4368b0` | Labels::Screen4368B0 | In outline: with the GUI root, sets a part's size from it |
+| `0x950e10` | Fireworks::AddShell | In outline: adds a firework shell to a list (+0x1B0) from its many settings |
+| `0x8534a0` | Scenery::Table8534A0 | In outline: once (`0x130BC90`), fills a shared six-entry table (Table::Fill16) and points at it |
+| `0x431070` | Sky::Table431070 | In outline: once (`0x1103C50`), fills a shared table (Table::Fill16) and points at it |
+| `0x97c630` | Water::Alpha97C630 | In outline: sets parts' alpha (+0xC4) to 0.3 when it has no part |
+| `0x694e90` | Layout::Add694E90 | In outline: grows the layout table by 0x100 when needed (Array::Resize6930B0) and adds |
+| `0x9fcaf0` | Fireworks::Draw9FCAF0 | In outline: draws each entry (+0x64, +0x6C, 0x30 bytes) |
+| `0x692710` | Text::Draw692710 | In outline: draws a text at a size, with its default font when none |
+| `0x7b3b20` | Effect::Normalise7B3B20 | In outline: scales values by one over a total (+0x44) |
+| `0x9ceca0` | Particles::Remove9CECA0 | In outline: finds and removes an entry (+0x84, +0x88) |

@@ -806,3 +806,12 @@ Tracked rides, flat rides and their cars and trains.
 | `0x525a50` | Car::SetMode525A50 | In outline: sets a car's mode (+0x384) and acts by it (6: Car::Update5242E0, ...) |
 | `0x784dd0` | GuestGroup::Check784DD0 | In outline: a check when not flagged (+0x11C) |
 | `0x52d5d0` | Ride::Check52D5D0 | In outline: when on (+0x1C0), a check with its ride when not flagged (+0xD8) |
+| `0x4d28a0` | Shop::Reset4D28A0 | In outline: sets two modes to 2 (+0xB0, +0xB4) and acts with its part |
+| `0x4d7e70` | Shop::Text4D7E70 | In outline: with nothing given, makes an empty text record |
+| `0x5da220` | TrackedRide::Hit5DA220 | In outline: a hit test (TrackedRide::Check5D9E80) with many values |
+| `0x4abd00` | Ride::Text4ABD00 | In outline: a ride text (Ride::Text534E60) and more when not flagged (+0x384) |
+| `0x4af400` | Ride::Step4AF400 | In outline: steps (`0x52EDD0`, Ride::Check532BB0) and acts with an entry that is not set |
+| `0x4ab7e0` | Ride::Slot4AB7E0 | In outline: when flagged (bit 14), a slot from n by counts (+0x370 / +0x394) |
+| `0x4c7f80` | Shop::Reset4C7F80 | In outline: clears values, sets one to 1.0 and a flag from a check (slot 0x144) |
+| `0x5c0720` | TrackPiece::Check5C0720 | In outline: a check when not flagged (+0xAC) |
+| `0x4a46d0` | Ride::Text4A46D0 | In outline: with no part (+0x17C), a shared text (+0x78) |

@@ -2439,3 +2439,26 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x445440` | Record::Copy445440 | Copies a record and its 30 entries from another |
 | `0x9648f0` | Record::Copy9648F0 | Copies a record and its 16 entries from another |
 | `0x933570` | Record::Make933570 | In outline: sets up a record with cleared values and handles |
+| `0x84f2f0` | Record::Move84F2F0 | In outline: moves a record's values from another, clearing the other's (+0x10, +0x2C, slot +0x28 = -1) |
+| `0x8e7e60` | Record::Copy8E7E60 | In outline: copies a record's values from another |
+| `0x4263a0` | Record::Copy4263A0 | In outline: copies a record's values from another |
+| `0x425b80` | Record::Copy425B80 | In outline: the same (another copy) |
+| `0xc70770` | Record::CopyC70770 | In outline: the same (another copy) |
+| `0x94d850` | Record::Copy94D850 | In outline: copies a record's values from another |
+| `0x47e5a0` | Record::Copy47E5A0 | Copies five values (+0x10, +0xA0, +0xB0, +0xC0, +0xD0) from another record |
+| `0x516ce0` | Record::Init516CE0 | In outline: sets up a record's values (an identity part, zeros) |
+| `0x425a60` | Record::Init425A60 | In outline: sets up a record's values (zeros and -1.0) |
+| `0xca6900` | Table::FreeCA6900 | In outline: puts slot n back on a free list |
+| `0xc02060` | Record::InitC02060 | In outline: sets up a record with its table (`0xFA5EC0`) and empty lists |
+| `0xbffb60` | Resource::RefBFFB60 | In outline: for a negative flag, makes a 0x34-byte resource reference (ResourceRefFA5D28) with the device's value (+0x45C) |
+| `0xbe5020` | ShaderFile::Read | Reads n bytes: from the shared stream (`0x13D0E84`) when there is one, else opens the file (`0xC51360`) |
+| `0x6a5e20` | Window::Make6A5E20 | In outline: makes a window part (Listener440) with its tables (`0xF4D8B8`, `0xF5F5A0`) |
+| `0x416110` | Table::Fill16 | In outline: fills a table with sixteen two-byte values (the many 0xFFFF table fillers call it) |
+| `0xcd5640` | Text::CompareCD5640 | In outline: compares two texts character by character |
+| `0x442120` | Text::Scan442120 | In outline: goes over a two-byte text to its end |
+| `0xc686c0` | Font::MakeC686C0 | In outline: makes a font record with Arial (Font::Arial) and its table (`0xFB7D58`) |
+| `0xcc1f30` | Shader::MakeCC1F30 | In outline: makes a part (`0xCC1990`) |
+| `0xc65f20` | Window::InitC65F20 | In outline: sets up a window record with its table (`0xFB7640`), cleared flags and an empty name |
+| `0xbd3c60` | Device::FormatSizeBD3C60 | In outline: a size by format number (1: 0x1E, ..., 0x100: 0x50) |
+| `0x805fd0` | Regions::Make805FD0 | In outline: makes a region record, with the shared one (`0x130AC04`) when given none |
+| `0xbcc740` | Track::PointAt | In outline: for a distance between 0 and the length (+0xC), finds the point along a track's pieces |

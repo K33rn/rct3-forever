@@ -1648,3 +1648,12 @@
 | `0x91a5d0` | Waterfall::Step91A5D0 | In outline: a large step scaling values by a time (+0xE8, +0xE0) and a fraction under 1 |
 | `0x90ba10` | Water::Terrain90BA10 | In outline: with a part (+0x18) and entries, a terrain step |
 | `0x786340` | GuestGroup::Slots786340 | In outline: goes over slots 0 to 6 (+0x60) for those flagged (bit 6) |
+| `0x7a0b50` | Terrain::Link7A0B50 | In outline: a step over a list (+0x540) |
+| `0x93da00` | Water::Cell93DA00 | In outline: values for a cell inside the grid (+0x58, +0x59), 0x30 bytes each |
+| `0x93dbf0` | Water::Cell93DBF0 | In outline: the same, 0 outside |
+| `0x9935e0` | Fireworks::Load9935E0 | In outline: reads four-byte values from a saved block (Load::ReadBytes) |
+| `0x54ad80` | Ride::Load54AD80 | In outline: the same (another copy) |
+| `0x7c9e60` | Person::Terrain7C9E60 | In outline: a step when the terrain is not flagged |
+| `0x94ef60` | Water::Entry94EF60 | In outline: for entry n (0xD0 bytes) of kind 4, a value by a count under 0xE |
+| `0x829b70` | Scenery::Footprint829B70 | In outline: with a part (+0x9C) in turn 0 or 2, turns its cells (Footprint::RotateCell) |
+| `0x79c0a0` | Toolbar::Find79C0A0 | In outline: a find when two shared values differ (`0x1306BCC`, `0x1306BD8`) |

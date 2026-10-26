@@ -1608,3 +1608,16 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9b5140` | Window::Layout9B5140 | In outline: the same with other parts |
 | `0x9b56a0` | Window::Layout9B56A0 | In outline: the same with other parts |
 | `0x9b6320` | Window::Layout9B6320 | In outline: the same with other parts |
+| `0x6afc20` | Window::Refresh6AFC20 | In outline: once (+0x94 bit 0), checks a flag (Window::Flag6ADE60) and acts with its parent |
+| `0x440bf0` | Effect::Set440BF0 | In outline: sets a value (+0x70) when it changes, under 0x14 |
+| `0x620470` | Window::Make620470 | In outline: makes a 0xA8-byte part |
+| `0x6b2720` | Window::Fill6B2720 | In outline: fills a record from its arguments and the shared value (`0x1305D58`) |
+| `0x67a7a0` | Window::Show67A7A0 | In outline: sets or clears a flag (bit 24 of +0x94) and lays out with a part (+0xE8) |
+| `0x67b3c0` | Window::SetContent67B3C0 | In outline: sets a part (+0x11C) and its content (Window::SetContent) unless flagged (bit 22) |
+| `0x640dd0` | Window::Desc640DD0 | In outline: with no part, makes a GUI description (GUI2_DatDesc) |
+| `0xaf1f30` | Window::NameAF1F30 | In outline: makes a part (+0x80) and a named text (`0x1303CFC`) |
+| `0x63aab0` | Window::Height63AAB0 | In outline: keeps a height of at least 131 and lays out |
+| `0x6a65b0` | Window::Take6A65B0 | In outline: takes a part (+0x28) and acts when on (+0x24) |
+| `0xa2a8e0` | Window::TextA2A8E0 | In outline: makes a part (+0x40) and a text (`0x495BF0`) |
+| `0xa451d0` | Window::ScaleA451D0 | In outline: a value from n by case, with fixed scales and offsets |
+| `0x6f0d80` | Window::Flags6F0D80 | In outline: 0 unless flagged (+0xD0); else a step over flags from 0x80 |

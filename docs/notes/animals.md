@@ -574,3 +574,9 @@
 | `0xb66290` | WildAnimal::StepB66290 | In outline: a large step with a point and a part's values (+0x50 on) |
 | `0xa6f3a0` | Animal::NormalsA6F3A0 | In outline: works out normals for its triangles (+0x5C, +0x60) |
 | `0xa97f70` | Animal::UpdateA97F70 | In outline: an update when not flagged (+0x78) with a part |
+| `0xa60590` | Animal::CopyA60590 | In outline: copies values from its owner (+4 +0x160, +0x120, +0x140) |
+| `0xa874d0` | Animal::UpdateA874D0 | In outline: an update when not flagged (+0x28) |
+| `0xa7c190` | Animal::TextA7C190 | In outline: an empty text filled when not flagged (+0x184) |
+| `0xa7a100` | Animal::PassA7A100 | In outline: goes over entries (+0xC, +0x10) with a part's list (+0x40, +0x48) |
+| `0x992fd0` | Fireworks::CopyKey | In outline: makes a firework key frame (FireworkSlotKeyFrame) and copies a value (+0x48) |
+| `0xa7c440` | Animal::CheckA7C440 | In outline: a check when not flagged (+0x1E0) |
