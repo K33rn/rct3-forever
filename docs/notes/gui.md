@@ -1369,3 +1369,18 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6ba5a0` | Window::Count6BA5A0 | In outline: a step under a count (`0x6C1DA0` +0x11C) |
 | `0x6f75c0` | Window::Update6F75C0 | In outline: with no part (+0xA0), an update (Window::Update6F5680) |
 | `0x9fac60` | NamedObject::Make9FAC60 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
+| `0x6487a0` | Window::Set6487A0 | In outline: a step (`0x630360`) and sets a value (Set_+0x100) |
+| `0x47a260` | Window::Text47A260 | In outline: a text for 0 to 0x1D |
+| `0x9d4c70` | Window::Check9D4C70 | In outline: a check when not flagged (+0x234) |
+| `0x9da430` | Window::Shared9DA430 | In outline: a step when the shared value (`0x1300718`) is set, unless given 2 |
+| `0x9da260` | Window::Shared9DA260 | In outline: a step when the shared value (`0x1305798`) is set, unless given 2 |
+| `0x6e2fb0` | Objectives::MoneyText6E2FB0 | In outline: a condition text with a money value or "unlimited" (Money::FormatOrUnlimited) |
+| `0x6dd4b0` | Objectives::MoneyText6DD4B0 | In outline: the same (another copy) |
+| `0x6dd000` | Objectives::MoneyText6DD000 | In outline: the same (another copy) |
+| `0x99d1d0` | Window::Draw99D1D0 | In outline: draws a window's frame (Window::DrawFrame6ACE50) and makes a part |
+| `0x6cc710` | Window::Value6CC710 | In outline: a value from a loop |
+| `0x6e7060` | Objectives::EnclosureVisitorsText | In outline: makes an enclosure visitors condition's text with its number (EnclosureVisitorsCondition::Name) |
+| `0x6e4ba0` | Objectives::NumberText6E4BA0 | In outline: a condition text with a number (String::FromNumber) |
+| `0x6e4580` | Objectives::NumberText6E4580 | In outline: the same (another copy) |
+| `0x98f7c0` | Window::Text98F7C0 | In outline: a text when not flagged (+0x4C) |
+| `0xa4c6c0` | WindowList::MakeA4C6C0 | In outline: makes a window list (WindowList, `0x6AF710`) |

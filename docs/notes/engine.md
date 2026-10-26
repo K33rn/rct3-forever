@@ -2015,3 +2015,39 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x4d01a0` | Array::Grow4D01A0 | In outline: grows a list of 0x2C-byte entries to hold n |
 | `0x483864` | Text::Compare483864 | In outline: compares characters |
 | `0xcedc50` | Shapes::FlagCEDC50 | In outline: a step for a part that is on (+0x50) |
+| `0x40c6a0` | Array::Grow40C6A0 | In outline: grows a list of 0x70-byte entries to hold n |
+| `0xb78ea0` | Entries::SortB78EA0 | In outline: sorts entries (Entries::SortB782A0 over +8) |
+| `0xcbe500` | Shader::StepCBE500 | In outline: a step (`0xCBDFB0`) with a buffer |
+| `0x87f420` | Text::Make87F420 | In outline: makes a text from a shared one (`0xF3F4A4`) |
+| `0x8099c0` | Record::Make8099C0 | In outline: a step (`0x555A60`) and a part |
+| `0x43abe0` | Text::Check43ABE0 | In outline: a step for an empty text |
+| `0xbf5930` | Text::StepBF5930 | In outline: a step (`0xBF4B20`) past a count (+0x14) |
+| `0xbe28a0` | VertexDeclaration::FillBE28A0 | In outline: a fill step (VertexDeclaration::StepBE2250, `0xBDC800`) |
+| `0xbd9d20` | Resource::LinkBD9D20 | In outline: sets a part (+0x24) when it changes |
+| `0xe00060` | Memory::StepE00060 | In outline: a step with a buffer, with none handled |
+| `0xc9bfd0` | Device::MakeTexturesC9BFD0 | In outline: creates 64 one-pixel textures (Device::CreateTexture(1, 1, 0, 1)) |
+| `0xc386d0` | Resource::MakeC386D0 | In outline: a step (`0xC424B0` with `0x13E6B0C`) |
+| `0xbfd310` | List::PassBFD310 | In outline: goes over a list (+0x20) |
+| `0x6930b0` | Array::Resize6930B0 | In outline: resizes a list of 64-byte entries to n (the layout table) |
+| `0x499160` | Table::Fill499160 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0xc31080` | Resource::SlotC31080 | In outline: a step for a slot under the shared count (`0x13E69BC`) |
+| `0x991af0` | Array::Resize991AF0 | In outline: resizes a list of 0x28-byte entries to n |
+| `0x823040` | Array::Resize823040 | In outline: resizes a list of 0x28-byte entries to n |
+| `0x51be40` | Array::Resize51BE40 | In outline: resizes a list of 0x28-byte entries to n |
+| `0x455df0` | Array::Copy455DF0 | In outline: copies a list of 24-byte entries |
+| `0xc03040` | Table::FillC03040 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x80fa40` | Array::Grow80FA40 | In outline: grows a list of 16-byte entries to hold n |
+| `0x49a7e0` | Array::Grow49A7E0 | In outline: the same (another copy) |
+| `0x42e780` | Array::Grow42E780 | In outline: the same (another copy) |
+| `0x42d730` | Array::Grow42D730 | In outline: the same (another copy) |
+| `0xc93330` | Shader::CaseC93330 | In outline: a step by a byte's case |
+| `0xce19f0` | Text::LowerCE19F0 | In outline: lower-cases characters (_tolower) |
+| `0xcc4010` | Shader::StepCC4010 | In outline: a shader step (`0xCC1DD0` with fill values, `0xCC3E60`) |
+| `0x9f98a0` | Array::Grow9F98A0 | In outline: grows a list of 0x90-byte entries to hold n |
+| `0x964bc0` | Array::Grow964BC0 | In outline: grows a list of 0x1018-byte entries to hold n |
+| `0x94e250` | Array::Grow94E250 | In outline: grows a list of 0xD0-byte entries to hold n |
+| `0xce0540` | Record::MakeCE0540 | In outline: makes a 0x28-byte record |
+| `0xac6b90` | Array::ResizeAC6B90 | In outline: resizes a list of 0x24-byte entries to n |
+| `0xcb79b0` | ShaderFile::OpenCB79B0 | In outline: makes a part (6) and opens a file (`0xC51360` with 4) |
+| `0xc02540` | Timer::StepC02540 | In outline: a timed step (Timer::Milliseconds, `0xC50080`) |
+| `0x818480` | Array::Resize818480 | In outline: resizes a list of 0x2C-byte entries to n |

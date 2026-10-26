@@ -843,3 +843,14 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x998a40` | Fireworks::Add998A40 | In outline: adds an entry, growing a list of 16-byte entries when full (+0x1F8, +0x1FC) |
 | `0xbf6ff0` | Text::WaveBF6FF0 | In outline: fills buffers for the current device with a sine of a value |
 | `0x414630` | Effect::Length414630 | In outline: a length step over entries (+0x98) |
+| `0xcd87a0` | Camera::FaceCD87A0 | In outline: points (Matrix::LookAlongZSide) |
+| `0xc53530` | Stream::StepC53530 | In outline: when on (+0x8C), a step under a count (+0x98 vs +0x58) |
+| `0x480e40` | Camera::Step480E40 | In outline: a step with the camera (MainCamera::Get, `0xCD6850`) |
+| `0xbf8850` | Text::WaveBF8850 | In outline: fills buffers for the current device with a sine of a value |
+| `0x9f84e0` | Fireworks::Value9F84E0 | In outline: a value in mode 1 |
+| `0x993dd0` | FireworkSlot::AddKey | In outline: a step with a slot's key (FireworkSlot::KeyAt) and makes a key frame (FireworkSlotKeyFrame) |
+| `0x4686d0` | Grid::Round4686D0 | In outline: a value rounded |
+| `0x4414f0` | Grid::Round4414F0 | In outline: a value rounded |
+| `0xbedc00` | Vector::NormalBEDC00 | In outline: a normalised direction from values (+0x20 ...), with length 0 handled |
+| `0x98bad0` | Animal::Value98BAD0 | In outline: a value with a part (+0x48) and an object (`0x13CE508`) |
+| `0xc72210` | Device::StepC72210 | In outline: when on (+0x4C1), a step with a check |

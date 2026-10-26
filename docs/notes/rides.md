@@ -574,3 +574,19 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4f07f0` | Ride::Text4F07F0 | In outline: makes a text from a shared one (`0xF28914`) |
 | `0x4f06b0` | Ride::Text4F06B0 | In outline: makes a text from a shared one (`0xF288E8`) |
 | `0x4e11c0` | Ride::Part4E11C0 | In outline: a step (`0xA06E30`) with a part (+0x30) |
+| `0xbc5c10` | Track::StepBC5C10 | In outline: a step (`0xBC5AB0`, `0xBC5B40`) |
+| `0x5267a0` | Car::Terrain5267A0 | In outline: a step over the terrain |
+| `0x5079b0` | Car::Step5079B0 | In outline: a step when not flagged (+0xD8) for an entry above 1 |
+| `0x642910` | Window::Round642910 | In outline: for 2, a value rounded |
+| `0x4c1160` | Shop::Text4C1160 | In outline: a text when the shared value (`0x1303738`) is set |
+| `0x5f0670` | TrackPiece::Step5F0670 | In outline: a step (`0x5EFD60`, `0x5F0600`) |
+| `0x4ce5d0` | Shop::Text4CE5D0 | In outline: a text when a slot check fails (Shop::Slot4CDF90) |
+| `0x536da0` | Ride::Shared536DA0 | In outline: a step unless it is the shared object's part (`0x12F4F18` +0x278) |
+| `0x5362b0` | Ride::Section5362B0 | In outline: a step with a ride's section (`0x12F5338`) under a count |
+| `0x4cd9a0` | Shop::Part4CD9A0 | In outline: a step with a part |
+| `0x56a1b0` | Ride::Check56A1B0 | In outline: a check when not flagged (+0x254) |
+| `0x566cd0` | Ride::Tool566CD0 | In outline: unless a kind is 10, a step with the current tool's count (`0x12F5638` +0x150) |
+| `0x5173d0` | Car::Pass5173D0 | In outline: a step (`0x513740`) over a car's parts (+0x314) |
+| `0x50b690` | Car::Check50B690 | In outline: a step for rides not flagged 0x400000 or with fewer than two stations |
+| `0x5cf540` | TrackedRide::Platforms5CF540 | In outline: finds a platform's pieces (Platform::FindPieces) |
+| `0x4eef50` | Ride::Clear4EEF50 | In outline: a step (`0x4BCF30`) and empties a list |

@@ -391,3 +391,21 @@
 | `0xb8c150` | Animal::CheckB8C150 | In outline: a check when not flagged (+0xF8) |
 | `0xabb6f0` | Fence::StepABB6F0 | In outline: unless told not to, a step when on (+0xE8) |
 | `0xb36bd0` | Animal::CheckB36BD0 | In outline: a check when not flagged (+0x188) |
+| `0xb3ade0` | Animal::TerrainB3ADE0 | In outline: a step over the terrain |
+| `0xaae920` | PoolComplex::CaseAAE920 | In outline: a point (`0xAAE430`) and a step by case |
+| `0xa7c510` | Animal::StepA7C510 | In outline: a step with an object (`0x13CE3BC`, `0xA9EF10`) |
+| `0xbad070` | Animal::PassBAD070 | In outline: when on (+0x21C), goes over entries (+0x1D8) |
+| `0xa90e70` | Fence::NearA90E70 | In outline: a step for points beyond a distance |
+| `0xba2db0` | Animal::SlotBA2DB0 | In outline: a step for an entry not flagged (+0x18) |
+| `0xb58be0` | Animal::EventB58BE0 | In outline: for event 7, a step with an object (WildAnimal::Interface60) |
+| `0xb5d490` | Animal::QuadTreeB5D490 | In outline: inserts an object by its matrix into a quad tree (Object::GetMatrix, QuadTree::Insert) |
+| `0xab3940` | Animal::PassAB3940 | In outline: goes over entries (+0x10C) with a part |
+| `0xa9f8c0` | PoolComplex::MakeA9F8C0 | In outline: makes a part and goes over entries (+0x28) |
+| `0xb25c60` | WildAnimal::InteractWithItem | In outline: makes an interact-with-item decision (WAS_InteractWithItem) and a part (`0xB24230`) |
+| `0xae11a0` | Animal::PassAE11A0 | In outline: goes over entries (+0x50) comparing values |
+| `0xa327e0` | Animal::ValueA327E0 | In outline: a value from entries, checking a slot against a count (+0x5C) |
+| `0xb020c0` | Animal::CaseB020C0 | In outline: a step by an id's case (from 0xD776E) |
+| `0xb89270` | Animal::PassB89270 | In outline: goes over entries not flagged (+0x48, +0x18) |
+| `0xb0aa90` | Animal::StepB0AA90 | In outline: a step (`0x6A2BE0`) when a value is below 0 |
+| `0xa61dc0` | Animal::AngleA61DC0 | In outline: a direction from angles (cosine of +0x34, sine of +0x38) |
+| `0xb55960` | Animal::InsideB55960 | In outline: a step when a value is inside fixed bounds (`0xF6FD60`, `0xF6FD64`) |

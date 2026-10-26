@@ -1213,3 +1213,45 @@
 | `0x836360` | Scenery::Make836360 | In outline: makes a part when not flagged (+0x194) |
 | `0x9e63c0` | Fireworks::Table9E63C0 | In outline: fills a table with 0xFFFF (`0x416110`) |
 | `0x482260` | Draw::Count482260 | In outline: a step for more than one entry |
+| `0x8b6fb0` | Scenery::Update8B6FB0 | In outline: an update when not flagged (+0x120) |
+| `0x856bc0` | Scenery::Count856BC0 | In outline: a step (`0xCEFF50`) for a positive count |
+| `0x7789c0` | GuestGroup::Check7789C0 | In outline: makes a part and checks it (`0x76FF60`) |
+| `0x778880` | GuestGroup::Check778880 | In outline: makes a part and checks it (`0x76FFA0`) |
+| `0x8b7780` | Scenery::Text8B7780 | In outline: a text when not flagged (+0x4C) |
+| `0x7e6a40` | Person::Terrain7E6A40 | In outline: a step over the terrain |
+| `0x747240` | Guest::Make747240 | In outline: makes a part and goes over entries |
+| `0x733320` | Path::Flag733320 | In outline: a step by a flag's sign and when not flagged (+8) |
+| `0x9d5f90` | Fireworks::Time9D5F90 | In outline: a step with a positive value (+0xC) over a linked list |
+| `0x998b90` | Fireworks::Changed998B90 | In outline: a step (`0x989180`) when two values differ (+0xF8, +0xE8) |
+| `0x9061c0` | Water::Value9061C0 | In outline: a value for counts above 3 |
+| `0x7f93e0` | Person::Near7F93E0 | In outline: for kinds 4, 0 or 0x16, a step when a point is within a distance |
+| `0x726d60` | Path::Height726D60 | In outline: a value from the terrain |
+| `0x71e430` | PathFlying::Make | In outline: activates a part and makes a flying path (PathFlying) |
+| `0x9e6500` | Fireworks::Table9E6500 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x959020` | Water::Table959020 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x923c60` | Water::Step923C60 | In outline: a step (`0x923A90` with +0x130) with no part (+0x124) |
+| `0x875aa0` | Scenery::Count875AA0 | In outline: a step for a positive count with a part |
+| `0x862480` | Scenery::Case862480 | In outline: a step by an entry's kind when there are entries |
+| `0x83b340` | Scenery::Clear83B340 | In outline: tears down entries (+0x2C) |
+| `0x779a20` | Park::Pass779A20 | In outline: goes over entries (+0x48) in mode 4 or others |
+| `0x769cb0` | PathManager::Create769CB0 | In outline: makes the shared path manager (`0x130625C`, PathManager::PathManager) and activates it |
+| `0x760650` | Guest::Check760650 | In outline: a check when not flagged (+0x334) |
+| `0x71f340` | Path::Table71F340 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x703950` | Path::Terrain703950 | In outline: a step over the terrain |
+| `0x96e6b0` | Water::Slot96E6B0 | In outline: a step for a slot |
+| `0x9e6290` | Fireworks::Table9E6290 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x454f10` | List::Pass454F10 | In outline: goes over entries not flagged (+0x82) and flagged (+0x81) |
+| `0x8d6e90` | Terrain::Pick8D6E90 | In outline: a ray from a screen point (MainCamera::Get, Camera::ScreenRay) for picking |
+| `0x8b4530` | Scenery::Terrain8B4530 | In outline: a step over the terrain |
+| `0x847210` | Scenery::Centre847210 | In outline: for rides flagged 0x400000, a step at a scenery footprint's centre |
+| `0x7e6750` | Person::Loop7E6750 | In outline: a loop up to n |
+| `0x724840` | Path::Inside724840 | In outline: a step for a cell inside a byte range (+0x1C, +0x1D) |
+| `0x96ff10` | Water::Grow96FF10 | In outline: grows a list (`0x96F7F0`) to hold one more |
+| `0x8e3f40` | Terrain::Step8E3F40 | In outline: a terrain step |
+| `0x7a1840` | Terrain::Link7A1840 | In outline: a step with a part |
+| `0x771e50` | Park::Pass771E50 | In outline: goes over entries (+0x14) not flagged (+0x18) |
+| `0x71b370` | Path::Terrain71B370 | In outline: a value from the terrain |
+| `0x7a8f90` | Terrain::Same7A8F90 | In outline: a step when a value matches |
+| `0x7542e0` | Guests::Find7542E0 | In outline: a find comparing pairs (`0xCD5640`) |
+| `0x83cd30` | Scenery::Make83CD30 | In outline: makes a part when it has one (+0x16C) and is on (+0x184) |
+| `0x8b6e80` | Scenery::Update8B6E80 | In outline: an update when not flagged (+0xD8) |
