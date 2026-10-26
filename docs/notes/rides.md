@@ -558,3 +558,19 @@ Tracked rides, flat rides and their cars and trains.
 | `0x511950` | Car::Step511950 | In outline: the same with `0x86CFB0` |
 | `0x4aca40` | Ride::Update4ACA40 | In outline: an update when not flagged (+0x3C4) |
 | `0x581300` | Ride::Case581300 | In outline: a step by case |
+| `0x7afc90` | Ride::Step7AFC90 | In outline: a step (`0x410100`) unless told not to |
+| `0xa7f570` | AttractionPerson::StepA7F570 | In outline: a step with an attraction's person (AttractionPersonInfo::Person) |
+| `0x5da7d0` | TrackPiece::Pass5DA7D0 | In outline: goes over a ride's pieces (+0x158) (`0x510800`) |
+| `0x594a90` | Ride::Count594A90 | In outline: a step with a part's count (+0x1CC +4) |
+| `0x5df360` | TrackedRide::Pass5DF360 | In outline: a step with positive counts (+0xF8, +0xE8) |
+| `0x5dee90` | TrackedRide::Pass5DEE90 | In outline: a step with positive counts (+0xF0, +0xE8) |
+| `0x4f52e0` | Ride::Round4F52E0 | In outline: a step with a value rounded from a scale when not flagged (+0x54 +0x1BC) |
+| `0x5e67d0` | TrackPiece::Tool5E67D0 | In outline: a step with the current tool (`0x12F5638`) |
+| `0x54fc50` | Ride::Activate54FC50 | In outline: activates a part |
+| `0x569c60` | Ride::Check569C60 | In outline: a check when not flagged (+0x5C) and a part is not in mode 1 |
+| `0x50c0d0` | Car::Slot50C0D0 | In outline: a step (`0x94EF60`) when it has a slot |
+| `0x50c290` | Car::Step50C290 | In outline: a step (`0xB82870`) with a slot (+4) |
+| `0x4f0930` | Ride::Text4F0930 | In outline: makes a text from a shared one (`0xF35D48`) |
+| `0x4f07f0` | Ride::Text4F07F0 | In outline: makes a text from a shared one (`0xF28914`) |
+| `0x4f06b0` | Ride::Text4F06B0 | In outline: makes a text from a shared one (`0xF288E8`) |
+| `0x4e11c0` | Ride::Part4E11C0 | In outline: a step (`0xA06E30`) with a part (+0x30) |

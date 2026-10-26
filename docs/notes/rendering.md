@@ -831,3 +831,15 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xcd7bb0` | Camera::FaceCD7BB0 | In outline: points the camera (Matrix::LookAlongZSide on +0x140, +0x130) |
 | `0xbef450` | Text::DrawBEF450 | In outline: draws a text, character by character |
 | `0xbef020` | Text::DrawBEF020 | In outline: the same (another copy) |
+| `0x7b5a60` | Effect::Pass7B5A60 | In outline: goes over an effect's parts (+0x10) that are set |
+| `0x489e60` | Effect::Pass489E60 | In outline: the same (another copy) |
+| `0xbbd290` | Vector::LengthBBD290 | In outline: a step when a length is above a limit |
+| `0x864620` | Scenery::Shapes864620 | In outline: checks a model's shapes (Model::CheckShapes) against a point |
+| `0x864010` | Scenery::Shapes864010 | In outline: the same with Model::CheckShapes_(2) |
+| `0x436c00` | Camera::Step436C00 | In outline: a step with the camera (MainCamera::Get, `0xCD6850`) |
+| `0xbbee40` | Track::CaseBBEE40 | In outline: a value by case |
+| `0x426560` | Curves::Time426560 | In outline: a step for a negative time or a large value |
+| `0x988660` | Fireworks::Step988660 | In outline: a step with parts (+0xD4, +0xD8) when a check passes (`0x475610`) |
+| `0x998a40` | Fireworks::Add998A40 | In outline: adds an entry, growing a list of 16-byte entries when full (+0x1F8, +0x1FC) |
+| `0xbf6ff0` | Text::WaveBF6FF0 | In outline: fills buffers for the current device with a sine of a value |
+| `0x414630` | Effect::Length414630 | In outline: a length step over entries (+0x98) |

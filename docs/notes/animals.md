@@ -375,3 +375,19 @@
 | `0xa18cd0` | Seagull::Make | In outline: makes a seagull (Seagull) and activates it |
 | `0xb47770` | WildAnimal::SlotB47770 | In outline: a step for a slot (+0x78) not flagged |
 | `0x9d7e70` | Animal::Update9D7E70 | In outline: an update when not flagged (+0x68) |
+| `0xa5cbf0` | Animal::CountA5CBF0 | In outline: a loop with no entries (+0x78) handled |
+| `0xb45080` | WildAnimal::SlotB45080 | In outline: a step for a slot (+0x78) not flagged |
+| `0xb88480` | Animal::UpdateB88480 | In outline: an update when not flagged (+0xB8) |
+| `0xb7bd00` | Animal::CheckB7BD00 | In outline: a check when not flagged (+0x90) |
+| `0xb45520` | WildAnimal::SlotB45520 | In outline: a step for a slot not flagged |
+| `0xaad2f0` | PoolComplex::CaseAAD2F0 | In outline: unless told not to, a step by four bits |
+| `0xa75800` | Animal::IndexA75800 | In outline: makes an index of four-byte entries |
+| `0xaf0300` | Animal::CheckAF0300 | In outline: a check when not flagged (+0x10C) |
+| `0xad72c0` | Animal::CheckAD72C0 | In outline: the same (another copy) |
+| `0xb55590` | WildAnimal::FamilyMember | In outline: makes a family member (WildAnimalFamilyMember) and a part (`0x44E540`) |
+| `0xb1f7e0` | WildAnimal::TerrainB1F7E0 | In outline: a step over the terrain |
+| `0xa62080` | Animal::TurnA62080 | In outline: a turn step (sine of +0x38) for a short direction |
+| `0xa60380` | Animal::TerrainA60380 | In outline: a step over the terrain |
+| `0xb8c150` | Animal::CheckB8C150 | In outline: a check when not flagged (+0xF8) |
+| `0xabb6f0` | Fence::StepABB6F0 | In outline: unless told not to, a step when on (+0xE8) |
+| `0xb36bd0` | Animal::CheckB36BD0 | In outline: a check when not flagged (+0x188) |

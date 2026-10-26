@@ -1172,3 +1172,44 @@
 | `0x903aa0` | Water::Edge903AA0 | In outline: a step when not flagged (+0xC +0x54) |
 | `0x8e21b0` | Terrain::Step8E21B0 | In outline: a terrain step |
 | `0xaaa110` | PoolComplex::LoopAAA110 | In outline: a loop up to n |
+| `0x8ddc50` | Terrain::Step8DDC50 | In outline: a terrain step |
+| `0x8541a0` | Scenery::Slot8541A0 | In outline: a step (`0x851450` with +0x118, +0x114) when it has a slot |
+| `0xb9d990` | PathGrid::CellB9D990 | In outline: a value for a cell inside the grid (+0x64, +0x68) that is set (+0x74) |
+| `0x8d67a0` | Terrain::Loop8D67A0 | In outline: a loop over cells |
+| `0x7a6790` | Terrain::Kind7A6790 | In outline: for kind 0xF with no part (+0x194), a step (`0x4751E0`) |
+| `0x71d7b0` | Path::Count71D7B0 | In outline: a step for counts above 1 |
+| `0x90a150` | Water::Count90A150 | In outline: a step for one entry |
+| `0x8b23b0` | Scenery::Flat8B23B0 | In outline: a flat length step (`0x8B15A0`) |
+| `0x8383b0` | Scenery::Pass8383B0 | In outline: goes over entries (+0x14) |
+| `0x7c58a0` | Person::Face7C58A0 | In outline: points a person (Matrix::LookAlongZSide) and acts on a non-zero value |
+| `0x6f7700` | Park::Date6F7700 | In outline: a value from the date (GameTime::Get), rounded |
+| `0x8dd8b0` | Terrain::Step8DD8B0 | In outline: a terrain step |
+| `0x84bb60` | Scenery::Step84BB60 | In outline: a step (`0x532A80` with +0x44) over seven values |
+| `0x829060` | Scenery::Flags829060 | In outline: a step with a part (+0x9C) and matching flags |
+| `0x75ee40` | Guest::Check75EE40 | In outline: when on (+0x404), compares a value against a limit |
+| `0x756170` | Guest::Spot756170 | In outline: a step with a spot (`0x7578C0` with +0x121) |
+| `0x7523e0` | Guest::Matrix7523E0 | In outline: works out matrices (`0xCD78A0`, `0xCD75C0`) |
+| `0x97ce60` | Water::Loop97CE60 | In outline: a loop |
+| `0x943670` | Water::Check943670 | In outline: a step when two values differ (+0x68, +0x74) or a check passes |
+| `0x7e9be0` | Person::Case7E9BE0 | In outline: a step by a value |
+| `0xb6c3a0` | Animal::TerrainB6C3A0 | In outline: a step over the terrain |
+| `0xa914b0` | Fence::DistanceA914B0 | In outline: a distance (`0xA90D00`) over entries (+0x14) |
+| `0x9fbd90` | Fireworks::Fill9FBD90 | In outline: fills buffers for the current device |
+| `0x9732b0` | Water::Clear9732B0 | In outline: tears down entries (+4) |
+| `0x9506f0` | Water::Table9506F0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x92b820` | Water::List92B820 | In outline: goes over entries not flagged (+0x18) |
+| `0x8e88e0` | Terrain::Step8E88E0 | In outline: a terrain step |
+| `0x8d3600` | Terrain::Ids8D3600 | In outline: makes a part and the shared id set (`0x12F4634`, IdSet) |
+| `0x7853a0` | GuestGroup::Slot7853A0 | In outline: a step for slot 0 to 6 with a part |
+| `0xa9f6a0` | PoolComplex::WaterA9F6A0 | In outline: a step with the water manager (`0x905140`) |
+| `0x901c20` | Water::Solve901C20 | In outline: a water find (Water::Find8FF790) and a grid solve (Grid::Solve90A290) |
+| `0x838cc0` | Scenery::Count838CC0 | In outline: for a positive count, a step (Call44CC40And489A10) |
+| `0x771f90` | Park::Pass771F90 | In outline: goes over entries (+0x14) not flagged (+0x18) |
+| `0x7541a0` | Guests::Init7541A0 | In outline: makes a part and sets a shared value (`0x13064FC`, `0x7537B0`) |
+| `0x783c60` | GuestGroup::Update783C60 | In outline: an update when not flagged (+0x11C) |
+| `0x776c60` | Park::Tile776C60 | In outline: unless a kind is 2 (+0x8B), a step with a path tile's centre (PathTile::Centre) |
+| `0x95de00` | Water::Compare95DE00 | In outline: a step comparing heights |
+| `0x912010` | Water::Table912010 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x836360` | Scenery::Make836360 | In outline: makes a part when not flagged (+0x194) |
+| `0x9e63c0` | Fireworks::Table9E63C0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x482260` | Draw::Count482260 | In outline: a step for more than one entry |

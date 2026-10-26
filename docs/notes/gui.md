@@ -943,7 +943,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6a2620` | Window::Build6A2620 | In outline: builds a window from the shared title `0x1305C4C` |
 | `0x9dd650` | Window::List9DD650 | In outline: fills a window from a shared list (`0x134180C` +0x14) |
 | `0xc65490` | Window::MessageC65490 | In outline: handles a window message by kind (not 8; 0x10005, ...) |
-| `0x4787c0` | Game::Fade4787C0 | In outline: starts a fade over 0.1 (`0x617600`) and `0xA1F980` |
+| `0x4787c0` | Game::Pump4787C0 | In outline: pumps Windows messages with 0.1 (Windows::PumpMessages) and calls `0xA1F980` |
 | `0x6e1b30` | Objectives::Event6E1B30 | In outline: handles an event from its own part (+8 +0x104) (`0xA2C580`) |
 | `0x48fd90` | Window::Build48FD90 | In outline: builds a window from the shared title `0x12F4670` |
 | `0xa55b30` | Window::LayoutA55B30 | In outline: places a window's parts (Window::UpdateRect) |
@@ -1359,3 +1359,13 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xad0710` | Window::PlaceAD0710 | In outline: when on (+0x44), places a window |
 | `0x97e0a0` | Window::Layout97E0A0 | In outline: lays out a window and refreshes it when a value changes (+0xF0) |
 | `0x9a7d90` | Window::Check9A7D90 | In outline: a check when not flagged (+0x88) |
+| `0x6eabf0` | Window::Layout6EABF0 | In outline: places a window (Window::UpdateRect) |
+| `0x701f50` | Window::Case701F50 | In outline: for its own value (+0x124), a step by case |
+| `0x7be2f0` | Window::Make7BE2F0 | In outline: makes a window part (Listener440, Constructor) |
+| `0x687df0` | ListWindow::Fill687DF0 | In outline: sets a list window's count (ListWindow::SetCount) and fills it |
+| `0x5f4640` | WindowList::Make5F4640 | In outline: makes a window list (WindowList, `0x441090`) |
+| `0x9b5560` | Window::Reset9B5560 | In outline: clears a number field's binding and a list's selection (NumberField::BindFloat(0), ListWindow::SetSelection(0)) |
+| `0x995e40` | Window::Step995E40 | In outline: when on (+0x1EC), a step (`0x6C1DA0`) |
+| `0x6ba5a0` | Window::Count6BA5A0 | In outline: a step under a count (`0x6C1DA0` +0x11C) |
+| `0x6f75c0` | Window::Update6F75C0 | In outline: with no part (+0xA0), an update (Window::Update6F5680) |
+| `0x9fac60` | NamedObject::Make9FAC60 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |

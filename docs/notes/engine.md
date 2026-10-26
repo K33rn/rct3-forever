@@ -1983,3 +1983,35 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x8e9330` | Array::Grow8E9330 | In outline: grows a list of 0x130-byte entries to hold n |
 | `0x87bee0` | Array::Grow87BEE0 | In outline: grows a list of 0x80-byte entries to hold n |
 | `0x735850` | Array::Grow735850 | In outline: grows a list of 0x98-byte entries to hold n |
+| `0x617600` | Windows::PumpMessages | In outline: pumps waiting Windows messages (PeekMessageA, TranslateMessage), with a time value |
+| `0x743e10` | Folder::Init743E10 | In outline: a step with the install folder text (Init458) |
+| `0xc3eee0` | Stream::OpenC3EEE0 | In outline: opens a stream (`0xC51360` with 2, Stream::StepC53340) |
+| `0xbe9630` | List::PassBE9630 | In outline: goes over a list (+0x20) |
+| `0xbc33a0` | Text::MakeBC33A0 | In outline: makes a C string buffer |
+| `0x49e3b0` | Array::Grow49E3B0 | In outline: grows a list of 0x30-byte entries to hold n |
+| `0x40d840` | Array::Grow40D840 | In outline: grows a list (+0x34) |
+| `0xcd29f0` | Loop::StepCD29F0 | In outline: a loop while a value is not negative |
+| `0xbe5220` | Module::RunBE5220 | In outline: a module step (ModuleList::Run, Error::ThrowIf) |
+| `0x457c00` | Text::Case457C00 | In outline: a step for values 0x10D to 0x10F |
+| `0x445af0` | SortedTable::Add445AF0 | In outline: a step when an entry is not found (SortedTable::Find8) |
+| `0xba32c0` | Array::ResizeBA32C0 | In outline: resizes a list of 24-byte entries to n |
+| `0xb92c80` | Pair::CompareB92C80 | In outline: compares two pairs (`0xCD5640`) |
+| `0x4a36e0` | Pair::Compare4A36E0 | In outline: the same (another copy) |
+| `0xaa17a0` | Array::ResizeAA17A0 | In outline: resizes a list of 0x2C-byte entries to n |
+| `0x457740` | Table::Fill457740 | In outline: fills a 0x100-entry table |
+| `0xc46810` | Table::ReadCTBL | In outline: reads a block marked "CTBL" (0x4C425443) and a two-byte value (`0xBE5020`) |
+| `0xc25a10` | List::PassC25A10 | In outline: goes over entries (+0xC) that are set |
+| `0xc1cae0` | Table::FillC1CAE0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0xa1ea60` | Record::MakeA1EA60 | In outline: makes a 0xC-byte record (`0xA1D400`) |
+| `0xcb0a20` | ShaderFile::MakeCB0A20 | In outline: a loader step (Loader::PumpC536D0) and a part (0x16) |
+| `0xe00ba0` | Memory::StepE00BA0 | In outline: a step (`0xDFD8F0`, Memory::StepE00920) |
+| `0xc443c0` | Resource::SameC443C0 | In outline: a step when values match (+8) |
+| `0xcc6060` | Model::MakeCC6060 | In outline: makes 64-byte and four-byte entry arrays for a model's parts (+0x24) |
+| `0x9d4140` | Text::Make9D4140 | In outline: makes a text record |
+| `0x9738e0` | SortedPointers::Step9738E0 | In outline: a step when a first entry is not found (SortedPointers::FindFirst) |
+| `0x46b750` | System::Version46B750 | In outline: reads the Windows version (GetVersionExA) and acts on versions above 3 |
+| `0xcebe40` | Array::GrowCEBE40 | In outline: grows a list of 0x70-byte entries to hold n |
+| `0xce78e0` | Array::GrowCE78E0 | In outline: the same (another copy) |
+| `0x4d01a0` | Array::Grow4D01A0 | In outline: grows a list of 0x2C-byte entries to hold n |
+| `0x483864` | Text::Compare483864 | In outline: compares characters |
+| `0xcedc50` | Shapes::FlagCEDC50 | In outline: a step for a part that is on (+0x50) |
