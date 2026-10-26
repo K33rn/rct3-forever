@@ -476,3 +476,17 @@
 | `0x717400` | Path::Check717400 | In outline: checks a path piece's parts (+0x214) over the terrain (a 90 by 90 grid) |
 | `0xab1f20` | Fence::HeightAB1F20 | In outline: a border piece's height by its kind (+0x120: 2, ...) over the terrain |
 | `0x83a160` | Scenery::Footprint83A160 | In outline: works out a scenery item's footprint (Placement::Footprint) for kinds 3, 5 and 7 (not 1, 2, 6, 8), from its cells (`0x838B60`, `0x838AC0`) |
+| `0x9485c0` | Water::Grow9485C0 | In outline: grows the shared water list (`0x133A2E4`, `0x940800` with 0x100) and adds the pieces given over the terrain |
+| `0x492350` | Terrain::FlatEnough | In outline: whether a terrain cell is flat enough: its height range (Terrain::CellHeightRange) within a limit |
+| `0x4b1ec0` | Shop::Update4B1EC0 | In outline: goes over a shop's people when not flagged (+0x3C4), checking each (Get_+0x20, `0x4AB750`) |
+| `0x7abef0` | Person::Route7ABEF0 | In outline: another route finder like Person::Route7AB810 (PathManager, `0x71B370`, `0x7A6A40`) |
+| `0x720a20` | Path::Slope720A20 | In outline: a path cell's slope from its height range (Terrain::CellHeightRange) |
+| `0x8b6a80` | SceneryBehaviour::Aim8B6A80 | In outline: another scenery behaviour aim like SceneryBehaviour::Aim8B79C0, without a slot (+0xDC = -1) |
+| `0x719080` | Path::Tool719080 | In outline: a path tool's update: refreshes (`0x5F79D0`) and, when on (+0x114) and not flagged (+0x298, +0x2DC), acts (`0x717260`) |
+| `0x417180` | Regions::Set417180 | In outline: sets a region's value by its kind (the high 16 bits, 1 to 8) |
+| `0xa8a6c0` | PoolComplex::PartsA8A6C0 | In outline: goes over a pool complex's parts (Table30::Entry) counting them (`0xA893B0`) |
+| `0x714910` | Path::PlaceAtMouse | In outline: places a path piece at the ground under the mouse (MainCamera::Get, `0xCD79C0`), or the plain way (`0x713460`) |
+| `0x678f10` | Scenery::Range678F10 | In outline: goes over a range of entries checking flag 1 (+0x94) by its mode (bits 0x60 = 0x40) |
+| `0x5bb490` | Ride::Count5BB490 | In outline: counts a thing by kind (Counts::AddByKind) and, unless it passes a check (`0xBC4200`), compares its slot (+0x1FC) when not flagged (+0x201) |
+| `0xab57a0` | PoolComplex::LinkAB57A0 | In outline: links a pool piece (`0xAAF2E0`) when not flagged (+0x168) |
+| `0x8e2c50` | Terrain::Edit8E2C50 | In outline: a terrain edit when a value changed (+0xFC vs +0xF4), by its flags (+0x1C, +0x1D) |

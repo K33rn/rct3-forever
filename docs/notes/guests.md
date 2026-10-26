@@ -156,3 +156,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x75ef80` | Guest::Decide75EF80 | In outline: a guest's choice: finds something (`0x79C0A0`) and checks it (`0x49B610`) |
 | `0x75e0d0` | Guest::Mood75E0D0 | In outline: unless in state 0x10 stage 2, now and then (Random::Ran0, by its rate +0x418) changes a guest's mood when it has more than two of something (+0x120) |
 | `0x776200` | GuestGroup::HoldHands | In outline: makes a hold-hands route for a group (HoldHandsRouteController) and starts it (`0x7E5190` on +0x198) when it has at least two members |
+| `0xa27600` | Guest::MoveA27600 | In outline: moves a guest by a time (`0x752680`) and, in state 10 with a target (+0x1C0), checks it |
+| `0x7acca0` | Guest::RideChoice7ACCA0 | In outline: a guest's choice of the first attraction of a kind (AttractionInstance::FirstOf) by what it is linked to |
+| `0x7ad360` | Guest::RideChoice7AD360 | In outline: another choice by the first attraction (AttractionInstance::FirstOf) and its state (`0x7AAD50`, not 2) |

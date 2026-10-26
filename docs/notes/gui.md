@@ -710,3 +710,8 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x681810` | Window::Drag681810 | In outline: when a drag has moved far enough, moves a window to whole pixels and checks its children (Window::ForEachChild) |
 | `0x654840` | Window::Build654840 | In outline: builds a window from the shared title `0x12F802C` |
 | `0xb433a0` | Window::BuildB433A0 | In outline: builds a window from the shared title `0x13CE99C` |
+| `0xba89a0` | Window::BuildBA89A0 | In outline: builds a window from the shared title `0x13D0618` |
+| `0x65a2d0` | Window::Build65A2D0 | In outline: builds a window from the shared title `0x12F809C` |
+| `0xae2100` | Graph::DrawAE2100 | In outline: draws a graph's frame (`0x6ACE50`), its lines (`0x694FB0`) and five marks (`0x695E80`) |
+| `0x597760` | AttractionPerson::Link597760 | In outline: another attraction person link like AttractionPerson::Link587D00 |
+| `0xa9ac20` | Window::BuildA9AC20 | In outline: builds a window from the shared title `0x13CDFCC` |

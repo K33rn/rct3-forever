@@ -488,3 +488,12 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x978970` | Particles::Draw978970 | In outline: draws particles for the current device (ForCurrent(3)), each by its fade (+0x8C, between 0 and 1) |
 | `0x811280` | Shadows::View811280 | In outline: sets up a shadow view with an orthographic matrix (Matrix::Ortho, 1 to 1000) by its kind (0, 1, 2), with `0x466660` |
 | `0x425d40` | Sky::Colour425D40 | In outline: works out a sky colour (`0x9FBED0`) kept at most 1 and packed into a colour value |
+| `0xbf3ba0` | Texture::ConvertBF3BA0 | In outline: converts a texture's pixels for the sizes 0x40, 0xC0 and 0x100, giving 0 for others |
+| `0xbf2880` | Text::DrawBF2880 | In outline: another text draw with an alpha kept between 0 and 255 |
+| `0x9acb70` | Fireworks::SourceAt | In outline: points a firework's particle source along its direction (Matrix::LookAlongZSide, ParticleSource::SetPosition) when not flagged (+0xFC) |
+| `0x946fc0` | Water::Find946FC0 | In outline: finds the water pieces with the id given (+0x3C) and gathers them (`0x926200`, `0x90F8F0`) |
+| `0xbf2290` | Text::DrawBF2290 | In outline: another text draw with an alpha kept between 0 and 255 |
+| `0x4992d0` | Shapes::Draw4992D0 | In outline: draws a shape (`0x499160`) for the current device (ForCurrent(3)) along its direction |
+| `0x9fbf40` | Fireworks::Face9FBF40 | In outline: turns a firework part to face the camera (MainCamera::Get), normalising the ways |
+| `0xc01ba0` | Device::HandleC01BA0 | In outline: handles a device message by its kind (low byte of +0x24: 0x12, ...) when on (`0x10F2EC4`) and with more than three entries (+0x128) |
+| `0x90cae0` | Water::DrawFlagged90CAE0 | In outline: draws the flagged water parts (+0x4C, count +0x54) for the current device (ForCurrent(3)) |

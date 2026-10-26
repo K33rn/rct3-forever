@@ -131,3 +131,7 @@
 | `0xb48c10` | WildAnimal::MoveB48C10 | In outline: moves an animal when not flagged (+0x1C, +0x24) and the move is long enough |
 | `0xb04ae0` | Animal::UpdateB04AE0 | In outline: goes over an animal's parts while not flagged (+0x220, +0x2DC), with a case for +0x2D4 |
 | `0xb1ca90` | Animal::TargetB1CA90 | In outline: unless in mode 1 (+0xC1), activates an animal and finds its target (`0xB856E0` on +0x60) |
+| `0xb59de0` | Animal::AimB59DE0 | In outline: when flagged (+0x40), turns an animal toward its target (`0xB587A0`, `0xB567F0`) |
+| `0x494960` | WildAnimal::PathCheck | In outline: the cell-by-cell path check used by WildAnimal::PathClear: sets up the cells between two points (`0x491E30`) and checks each on the terrain (a 90 by 90 grid) |
+| `0xb3c980` | WildAnimal::MakeCarcass | In outline: makes a carcass (a 0xC0-byte Carcass) where a wild animal is (WildAnimal::Interface60) |
+| `0xb2da50` | WildAnimal::SetupB2DA50 | In outline: another animal setup like WildAnimal::SetupB2DE20 (terrain, enclosures) |

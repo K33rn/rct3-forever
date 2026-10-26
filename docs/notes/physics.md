@@ -210,3 +210,5 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x8bbef0` | Ray::Triangle8BBEF0 | In outline: whether a ray meets a triangle: its distance and barycentric values (each at least 0, adding to under 1) |
 | `0x7c6e70` | Camera::Blend7C6E70 | In outline: points a camera along a direction (Matrix::LookAlongZSide) and blends it by a time factor (`0xCC5C80`) when close |
 | `0xbbd970` | Track::FrameBBD970 | In outline: a track point's frame: normalises its direction and points along it (Matrix::LookAlongZ, `0xBEE0C0`) |
+| `0xbee8c0` | Vertices::TransformBEE8C0 | In outline: transforms a list of vertices by a matrix in a loop (used for track meshes) |
+| `0xbc8110` | Object::HitBC8110 | In outline: a hit test on an object (Object::HitTestBC7940 within 0.5) and, when it hits, the facing (`0xBC5D50`) for kinds 1 and 3 |

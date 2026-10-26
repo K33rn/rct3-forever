@@ -1532,3 +1532,9 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x4189a0` | List::Refresh4189A0 | In outline: goes over a list refreshing its entries (`0x417A20`) |
 | `0xbf5f20` | Models::UpdateBF5F20 | In outline: goes over a list of models updating the ones not flagged (+0xED) whose value is 0 (`0xBF5D00`) |
 | `0x7bcf20` | Loader::Read7BCF20 | In outline: opens and reads a resource by name (`0xBDAC20`) |
+| `0x419510` | Regions::Rebuild419510 | In outline: releases and rebuilds a set of regions (`0xBE79B0`) over a list, from their first and last entries |
+| `0x497300` | Save::Flush497300 | In outline: when its buffer is full (+0x810 vs +0x814), writes it out (SaveWriter::Finish) in parts of up to 0x400 bytes |
+| `0xa38ae0` | List::UpdateA38AE0 | In outline: sets up (`0xA36B40`) and goes over a list updating the entries not flagged (+0x18) that pass a check (`0xA364A0`) |
+| `0xcad190` | Loader::OpenCAD190 | In outline: another resource open like Loader::OpenCAC5A0 (Object69E with 0x84) |
+| `0xc42c30` | Overlay::ReadDebug | In outline: reads an overlay file's debug data (OverlayFile::ReadDebugData) after setting up (`0xC429E0`) and finishes its buffer (SaveWriter::Finish) |
+| `0x7314b0` | Names::Unique7314B0 | In outline: another unique name maker like Names::Unique731970 |
