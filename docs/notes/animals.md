@@ -775,3 +775,48 @@
 | `0xb01b80` | Animal::ToggleB01B80 | Turns a flag (+0x228) on or off and acts |
 | `0x9b3dc0` | Window::Bind9B3DC0 | In outline: sets the object it shows (+0xD4) and acts |
 | `0xacfcb0` | Animal::PointACFCB0 | In outline: a step with a point 2 high |
+| `0xaa08e0` | Animals::PassAA08E0 | In outline: goes over entries (+0x34) |
+| `0xaa0840` | Animals::PassAA0840 | In outline: goes over entries (+0x34) |
+| `0xb89610` | Animals::PassB89610 | In outline: goes over entries (+0x64) |
+| `0xa893b0` | Animals::PassA893B0 | In outline: goes over entries (+0xD0) |
+| `0xa30860` | Animals::MakeA30860 | In outline: makes a 0x10-byte part |
+| `0xae17b0` | Animals::PassAE17B0 | In outline: goes over entries (+0x4C) |
+| `0xb6b5c0` | Animals::MakeB6B5C0 | In outline: makes a 0x10-byte part |
+| `0xb24620` | WildAnimal::ResetB24620 | In outline: clears a value (+0x94) and acts with a part (+0xD0) |
+| `0xa8dfe0` | Animal::FindA8DFE0 | In outline: a find in a list |
+| `0xb11c70` | Animal::CountB11C70 | In outline: a step when a count passes (Animal::CountB117E0) |
+| `0xa64760` | Animal::SetA64760 | In outline: sets a value (+0x1F4) and acts with a shared object (`0x13429A8`) |
+| `0xa46fa0` | Window::PartA46FA0 | In outline: a step when its part (+0x124) is its own storage (+0x130) |
+| `0xb89570` | Animal::PassB89570 | In outline: goes over entries (+0x64) |
+| `0xb81bb0` | Animal::StepB81BB0 | In outline: a step with a value |
+| `0xb24190` | WildAnimal::FindB24190 | In outline: a find in a list |
+| `0xaaa5f0` | PoolComplex::FindAAA5F0 | In outline: the same (another copy) |
+| `0xa82180` | Animal::SlotA82180 | In outline: a value for a part's slot (+0xD8 +0x174) under a count (+0xE0) |
+| `0xa820e0` | Animal::SlotA820E0 | In outline: the same (another copy) |
+| `0xa341e0` | Animal::SharedA341E0 | In outline: when a part is on (+0xD4 +0x238), a step with the shared object's list (`0x12F4E4C`) |
+| `0xb9baf0` | Animal::FindB9BAF0 | In outline: a find in a list |
+| `0xadf440` | Animal::SetADF440 | In outline: sets a value (+0xB4) and acts by its sign |
+| `0xa5d540` | Animal::FindA5D540 | In outline: a find in a list |
+| `0xa53b80` | Window::FindA53B80 | In outline: the same (another copy) |
+| `0xb55e90` | Animal::SharedB55E90 | In outline: a value with a shared object (`0x13429A8`), none handled |
+| `0xb29720` | WildAnimal::InitB29720 | In outline: fills a record from an object and its arguments |
+| `0xa6fbc0` | Animal::InitA6FBC0 | In outline: sets up a record with its table (`0xF8F988`) |
+| `0xaaa500` | PoolComplex::MakeAAA500 | In outline: makes a record (Record::Make7CD120) |
+| `0xaa0ce0` | PoolComplex::FindAA0CE0 | In outline: whether a find passes (PoolComplex::FindA9F360) |
+| `0xb99880` | Animal::TimeB99880 | In outline: takes n from a time (+0x58) and acts |
+| `0xaba690` | PoolComplex::StepABA690 | In outline: when on (+0xE8), a step |
+| `0xb5d5d0` | Animal::PartB5D5D0 | In outline: a step with an object's part (+0x88) |
+| `0xb53f10` | Animal::AssignB53F10 | In outline: copies another record when it differs |
+| `0xaf8f10` | Animal::StepAF8F10 | In outline: a step with a work buffer |
+| `0xa6bd00` | Animal::CountA6BD00 | In outline: a step with a count, past a limit (+0x50) handled |
+| `0xb90ab0` | Animal::StepB90AB0 | In outline: a step with many values |
+| `0xafb000` | Animal::ReleaseAFB000 | In outline: with a count (+0x4C) and a part (+0x40), a step (slot 0xC) |
+| `0xac3ee0` | List::AddAC3EE0 | In outline: grows a list by 16 when full (Array::Resize5501E0) and adds |
+| `0xa457a0` | Window::ValueA457A0 | In outline: a step with a value (`0xA45110`) |
+| `0xb948c0` | Animal::ByteB948C0 | In outline: a step with a byte (+0x139) |
+| `0xb91730` | Animal::CaseB91730 | In outline: for kind 0x11 with a value, a step |
+| `0xb4b4b0` | WildAnimal::ListB4B4B0 | In outline: a step with a list (+8, +0xC) |
+| `0xaf7980` | Animal::ReleaseAF7980 | In outline: with a count (+0x14) and a part (+8), a step (slot 0xC) |
+| `0xae5ca0` | Animal::PassAE5CA0 | In outline: goes over entries (+4) |
+| `0xaa2590` | PoolComplex::CheckAA2590 | In outline: a step when a check passes (Animal::CheckA7C440) |
+| `0xa1d330` | Bird::PartA1D330 | In outline: a step with a part (+0xB4) |

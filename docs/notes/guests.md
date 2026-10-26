@@ -243,3 +243,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7cfa20` | Person::SetState7CFA20 | In outline: sets a person's state to 0x102 with 4 and acts |
 | `0x7cfbe0` | Person::SetState7CFBE0 | In outline: the same with other values |
 | `0x7ce670` | Person::Check7CE670 | In outline: with no part (+0x30C), a check |
+| `0x7cfe30` | Person::SetState7CFE30 | In outline: sets a person's state to 0x102 with 1 and a value to 0x11F (+0xB8) |

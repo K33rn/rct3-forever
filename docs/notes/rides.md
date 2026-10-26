@@ -1006,3 +1006,67 @@ Tracked rides, flat rides and their cars and trains.
 | `0x58aef0` | Ride::Last58AEF0 | In outline: a step (`0x58A7A0`) and the last 0x24-byte entry |
 | `0x59db10` | Ride::Check59DB10 | In outline: a check when not flagged (+0x84) |
 | `0x4c59f0` | Shop::Interface4C59F0 | In outline: a step with a value from an interface (Interface60::Get, +0xBC) |
+| `0x501b50` | Rides::Init501B50 | In outline: sets up a record with its table (`0xF368B0`) |
+| `0x563600` | Rides::Pass563600 | In outline: goes over entries (+0xC4) |
+| `0x563560` | Rides::Pass563560 | In outline: goes over entries (+0xC4) |
+| `0x5634c0` | Rides::Pass5634C0 | In outline: goes over entries (+0xC4) |
+| `0x563420` | Rides::Pass563420 | In outline: goes over entries (+0xC4) |
+| `0x5a46f0` | Rides::Pass5A46F0 | In outline: goes over entries (+0x6B0) |
+| `0x5d6d40` | Rides::Check5D6D40 | In outline: a value when not flagged (+0x68) |
+| `0x5d6ca0` | Rides::Check5D6CA0 | In outline: a value when not flagged (+0x68) |
+| `0x5d6c00` | Rides::Check5D6C00 | In outline: a value when not flagged (+0x68) |
+| `0x5d6a20` | Rides::Check5D6A20 | In outline: a value when not flagged (+0x68) |
+| `0x5d6980` | Rides::Check5D6980 | In outline: a value when not flagged (+0x68) |
+| `0x5d68e0` | Rides::Check5D68E0 | In outline: a value when not flagged (+0x68) |
+| `0x4b9c20` | Rides::Make4B9C20 | In outline: makes a 0x10-byte part |
+| `0x5137f0` | Rides::Handle5137F0 | In outline: makes a handle and links it |
+| `0x53ca00` | Rides::Make53CA00 | In outline: makes a 0x10-byte part |
+| `0x534ce0` | Rides::Update534CE0 | In outline: an update when not flagged (+0x21C) |
+| `0x5a3eb0` | Rides::Check5A3EB0 | In outline: a value when not flagged (+0x378) |
+| `0x5122f0` | Rides::Pass5122F0 | In outline: goes over entries (+0x314) |
+| `0x4d4520` | Rides::Update4D4520 | In outline: an update when not flagged (+0x74) |
+| `0x559140` | Rides::Update559140 | In outline: an update when not flagged (+0x34) |
+| `0x5590a0` | Rides::Update5590A0 | In outline: an update when not flagged (+0x18) |
+| `0x563bb0` | Rides::Check563BB0 | In outline: a value when not flagged (+0xF0) |
+| `0x563920` | Rides::Check563920 | In outline: a value when not flagged (+0xF0) |
+| `0x4e0c50` | Rides::Update4E0C50 | In outline: an update when not flagged (+0x4C) |
+| `0x5d1f20` | Rides::Pass5D1F20 | In outline: goes over entries (+0x10) |
+| `0x518490` | Rides::Pass518490 | In outline: goes over entries (+0x7B4) |
+| `0x5c17f0` | Rides::Check5C17F0 | In outline: a value when not flagged (+0xAC) |
+| `0x59f320` | Rides::Make59F320 | In outline: makes a 0xC-byte part |
+| `0x5d6b60` | Rides::Pass5D6B60 | In outline: goes over entries (+0xF8) |
+| `0x5daa80` | TrackedRide::Check5DAA80 | In outline: a step when a check fails (`0x5657D0`) |
+| `0x584ce0` | Ride::Find584CE0 | In outline: a find, -1 when none (Offset138) |
+| `0x5124b0` | Car::Step5124B0 | In outline: a step with many values |
+| `0x4f6c10` | Ride::Cost4F6C10 | In outline: with a part (+0x614), the track editor's auto-complete cost (TrackEditor::AutoCompleteCost) |
+| `0x5f2560` | Ride::Value5F2560 | In outline: a value with a large start (1e6) |
+| `0x5d2020` | TrackPiece::Handle5D2020 | In outline: a step with a handle (`0xF3F6B8`) |
+| `0x5bd670` | TrackPiece::Check5BD670 | In outline: unless its owner is flagged (bit 0x10 of +0x18), a step |
+| `0x5446a0` | Window::Part5446A0 | In outline: a step (Window::Slot48Self) and acts with a part (+0x140) |
+| `0x5d71c0` | TrackPiece::Find5D71C0 | In outline: a find in a list |
+| `0x4cef50` | Shop::Copy4CEF50 | In outline: copies a record from another |
+| `0x4cdc10` | Shop::List4CDC10 | In outline: a step with a list (+0x64) |
+| `0x50b130` | Car::Count50B130 | In outline: with no entries (+0x2C) and n positive, a step with a list (+0x28) |
+| `0x5d5690` | TrackPiece::Part5D5690 | In outline: with a part (+8), a step |
+| `0x5d55f0` | TrackPiece::Part5D55F0 | In outline: the same (another copy) |
+| `0x5cfc40` | TrackedRide::Byte5CFC40 | In outline: goes over a byte count (+0x30) |
+| `0x4cd6e0` | Shop::Pass4CD6E0 | In outline: goes over a list (+0x64) |
+| `0x5be020` | TrackPiece::Same5BE020 | In outline: whether two pieces have the same values (+0x64, +0x68) |
+| `0x54c410` | Ride::List54C410 | In outline: a step with a list (+0x78) |
+| `0x58ae50` | Ride::Point58AE50 | In outline: a step (`0x58A7A0`) and a point |
+| `0x4ca910` | Shop::Part4CA910 | In outline: with a part (+0xD8 +0xC), a step |
+| `0x596450` | Ride::Shared596450 | In outline: a step with the shared object's list (`0x12F4E4C`) |
+| `0x591c20` | Ride::List591C20 | In outline: a step with a list (+0x208) |
+| `0x500940` | Car::List500940 | In outline: a step with a list (+0x7C) |
+| `0x5bbf10` | TrackPiece::Step5BBF10 | In outline: a step (`0x5BC5A0`) and a value (+0x1E0) |
+| `0x5b5440` | TrackedRide::Step5B5440 | In outline: a step, when asked |
+| `0x5a3e10` | TrackedRide::Check5A3E10 | In outline: checks (Ride::Check532BB0, Ride::Check4AA3E0) and acts |
+| `0x58f740` | Ride::Count58F740 | In outline: a count from a part (+0xC, slot 0x10) |
+| `0x5559c0` | Ride::Step5559C0 | In outline: a step with a part (`0x4A1800`) |
+| `0x548f60` | Ride::Part548F60 | In outline: a step with a part (+0x4C) |
+| `0x4efa70` | Ride::Mode4EFA70 | In outline: with a part (+0x7EC) in mode 4 (+0x144), a step |
+| `0x549f20` | Ride::Position549F20 | In outline: a position (Ride::Position549C50) and acts with a part (+0x4C) |
+| `0x548ea0` | Ride::Slot548EA0 | In outline: a slot (Ride::Slot548CF0) and acts with a part (+0x4C) |
+| `0x57ac20` | Ride::Part57AC20 | In outline: a step with a part (+0x194) |
+| `0x549b10` | Ride::Part549B10 | In outline: a step with a part (+0x4C) |
+| `0x4cd910` | Shop::Find4CD910 | In outline: a find over a list (+0x64) |

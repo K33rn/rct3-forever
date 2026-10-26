@@ -1811,3 +1811,26 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6d79e0` | Window::Init6D79E0 | In outline: the same (another copy) |
 | `0x6d83c0` | Window::Init6D83C0 | In outline: the same (another copy) |
 | `0x679ec0` | Window::Empty679EC0 | In outline: empties a text and acts with a part (+0xFC) |
+| `0x6c3440` | Gui::Make6C3440 | In outline: makes a 0x120-byte part |
+| `0x67f0b0` | Gui::Make67F0B0 | In outline: makes a 0x174-byte part |
+| `0x67d4b0` | Gui::Pass67D4B0 | In outline: goes over entries (+0x11C) |
+| `0x6ecf90` | Gui::Make6ECF90 | In outline: makes a 0x18C-byte part |
+| `0x6f5f30` | Window::Find6F5F30 | In outline: a find in a list |
+| `0x6bf490` | Window::Find6BF490 | In outline: the same (another copy) |
+| `0x68efa0` | Window::Find68EFA0 | In outline: the same (another copy) |
+| `0x67aff0` | Window::Mode67AFF0 | In outline: in mode 2 (bits of +0xE4), a check (slot 0xFC) |
+| `0x70ba30` | Window::Uncheck70BA30 | In outline: clears a value (+0x144) and unchecks (Window::SetChecked) |
+| `0x700e90` | Window::List700E90 | In outline: a step with a list (+0x174) |
+| `0x669f00` | Window::Rect669F00 | In outline: takes a rectangle from a part (+0xD8, slot 0x20) and acts |
+| `0x643df0` | Window::List643DF0 | In outline: a step with a list (+0x3C) |
+| `0x685a20` | Window::Set685A20 | In outline: sets a value (+0x174) and a scaled float |
+| `0x659c70` | Window::Pass659C70 | In outline: goes over entries with a work value |
+| `0x642d00` | Window::Pass642D00 | In outline: the same (another copy) |
+| `0x6c20a0` | Window::Size6C20A0 | In outline: a step with its size |
+| `0x6c3be0` | Window::Init6C3BE0 | In outline: clears a record |
+| `0x61c1a0` | Window::Set61C1A0 | In outline: sets a value (+0x28) to minus an object's (+0xFC) and more |
+| `0x700a60` | Window::Part700A60 | In outline: a step with a part's value (+0xE0 +0x114) |
+| `0x632ef0` | AttractionDetails::Tab632EF0 | In outline: when a tab is available (AttractionDetails::TabAvailable), a step by tab |
+| `0x61c000` | Window::Check61C000 | In outline: a step unless asked and not flagged |
+| `0x65f2f0` | Window::Size65F2F0 | In outline: a step with its size |
+| `0x9bb9f0` | Window::Bind9BB9F0 | In outline: sets a value (+0x104) and binds (Window::Bind9B3240) |
