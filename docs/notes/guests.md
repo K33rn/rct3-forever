@@ -242,3 +242,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7cf900` | Person::Reset7CF900 | In outline: steps (Person::Link7CE720, `0x7622D0`, `0x7A9550`) and clears a flag (+0x224) |
 | `0x7cfa20` | Person::SetState7CFA20 | In outline: sets a person's state to 0x102 with 4 and acts |
 | `0x7cfbe0` | Person::SetState7CFBE0 | In outline: the same with other values |
+| `0x7ce670` | Person::Check7CE670 | In outline: with no part (+0x30C), a check |

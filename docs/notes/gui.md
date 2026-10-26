@@ -1772,3 +1772,42 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x825530` | Window::Part825530 | In outline: a step (Window::Slot48Self) and makes a part when none (+0x140) |
 | `0x7aed10` | Toolbar::Children7AED10 | In outline: a step with children (Window::ChildrenSlot2) and `0x8E5910` |
 | `0x6714b0` | Window::Find6714B0 | In outline: a find with none handled |
+| `0x63a0d0` | Gui::Make63A0D0 | In outline: makes a 0x20-byte part |
+| `0x672080` | Gui::Pass672080 | In outline: goes over entries (+0x120) |
+| `0x6dbe80` | Gui::Make6DBE80 | In outline: makes a 0x78-byte part |
+| `0x6db880` | Gui::Make6DB880 | In outline: makes a 0x78-byte part |
+| `0x6db3a0` | Gui::Make6DB3A0 | In outline: makes a 0x78-byte part |
+| `0x6da3f0` | Gui::Make6DA3F0 | In outline: makes a 0x78-byte part |
+| `0x6da280` | Gui::Make6DA280 | In outline: makes a 0x78-byte part |
+| `0x6da110` | Gui::Make6DA110 | In outline: makes a 0x78-byte part |
+| `0x6d9f40` | Gui::Make6D9F40 | In outline: makes a 0x78-byte part |
+| `0x6d9d70` | Gui::Make6D9D70 | In outline: makes a 0x78-byte part |
+| `0x6d9b90` | Gui::Make6D9B90 | In outline: makes a 0x78-byte part |
+| `0x6d9a20` | Gui::Make6D9A20 | In outline: makes a 0x78-byte part |
+| `0x6da560` | Gui::Make6DA560 | In outline: makes a 0x70-byte part |
+| `0x683810` | Gui::Make683810 | In outline: makes a 0x268-byte part |
+| `0x6838c0` | Window::Value6838C0 | In outline: with no part (+0x3C), a step with a value (+0xC4) |
+| `0x6b97c0` | Window::Shared6B97C0 | In outline: once (`0x1305DB0`), makes a 0x164-byte part |
+| `0x68f720` | Window::Point68F720 | In outline: a step with a point |
+| `0x61ed30` | Window::Last61ED30 | In outline: a value from the last entry (+0x110, +0x114) |
+| `0x7f09d0` | Person::Activate7F09D0 | In outline: activates a window (Window::Activate6A4260) and acts |
+| `0x6d58d0` | Window::Pass6D58D0 | In outline: when not flagged (+0x40), goes over entries |
+| `0x680d20` | Window::Draw680D20 | In outline: draws in black with a shared device (`0x1305CF0`, slot 0x3C) |
+| `0x6808f0` | Window::Draw6808F0 | In outline: the same (another copy) |
+| `0x6eab20` | Window::Rect6EAB20 | In outline: takes a rectangle from a part (+0xE4) and acts |
+| `0x6bf900` | Window::Copy6BF900 | In outline: copies values from another |
+| `0x64a320` | Window::Info64A320 | In outline: a step with an info text (Info::Text7C8700) |
+| `0x5fc960` | Window::Flag5FC960 | In outline: sets a flag (Window::Flag6ABC90) and acts |
+| `0x6ff1e0` | Window::Part6FF1E0 | In outline: with a part (+0xD8), a step |
+| `0x6d92b0` | Window::Init6D92B0 | In outline: fills a record from an object and its arguments |
+| `0x6d8da0` | Window::Init6D8DA0 | In outline: the same (another copy) |
+| `0x6d8a50` | Window::Init6D8A50 | In outline: the same (another copy) |
+| `0x6d8250` | Window::Init6D8250 | In outline: the same (another copy) |
+| `0x6d80e0` | Window::Init6D80E0 | In outline: the same (another copy) |
+| `0x6d7f70` | Window::Init6D7F70 | In outline: the same (another copy) |
+| `0x6d7e10` | Window::Init6D7E10 | In outline: the same (another copy) |
+| `0x6d7cb0` | Window::Init6D7CB0 | In outline: the same (another copy) |
+| `0x6d7b50` | Window::Init6D7B50 | In outline: the same (another copy) |
+| `0x6d79e0` | Window::Init6D79E0 | In outline: the same (another copy) |
+| `0x6d83c0` | Window::Init6D83C0 | In outline: the same (another copy) |
+| `0x679ec0` | Window::Empty679EC0 | In outline: empties a text and acts with a part (+0xFC) |

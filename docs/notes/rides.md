@@ -967,3 +967,42 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4c7420` | Shop::Update4C7420 | In outline: an update when not flagged (+0x58) |
 | `0x5d08a0` | TrackPiece::Init5D08A0 | In outline: fills a record from its arguments |
 | `0x4d3390` | Shop::Handle4D3390 | In outline: a step (`0x4D2C10`) and a handle (Handle::For) |
+| `0x563870` | Rides::Pass563870 | In outline: goes over entries (+0xC4) |
+| `0x5a4d10` | Rides::Pass5A4D10 | In outline: goes over entries (+0x6B0) |
+| `0x501fc0` | Rides::Make501FC0 | In outline: makes a 0x268-byte part |
+| `0x5d6de0` | Rides::Pass5D6DE0 | In outline: goes over entries (+0xE8) |
+| `0x5d6ac0` | Rides::Pass5D6AC0 | In outline: goes over entries (+0xE8) |
+| `0x55ac90` | Rides::Handle55AC90 | In outline: makes a handle and links it |
+| `0x4b9cc0` | Rides::Make4B9CC0 | In outline: makes a 0x10-byte part |
+| `0x5dba20` | TrackedRide::Make5DBA20 | In outline: makes a part |
+| `0x5a3d60` | TrackedRide::Value5A3D60 | In outline: a value when not flagged (+0x378) |
+| `0x59c8d0` | Ride::Tool59C8D0 | In outline: goes over entries with the current tool |
+| `0x557dc0` | Ride::Pass557DC0 | In outline: goes over entries (+0x98) |
+| `0x53b5f0` | Ride::Init53B5F0 | In outline: a step (`0x441060`) and sets up a record with its table (`0xF38A74`) |
+| `0x4e1050` | Ride::Point4E1050 | In outline: a point from a part (+0x270 +0x40, slot 0x1C) |
+| `0x4c3670` | Shop::Check4C3670 | In outline: a check with a part (+0x140, slot 0x3C) |
+| `0x5327b0` | Ride::Mode5327B0 | In outline: 0 unless in mode 2 (+0x70), else a step |
+| `0x4ee950` | Ride::Extent4EE950 | In outline: clears an extent (Extent::Clear) and acts |
+| `0x4aa4f0` | Ride::Value4AA4F0 | In outline: a value when not flagged (+0x3C4) |
+| `0x5301f0` | Ride::Set5301F0 | In outline: sets a value to 1 (+0x118) and acts |
+| `0x51e8c0` | Car::Buffer51E8C0 | In outline: makes an aligned buffer for each entry (+0x7B4) |
+| `0x5cf980` | TrackedRide::Slot5CF980 | In outline: a value from slot n (+0x28) under a count (+0x68) |
+| `0x4f0e80` | Ride::Slot4F0E80 | In outline: a step with slot n (+0x748) |
+| `0x4ef1d0` | Ride::Set4EF1D0 | In outline: a step when a value changes |
+| `0x4f3b90` | Ride::Settings4F3B90 | In outline: sets defaults (Settings5D::Defaults) and acts |
+| `0x4ee810` | Ride::Step4EE810 | In outline: a step (`0x4BBDA0`) and a value (+0x144) |
+| `0x4ee760` | Ride::Step4EE760 | In outline: the same with `0x4BBD80` |
+| `0x4ee6b0` | Ride::Step4EE6B0 | In outline: the same with `0x4BBD60` |
+| `0x5605f0` | Ride::Count5605F0 | In outline: a count (`0xBCD1F0`) |
+| `0x532ca0` | Ride::SetPoint532CA0 | In outline: copies a point into its values (+0x1B4 on) |
+| `0x5d0950` | TrackPiece::Init5D0950 | In outline: copies a list (List::CopyBD1800) and sets up a record with its table (`0xF3D9F4`) |
+| `0x53b850` | Ride::Text53B850 | In outline: makes a text |
+| `0x5be200` | TrackPiece::Set5BE200 | In outline: a step when on-ness (+0x2FC) changes |
+| `0x5376c0` | Ride::Pass5376C0 | In outline: when not flagged (+0x21C), goes over entries |
+| `0x4cd780` | Shop::Pass4CD780 | In outline: goes over a list (+0x64) |
+| `0x4aa670` | Ride::Part4AA670 | In outline: a step with a part (+0xA4) |
+| `0x5c5ee0` | TrackPiece::Step5C5EE0 | In outline: a step with cleared values (Zero6) |
+| `0x58abb0` | Ride::Point58ABB0 | In outline: a step (`0x58A7A0`) and a point |
+| `0x58aef0` | Ride::Last58AEF0 | In outline: a step (`0x58A7A0`) and the last 0x24-byte entry |
+| `0x59db10` | Ride::Check59DB10 | In outline: a check when not flagged (+0x84) |
+| `0x4c59f0` | Shop::Interface4C59F0 | In outline: a step with a value from an interface (Interface60::Get, +0xBC) |

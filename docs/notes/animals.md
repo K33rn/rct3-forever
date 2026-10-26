@@ -732,3 +732,46 @@
 | `0xb32670` | WildAnimal::ParseB32670 | In outline: goes over a C string |
 | `0xafa490` | Animal::PartAFA490 | In outline: with a part (+0x40), a step |
 | `0xa02140` | Fireworks::ListA02140 | In outline: a step with a list (+8, +0xC) |
+| `0xb7c210` | Animals::InitB7C210 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0xb51990` | Animals::TerrainB51990 | In outline: a step when the terrain is not flagged |
+| `0xa41540` | Animals::MakeA41540 | In outline: makes a 0x10-byte part |
+| `0xb55a90` | Animals::TerrainB55A90 | In outline: a step when the terrain is not flagged |
+| `0xba5230` | Animals::MakeBA5230 | In outline: makes a 0x118-byte part |
+| `0xb7b130` | Animals::MakeB7B130 | In outline: makes a 0x70-byte part |
+| `0xbacd80` | Animals::MakeBACD80 | In outline: makes a 0x100-byte part |
+| `0xb53a70` | Animals::MakeB53A70 | In outline: makes a 0xC-byte part |
+| `0xb42850` | Animals::MakeB42850 | In outline: makes a 0x268-byte part |
+| `0xa144a0` | Animals::TerrainA144A0 | In outline: a step when the terrain is not flagged |
+| `0xb896b0` | Animals::PassB896B0 | In outline: goes over entries (+0x64) |
+| `0xa5c8a0` | Animal::CopyA5C8A0 | In outline: copies a shared list (List::CopyBD1800 from `0x1304098`) |
+| `0xa0ddf0` | Bird::AddA0DDF0 | In outline: adds to a slot pool (SlotPool::Add) |
+| `0xb4ae30` | WildAnimal::BitsB4AE30 | In outline: a step with a shared bit table (`0x10F28E8`) |
+| `0xabd410` | Fence::InRectABD410 | In outline: a step when a cell lies inside a rectangle (+0x4C..+0x58) |
+| `0xabd360` | Fence::InRectABD360 | In outline: the same (another copy) |
+| `0xb586f0` | Animal::SetPointB586F0 | In outline: copies a point into its values (+0xD0 on) |
+| `0xb52180` | Animal::PartB52180 | In outline: a step with a part (+0x138) |
+| `0xaa3de0` | PoolPiece::ResetAA3DE0 | In outline: clears a flag and acts with a part (+0xC) |
+| `0xb6cd90` | Animal::BitsB6CD90 | In outline: a count over bits (+0x60) |
+| `0xb5bda0` | Effect::StepB5BDA0 | In outline: a step with a work buffer |
+| `0xba9390` | Track::CheckBA9390 | In outline: a check with a part (+0x40, slot 0x3C) |
+| `0xba52d0` | Track::MakeBA52D0 | In outline: with no part (+0x50), makes a 16-byte one |
+| `0xb11270` | Animal::CompareB11270 | In outline: compares two texts (Text::CompareCD5150) |
+| `0xabedb0` | Fence::StepABEDB0 | In outline: steps (`0x7CBF50`) on two halves of a record |
+| `0xa08990` | Bird::ModeA08990 | In outline: with a part (+0x12C) in mode 1, a step (`0xA06E30`) |
+| `0xabb850` | PoolComplex::ColoursABB850 | In outline: when on (+0xE8), colours (PoolComplex::ColoursAB6050) |
+| `0xa8ab50` | Animal::CaseA8AB50 | In outline: a check by case |
+| `0xa1ee70` | Bird::RefA1EE70 | In outline: adds one to a count (+0x20) and acts |
+| `0xa1edc0` | Bird::RefA1EDC0 | In outline: the same (another copy) |
+| `0xb59c20` | Animal::ModeB59C20 | In outline: in mode 2 (+0x138), sets it to 0 and acts |
+| `0xb45270` | WildAnimal::UpdateB45270 | In outline: an update when not flagged (+0x74) |
+| `0xa45700` | Window::ValueA45700 | In outline: a step with a value (`0xA45570`) |
+| `0xa35ee0` | Animal::InfoA35EE0 | In outline: a step with an info text (Info::TextA30980) |
+| `0xb24740` | WildAnimal::SharedB24740 | In outline: a step with shared values (`0x1301A74`, `0x1300C20`) |
+| `0xa622a0` | Animal::AngleA622A0 | In outline: when a value is far enough from 1, an angle step (Animal::AngleA61DC0) |
+| `0xb9a6c0` | Animal::CountB9A6C0 | In outline: for a positive count, a step |
+| `0xa2e810` | Animal::RefA2E810 | In outline: adds one to a count (+0x2C) and acts |
+| `0xb7bf00` | Animal::CheckB7BF00 | In outline: a check when not flagged (+0x90) |
+| `0xb12140` | Animal::MakeB12140 | In outline: makes a part |
+| `0xb01b80` | Animal::ToggleB01B80 | Turns a flag (+0x228) on or off and acts |
+| `0x9b3dc0` | Window::Bind9B3DC0 | In outline: sets the object it shows (+0xD4) and acts |
+| `0xacfcb0` | Animal::PointACFCB0 | In outline: a step with a point 2 high |

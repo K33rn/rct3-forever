@@ -2748,3 +2748,63 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbe5720` | Shared::MakeBE5720 | In outline: once (`0x13D0E78`), makes a 0x40-byte record |
 | `0x9d0ce0` | Ref::Assign9D0CE0 | In outline: takes a reference to another's part when it differs |
 | `0x9c5660` | Record::Copy9C5660 | In outline: copies a record from another |
+| `0xc57950` | Engine::MakeC57950 | In outline: makes a 0x10-byte part |
+| `0x41ca00` | Engine::Make41CA00 | In outline: makes a 0x10-byte part |
+| `0x410610` | Engine::Handle410610 | In outline: makes a handle and links it |
+| `0x438a70` | Engine::Make438A70 | In outline: makes a 0x10-byte part |
+| `0xcd2470` | Engine::MakeCD2470 | In outline: makes a 0x10-byte part |
+| `0xcb7230` | Engine::PassCB7230 | In outline: goes over entries (+0x50) |
+| `0xc57760` | Engine::MakeC57760 | In outline: makes a 0x10-byte part |
+| `0xc56e60` | Engine::MakeC56E60 | In outline: makes a 0xF8-byte part |
+| `0xcd2520` | Engine::MakeCD2520 | In outline: makes a 0x10-byte part |
+| `0xcafbd0` | Engine::MakeCAFBD0 | In outline: makes a 0x10-byte part |
+| `0xc008d0` | Engine::PassC008D0 | In outline: goes over entries (+0x164) |
+| `0xcd3230` | Text::CompareCD3230 | In outline: compares two-byte texts |
+| `0xcd2fc0` | Text::CompareCD2FC0 | In outline: compares C strings |
+| `0xcd2f10` | Text::CompareCD2F10 | In outline: the same (another copy) |
+| `0xc5d840` | Window::StepC5D840 | In outline: a step (slot 0x74) with a point |
+| `0xc0bc90` | Text::CaseC0BC90 | In outline: for a kind between 8 and 0x1C, a step |
+| `0xbee5b0` | Vector::StepBEE5B0 | In outline: scales a point (Vector::ScaleBEE2C0) and more |
+| `0x475260` | Math::Step475260 | In outline: rounds (Math::Round) and acts with a shared value (`0x12F00B4`) |
+| `0xbdc9b0` | VertexDeclaration::StepBDC9B0 | In outline: with no part (+0xC) and a count, a step (slot 0xF8) |
+| `0xbd5250` | Device::ValueBD5250 | In outline: a value from the device (slot 0xB4) |
+| `0xb78c20` | Ref::ReleaseB78C20 | In outline: takes one from a count (+8) and acts |
+| `0x446360` | Record::Init446360 | In outline: sets up a record with its table (`0xF28EA8`) |
+| `0xc5e300` | Window::ScaleC5E300 | In outline: a step (slot 0x70) with a value scaled by a shared value (`0x13E6D00` +0x194) |
+| `0xcefdd0` | Shapes::EntryCEFDD0 | In outline: a value for entry n (16 bytes) |
+| `0x45b190` | Record::Copy45B190 | In outline: copies a record from another |
+| `0x430f70` | Sky::Entry430F70 | In outline: for entry n (0x30 bytes) under a count (+0x4C), a step |
+| `0xcb69e0` | ShaderFile::ReadCB69E0 | In outline: reads four-byte values (ShaderFile::Read) |
+| `0xca5a10` | Table::CheckCA5A10 | In outline: a step when n is outside a range (+0x38, +0x3C) |
+| `0x454c00` | Device::Step454C00 | In outline: a step with the device (slot 0x14 with 1) |
+| `0x454b50` | Device::Step454B50 | In outline: the same (another copy) |
+| `0x42bff0` | Sky::Next42BFF0 | In outline: the next entry while under a count (+0x4C, +0x50) |
+| `0x42bf40` | Sky::Next42BF40 | In outline: the same (+0x40, +0x44) |
+| `0x4185c0` | Effects::Init4185C0 | In outline: sets up a record with its table (`0xF270D8`) and a listener (Listener440) |
+| `0xc62da0` | Window::CaseC62DA0 | In outline: a step by kind, 8 handled |
+| `0xc1c220` | Resource::PartC1C220 | In outline: with a part (+0x1C), a step |
+| `0xc09a20` | Text::StepC09A20 | In outline: with a part (+4), a step (Get8Then40) |
+| `0xcb2510` | Buffer::SetCB2510 | In outline: sets a size when it changes, 0 handled |
+| `0xc38a10` | Resource::FindC38A10 | In outline: a find over a list (+0x14) |
+| `0xbe8430` | Math::StepBE8430 | In outline: a 64-bit step |
+| `0xbc2ce0` | Track::FreeBC2CE0 | In outline: frees (Memory::FreeCounted) and clears a flag (+0x18) |
+| `0xcc2250` | Ref::ReleaseCC2250 | In outline: takes one from a count (+4) and frees at zero |
+| `0xc3b9e0` | Resource::StepC3B9E0 | In outline: a step with a part's list (+0x6C +0x3C +0x18) |
+| `0xbff310` | Resource::InitBFF310 | In outline: sets up a record with its table (`0xFA5CF0`) |
+| `0xbe86f0` | Resource::InitBE86F0 | In outline: sets up a record with its table (`0xFA56D0`) |
+| `0xbbd140` | Track::FindBBD140 | In outline: clears a value (+0x18) and a find (RefList::Find) |
+| `0xba8e00` | Track::CheckBA8E00 | In outline: when not flagged (+0x158), a step with no part |
+| `0x49b780` | Record::Init49B780 | In outline: clears a record |
+| `0x418da0` | Effects::Step418DA0 | In outline: a step with many values |
+| `0xc5d7a0` | Window::StepC5D7A0 | In outline: a step with a part (+0x18, slot 0x78) |
+| `0xc2b8b0` | Resource::PartC2B8B0 | In outline: with a part (+0x24), a step |
+| `0xc167c0` | Resource::CompareC167C0 | In outline: compares two records by a value (+4) |
+| `0xc0bad0` | Parser::MakeC0BAD0 | In outline: makes a part (Parser::Allocate 4, 0x1C) |
+| `0xc0bb70` | Parser::MakeC0BB70 | In outline: makes a part (Parser::Allocate 4, 0x20) |
+| `0xcc29d0` | Shader::SharedCC29D0 | In outline: with no shared value (`0x13F70D8`), a step |
+| `0xc63460` | Window::CheckC63460 | In outline: a check (slot 0x70) |
+| `0xbff010` | Resource::InitBFF010 | In outline: fills a record from its arguments |
+| `0xbd2ed0` | Table::StepBD2ED0 | In outline: a step with many values |
+| `0x44b890` | Effect::Pass44B890 | In outline: goes over entries |
+| `0xc55190` | Device::SharedC55190 | In outline: when not asked and with no shared part (`0x13E6C98`), a step |
+| `0xc0d5a0` | Text::CountC0D5A0 | In outline: 0 for none, else a count |
