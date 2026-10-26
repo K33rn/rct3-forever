@@ -2005,3 +2005,60 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x688230` | Window::Part688230 | In outline: with a part (+0x178 +0xE4), a step (`0x685BA0`) |
 | `0x660630` | Window::Fraction660630 | In outline: a fraction from values |
 | `0x67edf0` | Window::Check67EDF0 | In outline: a step (Window::Slot48Self) and a check (slot 0x10C) |
+| `0x63fe50` | Gui::Init63FE50 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0x6bfb50` | Gui::Pass6BFB50 | In outline: goes over entries (+0x11C) |
+| `0x65f2a0` | Window::Size65F2A0 | In outline: a step with its width plus n |
+| `0x642cb0` | Window::Shared642CB0 | In outline: a step (`0x467A30`) and a shared table (`0x10EEAD4`) |
+| `0x6eed60` | Window::Hit6EED60 | In outline: a step when a point lies inside (Rect::Contains) |
+| `0x6f2490` | Window::Step6F2490 | In outline: a step with many values |
+| `0x6b16f0` | Window::Part6B16F0 | In outline: with a part (+0x44 +4), a step |
+| `0x6809a0` | Window::Centre6809A0 | In outline: a step with half its size |
+| `0x670620` | Window::Width670620 | In outline: a part's width (+0x134) plus more |
+| `0x63d140` | Window::Point63D140 | In outline: a step with a point |
+| `0x63d010` | Window::Free63D010 | In outline: sets its table (`0xF494C0`) and releases a part |
+| `0x639770` | Window::Layout639770 | In outline: in mode 1 (+0x1C), lays out (Window::Layout) |
+| `0x6c80c0` | Window::Count6C80C0 | In outline: a count over entry n (0x20 bytes at +0x30) |
+| `0x6af710` | Window::Init6AF710 | In outline: points a record at itself and sets values |
+| `0x6a1b00` | Window::Value6A1B00 | In outline: a step with two values (slots 0xFC, 0x100) |
+| `0x61ece0` | Window::Console61ECE0 | In outline: when on (+0xF8), opens the message console (MessageConsole::Open) |
+| `0x6e9960` | Window::Slot6E9960 | In outline: for a slot under 8 (+0x50), a step |
+| `0x6b5f40` | Window::Interface6B5F40 | In outline: with an object (`0x130B5C8`), a step |
+| `0x6b2cb0` | Window::Shared6B2CB0 | In outline: goes over entries with a shared value (`0x1305D54`) |
+| `0x6a7a10` | Window::Owner6A7A10 | In outline: a step with its owner's value |
+| `0x683620` | WideString::Grow683620 | In outline: makes a two-byte text unique with room for two more (WideString::MakeUnique) |
+| `0x67bb60` | Window::Part67BB60 | In outline: when flagged (bit 22) with a part's entries (+0x124), a step |
+| `0x670670` | Window::Part670670 | In outline: with a part (+0x58), a step |
+| `0x63a180` | Window::Part63A180 | In outline: with a part (+0x3C), a step |
+| `0x6e8b70` | Window::Find6E8B70 | In outline: a find (Record::Find460E80) and acts |
+| `0x6c8030` | Window::Slot6C8030 | In outline: for a slot under 8 (+0x50), a step |
+| `0x6b1740` | Window::List6B1740 | In outline: a step with a list (+0x40) |
+| `0x6b08f0` | Window::Part6B08F0 | In outline: a part step (Window::Part6AF2E0) and unless flagged (bit 2), more |
+| `0x63d060` | Window::Init63D060 | In outline: sets up a record with its table (`0xF494C0`) and a value |
+| `0x6182b0` | Window::Shared6182B0 | In outline: a step with a shared object's width (`0x12F83F0`) |
+| `0x5f4790` | Window::Set5F4790 | In outline: sets a value (+0xF4) and acts with a part (+0x84) |
+| `0x624990` | Window::Shared624990 | In outline: sets a shared flag (bit 1 of `0x1313C64`) when needed |
+| `0x680ab0` | Window::Ring680AB0 | In outline: a step with a ring buffer's next entry (12 bytes) |
+| `0x6fde90` | Grid::Slot6FDE90 | In outline: with a slot (+0x40), a value |
+| `0x6ad690` | Window::Screen6AD690 | In outline: a screen position (Window::ScreenPosition) and points |
+| `0x6455c0` | Window::Lod6455C0 | In outline: a level-of-detail check (SceneryVisual::CheckLOD) |
+| `0x630d30` | Window::Shared630D30 | In outline: a step (Window::Slot48Self) and with no shared count (`0x1106C54`), more |
+| `0x6b16b0` | Window::Flag6B16B0 | In outline: with a part (+0x3C), a step by a flag (+0x94) |
+| `0x6b1670` | Window::Flag6B1670 | In outline: the same (another copy) |
+| `0x6a1f00` | Window::Flags6A1F00 | In outline: a step by flags (0xC0 of +0x140) |
+| `0x69f1e0` | ListWindow::Count69F1E0 | In outline: sets a count (ListWindow::SetCount) and a step (`0x69EFF0`) |
+| `0x673310` | Window::Check673310 | In outline: 0 for none, else a check |
+| `0x6c3870` | Window::Pass6C3870 | In outline: goes over entries (`0x6C8180` with +0x58) |
+| `0x6a3b60` | Window::Init6A3B60 | In outline: fills a record from its arguments |
+| `0x642860` | Window::Children642860 | In outline: children (Window::ChildrenSlot6) and acts with a part (+0x118) |
+| `0x642700` | Window::Step642700 | In outline: a step (`0x467780`) and acts with no part (+0x124) |
+| `0x640ec0` | Window::Part640EC0 | In outline: a step with a part (+0x44) |
+| `0x61cef0` | Window::Count61CEF0 | In outline: a check with a count (+0x8C) and a part (+0x94) |
+| `0x669d40` | WideString::Add669D40 | In outline: makes a two-byte text unique with room for one more (WideString::MakeUnique) and adds a character |
+| `0x644e90` | Window::Flags644E90 | In outline: sets flags (+0x1B4) and acts by bit 0 |
+| `0x63a8a0` | Window::Layout63A8A0 | In outline: lays out (Window::Layout) and refreshes (Window::Refresh6AFC20) |
+| `0x6bc8b0` | Window::Value6BC8B0 | In outline: a step (Thunk) and a value (+0x70) |
+| `0x6af3e0` | Window::Focus6AF3E0 | In outline: with a first focusable window (Window::FirstFocusable), a step |
+| `0x69b100` | Window::Keyboard69B100 | In outline: a step with the keyboard layout (HKL) |
+| `0x65b470` | Window::Check65B470 | In outline: when a part is not flagged and a check passes (slot 0x10), a step |
+| `0x630780` | Window::Fade630780 | In outline: a rounded fade from a shared object's value (`0x1103B6C` +0x180) |
+| `0x69e950` | Window::Set69E950 | Sets two values (+0xD8, +0xDC) |

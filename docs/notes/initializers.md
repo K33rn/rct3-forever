@@ -937,3 +937,4 @@ and leaves it with `0x46F990`). See the script for how they are recognised.
 | `0xf04520` | Colours::InitF04520 | In outline: sets up a set of shared colours at start-up (Colour::Colour with values like 0x2F,0x43,0x43 and 0x83,0x97,0x97) |
 | `0xee6800` | Init::SharedValuesEE6800 | Sets shared values at start-up (`0x1341A80` on) to 0 and a few fixed small negative numbers |
 | `0xee6c70` | Init::SharedValuesEE6C70 | Sets shared values at start-up (`0x1341B98` on) to 0 and 1.0 |
+| `0xee1010` | Init::SharedEE1010 | In outline: sets a shared value (`0x133A104`) from a scaled one (`0xC21230`) at start-up |
