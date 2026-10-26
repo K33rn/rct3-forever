@@ -4288,3 +4288,269 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc38500` | Resource::PartC38500 | In outline: gives a part's value (+4 +0x10) |
 | `0xc20f90` | Resource::ValueC20F90 | In outline: gives a part's first value (+0x14) |
 | `0xbc3ba0` | Camera::MakeBC3BA0 | In outline: makes a part and a camera step (Camera::StepCDC3B0) |
+| `0x4987a0` | Engine::Init4987A0 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0xcb92e0` | Engine::InitCB92E0 | In outline: sets up a record with its table (`0xFC0E28`) |
+| `0x49cd70` | Engine::Init49CD70 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0x49cd50` | Engine::Init49CD50 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0x407350` | Engine::Copy407350 | In outline: copies values from another record |
+| `0xcba1b0` | Engine::InitCBA1B0 | In outline: sets up a record with its table (`0xFC0AB4`) |
+| `0x48ca00` | Engine::Init48CA00 | In outline: sets up a record with its table (`0xF2E318`) |
+| `0xbd3fd0` | Engine::InitBD3FD0 | In outline: sets up a record with its table (`0xFA5238`) |
+| `0xbd3fc0` | Engine::InitBD3FC0 | In outline: sets up a record with its table (`0xFA5238`) |
+| `0x496a40` | Static::Find496A40 | In outline: a find (Thunk), none handled |
+| `0x468900` | Labels::Array468900 | In outline: makes an aligned buffer of n two-byte entries |
+| `0xce5e80` | SaveWriter::RunCE5E80 | In outline: runs a save writer (SaveWriter::Run) at an offset (Get8Then40) |
+| `0xbd3170` | Device::ResetBD3170 | In outline: clears a value (+0x24) and acts when on (+0x10) |
+| `0xbccaa0` | SaveWriter::RunBCCAA0 | In outline: runs a save writer (SaveWriter::Run) at an offset (Get8Then40) |
+| `0xbc9840` | SaveWriter::RunBC9840 | In outline: the same (another copy) |
+| `0xbc95f0` | SaveWriter::RunBC95F0 | In outline: the same (another copy) |
+| `0xbbdf90` | SaveWriter::RunBBDF90 | In outline: the same (another copy) |
+| `0xbb41f0` | Track::CaseBB41F0 | In outline: a value by case (1, ...) |
+| `0x4414d0` | Effect::Mode4414D0 | In outline: makes a part and a value unless its mode is 1 or 2 (+0x7C) |
+| `0x436d50` | Sky::Device436D50 | In outline: device steps with a part (+0x50, slots 0xA4 with 9, 0xF and 0x50) |
+| `0x40bb10` | Effect::Look40BB10 | In outline: a matrix looking along Z from the side (Matrix::LookAlongZSide) and clears a value (+0x30) |
+| `0x458820` | Folder::Special458820 | In outline: a special folder (Folder::Special458010) |
+| `0x4970b0` | Static::Save4970B0 | In outline: takes one from a count (+0x10) and a text step (Static::Text496F70) |
+| `0x497090` | Static::Save497090 | In outline: a text step (Static::Text496F70) and writes two bytes (SaveWriter::Write) |
+| `0xcef0a0` | Shapes::EntryCEF0A0 | In outline: entry n of a table (+0x34) under a count (+0x2C) |
+| `0xce63e0` | Camera::ResetCE63E0 | In outline: a step with an object (slot 0x24) and a reset (Camera::ResetCE6290) |
+| `0xce63c0` | Camera::ResetCE63C0 | In outline: the same with slot 0x3C |
+| `0xcdb5e0` | Math::PowerCDB5E0 | In outline: a power of two at least n |
+| `0xc5bc90` | Math::ValueC5BC90 | In outline: 0 for zero (sign ignored), else a value |
+| `0xc57430` | Device::CheckC57430 | In outline: a step when a check passes (slot 4) |
+| `0xc43e30` | ShaderFile::ReadAllC43E30 | Whether n bytes could be read (ShaderFile::Read) |
+| `0xc42a40` | Resource::InitC42A40 | In outline: points a record at itself and sets values |
+| `0xc16640` | Resource::FreeC16640 | In outline: frees a buffer (+0xC) and a stream step (Stream::StepC501D0) |
+| `0xbe6880` | Resource::FreeBE6880 | In outline: with more than one entry (+0x32), frees (Memory::FreeCounted) |
+| `0xbdf1a0` | HashTable::GetBDF1A0 | In outline: a value from a find (HashTable::FindBDD290), none handled |
+| `0xbdc910` | VertexDeclaration::FreeBDC910 | Frees a buffer (+4) and clears the pointer |
+| `0xbc6ce0` | Track::SectorBC6CE0 | In outline: a flat length (Track::FlatBC6AA0) and an angle sector (Angle::Sector) |
+| `0xbc0de0` | Track::SetBC0DE0 | In outline: for 0, clears a value (+0x14) |
+| `0xbb21c0` | Track::ClearBB21C0 | In outline: clears 18 values |
+| `0xcef8d0` | Shapes::EntryCEF8D0 | Gives an entry chosen by the high bits of n (list) and the low 20 bits (8-byte index) |
+| `0xce6300` | Camera::ResetCE6300 | In outline: a step with an object (slot 8) and a reset (Camera::ResetCE6290) |
+| `0xcdf1e0` | Loop::SharedCDF1E0 | In outline: gives entry n of a shared table (`0x1400778`) |
+| `0xcdf0f0` | Loop::CheckCDF0F0 | In outline: a check on two values, 1 handled |
+| `0xcc24b0` | Shader::FlagCC24B0 | Sets a shared flag (`0x13F7098`) |
+| `0xcbbdd0` | Shader::FatalCBBDD0 | Prints a message line to the error stream and exits with code 2 |
+| `0xcb5660` | Shader::ValueCB5660 | In outline: when on (+0x1A1), a step (Resource::StepBD6160) |
+| `0xca40e0` | Resource::FreeCA40E0 | In outline: tears down a chain member (ChainMember) and frees when asked |
+| `0xca28e0` | Buffer::FreeCA28E0 | In outline: frees buffers (+0x2C, +0x30) |
+| `0xc50a80` | Stream::FailC50A80 | Reports a stream failure (Stream::Fail) with the last Windows error (GetLastError) |
+| `0xc2f0b0` | Device::FindC2F0B0 | Sets a value (+0x24) from a find (Device::FindC5C990 on +0x14) |
+| `0xc097a0` | Text::FatalC097A0 | Prints a message line to the error stream and exits with code 2 |
+| `0xbfa560` | Device::FindBFA560 | Sets a value (+0x28) from a find (Device::FindC5C7F0 on +8) |
+| `0xbf68c0` | Text::FreeBF68C0 | In outline: sets its table (`0xFA58E8`) and acts when not flagged (+0x14) |
+| `0xbdc140` | VertexDeclaration::FreeBDC140 | Frees a buffer (+4) |
+| `0xbc53b0` | Track::SectorBC53B0 | In outline: a flat length (Vector::FlatBC4E20) and an angle sector (Angle::Sector) |
+| `0xbb59a0` | Track::ValueBB59A0 | In outline: -1 unless the top byte is 3, else a value |
+| `0xbb22f0` | Track::FreeBB22F0 | In outline: for an object, frees it (Track::FreeBB23C0) |
+| `0x4414b0` | Effect::Value4414B0 | In outline: a value (Park::Value4413D0) from n plus m times a fixed scale |
+| `0x4258f0` | Sky::Slot4258F0 | In outline: slot n of a table (+0x34) under a two-byte count (+0x30) |
+| `0x41bf20` | Effects::Value41BF20 | In outline: -1 when a value's high half is under 2, else a value |
+| `0x40bdc0` | Effect::Set40BDC0 | In outline: sets a value (+0xF4) |
+| `0x40bda0` | Effect::Set40BDA0 | In outline: sets a value (+0xF0) |
+| `0x409f10` | Table::Slot409F10 | In outline: slot n (an object's +0xC) of a table (+0x14) under a count (+0x18) |
+| `0xcb0e50` | Shader::InitCB0E50 | Sets its table (`0xFC099C`) and clears a value |
+| `0xc69de0` | Window::PartC69DE0 | In outline: with a part (+0x100), tells it (slot 0xBC) |
+| `0xc66db0` | Window::StepC66DB0 | In outline: tells a part (+0xD0, slot 0x80) and a step (Window::StepC66CD0) |
+| `0xc5c040` | Device::PartC5C040 | In outline: with a part (+0x24), a step |
+| `0xc5bea0` | Device::PartC5BEA0 | In outline: with a part (+0x28), a step |
+| `0xc5be10` | Device::PartC5BE10 | In outline: the same (another copy) |
+| `0xc55090` | Stream::SetC55090 | In outline: sets a value (+0x40) and a stream step (Stream::StepC53530) |
+| `0xc425c0` | Ref::ReleaseC425C0 | In outline: takes one from its part's count and acts |
+| `0xc36d60` | Text::MakeC36D60 | In outline: makes a text (Text::MakeC36BD0) and sets its flag (+0x38) |
+| `0xc321e0` | Ref::ReleaseC321E0 | In outline: takes one from its part's count and acts |
+| `0xbd4490` | Device::CopyBD4490 | Copies two values (+0x50, +0x54 into +0x60, +0x64) |
+| `0xbc5280` | Track::ScaleBC5280 | In outline: a scale check (Track::ScaleBC3FE0) with values |
+| `0xbc4760` | Track::CaseBC4760 | In outline: a value by case (0, ...) |
+| `0xbc2c00` | Track::FreeBC2C00 | Frees a buffer (+0xC) and clears the pointer |
+| `0xbb7a20` | Track::EntryBB7A20 | Gives an entry address from a base (+0x44) and a two-byte index table |
+| `0xba9290` | Track::SlotBA9290 | In outline: with a slot (+4), a value |
+| `0xcc4820` | Shader::GetCC4820 | Gives a value (+0x14) |
+| `0xcc4800` | Shader::GetCC4800 | Gives a value (+0x18) |
+| `0xcc47e0` | Shader::GetCC47E0 | Gives a value (+0x14) |
+| `0xcc47c0` | Shader::GetCC47C0 | Gives a value (+0x10) |
+| `0xcc4780` | Shader::GetCC4780 | Gives a value (+8) |
+| `0xcc4760` | Shader::GetCC4760 | Gives a value (+4) |
+| `0xcc2610` | Shader::GetCC2610 | Gives a value (+8) |
+| `0xcb8360` | Resource::MaxCB8360 | Raises a value (+0x18) to n |
+| `0xc77340` | Device::InitC77340 | Clears a count and points a list at its own storage |
+| `0xc43c40` | Resource::LinkC43C40 | In outline: grows (Array::GrowC43BE0) and links (Resource::LinkBD9D20) |
+| `0xc3b960` | Resource::SharedC3B960 | In outline: with a part (+8), a shared step (Resource::SharedC30FC0) |
+| `0xc3ab60` | Resource::SharedC3AB60 | In outline: the same (another copy) |
+| `0xc0b980` | Parser::MakeC0B980 | In outline: makes a text (Parser::MakeC0AEE0) |
+| `0xbce040` | Memory::AlignedBCE040 | Allocates an aligned block (_aligned_malloc) and adds one to a shared count (`0x13D0D48`) |
+| `0xbc4220` | Track::KindBC4220 | Whether a kind is 4, 5 or 6 |
+| `0xbc4200` | Track::KindBC4200 | Whether a kind is 1, 2 or 3 |
+| `0xbbe610` | Track::FreeBBE610 | Frees a part (+4) and clears the pointer |
+| `0xbb1fb0` | Track::CheckBB1FB0 | In outline: a check over four entries |
+| `0x426770` | Sky::Free426770 | In outline: frees two buffers |
+| `0x41b160` | Effects::Check41B160 | Whether a part is set and on (+0xA4) |
+| `0x41aaf0` | Effects::Green41AAF0 | Gives the green byte of a colour as a float (times a fixed scale) |
+| `0x41aad0` | Effects::Red41AAD0 | Gives the red byte of a colour as a float (times a fixed scale) |
+| `0x40b290` | Effect::Projection40B290 | In outline: when flagged (bit 0 of +0x1A4), a camera projection (Camera::Projection) |
+| `0x488130` | Effect::Part488130 | In outline: with a part (+0x18), a step (slot 4) |
+| `0x46d630` | Labels::Copy46D630 | In outline: gives its part |
+| `0x476930` | Labels::Count476930 | In outline: takes one from a count (+0x68) and acts |
+| `0x46c7a0` | Labels::SetEntry46C7A0 | Sets entry n's value to 2.0 (0x50 bytes at +0x6C, +0x40) |
+| `0x42b7b0` | Sky::Clock42B7B0 | In outline: sets a flag (+0x1C) and takes the clock time (clock) |
+| `0x401000` | ModuleList::Start401000 | In outline: starts the module list (ModuleList::Start) and throws on failure |
+| `0xcc4740` | Shader::GetCC4740 | Gives its first value |
+| `0xca43a0` | Resource::InitCA43A0 | Clears a value and sets its table (`0xFBF578`) |
+| `0xc50110` | Stream::CheckC50110 | In outline: stops in the debugger for a negative size, else a value |
+| `0xc3b790` | Resource::CheckC3B790 | In outline: when a part's count is 1 (+0x28), a value |
+| `0xc383c0` | Resource::LoopC383C0 | In outline: makes a part and a loop (Resource::LoopC37E30) |
+| `0xc1adf0` | Resource::InitC1ADF0 | Sets its table (`0xFAFF20`) and clears a value |
+| `0xc09bd0` | Parser::FreeC09BD0 | In outline: for an object, frees it (Parser::Free) |
+| `0xa2af00` | Window::EntryA2AF00 | In outline: entry n of a table (+0x20) under a count (+0x1C) |
+| `0x45e4f0` | Effect::Value45E4F0 | In outline: -1 for none, else a value |
+| `0x45baa0` | Effect::Call45BAA0 | In outline: a call on a part (+0x2FC) and its own first slot with 1 |
+| `0x42e930` | Sky::Pass42E930 | In outline: a pass (Sky::Pass42E5F0 with 100000, 100000) |
+| `0xcdb930` | Record::InitCDB930 | In outline: clears a record |
+| `0xcc1e60` | Shader::FalseCC1E60 | Gives 0 |
+| `0xcb5900` | Buffer::FreeCB5900 | Frees a buffer and clears the pointer |
+| `0xcb58e0` | Buffer::FreeCB58E0 | The same (another copy) |
+| `0xca68b0` | Record::InitCA68B0 | In outline: clears a record |
+| `0xc43800` | Resource::InitC43800 | In outline: clears a value (+8) and sets up a record |
+| `0xc0a6c0` | Parser::FreeC0A6C0 | In outline: with a part, frees it (Parser::Free) |
+| `0xbda990` | Static::EnsureBDA990 | In outline: makes sure (Static::EnsureC374C0) and a list step (Engine::ListC361E0) |
+| `0xbc60c0` | Track::CaseBC60C0 | In outline: a value by case (1 gives 2, ...) |
+| `0xb7a440` | Animal::CallB7A440 | In outline: with a part (+0x6C), a call (its first slot) |
+| `0xb55f70` | Animal::TakeB55F70 | Takes a part's value (+0x84 +0x24) from a value (+0x110) |
+| `0x9f5750` | Fireworks::Min9F5750 | In outline: minimum values (List::MinimumValues) and makes a part |
+| `0x496b30` | Text::Flag496B30 | In outline: with a shared value (`0x12F469C`), a flag step (Text::FlagC09270) |
+| `0x482860` | Options::Set482860 | In outline: with no shared value (`0x12F460C`), sets an option (Options::SetBool) |
+| `0x4456c0` | Record::Init4456C0 | In outline: clears a record |
+| `0x41ae90` | Effects::Free41AE90 | In outline: sets its table (`0xF27108`) and acts with a part (+4) |
+| `0x41ab10` | Effects::Blue41AB10 | Gives the blue byte of a colour as a float (times a fixed scale) |
+| `0xcb09a0` | Zlib::ValueCB09A0 | In outline: a value from a stream (+0x18 +0x44), -1 handled, less 0x16 |
+| `0xca3840` | GroupedList::MoveCA3840 | In outline: moves across (GroupedList::MoveAcross) by a flag |
+| `0xc2e8c0` | Resource::PartC2E8C0 | In outline: with a part (+0x24), a step |
+| `0xbffca0` | Resource::CheckBFFCA0 | In outline: a check over four entries |
+| `0xbc4810` | Track::CaseBC4810 | In outline: a value by case (1 gives 2, ...) |
+| `0xbb7630` | Track::SignBB7630 | Sets a value (+0x18) to 1 or -1 by a flag |
+| `0xba9470` | Track::PartBA9470 | In outline: with a part (+0xAC), tells it (slot 4 with 0) |
+| `0x468650` | Labels::Compare468650 | In outline: compares four values |
+| `0x468630` | Labels::Compare468630 | In outline: the same (another copy) |
+| `0x42f270` | Sky::Frustum42F270 | In outline: when flagged (bit 1 of +0x1A4), a camera frustum (Camera::FrustumCD69C0) |
+| `0x415240` | Grid::Visible415240 | In outline: a visibility step (Grid::Visible414D20) and a set (`0x685140` with 1) |
+| `0xce6350` | Camera::ResetCE6350 | In outline: a step with an object (slot 0x48) and a reset (Camera::ResetCE6290) |
+| `0xce23e0` | Mesh::SetEntryCE23E0 | Sets a value (+0x38) of entry n's part (+0x18) |
+| `0xcb1020` | Shader::FreeCB1020 | In outline: sets its table (`0xFC099C`) and acts with a part (+4) |
+| `0xc46720` | Record::InitC46720 | Sets a two-byte value to 0xFFFF and clears another |
+| `0xc31480` | Stream::AddC31480 | In outline: adds (Stream::AddC311C0 with -1) |
+| `0xbec370` | Memory::StepBEC370 | In outline: a memory step (Memory::StepBEC1A0) |
+| `0xbe90a0` | Resource::StepBE90A0 | In outline: with no part (+0x40), a step (Resource::StepBE9040) |
+| `0xbb41c0` | Track::KindBB41C0 | Whether a kind is 0, 1 or 5 |
+| `0xc73bd0` | Resource::FreeC73BD0 | In outline: frees (Resource::FreeBE88B0) |
+| `0xc5a8f0` | Math::MaxC5A8F0 | Gives the larger of two floats |
+| `0xbe6380` | Resource::MakeBE6380 | In outline: makes an aligned block of a size (+0x24) pointing back at itself |
+| `0xbd9a70` | Resource::PartBD9A70 | In outline: with a part (+0x24), a value (slot 0xC) |
+| `0xbc3dc0` | Track::KindBC3DC0 | Whether a kind is 5 or 6 |
+| `0xbbe6b0` | Track::PartBBE6B0 | In outline: with a part (+0xC), a pass (Track::PassBBE630) |
+| `0xbb3e50` | Track::KindBB3E50 | Whether a kind is not 1 or 4 |
+| `0x457650` | Math::Clamp457650 | Keeps n between two limits |
+| `0x427910` | Sky::Free427910 | In outline: sets its table (`0xF27CAC`) and removes from a list (List678::Remove) |
+| `0x40a120` | Effect::Activate40A120 | In outline: unless flagged (bit 0 of +0x2C), activates (ManagedObject::Activate) |
+| `0xcc73a0` | Model::ValueCC73A0 | Gives a value (+8) of entry n's part (+8) |
+| `0xcc1400` | Shader::PassCC1400 | In outline: a pass (Shader::PassCC0FF0) |
+| `0xcada50` | Resource::FindCADA50 | In outline: with a part (+0x5C), a find (Resource::FindC3AC00) |
+| `0xca8610` | Parser::InitCA8610 | Sets its table (`0xFBF814`) and a value |
+| `0xc09bb0` | Parser::AllocateC09BB0 | In outline: allocates (Parser::Allocate 4, n) |
+| `0xbf47b0` | Text::InitBF47B0 | Sets its table (`0xFA5898`) and a value |
+| `0xbe84f0` | Math::StepBE84F0 | In outline: a 64-bit step (Math::StepBE8430 with 0) |
+| `0xbcf690` | String::FindLastBCF690 | In outline: finds the last match in a string (String::FindLast) |
+| `0xbcee60` | WideString::FindBCEE60 | In outline: a find in a two-byte text (WideString::Find) |
+| `0x4797c0` | CheckBox::Bind4797C0 | Binds a check box to a shared flag (CheckBox::BindFlag on `0x10EDAB8` entry n) |
+| `0xc052f0` | Device::ResetC052F0 | In outline: a step (slot 0x38) and clears a flag (+0x4C1) |
+| `0xbffd20` | Device::FreeBFFD20 | In outline: sets its table (`0xFA5E00`) and frees a buffer (+4) |
+| `0xbd9a90` | Resource::CallBD9A90 | In outline: with a part (+0x24), a call (slot 0x18) |
+| `0xbd63f0` | Resource::FreeBD63F0 | In outline: sets its table (`0xFA533C`) and frees a buffer (+4) |
+| `0xbd44b0` | Device::SetBD44B0 | Sets a value (+0x50) |
+| `0x45ee50` | Table::ClearSlot45EE50 | Clears slot n of a table (+0x60) |
+| `0x449a40` | Effect::Entry449A40 | Gives the address of entry n (0x40 bytes at +0x1C, +0x10) |
+| `0x43ff10` | Game::Shared43FF10 | In outline: with a shared object (`0x1106C48`), tells it (its first slot with 1) |
+| `0x40c3a0` | Effect::Entry40C3A0 | Gives a value of entry n (0x24 bytes at +0x2C, +0xC) |
+| `0x402cb0` | Static::Copy402CB0 | In outline: copies values |
+| `0xca6f00` | Record::InitCA6F00 | Clears two values |
+| `0xbfd100` | Resource::FreeBFD100 | In outline: sets its table (`0xFA5CA4`) and releases a part (+4, slot 8) |
+| `0xbe9410` | Resource::FreeBE9410 | In outline: sets its table (`0xFA5730`) and releases a part (+4, slot 8) |
+| `0x45b180` | Record::Init45B180 | Clears two values |
+| `0x40be00` | Effect::Entry40BE00 | Gives a value of entry n (0x70 bytes, +0x54) |
+| `0xcd9150` | Camera::StepCD9150 | In outline: a camera step (Camera::StepCD90E0 with 1) |
+| `0xcada40` | Resource::ValueCADA40 | In outline: with a part (+0x5C), a value |
+| `0xca68d0` | Table::SizeCA68D0 | Gives a size from a count (+8) times 8 less a value plus another |
+| `0xc6f3c0` | Device::InitC6F3C0 | In outline: sets up a record (Record::Init4548D0) |
+| `0xc09300` | TextRef::AssignC09300 | In outline: assigns a text reference (TextRef::Assign) |
+| `0xc07c80` | Device::SwapC07C80 | Swaps a shared value (`0x13D3258`) with n and gives the old one |
+| `0xbb1e00` | Track::InitBB1E00 | In outline: clears values (`0xBB21C0`) |
+| `0x454af0` | Record::Init454AF0 | In outline: sets up a record (Record::Init4548D0) |
+| `0x4490e0` | Effect::Toggle4490E0 | Turns a flag (+0x34) on or off |
+| `0x42f4e0` | Sky::Toggle42F4E0 | Turns a flag (+0x54) on or off |
+| `0x40d430` | Effect::Reset40D430 | In outline: clears a value (+0x48) and a pass (Engine::Pass40C490) |
+| `0xce4780` | Mesh::FlagCE4780 | Sets a flag (+0x21) |
+| `0xcbc590` | Buffer::FreeCBC590 | Frees a buffer (+0xC) |
+| `0xcbc580` | Buffer::FreeCBC580 | The same (another copy) |
+| `0xcb23b0` | Buffer::FreeCB23B0 | The same (another copy) |
+| `0xcb2320` | Buffer::FreeCB2320 | The same (another copy) |
+| `0xcb2290` | Buffer::FreeCB2290 | The same (another copy) |
+| `0xc9bcb0` | Buffer::FreeC9BCB0 | The same (another copy) |
+| `0xc47c80` | Buffer::FreeC47C80 | The same (another copy) |
+| `0xc47bf0` | Buffer::FreeC47BF0 | The same (another copy) |
+| `0xc47b60` | Buffer::FreeC47B60 | The same (another copy) |
+| `0xc47ad0` | Buffer::FreeC47AD0 | The same (another copy) |
+| `0xc47a40` | Buffer::FreeC47A40 | The same (another copy) |
+| `0xc479b0` | Buffer::FreeC479B0 | The same (another copy) |
+| `0xc425a0` | Record::SetC425A0 | Sets its first value |
+| `0xc1c2d0` | Device::ModeC1C2D0 | Whether a shared mode (`0x13D3184`) is 3 |
+| `0xc1ad00` | Buffer::FreeC1AD00 | Frees a buffer (+0xC) |
+| `0xbdd630` | Buffer::FreeBDD630 | The same (another copy) |
+| `0xbd6700` | Buffer::FreeBD6700 | The same (another copy) |
+| `0xbd66b0` | Buffer::FreeBD66B0 | The same (another copy) |
+| `0xbc2ca0` | Record::SetBC2CA0 | Sets its first value |
+| `0xbb5180` | Track::IsNot2BB5180 | Whether its first value is not 2 |
+| `0xbb5150` | Track::IsSetBB5150 | Whether its first value is not -1 |
+| `0xbb3d80` | Track::IsSetBB3D80 | Whether its first value is not -1 |
+| `0x4950f0` | Buffer::Free4950F0 | Frees a buffer (+0xC) |
+| `0x445fb0` | Effect::Clear445FB0 | Clears a value (+0x20) |
+| `0x41aac0` | Effects::Set41AAC0 | Sets its first value |
+| `0xcc4d50` | Shader::SharedCC4D50 | Gives a shared record (`0x13F7108`) |
+| `0xcbb240` | Zlib::CallCBB240 | Calls a callback (+0x24) |
+| `0xc3a9e0` | Buffer::FreeC3A9E0 | Frees a buffer |
+| `0x41b010` | Effects::Call41B010 | In outline: for an object, a call (slot 0x4C) |
+| `0xce45e0` | Mesh::HasCE45E0 | Whether a part (+0x3C) is set |
+| `0xc30b60` | Resource::FlagC30B60 | Sets a flag (+4) |
+| `0x46c1c0` | Labels::Shared46C1C0 | Gives a shared object's value (`0x12F0028` +0x40) |
+| `0x445270` | Effect::Clear445270 | Clears a value (+0x10) |
+| `0x42d200` | Sky::Clear42D200 | Clears its first value |
+| `0x4030e0` | Static::Set4030E0 | For 0, sets a value to 2 (+0x14) |
+| `0xc504c0` | Stream::SharedC504C0 | Sets its first value to a shared one (`0x13E6C98`) |
+| `0xc35df0` | Resource::AddC35DF0 | Adds one to a count (+4) and sets a flag (+9) |
+| `0x47be20` | Labels::Shared47BE20 | Gives entry n of a shared float table (`0x10EDD40`) |
+| `0x436d40` | Sky::Flag436D40 | Sets a part's flag (+0x64 +0x2E) |
+| `0xca5590` | Table::ResetCA5590 | Copies a value (+0xC into +0x1C) |
+| `0xc30b70` | Resource::ClearC30B70 | Clears a flag (+4) and gives 0 |
+| `0xc01520` | Device::SetC01520 | Sets a shared flag (`0x10F2EC0`) |
+| `0xbb41e0` | Track::IsNot5BB41E0 | Whether n is not 5 |
+| `0xbb1df0` | Track::FreeBB1DF0 | In outline: frees (Track::FreeBB23C0) |
+| `0x4756d0` | Labels::Flag4756D0 | Gives bit 0 of a value (+0x74) |
+| `0xcb7970` | Mesh::FlagCB7970 | Gives bit 0 of its first value |
+| `0x445eb0` | Effect::False445EB0 | Gives 0 |
+| `0x445210` | Effect::Same445210 | Gives its argument back |
+| `0x4073a0` | Static::Same4073A0 | Gives its argument back |
+| `0x46aa80` | Labels::Same46AA80 | Gives its argument back |
+| `0xcc6300` | Model::ClearPartCC6300 | Clears part n's flag (8 bytes at +0x14) |
+| `0xcba130` | Memory::AllocCBA130 | In outline: an allocation (Memory::AllocBCE080) |
+| `0xbda9b0` | Memory::CheckBDA9B0 | Whether a shared flag (`0x13D0DF0`) is clear |
+| `0x49a4a0` | Static::Entry49A4A0 | Gives the address of entry n (16 bytes) |
+| `0xcb81b0` | Resource::InitCB81B0 | In outline: sets up a record (Record::InitCB8140) |
+| `0xc192e0` | Path::MatchC192E0 | In outline: a match (Path::MatchC18700) |
+| `0xc163d0` | Resource::ReleaseC163D0 | In outline: releases a part |
+| `0x49cab0` | Text::Scale49CAB0 | Gives n times a shared scale (`0x12F4AF4`) |
+| `0x452d70` | Game::Count452D70 | Whether a shared count (`0x1106D40`) is above 1 |
+| `0x4490d0` | Effect::Toggle4490D0 | Turns a flag (+0x32) on or off |
+| `0x4490c0` | Effect::Toggle4490C0 | Turns a flag (+0x30) on or off |
+| `0x431fc0` | Sky::Value431FC0 | In outline: reports a missing resource (Report::MissingResourceSymbol3) and gives a value |
+| `0x425770` | GameTime::Shared425770 | In outline: with no shared count (`0x1106C54`), the game time |
+| `0x49bc50` | Static::Value49BC50 | In outline: reports a missing resource (ReportMissingResourceSymbol) and gives a value |

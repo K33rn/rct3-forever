@@ -1469,3 +1469,91 @@
 | `0xa20930` | Bird::MakeA20930 | In outline: with a part (+0x84), makes a record (Record::MakeA1EA60) |
 | `0xa1f7f0` | Bird::ReleaseA1F7F0 | In outline: releases a part (+4) |
 | `0xb0e0d0` | Animal::SharedB0E0D0 | In outline: a step with a shared table (`0x10F274C`) and a value (+0x10) |
+| `0xbb2730` | Animals::InitBB2730 | In outline: sets up a record with its table (`0xF9EBC4`) |
+| `0xa5ece0` | Animals::InitA5ECE0 | In outline: sets up a record with its table (`0xF8F6D8`) |
+| `0xa538c0` | Animals::InitA538C0 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0xa1d220` | Animals::InitA1D220 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0xb75ab0` | Effect::BitsB75AB0 | In outline: makes a part and a bits step (Fireworks::Bits9F8B40) |
+| `0xb26f40` | WildAnimal::EmptyB26F40 | In outline: empties a text and sets a flag (+0x51) |
+| `0xb19d40` | WildAnimal::EmptyB19D40 | In outline: the same (another copy) |
+| `0xac5510` | Graph::CaseAC5510 | In outline: a value by case (+0x54: 0, ...) |
+| `0xaae680` | PoolComplex::CheckAAE680 | In outline: 1 unless flagged (bit 0 of +0x140) with a part (+0x118) |
+| `0xa5a650` | Window::CaseA5A650 | In outline: a value by case (1, ...) |
+| `0xb2e960` | WildAnimal::HeadingB2E960 | Gives the heading angle of a point (atan2 of x and z), kept positive |
+| `0xa7b420` | Animal::CaseA7B420 | In outline: 1.0 for 1, else a value |
+| `0xa30190` | Animal::BytesA30190 | Gives two bytes (+0x68, +0x69) as values |
+| `0xab8df0` | PoolComplex::ColoursAB8DF0 | In outline: when on (+0xE8), colours (PoolComplex::ColoursAB6050) |
+| `0xa971b0` | Animal::AddA971B0 | In outline: its owner and a scenery add (Scenery::Add869890) |
+| `0xa561b0` | Window::PartA561B0 | In outline: gives its part (+4) |
+| `0xb791a0` | Animal::ClearB791A0 | In outline: with a negative count (+4), empties an array (Array::ResizeB0DEF0 with 0) |
+| `0xb4af50` | WildAnimal::ClearB4AF50 | In outline: empties a shared table (`0x10F28E8`) |
+| `0xbad230` | Track::SetBAD230 | Sets flag n (+0x1E8) under a count (+0x1EC) |
+| `0xb85be0` | Animal::ListB85BE0 | In outline: a value with a part's list (+0x78) |
+| `0xb53030` | Animal::AddB53030 | In outline: with no slot (+0x60), adds to a slot pool (SlotPool::Add) |
+| `0xa5b900` | Window::CountA5B900 | In outline: a count over entries (+0x64) |
+| `0xa1f960` | Bird::ReleaseA1F960 | In outline: releases a part (+4) |
+| `0xa06ea0` | Bird::CopyA06EA0 | In outline: gives its part |
+| `0xb0dd20` | Animal::InitB0DD20 | Clears a flag (+0x20) and sets a value to the largest float (+0x4C) |
+| `0xaf7570` | Animal::InitAF7570 | Clears a count and points a list at its own storage |
+| `0xada8b0` | Animal::InitADA8B0 | The same (another copy) |
+| `0xaae3e0` | PoolComplex::RoundAAE3E0 | Gives a count (+0x124) rounded down to a multiple of 3 |
+| `0xa04d50` | Bird::FlagsA04D50 | In outline: terrain flags (Terrain::FlagsA03630) |
+| `0xabc170` | Fence::SetABC170 | In outline: sets a value (+0x48) and acts unless flagged (bit 0 of +0x2C) |
+| `0xaae330` | PoolComplex::ValueAAE330 | Gives a scaled value (+0x134) less a fixed amount |
+| `0xa88840` | Animal::BandA88840 | Whether a ratio of two values falls in band 0 (Guest::Band) |
+| `0xa88320` | Animal::SetA88320 | In outline: sets a value (+0x48) and acts unless flagged (bit 0 of +0x2C) |
+| `0xa6b430` | Animal::RadiusA6B430 | Sets a radius (+8) and its square (+0x18) |
+| `0xa1f860` | Bird::LinkA1F860 | In outline: with a part, a link (Window::LinkA1CF10) |
+| `0xb83ac0` | Animal::SetB83AC0 | Sets a value (+8) of a found entry (Animal::FindB829C0) |
+| `0xb83aa0` | Animal::SetB83AA0 | The same with +4 |
+| `0xb7c700` | Animal::UpdateB7C700 | In outline: an update (Animal::UpdateB7BE40) and clears a value (+0xA4) |
+| `0xb7b0e0` | Animal::InterfaceB7B0E0 | In outline: a step with an interface (Interface48::Get) |
+| `0xb6c570` | Animal::ClearB6C570 | Clears slot n of a table (+0x2B4) |
+| `0xb44d80` | WildAnimal::ValueB44D80 | In outline: a value with an object (`0x13CE94C`), none handled |
+| `0xb44d60` | WildAnimal::ValueB44D60 | In outline: the same (another copy) |
+| `0xb34e40` | WildAnimal::UpdateB34E40 | In outline: sets a flag (+0x228) and an update (Animal::UpdateB70BE0) |
+| `0xab51b0` | Fence::NeighboursAB51B0 | In outline: fence neighbours (Fence::NeighboursAAF900) at a cell (+0x128, +0x12C) |
+| `0xaadf70` | PoolComplex::KindAADF70 | In outline: for kind 4, a graph entry (Graph::EntryAC2A60 with 0x42) |
+| `0xa8c5e0` | Animal::DeleteA8C5E0 | In outline: a current-object step (Ride::Current5F7710) and deletes a member |
+| `0xa88430` | Animal::MoveA88430 | Moves a value (+0xDC into +0x54) and clears it |
+| `0xa301e0` | Animal::PartA301E0 | In outline: with a part (+0x9C), its value (+0x80) |
+| `0xa28ce0` | Window::MakeA28CE0 | In outline: sets a flag (+0xE1) and makes a part |
+| `0xb4b540` | WildAnimal::CrateB4B540 | In outline: loads animal crate models (AnimalCrate::LoadModels) and a value from a shared table (`0x10F27E8`) |
+| `0xaf7890` | Animal::ClearAF7890 | Clears entry n's flag (8 bytes at +0x2C) and sets another flag (+0x34) |
+| `0xaae290` | PoolComplex::FlagAAE290 | In outline: sets a flag (PoolComplex::FlagA9EF10) by a slot (+0x13C) |
+| `0x9eda50` | Fireworks::Release9EDA50 | In outline: children (Window::ChildrenSlot4) and a release (Fireworks::Release9ED8C0) |
+| `0x7b2380` | Guest::Pickup7B2380 | In outline: children (Window::ChildrenSlot4) and a pickup step (Guest::Pickup7B1BA0) |
+| `0xb7a600` | Animal::InterfaceB7A600 | In outline: with an interface (Interface48::Get), a value |
+| `0xb42c20` | WildAnimal::PointB42C20 | In outline: with a part (+0x124), sets a point (Animal::SetPointB83350) |
+| `0xac5540` | Graph::ValueAC5540 | In outline: a value from a kind (+0x54) |
+| `0xaae2b0` | PoolComplex::FindAAE2B0 | In outline: with no part (+0x120), a fence find (Fence::FindA91880) |
+| `0xa971d0` | Animal::ValueA971D0 | In outline: its owner and a scenery value (Scenery::Value8609A0) |
+| `0xa905d0` | Fence::SlotA905D0 | In outline: with no slot (+0x288 = -1), a value |
+| `0xa62f30` | Animal::CallA62F30 | In outline: a call (slot 0x14) on the current state's part (+0x3B8 by +0x3B4) |
+| `0xa62f10` | Animal::CallA62F10 | In outline: the same with slot 0x10 |
+| `0xa450d0` | Window::SaveA450D0 | In outline: with a shared value (`0x13428DC`), saves before loading (FrontScreen::SaveBeforeLoad with 3) |
+| `0xa08a50` | Bird::PartA08A50 | In outline: with a part (+0x12C), a step (Bird::StepA062F0) |
+| `0xb7c2c0` | Animal::UpdateB7C2C0 | In outline: an update (Animal::UpdateB7BE40) and clears a flag (+0x9D) |
+| `0xb42ee0` | WildAnimal::ChildrenB42EE0 | In outline: children (Window::ChildrenSlot6) and clears a flag (+0x26C) |
+| `0xaae660` | PoolComplex::KindAAE660 | Whether the low three bits of a value (+0x118) are 3 |
+| `0xa1f840` | Bird::ClearA1F840 | When its first value is n, clears it |
+| `0xb92540` | Animal::ValueB92540 | In outline: with a part (+0x68), its value (+0x78) |
+| `0xa50330` | Window::SharedA50330 | In outline: with a shared value (`0x1342900`), a step (Window::StepA4AD40) |
+| `0xb53830` | Animal::ListB53830 | Gives a list (+0x94) when it has entries |
+| `0xa40300` | Window::PieceA40300 | In outline: sets a value (+8) and adds a track piece (TrackImporter::AddPiece) |
+| `0xa1e000` | Window::TutorialA1E000 | In outline: when flagged (bit 0 of +0x80), loads tutorial steps (Tutorial::LoadSteps) |
+| `0xa0a330` | Bird::UpdateA0A330 | In outline: an update (Bird::UpdateA0EF90) |
+| `0xb88260` | Animal::CheckB88260 | Whether a check's object has no value (Animal::CheckB87EB0, +0x4C) |
+| `0xb10960` | Animal::ValueB10960 | In outline: with a part (+0x48), its value (+0x38) |
+| `0xa7e7f0` | Window::LayoutA7E7F0 | In outline: makes a part and lays out (Window::LayoutA7CEA0) |
+| `0xa1f8b0` | Bird::LoopA1F8B0 | In outline: with a part, a loop (Window::LoopA1E530) |
+| `0xa1f8a0` | Bird::LoopA1F8A0 | In outline: with a part, a loop (Window::LoopA1E410) |
+| `0xa1f890` | Bird::UpdateA1F890 | In outline: with a part, an update (Window::UpdateA1E230) |
+| `0xaaa460` | PoolComplex::InitAAA460 | In outline: sets up a record (Animals::InitAC67C0) |
+| `0xa1f8c0` | Bird::PartA1F8C0 | In outline: with a part, a step (Bird::PartA1E650) |
+| `0xb329c0` | WildAnimal::ThunkB329C0 | In outline: a call (Thunk) |
+| `0xafeea0` | Buffer::FreeAFEEA0 | Frees a buffer |
+| `0xa2aef0` | Window::CallA2AEF0 | In outline: a call (`0xBD9A90`) |
+| `0xa3ebd0` | Animal::ClearA3EBD0 | Clears its first value |
+| `0xb341e0` | WildAnimal::SharedB341E0 | In outline: with a shared object (`0x13CE934`), a step |
+| `0xa30180` | Animal::CountA30180 | Adds one to a count (+0x5C) |

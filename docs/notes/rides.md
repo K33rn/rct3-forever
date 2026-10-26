@@ -1792,3 +1792,144 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4499c0` | Effect::SetEntry4499C0 | In outline: the same with +0x34 |
 | `0x447310` | Effect::Free447310 | In outline: sets its table (`0xF29180`) and acts with a part (+8) |
 | `0x417140` | Effects::Part417140 | In outline: with a part (+0x50), a value |
+| `0x4b85a0` | Rides::Init4B85A0 | In outline: sets up a record with its table (`0xF31674`) |
+| `0x4b85c0` | Rides::Init4B85C0 | In outline: sets up a record with its table (`0xF31674`) |
+| `0x4de210` | Rides::Init4DE210 | In outline: sets up a record with its table (`0xF347CC`) |
+| `0x5ea8a0` | AttractionPerson::Check5EA8A0 | In outline: when on (+0x16C), a step (slot 0xE4) |
+| `0x5a0fc0` | TrackedRide::Kind5A0FC0 | Whether a kind is 9, 10, 0xD or 0xF |
+| `0x55f050` | Ride::Value55F050 | In outline: with a byte (+9) other than 0 or 1, a value (+0x108) |
+| `0x55bc50` | Ride::Compare55BC50 | In outline: a list of one (ObjectArray::SetCapacity) and a compare (Ride::Compare55A6A0) |
+| `0x55b190` | Ride::Link55B190 | In outline: a compare (Ride::Compare55A280) and a link (Ride::Link55A530) |
+| `0x53c770` | Ride::Add53C770 | In outline: with no slot (+4), adds to a slot pool (SlotPool::Add) |
+| `0x50ab00` | Car::Value50AB00 | In outline: with a byte (+9) above 2, a value (+0x140) |
+| `0x4d2b90` | Shop::Interface4D2B90 | In outline: with an interface (`0x12F4EB0`), a step |
+| `0x4d0fa0` | Shop::Diff4D0FA0 | In outline: a difference with a value (slot 0xE8) |
+| `0x4a0e10` | Ride::Part4A0E10 | In outline: makes a part and a ride part step (Ride::Part5F3DF0) |
+| `0x49dd10` | Text::Format49DD10 | In outline: formats a value (Text::Format49D5A0) |
+| `0x49d580` | Text::Number49D580 | In outline: a number text (Text::Number49CD90) |
+| `0x59e9f0` | Ride::Seconds59E9F0 | Gives the time (Timer::Milliseconds) times a fixed scale |
+| `0x5490c0` | Ride::Clear5490C0 | In outline: a part step (Ride::Part549000) and clears a flag (bit 0 of +0x40) |
+| `0x548cd0` | Ride::Clear548CD0 | In outline: a part step (Ride::Part548C40) and clears flags (bits 0-1 of +0x40) |
+| `0x50d0e0` | Car::Shared50D0E0 | In outline: with a shared table (`0x12F50B0`), sets a value of an entry |
+| `0x50d060` | Car::Shared50D060 | In outline: with a shared table (`0x12F50B0`), a step |
+| `0x50b450` | Car::Set50B450 | In outline: when n differs from a value (+0x388), sets a flag (0x20 of +0x39C) |
+| `0x4ed410` | Ride::Flag4ED410 | In outline: when flagged (0x400000 of +0x18) above 2 (+0xE4), a value (+0x170) |
+| `0x4bbce0` | Ride::Set4BBCE0 | In outline: sets a value (+0x39C) and acts with a part (+0x2E0) |
+| `0x49b2b0` | Static::Case49B2B0 | In outline: a value by case (0, ...) |
+| `0x4996a0` | Static::Entry4996A0 | In outline: an entry step (Static::Entry498E50) |
+| `0x488260` | Effect::Part488260 | In outline: with a part's value (+0x10 +0x18), a step |
+| `0x4823a0` | Labels::Shared4823A0 | In outline: with a shared value (`0x12F4604`), frees labels (Labels::Free4815B0) |
+| `0x5c6160` | TrackPiece::Toggle5C6160 | In outline: a step (TrackPiece::Step5C5EE0) and turns a flag (+0x190) on or off |
+| `0x59a1b0` | Ride::Next59A1B0 | Moves a shared counter (`0x12F54C4`) on, wrapping at 0x1A |
+| `0x59a190` | Ride::Next59A190 | Moves a shared counter (`0x12F54C8`) on, wrapping at 3 |
+| `0x59a170` | Ride::Next59A170 | Moves a shared counter (`0x12F54C0`) on, wrapping at 0xB |
+| `0x58ed00` | Ride::Refresh58ED00 | In outline: refreshes (Ride::Refresh58EA70) and a step with entry n (slot 0x20) |
+| `0x552200` | Ride::List552200 | In outline: a list step (Ride::List5516D0) with +0x48 and a shared value (`0x10EE884`) |
+| `0x4edbf0` | Ride::Reset4EDBF0 | In outline: clears values (+0x5C4, +0x5CC, ...) |
+| `0x559b70` | Ride::Interface559B70 | In outline: when not flagged (+0x90), a step with an interface (Interface04b::Get) |
+| `0x4b76b0` | Ride::Make4B76B0 | In outline: makes a shop record (Shop::Make4CA520) with a value (+0x138) |
+| `0x4a36a0` | Ride::Copy4A36A0 | In outline: takes a reference to another's part |
+| `0x5f76f0` | Ride::Make5F76F0 | In outline: makes a part with 1 |
+| `0x5ede10` | AttractionPerson::Select5EDE10 | In outline: a check (Rides::Check5EBEB0) and selects it (`0x12F5608`) |
+| `0x5eddf0` | AttractionPerson::Select5EDDF0 | In outline: the same (another copy) |
+| `0x4edc20` | Ride::Mode4EDC20 | In outline: in mode 5 (+0x144) with a part (+0x740), a step (Call59FA20Then59FA80) |
+| `0x4e1300` | Ride::Step4E1300 | In outline: a step with a part's owner (+0x28 +0x40, slot 0x10) |
+| `0x5f4940` | Ride::Part5F4940 | In outline: when on (+0x14), a part step (Ride::Part5F48F0) |
+| `0x5bcfb0` | TrackPiece::Kind5BCFB0 | Whether a kind is 2, 4 or 6 |
+| `0x59a000` | Ride::Check59A000 | In outline: a step when an entry is set (Entry::IsSet2) |
+| `0x58e930` | Ride::Init58E930 | Sets its table (`0xF3CE08`) and clears a value |
+| `0x55fc90` | Ride::Value55FC90 | In outline: when on (+0x20C), a value (+0x220) |
+| `0x4e2c10` | Ride::Reset4E2C10 | In outline: with a part (+0x74), a reset (`0x4EDBF0`) |
+| `0x4828b0` | Window::Check4828B0 | In outline: with a part (+0x1C) and a shared value (`0x10EDBA0`), a device check (Device::CheckBFC470) |
+| `0x5d15d0` | TrackPiece::Value5D15D0 | In outline: 0 for none, else a value |
+| `0x582890` | Ride::Set582890 | Sets a value (+0x1BC) and a flag (+0x1C0) |
+| `0x52f710` | Car::Flag52F710 | In outline: when not asked, a step with its owner (slot 0x144) |
+| `0x4ed600` | Ride::Assign4ED600 | In outline: takes an object and acts when set |
+| `0x4e5ee0` | Ride::Person4E5EE0 | In outline: with an info's person (AttractionPersonInfo::Person), a value |
+| `0x4d0fe0` | Shop::Diff4D0FE0 | In outline: a difference with a count (Animal::CountA899F0) |
+| `0x5d1d30` | TrackPiece::Entry5D1D30 | In outline: a table entry (+0x14) by an index (TrackPiece::Index5D1670) |
+| `0x5bf160` | TrackPiece::Value5BF160 | In outline: with a part (+0x258), a value (Track::ValueBC5E20) |
+| `0x5a1b50` | TrackedRide::List5A1B50 | In outline: steps (Thunk, Rides::List531200) |
+| `0x58ecd0` | Ride::Entry58ECD0 | In outline: refreshes (Ride::Refresh58EA70) and gives entry n (+4) |
+| `0x58df20` | Ride::Call58DF20 | In outline: a call (slot 0xC) with two values and gives the first |
+| `0x55f2c0` | Ride::HasFlags55F2C0 | Whether all the given flags are set (+0xF8) |
+| `0x5cfb20` | TrackedRide::Value5CFB20 | In outline: a value (+8), more when asked |
+| `0x5b0530` | TrackedRide::Trains5B0530 | In outline: stations (TrackedRide::Stations5B0370) and checks trains (TrackedRide::CheckTrains) |
+| `0x59a150` | Ride::Set59A150 | In outline: for 0, sets a value (+0xAC) |
+| `0x59a130` | Ride::Set59A130 | In outline: for 0, sets a value (+0xA8) |
+| `0x59a110` | Ride::Set59A110 | In outline: for 0, sets a value (+0xA4) |
+| `0x569da0` | Ride::Tool569DA0 | In outline: the current tool and a check (TrackedRide::Check5DAA80) |
+| `0x55f300` | Ride::SetFlags55F300 | Sets the given flags (+0xF8) |
+| `0x52f2c0` | Car::Check52F2C0 | In outline: a step when a check passes (`0xBB3D80`) |
+| `0x50b260` | Car::Toggle50B260 | In outline: with a shared record (`0x12F50B0`), turns its flag (+5) on or off |
+| `0x50b240` | Car::Toggle50B240 | In outline: the same with +4 |
+| `0x4ef190` | Ride::Init4EF190 | In outline: sets its table (`0xF359DC`) and default settings (Settings5D::Defaults) |
+| `0x4eef10` | Ride::Value4EEF10 | In outline: with a part (+0x84), its part's value (+8 +0x54) |
+| `0x4eeef0` | Ride::Value4EEEF0 | In outline: the same with +0x50 |
+| `0x4edc60` | Ride::Init4EDC60 | In outline: sets its table (`0xF359D4`) and default settings (Settings5D::Defaults) |
+| `0x4a0c50` | Ride::Check4A0C50 | In outline: a step when a check passes (`0xBB5180`) |
+| `0x4a0b90` | Ride::Check4A0B90 | In outline: a step when an entry is set (Entry::IsSet) |
+| `0x5cd4d0` | TrackedRide::Check5CD4D0 | In outline: a check (TrackedRide::Check5CBE70) |
+| `0x5be2a0` | TrackPiece::Set5BE2A0 | In outline: with a part (+0x2FC), sets its value (+0x10) |
+| `0x55fc70` | Ride::Random55FC70 | In outline: a random step (Ride::Random576BF0) |
+| `0x50d080` | Car::Shared50D080 | In outline: with a shared record (`0x12F50B0`), takes one from its count |
+| `0x4ff4a0` | Car::Band4FF4A0 | In outline: a band (Value::Band) and a case value (Car::Case4FF440) |
+| `0x4bbda0` | Ride::Call4BBDA0 | In outline: with a part (+0x2E0), a call (slot 0xC) |
+| `0x4bbd80` | Ride::Call4BBD80 | In outline: the same with slot 8 |
+| `0x4bbd60` | Ride::Call4BBD60 | In outline: the same with slot 4 |
+| `0x5f78e0` | Ride::Current5F78E0 | In outline: with the current object (`0x12F56D4`), a call (slot 0xF4) |
+| `0x5d4950` | TrackedRide::Track5D4950 | In outline: the tracked ride's track interface |
+| `0x5d37d0` | TrackPiece::Value5D37D0 | Gives a value (+0x7C) from its owner's part (+8 +0x40, slot 0x94) |
+| `0x5d37b0` | TrackPiece::Value5D37B0 | The same with +0x78 |
+| `0x5bd740` | TrackPiece::Middle5BD740 | In outline: the middle of a span (Span::Middle) from its owner |
+| `0x5a2ca0` | TrackedRide::Entry5A2CA0 | Gives the address of entry n (0x28 bytes at +0x3D0) |
+| `0x597f80` | Ride::Activate597F80 | In outline: a step (slot 0xE4) and activates a window (Window::Activate6A4260) |
+| `0x54f5f0` | Ride::List54F5F0 | In outline: a list step (Ride::List54DEE0 on +0x48) |
+| `0x52fa40` | Car::Check52FA40 | In outline: a shop check (Shop::Check4C1680) and a step (slot 0x144) |
+| `0x50a7f0` | Car::Kind50A7F0 | Whether a kind is 3 or 0xC |
+| `0x4ed620` | Ride::Clear4ED620 | In outline: with an object, clears its value (+0x2B8) |
+| `0x4ebe50` | Ride::Call4EBE50 | In outline: a step (Window::Slot48Self) and a call on a part (+0x144) |
+| `0x5a1a20` | TrackedRide::Has5A1A20 | Whether a part's value (+0x6F4 +0xBC) is set |
+| `0x589420` | Ride::Directions589420 | In outline: sets a flag (+0x154) and special track directions (TrackSpecial::Directions) |
+| `0x5725b0` | Ride::Check5725B0 | In outline: a count (Ride::Count572570) and a check (Ride::Check569C60) |
+| `0x4efd20` | Ride::List4EFD20 | In outline: a value from a list |
+| `0x58ed50` | Ride::Refresh58ED50 | In outline: refreshes (Ride::Refresh58EA70) and a call on a part (+0xC, slot 0x20) |
+| `0x4a0d50` | Ride::Value4A0D50 | In outline: with a part (+0x1BC), its value (+8) |
+| `0x4a0d30` | Ride::Value4A0D30 | In outline: with a part (+0x1BC), its value (+4) |
+| `0x5bdd80` | TrackPiece::Kind5BDD80 | Gives its owner's kind (+0x40, slot 0x94, +0x10) |
+| `0x59a550` | Ride::Slot59A550 | Gives slot n of a table (+0xD0) |
+| `0x5106f0` | Car::Shared5106F0 | In outline: with a shared record (`0x12F50B0`), a check (Car::Check510650) |
+| `0x4bfc30` | Ride::Entry4BFC30 | Gives entry n of a float table (+0x12C) |
+| `0x5cfb10` | TrackPiece::Empty5CFB10 | In outline: 1 when its first value is not set |
+| `0x5a19c0` | TrackedRide::Flag5A19C0 | Gives bit 10 of a part's value (+0xA8 +0x30) |
+| `0x4bf100` | Ride::Eighth4BF100 | Gives a shared value (Ride::Shared4BF0B0) divided by 8 |
+| `0x59a1d0` | Ride::Shared59A1D0 | Gives the address of a shared table entry (`0x10EE9B0` by `0x12F54C8`, 16 bytes) |
+| `0x581660` | Ride::Init581660 | In outline: makes an array of four (Ride::Array581600) |
+| `0x58ecf0` | Ride::Value58ECF0 | In outline: refreshes (Ride::Refresh58EA70) and gives a value (+0xC) |
+| `0x58ecc0` | Ride::Value58ECC0 | In outline: the same with +8 |
+| `0x5812a0` | Ride::Entry5812A0 | Gives entry n of a float table (+4) |
+| `0x57a0c0` | Ride::Init57A0C0 | Clears a flag and sets a value to -1.0 (+0x18) |
+| `0x5d4940` | TrackedRide::Track5D4940 | In outline: the tracked ride's interfaces (TrackedRide::Interface2, TrackInterface) |
+| `0x5d4930` | TrackedRide::Track5D4930 | In outline: the same with Interface54::Get |
+| `0x59af60` | Ride::Interface59AF60 | In outline: an interface (Interface54b::Get) and a check (`0x5A1A20`) |
+| `0x59ad20` | Ride::Interface59AD20 | Gives an interface's part (Interface54b::Get +0x6F4) |
+| `0x5138a0` | Car::Interface5138A0 | Gives an interface's value (`0x12F537C` +0x290) |
+| `0x58ddb0` | Buffer::Free58DDB0 | Frees a buffer (+8) |
+| `0x501fb0` | Car::Clear501FB0 | Clears a value (+0x18) and the selected object (`0x12F503C`) |
+| `0x5d0630` | TrackPiece::Value5D0630 | Gives a part's value (+0x18 +8 +0x10) |
+| `0x5a1610` | TrackedRide::Value5A1610 | Gives a part's value (+0x6F4 +0x78) |
+| `0x5a1600` | TrackedRide::Value5A1600 | The same with +0x70 |
+| `0x5a15f0` | TrackedRide::Value5A15F0 | The same with +0x60 |
+| `0x5a15e0` | TrackedRide::Value5A15E0 | The same with +0x68 |
+| `0x5a15d0` | TrackedRide::Value5A15D0 | The same with +0x58 |
+| `0x5a15c0` | TrackedRide::Value5A15C0 | The same with +0x54 |
+| `0x585a90` | Ride::Count585A90 | Adds one to a count (+0x90) |
+| `0x55fb90` | Ride::Flag55FB90 | Sets a flag (bit 1 of +0xF8) |
+| `0x5d1e60` | TrackPiece::Set5D1E60 | When given, sets a shared record (`0xF3F6D4`) |
+| `0x5d15c0` | TrackPiece::Bit24 | Gives bit 24 of n |
+| `0x5d15b0` | TrackPiece::Bit12 | Gives bit 12 of n |
+| `0x5d15a0` | TrackPiece::Bit3 | Gives bit 3 of n |
+| `0x5d15f0` | TrackPiece::IsZero5D15F0 | Whether a byte is 0 |
+| `0x5d1590` | TrackPiece::Bit1 | Gives bit 1 of n |
+| `0x55fba0` | Ride::Clear55FBA0 | Clears flags (bits 0-1 of +0xF8) |
+| `0x52f530` | Car::False52F530 | Gives 0 |

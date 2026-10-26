@@ -2216,3 +2216,86 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9f5fe0` | Window::Flag9F5FE0 | In outline: a flag step (Window::Flag6A2BE0) with work values |
 | `0x680140` | Window::Reset680140 | In outline: a set step (Window::Set6876F0) and clears a shared value (`0x1103C58` +0x2DC) |
 | `0x67a940` | Window::Copy67A940 | In outline: copies values into a part (+0xF0, +0xE4 on) |
+| `0x6b58c0` | Window::Part6B58C0 | In outline: with a part (+0x40000), a step |
+| `0x680a90` | Window::Free680A90 | Frees a buffer and clears the pointer |
+| `0xa55810` | Window::UpdateA55810 | In outline: takes a part (Window::Take6A66E0) and updates entries (Window::UpdateEntries) |
+| `0xa1a6f0` | Window::SetA1A6F0 | In outline: sets a value (+0xB0) and a flag on a shared window (0x400000 of `0x12F83F0` +0x94) |
+| `0x6ebd20` | ListWindow::Select6EBD20 | In outline: refreshes (Window::Refresh6EB470) and selects (ListWindow::SetSelection) |
+| `0x6d7870` | Window::Init6D7870 | In outline: sets its table (`0xF64250`) and a find (Animal::FindB6C520) |
+| `0x6c9d30` | ListWindow::Select6C9D30 | In outline: fills (ListWindow::Fill6C9B80) and selects (ListWindow::SetSelection) |
+| `0x6c8160` | Window::Entry6C8160 | In outline: for n under 5, a value |
+| `0x6c6db0` | ListWindow::Select6C6DB0 | In outline: fills (ListWindow::Fill6C6C10) and selects (ListWindow::SetSelection) |
+| `0x6af100` | Window::Hit6AF100 | In outline: a hit step (Window::Hit6AED50) with a handle (`0xF606D0`) |
+| `0x6af0e0` | Window::Hit6AF0E0 | In outline: the same with `0xF606B0` |
+| `0x6af0c0` | Window::Hit6AF0C0 | In outline: the same with `0xF606A0` |
+| `0x6af0a0` | Window::Hit6AF0A0 | In outline: the same with `0xF60670` |
+| `0x6af080` | Window::Hit6AF080 | In outline: the same with `0xF60660` |
+| `0x68eda0` | Window::Reset68EDA0 | Clears a value (+0xF4) and a flag (+0xE4) |
+| `0x667680` | Window::Set667680 | In outline: sets values (Window::Set667120) from a value (slot 0x15C) |
+| `0x6c3970` | Window::Pass6C3970 | In outline: a pass (Window::Pass6C3870 with 5) and sets a value to 360 (+0x74) |
+| `0x6c21f0` | Window::Shared6C21F0 | In outline: with no shared count (`0x1305DE8`), clears another (`0x1305DEC`) |
+| `0x6a6350` | Window::Layout6A6350 | In outline: with a part (+0xEC), lays out (Window::Layout6A5F40) |
+| `0x690ee0` | Window::Device690EE0 | In outline: a device step (slot 0x78) with three values |
+| `0x68d5b0` | Window::Part68D5B0 | In outline: with a part (+0xE0), tells it (slot 0xE0 with 0x10000) |
+| `0x667f70` | Window::Place667F70 | In outline: places (Window::Place667990) and sets a flag (+0x20) |
+| `0x6631a0` | Window::Scenery6631A0 | In outline: sets scenery values (Scenery::Set83DBC0) |
+| `0x685140` | Window::Set685140 | In outline: sets a value to 1 (+0x10) and acts when asked |
+| `0x6a1e70` | Window::Check6A1E70 | In outline: checks a box (Window::SetChecked) from a part's value (+0x13C, slot 0x10) |
+| `0x672dd0` | Window::Part672DD0 | In outline: with a part (+0x128), a step |
+| `0x62e490` | Window::Update62E490 | In outline: makes a part (`0x5F76F0`) and updates entries (Window::UpdateEntries) |
+| `0x47ca80` | Sound::Unmute47CA80 | In outline: unmutes a kind of sound (Sound::UnmuteKind) |
+| `0x47ca60` | Sound::Mute47CA60 | In outline: mutes a kind of sound (Sound::MuteKind) |
+| `0x6eaa60` | Window::Make6EAA60 | In outline: makes a part (Window::Make6E9AF0) |
+| `0x6b4be0` | MapDialog::Build6B4BE0 | In outline: builds the map dialog (MapDialog::Build) and a step |
+| `0x6b2d70` | Window::Set6B2D70 | In outline: a device set (Device::SetBD3750 with 1) and copies a flag (+0x60 into +0x6C) |
+| `0x6a3140` | Window::Set6A3140 | Sets a value (+0x10C) and a flag (0x1000000 of +0x94) |
+| `0x68d590` | Window::Part68D590 | In outline: with a part (+0xE0), tells it (slot 0xE0) |
+| `0x67a8e0` | Window::Set67A8E0 | In outline: sets a value (+0xD0) |
+| `0x9bbf60` | Window::Layout9BBF60 | In outline: lays out (Window::Layout) and children (Window::ChildrenSlot4) |
+| `0x9bbf40` | Window::Refresh9BBF40 | In outline: refreshes (Window::Refresh6AFC20) and a step (Window::Step642700) |
+| `0x9a9ad0` | Window::Layout9A9AD0 | In outline: lays out (Window::Layout) and children (Window::ChildrenSlot4) |
+| `0x9b2ef0` | Window::Set9B2EF0 | In outline: a set step (Window::Set67A8E0) |
+| `0x6d7890` | Window::Free6D7890 | In outline: sets its table (`0xF64250`) and a step (`0xB6C570`) |
+| `0x6c8c30` | Window::Reset6C8C30 | In outline: a reset (Window::Reset6C82E0) and children (Window::ChildrenSlot4) |
+| `0x6c6880` | Window::Reset6C6880 | In outline: the same (another copy) |
+| `0x65d170` | Window::Step65D170 | In outline: a step with a part (+0x154, slot 0x10) and another (Window::Step642700) |
+| `0x659c10` | Window::Key659C10 | In outline: for key 0x1B (escape), lays out (Window::Layout) |
+| `0x6a31a0` | Window::Value6A31A0 | In outline: a value (slot 0x100) |
+| `0x67ab40` | Window::Value67AB40 | Gives a part's value (+0xE8 +0xD0) |
+| `0x65aa90` | Window::Mode65AA90 | Sets a mode (+0x168) and acts (slot 0xE4) |
+| `0x642a50` | Window::Skin642A50 | In outline: a skin texture (SkinItem::Texture with 1) |
+| `0x638f30` | Windows::Memory638F30 | In outline: the machine's memory status (GlobalMemoryStatus) |
+| `0x624580` | Window::Flag624580 | In outline: when flagged (bit 1 of +0x10), a step |
+| `0x624560` | Window::Flag624560 | In outline: when flagged (bit 0 of +0x10), a step |
+| `0x624540` | Window::Flag624540 | In outline: when flagged (bit 4 of +0x68), a step |
+| `0x624520` | Window::Flag624520 | In outline: when flagged (bit 0 of +0x68), a step |
+| `0x6ea070` | Window::Panel6EA070 | In outline: a panel step (Panel::ChildrenSlot4ThenLayout) and lays out |
+| `0x6c87c0` | Window::Part6C87C0 | In outline: with no part (+0x58), a step (slot 0x58) |
+| `0x65b400` | Window::Call65B400 | In outline: a call on a part (+0x16C) with a value (+0x178) |
+| `0x6ea020` | Window::Mode6EA020 | In outline: mode steps (Window::Mode6A7DA0, Window::Mode6A8400 with 0) |
+| `0x6a7b70` | Window::Set6A7B70 | Sets a part's value (+0xE4 +0x150) |
+| `0x68d5e0` | Window::Children68D5E0 | In outline: a step (slot 0x100) and children (Window::ChildrenSlot2) |
+| `0x68d540` | Window::Offset68D540 | Gives a part's value (+0xE0 +0x128) less a value (+0xFC) |
+| `0x669640` | List::Free669640 | In outline: for a list, frees its entries (List::Free6695B0) |
+| `0x6543f0` | List::Free6543F0 | In outline: the same (List::Free654280) |
+| `0x62ac40` | Window::Call62AC40 | In outline: a step (Window::Slot48Self) and a call on a part (+0x144) |
+| `0x42a3c0` | Window::Children42A3C0 | In outline: children (Window::ChildrenSlot4) and lays out |
+| `0x6fee20` | Window::Step6FEE20 | In outline: a step (Window::Step6AB170) and gives its argument |
+| `0x6ef410` | Window::Shared6EF410 | In outline: with a shared object (`0x13060FC`), tells it (its first slot with 1) |
+| `0x6b8cd0` | Window::Part6B8CD0 | In outline: a part step (Window::Part642E80) and gives its argument |
+| `0x5fc0f0` | Window::Part5FC0F0 | In outline: the same (another copy) |
+| `0x69b150` | Window::ImeClose69B150 | Tells the input method editor to close its candidate list (ImmNotifyIME 0x11) |
+| `0x69b140` | Window::ImeCancel69B140 | Tells the input method editor to cancel its composition (ImmNotifyIME 0x15, 1) |
+| `0x6ed400` | Window::Call6ED400 | In outline: tells a part (+0x168, slot 4) |
+| `0x699e90` | Window::Value699E90 | In outline: reports a missing resource (Report::MissingResourceSymbol2) and gives a value |
+| `0x670730` | Window::Part670730 | In outline: with a part (+0x58), a step (Window::Step678190) |
+| `0x700510` | Window::Call700510 | In outline: tells a part (+0xD4, slot 0xE4) |
+| `0x67ab70` | Window::Address67AB70 | Gives the address of a part's value (+0xF0 +0xE4) |
+| `0x67ab60` | Window::Address67AB60 | Gives the address of a part's value (+0xF0 +0x114) |
+| `0x665910` | Buffer::Free665910 | Frees a buffer |
+| `0x665840` | Buffer::Free665840 | The same (another copy) |
+| `0x665770` | Buffer::Free665770 | The same (another copy) |
+| `0x611ae0` | Buffer::Free611AE0 | The same (another copy) |
+| `0x6acac0` | Window::Shared6ACAC0 | Sets a shared value (`0x1305CF0`) |
+| `0x6ef460` | Window::Slot6EF460 | Gives slot n (+8) |
+| `0x6ef450` | Window::Count6EF450 | Adds one to slot n's count (+8) |
