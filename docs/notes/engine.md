@@ -1963,3 +1963,23 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbd0ab0` | Folder::FindBD0AB0 | In outline: finds by a name text, with -1 handled |
 | `0xbc5900` | Track::SnapBC5900 | In outline: unless a mode is 0 or 1, snaps (Track::SnapBC5580) |
 | `0x9843e0` | Text::Edit9843E0 | In outline: a text edit step (WideString::MakeUnique) |
+| `0xcad5c0` | Debug::Printf | In outline: formats a message (vsprintf) and prints it (printf) |
+| `0xbe6480` | Device::MakeTextures | In outline: creates textures in a loop (Device::CreateTexture) |
+| `0xcb6270` | Array::MakeCB6270 | In outline: makes a list of 16-byte entries (`0xCB61E0`) |
+| `0x801e30` | Record::Make801E30 | In outline: makes a 0x50-byte record, cleared |
+| `0x45b2b0` | Resource::Reset45B2B0 | In outline: tears down and remakes a part (Destructor, `0xBE68A0`) |
+| `0xce3450` | Table::FindCE3450 | In outline: a find (`0xCE3100`), with -1 handled |
+| `0xbecd70` | Text::AddBECD70 | In outline: makes a text and acts when the shared count (`0x13D23BC`) is over 299 |
+| `0xbc92e0` | Memory::CheckBC92E0 | In outline: a step when a check passes (`0xBC8A30`) |
+| `0xbd6930` | Record::MakeBD6930 | In outline: makes a record with an empty text (TextRef::TextRefEmpty) |
+| `0xbd2a30` | List::ValueBD2A30 | In outline: a step over entries comparing values |
+| `0xbd0960` | Folder::FindByName | In outline: finds a folder by a C-string name, with none handled |
+| `0xbe4cd0` | Loop::StepBE4CD0 | In outline: a loop |
+| `0x7bc370` | Text::Length7BC370 | In outline: a step for a text between 5 and 0xFFF characters long |
+| `0x446a10` | Text::Edit446A10 | In outline: a text edit step (WideString::MakeUnique) |
+| `0x802a20` | Save::Text802A20 | In outline: writes a text to a save, two bytes at a time (SaveWriter::Write) |
+| `0x4355e0` | Record::Make4355E0 | In outline: makes a record |
+| `0xaaabf0` | Array::ResizeAAABF0 | In outline: resizes a list of 0x38-byte entries to n |
+| `0x8e9330` | Array::Grow8E9330 | In outline: grows a list of 0x130-byte entries to hold n |
+| `0x87bee0` | Array::Grow87BEE0 | In outline: grows a list of 0x80-byte entries to hold n |
+| `0x735850` | Array::Grow735850 | In outline: grows a list of 0x98-byte entries to hold n |

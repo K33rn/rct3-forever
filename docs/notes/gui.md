@@ -1334,3 +1334,28 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6f2010` | Window::Name6F2010 | In outline: a name text with a shared one (`0xF67028`) |
 | `0x9c15c0` | Window::Mode9C15C0 | In outline: makes a part and a step unless in mode 1 (+0xF8) |
 | `0x98ab20` | Window::Link98AB20 | In outline: links parts |
+| `0x65d1d0` | Window::Layout65D1D0 | In outline: places two parts (Window::UpdateRect) |
+| `0x639ec0` | Window::Value639EC0 | In outline: for 5, a value (Window::Value638F80) |
+| `0x612000` | Window::Half612000 | In outline: a step for the first half of a count |
+| `0x6205a0` | MessageConsole::AddEntry | In outline: makes a message console entry (ObjectMessageConsoleEntry) and activates it |
+| `0xa44b00` | Window::IdA44B00 | In outline: a step for ids from 0x1ED8C9C up to a count (+0x244) |
+| `0xa1e060` | Window::MoveA1E060 | In outline: moves every entry to another list (List::MoveAllTo) |
+| `0x683b10` | Window::Shared683B10 | In outline: makes a part when the shared value (`0x1305BE4`) is 0 |
+| `0xaa6280` | Window::DrawAA6280 | In outline: makes a part and draws (`0x694E90` with `0x10F25F8`) |
+| `0x70f4f0` | Window::Draw70F4F0 | In outline: makes a part and draws (`0x694E90` with `0x10EF65C`) |
+| `0x66a620` | Window::Layout66A620 | In outline: places a window (Window::UpdateRect) |
+| `0x41bf90` | Window::Value41BF90 | In outline: a step (`0x6ADB60`) when a value is positive |
+| `0x996140` | Window::Layout996140 | In outline: places a window (Window::UpdateRect) |
+| `0x7873d0` | Window::Part7873D0 | In outline: a part with a text from `0x13069B4` (`0x67BE80` with 0x80) |
+| `0x67e6a0` | Window::Build67E6A0 | In outline: builds a window (Window::Build67DFD0) with no entries handled |
+| `0x6671d0` | Window::Mode6671D0 | In outline: in mode 1 (+0x170), sets a rectangle and refreshes (Window::SetRectAndRefresh) |
+| `0x617440` | Window::Flag617440 | In outline: a step when a flag changes |
+| `0x4c8f40` | Window::Part4C8F40 | In outline: a part with a text from `0x12F4CAC` (`0x67BE80` with 0x80) |
+| `0xa62f90` | Window::CheckA62F90 | In outline: a step when a check fails |
+| `0xa3c530` | Window::StepA3C530 | In outline: a step (`0xA3C1C0`) when given a part |
+| `0x981be0` | Window::Update981BE0 | In outline: an update when not flagged (+0x40) |
+| `0x6fd710` | Window::Slot6FD710 | In outline: a step for a non-negative slot |
+| `0x633ff0` | Window::Edit633FF0 | In outline: a step unless the "cannot edit" message is shown (TrackedRide::ShowCannotEdit) |
+| `0xad0710` | Window::PlaceAD0710 | In outline: when on (+0x44), places a window |
+| `0x97e0a0` | Window::Layout97E0A0 | In outline: lays out a window and refreshes it when a value changes (+0xF0) |
+| `0x9a7d90` | Window::Check9A7D90 | In outline: a check when not flagged (+0x88) |

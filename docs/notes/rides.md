@@ -536,3 +536,25 @@ Tracked rides, flat rides and their cars and trains.
 | `0x57a7e0` | Ride::Case57A7E0 | In outline: a step by case |
 | `0x4f3980` | Ride::Mode4F3980 | In outline: in mode 4 (+0x144), a step when not flagged (+0x668) |
 | `0x4c7600` | Shop::Hit4C7600 | In outline: a hit test (`0x4C7420`, `0x5DA220`) |
+| `0x56f5c0` | Ride::Loop56F5C0 | In outline: a loop when not flagged (+0xF0) |
+| `0x4eb0a0` | AttractionPerson::Check4EB0A0 | In outline: a check (`0xBCC740`) when not flagged (+0x13C) |
+| `0xa7f6b0` | AttractionPerson::StepA7F6B0 | In outline: a step with an attraction's person (AttractionPersonInfo::Person) |
+| `0x592980` | Ride::Slot592980 | In outline: a step for n under a count (+0x1BC) when not flagged (+0x204) |
+| `0x4df520` | Ride::Text4DF520 | In outline: a text when not flagged (+0x4C) |
+| `0x4b63c0` | Shop::Text4B63C0 | In outline: a text when not flagged (+0x50) |
+| `0x5bdec0` | TrackPiece::Check5BDEC0 | In outline: a check for rides not flagged 0x400000 or with fewer than three stations |
+| `0x92e910` | Ride::Hit92E910 | In outline: a ride part hit test (TrackedRide::HitTest5C4EB0 within 0.5) |
+| `0x5aa220` | Ride::Ids5AA220 | In outline: makes the shared id set (`0x12F4634`, IdSet) in a loop |
+| `0x50b4b0` | Car::Count50B4B0 | In outline: a step for counts above 3 when not flagged (+0x108) |
+| `0x4d29d0` | Shop::Step4D29D0 | In outline: when a check passes, a step (`0x4D2800` with 3) |
+| `0x5d6500` | TrackedRide::List5D6500 | In outline: makes a small list (SmallArray) and fills it (`0x5BF340`) |
+| `0x4b2510` | Shop::Items4B2510 | In outline: goes over a shop's items (+0x3EC) making their texts (Shop::ItemText4B0190) |
+| `0x576bf0` | Ride::Random576BF0 | In outline: when asked, a random value in a range (Random::Ran0Range with +0x90, +0x94) |
+| `0x536160` | Ride::Get536160 | In outline: a step with an object (Interface50::Get) |
+| `0x52f5c0` | Ride::Mark52F5C0 | In outline: a green (0xFF00FF00) mark at a scenery footprint's centre |
+| `0x511d40` | Car::Step511D40 | In outline: a step (`0x86D0A0`) and more for 0 with a part (+0x404) |
+| `0x511bf0` | Car::Step511BF0 | In outline: the same with `0x86D050` |
+| `0x511aa0` | Car::Step511AA0 | In outline: the same with `0x86D000` |
+| `0x511950` | Car::Step511950 | In outline: the same with `0x86CFB0` |
+| `0x4aca40` | Ride::Update4ACA40 | In outline: an update when not flagged (+0x3C4) |
+| `0x581300` | Ride::Case581300 | In outline: a step by case |

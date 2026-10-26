@@ -1148,3 +1148,27 @@
 | `0xa7a630` | Animal::TerrainA7A630 | In outline: a step over the terrain |
 | `0x963fa0` | Water::Manager963FA0 | In outline: when asked, a step with the water manager |
 | `0x7a0030` | Terrain::Step7A0030 | In outline: a step (`0x7A0860` with 0) |
+| `0x7e6c20` | Person::Points7E6C20 | In outline: a step with more than two points |
+| `0x8211f0` | SceneryBehaviour::Check8211F0 | In outline: a step when a check passes (`0x81FAF0`) |
+| `0x79d3a0` | Terrain::Step79D3A0 | In outline: a terrain step |
+| `0x7516e0` | Guest::Find7516E0 | In outline: unless told not to, finds an entry matching a value (+0x14) |
+| `0xb91550` | Enclosure::FindB91550 | In outline: a step with the enclosure manager (`0xB9F8A0`) |
+| `0x8ff000` | Water::Slot8FF000 | In outline: a step for a slot under a count |
+| `0x7141a0` | Path::Link7141A0 | In outline: a step when given a part |
+| `0x92c130` | Water::Table92C130 | In outline: fills a 0x1C by 0x1C table with 0xFFFF (`0x416110`) |
+| `0x8f86f0` | Water::Shared8F86F0 | In outline: a step when the shared flag (`0x10F0B20`) is set |
+| `0x726ea0` | Path::Flag726EA0 | In outline: a step when the path manager is flagged (+0x97) |
+| `0x95f910` | Water::Range95F910 | In outline: a step over a range |
+| `0x746390` | Guest::Update746390 | In outline: a step when flagged (+0xE49) |
+| `0x9137a0` | Water::Count9137A0 | In outline: a step when a count (+0x78) is above 1 |
+| `0x71e570` | PathQueue::Make | In outline: activates a part and makes a path queue (PathQueue) |
+| `0xbcb910` | Range::StepBCB910 | In outline: a step comparing values |
+| `0xb9f4e0` | PathGrid::PassB9F4E0 | In outline: goes over entries (+0x78) that are set |
+| `0x9384a0` | Water::Fill9384A0 | In outline: when it has two parts (+0xC, +0x18), a step for the device (ForCurrent(0)) |
+| `0x92c5c0` | Water::Step92C5C0 | In outline: a step (`0x90F880` with +0x58) |
+| `0x9143c0` | Water::Table9143C0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x71be20` | Path::Points71BE20 | In outline: a step with a path's points (Path::Points) |
+| `0x912150` | Water::Check912150 | In outline: a step when a check passes and a flag is set (+0x10) |
+| `0x903aa0` | Water::Edge903AA0 | In outline: a step when not flagged (+0xC +0x54) |
+| `0x8e21b0` | Terrain::Step8E21B0 | In outline: a terrain step |
+| `0xaaa110` | PoolComplex::LoopAAA110 | In outline: a loop up to n |

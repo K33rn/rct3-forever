@@ -820,3 +820,14 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xcd7dc0` | Camera::RayCD7DC0 | In outline: when on (+0x1A6), a step with the tangent of half the field of view (+0x190) |
 | `0xbc20b0` | Track::TurnBC20B0 | In outline: turns by a byte times a step (Matrix::TurnAboutY) |
 | `0xa5fab0` | Animal::RayA5FAB0 | In outline: a step with a screen ray (Camera::ScreenRay) |
+| `0x487600` | Effect::Range487600 | In outline: a step when two values are the same (+0x38, +0x3C) |
+| `0xccc5d0` | Model::FillCCC5D0 | In outline: fills buffers for the current device and the shared model (`0x13FA030`) |
+| `0xbb7a80` | Track::StepBB7A80 | In outline: a step (`0xBC28D0`), with 0xFFFF handled |
+| `0xc63d50` | Window::ClipC63D50 | In outline: a clip step comparing values |
+| `0xc213b0` | Curves::StepC213B0 | In outline: a step past a count (+0x34) with a value under 1 |
+| `0xbb76b0` | Track::PassBB76B0 | In outline: goes over entries (+0x50) that are set |
+| `0xcdf200` | Vector::CompareCDF200 | In outline: a step comparing values |
+| `0xbee460` | Vector::NormalBEE460 | In outline: a normalise step when a value is small |
+| `0xcd7bb0` | Camera::FaceCD7BB0 | In outline: points the camera (Matrix::LookAlongZSide on +0x140, +0x130) |
+| `0xbef450` | Text::DrawBEF450 | In outline: draws a text, character by character |
+| `0xbef020` | Text::DrawBEF020 | In outline: the same (another copy) |

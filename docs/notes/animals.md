@@ -359,3 +359,19 @@
 | `0xb85d90` | Animal::FaceB85D90 | In outline: points (Matrix::LookAlongZSide) |
 | `0xa9b800` | PoolComplex::UpdateA9B800 | In outline: an update when not flagged (+0x1B0) |
 | `0xb21280` | Animal::CaseB21280 | In outline: a value by a mode (+0x78) |
+| `0xb81f20` | Animal::DistanceB81F20 | In outline: a distance step when on (+0x50) |
+| `0xa13070` | Bird::LandingRoute | In outline: unless a value is 0x200, makes a landing route (LandingRoute) |
+| `0xb1fb50` | WildAnimal::FaceB1FB50 | In outline: points an animal (Matrix::LookAlongZSide on +0xC0) |
+| `0xaf26f0` | Animal::LinkAF26F0 | In outline: a step (`0x4A47B0`) with a part |
+| `0xa7c6a0` | Animal::CheckA7C6A0 | In outline: a check when not flagged (+0x84) |
+| `0xaf5210` | Animal::LinkAF5210 | In outline: a step (`0xAEFF30`) with a part |
+| `0xadfc50` | Animal::LinkADFC50 | In outline: a step (`0xAD6EF0`) with a part |
+| `0xb8f420` | Animal::FlagsB8F420 | In outline: a step when flagged (+0x184) and not flagged (+0x1A8) |
+| `0xb563b0` | Animal::CompareB563B0 | In outline: compares a value (`0xB55E90`) |
+| `0xb1c940` | WildAnimal::AngleB1C940 | In outline: a step with a cosine of twice an angle |
+| `0xabbab0` | Animal::EventABBAB0 | In outline: with a part (+0x284), a step for values other than 6, 8 and 9 |
+| `0xb72120` | Animal::StepB72120 | In outline: a step (`0x44E540`) unless told not to |
+| `0xa91880` | Fence::FindA91880 | In outline: a find in a sorted list (SortedPointers::FindBy8 on `0x13CDF84`) |
+| `0xa18cd0` | Seagull::Make | In outline: makes a seagull (Seagull) and activates it |
+| `0xb47770` | WildAnimal::SlotB47770 | In outline: a step for a slot (+0x78) not flagged |
+| `0x9d7e70` | Animal::Update9D7E70 | In outline: an update when not flagged (+0x68) |
