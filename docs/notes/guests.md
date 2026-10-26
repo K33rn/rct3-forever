@@ -226,3 +226,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7ce320` | Person::Mode7CE320 | In outline: in modes 2 or 3, when on (+0x3F0), updates a target (Person::UpdateTarget7CB120) |
 | `0x7adc90` | Person::Make7ADC90 | In outline: makes a record from its arguments |
 | `0x7d68e0` | Person::Swim7D68E0 | In outline: a large person update by stage (+0x194): sets states (0x112, 0x11F, 0x100), counts a time (+0xBC) against a table (`0xFC35D8`), swims toward a pool part's point (Person::SwimToward, PoolComplex::PartA87E00) |
+| `0x7dd270` | Person::Update7DD270 | In outline: a large person update: with no part, sets its state to 0; acts by a part's mode (2, ...) |
+| `0x7d32d0` | Person::Update7D32D0 | In outline: a large person update with its part (+0x1C0), setting state 0x100 when the part is gone or flagged |
+| `0x7de4d0` | Person::Update7DE4D0 | In outline: with its part, in mode 9 (+0x190) and no stage, a step |

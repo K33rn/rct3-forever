@@ -975,3 +975,33 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc91780` | Device::CameraC91780 | In outline: a large camera step when asked or when its values are set: works out matrices from its part (+0x2138) |
 | `0xcdcf50` | Shapes::BuildCDCF50 | In outline: a large shape build: works out vertex and index counts, makes a 16-byte-entry list filled with the largest float, and fills it (4K and 2K-entry work tables) |
 | `0x8f1060` | Terrain::Colours8F1060 | In outline: blends neighbouring colours (their red, green, blue bytes) along the edges, rounded |
+| `0x952f50` | Water::Sort952F50 | In outline: when on (+0x14), works out each piece's distance along a direction and draws them in order (another copy of Water::Sort954100) |
+| `0x71f4c0` | Path::Draw71F4C0 | In outline: a large path draw: sets a shared flag (`0x1400304` bit 0), a depth bias (`0x14002FC`), a matrix (`0xCD75C0`) and draws with the shared device |
+| `0x9cf070` | Particles::Draw9CF070 | In outline: for n particles, works out a camera-facing direction from the view matrix (slot 0xB4), normalised, and fills quads |
+| `0x9d1580` | Particles::Draw9D1580 | In outline: grows buffers to twice n (`0x9D1120`, `0x9CE490`) and fills camera-facing quads from the view matrix |
+| `0x9183b0` | Water::Corners9183B0 | In outline: works out a box's corners from a matrix and sizes |
+| `0xc23870` | Skeleton::StepC23870 | In outline: a large step comparing two points' distances from a centre (+0x80) over bones |
+| `0x8103e0` | Regions::DrawTimed8103E0 | In outline: a large timed draw (`0x130ACA8`, Timer::Ticks) with a depth bias and the shared device |
+| `0xcd69c0` | Camera::FrustumCD69C0 | In outline: works out the view's extents from the tangent of half the field of view (+0x190), the near distance (+0x1A0) and the aspect (+0x194) |
+| `0xc1fc30` | Matrix::Invert4 | In outline: inverts a 4x4 matrix from its cofactors |
+| `0x408a90` | Sky::Draw408A90 | In outline: a large draw with the downward light direction (Lighting::DownwardDirection), turned around |
+| `0x9d30e0` | Fireworks::Draw9D30E0 | In outline: a large draw with a matrix, the shared one (`0x1400160`) when none, after stepping entries (+0xB8) |
+| `0x9e79e0` | Fireworks::Draw9E79E0 | In outline: a large draw with the shared day (`0x1103B6C` +0x110) and the shared device |
+| `0x9437b0` | Water::Map9437B0 | In outline: a large step with a scale from the terrain's cell size and shared values (Matrix::ScaleOffset2D) |
+| `0x932ac0` | Water::Draw932AC0 | In outline: a large draw with a ride part and the shared device |
+| `0x7bf0c0` | Model::Bone7BF0C0 | In outline: works out a pose from a bone's 64-byte matrix (+0x18 list) and its values |
+| `0xb82090` | Model::BoneB82090 | In outline: the same from bone n's matrix (+0xB0 +0x20) |
+| `0x7bee20` | Model::Bone7BEE20 | In outline: the same (another copy) |
+| `0x8625d0` | Scenery::Light8625D0 | In outline: when on (+0x138), a light step for part n (0x48 bytes) by kind (3, 4) and flags |
+| `0x9e7240` | Sky::Sun9E7240 | In outline: a large step from the shared day's sun direction (`0x1103B6C` +0x120 on), turned below the horizon |
+| `0xbddc00` | VertexDeclaration::CopyBDDC00 | In outline: copies vertex elements by their kinds and offsets |
+| `0xbde5e0` | VertexDeclaration::FillBDE5E0 | In outline: fills a declaration's header and copies its elements by kind |
+| `0xbde860` | VertexDeclaration::FillBDE860 | In outline: the same (another copy) |
+| `0x89fef0` | SceneryRenderer::Add89FEF0 | In outline: adds a draw, growing its list by 0x200 when full (+0x3B8 on) |
+| `0x91b0c0` | Water::Indices91B0C0 | In outline: fills index lists by a flag (bit 0x40) and the shared count (`0x10F0BEC`) |
+| `0x91abb0` | Water::Indices91ABB0 | In outline: the same for a grid of counts (+0x154, +0x158) |
+| `0x8bdf80` | Terrain::Unproject8BDF80 | In outline: inverts the view matrix (slot 0xB4, Matrix::Invert4) and scales by the terrain's size |
+| `0x857090` | Scenery::Fill857090 | In outline: adds up n parts' counts and fills buffers for the current device |
+| `0xcd75c0` | Camera::Projection | In outline: works out the camera's projection from its near and far values (+0x188, +0x18C), a zoom (+0x19C) and the tangent of half the field of view |
+| `0x438600` | Screen::Size438600 | In outline: the GUI root's size rounded to whole pixels and a step |
+| `0x8f0d30` | Terrain::Indices8F0D30 | In outline: for a square grid of more than one cell, fills a short index list |

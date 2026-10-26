@@ -1587,3 +1587,24 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9c1a20` | Window::Check9C1A20 | In outline: a check when not flagged (+0x128) |
 | `0xa431b0` | Window::CaseA431B0 | In outline: unless given its own part, clears a value (+0xC4) and acts by a mode (+0xC0) |
 | `0x6ef5d0` | Window::Count6EF5D0 | In outline: counts up entry n (+8) and acts by n, making parts and texts |
+| `0x605980` | Options::Camera605980 | In outline: unless told not to, saves an option (Options::SetInt), a camera step, sets a list's selection from the camera (+0x3B4) and lays out |
+| `0x6149d0` | Window::Build6149D0 | In outline: builds a window from the shared title `0x12F5740` |
+| `0x679450` | Window::Place679450 | In outline: places a window by its corner flags (+0xF4 bits 2 and 3) |
+| `0xa40c80` | Window::LayoutA40C80 | In outline: a large layout: sets a text, a shared width (`0x12F9570`) and places parts |
+| `0x62ca40` | Window::Build62CA40 | In outline: builds a window from the shared title `0x12F7E08` |
+| `0x70bad0` | Window::Layout70BAD0 | In outline: places a window's parts by its size (Window::UpdateRect) |
+| `0x7f1280` | Toolbar::Button7F1280 | In outline: makes a 0x144-byte image button (Button::SetImages with five images) and places it |
+| `0x6d4c10` | Window::Build6D4C10 | In outline: builds a window from the shared title `0x1305F34` |
+| `0x6820f0` | Window::Animate6820F0 | In outline: steps an animation time (+0x278) and goes over queued entries (+0x294) |
+| `0x83bd00` | Window::Build83BD00 | In outline: builds a window from the shared title `0x130B630` |
+| `0x6846f0` | Window::Build6846F0 | In outline: builds a window from the shared title `0x12F8428` |
+| `0x9aadd0` | Window::Build9AADD0 | In outline: builds a window from the shared title `0x1341424` |
+| `0x4d6730` | Window::Build4D6730 | In outline: builds a titled window (Window::BuildTitled) with a list member and its tables (`0xF33950`) |
+| `0x4d7480` | Window::Build4D7480 | In outline: builds a window from the shared title `0x12F4F00` |
+| `0x9be000` | Window::Layout9BE000 | In outline: places parts by the window's size, by a flag (+0x148) |
+| `0x4bd4e0` | Window::Build4BD4E0 | In outline: builds a window from the shared title `0x12F4BD8` |
+| `0x9b4720` | Window::Layout9B4720 | In outline: places two parts centred by their sizes |
+| `0x67be80` | Window::Build67BE80 | In outline: builds a window from the shared title `0x12F8208` |
+| `0x9b5140` | Window::Layout9B5140 | In outline: the same with other parts |
+| `0x9b56a0` | Window::Layout9B56A0 | In outline: the same with other parts |
+| `0x9b6320` | Window::Layout9B6320 | In outline: the same with other parts |

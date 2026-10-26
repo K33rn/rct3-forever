@@ -278,3 +278,8 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x426790` | Curves::Step426790 | In outline: a curve step with a non-negative time |
 | `0x5a2690` | Ride::Time5A2690 | In outline: a step when a time is up to a value |
 | `0xb61800` | WildAnimal::DistanceB61800 | In outline: a distance step |
+| `0x42ee50` | Matrix::Multiply42EE50 | Multiplies two 4x4 matrices into a third |
+| `0x505c00` | Matrix::Transform4 | Transforms a four-part point by a 4x4 matrix in place |
+| `0x9f4e10` | Bezier::Point9F4E10 | In outline: a point on a cubic curve at t from four points (the 1-t and t cubes, scaled by 3) |
+| `0x466660` | Vector::Toward466660 | In outline: a normalised direction between two points when they are far enough apart |
+| `0xc22d30` | Skeleton::MatrixC22D30 | In outline: works out a bone matrix from its part's matrix (+0x54 +0xC0 on) |

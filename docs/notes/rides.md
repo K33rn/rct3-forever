@@ -798,3 +798,11 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5242e0` | Car::Update5242E0 | In outline: a large car update with its ride, when the ride is not flagged (+0x861) |
 | `0x5e2b20` | TrackPiece::Build5E2B20 | In outline: a large piece build: clears a list (Array::Resize5D77A0(0)) and values and fills from its ride |
 | `0x764790` | Guest::Case764790 | In outline: a large guest step with two parts (by shared ids `0x12F4C64`, `0x12F5494`) and a case |
+| `0x515bc0` | Car::Parts515BC0 | In outline: with the shared object (`0x12F4F94`) and its ride, steps each car part slot (Car::Step50BBE0 with 1, 4, 6, 9, 0xB, ...) by flags |
+| `0x568b80` | Ride::Step568B80 | In outline: a large ride step: counts up (+0x304) and works with a car's part (+0x198) |
+| `0x5d2ab0` | TrackedRide::Ray5D2AB0 | In outline: a large step for kinds 1, 9 and 10 with a ray step (`0xBCC740`) |
+| `0x539090` | Ride::Section539090 | In outline: a large step with a ride's section, making a 0x48-byte part when it has none |
+| `0x53eea0` | Ride::Text53EEA0 | In outline: a large text step comparing names (WideString::Compare) |
+| `0x525a50` | Car::SetMode525A50 | In outline: sets a car's mode (+0x384) and acts by it (6: Car::Update5242E0, ...) |
+| `0x784dd0` | GuestGroup::Check784DD0 | In outline: a check when not flagged (+0x11C) |
+| `0x52d5d0` | Ride::Check52D5D0 | In outline: when on (+0x1C0), a check with its ride when not flagged (+0xD8) |

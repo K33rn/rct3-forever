@@ -2433,3 +2433,9 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x9d2910` | Record::Make9D2910 | In outline: makes a 16-byte record |
 | `0x612250` | Game::Step612250 | In outline: a large step over a list of entries (+0xE4, +0xF4) by their flags, with a second list of numbers (+0xE8) counted down and up (+0xF0) |
 | `0xcc96b0` | Shader::BuildCC96B0 | In outline: builds a 0x4C-byte shader record: a list of n values and 0x60-byte entries with empty names for each of its parts (+0x2C, +0x30) |
+| `0xc0bed0` | Parser::InitC0BED0 | In outline: sets up a parser with its table (`0xFAFADC`) and empty lists |
+| `0x4214f0` | Effect::Rebuild4214F0 | In outline: releases (Effect::Release420DA0) and swaps a shared counted part (+0x19C into +0x15C +0x114) |
+| `0x4014b0` | Text::Copy4014B0 | In outline: makes its own copy of a shared text when shared |
+| `0x445440` | Record::Copy445440 | Copies a record and its 30 entries from another |
+| `0x9648f0` | Record::Copy9648F0 | Copies a record and its 16 entries from another |
+| `0x933570` | Record::Make933570 | In outline: sets up a record with cleared values and handles |

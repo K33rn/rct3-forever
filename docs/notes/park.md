@@ -1637,3 +1637,14 @@
 | `0x734400` | Path::Terrain734400 | In outline: a large path step with the shared terrain (`0x1311650`, 90 by 90) and cell sizes |
 | `0x930f30` | Water::Build930F30 | In outline: a large water build: makes room (`0x92E7F0` for 2n and 6n-6) and fills from a part (+0x120, +0x124) |
 | `0xba0b40` | Enclosure::RectBA0B40 | In outline: a large step over a rectangle kept inside its grid (+0x64, +0x68), with the shared terrain |
+| `0x935a30` | Water::Rebuild935A30 | In outline: a large rebuild: a step (`0x92EA60`) and releases parts (+0x24, +0x2C, +0x30) |
+| `0x8efd20` | Water::Normals8EFD20 | In outline: works out each triangle's normal (cross products) for a list |
+| `0x95c490` | Water::Rebuild95C490 | In outline: releases its part (+0x30), fills index lists with 0xFFFF and rebuilds |
+| `0x92fcb0` | Water::Ride92FCB0 | In outline: a large step when on (+0x1B1) with a ride part |
+| `0x91cad0` | Waterfall::Step91CAD0 | In outline: unless the waterfall manager is flagged (+0x68 bit 0), a large step from its points (+0x180 on) over the terrain; else copies them and gives 1 |
+| `0x8f6cb0` | Terrain::Count8F6CB0 | In outline: clears a list sized by the terrain's size and the shared count (`0x1311618`) and fills it |
+| `0x854a20` | Scenery::Cell854A20 | In outline: for a cell's entry (+0x28), counts it up and acts by case |
+| `0x493200` | Terrain::Step493200 | In outline: a step with the shared terrain, made when none (90 by 90) |
+| `0x91a5d0` | Waterfall::Step91A5D0 | In outline: a large step scaling values by a time (+0xE8, +0xE0) and a fraction under 1 |
+| `0x90ba10` | Water::Terrain90BA10 | In outline: with a part (+0x18) and entries, a terrain step |
+| `0x786340` | GuestGroup::Slots786340 | In outline: goes over slots 0 to 6 (+0x60) for those flagged (bit 6) |

@@ -564,3 +564,13 @@
 | `0xafb740` | Animal::TerrainAFB740 | In outline: a large step over terrain cells: makes two 0x400-byte buffers and reads three neighbouring slots (Animal::SlotAFB160) |
 | `0xa6d7b0` | Animal::PoseA6D7B0 | In outline: a large pose by kind (1, ...): blends points by a shared fraction (`0x13429E0`) and works out a normalised direction |
 | `0xb29a70` | WildAnimal::TerrainB29A70 | In outline: a large step with the terrain's bounds and the enclosure manager's cell |
+| `0xb792d0` | Animal::NearestB792D0 | In outline: a large find of the nearest (from the largest float) with the shared object (`0x12F468C`), made when none |
+| `0xaf7b50` | Animal::TrackAF7B50 | In outline: a large step for entry n that is on: reads a track's ends (`0xBC5AB0`, `0xBC5B40`) |
+| `0xb8a970` | Animal::PassB8A970 | In outline: with the shared value (`0x12F54C0`), goes over entries (+0x74 +0x24) |
+| `0xa720b0` | Animal::Overlap2 | In outline: a large step for two objects whose boxes overlap (another copy of Animal::Overlap with `0x13C3820`) |
+| `0xa72f80` | Animal::Overlap3 | In outline: the same with a 32-entry shared table (`0x13C893C`) filled with the largest float |
+| `0xb64800` | WildAnimal::StepB64800 | In outline: a large step with a part's values (+0x60 on) and two values (`0xB2E960`) |
+| `0xb3d250` | WildAnimal::CellB3D250 | In outline: an animal's cell (Grid::CellAt) inside the enclosure manager's grid |
+| `0xb66290` | WildAnimal::StepB66290 | In outline: a large step with a point and a part's values (+0x50 on) |
+| `0xa6f3a0` | Animal::NormalsA6F3A0 | In outline: works out normals for its triangles (+0x5C, +0x60) |
+| `0xa97f70` | Animal::UpdateA97F70 | In outline: an update when not flagged (+0x78) with a part |
