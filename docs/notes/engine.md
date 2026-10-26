@@ -1646,3 +1646,31 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xb5de60` | List::CopyB5DE60 | In outline: copies a list (+0x24) into a new 32-byte-entry array |
 | `0x99fb20` | Folder::LoadOnce99FB20 | In outline: unless loaded (`0x13CE594`), builds a path from the install folder text and loads it |
 | `0x99f890` | Folder::LoadOnce99F890 | In outline: the same load-once (`0x13CE4C8`) |
+| `0xbe2d30` | Resource::TableBE2D30 | In outline: collects a resource's entries (Resource::CollectBE29E0, `0xBE27B0`) |
+| `0xc536d0` | Loader::PumpC536D0 | In outline: a timed loader step (Timer::Milliseconds) |
+| `0xbe7e00` | Regions::CaseBE7E00 | In outline: a region step by case (`0xBE7950`) |
+| `0xc33730` | Resource::MakeC33730 | In outline: makes a resource part (`0xBD05B0`, `0xC6AC40`) |
+| `0xa04010` | Text::JoinA04010 | In outline: joins a text and a shared one (`0xF2A7D4`) |
+| `0x687720` | Folder::Find687720 | In outline: finds a folder by name (`0xBD0960`) |
+| `0x91c720` | Array::Resize91C720 | In outline: resizes a list of 0x30-byte entries to n |
+| `0x424290` | Array::Resize424290 | In outline: resizes a list of 0x24-byte entries to n |
+| `0x48ad70` | List::Copy48AD70 | In outline: copies a list into a new 32-byte-entry array |
+| `0xa067b0` | Array::MakeA067B0 | In outline: makes a 20-byte-entry array with a count |
+| `0x8860f0` | List::Index8860F0 | In outline: makes an index for a list (+0xD4 +8) |
+| `0x840900` | Scenery::Make840900 | In outline: makes a scenery list member (ListMember with `0x10EC9F0`) with a path table (`0x488290`) |
+| `0xc55580` | Stream::SetPausedC55580 | In outline: pauses or resumes the stream system (`0x13E6CF8`) |
+| `0xcea730` | IdMap::Remove | In outline: removes the entry with the id given from an id map (the partner of IdMap::Find) and gives its place |
+| `0xcea320` | IdMap::Remove2 | In outline: the same id map remove (another copy) |
+| `0xce9f00` | IdMap::Remove3 | In outline: the same id map remove (another copy) |
+| `0x9cdd70` | IdMap::Remove4 | In outline: the same id map remove (another copy) |
+| `0x8e7b00` | IdMap::Remove5 | In outline: the same id map remove (another copy) |
+| `0x8e7770` | IdMap::Remove6 | In outline: the same id map remove (another copy) |
+| `0x49a150` | IdMap::Remove7 | In outline: the same id map remove (another copy) |
+| `0x40b550` | IdMap::Remove8 | In outline: the same id map remove (another copy) |
+| `0x408240` | IdMap::Remove9 | In outline: the same id map remove (another copy) |
+| `0x881900` | Text::Make881900 | In outline: makes a text from an empty one |
+| `0xc54dc0` | Stream::NameC54DC0 | In outline: makes a stream's name (`0xCA24F0`) |
+| `0x4cbaa0` | Name::Find4CBAA0 | In outline: finds a name in a list ignoring case (WideString::ToLower, WideString::Compare) |
+| `0xc4d7a0` | Text::FindC4D7A0 | In outline: finds a text entry (`0xC47500`) |
+| `0xc31770` | Mesh::SetFormatC31770 | In outline: sets a mesh buffer's format by its kind (0x40, ...) |
+| `0x8d3140` | Terrain::TimedUpdate | In outline: a timed terrain update inside a critical section |

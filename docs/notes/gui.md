@@ -900,3 +900,29 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x8e5610` | Window::Build8E5610 | In outline: builds a window from the shared title `0x1313C9C` |
 | `0xae6780` | List::GrowAE6780 | In outline: grows a list (ObjectArray::SetCapacity on +0x4C) and fills it from another (+0x44) |
 | `0x86f050` | Window::Build86F050 | In outline: builds a window from the shared title `0x1310EB8` |
+| `0xa06b10` | Window::ShowA06B10 | In outline: makes a window part and acts when asked |
+| `0x9ef7f0` | Window::Build9EF7F0 | In outline: builds a window from the shared title `0x1341C80` |
+| `0x61ef90` | Window::Update61EF90 | In outline: a window update (`0x42B3C0`) |
+| `0x67d060` | Window::Build67D060 | In outline: builds a window from the shared title `0x12F83C4` |
+| `0x69ebf0` | Window::Build69EBF0 | In outline: builds a window from the shared title `0x1305BFC` |
+| `0x67d830` | Window::Build67D830 | In outline: builds a window from the shared title `0x12F83CC` |
+| `0x798fd0` | Toolbar::Build798FD0 | In outline: builds an image button (Button::SetImages with five images) |
+| `0x78a280` | Window::Build78A280 | In outline: builds a window from the shared title `0x1306A78` |
+| `0x63b780` | Window::Build63B780 | In outline: builds a window from the shared title `0x12F7E8C` |
+| `0x61e7b0` | MessageConsole::Make | In outline: makes the developers' message console (MessageConsole::MessageConsole) and activates it |
+| `0x6b1be0` | Window::Build6B1BE0 | In outline: builds a window from the shared title `0x1305D3C` |
+| `0x6e4fe0` | Window::Build6E4FE0 | In outline: builds a window from the shared title `0x130604C` |
+| `0x9a3920` | Window::Build9A3920 | In outline: builds a window from the shared title `0x13413D0` |
+| `0xc64840` | Window::ScaleC64840 | In outline: works out a window's scale when the shared value is unset (`0x13E6D08`) |
+| `0x694c10` | Layout::Setup694C10 | In outline: sets up the layout table when its value is unset (`0x10EEDB4` = 0xFFFF, `0x6930B0`) |
+| `0x9aec50` | Window::Text9AEC50 | In outline: sets a window's text when it changes |
+| `0x444890` | Window::Message444890 | In outline: another message result maker |
+| `0xa54220` | Window::TextsA54220 | In outline: makes a window's texts from a shared text (`0xF30568`, `0xA532A0`) |
+| `0x7f4540` | Window::Build7F4540 | In outline: builds a window from the shared title `0x130AB70` |
+| `0x68e950` | Window::Build68E950 | In outline: builds a window from the shared title `0x12F8488` |
+| `0x667710` | Window::Build667710 | In outline: builds a window from the shared title `0x12F8130` |
+| `0x4ca0b0` | Window::Build4CA0B0 | In outline: builds a window from the shared title `0x12F4E40` |
+| `0x980160` | Window::Layout980160 | In outline: places a window's rows (Window::UpdateRect) |
+| `0xacad60` | Graph::DrawACAD60 | In outline: draws a graph's frame (`0x6ACE50`) and contents when not flagged (+0x100) |
+| `0x6b2880` | Window::Update6B2880 | In outline: a window update (`0xBD36C0`) with no entries (+0x34) |
+| `0x601710` | Window::Part601710 | In outline: makes a 0x130-byte window part |

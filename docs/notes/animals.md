@@ -186,3 +186,11 @@
 | `0xb17710` | WildAnimal::UpdateB17710 | In outline: an animal update when not flagged (+0xCC) |
 | `0xa10bc0` | Bird::AngleA10BC0 | In outline: a bird's heading from its direction (arctangent of +0xA0 and +0xA8) and distance |
 | `0xb7ecf0` | WildAnimal::TerrainB7ECF0 | In outline: an animal's check over the terrain (WildAnimal::Interface60) |
+| `0xb8ef10` | Animal::RefreshB8EF10 | In outline: refreshes an animal (`0xB8DF10`, `0xB8A7F0`) |
+| `0xb56510` | Animal::CompareB56510 | In outline: compares a value (`0xB55E90`) against a limit |
+| `0xb415f0` | WildAnimal::Make | In outline: makes a wild animal (WildAnimal::WildAnimal) and sets it up (`0xB368D0`) |
+| `0xb88e20` | Animal::ListB88E20 | In outline: goes over a list's entries not flagged (+0x18) |
+| `0xad7b80` | Animal::KeyAD7B80 | In outline: finds an animation key at a time (Keys::FindTime) |
+| `0xb3b480` | Animal::LinkB3B480 | In outline: sets an animal's link (+0x4C) when it changes |
+| `0xb46080` | WildAnimal::Decide | In outline: with nothing to do (+0x78), makes an animal decision (WAS_Decision) |
+| `0xb47380` | WildAnimal::CheckB47380 | In outline: an animal check when flagged (+0xAD) |

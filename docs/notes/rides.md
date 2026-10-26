@@ -282,3 +282,19 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5c1070` | TrackPiece::Refresh5C1070 | In outline: refreshes a track piece (Set_+0xfc) when not flagged (+0xAC) |
 | `0x5c5620` | TrackedRide::HitTest5C5620 | In outline: another ride part hit test like TrackedRide::HitTest5C4EB0, for shown parts (not flag 0x10000) |
 | `0x53d8f0` | Ride::Find53D8F0 | In outline: finds an entry among a ride's parts (+0x34) |
+| `0x534970` | Ride::Section534970 | In outline: a ride's section (`0x12F5338`, `0x557BD0`) |
+| `0x5a8e50` | Ride::Place5A8E50 | In outline: for kinds 9 and 0xD, places at a scenery footprint's centre (SceneryItem::FootprintCentre) |
+| `0x5e7520` | TrackPiece::Select5E7520 | In outline: refreshes a piece (`0x5E64F0`) for the selected ride (`0x12F5608`) |
+| `0x526c40` | Car::Tilt526C40 | In outline: a car's pose (`0x50B9B0`) tilted back (Matrix::TurnAboutX by minus its angle) |
+| `0x5ea560` | TrackedRide::Update5EA560 | In outline: another tracked ride update when not flagged (+0x68) |
+| `0x7214a0` | Path::Flags7214A0 | In outline: path flags check (+0xD0, +0xD1) when asked |
+| `0x51de90` | Car::SetMode51DE90 | In outline: sets a ride car's mode (+0x38C) when it changes, with mode 1 handled |
+| `0x5db260` | Ride::CanOpen5DB260 | In outline: whether a ride can open (`0x5CFB10`) |
+| `0x4c5b60` | AttractionPerson::Spot4C5B60 | In outline: a person's spot on an attraction (`0x5BEB30`) when not flagged (+0x74) |
+| `0x5e6550` | TrackPiece::Selected5E6550 | In outline: acts on the selected ride (`0x12F5608`) when there is one |
+| `0x592240` | Ride::Case592240 | In outline: acts by a case (1, ...) |
+| `0x4ef6c0` | Ride::Hit4EF6C0 | In outline: a ride part hit test (`0x5DA220` within 0.5) when close enough |
+| `0x5ebf30` | AttractionPerson::Check5EBF30 | In outline: an attraction person check when not flagged (+0x118) for the selected one |
+| `0x4e84c0` | AttractionPerson::Check4E84C0 | In outline: the same attraction person check (another copy) |
+| `0x552dd0` | Ride::Kind552DD0 | In outline: acts by a ride part's kind (+0xB4: 1, ...) |
+| `0x4c8740` | Shop::Mode4C8740 | In outline: a shop step by its mode (+0xC4 = 2) and a value's sign |

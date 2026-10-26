@@ -255,3 +255,9 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xc5a5a0` | Vector::AngleBetween | In outline: works out the turn between two directions (their lengths and the angle between them) |
 | `0x960570` | Particles::Count960570 | In outline: a particle count from a shape's size (half its length times a rate), rounded |
 | `0x9008b0` | Water::Step9008B0 | In outline: a water step by the sign of a value |
+| `0x419920` | Grid::Normal419920 | In outline: a grid point's normal (Grid::Normal419100) by the side of a value |
+| `0x727ea0` | Quad::Normal727EA0 | In outline: a tile quad's normal (normalised) |
+| `0x7c2ac0` | Person::Turn7C2AC0 | In outline: a person's turn toward a direction when it is long enough |
+| `0x407870` | Draw::Length407870 | In outline: a line length (square root) for drawing |
+| `0xce55d0` | Sound::Direction | In outline: a sound's direction from the listener, normalised |
+| `0x9f7370` | Firework::Aim9F7370 | In outline: a firework's aim from its direction (+0x28) |

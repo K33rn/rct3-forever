@@ -622,3 +622,16 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x927630` | Water::Make927630 | In outline: sets up a water piece (`0x926050`) with the water manager |
 | `0xc6f8e0` | Device::ApplyC6F8E0 | In outline: applies a device setting when it can (`0xBE90C0`) |
 | `0x8e6980` | Water::Side8E6980 | In outline: which side of a plane a water point lies on |
+| `0xcec9b0` | Mesh::PassCEC9B0 | In outline: goes over a mesh's parts (+0x4C, `0xCEC7C0`) |
+| `0xcc6420` | Model::PartsCC6420 | In outline: goes over a model's parts when not flagged (+8) |
+| `0xc50da0` | Stream::FillC50DA0 | In outline: fills buffers for the current device (ForCurrent(3), `0xBFFB60`) |
+| `0xce1720` | Particles::TimeCE1720 | In outline: a particle time check against the shared count (`0x140081C`) |
+| `0x474d20` | Labels::Pick474D20 | In outline: finds the label under the mouse (MainCamera::Get, `0xCD79C0`) |
+| `0x9ec8b0` | Firework::Move9EC8B0 | In outline: moves a firework on when not flagged (+0x3C) |
+| `0x9d6110` | Fireworks::MakeShells | In outline: makes firework shells with fixed settings (`0x950E10` with 0xF and 5 and set sizes) |
+| `0xce8b00` | Shapes::GrowCE8B00 | In outline: grows a shape list (+0x10) |
+| `0xce8330` | Shapes::FillCE8330 | In outline: when on (+0x34), fills a shape's parts (+0x28) |
+| `0x44ac40` | Effect::Matrix44AC40 | In outline: works out an effect's matrix (`0xCD78A0`) when it has parts (+8, +0x58) |
+| `0x481910` | Draw::Line481910 | In outline: draws a line with the shared line drawer (`0x481620`) |
+| `0xce8d80` | Shapes::GrowCE8D80 | In outline: grows a shape list (+0x10) |
+| `0xcf0740` | Shapes::TexturesCF0740 | In outline: another shape textures pass like Shapes::TexturesCF0400 |

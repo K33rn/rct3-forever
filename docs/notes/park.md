@@ -664,3 +664,16 @@
 | `0xae3470` | List::PassAE3470 | In outline: goes over a list's entries (+4) |
 | `0xaa3a40` | PoolPiece::Sides | In outline: works out a pool piece's sides (PoolPiece::SideData) when it is on |
 | `0xa915f0` | Fence::MakeA915F0 | In outline: makes a border piece, placing the corners (Fence::CornersAB16C0) when it has no slot |
+| `0x84b5f0` | Scenery::Update84B5F0 | In outline: a scenery update when not flagged (+0x6C) |
+| `0x9fa7b0` | Fireworks::Terrain9FA7B0 | In outline: another firework pass over the terrain |
+| `0x6f7330` | VIP::Visit | In outline: when there is no current one (+0x74 +0xC), brings a VIP to the park (VIP::Arrive) |
+| `0x9a4cd0` | Fireworks::Place9A4CD0 | In outline: places a firework item when high enough and its check passes |
+| `0xb9c5f0` | PathGrid::PassB9C5F0 | In outline: goes over a path grid (+0x64 by +0x68) |
+| `0x479d30` | Shop::Item479D30 | In outline: a shop item for slot 0 or 1 |
+| `0x92c710` | Water::Jets92C710 | In outline: a water jet step when not flagged (+0x324) |
+| `0xb621b0` | WildAnimal::CanStep | In outline: whether an animal can step to a point over the terrain |
+| `0xaaf680` | Fence::NextAAF680 | In outline: when not flagged (+0x178), checks the next cell (`0xABD1C0` on +0x128, +0x12C) |
+| `0x445750` | Effects::Slots445750 | In outline: goes over an effect list's slots (+0x14) |
+| `0x8e4220` | Terrain::Cell8E4220 | In outline: a terrain cell step |
+| `0x8656e0` | Scenery::Make8656E0 | In outline: makes a scenery part when it has a slot |
+| `0x8eef10` | Water::Points8EEF10 | In outline: goes over a water piece's points (+8) |
