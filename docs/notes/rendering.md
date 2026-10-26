@@ -516,3 +516,20 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x8e84d0` | Water::Reflections8E84D0 | In outline: turns water reflections on or off by the settings (`0x10ED780`, +0x1C0), with `0x8E6150` |
 | `0x8f8f10` | Terrain::LoadTextures8F8F10 | In outline: opens and reads the terrain's resources by name (`0xBDADC0`, `0xBDAC20`) |
 | `0x9c44b0` | Particles::Near9C44B0 | In outline: whether an emitter is near the camera (`0x130654C`) within its distance (+0x130) |
+| `0xbf8f30` | Draw::SetupBF8F30 | In outline: another drawing setup for the current device (ForCurrent(3), Call10IfReady) |
+| `0x8f6920` | Terrain::Colours8F6920 | In outline: packs a list of terrain colours into bytes, four at a time |
+| `0x856d00` | SceneryRenderer::Draw856D00 | In outline: draws n scenery parts for the current device (ForCurrent(3)) unless turned off (`0x130BC95`) |
+| `0xcdca90` | Mesh::JoinCDCA90 | In outline: another mesh join like Mesh::JoinCDC480 |
+| `0x9749c0` | Particles::Draw9749C0 | In outline: another particle draw (when on, `0x12F018C` +0x24 +2) for the current device |
+| `0xcc8490` | Model::PartsCC8490 | In outline: another model parts pass like Model::PartsCC8810 |
+| `0xc1d460` | Particles::QuadC1D460 | In outline: another particle quad like Particles::QuadC1CEA0 (Triangle::FromBase) |
+| `0x96a940` | Shapes::Draw96A940 | In outline: draws a set of shapes (+0x3C) with a batch (`0x499160`), counting it (Counter::Increment) |
+| `0x7e45c0` | Model::Update7E45C0 | In outline: updates a model's lights (Model::UpdateLights) and parts (`0x861050`), with more when flagged (+0xB8) |
+| `0x473f30` | Labels::Update473F30 | In outline: goes over a list of labels (+0xC) by the camera (MainCamera::Get) and updates the shown ones (`0x471180`) |
+| `0x91ba70` | Waterfall::Make91BA70 | In outline: for flag 0x80, makes the waterfall manager and activates it; with debug mode 1 (`0x133A174` +0x310), more |
+| `0x979880` | Particles::Draw979880 | In outline: another particle draw (when on) for the current device |
+| `0x97a000` | Particles::Draw97A000 | In outline: another timed particle draw like Particles::Draw975190, within limits (under 10001, 15001) |
+| `0xc70230` | Effect::SetByKindC70230 | In outline: sets an effect's value by number: a colour (Colour::FromARGB) for 0, ... 0xC |
+| `0x9ef480` | Fireworks::DebugDraw9EF480 | In outline: when on (+0x124, +0x19C), draws a firework's path in green (0xFF00C000) with the shared line drawer |
+| `0x993a50` | FireworkSlot::KeyAt | In outline: makes a firework slot's key frame (FireworkSlotKeyFrame) for a time, finding its key (Keys::FindTime) when not flagged (+0xCC) |
+| `0x9d7b00` | FireworkDisplay::Load9D7B00 | In outline: makes a firework display (FireworkDisplay::FireworkDisplay) and fills it (`0x98D860`, `0x991000`, `0x9887A0`) |

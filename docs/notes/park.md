@@ -516,3 +516,13 @@
 | `0x4627a0` | Scenery::Activate4627A0 | In outline: with a reference (WithReference45FA50), activates the entries of a list (+0x48, count +0x4C) not flagged (+0x18) |
 | `0x5766d0` | Ride::Update5766D0 | In outline: a ride's update (`0x56F080`, `0x5613A0`, `0x561420`) with cases for kinds other than 0xD, 0xF, 0x16 |
 | `0x4cf8a0` | Shop::Items4CF8A0 | In outline: another shop item pass like Shop::Items4CFC30 |
+| `0x8b9fe0` | Scenery::Check8B9FE0 | In outline: a scenery check when asked and not flagged (+0x58), with a part (+0x54) |
+| `0x56f080` | Ride::Check56F080 | In outline: checks a ride with the current tool (`0x12F5638`, `0x5DBCD0`) and a value below 0 |
+| `0x8d3ce0` | Terrain::SaveCell | In outline: writes a terrain cell to a save (SaveWriter::Write: four values, then bytes) |
+| `0x946800` | Water::SaveBody | In outline: writes a water body to a save (SaveWriter::Write: four values, then its bytes) |
+| `0x9951c0` | Fireworks::Ground9951C0 | In outline: finds the terrain under a firework point (`0x8D6E90`) |
+| `0xa97930` | Fence::UpdateA97930 | In outline: goes over a border's pieces (+0x28, count +0x2C) whose value (+0x14) is below 0 and links them |
+| `0x99e490` | Fireworks::PlaceRow99E490 | In outline: snaps a firework list's point to a row (Grid::SnapToRow) and checks the slot (Get_+0x108, `0x13CE5EC`) |
+| `0xb9c230` | PathGrid::MarkB9C230 | In outline: goes over a path grid (+0x64 by +0x68) marking the cells that match the ids given |
+| `0xac0560` | Fence::RebuildPlay | In outline: rebuilds the border pieces around a rectangle (Fence::RebuildRect one cell wider) and plays the earth thump sound (EarthThump::Sound) |
+| `0x946be0` | Water::LoadBody | In outline: reads a water body from a saved block (`0x809210`, four bytes then single bytes), checking the block's size |

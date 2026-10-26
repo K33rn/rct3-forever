@@ -737,3 +737,10 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x692950` | Layout::Place692950 | In outline: another box placement like Layout::Place692CF0, growing the shared table when needed (`0x6918E0`) |
 | `0xaea080` | Graph::DrawAEA080 | In outline: another graph draw like Graph::DrawACFDB0, when not flagged (+0x100) |
 | `0xa297d0` | Info::TextA297D0 | In outline: makes an info text from a shared text (`0xF31F48`) for a thing |
+| `0xa06fc0` | Window::FillA06FC0 | In outline: fills a window's list from its entries (`0x687DF0`, `0x685AC0`, `0x687720`) and their texts |
+| `0x680160` | Window::Fill680160 | In outline: the same list fill (another copy) |
+| `0x751db0` | AvatarEditor::Draw751DB0 | In outline: draws the avatar editor's view (GUIRenderer), growing a shared list by 0x10 (`0x13064EC`, `0x13064F8`) |
+| `0x611c20` | Colours::For611C20 | In outline: a colour by number (up to 0x4000; above 0x80 a pale blue-green from Colour::ToRGB) |
+| `0x660190` | Window::Build660190 | In outline: builds a window from the shared title `0x12F80D8` |
+| `0xc6ba50` | ScrollBar::DrawC6BA50 | In outline: draws a scroll bar (ScrollBar::Draw) and its parts |
+| `0x690580` | Window::Build690580 | In outline: makes a 0xD8-byte window part with the shared title `0x12F8498` |

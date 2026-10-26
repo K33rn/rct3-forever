@@ -167,3 +167,8 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x79a6b0` | Guest::Spot79A6B0 | In outline: finds a spot for a guest over the terrain |
 | `0x7aa9c0` | Person::Route7AA9C0 | In outline: another route finder with the path manager |
 | `0x7ec8f0` | Person::Behaviour7EC8F0 | In outline: a person's update at a scenery behaviour: resets its state (Person::SetState) and checks the owner's flags (+0x7C bit 4, +0x58 bit 1) |
+| `0x7d4450` | Person::Lie7D4450 | In outline: when not flagged (+0x394), lays a person down: turns it along its direction and a quarter turn about x (Matrix::TurnAboutX with pi/2) |
+| `0x75bdd0` | Guest::Update75BDD0 | In outline: a guest's update: sets its state (Person::SetState) and, once a time (+0xBC) is reached, checks (`0x98E350`) |
+| `0x762f60` | Guest::Wet762F60 | In outline: a guest getting wet (Person::MadeWet), by its wetness level (+0x504, above 2 handled) unless flagged (+0x334) |
+| `0x75a800` | Guest::Random75A800 | In outline: in mode 1 (+0x121), picks a random value for a guest, rounded |
+| `0x535cc0` | Guest::Swim535CC0 | In outline: a guest's swim check: its group (Guest::Group) and the section it is in (`0x12F5338`) |

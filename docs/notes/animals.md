@@ -140,3 +140,8 @@
 | `0xb198b0` | WildAnimal::PlaceB198B0 | In outline: places an animal (WildAnimal::Interface60) on the terrain (a 90 by 90 grid) |
 | `0xb782a0` | Entries::SortB782A0 | In outline: sorts a list of 0x70-byte entries by their value at +8 |
 | `0xb43a90` | WildAnimal::TurnB43A90 | In outline: turns an animal when the change is big enough and it has a target (+0x40), by case, when flagged (+0x188) |
+| `0xb54ae0` | Animal::TargetB54AE0 | In outline: when not flagged (+0xC4), checks whether an animal's target (+0xC0) changed and finds the new one (`0xB539B0`) |
+| `0xb8c730` | Animal::FaceB8C730 | In outline: points an animal toward its target (`0xB891A0`, `0xB89460`, Matrix::LookAlongZSide) |
+| `0xb169d0` | Animal::EnclosureB169D0 | In outline: checks an animal's enclosure (EnclosureManager::Get, `0xB9AC20`) and acts by its state (+0x78) |
+| `0x8189b0` | SceneryBehaviour::Pick8189B0 | In outline: with a reference (WithReference8155F0), picks a random value (`0x4751E0`), rounded |
+| `0xb45c30` | Animal::UpdateB45C30 | In outline: an animal's update when not flagged (+0x58, +0x74) (`0xB33D10`) |

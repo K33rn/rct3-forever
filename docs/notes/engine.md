@@ -1553,3 +1553,12 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xceab50` | Pairs::InsertCEAB50 | In outline: adds a pair to a sorted list, keeping it in order |
 | `0x85a620` | Pairs::Insert85A620 | In outline: the same sorted pair insert (another copy) |
 | `0x98b4c0` | Links::Set98B4C0 | In outline: sets an object's link (+0x48) when it changes |
+| `0xaa1210` | ObjectList::GrowAA1210 | In outline: grows a list (+0x1C to +0x20) to take in index n (ObjectArray::SetCapacity) and links its new entries |
+| `0x744a90` | Loader::Find744A90 | In outline: looks up a resource from an empty name (`0xC16D10`) and uses it when found |
+| `0xbe70d0` | VertexLayout::BuildBE70D0 | In outline: builds a vertex layout from a mesh's parts (up to +0x30), adding each element (VertexLayout::Add) after a cleared table of 0xFFFF entries |
+| `0xc59ab0` | Text::SplitC59AB0 | In outline: splits a text into two parts (both starting empty) |
+| `0x8fc9d0` | Terrain::Buffers8FC9D0 | In outline: makes a terrain patch's records (0xA4 bytes and a 0x12C0-byte buffer) |
+| `0xb87790` | Info::TextB87790 | In outline: another info text maker like Info::Text4C0850, from its parts (+0x5C) |
+| `0x66c250` | Scenario::Load66C250 | In outline: loads a file (ManagedObject::LoadFile) and checks what it holds by kind |
+| `0xcc1420` | Matrices::ResizeCC1420 | In outline: resizes a list of 4x4 matrices (64 bytes each) to n, keeping the old ones |
+| `0xce5230` | Sound::UpdateCE5230 | In outline: a sound's update when it has something (+0x24, +0x20): runs Sound::UpdateCE4CC0 and sets its value when it changed (+0x18) |

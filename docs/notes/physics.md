@@ -224,3 +224,6 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x8ead40` | Water::Normals8EAD40 | In outline: works out a water piece's normals over the terrain, normalising each |
 | `0x5f07b0` | Camera::Aim5F07B0 | In outline: when not flagged (+0x58), points a camera along a direction (Matrix::LookAlongZSide) when it is long enough |
 | `0x8c0170` | Terrain::LowestPoint | In outline: the lowest of a list of terrain points (the first for one or two) |
+| `0xa176b0` | Camera::AimA176B0 | In outline: normalises a direction for a camera's aim |
+| `0xbb9090` | PointSet::StepBB9090 | In outline: another point walk step like PointSet::StepBB8430 |
+| `0xbc5580` | Track::SnapBC5580 | In outline: snaps a track piece's height (Grid::SnapIndex with 0.1) by its kind (4 handled) |
