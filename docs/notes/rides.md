@@ -606,3 +606,14 @@ Tracked rides, flat rides and their cars and trains.
 | `0x56a400` | Ride::Check56A400 | In outline: a check when not flagged (+0x254) |
 | `0x5604c0` | Ride::Clear5604C0 | In outline: tears down a part and more (+0x2DC) |
 | `0x491260` | Ride::Count491260 | In outline: a loop up to n when not flagged (+0x428) |
+| `0x5c7280` | TrackedRide::Extent5C7280 | In outline: a loop clearing an extent (Extent::Clear) |
+| `0x4f0f30` | Ride::Mode4F0F30 | In outline: with no slot (+0x7F8), a step unless in mode 3 or 1 (+0x144) |
+| `0x59be00` | Ride::Activate59BE00 | In outline: activates a part with the current tool (`0x12F5638`) |
+| `0x56a2e0` | Ride::Check56A2E0 | In outline: a check when not flagged (+0x254) |
+| `0x511010` | Car::Check511010 | In outline: a step for values above 2 when not flagged (+0x88C) |
+| `0x4ee570` | Ride::Round4EE570 | In outline: a value rounded from a scale, negated when asked |
+| `0x4ce890` | Shop::Entry4CE890 | In outline: when not flagged (+0x4C), a step with a ride's entry (TrackedRideInstance::Entry) |
+| `0x5abae0` | Ride::Refresh5ABAE0 | In outline: a refresh (`0x52F710`) and a step when not flagged (+0x338) |
+| `0x5c3ca0` | TrackPiece::Time5C3CA0 | In outline: a step (`0x5C17F0`) with a non-negative time |
+| `0x5ae460` | Ride::Value5AE460 | In outline: a value with a text when a value (+0x868) is below 0 |
+| `0x4c8110` | Shop::Mode4C8110 | In outline: in mode 2 (+0xC4), a step with an object (Interface60::Get) |

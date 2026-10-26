@@ -1403,3 +1403,15 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x682f30` | Window::Round682F30 | In outline: a value rounded when not flagged (+0x269) |
 | `0x670ab0` | WindowList::Make670AB0 | In outline: makes a window list (WindowList) |
 | `0x441960` | Window::Set441960 | In outline: sets a part (+0x58) when it changes |
+| `0x6c9b80` | ListWindow::Fill6C9B80 | In outline: sets a list window's count (ListWindow::SetCount from `0x6C80C0`) |
+| `0xc62bd0` | Window::ParentC62BD0 | In outline: a step for a window and its parent |
+| `0xc623f0` | Window::FlagsC623F0 | In outline: a step (`0xC622D0`) when both low flags are set |
+| `0x6e9d70` | Window::Make6E9D70 | In outline: makes a list member part (Listener440, ListMember with `0x10EC9E4`) |
+| `0x615dc0` | Window::Place615DC0 | In outline: places a part (Window::SetRelationAndLayout with 6) and acts when not flagged (+0xE0) |
+| `0x9bcf80` | Window::Update9BCF80 | In outline: an update when not flagged (+0x38) and flagged (+0x49) |
+| `0x6adcc0` | Window::Loop6ADCC0 | In outline: a loop |
+| `0xa1e530` | Window::LoopA1E530 | In outline: when on (+0xA4) with a part (+0x84), goes over a list |
+| `0xa1e410` | Window::LoopA1E410 | In outline: the same (another copy) |
+| `0x9ebb50` | Window::Make9EBB50 | In outline: makes a list member part (ListMember with `0x10EC9E4`, Listener440) |
+| `0x7c8870` | Info::Text7C8870 | In outline: makes an info text from a shared one (`0xF31F48`) and a wide string |
+| `0x6a7df0` | Window::Mode6A7DF0 | In outline: a step in mode 1 |

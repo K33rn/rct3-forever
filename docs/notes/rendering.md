@@ -863,3 +863,4 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbc63b0` | Track::LengthBC63B0 | In outline: a length step with fewer than two stations |
 | `0xbb69e0` | Track::RoundBB69E0 | In outline: a value rounded from a scale (+0x2C) |
 | `0xac8d20` | LaserDesigner::RandomColour | In outline: a random value (_rand) and a colour blend element (ColourBlenderElement) |
+| `0x48a5c0` | Effect::Check48A5C0 | In outline: an effect part check |

@@ -212,3 +212,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7c7280` | Person::Case7C7280 | In outline: a step by a value (+0x120: 5, ...) |
 | `0x7bcdd0` | Person::Database | In outline: makes a database entry (PPGDatabaseEntry) |
 | `0x7d5880` | Person::Check7D5880 | In outline: a step when a check fails (`0x7D3EA0`) |
+| `0x786870` | GuestGroup::GolfBall | In outline: a group slot step (GuestGroup::Slot7861D0(1, 1, 1, 6)) and makes a golf ball item (CarriedItem::MakeGolfBall) |
+| `0x7b3bf0` | Person::Mode7B3BF0 | In outline: a step unless a person's mode is 8 (+0x190), for kinds under 4 (+0x120) |

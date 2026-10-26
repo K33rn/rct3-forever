@@ -1290,3 +1290,24 @@
 | `0x784840` | GuestGroup::Check784840 | In outline: a check (`0x7847B0`) when not flagged (+0x11C) |
 | `0x77dd90` | Park::Link77DD90 | In outline: a step with a part |
 | `0x7156e0` | Path::Link7156E0 | In outline: links a path part (Path::Link7141A0) |
+| `0x983b00` | Fireworks::Time983B00 | In outline: a step with a positive value (+0xC4) while a time (+0xBC) is under a limit |
+| `0x83b1c0` | Scenery::Range83B1C0 | In outline: a step when two values are the same (+0x24, +0x28) |
+| `0x499b10` | List::Pass499B10 | In outline: goes over entries (+0x24) that are set |
+| `0x9ec2e0` | Fireworks::Loop9EC2E0 | In outline: goes over a list |
+| `0x93d340` | Water::Table93D340 | In outline: sets up a 0x100-entry path table (`0x488290`) over the terrain |
+| `0x8bce50` | Terrain::Cell8BCE50 | In outline: a step for a cell inside a count (+4) |
+| `0x8057d0` | Regions::Loop8057D0 | In outline: a loop when two values differ |
+| `0x491e30` | Grid::Table491E30 | In outline: sets up a 0x80-entry path table (`0x488290`) over the terrain |
+| `0x97e200` | Water::Pass97E200 | In outline: goes over entries (+0x11C) |
+| `0x77dc70` | Park::Value77DC70 | In outline: a value from entries not flagged (+0x334) |
+| `0x77db50` | Park::Value77DB50 | In outline: the same (another copy) |
+| `0x4632e0` | Scenery::Clear4632E0 | In outline: tears down entries (+0x18) |
+| `0x8c6f10` | Terrain::Corner8C6F10 | In outline: a step with a terrain corner's position (Terrain::CornerPosition) |
+| `0x8849b0` | Scenery::Find8849B0 | In outline: finds an entry by a value among entries (+0xF4) |
+| `0x7ad760` | Terrain::Value7AD760 | In outline: a step by a value (+0x52C) |
+| `0xa0bc60` | Bird::WaterA0BC60 | In outline: a step with the water manager (`0x9459F0`) |
+| `0x8291a0` | Scenery::Flags8291A0 | In outline: a step for entries whose bit is set (+0x134) |
+| `0x7e8d20` | Person::Terrain7E8D20 | In outline: a step over the terrain |
+| `0x919c80` | Waterfall::Flag919C80 | In outline: a step when the waterfall manager is flagged (+0x68 bit 0x10) |
+| `0x7cf7e0` | Person::Link7CF7E0 | In outline: a step with a part |
+| `0x435ea0` | Grid::Round435EA0 | In outline: a value rounded |

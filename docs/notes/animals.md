@@ -418,3 +418,17 @@
 | `0xb1b140` | Animal::StepB1B140 | In outline: a step (`0x44E540`) with a part |
 | `0xac8900` | Animal::IndexAC8900 | In outline: a step (`0xAC7D90`) and makes an index of four-byte entries |
 | `0xa17580` | Bird::DeadZoneA17580 | In outline: a length step with a dead zone (Vector::DeadZone) |
+| `0xab1450` | Animal::EntryAB1450 | In outline: a check (Animal::CheckA8B8B0) with a table entry (Table30::Entry with +0x13C) |
+| `0xa27260` | Animal::WeatherA27260 | In outline: a step with the weather (Weather::Get) and a sine of a sum |
+| `0xb1ad70` | Animal::StepB1AD70 | In outline: a step (`0x44E540`) when given a part |
+| `0xa60fd0` | Animal::CompareA60FD0 | In outline: a step when a value is below a limit |
+| `0xa609d0` | Animal::LengthA609D0 | In outline: a step when a direction is long enough |
+| `0xb55b50` | WildAnimal::ItemWindow | In outline: builds the wild animal item window (WildAnimalItemWindow::Build) and clears a key combination |
+| `0xaa4060` | PoolComplex::FlagAA4060 | In outline: a step when a table entry exists (IndexedTable::Entry) and a grid value has a flag (GridArea::ValueAt) |
+| `0xa282d0` | Animal::NearestA282D0 | In outline: finds the nearest entry that passes a check |
+| `0xb11320` | Animal::Database | In outline: makes database entries (WAIDatabaseEntry) for entries (+0x48) |
+| `0xa326a0` | Animal::ValueA326A0 | In outline: a value from entries, checking a slot against a count (+0x5C) |
+| `0xa32560` | Animal::ValueA32560 | In outline: the same (another copy) |
+| `0xb6bd00` | Animal::WalkB6BD00 | In outline: a walk over points with values above 0 |
+| `0xb5bbe0` | Animal::WalkB5BBE0 | In outline: the same (another copy) |
+| `0xa0c0a0` | Bird::WalkA0C0A0 | In outline: the same (another copy) |

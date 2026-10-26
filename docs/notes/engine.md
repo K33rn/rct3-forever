@@ -2099,3 +2099,24 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x513490` | Array::Resize513490 | In outline: resizes a list of 20-byte entries to n |
 | `0xc2f480` | Resource::LoopC2F480 | In outline: a loop and a step for a slot under a count (+0x18) |
 | `0xa1d0f0` | Name::FindA1D0F0 | In outline: a find by comparing names (WideString::Compare) |
+| `0x69d460` | Input::ImeComposition | In outline: when flagged (8), reads the IME composition text (ImmGetCompositionStringW) |
+| `0x417e40` | List::Add417E40 | In outline: adds an entry when full (+0x14 vs +0xC), under 0x10 |
+| `0x410420` | NamedObject::Make410420 | In outline: makes a list member object (ListMember with `0x10EC9E8`) with an Object413 (0xB) |
+| `0xcba3c0` | ShaderFile::CheckCBA3C0 | In outline: a check on a buffer's place against its end |
+| `0x498510` | List::Grow498510 | In outline: grows a list (+8) to hold one more |
+| `0x9d4960` | Resource::Count9D4960 | In outline: a step (`0xBCE9D0`) for a positive count |
+| `0x807700` | Load::Read807700 | In outline: reads a four-byte value from a saved block (Load::ReadBytes) |
+| `0xbd80a0` | Table::FillBD80A0 | In outline: fills a 0x1D table with 0xFFFF (`0x416110`) |
+| `0x8f7750` | Table::Fill8F7750 | In outline: fills a two-entry table with 0xFFFF (`0x416110`) |
+| `0x4164c0` | Table::Fill4164C0 | In outline: fills a four-entry table with 0xFFFF (`0x416110`) |
+| `0xbd2b80` | List::LoopBD2B80 | In outline: goes over a linked list |
+| `0xcb5be0` | Shader::SetCB5BE0 | In outline: sets a value (+0x60) when it changes, with under two handled |
+| `0xc3a6d0` | Resource::FindC3A6D0 | In outline: a step when found (`0xC42410`) |
+| `0xa53de0` | File::LoadA53DE0 | In outline: a step (Window::StepA52B40) and loads a file (ManagedObject::LoadFile) |
+| `0x55b1b0` | Record::Make55B1B0 | In outline: makes a record with an empty handle |
+| `0xcefa90` | Array::GrowCEFA90 | In outline: grows a list of eight-byte entries to hold n |
+| `0xcef970` | Array::GrowCEF970 | In outline: the same (another copy) |
+| `0xcaf740` | ResourceFile::MakeCAF740 | In outline: makes a part (Constructor, `0xCADD90`) |
+| `0xa01ce0` | Save::WriteA01CE0 | In outline: writes four four-byte values to a save (SaveWriter::Write) |
+| `0x5ba680` | Save::Write5BA680 | In outline: the same (another copy) |
+| `0x800340` | Text::Make800340 | In outline: makes a text (`0x6A5E20`) |
