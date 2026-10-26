@@ -1891,3 +1891,29 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x620250` | Window::Case620250 | In outline: a step by case (3, ...) |
 | `0x7003c0` | Window::Rect7003C0 | In outline: takes a rectangle from a part (+0xD4, slot 0x20) and acts |
 | `0x677090` | Window::Case677090 | In outline: for kind 7 from its part (+0x108), a step |
+| `0x6aade0` | Gui::Make6AADE0 | In outline: makes a 0x10-byte part |
+| `0x61f700` | Gui::Pass61F700 | In outline: goes over entries (+0xF4) |
+| `0x63fea0` | Gui::Release63FEA0 | In outline: takes one from a count (+0x14) and frees at zero |
+| `0x69f2f0` | Window::Slot69F2F0 | In outline: a step with slot n (+0x2CC) |
+| `0x65ad40` | Window::Check65AD40 | In outline: a step when a check passes (slot 0xFC) |
+| `0x62c950` | Window::Loop62C950 | In outline: a loop up to n |
+| `0x6de2f0` | Window::Name6DE2F0 | In outline: a name text and more |
+| `0x6df9e0` | Window::Part6DF9E0 | In outline: a step with a part (+0x84) |
+| `0x630d80` | Window::Part630D80 | In outline: with a part's part (+0x1C +0x190), a step |
+| `0x62c9d0` | Window::Mode62C9D0 | In outline: in mode 7 (+0x70), a step |
+| `0x700e10` | Window::Clear700E10 | In outline: empties a list (+0x174) |
+| `0x6c9d50` | Window::Count6C9D50 | In outline: a step when a count (`0x6C80C0` on +0x218) is under 8 |
+| `0x67e8f0` | Window::Step67E8F0 | In outline: a step with many values |
+| `0x661660` | Ref::Step661660 | In outline: adds one to a count and acts |
+| `0x63e550` | Window::Draw63E550 | In outline: draws a frame (Window::DrawFrame6ACE50) and acts with a part (+0xD8) |
+| `0x6b0e30` | Window::Part6B0E30 | In outline: with a part (+0x3C), tells it (slot 0x18) |
+| `0x6a2c40` | Window::Width6A2C40 | In outline: makes a part and a step with a width |
+| `0x644d90` | Window::Value644D90 | In outline: a value with another (+0x1B0) |
+| `0x6247f0` | Window::List6247F0 | In outline: a step with a list (+0x4C) |
+| `0x671c30` | Window::Find671C30 | In outline: a find over a part's list (+0x128 +0x64) |
+| `0x6673b0` | Window::Content6673B0 | In outline: sets content (Window::SetContent) from a part's entry |
+| `0x675b70` | Window::List675B70 | In outline: a step with a list (+0x108) |
+| `0x660740` | Window::Fraction660740 | In outline: a fraction from values |
+| `0x62ab20` | Window::Mode62AB20 | In outline: unless in mode 1 (+0x70), a step |
+| `0x617eb0` | Window::Text617EB0 | In outline: a step when a text check fails (Text::Check403C20) |
+| `0x667120` | Window::Set667120 | In outline: sets two values (+0x16C, +0x170) to n and acts |

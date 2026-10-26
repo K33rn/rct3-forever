@@ -1069,3 +1069,5 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xb75570` | Effect::StepB75570 | In outline: a step with points |
 | `0xb5f270` | Effect::StepB5F270 | In outline: the same (another copy) |
 | `0x7b9bb0` | Effect::Step7B9BB0 | In outline: the same (another copy) |
+| `0x7b3580` | Effect::Hit7B3580 | In outline: a check with a point plus an offset |
+| `0x488a00` | Effect::Hit488A00 | In outline: the same (another copy) |
