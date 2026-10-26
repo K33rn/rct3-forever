@@ -2681,3 +2681,70 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x42c550` | Sky::Find42C550 | In outline: a find over a list (+0x20) |
 | `0x41c660` | Record::Check41C660 | In outline: a check with none handled |
 | `0x6209c0` | Window::Check6209C0 | In outline: a check with none handled |
+| `0x612170` | Record::Init612170 | In outline: sets up a record with its tables (`0xF42AC0`, `0xF42AAC`) |
+| `0x456140` | List::Find456140 | In outline: a find over entries (+4) |
+| `0x443a20` | Text::Format443A20 | In outline: formats into a 32-character buffer |
+| `0xc3ba90` | Resource::StepC3BA90 | In outline: a step with a part (+0x6C) |
+| `0xbff0e0` | Resource::InitBFF0E0 | In outline: sets up a record with its table (`0xFA5CD4`) |
+| `0xbeb7c0` | Resource::InitBEB7C0 | In outline: sets up a record with its table (`0xFA577C`) |
+| `0xbc67b0` | Track::CountBC67B0 | In outline: a count over entries |
+| `0x475ae0` | Text::Step475AE0 | In outline: a step with a work buffer |
+| `0xc934b0` | Batches::InitC934B0 | In outline: fills a record from its arguments |
+| `0xc586b0` | Device::CountC586B0 | In outline: 0 with no part (+0x44), else a count |
+| `0x403210` | Static::Reset403210 | In outline: when on (+0x1C), resets (Static::Reset) |
+| `0x403020` | Static::Reset403020 | In outline: when on (+0x24), resets (Static::Reset) |
+| `0xcba910` | Text::ParseNumberCBA910 | In outline: reads a number from a C string into a 64-bit value |
+| `0xcafb20` | Resource::TextCAFB20 | In outline: makes a text |
+| `0xc34340` | Resource::MakeC34340 | In outline: makes a 0x110-byte part |
+| `0xc33c00` | Resource::MakeC33C00 | In outline: a step (`0xC326A0`) and makes a 0x110-byte part |
+| `0xc03fb0` | Device::ValueC03FB0 | In outline: a value from the device (slot 0x20) |
+| `0xbfed80` | Device::MakeBFED80 | In outline: makes a buffer of n times m with the device (+4 +0x24C) |
+| `0xbebbd0` | Resource::InitBEBBD0 | In outline: fills a record from its arguments |
+| `0xbb7580` | Track::PassBB7580 | In outline: goes over a part's entries (+0x10 +0x24) |
+| `0xcb81f0` | Resource::MakeCB81F0 | In outline: makes a part, with none handled |
+| `0xc9e5e0` | Batches::ReleaseC9E5E0 | In outline: takes one from a count (+0x68) and acts |
+| `0xc64100` | Window::StepC64100 | In outline: unless flagged (0x80000), a step (`0xC5E300`) |
+| `0xc20cf0` | Resource::StepC20CF0 | In outline: a step (`0xCA3540`) and more |
+| `0xc0dc80` | Text::InitC0DC80 | In outline: sets up a record with its table (`0xFAFAAC`) and a text |
+| `0xbeb6e0` | Resource::InitBEB6E0 | In outline: fills a record from its arguments |
+| `0xbb6880` | Track::PassBB6880 | In outline: goes over entries (+0x18) |
+| `0xcc90f0` | Ref::AssignCC90F0 | In outline: takes a reference to another's part when it differs |
+| `0xc5fa90` | Window::ScaleC5FA90 | In outline: a value scaled by a shared value (`0x13E6D00` +0x194) |
+| `0xc03a90` | Device::MakeC03A90 | In outline: makes a 16-byte part |
+| `0xc01020` | Device::CountC01020 | In outline: a count |
+| `0xbe4530` | Error::InitBE4530 | In outline: sets up a record with its table (`0xF270D4`) and -1 |
+| `0xbd1620` | Record::InitBD1620 | In outline: sets up a record with its table (`0xFA14D0`) and a value (+0x24) |
+| `0xb96e10` | Record::InitB96E10 | In outline: sets up a record with its table (`0xF28EA8`) |
+| `0xcb6fb0` | Shader::PassCB6FB0 | In outline: goes over entries (+0x14) |
+| `0xca5dc0` | Table::CheckCA5DC0 | In outline: throws an error (0x2A02) when bits do not match |
+| `0xc07180` | Device::ClearC07180 | In outline: empties a list (+0x24) |
+| `0xbe2030` | Record::InitBE2030 | In outline: fills a record from a value |
+| `0x495220` | Text::Parse495220 | In outline: goes over a C string |
+| `0xced190` | Shapes::StepCED190 | In outline: a step with a value (+0x58) |
+| `0xcd32e0` | Text::CompareCD32E0 | In outline: compares two-byte texts |
+| `0xcbd3e0` | String::StepCBD3E0 | In outline: a step with the shared empty string (String::SharedEmpty) |
+| `0xc572c0` | Device::StepC572C0 | In outline: for -1, unless a shared flag is set (`0x10F31F8`), a step |
+| `0xc56f00` | Device::MakeC56F00 | In outline: sets a shared flag (`0x13E6C60` = 1) and makes a 0x3C-byte part |
+| `0xc65ae0` | Window::CheckC65AE0 | In outline: a check with none handled |
+| `0xbeba10` | Resource::InitBEBA10 | In outline: sets up a record with its table (`0xFA5798`) |
+| `0xbd1750` | Record::InitBD1750 | In outline: sets up a record with its table (`0xFA14D0`) and a value |
+| `0xce9710` | Camera::SetCE9710 | In outline: sets a value from another when it differs |
+| `0xca5800` | Table::FindCA5800 | In outline: a find from a point below a limit (+0x20) |
+| `0xc3a4b0` | Resource::StepC3A4B0 | In outline: a step with a list (+0x14) |
+| `0xc2fc30` | Table::EntryC2FC30 | In outline: for a nonzero slot, a two-byte entry from a table |
+| `0xc18550` | Path::CopyC18550 | In outline: sets up a record with its table (`0xFAFC8C`) from another |
+| `0xc0fb50` | Parser::MakeC0FB50 | In outline: makes a part (Parser::Allocate 4, 0x44) |
+| `0xbf9e30` | Text::StepBF9E30 | In outline: a step with work buffers |
+| `0xbc6940` | Track::CountBC6940 | In outline: a count over entries |
+| `0xbb5a60` | Track::CountBB5A60 | In outline: the same (another copy) |
+| `0x4977e0` | Static::Make4977E0 | In outline: makes a part |
+| `0x418e40` | Effects::Find418E40 | In outline: a find with an entry (Thunk) |
+| `0xce3160` | Table::SetCE3160 | In outline: removes a slot (Table::RemoveCE3100) and acts, -1 handled |
+| `0xcbdbb0` | Shader::CheckCBDBB0 | In outline: a step with none handled |
+| `0xcb7740` | Mesh::FreeCB7740 | In outline: a mesh step (Mesh::StepCB7060) and takes one from a shared count (`0x13E6F6C`) |
+| `0xc62cf0` | Window::StepC62CF0 | In outline: a step (`0xC622D0`) with values |
+| `0xc36b00` | Resource::MakeC36B00 | In outline: makes a part |
+| `0xc0efe0` | Resource::InitC0EFE0 | In outline: sets up a record with its tables (`0xFAFB24`, `0xFAFB20`) |
+| `0xbe5720` | Shared::MakeBE5720 | In outline: once (`0x13D0E78`), makes a 0x40-byte record |
+| `0x9d0ce0` | Ref::Assign9D0CE0 | In outline: takes a reference to another's part when it differs |
+| `0x9c5660` | Record::Copy9C5660 | In outline: copies a record from another |

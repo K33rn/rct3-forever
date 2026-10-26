@@ -695,3 +695,40 @@
 | `0xafdcb0` | Animal::StepAFDCB0 | In outline: with none given and no part (+0x1090), a step |
 | `0xa8b5d0` | Animal::PassA8B5D0 | In outline: goes over entries (+0xD8) |
 | `0x9c7510` | Fireworks::Pass9C7510 | In outline: goes over entries (+0x9C) |
+| `0xb8de50` | Animal::SharedB8DE50 | In outline: with no shared value (`0x1305DD8`), a step (`0x6C1DA0`) |
+| `0xb6ce40` | Animal::BitsB6CE40 | In outline: a count over bits (+0x60) |
+| `0xa5ee90` | Animal::PointA5EE90 | In outline: a step with points |
+| `0xaf5f90` | Animal::MakeAF5F90 | In outline: makes a 0xC0-byte part |
+| `0xadfe10` | Animal::MakeADFE10 | In outline: makes a 0xF0-byte part |
+| `0xb81da0` | Animal::PartB81DA0 | In outline: with a part (+0xB4), a step with a value (+0x10) |
+| `0xb35330` | WildAnimal::TerrainB35330 | In outline: a step when the terrain is not flagged |
+| `0xa956f0` | PlaceObject::ErrorA956F0 | In outline: an error text (PlaceObject::ErrorText) and a step with a value (+0x44) |
+| `0xa147e0` | Bird::CheckA147E0 | In outline: a check with a shared object (`0x12F468C`) |
+| `0xb366e0` | WildAnimal::PartB366E0 | In outline: a step with a part (+0x98) |
+| `0xa186d0` | Bird::DistanceA186D0 | In outline: a step with a distance from a part's point (+0xB0) |
+| `0x98e690` | Record::Check98E690 | In outline: makes a part and a check |
+| `0xb59810` | Animal::HandleB59810 | In outline: makes a handle and links it |
+| `0xac6cc0` | Graph::StepAC6CC0 | In outline: a step with two values (+0x44, +0x4C) |
+| `0xac3270` | Graph::MakeAC3270 | In outline: makes a 0x7C8-byte part |
+| `0xaa0e00` | PoolComplex::StepAA0E00 | In outline: a step (`0xA9FFF0`) and a part (slot 0x124) |
+| `0x9890c0` | Record::Reset9890C0 | In outline: clears a flag (+0xFC) and acts |
+| `0xb33c60` | WildAnimal::SharedB33C60 | In outline: a step with a shared value (`0x13D294C`) |
+| `0xb2f110` | WildAnimal::StepB2F110 | In outline: a step with the wild animal interfaces |
+| `0xb2f620` | WildAnimal::StepB2F620 | In outline: the same (another copy) |
+| `0xa10b10` | Bird::RandomA10B10 | In outline: a step with a random value scaled and shifted |
+| `0xaebc40` | Animal::PointAEBC40 | In outline: a step with a point 2 high |
+| `0xaeae80` | Animal::PointAEAE80 | In outline: the same (another copy) |
+| `0xae9f80` | Animal::PointAE9F80 | In outline: the same (another copy) |
+| `0xace100` | Animal::PointACE100 | In outline: the same (another copy) |
+| `0xaa97d0` | PoolComplex::HandleAA97D0 | In outline: makes a handle and links it |
+| `0xa3c1c0` | Animal::ResetA3C1C0 | In outline: clears values (+0x18C, +0x190) and more |
+| `0x9d2c90` | Ref::Release9D2C90 | In outline: takes one from a count and frees at zero |
+| `0xb7b1d0` | Animal::MakeB7B1D0 | In outline: makes a 0x110-byte part |
+| `0xb3e390` | WildAnimal::LanguageB3E390 | In outline: a step with a language index (Language::Index) |
+| `0xa1e800` | Bird::StepA1E800 | In outline: with a part (+0x84), a step with values (+0x48) |
+| `0xa85490` | Animal::ValueA85490 | In outline: a value when not flagged (+0x48) |
+| `0xa7ad50` | Animal::StepA7AD50 | In outline: a step with many values |
+| `0xb7cba0` | Animal::CheckB7CBA0 | In outline: a step when not flagged (+0x90) |
+| `0xb32670` | WildAnimal::ParseB32670 | In outline: goes over a C string |
+| `0xafa490` | Animal::PartAFA490 | In outline: with a part (+0x40), a step |
+| `0xa02140` | Fireworks::ListA02140 | In outline: a step with a list (+8, +0xC) |

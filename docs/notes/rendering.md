@@ -1050,3 +1050,19 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9fc310` | Fireworks::Step9FC310 | In outline: a step with many values |
 | `0x9fc980` | Fireworks::Entry9FC980 | In outline: a step for entry n (0x30 bytes) |
 | `0x46fb40` | Labels::Flag46FB40 | In outline: when flagged (bit 2 of +0x354), a step |
+| `0x48aff0` | Effect::Flag48AFF0 | In outline: when flagged (bit 4 of +8), a step |
+| `0x7b3890` | Effect::Step7B3890 | In outline: a step with a work buffer |
+| `0xb6c100` | Effect::StepB6C100 | In outline: the same (another copy) |
+| `0xb74fb0` | Effect::BoundsB74FB0 | In outline: when flagged (bit 4 of +8), updates bounds (QuadTree::UpdateBounds) |
+| `0xb74dd0` | Effect::BoundsB74DD0 | In outline: the same (another copy) |
+| `0xb5ecb0` | Effect::BoundsB5ECB0 | In outline: the same (another copy) |
+| `0xb5ead0` | Effect::BoundsB5EAD0 | In outline: the same (another copy) |
+| `0x7b94e0` | Effect::Bounds7B94E0 | In outline: the same (another copy) |
+| `0x7b9300` | Effect::Bounds7B9300 | In outline: the same (another copy) |
+| `0x48bd10` | Effect::Bounds48BD10 | In outline: the same (another copy) |
+| `0x48bc60` | Effect::Bounds48BC60 | In outline: the same (another copy) |
+| `0x431f00` | Sky::Entry431F00 | In outline: for entry n under a count (+0x4C), a step with a point |
+| `0x9feae0` | Fireworks::Shared9FEAE0 | In outline: with a shared value (`0x10EDB90`), a step |
+| `0x7b05e0` | Effect::Value7B05E0 | In outline: when asked, a fixed value (`0xF264E0`) |
+| `0x44ea10` | Effect::Value44EA10 | In outline: a value when not flagged (+0x60) |
+| `0x9faae0` | Fireworks::Entry9FAAE0 | In outline: a step for entry n (0x90 bytes) |

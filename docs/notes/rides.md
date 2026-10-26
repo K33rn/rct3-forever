@@ -920,3 +920,50 @@ Tracked rides, flat rides and their cars and trains.
 | `0x569e50` | Ride::Tool569E50 | In outline: a step with a value (+0x228) and the current tool |
 | `0x4cf380` | Shop::Mode4CF380 | In outline: for mode 3 or 1, a step with a part (+0x10) |
 | `0x99fe70` | Fireworks::Cost99FE70 | In outline: a total load (Cars::TotalLoad) and a money text (Money::FormatOrUnlimited) |
+| `0x5bd7a0` | TrackPiece::Terrain5BD7A0 | In outline: a step when the terrain is not flagged |
+| `0x5adf90` | Ride::Pass5ADF90 | In outline: goes over entries (+0x6B0) |
+| `0x58bda0` | Ride::Point58BDA0 | In outline: a point from the selected ride (Ride::Selected58BAB0, +0x18) |
+| `0x58bce0` | Ride::Point58BCE0 | In outline: the same with +0xC |
+| `0x58b1f0` | Ride::Value58B1F0 | In outline: a value from a part (slot 0x28) |
+| `0x4f1980` | Ride::Check4F1980 | In outline: a check with a work buffer |
+| `0x5cde00` | Ride::Step5CDE00 | In outline: a step with many values |
+| `0x5cc680` | TrackedRide::Handle5CC680 | In outline: when it matches a part's value (+0x200 +0xC), makes a handle |
+| `0x50cf50` | Car::Add50CF50 | In outline: adds when there is room |
+| `0x4b59c0` | Ride::Check4B59C0 | In outline: a step when a check fails (Ride::Check4B51E0) |
+| `0x5d1e69` | TrackPiece::Fragment5D1E69 | In outline: a fragment that sets a part (`0xF3F6D4`) under a flag |
+| `0x579ff0` | Ride::Init579FF0 | In outline: fills a record from its arguments |
+| `0x4bbbc0` | Ride::Shared4BBBC0 | In outline: with a shared value (`0x1313C88` +0x20), a step with a value (+0x398) |
+| `0x549ba0` | Ride::Part549BA0 | In outline: a step with a part (+0x4C) |
+| `0x5f1f20` | Ride::Handle5F1F20 | In outline: makes a handle and links it |
+| `0x5ae770` | Ride::Handle5AE770 | In outline: the same (another copy) |
+| `0x59af70` | Ride::Step59AF70 | In outline: a step with many values |
+| `0x58e880` | Array::Grow58E880 | In outline: grows a list to hold n plus one |
+| `0x4d5580` | Ride::Value4D5580 | In outline: a value when not flagged (+0x378) |
+| `0x4aa5b0` | Ride::Value4AA5B0 | In outline: a value when not flagged (+0x3C4) |
+| `0x49d5a0` | Text::Format49D5A0 | In outline: formats a value into a 128-character buffer |
+| `0x49af92` | GameTime::Fragment49AF92 | In outline: a fragment that takes the game time |
+| `0x49ae02` | GameTime::Fragment49AE02 | In outline: the same (another copy) |
+| `0x496fe0` | Text::Step496FE0 | In outline: a step with a 1024-character buffer |
+| `0x59bd50` | Ride::Check59BD50 | In outline: a check when not flagged (+0x84) |
+| `0x562c40` | Ride::Kind562C40 | In outline: for kind 0x1D (+0x60), a step when not flagged (+0x238) |
+| `0x5d44e0` | TrackPiece::Set5D44E0 | In outline: sets a value (+4) when it changes |
+| `0x5d43c0` | TrackPiece::Set5D43C0 | In outline: the same (another copy) |
+| `0x5d42a0` | TrackPiece::Set5D42A0 | In outline: the same (another copy) |
+| `0x5e1010` | TrackedRide::Pass5E1010 | In outline: goes over entries (+0x114) |
+| `0x5dfe40` | TrackedRide::Track5DFE40 | In outline: a step with the tracked ride and track interfaces |
+| `0x5d7b10` | TrackPiece::Handle5D7B10 | In outline: makes a handle and links it |
+| `0x55ae80` | Ride::Handle55AE80 | In outline: the same (another copy) |
+| `0x55add0` | Ride::Handle55ADD0 | In outline: the same (another copy) |
+| `0x52c7c0` | Car::Check52C7C0 | In outline: a check when not flagged (+0xD8) |
+| `0x513740` | Car::Reset513740 | In outline: clears a flag (+0x130) and makes a handle |
+| `0x508280` | Car::Handle508280 | In outline: makes a handle and links it |
+| `0x4ef0e0` | Ride::Mode4EF0E0 | In outline: in mode 3 or 1 (+0x144), a step |
+| `0x58c670` | Ride::Interface58C670 | In outline: with an interface (Interface44::Get), a step |
+| `0x573a40` | Ride::Update573A40 | In outline: an update when not flagged (+0x5C) |
+| `0x53b530` | Ride::Init53B530 | In outline: fills a record from its arguments |
+| `0x50bf80` | Car::Shared50BF80 | In outline: when a shared flag is set (`0x12F50E1`), a step with a shared value (`0x12F50DC`) |
+| `0x58f7e0` | Ride::Refresh58F7E0 | In outline: refreshes (Ride::Refresh58EA70) and acts with a point |
+| `0x532b00` | Ride::SetPoint532B00 | In outline: copies a point into its values (+0x1C0 on) |
+| `0x4c7420` | Shop::Update4C7420 | In outline: an update when not flagged (+0x58) |
+| `0x5d08a0` | TrackPiece::Init5D08A0 | In outline: fills a record from its arguments |
+| `0x4d3390` | Shop::Handle4D3390 | In outline: a step (`0x4D2C10`) and a handle (Handle::For) |

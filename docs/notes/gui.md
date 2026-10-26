@@ -1747,3 +1747,28 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x99fdb0` | Window::Text99FDB0 | In outline: the same (another copy) |
 | `0x99ad00` | Window::Text99AD00 | In outline: the same (another copy) |
 | `0xae6d40` | Graph::ValueAE6D40 | In outline: a rounded value times a scale, with a part (+0xF0) |
+| `0x681c00` | Window::Point681C00 | In outline: a step with a point |
+| `0x6af2e0` | Window::Part6AF2E0 | In outline: a step with a part (+0xB8) |
+| `0x6a1060` | Window::Check6A1060 | In outline: unless flagged (0x800), a step (slot 0xFC) |
+| `0x6710b0` | Window::Clear6710B0 | In outline: empties a list (+0x40) |
+| `0x6dbc90` | Window::Place6DBC90 | In outline: a step (`0x6D4870`) and places by a part's value (+0xD4 +0x80) |
+| `0x6abbd0` | Window::Rect6ABBD0 | In outline: takes a rectangle from a part (+0xF0, slot 0x20) and acts |
+| `0x67ec90` | Window::Rect67EC90 | In outline: the same (another copy) |
+| `0xa58b60` | Window::SetA58B60 | In outline: sets a value (+0x170) and acts with a part (+0x174) |
+| `0x683e60` | Window::Text683E60 | In outline: makes a text |
+| `0x678560` | Window::Set678560 | In outline: sets a value (+0xF0) and makes a part |
+| `0x65eaa0` | Window::Make65EAA0 | In outline: makes a 0x268-byte part |
+| `0x6873d0` | Window::Text6873D0 | In outline: a text, with no part (+0x178) handled |
+| `0x6c2140` | Window::Set6C2140 | In outline: sets a value (+0xF0) and acts |
+| `0x69f370` | Window::Pass69F370 | In outline: goes over entries with a point |
+| `0x6649b0` | Window::Make6649B0 | In outline: makes a 0xC-byte part |
+| `0x6a1800` | Window::Key6A1800 | In outline: handles a key (Window::HandleKey6A1120) with a rounded value |
+| `0x6d4870` | Window::Place6D4870 | In outline: lays out (Window::Layout6D4690) and places by a part's value (+0xD4 +0x80) |
+| `0x6a0f40` | Window::Text6A0F40 | In outline: makes a text |
+| `0xb01280` | Window::MakeB01280 | In outline: makes a 0x268-byte part |
+| `0xa1e9b0` | Window::FindA1E9B0 | In outline: a step when a find passes (`0xA1ACF0` with +0x88) |
+| `0xa1d400` | Window::InitA1D400 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0xa58ce0` | Window::PassA58CE0 | In outline: goes over entries (+0x184) |
+| `0x825530` | Window::Part825530 | In outline: a step (Window::Slot48Self) and makes a part when none (+0x140) |
+| `0x7aed10` | Toolbar::Children7AED10 | In outline: a step with children (Window::ChildrenSlot2) and `0x8E5910` |
+| `0x6714b0` | Window::Find6714B0 | In outline: a find with none handled |

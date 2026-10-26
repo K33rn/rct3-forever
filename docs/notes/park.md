@@ -1854,3 +1854,51 @@
 | `0x871240` | Scenery::Make871240 | In outline: makes a 0xC-byte part |
 | `0x843a60` | Scenery::Step843A60 | In outline: a step with many values |
 | `0x784b20` | GuestGroup::Make784B20 | In outline: makes a 0xC-byte part |
+| `0x703400` | Grid::Terrain703400 | In outline: a step when the terrain is not flagged |
+| `0x846d20` | Scenery::Step846D20 | In outline: a step (`0x828560`) with work values |
+| `0x83ff70` | Scenery::Step83FF70 | In outline: a step with a shared object (`0x13429A8`) and points |
+| `0x7881b0` | GuestGroup::Part7881B0 | In outline: a step with a part's value (+0x19C +0xF8) |
+| `0x7729f0` | Park::Find7729F0 | In outline: a find over a list (+0xAC) |
+| `0x761260` | Guest::Handle761260 | In outline: makes a handle and links it |
+| `0x71d6e0` | Path::Terrain71D6E0 | In outline: a step when the terrain is not flagged |
+| `0x93c630` | Water::List93C630 | In outline: a step with a list (+0x14) |
+| `0x842710` | Scenery::Make842710 | In outline: with no part (+0x124), makes a 0x270-byte one |
+| `0x8152a0` | SceneryBehaviour::Check8152A0 | In outline: a check when not flagged (+0x18) |
+| `0x761a80` | Guest::Check761A80 | In outline: a check when not flagged (+0x530) |
+| `0x71ba90` | Path::Step71BA90 | In outline: a step with a value (+0xA4) and slot 0x30 |
+| `0x8ea090` | Terrain::Remove8EA090 | In outline: removes from a map (IdMap::Remove5 on +0x158) |
+| `0x77f960` | Park::Add77F960 | In outline: grows a list by 8 when full (Array::Resize5501E0) and adds |
+| `0x71b010` | Path::Terrain71B010 | In outline: a step when the terrain is not flagged |
+| `0x703320` | Grid::Terrain703320 | In outline: the same (another copy) |
+| `0x936ee0` | Water::Part936EE0 | In outline: a step with a part (+0x5C) |
+| `0x7cf660` | Person::Mode7CF660 | In outline: unless in mode 6 (+0x350), a step when given |
+| `0x784700` | GuestGroup::Find784700 | In outline: a find over a list (+0x44) |
+| `0x94eeb0` | Water::Entry94EEB0 | In outline: when asked, a step for entry n (0x60 bytes) |
+| `0x7722b0` | Park::Handle7722B0 | In outline: makes a handle and links it |
+| `0x970a90` | Water::Entry970A90 | In outline: a value for entry n (12 bytes) |
+| `0x91bf90` | Waterfall::Step91BF90 | In outline: a terrain step with values |
+| `0x8da8d0` | Terrain::Point8DA8D0 | In outline: a step with a point |
+| `0x84f680` | Scenery::Make84F680 | In outline: with no part, makes a 0x1008-byte one |
+| `0x7f76b0` | Person::Handle7F76B0 | In outline: makes a handle and links it |
+| `0x739540` | Guest::Make739540 | In outline: makes a 0x180-byte part |
+| `0x731220` | Path::Make731220 | In outline: makes a 0xBF8-byte part |
+| `0x723b70` | Path::Byte723B70 | In outline: a step by a byte (+0x8B) |
+| `0x714d90` | Path::Set714D90 | In outline: sets a value (+0x160) from a byte and acts |
+| `0x92ee40` | Water::Check92EE40 | In outline: a check when not flagged (+0x170) |
+| `0x8c6760` | Scenery::Step8C6760 | In outline: a step with many values |
+| `0x87c460` | Scenery::Terrain87C460 | In outline: for n not negative, a terrain step |
+| `0x85b1a0` | Scenery::Bits85B1A0 | In outline: a step by bits |
+| `0x82fd40` | Scenery::SetPoint82FD40 | In outline: sets a point (+0x120 on) when it changes |
+| `0x7c61d0` | Person::Step7C61D0 | In outline: a step with values |
+| `0x754540` | Guest::Shared754540 | In outline: once (`0x13064FC`), makes a 0x2C-byte record |
+| `0x7034f0` | Grid::Terrain7034F0 | In outline: a step when the terrain is not flagged |
+| `0x9d13f0` | Particles::Pass9D13F0 | In outline: goes over entries (+0x78) |
+| `0x836100` | Scenery::Make836100 | In outline: makes a 0xC0-byte part |
+| `0x79aad0` | Toolbar::Handle79AAD0 | In outline: makes a handle and links it |
+| `0x8f3340` | Terrain::Part8F3340 | In outline: a step with a part (+0x2C, slots 0x14, 8) |
+| `0x837ad0` | Scenery::Init837AD0 | In outline: clears a value (+4) and sets another to 0x20000 (+8) |
+| `0x81a760` | SceneryBehaviour::Kind81A760 | In outline: sets a kind (+0x70) and a value from a shared table (`0x10F0718`) |
+| `0x753180` | Guest::Part753180 | In outline: with a part (+0x14), a step |
+| `0x938cd0` | Water::Cell938CD0 | In outline: a value for a cell (row times a width plus column) |
+| `0x87ed50` | Scenery::Parse87ED50 | In outline: goes over a C string |
+| `0x9978a0` | Fireworks::Step9978A0 | In outline: a step (`0x997450`) and acts with a shared value (`0x10F0CE8`) |
