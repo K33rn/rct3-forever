@@ -237,3 +237,5 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbbd650` | Track::SpeedBBD650 | In outline: a track point's speed value from its distance (square roots) within a limit (+0x1C) |
 | `0xae1b40` | Graph::FindAE1B40 | In outline: finds the shown entry (+0x40, count +0x44) at a value |
 | `0xc209e0` | Matrix::FromAxisAngle | In outline: makes a rotation from a turn vector (its length is the angle, using its cosine and sine), leaving tiny turns alone |
+| `0x419100` | Grid::Normal419100 | In outline: normalises a direction for a grid point |
+| `0xa6f0a0` | Points::StepA6F0A0 | In outline: moves a list of points on by a time, four at a time |

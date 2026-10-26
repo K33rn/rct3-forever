@@ -186,3 +186,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x756790` | Guest::Sounds756790 | In outline: plays a guest's crowd sounds (Crowd::Sounds, `0x7B5010`) unless flagged (+0x509) |
 | `0x75ca40` | Guest::Behaviour75CA40 | In outline: a guest's update at a scenery behaviour (state 0xC), resetting its state when the owner is flagged (bit 4 of +0x7C) |
 | `0x7972a0` | Guest::Behaviour7972A0 | In outline: another guest update at a scenery behaviour (state 0xF) |
+| `0x778580` | GuestGroup::Check778580 | In outline: a group's check over its members (+0x48) unless told not to |
+| `0x76f560` | Guest::FindAttraction76F560 | In outline: goes over the attractions (AttractionInstance::FirstOf) and picks the ones a guest can use (`0xA887B0`) |

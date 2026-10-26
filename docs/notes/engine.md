@@ -1593,3 +1593,9 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc3ff60` | ResourceFile::GetC3FF60 | In outline: gets entry n of a resource file (in range of +0x2C) when it is open (+0x30), with state 5 handled |
 | `0xc17bb0` | Path::MatchC17BB0 | In outline: another path match like Path::MatchC17890 |
 | `0xc17580` | Path::MatchC17580 | In outline: another path match like Path::MatchC17890 |
+| `0xc4e710` | Strings::MakeC4E710 | In outline: makes n empty strings in a new array |
+| `0xae50f0` | List::UpdateAE50F0 | In outline: goes over a list's entries not flagged (+0x18) with a part (+0x14) |
+| `0xc002a0` | Input::KeyEventC002A0 | In outline: handles a key event: turns its scan code into a virtual key with the keyboard layout (MapVirtualKeyExA with +0x324) and records it, with a case for held keys |
+| `0xcc3160` | Atlas::PackCC3160 | In outline: another rectangle packing like Atlas::PackCC3470 (0x55 slots, a 0x100-entry table) |
+| `0x7397d0` | Names::Unique7397D0 | In outline: another unique name maker |
+| `0x40d540` | List::Grow40D540 | In outline: grows a list (+8) to take in an entry (`0x40C6A0`) |

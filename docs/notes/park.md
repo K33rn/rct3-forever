@@ -562,3 +562,18 @@
 | `0xa606c0` | Tool::PickA606C0 | In outline: finds what is under the mouse (`0xCD79C0`, `0x48C300`) |
 | `0x9124d0` | Water::Table9124D0 | In outline: builds a table of n water entries |
 | `0x825da0` | Scenery::Update825DA0 | In outline: finds a scenery item (`0x825A00`) and refreshes it |
+| `0xb9a210` | PathGrid::RectB9A210 | In outline: goes over a path grid rectangle |
+| `0x9eb030` | Fireworks::Ground9EB030 | In outline: checks a firework's height over the terrain |
+| `0xabdbb0` | PoolComplex::WaterABDBB0 | In outline: goes over a pool's rectangle of cells with the water manager |
+| `0xaaf900` | Fence::NeighboursAAF900 | In outline: when not flagged (+0x178), refreshes a border cell's neighbours (`0xABD1C0` either side) |
+| `0x88d160` | Scenery::Copy88D160 | In outline: copies a scenery entry with its two boxes (Rect::Assign) |
+| `0xbaf160` | Enclosure::ValueBAF160 | In outline: an enclosure value for entry n (below +0x204 +0x44) when not flagged (+0x208) |
+| `0x8f9db0` | Terrain::Rect8F9DB0 | In outline: a terrain pass over a rectangle (up to +0x3B) |
+| `0x7cc820` | Person::Check7CC820 | In outline: a person's check (Set_+0xc, `0x46F8E0`) |
+| `0x77dec0` | GuestGroup::Pay77DEC0 | In outline: a group's check against the park (Park::Get, `0x6C1DA0`) over its members (+0x48) |
+| `0x46f240` | Terrain::Near46F240 | In outline: whether two points are near each other over the terrain |
+| `0xaf55a0` | Water::JetAF55A0 | In outline: starts a water effect n (`0x94EEB0` with 1, `0x94EF60`) when there is one |
+| `0x436eb0` | Weather::Step436EB0 | In outline: moves a timed value on by its table (+0x1D0 by +0x2D8) when a slot matches (+0x2D4) |
+| `0xb9ca60` | PathGrid::FindB9CA60 | In outline: finds an entry of a path grid matching an id (+0xAC) |
+| `0x8eb0f0` | Water::Build8EB0F0 | In outline: builds water entries up to a count (+0x120) when asked |
+| `0x95b320` | Water::Spread95B320 | In outline: spreads water from a cell over the terrain (`0x95A570`) |

@@ -161,3 +161,10 @@
 | `0xa12990` | Animal::ChooseA12990 | In outline: another animal action pick when not flagged (+0x138) (`0xA11350`) |
 | `0xa18e20` | Bird::UpdateA18E20 | In outline: another bird update for kind 0x200 not in mode 2 |
 | `0xb60f50` | WildAnimal::StepB60F50 | In outline: an animal's step toward its target (`0xB84800` on +0x60) over the terrain |
+| `0xb3af20` | WildAnimal::PlaceB3AF20 | In outline: places an animal (WildAnimal::Interface60) on the terrain |
+| `0xb15c80` | WildAnimal::TerrainB15C80 | In outline: an animal pass over the terrain (a 90 by 90 grid) |
+| `0xbaa5e0` | Enclosure::PickBAA5E0 | In outline: finds the enclosure cell under a point from the camera over the terrain |
+| `0xb19170` | WildAnimal::PlaceB19170 | In outline: another animal placement over the terrain |
+| `0xb67960` | WildAnimal::CellB67960 | In outline: finds an animal's terrain cell (Grid::CellAt) |
+| `0xb526b0` | Animal::LinkB526B0 | In outline: links an animal's part when it has one (+0x138 +0xC) |
+| `0x9857e0` | Animal::Release9857E0 | In outline: releases an animal's links |

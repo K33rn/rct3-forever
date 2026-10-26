@@ -258,3 +258,14 @@ Tracked rides, flat rides and their cars and trains.
 | `0x568860` | Ride::Slot568860 | In outline: when not flagged (+0x5C) with a slot (+0x280) inside the ride's count (+0x6B0) |
 | `0x5abc20` | Ride::Mode5ABC20 | In outline: acts by a ride part's mode (+0x100: 1, ...) and its kind (+0xB4 = 3) |
 | `0xa87e00` | PoolComplex::PartA87E00 | In outline: a pool complex part by its kind (0, 3: PointerTable::Value44) |
+| `0x51e150` | Car::Update51E150 | In outline: a ride car's timed update when shown (+0x250) |
+| `0x5e7f50` | TrackPiece::Check5E7F50 | In outline: a track piece check for the selected ride (`0x12F5608`) by its options |
+| `0x59c270` | Ride::Gather59C270 | In outline: when not flagged (+0x84), gathers a ride's parts by kind (LayeredObjects::Gather5E92A0) |
+| `0x5a43e0` | Ride::Slots5A43E0 | In outline: a ride's slots up to its count (+0x6B0), with kind 4 (+0x38C) handled |
+| `0xa753f0` | Coaster::UpdateA753F0 | In outline: when on (+0xA0), refreshes (`0xA6F3A0`) and acts in mode 2 |
+| `0x52c4c0` | Car::Crash52C4C0 | In outline: resets a ride car's crash (RideCarCrash::Reset) and acts unless flagged (+0x1C1, +0xD8) |
+| `0x51b7d0` | Car::Parts51B7D0 | In outline: when on (+0x924), goes over a car's parts (+0x90C, count +0x910) handling each (`0x51B590`) |
+| `0x4c7b40` | AttractionPerson::Place4C7B40 | In outline: places a person on an attraction (`0x4C5E10`) when not flagged (+0x74) |
+| `0x5a2880` | TrackedRide::Section5A2880 | In outline: works out a track section (`0x564550`, `0x12F5338`, `0x559BF0`) |
+| `0x58ca20` | AttractionPerson::Spot58CA20 | In outline: finds a person's spot on an attraction (AttractionPersonInfo::Person) |
+| `0x5e11e0` | TrackedRide::Check5E11E0 | In outline: checks a ride's track (TrackedRide::Check5D9E80) and collects its parts (SmallArray, `0x5BF3C0`) |

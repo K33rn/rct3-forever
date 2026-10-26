@@ -561,3 +561,17 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x89edd0` | Scenery::Ground89EDD0 | In outline: works out a scenery part's box (`0x864620`) over the terrain |
 | `0xace200` | Graph::DrawACE200 | In outline: another graph draw when not flagged (+0x100) |
 | `0xc5df60` | Draw::C5DF60 | In outline: a long maths body with no calls (a drawing step) |
+| `0x90c7d0` | Water::Draw90C7D0 | In outline: another water draw like Water::DrawFlagged90CAE0 for the current device |
+| `0xcc10f0` | Shader::SetCC10F0 | In outline: sets a shader's values (`0xE02AB0`, `0xE02B70`) by its flags (bit 2, the kind table `0xFC4C78`) |
+| `0x96a630` | Shapes::Draw96A630 | In outline: draws a shape set with a batch (`0x8534A0`), counting it |
+| `0xce9830` | Shapes::FillCE9830 | In outline: fills a shape's parts (+0x18) when no target is given |
+| `0x9719c0` | Shapes::Draw9719C0 | In outline: draws a shape with its alpha (+0xC, `0x5BAB50`), counting it |
+| `0x85a060` | SceneryRenderer::Draw85A060 | In outline: draws scenery parts (+0x120) for the current device, each from its table entry (Table2C::Value) |
+| `0x7bae80` | Fog::Update7BAE80 | In outline: a timed update that sets the fog (Fog::Setup from its distance, +0x14 +0x2C) |
+| `0xcc6f00` | Animation::SampleCC6F00 | In outline: samples an animation's tracks over a range at a time (Keys::FindFrom2) |
+| `0x9faf80` | Fireworks::Shots9FAF80 | In outline: goes over a display's shots (+0x5C) that have a slot, starting each (`0x8501C0`) |
+| `0x859d60` | SceneryRenderer::Draw859D60 | In outline: another scenery draw like SceneryRenderer::Draw85A060, over the parts at +0x100 |
+| `0x979d00` | Particles::Same979D00 | In outline: another particle setup comparison like Particles::Same974E60 |
+| `0xa0d300` | Effect::FaceA0D300 | In outline: turns an effect by an angle (cosine, sine) and points it (Matrix::LookAlongZ) |
+| `0x977370` | Particles::Draw977370 | In outline: draws particles for the current device (ForCurrent(3)) |
+| `0x9ae960` | Fireworks::Update9AE960 | In outline: a firework update when on (+0x154) and not flagged (+0xFC) |

@@ -793,3 +793,22 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x99e160` | Window::Build99E160 | In outline: builds a window from the shared title `0x13413B4` |
 | `0x6a3e90` | List::Scroll6A3E90 | In outline: scrolls a list (`0x6A4AB0`) to keep its view (+0x158 to +0x160) in range |
 | `0x608b40` | Window::Build608B40 | In outline: builds a window from the shared title `0x12F5724` |
+| `0x6af7e0` | Window::BuildTitled | In outline: the window base that many window builders call first: builds a window from a title (by default the shared title `0x1305CFC`) |
+| `0x43e790` | Text::Make43E790 | In outline: makes two texts and, when asked, joins them |
+| `0x61d000` | Text::Name61D000 | In outline: makes a text with `%NAME%` replaced for each of a list's entries (+0x8C) |
+| `0x6e3b40` | Text::Name6E3B40 | In outline: makes a name text (NameText_0x0) and copies it |
+| `0x9dede0` | Text::Three9DEDE0 | In outline: makes three texts from shared texts (`0xF858B0`, `0xF858AC`, `0xF858A8`) |
+| `0x6a43e0` | Window::Build6A43E0 | In outline: builds a window from the shared title `0x1305C68` |
+| `0x681cc0` | Window::Build681CC0 | In outline: builds a window from the shared title `0x12F83FC` |
+| `0x9aa8a0` | Window::Build9AA8A0 | In outline: builds a window from the shared title `0x134140C` |
+| `0xa7ff10` | Window::BuildA7FF10 | In outline: builds a window from the shared title `0x13CDE98` |
+| `0x42abc0` | Window::Build42ABC0 | In outline: builds a window from the shared title `0x1103BC8` |
+| `0x666570` | Window::Part666570 | In outline: makes a 0x118-byte window part (`0x6663D0`) |
+| `0x7513b0` | AvatarEditor::Sort7513B0 | In outline: goes over the avatar editor's shared list (`0x13064EC`) by its values |
+| `0xaeaf80` | Graph::DrawAEAF80 | In outline: another graph draw when not flagged (+0x100) |
+| `0x67f7f0` | List::Layout67F7F0 | In outline: places a list window and its rows (+0x16C) |
+| `0x444f10` | Window::Message444F10 | In outline: another message result maker (rounded sizes); the one Window::HandleKey6A1120 uses above 0x5000 |
+| `0x6e68c0` | Objectives::Text6E68C0 | In outline: an objective's text from its name (ReleaseAnimalsCondition::Name) |
+| `0x6e2560` | Objectives::Text6E2560 | In outline: an objective's text from its name (NameText_0x0) |
+| `0x6954f0` | Layout::Place6954F0 | In outline: another box placement, setting up when the shared value is unset (`0x10EEDB4` = 0xFFFF, `0x6930B0`) |
+| `0x6afe60` | Window::Update6AFE60 | In outline: a window's update with the shared object (`0x1342708`) and a value (`0xA1D240`) |
