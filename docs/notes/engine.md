@@ -4568,3 +4568,228 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcc28d0` | Shader::NothingCC28D0 | In outline: shows no effect in the decompiler |
 | `0xcc2830` | Shader::NothingCC2830 | In outline: shows no effect in the decompiler |
 | `0xcc26c0` | Shader::NothingCC26C0 | In outline: shows no effect in the decompiler |
+| `0xdfe530` | DShow::MulDivDFE530 | In outline: a signed 64-bit multiply then divide with rounding (__allmul, sign handled on each part), like DirectShow's llMulDiv |
+| `0xdfd630` | DShow::ConnectDFD630 | In outline: for a set of media types, asks a pin to accept them (slots 0x1C, 0xC) and goes over its entries; 1 for none |
+| `0xdf6f40` | DShow::JoinDF6F40 | In outline: under two locks, joins a pin to a graph (`0xDFB4B0`) and tells the filter (slot 0x24); gives the result |
+| `0xe01630` | DShow::NextTimeE01630 | In outline: under a lock, works out the earliest pending time of two timer lists (`0xE01AD0`), allowing for an offset (+0x68), and waits for it |
+| `0xe017b0` | DShow::AdviseE017B0 | In outline: under a lock, adds a timed request to one of two lists by its time |
+| `0xdfb4b0` | DShow::ReceiveConnectionDFB4B0 | In outline: checks a connecting pin (E_POINTER for none), asks it for an interface (`0x1044BC4`) and its media type and allocator (slots 0x3C, 0x24, 0x14) |
+| `0xdfd420` | DShow::DecommitDFD420 | In outline: under a lock, a step (`0xDFD190`) and, when needed, frees its samples and wakes waiters |
+| `0xdf63a0` | DShow::GetPinDF63A0 | In outline: under a lock, makes its pin the first time (0x50 bytes) and gives it |
+| `0xdfc580` | DShow::WaitStateDFC580 | In outline: under a lock, waits on two handles (WaitForMultipleObjects) while a state (+0xC4) is 2, then adds one to a count (+0xCC) |
+| `0xdfc3a0` | DShow::SetEventDFC3A0 | In outline: under a lock, copies a handle into itself (DuplicateHandle in this process) the first time |
+| `0xdf9d90` | DShow::EnumNextDF9D90 | In outline: an enumerator's next: E_POINTER for no output, resets when its owner's version (slot 0x14) changed, then copies up to n items |
+| `0xdf6a00` | DShow::GetPinDF6A00 | In outline: under a lock, makes its pin the first time (0xE0 bytes, `0xDF7820` with the name `0x10FF97C`) |
+| `0xdf61a0` | DShow::InitDF61A0 | In outline: sets up a renderer-like filter: a base (`0xDF9150`), an event (`0xDFDAB0`), clears values and two critical sections |
+| `0xe01070` | DShow::FreeE01070 | In outline: releases every entry of a list and a clock's advise (slot 0x18 with +0x54) and the clock itself |
+| `0xdfa390` | DShow::InitDFA390 | In outline: sets up a pin: a base (`0xDFD8F0`), values, a media type (Track::InitBB1E00), rate limits (-1, 0x7FFFFFFF) and a rate of 1.0 |
+| `0xdf9560` | DShow::RunDF9560 | In outline: under a lock, sets a start time and runs every connected pin (slot 0x1C); goes active first when needed |
+| `0xe03da0` | DShow::ResizeE03DA0 | In outline: resizes an array of 32-byte entries (Memory::AllocAligned, ArrayConstruct), copying the old ones |
+| `0xe01240` | DShow::UnadviseE01240 | In outline: under a lock, removes a timed request from its list |
+| `0xdfc8a0` | DShow::CompleteConnectDFC8A0 | In outline: VFW_E_NOT_CONNECTED for no pin; asks an interface (`0x1044564`) and connects through one of two ways (`0xDFC980`, `0xDFCA50`) |
+| `0xdfa760` | DShow::TryTypesDFA760 | In outline: goes over a media type enumerator (slots 0x14, 0xC) trying each until one connects; keeps the first error that matters |
+| `0xe041d0` | DShow::AddE041D0 | In outline: adds an entry (12 bytes) to a list (+0x10, count +0x14), growing it by 200 when full |
+| `0xdfa840` | DShow::ConnectDFA840 | In outline: connects with a given type (`0xDFA6B0`), or tries the pin's and its partner's types in turn (`0xDFA760`) |
+| `0xe028d0` | DShow::SortE028D0 | In outline: one pass of a bubble sort over 20-byte entries (+0xC) by their first value |
+| `0xdfc7c0` | DShow::ConnectDFC7C0 | In outline: copies a media type (Track::CopyBB1E40), a step (`0xDFC8A0`) and a call (slot 0x58); frees it on failure |
+| `0xdf9830` | DShow::SetSyncSourceDF9830 | In outline: under a lock, sets a clock (+0x34), asks it for an interface (`0x1044AD4`) and keeps a name |
+| `0xe01170` | DShow::MakeE01170 | In outline: under a lock, makes a part (0x50 bytes) through `0xE00BA0` with many values |
+| `0xdfc980` | DShow::CompleteDFC980 | In outline: asks the partner (slot 0x10), its own step (slot 0x24) and a part (+0x9C, slot 0x14) |
+| `0xdfc010` | DShow::InitDFC010 | In outline: sets up a pin: a base (`0xDFAEF0`), a critical section, its tables (`0x104D6C0`, `0x104D678`, `0x104D650`) and a step (`0xDFC1A0`), passing failure out |
+| `0xe01490` | DShow::RescheduleE01490 | In outline: resets an event and sets the clock's next wake to the earliest time of two lists |
+| `0xe01330` | DShow::RemoveE01330 | In outline: under a lock, removes an entry from one of two lists; VFW_E_NOT_FOUND (0x80040216) when missing |
+| `0xdf7d80` | DShow::ResetTimesDF7D80 | Resets the renderer's timing statistics: sets -1000 and -1 marks, the start time (timeGetTime), clears counts and sets -300000 |
+| `0xdf9720` | DShow::FindPinDF9720 | In outline: E_POINTER for no output; under a lock, finds the pin with a name (`0xDFE010`) |
+| `0xe02ab0` | DShow::CopyE02AB0 | In outline: copies fields of each entry into 0x40-byte slots by index |
+| `0xe03b30` | DShow::NameE03B30 | In outline: an object's name through its interface (by `0x141DCD4`), else "<unknown object>" |
+| `0xdfd0d0` | DShow::ReleaseDFD0D0 | In outline: under a lock, puts a sample back and frees when all are back |
+| `0xdf8950` | DShow::JitterDF8950 | In outline: E_POINTER for no output; under a lock, a standard deviation from sums (Math::ClipDFE200, __alldiv, Math::IntSqrt) |
+| `0xe00e60` | DShow::NextE00E60 | In outline: a time (__ftol) plus an offset, and asks the clock (slot 0xC) |
+| `0xdfc280` | DShow::NotifyDFC280 | In outline: E_INVALIDARG for unknown flags; resets an event or sets a handle (`0xDFC3A0`) or a step (`0xDFC500`) |
+| `0xdffbf0` | DShow::SetPositionsDFFBF0 | In outline: under a lock, not while in mode 1; sets the current and stop positions (slot 0x34 twice) |
+| `0xdf9af0` | DShow::InitDF9AF0 | In outline: sets up an enumerator from its owner or a copy of another, with a list (`0xE01CB0`) |
+| `0xdf7710` | DShow::EndOfStreamDF7710 | In outline: under a lock, when connected, sends an event (`0xDF9920` with 0x16) and sets a flag |
+| `0xdfa6b0` | DShow::AttemptConnectDFA6B0 | In outline: checks a type (slot 0x28), keeps the partner (+0x18) and asks it to receive the connection; maps some errors to one |
+| `0xdf94b0` | DShow::StopDF94B0 | In outline: under a lock, when active, stops every connected pin (slot 0x14) |
+| `0xdfdda0` | DShow::FreeDFDDA0 | In outline: waits for and closes a thread, frees its queue, closes a handle and deletes its critical section |
+| `0xdffb00` | DShow::SetRateDFFB00 | In outline: under a lock, reads values (slot 0x14) and keeps them |
+| `0xdf9400` | DShow::PauseDF9400 | In outline: under a lock, when active, pauses every connected pin (slot 0x18) |
+| `0xdf74d0` | DShow::RunDF74D0 | In outline: under a lock, moves to state 1 raising the timer resolution (timeBeginPeriod 1), and starts (slots 0x40, 0x60, 0x54) |
+| `0xdf78a0` | DShow::PauseDF78A0 | In outline: under two locks of the filter, a check and the filter's pause (slot 0x68) |
+| `0xdfdf10` | DShow::GetDFDF10 | In outline: waits under a lock until a queue gives an entry, then copies it |
+| `0xdf7c90` | DShow::InitDF7C90 | In outline: sets up a video renderer: the base (`0xDF61A0`), its tables (`0x104D4D0`..`0x104D458`) and resets its timing (`0xDF7D80`) |
+| `0xdf7950` | DShow::StepDF7950 | In outline: under two locks of the filter, a step (`0xDFB730`) and two filter calls (slots 0x84, 0x64) |
+| `0xdf73d0` | DShow::FlushDF73D0 | In outline: under a lock, when connected, clears a value, a step (`0xDFFCE0`) and sends an event (`0xDF9920` with 1) |
+| `0xdf7670` | DShow::CompleteDF7670 | In outline: under a lock, when idle and connected, sends an event (`0xDF9920` with 5) |
+| `0xdf79f0` | DShow::StepDF79F0 | In outline: under two locks of the filter, a filter call (slot 0x88) and a step (`0xDFB760`) |
+| `0xe03ff0` | SortedTable::RemoveE03FF0 | In outline: finds a key in a shared table (SortedTable::Find, `0x141DCE4`), takes one from its count and, at 0, frees it and closes the gap |
+| `0xe01400` | DShow::SetClockE01400 | In outline: under a lock, swaps the clock (+0x60), releasing the old one's advise, and reschedules (`0xE01490`) |
+| `0xdfcaf0` | DShow::InitDFCAF0 | In outline: sets up an allocator: a base, a critical section and, when asked, a semaphore (CreateSemaphoreA); E_OUTOFMEMORY on failure |
+| `0xdf6dd0` | DShow::ScheduleDF6DD0 | In outline: works out a sample's times (slot 0x58); with none, sets an event; else asks the clock to advise (slot 0x10) |
+| `0xdf8860` | DShow::AverageDF8860 | In outline: E_POINTER for no output; under a lock, a total divided by a count less one |
+| `0xdfc500` | DShow::StopWaitDFC500 | In outline: under a lock, sets two events, closes one and clears its state |
+| `0xdfa4e0` | DShow::QueryDFA4E0 | In outline: compares an interface id with two known ids (`0x1044C54`, `0x1044B14`) and gives the matching part |
+| `0xe01d50` | List::AddAfterE01D50 | In outline: adds a value after a node (a node cache reused first, else 12 bytes) |
+| `0xe00fe0` | DShow::InitE00FE0 | In outline: sets up a critical section, a list, an event and clears values |
+| `0xe01e30` | List::AddBeforeE01E30 | In outline: adds a value before a node (the same cache) |
+| `0xe01b50` | List::RemoveE01B50 | In outline: unlinks a node, keeps it in the cache while there is room, and gives its value |
+| `0xdffa80` | DShow::FreeDFFA80 | In outline: deletes a critical section and frees its parts |
+| `0xdf6ca0` | DShow::InactiveDF6CA0 | In outline: releases a part (+0xAC), VFW_E_NOT_PAUSED (0x80040224) in some states, and stops streaming (slots 0x64, 0x70) |
+| `0xdf87e0` | DShow::RateDF87E0 | In outline: E_POINTER for no output; under a lock, a rate from frames over the time since a start (timeGetTime) |
+| `0xdfaca0` | DShow::PinInfoDFACA0 | In outline: E_POINTER for no output; fills a pin's info: its filter (referenced), name (up to 0x80 characters, `0xDFDFD0`) and direction (+0x10) |
+| `0xdf6690` | DShow::ReadyDF6690 | In outline: when not connected, sets an event; in state 1, a check (slot 0xA0) that may reset it |
+| `0xdff0f0` | DShow::FreeDFF0F0 | In outline: frees its parts (`0xDFEAB0`, `0xDFD8A0`) |
+| `0xe00b30` | DShow::FreeVariantsE00B30 | In outline: clears an array of 16-byte variants: frees strings (type 8) and releases objects (types 9, 0xD) |
+| `0xdfcb80` | DShow::FreeDFCB80 | In outline: closes a semaphore, releases a part (+0x58), deletes its critical section and frees its base |
+| `0xe01bd0` | List::AddTailE01BD0 | In outline: adds a value at the end of a list (a node cache reused first, else 12 bytes) |
+| `0xe01560` | DShow::SetOffsetE01560 | In outline: under a lock, sets a time offset (+0x68), turns it on and reschedules (`0xE01490`) |
+| `0xdf7580` | DShow::StopDF7580 | In outline: under a lock, clears a value; from state 1, moves to 0, stops (slot 0x44) and lowers the timer resolution (timeEndPeriod 1) |
+| `0xdf6b10` | DShow::FindPinDF6B10 | In outline: E_POINTER for no output; gives its only pin when the name matches (`0x10FF97C`) |
+| `0xdf9210` | DShow::FreeDF9210 | In outline: frees a name (+0x3C), releases a clock (+0x18) and frees its base |
+| `0xe01c40` | List::AddHeadE01C40 | In outline: adds a value at the start of a list (the same cache) |
+| `0xdff220` | DShow::FormatDFF220 | In outline: E_NOTIMPL when a check fails (slot 0x18), else gives a fixed id (`0x1044B64`) |
+| `0xdff1b0` | DShow::FormatDFF1B0 | In outline: the same with `0x10451B4` |
+| `0xdf65c0` | DShow::WaitDF65C0 | In outline: while a value (+0xB4) is set, keeps window messages moving (PeekMessageA, Sleep 1, GetQueueStatus, posting a thread message) |
+| `0xe00d30` | DShow::FreeE00D30 | In outline: frees its parts (`0xDFEAB0`, `0xE00B30`, `0xDFD8A0`) |
+| `0xdf7230` | DShow::ReleaseSampleDF7230 | In outline: under a lock, releases a kept sample (+0x6C) |
+| `0xdfd5d0` | DShow::FreeDFD5D0 | In outline: puts back its tables (`0x104D754`, `0x104D728`), decommits and frees an allocator |
+| `0xdf72b0` | DShow::ClearDF72B0 | In outline: under a lock, when a flag (+0xC0) is set, clears it and acts (slot 0x60) |
+| `0xdf9150` | DShow::InitDF9150 | In outline: sets up a filter: a base (`0xDFD8F0`), a class id (four values), a lock and clears values |
+| `0xdfb2b0` | DShow::FreeDFB2B0 | In outline: releases a part (+0x9C) and frees its base (`0xDFA480`) |
+| `0xdfa480` | DShow::FreeDFA480 | In outline: frees a name (+0x14), a media type (Track::FreeBB1DF0) and its base |
+| `0xdf6ee0` | DShow::GetSampleDF6EE0 | In outline: under a lock, gives a kept sample (+0x6C) with a reference added |
+| `0xdf8070` | DShow::FrameTimeDF8070 | In outline: updates a running average of the time between frames (timeGetTime, times 10000, weighted 3:1) and a step (`0xDF7FD0`) |
+| `0xe019e0` | List::FreeE019E0 | In outline: empties a list (`0xE01A40`) and frees its node cache |
+| `0xdfb9c0` | DShow::ReleaseDFB9C0 | In outline: takes one from a sample's count (InterlockedDecrement) and at 0 frees its media type when flagged and gives it back to its allocator (slot 0x20) |
+| `0xdf8cf0` | DShow::FreeDF8CF0 | In outline: releases a part (+0x14) and frees its base |
+| `0xdffce0` | DShow::SetStartDFFCE0 | In outline: E_UNEXPECTED (0x80004005-like) in mode 1; else reads a time (slot 0x2C) and sets the start and current positions under a lock |
+| `0xdfbd40` | DShow::SetTypeDFBD40 | In outline: frees a media type (Track::FreeBB22F0) and, for a new one, copies it (Track::AllocBB2310), E_OUTOFMEMORY on failure; sets or clears a flag (bit 3 of +4) |
+| `0xdff9f0` | DShow::InitDFF9F0 | In outline: sets up a seeking object: a base (`0xDFF070`), a critical section, a mode of 1 and its tables (`0x104D8C8`..`0x104D86C`) |
+| `0xdfc340` | DShow::MakeEventDFC340 | In outline: makes an event (CreateEventA) and sets it (`0xDFC3A0`), closing it on failure |
+| `0xe002d0` | DShow::InitE002D0 | In outline: sets up a seeking base: a base (`0xDFEEF0`), rate limits (-1, 0x7FFFFFFF) and a rate of 1.0 |
+| `0xdfe780` | DShow::CopyTextDFE780 | In outline: E_POINTER for no output; copies a two-byte text into new task memory (CoTaskMemAlloc), E_OUTOFMEMORY on failure |
+| `0xe04080` | Bits::InitE04080 | In outline: sets a size and value, a count of 1, and allocates and clears an array of n values |
+| `0xdfdc80` | DShow::CallWorkerDFDC80 | In outline: under a lock, hands a request to a worker thread (SetEvent) and waits for its answer (WaitForSingleObject); E_FAIL with no thread |
+| `0xdfb250` | DShow::InitDFB250 | In outline: sets up an input pin: a base (`0xDFA390`), clears values and 12 more |
+| `0xe01eb0` | List::AddListBeforeE01EB0 | In outline: adds every value of another list before a node (`0xE01E30`) |
+| `0xe01dd0` | List::AddListAfterE01DD0 | In outline: adds every value of another list after a node (`0xE01D50`) |
+| `0xdfcd40` | DShow::GetPropsDFCD40 | In outline: E_POINTER for no output; under a lock, copies allocator properties (count, size, prefix) |
+| `0xe015d0` | DShow::ClearOffsetE015D0 | In outline: under a lock, turns the time offset off and reschedules (`0xE01490`) |
+| `0xdf9f40` | DShow::InitDF9F40 | In outline: sets up an enumerator (`0x104D5D8`) from its owner or a copy of another |
+| `0xdf8b00` | DShow::JoinGraphDF8B00 | In outline: when leaving a graph, sends an event (`0xDF9920` with 0x15), then joins (`0xDF9830`) |
+| `0xdf97e0` | DShow::FilterInfoDF97E0 | In outline: E_POINTER for no output; fills a name (up to 0x80 characters) and the graph (referenced) |
+| `0xe01d00` | List::AddListHeadE01D00 | In outline: adds every value of another list at the start (`0xE01C40`) |
+| `0xdfb620` | DShow::FindDFB620 | In outline: E_POINTER for no list; checks values in turn (slot 0x18) until one fails, keeping the place |
+| `0xdfaf90` | DShow::DisconnectDFAF90 | In outline: tells the allocator (+0x98, slot 0x18) and releases it and the partner (+0x9C) |
+| `0xdf7820` | DShow::InitDF7820 | In outline: sets up a renderer's input pin (`0xDFB250`) with its filter and tables (`0x104D408`..`0x104D384`) |
+| `0xdfdba0` | DShow::FreeDFDBA0 | In outline: takes a thread handle (InterlockedExchange), waits for it and closes it, deletes a critical section and frees its base |
+| `0xe01cb0` | List::AddListTailE01CB0 | In outline: adds every value of another list at the end (`0xE01BD0`) |
+| `0xdff070` | DShow::InitDFF070 | In outline: sets up a pass-through object: a base (`0xDFEEF0`), its tables (`0x104D818`..`0x104D7BC`) and a pin; E_POINTER for none |
+| `0xdfd970` | DShow::QueryDFD970 | In outline: E_POINTER for no output; for a known id (`0x104D97C`) gives itself (`0xDFDA20`) |
+| `0xdfd580` | DShow::FreeSamplesDFD580 | In outline: deletes every free sample (+0x28, slot 0x54) and frees the memory block (VirtualFree) |
+| `0xdf9920` | DShow::NotifyDF9920 | In outline: E_NOTIMPL with no sink (+0x44); else passes an event to it (slot 0xC) |
+| `0xdfc4c0` | DShow::EndWaitDFC4C0 | In outline: resets one event, sets and closes another and sets a state of 2 |
+| `0xdffbb0` | DShow::SetPosDFFBB0 | In outline: under a lock, sets a position (+0x38, +0x3C) and clears a value |
+| `0xdf9ea0` | DShow::SkipDF9EA0 | In outline: VFW_E_ENUM_OUT_OF_SYNC (0x80040203) when the owner changed; else skips n entries (1 when too many) |
+| `0xdf9650` | DShow::StreamTimeDF9650 | In outline: no clock gives an error (0x80040213); else the clock's time (slot 0xC) less a start time |
+| `0xdf9030` | DShow::StreamTimeDF9030 | In outline: the same with other fields |
+| `0xe04110` | Bits::ResetE04110 | In outline: adds one to a version (to 0x40000000) and clears its array |
+| `0xdfcfb0` | DShow::FreeCountDFCFB0 | In outline: under a lock, gives how many samples are free |
+| `0xdfe010` | DShow::CompareTextDFE010 | Compares two two-byte texts, giving the difference at the first mismatch |
+| `0xdfc6a0` | DShow::ReleaseDFC6A0 | In outline: under a lock, takes one from a count and at 0 ends the wait (`0xDFC4C0`) |
+| `0xdf8000` | DShow::ResetDF8000 | In outline: clears a value, sets another, a call (slot 0xB4) and a step (`0xDF7FD0`) |
+| `0xdf7bf0` | DShow::IdDF7BF0 | In outline: E_POINTER for no output; copies a pin name (`0x10FF97C`) into new task memory (CoTaskMemAlloc) |
+| `0xdfaef0` | DShow::InitDFAEF0 | In outline: sets up an output pin (`0xDFA390` as output) and clears its allocator and partner input |
+| `0xdf6c20` | DShow::RunDF6C20 | In outline: clears a value; in state 2, starts streaming (slot 0x7C) and clears a mark (`0xDF75F0`) |
+| `0xdfdfd0` | DShow::CopyTextNDFDFD0 | Copies a two-byte text up to n characters, always ending it |
+| `0xdfd270` | DShow::InitDFD270 | In outline: sets up a memory allocator (`0xDFCAF0` with a semaphore) and its tables (`0x104D754`, `0x104D728`) |
+| `0xdfca50` | DShow::AdviseDFCA50 | In outline: with a clock and an event, asks it to advise (slot 0xC); E_FAIL otherwise |
+| `0xdfdb60` | DShow::InitDFDB60 | In outline: makes a manual event (`0xDFDAB0`), a critical section and clears a thread value |
+| `0xdfab80` | DShow::DisconnectDFAB80 | In outline: with a partner (+0x18), breaks the connection (slot 0x2C) and releases it; 1 when not connected |
+| `0xdf87a0` | DShow::GetDF87A0 | In outline: E_POINTER for no output; under a lock, gives a count (+0x44) |
+| `0xdf8760` | DShow::GetDF8760 | In outline: the same with +0x40 |
+| `0xdf7470` | DShow::StopTimerDF7470 | In outline: kills a timer (`0xDF74B0`) and under a lock clears three values |
+| `0xe01af0` | List::FindE01AF0 | In outline: the node holding a value, or none |
+| `0xdf6bc0` | DShow::BeginFlushDF6BC0 | In outline: in state 1, resets an event, a call (slot 0x28 with 0), another (slot 0x6C) and keeps messages moving (`0xDF65C0`) |
+| `0xdfb8c0` | DShow::InitDFB8C0 | In outline: sets up a media sample with its table (`0x104D5F8`) and clears values |
+| `0xdf6b80` | DShow::EndOfStreamDF6B80 | In outline: when streaming, sets a flag and, with nothing pending, an event; a call (slot 0x60) when running |
+| `0xe01a40` | List::ClearE01A40 | Frees every node and empties the list |
+| `0xdfd8f0` | DShow::InitDFD8F0 | In outline: a COM object base: its table (`0x104D77C`), adds to a shared count (`0xDFD880`) and keeps its owner (itself for none) |
+| `0xdff560` | DShow::SetDFF560 | In outline: a call (slot 0x50); on failure, tries another way (`0xDFF530` with a callback) |
+| `0xdfb470` | DShow::DisconnectDFB470 | In outline: tells a part (+0x9C, slot 0x18) and releases it |
+| `0xdf9ee0` | DShow::ResetDF9EE0 | In outline: takes its owner's version (slot 0x14), clears the place and empties a list |
+| `0xdf6da0` | DShow::CancelDF6DA0 | In outline: with an advise (+0x68), cancels it on the clock (slot 0x18), clears it and resets an event; whether there was none |
+| `0xe00df0` | DShow::UnadviseE00DF0 | In outline: no clock gives an error (0x80040234); else tells it (slot 0xC) and clears it |
+| `0xdffcb0` | DShow::ClearPosDFFCB0 | In outline: under a lock, clears a position |
+| `0xdff530` | DShow::WithDFF530 | In outline: gets an interface (`0xDFF220`), calls a callback with it and releases it |
+| `0xdfdd00` | DShow::PeekDFDD00 | In outline: when an event is set (WaitForSingleObject 0), gives a request value |
+| `0xe03ab0` | Math::BlendE03AB0 | Below 1.0, blends two values by a weight (+0xC); else takes the first |
+| `0xdfc730` | DShow::ResetDFC730 | In outline: with an event and a value, resets it and a step (`0xDFB160`); E_FAIL otherwise |
+| `0xe04588` | Crt::MakeDirE04588 | Makes a folder (CreateDirectoryA); on failure sets errno from the Windows error (__dosmaperr) and gives -1 |
+| `0xdf7fd0` | DShow::SleepDF7FD0 | Sleeps for a time (+0xF0, in 100 ns units) when it is above 0, else yields (Sleep 0) |
+| `0xdf8040` | DShow::MarkDF8040 | In outline: a call (slot 0xB4) and takes the time (timeGetTime) |
+| `0xdfd8a0` | DShow::ReleaseDFD8A0 | Takes one from a shared count (`0x141DCA8`) and at 0 frees a loaded library (FreeLibrary on `0x141DCA4`) |
+| `0xdfc6e0` | DShow::BusyDFC6E0 | In outline: under a lock, whether a count (+0xCC) is above 0 |
+| `0xdfa950` | DShow::CheckDFA950 | In outline: asks a pin's direction (slot 0x24) and gives VFW_E_INVALID_DIRECTION (0x80040208) when it matches its own |
+| `0xdfa060` | DShow::ReleaseDFA060 | Takes one from a count (+0x10, InterlockedDecrement) and at 0 deletes itself |
+| `0xdf9cc0` | DShow::ReleaseDF9CC0 | The same with +0x14 |
+| `0xe04540` | Bits::TouchE04540 | In outline: when slot n is older than the version, a step (`0xE04330`) and marks it current |
+| `0xdfc1a0` | DShow::MakeEventDFC1A0 | Makes a manual event (CreateEventA, set) into +0xBC and sets a flag; gives the Windows error on failure |
+| `0xdfb760` | DShow::ClearFlagDFB760 | Under a lock, clears a flag (+0x95) |
+| `0xdf6eb0` | DShow::HasSampleDF6EB0 | Under a lock, whether a sample (+0x6C) is kept |
+| `0xdf9f10` | DShow::ResetDF9F10 | In outline: takes its owner's version (slot 0x14) and clears the place |
+| `0xdf7bc0` | DShow::CallDF7BC0 | In outline: a call on a part (+0xD8, slot 0x94) and gives 0 |
+| `0xdf75f0` | DShow::SetDF75F0 | Under a lock, sets a value (+0xB0) |
+| `0xdfd190` | DShow::CheckPropsDFD190 | Whether allocator properties are set (count, size, alignment above 0), giving whether one is still busy; VFW_E_SIZENOTSET (0x80040212) otherwise |
+| `0xef2df0` | ModuleList::RunEF2DF0 | In outline: runs a module list (ModuleList::Run), throws on failure and registers a cleanup at exit (_atexit) |
+| `0xef2b00` | ModuleList::RunEF2B00 | In outline: the same with another cleanup |
+| `0xdfb730` | DShow::SetFlagDFB730 | Under a lock, sets a flag (+0x95) |
+| `0xdfcac0` | DShow::WaitDFCAC0 | Waits on a handle (WaitForSingleObject, forever); E_UNEXPECTED when it fails strangely, else the Windows error |
+| `0xdffa50` | DShow::DeleteDFFA50 | Deleting destructor: frees its parts (`0xDFFA80`) and, when asked, its memory (from 8 bytes before) |
+| `0xdff0c0` | DShow::DeleteDFF0C0 | Deleting destructor: the same with `0xDFF0F0` |
+| `0xdfeef0` | DShow::InitDFEEF0 | In outline: a COM object base (`0xDFD8F0`) and clears a value |
+| `0xdfda20` | DShow::GetInterfaceDFDA20 | E_POINTER for no output; gives the object with a reference added (slot 4) |
+| `0xdfea40` | DShow::TimerDFEA40 | Starts a multimedia timer (timeSetEvent) |
+| `0xdfdfb0` | DShow::CopyTextDFDFB0 | Copies a two-byte text |
+| `0xdfcff0` | DShow::WakeDFCFF0 | Releases a semaphore by the number of waiters (+0x34) and clears it |
+| `0xdf74b0` | DShow::KillTimerDF74B0 | Stops a multimedia timer (timeKillEvent on +0xC0) and clears it |
+| `0xdfa370` | DShow::ResetDFA370 | Clears the place and takes the owner's count (slot 0x10) |
+| `0xe02040` | List::FreeCacheE02040 | Frees every node in a cache list |
+| `0xe019c0` | List::InitE019C0 | Clears two values |
+| `0xdfdab0` | DShow::EventDFDAB0 | Makes an event (CreateEventA, manual or not) |
+| `0xdf8be0` | DShow::CreateDF8BE0 | Makes a COM object (CoCreateInstance with the ids `0x1045C94`, `0x1044BB4`) |
+| `0xdf6c00` | DShow::EndFlushDF6C00 | In outline: when connected, clears a position (`0xDFFCB0`) and a call (slot 0x28 with 1) |
+| `0xdfe9f0` | DShow::LastErrorDFE9F0 | The last Windows error as an HRESULT (0x8007xxxx), or E_FAIL for none |
+| `0xdfb180` | DShow::InactiveDFB180 | In outline: clears a flag; VFW_E_NO_ALLOCATOR (0x8004020A) for none, else tells the allocator (slot 0x18) |
+| `0xdfa930` | DShow::AssignDFA930 | In outline: copies a media type (Track::AssignBB1F80), giving 0 on success |
+| `0xdf6c70` | DShow::StopDF6C70 | In outline: when connected, clears a position and a call (slot 0x70) |
+| `0xdf7e50` | DShow::ElapsedDF7E50 | Turns a start time (+0x158) into the time since it (timeGetTime) |
+| `0xe04330` | Bits::CountE04330 | In outline: counts a value into the range of a 12-byte entry list (+0x10), adding a range (`0xE041D0`) when needed |
+| `0xe039f0` | DShow::InitE039F0 | Sets a value, clears another and a weight of 1.0 |
+| `0xe01ab0` | List::NextE01AB0 | Gives a node's value and moves the place on |
+| `0xdfc7a0` | DShow::PauseDFC7A0 | Resets an event (+0xD0) and a step (`0xDFB1F0`) |
+| `0xdfc780` | DShow::RunDFC780 | Sets an event (+0xD0) and a step (`0xDFB1D0`) |
+| `0xdfc760` | DShow::StopDFC760 | Sets an event (+0xD0) and a step (`0xDFB180`) |
+| `0xdfb160` | DShow::ActiveDFB160 | VFW_E_NO_ALLOCATOR (0x8004020A) for none, else tells the allocator (slot 0x14) |
+| `0xdf7e90` | DShow::SetDF7E90 | Sets a value (+0x150) |
+| `0xdfaf30` | DShow::CallDFAF30 | In outline: a call (slot 0x38) with a part and an address |
+| `0xdfdce0` | DShow::WaitDFDCE0 | Waits for an event (forever) and gives a request value |
+| `0xdfd880` | DShow::AddRefDFD880 | Adds one to a shared count (`0x141DCA8`, InterlockedIncrement) |
+| `0xdfb1f0` | DShow::PartnerDFB1F0 | VFW_E_NOT_CONNECTED (0x80040209) for no partner, else tells it (slot 0x40) |
+| `0xdfb1d0` | DShow::PartnerDFB1D0 | The same with slot 0x3C |
+| `0xdf93e0` | DShow::FreeDF93E0 | With an object, the shared release (`0xDFD8A0`) |
+| `0xdfe0c0` | DShow::LengthDFE0C0 | The length of a two-byte text |
+| `0xe01ad0` | List::ValueE01AD0 | A node's value, or 0 for none |
+| `0xdf7b90` | DShow::ReleaseDF7B90 | Passes a release to its owner (slot 8, 8 bytes before) |
+| `0xdf7b80` | DShow::AddRefDF7B80 | Passes an add reference to its owner (slot 4) |
+| `0xdf7800` | DShow::ReleaseDF7800 | The same as `0xDF7B90` (another copy) |
+| `0xdf77e0` | DShow::AddRefDF77E0 | The same as `0xDF7B80` (another copy) |
+| `0xdf7b70` | DShow::QueryDF7B70 | Passes an interface query to its owner (its first slot) |
+| `0xdf77d0` | DShow::QueryDF77D0 | The same (another copy) |
+| `0xdfdad0` | DShow::CloseDFDAD0 | Closes a handle when set |
+| `0xe02830` | List::InitE02830 | Clears two values |
+| `0xdfeab0` | DShow::ReleaseDFEAB0 | Releases an object when set (slot 8) |
+| `0xdfd810` | DShow::ReleaseDFD810 | The same (another copy) |
+| `0xdf67e0` | DShow::UnlockDF67E0 | Leaves a critical section (an auto-lock's end) |
+| `0xe01b30` | List::RemoveHeadE01B30 | Removes the first node (`0xE01B50`) |
+| `0xdf6700` | DShow::DeleteLockDF6700 | Deletes a critical section |
