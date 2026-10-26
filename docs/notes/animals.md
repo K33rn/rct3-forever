@@ -613,3 +613,34 @@
 | `0xb7aad0` | Animal::CheckB7AAD0 | In outline: when on (+0x41) and not flagged (+0x40), a check (`0xB7A480`) |
 | `0xa10e90` | Bird::FaceA10E90 | In outline: clears a value (+0xC0) and points (Effect::FaceA0D300) |
 | `0xaacec0` | PoolComplex::CaseAACEC0 | In outline: for 1, a value by case |
+| `0xbad890` | Animal::TextBAD890 | In outline: an empty text filled from entries (+0x198) |
+| `0xb2d560` | WildAnimal::CheckB2D560 | In outline: a check when on (+0xB4) and not flagged (+0xAC) |
+| `0xa5f2c0` | Animal::SetA5F2C0 | In outline: with no part (+4) and given one, sets values |
+| `0xa2e200` | Animal::CheckA2E200 | In outline: for 0, a check when not flagged (+0x30) |
+| `0xb25d90` | WildAnimal::MakeB25D90 | In outline: makes a 0x100-byte part |
+| `0xb0f6b0` | Animal::GetB0F6B0 | In outline: when not flagged (+0x154), takes a value |
+| `0xa6faf0` | Animal::EntryA6FAF0 | In outline: a step for entry n under a third of a count (+0x4C) |
+| `0x9e2f10` | Fireworks::Count9E2F10 | In outline: a step under a count (+0x38, +0x3C) |
+| `0x99c730` | Fireworks::Step99C730 | In outline: a step over entries |
+| `0x99c660` | Fireworks::Step99C660 | In outline: the same (another copy) |
+| `0xb70be0` | Animal::UpdateB70BE0 | In outline: an update when not flagged (+0xAC) |
+| `0xa938b0` | Fence::BytesA938B0 | In outline: a step with bytes (+0x15C, +0x15E) |
+| `0x968f20` | Fireworks::Count968F20 | In outline: a step with no entries (+0x14) handled |
+| `0x968e50` | Fireworks::Count968E50 | In outline: the same (another copy) |
+| `0x7461b0` | Guest::Pass7461B0 | In outline: goes over entries (+0xD4 +0x18) |
+| `0xaf4820` | Animal::FloatAF4820 | In outline: makes a float blend element and acts when not flagged (+0x60) |
+| `0xad8810` | Animal::FloatAD8810 | In outline: the same when not flagged (+0x74) |
+| `0xa14cc0` | Bird::CheckA14CC0 | In outline: a check when not flagged (+0x128) |
+| `0xa14bf0` | Bird::CheckA14BF0 | In outline: the same (+0x144) |
+| `0xa114a0` | Bird::CheckA114A0 | In outline: the same (+0x138) |
+| `0xa113d0` | Bird::CheckA113D0 | In outline: the same (+0x154) |
+| `0xb12d40` | Animal::PartB12D40 | In outline: a step with a part (+0x84) |
+| `0xae1550` | Animal::PassAE1550 | In outline: goes over entries (+4) |
+| `0xab3a80` | Animal::EntryAB3A80 | In outline: for entry n (24 bytes) under a count (+0x15C), a check; 0 outside |
+| `0xa97640` | Animal::UpdateA97640 | In outline: an update when not flagged (+0x78) |
+| `0xa9ff20` | PoolComplex::UpdateA9FF20 | In outline: an update when not flagged (+0x34) |
+| `0xa32910` | Animal::CountA32910 | In outline: a count from its part (+0x9C) |
+| `0xb47d40` | WildAnimal::LightsB47D40 | In outline: updates lights (Model::UpdateLights) and adds a time (+0x140) |
+| `0xa97860` | Animal::EntryA97860 | In outline: for entry n (0x1C bytes) under a count (+0x84), a check; 0 outside |
+| `0x84a8d0` | Scenery::Check84A8D0 | In outline: a check when not flagged (+0xC8) |
+| `0xb12070` | Animal::ClearB12070 | In outline: clears a linked value (+0x48) and more |

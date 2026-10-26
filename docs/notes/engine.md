@@ -2530,3 +2530,47 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc5cb30` | Device::LinkC5CB30 | In outline: a step with a linked part |
 | `0xc307d0` | Resource::ValueC307D0 | In outline: a value from entry n (+0x28, 16 bytes) |
 | `0xbd31f0` | Node::SetBD31F0 | In outline: clears a flag (+0x98) and a step (`0xBD2960`), or sets it |
+| `0x7defa0` | Person::Find7DEFA0 | In outline: a find with a list (+0x270) |
+| `0x498630` | Effects::Point498630 | In outline: a step with points and a value (+0x24) |
+| `0x495f50` | Static::Step495F50 | In outline: resets (Static::Reset) and makes a part |
+| `0x417d70` | List::Init417D70 | In outline: sets up a list with room for 16 |
+| `0xcdf110` | Table::FindCDF110 | In outline: a find over a shared table (`0x1400778`) |
+| `0xcd3550` | Text::FindCD3550 | In outline: a text find |
+| `0xcc4c50` | Shader::ScanCC4C50 | In outline: goes over bytes until seven matches |
+| `0xc4ddb0` | Shader::RegisterC4DDB0 | In outline: registers names into a list (+0x3C) |
+| `0xc04bb0` | Device::CaseC04BB0 | In outline: a value by case (0x13: +0x4F4, ...) |
+| `0xbf47d0` | Text::InitBF47D0 | In outline: sets up a record with its table (`0xFA589C`) |
+| `0xc52120` | Stream::StepC52120 | In outline: a step with two values |
+| `0xc4df70` | Shader::RegisterC4DF70 | In outline: registers names into a list (+0x1C) |
+| `0xc256f0` | Array::GrowC256F0 | In outline: grows a list of four-byte entries to hold n |
+| `0xbd2fc0` | List::StepBD2FC0 | In outline: a step over entries (+0x24) |
+| `0xc9ed10` | Batches::InitC9ED10 | In outline: sets up a record (`0xCA4480` with +0x38) |
+| `0xc5bec0` | Device::CountC5BEC0 | In outline: a count over entries (+0x28) |
+| `0xc11010` | Resource::MakeC11010 | In outline: makes a part with its table (`0xFAF9BC`) |
+| `0xbd2d70` | Table::InitBD2D70 | In outline: sets up four entries |
+| `0xcd4cc0` | Text::FindCD4CC0 | In outline: finds a two-byte text in another |
+| `0xbe03a0` | Text::ValueBE03A0 | In outline: a value from a shared table (`0x10F2BA8`) by a byte, and a C string |
+| `0x7be220` | Text::Set7BE220 | In outline: a step with a text's length (Text::Length495720) under a count |
+| `0x735b70` | Path::Make735B70 | In outline: makes a pooled object (PooledObject) |
+| `0x45c250` | Effect::Name45C250 | In outline: with nothing set (+0x300), sets a name |
+| `0x417570` | Regions::Set417570 | In outline: sets a region (Regions::Set417180) and acts |
+| `0xcf0330` | Shapes::StepCF0330 | In outline: a step over entries |
+| `0xcdf760` | Loop::StepCDF760 | In outline: a loop down from n |
+| `0xbb9cb0` | Track::InitBB9CB0 | In outline: sets up a record pointing at its own storage |
+| `0xcc4140` | Shader::InitCC4140 | In outline: sets up a record with its table (`0xFC31F4`) |
+| `0xc194c0` | Resource::MakeC194C0 | In outline: makes a record with its table (`0xFAFDB0`) |
+| `0xbbd580` | Track::StepBBD580 | In outline: a step (`0xBC28D0`), with 0xFFFF handled |
+| `0xcdf690` | Loop::StepCDF690 | In outline: a loop down from n (Loop::StepCDF4C0) |
+| `0xc90e70` | Device::CheckC90E70 | In outline: with no part (+0x2144), a check by flags |
+| `0xc5dae0` | Window::DrawC5DAE0 | In outline: a draw step with a text (0x2B) |
+| `0xbf5a90` | Text::StepBF5A90 | In outline: when not flagged (+0xED), a step (`0xBF4B20`) |
+| `0xcc4f80` | Shader::CompareCC4F80 | Compares two records by their first value, then more |
+| `0xcc3eb0` | Shader::CompareCC3EB0 | The same (another copy) |
+| `0xc6fb70` | Device::CountC6FB70 | In outline: a step with a count |
+| `0xc05080` | Device::SetC05080 | In outline: sets values (+0x4E0, +0x4E4) and acts |
+| `0x98d6f0` | Record::Make98D6F0 | In outline: makes a 0x90-byte record |
+| `0x438b20` | Effect::Step438B20 | In outline: a step with many values |
+| `0xc160b0` | Resource::MakeC160B0 | In outline: makes a record |
+| `0xc051f0` | Device::StepC051F0 | In outline: when on (+0x4C0, +0x4C1), a step (slot 0x50) |
+| `0xbf92c0` | Text::StepBF92C0 | In outline: a step with many values |
+| `0x43ab10` | Effect::Find43AB10 | In outline: a find with a value (+0x40) and a mode (+0x3C) |

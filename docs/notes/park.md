@@ -1713,3 +1713,40 @@
 | `0x483d20` | List::Clear483D20 | In outline: empties a list |
 | `0x53ddb0` | Ride::List53DDB0 | In outline: goes over section n's list |
 | `0x9e0d70` | Fireworks::AddTime9E0D70 | In outline: adds 100 times n to a value (+0x3C), kept in range |
+| `0x96fdf0` | Water::Make96FDF0 | In outline: makes a part (`0x965610`) |
+| `0x976290` | Water::Make976290 | In outline: makes a part (Object967) |
+| `0x970f20` | Water::Entry970F20 | In outline: a loop from entry n (+0x90, eight bytes) |
+| `0x9060f0` | Water::Value9060F0 | In outline: a value from a grid cell (+0x44) and its neighbours |
+| `0x852480` | Scenery::Bit852480 | In outline: a step with a bit from a count (+0xC) |
+| `0x7e6dd0` | Person::Add7E6DD0 | In outline: grows a list when full (Array::Resize7E5400) and adds |
+| `0x7a2090` | Terrain::Step7A2090 | In outline: a terrain step |
+| `0x431e30` | Sky::Find431E30 | In outline: a find over entries (+0x40, +0x4C) |
+| `0x742170` | Guest::Assign742170 | In outline: lets go of a shared part and takes another |
+| `0x42dea0` | Terrain::Entry42DEA0 | In outline: entry n (16 bytes) when the terrain is not flagged |
+| `0x418f00` | Effects::Step418F00 | In outline: a step with an entry (Thunk on +0x10) |
+| `0x937930` | Water::Init937930 | In outline: fills a record from its arguments |
+| `0x919430` | Waterfall::Set919430 | In outline: sets points (+0xA0 on) |
+| `0x8f3650` | Terrain::Corner8F3650 | In outline: a step with the terrain's corner (+0xC, +0x10) |
+| `0x8851e0` | Scenery::Fraction8851E0 | In outline: a fraction from a point (`0x682D80`) and a size (+8) |
+| `0x834a90` | Scenery::Part834A90 | In outline: a step with a part (+0x5C) |
+| `0x8058f0` | Regions::Loop8058F0 | In outline: with values, goes over a list (+0x10) |
+| `0x7713c0` | Guest::Ratio7713C0 | In outline: clears a flag (+0xB0) and sets a value (+0x58) to a share of two values (+0x40, +0x44) |
+| `0x8a09f0` | Scenery::Pass8A09F0 | In outline: goes over entries (+0x54) |
+| `0x8726a0` | Scenery::Case8726A0 | In outline: for 0x18, a step with a list (+0x1B0) |
+| `0x73e6b0` | Guest::Count73E6B0 | In outline: 0 with no entries (+0x518), else a step |
+| `0x876740` | Scenery::Pass876740 | In outline: goes over a part's entries (+0x9C +0x34) |
+| `0x9788a0` | Water::Grow9788A0 | In outline: when n passes its room (+0x6C), frees and remakes two buffers (+0x60, +0x64) |
+| `0x724770` | Path::Cell724770 | In outline: a step with a byte cell |
+| `0x8b53b0` | SceneryBehaviour::Step8B53B0 | In outline: with a slot (+0xF4), a step from its owner |
+| `0x836d00` | Scenery::Update836D00 | In outline: an update when not flagged (+0x194) |
+| `0x713390` | Path::Terrain713390 | In outline: a step when the terrain is not flagged |
+| `0x99e810` | Fireworks::Snap99E810 | In outline: snaps to a row (Grid::SnapToRow) and a table entry (Table104::Entry) |
+| `0x4c5a90` | Shop::Mode4C5A90 | In outline: when an object is in mode 0xF (+0x194), a step when not flagged (+0x74) |
+| `0x7cf710` | Person::Slot7CF710 | In outline: for slot n under a count (slot 0x58), a step |
+| `0x781c40` | Array::Free781C40 | In outline: frees an array, tearing each entry down |
+| `0x73aa80` | Guest::Update73AA80 | In outline: an update when not flagged (+0x60) |
+| `0x506950` | Car::Handles506950 | In outline: for a positive count, makes handles |
+| `0x551600` | Ride::Clear551600 | In outline: empties a list |
+| `0x551530` | Ride::Clear551530 | In outline: the same (another copy) |
+| `0x551460` | Ride::Clear551460 | In outline: the same (another copy) |
+| `0x551390` | Ride::Clear551390 | In outline: the same (another copy) |

@@ -858,3 +858,26 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4bfaa0` | Shop::Value4BFAA0 | In outline: a value from its part's values |
 | `0x4c4ba0` | Shop::Swing4C4BA0 | In outline: adds to a value (+0x90), kept above a shared limit |
 | `0x4d1bb0` | Shop::Part4D1BB0 | In outline: a step with a part (by a shared id `0x12F4C64`) |
+| `0x5b54e0` | TrackedRide::Check5B54E0 | In outline: 0 unless a check passes (slot 0x4C) |
+| `0x5d1270` | TrackedRide::Case5D1270 | In outline: a value by case (0x20: when a mode is not 2, ...) |
+| `0x51bbb0` | Car::Find51BBB0 | In outline: a find over entries (+0x7B4) |
+| `0x5cdf30` | Ride::Text5CDF30 | In outline: a text from a shared one (`0xF3F4A4`) |
+| `0x5bdd90` | TrackPiece::Value5BDD90 | In outline: a value from its owner (slot 0x94) by a flag (+0x190) |
+| `0x5a1ce0` | TrackedRide::Slot5A1CE0 | In outline: a step when a slot (+0x2A0) is -1 or past a count |
+| `0x500860` | Car::Reset500860 | In outline: clears values |
+| `0x5be8b0` | TrackPiece::Last5BE8B0 | In outline: a step with the last 0x24-byte entry |
+| `0x5eebe0` | AttractionPerson::Select5EEBE0 | In outline: sets a value (+0xBC = 1) and a step with the selected ride |
+| `0x5dbad0` | TrackedRide::Make5DBAD0 | In outline: makes a part |
+| `0x5bdb30` | TrackPiece::Value5BDB30 | In outline: a value when its owner's value (+0x10) is 0 |
+| `0x5a3ab0` | TrackedRide::Owner5A3AB0 | In outline: a step with its owner and a value (+0x6F4) |
+| `0x5637a0` | Ride::Slot5637A0 | In outline: with no slot (+0x308 = -2), -1 when there are no entries |
+| `0x58b3b0` | Ride::All58B3B0 | In outline: goes over rides from the selected one |
+| `0x585c00` | Ride::Part585C00 | In outline: a step with a part (+0x2C) |
+| `0x4ff580` | Car::Count4FF580 | In outline: a step for a positive count |
+| `0x58b2e0` | Ride::All58B2E0 | In outline: goes over rides from the selected one |
+| `0x4afef0` | Ride::Check4AFEF0 | In outline: 0 when its part is flagged (bit 4), more when not flagged (bit 14) |
+| `0x562b70` | Ride::Mode562B70 | In outline: in mode 2 (+0x60), a step when not flagged |
+| `0x535450` | Ride::Section535450 | In outline: sets section n's value (+0x64) and tells (slot 0xE0) |
+| `0x525fc0` | Car::Update525FC0 | In outline: an update when not flagged (+0x180) |
+| `0x4cf0c0` | Shop::Set4CF0C0 | In outline: with nothing given, a step (`0x4CCF50`) |
+| `0x5ab230` | Ride::Values5AB230 | In outline: takes two values (slots 0x40, 0x3C) and acts |

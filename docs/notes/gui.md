@@ -1651,3 +1651,33 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa30200` | Window::PartA30200 | In outline: a step with a part (by a shared id `0x1342780`) |
 | `0x672160` | Window::Find672160 | In outline: a find over entries (+0x148, +0x14C) |
 | `0x6e99b0` | Window::Slot6E99B0 | In outline: a step for slot (n + m) of 32 bytes |
+| `0xacafe0` | Graph::UpdateACAFE0 | In outline: an update when not flagged (+0x100) |
+| `0xac4e20` | Window::LayoutAC4E20 | In outline: keeps a height (Window::Height63AAB0) and goes over a list (+0xE0) |
+| `0x682c00` | Window::Countdown682C00 | In outline: counts a time (+0x2C) down by a step and acts |
+| `0x65bc10` | Window::Place65BC10 | In outline: places a part 18 high, by a width when it has no part (+0xF0) |
+| `0x643d20` | Window::Make643D20 | In outline: with a part (+0x124), makes a 0xC-byte record |
+| `0x4ccc10` | NamedObject::Make4CCC10 | In outline: makes a list member object with one of two tables (`0x10EC9E8`, `0x10EC9EC`) |
+| `0xa58c10` | Window::MakeA58C10 | In outline: a step (`0x7FAF90` with +0x174) and makes a part |
+| `0x9f7240` | NamedObject::Make9F7240 | In outline: makes a list member object (ListMember with `0x10EC9E8`) |
+| `0x9a62b0` | Window::Make9A62B0 | In outline: makes a part |
+| `0xbaa4f0` | Window::ResetBAA4F0 | In outline: takes a part (Window::Take6A65B0), clears a flag (+0x145) and releases a part (+0x130) |
+| `0xa26780` | Window::TextA26780 | In outline: a step (`0x6B1670`) and a text (`0xA261B0`) |
+| `0x98f970` | Window::Entry98F970 | In outline: a step for entry n (0x28 bytes at +0x40) not flagged |
+| `0x75a6a0` | Window::Text75A6A0 | In outline: for 0, a text from a part (+0x88) |
+| `0x75a5d0` | Window::Text75A5D0 | In outline: for 0, a text from a part (+0x84) |
+| `0x700180` | Window::Set700180 | In outline: sets a value (+0x18C) and makes a 0x268-byte part |
+| `0x6742e0` | Window::Reset6742E0 | In outline: with a part (+0x120), clears a shared value (`0x10EED3C`) and goes over entries |
+| `0x6278e0` | Window::Root6278E0 | In outline: a step with the GUI root |
+| `0x6190b0` | Window::Make6190B0 | In outline: makes a part with a value (+0x70) |
+| `0x97c980` | Window::Layout97C980 | In outline: places a window (Window::UpdateRect) |
+| `0x659d10` | Window::Loop659D10 | In outline: a loop (Window::Loop6ADCC0 with 4.0) and a value kept above a limit |
+| `0x65eb50` | Window::Point65EB50 | In outline: a step with a point (`0x624770`) |
+| `0xa25f10` | Window::LayoutA25F10 | In outline: places a window (Window::UpdateRect) |
+| `0x981b10` | Window::Step981B10 | In outline: when a check passes (Window::Check981700), a step (`0x9814B0`) |
+| `0x6ad8f0` | Window::Flags6AD8F0 | In outline: a step by flags (bits 5, 9, 10) |
+| `0x679df0` | Window::Text679DF0 | In outline: makes an empty text and a 0xC-byte record |
+| `0x6a8400` | Window::Mode6A8400 | In outline: a step in mode 1 (+0xF0) with a part (+0xF4) |
+| `0x6728b0` | Window::Link6728B0 | In outline: a step with a linked part (+0xF8) |
+| `0x9aabb0` | Window::Place9AABB0 | In outline: with a part (+0xD8), places it 30 wide |
+| `0xa54c90` | Window::MakeA54C90 | In outline: makes a window part |
+| `0xa54ba0` | Window::MakeA54BA0 | In outline: the same (another copy) |
