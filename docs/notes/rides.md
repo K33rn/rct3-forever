@@ -905,3 +905,18 @@ Tracked rides, flat rides and their cars and trains.
 | `0x590440` | Ride::Part590440 | In outline: a step with a part (+0x2C) |
 | `0x585cd0` | Ride::Step585CD0 | In outline: a step with a work buffer |
 | `0x4f3ad0` | Ride::Step4F3AD0 | In outline: a step with a value (+0x5E4) |
+| `0x5d5730` | TrackPiece::Count5D5730 | In outline: a step with a count (+0x11C) plus one |
+| `0x5c1410` | TrackPiece::Shared5C1410 | In outline: unless a shared flag is set (`0x12F55F0`), a step with a work buffer |
+| `0x5ae580` | Ride::Handle5AE580 | In outline: makes a handle and links it |
+| `0x582a30` | Ride::SetPart582A30 | In outline: sets a part (+0x1B8) when it changes |
+| `0x5bf180` | TrackPiece::Check5BF180 | In outline: a check when on |
+| `0x4f5470` | Ride::Check4F5470 | In outline: a step when a check passes (slot 4) |
+| `0x5bcc10` | TrackPiece::Scenery5BCC10 | In outline: a scenery step (Scenery::Step84BB60) with the current tool |
+| `0x555420` | Ride::Case555420 | In outline: a step by a byte's case (0, ...) |
+| `0x4de970` | Ride::Time4DE970 | In outline: adds to a time (+0x10) unless a shared flag is set (`0x10EDC18`) |
+| `0x5a7240` | Ride::Value5A7240 | In outline: 100 when not flagged (+0x390), else a value |
+| `0x59e270` | Ride::Handle59E270 | In outline: makes a handle and links it |
+| `0x562eb0` | Ride::Step562EB0 | In outline: when given, a step |
+| `0x569e50` | Ride::Tool569E50 | In outline: a step with a value (+0x228) and the current tool |
+| `0x4cf380` | Shop::Mode4CF380 | In outline: for mode 3 or 1, a step with a part (+0x10) |
+| `0x99fe70` | Fireworks::Cost99FE70 | In outline: a total load (Cars::TotalLoad) and a money text (Money::FormatOrUnlimited) |

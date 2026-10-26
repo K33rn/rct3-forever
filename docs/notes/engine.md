@@ -2619,3 +2619,65 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x809800` | Regions::Count809800 | In outline: a step for fewer than two entries |
 | `0x501a90` | Ride::Init501A90 | In outline: sets up a record with cleared values |
 | `0x4f05b0` | Ride::Make4F05B0 | In outline: makes a part |
+| `0x49b930` | Static::Pass49B930 | In outline: goes over entries with the shared count (`0x1106C54`) |
+| `0x470300` | Device::Step470300 | In outline: takes a value from the device (slot 0xC0) and acts |
+| `0x42c490` | Sky::Find42C490 | In outline: a find over a list (+0x20) |
+| `0xc5bd50` | Device::StepC5BD50 | In outline: a step with the device's part (+0x10 +0x24C) and a value (+0x1C) |
+| `0xc16e90` | Resource::InitC16E90 | In outline: sets up a record with its table (`0xFAFC60`) and a callback (`0xC167C0`) |
+| `0xc0e8e0` | Resource::InitC0E8E0 | In outline: sets up a record with its tables (`0xFAFB0C`, `0xFAFB08`) |
+| `0xbdfe60` | Ref::StepBDFE60 | In outline: adds one to a count and acts |
+| `0xce3040` | Buffer::FreeCE3040 | In outline: frees an aligned buffer (+8) and more |
+| `0xc58560` | Device::CountC58560 | In outline: 0 with no part (+0x44), else a count |
+| `0xc38440` | Resource::LastC38440 | In outline: a value from the last entry |
+| `0xbc8970` | Track::MinBC8970 | In outline: keeps a shared value (`0x10F2B30`) below a limit |
+| `0x7f11a0` | Person::Value7F11A0 | In outline: a value from an object (slot 0x90) |
+| `0x497240` | Static::Last497240 | In outline: a step with the last entry (+0x81C) |
+| `0x45f980` | Text::Init45F980 | In outline: sets up a record with empty texts (WideString::Empty) |
+| `0x40cca0` | Effect::Entry40CCA0 | In outline: a step for entry n (0x70 bytes) |
+| `0xcf01e0` | Shapes::InitCF01E0 | In outline: fills a record with its arguments and the shared value (`0x10F2FA0`) |
+| `0xc54720` | Device::SetC54720 | In outline: sets a shared flag (`0x13E6C60` = 1) and acts |
+| `0xc044e0` | Device::StepC044E0 | In outline: a step, with none given handled |
+| `0x7f10e0` | Person::Value7F10E0 | In outline: a value from an object (its first slot via +0x48) |
+| `0x79f970` | Terrain::Make79F970 | In outline: fills a record from an object (slot 0x18) and its arguments |
+| `0xcc2360` | Shader::FreeAllCC2360 | In outline: tears down each entry it finds (`0xCC25D0`) until none is left |
+| `0xcb8860` | Resource::MakeCB8860 | In outline: makes a part, with none handled |
+| `0xc69cf0` | Window::InitC69CF0 | In outline: fills a record from many values |
+| `0xbd95b0` | Memory::TakeBD95B0 | In outline: takes room from the shared pool (`0x13D0DB0`) |
+| `0xbafe30` | Track::HandleBAFE30 | In outline: makes a handle and links it |
+| `0xcbdaf0` | Memory::StepCBDAF0 | In outline: with the shared pool (`0x13F7014`), frees a part (+0x24) |
+| `0xcb8a20` | Resource::MakeCB8A20 | In outline: makes a part, with none handled |
+| `0xca2550` | Shared::MakeCA2550 | In outline: once (`0x13E6F20`), makes a four-byte record |
+| `0xc3a560` | Resource::StepC3A560 | In outline: a step (`0xC3A4B0`) and more |
+| `0xbf54d0` | Text::PassBF54D0 | In outline: goes over entries (+4) |
+| `0xba2ef0` | Track::HandleBA2EF0 | In outline: makes a handle and links it |
+| `0xb99db0` | Track::CheckB99DB0 | In outline: a check with two answers |
+| `0xce7d30` | Camera::LimitCE7D30 | In outline: lowers a value (+0x20) to n when n is smaller |
+| `0xcbd220` | Shader::CheckCBD220 | In outline: a check with none handled |
+| `0xcb2700` | Model::WriteHeaderCB2700 | In outline: writes a "D3DT" tag and four-byte values (Writer::Write4) |
+| `0xca6560` | Resource::NameCA6560 | In outline: a text from a name buffer (+0x448) |
+| `0xc61140` | Device::StepC61140 | In outline: when not flagged (+0x9C), a step by flags (0x180) |
+| `0xc3c6d0` | Resource::EntryC3C6D0 | In outline: entry n under a count (+0x50) |
+| `0xc3c610` | Resource::EntryC3C610 | In outline: the same with +0x58 |
+| `0xc3c790` | Resource::EntryC3C790 | In outline: entry n under a count (+0x2C) |
+| `0xc0db10` | Text::FindC0DB10 | In outline: a two-byte text from slot n (+8), or a given one |
+| `0xc0da10` | Text::FindC0DA10 | In outline: the same (another copy) |
+| `0xc0d880` | Text::FindC0D880 | In outline: the same (another copy) |
+| `0xc0d780` | Text::FindC0D780 | In outline: the same (another copy) |
+| `0xbdcf60` | VertexDeclaration::StepBDCF60 | In outline: with no part (+0xC), a loop (VertexDeclaration::LoopBDCE30) |
+| `0xca3750` | Resource::InitCA3750 | In outline: fills a record from an object and its arguments |
+| `0xc3aff0` | Resource::StepC3AFF0 | In outline: a step for n under a count (+0x2C), not in mode 1 (+0x60) |
+| `0xbfdef0` | Record::InitBFDEF0 | In outline: fills a record from two values and clears a two-byte value |
+| `0xbea2d0` | Record::InitBEA2D0 | In outline: the same (another copy) |
+| `0xbeb390` | Device::MakeBEB390 | In outline: makes a buffer of n times m with the device (+4 +0x24C) |
+| `0xc66410` | Window::StepC66410 | In outline: a step when a value changes (+0xE8, +0xF0) |
+| `0xc311c0` | Stream::AddC311C0 | In outline: adds n to a count (+0x1C) and acts |
+| `0xc03c60` | Device::StepC03C60 | In outline: a step with cleared values |
+| `0xbd6410` | ShaderFile::ReadBD6410 | In outline: reads four-byte values (ShaderFile::Read) |
+| `0x463880` | Record::Init463880 | In outline: sets up a record with its table (`0xF2A87C`) |
+| `0x44c7e0` | Vector::Length44C7E0 | In outline: a step with a point's length |
+| `0x409cf0` | List::Find409CF0 | In outline: a find over entries (+0xC, +0x18) |
+| `0x45e0e0` | Library::Free45E0E0 | In outline: frees a loaded library (FreeLibrary on +0x888) and more |
+| `0x471f20` | List::Add471F20 | In outline: grows a list by two when full (`0x4710B0`) and adds |
+| `0x42c550` | Sky::Find42C550 | In outline: a find over a list (+0x20) |
+| `0x41c660` | Record::Check41C660 | In outline: a check with none handled |
+| `0x6209c0` | Window::Check6209C0 | In outline: a check with none handled |

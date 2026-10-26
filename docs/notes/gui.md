@@ -1714,3 +1714,36 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6ad9c0` | Window::Flags6AD9C0 | In outline: a step by flags (bits 6, 5) |
 | `0x65adc0` | Window::Step65ADC0 | In outline: a step with a part (slot 0x108) |
 | `0x671ca0` | Window::Part671CA0 | In outline: a step with a part (+0x130) |
+| `0x6fef60` | Window::Clear6FEF60 | In outline: for 0, releases a part (+0xD8) |
+| `0x64b320` | Window::Text64B320 | In outline: a text from a part (`0x783750` with +0x118) and a shared value (`0x1301EF0`) |
+| `0xacd6c0` | Graph::PartACD6C0 | In outline: with a part (+0x10C), a step |
+| `0xacaaa0` | Graph::MakeACAAA0 | In outline: makes a 0x268-byte part |
+| `0xa53a90` | Window::FormatA53A90 | In outline: formats into a 32-character buffer |
+| `0xa209e0` | Window::SetA209E0 | In outline: sets two values (+0xDC, +0xE0) and acts |
+| `0x7006a0` | Window::Part7006A0 | In outline: with a part (+0x20), a step with a value (+0x30) |
+| `0x9b3240` | Window::Bind9B3240 | In outline: sets the object it shows (+0xD4) and acts |
+| `0x9b4190` | Window::Bind9B4190 | In outline: the same (another copy) |
+| `0x6af600` | Window::Part6AF600 | In outline: a step with a part (+0x4C) |
+| `0x6af540` | Window::Part6AF540 | In outline: a step with a part (+0x64) |
+| `0x6927f0` | Text::Fit6927F0 | In outline: a check with a text's size |
+| `0x9a9a00` | Window::Copy9A9A00 | In outline: copies a value (+0x7C into +0x114) and makes a part |
+| `0x663560` | Window::Reset663560 | In outline: clears a flag (+0x4C) and acts when not flagged (+0x2C) |
+| `0x661d30` | Window::Check661D30 | In outline: clears a value (+0xE4) and a check with a part (slot 0x14C) |
+| `0x6b8b40` | Window::Point6B8B40 | In outline: a step with a point |
+| `0xa26270` | Window::TextA26270 | In outline: makes a text |
+| `0x9f3d00` | Window::Part9F3D00 | In outline: with a part (+0x50), a step |
+| `0x9891e0` | Window::Part9891E0 | In outline: with a part (+0x114), a step (`0x475BA0`) |
+| `0x6a9d30` | Window::Step6A9D30 | In outline: a step with a work buffer |
+| `0x6f22f0` | Window::Part6F22F0 | In outline: with a part (+0xA0), a step when not flagged (+0x9C) |
+| `0x670910` | Window::Make670910 | In outline: makes a 0xC-byte part |
+| `0x65a1d0` | Window::Make65A1D0 | In outline: makes a 0x268-byte part |
+| `0x643a10` | Window::Make643A10 | In outline: the same (another copy) |
+| `0x5445e0` | Window::Children5445E0 | In outline: goes over children (Window::Children67AC20) and acts |
+| `0x69ea20` | Window::Size69EA20 | In outline: a step with a part's size |
+| `0x6dc010` | Window::Place6DC010 | In outline: a step (`0x6D4870`) and places by a part's value (+0xD4 +0x80) |
+| `0x6db500` | Window::Place6DB500 | In outline: the same (another copy) |
+| `0x6dab30` | Window::Place6DAB30 | In outline: the same (another copy) |
+| `0xa261b0` | Window::TextA261B0 | In outline: makes a text |
+| `0x99fdb0` | Window::Text99FDB0 | In outline: the same (another copy) |
+| `0x99ad00` | Window::Text99AD00 | In outline: the same (another copy) |
+| `0xae6d40` | Graph::ValueAE6D40 | In outline: a rounded value times a scale, with a part (+0xF0) |

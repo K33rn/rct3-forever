@@ -1805,3 +1805,52 @@
 | `0x9399a0` | Water::Pass9399A0 | In outline: goes over entries (+0x14) |
 | `0x92e510` | Water::Value92E510 | In outline: a value from a part (+4 +0xC) |
 | `0x7f1ed0` | Person::Case7F1ED0 | In outline: a step by a kind (+0x120: 4, ...) |
+| `0x93d7b0` | Water::Rect93D7B0 | In outline: goes over a byte rectangle |
+| `0x919b20` | Waterfall::Terrain919B20 | In outline: a step when the terrain is not flagged |
+| `0x834c20` | Scenery::Set834C20 | In outline: sets a mode to 1 (+0x74) and a value (+0x7C) |
+| `0x6b6920` | Grid::Terrain6B6920 | In outline: a step when the terrain is not flagged |
+| `0x807da0` | Regions::Step807DA0 | In outline: a step with a part (+0x24) |
+| `0x763380` | Guest::State763380 | In outline: unless in state 0x11 (+0x190), a step |
+| `0x735a20` | Path::Rect735A20 | In outline: goes over a rectangle |
+| `0x6f7900` | Grid::Pass6F7900 | In outline: goes over entries (+0x12C) |
+| `0x6f7840` | Grid::Pass6F7840 | In outline: the same with +0x100 |
+| `0x95f3d0` | Water::Step95F3D0 | In outline: a step with work buffers |
+| `0x930de0` | Water::Copy930DE0 | In outline: copies a record (`0x92E690`) |
+| `0x90ae30` | Water::Count90AE30 | In outline: a step for a positive count |
+| `0x7ca940` | Person::Value7CA940 | In outline: in mode 2 (+0x194), a value from a loop (Person::Loop7CA7B0) |
+| `0x7a0480` | Terrain::Part7A0480 | In outline: a step with a part (+0x510) |
+| `0x724050` | Path::Pass724050 | In outline: goes over entries (+0x70) |
+| `0x6fdb50` | Grid::Bits6FDB50 | In outline: for n not negative, a step with a bit table (+0x4C) |
+| `0x6fdc10` | Grid::Bits6FDC10 | In outline: the same (another copy) |
+| `0x7caf00` | Person::Update7CAF00 | In outline: an update when not flagged (+0x334) |
+| `0x79f810` | Terrain::Part79F810 | In outline: a step with a part (+0x510) |
+| `0x7500d0` | Guest::Pass7500D0 | In outline: with a part (+0xE4), goes over entries |
+| `0x7035d0` | Grid::Terrain7035D0 | In outline: a step when the terrain is not flagged |
+| `0x965b10` | Water::Find965B10 | In outline: a find over a list (+0x20) |
+| `0x8536c0` | Scenery::Step8536C0 | In outline: a step with a record |
+| `0x7a91b0` | Terrain::Handle7A91B0 | In outline: when given, makes a handle and links it |
+| `0x7a6a40` | Terrain::Count7A6A40 | In outline: a count |
+| `0x72caf0` | Path::Part72CAF0 | In outline: a step with a part (+0xAC) |
+| `0x8ea590` | Terrain::Entry8EA590 | In outline: a step for entry n (0x130 bytes) of an object (+0x118) |
+| `0x8765a0` | Scenery::Pass8765A0 | In outline: goes over entries (+0x4C) |
+| `0x826d70` | Scenery::Init826D70 | In outline: fills a record with handles from its arguments |
+| `0x81cf00` | SceneryBehaviour::Find81CF00 | In outline: a find over entries (+0x68) |
+| `0x81ce40` | SceneryBehaviour::Find81CE40 | In outline: the same (another copy) |
+| `0x97a430` | Water::Make97A430 | In outline: makes a window part |
+| `0x9782b0` | Water::Make9782B0 | In outline: the same (another copy) |
+| `0x977e40` | Water::Make977E40 | In outline: the same (another copy) |
+| `0x977210` | Water::Make977210 | In outline: the same (another copy) |
+| `0x976ec0` | Water::Make976EC0 | In outline: the same (another copy) |
+| `0x968000` | Water::Make968000 | In outline: the same (another copy) |
+| `0x96ba80` | Water::Make96BA80 | In outline: the same (another copy) |
+| `0x96b6d0` | Water::Make96B6D0 | In outline: the same (another copy) |
+| `0x96b1d0` | Water::Make96B1D0 | In outline: the same (another copy) |
+| `0x96afe0` | Water::Make96AFE0 | In outline: the same (another copy) |
+| `0x967f20` | Water::Make967F20 | In outline: the same (another copy) |
+| `0x79b340` | Toolbar::Make79B340 | In outline: makes a window part |
+| `0x913360` | Water::Part913360 | In outline: with a part (+0x8C), tears it down |
+| `0x8d9e30` | Terrain::Step8D9E30 | In outline: unless a shared flag is set (`0x1310E7C`), a step when on (+0x16) |
+| `0x882ad0` | Scenery::Entry882AD0 | In outline: a step for entry n (0x4C bytes) |
+| `0x871240` | Scenery::Make871240 | In outline: makes a 0xC-byte part |
+| `0x843a60` | Scenery::Step843A60 | In outline: a step with many values |
+| `0x784b20` | GuestGroup::Make784B20 | In outline: makes a 0xC-byte part |

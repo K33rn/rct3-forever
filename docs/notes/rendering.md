@@ -1038,3 +1038,15 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x488b10` | Effect::Step488B10 | In outline: a step with points |
 | `0xa6fc60` | Animal::SolveA6FC60 | In outline: solves a constraint (Constraint::SolveA6CA10) and goes over entries |
 | `0xbc5fd0` | Track::StepBC5FD0 | In outline: a step for a positive count |
+| `0x4266a0` | Sky::Point4266A0 | In outline: a step with a point (+0x3F0 on) |
+| `0x40cd60` | Effect::Entry40CD60 | In outline: a step for entry n (0x70 bytes), when asked |
+| `0x80c3e0` | Regions::Draw80C3E0 | In outline: when a shared flag is set (`0x12F018C` +0x20), draws a box in black |
+| `0xb74190` | Effect::FlagB74190 | In outline: when flagged (bit 4 of +8), a step |
+| `0xb5e100` | Effect::FlagB5E100 | In outline: the same (another copy) |
+| `0x7b7e70` | Effect::Flag7B7E70 | In outline: the same (another copy) |
+| `0x44b2a0` | Effect::Entry44B2A0 | In outline: for entry n (0x40 bytes) under a count (+0x28), a step |
+| `0x9e2fe0` | Fireworks::Entry9E2FE0 | In outline: a step for entry n (0x20 bytes) |
+| `0x9e87e0` | Fireworks::Entry9E87E0 | In outline: with no shared flag (`0x10EDAE0`), a step for entry n of a shared table (`0x10F1CD0`) |
+| `0x9fc310` | Fireworks::Step9FC310 | In outline: a step with many values |
+| `0x9fc980` | Fireworks::Entry9FC980 | In outline: a step for entry n (0x30 bytes) |
+| `0x46fb40` | Labels::Flag46FB40 | In outline: when flagged (bit 2 of +0x354), a step |

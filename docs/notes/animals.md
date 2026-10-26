@@ -666,3 +666,32 @@
 | `0xb7bc40` | Animal::UpdateB7BC40 | In outline: an update when not flagged (+0x90) |
 | `0xb13ea0` | Animal::ResetB13EA0 | In outline: clears a value (+0x94) and acts with a part (+0x84) |
 | `0x99ff30` | Fireworks::Part99FF30 | In outline: a step with a part (+8) |
+| `0xb885c0` | Animal::UpdateB885C0 | In outline: an update when not flagged (+0x1A8) |
+| `0xb54970` | Animal::MakeB54970 | In outline: makes a 0x1C-byte part |
+| `0xb53da0` | Animal::HandleB53DA0 | In outline: makes a handle (`0xF9A998`) and acts |
+| `0xafb0a0` | Animal::CountAFB0A0 | In outline: at 2000 (+0x54), a step (`0xAFB000`) |
+| `0xaf7a10` | Animal::CountAF7A10 | In outline: at 32000 (+0x1C), a step (`0xAF7980`) |
+| `0xa91180` | Animal::StepA91180 | In outline: a step with points |
+| `0xa704f0` | Animal::StepA704F0 | In outline: a step with many values |
+| `0x9ec540` | Fireworks::Mode9EC540 | In outline: in mode 2 (+0x70), a step |
+| `0xb6c660` | Animal::CountB6C660 | In outline: a count over entries (+0x48) |
+| `0xb91b40` | Animal::MakeB91B40 | In outline: makes a part |
+| `0xb87f70` | Animal::CheckB87F70 | In outline: a check when not flagged (+0xD4) |
+| `0xb7be40` | Animal::UpdateB7BE40 | In outline: an update when not flagged (+0x90) |
+| `0xb3ac30` | Animal::InitB3AC30 | In outline: fills a record from its arguments |
+| `0xb21ea0` | WildAnimal::CountB21EA0 | In outline: a step with a count (+0xE4) plus one |
+| `0xa5dfd0` | Animal::SizeA5DFD0 | In outline: a step with a size (+0x80, +0x88) |
+| `0xa329e0` | Animal::CountA329E0 | In outline: a count over entries (+0x9C) |
+| `0xb7aa10` | Animal::HandleB7AA10 | In outline: sets a flag (+0x41) and makes a handle |
+| `0xb34bf0` | WildAnimal::CheckB34BF0 | In outline: a step when not flagged (+0x47) and more |
+| `0xa9cbb0` | PoolComplex::MakeA9CBB0 | In outline: makes a part, with none handled |
+| `0xb9e430` | Animal::DrawB9E430 | In outline: a draw step in green (0x7F00FF00) |
+| `0xb45460` | WildAnimal::BitsB45460 | In outline: a count over bits (+0x78) |
+| `0xb453a0` | WildAnimal::BitsB453A0 | In outline: the same (another copy) |
+| `0xafdec0` | Animal::ResetAFDEC0 | In outline: when on (+0x34), turns it off and acts |
+| `0xaf3580` | Animal::AddAF3580 | In outline: grows a list by one (ObjectArray::SetCapacity on +0x58) and a handle |
+| `0xac9ed0` | Graph::ScaleAC9ED0 | In outline: a step with a value, below 8 handled |
+| `0xb21de0` | WildAnimal::UpdateB21DE0 | In outline: an update when not flagged (+0x94) |
+| `0xafdcb0` | Animal::StepAFDCB0 | In outline: with none given and no part (+0x1090), a step |
+| `0xa8b5d0` | Animal::PassA8B5D0 | In outline: goes over entries (+0xD8) |
+| `0x9c7510` | Fireworks::Pass9C7510 | In outline: goes over entries (+0x9C) |
