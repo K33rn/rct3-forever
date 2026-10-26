@@ -1676,3 +1676,40 @@
 | `0x9e3240` | Fireworks::AddTime | In outline: adds 50 times n to a value (+0x28), kept between 0 and 2000 |
 | `0x5f7900` | Ride::Drag5F7900 | In outline: a step once the mouse has moved far enough from where it started |
 | `0x9d4eb0` | Fireworks::Time9D4EB0 | In outline: when on with a part, counts a time (+0x84) down |
+| `0x7e8ca0` | Park::Rebuild7E8CA0 | In outline: a rebuild step (Park::Rebuild7E7440) and more for kind 4 |
+| `0x72d250` | Path::Part72D250 | In outline: a step with a part (by a shared id `0x130646C`) |
+| `0x8606e0` | Scenery::Count8606E0 | In outline: counts a part's entries (+0xC +0x14) |
+| `0x72b140` | Path::Quad72B140 | In outline: for kind 3, a cell's quad (Cell::Quad) and fills |
+| `0x865410` | Scenery::Shapes865410 | In outline: when flagged (bit 3), checks shapes (Model::CheckShapes) |
+| `0x93cd30` | Water::Make93CD30 | In outline: with no part (+4), a step with the shared object (`0x12F468C`) |
+| `0x8fb270` | Water::Find8FB270 | In outline: a find over the shared list (`0x1339FD8`) |
+| `0x7737d0` | Park::Find7737D0 | In outline: a find over entries (+8, +0x20) |
+| `0x492ed0` | Terrain::Height492ED0 | In outline: a height when the terrain is not flagged |
+| `0x833cc0` | Scenery::Link833CC0 | In outline: a step with a linked part (+0x48) |
+| `0x84d220` | Scenery::Copy84D220 | In outline: copies a record's values from another |
+| `0x71b0f0` | Path::Case71B0F0 | In outline: a value by case |
+| `0x772c90` | Park::Find772C90 | In outline: a find over entries (+8, +0x10) |
+| `0x7ae680` | Terrain::Inside7AE680 | In outline: whether a cell lies inside its byte bounds (+4 to +7) |
+| `0x7cadd0` | Person::Link7CADD0 | In outline: clears a value (+0x350) and a step with a linked part (+0x35C) |
+| `0x83f800` | Scenery::Set83F800 | In outline: for 0 clears a list (ObjectArray52::Resize(0)), and acts when its one entry differs |
+| `0x72eca0` | Path::Refresh72ECA0 | In outline: updates (Path::Update7266B0), refreshes (Path::Refresh72E7C0(1)) and acts with a part |
+| `0x93e7d0` | Water::Clip93E7D0 | In outline: with a part (+0xB0), a clipped step (Water::Clip95AA10) |
+| `0x93cbe0` | Water::Release93CBE0 | In outline: with a part (+4), a step with the shared object (`0x12F468C`) |
+| `0x869950` | Scenery::Find869950 | In outline: a find over a list (+0xF4) |
+| `0x8609a0` | Scenery::Value8609A0 | In outline: a value from entries (+0x18) |
+| `0x94dd40` | Water::Entry94DD40 | In outline: for entry n (0xD0 bytes) in mode 1, copies a value |
+| `0x7289d0` | Path::Case7289D0 | In outline: a step by a kind (+0x60) |
+| `0x4377e0` | Effects::Value4377E0 | In outline: a value from a shared table (`0x10F2BA8`) by a byte |
+| `0x758f70` | Guest::Check758F70 | In outline: 1 when a check passes (`0x7DF1F0`), else a step with the park |
+| `0x8348e0` | SceneryBehaviour::Centre8348E0 | In outline: a point from its owner's values |
+| `0x45eea0` | List::Find45EEA0 | In outline: a find over entries (+4, +8) |
+| `0x8fe240` | Water::Entry8FE240 | In outline: a point from entry n (0x60 bytes at +0xA8) |
+| `0x8605f0` | Scenery::Value8605F0 | In outline: a value from a part scaled by a table (`0x10F087C`) and a shared value |
+| `0x704a50` | Path::Cell704A50 | In outline: a cell (+0x1A8, +0x1AC, or +0x1B4 when flagged) |
+| `0x6c3cc0` | List::Count6C3CC0 | In outline: 0 when empty, else a count step |
+| `0x588ae0` | Ride::Part588AE0 | In outline: a step with a part (by a shared id `0x12F53F0`) |
+| `0x838710` | Scenery::Value838710 | In outline: a value by a kind (0, 0xB, 0x1E, ...) |
+| `0x95a570` | Water::Remove95A570 | In outline: removes an entry from an index (+0x20) and a list (+8) |
+| `0x483d20` | List::Clear483D20 | In outline: empties a list |
+| `0x53ddb0` | Ride::List53DDB0 | In outline: goes over section n's list |
+| `0x9e0d70` | Fireworks::AddTime9E0D70 | In outline: adds 100 times n to a value (+0x3C), kept in range |

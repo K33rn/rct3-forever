@@ -593,3 +593,23 @@
 | `0x9d5970` | Window::Link9D5970 | In outline: with a value (+0xDC), a step with a linked part (+0xD0) |
 | `0xaa9250` | PoolComplex::UpdateAA9250 | In outline: an update when not flagged (+0x10C) |
 | `0x846b20` | Scenery::Check846B20 | In outline: 1 when flagged (+0xA8), else a check with its part (slot 0x44) |
+| `0xaa91d0` | PoolComplex::StepAA91D0 | In outline: a step when not flagged (+0x10C) |
+| `0xaa9150` | PoolComplex::StepAA9150 | In outline: the same (another copy) |
+| `0xaa90d0` | PoolComplex::StepAA90D0 | In outline: the same (another copy) |
+| `0xa8ebe0` | Animal::AtLeast10 | In outline: makes a list at least 10 long (`0x417C20`) and fills new entries |
+| `0xb856e0` | Animal::KindB856E0 | In outline: a value by a kind (+0x61: 2, ...) within a count |
+| `0xaa8a40` | PoolComplex::CheckAA8A40 | In outline: a check with a part's object (by a shared id `0x130BBEC`) |
+| `0xa84ac0` | Animal::CaseA84AC0 | In outline: for 1, tells parts (+0x5C, +0xB0) |
+| `0xb42390` | WildAnimal::ClampB42390 | In outline: when flagged (bit 2), keeps a value between two others (+0x1E0, +0x1E8) |
+| `0xb8b9f0` | Animal::TextB8B9F0 | In outline: takes a reference to an info text (Info::TextB87790) |
+| `0x9fe2a0` | Fireworks::Remove9FE2A0 | In outline: for entry n (0x30 bytes) that is on, removes it from an active list (ActiveList::Remove) |
+| `0xaae350` | PoolComplex::ValueAAE350 | In outline: a value by a mode (+0x130) |
+| `0xaae430` | PoolComplex::PointAAE430 | In outline: a point step when the terrain is not flagged |
+| `0xb94010` | Enclosure::LinkB94010 | In outline: a step with a linked part (+0x70) |
+| `0xb44ef0` | WildAnimal::ValueB44EF0 | In outline: a value from its part (+0x54 +0x54) when flagged, else from another |
+| `0xa6bed0` | Animal::EntryA6BED0 | In outline: goes over entry n's list (+0x4C, 0xC bytes) |
+| `0xba9fc0` | Enclosure::StepBA9FC0 | In outline: a step by a check (slots 0x3C, 0x54) |
+| `0xba9f60` | Enclosure::StepBA9F60 | In outline: the same (another copy) |
+| `0xb7aad0` | Animal::CheckB7AAD0 | In outline: when on (+0x41) and not flagged (+0x40), a check (`0xB7A480`) |
+| `0xa10e90` | Bird::FaceA10E90 | In outline: clears a value (+0xC0) and points (Effect::FaceA0D300) |
+| `0xaacec0` | PoolComplex::CaseAACEC0 | In outline: for 1, a value by case |

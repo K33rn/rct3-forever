@@ -1640,3 +1640,14 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xaf1eb0` | Window::TextAF1EB0 | In outline: a step (`0x9812F0`) and makes an empty text record |
 | `0xa39f80` | Window::TextA39F80 | In outline: the same (another copy) |
 | `0x98c730` | Fireworks::Flag98C730 | In outline: sets or clears a flag (bit 22) by whether there are fireworks (Fireworks::Count98AEC0) |
+| `0x67a5b0` | Window::Release67A5B0 | In outline: when a press matches, plays the button release sound (Sound::GUIBRelease) and a check |
+| `0x67a630` | Window::Release67A630 | In outline: the same (another copy) |
+| `0x98f8f0` | Fireworks::Window98F8F0 | In outline: with fireworks (Fireworks::Count98AEC0), makes a 0x2C8-byte part |
+| `0x67ac20` | Window::Children67AC20 | In outline: a child step (Window::ChildrenSlot9) and a check unless flagged |
+| `0x984530` | Window::Text984530 | In outline: a text from its part (+0x78 +8), empty when none |
+| `0x61cb70` | Window::Text61CB70 | In outline: a text from a part (+0x48), empty when none |
+| `0x6542d0` | Window::Make6542D0 | In outline: a step (Window::Slot48Self) and makes a 0x180-byte part |
+| `0x757580` | Entertainer::CostumeMenu | In outline: adds the entertainer costume menu (Entertainer::AddCostumeMenu) and sets a window's values |
+| `0xa30200` | Window::PartA30200 | In outline: a step with a part (by a shared id `0x1342780`) |
+| `0x672160` | Window::Find672160 | In outline: a find over entries (+0x148, +0x14C) |
+| `0x6e99b0` | Window::Slot6E99B0 | In outline: a step for slot (n + m) of 32 bytes |

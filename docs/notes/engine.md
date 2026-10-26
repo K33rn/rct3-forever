@@ -2490,3 +2490,43 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x496610` | Record::Get496610 | In outline: a value (Thunk), else makes a 0xCC-byte one |
 | `0xc96450` | Device::InitC96450 | In outline: sets up eight entries |
 | `0x4b7940` | Text::Assign4B7940 | In outline: sets texts from a shared one (`0xF27994`) and a record's |
+| `0xcebf80` | Record::InitCEBF80 | In outline: clears a record's values |
+| `0xc50aa0` | Stream::StepC50AA0 | In outline: a step with flags (bits 2, 11) |
+| `0x455040` | Effects::Entry455040 | In outline: a value from entry n (0x90 bytes) of kind 1 |
+| `0xbd1800` | List::CopyBD1800 | In outline: sets up a list from another with its table (`0xFA14D0`) |
+| `0x41cd80` | Text::Make41CD80 | In outline: with nothing set, makes a 0x1C-byte record |
+| `0xc67710` | Window::AddChildC67710 | In outline: sets up a child, points it at its parent and tells it |
+| `0xc5cc00` | Device::LinkC5CC00 | In outline: a step with a linked part |
+| `0xbe45e0` | Module::MatchBE45E0 | In outline: a module step (ModuleList::Run) and a path match (Path::MatchC17580) |
+| `0x47e120` | Record::Copy47E120 | In outline: copies a record's values from another |
+| `0xc5cb90` | Device::LinkC5CB90 | In outline: a step with a linked part |
+| `0xbdaa50` | Resource::Get2 | In outline: makes sure of a shared resource (Static::EnsureC374C0) |
+| `0x9c5d50` | Record::Get9C5D50 | In outline: a value (Thunk), else makes a 0x38-byte one |
+| `0xbdd180` | VertexDeclaration::FindBDD180 | In outline: a find over elements |
+| `0xcc6200` | Record::CopyCC6200 | In outline: copies values into its part (+4) |
+| `0xbe40d0` | Module::CheckBE40D0 | In outline: when on (+0xC), a check by a part's flags (bits 1, 13) |
+| `0xc699c0` | Window::MakeC699C0 | In outline: makes a window part (`0xC69910`) |
+| `0xc66d30` | Window::MakeC66D30 | In outline: sets up a window record (Window::InitC65F20) with its table (`0xFB7B98`) |
+| `0xbc6d00` | Track::CheckBC6D00 | In outline: for rides flagged 0x400000 with more than one station and both ends set, a step |
+| `0x9e8290` | Record::Copy9E8290 | In outline: copies a record's values from another |
+| `0x7cd120` | Record::Make7CD120 | In outline: sets up a record with its tables (`0xF70DE0`) |
+| `0xce3250` | Table::RemoveCE3250 | In outline: removes an entry from an index (+0xC) and a list (+0x38) |
+| `0xce3100` | Table::RemoveCE3100 | In outline: the same with +8 and +0x14 |
+| `0x4548d0` | Record::Init4548D0 | In outline: sets a record's values (0, 1, zeros) |
+| `0xbca7e0` | Device::CaseBCA7E0 | In outline: a value by case (1, 0x13, 0x2A, ...) |
+| `0x7b5070` | Effect::Next7B5070 | In outline: in mode 1, a step with the next entry |
+| `0x7b5010` | Effect::Next7B5010 | In outline: a step with the next entry |
+| `0x45eae0` | Animal::Pass45EAE0 | In outline: when not flagged (+0x884), goes over entries (+0x18) |
+| `0xc675a0` | Window::DetachC675A0 | In outline: with a parent (+0x18), a step with a linked part (+0x74) |
+| `0xbe5360` | Module::LoopBE5360 | In outline: with the shared list (`0x13D0E90`) and flag (`0x10F2CD8`), goes over it |
+| `0xbdc880` | Table::SumBDC880 | In outline: goes over a table (+0xC to +0x20C) |
+| `0xa1ce30` | List::LoopA1CE30 | In outline: goes over a linked list |
+| `0x6e3ae0` | Window::Free6E3AE0 | In outline: frees a buffer (+0x7C) and clears it and a count (+0x80) |
+| `0x40c300` | Model::Part40C300 | In outline: for part n (0x24 bytes) with nothing set, a step (`0xCC63E0`) |
+| `0xbf5bf0` | Text::LinkBF5BF0 | In outline: a step with a list (+0x34) |
+| `0x985fe0` | Table::Init985FE0 | In outline: fills 16 entries with the largest float |
+| `0x633b30` | Record::Init633B30 | In outline: sets up a record with its table (`0xF47F0C`) |
+| `0xc5e410` | Window::FadeC5E410 | In outline: clears a flag (+0x9C) and sets a value from 1 minus another (+0xDC) |
+| `0xc5cb30` | Device::LinkC5CB30 | In outline: a step with a linked part |
+| `0xc307d0` | Resource::ValueC307D0 | In outline: a value from entry n (+0x28, 16 bytes) |
+| `0xbd31f0` | Node::SetBD31F0 | In outline: clears a flag (+0x98) and a step (`0xBD2960`), or sets it |

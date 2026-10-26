@@ -1023,3 +1023,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbe68a0` | Device::Size | In outline: a size from a part's value (slot 0x38) |
 | `0xa51870` | Window::SumA51870 | In outline: a value from entries (+0xC, +0x10) |
 | `0xa0a340` | Bird::ClampA0A340 | In outline: clears a value (+0xB0) outside fixed bounds |
+| `0x466470` | Effect::Fraction466470 | In outline: clears values and works out a fraction |
+| `0x9fbd30` | Fireworks::Size9FBD30 | In outline: a size (+0x74), halved when the shared value is set (`0x10EDB90`) |
+| `0x47c4e0` | Effects::Set47C4E0 | In outline: sets shared entry n's value (`0x10EDD40`) and acts |
+| `0x9d4de0` | Fireworks::Part9D4DE0 | In outline: with no part, clears a value (+0xCC) |

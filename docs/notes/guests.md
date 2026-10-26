@@ -238,3 +238,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x759690` | Guest::AddValue759690 | In outline: adds to a value (+0x40C), kept between 0 and 1 |
 | `0x7cf960` | Person::Case7CF960 | In outline: a value by mode (+0x190, 0x100 and others) |
 | `0x4ea940` | AttractionPerson::Activate4EA940 | In outline: a step (`0x5528B0`) and activates the attraction's person |
+| `0x759d50` | Guest::Update759D50 | In outline: updates (Person::Update7D65F0) and, in mode 0, a check (`0x7C3480`) |
+| `0x7cf900` | Person::Reset7CF900 | In outline: steps (Person::Link7CE720, `0x7622D0`, `0x7A9550`) and clears a flag (+0x224) |

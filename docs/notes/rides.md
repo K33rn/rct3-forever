@@ -832,3 +832,29 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4d2800` | Shop::Event4D2800 | In outline: for 3, unless a check passes, a step with an object (`0x12F4EB0`) |
 | `0x5302a0` | Ride::Case5302A0 | In outline: false for 0, true for others |
 | `0x835350` | Scenery::Step835350 | In outline: a step (`0x4DE970`) and acts with a part |
+| `0x5903c0` | Ride::Make5903C0 | In outline: makes a 0xAC-byte part from its part (+0x1C8) |
+| `0x585b20` | Ride::Make585B20 | In outline: the same with +0x1D0 |
+| `0x4a8910` | Ride::Make4A8910 | In outline: the same with +0x3A8 |
+| `0xbc5b40` | Track::EndB | In outline: an end value by case (0: +0x24, 1: +0x2C, ...) |
+| `0xbc5ab0` | Track::EndA | In outline: an end value by case (0: +0x20, 1: +0xD8, ...) |
+| `0x4de8a0` | Ride::Value4DE8A0 | In outline: with a part, a value from an object (`0x12F4F44`, slot 0x10) |
+| `0x58ea70` | Ride::Refresh58EA70 | In outline: when on (+0x10), a refresh (`0x58E950`) and takes a value (slot 0x1C) |
+| `0x4e5fb0` | AttractionPerson::Event4E5FB0 | In outline: with the attraction's person, unless a shop event passes, a step in mode 2 |
+| `0x5601f0` | Ride::Value5601F0 | In outline: a value from a byte (+9), at least 1 |
+| `0x5bf4a0` | TrackPiece::Compare5BF4A0 | In outline: compares two values |
+| `0x7c4340` | Person::Check7C4340 | In outline: when not flagged (+0xC7), 0 unless 0 or 2, else a check |
+| `0x7c3100` | Person::Mode7C3100 | In outline: when flagged (+0xC7) and a check passes, sets a value to 0x140 |
+| `0x4d2b20` | Shop::Reset4D2B20 | In outline: sets two modes (+0xB0 = 4, +0xB4 = 3) and acts with its part |
+| `0x5dbbf0` | TrackedRide::Check5DBBF0 | In outline: a check (TrackedRide::Check5D97A0) when one value is up to another |
+| `0x50e6d0` | Car::Kind50E6D0 | In outline: 2, or 3 or 4 when flagged (bit 3), by counts (+0x7B4, +0x8C0) |
+| `0x5d3ec0` | TrackedRide::Copy5D3EC0 | In outline: copies a value from another of the same kind (`0xF3F71C`) |
+| `0x5d3e60` | TrackedRide::Copy5D3E60 | In outline: the same with `0xF3F714` |
+| `0x5d3d40` | TrackedRide::Copy5D3D40 | In outline: the same with `0xF3F70C` |
+| `0x552d70` | Ride::Part552D70 | In outline: a step with a part (by a shared id `0x12F51B4`) |
+| `0x552850` | Ride::Part552850 | In outline: the same (another copy) |
+| `0x52ce20` | Car::Pivot52CE20 | In outline: checks a pivot (RideCar::CheckPivot) and a step |
+| `0x4aa860` | Ride::Case4AA860 | In outline: a step by case from 5 |
+| `0x507950` | Car::Set507950 | In outline: sets a value (+0xF4) and acts with a part (+0x134) |
+| `0x4bfaa0` | Shop::Value4BFAA0 | In outline: a value from its part's values |
+| `0x4c4ba0` | Shop::Swing4C4BA0 | In outline: adds to a value (+0x90), kept above a shared limit |
+| `0x4d1bb0` | Shop::Part4D1BB0 | In outline: a step with a part (by a shared id `0x12F4C64`) |
