@@ -1131,3 +1131,72 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x479850` | Window::Make479850 | In outline: makes a part |
 | `0x458840` | Window::Make458840 | In outline: makes a part |
 | `0x9eea50` | Window::Mode9EEA50 | In outline: a step in mode 1 |
+| `0x67a960` | Window::Mode67A960 | In outline: a step in modes 2 or 3 |
+| `0x6a0560` | Window::Make6A0560 | In outline: makes a part |
+| `0x6f14e0` | Window::Refresh6F14E0 | In outline: refreshes a window (`0x6D4620`) |
+| `0x621100` | Save::Write621100 | In outline: writes values to a save (SaveWriter::Write, four bytes) |
+| `0xa3ebe0` | Window::CheckA3EBE0 | In outline: a check when given an object that has a part |
+| `0x67cdd0` | Window::Value67CDD0 | In outline: a value with no entries handled |
+| `0x6be5a0` | Money::Text2 | In outline: makes a money text with two decimal places (Money::Format_(2)) |
+| `0x41d750` | Graph::Draw41D750 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0x8863a0` | Window::Layout8863A0 | In outline: places a window's parts (Window::UpdateRect) |
+| `0xb4fa70` | Window::RefreshB4FA70 | In outline: a refresh (`0x665E90`) |
+| `0xa35550` | Window::PlaceA35550 | In outline: places a window by its screen position (Window::ScreenPosition) |
+| `0x9be910` | Window::Update9BE910 | In outline: a window update when not flagged (+0x1C) |
+| `0x9be750` | Window::Update9BE750 | In outline: a window update when not flagged (+0x38) |
+| `0x6d4690` | Window::Layout6D4690 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x707070` | Window::ParkRating707070 | In outline: shows the park rating's breakdown (Park::RatingBreakdown) |
+| `0x61f220` | Graph::Draw61F220 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0xace520` | Window::UpdateACE520 | In outline: a window step when on (+0x2C) |
+| `0x68c770` | Window::Refresh68C770 | In outline: a refresh (`0x6879A0`) |
+| `0x664620` | Window::Part664620 | In outline: a step with its part (+0x1B4 +0xC) |
+| `0x65ab80` | Window::Mode65AB80 | In outline: a step in mode 1 |
+| `0x98deb0` | Window::Mode98DEB0 | In outline: a step unless in mode 1 (+0x108) |
+| `0xb929f0` | Message::ResultB929F0 | In outline: another message result maker like Window::Message444890 |
+| `0xb32b60` | Message::ResultB32B60 | In outline: the same message result maker (another copy) |
+| `0xb10dc0` | Message::ResultB10DC0 | In outline: the same message result maker (another copy) |
+| `0xa2af70` | Message::ResultA2AF70 | In outline: the same message result maker (another copy) |
+| `0xa2a440` | Message::ResultA2A440 | In outline: the same message result maker (another copy) |
+| `0xa0af40` | Message::ResultA0AF40 | In outline: the same message result maker (another copy) |
+| `0x8fcd50` | Message::Result8FCD50 | In outline: the same message result maker (another copy) |
+| `0x8f8d10` | Message::Result8F8D10 | In outline: the same message result maker (another copy) |
+| `0x7bc4d0` | Message::Result7BC4D0 | In outline: the same message result maker (another copy) |
+| `0x7bc1b0` | Message::Result7BC1B0 | In outline: the same message result maker (another copy) |
+| `0x7578e0` | Message::Result7578E0 | In outline: the same message result maker (another copy) |
+| `0x703a90` | Message::Result703A90 | In outline: the same message result maker as Window::Message444890 (another copy) |
+| `0x69ae70` | Message::Result69AE70 | In outline: the same message result maker (another copy) |
+| `0x69acb0` | Message::Result69ACB0 | In outline: the same message result maker (another copy) |
+| `0x5a36f0` | Message::Result5A36F0 | In outline: the same message result maker (another copy) |
+| `0x5a3510` | Message::Result5A3510 | In outline: the same message result maker (another copy) |
+| `0x5a3350` | Message::Result5A3350 | In outline: the same message result maker (another copy) |
+| `0x59a5f0` | Message::Result59A5F0 | In outline: the same message result maker (another copy) |
+| `0x560d20` | Message::Result560D20 | In outline: the same message result maker (another copy) |
+| `0x4a33d0` | Message::Result4A33D0 | In outline: the same message result maker (another copy) |
+| `0x4a3130` | Message::Result4A3130 | In outline: the same message result maker (another copy) |
+| `0x4a2e90` | Message::Result4A2E90 | In outline: the same message result maker (another copy) |
+| `0x4a2bf0` | Message::Result4A2BF0 | In outline: the same message result maker (another copy) |
+| `0x4a2950` | Message::Result4A2950 | In outline: the same message result maker (another copy) |
+| `0x4a26b0` | Message::Result4A26B0 | In outline: the same message result maker (another copy) |
+| `0x4a2410` | Message::Result4A2410 | In outline: the same message result maker (another copy) |
+| `0x4a2170` | Message::Result4A2170 | In outline: the same message result maker (another copy) |
+| `0x4a1ed0` | Message::Result4A1ED0 | In outline: the same message result maker (another copy) |
+| `0x44e2a0` | Message::Result44E2A0 | In outline: the same message result maker (another copy) |
+| `0x41cb90` | Message::Result41CB90 | In outline: the same message result maker (another copy) |
+| `0x4040f0` | Message::Result4040F0 | In outline: the same message result maker (another copy) |
+| `0x403f30` | Message::Result403F30 | In outline: the same message result maker (another copy) |
+| `0x68e200` | Window::Shared68E200 | In outline: a step when the shared value (`0x1305BE4`) is 0 |
+| `0x67b550` | Window::Mode67B550 | In outline: a step in modes 2 or 3 |
+| `0xae2670` | Graph::DrawAE2670 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0x9b1fe0` | Window::Update9B1FE0 | In outline: a window update when not flagged (+0x20) |
+| `0x983230` | Window::Check983230 | In outline: a check (`0x982C70` with +0x58) |
+| `0x6af120` | Window::Flags6AF120 | In outline: a step when flagged (bit 9 or bit 7) |
+| `0x4c5460` | Shop::Text4C5460 | In outline: a text when not flagged (+0x378) |
+| `0xc60f90` | Window::UpdateC60F90 | In outline: a window update when not flagged (+0xE8) |
+| `0x6aaaa0` | Window::Draw6AAAA0 | In outline: draws a window part (GUIRenderer) |
+| `0xc65160` | Window::PartC65160 | In outline: a step with a part (+0xF0) |
+| `0x6ae130` | Window::Check6AE130 | In outline: a window list check |
+| `0x9d5510` | Window::Refresh9D5510 | In outline: a refresh with an empty handle |
+| `0x7891e0` | Graph::Draw7891E0 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0x6472e0` | Window::Refresh6472E0 | In outline: a refresh (`0x645EB0` with +0x14) |
+| `0x6b5d10` | Colour::Make6B5D10 | In outline: a colour from three values, the first kept in range |
+| `0x642e80` | Window::Part642E80 | In outline: a step with a part |

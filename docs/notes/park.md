@@ -892,3 +892,47 @@
 | `0x75eaa0` | Guest::Part75EAA0 | In outline: a guest step with a part |
 | `0x75ec70` | Guest::Part75EC70 | In outline: a guest step with a part |
 | `0xafd7f0` | Animal::ModeAFD7F0 | In outline: a step unless in mode 1 |
+| `0x4a0090` | Grid::Cell4A0090 | In outline: a grid cell from a point, rounded |
+| `0xabe060` | Fence::PassABE060 | In outline: goes over a list (+0x60) |
+| `0x7bbe50` | Person::Part7BBE50 | In outline: a step with a part when it has one |
+| `0x8b3af0` | PathManager::Create8B3AF0 | In outline: makes the shared path manager (`0x130625C`, PathManager::PathManager) |
+| `0x8b71b0` | PathManager::Create8B71B0 | In outline: the same (another copy) |
+| `0x9328c0` | Water::Pass9328C0 | In outline: goes over entries (+8) |
+| `0x92bc70` | Water::Terrain92BC70 | In outline: a water step over the terrain |
+| `0x821020` | SceneryBehaviour::Same821020 | In outline: a step when two values are the same |
+| `0x81ee70` | SceneryBehaviour::Count81EE70 | In outline: a step for a positive count |
+| `0x84edc0` | Scenery::Count84EDC0 | In outline: a step for a positive count |
+| `0x727380` | Path::Case727380 | In outline: a path check for cases under 5 |
+| `0x753b10` | Guest::Scenery753B10 | In outline: a step with a scenery value (`0x89C760` with +0x98) |
+| `0x907440` | Water::Range907440 | In outline: a water step over a range |
+| `0xb58a20` | Animal::RectB58A20 | In outline: a terrain step over a byte rectangle |
+| `0x950c50` | Water::Grow950C50 | In outline: grows a list (+0x1BC) |
+| `0x837c30` | Scenery::Count837C30 | In outline: a step with positive counts |
+| `0x8175a0` | SceneryBehaviour::Ref8175A0 | In outline: a step with a reference (WithReference8155F0) |
+| `0x8f6760` | Terrain::Clip8F6760 | In outline: a terrain value from a clipped rectangle (Rect::Clip8F3750) |
+| `0x84c160` | Scenery::Make84C160 | In outline: makes a scenery record with an empty handle |
+| `0x8514d0` | Scenery::Grow8514D0 | In outline: grows a list to hold n (`0x84EC40`) |
+| `0x71da80` | Path::Terrain71DA80 | In outline: a path step over the terrain |
+| `0x8feae0` | Water::Update8FEAE0 | In outline: a water step when on (+0x2C) |
+| `0x816320` | SceneryBehaviour::Slot816320 | In outline: a step for a slot |
+| `0x7f06f0` | Person::Loop7F06F0 | In outline: a loop |
+| `0x7ea320` | Person::Cell7EA320 | In outline: a step when a cell changes |
+| `0xa283f0` | Guest::StepA283F0 | In outline: a guest step (`0x754670` with 1) |
+| `0x916310` | Water::Mode916310 | In outline: a water step in mode 1 (+0x38) |
+| `0x827b40` | Scenery::Terrain827B40 | In outline: a scenery step over the terrain |
+| `0x90d510` | Water::Grid90D510 | In outline: a step with positive counts (+0x8C, +0x98) |
+| `0x84b880` | Scenery::Show84B880 | In outline: a step when its check passes or when asked |
+| `0x84b430` | Scenery::Update84B430 | In outline: an update when not flagged (+0x1C) |
+| `0x966920` | Water::Loop966920 | In outline: a loop |
+| `0x8d0170` | Terrain::Case8D0170 | In outline: a terrain step by case |
+| `0x7b1750` | Person::Part7B1750 | In outline: a step with a part when it has one |
+| `0xa90b50` | Fence::CountA90B50 | In outline: a step for a positive count |
+| `0x784970` | GuestGroup::Update784970 | In outline: an update when not flagged (+0x11C) |
+| `0x72d090` | Path::Update72D090 | In outline: an update when not flagged (+0x11C) |
+| `0x42e990` | Placement::Step42E990 | In outline: a placement step (Placement::Footprint) |
+| `0x885ad0` | Scenery::Slot885AD0 | In outline: a step when it has a slot |
+| `0x82ada0` | Scenery::Link82ADA0 | In outline: a step with a part |
+| `0x82abf0` | Scenery::Link82ABF0 | In outline: the same (another copy) |
+| `0x7f7760` | Person::Update7F7760 | In outline: an update when not flagged (+0x5C) |
+| `0x8826f0` | Scenery::Part8826F0 | In outline: a step with a part (+0xCC +0x64) |
+| `0x7d56d0` | Person::Refresh7D56D0 | In outline: a refresh (`0x7D3FB0` with 0) |

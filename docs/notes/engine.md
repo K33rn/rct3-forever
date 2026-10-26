@@ -1777,3 +1777,41 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xbe6b70` | Table::FillBE6B70 | In outline: fills a table with 0xFFFF (`0x416110`) |
 | `0xc36d80` | Resource::SlotC36D80 | In outline: a step for a slot in range (`0xCADA40`) |
 | `0xcdf4c0` | Loop::StepCDF4C0 | In outline: a loop |
+| `0x99a080` | Record::Make99A080 | In outline: makes a record with an empty handle |
+| `0x881fd0` | Record::Copy881FD0 | In outline: copies an entry (Thunk) |
+| `0x53d720` | Record::Make53D720 | In outline: makes a record |
+| `0xc04d00` | Device::CaseC04D00 | In outline: a device step by case |
+| `0xbc2ef0` | Memory::RangeBC2EF0 | In outline: a step over a range |
+| `0xe00920` | Memory::StepE00920 | In outline: a step when given a buffer |
+| `0xbc31d0` | Memory::StepBC31D0 | In outline: a step (`0xBC30F0`) |
+| `0xbe1a00` | Table::PassBE1A00 | In outline: goes over a table (+0x20C entries) |
+| `0x7cf180` | Record::Make7CF180 | In outline: makes a 0xC-byte record |
+| `0xc464d0` | Text::LoopC464D0 | In outline: a loop over a text |
+| `0xc48fc0` | Array::MakeC48FC0 | In outline: makes an array of n values |
+| `0x499c30` | NamedObject::Make499C30 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
+| `0x9d8210` | ManagedObject::Make9D8210 | In outline: makes a managed object (ManagedObject with `0x13CE454`) |
+| `0x750190` | Name::Find750190 | In outline: finds a name ignoring case |
+| `0xc68d80` | Text::ParseC68D80 | In outline: reads a value from the rest of a text (WideString::Substring) |
+| `0x417a20` | Array::Resize417A20 | In outline: resizes a list to n |
+| `0xc3c3e0` | Resource::MakeC3C3E0 | In outline: makes a part (Constructor) |
+| `0xc587f0` | Stream::StepC587F0 | In outline: a stream step (`0xCB06E0`) |
+| `0xbc87b0` | Memory::StepBC87B0 | In outline: a step unless told not to |
+| `0xcd21e0` | Resource::FindCD21E0 | In outline: finds a resource (`0xBCEE60`) |
+| `0xc4ef00` | Loop::StepC4EF00 | In outline: a loop while more than one is left |
+| `0x909f10` | List::Find909F10 | In outline: finds an entry up to n |
+| `0x80f7d0` | List::Find80F7D0 | In outline: finds an entry up to n |
+| `0xaf73a0` | Name::FindAF73A0 | In outline: a name step ignoring case (WideString::ToLower) |
+| `0xadff60` | Name::FindADFF60 | In outline: the same (another copy) |
+| `0xc339e0` | Resource::MakeC339E0 | In outline: makes a resource part (Resource::MakeC33730) |
+| `0x909c10` | List::Find909C10 | In outline: finds an entry up to n |
+| `0x87bcb0` | List::Find87BCB0 | In outline: finds an entry up to n |
+| `0x499720` | List::Grow499720 | In outline: grows a list to hold n |
+| `0xca46f0` | List::FindCA46F0 | In outline: a step for a positive count |
+| `0xce76b0` | List::FindCE76B0 | In outline: finds an entry up to n |
+| `0xb333e0` | Text::MakeB333E0 | In outline: makes a text from an empty one |
+| `0xc236c0` | List::PassC236C0 | In outline: goes over n entries |
+| `0x9d0f40` | List::Grow9D0F40 | In outline: grows a list to hold n |
+| `0xcef460` | Name::FindCEF460 | In outline: finds an entry by name (`0xCEF120`) |
+| `0xc57110` | Path::HasDrive | In outline: a step for a path that is shorter than two or has no drive letter (no ':' second) |
+| `0xbdeb50` | Text::FindBDEB50 | In outline: a step with a text entry |
+| `0xcbe870` | Text::MakeCBE870 | In outline: makes a text from an empty one |

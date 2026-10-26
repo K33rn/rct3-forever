@@ -257,3 +257,18 @@
 | `0xb3cd60` | Animal::LoopB3CD60 | In outline: goes over a linked list |
 | `0xb9bc90` | PathGrid::CountB9BC90 | In outline: a step for a positive count |
 | `0xaf1290` | Animal::ValueAF1290 | In outline: an animal value when not flagged (+0x74) |
+| `0xb529b0` | Animal::PartB529B0 | In outline: a step with its part (+0x138 +0xC) |
+| `0xb01420` | WildAnimal::TerrainB01420 | In outline: an animal step over the terrain (WildAnimal::Interface60) |
+| `0xa6f930` | Animal::ModeA6F930 | In outline: a step in mode 2 |
+| `0xa6c4d0` | Animal::PassA6C4D0 | In outline: goes over entries (+0x48) |
+| `0xae1390` | Animal::BigAE1390 | In outline: a step when a count is over 0x400 |
+| `0xb33850` | Animal::CopyB33850 | In outline: copies an entry (Thunk) |
+| `0x414470` | Animal::Pass414470 | In outline: goes over entries (+0x84) |
+| `0xb87b10` | Animal::UpdateB87B10 | In outline: an update when not flagged (+0x98) |
+| `0xb1fe80` | Animal::GetB1FE80 | In outline: a step with an object (Interface48::Get) |
+| `0xb01c20` | WildAnimal::UpdateB01C20 | In outline: an update when not flagged (+0x228) |
+| `0xb6cbd0` | Animal::PointB6CBD0 | In outline: a point check against a shape with more than three points |
+| `0xb84f90` | Animal::GetB84F90 | In outline: a step with an object (`0x13064A0`) |
+| `0xa1ab40` | Bird::ModeA1AB40 | In outline: a step unless in mode 1 |
+| `0xb22600` | Animal::UpdateB22600 | In outline: an update when not flagged (+0xB0) |
+| `0xb32420` | WildAnimal::UseShelter | In outline: makes a use-shelter decision (WAS_UseShelter) |

@@ -724,3 +724,30 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbf5d00` | Text::WidthBF5D00 | In outline: a text width when on (+0xEC) |
 | `0x9aa2d0` | Particles::Make9AA2D0 | In outline: makes a part |
 | `0x9f3b30` | Fireworks::Step9F3B30 | In outline: a firework step with a part |
+| `0xcedd90` | Shapes::UpdateCEDD90 | In outline: a step when not flagged (+0x24) |
+| `0xbfa010` | Text::DrawBFA010 | In outline: a text draw step (`0xC5C7F0`) |
+| `0x9d3ad0` | Fireworks::Loop9D3AD0 | In outline: a loop |
+| `0x9c65b0` | Particles::Slot9C65B0 | In outline: a step with no slot (+0xC4 negative) |
+| `0x9c7340` | Particles::Add9C7340 | In outline: adds an entry when there is room (+0x98 vs +0x9C) |
+| `0x9af320` | Fireworks::Part9AF320 | In outline: a step for a part not flagged (+0x18) |
+| `0x43a940` | Effect::Make43A940 | In outline: makes a part |
+| `0xbb8000` | Vector::LerpBB8000 | In outline: a blend of two points by a fraction |
+| `0xccc400` | Model::FillCCC400 | In outline: fills buffers for the current device |
+| `0xcdb0e0` | Plane::BelowCDB0E0 | In outline: whether a point is below a plane |
+| `0xbfa640` | Text::DrawBFA640 | In outline: a text draw step (`0xC5C7F0`) |
+| `0xc5d920` | Device::StepC5D920 | In outline: a step by a flag |
+| `0xafd160` | Mesh::FillAFD160 | In outline: fills a mesh (Mesh::FillAF8FB0) |
+| `0xcccc70` | Model::PassCCCC70 | In outline: goes over a model's parts (+0x44) |
+| `0xa99c10` | PoolComplex::CameraA99C10 | In outline: a value from the camera (MainCamera::Get) |
+| `0x428fb0` | Sky::Loop428FB0 | In outline: a loop |
+| `0xa92360` | Fence::CameraA92360 | In outline: a value from the camera (MainCamera::Get) |
+| `0x9e0b90` | Fireworks::Height9E0B90 | In outline: a step when a height is not above 0 |
+| `0x481d40` | Draw::RedLine481D40 | In outline: draws a red line (0xFFFF0000) with the shared line drawer |
+| `0xbf8c50` | Text::FillBF8C50 | In outline: fills buffers for the current device |
+| `0x9ed500` | Firework::Step9ED500 | In outline: a firework step (`0x9F5440`) |
+| `0xcd8520` | Camera::StepCD8520 | In outline: a step unless told not to |
+| `0x47c240` | Effect::Update47C240 | In outline: an update when not flagged (+0xF) |
+| `0x9a4ad0` | Fireworks::Step9A4AD0 | In outline: a firework step (`0x9A4A60`) |
+| `0x410180` | Effect::Update410180 | In outline: a step when on (+8) |
+| `0x81d1c0` | SceneryBehaviour::Step81D1C0 | In outline: a behaviour step from its owner |
+| `0xbf75c0` | Text::FillBF75C0 | In outline: fills buffers for the current device |

@@ -273,3 +273,8 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x5f1ab0` | TrackPiece::Walk5F1AB0 | In outline: a walk along a piece |
 | `0x749810` | Guest::Turn749810 | In outline: turns a guest's pose (Matrix::TurnColumnsAboutY by +0xDF4 times a rate) |
 | `0x4a0280` | Grid::Cell4A0280 | In outline: a grid cell from a point, rounded |
+| `0x93d140` | Water::Below93D140 | In outline: whether a point is below a water surface |
+| `0x7c22e0` | Person::Path7C22E0 | In outline: a value from a path piece (`0x71B370`) |
+| `0x426790` | Curves::Step426790 | In outline: a curve step with a non-negative time |
+| `0x5a2690` | Ride::Time5A2690 | In outline: a step when a time is up to a value |
+| `0xb61800` | WildAnimal::DistanceB61800 | In outline: a distance step |

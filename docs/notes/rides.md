@@ -405,3 +405,22 @@ Tracked rides, flat rides and their cars and trains.
 | `0x582af0` | Ride::Terrain582AF0 | In outline: a ride step over the terrain |
 | `0x526a70` | Car::Mode526A70 | In outline: a car step in mode 0x10 (+0x384) |
 | `0xa3d7a0` | Ride::CanOpenA3D7A0 | In outline: a step when a ride can open (`0x5CFB10`) |
+| `0x5c7000` | TrackedRide::Check5C7000 | In outline: a check when not flagged (+0x2F0) |
+| `0x5c6e30` | TrackedRide::Check5C6E30 | In outline: a check when not flagged (+0x2D4) |
+| `0x4d2540` | Shop::Link4D2540 | In outline: links a shop's part |
+| `0x4845c0` | Ride::Case4845C0 | In outline: a step for cases 1 or 4 |
+| `0x511130` | Car::Update511130 | In outline: a car update when not flagged (+0x180) |
+| `0x579d40` | Ride::Time579D40 | In outline: a step with a positive time and no part (+4) |
+| `0x5a9ec0` | Ride::Update5A9EC0 | In outline: a ride update when not flagged (+0x324) |
+| `0x4bf1f0` | Shop::Count4BF1F0 | In outline: a step with no entries handled |
+| `0x4dfb10` | Ride::Empty4DFB10 | In outline: a step when two counts (+0x380, +0x388) add to under 1 |
+| `0x5fb250` | Ride::Update5FB250 | In outline: an update when not flagged (+8) |
+| `0x5a1e10` | Ride::Section5A1E10 | In outline: a step with a ride's section (`0x12F5338`) |
+| `0x4ac090` | Ride::Count4AC090 | In outline: a step past a count (+0x31C) |
+| `0xa7f3b0` | AttractionPerson::StepA7F3B0 | In outline: a step with an attraction's person (AttractionPersonInfo::Person) |
+| `0x559e00` | Ride::Get559E00 | In outline: a step with an object (Interface04b::Get) |
+| `0x533e20` | Shop::Step533E20 | In outline: a shop step (`0x4C1CD0`) |
+| `0x4edf70` | Ride::Step4EDF70 | In outline: a step unless told not to |
+| `0x5c6c80` | TrackedRide::Check5C6C80 | In outline: a check when not flagged (+0x1E0) |
+| `0x50e980` | Car::Shared50E980 | In outline: a step when the shared value (`0x10EE438`) is set |
+| `0x4d02e0` | Shop::Slot4D02E0 | In outline: a step with no slot (+0x88 negative) |
