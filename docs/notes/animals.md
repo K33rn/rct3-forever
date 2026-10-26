@@ -210,3 +210,17 @@
 | `0xa08750` | Animal::UpdateA08750 | In outline: an animal update when not flagged (+0x18C, +0x141) |
 | `0xb462f0` | WildAnimal::StepB462F0 | In outline: an animal step with no task (+0x78) and entries (+0x80) |
 | `0xba4030` | Animal::UpdateBA4030 | In outline: an animal update when not flagged (+0xC8) |
+| `0xb72370` | Animal::UpdateB72370 | In outline: an animal update when not flagged (+0xB8) |
+| `0xa6c690` | Animal::PassA6C690 | In outline: goes over an animal's entries |
+| `0xa40080` | Animal::FindA40080 | In outline: finds an animal entry unless told not to |
+| `0xb5a9b0` | Animal::PartB5A9B0 | In outline: an animal step with its part (+0x144 +0xC) |
+| `0xa98c60` | PoolComplex::CachedA98C60 | In outline: a step with the cached object (Interface64::GetCached) |
+| `0xa88a60` | Animal::ValueA88A60 | In outline: an animal value above a limit (`0xF29638`) |
+| `0x9c5850` | Fireworks::Check9C5850 | In outline: a firework check when not flagged (+0x30) |
+| `0xb47ad0` | WildAnimal::DistanceB47AD0 | In outline: an animal's distance to a point |
+| `0xb725a0` | Animal::UpdateB725A0 | In outline: an animal update when not flagged (+0xB8) |
+| `0xa0ffe0` | Bird::NearA0FFE0 | In outline: whether a point is further than a scaled distance |
+| `0xa8b690` | Animal::PassA8B690 | In outline: goes over an animal's entries (+0xD0) |
+| `0xb8bc50` | Animal::CaseB8BC50 | In outline: an animal value by case |
+| `0xb1c670` | Animal::GetB1C670 | In outline: a step with an object (Interface44c::Get) |
+| `0xb33f40` | Animal::PassB33F40 | In outline: goes over a list (+0x14) |

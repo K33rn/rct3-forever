@@ -994,3 +994,45 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xb90d30` | Window::BuildB90D30 | In outline: builds a window from the shared title `0x13D01E4` |
 | `0xa4aec0` | Window::BuildA4AEC0 | In outline: builds a titled window (Window::BuildTitled) with a list member (ListMember453) |
 | `0x9bc930` | Window::Text9BC930 | In outline: sets a window's text from an empty one when it has one (+0x58 +0xC) |
+| `0xa58e80` | List::LayoutA58E80 | In outline: lays out a list (+0x184 rows) |
+| `0x67f3b0` | Window::Build67F3B0 | In outline: builds a window from the shared title `0x12F83DC` |
+| `0xa3d9d0` | Window::TextA3D9D0 | In outline: sets a window's text when not flagged (+0x378) |
+| `0xa35890` | Window::LayoutA35890 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x42e060` | Window::Build42E060 | In outline: builds a window from the shared title `0x1103C00` |
+| `0xb5b290` | Window::BuildB5B290 | In outline: builds a window from the shared title `0x13CEAD0` |
+| `0xc64550` | Window::SizeC64550 | In outline: works out a window's size from its parts |
+| `0xaca200` | Graph::RangeACA200 | In outline: a graph's range from its values |
+| `0x667990` | Window::Place667990 | In outline: places a window by its screen position (Window::ScreenPosition) |
+| `0x643ec0` | Window::Build643EC0 | In outline: builds a window from the shared title `0x12F7EF8` |
+| `0xa60c10` | Window::FadeA60C10 | In outline: a window fade step when far enough from 1 |
+| `0xa2d640` | Window::LayoutA2D640 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x630fb0` | Window::Build630FB0 | In outline: builds a window from the shared title `0x12F7E40` |
+| `0xb9f980` | Window::BuildB9F980 | In outline: builds a window from the shared title `0x13D05DC` |
+| `0x68f1c0` | Window::Build68F1C0 | In outline: builds a window from the shared title `0x12F848C` |
+| `0x68d2b0` | Window::Build68D2B0 | In outline: builds a window from the shared title `0x12F8480` |
+| `0x681050` | Window::Drag681050 | In outline: a drag step once the mouse has moved far enough |
+| `0x6b3e10` | Window::Update6B3E10 | In outline: a window step when on (+0x40034) |
+| `0x6dc5a0` | Objectives::ParkValueText | In outline: makes a park value condition's text (ParkValueCondition::Name) |
+| `0x65a870` | Window::Event65A870 | In outline: handles event 1 |
+| `0x688280` | Window::Build688280 | In outline: builds a window from the shared title `0x12F846C` |
+| `0x5f4ba0` | Window::Build5F4BA0 | In outline: builds a window from the shared title `0x12F56F0` |
+| `0x6fcf50` | Window::Kind6FCF50 | In outline: acts by a window's kind (+0x14) |
+| `0x664b10` | Window::Build664B10 | In outline: builds a window from the shared title `0x12F8110` |
+| `0x702ca0` | Window::Build702CA0 | In outline: builds a window from the shared title `0x1306184` |
+| `0x9b2340` | Window::Build9B2340 | In outline: builds a window from the shared title `0x1341430` |
+| `0x6a23e0` | Window::Build6A23E0 | In outline: builds a window from the shared title `0x1305C48` |
+| `0x6869f0` | Window::Build6869F0 | In outline: builds a window from its title |
+| `0x67c370` | Window::Build67C370 | In outline: builds a window from the shared title `0x12F8228` |
+| `0x6a3540` | Window::Build6A3540 | In outline: builds a window from the shared title `0x1305C5C` |
+| `0x917210` | Window::Build917210 | In outline: builds a window from the shared title `0x133A13C` |
+| `0x78a750` | Window::Layout78A750 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x98d860` | Info::Text98D860 | In outline: makes an info text from a shared text (`0xF31F48`) |
+| `0x6a8d00` | Window::Build6A8D00 | In outline: builds a window from the shared title `0x1305CB0` |
+| `0x670380` | Window::Build670380 | In outline: builds a window from the shared title `0x12F8188` |
+| `0x63a3a0` | Window::Build63A3A0 | In outline: builds a window from the shared title `0x12F7E80` |
+| `0x79c950` | Toolbar::Same79C950 | In outline: a step when two shared values match (`0x1306BCC`, `0x1306BD8`) |
+| `0x6435f0` | Window::Draw6435F0 | In outline: draws a window part (GUIRenderer) |
+| `0xa33350` | Window::LinkA33350 | In outline: links a window part when given one |
+| `0xb43e30` | Window::BuildB43E30 | In outline: builds a window from the shared title `0x13CE990` |
+| `0x630ab0` | Window::Build630AB0 | In outline: builds a window from the shared title `0x12F7E38` |
+| `0xc603a0` | Window::FocusC603A0 | In outline: a step when it is the window system's focused one (`0x13E6D00` +0x190) |

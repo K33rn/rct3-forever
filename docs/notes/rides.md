@@ -330,3 +330,20 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5da510` | TrackedRide::Find5DA510 | In outline: a step when a piece is its own (`0x5D6E80`) |
 | `0x4f3f40` | Ride::Kind4F3F40 | In outline: a step over parts of kinds 1, 3 or 4 |
 | `0x4f1740` | Ride::Station4F1740 | In outline: a station check (`0x5D1D80` with +0x5DC, +0x5E0, `0x5D0630`) |
+| `0x5ada60` | TrackedRide::Flags5ADA60 | In outline: a step when either shared flag (`0x12F5528`, `0x12F5529`) is set |
+| `0x58b7a0` | Ride::Hit58B7A0 | In outline: a hit test for the selected ride (`0x12F5608`) |
+| `0x5e0090` | TrackPiece::Find5E0090 | In outline: finds a piece among a ride's pieces (+0x158) |
+| `0x4f5060` | Ride::Refresh4F5060 | In outline: refreshes a ride (`0x4F3B90` with 1) |
+| `0x4c0450` | Shop::Time4C0450 | In outline: a shop step with a positive time and an entry (+0xCC) |
+| `0x4b4480` | Ride::Owner4B4480 | In outline: a ride step with its owner (OffsetRef::Owner4) |
+| `0x5e8260` | TrackedRide::Update5E8260 | In outline: a tracked ride update when not flagged (+0x68) |
+| `0x531240` | Ride::Slot531240 | In outline: a ride step with an attraction slot (AttractionInstance::Slot12) |
+| `0x58c800` | AttractionPerson::Find58C800 | In outline: a step for an attraction's person (AttractionPersonInfo::Person) |
+| `0x58b580` | Ride::Hit58B580 | In outline: another hit test for the selected ride (`0x12F5608`) |
+| `0x5591e0` | Ride::Check5591E0 | In outline: a ride check when not flagged (+0x18) |
+| `0x5ae990` | TrackedRide::Make5AE990 | In outline: makes a 0x3F0-byte ride part |
+| `0x50dff0` | Car::Flat50DFF0 | In outline: a flat (x, z) length and direction check |
+| `0x4ce9b0` | Shop::Text4CE9B0 | In outline: a shop text when not flagged (+0x4C) |
+| `0x4d0cb0` | Shop::Grow4D0CB0 | In outline: grows a shop list (+0x9C) |
+| `0x54f670` | Ride::List54F670 | In outline: goes over a ride's list |
+| `0x4914f0` | Ride::Update4914F0 | In outline: a ride update when not flagged (+0x428) |

@@ -198,3 +198,8 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x75c150` | Guest::Update75C150 | In outline: a guest update setting its state (Person::SetState) |
 | `0x7d2d00` | Person::Leave7D2D00 | In outline: when its check fails (`0xAB3A80`), sets a person's state to 0x103 |
 | `0x8b5880` | Person::Mode8B5880 | In outline: a person step in modes 2 or 3 (+0x18C) with no slot (+0x30) |
+| `0x7ded70` | Person::Check7DED70 | In outline: a person check when not flagged (+0x2D4) |
+| `0x756550` | Guest::Sounds756550 | In outline: a crowd step that stops the crowd sounds (Crowd::Sounds(0)) |
+| `0x7cef60` | Person::Update7CEF60 | In outline: a person update when not flagged (+0x2D4) |
+| `0x7cc220` | Person::Find7CC220 | In outline: a person step unless told not to |
+| `0x75abf0` | Guest::Mode75ABF0 | In outline: a guest step in mode 0x10 (+0x190) |

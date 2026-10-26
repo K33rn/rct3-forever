@@ -753,3 +753,46 @@
 | `0x838e00` | Scenery::Kind838E00 | In outline: a scenery check by kind (+0x8B = 2) unless told not to |
 | `0x96fae0` | List::Sort96FAE0 | In outline: sorts 0x18-byte entries by their first value |
 | `0x80cba0` | List::Sort80CBA0 | In outline: the same sort (another copy) |
+| `0x875630` | Scenery::Range875630 | In outline: a scenery step for a range under 0xE5 |
+| `0x429b40` | Terrain::Below429B40 | In outline: a step when a height is below 0 |
+| `0x88f4f0` | Scenery::Slot88F4F0 | In outline: a scenery step for a slot when it has one |
+| `0x8545f0` | Scenery::Show8545F0 | In outline: a step when given an entry and the shared flag (`0x12F018C` +0xB0) is set |
+| `0x854330` | Scenery::Find854330 | In outline: finds a scenery entry up to n |
+| `0x8ff430` | Whirlpool::Find8FF430 | In outline: finds a cell in a sorted list (SortedPointers::FindXY3) |
+| `0x72cbb0` | Path::Refresh72CBB0 | In outline: a path step with the path manager |
+| `0x95c260` | Water::Terrain95C260 | In outline: a water check over the terrain |
+| `0x95a7e0` | Water::Terrain95A7E0 | In outline: the same water check (another copy) |
+| `0xaa03d0` | PoolComplex::OwnerAA03D0 | In outline: a pool step when a part's owner (+0x13C) is another |
+| `0x8ff790` | Water::Find8FF790 | In outline: finds a water entry up to n |
+| `0x837df0` | Scenery::Count837DF0 | In outline: a scenery step by a count (under 1 handled) |
+| `0x877390` | Scenery::Terrain877390 | In outline: a scenery step over the terrain |
+| `0xa929f0` | Fence::UpdateA929F0 | In outline: a border update when not flagged (+0xED) |
+| `0x723c20` | Path::Full723C20 | In outline: a path step when a list is full (+0x70 = +0x6C) |
+| `0x8f7500` | Terrain::Refresh8F7500 | In outline: refreshes a terrain part (`0x8F47F0`) |
+| `0x8828a0` | Scenery::Pass8828A0 | In outline: goes over a scenery list (+0x14) |
+| `0x95df40` | Water::Edge95DF40 | In outline: another water edge case, the fraction kept between 0 and 1 |
+| `0x915990` | Water::Pass915990 | In outline: goes over water entries (+0x1C) |
+| `0x7a0930` | Terrain::Check7A0930 | In outline: a check with a part when there is one |
+| `0x902290` | Water::Grow902290 | In outline: grows a water list (+0xB0) |
+| `0xa92c20` | Fence::PointA92C20 | In outline: a border step with a part (+0x198) |
+| `0x944250` | Water::Activate944250 | In outline: activates a water part |
+| `0x8ee9c0` | Water::Make8EE9C0 | In outline: makes a water part (`0x4377E0` with 0x1C) |
+| `0x875880` | Scenery::Find875880 | In outline: finds a scenery entry (+0x80) |
+| `0x85cfd0` | Scenery::Case85CFD0 | In outline: a scenery value by case |
+| `0xac6000` | PoolComplex::PointAC6000 | In outline: a pool step when not flagged (+0x1C) |
+| `0x9140a0` | Water::Below9140A0 | In outline: a step when a height is below 0 |
+| `0x978510` | Water::Show978510 | In outline: a step when the shared flag (`0x12F018C` +0x24 +2) is set |
+| `0x976ca0` | Water::Locked976CA0 | In outline: a water step inside a critical section |
+| `0x8167e0` | SceneryBehaviour::Find8167E0 | In outline: a behaviour step for a slot |
+| `0x42d4e0` | Terrain::Step42D4E0 | In outline: a terrain step |
+| `0x855b90` | Scenery::Set855B90 | In outline: sets a scenery value (+0x50) when it changes |
+| `0x8181b0` | SceneryBehaviour::Mode8181B0 | In outline: a behaviour step in mode 1 (+0x70) |
+| `0x779d20` | Park::Step779D20 | In outline: a step with the park (Park::Get) |
+| `0x943360` | Water::Terrain943360 | In outline: a water step over the terrain |
+| `0x822880` | SceneryBehaviour::Loop822880 | In outline: a behaviour loop |
+| `0x745e40` | Guest::Link745E40 | In outline: links a guest's part |
+| `0xaa1ec0` | PoolComplex::ListAA1EC0 | In outline: goes over a pool's list |
+| `0x839660` | Scenery::Slot839660 | In outline: a scenery step when it has a slot |
+| `0x77e1c0` | Park::Find77E1C0 | In outline: finds an entry (+0x48) |
+| `0x908250` | Water::Cell908250 | In outline: a water cell step inside bounds |
+| `0x871cb0` | Scenery::Flag871CB0 | In outline: a scenery step by a flag (Flags::Bit0) |

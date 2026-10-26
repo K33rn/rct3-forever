@@ -674,3 +674,25 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xb74830` | Effect::BoundsB74830 | In outline: another effect box grow like Effect::Bounds48B6F0 |
 | `0xb5e710` | Effect::BoundsB5E710 | In outline: another effect box grow like Effect::Bounds48B6F0 |
 | `0x7b8bd0` | Effect::Bounds7B8BD0 | In outline: another effect box grow like Effect::Bounds48B6F0 |
+| `0x46f6b0` | Labels::Add46F6B0 | In outline: adds a label, up to 5000 |
+| `0xc5f570` | Device::SetC5F570 | In outline: a device setting (`0xC5F410`) |
+| `0x8699c0` | Scenery::Model8699C0 | In outline: refreshes a scenery model (`0x860790`) |
+| `0x454cb0` | Normals::Make454CB0 | In outline: works out direction lengths for a list of points |
+| `0x85fd90` | Fireworks::MakeShells2 | In outline: makes firework shells with fixed settings (`0x950E10` with 0xF and set sizes) |
+| `0xbf2060` | Text::DrawBF2060 | In outline: draws a text, character by character |
+| `0xbf1a10` | Text::DrawBF1A10 | In outline: the same text draw (another copy) |
+| `0x9f1fa0` | Firework::Plane9F1FA0 | In outline: a firework's crossing of a plane (non-zero dot product) |
+| `0xcbd5e0` | Shader::SetCBD5E0 | In outline: sets a shader part (`0xCBBB00`) |
+| `0x9f75f0` | Firework::Colour9F75F0 | In outline: a firework colour with its alpha rounded from a scale |
+| `0x8c69a0` | Terrain::Clip8C69A0 | In outline: a terrain clip step |
+| `0x8e6e10` | Water::Normal8E6E10 | In outline: a water normal's length |
+| `0xcbdd20` | Shader::StateCBDD20 | In outline: a shader state step for states under 0xE |
+| `0x46be00` | Effect::Fill46BE00 | In outline: fills effect buffers for the current device |
+| `0x46e480` | SceneryBehaviour::Step46E480 | In outline: a behaviour step from its owner (SceneryBehaviour::Owner) |
+| `0x9d7200` | Fireworks::Pass9D7200 | In outline: a firework step when there is more than one |
+| `0xca0740` | Shapes::AddCA0740 | In outline: adds a shape when there is room (+0x40 vs +0x44) |
+| `0xceeb80` | Plane::SideCEEB80 | In outline: which side of a plane a box lies on |
+| `0xcd0270` | Plane::SideCD0270 | In outline: the same plane side check (another copy) |
+| `0xbf2c60` | Text::DrawBF2C60 | In outline: draws text with a size rounded from a scale |
+| `0xbf2670` | Text::DrawBF2670 | In outline: the same text draw (another copy) |
+| `0xc2c7b0` | Resource::ReleaseC2C7B0 | In outline: releases a part (`0xCA4420`) |

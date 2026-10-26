@@ -1716,3 +1716,26 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc37290` | Resource::NameC37290 | In outline: makes a resource name from a C string (String::FromC) |
 | `0xc181c0` | Path::MakeC181C0 | In outline: makes a path record |
 | `0x808910` | Save::Text808910 | In outline: writes a text to a save, two bytes at a time (SaveWriter::Write) |
+| `0xcb1f40` | ShaderFile::ReadCB1F40 | In outline: reads a shader file entry, clearing a pair first (ClearPair) |
+| `0x806610` | Load::Read806610 | In outline: reads a two-byte value from a saved block |
+| `0xceb190` | IdMap::Take | In outline: removes an entry by id (IdMap::Remove3) and acts on it |
+| `0xae6460` | List::AddAE6460 | In outline: grows a list by one (ObjectArray::SetCapacity) |
+| `0x4a0470` | NamedObject::Make4A0470 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
+| `0xc102d0` | Resource::MakeC102D0 | In outline: makes a resource record (`0xC0A670`) |
+| `0x4585d0` | Record::Make4585D0 | In outline: makes a record (`0x458010`) |
+| `0x4583a0` | Record::Make4583A0 | In outline: the same record maker (another copy) |
+| `0x458170` | Record::Make458170 | In outline: the same record maker (another copy) |
+| `0x66ffa0` | Folder::Path66FFA0 | In outline: builds a path from the install folder text |
+| `0x7ff180` | Text::Check7FF180 | In outline: a check on part of a text (WideString::Substring) |
+| `0x470b20` | Load::Read470B20 | In outline: reads a four-byte value from a saved block |
+| `0x69d9d0` | Input::Keyboard69D9D0 | In outline: a key step with the keyboard layout (GetKeyboardLayout) |
+| `0x7374b0` | List::Index7374B0 | In outline: makes an index for a list (+0x5C entries) |
+| `0x44e080` | Array::Resize44E080 | In outline: resizes a list to n |
+| `0x90d7a0` | Array::Resize90D7A0 | In outline: resizes a list to n |
+| `0xc4d580` | Text::FindC4D580 | In outline: another text entry find (`0xC47500`) |
+| `0xbe0470` | Text::FindBE0470 | In outline: finds an entry by a C string |
+| `0x8d9ef0` | Save::Write8D9EF0 | In outline: writes values to a save (SaveWriter::Write, four bytes) |
+| `0x45b690` | Save::Write45B690 | In outline: writes values to a save (SaveWriter::Write, four bytes) |
+| `0xcd25c0` | Resource::FindCD25C0 | In outline: finds a resource (`0xBCEE60`) |
+| `0x812d40` | List::Range812D40 | In outline: a step over a range |
+| `0xc5d1c0` | Vector::SameC5D1C0 | In outline: whether two points are nearly the same |
