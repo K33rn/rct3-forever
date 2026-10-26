@@ -706,3 +706,50 @@
 | `0x55af30` | Ride::List55AF30 | In outline: goes over a ride's list |
 | `0x726a10` | Terrain::Tile726A10 | In outline: a terrain tile step |
 | `0x80fcc0` | Regions::Point80FCC0 | In outline: a region check for a point when there are regions (+0x48, `0x130ACA4`) |
+| `0x834260` | Scenery::Link834260 | In outline: links a scenery item's part (`0x834190`) |
+| `0xb6f6d0` | WildAnimal::TerrainB6F6D0 | In outline: an animal check over the terrain |
+| `0x939610` | Water::Make939610 | In outline: makes a water piece's two parts |
+| `0x8c1740` | Terrain::Rect8C1740 | In outline: goes over a byte rectangle when not flagged (+0x70) |
+| `0x752130` | Guests::Pass752130 | In outline: goes over the guests (Interface4C +0x48) |
+| `0xb15a30` | WildAnimal::TerrainB15A30 | In outline: an animal check over the terrain |
+| `0x89c780` | Scenery::Place89C780 | In outline: places a scenery item when its check passes (`0x8915F0`) |
+| `0x721100` | Path::Join721100 | In outline: whether two path pieces join, by case |
+| `0x4bc130` | Shop::Terrain4BC130 | In outline: a shop check over the terrain |
+| `0x770370` | Guest::Far770370 | In outline: in mode 1 (+0xF8), a check against a distance of 250 |
+| `0x7ae350` | Terrain::Make7AE350 | In outline: a step over the terrain |
+| `0x8e25f0` | Terrain::Pass8E25F0 | In outline: a pass over the terrain |
+| `0x8e1480` | Terrain::Pass8E1480 | In outline: another pass over the terrain |
+| `0x8dba90` | Water::Point8DBA90 | In outline: a water point's distance by its level (+7) |
+| `0x88fa80` | Scenery::Update88FA80 | In outline: when the global flag `0x1400306` is unset, goes over a scenery list (+0x54) |
+| `0x853800` | Scenery::Cell853800 | In outline: acts when a cell matches its own (+0x28, +0x2C), by case |
+| `0x83cfb0` | Scenery::Update83CFB0 | In outline: a scenery update unless flagged (+0x184, +0x1E8) |
+| `0x7158f0` | Path::Case7158F0 | In outline: a path value by case (under 5) |
+| `0x902050` | Water::Grow902050 | In outline: grows a water list (+0xB0) |
+| `0x72e1e0` | Path::Refresh72E1E0 | In outline: refreshes a path rectangle (Path::Rect72D2D0) with the path manager |
+| `0x915bb0` | Water::Range915BB0 | In outline: a water step for n inside a range (`0x10F0BA0`, +0x10) |
+| `0x853dc0` | Scenery::Release853DC0 | In outline: in mode 1 (+0x14), releases a part |
+| `0x81b850` | SceneryBehaviour::Start | In outline: makes a behaviour active (SceneryBehaviour::SetActive) and adds it to a slot pool (SlotPool::Add) |
+| `0x86d130` | Scenery::Model86D130 | In outline: sets a scenery item's model (+0x4C) when it changes (`0x860790`) |
+| `0x80f380` | Regions::Inside80F380 | In outline: with regions (`0x130AC70`), checks whether a box lies inside one |
+| `0xb62aa0` | WildAnimal::TerrainB62AA0 | In outline: an animal check over the terrain |
+| `0x9f8b40` | Fireworks::Bits9F8B40 | In outline: a step over a 64-bit value's parts (under 4) |
+| `0x97b6f0` | Water::Find97B6F0 | In outline: finds a water entry for a cell (+8, +0xC) |
+| `0x877cd0` | Scenery::Kind877CD0 | In outline: a scenery step for kinds 0xC to 0xF when flagged (bit 15) |
+| `0x867c80` | Scenery::Has867C80 | In outline: whether a scenery list (+0xC +0x14) holds an entry |
+| `0x7ce430` | Person::Terrain7CE430 | In outline: a person's step over the terrain by a value's sign |
+| `0x884d20` | Scenery::Point884D20 | In outline: a point check against a scenery shape with more than three points |
+| `0x88dc60` | Scenery::Terrain88DC60 | In outline: a scenery check over the terrain (`0x864620`) |
+| `0x915df0` | Water::Update915DF0 | In outline: a water update unless flagged (+8 bit 8), with Water::Range915BB0 |
+| `0x8e3d00` | Terrain::Cell8E3D00 | In outline: a terrain cell step |
+| `0x8424d0` | Scenery::Link8424D0 | In outline: links a scenery part when given one |
+| `0x7875d0` | GuestGroup::Remove7875D0 | In outline: when it is its own (+0x174), clears a group's part (+0x16C) |
+| `0x75e860` | Guest::Link75E860 | In outline: links a guest's part when given one |
+| `0x71c230` | Path::Update71C230 | In outline: when on (+0xA0), a path step with the shared count (`0x130634C`) |
+| `0x80aee0` | Box::Merge80AEE0 | In outline: grows a box to hold another |
+| `0x42d8e0` | Terrain::Point42D8E0 | In outline: a terrain step at a point |
+| `0x90b7e0` | Water::Terrain90B7E0 | In outline: a water step over the terrain |
+| `0x835050` | Scenery::Link835050 | In outline: a scenery check with a part when given one |
+| `0x715f20` | Path::InGrid715F20 | In outline: another path check for a cell inside the path manager's grid (+0x5C, +0x5D) |
+| `0x838e00` | Scenery::Kind838E00 | In outline: a scenery check by kind (+0x8B = 2) unless told not to |
+| `0x96fae0` | List::Sort96FAE0 | In outline: sorts 0x18-byte entries by their first value |
+| `0x80cba0` | List::Sort80CBA0 | In outline: the same sort (another copy) |

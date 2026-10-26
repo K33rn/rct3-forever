@@ -305,3 +305,28 @@ Tracked rides, flat rides and their cars and trains.
 | `0x53de10` | Ride::Camera53DE10 | In outline: a ride step by the camera over its list |
 | `0x573c00` | Ride::Hit573C00 | In outline: a ride hit test with the current tool (`0x12F5638`, `0x5DA220` within 0.5) |
 | `0x500ab0` | Car::Update500AB0 | In outline: a car update (`0x59AB70`) with its part (+0xB4 +0x70) |
+| `0x4c84e0` | Shop::Mode4C84E0 | In outline: a shop step by its mode (+0xC4 = 2) when not flagged (+0x74) |
+| `0x5d57f0` | TrackedRide::Next5D57F0 | In outline: a step to the next station (+0xE8) when not flagged (+0x68) |
+| `0x5d0a00` | TrackedRide::Check5D0A00 | In outline: a check for a ride flagged 0x400000 with more than two stations (+0xE4) |
+| `0x50e730` | Car::Pose50E730 | In outline: a car's pose when not flagged (+0x250) |
+| `0x4c0db0` | Shop::CountText | In outline: writes a shop's count (`0x4CDAE0` on +0xA8) as a number text ("%d") |
+| `0x73bbd0` | Ride::Activate73BBD0 | In outline: activates a ride part in mode 1 (+0x5A1) |
+| `0x5cdb00` | Ride::Name5CDB00 | In outline: sets a ride's name text (`0x560F00`, TextRef::Assign) |
+| `0x572320` | Ride::Count572320 | In outline: acts when a ride count (`0x5636A0`) is positive |
+| `0x5ba900` | Ride::Count5BA900 | In outline: acts when a ride's count (+0x20 then +0x50) is under 1 |
+| `0x56b040` | Ride::Mode56B040 | In outline: a step when the current ride's mode (+0x38C) is 0xC |
+| `0x54f9e0` | Ride::List54F9E0 | In outline: goes over a ride's list entries not flagged (+0x18) |
+| `0x4f6cd0` | Ride::Event4F6CD0 | In outline: unless in mode 1 (+0x50), handles an event with the shared window (`0x1342708`) |
+| `0x51b590` | Car::Spot51B590 | In outline: a car's spot (`0x518390`) when not flagged (+0xC) |
+| `0x5c9370` | TrackedRide::Check5C9370 | In outline: a check for a ride flagged 0x400000 with more than two stations, when not flagged (+0x130) |
+| `0x5a0110` | Ride::Time5A0110 | In outline: a step (`0x59FFA0`) once a time passes its value (+0x50) |
+| `0x5a0380` | Ride::Time5A0380 | In outline: the same timed step (another copy) |
+| `0x4940c0` | Ride::Parts4940C0 | In outline: goes over a ride's parts (+0x234) |
+| `0x5c07f0` | TrackPiece::Pose5C07F0 | In outline: a track piece's pose (`0x5C0720`, Matrix::LookAlongZSide) |
+| `0x54f1a0` | Ride::Particles54F1A0 | In outline: makes a ride particle manager (RideParticleManager) with a name (`0x12F52C4`) |
+| `0x54eb40` | Ride::Particles54EB40 | In outline: the same with another name (`0x12F5250`) |
+| `0x52d390` | Ride::Check52D390 | In outline: a ride check (`0x12F537C`) when not flagged (+0xD8) |
+| `0x5ee9a0` | AttractionPerson::Select5EE9A0 | In outline: when not flagged (+0x118), acts on the selected ride (`0x12F5608`) |
+| `0x5da510` | TrackedRide::Find5DA510 | In outline: a step when a piece is its own (`0x5D6E80`) |
+| `0x4f3f40` | Ride::Kind4F3F40 | In outline: a step over parts of kinds 1, 3 or 4 |
+| `0x4f1740` | Ride::Station4F1740 | In outline: a station check (`0x5D1D80` with +0x5DC, +0x5E0, `0x5D0630`) |

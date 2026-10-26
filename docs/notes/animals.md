@@ -203,3 +203,10 @@
 | `0x98bc80` | Animal::Turn98BC80 | In outline: a turn when big enough |
 | `0xb67700` | WildAnimal::StepB67700 | In outline: an animal step when not flagged (+0xC2) (`0xB62430`) |
 | `0xa96ee0` | Animal::ValueA96EE0 | In outline: an animal value by its state (+0x7C) unless in mode 1 (+0x90) |
+| `0x437de0` | Animal::Info437DE0 | In outline: an animal's info when it has one (+0x1B8) |
+| `0xb87450` | Animal::ListB87450 | In outline: goes over an animal's entries (+0x9C) when not flagged (+0x78) |
+| `0xb15430` | WildAnimal::UpdateB15430 | In outline: an animal update when not flagged (+0x95, +0xB0) |
+| `0xb58f40` | Animal::PassB58F40 | In outline: goes over n entries when flagged (+0x10C bit 2) |
+| `0xa08750` | Animal::UpdateA08750 | In outline: an animal update when not flagged (+0x18C, +0x141) |
+| `0xb462f0` | WildAnimal::StepB462F0 | In outline: an animal step with no task (+0x78) and entries (+0x80) |
+| `0xba4030` | Animal::UpdateBA4030 | In outline: an animal update when not flagged (+0xC8) |

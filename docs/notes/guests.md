@@ -197,3 +197,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x8b5cc0` | Person::Face8B5CC0 | In outline: points a person (Matrix::LookAlongZSide) when it is the one given (+0x104) |
 | `0x75c150` | Guest::Update75C150 | In outline: a guest update setting its state (Person::SetState) |
 | `0x7d2d00` | Person::Leave7D2D00 | In outline: when its check fails (`0xAB3A80`), sets a person's state to 0x103 |
+| `0x8b5880` | Person::Mode8B5880 | In outline: a person step in modes 2 or 3 (+0x18C) with no slot (+0x30) |

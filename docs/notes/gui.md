@@ -961,3 +961,36 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x69ccf0` | List::Sort69CCF0 | In outline: sorts a list's entries (a 0x337-entry counted buffer, Memory::AllocCounted) |
 | `0x668300` | Window::Event668300 | In outline: handles an event from itself by its mode (+0x16C = 1) |
 | `0xa55200` | PlayerProfile::Make | In outline: makes the player profile (ManagedPlayerProfile) and activates it |
+| `0xa40700` | Window::BuildA40700 | In outline: builds a window from the shared title `0x13428E8` |
+| `0x71a5b0` | Window::Build71A5B0 | In outline: builds a window from the shared title `0x1306254` |
+| `0x68b1a0` | Window::Build68B1A0 | In outline: builds a window from the shared title `0x12F8448` |
+| `0x871300` | Window::Build871300 | In outline: builds a window from the shared title `0x1310ED8` |
+| `0xb4f310` | Window::BuildB4F310 | In outline: builds a window from the shared title `0x13CE9F0` |
+| `0x7b1930` | Window::Build7B1930 | In outline: builds a window from the shared title `0x1306CC4` |
+| `0x6ecd40` | Window::Build6ECD40 | In outline: builds a window from the shared title `0x13060E4` |
+| `0xa5c970` | Window::PickA5C970 | In outline: gives a part by case (0, ...) |
+| `0x63ffd0` | Window::Build63FFD0 | In outline: builds a window from the shared title `0x12F7ED0` |
+| `0x678310` | Scrollbar::Clamp678310 | In outline: keeps a scroll position (+0xF0) between 0 and its range (+0x84 minus +0x7C) |
+| `0x64ac90` | Window::Title64AC90 | In outline: makes a window's title, copying a default when none is given |
+| `0x634820` | Window::Title634820 | In outline: the same title maker (another copy) |
+| `0x79d4f0` | Window::Make79D4F0 | In outline: makes a window part when there is none |
+| `0x9911e0` | List::Grow9911E0 | In outline: grows a list by one (ObjectArray::SetCapacity) |
+| `0xae7920` | Window::BuildAE7920 | In outline: builds a window from the shared title `0x13CE580` |
+| `0xae6a10` | Window::BuildAE6A10 | In outline: builds a window from the shared title `0x13CE584` |
+| `0x9cb730` | Window::Part9CB730 | In outline: makes a 0x1C0-byte window part |
+| `0x991430` | Window::Link991430 | In outline: links a window part when given one |
+| `0x9de250` | Window::Layout9DE250 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x61d7f0` | Window::Text61D7F0 | In outline: makes a text (`0x7C8700`) when there is one |
+| `0x99d410` | Window::Build99D410 | In outline: builds a window from its title |
+| `0x63f310` | Window::Text63F310 | In outline: makes a window text from an empty one (`0xF264AD`) |
+| `0x634ae0` | Window::Build634AE0 | In outline: builds a window from the shared title `0x12F7E64` |
+| `0x8f9b70` | Window::Build8F9B70 | In outline: builds a window from the shared title `0x1339FC0` |
+| `0x78fec0` | Window::Title78FEC0 | In outline: makes a window's title, copying a default when none is given |
+| `0xc61530` | Window::FadeC61530 | In outline: when a window's value (+0xD0) is 0, clears a flag (Flags::Bit0) |
+| `0x9c1fd0` | Window::Scroll9C1FD0 | In outline: a step when a part's value (+0x84) is positive |
+| `0x8e5df0` | Window::Build8E5DF0 | In outline: builds a window from the shared title `0x1313CA4` |
+| `0x7007a0` | Window::Layout7007A0 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x6857f0` | Text::Empty6857F0 | In outline: when not flagged (+0xE4), checks whether a text is empty |
+| `0xb90d30` | Window::BuildB90D30 | In outline: builds a window from the shared title `0x13D01E4` |
+| `0xa4aec0` | Window::BuildA4AEC0 | In outline: builds a titled window (Window::BuildTitled) with a list member (ListMember453) |
+| `0x9bc930` | Window::Text9BC930 | In outline: sets a window's text from an empty one when it has one (+0x58 +0xC) |

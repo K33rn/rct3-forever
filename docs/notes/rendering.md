@@ -650,3 +650,27 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc08dc0` | Text::MeasureC08DC0 | In outline: measures a text to its end |
 | `0xbdd9a0` | VertexDeclaration::FillBDD9A0 | In outline: fills a vertex declaration from its elements (kind 1, under 0xFF) |
 | `0x426950` | Curves::Sample | In outline: samples a curve at a time (used by Sky::UpdateLight), with one or no keys handled |
+| `0x8b0000` | Particles::Random8B0000 | In outline: a random particle direction (Random::Ran0), normalised |
+| `0xcdb390` | Vector::DistanceToLine | In outline: a point's distance from a line, from the normalised direction |
+| `0x9fc6a0` | Fireworks::Fire9FC6A0 | In outline: fires a firework (Fireworks::Fire9F79F0) and more when asked |
+| `0x9e13b0` | Particles::Fill9E13B0 | In outline: fills particle buffers for the current device |
+| `0xbf3950` | Text::DrawBF3950 | In outline: draws text with a size rounded from a scale (`0xF264C0`) |
+| `0xbf32b0` | Text::DrawBF32B0 | In outline: the same text draw (another copy) |
+| `0x9e2a60` | Fireworks::Make9E2A60 | In outline: when on (`0x10F0E88`), makes a firework part |
+| `0xbf9760` | Text::DrawBF9760 | In outline: a text draw for the current device (`0x4164C0`, ForCurrent(3)) |
+| `0xcf09b0` | Shapes::TexturesCF09B0 | In outline: another shape textures pass, with slot n checked against the shared table (`0x1106E38`) |
+| `0x449ea0` | Labels::Draw449EA0 | In outline: draws a label (GUIRenderer, `0x692710` with size 9 by 9) |
+| `0xb73450` | Effect::HitTestB73450 | In outline: another effect ray hit test like Effect::HitTest48A7C0 |
+| `0x7b7530` | Effect::HitTest7B7530 | In outline: another effect ray hit test like Effect::HitTest48A7C0 |
+| `0xb5d920` | Effect::HitTestB5D920 | In outline: another effect ray hit test like Effect::HitTest48A7C0 |
+| `0xc90590` | Shader::ConstantsC90590 | In outline: registers shader constant names (c_tci0, c_lightPosDir, ...) |
+| `0x9cd440` | ParticleEmitter::Make9CD440 | In outline: makes a particle emitter description (ParticleEmitterDesc) |
+| `0xceffa0` | Shapes::IndexCEFFA0 | In outline: makes an index for a shape list (+4) |
+| `0x44a320` | Effect::Show44A320 | In outline: shows an effect's parts when flagged (+0x21) |
+| `0xaf5360` | WaterDrops::Aim | In outline: sets a water drop emitter's direction (WaterDrops::SetEmitterDirection from +0xE4) |
+| `0x9ac930` | Fireworks::Update9AC930 | In outline: a firework update when not flagged (+0xFC) (`0x9D4E50`) |
+| `0x858970` | SceneryRenderer::Draw858970 | In outline: draws scenery parts (+0x80) for the current device |
+| `0x86d3a0` | SceneryModel::Setup2 | In outline: another scenery model setup, finding its lights and water when asked |
+| `0xb74830` | Effect::BoundsB74830 | In outline: another effect box grow like Effect::Bounds48B6F0 |
+| `0xb5e710` | Effect::BoundsB5E710 | In outline: another effect box grow like Effect::Bounds48B6F0 |
+| `0x7b8bd0` | Effect::Bounds7B8BD0 | In outline: another effect box grow like Effect::Bounds48B6F0 |

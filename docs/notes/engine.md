@@ -1690,3 +1690,29 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x4900f0` | NamedObject::Make4900F0 | In outline: makes a list member object (ListMember with `0x10EC9E8`) with its part (`0x48E000`) |
 | `0x7c1780` | Load::Read7C1780 | In outline: reads a saved record from a block (`0x809210`, four bytes at a time) |
 | `0xc18700` | Path::MatchC18700 | In outline: another path match (`0xBE84F0`, String::Substring) |
+| `0xcc2f10` | Timer::StepCC2F10 | In outline: a time step from a count (`0xCC4740`) times a rate (`0x10F45D0`) |
+| `0xc303c0` | Resource::PassC303C0 | In outline: goes over the shared list (`0x13E69BC` entries) |
+| `0xbd9200` | Text::FindBD9200 | In outline: another text entry find (`0xBD65D0`) |
+| `0xcef210` | Name::FindCEF210 | In outline: finds an entry by its name text |
+| `0xcc9290` | Name::FindCC9290 | In outline: the same name find (another copy) |
+| `0xcb0be0` | ShaderFile::OpenCB0BE0 | In outline: makes a part (0x2E) and opens a file (`0xC51360` with 4) |
+| `0xafd3b0` | Array::ResizeAFD3B0 | In outline: resizes a list of 0x30-byte entries to n |
+| `0x7be430` | Text::Make7BE430 | In outline: makes a text from a value |
+| `0xa1bfe0` | Text::MakeA1BFE0 | In outline: makes a text from a shared one (`0xF265E4`) |
+| `0xc28f20` | List::PassC28F20 | In outline: goes over a list (+4) when the value is not negative |
+| `0xb4d470` | Window::TitleB4D470 | In outline: makes a window's title, copying a default when none is given |
+| `0x9e17e0` | Array::Resize9E17E0 | In outline: resizes a list of 0x30-byte entries to n |
+| `0x50ff10` | Array::Resize50FF10 | In outline: resizes a list of 32-byte entries to n |
+| `0x9e1080` | Array::Resize9E1080 | In outline: resizes a list of 32-byte entries to n |
+| `0x90d9c0` | Array::Resize90D9C0 | In outline: resizes a list of 32-byte entries to n |
+| `0xca1b10` | Font::MakeCA1B10 | In outline: makes a font with the screen's device context (GetDC) |
+| `0xc1ef70` | Resource::CheckC1EF70 | In outline: a resource check |
+| `0xc02180` | System::VersionC02180 | In outline: reads the Windows version (GetVersionExA) and acts on NT 5 (2000/XP) |
+| `0x7895a0` | Name::Find7895A0 | In outline: finds a name in a list ignoring case |
+| `0xcae150` | ResourceFile::NameCAE150 | In outline: finds a part of a file name (`0xCADDF0`, String::Find of `0xFC078C`) |
+| `0xa83890` | File::LoadA83890 | In outline: loads a file (ManagedObject::LoadFile) after `0xA820E0` |
+| `0xca6cc0` | Resource::CheckCA6CC0 | In outline: a resource check (`0xCA6BC0`) when on (+0xC) |
+| `0xc69190` | Resource::FindC69190 | In outline: finds a resource by name unless told not to |
+| `0xc37290` | Resource::NameC37290 | In outline: makes a resource name from a C string (String::FromC) |
+| `0xc181c0` | Path::MakeC181C0 | In outline: makes a path record |
+| `0x808910` | Save::Text808910 | In outline: writes a text to a save, two bytes at a time (SaveWriter::Write) |
