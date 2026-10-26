@@ -1581,3 +1581,15 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xa045c0` | Files::FindDat | In outline: lists the `*.dat` files of a folder |
 | `0xdfe200` | Math::ClipDFE200 | In outline: clips ranges given as start and size against limits (negative starts handled) |
 | `0xc3d560` | ResourceFile::CheckC3D560 | In outline: for files with fewer than three parts (+0x6C +0x30), loads one when none is loaded (+0x9C, `0xC3B8E0`) |
+| `0x476450` | List::Kinds476450 | In outline: goes over a list's entries (+0x84) by kind (1, ...) |
+| `0x431810` | Tree::Drain431810 | In outline: takes the last values from a sorted tree while it has some (SortedTree::LastValue) |
+| `0xc4a380` | Table::BuildC4A380 | In outline: builds a table of n 16-bit entries and an index |
+| `0xc39c30` | Resource::OpenC39C30 | In outline: opens a resource (`0xC38500`, `0xCA55A0` with 3, `0xCA5590`) |
+| `0xc17890` | Path::MatchC17890 | In outline: splits a path (`0xBE84F0`, String::Substring) and checks its first part (`0xC167C0`) |
+| `0xb73980` | PooledList::MakeB73980 | In outline: makes a list member object (ListMember with `0x10EC9E4`, PooledObject) and sets it up (`0x4B4740`) |
+| `0xa53f00` | Files::ListA53F00 | In outline: lists files into a list of names |
+| `0x9ad0f0` | Files::List9AD0F0 | In outline: lists files (`0xBE5570`) into a list |
+| `0x98da70` | Info::Text98DA70 | In outline: another info text maker like Info::Text4C0850, from its parts (+0xEC) |
+| `0xc3ff60` | ResourceFile::GetC3FF60 | In outline: gets entry n of a resource file (in range of +0x2C) when it is open (+0x30), with state 5 handled |
+| `0xc17bb0` | Path::MatchC17BB0 | In outline: another path match like Path::MatchC17890 |
+| `0xc17580` | Path::MatchC17580 | In outline: another path match like Path::MatchC17890 |

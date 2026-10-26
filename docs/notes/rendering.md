@@ -554,3 +554,10 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x974e60` | Particles::Same974E60 | In outline: whether two particle setups are the same (their first values and flag) |
 | `0x420800` | Texture::Make420800 | In outline: makes a 256-wide texture (Device::CreateTexture) for entry n of a list (+0x11C) and fills it (`0x41F910`) |
 | `0x85f4f0` | Scenery::HitTest85F4F0 | In outline: another scenery hit test like Scenery::HitTest85E7B0 (`0xCDEB10`) |
+| `0x89cc00` | Scenery::Fit89CC00 | In outline: compares a model's box (Model::Bounds) with limits |
+| `0xcc8bc0` | Model::PartsCC8BC0 | In outline: another model parts pass like Model::PartsCC8810 |
+| `0xcb6c90` | Batches::DrawCB6C90 | In outline: draws a model's batches (Call10IfReady for each, +0x44 of them), with an extra pass at detail level 1 (`0x13D3184`) for flags 0x30 |
+| `0xc5af00` | Animation::StepC5AF00 | In outline: another animation step like Animation::StepC5B220 |
+| `0x89edd0` | Scenery::Ground89EDD0 | In outline: works out a scenery part's box (`0x864620`) over the terrain |
+| `0xace200` | Graph::DrawACE200 | In outline: another graph draw when not flagged (+0x100) |
+| `0xc5df60` | Draw::C5DF60 | In outline: a long maths body with no calls (a drawing step) |

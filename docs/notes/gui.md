@@ -774,3 +774,22 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa364a0` | List::RowOKA364A0 | In outline: whether row n of a list is usable (more than six rows handled, within its count +0x108) |
 | `0x6fc2a0` | Window::Build6FC2A0 | In outline: builds a window from the shared title `0x1306138` |
 | `0x57ce30` | Window::Layout57CE30 | In outline: lays out a ride window when it has a ride (+0xF8) and it passes a check (`0x5A1A10`) |
+| `0x48f640` | Marker::Select48F640 | In outline: a marker's update for its target (+0xD4, +0xDC) with the camera |
+| `0x672520` | Window::Build672520 | In outline: builds a window from the shared title `0x12F81B8` |
+| `0xa26da0` | Window::BuildA26DA0 | In outline: builds a window from the shared title `0x134273C` |
+| `0x788b50` | Window::Build788B50 | In outline: builds a window from the shared title `0x1306A6C` |
+| `0x6948f0` | Layout::Fit6948F0 | In outline: fits a box among others, growing the shared table (`0x12F8618`, `0x12F861C`, `0x693300`) |
+| `0x997a30` | Window::Build997A30 | In outline: builds a window from the shared title `0x1341384` |
+| `0x6aed50` | Window::Hit6AED50 | In outline: whether a point hits a window by the GUI root's and its own flags (bits 23, 7, 0x18) |
+| `0xa5e120` | Awards::TextA5E120 | In outline: makes an awards text (Awards::Get, `0xA5B900`) when the count passes the shown one (+0x114) |
+| `0x6b6ad0` | Window::Build6B6AD0 | In outline: builds a window from the shared title `0x1305D98` |
+| `0x66a860` | Window::Layout66A860 | In outline: places a window's parts (Window::UpdateRect) |
+| `0xb522e0` | Window::BuildB522E0 | In outline: builds a window from the shared title `0x13CEA4C` |
+| `0x9ab8b0` | Fireworks::FindByName | In outline: finds an entry by name in the firework list (`0x1341408` +0x10, WideString::Compare) |
+| `0x63f710` | Clock::Text63F710 | In outline: makes a time text from the game time (GameTime::Get +0x4C, scaled) |
+| `0x663cf0` | Window::Update663CF0 | In outline: a window's update when not flagged (+0x2C) (`0x880F60`) |
+| `0x6a07e0` | Window::Build6A07E0 | In outline: builds a window from its title |
+| `0x994e60` | Window::Build994E60 | In outline: builds a window from the shared title `0x1341374` |
+| `0x99e160` | Window::Build99E160 | In outline: builds a window from the shared title `0x13413B4` |
+| `0x6a3e90` | List::Scroll6A3E90 | In outline: scrolls a list (`0x6A4AB0`) to keep its view (+0x158 to +0x160) in range |
+| `0x608b40` | Window::Build608B40 | In outline: builds a window from the shared title `0x12F5724` |

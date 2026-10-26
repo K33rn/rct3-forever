@@ -158,3 +158,6 @@
 | `0xb487b0` | WildAnimal::StepB487B0 | In outline: when a time (+0xF4) is below another (+0x118), moves an animal on (`0xB47AD0`, `0xB48060`) |
 | `0xb17300` | WildAnimal::PlaceB17300 | In outline: places an animal on the terrain with its record |
 | `0xa15ea0` | Duck::Other | In outline: a duck's other action when not flagged (+0x128) (`0xA14B70`) |
+| `0xa12990` | Animal::ChooseA12990 | In outline: another animal action pick when not flagged (+0x138) (`0xA11350`) |
+| `0xa18e20` | Bird::UpdateA18E20 | In outline: another bird update for kind 0x200 not in mode 2 |
+| `0xb60f50` | WildAnimal::StepB60F50 | In outline: an animal's step toward its target (`0xB84800` on +0x60) over the terrain |

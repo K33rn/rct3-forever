@@ -549,3 +549,16 @@
 | `0xba05d0` | Scenery::SetupBA05D0 | In outline: sets up a scenery item (`0x86DF00`, `0x865500`, Set_+0xfc) |
 | `0x82a890` | Scenery::Kind82A890 | In outline: handles a scenery item by its kind (+0x48) with what is there (`0xAFD9D0`) |
 | `0xabb3c0` | Fence::RebuildABB3C0 | In outline: clears a border's list (ObjectArray28::Resize) and builds its pieces again (Fence::PiecesAAFC00 on +0x128, +0x12C) |
+| `0x94ae40` | Water::Terrain94AE40 | In outline: a water pass over the terrain (a 90 by 90 grid) |
+| `0x727050` | Terrain::Edge727050 | In outline: works out the edge between two corners of a tile (0 to 3, different) over the terrain |
+| `0x5c42b0` | Scenery::Link5C42B0 | In outline: sets up a scenery item (`0x84BB60`) and links its owner (+0x138) |
+| `0x5d8ce0` | TrackPiece::Refresh5D8CE0 | In outline: refreshes a track piece (`0x5C45E0`) for the selected ride (`0x12F5608`) |
+| `0x5d89c0` | TrackPiece::Refresh5D89C0 | In outline: the same track piece refresh (another copy) |
+| `0x5114b0` | Ride::Parts5114B0 | In outline: goes over a ride's parts (+0x95C, count +0x960) handling the shown ones with a slot |
+| `0x5a97b0` | Ride::Update5A97B0 | In outline: a ride's update when not flagged (+0x324) (`0x59C8A0`) |
+| `0x8bc700` | Terrain::RayGround | In outline: where a ray meets the ground (used by Path::Ground71CC40), rounded to a cell |
+| `0x8e5170` | Terrain::Mark8E5170 | In outline: marks terrain cells (0x28) |
+| `0xaabdf0` | PoolComplex::GroundAABDF0 | In outline: places a pool part on the terrain when not flagged (+0x1C) |
+| `0xa606c0` | Tool::PickA606C0 | In outline: finds what is under the mouse (`0xCD79C0`, `0x48C300`) |
+| `0x9124d0` | Water::Table9124D0 | In outline: builds a table of n water entries |
+| `0x825da0` | Scenery::Update825DA0 | In outline: finds a scenery item (`0x825A00`) and refreshes it |

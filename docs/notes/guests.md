@@ -179,3 +179,10 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7eb590` | Person::Dress7EB590 | In outline: unless of kind 5 (+0x120), picks a person's body parts (Person::PickBodyParts) and its look (`0x6C3650`) |
 | `0x75ba90` | Guest::Update75BA90 | In outline: a guest's update when it has a target |
 | `0x781910` | GuestGroup::Ride781910 | In outline: a group's update on a ride (state 0x10) when not flagged (+0x1BC), over its members (+0x48) |
+| `0x7b0790` | Guest::Update7B0790 | In outline: a guest's update when not flagged (+0x174) once a time is reached and it moved far enough (Interface138::Get) |
+| `0x737ce0` | Staff::Update737CE0 | In outline: a staff update when not flagged (+0xC0) |
+| `0x7897e0` | Guest::Find7897E0 | In outline: finds something for a guest (`0x7C8700`) |
+| `0x784320` | GuestGroup::Slot784320 | In outline: sets a group's slot (0 to 6) when it changes (+0x40) |
+| `0x756790` | Guest::Sounds756790 | In outline: plays a guest's crowd sounds (Crowd::Sounds, `0x7B5010`) unless flagged (+0x509) |
+| `0x75ca40` | Guest::Behaviour75CA40 | In outline: a guest's update at a scenery behaviour (state 0xC), resetting its state when the owner is flagged (bit 4 of +0x7C) |
+| `0x7972a0` | Guest::Behaviour7972A0 | In outline: another guest update at a scenery behaviour (state 0xF) |

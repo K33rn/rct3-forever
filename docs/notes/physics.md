@@ -232,3 +232,8 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x415d80` | Grid::Wobble415D80 | In outline: goes over a grid's entries (+0x20) and updates its wobble (Wobble::Update) |
 | `0x9eef30` | Fireworks::Pick9EEF30 | In outline: finds the firework part under the mouse (MainCamera::Get, `0xCD79C0`) |
 | `0x81f120` | SceneryBehaviour::Parts81F120 | In outline: goes over a behaviour's parts (+0x6C) not flagged (+0x18) |
+| `0x95e900` | Water::Edge95E900 | In outline: another water edge case like Water::Edge95EC30 |
+| `0xbb7140` | PointSet::WalkBB7140 | In outline: another point walk like PointSet::Walk |
+| `0xbbd650` | Track::SpeedBBD650 | In outline: a track point's speed value from its distance (square roots) within a limit (+0x1C) |
+| `0xae1b40` | Graph::FindAE1B40 | In outline: finds the shown entry (+0x40, count +0x44) at a value |
+| `0xc209e0` | Matrix::FromAxisAngle | In outline: makes a rotation from a turn vector (its length is the angle, using its cosine and sine), leaving tiny turns alone |

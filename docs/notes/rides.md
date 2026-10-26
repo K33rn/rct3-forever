@@ -253,3 +253,8 @@ Tracked rides, flat rides and their cars and trains.
 | `0x535610` | Ride::Owner535610 | In outline: with entries and not flagged (+0x74), finds the ride's owner (Interface04::Get) |
 | `0x515890` | Car::Update515890 | In outline: a ride car's update when shown (+0x250), with the shared ride state (`0x12F4F94`) |
 | `0xa018d0` | Ride::KindA018D0 | In outline: for n above 0, acts by the selected ride's kind (`0x130B5C8`, +0x9C +0x48) |
+| `0x57b560` | TrackedRide::Stations57B560 | In outline: goes over a ride's stations (TrackedRideInstance::Entry) |
+| `0x568350` | Ride::Tool568350 | In outline: a ride tool's update when not flagged (+0xF0) within its count (+0xEC +0x158) |
+| `0x568860` | Ride::Slot568860 | In outline: when not flagged (+0x5C) with a slot (+0x280) inside the ride's count (+0x6B0) |
+| `0x5abc20` | Ride::Mode5ABC20 | In outline: acts by a ride part's mode (+0x100: 1, ...) and its kind (+0xB4 = 3) |
+| `0xa87e00` | PoolComplex::PartA87E00 | In outline: a pool complex part by its kind (0, 3: PointerTable::Value44) |
