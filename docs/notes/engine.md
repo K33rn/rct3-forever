@@ -1619,3 +1619,15 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xca49f0` | Input::KeyCA49F0 | In outline: handles a key code (`0xCA4970`) by its low byte |
 | `0x8015a0` | Text::ReadText8015A0 | In outline: reads a saved text from a block (`0x809210`, two bytes at a time), checking the block's size |
 | `0x970650` | Table::Pick970650 | In outline: gives one of a set of values by number (0, ...) |
+| `0x9a63c0` | Files::FindFwd2 | In outline: another listing of the `*.fwd` firework files |
+| `0x5101a0` | Matrices::Resize5101A0 | In outline: resizes a list of 4x4 matrices to n (like Matrices::ResizeCC1420) |
+| `0x431b80` | List::Copy431B80 | In outline: copies a list (+0x50) into a new 32-byte-entry array |
+| `0xb73e80` | List::CopyB73E80 | In outline: copies a list (+0x64) into a new 32-byte-entry array |
+| `0x44aec0` | List::Copy44AEC0 | In outline: copies a list (+0x2C) into a new 32-byte-entry array |
+| `0xbd7220` | Text::BufferBD7220 | In outline: makes a 0xA42-entry counted buffer (Memory::AllocCounted) for a text's characters |
+| `0xcbc140` | ShaderPreprocessorLexer::Append | In outline: appends a text to the scanner's output (String::Append) until its end |
+| `0xcbbe90` | ShaderPreprocessorLexer::Append2 | In outline: the same append (another copy) |
+| `0xbe7b00` | List::RemoveBE7B00 | In outline: removes an entry from a list when found (`0xBE7DB0`) |
+| `0xc95510` | Effect::SetFlagC95510 | In outline: sets an effect's value from a flag record (its fourth byte) |
+| `0xc765a0` | Effect::SetFlagC765A0 | In outline: the same flag setter for another kind of effect |
+| `0xc70da0` | Effect::SetFlagC70DA0 | In outline: the same flag setter for another kind of effect |

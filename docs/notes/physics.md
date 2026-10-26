@@ -245,3 +245,5 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x510990` | Car::Points510990 | In outline: goes over n car points |
 | `0x8100e0` | Regions::Find8100E0 | In outline: finds a region for a point, searching the children (it calls itself) |
 | `0x95e640` | Water::Edge95E640 | In outline: another water edge case, the fraction kept between 0 and 1 |
+| `0xbc8500` | Object::FaceBC8500 | In outline: the facing toward a point for an object (used by Object::AimBC8AA0), with its two ends |
+| `0xb42f50` | WildAnimal::CaseB42F50 | In outline: an animal step by case when it has a part (+0x124) |

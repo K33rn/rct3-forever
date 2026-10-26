@@ -639,3 +639,14 @@
 | `0x713960` | Path::Kind713960 | In outline: handles a path piece by its kind |
 | `0x71ec30` | Path::Kind71EC30 | In outline: handles a path piece by its kind (Interface4C::GetCached) |
 | `0x72cde0` | Path::Refresh72CDE0 | In outline: refreshes a path piece (`0x82FB30`) |
+| `0xbad9e0` | Rect::SidesBAD9E0 | In outline: goes over a rectangle's side cells (+0x1D8 of them) by its side (+0x1E4) |
+| `0x73e180` | Staff::Spot73E180 | In outline: finds a spot for a staff member over the terrain |
+| `0x8ae570` | Scenery::Rating8AE570 | In outline: part of a spot's rating, from its values (+0x20, +0x28, +0x30) |
+| `0x4f4b70` | Placement::Check4F4B70 | In outline: another placement check like Placement::Check4F41C0 (+0x65C) |
+| `0x4c9260` | Ride::Select4C9260 | In outline: when the thing given is the ride's (+0x180), acts on its part (+0x17C) |
+| `0xac02b0` | Fence::CellsAC02B0 | In outline: goes over a rectangle's cells handling each |
+| `0x55a280` | Ride::Compare55A280 | In outline: another ride comparison (`0x4AA7E0`) |
+| `0x559830` | Ride::Check559830 | In outline: a ride check when not flagged (+0x34) |
+| `0x72ed10` | Path::Update72ED10 | In outline: finds a path piece's kind (PathManager::Get, Path::Kind71EC30) |
+| `0x90f8f0` | Water::Gather90F8F0 | In outline: gathers water pieces over the terrain (used by Water::Find946FC0) |
+| `0x94a340` | Water::Reflection94A340 | In outline: goes over the water parts (+0x164) with their reflection value (`0x949210`) |

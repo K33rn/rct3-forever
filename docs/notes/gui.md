@@ -857,3 +857,16 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa6c0e0` | Camera::FocusA6C0E0 | In outline: when there is a shared target (`0x13429B4`), moves the camera to it (MainCamera::Get) |
 | `0x57acb0` | Window::Build57ACB0 | In outline: builds a window from the shared title `0x12F53B4` |
 | `0x666ae0` | Window::Part666AE0 | In outline: makes a window part (Window::Part666570, `0x6456F0`) |
+| `0x7bcb20` | Window::Find7BCB20 | In outline: finds a window entry (`0x495720`) when there is one |
+| `0x55d570` | Window::Build55D570 | In outline: builds a window from the shared title `0x12F5350` |
+| `0x654500` | Window::Build654500 | In outline: builds a window from the shared title `0x12F7FF8` |
+| `0x62b620` | Window::Build62B620 | In outline: builds a window from the shared title `0x12F7DFC` |
+| `0x4ddd80` | Window::Build4DDD80 | In outline: builds a window from the shared title `0x12F4F20` |
+| `0x6456f0` | Window::Build6456F0 | In outline: builds a window from the shared title `0x12F7F94` |
+| `0xa842d0` | Window::BuildA842D0 | In outline: builds a window from the shared title `0x13CDEB0` |
+| `0x61fd30` | Window::Update61FD30 | In outline: activates a window's part and acts for a slot below 0 |
+| `0xa26330` | Window::UpdateA26330 | In outline: when on (+0xE8) with the shared window (`0x12F80D4`) |
+| `0x6d5380` | Window::Build6D5380 | In outline: builds a window from the shared title `0x1305F30` |
+| `0xa29b60` | Info::TextA29B60 | In outline: makes an info text (`0xA290D0`) with flag 0x10 handled |
+| `0x6d5c40` | Info::Text6D5C40 | In outline: makes an info text |
+| `0x6ed030` | Window::Build6ED030 | In outline: builds a window from the shared title `0x13060E0` |

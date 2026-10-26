@@ -192,3 +192,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7d65f0` | Person::Update7D65F0 | In outline: a person's update unless busy (`0x7D3EA0`), when two values match (+0xB8, +0x318) |
 | `0x761610` | Guest::Spot761610 | In outline: a guest's spot (`0x7BE2F0`) and its name text |
 | `0x77e3d0` | GuestGroup::Members77E3D0 | In outline: goes over a group's members (+0x48) not flagged (+0x2D4) |
+| `0xa27df0` | Guest::ListA27DF0 | In outline: goes over a list of guests not flagged (+0xC8) |

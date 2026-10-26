@@ -600,3 +600,12 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xceb670` | Batches::SortByOpacity | In outline: sorts a model's batches (+0x80) by their materials' opacity (Materials::CompareOpacity) |
 | `0xbc9c70` | Model::BuildBC9C70 | In outline: builds a model's parts unless turned off (`0x13D0B14`) |
 | `0x9fa2e0` | Fireworks::Ground9FA2E0 | In outline: a firework part check over the terrain (kinds other than 1) |
+| `0x82f710` | Scenery::Lights82F710 | In outline: updates a scenery model's lights (Model::UpdateLights) and its parts (+0x9C +0x70) |
+| `0xc056c0` | Renderer::ClearC056C0 | In outline: clears a renderer's lists (`0xBFA8E0`, `0xC2F250`) |
+| `0xbeafc0` | Resources::ListBEAFC0 | In outline: goes over a resource list unless turned off (`0x13D3172`) |
+| `0xce8760` | Shapes::FillCE8760 | In outline: when on (+0x34), fills a shape's parts (+0x28) |
+| `0x855dd0` | Scenery::FindPart855DD0 | In outline: finds a scenery part (SortedPointers::FindFirst2) |
+| `0x85ffc0` | WaterDrops::Aim | In outline: sets a water drop emitter's direction (WaterDrops::SetEmitterDirection) when the value is positive |
+| `0x9e5fe0` | Fireworks::Colour9E5FE0 | In outline: a firework part's colour faded by a value, packed |
+| `0x989440` | FireworkLauncher::Slots989440 | In outline: finds a launcher's slots (FireworkLauncher::FindSlots) |
+| `0xcecee0` | Mesh::AddCECEE0 | In outline: adds an entry to a mesh list (+0x50) |
