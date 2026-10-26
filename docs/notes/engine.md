@@ -1631,3 +1631,18 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc95510` | Effect::SetFlagC95510 | In outline: sets an effect's value from a flag record (its fourth byte) |
 | `0xc765a0` | Effect::SetFlagC765A0 | In outline: the same flag setter for another kind of effect |
 | `0xc70da0` | Effect::SetFlagC70DA0 | In outline: the same flag setter for another kind of effect |
+| `0x455260` | Text::Find455260 | In outline: finds an empty entry in a list of texts |
+| `0xc582c0` | Stream::CheckC582C0 | In outline: sets up (`0xC50250`) and checks a stream (`0xCB09C0`) |
+| `0x7c14d0` | Save::Write7C14D0 | In outline: writes a record's four values and more to a save (SaveWriter::Write) |
+| `0x6f07f0` | Table::Pick6F07F0 | In outline: gives a value by number (0, ...) |
+| `0x49c4a0` | Tasks::Pick49C4A0 | In outline: picks a task from a list by the date (GameTime::Get) |
+| `0xb12590` | Text::ShareB12590 | In outline: makes a shared text (ShareText44) and a record from it |
+| `0x618c70` | LoadingScreen::Make618C70 | In outline: sets up a loading screen with two empty texts and its name (LoadingScreen::Name) |
+| `0xcb3080` | Shader::CompileCB3080 | In outline: sets up (`0xC46720`) and runs a shader build step (`0xCF754D`) |
+| `0xc733a0` | Device::FindModeC733A0 | In outline: goes over a list for an entry matching a value (+0x10) |
+| `0xcaf330` | ResourceFile::NameCAF330 | In outline: makes a resource file's name (`0xC3D0E0`) |
+| `0x7fc100` | Text::ReadText7FC100 | In outline: another saved text read from a block (`0x809210`, two bytes at a time) |
+| `0x47d160` | NamedObject::Make47D160 | In outline: makes a list member object (ListMember with `0x10EC9E8`) and its part (`0xCE5A80`) |
+| `0xb5de60` | List::CopyB5DE60 | In outline: copies a list (+0x24) into a new 32-byte-entry array |
+| `0x99fb20` | Folder::LoadOnce99FB20 | In outline: unless loaded (`0x13CE594`), builds a path from the install folder text and loads it |
+| `0x99f890` | Folder::LoadOnce99F890 | In outline: the same load-once (`0x13CE4C8`) |

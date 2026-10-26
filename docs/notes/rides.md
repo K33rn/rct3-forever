@@ -274,3 +274,11 @@ Tracked rides, flat rides and their cars and trains.
 | `0x54e360` | Ride::Particles54E360 | In outline: makes a ride's particle manager (RideParticleManager) and its parts (+0x5C, `0x12F526C`) |
 | `0x51e5d0` | Car::Parts51E5D0 | In outline: goes over a car's parts handling each (`0x51B590`) |
 | `0x5f1250` | Ride::Update5F1250 | In outline: a ride's update when not flagged (+0x58) |
+| `0x5adca0` | TrackedRide::Stations5ADCA0 | In outline: goes over a ride's stations (+0x6B0, TrackedRideInstance::Entry) |
+| `0x5c1a40` | TrackPiece::Turn5C1A40 | In outline: a track piece's turn (Clamp0To3) when not flagged (+0xAC) |
+| `0x5dfba0` | TrackPiece::Link5DFBA0 | In outline: links two different pieces when the second is not flagged (+0x170) |
+| `0x51dbd0` | Car::Make51DBD0 | In outline: makes a ride car's part (`0x9D4C70`) |
+| `0x4abdf0` | Ride::Tile4ABDF0 | In outline: finds a ride's tile (OffsetRef::Owner2) |
+| `0x5c1070` | TrackPiece::Refresh5C1070 | In outline: refreshes a track piece (Set_+0xfc) when not flagged (+0xAC) |
+| `0x5c5620` | TrackedRide::HitTest5C5620 | In outline: another ride part hit test like TrackedRide::HitTest5C4EB0, for shown parts (not flag 0x10000) |
+| `0x53d8f0` | Ride::Find53D8F0 | In outline: finds an entry among a ride's parts (+0x34) |

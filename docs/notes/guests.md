@@ -193,3 +193,5 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x761610` | Guest::Spot761610 | In outline: a guest's spot (`0x7BE2F0`) and its name text |
 | `0x77e3d0` | GuestGroup::Members77E3D0 | In outline: goes over a group's members (+0x48) not flagged (+0x2D4) |
 | `0xa27df0` | Guest::ListA27DF0 | In outline: goes over a list of guests not flagged (+0xC8) |
+| `0x7cf350` | Person::Update7CF350 | In outline: a person's update with no stage (+0x194 = -1) and a part |
+| `0x8b5cc0` | Person::Face8B5CC0 | In outline: points a person (Matrix::LookAlongZSide) when it is the one given (+0x104) |

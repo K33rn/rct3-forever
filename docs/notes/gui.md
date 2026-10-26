@@ -870,3 +870,33 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa29b60` | Info::TextA29B60 | In outline: makes an info text (`0xA290D0`) with flag 0x10 handled |
 | `0x6d5c40` | Info::Text6D5C40 | In outline: makes an info text |
 | `0x6ed030` | Window::Build6ED030 | In outline: builds a window from the shared title `0x13060E0` |
+| `0xa5e480` | Window::BuildA5E480 | In outline: builds a window from the shared title `0x1342994` |
+| `0x6307c0` | Window::Build6307C0 | In outline: builds a window from the shared title `0x12F7E30` |
+| `0xaef9c0` | Window::BuildAEF9C0 | In outline: builds a window from the shared title `0x13CE5A0` |
+| `0xad6610` | Window::BuildAD6610 | In outline: builds a window from the shared title `0x13CE4D0` |
+| `0x9b6660` | Window::Colour9B6660 | In outline: places a window and sets its colour from its values (Colour::ToARGB) |
+| `0x678b60` | Window::Build678B60 | In outline: builds a window from the shared title `0x12F81EC` |
+| `0x9bbab0` | Window::Build9BBAB0 | In outline: builds a window from the shared title `0x1341438` |
+| `0x6ed4f0` | Window::Build6ED4F0 | In outline: builds a window from the shared title `0x13060EC` |
+| `0x6aeab0` | Window::Hit6AEAB0 | In outline: another window hit test like Window::Hit6AED50 |
+| `0x679fb0` | Window::Build679FB0 | In outline: builds a window from the shared title `0x12F8204` |
+| `0x48ebc0` | Marker::Text48EBC0 | In outline: makes a marker's text from the first character of a text |
+| `0x9bcb60` | Window::Layout9BCB60 | In outline: lays out a window and refreshes it (`0x9D5510`) |
+| `0x6daec0` | Window::Layout6DAEC0 | In outline: refreshes (`0x6D4870`) and places a window |
+| `0x5f7c50` | Window::Build5F7C50 | In outline: builds a window from the shared title `0x12F56E0` |
+| `0x9c08b0` | Window::Update9C08B0 | In outline: refreshes a window part (`0x9BE750`) when not flagged (+0x38) |
+| `0x719fd0` | Window::Check719FD0 | In outline: checks a window row (`0x981700`) unless told not to |
+| `0x6f1be0` | Window::Fade6F1BE0 | In outline: moves a window's fades (+0xD4, +0x110) toward 1 |
+| `0x9bff50` | Window::Build9BFF50 | In outline: builds a window from the shared title `0x1341464` |
+| `0x42a770` | Window::Build42A770 | In outline: builds a window from the shared title `0x1103BCC` |
+| `0x98fa60` | List::Pass98FA60 | In outline: goes over a list's entries (+0x44) |
+| `0x6a5370` | Window::Keys6A5370 | In outline: sets up a window's key combinations (KeyCombination::Set, one with 0x4000000) |
+| `0x61ea40` | MessageConsole::Open | In outline: when on (+0xF8), opens the developers' message console (MessageConsole::MessageConsole) |
+| `0x6a32a0` | Window::Build6A32A0 | In outline: builds a window from the shared title `0x1305C54` |
+| `0xa7afe0` | Window::BuildA7AFE0 | In outline: builds a window from the shared title `0x13CDE50` |
+| `0x9f6170` | Window::Build9F6170 | In outline: builds a window from the shared title `0x1341D18` |
+| `0x6607b0` | List::Layout6607B0 | In outline: lays out a list (+0x184 rows) |
+| `0x9b1d50` | Window::Text9B1D50 | In outline: sets a window's text when it changes |
+| `0x8e5610` | Window::Build8E5610 | In outline: builds a window from the shared title `0x1313C9C` |
+| `0xae6780` | List::GrowAE6780 | In outline: grows a list (ObjectArray::SetCapacity on +0x4C) and fills it from another (+0x44) |
+| `0x86f050` | Window::Build86F050 | In outline: builds a window from the shared title `0x1310EB8` |

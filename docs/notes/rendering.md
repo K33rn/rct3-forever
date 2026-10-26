@@ -609,3 +609,16 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9e5fe0` | Fireworks::Colour9E5FE0 | In outline: a firework part's colour faded by a value, packed |
 | `0x989440` | FireworkLauncher::Slots989440 | In outline: finds a launcher's slots (FireworkLauncher::FindSlots) |
 | `0xcecee0` | Mesh::AddCECEE0 | In outline: adds an entry to a mesh list (+0x50) |
+| `0x88d460` | SceneryRenderer::Pass88D460 | In outline: another scenery pass over a set's lists (+0xC +0x14) |
+| `0x81cb60` | SceneryBehaviour::Draw81CB60 | In outline: a long maths body drawing a behaviour from its owner (SceneryBehaviour::Owner) |
+| `0x46c7c0` | SceneryBehaviour::Draw46C7C0 | In outline: the same behaviour drawing (another copy) |
+| `0xc9d280` | Particles::ClearC9D280 | In outline: when on (+0x68), empties a particle list (+0x34) |
+| `0xb75ed0` | Animals::DrawB75ED0 | In outline: a timed draw inside a critical section |
+| `0x858bb0` | SceneryRenderer::Draw858BB0 | In outline: draws scenery parts (+0xA0) for the current device |
+| `0x9b2c00` | Fireworks::Check9B2C00 | In outline: checks a firework's two values are positive |
+| `0xcecc40` | Mesh::ReleaseCECC40 | In outline: releases a mesh's parts' shaders (+0x64) |
+| `0x7b8680` | Effect::Bounds7B8680 | In outline: another effect box grow like Effect::Bounds48B6F0 |
+| `0x48b450` | Effect::Bounds48B450 | In outline: another effect box grow over set parts |
+| `0x927630` | Water::Make927630 | In outline: sets up a water piece (`0x926050`) with the water manager |
+| `0xc6f8e0` | Device::ApplyC6F8E0 | In outline: applies a device setting when it can (`0xBE90C0`) |
+| `0x8e6980` | Water::Side8E6980 | In outline: which side of a plane a water point lies on |

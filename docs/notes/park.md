@@ -650,3 +650,17 @@
 | `0x72ed10` | Path::Update72ED10 | In outline: finds a path piece's kind (PathManager::Get, Path::Kind71EC30) |
 | `0x90f8f0` | Water::Gather90F8F0 | In outline: gathers water pieces over the terrain (used by Water::Find946FC0) |
 | `0x94a340` | Water::Reflection94A340 | In outline: goes over the water parts (+0x164) with their reflection value (`0x949210`) |
+| `0x93dcd0` | Water::Range93DCD0 | In outline: finds a water range from n |
+| `0x8f4b50` | Terrain::Rows8F4B50 | In outline: goes over a terrain patch's rows and columns |
+| `0x463a00` | Scenery::Kind463A00 | In outline: for entry n of the shared table (`0x1106E38`), acts when not flagged (+0x35) and its kind is under 6 |
+| `0xabd910` | Fence::CellsABD910 | In outline: goes over a rectangle's cells and counts them |
+| `0x716da0` | Path::Ratio716DA0 | In outline: a path value from two values (+0x154, +0x158) when the fraction is under 1 |
+| `0x7562b0` | Guest::SetMode7562B0 | In outline: sets a guest's mode (+0x121) when it changes, with its spot (`0x7578C0`) |
+| `0x72df40` | Path::Update72DF40 | In outline: a path update when not flagged (+0x11C) |
+| `0x80b260` | Scenery::Place80B260 | In outline: sets a scenery item's box (Box::Assign) and places it (`0x843D10`) |
+| `0x4c89b0` | Shop::Check4C89B0 | In outline: a shop check (`0x4C7600`) |
+| `0x7aa730` | Terrain::Check7AA730 | In outline: a check over the terrain |
+| `0xac6870` | PoolComplex::MakeAC6870 | In outline: makes a pool part over the terrain |
+| `0xae3470` | List::PassAE3470 | In outline: goes over a list's entries (+4) |
+| `0xaa3a40` | PoolPiece::Sides | In outline: works out a pool piece's sides (PoolPiece::SideData) when it is on |
+| `0xa915f0` | Fence::MakeA915F0 | In outline: makes a border piece, placing the corners (Fence::CornersAB16C0) when it has no slot |

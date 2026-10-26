@@ -178,3 +178,11 @@
 | `0xb699d0` | Animal::ListB699D0 | In outline: goes over an animal's list (+0x17C, more than two) |
 | `0xb2fc40` | Animal::UpdateB2FC40 | In outline: an animal update when not flagged (+0xB0) |
 | `0x817910` | SceneryBehaviour::Update817910 | In outline: a behaviour update when not flagged (+0x60) |
+| `0xb0faa0` | Animal::StepB0FAA0 | In outline: once a time has passed (+0xB4), an animal's step over the terrain |
+| `0xb44a30` | Animal::UpdateB44A30 | In outline: an animal update when not flagged (+0x74) |
+| `0xb742e0` | Effect::BoundsB742E0 | In outline: another effect box grow like Effect::Bounds48B6F0 |
+| `0xb5e1c0` | Effect::BoundsB5E1C0 | In outline: another effect box grow like Effect::Bounds48B6F0 |
+| `0xb98d70` | PathGrid::AnimalB98D70 | In outline: sets up a path table (`0x488290` with 0x10) over the terrain for an animal |
+| `0xb17710` | WildAnimal::UpdateB17710 | In outline: an animal update when not flagged (+0xCC) |
+| `0xa10bc0` | Bird::AngleA10BC0 | In outline: a bird's heading from its direction (arctangent of +0xA0 and +0xA8) and distance |
+| `0xb7ecf0` | WildAnimal::TerrainB7ECF0 | In outline: an animal's check over the terrain (WildAnimal::Interface60) |

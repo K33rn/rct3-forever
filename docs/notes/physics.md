@@ -247,3 +247,11 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x95e640` | Water::Edge95E640 | In outline: another water edge case, the fraction kept between 0 and 1 |
 | `0xbc8500` | Object::FaceBC8500 | In outline: the facing toward a point for an object (used by Object::AimBC8AA0), with its two ends |
 | `0xb42f50` | WildAnimal::CaseB42F50 | In outline: an animal step by case when it has a part (+0x124) |
+| `0x48b6f0` | Effect::Bounds48B6F0 | In outline: grows a box from an effect's parts (0x1C bytes each) that are set |
+| `0x8c4730` | Terrain::Normal8C4730 | In outline: normalises a terrain direction |
+| `0xa0f6f0` | CameraPath::NearA0F6F0 | In outline: checks a camera path point's distance (`0xA0F590`) |
+| `0x6304a0` | Camera::Aim6304A0 | In outline: points the camera (MainCamera::Get) along a fixed direction (`0xF276F0`) |
+| `0x8164f0` | SceneryBehaviour::Round8164F0 | In outline: with a reference (WithReference8155F0), a rounded value |
+| `0xc5a5a0` | Vector::AngleBetween | In outline: works out the turn between two directions (their lengths and the angle between them) |
+| `0x960570` | Particles::Count960570 | In outline: a particle count from a shape's size (half its length times a rate), rounded |
+| `0x9008b0` | Water::Step9008B0 | In outline: a water step by the sign of a value |
