@@ -2062,3 +2062,77 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x65b470` | Window::Check65B470 | In outline: when a part is not flagged and a check passes (slot 0x10), a step |
 | `0x630780` | Window::Fade630780 | In outline: a rounded fade from a shared object's value (`0x1103B6C` +0x180) |
 | `0x69e950` | Window::Set69E950 | Sets two values (+0xD8, +0xDC) |
+| `0x68fc10` | Gui::Pass68FC10 | In outline: goes over entries (+0x164) |
+| `0x6721c0` | Gui::Pass6721C0 | In outline: goes over entries (+0x14C) |
+| `0x6f0f60` | Gui::Copy6F0F60 | In outline: copies values from another record |
+| `0x6c3d20` | Gui::Assign6C3D20 | In outline: frees its buffer and remakes it from another |
+| `0x620930` | Gui::List620930 | In outline: a step with a list (+0x8) |
+| `0x6b8a40` | Window::Shared6B8A40 | In outline: with no shared value (`0x1305DD8`), a step (`0x6C1DA0`) |
+| `0x660520` | Window::Event660520 | In outline: an event step (Window::Event65FFE0) and for events 0x10, 1 or 3, more |
+| `0x6bc690` | Window::Round6BC690 | In outline: n over m plus a half, rounded |
+| `0x6b8a00` | Window::Shared6B8A00 | In outline: with no shared value (`0x1305DD8`), a step (`0x6C1DA0`) |
+| `0x6428a0` | Window::Skin6428A0 | In outline: with a part (+0x118), a skin texture (SkinItem::Texture) |
+| `0x63a090` | Window::Event63A090 | In outline: a step (Window::Step642A90) and for events 0x10, 1 or 3, more |
+| `0x9f01e0` | Window::Children9F01E0 | In outline: children (Window::ChildrenSlot4) and a step with a part (+0xE0, slot 0xFC) |
+| `0x6e9890` | Window::Find6E9890 | In outline: a find with an object's list (+0x48, +0x4C) |
+| `0x6c3c80` | Window::Add6C3C80 | In outline: grows by 10 when full (`0x6C3A80`) and adds |
+| `0x6706d0` | Window::Reset6706D0 | In outline: clears a value (+0x38) and acts with another (+0x3C) |
+| `0x661e20` | Window::Step661E20 | In outline: a step with values |
+| `0x65a720` | Window::Check65A720 | In outline: a step when a check fails (slot 0x10) |
+| `0x63da80` | Window::Init63DA80 | In outline: clears a value and points a list at its own storage |
+| `0x6175c0` | Window::Add6175C0 | In outline: grows by one (`0x6173B0`) and adds |
+| `0x6e9ab0` | Window::Make6E9AB0 | In outline: makes a part with 10 |
+| `0x6e8780` | Window::Find6E8780 | In outline: a find (Record::Find460E80) and acts |
+| `0x6db790` | Window::Add6DB790 | In outline: grows by one (`0x6C3A80`) and adds |
+| `0x65a6d0` | Window::Point65A6D0 | In outline: a step with a point |
+| `0x6f1010` | Window::Flags6F1010 | In outline: a value from flags (+0xD0) |
+| `0x6c8110` | Window::Pass6C8110 | In outline: goes over entries (+0x1C) |
+| `0x69cf50` | Window::Keyboard69CF50 | In outline: when on (+0x20) with a shared value (`0x10EDBB0`), a keyboard layout step |
+| `0x690b00` | Window::Children690B00 | In outline: children (Window::ChildrenSlot4) and sets a shared flag (`0x13D3250`) |
+| `0x63b400` | Window::Content63B400 | In outline: sets content (Thunk67B3C0) and a step (`0x67B4C0`) |
+| `0x6a7720` | Window::Init6A7720 | In outline: fills a record from its arguments |
+| `0x6a6760` | Window::Shared6A6760 | In outline: a step with a shared table (`0x10EF210`) |
+| `0x685530` | Window::Device685530 | In outline: with a shared value (`0x12F8434`), a step with the device (slot 0xCC) |
+| `0x62ac60` | Window::Check62AC60 | In outline: a step when a part's check passes (+8, slot 4) |
+| `0x6c8080` | Window::Slot6C8080 | In outline: a step with an object's values (+0x4C, +0x50) |
+| `0x6a7cb0` | Window::Flag6A7CB0 | In outline: a step with a part (+0xDC) by a flag |
+| `0x6a7c70` | Window::Flag6A7C70 | In outline: the same with +0xE0 |
+| `0x6715e0` | Window::Toggle6715E0 | Turns a flag (+0x124) on or off and acts |
+| `0x63a860` | Window::Value63A860 | In outline: when on (+0xD4), a value from n with fixed scales |
+| `0x620dd0` | Window::Init620DD0 | In outline: sets up a record with its table (`0xF43E60`) pointing at itself |
+| `0x6e98d0` | Window::Slot6E98D0 | In outline: a step with an object's values (+0x48, +0x4C) |
+| `0x69ebb0` | Button::Image69EBB0 | In outline: sets a button's single image (Button::SetSingleImage) |
+| `0x6c3910` | Window::Shared6C3910 | In outline: a step with a shared part (`0x1305E20` +0xD4) and sets a value (Window::Set6CC950) |
+| `0x67e670` | Window::Step67E670 | In outline: a step with values |
+| `0x67b4c0` | Window::Set67B4C0 | In outline: sets a value (+0x120) from an object (+8) |
+| `0x65ea60` | Window::Current65EA60 | In outline: a current-object step (`0x5F7710`) and a value (+0x134) |
+| `0x479740` | Window::Pair479740 | In outline: sets a pair of values and another from a shared table entry (`0x10ED868`) |
+| `0x70b720` | Grid::Case70B720 | In outline: a case step (Window::Case701F50) and acts when its part (+0x148) is current |
+| `0x6bc8f0` | Window::Value6BC8F0 | In outline: a step (Thunk) and a value (+0x70) |
+| `0x6bc880` | Window::Value6BC880 | In outline: the same (another copy) |
+| `0x6bc850` | Window::Value6BC850 | In outline: the same (another copy) |
+| `0x6876f0` | Window::Set6876F0 | In outline: sets a flag (+0x2CC) and copies a part's value (+0x168 +0x170) |
+| `0x685070` | Window::Init685070 | In outline: a list member (ListMember with `0x10EC9E8`) with its table (`0xF5182C`) |
+| `0x680110` | Window::Flag680110 | In outline: when not flagged (+0x2E8), sets a shared flag (bit 0 of `0x1103C58` +0x2DC) |
+| `0x665a00` | Window::Grow665A00 | In outline: grows when n passes a count (+4) |
+| `0x6659d0` | Window::Grow6659D0 | In outline: the same (another copy) |
+| `0x6659a0` | Window::Grow6659A0 | In outline: the same (another copy) |
+| `0x6ff0d0` | Grid::Step6FF0D0 | In outline: a step (Window::Step642700) and a part's part (+0x154 +0xD8) |
+| `0x6d78e0` | Window::Free6D78E0 | In outline: sets its table (`0xF64250`), a step (`0xB6C570`) and frees when asked |
+| `0x6c8180` | Window::Entry6C8180 | In outline: for (n under 8, m), a value |
+| `0x6a2be0` | Window::Flag6A2BE0 | In outline: 0 when flagged (bit 0 of +0x97), else a step |
+| `0x672130` | Window::Add672130 | In outline: grows by one (`0x6719E0`) and adds |
+| `0x66a810` | Window::Add66A810 | In outline: grows by one (`0x66A4C0`) and adds |
+| `0x666e30` | Window::Part666E30 | In outline: with a part's part (+0x1C +0x1C8), a step |
+| `0x65c170` | Window::Byte65C170 | In outline: a byte from a table (+0x24) and acts with a part (+0x20) |
+| `0x624610` | Window::Selected624610 | In outline: whether a shared object (`0x1306CA4` +0xC) is the selected one (`0x12F503C`) |
+| `0x6245e0` | Window::Selected6245E0 | In outline: the same with `0x13CE688` |
+| `0x6e9a80` | Window::Entry6E9A80 | In outline: for (n, m under 1), a value |
+| `0x6b2fc0` | Window::SetPoint6B2FC0 | In outline: copies a point into its values (+0x24 on) |
+| `0x664810` | Window::Init664810 | In outline: sets up entry n's handle (0x14 bytes at +0x138) |
+| `0x6595a0` | Window::Refresh6595A0 | In outline: for 3, refreshes (Window::Refresh6AFC20) |
+| `0x6ef470` | Window::Reset6EF470 | In outline: clears values (+8, +0xC, ...) |
+| `0x66a7e0` | Window::Free66A7E0 | In outline: with a buffer (+0xDC), frees it |
+| `0x6554d0` | Window::Part6554D0 | In outline: with a part (+0x100), a value |
+| `0x63d4b0` | Window::Set63D4B0 | In outline: sets a value (+0x24) when it changes and acts with a part (+0x20) |
+| `0x5fcae0` | Window::Flags5FCAE0 | In outline: clears a flag (+0x154) and adds flags (+0x140) into a part (+0x13C) |

@@ -1252,3 +1252,116 @@
 | `0xa352c0` | Animal::StepA352C0 | In outline: a step with cleared values |
 | `0xa1cdf0` | Bird::FindA1CDF0 | In outline: with a part (+0x84), a find |
 | `0xa1ab00` | Bird::StepA1AB00 | In outline: with a part (+0x84), a step with values (+0x48) |
+| `0xaf8be0` | Animals::PassAF8BE0 | In outline: goes over entries (+0x30) |
+| `0xbbf9b0` | Animals::MakeBBF9B0 | In outline: makes a 0x1C-byte part |
+| `0xb91240` | Animals::MakeB91240 | In outline: makes a 0xC-byte part |
+| `0xb6cf00` | Animals::PassB6CF00 | In outline: goes over entries (+0x60) |
+| `0xb6c360` | Animals::PassB6C360 | In outline: goes over entries (+0x60) |
+| `0xa8c210` | Animals::MakeA8C210 | In outline: makes a 0xC-byte part |
+| `0xa8c1d0` | Animals::MakeA8C1D0 | In outline: makes a 0xC-byte part |
+| `0xa27540` | Animals::ListA27540 | In outline: a step with a list (+0x24) |
+| `0xab0740` | Animals::ListAB0740 | In outline: a step with a list (+0x1C4) |
+| `0xb91210` | Animals::ClearB91210 | In outline: empties a list (+0x1C) |
+| `0xb828a0` | Animals::PassB828A0 | In outline: goes over entries (+0x8) |
+| `0xaaea80` | Animals::PassAAEA80 | In outline: goes over entries (+0x15C) |
+| `0xa97380` | Animals::PassA97380 | In outline: goes over entries (+0x84) |
+| `0xa518f0` | Animals::PassA518F0 | In outline: goes over entries (+0x10) |
+| `0xa03dc0` | Animals::PassA03DC0 | In outline: goes over entries (+0xC) |
+| `0xa03e40` | Animals::ListA03E40 | In outline: a step with a list (+0x10) |
+| `0xadaaf0` | Animal::RandomADAAF0 | In outline: a random value (Random::Ran0) and more |
+| `0xadaab0` | Animal::SetADAAB0 | In outline: sets a value (+0xB4) and a flag (+0xB0) |
+| `0xac9c90` | Graph::CheckAC9C90 | In outline: when not flagged (+0x120), a step with no part |
+| `0xa6c9a0` | Animal::SetA6C9A0 | In outline: sets a value (+0x34) and when flagged (bit 2 of +0x44), goes over entries |
+| `0xa6c960` | Animal::SetA6C960 | In outline: sets a value (+0x30) and when not flagged, goes over entries |
+| `0xa161d0` | Bird::CheckA161D0 | In outline: when not flagged (+0x14C), a check (Bird::CheckA14BF0) |
+| `0xa12cb0` | Bird::CheckA12CB0 | In outline: when not flagged (+0x15C), a check (Bird::CheckA113D0) |
+| `0xba3070` | PathGrid::RectBA3070 | In outline: builds a path grid (PathGrid::BuildB9DAE0) and a rectangle step (PathGrid::RectB9DEE0) |
+| `0xba2ff0` | PathGrid::RectBA2FF0 | In outline: builds a path grid and a rectangle step (Animal::RectB9DE50) |
+| `0xb80330` | Animal::LimitsB80330 | Sets a number field's limits (NumberField::SetLimits) with a step of 0.01 |
+| `0xb5d670` | Effect::MoveB5D670 | In outline: with a part (+0x24) and an object in a tree (+0x94), moves it (QuadTree::Move) |
+| `0xb490c0` | WildAnimal::InitB490C0 | In outline: sets up a handle pointing at itself |
+| `0xb2e900` | WildAnimal::CrossB2E900 | In outline: a check on the cross product of two flat points |
+| `0xaa3da0` | PoolPiece::StepAA3DA0 | In outline: a step with values |
+| `0xa45310` | Window::ScaleA45310 | In outline: scales a point by its size |
+| `0xa24e00` | Window::SetA24E00 | In outline: sets a value (+0xE8) and acts when given |
+| `0xb5f6f0` | Effect::PartB5F6F0 | In outline: with a part (+0x24), a step |
+| `0xb2f770` | WildAnimal::LowerB2F770 | Takes a fixed step from a value (+0x24) and acts |
+| `0xb2f730` | WildAnimal::RaiseB2F730 | Adds a fixed step to a value (+0x24) and acts |
+| `0xb1faf0` | WildAnimal::MakeB1FAF0 | In outline: makes a part and tells it (slot 0x50 with 1) |
+| `0xb12d00` | Animal::CheckB12D00 | In outline: for an object that is on (+0x1D0) or flagged (bit 3 of +0xA8), true |
+| `0xae6e00` | Graph::ValueAE6E00 | In outline: a rounded scaled value under a part's count (+0xF0 +0x4C) |
+| `0xac4980` | Graph::SharedAC4980 | In outline: a step with a shared table (`0x10F2684`) |
+| `0xa0eb00` | Bird::PartA0EB00 | In outline: with a part (+0x30), a step |
+| `0xb94b90` | Animal::EnclosureB94B90 | In outline: a step with the enclosure manager and a set (Animal::SetB9CA00) |
+| `0xb94b50` | Animal::EnclosureB94B50 | In outline: with no part (+0x15C), a step with the enclosure manager |
+| `0xb90c70` | Animal::CheckB90C70 | In outline: with a part (+0x280), a check (Animals::CheckB87720) |
+| `0xb587a0` | Animal::SetPointB587A0 | In outline: copies a point into its values (+0x100 on) with an offset |
+| `0xb14a70` | Animal::StepB14A70 | In outline: a step with many values |
+| `0xac77d0` | Graph::SetAC77D0 | Sets a value (+0xF4) and another to -1.0 (+0xFC) |
+| `0xaa9fa0` | PoolComplex::CheckAA9FA0 | In outline: a value when a check's object has no value (+0x120) |
+| `0xa80540` | Animal::RatioA80540 | Sets a value (+0xF4) to a ratio of two values from a check (Animal::CheckA7C440) |
+| `0xa304d0` | Animal::ByteA304D0 | In outline: with a part (+0x9C) and entries, a byte from entry (n, m) |
+| `0xb81c80` | Animal::SetB81C80 | In outline: sets a flag (+0x51) and for off with a slot (+0xA0), a step |
+| `0xb6c950` | Animal::FindB6C950 | In outline: a find over entries (+0x60) |
+| `0xaaf240` | Fence::InitAAF240 | In outline: sets up a handle pointing at itself |
+| `0xa35500` | Animal::ReleaseA35500 | In outline: releases a part (+4) and frees when asked |
+| `0xa30510` | Animal::SetByteA30510 | In outline: with a part (+0x9C) and entries, sets a byte of entry (n, m) |
+| `0xa1d3c0` | Bird::CheckA1D3C0 | In outline: a check with a part's list (+0x84) |
+| `0xb75cd0` | Effect::FreeB75CD0 | In outline: with a part, frees it |
+| `0xb75c40` | Effect::FreeB75C40 | In outline: the same (another copy) |
+| `0xb668d0` | Animal::ValueB668D0 | In outline: a value from two values (+0x24, +0x2C) |
+| `0xafa5b0` | Animal::PassAFA5B0 | In outline: goes over entries (+0x38, +0x3C) |
+| `0xac55a0` | Graph::FreeAC55A0 | In outline: with a part, frees it |
+| `0xaba650` | PoolComplex::ColoursABA650 | In outline: when on (+0xE8), colours (PoolComplex::ColoursAB6050) |
+| `0xa882e0` | Animal::RoundA882E0 | In outline: a value (+0x54), rounded, less one |
+| `0xa49200` | Window::PassA49200 | In outline: goes over entries down from a count (+0xE8) |
+| `0xa1f9b0` | Bird::ReleaseA1F9B0 | In outline: releases a part (+4) and frees when asked |
+| `0xba3030` | PathGrid::RectBA3030 | In outline: builds a path grid over its whole size (PathGrid::BuildB9DAE0) and a rectangle step |
+| `0xba2fb0` | PathGrid::RectBA2FB0 | In outline: the same with Animal::RectB9DE50 |
+| `0xb75670` | Effect::QueryB75670 | In outline: sets two vectors and a value (SetTwoVectorsAndValue) |
+| `0xb5f370` | Effect::QueryB5F370 | In outline: the same (another copy) |
+| `0xb47a90` | WildAnimal::NearB47A90 | Whether two points are within n on both flat axes |
+| `0xb34d90` | WildAnimal::MakeB34D90 | In outline: makes a part (WildAnimal::MakeB18AA0 with 3.0) and acts |
+| `0xb23a50` | WildAnimal::PartB23A50 | In outline: with a part (+0xC4), a value |
+| `0xaabc20` | PoolComplex::FreeAABC20 | In outline: with a part, frees it and itself when asked |
+| `0xaa6b10` | PoolComplex::TextAA6B10 | In outline: an empty text and when n matches a value (+0x194), a step |
+| `0xaa3d60` | PoolPiece::SetAA3D60 | In outline: when n differs from a value (+0x13C), sides (PoolPiece::SidesAA3970) |
+| `0xa7c7f0` | Animal::CheckA7C7F0 | In outline: a check (Animal::CheckA7C440) |
+| `0xa275c0` | Window::LoopA275C0 | In outline: goes over a list (+0x24) |
+| `0xb347e0` | WildAnimal::CountB347E0 | In outline: for a positive count, goes over entries |
+| `0xb167f0` | Animal::StepB167F0 | In outline: a step with values (+0x7C, +0x84) |
+| `0xa7ace0` | Animal::ReleaseA7ACE0 | In outline: releases a part (+0x274) |
+| `0xa6b030` | Animal::FindA6B030 | In outline: under 5 (+0xAC), a find (Person::Find7CC220) |
+| `0xa63c30` | Animal::CountA63C30 | In outline: a step with a count (+0x1F0) plus one |
+| `0xa30550` | Animal::EntryA30550 | In outline: a value from entry n (12 bytes at +0xA0) |
+| `0xa0ebc0` | Bird::ScaleA0EBC0 | Sets values (+0x24, +0x2C) from shared settings (`0x10ED8C4`, `0x10ED8D8`) with fixed scales |
+| `0xa0c700` | Bird::AddA0C700 | In outline: adds when there is room (+0x18, +0x1C) |
+| `0xa086d0` | Bird::CurrentA086D0 | In outline: a current-object step (`0x5F7710`) and a value (+0x1D4) |
+| `0xa04d70` | Bird::StepA04D70 | In outline: a step (`0x8E58F0`) and a value (+0x130) |
+| `0xb989f0` | Animal::CountB989F0 | In outline: for a positive count, goes over entries |
+| `0xb71b90` | Effect::MoveB71B90 | In outline: moves an object in a tree (QuadTree::Move) by its slot (+0xA0) |
+| `0xb55f90` | Animal::CheckB55F90 | In outline: 1 when not on (+0x135), else a check |
+| `0xafef30` | Animal::GrowAFEF30 | In outline: grows when n passes a count (+4) |
+| `0xacb5e0` | Graph::UpdateACB5E0 | In outline: an update (Graph::UpdateACAFE0) and a value (Graph::ValueACB0E0) |
+| `0xaa35e0` | PoolPiece::SidesAA35E0 | In outline: a pool piece's sides (PoolPiece::SideData) and goes over them |
+| `0xb94fa0` | Animal::EnclosureB94FA0 | In outline: with no part (+0x40), a step with the enclosure manager |
+| `0xb55d60` | Animal::SharedB55D60 | In outline: with a shared object (`0x13CEAA4`), a part step (Animal::PartB5A9B0) |
+| `0xb51a90` | Animal::PartB51A90 | In outline: a step with a part (+0x138) |
+| `0xa20bd0` | Bird::StepA20BD0 | In outline: a step (Bird::StepA1E800) and adds (Window::AddA1E8B0) |
+| `0xb34b90` | WildAnimal::ValueB34B90 | In outline: a value from the wild animal interface (+0x34) |
+| `0xa452e0` | Window::ScaleA452E0 | In outline: scales a point by its size |
+| `0xb967e0` | Animal::SharedB967E0 | In outline: with a shared list (`0x13D0230`), a step |
+| `0xb7b590` | Animal::CheckB7B590 | In outline: a step when a value (slot 0x4C) is set |
+| `0xb6b670` | Effect::CheckB6B670 | In outline: a step when a part's check passes (+0x68, slot 0x114) |
+| `0xb62430` | Animal::ValueB62430 | In outline: a value from shared settings (`0x10F2934`, `0x10F292C`) and an object |
+| `0xb5b130` | Animal::CheckB5B130 | In outline: a step when a part's check passes (+0x120, slot 0x110) |
+| `0xb42cb0` | WildAnimal::FreeB42CB0 | In outline: with a buffer (+0x270), frees it |
+| `0xaaad60` | PoolComplex::GrowAAAD60 | In outline: grows when a count plus n passes its room |
+| `0xa06e30` | Bird::ShowA06E30 | In outline: in mode 1 (+4), shows (Window::ShowA06B10) |
+| `0xb79040` | Animal::SetPointB79040 | In outline: copies a point into its values (+0x40 on) |
+| `0xb75ea0` | Effect::InitB75EA0 | In outline: clears a record |
+| `0xb5b200` | Animal::CheckB5B200 | In outline: with a part (+0x120), a check (slot 0x110) |
+| `0xb5b1d0` | Animal::CheckB5B1D0 | In outline: the same (another copy) |
+| `0xa63c00` | Animal::CountA63C00 | In outline: a step with a count (+0x1F0) less one |
+| `0xa45180` | Window::CaseA45180 | In outline: a value by case |
+| `0xa04c20` | Bird::InitA04C20 | In outline: sets up a record with its table (`0xF86EA4`) pointing at itself |

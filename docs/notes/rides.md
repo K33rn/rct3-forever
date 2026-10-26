@@ -1531,3 +1531,90 @@ Tracked rides, flat rides and their cars and trains.
 | `0x598820` | Ride::Set598820 | In outline: sets a value (+0x1A4) and acts when asked |
 | `0x585820` | Ride::Owner585820 | In outline: a value from an owner (OffsetRef::Owner5, +0xC) |
 | `0x579c10` | Ride::Part579C10 | In outline: with a part (+4), a step with n |
+| `0x5adf50` | Rides::Pass5ADF50 | In outline: goes over entries (+0x6B0) |
+| `0x55b630` | Rides::Pass55B630 | In outline: goes over entries (+0x44) |
+| `0x531200` | Rides::List531200 | In outline: a step with a list (+0x29C) |
+| `0x5c0f40` | Rides::List5C0F40 | In outline: a step with a list (+0x1E4) |
+| `0x4ccde0` | Rides::Make4CCDE0 | In outline: makes a 0xC-byte part |
+| `0x5c1d20` | Rides::List5C1D20 | In outline: a step with a list (+0x1E4) |
+| `0x4ccdb0` | Rides::Clear4CCDB0 | In outline: empties a list (+0x64) |
+| `0x5c1040` | Rides::List5C1040 | In outline: a step with a list (+0x1E4) |
+| `0x5511d0` | Ride::Activate5511D0 | In outline: activates two parts (Ride::Activate54FC50 on +0x60, +0x90) with shared values |
+| `0x52f480` | Car::Check52F480 | In outline: a step when a check passes (slot 0x13C) |
+| `0x52edd0` | Car::Pass52EDD0 | In outline: goes over entries (+8) |
+| `0x4ff440` | Car::Case4FF440 | In outline: a value by case (1, ...) |
+| `0x4fe450` | Ride::Scale4FE450 | In outline: n times a shared value (`0x1106D08`), rounded, plus one |
+| `0x4f6900` | Ride::Mode4F6900 | In outline: in mode 1, 3 or 4 (+0x144), a step |
+| `0x4e5d00` | Ride::Value4E5D00 | In outline: a step with a part's value (+4 +0x1C) |
+| `0x5d0fc0` | TrackPiece::Free5D0FC0 | In outline: sets its table (`0xF3F684`) and acts with a part (+8) |
+| `0x5301b0` | Ride::Owner5301B0 | In outline: a check with a value (+0x294) and an owner (OffsetRef::Owner2) |
+| `0x5f7710` | Ride::Current5F7710 | In outline: when it is the current object (`0x12F56D4`), a step |
+| `0x5a1240` | TrackedRide::Owner5A1240 | In outline: a value with owners (OffsetRef::Owner3, OffsetRef::Owner2) |
+| `0x59dc20` | Ride::Free59DC20 | In outline: with an object, a step (TrackedRide::Check5C6E30) |
+| `0x511470` | Car::Pass511470 | In outline: passes over two lists (Car::Pass50E630 on +0x944, +0x94C) |
+| `0x501f40` | Car::Flag501F40 | In outline: with a part (+0x18), sets its flag (+0xDC) |
+| `0x4bf9e0` | Ride::Mode4BF9E0 | In outline: in mode 2 (+0x70), a step when given |
+| `0x4bf150` | Ride::Scale4BF150 | In outline: scales a value (+0x80) by 24/25 and acts |
+| `0x5bd860` | TrackPiece::Set5BD860 | In outline: sets a value (+0x324) and acts with a part (+0x31C) |
+| `0x5a1fd0` | TrackedRide::Owner5A1FD0 | In outline: a step with owners (OffsetRef::Owner3, OffsetRef::Owner2) |
+| `0x5a17a0` | TrackedRide::Point5A17A0 | In outline: a step with an object's point (+0x30, +0x34) |
+| `0x591be0` | Ride::Entry591BE0 | In outline: entry n of a list (+0x208) |
+| `0x5242a0` | Car::Kind5242A0 | In outline: for kind 0x10 (+0x384), an update (Car::Update523790) |
+| `0x4f3cb0` | Ride::Shared4F3CB0 | In outline: when a shared object is not flagged (`0x1106CF8` +0x30), a step (`0x4490E0`) |
+| `0x4bb540` | Ride::Footprint4BB540 | In outline: a footprint centre (SceneryItem::FootprintCentre) with the largest float |
+| `0x5bf3e0` | TrackPiece::Copy5BF3E0 | In outline: copies a flag (+0x240) and an array (Array4::Assign) |
+| `0x5a1150` | TrackedRide::Owner5A1150 | In outline: a value with owners (OffsetRef::Owner3, OffsetRef::Owner2) |
+| `0x5779b0` | Ride::Step5779B0 | In outline: a step with a work buffer |
+| `0x537080` | Ride::Count537080 | In outline: unless n is 2, a count (Ride::Count533FF0) |
+| `0x4dd9d0` | Ride::Part4DD9D0 | In outline: when given, sets a part (Ride::SetPart582A30 on +0x40) |
+| `0x5d2710` | TrackPiece::Owner5D2710 | In outline: a value with owners (OffsetRef::Owner3, OffsetRef::Owner2) |
+| `0x5a1dc0` | TrackedRide::Owner5A1DC0 | In outline: a value with a part (+0x6F4) and an owner (OffsetRef::Owner3) |
+| `0x5a12b0` | TrackedRide::Owner5A12B0 | In outline: a value with owners (OffsetRef::Owner3, OffsetRef::Owner2) |
+| `0x5a1200` | TrackedRide::Owner5A1200 | In outline: the same (another copy) |
+| `0x55eee0` | Ride::Owner55EEE0 | In outline: a value with owners (OffsetRef::Owner3, OffsetRef::Owner2) |
+| `0x55eea0` | Ride::Owner55EEA0 | In outline: the same (another copy) |
+| `0x534fe0` | Ride::Count534FE0 | In outline: a count (slot 0x138) |
+| `0x52cc60` | Car::Value52CC60 | In outline: a step when a value from an interface (`0x12F50D4`) is not negative |
+| `0x50b470` | Car::Init50B470 | In outline: clears a count and sets its table (`0xF36E40`) |
+| `0x4f3ee0` | Ride::Part4F3EE0 | In outline: with a value (+0x104), a step |
+| `0x4ed510` | Ride::Owner4ED510 | In outline: a value with owners (OffsetRef::Owner3, OffsetRef::Owner2) |
+| `0x4e28f0` | Ride::Owner4E28F0 | In outline: the same (another copy) |
+| `0x4ccd70` | Shop::Init4CCD70 | In outline: clears a flag and sets up a handle (+0x18) |
+| `0x5eaa90` | AttractionPerson::Copy5EAA90 | In outline: copies values from a part (+0x170) |
+| `0x57aae0` | Ride::Value57AAE0 | In outline: a step with a value (Ride::Value5A7240) |
+| `0x5602f0` | Ride::Check5602F0 | In outline: a check with a track case (Track::CaseBCD1F0) of more than two |
+| `0x4ebe70` | Ride::Check4EBE70 | In outline: a step when a part's check passes (+8, slot 4) |
+| `0x5c24f0` | TrackPiece::List5C24F0 | In outline: a step with a list |
+| `0x5be0c0` | TrackPiece::Extent5BE0C0 | In outline: clears an extent (Extent::Clear) |
+| `0x59ff60` | Ride::Free59FF60 | In outline: with a part (+4), frees and deletes when asked |
+| `0x593700` | Ride::List593700 | In outline: a step with a list |
+| `0x55ebb0` | Ride::Case55EBB0 | In outline: unless n is 1, a step |
+| `0x5d3810` | TrackPiece::Copy5D3810 | In outline: copies a value (+0x1B8) and a check (TrackPiece::Check5C0120) |
+| `0x5d03e0` | TrackPiece::Hit5D03E0 | In outline: a hit test (Object::HitBC8110) with a clamped value |
+| `0x55fb10` | Ride::Case55FB10 | In outline: a step by kind (+0x60: 6, ...) |
+| `0x53b400` | Ride::Flag53B400 | In outline: when asked, sets a flag (+0x41) |
+| `0x50b610` | Car::Check50B610 | In outline: a check that four flags are off (+0x3B0, +0x3B1, +0x3CC, +0x3CD) |
+| `0x4caa70` | Shop::Init4CAA70 | In outline: sets up a handle pointing at itself |
+| `0x5d0780` | TrackPiece::Set5D0780 | In outline: when given, sets a part (`0xF3F6A4`) |
+| `0x5bd710` | TrackPiece::Kind5BD710 | In outline: a value from its owner's kind (slot 0x94, +0x10) |
+| `0x52f590` | Car::Check52F590 | In outline: a step when a check fails (slot 0x160) |
+| `0x501c80` | Car::Step501C80 | In outline: a step with values |
+| `0x4de250` | Ride::Set4DE250 | In outline: sets a value (+0x20) and a step (slot 0x44) |
+| `0x634eb0` | Window::Edit634EB0 | In outline: whether a tracked ride cannot be edited (TrackedRide::ShowCannotEdit) and a flag (bit 22) |
+| `0x5fc840` | Window::Shared5FC840 | In outline: a step with a shared table (`0x10EEA34`) |
+| `0x5f1a80` | Ride::Slot5F1A80 | In outline: for slot -2, a value (+0xAC) |
+| `0x5f1a50` | Ride::Slot5F1A50 | In outline: for slot -2, a value (+0xA8) |
+| `0x5d1da0` | TrackPiece::Check5D1DA0 | In outline: a check with an index (TrackPiece::Index5D1BD0) |
+| `0x549090` | Ride::Part549090 | In outline: with a part (+0x4C +0xC) not flagged, a step |
+| `0x548ca0` | Ride::Part548CA0 | In outline: the same (another copy) |
+| `0x5d24b0` | TrackPiece::Init5D24B0 | In outline: sets its tables (`0xF3F6C4`, `0xF3F6C0`) |
+| `0x506360` | Car::Set506360 | In outline: sets a value (+0x150) and acts with another (+0x134) |
+| `0x53dd50` | Ride::Entry53DD50 | In outline: a value from slot n's list (+0x30) |
+| `0x52ff90` | Car::Owner52FF90 | In outline: a value from an owner's byte (OffsetRef::Owner2, +1) |
+| `0x52ff60` | Car::Owner52FF60 | In outline: the same (another copy) |
+| `0x50a6d0` | Car::Value50A6D0 | In outline: a value (+0x84) when not negative |
+| `0x50a6a0` | Car::Value50A6A0 | In outline: a value (+0x80) when not negative |
+| `0x4a94b0` | Ride::Owner4A94B0 | In outline: a value with a part (+0x3A8) and an owner (OffsetRef::Owner4) |
+| `0x5da7a0` | TrackedRide::Range5DA7A0 | In outline: a range step (TrackPiece::Range5D5A40) over all pieces and acts when given |
+| `0x5b75a0` | TrackedRide::Trains5B75A0 | In outline: sets trains (TrackedRide::SetTrains) and acts with a value (+0x3CC) |
+| `0x5fc810` | Window::Shared5FC810 | In outline: a step with a shared table (`0x10EEA34`) |

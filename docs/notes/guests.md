@@ -248,3 +248,7 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7e3a10` | Person::Init7E3A10 | In outline: sets up a record with empty texts (WideString::Empty) |
 | `0x7fae60` | Person::Part7FAE60 | In outline: a step with a part (+0x4) |
 | `0x7eb8d0` | Person::List7EB8D0 | In outline: a step with a list (+0x8) |
+| `0x7fd4b0` | Person::Pass7FD4B0 | In outline: goes over entries (+0x14) |
+| `0x7fbca0` | Person::Pass7FBCA0 | In outline: goes over entries (+0x3C) |
+| `0x7e6f20` | Person::Assign7E6F20 | In outline: frees its buffer and remakes it from another |
+| `0x7ffc80` | Person::Reset7FFC80 | In outline: resets (Static::Reset) and more |

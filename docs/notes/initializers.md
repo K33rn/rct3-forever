@@ -938,3 +938,5 @@ and leaves it with `0x46F990`). See the script for how they are recognised.
 | `0xee6800` | Init::SharedValuesEE6800 | Sets shared values at start-up (`0x1341A80` on) to 0 and a few fixed small negative numbers |
 | `0xee6c70` | Init::SharedValuesEE6C70 | Sets shared values at start-up (`0x1341B98` on) to 0 and 1.0 |
 | `0xee1010` | Init::SharedEE1010 | In outline: sets a shared value (`0x133A104`) from a scaled one (`0xC21230`) at start-up |
+| `0xef2ac0` | Init::ModulesEF2AC0 | In outline: starts the module list (ModuleList::Start) at start-up |
+| `0xef3070` | Init::CpuSseEF3070 | Sets a shared flag (`0x13D2888`) when the CPU has SSE (cpuid 1, EDX bit 25) |
