@@ -904,3 +904,22 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xccf530` | Model::BlendCCF530 | In outline: a blend by a fraction with fixed scales |
 | `0xc776d0` | Device::SetC776D0 | In outline: when not flagged (+0x4C1), sets a value when it changes |
 | `0xcf1190` | Shapes::DrawCF1190 | In outline: a draw step with the shared device (slot 0xB8) over entries |
+| `0x9ef270` | Fireworks::Clear9EF270 | In outline: with no part (+0x140), clears another's value (+0x144 +0x5C) |
+| `0x940ea0` | Water::Make940EA0 | In outline: makes a part |
+| `0xbf9660` | Text::WaveBF9660 | In outline: a cosine step |
+| `0x9e16e0` | Particles::Pass9E16E0 | In outline: when on (+0x10), goes over entries (+0x1C) |
+| `0x9c5a80` | Fireworks::Update9C5A80 | In outline: an update when not flagged (+0x30) |
+| `0x7b4570` | Effect::Pass7B4570 | In outline: goes over entries (+0x10) |
+| `0xb6d680` | Effect::PassB6D680 | In outline: goes over entries (+0x10) |
+| `0x970b40` | Water::Make970B40 | In outline: makes a part (`0x966450`) |
+| `0xbf8a50` | Text::FillBF8A50 | In outline: fills a two-entry buffer for the current device |
+| `0x9bc490` | Particles::Pass9BC490 | In outline: goes over entries (+0x50), calling itself |
+| `0x6f13c0` | Window::Value6F13C0 | In outline: a value from a count (+0xD0) |
+| `0xb711a0` | Effect::PartB711A0 | In outline: goes over a part's entries |
+| `0x7b5780` | Effect::Part7B5780 | In outline: the same (another copy) |
+| `0xac7840` | Graph::SetAC7840 | In outline: links its part (+0xF0) back to itself (+0xF4) |
+| `0x7b32c0` | Effect::Inside7B32C0 | In outline: whether a box lies inside its bounds |
+| `0x7b2fc0` | Effect::Inside7B2FC0 | In outline: the same (another copy) |
+| `0x488710` | Effect::Inside488710 | In outline: the same (another copy) |
+| `0x9f5db0` | Fireworks::Check9F5DB0 | In outline: 0 with no list (+0x4C) |
+| `0x9e2970` | Fireworks::Next9E2970 | In outline: steps a value (+0x1C) up to the shared count (`0x10F0E84`) |

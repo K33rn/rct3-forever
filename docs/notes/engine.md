@@ -2232,3 +2232,58 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc38810` | Record::MakeC38810 | In outline: makes a 0x2C-byte record |
 | `0x5aef00` | Array::Free5AEF00 | In outline: frees an array of 0x1C-byte entries (+0x20), tearing each down |
 | `0x46e6a0` | List::Pop46E6A0 | In outline: takes one off a count (+8) |
+| `0xbcbf90` | Bezier::Point | In outline: a point on a cubic curve at t from four points (the 1-t and t cubes) |
+| `0xc56a10` | System::VersionC56A10 | In outline: sets a shared flag (`0x10F31F8`) and reads the Windows version (OSVERSIONINFOA) |
+| `0x457550` | File::Info457550 | In outline: reads data into a 2048-character buffer |
+| `0x479530` | Text::ReadFloats | In outline: reads floats from texts ("%f", sscanf) |
+| `0x4613f0` | Record::Make4613F0 | In outline: sets up a record with an empty text and cleared values |
+| `0x438040` | Effect::Release438040 | In outline: releases a part (+0x1B0) and formats a 256-character name |
+| `0xc05e00` | Device::StepC05E00 | In outline: when not flagged (+0x4C0), fills seven values |
+| `0xabc4f0` | Array::ResizeABC4F0 | In outline: resizes a list to n |
+| `0xa6b710` | Array::ResizeA6B710 | In outline: resizes a list to n |
+| `0x939430` | Array::Resize939430 | In outline: resizes a list to n |
+| `0x50fc40` | Array::Resize50FC40 | In outline: resizes a list to n |
+| `0x4eed70` | Array::Resize4EED70 | In outline: resizes a list to n |
+| `0x5d77a0` | Array::Resize5D77A0 | In outline: resizes a list to n |
+| `0x5d7630` | Array::Resize5D7630 | In outline: resizes a list to n |
+| `0x5d7530` | Array::Resize5D7530 | In outline: resizes a list to n |
+| `0x5d73d0` | Array::Resize5D73D0 | In outline: resizes a list to n |
+| `0xcbc640` | Array::ResizeCBC640 | In outline: resizes a list of eight-byte entries to n |
+| `0xc63220` | Window::CaseC63220 | In outline: acts by a message's kind |
+| `0xc50b70` | Stream::SetC50B70 | In outline: sets a value (+0x40) when it changes, with flag bit 11 handled |
+| `0xc302c0` | Resource::ValueC302C0 | In outline: a value from its part (slot 0x14) and the shared list (`0x13E69BC`), 0 with none |
+| `0xc06500` | Device::LoopC06500 | In outline: goes over a list (+0x24) reading four bytes from each |
+| `0xbfd780` | Memory::StepBFD780 | In outline: a step with a count (+0x24) |
+| `0xbd76c0` | Text::FindBD76C0 | In outline: a find by name (NamedList::Find2) |
+| `0xce7df0` | Shapes::StepCE7DF0 | In outline: a step under a count (+0x1C) |
+| `0xce5a80` | NamedObject::PartCE5A80 | In outline: sets up a record with its table (`0xFC7FAC`) |
+| `0xc47500` | ShaderFile::FindC47500 | In outline: finds an entry by a hash of four values |
+| `0xcc24d0` | Shader::DestroyAll | In outline: destroys entries one at a time (DestroyCC25D0) |
+| `0xc30ec0` | Resource::PassC30EC0 | In outline: goes over the shared list (`0x13E69B8`, `0x13E69BC` entries) |
+| `0x495720` | Text::Length495720 | In outline: a step with a C string's length |
+| `0x446910` | List::Find446910 | In outline: a find over entries (+8) |
+| `0xc73c20` | Debug::Output | In outline: sends a text to the debugger output (an output string) |
+| `0xcba820` | Text::ReadNumberCBA820 | In outline: reads a number from a C string after skipping tabs and spaces |
+| `0xc58f40` | Stream::NameC58F40 | In outline: a stream's name, empty when it has none (+0xC) |
+| `0xc50390` | Stream::StepC50390 | In outline: a step with a part (+0xF0) |
+| `0xbe3ee0` | Timer::StepBE3EE0 | In outline: with a shared part (`0x13D0E84`), a step against a time (Timer::Milliseconds) |
+| `0xce2bb0` | Table::StepCE2BB0 | In outline: a step over entries |
+| `0x87c030` | Array::Resize87C030 | In outline: resizes a list to n |
+| `0x80fb70` | Array::Resize80FB70 | In outline: resizes a list to n |
+| `0x445a00` | Array::Resize445A00 | In outline: resizes a list to n |
+| `0xcbd2e0` | Text::MakeCBD2E0 | In outline: makes a text, empty when given nothing |
+| `0x823ea0` | Array::Free823EA0 | In outline: frees an array, tearing each entry down |
+| `0xbfcc20` | Device::MakeBFCC20 | In outline: fills a record from its arguments |
+| `0xa544a0` | Record::MakeA544A0 | In outline: sets up a record with its table (`0xF8EA64`) and an empty text |
+| `0xcef120` | Name::MakeCEF120 | In outline: makes a name text from a list |
+| `0xcc91a0` | Name::MakeCC91A0 | In outline: the same (another copy) |
+| `0xc47660` | ShaderFile::HashC47660 | In outline: a step (`0xC4CED0`) and a hash of twelve values modulo a size |
+| `0xc331a0` | Resource::MakeC331A0 | In outline: makes a record |
+| `0xbdcbd0` | VertexDeclaration::StepBDCBD0 | In outline: a step over bytes |
+| `0x9f8770` | Math::Split9F8770 | In outline: splits a 64-bit value into parts |
+| `0x7e70d0` | Array::Clear7E70D0 | In outline: clears a count (+0xC) and frees its buffer (+0x10) when it owns it |
+| `0xcc4390` | Timer::StepCC4390 | In outline: a step with two values |
+| `0xbe8ea0` | Resource::MakeBE8EA0 | In outline: fills a record from its arguments |
+| `0x734160` | Path::Copy734160 | Copies a path record's values from another |
+| `0xcb8000` | ShaderFile::SortCB8000 | In outline: a sort step over eight-byte pairs |
+| `0x4467d0` | Effects::Find4467D0 | In outline: a find loop |

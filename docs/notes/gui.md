@@ -1484,3 +1484,36 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x544cf0` | Window::Text544CF0 | In outline: a text from its part (+0xF0, slot 0x188) |
 | `0x9bd260` | Window::Update9BD260 | In outline: an update when not flagged (+0x38) |
 | `0x7efb60` | Staff::LoadUniforms | In outline: loads from the "\Uniforms" folder |
+| `0xa07e00` | Window::MakeA07E00 | In outline: unless the shared value is set (`0x12F8084`), makes a 0x54-byte part |
+| `0x678190` | Window::Step678190 | In outline: a step with its list's part (+0xF0, slot 0xF8) |
+| `0x49d480` | Window::Number49D480 | In outline: unless the shared value is set (`0x1305DD8`), a step with a window (`0x6C1DA0`, `0x6BE4C0`) |
+| `0xc629e0` | Window::RectC629E0 | In outline: unless flagged (bit 0x80000 of +0x1C), sets its rectangle (slot 0x70, Rect::Assign) |
+| `0x99c1a0` | Window::Fits99C1A0 | In outline: a step when rows (+0x108) times a height fit the window |
+| `0x6ffc30` | Window::Mouse6FFC30 | In outline: with a part (+0x11C), a screen step with the GUI root's size |
+| `0x6c6050` | Window::Name6C6050 | In outline: makes a part (+0x88) and a named text (`0x1303CFC`) |
+| `0x6c5f50` | Window::Name6C5F50 | In outline: the same with +0x84 |
+| `0x6c5e50` | Window::Name6C5E50 | In outline: the same with +0x80 |
+| `0x6c5d50` | Window::Name6C5D50 | In outline: the same with +0x7C |
+| `0x6b21b0` | Window::Make6B21B0 | In outline: makes a window part (`0x685070` with 1.0) |
+| `0x6b1f20` | Window::Make6B1F20 | In outline: the same (another copy) |
+| `0x9c2360` | Window::Bind9C2360 | In outline: sets the object it shows (+0xDC) and binds fields to it (Window::Set10C with +0x7C, +0x80, ...) |
+| `0x69b4a0` | Input::ImeInit | In outline: sets up text input: its table (`0xF2DFD4`), the window's input context and the keyboard layout list |
+| `0x610d30` | GameOptions::Units | In outline: builds the game options units (GameOptionsDialog::BuildUnits) and, when flagged, lays out and refreshes |
+| `0xa57210` | Campaign::ProfileText | In outline: a text with the campaign profile name (Campaign::ProfileName) |
+| `0xc64d40` | Window::LoopC64D40 | In outline: clears a flag (+0x9C) and goes over its parent's list (+0xF0 +0xB0) |
+| `0x479c30` | Text::Slot479C30 | In outline: a text for 0 to 0x50 when its shared flags agree (`0x10EDAB8`) |
+| `0x479a20` | Text::Slot479A20 | In outline: a text for 0 to 0x18 when two shared values differ (`0x10ED668`) |
+| `0xb00d50` | Window::Screen | In outline: a screen step with the GUI root's size |
+| `0x65d340` | Window::Set65D340 | In outline: when given a part, sets it (+0xF4) and goes over its entries |
+| `0x6206f0` | Window::Make6206F0 | In outline: makes a 0x90-byte part |
+| `0x9df140` | Window::Changed9DF140 | In outline: when the shared value (`0x1341868`) changes, takes it and sets a flag (+8) |
+| `0x623db0` | Window::Place623DB0 | In outline: with a part (+0xDC), places it (Window::SetRelation with 6) when not flagged |
+| `0x48e380` | Window::Rect48E380 | In outline: a step with its rectangle (slot 0x20) |
+| `0x68b470` | Window::Draw68B470 | In outline: draws a window's frame (Window::DrawFrame6ACE50) and more |
+| `0xc5fc40` | Window::HitC5FC40 | In outline: a hit test with points |
+| `0x97cd70` | Window::List97CD70 | In outline: a step with a list (+0x16C) |
+| `0x8cd630` | Window::Place8CD630 | In outline: with a part (+0xE0), places it (Window::SetRelation with 6) when not flagged |
+| `0x70e4c0` | Window::Release70E4C0 | In outline: sends a release (Window::SendRelease) and acts with the shared value (`0x1306194`) |
+| `0x642740` | Window::Rect642740 | In outline: when not flagged (+0x152), a step with its rectangle |
+| `0x9dd8c0` | Window::Text9DD8C0 | In outline: a text by a shared object's value (`0x134180C` +0x14 = 4) |
+| `0x662fe0` | Window::Handle662FE0 | In outline: makes a handle and links it |

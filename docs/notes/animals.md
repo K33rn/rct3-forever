@@ -485,3 +485,31 @@
 | `0xa1e8b0` | Window::AddA1E8B0 | In outline: when not found (`0xA1ACF0`), makes a 0xC-byte record |
 | `0xaa18e0` | NamedObject::MakeAA18E0 | In outline: makes a list member object (ListMember with `0x10EC9E8`) |
 | `0xaf18c0` | Animal::UpdateAF18C0 | In outline: an update when not flagged (+0x74) |
+| `0xb675f0` | WildAnimal::ValueB675F0 | In outline: a value from its part (+0x17C) and a count (+0x158) |
+| `0xa91d70` | Fence::QuadA91D70 | In outline: draws a quad (`0xA91C80`) from its corners |
+| `0xb3e440` | Animal::FindB3E440 | In outline: a find over a list (+0x1D4) |
+| `0xb2f490` | WildAnimal::Heading | In outline: a direction's heading (arctangent), kept positive |
+| `0xa89af0` | Animal::CountA89AF0 | In outline: counts entries (+0xD0) |
+| `0xa895b0` | Animal::CountA895B0 | In outline: the same (another copy) |
+| `0xb70350` | Animal::FindB70350 | In outline: a find over entries (+0x60) |
+| `0xb2c490` | Animal::TextB2C490 | In outline: a text from shared values |
+| `0xb16890` | Animal::TextB16890 | In outline: a text by a mode (+0x78) |
+| `0xa899f0` | Animal::CountA899F0 | In outline: counts entries (+0xD0) |
+| `0xa898f0` | Animal::CountA898F0 | In outline: the same (another copy) |
+| `0xa894c0` | Animal::CountA894C0 | In outline: the same (another copy) |
+| `0xa7ec40` | Animal::PartA7EC40 | In outline: a step with its part (+0x44 +0xC) |
+| `0xb1b270` | Animal::MakeB1B270 | In outline: makes a 0x150-byte part |
+| `0xb2e670` | WildAnimal::CrossB2E670 | In outline: a cross product with an object's direction (WildAnimal::Interface60) |
+| `0xb2e570` | WildAnimal::CrossB2E570 | In outline: the same (another copy) |
+| `0xb242b0` | WildAnimal::TimeB242B0 | In outline: unless a value is -1.0 (+0xBC), a step against an object's value (+0x40) |
+| `0xaaad90` | PoolComplex::GrowAAAD90 | In outline: grows a list (Array::ResizeAAABF0) when full |
+| `0xb7eb90` | Animal::StepB7EB90 | In outline: a step by a flag (+0x7C) |
+| `0xb669e0` | WildAnimal::DirectionB669E0 | In outline: a direction between two points |
+| `0xa3e9e0` | Animal::CheckA3E9E0 | In outline: a check for an object with a slot (`0x12F5544`) |
+| `0xb91120` | NamedObject::MakeB91120 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
+| `0xb90b50` | Animal::ReleaseB90B50 | In outline: a step (`0x582A30` with 0) and releases its part (+0x280) |
+| `0xafe3c0` | Animal::UpdateAFE3C0 | In outline: an update when not flagged (+0x170) |
+| `0xba5380` | Animal::PassBA5380 | In outline: goes over entries (+8) |
+| `0xac3510` | Fence::PassAC3510 | In outline: the same (another copy) |
+| `0xab5f10` | PoolPiece::PlaceAB5F10 | In outline: when flagged (+0x11C bit 0), places a piece (PoolPiece::PlaceAB51D0 with 0x58) |
+| `0xa39e50` | Animal::SwapA39E50 | In outline: replaces a shared part (+0xB4) |

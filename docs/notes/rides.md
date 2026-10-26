@@ -661,3 +661,38 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5a8a80` | TrackedRide::Reset5A8A80 | In outline: clears slots (+0x3E4 to +0x3EC = -1) and goes over its stations |
 | `0x592130` | Ride::Check592130 | In outline: a check when not flagged (+0x204) |
 | `0x4d2700` | Shop::Link4D2700 | In outline: a step with a linked part (+0x48) |
+| `0x5636a0` | Ride::Count5636A0 | In outline: counts entries (+0xC4) |
+| `0x4acd60` | Ride::Check4ACD60 | In outline: a step when a value differs from the shared one (`0x12F4B68`) |
+| `0x513910` | Car::Step513910 | In outline: a step with a slot when on (+0x250) |
+| `0x4c58f0` | Shop::Value4C58F0 | In outline: a step by a value against a limit |
+| `0x5a7ea0` | TrackedRide::Step5A7EA0 | In outline: steps (Thunk, `0x531200`) |
+| `0x588ff0` | Ride::Place588FF0 | In outline: places a part beside another (+0x108) |
+| `0x506dd0` | Ride::Mode506DD0 | In outline: 0 in modes 2 and 3 (+0xE0) |
+| `0x49d270` | Text::Mode49D270 | In outline: a text by the shared mode (`0x10EE248`) |
+| `0x49ceb0` | Text::Mode49CEB0 | In outline: the same (another copy) |
+| `0x440d10` | Effect::Set440D10 | In outline: when a value changes (+0x6C vs +0x74) or flagged (+0x7C), takes it and acts |
+| `0x598910` | Ride::Text598910 | In outline: an empty text filled from its part (+0x144, slot 0x4C) |
+| `0x530030` | Ride::Set530030 | In outline: sets a value (SetA8AndUpdate) and a part (+0x294) |
+| `0x4ace60` | Ride::SetMode4ACE60 | In outline: sets a mode (+0x354) when it changes, clearing a value (+0x360) |
+| `0x7b4800` | Effect::Inside7B4800 | In outline: unless told not to, whether a box lies inside its bounds |
+| `0x41c900` | Window::Text41C900 | In outline: a text unless a flag is set (Flags::Bit0) |
+| `0x58ad50` | Ride::Time58AD50 | In outline: a timed step (`0x58A7A0`) with a value (+0x38) |
+| `0x58ac50` | Ride::Time58AC50 | In outline: the same (another copy) |
+| `0x5c0d30` | TrackPiece::Update5C0D30 | In outline: a scenery update (Scenery::Update848C90) and a step when not flagged (+0x174) |
+| `0x5c0c30` | TrackPiece::Update5C0C30 | In outline: the same with Scenery::Step848B20 |
+| `0x5c0b30` | TrackPiece::Update5C0B30 | In outline: the same with Scenery::Step8489B0 |
+| `0x5c0a30` | TrackPiece::Update5C0A30 | In outline: the same with Scenery::Step848840 |
+| `0x5bb860` | TrackPiece::Clear5BB860 | In outline: clears a flag (+0x214), a record (Record::Clear) and a handle |
+| `0x568760` | Ride::Tool568760 | In outline: a step with the current tool (`0x12F5638`) and entry +0x27C (32 bytes) |
+| `0x563a30` | Ride::Check563A30 | In outline: a check when not flagged (+0x254) |
+| `0x5112f0` | Car::Lights5112F0 | In outline: updates lights (Model::UpdateLights) and goes over its parts (+0x314) |
+| `0x5bb3a0` | Ride::Last5BB3A0 | In outline: a step with the last 0x24-byte entry |
+| `0x501da0` | Ride::Flag501DA0 | In outline: a step comparing a flag (bit 22) with a count (slot 0x5C) |
+| `0x4cd820` | Shop::Find4CD820 | In outline: a find over a list (+0x64) |
+| `0x5dab20` | TrackedRide::Check5DAB20 | In outline: 0 unless a check passes (`0x5657D0`) |
+| `0x4b51e0` | Ride::Check4B51E0 | In outline: a check when not flagged (+0x5C) |
+| `0x559d10` | Ride::Cells559D10 | In outline: with no cached object, a ride's cells (Ride::Cells557EE0) |
+| `0x559c20` | Ride::Cells559C20 | In outline: the same with Interface04b::Get |
+| `0x4b00a0` | Ride::Check4B00A0 | In outline: 0 when its part is flagged (bit 4), more when flagged (bit 14) |
+| `0x5bcb20` | TrackPiece::Handle5BCB20 | In outline: makes a handle and links it |
+| `0x4e1410` | Ride::Make4E1410 | In outline: fills a record from its arguments |
