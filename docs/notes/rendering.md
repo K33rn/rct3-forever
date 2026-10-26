@@ -751,3 +751,33 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x410180` | Effect::Update410180 | In outline: a step when on (+8) |
 | `0x81d1c0` | SceneryBehaviour::Step81D1C0 | In outline: a behaviour step from its owner |
 | `0xbf75c0` | Text::FillBF75C0 | In outline: fills buffers for the current device |
+| `0xcec7c0` | Mesh::PassCEC7C0 | In outline: goes over a mesh's entries |
+| `0x481b90` | Draw::Line481B90 | In outline: a line draw with a normalised direction |
+| `0xce85b0` | Shapes::FillCE85B0 | In outline: when on (+0x34), a fill step |
+| `0xbfa380` | Text::DrawBFA380 | In outline: a text draw step (`0xC5C7F0`) |
+| `0x9ea050` | Fireworks::Sound9EA050 | In outline: a step with the crowd sounds (Crowd::Sounds) |
+| `0x971700` | Water::Alpha971700 | In outline: a step with a value rounded from a scale |
+| `0x40bc00` | Effect::Face40BC00 | In outline: points an effect (Matrix::LookAlongZSide) |
+| `0x9ea680` | Firework::Kind9EA680 | In outline: a value by kind (+0x10) |
+| `0xccc250` | Model::FillCCC250 | In outline: fills buffers for the current device |
+| `0xccbbf0` | Model::FillCCBBF0 | In outline: the same (another copy) |
+| `0xbf7200` | Text::DrawBF7200 | In outline: a text draw step (`0xBD6E10`) |
+| `0xbee2c0` | Vector::ScaleBEE2C0 | In outline: a step when a value is positive |
+| `0x9e4530` | Fireworks::Clear9E4530 | In outline: clears list marks (Lists::ClearMarks) |
+| `0xc3b510` | Resource::KindC3B510 | In outline: a step for a part of kind 5 (+0x60) |
+| `0xa008f0` | Fireworks::Table | In outline: sets up a 0x100-entry table (`0x488290`) |
+| `0xcf0c00` | Shapes::StepCF0C00 | In outline: a step unless told not to |
+| `0xbcc4c0` | Device::TimeBCC4C0 | In outline: a step with a non-negative time |
+| `0x424ec0` | Sky::Value424EC0 | In outline: a value when not flagged (+0x1C) |
+| `0xbb7800` | Vector::StepBB7800 | In outline: a step when the shared flag (`0x13D07FC`) is set |
+| `0xbefe00` | Text::DrawBEFE00 | In outline: draws a text, character by character |
+| `0xbef8f0` | Text::DrawBEF8F0 | In outline: the same (another copy) |
+| `0x97c2f0` | Water::Release97C2F0 | In outline: releases a part |
+| `0xbf86c0` | Text::FillBF86C0 | In outline: fills buffers for the current device |
+| `0x7b4670` | Effect::Check7B4670 | In outline: an effect check unless told not to |
+| `0x47c550` | Effect::Part47C550 | In outline: a step with a part |
+| `0xc8b8e0` | Device::StepC8B8E0 | In outline: a device step (`0xC051F0`) |
+| `0xbf73a0` | Text::DrawBF73A0 | In outline: a text draw step (`0xBD6E10`) |
+| `0xbed120` | Vector::LengthBED120 | In outline: a length step |
+| `0xbde370` | VertexDeclaration::CaseBDE370 | In outline: a step by an element's kind |
+| `0x99c360` | Fireworks::Count99C360 | In outline: a step for a positive count |

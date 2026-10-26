@@ -272,3 +272,31 @@
 | `0xa1ab40` | Bird::ModeA1AB40 | In outline: a step unless in mode 1 |
 | `0xb22600` | Animal::UpdateB22600 | In outline: an update when not flagged (+0xB0) |
 | `0xb32420` | WildAnimal::UseShelter | In outline: makes a use-shelter decision (WAS_UseShelter) |
+| `0xaebf50` | Animal::UpdateAEBF50 | In outline: a step when on (+0x2C) |
+| `0xaf0150` | Animal::TextAF0150 | In outline: a text when not flagged (+0x10C) |
+| `0xad7110` | Animal::TextAD7110 | In outline: the same (another copy) |
+| `0xafa2e0` | Animal::SlotAFA2E0 | In outline: a step when it has a slot |
+| `0xb82a30` | Animal::UpdateB82A30 | In outline: a step when not flagged (+0x50) |
+| `0xaae4a0` | PoolComplex::PointAAE4A0 | In outline: a step with a point (`0xAAE430`) |
+| `0xa151f0` | Bird::OnA151F0 | In outline: a step when on (+0x14C) |
+| `0xa11950` | Bird::OnA11950 | In outline: a step when on (+0x15C) |
+| `0xab5b70` | Animal::CaseAB5B70 | In outline: a step by case |
+| `0xab2d00` | Animal::StepAB2D00 | In outline: a step with an object (`0x13CE3F8`) |
+| `0xb97250` | PathGrid::StepB97250 | In outline: a step (`0xB97150`) |
+| `0xabac70` | Fence::OnABAC70 | In outline: a step when on (+0xE8) |
+| `0xb9e4f0` | PathGrid::FlagB9E4F0 | In outline: a step when a table entry is not flagged (`0x10F29C8`) |
+| `0xab4430` | Animal::StepAB4430 | In outline: a step (`0xA9A440`) |
+| `0xbae740` | Animal::CheckBAE740 | In outline: a check |
+| `0xab4f90` | Animal::ListAB4F90 | In outline: goes over a list (+0x1C4) |
+| `0x45ec70` | Animal::Update45EC70 | In outline: an update when not flagged (+0x884) |
+| `0xb609c0` | WildAnimal::RandomB609C0 | In outline: a random point (Random::Ran0) |
+| `0xb21b90` | Animal::UpdateB21B90 | In outline: an update when not flagged (+0xB0) |
+| `0xb9a520` | PathGrid::MakeB9A520 | In outline: makes a part |
+| `0xb76290` | Animal::UpdateB76290 | In outline: unless the global flag `0x1400306` is set, a step |
+| `0xaa2400` | PoolComplex::StepAA2400 | In outline: a step (`0x63AAB0`) |
+| `0xa15050` | Bird::UpdateA15050 | In outline: an update when not flagged (+0x128) |
+| `0xab0780` | Animal::StepAB0780 | In outline: a step when asked |
+| `0xaaa8d0` | PoolComplex::CountAAA8D0 | In outline: a step when a count is above 2 |
+| `0xaa0040` | PoolComplex::LoopAA0040 | In outline: goes over a linked list |
+| `0xb73cf0` | Animal::CountB73CF0 | In outline: a step for a positive count |
+| `0xbb4460` | Animal::PassBB4460 | In outline: goes over entries (+0x100) |

@@ -1075,7 +1075,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6f5680` | Window::Update6F5680 | In outline: a window update when not flagged (+0x9C) |
 | `0xacc6a0` | Window::BuildACC6A0 | In outline: builds a window from the shared title `0x13CE490` |
 | `0x6ea360` | Window::Build6EA360 | In outline: builds a window from the shared title `0x13060C8` |
-| `0x673660` | Graph::Draw673660 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0x673660` | Window::Draw673660 | In outline: draws a window's frame (`0x6ACE50`) |
 | `0x6218d0` | Window::Layout6218D0 | In outline: places a window's parts (Window::UpdateRect) |
 | `0x813fc0` | Window::Build813FC0 | In outline: builds a window from the shared title `0x130B37C` |
 | `0x70a1d0` | Window::Build70A1D0 | In outline: builds a window from the shared title `0x13061F0` |
@@ -1138,7 +1138,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xa3ebe0` | Window::CheckA3EBE0 | In outline: a check when given an object that has a part |
 | `0x67cdd0` | Window::Value67CDD0 | In outline: a value with no entries handled |
 | `0x6be5a0` | Money::Text2 | In outline: makes a money text with two decimal places (Money::Format_(2)) |
-| `0x41d750` | Graph::Draw41D750 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0x41d750` | Window::Draw41D750 | In outline: draws a window's frame (`0x6ACE50`) |
 | `0x8863a0` | Window::Layout8863A0 | In outline: places a window's parts (Window::UpdateRect) |
 | `0xb4fa70` | Window::RefreshB4FA70 | In outline: a refresh (`0x665E90`) |
 | `0xa35550` | Window::PlaceA35550 | In outline: places a window by its screen position (Window::ScreenPosition) |
@@ -1146,7 +1146,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9be750` | Window::Update9BE750 | In outline: a window update when not flagged (+0x38) |
 | `0x6d4690` | Window::Layout6D4690 | In outline: places a window's parts (Window::UpdateRect) |
 | `0x707070` | Window::ParkRating707070 | In outline: shows the park rating's breakdown (Park::RatingBreakdown) |
-| `0x61f220` | Graph::Draw61F220 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0x61f220` | Window::Draw61F220 | In outline: draws a window's frame (`0x6ACE50`) |
 | `0xace520` | Window::UpdateACE520 | In outline: a window step when on (+0x2C) |
 | `0x68c770` | Window::Refresh68C770 | In outline: a refresh (`0x6879A0`) |
 | `0x664620` | Window::Part664620 | In outline: a step with its part (+0x1B4 +0xC) |
@@ -1186,7 +1186,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x403f30` | Message::Result403F30 | In outline: the same message result maker (another copy) |
 | `0x68e200` | Window::Shared68E200 | In outline: a step when the shared value (`0x1305BE4`) is 0 |
 | `0x67b550` | Window::Mode67B550 | In outline: a step in modes 2 or 3 |
-| `0xae2670` | Graph::DrawAE2670 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0xae2670` | Window::DrawAE2670 | In outline: draws a window's frame (`0x6ACE50`) |
 | `0x9b1fe0` | Window::Update9B1FE0 | In outline: a window update when not flagged (+0x20) |
 | `0x983230` | Window::Check983230 | In outline: a check (`0x982C70` with +0x58) |
 | `0x6af120` | Window::Flags6AF120 | In outline: a step when flagged (bit 9 or bit 7) |
@@ -1196,7 +1196,42 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xc65160` | Window::PartC65160 | In outline: a step with a part (+0xF0) |
 | `0x6ae130` | Window::Check6AE130 | In outline: a window list check |
 | `0x9d5510` | Window::Refresh9D5510 | In outline: a refresh with an empty handle |
-| `0x7891e0` | Graph::Draw7891E0 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0x7891e0` | Window::Draw7891E0 | In outline: draws a window's frame (`0x6ACE50`) |
 | `0x6472e0` | Window::Refresh6472E0 | In outline: a refresh (`0x645EB0` with +0x14) |
 | `0x6b5d10` | Colour::Make6B5D10 | In outline: a colour from three values, the first kept in range |
 | `0x642e80` | Window::Part642E80 | In outline: a step with a part |
+| `0x6ace50` | Window::DrawFrame6ACE50 | In outline: draws a window's frame (as the other notes call it); many draw functions call it first |
+| `0x6b0740` | Window::Loop6B0740 | In outline: goes over a list to its end |
+| `0x61ede0` | Window::Mode61EDE0 | In outline: a step in mode 1 |
+| `0xc61330` | Window::FadeC61330 | In outline: a step when a value is 0 |
+| `0x65ffe0` | Window::Event65FFE0 | In outline: handles event 7 |
+| `0xa33650` | Window::CheckA33650 | In outline: a check unless given nothing |
+| `0x9c1870` | Window::Text9C1870 | In outline: a text when not flagged (+0x128) |
+| `0x67cbd0` | Window::Update67CBD0 | In outline: a step when on (+0x10) |
+| `0x6610f0` | Window::Build6610F0 | In outline: builds a window (Window::Build663680) |
+| `0x66fdf0` | Window::Text66FDF0 | In outline: makes a text record |
+| `0x4e4410` | Window::Main4E4410 | In outline: builds the main window (MainWindow::Build(0)) |
+| `0xba26d0` | Window::SharedBA26D0 | In outline: a step unless the shared window (`0x1342708`) is on (+0xA4) |
+| `0x98e350` | Window::Check98E350 | In outline: a check with no part (+0x140) |
+| `0x6eb620` | Window::Text6EB620 | In outline: makes a text record |
+| `0x6ae2f0` | Window::Check6AE2F0 | In outline: a window list check |
+| `0xa04420` | Window::TextA04420 | In outline: a text (Text::JoinA04010) |
+| `0x6733e0` | Window::Layout6733E0 | In outline: lays out a window (Window::Layout672DF0) |
+| `0x6da760` | Window::Layout6DA760 | In outline: lays out a window (Window::Layout6D4690) |
+| `0x6419f0` | Window::Count6419F0 | In outline: a step for a positive count |
+| `0x79d200` | Toolbar::Inside79D200 | In outline: whether a point is inside fixed bounds (`0xF6FD60`, `0xF6FD64`) |
+| `0x98e760` | Window::Make98E760 | In outline: makes a list member part (ListMember with `0x10EC9F8`) |
+| `0x7afad0` | Window::Make7AFAD0 | In outline: makes a list member part (ListMember with `0x10EC9F8`) |
+| `0x6eb470` | Window::Refresh6EB470 | In outline: a refresh (`0x6E9D70` with 0) |
+| `0x6a3c00` | Window::Fill6A3C00 | In outline: fills buffers for the current device |
+| `0x98b850` | Window::Check98B850 | In outline: a check when not flagged (+0xD4) |
+| `0x683970` | Window::Draw683970 | In outline: draws a window (Window::Draw6A9EF0) |
+| `0x6deda0` | Window::Name6DEDA0 | In outline: a name text (NameText_0x0) |
+| `0xa8c380` | Window::LinkA8C380 | In outline: a step with a part |
+| `0xa81ed0` | Window::LayoutA81ED0 | In outline: places a window's parts (Window::UpdateRect) |
+| `0xa463a0` | Window::TextA463A0 | In outline: sets a text from a shared one (`0x12FE854`) |
+| `0x6e9b80` | Window::Event6E9B80 | In outline: handles events 0x11 or 7 |
+| `0x6cd750` | Window::Step6CD750 | In outline: a step (`0x6C5E50`) |
+| `0x6ae630` | Window::Check6AE630 | In outline: a window list check |
+| `0x9c12f0` | Window::Update9C12F0 | In outline: a step when on (+0x10) |
+| `0x6d10d0` | Window::Link6D10D0 | In outline: a step when given a part |

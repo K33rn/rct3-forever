@@ -424,3 +424,35 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5c6c80` | TrackedRide::Check5C6C80 | In outline: a check when not flagged (+0x1E0) |
 | `0x50e980` | Car::Shared50E980 | In outline: a step when the shared value (`0x10EE438`) is set |
 | `0x4d02e0` | Shop::Slot4D02E0 | In outline: a step with no slot (+0x88 negative) |
+| `0x548cf0` | Ride::Slot548CF0 | In outline: a step with no slot (+0x74 negative) |
+| `0x5bc3b0` | TrackPiece::Blend5BC3B0 | In outline: a blend of two values by a fraction, rounded |
+| `0x59de70` | Ride::Loop59DE70 | In outline: goes over a linked list |
+| `0x57a320` | Ride::Time57A320 | In outline: a step when a value is below 0 |
+| `0x4b0a20` | Ride::List4B0A20 | In outline: goes over a list |
+| `0x567fa0` | Ride::Update567FA0 | In outline: an update when not flagged (+0xF0) |
+| `0x5a90e0` | Ride::Slot5A90E0 | In outline: a step with an attraction slot (AttractionInstance::Slot51) |
+| `0x4d1900` | Shop::Link4D1900 | In outline: links a shop's part |
+| `0x56f410` | Path::Queue56F410 | In outline: a queue (kind 0xD) step |
+| `0x5cbe70` | TrackedRide::Check5CBE70 | In outline: a check when given nothing |
+| `0x55c450` | Ride::Make55C450 | In outline: makes a part |
+| `0x543be0` | Ride::Check543BE0 | In outline: a step when there is no part or its check fails (`0xBB41F0`) |
+| `0x58bab0` | Ride::Selected58BAB0 | In outline: a step with the selected ride (`0x12F5608`) |
+| `0x53a490` | Ride::Round53A490 | In outline: a value rounded |
+| `0x4d09c0` | Shop::Make4D09C0 | In outline: makes a part (`0x4B4740`) |
+| `0x4f1c50` | Ride::Station4F1C50 | In outline: a station step (`0x5D1FD0`) |
+| `0x595dd0` | ShopItem::Make | In outline: makes a shop item (ShopItemInstance) |
+| `0x5c1ee0` | TrackPiece::Check5C1EE0 | In outline: a check (`0xBC9280`) |
+| `0x5f79d0` | Ride::On5F79D0 | In outline: a step when on (+0x114) |
+| `0x4de280` | Ride::Check4DE280 | In outline: a step when a check passes |
+| `0x4b6890` | Ride::Make4B6890 | In outline: makes a list member part (ListMember with `0x10EC9F8`) |
+| `0x4ca6e0` | Shop::Find4CA6E0 | In outline: finds an entry in a list range (`0x4C9F20` up to +0x17C) |
+| `0x5eed40` | AttractionPerson::Update5EED40 | In outline: an update when not flagged (+0x118) |
+| `0x493ee0` | Ride::Count493EE0 | In outline: a step for a positive count |
+| `0x479fb0` | Shop::Item479FB0 | In outline: a shop item for slot 0 or 1 |
+| `0x4c1f70` | Info::Text4C1F70 | In outline: a step with an info text (Info::Text4C0850) |
+| `0x5268e0` | Car::Check5268E0 | In outline: a step for a ride flagged 0x400000 with more than one station |
+| `0x5dfef0` | TrackPiece::Find5DFEF0 | In outline: finds a piece among a ride's pieces (+0x158) |
+| `0x56f710` | Ride::Time56F710 | In outline: a step when a value (+0x70) is positive |
+| `0x593370` | Ride::Part593370 | In outline: a step with a part |
+| `0x56bd20` | Ride::Update56BD20 | In outline: an update when not flagged (+0xF0) |
+| `0x529990` | Car::Pivot529990 | In outline: checks a car's pivot (RideCar::CheckPivot) |

@@ -1815,3 +1815,50 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc57110` | Path::HasDrive | In outline: a step for a path that is shorter than two or has no drive letter (no ':' second) |
 | `0xbdeb50` | Text::FindBDEB50 | In outline: a step with a text entry |
 | `0xcbe870` | Text::MakeCBE870 | In outline: makes a text from an empty one |
+| `0x7fc8e0` | Text::Trim7FC8E0 | In outline: a text without its last four characters (WideString::Substring) |
+| `0x48d090` | Text::Number48D090 | In outline: writes a number as text ("%d") |
+| `0xce7ef0` | Registry::StepCE7EF0 | In outline: a step with the registry (Registry::Ensure2) |
+| `0xcb7b80` | ShaderFile::FindCB7B80 | In outline: a find by name for entries of kind 2 |
+| `0xbb81d0` | Record::MakeBB81D0 | In outline: makes a 0x18-byte record |
+| `0x7fee40` | Map::Find7FEE40 | In outline: a find in a sorted map (SortedMap::FindValue7FB9C0) |
+| `0xcec590` | Pairs::AddCEC590 | In outline: adds a pair (Pairs::InsertCEAB50) |
+| `0x46b250` | Text::Empty46B250 | In outline: whether a text is empty |
+| `0xbe5570` | Module::RunBE5570 | In outline: a module step (ModuleList::Run) |
+| `0xbbbe30` | List::PassBBBE30 | In outline: goes over a list |
+| `0x42aee0` | Text::Lines42AEE0 | In outline: splits a text at line breaks (WideString::Find(10)) |
+| `0xc51e00` | Stream::ReadC51E00 | In outline: a step when a stream has more (+0x14 vs +0x18) |
+| `0xbec1a0` | Memory::StepBEC1A0 | In outline: a step by a flag's sign |
+| `0xc2eee0` | Resource::StepC2EEE0 | In outline: a resource step (`0xC5C990`) |
+| `0xbe2250` | VertexDeclaration::StepBE2250 | In outline: a step with a declaration (VertexDeclaration::FindBE1BD0) |
+| `0xbdac20` | Text::MakeBDAC20 | In outline: makes a text from an empty one |
+| `0xc5c7f0` | Device::FindC5C7F0 | In outline: a find in a list |
+| `0xa28780` | Table::SetA28780 | In outline: sets a table (SetTableF2CEB4) |
+| `0xc553e0` | Stream::SetC553E0 | In outline: a stream step on or off |
+| `0x497bc0` | Save::Write497BC0 | In outline: a save step (Save::Flush497300) |
+| `0x497a20` | Save::Write497A20 | In outline: the same (another copy) |
+| `0x8aee00` | NamedObject::Make8AEE00 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
+| `0x492b30` | Record::Make492B30 | In outline: makes a 0x98-byte record |
+| `0x620f30` | Load::Read620F30 | In outline: reads a four-byte value from a saved block |
+| `0x401310` | Record::Check401310 | In outline: a step by a value's sign |
+| `0xc5c990` | Device::FindC5C990 | In outline: a find in a list |
+| `0xbe4b30` | Loop::StepBE4B30 | In outline: a loop |
+| `0xc4f0e0` | KeyMap::Step | In outline: a step with a key map entry (KeyMap::Find) |
+| `0xbeb4b0` | List::LoopBEB4B0 | In outline: goes over a linked list |
+| `0xceb980` | List::FindCEB980 | In outline: a step under a count (+0x18) |
+| `0xc40280` | OverlayFile::Step | In outline: a step that relocates an overlay file (OverlayFile::Relocate) |
+| `0x98e4f0` | Loop::Step98E4F0 | In outline: a loop |
+| `0xc46160` | Resource::SetC46160 | In outline: a step when two values change (+0x10, +0x14) |
+| `0x9acf50` | Name::Find9ACF50 | In outline: a name step ignoring case |
+| `0x6a39d0` | Text::Make6A39D0 | In outline: makes a text from a shared one (`0xF27994`) |
+| `0xc36bd0` | Text::MakeC36BD0 | In outline: makes a text from an empty one |
+| `0xc042a0` | Loop::StepC042A0 | In outline: a loop |
+| `0xcb0510` | ShaderFile::MakeCB0510 | In outline: makes a part (0x1E) |
+| `0xc575d0` | Record::MakeC575D0 | In outline: makes a record |
+| `0xc1be20` | Module::StepC1BE20 | In outline: a module load (Module::LoadBE5B20) |
+| `0xc4d380` | Record::MakeC4D380 | In outline: makes a 0xC-byte record |
+| `0x457e10` | Text::Copy457E10 | In outline: copies a C string |
+| `0xb84e00` | Buffer::MakeB84E00 | In outline: makes a buffer (Buffer16) |
+| `0xb851b0` | Buffer::MakeB851B0 | In outline: makes a buffer (`0xB84E00`) |
+| `0xc6adb0` | List::LastC6ADB0 | In outline: a step for the last entry |
+| `0x638da0` | Flags::Read638DA0 | In outline: reads a set of flags (bits 0x4000, 0x200, ...) into a value |
+| `0x43ad20` | Math::Log43AD20 | In outline: a value from a base-2 log of a constant (`0xF276F0`) |

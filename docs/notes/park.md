@@ -936,3 +936,67 @@
 | `0x7f7760` | Person::Update7F7760 | In outline: an update when not flagged (+0x5C) |
 | `0x8826f0` | Scenery::Part8826F0 | In outline: a step with a part (+0xCC +0x64) |
 | `0x7d56d0` | Person::Refresh7D56D0 | In outline: a refresh (`0x7D3FB0` with 0) |
+| `0x8e4070` | Terrain::Range8E4070 | In outline: a step for a range (+4 to +8) |
+| `0x8be890` | Terrain::Rect8BE890 | In outline: goes over a byte rectangle of cells |
+| `0x743a70` | Guest::Spot743A70 | In outline: a step with a spot (Guest::PickSpot76D240) |
+| `0x49f5f0` | List::Pass49F5F0 | In outline: goes over a list (+0x1C) |
+| `0x8e8200` | Water::Flag8E8200 | In outline: a step for an entry not flagged (+3) |
+| `0xa5eff0` | Terrain::StepA5EFF0 | In outline: a terrain step |
+| `0x97adf0` | Water::Pass97ADF0 | In outline: goes over entries (+0x50) |
+| `0x8bfb10` | Terrain::Length8BFB10 | In outline: a length from values (+0xB8 ...) |
+| `0x8bbd40` | Terrain::Below8BBD40 | In outline: a step when a height is below 0 |
+| `0x87b910` | Scenery::Face87B910 | In outline: points a scenery item (Matrix::LookAlongZSide) |
+| `0x7f9110` | Person::Step7F9110 | In outline: a step (`0x6F0FB0`) |
+| `0x846df0` | Scenery::Place846DF0 | In outline: a place step (`0x828560`) |
+| `0x7221e0` | Path::PointsStep | In outline: a step with a path's points (Path::Points) |
+| `0x8f47f0` | Terrain::Range8F47F0 | In outline: a step over a byte range |
+| `0xabdec0` | Fence::ValueABDEC0 | In outline: a value for a positive count |
+| `0x8475e0` | Scenery::Check8475E0 | In outline: a check with a part |
+| `0x729850` | Path::Make729850 | In outline: makes a path record (`0x48C9C0`) |
+| `0x778e20` | Park::Value778E20 | In outline: a value from a part when it has one |
+| `0xabd1c0` | Fence::Cell | In outline: a cell value when inside the bounds (+0x4C to +0x54) |
+| `0x8e5bb0` | Terrain::Step8E5BB0 | In outline: a terrain step |
+| `0x91bdf0` | Waterfall::Step91BDF0 | In outline: a step with the waterfall manager (WaterfallManager::Get) |
+| `0x8fe330` | Water::Slot8FE330 | In outline: a step when it has a slot |
+| `0x73d830` | Guest::Mode73D830 | In outline: a guest step in mode 0xD (+0x190) |
+| `0x95b6b0` | Water::Count95B6B0 | In outline: a step for a positive count (+0x1C) |
+| `0x8df700` | Terrain::Slope8DF700 | In outline: a value from a distance over a scale (`0x8DF080`) |
+| `0x748410` | Guest::Make748410 | In outline: makes a part |
+| `0x47df10` | Scenery::Shared47DF10 | In outline: a step when the shared flag (`0x12F0189`) is set or a value is under 1 |
+| `0x9131c0` | Water::Count9131C0 | In outline: a step under the shared count (`0x10F0B40`) |
+| `0x8dd710` | Terrain::Step8DD710 | In outline: a terrain step |
+| `0x87a130` | Scenery::Count87A130 | In outline: a step under a count (+0x60) |
+| `0xaaf4e0` | Fence::UpdateAAF4E0 | In outline: an update when not flagged (+0x178) |
+| `0x94bca0` | Water::Slot94BCA0 | In outline: a value for n in range of its count (+0x58) |
+| `0x95ab70` | Water::Part95AB70 | In outline: a step with a part when it has one |
+| `0xbaf5f0` | Enclosure::StepBAF5F0 | In outline: a step with the enclosure manager (EnclosureManager::Get) |
+| `0x822db0` | SceneryBehaviour::Update822DB0 | In outline: an update when not flagged (+0xF4) |
+| `0x937e90` | Water::Index937E90 | In outline: makes a two-byte-entry index for a list (+0x18) |
+| `0x8eb6c0` | Water::Flag8EB6C0 | In outline: a step for an entry flagged (+0x118 +1) |
+| `0x8611a0` | Scenery::Shared8611A0 | In outline: a step when a shared value is set (`0x10EDB80`) and a shared flag is not (`0x1310E84`) |
+| `0x978370` | Water::Same978370 | In outline: a step when two cells differ |
+| `0x8db530` | Water::Level8DB530 | In outline: a water step by a level (+7) |
+| `0x8a0710` | Scenery::Table8A0710 | In outline: makes a table of 0x150-byte entries |
+| `0x848c90` | Scenery::Update848C90 | In outline: an update when not flagged (+0x6C) |
+| `0x9671c0` | Water::Link9671C0 | In outline: a step with a part |
+| `0x84ae30` | Scenery::Make84AE30 | In outline: makes a scenery record with an empty handle |
+| `0x840f50` | Scenery::Pass840F50 | In outline: goes over entries (+0xD0) |
+| `0x833650` | Scenery::Mode833650 | In outline: a step in mode 1 |
+| `0x813e00` | List::Find813E00 | In outline: finds an entry (+8) |
+| `0x717050` | Path::Link717050 | In outline: a step when given a part |
+| `0x94be40` | Water::Slot94BE40 | In outline: a value for a positive n |
+| `0x939ba0` | Water::Make939BA0 | In outline: makes a water record |
+| `0x7ca7b0` | Person::Loop7CA7B0 | In outline: goes over a linked list |
+| `0x419bb0` | Grid::Normal419BB0 | In outline: a grid point's normal (Grid::Normal419100) |
+| `0xabca20` | Fence::EdgeABCA20 | In outline: a step with a tile's edge point (Tile::EdgePoint) |
+| `0x7291e0` | Path::Case7291E0 | In outline: a path value by case |
+| `0x8e2a40` | Terrain::Count8E2A40 | In outline: a count rounded from a value's size times a scale (+0x1A4) |
+| `0x812bb0` | Regions::Make812BB0 | In outline: makes a part |
+| `0x72f480` | Path::Flag72F480 | In outline: a step when not flagged (+6) |
+| `0x94c160` | Water::Slot94C160 | In outline: a value for a positive n |
+| `0x84b150` | Scenery::Step84B150 | In outline: a step (`0x8487C0`) |
+| `0x713f10` | Path::Shared713F10 | In outline: a step with a part when the shared flag (`0x1306224`) is set |
+| `0x778c90` | Park::Part778C90 | In outline: a step with a part (+0x48) |
+| `0x717c80` | Path::Time717C80 | In outline: a step when a value is up to 1 |
+| `0x8e4c00` | Terrain::Step8E4C00 | In outline: a terrain step |
+| `0x7a8da0` | Terrain::Case7A8DA0 | In outline: a step for case 0x38 or when not flagged (+0x29C) |
