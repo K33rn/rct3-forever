@@ -240,3 +240,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5ab390` | Track::Make5AB390 | In outline: makes a track for a ride (`0x533E20`, Track::Track) and refreshes it (`0x5A3A30`) |
 | `0x5c6180` | TrackedRide::Check5C6180 | In outline: for pieces other than kinds 4 to 8, when not flagged (+0x154), checks the tool (`0x12F5638`) against the ride's count (+0x150 +0x148) |
 | `0x587d00` | AttractionPerson::Link587D00 | In outline: links a person to an attraction (`0x4AA760`) when not flagged (+0x100) |
+| `0x9dca50` | Ride::Window9DCA50 | In outline: a ride window's check: the park (`0x6C1DA0`) and the first attraction of a kind (AttractionInstance::FirstOf) |

@@ -159,3 +159,8 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0xa27600` | Guest::MoveA27600 | In outline: moves a guest by a time (`0x752680`) and, in state 10 with a target (+0x1C0), checks it |
 | `0x7acca0` | Guest::RideChoice7ACCA0 | In outline: a guest's choice of the first attraction of a kind (AttractionInstance::FirstOf) by what it is linked to |
 | `0x7ad360` | Guest::RideChoice7AD360 | In outline: another choice by the first attraction (AttractionInstance::FirstOf) and its state (`0x7AAD50`, not 2) |
+| `0x76a450` | Guest::Animal76A450 | In outline: when not flagged (+0x530), a guest's look at an animal (`0xB75820`) |
+| `0x7f6060` | Guest::Leave7F6060 | In outline: a guest's leaving step (`0xBAE8E0` on +0xB8, `0x4D2800` with 0x100) |
+| `0x77a620` | GuestGroup::Move77A620 | In outline: in mode 4 (+0xE4), moves a group's members that are not on the ride (+0x118 +0xC) (`0x7C6280` with 0.5) |
+| `0x776da0` | GuestGroup::Choose776DA0 | In outline: a group's choice by its state (+0x44: 0, ...), at random (Random::Ran0) among the free options |
+| `0x7de9c0` | Guest::Update7DE9C0 | In outline: a guest's update: resets its state (Person::SetState) and checks what it is linked to by kind |

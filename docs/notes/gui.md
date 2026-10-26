@@ -715,3 +715,15 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xae2100` | Graph::DrawAE2100 | In outline: draws a graph's frame (`0x6ACE50`), its lines (`0x694FB0`) and five marks (`0x695E80`) |
 | `0x597760` | AttractionPerson::Link597760 | In outline: another attraction person link like AttractionPerson::Link587D00 |
 | `0xa9ac20` | Window::BuildA9AC20 | In outline: builds a window from the shared title `0x13CDFCC` |
+| `0x88b0a0` | List::Draw88B0A0 | In outline: another list draw like List::Draw88B470, at its scale (Node::TotalScale) with its background (`0x694E90`) |
+| `0x789e20` | Window::Build789E20 | In outline: builds a window from the shared title `0x1306A74` |
+| `0x9ac3b0` | Window::Title9AC3B0 | In outline: places a window and sets its title text, cut at a `:` when it has one (WideString::Find, Window::SetText114) |
+| `0x683060` | Window::Build683060 | In outline: builds a window from the shared title `0x12F8410` |
+| `0x484880` | Window::Layout484880 | In outline: lays out a window (`0x6A65B0`, Window::Layout) and refreshes its link |
+| `0x9c0e10` | Window::Layout9C0E10 | In outline: lays out a window and refreshes its parts (`0x9BB8E0`, `0x9BB9F0`, `0x9BCE00`) |
+| `0x5981e0` | Window::Build5981E0 | In outline: builds a window from the shared title `0x12F54B0` |
+| `0x485750` | Window::Build485750 | In outline: builds a window from the shared title `0x12F4630` |
+| `0x4d6dd0` | Window::Build4D6DD0 | In outline: builds a window from the shared title `0x12F4F08` |
+| `0x7199a0` | Window::Build7199A0 | In outline: builds a window from the shared title `0x1306248` |
+| `0x65b7f0` | Window::Build65B7F0 | In outline: builds a window from the shared title `0x12F80AC` |
+| `0xa58310` | Window::BuildA58310 | In outline: builds a window (`0xA55E00`) and its parts |

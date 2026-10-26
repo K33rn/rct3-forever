@@ -490,3 +490,16 @@
 | `0x5bb490` | Ride::Count5BB490 | In outline: counts a thing by kind (Counts::AddByKind) and, unless it passes a check (`0xBC4200`), compares its slot (+0x1FC) when not flagged (+0x201) |
 | `0xab57a0` | PoolComplex::LinkAB57A0 | In outline: links a pool piece (`0xAAF2E0`) when not flagged (+0x168) |
 | `0x8e2c50` | Terrain::Edit8E2C50 | In outline: a terrain edit when a value changed (+0xFC vs +0xF4), by its flags (+0x1C, +0x1D) |
+| `0x891a20` | Scenery::Insert891A20 | In outline: adds a scenery entry into a sorted table by kind (SortedTable::LowerBoundKind), moving the rest (`0x88D160`) |
+| `0x839290` | Scenery::Shapes839290 | In outline: goes over a scenery set's parts (+0xE4, count +0xE8) of kinds 0, 2, 3 and 4 checking their shapes (Model::CheckShapes) |
+| `0x844c40` | Scenery::Collect844C40 | In outline: makes a list of the scenery parts near a point (`0x84C160`) |
+| `0x7223a0` | Path::Link7223A0 | In outline: goes over a path's points (Path::Points) checking each link the other way (`0x720F70`) |
+| `0xb963f0` | PathGrid::UpdateB963F0 | In outline: goes over a path grid's entries (+0xEC) and checks the ones not flagged (+0x1C) |
+| `0xaa6d40` | PoolComplex::UpdateAA6D40 | In outline: goes over a pool complex's parts (`0xA85490`) updating the linked ones |
+| `0xab1020` | Fence::PieceAB1020 | In outline: a border piece by its kind (+0x120: 0, 4, ...) when not flagged (+0x194) |
+| `0x8dbd00` | Terrain::Smooth8DBD00 | In outline: another terrain smoothing pass like Terrain::Smooth8DC170 over a rectangle (bounds at +4 to +7) |
+| `0x708f50` | SceneryBehaviour::PathUnder | In outline: finds the path tile under a scenery behaviour's owner (SceneryBehaviour::Owner, PathManager, `0x71B370`) |
+| `0xab0c50` | Fence::PieceAB0C50 | In outline: another border piece by kind like Fence::PieceAB1020 |
+| `0x464060` | Scenery::Check464060 | In outline: goes over a list's entries (+8, count +0xC) checking each against the shared table (`0x1106E38` +0x18) |
+| `0x4e1680` | Ride::Flatten4E1680 | In outline: when a ride has a part (+0x280), sets it up (`0x4E1050`, `0xA06E30`) and flattens the ground for it (Scenery::Flatten843D60) |
+| `0x5e9d60` | TrackPiece::Check5E9D60 | In outline: a track piece check: blocked (`0x5D9720`) or, when asked, for the selected ride (`0x12F5608`) |

@@ -212,3 +212,10 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0xbbd970` | Track::FrameBBD970 | In outline: a track point's frame: normalises its direction and points along it (Matrix::LookAlongZ, `0xBEE0C0`) |
 | `0xbee8c0` | Vertices::TransformBEE8C0 | In outline: transforms a list of vertices by a matrix in a loop (used for track meshes) |
 | `0xbc8110` | Object::HitBC8110 | In outline: a hit test on an object (Object::HitTestBC7940 within 0.5) and, when it hits, the facing (`0xBC5D50`) for kinds 1 and 3 |
+| `0x8f3750` | Rect::Clip8F3750 | In outline: clips a point or span against a rectangle's sides (left, right, top, bottom) |
+| `0x431450` | Effect::Bounds431450 | In outline: another effect box grow like Effect::Bounds44A750 |
+| `0x820ba0` | SceneryBehaviour::Swing820BA0 | In outline: checks a behaviour's part (`0x81FAF0`) and works out a swing from a fixed angle (cosine of `0xF76318`) |
+| `0x816cb0` | SceneryBehaviour::Pick816CB0 | In outline: with a reference (WithReference8155F0), picks a part at random (`0x81F4D0`, `0x8156C0`, `0x4751E0`) |
+| `0x9ce6d0` | Particles::InRange9CE6D0 | In outline: whether a point is within an emitter's range (its radius against a limit and +0x134) |
+| `0x8775c0` | Scenery::Angles8775C0 | In outline: loads scenery (Scenery::Load876810) and works out the two angles of a direction (arctangents) |
+| `0x506a20` | Car::Ground506A20 | In outline: walks a ray across the terrain (Terrain::RayMarch8BD5B0) for a ride car (+0x44) and keeps the hit |

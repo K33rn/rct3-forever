@@ -1538,3 +1538,8 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcad190` | Loader::OpenCAD190 | In outline: another resource open like Loader::OpenCAC5A0 (Object69E with 0x84) |
 | `0xc42c30` | Overlay::ReadDebug | In outline: reads an overlay file's debug data (OverlayFile::ReadDebugData) after setting up (`0xC429E0`) and finishes its buffer (SaveWriter::Finish) |
 | `0x7314b0` | Names::Unique7314B0 | In outline: another unique name maker like Names::Unique731970 |
+| `0x45fe30` | Folder::Find45FE30 | In outline: looks for a folder by name (`0xBD0960`) and, when missing, builds its path from the install folder text |
+| `0xbda5c0` | File::ReadBDA5C0 | In outline: reads a file's header (`0xBE5020`, four bytes) and, for version 5 with data, its parts |
+| `0x7ffdf0` | AIDDatabase::ReadEntry | In outline: reads a database entry's fields (`0x7FC020`, `0x7FD440`, AIDDatabaseEntry::Fields, `0x7FBE30`) |
+| `0xc0cff0` | Parser::NodeC0CFF0 | In outline: a parser node handler by its kind (+2: 2, ...) |
+| `0xcc8810` | Model::PartsCC8810 | In outline: goes over a model's parts (+0x24, +4) handling the ones that are on |

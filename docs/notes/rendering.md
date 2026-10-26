@@ -497,3 +497,12 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9fbf40` | Fireworks::Face9FBF40 | In outline: turns a firework part to face the camera (MainCamera::Get), normalising the ways |
 | `0xc01ba0` | Device::HandleC01BA0 | In outline: handles a device message by its kind (low byte of +0x24: 0x12, ...) when on (`0x10F2EC4`) and with more than three entries (+0x128) |
 | `0x90cae0` | Water::DrawFlagged90CAE0 | In outline: draws the flagged water parts (+0x4C, count +0x54) for the current device (ForCurrent(3)) |
+| `0x8b0f00` | SceneryBehaviour::Start8B0F00 | In outline: starts a scenery behaviour (SceneryBehaviour::SetActive, SlotPool::Add) with an empty name |
+| `0xbf78f0` | Draw::SetupBF78F0 | In outline: sets up drawing for the current device (ForCurrent(3)) with two states (Call10IfReady) |
+| `0x9ca400` | Particles::Clear9CA400 | In outline: clears a particle system's emitters (+0x58) (`0x5501E0`, `0x9CD440`) |
+| `0x91b6b0` | Waterfall::Draw91B6B0 | In outline: draws a waterfall's grid (at least 2 by 2, +0x154, +0x158) for the current device (ForCurrent(1)) with the waterfall manager |
+| `0xbf0520` | Text::LayoutBF0520 | In outline: another text layout like Text::LayoutBF1C40 |
+| `0xbf1060` | Text::LayoutBF1060 | In outline: another text layout like Text::LayoutBF1C40 |
+| `0xbf0ac0` | Text::LayoutBF0AC0 | In outline: another text layout like Text::LayoutBF1C40 |
+| `0x916620` | Water::Update916620 | In outline: when the water options are off (`0x10EDBA0`, `0x10EDD08`), the plain update (`0x916580`), otherwise each piece (+0x14, `0x916310`) |
+| `0x9c7fe0` | Particles::Setup9C7FE0 | In outline: below a rate (+0x4C), sets up a particle system's emitters (+0xD0) |
