@@ -617,3 +617,19 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5c3ca0` | TrackPiece::Time5C3CA0 | In outline: a step (`0x5C17F0`) with a non-negative time |
 | `0x5ae460` | Ride::Value5AE460 | In outline: a value with a text when a value (+0x868) is below 0 |
 | `0x4c8110` | Shop::Mode4C8110 | In outline: in mode 2 (+0xC4), a step with an object (Interface60::Get) |
+| `0x5ea970` | AttractionPerson::Compare5EA970 | Compares two attraction people: first by a flag (bit 22 of +0x108 +0x94), then by a value (`0x5EA940`) |
+| `0x534e60` | Ride::Text534E60 | In outline: makes an empty text and, with entries and not flagged (+0x1DC), fills it from its part |
+| `0x5d9bd0` | TrackedRide::Selected5D9BD0 | In outline: unless told not to, a step with the selected ride (`0x12F5608`) when not flagged (+0x170) |
+| `0x4c0c90` | Shop::Text4C0C90 | In outline: with a part (+0xA8), makes an info text (`0xF31F48`) |
+| `0x4cdd10` | Shop::Nearest4CDD10 | In outline: finds the nearest entry in a list (+0x64) |
+| `0x4af910` | Ride::Age4AF910 | In outline: checks reliability (Ride::CheckReliability), adds the time to a value (+0x360) unless flagged (bit 14 of +0xE4), and goes over entries (+0x368) |
+| `0x563300` | Ride::Find563300 | In outline: finds an entry among entries (+0xC4) not flagged |
+| `0x4de590` | Ride::Step4DE590 | In outline: a step with its part (virtual slot 0x54) |
+| `0x4cf190` | Shop::Make4CF190 | In outline: when given nothing, makes one (`0x4CCFB0`) |
+| `0x59d7b0` | Ride::Toggle59D7B0 | In outline: when its owner is flagged (bit 8 of +0x30), turns a flag over (+0xB4) |
+| `0x54c7a0` | Ride::Loop54C7A0 | In outline: a loop over a list |
+| `0x5c1dd0` | TrackPiece::Check5C1DD0 | In outline: when a check passes (`0x5BF180`), a step for pieces flagged (+1 bit 8) |
+| `0x5f1140` | TrackPiece::Check5F1140 | In outline: a check when not flagged (+0x58) |
+| `0x58af90` | Ride::Time58AF90 | In outline: a timed step (`0x58A7A0`) |
+| `0x4cf470` | Shop::Reset4CF470 | In outline: a reset (`0x501FB0`), a camera step and clears a slot (+0x84 = -1) |
+| `0x463530` | Scenery::Check463530 | In outline: a check when not flagged (+0x3C) |

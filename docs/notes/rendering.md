@@ -864,3 +864,26 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbb69e0` | Track::RoundBB69E0 | In outline: a value rounded from a scale (+0x2C) |
 | `0xac8d20` | LaserDesigner::RandomColour | In outline: a random value (_rand) and a colour blend element (ColourBlenderElement) |
 | `0x48a5c0` | Effect::Check48A5C0 | In outline: an effect part check |
+| `0x4493f0` | Effect::Walk4493F0 | In outline: a walk over two points with values up to 0 |
+| `0x42fb10` | Effect::Walk42FB10 | In outline: the same (another copy) |
+| `0x9fba50` | Fireworks::Draw9FBA50 | In outline: a draw step with the shared device (`0x13D0DB8`) |
+| `0x9cd320` | Particles::Set9CD320 | In outline: sets a value (+0xA0), refreshes (`0x9C60A0`, `0x9C6900` with +0xA4) and makes a handle |
+| `0x9718a0` | Water::Colour9718A0 | In outline: a colour with an alpha rounded from a value (+0xC) |
+| `0xca3c10` | Font::StepCA3C10 | In outline: a step when a value (+4 +0xE8) is positive |
+| `0xca38d0` | Font::StepCA38D0 | In outline: the same (another copy) |
+| `0x5e10c0` | TrackPiece::Time5E10C0 | In outline: a step when a time difference is below 0 (`0x5D97A0`) |
+| `0x58b0a0` | Ride::Time58B0A0 | In outline: a timed step (`0x58A7A0`) over entries of 0x24 bytes |
+| `0x8b5ac0` | Scenery::Face8B5AC0 | In outline: points (Matrix::LookAlongZSide on +0xB0) from a set matrix |
+| `0xbc62a0` | Track::LengthBC62A0 | In outline: a step for rides not flagged 0x400000 or with fewer than two stations |
+| `0xbb7030` | Track::PointBB7030 | In outline: a point step when a value is not 0 |
+| `0xa62d90` | Camera::PickA62D90 | In outline: a ray from a screen point (Camera::ScreenRay) with the GUI root's size |
+| `0x9cdba0` | Particles::TransformC | Transforms a particle's point by the shared matrix (`0x1341580` on) and stores it |
+| `0x7a3f30` | Colours::Init7A3F30 | In outline: once (`0x1306C5C`), sets shared colours (`0x1306C50` on) |
+| `0x645eb0` | Colours::Init645EB0 | In outline: once (`0x12F7FA8`), sets shared colours (`0x12F7F9C` on) |
+| `0xcf1080` | Shapes::DrawCF1080 | In outline: a draw step with the shared device (`0x13D0DB8`, slot 0xB8) over entries |
+| `0x470160` | Device::Viewport470160 | In outline: sets the shared device's view to 640 by 480 (slot 0x6C) |
+| `0x4831f0` | Fireworks::Text4831F0 | In outline: when given a text, makes a part and sets a fade of 0.5 (Firework::SetFade) |
+| `0x476320` | Effect::Step476320 | In outline: a step with its part (+0x40, slot 0x14) |
+| `0x489310` | Effect::Pass489310 | In outline: goes over entries (+0x10) |
+| `0xbb7470` | Track::PassBB7470 | In outline: goes over indexed entries (+0x10 +0x20) |
+| `0x727bb0` | Path::Values727BB0 | In outline: fills values, with the shared one (`0x13063C0`) when flagged (bit 0) |

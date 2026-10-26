@@ -1311,3 +1311,52 @@
 | `0x919c80` | Waterfall::Flag919C80 | In outline: a step when the waterfall manager is flagged (+0x68 bit 0x10) |
 | `0x7cf7e0` | Person::Link7CF7E0 | In outline: a step with a part |
 | `0x435ea0` | Grid::Round435EA0 | In outline: a value rounded |
+| `0x482a40` | Effect::Release482A40 | In outline: unless a shared value is set (`0x10EDBA0`), releases its part (+0x1C) and clears it |
+| `0x4fe790` | Path::Points4FE790 | In outline: when a check passes and the path manager's cell is set, goes over a path's points (Path::Points) |
+| `0x828b90` | Scenery::Key828B90 | In outline: unless key 0x2A is held (KeyState::Held), a terrain step |
+| `0x8233d0` | SceneryBehaviour::Cell8233D0 | In outline: when the terrain is not flagged, finds its owner's cell (Grid::CellAt) |
+| `0xac1fe0` | Fence::SetAC1FE0 | In outline: sets a border's cells (`0xABFDA0`) with -1 for missing values |
+| `0xac0a50` | Fence::RectAC0A50 | In outline: goes over a rectangle's cells inside its bounds (+0x4C to +0x58) |
+| `0xa9f170` | PoolComplex::TerrainA9F170 | In outline: a step at a point when the terrain is not flagged |
+| `0x824220` | SceneryBehaviour::Pass824220 | In outline: goes over entries four at a time, checking a value (+0x2E0) against a limit |
+| `0x4659b0` | Scenery::Save4659B0 | In outline: makes a database save (MADatabaseSave) for an object |
+| `0x8ea140` | Water::Count8EA140 | In outline: with no part (+0x130), a step for counts above 1 |
+| `0x8c6bc0` | Terrain::Corner8C6BC0 | In outline: when asked and not flagged (+0x13), a step by a scaled value |
+| `0x846bb0` | Scenery::Ride846BB0 | In outline: for kind 0x12, a step with a ride flagged 0x400000 with more than one station |
+| `0x93ca60` | Water::Draw93CA60 | In outline: a draw step with the shared device (`0x13D0DB8`, slot 0xB8) |
+| `0x7797d0` | Park::Pass7797D0 | In outline: goes over entries (+0x48, list at +0x60) with a part each |
+| `0x8c6ce0` | Terrain::Corner8C6CE0 | In outline: for a cell inside a count (+4), when not flagged (+0x13 bit 2), a step |
+| `0x825a00` | Scenery::Mouse825A00 | In outline: unless a shared value is set (`0x13429A8`), a screen-point step with the camera and the GUI root's size |
+| `0x709b10` | Path::Make709B10 | In outline: makes a pooled object (PooledObject) with its table (`0xF68FFC`) |
+| `0x910100` | Water::Init910100 | In outline: sets up a 0x80-slot pool (SlotPool::Init) and clears values, keeping its argument (+0x30) |
+| `0x81d4a0` | SceneryBehaviour::Find81D4A0 | In outline: goes over the shared behaviour list (`0x130B49C`) for one whose owner matches |
+| `0x81d5c0` | SceneryBehaviour::Find81D5C0 | In outline: the same (another copy) |
+| `0x92e3f0` | Water::Nearest92E3F0 | In outline: finds the nearest entry (starting from 1e6) |
+| `0x89f0f0` | Scenery::Ground89F0F0 | In outline: grounds each of its 0x150-byte entries (+0x3C4, Scenery::Ground89EDD0) |
+| `0x86e9a0` | Window::Open86E9A0 | In outline: makes a 0x1A4-byte window part titled `0x1310EB8` |
+| `0x907bb0` | Water::Cell907BB0 | In outline: a cell from a value's place within a range (+8 to +0x10), rounded down |
+| `0x8e6c10` | Water::Scale8E6C10 | Fills a matrix from its values (+0xF4 on) scaled by two values |
+| `0x82fc30` | Scenery::Height82FC30 | In outline: when not flagged (+0x130) and its part is not (bit 5), places its footprint (Placement::Footprint) and reads a height (Terrain::HeightLevel) |
+| `0x7ecc80` | Person::Path7ECC80 | In outline: a step with the path manager at its cell (+0x80, +0x84) |
+| `0x7bde80` | Person::Texts7BDE80 | In outline: makes a text record for each entry (+0x30) |
+| `0xb9f630` | PathGrid::PassB9F630 | In outline: when the terrain is not flagged, goes over entries (+0x78) |
+| `0x4913e0` | Grid::Table4913E0 | In outline: sets up a 0x100-entry path table (`0x488290`), its table (`0xF2E9A4`) and clears a flag (+0x428) |
+| `0x5f3df0` | Ride::Part5F3DF0 | In outline: a step with its part's slot from the shared id (`0x12F4B34`) |
+| `0x993920` | Fireworks::Update993920 | In outline: an update when not flagged (+0x88) |
+| `0x802e30` | Regions::Find802E30 | In outline: a find in a sorted array (SortedArray::Find on +0x24) |
+| `0x773040` | Park::Tile773040 | In outline: with a part (+0x104), a step at a path tile's centre (PathTile::Centre) by a fraction |
+| `0x8d3830` | Terrain::Layers8D3830 | In outline: with the shared value (`0x13CE668`), builds terrain layers (TerrainLayers::BuildAFA7C0) and more |
+| `0x8470f0` | Scenery::Fill8470F0 | In outline: fills a record from its values |
+| `0x8c6e00` | Terrain::Corner8C6E00 | In outline: when asked and not flagged (+0x13 bit 4), a step by a scaled value |
+| `0x774060` | Park::Count774060 | In outline: counts entries (+0x48, list at +0x60) |
+| `0x85a9c0` | Scenery::Pop85A9C0 | In outline: takes the last entry off two lists (+8, +0x10) |
+| `0x843b20` | Scenery::Place843B20 | In outline: a place step with a part that is on (+0x14) |
+| `0x90c060` | Water::Camera90C060 | In outline: with entries (+0x28), a step with the camera |
+| `0x80b7e0` | Regions::Find80B7E0 | In outline: a find over a list (+4) |
+| `0x7d3ea0` | Person::Waterfall7D3EA0 | In outline: a step with the waterfall manager at its point (+0x80, +0x84) |
+| `0x852f90` | Scenery::Bit852F90 | In outline: a step with a bit from a count (+0xC) |
+| `0x827f40` | Scenery::Terrain827F40 | In outline: a step when the terrain is not flagged |
+| `0x94ad30` | Water::Terrain94AD30 | In outline: with terrain entries (+0x7C), a step (`0x8F3720`) |
+| `0x84aa80` | Scenery::Update84AA80 | In outline: an update when not flagged (+0x6C) |
+| `0x7f5490` | Person::Link7F5490 | In outline: a step with a linked part (+0x544) |
+| `0x7dc680` | Person::Pass7DC680 | In outline: goes over n people with an object (`0x13CE94C`) |

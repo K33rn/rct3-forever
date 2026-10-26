@@ -432,3 +432,42 @@
 | `0xb6bd00` | Animal::WalkB6BD00 | In outline: a walk over points with values above 0 |
 | `0xb5bbe0` | Animal::WalkB5BBE0 | In outline: the same (another copy) |
 | `0xa0c0a0` | Bird::WalkA0C0A0 | In outline: the same (another copy) |
+| `0xba9700` | Enclosure::StepBA9700 | In outline: a step (`0xBAF4D0`) with a handle |
+| `0xb7c0f0` | Animal::TextB7C0F0 | In outline: a text by shared values (`0x1103B9C`, `0x1300494`), empty otherwise |
+| `0xb82be0` | Animal::CountB82BE0 | In outline: with a part (+0xA4), goes over its entries (+0x50); 0 with none |
+| `0xb34810` | PathGrid::MakeB34810 | In outline: sets up a 100-entry path table (`0x488290`), its table (`0xF99170`) and clears values |
+| `0xb294d0` | WildAnimal::RunAway | In outline: makes a run-away locomotion (WAL_RunAway) and more when not flagged (+0xCC) |
+| `0xaf39b0` | Animal::ClampAF39B0 | In outline: keeps n between 0 and its count minus one (+0x58) |
+| `0xa60af0` | Animal::TurnA60AF0 | In outline: when a direction is long enough, turns a point (+0x50) about it (Vector::RotateAround) |
+| `0xb4bea0` | WildAnimal::Crate | In outline: makes a wild animal crate (WildAnimalCrate) |
+| `0x994830` | Fireworks::Clamp994830 | In outline: keeps a value between 0 and a limit (+0x110) |
+| `0xb27680` | Animal::HandleB27680 | In outline: makes a handle and links it |
+| `0xb930b0` | Animal::CheckB930B0 | In outline: makes a part (+0x44) and a check |
+| `0xb8a850` | Animal::SetB8A850 | In outline: sets a flag (+0x70) and, when not flagged (+0x1A8), a step with its part (+0x194) |
+| `0xb561c0` | Animal::LinkB561C0 | In outline: links its part (+0x84 +0x14) and a scenery value (`0x89C760`) |
+| `0xb36d10` | Animal::FindB36D10 | In outline: finds an entry in a list (+0x2C) |
+| `0xae32f0` | Animal::CopyAE32F0 | In outline: copies another object's values (+0x50, +0x44, +0x4C) |
+| `0xab0b30` | Animal::LoopAB0B30 | In outline: a loop with an object (`0x13CE028`) and a list (+0x19C) |
+| `0xb12460` | WildAnimal::DatabaseB12460 | In outline: sets up a record named "*:wai" with its table (`0xF97EF4`) |
+| `0xafa6b0` | Animal::PassAFA6B0 | In outline: goes over entries (+0x1C) flagged (bit 1) |
+| `0xaa52b0` | PoolComplex::SidesAA52B0 | In outline: when on (+0x140), a step with a pool piece's sides (PoolPiece::SideData) |
+| `0xa90d00` | Fence::DistanceA90D00 | In outline: a distance from a point to a line between two points of a list |
+| `0xa8a040` | Animal::TextA8A040 | In outline: a text (`0xAA08E0`) |
+| `0xb39150` | WildAnimal::Tick4 | In outline: counts up (+0x25C) and every 4th time resets it and acts, unless the shared value is set (`0x1306C68`) |
+| `0xb39040` | WildAnimal::Tick5 | In outline: the same every 5th time (+0x258) |
+| `0xb38f30` | WildAnimal::Tick10 | In outline: the same every 10th time (+0x254) |
+| `0xac1ed0` | Fence::StepAC1ED0 | In outline: a step (`0xAC1B90`) and a handle |
+| `0xa897d0` | Animal::CountA897D0 | In outline: counts entries (+0xD0) |
+| `0xa896b0` | Animal::CountA896B0 | In outline: the same (another copy) |
+| `0x741740` | AnimalKeeper::GoToEnclosure | In outline: gets an enclosure in need (AnimalKeeper::NeedEnclosure) and sets the person's state to 0xD |
+| `0xb2f380` | WildAnimal::SmallTurn | In outline: makes a small-turn decision (WAS_SmallTurn) |
+| `0xabe8f0` | Fence::RectABE8F0 | In outline: goes over a rectangle's cells inside its bounds (+0x4C to +0x58) |
+| `0xb718a0` | Animal::AddB718A0 | In outline: adds an entry to a list (+0x54), growing it (200 at first) when full |
+| `0xb12260` | Animal::AddB12260 | In outline: grows two lists when full (Array::ResizeB11D40, `0xB10B80`) and adds |
+| `0xba3f20` | Animal::FindBA3F20 | In outline: finds an entry among entries (+0x74, +0x78) |
+| `0xaaaab0` | PoolComplex::Waypoints | In outline: makes a pool waypoint list (PoolWaypointList) for entry n (0x38 bytes) |
+| `0xae9720` | Animal::PartAE9720 | In outline: with a part (+0x108) not flagged (+0xD4), a step |
+| `0xb94e90` | Enclosure::StepB94E90 | In outline: a step with its part (+0x38 +0x104) and the shared value (`0x1305DD8`) |
+| `0xb1f4d0` | WildAnimal::MoveSpline | In outline: makes a spline move (WALMoveSpline) with a flag (+0x111) |
+| `0xa89f30` | Animal::TextA89F30 | In outline: makes an info text (`0xF31F48`) |
+| `0x9d11b0` | Fireworks::Sort9D11B0 | In outline: sorts value pairs, two at a time |

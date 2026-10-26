@@ -2120,3 +2120,63 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xa01ce0` | Save::WriteA01CE0 | In outline: writes four four-byte values to a save (SaveWriter::Write) |
 | `0x5ba680` | Save::Write5BA680 | In outline: the same (another copy) |
 | `0x800340` | Text::Make800340 | In outline: makes a text (`0x6A5E20`) |
+| `0x45c520` | Effect::Case45C520 | In outline: reads two parts' values (slot 0xFC of +0xE4 and +0xE8) and acts by an id (0x4089A00, ...), keeping counts under 0xFF |
+| `0x7e72a0` | Heap::Pop7E72A0 | In outline: takes the first entry off a heap of +0x18 entries at +0x10 (-1 when empty), moves the last one in and sifts it down by value |
+| `0x4c1560` | Text::Buffer4C1560 | In outline: makes a buffer the size a virtual call gives (slot 0x58) and fills it |
+| `0xa03ef0` | File::LoadA03EF0 | In outline: joins a name with a shared text (`0xF2A7D4`) and loads that file (ManagedObject::LoadFile) |
+| `0x68faf0` | Array::Remove68FAF0 | In outline: removes entry n, checking "_index >= 0" (AssertFailed) |
+| `0xce9470` | Array::AddCE9470 | In outline: adds an entry, growing the list at +0x7C (200 at first, then double) when +0x80 reaches +0x84 |
+| `0xc55240` | Stream::MakeC55240 | In outline: makes a stream record with an empty name (String::FromC) |
+| `0xc43660` | Resource::MakeC43660 | In outline: unless a check passes (`0xBDA990`), makes a 0xC-byte record |
+| `0xbeb270` | Range::FindBEB270 | In outline: goes over a list (+0x1BC) making a part for each range (Range::MakeBEA3B0) |
+| `0xca58b0` | Font::MakeCA58B0 | In outline: sets up a record: its table (`0xFBF5B0`), two bytes and a value from its argument, and clears the rest |
+| `0xbee0c0` | Matrix::Invert3 | Inverts a 3x3 matrix in place: works out its cofactors and divides by the determinant |
+| `0xc33550` | Resource::MakeC33550 | In outline: a step (`0xC5E410`) and makes a part |
+| `0x44a200` | List::AddNumber44A200 | In outline: grows the list (`0x449290`, double) when full and adds a number written as text ("%d") |
+| `0x49cd90` | Text::Number49CD90 | In outline: writes a number rounded down (to a 128-character buffer) |
+| `0x45eb50` | Text::Format45EB50 | In outline: formats into a 1024-character buffer when not already set (+4) |
+| `0x458010` | Folder::Special458010 | In outline: finds a special shell folder's path (an item list, IMalloc, a 260-character path) |
+| `0xce7450` | Array::SetCountCE7450 | In outline: sets a count (+0x28) when it changes, tearing down entries past it |
+| `0xc2ed00` | Resource::FindC2ED00 | In outline: when it has none (+0x24), finds one (Device::FindC5C990) |
+| `0xbdf950` | Table::InitBDF950 | In outline: once (`0x13D0E74` bit 0), fills a shared table with 0xFFFF (`0x416110`) and points at it (`0x13D0E4C`) |
+| `0xc2fb10` | HashTable::AddRef | In outline: finds an entry by name (`0xC2FA90`) and adds one to its count, or adds it |
+| `0xbfec60` | Range::FindBFEC60 | In outline: goes over a list (+0x3C) making a part for each range (Range::MakeBFDFD0) |
+| `0x9c71d0` | Array::Resize9C71D0 | In outline: resizes a list to n |
+| `0x53a080` | Array::Resize53A080 | In outline: resizes a list to n |
+| `0xa32c00` | Array::ResizeA32C00 | In outline: resizes a list to n |
+| `0x823d90` | Array::Resize823D90 | In outline: resizes a list to n |
+| `0xcae420` | ResourceFile::CheckCAE420 | In outline: a step with a file name (ResourceFile::NameCADF80) when a check fails (`0xCAD810`) |
+| `0xc10730` | Resource::MakeC10730 | In outline: makes a resource record (Resource::MakeC102D0) |
+| `0xaaafd0` | Array::ClearAAAFD0 | In outline: clears a count (+0xC) and frees its buffer (+0x10) when it owns it |
+| `0x5d0ea0` | Record::Make5D0EA0 | In outline: makes a 0x2C-byte record pointing at its own storage |
+| `0x4c6930` | Handle::Make4C6930 | In outline: makes a handle and links it |
+| `0xce32b0` | Table::AddCE32B0 | In outline: adds an entry when not found (`0xCE3250`), taking the next number (+0x40) |
+| `0x429190` | Sky::Blend429190 | In outline: blends two shared colours by a fraction (+0x66C) into shared values (`0x1103B78` on) |
+| `0xc08680` | Timer::CpuSpeed | In outline: times the processor against the performance counter (QueryPerformanceFrequency, QueryPerformanceCounter, rdtsc) |
+| `0xc66a70` | Window::MakeC66A70 | In outline: makes a window part (`0xC65F20`) with its table (`0xFB7A10`) |
+| `0xcbd110` | Text::MakeCBD110 | In outline: makes a text record, empty when given nothing |
+| `0xbdf2d0` | HashTable::InsertBDF2D0 | In outline: grows when full (`0xBE0840`), hashes a key (`0xBDBF70`) modulo its size (+4) and probes for a slot |
+| `0xbdf1c0` | HashTable::InsertBDF1C0 | In outline: the same with `0xBE0730` |
+| `0xbe0840` | HashTable::GrowBE0840 | In outline: when full (+8 = +4), grows to the next prime size (Math::NextPrime, `0xBDFBB0`) and puts the entries back |
+| `0xbe0730` | HashTable::GrowBE0730 | In outline: the same with `0xBDFAE0` |
+| `0xb959c0` | Array::ResizeB959C0 | In outline: resizes a list to n |
+| `0x991910` | Array::Resize991910 | In outline: resizes a list to n |
+| `0x81dc30` | Array::Resize81DC30 | In outline: resizes a list to n |
+| `0x744f60` | Array::Resize744F60 | In outline: resizes a list to n |
+| `0x5d7260` | Array::Resize5D7260 | In outline: resizes a list to n |
+| `0x96f7f0` | Array::Resize96F7F0 | In outline: resizes a list of 24-byte entries to n |
+| `0x80c8b0` | Array::Resize80C8B0 | In outline: resizes a list of 24-byte entries to n |
+| `0xcc4280` | Timer::CheckCC4280 | In outline: a step when a time step (Timer::StepCC2F10) differs from its value (+0x30) |
+| `0x813280` | List::Remove813280 | In outline: removes entry n, moving the rest down |
+| `0x620ac0` | Record::Make620AC0 | In outline: sets up a record with an empty text and cleared values |
+| `0xcdc2a0` | List::FindCDC2A0 | In outline: a search over a sorted list |
+| `0xcc5240` | Shader::MakeCC5240 | In outline: sets up a record with its table (`0xFC31FC`) |
+| `0xc47380` | ShaderFile::HashC47380 | In outline: a step (`0xC4CDE0`) and a hash of four values |
+| `0xbe6a60` | Table::InitBE6A60 | In outline: fills a table with 0xFFFF (`0x416110`), clears +0x28 and +0x3C, keeps its argument (+0x2C) |
+| `0x47a150` | Text::Slot47A150 | In outline: a text for 0 to 0x17 (to a 512-character buffer) |
+| `0x461080` | Array::Free461080 | In outline: frees an array of four-byte entries, tearing each down (`0x4012E0`) |
+| `0xc5ec10` | Device::StepC5EC10 | In outline: clears a value (+0x80) and gives 1 when a check passes |
+| `0xc1b1c0` | Table::GrowC1B1C0 | In outline: adds 0x18-byte records until there is one for a byte value (+0x11) |
+| `0xbe2fd0` | List::CountBE2FD0 | In outline: counts a linked list (+0x30) |
+| `0x734250` | Record::Make734250 | In outline: sets up a record with cleared bytes and a handle |
+| `0x42c340` | Array::Free42C340 | In outline: frees each of its entries (+0x3C, +0x44) |

@@ -1415,3 +1415,44 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9ebb50` | Window::Make9EBB50 | In outline: makes a list member part (ListMember with `0x10EC9E4`, Listener440) |
 | `0x7c8870` | Info::Text7C8870 | In outline: makes an info text from a shared one (`0xF31F48`) and a wide string |
 | `0x6a7df0` | Window::Mode6A7DF0 | In outline: a step in mode 1 |
+| `0x6fdf10` | Window::List6FDF10 | In outline: goes over a linked list (+0x4C) and acts on each entry by its kind (+0x14) |
+| `0x9ca180` | Window::Add9CA180 | In outline: grows the list at +0xCC (`0x9C6490`) and puts its argument last, grows +0x58 (Array::Resize5501E0) and makes a handle |
+| `0x7af8a0` | Window::Text7AF8A0 | In outline: when not flagged (+0x4C), a text from its part (+0x38 +0xC) |
+| `0x9b3a30` | Window::Bind9B3A30 | Sets the object it shows (+0xF0) and, when there is one, binds two number fields to its floats (+0x130, +0x134) and a check box to a flag (+0x198) |
+| `0x9b37b0` | Window::Bind9B37B0 | Sets the object it shows (+0xD4) and, when there is one, binds three number fields to its floats (+0x88, +0x8C, +0x90) and a check box to a flag (+0x84) |
+| `0x70e5b0` | Window::Event70E5B0 | In outline: for 0x10 clears a part's value (+0x40 +0x124); for 7 acts with the shared value (`0x1306194`) |
+| `0x6fdd50` | Window::Nth6FDD50 | In outline: walks n entries along the linked list at +0x4C |
+| `0x6b6100` | Window::Scale6B6100 | In outline: a point scaled to a window's width and height (+0x84 minus +0x7C, +0x88 minus +0x80) |
+| `0x6dde60` | Objectives::CountText6DDE60 | In outline: a condition's name with its count (+0x70) after it (": %d") |
+| `0x6ddb30` | Objectives::CountText6DDB30 | In outline: the same (another copy) |
+| `0x6dd800` | Objectives::CountText6DD800 | In outline: the same (another copy) |
+| `0x6a7600` | Window::First6A7600 | In outline: finds the first of 12 parts (+0x34 on) whose flag is set (+0x94 bit 5) |
+| `0x66cce0` | Window::Clear66CCE0 | In outline: frees its buffer (+0xDC), clears +0xDC and +0xE0, and more (`0x12F4B34`) |
+| `0x9a2880` | MixMaster::Layout | In outline: lays out the window (Window::Layout99C500), refreshes (`0x99FE70`) and, when not scrubbing, stops scrubbing (MixMaster::NoScrub) |
+| `0x6db1e0` | Window::Place6DB1E0 | In outline: refreshes (`0x6D4870`) and places parts beside each other by their widths |
+| `0xa2aa30` | Message::ResultA2AA30 | In outline: makes a message result (Message::ResultA2A440) from a text (`0x495BF0`) |
+| `0x9830a0` | Window::Make9830A0 | In outline: sets up a window part and clears +0x38, +0x3C, +0x40 |
+| `0x6b3390` | WindowList::Make6B3390 | In outline: makes a window list (WindowList) |
+| `0x690b70` | Window::Screen690B70 | In outline: works out a window's rectangle and a point on the screen (Windows rectangle and point calls) |
+| `0x67ade0` | Window::Shrink67ADE0 | In outline: moves a value (+0xC) toward a limit (+0x10) by a time step, stopping there |
+| `0x68b570` | Window::Rows68B570 | In outline: a step over rows, with none (+0xD8) handled |
+| `0x61b970` | Window::Help61B970 | In outline: builds a help button (HelpButton::Build2) and a named text (`0x1303CFC`) |
+| `0x78b340` | Window::Draw78B340 | In outline: draws a part in grey (0xFFD6D6D6) |
+| `0x9aa0a0` | Window::Place9AA0A0 | In outline: gets its rectangle and sets it 10 wide (Window::SetRectAndRefresh) |
+| `0x9ecb30` | Window::Make9ECB30 | In outline: makes a part from its argument, or the shared one (`0x1341C68`) when none |
+| `0xa2c2f0` | Window::MakeA2C2F0 | In outline: a message result (Message::ResultA2AF70) and a 0xC0-byte part when there is none |
+| `0x6ef2f0` | Window::Flag6EF2F0 | In outline: when flagged (bit 1 of -0x40), makes a part |
+| `0x6931f0` | Array::Resize6931F0 | In outline: resizes a list of 0x24-byte entries to n |
+| `0x49e530` | NamedObject::Make49E530 | In outline: makes a list member object (ListMember with `0x10EC9E8`) with its tables (`0xF305C4`, `0xF305BC`) |
+| `0x6c6c10` | ListWindow::Fill6C6C10 | In outline: sets a list window's count (ListWindow::SetCount from `0x6C8110`) and fills it |
+| `0x6879a0` | Folder::Find6879A0 | In outline: under a count (+0x190 vs +0x2D0), finds folders by name (Folder::Find687720) |
+| `0x70b750` | Window::Key70B750 | In outline: a step unless key 0x20 is held (KeyState::Held) |
+| `0x6b2440` | Window::Make6B2440 | In outline: makes a window part (`0x685070`) |
+| `0x981dd0` | Window::Copy981DD0 | In outline: copies a value (+0x44) and a linked part (+0x1C) |
+| `0xaa5b70` | Window::LayoutAA5B70 | In outline: unless a shared value is set (`0x10EDCC0`), lays out a window 30 high |
+| `0xa2b830` | Window::SharedA2B830 | In outline: a step with the shared object's list (`0x12F4E4C` +0x64) |
+| `0x984100` | Research::CategoryInstance | In outline: makes a research category (ResearchCategoryInstance) |
+| `0x634d90` | Window::Ref634D90 | In outline: a step with its referenced object (Window::Slot48Self, Reference::ToObject on +0x14C) |
+| `0x9b93a0` | Window::Event9B93A0 | In outline: for event 0x13 only, a step with the shared object's part (+0x100 +0x278) |
+| `0x6f1280` | Window::Make6F1280 | In outline: with no part (+0xA4), makes a 0x160-byte one |
+| `0x44a560` | NamedObject::Make44A560 | In outline: makes a list member object (ListMember with `0x10EC9E8`, Listener440) |

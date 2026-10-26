@@ -214,3 +214,13 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7d5880` | Person::Check7D5880 | In outline: a step when a check fails (`0x7D3EA0`) |
 | `0x786870` | GuestGroup::GolfBall | In outline: a group slot step (GuestGroup::Slot7861D0(1, 1, 1, 6)) and makes a golf ball item (CarriedItem::MakeGolfBall) |
 | `0x7b3bf0` | Person::Mode7B3BF0 | In outline: a step unless a person's mode is 8 (+0x190), for kinds under 4 (+0x120) |
+| `0x4c5340` | AttractionPerson::Find4C5340 | In outline: when not flagged (+0x378), the nearest person from its part (+0x364) |
+| `0x4d1fa0` | Person::Toward4D1FA0 | In outline: with its part (+0x58 +0xC), a step toward a point (`0x7C6280`) |
+| `0x4d1e80` | Person::SwimToward4D1E80 | In outline: with its part (+0x58 +0xC), swims toward a point (Person::SwimToward) |
+| `0x7618f0` | Guest::Swap7618F0 | In outline: replaces a shared counted part (+0x578), freeing the old one when no longer used |
+| `0x7e2a10` | Guest::Value7E2A10 | In outline: picks one of four shared values by a value (`0x7F86C0`) |
+| `0x75e740` | Guest::Once75E740 | In outline: once (+0x404), a step with a handle |
+| `0x760000` | Guest::Update760000 | In outline: a long guest update that sets a value to 0xDC and more |
+| `0x7e4030` | Person::Pose7E4030 | In outline: a pose from its part's values (+0xA4 +0x60 on) |
+| `0x7caa00` | Person::Find7CAA00 | In outline: a find over a linked list (+0x2EC), 0 when empty |
+| `0x7ce320` | Person::Mode7CE320 | In outline: in modes 2 or 3, when on (+0x3F0), updates a target (Person::UpdateTarget7CB120) |
