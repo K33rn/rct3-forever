@@ -1298,3 +1298,39 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xaefca0` | Scrollbar::RangeAEFCA0 | In outline: a step when a range (+0x84 minus +0x7C) is above a limit |
 | `0xc65800` | Window::ScrollC65800 | In outline: a step against the window system's value (`0x13E6D00` +0xD4) |
 | `0xa644a0` | Window::MakeA644A0 | In outline: makes a list member part (ListMember with `0x10EC9F8`) |
+| `0x7e3ae0` | Window::Case7E3AE0 | In outline: a value by a mode (+0x114) |
+| `0xc679e0` | Window::StepC679E0 | In outline: a step (`0xC675A0`) with a part |
+| `0x6f5880` | Window::Update6F5880 | In outline: an update when not flagged (+0x9C) |
+| `0x6f24e0` | Window::Check6F24E0 | In outline: a step when a part is not flagged (+0xA8 bit 3, +0xAC) |
+| `0x64aee0` | Window::List64AEE0 | In outline: goes over a list (List::Pass665E90) |
+| `0x42b850` | Window::Text42B850 | In outline: a text from a wide string and a message (Window::Message442C60) |
+| `0x6b2ff0` | WindowList::Make | In outline: makes a window list (WindowList, `0xBD2740`) |
+| `0x6417f0` | Window::Count6417F0 | In outline: a step for a positive count |
+| `0x68f990` | Window::Count68F990 | In outline: a step under a count (+0x16C) |
+| `0x63b270` | Window::Values63B270 | In outline: sets a window's values (Window::SetRelatedValue, Window::SetValueEC) |
+| `0xa37040` | Window::PlaceA37040 | In outline: a step by its screen position (Window::ScreenPosition) against a limit |
+| `0xa30980` | Info::TextA30980 | In outline: makes an info text from a wide string and a shared one (`0xF31F48`) |
+| `0xa2d3d0` | Window::LayoutA2D3D0 | In outline: places two parts (Window::UpdateRect) |
+| `0xa290d0` | Info::TextA290D0 | In outline: the same info text maker (another copy) |
+| `0x99c500` | Window::Layout99C500 | In outline: lays out a window and places a part (Window::SetRelationAndLayout with 6) |
+| `0x6b98d0` | Window::Case6B98D0 | In outline: a value by case |
+| `0x690960` | Window::Camera690960 | In outline: a step with a child (Window::ChildrenSlot2) and the camera |
+| `0x673860` | Window::Layout673860 | In outline: lays out a window (Window::Layout672DF0) when a check fails |
+| `0x81afa0` | Info::Text81AFA0 | In outline: makes an info text from a wide string and a shared one (`0xF31F48`) |
+| `0x6b3190` | WindowList::Make6B3190 | In outline: makes a window list (WindowList, `0xBD2740`) |
+| `0x5f8290` | WindowList::Make5F8290 | In outline: makes a window list (WindowList, `0x6A5E20` with 0, 1, 1) |
+| `0xa3ee80` | Window::UpdateA3EE80 | In outline: an update when not flagged (+0x20) |
+| `0xa3c3d0` | Window::ClockA3C3D0 | In outline: in mode 1 (+0x4C), a step with the processor clock (_clock) |
+| `0xa2e430` | Window::UpdateA2E430 | In outline: an update when not flagged (+0x30) |
+| `0x81b100` | Window::Open81B100 | In outline: for -0x78, builds a window (Window::Build6A2620 with 0x9165) |
+| `0xa2e2d0` | Window::UpdateA2E2D0 | In outline: the same (another copy) |
+| `0xa06400` | Window::MoneyA06400 | In outline: shows a money text (`0xA06380`, Window::Money6C2E80) |
+| `0x6b3570` | WindowList::Make6B3570 | In outline: makes a window list (WindowList, `0xBD2740`) |
+| `0x639d70` | Window::Text639D70 | In outline: makes a text from a message (Message::Result4040F0 with `0x1303CFC`) |
+| `0xac5390` | Window::OpenAC5390 | In outline: builds the window titled `0x13CE404` (Window::BuildAC4EF0) |
+| `0xa2c660` | Window::TextA2C660 | In outline: makes texts from shared ones (`0xF264AD`, `0xF751C0`) |
+| `0x993f00` | Window::Update993F00 | In outline: an update when not flagged (+0xE8) |
+| `0xa35ae0` | Window::PlaceA35AE0 | In outline: places a window (Window::UpdateRect, Window::ScreenPosition) |
+| `0x6f2010` | Window::Name6F2010 | In outline: a name text with a shared one (`0xF67028`) |
+| `0x9c15c0` | Window::Mode9C15C0 | In outline: makes a part and a step unless in mode 1 (+0xF8) |
+| `0x98ab20` | Window::Link98AB20 | In outline: links parts |

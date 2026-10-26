@@ -806,3 +806,17 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbbce20` | Vector::StepBBCE20 | In outline: a step when a value is above 1 |
 | `0xbc4e20` | Vector::FlatBC4E20 | In outline: a flat length step |
 | `0xacb0e0` | Graph::ValueACB0E0 | In outline: when not flagged (+0x100), sets a value (Set_+0xd0 from +0xFC +0x40) |
+| `0x8b8b40` | SceneryBehaviour::Step8B8B40 | In outline: a step with no slot (+0xFC = -1) from its owner |
+| `0x47c6e0` | Effect::Part47C6E0 | In outline: a step with a part not flagged (+0x11) |
+| `0xbb7ea0` | Vector::LerpBB7EA0 | In outline: a blend (Vector::LerpC2F650) when a value is below 0 |
+| `0x9f7e30` | Firework::Fill9F7E30 | In outline: aims a firework (Firework::Aim9F7370) and fills buffers for the current device |
+| `0x9d6680` | Fireworks::Pass9D6680 | In outline: goes over entries (+0x38) and activates them |
+| `0x9f5c50` | Fireworks::Loop9F5C50 | In outline: a loop |
+| `0x9bce00` | Particles::Source | In outline: makes a particle source (ParticleSource) |
+| `0x428090` | Sky::Direction428090 | In outline: a direction from values (+0x3F8 ...), with length 0 handled |
+| `0x7554c0` | Guest::Length7554C0 | In outline: a length step with entries (+0x510) |
+| `0x425060` | Curves::Key425060 | In outline: a step for a non-negative time up to a key |
+| `0xcd0510` | Camera::TimeCD0510 | In outline: a step with a non-negative time unless in mode 1 |
+| `0xcd7dc0` | Camera::RayCD7DC0 | In outline: when on (+0x1A6), a step with the tangent of half the field of view (+0x190) |
+| `0xbc20b0` | Track::TurnBC20B0 | In outline: turns by a byte times a step (Matrix::TurnAboutY) |
+| `0xa5fab0` | Animal::RayA5FAB0 | In outline: a step with a screen ray (Camera::ScreenRay) |

@@ -501,3 +501,38 @@ Tracked rides, flat rides and their cars and trains.
 | `0x57a4d0` | Ride::Tool57A4D0 | In outline: a step with the current tool (`0x12F5638`) and selected ride (`0x12F5608`) |
 | `0x534800` | Ride::Count534800 | In outline: a step (`0x532930`) for a positive count |
 | `0x4032d0` | Ride::Kind4032D0 | In outline: a step when flagged (+0x58) or a part's kind is 0xE |
+| `0x9d4800` | Car::LoadParts | In outline: loads ".\Cars\CarParts.pc" |
+| `0x53be10` | Ride::Event53BE10 | In outline: unless event 0x13 from itself, a step under a count (+0x274, +0x278) |
+| `0x51e460` | Car::Time51E460 | In outline: a step with a non-negative time over entries (+4) |
+| `0x5c45e0` | TrackPiece::Name5C45E0 | In outline: a step with a name (`0x560F00`, Scenery::Step84B150) |
+| `0x4cf580` | Shop::Count4CF580 | In outline: a step when a count (`0x4CE0E0`) is above 2 |
+| `0x54c550` | Ride::Part54C550 | In outline: a step with a part not flagged (+0xC8) |
+| `0x4b1d60` | Ride::Entry4B1D60 | In outline: a step when an entry is not set (Entry::IsSet) |
+| `0x5bf000` | TrackPiece::Kind5BF000 | In outline: a step for flagged pieces (bit 2) of kinds 0x5B to 0x5D and others |
+| `0x59e330` | Ride::Tool59E330 | In outline: a step (`0x4B52D0`) with the current tool (`0x12F5638`) |
+| `0x57a180` | Ride::Part57A180 | In outline: a step with a part (`0x569DC0`) that is on (+0x130) |
+| `0x4c1d20` | Shop::Time4C1D20 | In outline: when a value (+0x7C) is below 0, a step with the date (GameTime::Get) |
+| `0x500250` | Car::Range500250 | In outline: a step for a positive count with a grid range (Grid::Range) |
+| `0x5bd9d0` | TrackPiece::Kind5BD9D0 | In outline: for kinds 0x29, 0x4D, 0x4E and others, makes a 0xC0-byte part |
+| `0x518790` | Array::Resize518790 | In outline: resizes a list of 16-byte entries to n |
+| `0x4cde30` | Shop::Path4CDE30 | In outline: a step with the path manager for a set entry |
+| `0x4a3ed0` | Ride::Text4A3ED0 | In outline: makes a part and a text (Text::MakeBDAC20) |
+| `0x567e40` | Ride::Tool567E40 | In outline: a step with the current tool (`0x12F5638`, `0x5D6860`) |
+| `0x4cffe0` | Shop::Check4CFFE0 | In outline: a check when not flagged (+0x4C) |
+| `0x5a38d0` | Ride::Tool5A38D0 | In outline: a step with the current tool (`0x12F5638`) when not flagged (+0x378) |
+| `0x51b430` | Car::Selected51B430 | In outline: a step for the selected ride unless its kind is 3 or it is flagged 0x40 |
+| `0x7cfcc0` | Person::Ride7CFCC0 | In outline: sets a person's state to 0x102 and acts by a value (+0xB8) |
+| `0x5cf820` | TrackedRide::Count5CF820 | In outline: a step (`0x5BD740`) for a positive count |
+| `0x531e30` | Ride::Random531E30 | In outline: when asked, a random step (Random::Ran0) |
+| `0x5f21a0` | TrackPiece::Step5F21A0 | In outline: a step for -2 when not flagged (+0x18) |
+| `0x5aa650` | Ride::Count5AA650 | In outline: a step when a count (+0x7B4) is under 1 |
+| `0x4cdf90` | Shop::Slot4CDF90 | In outline: a step with a slot (+0x54) when not flagged (+0x50) |
+| `0x4bb990` | Shop::Step4BB990 | In outline: a step (`0x4BB920`) |
+| `0x5e29d0` | TrackPiece::Extent5E29D0 | In outline: clears an extent (Extent::Clear) and acts when not flagged (+0x18C) |
+| `0x5ae050` | TrackedRide::Entry5AE050 | In outline: a step with a ride's first entry (TrackedRideInstance::Entry(0)) |
+| `0x5d04a0` | TrackedRide::Step5D04A0 | In outline: a step (`0x5D1590`, `0x5D15A0`) |
+| `0x798210` | Guest::Mode798210 | In outline: a value by a mode (+0x190: 0xD, ...) |
+| `0x5be6a0` | TrackPiece::Face5BE6A0 | In outline: points (Matrix::LookAlongZSide) when a count is over 100 |
+| `0x57a7e0` | Ride::Case57A7E0 | In outline: a step by case |
+| `0x4f3980` | Ride::Mode4F3980 | In outline: in mode 4 (+0x144), a step when not flagged (+0x668) |
+| `0x4c7600` | Shop::Hit4C7600 | In outline: a hit test (`0x4C7420`, `0x5DA220`) |

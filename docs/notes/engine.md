@@ -1925,3 +1925,41 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc10b30` | Resource::MakeC10B30 | In outline: makes a part (Constructor, `0xC0A110`) |
 | `0xa3e3e0` | Object::MakeA3E3E0 | In outline: when on (+0xC) with a part (+0x10), makes an object (ObjectA402B0) |
 | `0x8be610` | Terrain::Make8BE610 | In outline: a terrain step |
+| `0xa3d4c0` | Module::LoadA3D4C0 | In outline: a module load (Module::LoadBE5B20) and a check (`0xBE40D0`) |
+| `0x9fe100` | Array::Grow9FE100 | In outline: grows a list of 0x30-byte entries to hold n |
+| `0x4573e0` | Text::Scan4573E0 | In outline: goes over a C string when given one |
+| `0xc1b480` | Record::MakeC1B480 | In outline: makes an 8-byte record |
+| `0x4303c0` | Array::Grow4303C0 | In outline: grows a list of 0x30-byte entries to hold n |
+| `0xe03e90` | SortedTable::StepE03E90 | In outline: a step when an entry is not found (SortedTable::Find) |
+| `0xcc8ee0` | Name::FindCC8EE0 | In outline: a find over entries (+0xC) |
+| `0xba3440` | Array::ResizeBA3440 | In outline: resizes a list of 0xB8-byte entries to n |
+| `0x803400` | Load::Read803400 | In outline: reads four-byte values from a saved block (Load::ReadBytes) |
+| `0x68f040` | Array::Resize68F040 | In outline: resizes a list of 0xC-byte entries to n |
+| `0x68b6a0` | Array::Copy68B6A0 | In outline: copies a list (ObjectArray28::Resize) |
+| `0x9d84f0` | Record::Make9D84F0 | In outline: makes a record with an empty handle (`0x9D7FC0` with +0x70) |
+| `0x7bb970` | Record::Make7BB970 | In outline: makes parts (`0xBDADC0`, Constructor) |
+| `0x875ce0` | Scenery::Make875CE0 | In outline: makes a pooled object (PooledObject) with a path table (`0x488290`) |
+| `0x497f20` | Save::Range497F20 | In outline: a step for n within a range |
+| `0xce6090` | Device::ErrorText | In outline: gives a text for a device error code |
+| `0xcc50e0` | Shader::StepCC50E0 | In outline: a shader step (`0xCC1DD0` with fill values, `0xCC4F30`) |
+| `0xc44500` | Resource::SameC44500 | In outline: a step when a value matches (+8) |
+| `0xc37c10` | Name::SameC37C10 | In outline: compares two names by length and text (WideString::Compare) |
+| `0x6841a0` | Text::Cut6841A0 | In outline: cuts a text (WideString::Substring, WideString::MakeUnique) |
+| `0xbc6d60` | Memory::CheckBC6D60 | In outline: a step when a check passes (`0xBC5200`) |
+| `0xcc94e0` | Name::FindCC94E0 | In outline: a find by name (`0xCC91A0`) over entries (+0xC) |
+| `0xb105f0` | Record::MakeB105F0 | In outline: makes parts |
+| `0xce6570` | Sound::Init | In outline: starts COM (CoInitialize) and creates the DirectSound device (DirectSoundCreate) into `0x1400B68` |
+| `0xce9000` | Shapes::PassCE9000 | In outline: goes over entries with a positive count (+0x64) |
+| `0x452bd0` | Record::Make452BD0 | In outline: makes parts (`0xBDADC0`, Constructor) |
+| `0x40fb70` | NamedObject::Make40FB70 | In outline: makes a list member object (ListMember with `0x10EC9E8`) with an Object413 |
+| `0xce7a90` | SortedPointers::StepCE7A90 | In outline: a step when a flagged entry is found (SortedPointers::FindFlagged) |
+| `0xb11d40` | Array::ResizeB11D40 | In outline: resizes a list of four-byte entries to n |
+| `0x460f20` | Array::Resize460F20 | In outline: resizes a list of four-byte entries to n |
+| `0xa53c20` | Array::ResizeA53C20 | In outline: resizes a list of eight-byte entries to n |
+| `0x40c7e0` | Array::Grow40C7E0 | In outline: grows a list of 0x24-byte entries to hold n |
+| `0xcba270` | ShaderFile::ReadCBA270 | In outline: reads a shader file entry, clearing a pair first, for entries marked 's' |
+| `0x8081f0` | Load::Read8081F0 | In outline: reads a 12-byte value from a saved block (Load::ReadBytes) |
+| `0xc01720` | Record::MakeC01720 | In outline: makes a record (`0xC01600`) |
+| `0xbd0ab0` | Folder::FindBD0AB0 | In outline: finds by a name text, with -1 handled |
+| `0xbc5900` | Track::SnapBC5900 | In outline: unless a mode is 0 or 1, snaps (Track::SnapBC5580) |
+| `0x9843e0` | Text::Edit9843E0 | In outline: a text edit step (WideString::MakeUnique) |

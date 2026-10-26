@@ -1082,3 +1082,69 @@
 | `0x728d70` | Path::Case728D70 | In outline: a path value by case |
 | `0x9ffcd0` | Fireworks::Terrain9FFCD0 | In outline: a step over the terrain for entries (+0x10) |
 | `0x8fafa0` | Water::Camera8FAFA0 | In outline: a step with the camera (MainCamera::Get, `0xA62D90`) |
+| `0x925540` | Water::Same925540 | In outline: a step when given its own value (+0x34) |
+| `0x8c0520` | Terrain::Below8C0520 | In outline: a step against the terrain's lowest point (Terrain::LowestPoint) |
+| `0x930ac0` | Water::Table930AC0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x91a330` | Water::Copy91A330 | In outline: copies a list (Array::Resize417A20) |
+| `0x8da760` | Water::Pass8DA760 | In outline: a step with the water manager over entries |
+| `0x7c1230` | Person::Find7C1230 | In outline: finds an entry (+0x20) |
+| `0x938b70` | Water::Find938B70 | In outline: finds an entry matching four bytes |
+| `0x919da0` | Water::Terrain919DA0 | In outline: a step over the terrain |
+| `0x4473c0` | Terrain::Step4473C0 | In outline: a terrain step |
+| `0x994ac0` | Fireworks::Slot994AC0 | In outline: a step when it has a slot |
+| `0x87c510` | Scenery::Value87C510 | In outline: a step by how far a value (+0x48) is from 0.5 |
+| `0x82ef60` | Scenery::Cell82EF60 | In outline: a step when the cell changes (+0xA0, +0xA4) (Scenery::Cell82B350) |
+| `0x779b60` | Park::Pass779B60 | In outline: goes over entries (+0x48) |
+| `0x8ea430` | Water::Flag8EA430 | In outline: a step for an entry (0x130 bytes) not flagged (+1) |
+| `0x7c08e0` | Person::Shared7C08E0 | In outline: unless the global flag `0x1400306` is set, a step against a value (+0x2C) |
+| `0x95aa10` | Water::Clip95AA10 | In outline: a step with a clipped rectangle (Rect::Clip8F3750) |
+| `0x8fee20` | Water::Slot8FEE20 | In outline: a step when it has a slot, unless told not to |
+| `0x8781c0` | Scenery::Step8781C0 | In outline: a step (`0x827EF0`) |
+| `0x86ebb0` | Scenery::Loop86EBB0 | In outline: goes over a linked list |
+| `0x7ff910` | Person::Pass7FF910 | In outline: goes over entries (+0x3C) |
+| `0x7366d0` | Path::Part7366D0 | In outline: a step with a part |
+| `0xb9f740` | PathGrid::CentreB9F740 | In outline: a step with a scenery footprint's centre (SceneryItem::FootprintCentre) |
+| `0x958ec0` | Water::Table958EC0 | In outline: fills a 4 by 4 table with 0xFFFF (`0x416110`) |
+| `0x8ddaf0` | Terrain::Step8DDAF0 | In outline: a terrain step |
+| `0x86df00` | Scenery::Make86DF00 | In outline: makes a record (`0x48C9C0`, SetTableF2CEB4) |
+| `0x826920` | Scenery::Loop826920 | In outline: a loop with a part |
+| `0x96acc0` | Water::Find96ACC0 | In outline: finds a water entry for a cell (+8, +0xC) |
+| `0x901da0` | Water::Table901DA0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x7df090` | Person::Clear7DF090 | In outline: clears a list (ObjectArray28::Resize(0)) when a value is negative |
+| `0x71ad30` | Path::Count71AD30 | In outline: a step under n when not flagged (+0x428) |
+| `0xabd620` | Fence::RectABD620 | In outline: goes over a rectangle of cells |
+| `0x855a20` | Scenery::Case855A20 | In outline: a step by case |
+| `0x80e4f0` | Regions::Range80E4F0 | In outline: a step within a range |
+| `0x4cc919` | Shop::Terrain4CC919 | In outline: a step over the terrain |
+| `0x9e32c0` | Fireworks::Time9E32C0 | In outline: a step with a positive time when a value (+0x58) is not 0 |
+| `0x930c20` | Water::Table930C20 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x7f5330` | Person::Link7F5330 | In outline: links parts |
+| `0x783450` | Park::Pass783450 | In outline: goes over entries (+0x48) with the park (Park::Get) |
+| `0x720e10` | Path::Activate720E10 | In outline: activates a path piece and acts when it is flagged (+6) |
+| `0x9769e0` | Water::Show9769E0 | In outline: when the shared flag (`0x12F018C` +0x24 +2) is set, a terrain step |
+| `0x8ddea0` | Terrain::Step8DDEA0 | In outline: a terrain step |
+| `0x88ad50` | Scenery::Part88AD50 | In outline: a step with a part (+0x170) |
+| `0xc9d0f0` | Table::FillC9D0F0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x92bfd0` | Water::Table92BFD0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x7279a0` | Path::Terrain7279A0 | In outline: a step over the terrain |
+| `0x7f83c0` | Person::Link7F83C0 | In outline: a step with a part |
+| `0x733d90` | PathManager::Create733D90 | In outline: makes the shared path manager (`0x130625C`, PathManager::PathManager) and activates it |
+| `0x4550c0` | List::Pass4550C0 | In outline: goes over entries not flagged (+0x82, +0x80) |
+| `0xc1c990` | Table::FillC1C990 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0xb9b090` | PathGrid::InsideB9B090 | In outline: a step for a cell inside the grid (+0x64, +0x68) |
+| `0xac2830` | Fence::TerrainAC2830 | In outline: a step over the terrain for a negative value |
+| `0xaa1c40` | PoolComplex::SlotAA1C40 | In outline: a step for n under a count (+0x34) |
+| `0x891df0` | Scenery::Pass891DF0 | In outline: goes over entries (+0x14) |
+| `0x937420` | Water::Loop937420 | In outline: a loop |
+| `0x901f00` | Water::Table901F00 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x87c6b0` | Scenery::Table87C6B0 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x8468f0` | Scenery::Count8468F0 | In outline: a step for a positive count with a part (+0x9C) |
+| `0xc1cd50` | Table::FillC1CD50 | In outline: fills a table with 0xFFFF (`0x416110`) |
+| `0x969920` | Water::Find969920 | In outline: finds a water entry for a cell (+8, +0xC) |
+| `0x94e090` | Water::Count94E090 | In outline: a step against a count (+8) |
+| `0x88e0b0` | Scenery::Flag88E0B0 | In outline: goes over entries (+0x3C8) flagged (bit 4) |
+| `0x861050` | Scenery::Pose861050 | In outline: unless told not to, a scenery pose (Scenery::Pose860790) |
+| `0x77bf40` | GuestGroup::Check77BF40 | In outline: checks a group (GuestGroup::Check778580(1), `0x778880` with 0xC) |
+| `0xa7a630` | Animal::TerrainA7A630 | In outline: a step over the terrain |
+| `0x963fa0` | Water::Manager963FA0 | In outline: when asked, a step with the water manager |
+| `0x7a0030` | Terrain::Step7A0030 | In outline: a step (`0x7A0860` with 0) |

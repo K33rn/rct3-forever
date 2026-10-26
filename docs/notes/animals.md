@@ -333,3 +333,29 @@
 | `0xafb160` | Animal::SlotAFB160 | In outline: a step for a 0x2C-byte entry flagged (+0x10 bit 1), up to 0xFF |
 | `0xb31b20` | WildAnimal::UseShelter2 | In outline: makes a use-shelter decision (WAS_UseShelter) and a part (`0x73E100`) |
 | `0xb10780` | Animal::CountB10780 | In outline: a step when a count (`0xB105F0` +0x50) is under 1 |
+| `0xa61f10` | Animal::SpeedA61F10 | In outline: a step when a speed (+0x144) is big enough and not positive |
+| `0xb34950` | Animal::TerrainB34950 | In outline: a step over the terrain |
+| `0xb20040` | WildAnimal::StepB20040 | In outline: a step with an object (WildAnimal::Interface60) |
+| `0xa5fc30` | Animal::TurnA5FC30 | In outline: a turn step (sine) when a direction is long enough |
+| `0xbae9d0` | Animal::SlotBAE9D0 | In outline: a step for an entry not flagged (+0x1D4, +0x18) |
+| `0xa0f590` | Bird::TerrainA0F590 | In outline: a value from the terrain |
+| `0xb69dc0` | Animal::TerrainB69DC0 | In outline: a step over the terrain |
+| `0xb587e0` | Animal::ModeB587E0 | In outline: in mode 1 (+0x138), a step (`0xB567A0`) |
+| `0xb53850` | Animal::PartB53850 | In outline: a step with a part (+0x8C) when not flagged (+0x90) |
+| `0xaaa300` | PoolComplex::PointsAAA300 | In outline: a step with more than two points |
+| `0xa8d8b0` | PoolComplex::Collection | In outline: makes a pool complex collection (PoolComplexCollection) |
+| `0xa28b60` | Animal::CheckA28B60 | In outline: a check with a part |
+| `0xaf46c0` | Animal::UpdateAF46C0 | In outline: an update when not flagged (+0x60) |
+| `0xa14ef0` | Bird::ValueA14EF0 | In outline: a value when not flagged (+0x144) |
+| `0xa14d90` | Bird::ValueA14D90 | In outline: a value when not flagged (+0x128) |
+| `0xafa180` | Animal::SlotAFA180 | In outline: a step for a slot inside a grid (+0x2C by +0x30) |
+| `0xa7c280` | Animal::UpdateA7C280 | In outline: an update when not flagged (+0x1C4) |
+| `0xac5d80` | Animal::ValueAC5D80 | In outline: a value when not flagged (+0x1C) |
+| `0xba4940` | WildAnimal::TerrainBA4940 | In outline: a step over the terrain (WildAnimal::Interface60) |
+| `0xb931d0` | Animal::TextB931D0 | In outline: makes a part and a text (Text::MakeBDAC20) |
+| `0xaa9c30` | Animal::ValueAA9C30 | In outline: a value (Animal::ValueAC5D80) |
+| `0xaa33d0` | PoolPiece::SidesAA33D0 | In outline: a pool piece's turned sides (Sides::Rotate, PoolPiece::SideData) |
+| `0xb23700` | WildAnimal::PlayWithAnimals | In outline: makes a play-with-animals decision (WAS_PlayWithAnimals) and a part (`0x44E540`) |
+| `0xb85d90` | Animal::FaceB85D90 | In outline: points (Matrix::LookAlongZSide) |
+| `0xa9b800` | PoolComplex::UpdateA9B800 | In outline: an update when not flagged (+0x1B0) |
+| `0xb21280` | Animal::CaseB21280 | In outline: a value by a mode (+0x78) |

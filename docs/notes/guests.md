@@ -208,3 +208,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7e1cf0` | Person::Message | In outline: makes a person message (PersonMessage) |
 | `0x7cede0` | Person::Time7CEDE0 | In outline: a step when a time (+0xBC) is above 1 and a check fails |
 | `0x7d41e0` | Person::Value7D41E0 | In outline: a value from an object (`0x13CE3BC`) |
+| `0x75b000` | Guest::Camera75B000 | In outline: a step with the camera (MainCamera::Get) and a check (`0x7C6280`) |
+| `0x7c7280` | Person::Case7C7280 | In outline: a step by a value (+0x120: 5, ...) |
+| `0x7bcdd0` | Person::Database | In outline: makes a database entry (PPGDatabaseEntry) |
