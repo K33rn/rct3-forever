@@ -2574,3 +2574,48 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc051f0` | Device::StepC051F0 | In outline: when on (+0x4C0, +0x4C1), a step (slot 0x50) |
 | `0xbf92c0` | Text::StepBF92C0 | In outline: a step with many values |
 | `0x43ab10` | Effect::Find43AB10 | In outline: a find with a value (+0x40) and a mode (+0x3C) |
+| `0xc4ff20` | File::WriteC4FF20 | In outline: writes a buffer to a file (WriteFile) |
+| `0xcb03b0` | Zlib::EndCB03B0 | In outline: zlib's stream end: gives -2 (stream error) with no stream or state (+0x1C), else frees it |
+| `0xbc0d10` | Debug::CheckBC0D10 | In outline: stops in the debugger (breakpoint) when a value is set (+0x80) |
+| `0xc324f0` | Text::FormatC324F0 | In outline: formats into a 128-character buffer |
+| `0xc65b90` | Window::StepC65B90 | In outline: a step with many values |
+| `0x433dd0` | Sky::Make433DD0 | In outline: makes parts |
+| `0x4042f0` | Effect::Step4042F0 | In outline: a step with many values |
+| `0x98b1b0` | Record::Make98B1B0 | In outline: sets up a record with handles |
+| `0x98b0e0` | Record::Make98B0E0 | In outline: the same (another copy) |
+| `0x946730` | Water::Find946730 | In outline: a find |
+| `0xcc6310` | Model::Part2CC6310 | In outline: a step for part n |
+| `0xcb6ac0` | ShaderFile::ReadHeaderCB6AC0 | In outline: reads four-byte values (ShaderFile::Read into +0x34, +0x40, ...) |
+| `0xbdfbb0` | HashTable::ResizeBDFBB0 | In outline: sizes a table to a prime (Math::NextPrime) and puts the entries back |
+| `0xbdfae0` | HashTable::ResizeBDFAE0 | In outline: the same (another copy) |
+| `0xbbbd60` | List::PassBBBD60 | In outline: goes over entries (+0x1C +4) |
+| `0xb81800` | List::AddB81800 | In outline: grows a list by one (ObjectArray::SetCapacity on +0x11C) and a handle |
+| `0x834190` | Scenery::Make834190 | In outline: makes a 32-byte part (`0xBCEE80`) |
+| `0xcc5700` | Shader::MakeCC5700 | In outline: makes a part |
+| `0xcc4da0` | Shader::MakeCC4DA0 | In outline: the same (another copy) |
+| `0xc05c50` | Device::StepC05C50 | In outline: when not flagged (+0x4C0), a step with the shared value (`0x13D317C`) |
+| `0xc04110` | Device::StepC04110 | In outline: a step (slot 0xC) and a loop |
+| `0xc37680` | Resource::MakeC37680 | In outline: makes a part, with none handled |
+| `0xc2f9d0` | Resource::LoopC2F9D0 | In outline: goes over entries (+4) |
+| `0xc1f960` | Skeleton::StepC1F960 | In outline: a step with points |
+| `0x804590` | Regions::Init804590 | In outline: sets up a record with the shared count (`0x130AC08` +0x14) |
+| `0x725a20` | Path::Clear725A20 | In outline: tears down parts |
+| `0x5bb130` | TrackPiece::Init5BB130 | In outline: sets a value of 10 and a step (`0x611A80` with 1, 200) |
+| `0x9d7090` | Record::Copy9D7090 | In outline: copies a record's values from another |
+| `0x982660` | Record::Get982660 | In outline: a value (Thunk), made when none |
+| `0xcd4880` | Text::FindCD4880 | In outline: finds a C string in another |
+| `0xc33670` | Text::FormatC33670 | In outline: formats into a 128-character buffer |
+| `0x9f3fd0` | Record::Init9F3FD0 | In outline: sets up a record with its table (`0xF867B4`) |
+| `0xc434f0` | Resource::InitC434F0 | In outline: sets up a record with its table (`0xFB12A4`) |
+| `0xc2f910` | Resource::MakeC2F910 | In outline: a step (`0xCA68B0`) and makes a part |
+| `0xc18640` | Path::InitC18640 | In outline: sets up a record with its table (`0xFAFC8C`) |
+| `0xc18490` | Path::InitC18490 | In outline: the same with `0xFAFC88` |
+| `0x877f30` | Record::Copy877F30 | In outline: copies a record and takes a reference to its shared part |
+| `0x753fe0` | Guest::Make753FE0 | In outline: fills a record from its arguments |
+| `0x426bc0` | Sky::Make426BC0 | In outline: makes a window part |
+| `0xcd7d00` | Camera::InitCD7D00 | In outline: sets values to the largest float and more |
+| `0xc37d70` | Resource::LastC37D70 | In outline: a step with the last entry (+4, +8) |
+| `0xc07a90` | Device::StepC07A90 | In outline: a step with a work buffer |
+| `0x809800` | Regions::Count809800 | In outline: a step for fewer than two entries |
+| `0x501a90` | Ride::Init501A90 | In outline: sets up a record with cleared values |
+| `0x4f05b0` | Ride::Make4F05B0 | In outline: makes a part |

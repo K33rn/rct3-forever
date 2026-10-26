@@ -1027,3 +1027,14 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9fbd30` | Fireworks::Size9FBD30 | In outline: a size (+0x74), halved when the shared value is set (`0x10EDB90`) |
 | `0x47c4e0` | Effects::Set47C4E0 | In outline: sets shared entry n's value (`0x10EDD40`) and acts |
 | `0x9d4de0` | Fireworks::Part9D4DE0 | In outline: with no part, clears a value (+0xCC) |
+| `0xb73380` | Effect::PartB73380 | In outline: goes over a part's entries |
+| `0xb731e0` | Effect::PartB731E0 | In outline: the same (another copy) |
+| `0xb5d850` | Effect::PartB5D850 | In outline: the same (another copy) |
+| `0xb5d6b0` | Effect::PartB5D6B0 | In outline: the same (another copy) |
+| `0x7b7460` | Effect::Part7B7460 | In outline: the same (another copy) |
+| `0x7b72c0` | Effect::Part7B72C0 | In outline: the same (another copy) |
+| `0x474450` | Labels::Step474450 | In outline: a step with many values |
+| `0x9103a0` | Water::Clear9103A0 | In outline: clears the device's depth (slot 0x3C with 4, 1.0) and acts |
+| `0x488b10` | Effect::Step488B10 | In outline: a step with points |
+| `0xa6fc60` | Animal::SolveA6FC60 | In outline: solves a constraint (Constraint::SolveA6CA10) and goes over entries |
+| `0xbc5fd0` | Track::StepBC5FD0 | In outline: a step for a positive count |

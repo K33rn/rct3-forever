@@ -644,3 +644,25 @@
 | `0xa97860` | Animal::EntryA97860 | In outline: for entry n (0x1C bytes) under a count (+0x84), a check; 0 outside |
 | `0x84a8d0` | Scenery::Check84A8D0 | In outline: a check when not flagged (+0xC8) |
 | `0xb12070` | Animal::ClearB12070 | In outline: clears a linked value (+0x48) and more |
+| `0xb88390` | Animal::UpdateB88390 | In outline: an update when not flagged (+0xD4) |
+| `0xb562e0` | Animal::PassB562E0 | In outline: goes over a part's entries (+0xBC +0x24) |
+| `0xb3ad10` | Animal::SetB3AD10 | In outline: when given a value and none is set (+0x1FC), sets it |
+| `0xae8bb0` | Animal::ReleaseAE8BB0 | In outline: releases a part (+0x108) |
+| `0xacc280` | Graph::ReleaseACC280 | In outline: releases a part (+0x10C) |
+| `0xa9fe50` | PoolComplex::UpdateA9FE50 | In outline: an update when not flagged (+0x34) |
+| `0xaa3970` | PoolPiece::SidesAA3970 | In outline: when on, a pool piece's sides (PoolPiece::SideData) |
+| `0xa62c90` | Animal::InitA62C90 | In outline: clears a value (+0x360) and sets another to 40 (+0x364) |
+| `0x92eb70` | Water::Reset92EB70 | In outline: resets (Static::Reset) and makes parts |
+| `0xabea00` | Fence::FlagsABEA00 | In outline: when its part matches, adds flags (+0x4C) |
+| `0xaa1b80` | PoolComplex::SetAA1B80 | In outline: grows a list when n passes its count (Array::ResizeAA17A0) and sets |
+| `0xa973b0` | Animal::EntryA973B0 | In outline: for entry n under a count (+0x84), a step |
+| `0xb90900` | Animal::HandleB90900 | In outline: makes a handle and links it |
+| `0xb539b0` | Animal::UpdateB539B0 | In outline: an update when not flagged (+0x74) |
+| `0xa8aa90` | Animal::CountA8AA90 | In outline: with no entries (+0x68 +4), a step |
+| `0xa7bec0` | Animal::CheckA7BEC0 | In outline: a check when not flagged (+0x1C4) |
+| `0xb848f0` | Animal::FindB848F0 | In outline: a find over entries (+8) |
+| `0xabae10` | Animal::ModeABAE10 | In outline: a step with no part (+0x120) |
+| `0xa88180` | Animal::ValueA88180 | In outline: a value from two counts |
+| `0xb7bc40` | Animal::UpdateB7BC40 | In outline: an update when not flagged (+0x90) |
+| `0xb13ea0` | Animal::ResetB13EA0 | In outline: clears a value (+0x94) and acts with a part (+0x84) |
+| `0x99ff30` | Fireworks::Part99FF30 | In outline: a step with a part (+8) |

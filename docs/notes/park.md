@@ -1750,3 +1750,58 @@
 | `0x551530` | Ride::Clear551530 | In outline: the same (another copy) |
 | `0x551460` | Ride::Clear551460 | In outline: the same (another copy) |
 | `0x551390` | Ride::Clear551390 | In outline: the same (another copy) |
+| `0x96e5e0` | Water::Pass96E5E0 | In outline: goes over entries (+0x50) |
+| `0x93d580` | Water::Reset93D580 | In outline: with the shared object (`0x133A274`), resets (Static::Reset) |
+| `0x851c90` | Scenery::Bit851C90 | In outline: a step with a bit from a count (+0xC) |
+| `0x82fdf0` | Scenery::Part82FDF0 | In outline: a step with a part (+0x34) |
+| `0x740420` | Guest::Set740420 | In outline: when given a value and none is set (+0x500), sets it |
+| `0x71d900` | Path::Reset71D900 | In outline: resets (Static::Reset) and makes parts |
+| `0x9fa210` | Fireworks::Entry9FA210 | In outline: a step for entry n (0x90 bytes) |
+| `0x849ea0` | Scenery::Set849EA0 | In outline: sets a value (+0x90) when it changes, under a count |
+| `0x73a4d0` | Guest::Handle73A4D0 | In outline: makes a handle and links it |
+| `0x7230b0` | Path::Byte7230B0 | In outline: a value from a byte (+0x88) |
+| `0x713240` | Path::Check713240 | In outline: a step when a check passes (`0x713180`) |
+| `0x713180` | Path::InGrid713180 | In outline: when set, a check with the path manager |
+| `0x90f4d0` | Water::Pass90F4D0 | In outline: goes over entries |
+| `0x8267c0` | Scenery::Part8267C0 | In outline: a step with a part (+0x18) |
+| `0x81bb00` | SceneryBehaviour::List81BB00 | In outline: a step with a list (+0x60) |
+| `0x721020` | Path::Join721020 | In outline: when asked, a join check |
+| `0x9142c0` | Water::Shared9142C0 | In outline: when the shared object is flagged (bit 0x10), a step for a count under 50 not in mode 1 |
+| `0x9051d0` | Water::Find9051D0 | In outline: a find (SortedPointers::FindInt) |
+| `0x8df080` | Terrain::Curve8DF080 | In outline: a value from a table by a value, first entry below the start |
+| `0x84d3a0` | Scenery::SetCell84D3A0 | In outline: sets a cell (+0x34, +0x38) when it changes |
+| `0x54c6d0` | Ride::Clear54C6D0 | In outline: empties a list |
+| `0x9797c0` | Water::Draw9797C0 | In outline: when the shared flag is set, sets device state (slot 0xA4 with 5, 2) and draws |
+| `0x976880` | Water::Make976880 | In outline: makes a part |
+| `0x974900` | Water::Draw974900 | In outline: the same draw (another copy) |
+| `0x8e03e0` | Terrain::Step8E03E0 | In outline: a terrain step (Terrain::Step8DFC30) and more |
+| `0x8dce20` | Terrain::Check8DCE20 | In outline: a check with the terrain |
+| `0x84a620` | Scenery::Update84A620 | In outline: an update when not flagged (+0x6C) |
+| `0x784640` | GuestGroup::Slot784640 | In outline: a step with a slot (+0x40) |
+| `0x774ce0` | Park::Find774CE0 | In outline: a find over entries (+0x48) |
+| `0x72f310` | Path::Rect72F310 | In outline: goes over a byte rectangle |
+| `0x702110` | Grid::Step702110 | In outline: a step with many values |
+| `0x937a00` | Water::Free937A00 | In outline: frees buffers (+0x38, ...) |
+| `0x8b70f0` | Scenery::Update8B70F0 | In outline: an update when not flagged (+0x120) |
+| `0x7a9340` | Terrain::Handle7A9340 | In outline: makes a handle and links it |
+| `0x79ff40` | Terrain::List79FF40 | In outline: goes over a list (+0x540) |
+| `0x77b750` | Park::Pass77B750 | In outline: goes over entries (+0x48) |
+| `0xaaf420` | Fence::StepAAF420 | In outline: a step with a value (+0x140) and a cell (+0x128) |
+| `0x8a0ac0` | Scenery::Pass8A0AC0 | In outline: goes over entries (+0x54) |
+| `0x82bd10` | Scenery::Part82BD10 | In outline: a step with a part (+0x58) |
+| `0x725c10` | Path::Pass725C10 | In outline: goes over entries (+0x10) |
+| `0x890510` | Scenery::Entry890510 | In outline: a step for entry n (0x150 bytes) |
+| `0x91d8c0` | Water::Add91D8C0 | In outline: grows a list by 16 when full (Array::Resize91C630) and adds |
+| `0x878100` | Scenery::Step878100 | In outline: a step with a part's value (+0xCC +0x4C) |
+| `0x7ed110` | Person::Step7ED110 | In outline: a step with an object (`0x13064A0`) |
+| `0x96c3b0` | Water::Make96C3B0 | In outline: makes a window part |
+| `0x96c090` | Water::Make96C090 | In outline: the same (another copy) |
+| `0x96be30` | Water::Make96BE30 | In outline: the same (another copy) |
+| `0x96a570` | Water::Pass96A570 | In outline: goes over entries down from a count (+0x30) |
+| `0x969860` | Water::Pass969860 | In outline: the same with +0x20 |
+| `0x9681d0` | Water::Make9681D0 | In outline: makes a window part |
+| `0x965a50` | Water::Find965A50 | In outline: a find over a list (+0x20) |
+| `0x9652e0` | Water::Add9652E0 | In outline: adds when there is room (+0x34, +0x38) |
+| `0x9399a0` | Water::Pass9399A0 | In outline: goes over entries (+0x14) |
+| `0x92e510` | Water::Value92E510 | In outline: a value from a part (+4 +0xC) |
+| `0x7f1ed0` | Person::Case7F1ED0 | In outline: a step by a kind (+0x120: 4, ...) |

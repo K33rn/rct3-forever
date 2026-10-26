@@ -1681,3 +1681,36 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x9aabb0` | Window::Place9AABB0 | In outline: with a part (+0xD8), places it 30 wide |
 | `0xa54c90` | Window::MakeA54C90 | In outline: makes a window part |
 | `0xa54ba0` | Window::MakeA54BA0 | In outline: the same (another copy) |
+| `0x9776a0` | Window::Make9776A0 | In outline: makes a window part |
+| `0x70e6d0` | Window::Shared70E6D0 | In outline: a step with the shared value (`0x1306194`) |
+| `0x660d50` | List::Grow660D50 | In outline: grows a list when n passes its count (+0x178) (Array::Resize460F20) |
+| `0x645620` | Window::Part645620 | In outline: a step with a part (+0x140) |
+| `0x9f67c0` | Window::Make9F67C0 | In outline: makes a 0x268-byte part |
+| `0x9b3fb0` | Window::Bind9B3FB0 | In outline: sets the object it shows (+0xD4) and binds fields to it |
+| `0x979c30` | Window::Make979C30 | In outline: makes a window part |
+| `0x667480` | Window::Width667480 | In outline: a step with a part's width |
+| `0x63b1a0` | Window::Place63B1A0 | In outline: when not flagged (+0xD4), places a part |
+| `0x5fca00` | Window::Flag5FCA00 | In outline: sets a flag (Window::Flag6ABC90) and acts |
+| `0x6a5d10` | Window::Make6A5D10 | In outline: makes a window part |
+| `0x65aab0` | Window::Mode65AAB0 | In outline: a step by a mode (+0x168) |
+| `0x655360` | Window::Hit655360 | In outline: a step when a point lies inside (Rect::Contains) |
+| `0x6203a0` | Window::Make6203A0 | In outline: makes a 0x70-byte part |
+| `0xa5b830` | Window::MakeA5B830 | In outline: makes a 0x78-byte part |
+| `0x9daf50` | Window::Make9DAF50 | In outline: the same (another copy) |
+| `0x9bde70` | Window::Name9BDE70 | In outline: with nothing set (+0x2FC), sets a name |
+| `0xa1ef90` | Window::PartA1EF90 | In outline: a step with a part (+0x84) |
+| `0x9bd0a0` | Window::Check9BD0A0 | In outline: a check when not flagged (+0x38) |
+| `0xac8e40` | Window::UpdateAC8E40 | In outline: an update when not flagged (+0x120) |
+| `0xac7b20` | Graph::PassAC7B20 | In outline: goes over entries (+0xEC) |
+| `0x6cc950` | Window::Set6CC950 | In outline: sets a value (+0xEC) and acts with a part (+0x3C) |
+| `0x6a2930` | Window::Shared6A2930 | In outline: unless flagged (bit 0x20), a step with the shared value (`0x1305C40`) |
+| `0x67c9f0` | Window::Set67C9F0 | In outline: sets a value (+0xF8) and makes a part |
+| `0x66d100` | Window::Text66D100 | In outline: a text from a shared one (`0xF307E0`) |
+| `0x64b580` | Window::Event64B580 | In outline: for event 0x31A955 only, a step |
+| `0x6630d0` | Window::Handle6630D0 | In outline: makes a handle and links it |
+| `0xa36bd0` | Window::SharedA36BD0 | In outline: when asked or with a part (+0x124), a step with the shared object's list (`0x12F4E4C`) |
+| `0xaca140` | Graph::MakeACA140 | In outline: makes a part from its part's value (+0x3C +0x3C) |
+| `0x9a6ed0` | Window::Reset9A6ED0 | In outline: clears a flag (+0x60) and acts when not flagged (+0x40) |
+| `0x6ad9c0` | Window::Flags6AD9C0 | In outline: a step by flags (bits 6, 5) |
+| `0x65adc0` | Window::Step65ADC0 | In outline: a step with a part (slot 0x108) |
+| `0x671ca0` | Window::Part671CA0 | In outline: a step with a part (+0x130) |

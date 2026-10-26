@@ -881,3 +881,27 @@ Tracked rides, flat rides and their cars and trains.
 | `0x525fc0` | Car::Update525FC0 | In outline: an update when not flagged (+0x180) |
 | `0x4cf0c0` | Shop::Set4CF0C0 | In outline: with nothing given, a step (`0x4CCF50`) |
 | `0x5ab230` | Ride::Values5AB230 | In outline: takes two values (slots 0x40, 0x3C) and acts |
+| `0x4de7d0` | Ride::Init4DE7D0 | In outline: sets up a record with its table (`0xF322E8`) |
+| `0x5f3f20` | Ride::Part5F3F20 | In outline: a step with an object's slot (`0x12F4B34`) |
+| `0x4ceff0` | Shop::Set4CEFF0 | In outline: with nothing given, a step (`0x4CCF00`) |
+| `0x5cf2c0` | TrackedRide::Check5CF2C0 | In outline: a check when not flagged (+0xAC) |
+| `0x5c2150` | TrackPiece::Tool5C2150 | In outline: a step with the current tool (`0x12F5638`, `0x5D4950`) |
+| `0x4debc0` | Ride::Step4DEBC0 | In outline: a step with its part (slot 0x54) |
+| `0x5d0300` | TrackPiece::Side5D0300 | In outline: a step with 1 or -1 by a side |
+| `0x5bc660` | TrackPiece::Check5BC660 | In outline: a check when not flagged (+0x108) |
+| `0x595600` | Ride::Entry595600 | In outline: a step for an entry (`0x5947B0`) not flagged |
+| `0x561180` | Ride::Time561180 | In outline: with a negative time (+0x70), a step when not flagged (+0xB4) |
+| `0x5928c0` | Ride::Update5928C0 | In outline: an update when not flagged (+0x204) |
+| `0x5039f0` | Ride::Window5039F0 | In outline: with a part (+0x18), a window step |
+| `0x503930` | Ride::Window503930 | In outline: the same (another copy) |
+| `0x52ba20` | Car::Value52BA20 | In outline: a value unless its owner's kind is 0x53 |
+| `0x4c8230` | Shop::Mode4C8230 | In outline: in mode 1 (+0xC4), a step with a value (+0xD8) |
+| `0x591a30` | Ride::Check591A30 | In outline: a check when not flagged (+0x204) |
+| `0x586330` | Ride::Check586330 | In outline: a check when not flagged (+0x1EC) |
+| `0x4abc40` | Ride::Check4ABC40 | In outline: a check when not flagged (+0x3C4) |
+| `0x5a7d00` | Ride::Check5A7D00 | In outline: a check when not flagged (+0x378) |
+| `0x4deb00` | Ride::Set4DEB00 | In outline: a step when its part differs (slot 0x54) |
+| `0x4c74d0` | Shop::Value4C74D0 | In outline: a value when not flagged (+0x58) |
+| `0x590440` | Ride::Part590440 | In outline: a step with a part (+0x2C) |
+| `0x585cd0` | Ride::Step585CD0 | In outline: a step with a work buffer |
+| `0x4f3ad0` | Ride::Step4F3AD0 | In outline: a step with a value (+0x5E4) |
