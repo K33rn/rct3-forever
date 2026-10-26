@@ -1543,3 +1543,13 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x7ffdf0` | AIDDatabase::ReadEntry | In outline: reads a database entry's fields (`0x7FC020`, `0x7FD440`, AIDDatabaseEntry::Fields, `0x7FBE30`) |
 | `0xc0cff0` | Parser::NodeC0CFF0 | In outline: a parser node handler by its kind (+2: 2, ...) |
 | `0xcc8810` | Model::PartsCC8810 | In outline: goes over a model's parts (+0x24, +4) handling the ones that are on |
+| `0x9138f0` | Array8::Add9138F0 | In outline: adds entries to a list (+0x90), growing it by ten when full (Array8::SetCapacity) |
+| `0xba5470` | Names::UniqueBA5470 | In outline: another unique name maker (`0xBA4CF0`) |
+| `0xba5a90` | Fences::LoadFolder | In outline: lists and loads the files in the `Enclosures\Fences\` folder (`0xBA4E40`) |
+| `0xac3a80` | Pools::LoadFolder | In outline: lists and loads the files in the `Pool\` folder (`0xAC2D10`) |
+| `0x73a660` | Queues::LoadFolder | In outline: lists and loads the files in the `Queue\` folder (`0x738690`) |
+| `0x731e10` | Paths::LoadFolder | In outline: lists and loads the files in the `Path\` folder (`0x730BF0`) |
+| `0xc4da10` | Text::JoinC4DA10 | In outline: joins the parts of a list (+0xC) into one text (String::Append) |
+| `0xceab50` | Pairs::InsertCEAB50 | In outline: adds a pair to a sorted list, keeping it in order |
+| `0x85a620` | Pairs::Insert85A620 | In outline: the same sorted pair insert (another copy) |
+| `0x98b4c0` | Links::Set98B4C0 | In outline: sets an object's link (+0x48) when it changes |

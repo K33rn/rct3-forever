@@ -135,3 +135,8 @@
 | `0x494960` | WildAnimal::PathCheck | In outline: the cell-by-cell path check used by WildAnimal::PathClear: sets up the cells between two points (`0x491E30`) and checks each on the terrain (a 90 by 90 grid) |
 | `0xb3c980` | WildAnimal::MakeCarcass | In outline: makes a carcass (a 0xC0-byte Carcass) where a wild animal is (WildAnimal::Interface60) |
 | `0xb2da50` | WildAnimal::SetupB2DA50 | In outline: another animal setup like WildAnimal::SetupB2DE20 (terrain, enclosures) |
+| `0xaf60e0` | Animal::UpdateAF60E0 | In outline: an animal's timed update when on (+0x70) with a slot (+0xA4) and not flagged (+0x94): its chance (`0xAF49C0`) |
+| `0xb66ad0` | WildAnimal::CheckSpotB66AD0 | In outline: checks a spot for an animal over the terrain within a distance (under 1.5) |
+| `0xb198b0` | WildAnimal::PlaceB198B0 | In outline: places an animal (WildAnimal::Interface60) on the terrain (a 90 by 90 grid) |
+| `0xb782a0` | Entries::SortB782A0 | In outline: sorts a list of 0x70-byte entries by their value at +8 |
+| `0xb43a90` | WildAnimal::TurnB43A90 | In outline: turns an animal when the change is big enough and it has a target (+0x40), by case, when flagged (+0x188) |

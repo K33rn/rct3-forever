@@ -506,3 +506,13 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbf0ac0` | Text::LayoutBF0AC0 | In outline: another text layout like Text::LayoutBF1C40 |
 | `0x916620` | Water::Update916620 | In outline: when the water options are off (`0x10EDBA0`, `0x10EDD08`), the plain update (`0x916580`), otherwise each piece (+0x14, `0x916310`) |
 | `0x9c7fe0` | Particles::Setup9C7FE0 | In outline: below a rate (+0x4C), sets up a particle system's emitters (+0xD0) |
+| `0x44d260` | Effects::Aim44D260 | In outline: when on (+0x154), aims an effect's parts (+0x15C) (`0x445270`) |
+| `0x978e80` | Shapes::Shader978E80 | In outline: when a shape's settings change, releases its old shader and makes the new one (`0xCC1F30`) |
+| `0x9fb600` | Fireworks::Update9FB600 | In outline: goes over a firework display's shots (+0x74, 0x48 bytes each) by their times |
+| `0xbeffa0` | Text::LayoutBEFFA0 | In outline: another text layout like Text::LayoutBF0520 |
+| `0x4824b0` | Debug::Draw4824B0 | In outline: draws developer shapes with the shared shader (Debug::DrawSolidColourNoZ2) |
+| `0xaca430` | Colour::FromHSV | In outline: turns a hue (wrapped into 0 to 360), saturation and value into a colour, by the hue's sixth of the circle |
+| `0x96f160` | Water::DebugDraw96F160 | In outline: when the developers' view is on (`0x12F018C` +0x20), draws water lines (Registry::Ensure, `0x481620`) |
+| `0x8e84d0` | Water::Reflections8E84D0 | In outline: turns water reflections on or off by the settings (`0x10ED780`, +0x1C0), with `0x8E6150` |
+| `0x8f8f10` | Terrain::LoadTextures8F8F10 | In outline: opens and reads the terrain's resources by name (`0xBDADC0`, `0xBDAC20`) |
+| `0x9c44b0` | Particles::Near9C44B0 | In outline: whether an emitter is near the camera (`0x130654C`) within its distance (+0x130) |

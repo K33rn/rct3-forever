@@ -503,3 +503,16 @@
 | `0x464060` | Scenery::Check464060 | In outline: goes over a list's entries (+8, count +0xC) checking each against the shared table (`0x1106E38` +0x18) |
 | `0x4e1680` | Ride::Flatten4E1680 | In outline: when a ride has a part (+0x280), sets it up (`0x4E1050`, `0xA06E30`) and flattens the ground for it (Scenery::Flatten843D60) |
 | `0x5e9d60` | TrackPiece::Check5E9D60 | In outline: a track piece check: blocked (`0x5D9720`) or, when asked, for the selected ride (`0x12F5608`) |
+| `0x4cfc30` | Shop::Items4CFC30 | In outline: refreshes a shop's items when it has a name (`0x4CDF90`) and is not flagged (+0x50) |
+| `0x5e43b0` | TrackedRide::Check5E43B0 | In outline: checks a ride's track (TrackedRide::TrackInterface) over its pieces (+0xE8) when not flagged (+0x68) |
+| `0x5d8610` | Track::CanJoin5D8610 | In outline: whether two track pieces' ends meet: works out their ends (`0xBC9430`) and checks them (Track::JoinBC6F00) |
+| `0x5d9e80` | TrackedRide::Check5D9E80 | In outline: checks a ride's track (`0x59AF60`, TrackedRide::TrackInterface) once a time (+0x10C) has passed |
+| `0x948220` | Water::FillTo948220 | In outline: fills water up to a level (rounded by `0x1106D08`) where it can spread (Water::Flood942A70) |
+| `0x907cc0` | Water::CellOK907CC0 | In outline: whether a cell of a water grid (+0) is inside it, with the odd and even rows handled |
+| `0x8e3690` | Water::SetCell8E3690 | In outline: sets a water cell inside the terrain (WaterManager::Get) |
+| `0x4afa30` | Shop::Section4AFA30 | In outline: for a shop on a track, works out its section (`0x12F5338`, its member at +0x38) |
+| `0x718370` | Path::Place718370 | In outline: works out where a path piece goes (`0x714120`, `0x7135A0`, `0x4CC8F0`) over the terrain |
+| `0x720670` | Path::Update720670 | In outline: a path piece's update by its case over the terrain |
+| `0x4627a0` | Scenery::Activate4627A0 | In outline: with a reference (WithReference45FA50), activates the entries of a list (+0x48, count +0x4C) not flagged (+0x18) |
+| `0x5766d0` | Ride::Update5766D0 | In outline: a ride's update (`0x56F080`, `0x5613A0`, `0x561420`) with cases for kinds other than 0xD, 0xF, 0x16 |
+| `0x4cf8a0` | Shop::Items4CF8A0 | In outline: another shop item pass like Shop::Items4CFC30 |

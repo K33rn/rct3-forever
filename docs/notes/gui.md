@@ -727,3 +727,13 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x7199a0` | Window::Build7199A0 | In outline: builds a window from the shared title `0x1306248` |
 | `0x65b7f0` | Window::Build65B7F0 | In outline: builds a window from the shared title `0x12F80AC` |
 | `0xa58310` | Window::BuildA58310 | In outline: builds a window (`0xA55E00`) and its parts |
+| `0x666020` | List::Layout666020 | In outline: lays out a list's rows (+0x178) (`0x6ACBD0`) |
+| `0x66fa40` | Window::Build66FA40 | In outline: builds a window from the shared title `0x12F8170` |
+| `0xa08bc0` | Window::BuildA08BC0 | In outline: builds a window from the shared title `0x1342268` |
+| `0x88a5f0` | Window::Build88A5F0 | In outline: builds a window from the shared title `0x1310FA8` |
+| `0x692cf0` | Layout::Place692CF0 | In outline: places a box by its options (a size at most 0, a slot below 0, a count against `0x12F8610`) |
+| `0x64e110` | Window::Build64E110 | In outline: builds a window from the shared title `0x12F8010` |
+| `0x6392e0` | Text::AsianFont6392E0 | In outline: for Asian languages (Language::IsAsian), finds the font entry for a size (under 0x400) in a table |
+| `0x692950` | Layout::Place692950 | In outline: another box placement like Layout::Place692CF0, growing the shared table when needed (`0x6918E0`) |
+| `0xaea080` | Graph::DrawAEA080 | In outline: another graph draw like Graph::DrawACFDB0, when not flagged (+0x100) |
+| `0xa297d0` | Info::TextA297D0 | In outline: makes an info text from a shared text (`0xF31F48`) for a thing |

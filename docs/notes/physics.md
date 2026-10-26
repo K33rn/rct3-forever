@@ -219,3 +219,8 @@ The rigid-body physics engine (crashing ride cars, the buggy, thrown and dropped
 | `0x9ce6d0` | Particles::InRange9CE6D0 | In outline: whether a point is within an emitter's range (its radius against a limit and +0x134) |
 | `0x8775c0` | Scenery::Angles8775C0 | In outline: loads scenery (Scenery::Load876810) and works out the two angles of a direction (arctangents) |
 | `0x506a20` | Car::Ground506A20 | In outline: walks a ray across the terrain (Terrain::RayMarch8BD5B0) for a ride car (+0x44) and keeps the hit |
+| `0xcc5c80` | Quaternion::Slerp | In outline: blends between two rotations by a fraction along the sphere (sines of the angle between them), falling back to a straight blend when they are nearly the same |
+| `0xc5a1f0` | Quaternion::Slerp2 | In outline: the same rotation blend (another copy; used to blend bone poses) |
+| `0x8ead40` | Water::Normals8EAD40 | In outline: works out a water piece's normals over the terrain, normalising each |
+| `0x5f07b0` | Camera::Aim5F07B0 | In outline: when not flagged (+0x58), points a camera along a direction (Matrix::LookAlongZSide) when it is long enough |
+| `0x8c0170` | Terrain::LowestPoint | In outline: the lowest of a list of terrain points (the first for one or two) |

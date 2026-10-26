@@ -164,3 +164,6 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x77a620` | GuestGroup::Move77A620 | In outline: in mode 4 (+0xE4), moves a group's members that are not on the ride (+0x118 +0xC) (`0x7C6280` with 0.5) |
 | `0x776da0` | GuestGroup::Choose776DA0 | In outline: a group's choice by its state (+0x44: 0, ...), at random (Random::Ran0) among the free options |
 | `0x7de9c0` | Guest::Update7DE9C0 | In outline: a guest's update: resets its state (Person::SetState) and checks what it is linked to by kind |
+| `0x79a6b0` | Guest::Spot79A6B0 | In outline: finds a spot for a guest over the terrain |
+| `0x7aa9c0` | Person::Route7AA9C0 | In outline: another route finder with the path manager |
+| `0x7ec8f0` | Person::Behaviour7EC8F0 | In outline: a person's update at a scenery behaviour: resets its state (Person::SetState) and checks the owner's flags (+0x7C bit 4, +0x58 bit 1) |
