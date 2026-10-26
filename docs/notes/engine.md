@@ -4554,3 +4554,17 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x431fc0` | Sky::Value431FC0 | In outline: reports a missing resource (Report::MissingResourceSymbol3) and gives a value |
 | `0x425770` | GameTime::Shared425770 | In outline: with no shared count (`0x1106C54`), the game time |
 | `0x49bc50` | Static::Value49BC50 | In outline: reports a missing resource (ReportMissingResourceSymbol) and gives a value |
+| `0x40c3c0` | Effect::Vertices40C3C0 | In outline: for entry n (0x24 bytes at +0x2C), grows its vertex space (Effect::Grow40B3B0) when short and fills it part by part through a shared converter table (`0x10F2D30` by format and `0x13D2888`); gives the start |
+| `0xc5fb50` | Camera::RectC5FB50 | In outline: from a rectangle's corners, works out an offset and size, has an object map a point (slot 0x70), and writes a result that depends on a flag (bit 2 of +0x1C) |
+| `0x46d0b0` | Labels::Greater46D0B0 | In outline: gets two texts (slot 8 of each) and whether the first compares above the second (Text::CompareCD5640); frees both |
+| `0x988070` | Vector::RotateByAxis988070 | In outline: rotates about a vector's direction by its length (Vector::RotateAround); below a tiny length leaves it unchanged |
+| `0x496a60` | Static::Release496A60 | In outline: when a check passes, takes one from a made entry's count (Engine::Make496540) and at 0 releases it (Static::Step495F50) and sets it to -1 |
+| `0x47e0d0` | Options::Reset47E0D0 | In outline: sets a flag (+0x21), clears a value (+0xD8), copies two values from a shared record (`0x1103B6C` +0x190, +0x194) and sets an option (Options::Set482860) |
+| `0x46b8b0` | Movie::Setup46B8B0 | In outline: with a player (+0x1C), a step (slot 0x28), sets up playback (MoviePlayback::Setup) and sets a flag (bit 2 of +0x18) unless its state (slot 0x1C) is 0 or 1 |
+| `0x42e6e0` | Sky::Point42E6E0 | In outline: for entry n of a shared table (`0x1103C0C`, 16 bytes, under `0x1103C18`) that is on and set, sets a point (Scenery::SetPoint86D0A0) |
+| `0x49ebd0` | Static::FreeSlot49EBD0 | Frees slot n (0x30 bytes at +0x20): clears its flag, puts n back on a free list (+0x24) and takes one from a count (+0x28) |
+| `0x48ca20` | Effect::Move48CA20 | In outline: makes a part and moves (Effect::Move48A4B0) with the same three values |
+| `0x483850` | Screen::Mode483850 | In outline: changes a screen mode pair (two bytes), keeping the cursor where it was (GetCursorPos, SetCursorPos), resets the window style (Window::Style483160), screen size and a text; gives 1 |
+| `0xcc28d0` | Shader::NothingCC28D0 | In outline: shows no effect in the decompiler |
+| `0xcc2830` | Shader::NothingCC2830 | In outline: shows no effect in the decompiler |
+| `0xcc26c0` | Shader::NothingCC26C0 | In outline: shows no effect in the decompiler |

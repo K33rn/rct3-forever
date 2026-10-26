@@ -1933,3 +1933,4 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5d1590` | TrackPiece::Bit1 | Gives bit 1 of n |
 | `0x55fba0` | Ride::Clear55FBA0 | Clears flags (bits 0-1 of +0xF8) |
 | `0x52f530` | Car::False52F530 | Gives 0 |
+| `0x5cfaf0` | TrackPiece::Copy5CFAF0 | Copies ten values (from +4) and sets another (+0x2C) |

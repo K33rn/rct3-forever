@@ -3493,3 +3493,18 @@
 | `0x9c60a0` | Particles::Count9C60A0 | Adds one to a count (+0x48) |
 | `0x7381c0` | Guest::Count7381C0 | Adds one to a count (+0x74) |
 | `0x76dff0` | Park::Same76DFF0 | Gives its argument back |
+| `0x7e1620` | Person::Build7E1620 | In outline: makes a part (`0xBCDFC0`); with none, takes a reference to a handle (+0xAC), builds a window part (Window::Build6456F0) into +0x68 and makes a scenery part (Scenery::Make61CF40) |
+| `0x79f8e0` | Terrain::Init79F8E0 | In outline: sets up a handle link (Handle::Null) joined into its list, a second link and clears three values |
+| `0x9d4a80` | Particles::Remove9D4A80 | In outline: finds an entry by either of two texts (Text::FindBCE9D0) and removes it, moving the last one in (Ref::Assign9D0CE0, ObjectArray::SetCapacity) |
+| `0x8b2570` | SceneryBehaviour::Init8B2570 | In outline: sets up a handle link (Handle::For), its table (`0xF2CD44`), a flag and the game time's value (+0x48) |
+| `0x949210` | Water::Entry949210 | In outline: for entry n (12 bytes at +0x160, under +0x164) marked stale, frees its object and finds it again (Water::Find946FC0); gives the object |
+| `0x844800` | Scenery::Buy844800 | In outline: when money allows (Money::CheckCost on +0x2C), clears every slot (+0x24, count +0x28) and gives 1; else, unless asked, shows the no money message (Money::ShowNoMoney) |
+| `0x81faf0` | Scenery::Link81FAF0 | In outline: whether two of four sides n and m link: equal, or m not next to n and a cached part of m's entry (0x1C bytes at +0x6C) by a shared kind (`0x130B540`) allows it |
+| `0x7fa670` | Person::Init7FA670 | In outline: an object with kind text "*:ent", its tables (`0xF7510C`, `0xF6C51C`) and an empty text reference |
+| `0x7577e0` | Guest::Init7577E0 | In outline: the same with its table (`0xF6C504`) |
+| `0x9c69d0` | Particles::Done9C69D0 | In outline: 0 while a count (+0x9C) is above 0; else whether every entry (count +0xD0) passes a check |
+| `0x9db100` | Fireworks::Make9DB100 | In outline: a random value (Random::Ran0) and makes a part (Window::Make9DAF50) |
+| `0x9d0a90` | Particles::Add9D0A90 | Adds a value at the end of a list (+0x214, count +0x218), growing it first (`0x9CE530`) |
+| `0x9eaf30` | Fireworks::Kind9EAF30 | In outline: a kind step (Firework::Kind9EA680) with a part (+0x70); gives its argument |
+| `0x9eaf10` | Fireworks::Kind9EAF10 | In outline: the same with +0x5C |
+| `0x7446d0` | Guest::Describe7446D0 | In outline: writes a record with "Version ", "Name " and "Leader " entries and describes each avatar entry (AvatarDatabaseEntry::Describe) |

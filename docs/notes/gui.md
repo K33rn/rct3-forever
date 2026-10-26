@@ -2299,3 +2299,14 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6acac0` | Window::Shared6ACAC0 | Sets a shared value (`0x1305CF0`) |
 | `0x6ef460` | Window::Slot6EF460 | Gives slot n (+8) |
 | `0x6ef450` | Window::Count6EF450 | Adds one to slot n's count (+8) |
+| `0x65cb80` | Window::Init65CB80 | In outline: sets its table (`0xF4D874`), a value, allocates a buffer (Memory::AllocAligned) and clears it byte by byte up to a count (+0x28) |
+| `0x7002f0` | Window::Next7002F0 | In outline: with a list (+0x1A8), moves an index (+0x190) on by one, kept between two limits (+0x19C, +0x1A0), and links (Scenery::Link6FD860) |
+| `0x484070` | Window::Take484070 | In outline: with a part (+0x58), takes (Window::Take6A65B0) when another has no value, and lays out when flagged (bit 0 of +0xC8 +0x94) |
+| `0x9aac90` | Window::Toggle9AAC90 | Turns a flag (+0xE0) on or off, acts (slot 0xE4) and places (Window::Place9AA0A0) |
+| `0x5f4e30` | Window::Close5F4E30 | In outline: when on (+8) and a shared flag (`0x12F8438`) is clear, tells its owner (slot 4) and clears the flag |
+| `0x5f4000` | Window::Mode5F4000 | In outline: with no shared value (`0x12F56B4`) and another (`0x134292C`), a mode step (Window::Mode67AFF0) |
+| `0x9da600` | Window::Shared9DA600 | In outline: a shared step (Window::Shared9DA430) and gives its argument |
+| `0x9da5e0` | Window::Shared9DA5E0 | In outline: the same with Window::Shared9DA260 |
+| `0x68d620` | Window::Clear68D620 | In outline: sets an empty text (Text::Assign40A6E0) and clears a value (+0xFC) |
+| `0x65d190` | Window::Close65D190 | In outline: tells a part (+0x154, slot 0x14), children (Window::ChildrenSlot4) and deletes itself |
+| `0x6acad0` | Window::Copy6ACAD0 | Copies two values |

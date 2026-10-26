@@ -1557,3 +1557,9 @@
 | `0xa3ebd0` | Animal::ClearA3EBD0 | Clears its first value |
 | `0xb341e0` | WildAnimal::SharedB341E0 | In outline: with a shared object (`0x13CE934`), a step |
 | `0xa30180` | Animal::CountA30180 | Adds one to a count (+0x5C) |
+| `0xb451c0` | WildAnimal::CachedB451C0 | In outline: looks up and caches a part (+0x70, flag +0x74) by a shared kind (`0x13D0168`), then gives a value from it by a flag (+0x90) |
+| `0xb36820` | WildAnimal::RandomB36820 | In outline: caches a part (+0x54, flag +0x58) by a shared kind (`0x13CE94C`), then sets several values (+0xD8..+0xEC) from random steps (WildAnimal::RandomB34740, RandomB346B0) |
+| `0xb21d30` | WildAnimal::CheckB21D30 | In outline: caches a part (+0xAC, flag +0xB0) by a shared kind (`0x13CE834`); when its flag (+0xE1) is clear, makes an object and checks it (WildAnimal::CheckB47380); else may set a state to 7 (+0x78) |
+| `0xa9a900` | PoolComplex::PartA9A900 | In outline: with a slot (+0x124), a graph case (Graph::LastAC2C50, PoolComplex::CaseAADEE0); else caches and gives a part (+0x13C, flag +0x140) by a shared kind (`0x1310F90`) |
+| `0xba68d0` | Fences::LoadBA68D0 | In outline: activates every object in a shared list (`0x10F2AB4`) not yet active, then loads the fences folder (Fences::LoadFolder) |
+| `0xba31a0` | Animals::GridBA31A0 | In outline: for every object in a shared list (`0x10F2A9C`), the animal walking grid view step (ViewMenu::AnimalWalkingGrid) |
