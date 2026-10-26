@@ -224,3 +224,17 @@
 | `0xb8bc50` | Animal::CaseB8BC50 | In outline: an animal value by case |
 | `0xb1c670` | Animal::GetB1C670 | In outline: a step with an object (Interface44c::Get) |
 | `0xb33f40` | Animal::PassB33F40 | In outline: goes over a list (+0x14) |
+| `0xb8d9c0` | Animal::UpdateB8D9C0 | In outline: an animal update when not flagged (+0xF8) |
+| `0xb3ea20` | Animal::UpdateB3EA20 | In outline: an animal update (Animal::UpdateB45C30) |
+| `0xaebd40` | Animal::UpdateAEBD40 | In outline: an animal update when not flagged (+0x100) |
+| `0xa7bf80` | Animal::UpdateA7BF80 | In outline: an animal update when not flagged (+0x1C4) |
+| `0xbafef0` | Shop::TimeBAFEF0 | In outline: a shop time step (Shop::Time4C0450) |
+| `0xb9c020` | PathGrid::ValueB9C020 | In outline: a path grid value for an entry not flagged (+0x18) |
+| `0xa6ed40` | Animal::PointA6ED40 | In outline: a point check against a shape with more than three points |
+| `0xb7c9a0` | Animal::UpdateB7C9A0 | In outline: an animal update when not flagged (+0x90) |
+| `0xa0ef90` | Bird::UpdateA0EF90 | In outline: unless the global flag `0x1400306` is set, a bird step |
+| `0xa88860` | Animal::ValueA88860 | In outline: an animal value from its entries (+0x28) |
+| `0xb77db0` | Animal::StepB77DB0 | In outline: an animal step (`0xB0E0F0`) |
+| `0xab0520` | Animal::ModeAB0520 | In outline: acts by an animal's mode (+0x120) |
+| `0xb98aa0` | PathGrid::FlagB98AA0 | In outline: a step when a table entry is not flagged (`0x10F29BB`) |
+| `0xb30090` | Animal::GetB30090 | In outline: a step with an object (Interface48::Get) |

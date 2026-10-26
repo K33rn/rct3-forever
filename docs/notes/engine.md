@@ -1739,3 +1739,17 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xcd25c0` | Resource::FindCD25C0 | In outline: finds a resource (`0xBCEE60`) |
 | `0x812d40` | List::Range812D40 | In outline: a step over a range |
 | `0xc5d1c0` | Vector::SameC5D1C0 | In outline: whether two points are nearly the same |
+| `0x7fc4a0` | Load::Make7FC4A0 | In outline: makes a part |
+| `0xbe0190` | Resource::FindBE0190 | In outline: finds a resource (`0xBDD290`) |
+| `0xa7aa00` | Loop::StepA7AA00 | In outline: a loop step |
+| `0xc4a180` | ShaderFile::ReadC4A180 | In outline: reads a four-byte value (`0xBE5020`) |
+| `0x926360` | Array::Resize926360 | In outline: resizes a list to n |
+| `0xa6fd20` | Array::ResizeA6FD20 | In outline: resizes a list to n |
+| `0x809210` | Load::ReadBytes | In outline: reads n bytes from a saved block, checking against its bounds (+8, +0xC) |
+| `0xc02a40` | Timer::StepC02A40 | In outline: a step when a time (+8) is positive |
+| `0x402550` | Text::Grow402550 | In outline: grows a text when the other is longer |
+| `0x746590` | Text::Make746590 | In outline: makes a text |
+| `0xa83bb0` | Text::MakeA83BB0 | In outline: makes a text record |
+| `0x743c20` | Text::Make743C20 | In outline: makes a text record |
+| `0x784be0` | Text::Make784BE0 | In outline: makes a text record |
+| `0xe04348` | Math::LoopE04348 | In outline: a loop over n values |

@@ -347,3 +347,25 @@ Tracked rides, flat rides and their cars and trains.
 | `0x4d0cb0` | Shop::Grow4D0CB0 | In outline: grows a shop list (+0x9C) |
 | `0x54f670` | Ride::List54F670 | In outline: goes over a ride's list |
 | `0x4914f0` | Ride::Update4914F0 | In outline: a ride update when not flagged (+0x428) |
+| `0x59dc60` | TrackSegment::Make | In outline: makes a track segment (TrackSegment::TrackSegment) |
+| `0x574740` | Ride::Slot574740 | In outline: a ride step when its slot (+0xBC) is in range of the current tool's count (`0x12F5638` +0x114) |
+| `0x5e1f20` | TrackPiece::Count5E1F20 | In outline: a track step for a positive count |
+| `0x4eb3d0` | AttractionPerson::Update4EB3D0 | In outline: an attraction person update when not flagged (+0x118) |
+| `0x5d00f0` | TrackPiece::Pose5D00F0 | In outline: a track piece pose with its turn (Clamp0To3) |
+| `0x4f0c70` | Ride::Step4F0C70 | In outline: a ride step (`0x4F06B0`) |
+| `0x4e4b20` | Window::Build4E4B20 | In outline: builds a window from the shared title `0x12F4FA4` |
+| `0x490a60` | Ride::Pass490A60 | In outline: goes over a ride's parts (+0x15C) |
+| `0x4af1f0` | Ride::Link4AF1F0 | In outline: links a ride's part (`0x4AA760`) |
+| `0x5a9cc0` | Ride::Update5A9CC0 | In outline: a ride update when not flagged (+0x324) |
+| `0x5864e0` | Ride::Check5864E0 | In outline: a ride check when not flagged (+0x1EC) |
+| `0x4698e0` | Ride::Slot4698E0 | In outline: a step when it has a slot |
+| `0x5e4760` | TrackPiece::Make5E4760 | In outline: makes a 0x14-byte record |
+| `0x4e7380` | Ride::Check4E7380 | In outline: a ride check (`0x531730`) |
+| `0x4bbf30` | Ride::Pick4BBF30 | In outline: a pick under the mouse (MainCamera::Get) |
+| `0x5eade0` | TrackedRide::Check5EADE0 | In outline: a check on a ride's part |
+| `0x59c580` | Ride::Update59C580 | In outline: a ride update when not flagged (+0x84) |
+| `0x531c30` | Ride::Count531C30 | In outline: a ride step for a positive count |
+| `0x568150` | Ride::Update568150 | In outline: a ride update when not flagged (+0xF0) |
+| `0x70f680` | Ride::Step70F680 | In outline: a ride step (`0x4F06B0`) |
+| `0x5516d0` | Ride::List5516D0 | In outline: goes over a ride's list |
+| `0x416650` | Ride::Mode416650 | In outline: a step in modes other than 0 and 1 (+0x174) |

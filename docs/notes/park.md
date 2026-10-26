@@ -796,3 +796,44 @@
 | `0x77e1c0` | Park::Find77E1C0 | In outline: finds an entry (+0x48) |
 | `0x908250` | Water::Cell908250 | In outline: a water cell step inside bounds |
 | `0x871cb0` | Scenery::Flag871CB0 | In outline: a scenery step by a flag (Flags::Bit0) |
+| `0x886620` | Scenery::Find886620 | In outline: finds a scenery entry (`0x8847A0`) |
+| `0x9e2730` | Fireworks::Terrain9E2730 | In outline: a firework step over the terrain |
+| `0x91e410` | Water::Terrain91E410 | In outline: a water step over the terrain |
+| `0x915780` | Water::Pass915780 | In outline: goes over water entries (+0x10) |
+| `0x88dea0` | Scenery::Water88DEA0 | In outline: a scenery step with a water part (`0x90D380`) |
+| `0x849ab0` | Scenery::Show849AB0 | In outline: a scenery step when on (+0x94) |
+| `0xaea420` | Animal::UpdateAEA420 | In outline: an animal step when on (+0x2C) |
+| `0x876fa0` | Scenery::Terrain876FA0 | In outline: a scenery step over the terrain |
+| `0x72fa20` | Path::Slot72FA20 | In outline: a path value for n in range of its count (+1) |
+| `0x72f610` | Path::Slot72F610 | In outline: a path value for n in range of its count (+0) |
+| `0x88f1e0` | Scenery::Loop88F1E0 | In outline: a scenery loop |
+| `0x97a4f0` | Water::Same97A4F0 | In outline: a step when two cells differ |
+| `0x741a30` | Guest::Link741A30 | In outline: links a guest's part when given one |
+| `0x726270` | PathGrid::Make726270 | In outline: sets up a path table (`0x488290` with 0x10) |
+| `0x9197a0` | Water::Terrain9197A0 | In outline: a water check over the terrain |
+| `0x812f50` | List::Range812F50 | In outline: a step over a range |
+| `0x901600` | Water::Terrain901600 | In outline: a water step over the terrain |
+| `0x870010` | Scenery::Part870010 | In outline: a scenery step with a part when it has one |
+| `0x84bf60` | Scenery::Make84BF60 | In outline: makes a scenery record with an empty handle |
+| `0x723e50` | Path::Index723E50 | In outline: makes a 20-byte-entry array |
+| `0x733b90` | Path::Part733B90 | In outline: a path step with a part when it has one |
+| `0x92c310` | Water::Mode92C310 | In outline: a water step in mode 1 |
+| `0x913420` | Water::Random913420 | In outline: a random water step (Random::Ran0) |
+| `0xac11d0` | Fence::GrowAC11D0 | In outline: grows a list (ObjectArray::SetCapacity) |
+| `0x492cd0` | WaterManager::Make | In outline: makes the water manager (WaterManager::WaterManager) |
+| `0x7538b0` | Guests::Next7538B0 | In outline: a step when a list's place differs from its end (+4, +0x10) |
+| `0x72f820` | Path::Slot72F820 | In outline: a path value for a positive n |
+| `0x72fc30` | Path::Slot72FC30 | In outline: a path value for a positive n |
+| `0x9f8d80` | Fireworks::Bits9F8D80 | In outline: a step over a 64-bit value's parts |
+| `0x955750` | Water::Grid955750 | In outline: a water grid step (+0x1C by +0x20) |
+| `0x828990` | Scenery::Terrain828990 | In outline: a scenery step over the terrain |
+| `0xabce40` | Fence::StepABCE40 | In outline: a border step (`0xABC4F0`) |
+| `0x88efe0` | Scenery::Loop88EFE0 | In outline: a scenery loop |
+| `0x77a9e0` | Park::Pass77A9E0 | In outline: goes over a list (+0x48) |
+| `0x903840` | Water::Count903840 | In outline: a water step for a positive count |
+| `0x774f30` | Guest::Count774F30 | In outline: a step when a count passes the shared value (`0x1306928`) |
+| `0x95f1e0` | Water::Edge95F1E0 | In outline: another water edge case |
+| `0x7f0d00` | Person::Slot7F0D00 | In outline: a step when it has a slot |
+| `0x724580` | Terrain::Rect724580 | In outline: a terrain step over a byte rectangle |
+| `0x98eb30` | Scenery::Refresh98EB30 | In outline: a refresh (`0x501FB0`) |
+| `0x7a8270` | Terrain::Mode7A8270 | In outline: acts by a mode (+0x524) |

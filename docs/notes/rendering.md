@@ -696,3 +696,15 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbf2c60` | Text::DrawBF2C60 | In outline: draws text with a size rounded from a scale |
 | `0xbf2670` | Text::DrawBF2670 | In outline: the same text draw (another copy) |
 | `0xc2c7b0` | Resource::ReleaseC2C7B0 | In outline: releases a part (`0xCA4420`) |
+| `0x84ef90` | Scenery::Light84EF90 | In outline: a scenery step with the downward light direction (Lighting::DownwardDirection) |
+| `0x8b6140` | SceneryBehaviour::Step8B6140 | In outline: a behaviour step from its owner (SceneryBehaviour::Owner) |
+| `0x81e050` | SceneryBehaviour::Add81E050 | In outline: adds a behaviour to a slot pool (SlotPool::Add) |
+| `0x408890` | Draw::Line408890 | In outline: a line draw when the length is not 0 |
+| `0x8b07b0` | Scenery::Turn8B07B0 | In outline: turns a scenery item (Matrix::TurnAboutY by +0x140) |
+| `0xc2f650` | Vector::LerpC2F650 | In outline: a blend of two points by a fraction |
+| `0x8b8ca0` | SceneryBehaviour::Step8B8CA0 | In outline: a behaviour step from its owner (SceneryBehaviour::Owner) |
+| `0xcbea90` | Shader::SetCBEA90 | In outline: sets a shader part when it has one |
+| `0x42b590` | Sky::Step42B590 | In outline: a step when on (+0xC) |
+| `0x94ca80` | Water::Length94CA80 | In outline: a water direction's length |
+| `0xbfbee0` | Device::StepBFBEE0 | In outline: a device step (`0xBD3DC0`) |
+| `0x9c5dc0` | Particles::Loop9C5DC0 | In outline: a particle loop |

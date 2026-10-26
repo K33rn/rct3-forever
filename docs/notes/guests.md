@@ -203,3 +203,4 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7cef60` | Person::Update7CEF60 | In outline: a person update when not flagged (+0x2D4) |
 | `0x7cc220` | Person::Find7CC220 | In outline: a person step unless told not to |
 | `0x75abf0` | Guest::Mode75ABF0 | In outline: a guest step in mode 0x10 (+0x190) |
+| `0x768f80` | Guest::Update768F80 | In outline: a guest update when not flagged (+0x2D4) |

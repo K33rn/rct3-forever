@@ -1036,3 +1036,59 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xb43e30` | Window::BuildB43E30 | In outline: builds a window from the shared title `0x13CE990` |
 | `0x630ab0` | Window::Build630AB0 | In outline: builds a window from the shared title `0x12F7E38` |
 | `0xc603a0` | Window::FocusC603A0 | In outline: a step when it is the window system's focused one (`0x13E6D00` +0x190) |
+| `0x5eabd0` | Window::Build5EABD0 | In outline: builds a window from the shared title `0x12F5644` |
+| `0xa04da0` | Window::BuildA04DA0 | In outline: builds a window from the shared title `0x1341DD8` |
+| `0x6ab4e0` | Window::Build6AB4E0 | In outline: builds a window from the shared title `0x1305CCC` |
+| `0x467a80` | Window::Build467A80 | In outline: builds a window from the shared title `0x12EFFF4` |
+| `0xa4c320` | Window::BuildA4C320 | In outline: builds a window from the shared title `0x1342924` |
+| `0x6fc5d0` | Window::Event6FC5D0 | In outline: handles an event from its own part (+0x164) |
+| `0x6b4040` | Window::Build6B4040 | In outline: builds a window from the shared title `0x1305D84` |
+| `0x6c22f0` | Window::Update6C22F0 | In outline: a window step when on (+0x2C) |
+| `0x69fc20` | Window::Build69FC20 | In outline: builds a window from the shared title `0x1305C08` |
+| `0x8dd470` | Window::Build8DD470 | In outline: builds a window from the shared title `0x1313C74` |
+| `0x7e3d90` | Window::Build7E3D90 | In outline: builds a window from the shared title `0x1309DF8` |
+| `0x685bd0` | Window::Build685BD0 | In outline: builds a window from the shared title `0x12F8464` |
+| `0x65d780` | Window::Build65D780 | In outline: builds a window from the shared title `0x12F80C4` |
+| `0x6a57c0` | Window::Build6A57C0 | In outline: builds a window from the shared title `0x1305C8C` |
+| `0x6a18b0` | Window::Build6A18B0 | In outline: builds a window from the shared title `0x1305C38` |
+| `0x7ef3d0` | Window::Build7EF3D0 | In outline: builds a window from the shared title `0x130A8D0` |
+| `0x8716b0` | Window::Build8716B0 | In outline: builds a window from the shared title `0x1310EDC` |
+| `0x6d0d60` | Window::Refresh6D0D60 | In outline: refreshes a window (`0x6D4690`) |
+| `0x6a84d0` | Window::Build6A84D0 | In outline: builds a window from the shared title `0x1305CAC` |
+| `0x687f30` | Window::Build687F30 | In outline: builds a window from the shared title `0x12F8468` |
+| `0x67dd20` | List::Pass67DD20 | In outline: goes over a list's entries (+0x11C) |
+| `0x4873b0` | Window::Build4873B0 | In outline: builds a window from the shared title `0x12F462C` |
+| `0xc64350` | Window::RectC64350 | In outline: sets a window's rectangle (Rect::Assign) |
+| `0xb4f560` | Window::BuildB4F560 | In outline: builds a window from the shared title `0x13CEA2C` |
+| `0x9f6e50` | Window::Build9F6E50 | In outline: builds a window from the shared title `0x1341D20` |
+| `0x6ab2a0` | Window::Build6AB2A0 | In outline: builds a window from the shared title `0x1305CD4` |
+| `0x6a1b50` | Window::Build6A1B50 | In outline: builds a window from the shared title `0x1305C34` |
+| `0x6dca90` | Objectives::ShopProfitText | In outline: makes a shop profit condition's text (ShopProfitCondition::Name) |
+| `0x6ac730` | Window::Build6AC730 | In outline: builds a window from the shared title `0x1305CE8` |
+| `0x648020` | Window::Build648020 | In outline: builds a window from the shared title `0x1306A88` |
+| `0xc6bfe0` | Window::MakeC6BFE0 | In outline: makes a window part (`0xC65F20`) |
+| `0xc5e520` | Device::SetC5E520 | In outline: a device setting when asked |
+| `0xa21490` | ListWindow::ClearA21490 | In outline: empties a list window (ListWindow::SetCount(0)) |
+| `0x6ab730` | Window::Build6AB730 | In outline: builds a window from the shared title `0x1305CD0` |
+| `0x41ce20` | Window::Build41CE20 | In outline: builds a window from the shared title `0x1103B34` |
+| `0xacf3a0` | Window::UpdateACF3A0 | In outline: a window step when on (+0x2C) |
+| `0x6f5680` | Window::Update6F5680 | In outline: a window update when not flagged (+0x9C) |
+| `0xacc6a0` | Window::BuildACC6A0 | In outline: builds a window from the shared title `0x13CE490` |
+| `0x6ea360` | Window::Build6EA360 | In outline: builds a window from the shared title `0x13060C8` |
+| `0x673660` | Graph::Draw673660 | In outline: draws a graph's frame (`0x6ACE50`) |
+| `0x6218d0` | Window::Layout6218D0 | In outline: places a window's parts (Window::UpdateRect) |
+| `0x813fc0` | Window::Build813FC0 | In outline: builds a window from the shared title `0x130B37C` |
+| `0x70a1d0` | Window::Build70A1D0 | In outline: builds a window from the shared title `0x13061F0` |
+| `0xa63950` | Window::ModeA63950 | In outline: acts by a window's mode (+0x1FC) |
+| `0xa2d9e0` | Window::ShowA2D9E0 | In outline: a step when asked or when it has a part (+0x100) |
+| `0x6a6100` | Window::Build6A6100 | In outline: builds a window from the shared title `0x1305C9C` |
+| `0x67dac0` | Window::Build67DAC0 | In outline: builds a window from the shared title `0x1305CC4` |
+| `0x4e41b0` | Window::Build4E41B0 | In outline: builds a window from the shared title `0x12F4F90` |
+| `0xb01e70` | Window::BuildB01E70 | In outline: builds a window from the shared title `0x13CE690` |
+| `0x6bc920` | Window::Event6BC920 | In outline: handles an event, passing it on first (Thunk) |
+| `0x503d10` | Window::Build503D10 | In outline: builds a window from the shared title `0x12F5054` |
+| `0x97dc80` | Window::Refresh97DC80 | In outline: refreshes a window (`0x6AFC20`) |
+| `0x6aa6c0` | Window::Size6AA6C0 | In outline: a window size for values up to 0x100 |
+| `0x9dd9b0` | Window::Build9DD9B0 | In outline: builds a window from the shared title `0x1341834` |
+| `0x9dbe60` | Window::Build9DBE60 | In outline: builds a window from the shared title `0x1341828` |
+| `0x5551c0` | Window::Narrow5551C0 | In outline: a step when the GUI root's width (`0x12F83F0` +0x88 minus +0x80) is under a limit |
