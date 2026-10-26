@@ -1862,3 +1862,24 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xc6adb0` | List::LastC6ADB0 | In outline: a step for the last entry |
 | `0x638da0` | Flags::Read638DA0 | In outline: reads a set of flags (bits 0x4000, 0x200, ...) into a value |
 | `0x43ad20` | Math::Log43AD20 | In outline: a value from a base-2 log of a constant (`0xF276F0`) |
+| `0x801ae0` | List::Find801AE0 | In outline: a find over a list (+4) |
+| `0x7fab10` | Record::Make7FAB10 | In outline: makes a part |
+| `0xce3d60` | List::PassCE3D60 | In outline: goes over entries (+0x28) |
+| `0xcaddf0` | ResourceFile::NameCADDF0 | In outline: a file name step by a value's sign |
+| `0xcc04e0` | Shader::StepCC04E0 | In outline: a shader step (`0xCBE430`) |
+| `0xcbe1d0` | Array::ResizeCBE1D0 | In outline: resizes a list to n |
+| `0xc48e30` | Text::MakeC48E30 | In outline: makes a text from an empty one |
+| `0xc3c260` | Path::IsAbsolute | In outline: whether a path is long enough and has a drive letter (':' second) |
+| `0xb0def0` | Array::ResizeB0DEF0 | In outline: resizes a list to n |
+| `0xcbd900` | Array::ResizeCBD900 | In outline: resizes a list to n |
+| `0x409660` | List::Grow409660 | In outline: grows a list to hold n |
+| `0xc513a0` | Stream::PartC513A0 | In outline: a step with a part |
+| `0xbe3820` | Resource::StepBE3820 | In outline: a step |
+| `0x9ffe70` | List::Grow9FFE70 | In outline: grows a list to hold n |
+| `0xc51c80` | Stream::SizeC51C80 | In outline: a step for sizes above 0x7FFFFFFF |
+| `0xbd6160` | Resource::StepBD6160 | In outline: a step (`0xC1FC30`) |
+| `0x714ff0` | Record::Make714FF0 | In outline: makes a record with an empty handle |
+| `0x47d570` | NamedObject::Make47D570 | In outline: makes a list member object (ListMember with `0x10EC9E8`) |
+| `0xa27aa0` | NamedObject::MakeA27AA0 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
+| `0xcba4e0` | Shader::StepCBA4E0 | In outline: a shader step (`0xC46720`) |
+| `0x40d2b0` | Record::Step40D2B0 | In outline: a step (`0x40C3C0`) |

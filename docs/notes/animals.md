@@ -300,3 +300,15 @@
 | `0xaa0040` | PoolComplex::LoopAA0040 | In outline: goes over a linked list |
 | `0xb73cf0` | Animal::CountB73CF0 | In outline: a step for a positive count |
 | `0xbb4460` | Animal::PassBB4460 | In outline: goes over entries (+0x100) |
+| `0xb83380` | Animal::PassB83380 | In outline: goes over entries (+8) |
+| `0xa12ee0` | Bird::UpdateA12EE0 | In outline: an update when not flagged (+0x138) |
+| `0xb788a0` | Animal::LoopB788A0 | In outline: goes over a linked list |
+| `0xab0930` | Animal::CaseAB0930 | In outline: a value by case |
+| `0xa131c0` | Bird::UpdateA131C0 | In outline: an update when not flagged (+0x138) |
+| `0xb6af50` | Animal::OnB6AF50 | In outline: a step when on (+0x74) |
+| `0xb52b70` | Animal::PartB52B70 | In outline: a step with a part (+0x130) and none at +0x14C |
+| `0xb99e70` | PathGrid::CountB99E70 | In outline: a step for a positive count |
+| `0xab0380` | Animal::ModeAB0380 | In outline: a check by an animal's mode (+0x120) |
+| `0xb6c720` | Animal::CountB6C720 | In outline: a step for a positive count |
+| `0xa89220` | Animal::BandA89220 | In outline: a step with a guest band (Guest::Band) |
+| `0xa14660` | Bird::WaterA14660 | In outline: a step with the water manager |

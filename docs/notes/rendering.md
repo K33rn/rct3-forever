@@ -781,3 +781,10 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xbed120` | Vector::LengthBED120 | In outline: a length step |
 | `0xbde370` | VertexDeclaration::CaseBDE370 | In outline: a step by an element's kind |
 | `0x99c360` | Fireworks::Count99C360 | In outline: a step for a positive count |
+| `0xbed2b0` | Vector::LengthBED2B0 | In outline: a length step |
+| `0xbf6e70` | Text::FillBF6E70 | In outline: fills buffers for the current device |
+| `0xbecfa0` | Vector::LengthBECFA0 | In outline: a length step |
+| `0x481790` | Draw::Add481790 | In outline: adds an entry when there is room (+0x20) |
+| `0x9e2cb0` | Fireworks::Make9E2CB0 | In outline: makes a part |
+| `0x43aeb0` | Effect::Step43AEB0 | In outline: a step (`0x438B20` with `0xF286F4`) |
+| `0x9ee8b0` | Fireworks::Camera9EE8B0 | In outline: a step with the camera (MainCamera::Get) |

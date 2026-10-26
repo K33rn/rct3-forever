@@ -1000,3 +1000,39 @@
 | `0x717c80` | Path::Time717C80 | In outline: a step when a value is up to 1 |
 | `0x8e4c00` | Terrain::Step8E4C00 | In outline: a terrain step |
 | `0x7a8da0` | Terrain::Case7A8DA0 | In outline: a step for case 0x38 or when not flagged (+0x29C) |
+| `0x9a48a0` | Fireworks::Entry9A48A0 | In outline: a step unless asked and a table entry exists (Table104::Entry) |
+| `0x9766c0` | Water::Light9766C0 | In outline: a water step with the downward light direction |
+| `0x7d3fb0` | Person::Check7D3FB0 | In outline: a step when a check fails |
+| `0x761440` | Guest::Check761440 | In outline: a check when not flagged (+0x444) |
+| `0x96ee00` | Water::Loop96EE00 | In outline: a loop |
+| `0x94bfd0` | Water::Slot94BFD0 | In outline: a value for n in range of its count (+0x59) |
+| `0x860790` | Scenery::Pose860790 | In outline: turns a scenery item's pose (Matrix::TurnColumnsAboutY by +0xB0) |
+| `0x80c530` | Regions::Loop80C530 | In outline: a loop |
+| `0x789000` | GuestGroup::Part789000 | In outline: a step with a part |
+| `0x778b00` | Park::Part778B00 | In outline: a step with a part (+0x48) |
+| `0x8378f0` | Scenery::Make8378F0 | In outline: makes a part (0x21) |
+| `0xa9fb70` | PoolComplex::CheckA9FB70 | In outline: a check with a part |
+| `0x96e0f0` | Water::Grow96E0F0 | In outline: grows a list to hold n (`0x96C780`) |
+| `0x7c63a0` | Person::Normal7C63A0 | In outline: a normalised direction |
+| `0x728a50` | Path::Value728A50 | In outline: a value when a check passes |
+| `0x840450` | Scenery::Part840450 | In outline: a step with a part (+0x9C) |
+| `0x7f8d60` | Person::Value7F8D60 | In outline: a value from a pointer table (PointerTable::Value44 with +0x121) |
+| `0xabe230` | Fence::PassABE230 | In outline: goes over entries (+0x60) |
+| `0xabcbb0` | Fence::EdgeABCBB0 | In outline: a step with a tile's edge point (Tile::EdgePoint) |
+| `0x94c2f0` | Water::Add94C2F0 | In outline: a step when adding n keeps the count (+0x58) under 0xFF |
+| `0x94c480` | Water::Add94C480 | In outline: the same (another copy) |
+| `0x90d380` | Water::Find90D380 | In outline: a find in a sorted table (SortedTable::Find20 on +0x80) |
+| `0x74dee0` | Guest::Grow74DEE0 | In outline: grows a list (`0x744F60` with +0x18 + 1) |
+| `0x744550` | Guest::Part744550 | In outline: a step with a part |
+| `0xb4ac70` | Animal::TerrainB4AC70 | In outline: a step over the terrain |
+| `0x830380` | Scenery::Slot830380 | In outline: a step when it has a slot (+0x190) |
+| `0x419d90` | Grid::Count419D90 | In outline: a step for a positive count |
+| `0x419f10` | Grid::Count419F10 | In outline: a step for a positive count |
+| `0x494d40` | Terrain::Step494D40 | In outline: a terrain step |
+| `0x902570` | Water::Slot902570 | In outline: a step when it has a slot |
+| `0x854820` | Scenery::Kind854820 | In outline: a step unless a kind is 2 |
+| `0x752cc0` | Guests::Update752CC0 | In outline: unless the global flag `0x1400306` is set, a step |
+| `0x8e8d80` | Water::Loop8E8D80 | In outline: a loop |
+| `0x8dcee0` | Terrain::Count8DCEE0 | In outline: a step for a positive count |
+| `0x815470` | SceneryBehaviour::Shared815470 | In outline: a step when one shared count passes another (`0x130B388`, `0x130B418`) |
+| `0x8917a0` | Scenery::Grid8917A0 | In outline: a step for a grid with cells |

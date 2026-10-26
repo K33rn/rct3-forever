@@ -1235,3 +1235,31 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6ae630` | Window::Check6AE630 | In outline: a window list check |
 | `0x9c12f0` | Window::Update9C12F0 | In outline: a step when on (+0x10) |
 | `0x6d10d0` | Window::Link6D10D0 | In outline: a step when given a part |
+| `0xa54e10` | Window::StepA54E10 | In outline: a step (`0xA52B40`) |
+| `0x983450` | Window::Text983450 | In outline: makes a text record |
+| `0x64b190` | Window::Check64B190 | In outline: a check when given an object that has a part |
+| `0x991000` | Window::Update991000 | In outline: an update when not flagged (+0xFC) |
+| `0x98e9a0` | Window::Step98E9A0 | In outline: a step (`0x98BC00`) |
+| `0x6cf4b0` | Window::Count6CF4B0 | In outline: a step when a count (+0xC) is above 3 |
+| `0xc67cf0` | Window::RectC67CF0 | In outline: sets a rectangle (Rect::Assign) |
+| `0x6e53d0` | Window::Name6E53D0 | In outline: a name text (NameText_0x0) |
+| `0xc66730` | Window::FadeC66730 | In outline: a step when a value (+0xD0) is not 0 |
+| `0xb9e690` | Window::MakeB9E690 | In outline: makes a part (`0x6C3BE0`) |
+| `0x6a7fc0` | Window::Mode6A7FC0 | In outline: a step in mode 1 |
+| `0x42aa30` | Window::Add42AA30 | In outline: adds an entry when there is room (+0xD8 vs +0xDC) |
+| `0x9f6c90` | Window::Alpha9F6C90 | In outline: an alpha rounded from a shared fade (`0x1103B6C` +0x180) |
+| `0x665e90` | List::Pass665E90 | In outline: goes over entries (+0x178) |
+| `0x6c8460` | Window::Make6C8460 | In outline: makes a window part (Listener440) |
+| `0x98c090` | Window::Update98C090 | In outline: an update when not flagged (+0x20A) |
+| `0xc62e70` | Window::RectC62E70 | In outline: sets a rectangle (Rect::Assign) |
+| `0x6a4260` | Window::Activate6A4260 | In outline: makes a part active (Updatable::SetActive(1)) |
+| `0x6e8e70` | Window::Value6E8E70 | In outline: a value with a part |
+| `0x6ae4a0` | Window::Check6AE4A0 | In outline: a window list check |
+| `0xa4ad40` | Window::StepA4AD40 | In outline: a step (`0x6A65B0`) |
+| `0x98bf10` | Window::Update98BF10 | In outline: an update when not flagged (+0x20A) |
+| `0x789ca0` | Window::Number789CA0 | In outline: a number text (String::FromNumber) |
+| `0x64a840` | Window::Draw64A840 | In outline: draws a window part (GUIRenderer) |
+| `0x695e80` | Layout::Mark695E80 | In outline: a step with the layout table, set up first when its value is unset (`0x10EEDB4` = 0xFFFF) |
+| `0x6b5b90` | Colour::Value6B5B90 | In outline: a value kept within a limit |
+| `0x4e2630` | TerrainEditor::Open | In outline: builds the terrain editor window (TerrainEditor::Build) |
+| `0xc63840` | Window::CheckC63840 | In outline: a check (`0xC5FA90`) |

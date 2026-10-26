@@ -456,3 +456,26 @@ Tracked rides, flat rides and their cars and trains.
 | `0x593370` | Ride::Part593370 | In outline: a step with a part |
 | `0x56bd20` | Ride::Update56BD20 | In outline: an update when not flagged (+0xF0) |
 | `0x529990` | Car::Pivot529990 | In outline: checks a car's pivot (RideCar::CheckPivot) |
+| `0x4c06c0` | Ride::NameInText | In outline: fills a text's "%RIDENAME%" marker with a ride's name |
+| `0x5a7740` | Car::Description | In outline: a car's description text, "<car description undefined>" when it has none |
+| `0x4df960` | Ride::Make4DF960 | In outline: makes a list member part (ListMember with `0x10EC9F8`) |
+| `0x5d6650` | TrackedRide::List5D6650 | In outline: makes a small list (SmallArray) |
+| `0x5ce040` | TrackedRide::Step5CE040 | In outline: a step (`0x5A4A90`) |
+| `0x5036d0` | Ride::Window5036D0 | In outline: a step with a window (`0x67B3C0`) |
+| `0x5d46e0` | TrackedRide::Pass5D46E0 | In outline: goes over entries (+0xF0) |
+| `0x569f10` | Ride::Step569F10 | In outline: a step (`0x4E6410`) |
+| `0x566b50` | Ride::Time566B50 | In outline: a step when a value (+0x70) is positive |
+| `0x536400` | Ride::Find536400 | In outline: finds an entry up to n |
+| `0x500d10` | Car::Part500D10 | In outline: a step with no part (+0xB4 +0x70) |
+| `0x4f8830` | Ride::Find4F8830 | In outline: finds an entry matching a value |
+| `0x4b6d10` | Ride::Step4B6D10 | In outline: a step (`0x4B52D0`) |
+| `0x4b5060` | Ride::Link4B5060 | In outline: a check when given a part |
+| `0x510e00` | Car::Tool510E00 | In outline: a step with the current tool (`0x12F5638`) |
+| `0x558da0` | Ride::Update558DA0 | In outline: an update when not flagged (+0x18) |
+| `0x5501e0` | Array::Resize5501E0 | In outline: resizes a list to n |
+| `0x50b7e0` | Car::Case50B7E0 | In outline: a pose step by case |
+| `0x5c1890` | TrackPiece::Value5C1890 | In outline: a value when not flagged (+0x170) |
+| `0x5bdc00` | TrackPiece::Check5BDC00 | In outline: a check with a part |
+| `0x59ade0` | Ride::Update59ADE0 | In outline: an update when not flagged (+0xD8) |
+| `0x523790` | Car::Update523790 | In outline: an update when not flagged (+0x180) |
+| `0x50b9b0` | Car::Pose50B9B0 | In outline: a car pose step when a value is positive |
