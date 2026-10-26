@@ -233,3 +233,6 @@ Tracked rides, flat rides and their cars and trains.
 | `0x5ea110` | TrackedRide::Update5EA110 | In outline: a tracked ride's update when not flagged (+0x68): its track (TrackedRide::TrackInterface) and its train's flag (+0x64 +0xB4) |
 | `0xbc6f00` | Track::JoinBC6F00 | In outline: whether two track pieces join: their ends (flag 0x400000, at least three) and their kinds (`0xBC4B50`, not 7) |
 | `0xab4b70` | PoolComplex::LinkAB4B70 | In outline: links a pool piece to its complex (`0x13CE028`, `0xA9F290`, `0xA9A440`) |
+| `0x5a81b0` | AttractionPersonInfo::Make | In outline: makes the person record for an attraction by its kind: mini golf (MiniGolfPersonInfo) for kind 9, others for 0xD and more |
+| `0x5e0c10` | TrackedRide::CanPlace5E0C10 | In outline: whether a track piece can be placed: its ride's track (TrackedRide::TrackInterface) and its check (`0x4C13C0`) |
+| `0x717840` | Path::Act717840 | In outline: acts on a path piece by its case (0: `0x716C30`, ...) and its check (Path::Check717400) |

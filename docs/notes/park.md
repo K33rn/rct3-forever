@@ -469,3 +469,10 @@
 | `0xa9a030` | GridTool::PickA9A030 | In outline: another cell-under-the-mouse pick like GridTool::CellUnderMouse (MainCamera::Get, `0xCD79C0`) on the terrain |
 | `0x847870` | Scenery::Check847870 | In outline: a scenery check: passes when off (`0x10EDC68`) or its own check passes (slot 0x44), otherwise checks the terrain |
 | `0x586b40` | Shop::Refresh586B40 | In outline: when not flagged (+0x1EC), refreshes a shop's items for each of four turns (`0x4D0CB0` with 4) |
+| `0xab16c0` | Fence::CornersAB16C0 | In outline: when it has no piece (+0x120) and is not flagged (+0x20C), places the four corner pieces (`0xA90B00` at minus and plus 2) |
+| `0x56b290` | Ride::UpdateTool56B290 | In outline: another ride tool update like Ride::UpdateTool56B690, when not flagged (+0x5C, +0xF0) |
+| `0x54e720` | Ride::Breakdown54E720 | In outline: a ride's chance check (`0x4AA5B0`) over its parts' values (+0x60, count +0x5C) with a random roll (Random::Ran0) |
+| `0x492730` | Terrain::CellOK492730 | In outline: whether a terrain cell is usable (a 90 by 90 grid), 0 for a cell outside it |
+| `0x717400` | Path::Check717400 | In outline: checks a path piece's parts (+0x214) over the terrain (a 90 by 90 grid) |
+| `0xab1f20` | Fence::HeightAB1F20 | In outline: a border piece's height by its kind (+0x120: 2, ...) over the terrain |
+| `0x83a160` | Scenery::Footprint83A160 | In outline: works out a scenery item's footprint (Placement::Footprint) for kinds 3, 5 and 7 (not 1, 2, 6, 8), from its cells (`0x838B60`, `0x838AC0`) |

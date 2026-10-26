@@ -702,3 +702,11 @@ The game's user interface: each window or dialog is built by one function that c
 | `0xae2830` | Window::DrawAE2830 | In outline: draws a window's frame (`0x6ACE50`) and, when it has height, its background (GUIRenderer, `0x694E90`), with a case for narrow ones |
 | `0x449580` | GUI::Setup449580 | In outline: sets up a GUI renderer with a 40000-byte buffer and its matrices (`0xCD78A0`) |
 | `0x69d5a0` | List::FillTexts69D5A0 | In outline: when it has no handler, fills a list's texts from a counted buffer (Memory::AllocCounted, WideString::FromWide) |
+| `0x684c40` | Window::HandleEvent684C40 | In outline: handles a window event by its number (0x10000, ...), timed (Timer::Milliseconds), with its parts (+0x128) |
+| `0x63ada0` | Window::Layout63ADA0 | In outline: when not flagged (+0xD4), places a window (Window::UpdateRect) and its part (+0xDC) |
+| `0xacef90` | Graph::DrawACEF90 | In outline: another graph draw like Graph::DrawACFDB0, when not flagged (+0x100) |
+| `0x99a900` | Window::Build99A900 | In outline: builds a window from the shared title `0x13413A4` |
+| `0x65fba0` | Window::Build65FBA0 | In outline: builds a window from the shared title `0x12F80E0` |
+| `0x681810` | Window::Drag681810 | In outline: when a drag has moved far enough, moves a window to whole pixels and checks its children (Window::ForEachChild) |
+| `0x654840` | Window::Build654840 | In outline: builds a window from the shared title `0x12F802C` |
+| `0xb433a0` | Window::BuildB433A0 | In outline: builds a window from the shared title `0x13CE99C` |

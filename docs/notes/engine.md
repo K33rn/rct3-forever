@@ -1524,3 +1524,11 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x731970` | Names::Unique731970 | In outline: the same unique name maker for another kind of thing (`0x730AA0`) |
 | `0xc59170` | Stream::ReadLinesC59170 | In outline: reads lines from a stream while not done (+0x14), joining their characters (`0x7FBFF0`, String::Append) |
 | `0x4c0850` | Info::Text4C0850 | In outline: makes an info text from its parts (+0x6C), with more than two characters and two parts handled |
+| `0x9b0890` | Texts::Load9B0890 | In outline: when not loaded (+0x14) or asked, loads a set of texts (`0x9AA6D0`, from `0x13D3058`) |
+| `0xbded20` | Shader::BuildBDED20 | In outline: builds a shader's code buffer (`0xBDD860`, its size +4 plus 0x10) and its parts by kind (0xE handled, `0xBDEB50`) |
+| `0xbca360` | Kinds::CodeBCA360 | In outline: a code number for a kind (0 gives 1; others give 0x13, 0x1F, ...) |
+| `0xa4b4d0` | Text::FindA4B4D0 | In outline: looks through a text for a marker (`0xF8E578`) and its parts |
+| `0x7eb930` | Info::Texts7EB930 | In outline: makes a thing's info texts when it has more than two parts (+0x414) |
+| `0x4189a0` | List::Refresh4189A0 | In outline: goes over a list refreshing its entries (`0x417A20`) |
+| `0xbf5f20` | Models::UpdateBF5F20 | In outline: goes over a list of models updating the ones not flagged (+0xED) whose value is 0 (`0xBF5D00`) |
+| `0x7bcf20` | Loader::Read7BCF20 | In outline: opens and reads a resource by name (`0xBDAC20`) |

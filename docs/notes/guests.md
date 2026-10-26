@@ -151,3 +151,8 @@ Guests (people visiting the park). More on how they choose rides is in [the rese
 | `0x7771f0` | Guest::Update7771F0 | In outline: a guest's update when not flagged (+0x1BC) with a target (+0x1B8), in state 0xB (+0x7C) and others |
 | `0x72e7c0` | Path::Refresh72E7C0 | In outline: refreshes a path piece's parts (`0x42E8B0`) unless flagged (+0x8C) |
 | `0x7f4f10` | Guest::PickRandom7F4F10 | In outline: picks one of two things at random for a guest of kind 0 or 1 (Random::Ran0) |
+| `0x760810` | Guest::PathTile760810 | In outline: finds the path tile under a guest (PathManager::Get, `0x71B370`) when it has a target (+0x4CC) |
+| `0x75b690` | Guest::GroupCheck75B690 | In outline: when flagged (+0x4B4) and not in stage 4, checks the guest's group (Park::Get, Guest::Group, GuestGroup::Member) |
+| `0x75ef80` | Guest::Decide75EF80 | In outline: a guest's choice: finds something (`0x79C0A0`) and checks it (`0x49B610`) |
+| `0x75e0d0` | Guest::Mood75E0D0 | In outline: unless in state 0x10 stage 2, now and then (Random::Ran0, by its rate +0x418) changes a guest's mood when it has more than two of something (+0x120) |
+| `0x776200` | GuestGroup::HoldHands | In outline: makes a hold-hands route for a group (HoldHandsRouteController) and starts it (`0x7E5190` on +0x198) when it has at least two members |

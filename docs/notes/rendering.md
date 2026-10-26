@@ -480,3 +480,11 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0xc31c70` | Mesh::FillC31C70 | In outline: fills a mesh's buffers (`0xC31770`) for a count, copying four values at a time |
 | `0x998630` | Fireworks::Aim998630 | In outline: aims a firework at the point under the mouse (MainCamera::Get, `0xCD79C0`), normalising its direction (+0x1E8) |
 | `0x4833d0` | Lights::Find4833D0 | In outline: finds the free light slots of a list and clears a 0x27-entry table |
+| `0x97b040` | Shapes::SetCount97B040 | In outline: when a shape set's count changes (+0x48), releases or makes its parts (+0x4C, count +0x50) |
+| `0x461650` | Texture::Make461650 | In outline: when it is on (+0x35) and not too big (up to 0x800, +0x28), makes a texture (Device::CreateTexture, twice the size, format 5) |
+| `0x9e89a0` | Sky::BlendColours | In outline: moves a set of shared colour values (`0x1341A80` on, 0x30 bytes each) toward their targets by a rate (Value::MoveToward with 0.05) |
+| `0x855560` | Water::DrawReflection855560 | In outline: when reflections are on (`0x12F018C` +0xB0), draws the water's reflection (WaterManager::Get, `0x949210`, Spring::Constants) |
+| `0x8fd290` | Water::DrawRange8FD290 | In outline: draws a range of water pieces (under 0x3FFF) for the current device (ForCurrent(3)) |
+| `0x978970` | Particles::Draw978970 | In outline: draws particles for the current device (ForCurrent(3)), each by its fade (+0x8C, between 0 and 1) |
+| `0x811280` | Shadows::View811280 | In outline: sets up a shadow view with an orthographic matrix (Matrix::Ortho, 1 to 1000) by its kind (0, 1, 2), with `0x466660` |
+| `0x425d40` | Sky::Colour425D40 | In outline: works out a sky colour (`0x9FBED0`) kept at most 1 and packed into a colour value |
