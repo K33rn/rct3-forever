@@ -3508,3 +3508,4 @@
 | `0x9eaf30` | Fireworks::Kind9EAF30 | In outline: a kind step (Firework::Kind9EA680) with a part (+0x70); gives its argument |
 | `0x9eaf10` | Fireworks::Kind9EAF10 | In outline: the same with +0x5C |
 | `0x7446d0` | Guest::Describe7446D0 | In outline: writes a record with "Version ", "Name " and "Leader " entries and describes each avatar entry (AvatarDatabaseEntry::Describe) |
+| `0x49b050` | Park::Group49B050 | Sorts a kind code (0-255) into one of three groups for the park list (Park::List668DE0): through a byte table (`0x49B088`) and a four-way jump table, class 1 gives 1, class 2 gives 0, and class 0 or 3 (and any code above 0xFF) gives 2. Read from the machine code, as the decompiler cannot handle it |
