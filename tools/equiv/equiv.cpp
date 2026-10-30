@@ -988,6 +988,24 @@ static std::vector<Test> tests() {
                                                                  arena<void>(0xa00));
         return Result{};
     };
+    // list fields: as the struct arrays, the list's first node at the field's place in the object; nodes at 0x3000
+    // (0x10 apart: next, ?, item), 0..5 of them before the last
+    Test list_save{0x533250,
+                   [=](Rng &r) {
+                       struct_array(r);
+                       int32_t offset = *arena<int32_t>(0x628);
+                       int n = r.range(0, 5);
+                       for (int k = 0; k <= n; k++) {
+                           uint32_t *node = arena<uint32_t>(0x3000 + 0x10 * k);
+                           node[0] = k < n ? (uint32_t)(uintptr_t)arena<void>(0x3010 + 0x10 * k) : 0;
+                           node[2] = (uint32_t)(uintptr_t)arena<void>(0x3400 + 0x20 * k);
+                       }
+                       *(void **)arena<uint8_t>(0x800 + offset) = arena<void>(0x3000);
+                   },
+                   struct_array_save};
+    list_save.iterations = 20;
+    list_save.data = false;
+    t.push_back(list_save);
     // one copy of each struct size
     for (uintptr_t at : {0x63fa30, 0x4c17d0, 0x54cd80, 0x512d40, 0x455970, 0x460960, 0x44ec90, 0x425260, 0x512b30,
                          0x815ac0, 0x4c19e0, 0x46da20, 0x98cd50, 0x81d860, 0xb248b0, 0x6be040, 0x460540, 0x460750}) {

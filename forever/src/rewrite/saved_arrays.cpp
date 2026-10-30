@@ -281,3 +281,35 @@ static const uint32_t save_4[] = {0x460540, 0x4ad8a0, 0x4adab0, 0x9850a0, 0xa5d1
 REWRITE_COPIES("StructArrayField<4>::Save", save_4, save_scaled_original, save<4>, &Calls<4>::save);
 static const uint32_t save_8[] = {0x460750, 0xa536b0, 0xa5cf40, 0xae2ca0};
 REWRITE_COPIES("StructArrayField<8>::Save", save_8, save_scaled_original, save<8>, &Calls<8>::save);
+
+// ListField::Save(object, writer): a list field (the list's first node at the field's offset; nodes {next, ?, item},
+// the last one's next null). Saves the length (its own size, slot 2, less 4), the count of nodes before the last,
+// keeping the running checksum, then has each field save each of those nodes' items.
+static volatile long g_list_saves;
+static void __fastcall list_save(StructArrayField *f, void *, uint8_t *object, SaveWriter *w) {
+    g_list_saves++;
+    uint32_t **list = (uint32_t **)(object + f->offset);
+    uint32_t *node = *list;
+    uint32_t *next = (uint32_t *)(uintptr_t)node[0];
+    int32_t count = 0;
+    while (next && node) {
+        node = (uint32_t *)(uintptr_t)node[0];
+        next = (uint32_t *)(uintptr_t)node[0];
+        count++;
+    }
+    typedef int32_t(__fastcall * OwnSize)(StructArrayField *, void *, uint8_t *);
+    int32_t length = ((OwnSize)f->vtable[2])(f, nullptr, object) - 4;
+    write_checked(w, &length, 4);
+    write_checked(w, &count, 4);
+    for (node = *list; node[0] && node; node = (uint32_t *)(uintptr_t)node[0])
+        for (int32_t j = 0; j < f->field_count; j++) {
+            Field *x = f->fields[j];
+            ((void(__fastcall *)(Field *, void *, uint8_t *, SaveWriter *))x->vtable[3])(
+                x, nullptr, (uint8_t *)(uintptr_t)node[2], w);
+        }
+}
+static const uint8_t list_save_original[] = {0x51, 0x8b, 0x54, 0x24, 0x08, 0x53, 0x55, 0x56,
+                                             0x8b, 0xe9, 0x57, 0x8b, 0x7d, 0x28, 0x8b, 0x04};
+static const uint32_t list_save_copies[] = {0x533250, 0x54cfa0, 0x54d240, 0x54d450, 0x54d750,
+                                            0x593980, 0x593b90, 0x5c26f0, 0xb3a780};
+REWRITE_COPIES("ListField::Save", list_save_copies, list_save_original, list_save, &g_list_saves);
