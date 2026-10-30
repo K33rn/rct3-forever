@@ -483,6 +483,25 @@ static void *__fastcall stub_named_from_text(void *self, void *, int32_t **name,
     (*name)[0] += *arena<int32_t>(0x38);
     return self;
 }
+// memory from the arena in turn (as the aligned allocation above): each text made gets its own
+static void *__cdecl stub_alloc_next(uint32_t size) {
+    record(0xbcdfc0, (void *)(uintptr_t)size);
+    uint32_t &next = *arena<uint32_t>(ALLOC_NEXT);
+    if (next < ALLOC_START) next = ALLOC_START;
+    void *p = arena<void>(next);
+    next += (size + 15) & ~15u;
+    return p;
+}
+// resource types: the base constructor, given the three texts (recorded by what they point to)
+static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
+                                           int32_t **name) {
+    record(0x7c, self);
+    record(0x7c, *engine);
+    record(0x7c, *extension);
+    record(0x7c, (void *)(uintptr_t)one);
+    record(0x7c, *name);
+    return self;
+}
 static void __fastcall stub_key_command(void *self, void *, uint32_t group, uint32_t setting, uint32_t name,
                                         void *keys, uint32_t e, uint32_t f) {
     record(0x79, self);
@@ -1121,6 +1140,17 @@ static std::vector<Test> tests() {
                        {0x410c90, (void *)stub_named_from_text}});
     };
     start_text.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // resource types: the object at 0x100; each text in memory of its own (0x2000 on), its count from arena 0x30
+    // (memory always there: the original crashes without)
+    Test resource_type{0xbb28e0, [=](Rng &r) { fresh(r); text_counts(r); *arena<uint32_t>(0x28) = 1; },
+                       [](void *fn) {
+                           return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                       }};
+    resource_type.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}, {0xbcf850, (void *)stub_text_from_c},
+                       {0xc2ffb0, (void *)stub_resource_base}});
+    };
+    resource_type.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Text::Widen (registers: ecx size, edx buffer at 0x800, edi C text at 0x400): sizes 0 (no limit) to 40, texts
     // of up to 60 characters; the result is eax, its top bit flipped if edx, esi or edi didn't come back the same
     Test text_widen{0x401050,
@@ -1175,7 +1205,7 @@ static std::vector<Test> tests() {
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
-                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text}) {
+                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

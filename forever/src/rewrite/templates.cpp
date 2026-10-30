@@ -457,6 +457,30 @@ template <uint32_t TEXT, uint32_t SUFFIX, uint32_t GLOBAL, uint32_t DTOR> static
     game_atexit((void(__cdecl *)())DTOR);
 }
 #define START_TEXT(at, text, suffix, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Text", at, REWRITE_CAT(original_, at), 8, (void *)&start_text<text, suffix, global, dtor>, &g_start_texts);
+// ---- resource types -----------------------------------------------------------------------------------------
+// The constructor of a resource type (a loader's description of the files it reads): its name, file extension and
+// engine as wide texts made from C text (0xBCF850), passed to the base constructor (0xC2FFB0: the engine, the
+// extension, 1, the name), let go of after; then the class's own table.
+static volatile long g_resource_types;
+static Text wide_text(const char *c) {
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
+    return p ? ((Text(__fastcall *)(void *, void *, const char *))0xbcf850)(p, nullptr, c) : nullptr;
+}
+template <uint32_t NAME, uint32_t EXTENSION, uint32_t ENGINE, uint32_t TABLE>
+static void *__fastcall resource_type(uint32_t *self) {
+    g_resource_types++;
+    Text volatile name = wide_text((const char *)NAME);
+    Text volatile extension = wide_text((const char *)EXTENSION);
+    Text volatile engine = wide_text((const char *)ENGINE);
+    ((void(__fastcall *)(void *, void *, Text volatile *, Text volatile *, uint32_t, Text volatile *))0xc2ffb0)(
+        self, nullptr, &engine, &extension, 1, &name);
+    release_text(engine);
+    release_text(extension);
+    release_text(name);
+    self[0] = TABLE;
+    return self;
+}
+#define RESOURCE_TYPE(at, name, extension, engine, table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ResourceType::ResourceType", at, REWRITE_CAT(original_, at), 8, (void *)&resource_type<name, extension, engine, table>, &g_resource_types);
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, name, setting, global, dtor>, &g_key_commands);
 #define NAMED_TEXT_REF(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref<suffix, table, class_table>, &g_named_text_refs);
@@ -503,6 +527,8 @@ template <uint32_t TEXT, uint32_t SUFFIX, uint32_t GLOBAL, uint32_t DTOR> static
 #define TABLE20_FREE(...)
 #undef START_TEXT
 #define START_TEXT(...)
+#undef RESOURCE_TYPE
+#define RESOURCE_TYPE(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
