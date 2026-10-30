@@ -46,6 +46,7 @@ MATCH = [
     ('TEXT_WIDEN', 0x401050, [], []),
     ('TEXT_CREATE', 0x45C000, [(1, 0)], [(14, 0), (16, 0)]),                  # the C text, the function making it
     ('TABLE20_FREE', 0x80F710, [(1, 0)], []),
+    ('START_TEXT', 0xECA490, [(1, 0)], [(13, 0), (20, 0), (34, 1), (76, 0)]),  # text, suffix, global, dtor
 ]
 
 

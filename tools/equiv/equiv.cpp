@@ -468,6 +468,21 @@ static void *__fastcall stub_key_combination(void *self, void *, uint32_t a, uin
     record(0x78, (void *)(uintptr_t)d);
     return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
 }
+// start-up texts: the copy made of a text (0x280, its count from arena 0x30) and the NamedTextRef made from it
+static void *__fastcall stub_text_copy(int32_t **self, void *, int32_t **from) {
+    record(0x7a, *from);
+    *self = arena<int32_t>(0x280);
+    (*self)[0] = *arena<int32_t>(0x30);
+    return self;
+}
+static void *__fastcall stub_named_from_text(void *self, void *, int32_t **name, void *texts, uint32_t suffix) {
+    record(0x7b, self);
+    record(0x7b, *name);
+    record(0x7b, texts);
+    record(0x7b, (void *)(uintptr_t)suffix);
+    (*name)[0] += *arena<int32_t>(0x38);
+    return self;
+}
 static void __fastcall stub_key_command(void *self, void *, uint32_t group, uint32_t setting, uint32_t name,
                                         void *keys, uint32_t e, uint32_t f) {
     record(0x79, self);
@@ -1094,6 +1109,18 @@ static std::vector<Test> tests() {
         stubs_for_now({{0xbd1940, (void *)stub_key_combination}, {0x6b2720, (void *)stub_key_command}});
     };
     start_key.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // start-up texts (memory for the text always there: the original crashes without)
+    Test start_text{0xeca490, [=](Rng &r) { fresh(r); text_counts(r); *arena<uint32_t>(0x28) = 1; },
+                    [](void *fn) {
+                        ((void(__cdecl *)())fn)();
+                        return Result{};
+                    }};
+    start_text.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {0xbcf850, (void *)stub_text_from_c},
+                       {0x403be0, (void *)stub_text_concat}, {0xbd01c0, (void *)stub_text_copy},
+                       {0x410c90, (void *)stub_named_from_text}});
+    };
+    start_text.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Text::Widen (registers: ecx size, edx buffer at 0x800, edi C text at 0x400): sizes 0 (no limit) to 40, texts
     // of up to 60 characters; the result is eax, its top bit flipped if edx, esi or edi didn't come back the same
     Test text_widen{0x401050,
@@ -1148,7 +1175,7 @@ static std::vector<Test> tests() {
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
-                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free}) {
+                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

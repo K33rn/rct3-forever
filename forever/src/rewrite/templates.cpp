@@ -436,6 +436,27 @@ static void __fastcall table20_free(uint8_t **table) {
 #define TEXT_WIDEN(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Text::Widen", at, REWRITE_CAT(original_, at), 8, (void *)&forever_text_widen_regs, &g_widens);
 #define TEXT_CREATE(at, text, make, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Text::Create", at, REWRITE_CAT(original_, at), 8, (void *)&text_create<text, make>, &g_text_creates);
 #define TABLE20_FREE(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Table20::Free", at, REWRITE_CAT(original_, at), 8, (void *)&table20_free, &g_table20_frees);
+// A text reference in a global, made at start-up: the wide text TEXT (0xBCF850) with SUFFIX added (0x403BE0),
+// copied (0xBD01C0) and looked up as a NamedTextRef (0x410C90, in the texts table 0x1303CFC, with its suffix); the
+// three texts are let go of after, and the global's destructor registered with atexit.
+static volatile long g_start_texts;
+template <uint32_t TEXT, uint32_t SUFFIX, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl start_text() {
+    g_start_texts++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
+    Text volatile text = p ? ((Text(__fastcall *)(void *, void *, const char *))0xbcf850)(p, nullptr, (const char *)TEXT)
+                           : nullptr;
+    Text volatile with_suffix, copy;
+    Text volatile *r = ((Text volatile * (__fastcall *)(Text volatile *, void *, Text volatile *, const char *))
+                            0x403be0)(&text, nullptr, &with_suffix, (const char *)SUFFIX);
+    ((void(__fastcall *)(Text volatile *, void *, Text volatile *))0xbd01c0)(&copy, nullptr, r);
+    ((void(__fastcall *)(void *, void *, Text volatile *, void *, uint32_t))0x410c90)((void *)GLOBAL, nullptr, &copy,
+                                                                                    (void *)0x1303cfc, 1);
+    release_text(copy);
+    release_text(with_suffix);
+    release_text(text);
+    game_atexit((void(__cdecl *)())DTOR);
+}
+#define START_TEXT(at, text, suffix, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Text", at, REWRITE_CAT(original_, at), 8, (void *)&start_text<text, suffix, global, dtor>, &g_start_texts);
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, name, setting, global, dtor>, &g_key_commands);
 #define NAMED_TEXT_REF(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref<suffix, table, class_table>, &g_named_text_refs);
@@ -480,6 +501,8 @@ static void __fastcall table20_free(uint8_t **table) {
 #define TEXT_WIDEN(...)
 #define TEXT_CREATE(...)
 #define TABLE20_FREE(...)
+#undef START_TEXT
+#define START_TEXT(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -571,6 +594,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) {at, key2, key1, name, setting, global, dtor},
 #undef TEXT_CREATE
 #define TEXT_CREATE(at, text, make, ...) {at, text, make},
+#undef START_TEXT
+#define START_TEXT(at, text, suffix, global, dtor, ...) {at, text, suffix, global, dtor},
 static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };
