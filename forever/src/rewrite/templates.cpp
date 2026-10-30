@@ -907,6 +907,25 @@ static void *__fastcall set_two_vectors(uint32_t *self, void *, const uint32_t *
 #define FACTORY_2K(at, size, ctor, first, last, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateAround", at, REWRITE_CAT(original_, at), 8, (void *)&factory_2k<size, ctor, first, last>, &g_factories);
 #define CTOR_BASE_TABLE(at, base, table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Constructor::BaseAndTable", at, REWRITE_CAT(original_, at), 8, (void *)&ctor_base_table<base, table>, &g_ctor_tables);
 #define SET_TWO_VECTORS(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Vectors::SetTwoAndValue", at, REWRITE_CAT(original_, at), 8, (void *)&set_two_vectors, &g_vector_sets);
+// A lazy global factory whose constructor takes a constant; and a factory given its two arguments in registers
+// (ecx, edx: a fastcall), which its constructor takes in that order.
+template <uint32_t GLOBAL, uint32_t SIZE, uint32_t A, uint32_t CTOR> static void *__cdecl lazy_factory_k1() {
+    g_global_factories++;
+    void *made = *(void **)GLOBAL;
+    if (!made) {
+        void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+        made = p ? ((void *(__fastcall *)(void *, void *, uint32_t))CTOR)(p, nullptr, A) : nullptr;
+        *(void **)GLOBAL = made;
+    }
+    return made;
+}
+template <uint32_t SIZE, uint32_t CTOR> static void *__fastcall factory_regs(uint32_t a, uint32_t b) {
+    g_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    return p ? ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t))CTOR)(p, nullptr, a, b) : nullptr;
+}
+#define LAZY_FACTORY_K1(at, global, size, a, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyWith", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_k1<global, size, a, ctor>, &g_global_factories);
+#define FACTORY_REGS(at, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateFromRegisters", at, REWRITE_CAT(original_, at), 8, (void *)&factory_regs<size, ctor>, &g_factories);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -991,6 +1010,10 @@ static void *__fastcall set_two_vectors(uint32_t *self, void *, const uint32_t *
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef LAZY_FACTORY_K1
+#undef FACTORY_REGS
+#define LAZY_FACTORY_K1(...)
+#define FACTORY_REGS(...)
 #undef FACTORY_K2
 #undef FACTORY_K5
 #undef FACTORY_2K
@@ -1152,6 +1175,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef LAZY_FACTORY_K1
+#undef FACTORY_REGS
+#define LAZY_FACTORY_K1(at, global, size, a, ctor, ...) {at, global, size, a, ctor},
+#define FACTORY_REGS(at, size, ctor, ...) {at, size, ctor},
 #undef FACTORY_K2
 #undef FACTORY_K5
 #undef FACTORY_2K

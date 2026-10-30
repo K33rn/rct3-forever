@@ -80,7 +80,8 @@ def rewritten():
                  'REF_INTERFACE': 'Reference::Interface', 'DTOR_DELETE_MEMBER': 'Destructor::DeleteMember',
                  'DTOR_MEMBER_BASE': 'Destructor::MemberThenBase', 'FACTORY_K2': 'Factory::CreateWith2', 'FACTORY_K5': 'Factory::CreateWith5',
                  'FACTORY_2K': 'Factory::CreateAround', 'CTOR_BASE_TABLE': 'Constructor::BaseAndTable',
-                 'SET_TWO_VECTORS': 'Vectors::SetTwoAndValue'}
+                 'SET_TWO_VECTORS': 'Vectors::SetTwoAndValue', 'LAZY_FACTORY_K1': 'Factory::LazyWith',
+                 'FACTORY_REGS': 'Factory::CreateFromRegisters'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found

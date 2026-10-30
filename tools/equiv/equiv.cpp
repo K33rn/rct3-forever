@@ -1664,6 +1664,19 @@ static std::vector<Test> tests() {
                                  arena<void>(0x100), nullptr, arena<void>(arena<uint32_t>(0x10)[0]),
                                  arena<void>(arena<uint32_t>(0x10)[1]), arena<uint32_t>(0x10)[2])};
                          }};
+    // a lazy factory with an argument, and one given its arguments in registers
+    Test lazy_factory_k1{0x425920, gf_setup, gf_call};
+    lazy_factory_k1.prepare = [=](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        gf_prepare(c[1], c[4], (void *)stub_ctor1);
+    };
+    lazy_factory_k1.finish = gf_finish;
+    Test factory_regs{0x7fd540, any_setup, [](void *fn) {
+                          return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(uint32_t, uint32_t))fn)(
+                              arena<uint32_t>(0x20)[2], arena<uint32_t>(0x20)[3])};
+                      }};
+    factory_regs.prepare = ctor_prepare((void *)stub_ctor2);
+    factory_regs.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1730,7 +1743,7 @@ static std::vector<Test> tests() {
                     &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2,
                     &condition_name, &factory_k3, &field_factory, &global_factory_k1, &ref_interface,
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
-                    &ctor_base_table, &set_two_vectors}) {
+                    &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

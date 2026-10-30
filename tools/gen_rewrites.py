@@ -88,6 +88,8 @@ MATCH = [
     ('FACTORY_2K', 0x464620, [(1, 0)], [(6, 0), (20, 0), (18, 0), (15, 0)], (6, 15, 18)),   # size, ctor, first/last arg
     ('CTOR_BASE_TABLE', 0x471EF0, [], [(2, 0), (3, 1)]),                        # base constructor, table
     ('SET_TWO_VECTORS', 0x4884B0, [], []),
+    ('LAZY_FACTORY_K1', 0x425920, [(1, 0)], [(6, 1), (9, 0), (16, 0), (18, 0)], (9, 16), [[(6, 1), (19, 0), (25, 0)]]),
+    ('FACTORY_REGS', 0x7FD540, [(1, 0)], [(8, 0), (20, 0)], (8,)),            # size, ctor; the two arguments in ecx, edx
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
     ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor
@@ -134,6 +136,14 @@ def main():
     def inside(ins, target):
         return ins[0].address <= target < ins[-1].address + ins[-1].size
 
+    def layout_by_index(ins, loose):
+        # as layout(), but jumps by the instruction they go to and no size for the instructions with masked constants
+        # (so a constant's encoding, push imm8 or imm32, doesn't matter)
+        at = {i.address: k for k, i in enumerate(ins)}
+        return [(None if k in loose else i.size,
+                 at.get(i.operands[0].imm, 'mid') if i.group(capstone.CS_GRP_JUMP) and i.operands[0].type == X.X86_OP_IMM
+                 and inside(ins, i.operands[0].imm) else None) for k, i in enumerate(ins)]
+
     def layout(ins, va):   # instruction sizes, and where jumps inside the function go (jumps out are operands)
         return [(i.size, (i.operands[0].imm - va) if i.group(capstone.CS_GRP_JUMP) and i.operands[0].type == X.X86_OP_IMM
                  and inside(ins, i.operands[0].imm) else None) for i in ins]
@@ -177,7 +187,7 @@ def main():
         b = body(rep)
         skip = set(ignore) | set(params) | {kj for group in same for kj in group}
         fixed = {kj: v for kj, v in operands(b).items() if kj not in skip}
-        MATCHED.append((macro, rep, shape_of(b, loose), layout(b, rep), fixed, params, len(b), loose, same))
+        MATCHED.append((macro, rep, shape_of(b, loose), layout_by_index(b, loose), fixed, params, len(b), loose, same))
     counts = {m[0]: 0 for m in MATCH}
     # ObjectArray::SetCapacity: matched by its shape with every constant masked (the copies differ in registers and
     # in how they multiply by the item size), its constants found by their roles
@@ -239,7 +249,7 @@ def main():
                     continue
         hit = False
         for macro, rep, shape, lay, fixed, params, length, loose, same in MATCHED:
-            if len(ins) != length or shape_of(ins, loose) != shape or layout(ins, va) != lay:
+            if len(ins) != length or shape_of(ins, loose) != shape or layout_by_index(ins, loose) != lay:
                 continue
             ops = operands(ins)
             if any(ops.get(kj) != v for kj, v in fixed.items()):
@@ -249,6 +259,7 @@ def main():
             out.append(f'{macro}(' + ', '.join([f'{va:#x}'] + [f'{value(ins, *kj):#x}' for kj in params] + [first]) + ')')
             counts[macro] += 1
             hit = True
+            break   # one entry per function (two representatives may match the same copies)
         if hit:
             continue
         imm = lambda k, j=0: ins[k].operands[j].imm & 0xffffffff
