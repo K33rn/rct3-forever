@@ -73,7 +73,9 @@ def rewritten():
                  'OBJECT_SETCAP': 'ObjectArray::SetCapacity',
                  'GLOBAL_FACTORY': 'Factory::Global', 'LAZY_FACTORY': 'Factory::Lazy', 'LAZY_FACTORY_INIT': 'Factory::LazyInit',
                  'DTOR_TABLES': 'Destructor::Tables', 'FREE_TWO': 'OwnedPair::FreeFields',
-                 'OBJECT_RESIZE': 'ObjectArray::Resize', 'WITH_REFERENCE': 'ObjectRef::CallWith'}
+                 'OBJECT_RESIZE': 'ObjectArray::Resize', 'WITH_REFERENCE': 'ObjectRef::CallWith',
+                 'POINTER_RESIZE': 'PointerArray::Resize', 'ARRAY_RESERVE': 'Array::Reserve', 'GUI_INIT': 'GuiPart::Init',
+                 'GUI_MAKE': 'GuiPart::Make', 'GUI_CREATE2': 'GuiPart::Create'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found

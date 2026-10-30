@@ -66,6 +66,11 @@ MATCH = [
      [[(2, 1), (26, 0), (31, 0)], [(25, 0), (30, 0), (33, 1)]]),   # flag, reference, object, id, cache
     ('DTOR_TABLES', 0x426C90, [(1, 0)], [(10, 1), (11, 1), (13, 0), (15, 1)]),   # tables, member destructor, base table
     ('FREE_TWO', 0x42FD80, [(1, 0)], [(9, 1)], (9, 16), [[(9, 1), (16, 0)]]),   # the field freed first
+    ('POINTER_RESIZE', 0xBD6750, [], []),
+    ('ARRAY_RESERVE', 0xBD7580, [], [(28, 0)]),                                 # its resize (a tail jump)
+    ('GUI_INIT', 0x6D79E0, [(1, 0)], [(14, 1), (27, 1), (28, 1), (29, 1)], (), [[(14, 1), (31, 1), (43, 1)]]),
+    ('GUI_MAKE', 0x6D9A20, [(1, 0)], [(7, 0), (15, 1), (22, 1), (23, 1), (24, 1)], (7,), [[(15, 1), (25, 1), (32, 1)]]),
+    ('GUI_CREATE2', 0x6D9980, [(1, 0)], [(7, 0), (18, 1), (25, 1), (26, 1), (27, 1)], (7,), [[(18, 1), (28, 1), (35, 1)]]),
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
     ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor
@@ -109,9 +114,12 @@ def main():
     ARRAY_FREE = strict(body(0x420B40), FREE_LOOSE)
     n_rn = n_rt = n_af = n_st = 0
     # start-up initialisers: also the same layout (instruction sizes, jumps to the same offsets)
-    def layout(ins, va):
+    def inside(ins, target):
+        return ins[0].address <= target < ins[-1].address + ins[-1].size
+
+    def layout(ins, va):   # instruction sizes, and where jumps inside the function go (jumps out are operands)
         return [(i.size, (i.operands[0].imm - va) if i.group(capstone.CS_GRP_JUMP) and i.operands[0].type == X.X86_OP_IMM
-                 else None) for i in ins]
+                 and inside(ins, i.operands[0].imm) else None) for i in ins]
     section_shape = lambda ins: [x if k != 19 else re.sub(r'^push (0x[0-9a-f]+|\d+)$', 'push KIND', x) for k, x in enumerate(strict(ins))]   # the section's kind
     START = {}
     for kind, rep in (('name', 0xEA8790), ('class', 0xEA86C0), ('section', 0xEA93C0)):
@@ -132,8 +140,8 @@ def main():
         for k, i in enumerate(ins):
             for j, o in enumerate(i.operands):
                 v = o.imm if o.type == X.X86_OP_IMM else o.mem.disp if o.type == X.X86_OP_MEM else None
-                if i.group(capstone.CS_GRP_JUMP):   # jumps inside the function: compared by layout()
-                    continue
+                if i.group(capstone.CS_GRP_JUMP) and (o.type != X.X86_OP_IMM or inside(ins, o.imm)):
+                    continue   # jumps inside the function: compared by layout()
                 if v is not None and (v & 0xffffffff) >= BASE:
                     found[(k, j)] = v & 0xffffffff
         return found

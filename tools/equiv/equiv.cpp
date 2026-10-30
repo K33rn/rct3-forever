@@ -563,6 +563,21 @@ static uint32_t __fastcall stub_reference_free(uint32_t *ref) {
     node[1][0] = (uint32_t)(uintptr_t)node[0];
     return *arena<uint32_t>(0x20);
 }
+// an array's own resize, as Array::Reserve calls it
+static uint32_t __fastcall stub_resize(void *self, void *, uint32_t n) {
+    record(0x85, self);
+    record(0x85, (void *)(uintptr_t)n);
+    return n * 3;
+}
+// interface parts: the base constructor and an owner's activation (slot 1)
+static void __fastcall stub_gui_base(void *self, void *, void *owner, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x86, self);
+    record(0x86, owner);
+    record(0x86, (void *)(uintptr_t)a);
+    record(0x86, (void *)(uintptr_t)b);
+    record(0x86, (void *)(uintptr_t)c);
+}
+static void __fastcall stub_activate(void *self) { record(0x87, self); }
 // resource types: the base constructor, given the three texts (recorded by what they point to)
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
@@ -1395,6 +1410,85 @@ static std::vector<Test> tests() {
                        {c[4], (void *)stub_reference_free}});
     };
     with_reference.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // PointerArray::Resize: the array {count, capacity, step, data} at 0x100, its data 0x400 or none; the new
+    // capacity 0..8, sometimes the same (the result isn't compared: for the same capacity the original leaves eax)
+    Test pointer_resize{0xbd6750,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 16; i++) arena<uint32_t>(0x400)[i] = r.next();
+                            bool data = r.next() % 4;
+                            uint32_t *a = arena<uint32_t>(0x100);
+                            a[1] = r.range(0, 8);
+                            a[0] = data ? r.range(0, (int)a[1]) : 0;
+                            a[3] = data ? (uint32_t)(uintptr_t)arena<void>(0x400) : 0;
+                            arena<uint32_t>(0x10)[0] = r.next() % 4 ? r.range(0, 8) : a[1];
+                        },
+                        [](void *fn) {
+                            ((uint32_t(__fastcall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), nullptr,
+                                                                                 arena<uint32_t>(0x10)[0]);
+                            return Result{};
+                        }};
+    // Array::Reserve: capacity 0..5, step 0..3, n 0..20; the copy's own resize is stood in for
+    Test array_reserve{0xbd7580,
+                       [=](Rng &r) {
+                           fresh(r);
+                           uint32_t *a = arena<uint32_t>(0x100);
+                           a[1] = r.range(0, 5);
+                           a[2] = r.next() % 2 ? 0 : r.range(1, 3);
+                           arena<uint32_t>(0x10)[0] = r.range(0, 20);
+                       },
+                       [](void *fn) {
+                           return Result{((uint32_t(__fastcall *)(void *, void *, uint32_t))fn)(
+                               arena<void>(0x100), nullptr, arena<uint32_t>(0x10)[0])};
+                       }};
+    array_reserve.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{rewrite::start_constants(e->at)[1], (void *)stub_resize}});
+    };
+    array_reserve.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // interface parts: the shared owner (the global MANAGER, game data: set from the arena before each run and put
+    // back after each copy) at 0x300, a given owner at 0x340 or none; each active or not
+    static uint32_t gui_manager, gui_saved;
+    auto gui_setup = [=](Rng &r) {
+        fresh(r);
+        for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next();
+        static void *vt[2] = {nullptr, (void *)stub_activate};
+        *arena<void *>(0x300) = vt;
+        *arena<void *>(0x340) = vt;
+        arena<uint8_t>(0x300)[4] = r.next() % 2;
+        arena<uint8_t>(0x340)[4] = r.next() % 2;
+        *arena<void *>(0x1f8) = arena<void>(0x300);
+        arena<uint32_t>(0x10)[0] = r.next() % 3 ? 0x340 : 0;
+    };
+    auto gui_prepare = [](const rewrite::Entry *e, int at) {
+        gui_manager = rewrite::start_constants(e->at)[at];
+        gui_saved = *(uint32_t *)gui_manager;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {0x6d7450, (void *)stub_gui_base}});
+    };
+    auto gui_finish = [](const rewrite::Entry *) {
+        unstub_many();
+        *(uint32_t *)gui_manager = gui_saved;
+    };
+    Test gui_init{0x6d79e0, gui_setup, [](void *fn) {
+                      *(void **)gui_manager = *arena<void *>(0x1f8);
+                      uint32_t owner = arena<uint32_t>(0x10)[0];
+                      return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *, uint32_t,
+                                                                                 uint32_t))fn)(
+                          arena<void>(0x100), nullptr, owner ? arena<void>(owner) : nullptr, arena<uint32_t>(0x20)[2],
+                          arena<uint32_t>(0x20)[3])};
+                  }};
+    gui_init.prepare = [=](const rewrite::Entry *e) { gui_prepare(e, 1); };
+    Test gui_make{0x6d9a20, gui_setup, [](void *fn) {
+                      *(void **)gui_manager = *arena<void *>(0x1f8);
+                      return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()};
+                  }};
+    gui_make.prepare = [=](const rewrite::Entry *e) { gui_prepare(e, 2); };
+    Test gui_create2{0x6d9980, gui_setup, [](void *fn) {
+                         *(void **)gui_manager = *arena<void *>(0x1f8);
+                         return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(uint32_t, uint32_t))fn)(
+                             arena<uint32_t>(0x20)[2], arena<uint32_t>(0x20)[3])};
+                     }};
+    gui_create2.prepare = [=](const rewrite::Entry *e) { gui_prepare(e, 2); };
+    for (Test *x : {&gui_init, &gui_make, &gui_create2}) x->finish = gui_finish;
     // two owned blocks: the object at 0x100, each field a block or nothing (the field is up to 0xFC on)
     Test free_two{0x42fd80,
                   [=](Rng &r) {
@@ -1459,7 +1553,7 @@ static std::vector<Test> tests() {
                     &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report,
                     &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap,
                     &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two,
-                    &object_resize, &with_reference}) {
+                    &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

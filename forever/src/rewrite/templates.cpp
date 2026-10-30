@@ -704,6 +704,86 @@ static uint32_t __fastcall with_reference(uint8_t *self, void *, void *object) {
 }
 #define OBJECT_RESIZE(at, size, header, ctor, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Resize", at, REWRITE_CAT(original_, at), 8, (void *)&object_resize<size, header, ctor, dtor>, &g_object_resizes);
 #define WITH_REFERENCE(at, table, field, function, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectRef::CallWith", at, REWRITE_CAT(original_, at), 8, (void *)&with_reference<table, field, function, dtor>, &g_with_references);
+// ---- growable arrays of 4-byte values {count, capacity, growth step, data} -------------------------------------
+// PointerArray::Resize: to the capacity n (unless it already is): the values that fit copied into a new aligned
+// block (none for n = 0), the old block freed (even when there is none), the count cut to n.
+static volatile long g_pointer_resizes;
+static uint32_t __fastcall pointer_resize(uint32_t *self, void *, uint32_t n) {
+    g_pointer_resizes++;
+    if (n == self[1]) return n;   // (the original leaves eax as it was; its callers don't use it)
+    uint32_t *values = n ? ((uint32_t * (__cdecl *)(uint32_t))0xbcdfd0)(n * 4) : nullptr;
+    uint32_t keep = self[0] > n ? n : self[0];
+    for (uint32_t i = 0; i < keep; i++) values[i] = ((uint32_t *)(uintptr_t)self[3])[i];
+    ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)self[3]);
+    keep = self[0] > n ? n : self[0];
+    self[3] = (uint32_t)(uintptr_t)values;
+    self[0] = keep;
+    self[1] = n;
+    return keep;
+}
+// Array::Reserve: room for at least n values: when the capacity is smaller, it grows from the capacity (at least 1)
+// by the growth step (or doubles when there is none) until n fits, then the array's own resize (RESIZE) is called.
+// Gives the capacity when there is room already.
+static volatile long g_array_reserves;
+template <uint32_t RESIZE> static uint32_t __fastcall array_reserve(uint32_t *self, void *, uint32_t n) {
+    g_array_reserves++;
+    uint32_t capacity = self[1];
+    if (n <= capacity) return capacity;
+    uint32_t grown = capacity > 1 ? capacity : 1;
+    while (n > grown) grown += self[2] ? self[2] : grown;
+    return ((uint32_t(__fastcall *)(void *, void *, uint32_t))RESIZE)(self, nullptr, grown);
+}
+
+// ---- interface parts -----------------------------------------------------------------------------------------
+// Interface parts built on 0x6D7450 (given their owner, two values and 1), then their three tables. The owner is
+// the given one or, for none, the shared one (in the global MANAGER); an owner not yet active is activated (its
+// slot 1), and the shared one is then marked active. Made in place (Init), or new: SIZE bytes, with the shared
+// owner and 0, 0 (Make) or the two arguments (Create); null without memory.
+static volatile long g_gui_parts;
+template <uint32_t T0, uint32_t T1, uint32_t T40> static void gui_tables(uint32_t *self) {
+    self[0] = T0;
+    self[1] = T1;
+    self[0x10] = T40;
+}
+static void gui_activate(uint8_t *owner) {
+    if (!owner[4]) ((void(__fastcall *)(void *))(*(void ***)owner)[1])(owner);
+}
+typedef void(__fastcall *GuiBase)(void *, void *, void *, uint32_t, uint32_t, uint32_t);   // 0x6D7450, ret 0x10
+template <uint32_t MANAGER, uint32_t T0, uint32_t T1, uint32_t T40>
+static void *__fastcall gui_init(uint32_t *self, void *, uint8_t *owner, uint32_t a, uint32_t b) {
+    g_gui_parts++;
+    ((GuiBase)0x6d7450)(self, nullptr, owner ? owner : *(uint8_t **)MANAGER, a, b, 1);
+    gui_tables<T0, T1, T40>(self);
+    bool shared = !owner;
+    if (shared) owner = *(uint8_t **)MANAGER;
+    gui_activate(owner);
+    if (shared) (*(uint8_t **)MANAGER)[4] = 1;
+    return self;
+}
+template <uint32_t SIZE, uint32_t MANAGER, uint32_t T0, uint32_t T1, uint32_t T40>
+static void *gui_new(uint32_t a, uint32_t b) {
+    uint32_t *self = (uint32_t *)((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    if (!self) return nullptr;
+    ((GuiBase)0x6d7450)(self, nullptr, *(void **)MANAGER, a, b, 1);
+    gui_tables<T0, T1, T40>(self);
+    gui_activate(*(uint8_t **)MANAGER);
+    (*(uint8_t **)MANAGER)[4] = 1;
+    return self;
+}
+template <uint32_t SIZE, uint32_t MANAGER, uint32_t T0, uint32_t T1, uint32_t T40> static void *__cdecl gui_make() {
+    g_gui_parts++;
+    return gui_new<SIZE, MANAGER, T0, T1, T40>(0, 0);
+}
+template <uint32_t SIZE, uint32_t MANAGER, uint32_t T0, uint32_t T1, uint32_t T40>
+static void *__stdcall gui_create2(uint32_t a, uint32_t b) {
+    g_gui_parts++;
+    return gui_new<SIZE, MANAGER, T0, T1, T40>(a, b);
+}
+#define POINTER_RESIZE(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("PointerArray::Resize", at, REWRITE_CAT(original_, at), 8, (void *)&pointer_resize, &g_pointer_resizes);
+#define ARRAY_RESERVE(at, resize, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Array::Reserve", at, REWRITE_CAT(original_, at), 8, (void *)&array_reserve<resize>, &g_array_reserves);
+#define GUI_INIT(at, manager, t0, t1, t40, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GuiPart::Init", at, REWRITE_CAT(original_, at), 8, (void *)&gui_init<manager, t0, t1, t40>, &g_gui_parts);
+#define GUI_MAKE(at, size, manager, t0, t1, t40, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GuiPart::Make", at, REWRITE_CAT(original_, at), 8, (void *)&gui_make<size, manager, t0, t1, t40>, &g_gui_parts);
+#define GUI_CREATE2(at, size, manager, t0, t1, t40, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GuiPart::Create", at, REWRITE_CAT(original_, at), 8, (void *)&gui_create2<size, manager, t0, t1, t40>, &g_gui_parts);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -788,6 +868,16 @@ static uint32_t __fastcall with_reference(uint8_t *self, void *, void *object) {
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef POINTER_RESIZE
+#undef ARRAY_RESERVE
+#undef GUI_INIT
+#undef GUI_MAKE
+#undef GUI_CREATE2
+#define POINTER_RESIZE(...)
+#define ARRAY_RESERVE(...)
+#define GUI_INIT(...)
+#define GUI_MAKE(...)
+#define GUI_CREATE2(...)
 #undef OBJECT_RESIZE
 #undef WITH_REFERENCE
 #define OBJECT_RESIZE(...)
@@ -915,6 +1005,16 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef POINTER_RESIZE
+#undef ARRAY_RESERVE
+#undef GUI_INIT
+#undef GUI_MAKE
+#undef GUI_CREATE2
+#define POINTER_RESIZE(...)
+#define ARRAY_RESERVE(at, resize, ...) {at, resize},
+#define GUI_INIT(at, manager, ...) {at, manager},
+#define GUI_MAKE(at, size, manager, ...) {at, size, manager},
+#define GUI_CREATE2(at, size, manager, ...) {at, size, manager},
 #undef OBJECT_RESIZE
 #undef WITH_REFERENCE
 #define OBJECT_RESIZE(at, size, header, ctor, dtor, ...) {at, size, header, ctor, dtor},
