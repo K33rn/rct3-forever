@@ -93,7 +93,12 @@ MATCH = [
     ('RENDER_STATE', 0xC6F000, [], [(2, 1), (10, 0)], (2, 10, 13), [[(2, 1), (13, 0)]]),   # the kept value's field, state
     ('FREE_LIST_TAKE', 0xBD2110, [], [(5, 1), (6, 0), (0, 1), (3, 1), (7, 1), (17, 1), (20, 1)], (),
      [[(0, 1), (12, 1), (16, 0)], [(7, 1), (14, 1), (19, 0)], [(20, 1), (22, 0)]]),   # base, make, then its fields
-    ('LISTENER_DTOR', 0x440ED0, [], [(2, 1)]),                                  # the table put back
+    ('LISTENER_DTOR', 0x440ED0, [], [(2, 1), (0, 1)], (0,)),                    # the table put back, the node's field
+    ('LISTENER_DTOR_QUIET', 0x413680, [], [(2, 1), (0, 1)], (0,)),              # the same, a broken list left as it is
+    ('DTOR_TABLES_MEMBER', 0x41B5B0, [(1, 0)], [(10, 1), (11, 1), (8, 1), (12, 1), (14, 0), (17, 0)], (8,)),
+    ('DTOR_DELETE2', 0x6157F0, [(1, 0)], [(9, 1), (10, 1), (11, 1), (18, 1), (26, 0)], (11, 18)),   # 2 tables, 2 members
+    ('DTOR5_DELETE2', 0x65D0D0, [(1, 0)], [(9, 1), (10, 1), (11, 0), (11, 1), (12, 0), (12, 1), (13, 0), (13, 1), (14, 1),
+                                           (21, 1), (29, 0)], (11, 12, 13, 14, 21)),   # 5 tables, 2 members, base
     ('DTOR_MEMBER_IF', 0x4D3B50, [(1, 0)], [(13, 1), (14, 0), (17, 0)], (13,)),   # member field, its dtor, base dtor
     ('LAZY_SINGLETON', 0x436100, [(1, 0)], [(6, 1), (9, 0), (16, 0), (17, 0), (18, 0), (20, 0)], (9, 16, 17, 18),
      [[(6, 1), (21, 1), (27, 1)]]),   # global, size, ctor arguments, ctor

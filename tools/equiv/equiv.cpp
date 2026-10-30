@@ -651,6 +651,8 @@ static void *__fastcall stub_singleton_ctor(void *self, void *, uint32_t a, uint
     *(void **)g_singleton_global = self;
     return self;
 }
+static uint32_t g_members[2];   // the fields of the members a destructor deletes
+static uint32_t g_node;         // a listener's node field
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -1753,15 +1755,16 @@ static std::vector<Test> tests() {
         unstub_many();
         memcpy((void *)fl_base, fl_saved, 0x20);
     };
-    // listeners: the object at 0x100, its node at 0x104 linked between 0x300 and 0x310 (always properly: a broken
-    // list stops at a breakpoint in both)
+    // listeners: the object at 0x100, its node (at the copy's field) linked between 0x300 and 0x310 (always
+    // properly: a broken list stops at a breakpoint in both)
     Test listener_dtor{0x440ed0,
                        [=](Rng &r) {
                            fresh(r);
-                           arena<void *>(0x100)[1] = arena<void>(0x300);
-                           arena<void *>(0x100)[2] = arena<void>(0x310);
-                           arena<void *>(0x300)[1] = arena<void>(0x104);
-                           arena<void *>(0x310)[0] = arena<void>(0x104);
+                           uint8_t *node = arena<uint8_t>(0x100 + g_node);
+                           *(void **)node = arena<void>(0x300);
+                           *(void **)(node + 4) = arena<void>(0x310);
+                           arena<void *>(0x300)[1] = node;
+                           arena<void *>(0x310)[0] = node;
                        },
                        [](void *fn) {
                            return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
@@ -1805,6 +1808,62 @@ static std::vector<Test> tests() {
         unstub_many();
         *(uint32_t *)sg_global = sg_saved;
     };
+    listener_dtor.prepare = [](const rewrite::Entry *e) { g_node = rewrite::start_constants(e->at)[2]; };
+    // listeners whose broken list is left as it is: the object at 0x100, its node (at the copy's field) linked
+    // between 0x300 and 0x310, each link sometimes missing or not pointing back
+    Test listener_quiet{0x413680,
+                        [=](Rng &r) {
+                            fresh(r);
+                            uint8_t *node = arena<uint8_t>(0x100 + g_node);
+                            *(void **)node = r.next() % 6 ? arena<void>(0x300) : nullptr;
+                            *(void **)(node + 4) = r.next() % 6 ? arena<void>(0x310) : nullptr;
+                            arena<void *>(0x300)[1] = r.next() % 6 ? (void *)node : arena<void>(0x380);
+                            arena<void *>(0x310)[0] = r.next() % 6 ? (void *)node : arena<void>(0x380);
+                        },
+                        [](void *fn) {
+                            return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                        }};
+    listener_quiet.prepare = [](const rewrite::Entry *e) { g_node = rewrite::start_constants(e->at)[2]; };
+    // destructors deleting two members (each at 0x300 or 0x340, or none) after putting back tables; or putting
+    // back tables and destroying a member in place; the base (and the member's) destructor stood in for
+    Test dtor_delete2{0x6157f0,
+                      [=](Rng &r) {
+                          fresh(r);
+                          static void *vt[1] = {(void *)stub_deleting};
+                          arena<void *>(0x300)[0] = vt;
+                          arena<void *>(0x340)[0] = vt;
+                          for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x800)[i] = r.next();
+                          arena<uint32_t>(0x10)[0] = r.next() % 4 ? 0x300 : 0;
+                          arena<uint32_t>(0x10)[1] = r.next() % 4 ? 0x340 : 0;
+                      },
+                      [](void *fn) {
+                          for (int k = 0; k < 2; k++) {
+                              uint32_t m = arena<uint32_t>(0x10)[k];
+                              *(void **)(arena<uint8_t>(0x800) + g_members[k]) = m ? arena<void>(m) : nullptr;
+                          }
+                          ((void(__fastcall *)(void *))fn)(arena<void>(0x800));
+                          return Result{};
+                      }};
+    dtor_delete2.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        g_members[0] = c[1];
+        g_members[1] = c[2];
+        stubs_for_now({{c[3], (void *)stub_destructor}});
+    };
+    dtor_delete2.finish = [](const rewrite::Entry *) { unstub_many(); };
+    Test dtor5_delete2{0x65d0d0, dtor_delete2.setup, dtor_delete2.call};
+    dtor5_delete2.prepare = dtor_delete2.prepare;
+    dtor5_delete2.finish = dtor_delete2.finish;
+    Test dtor_tables_member{0x41b5b0, [=](Rng &r) { fresh(r); for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x800)[i] = r.next(); },
+                            [](void *fn) {
+                                ((void(__fastcall *)(void *))fn)(arena<void>(0x800));
+                                return Result{};
+                            }};
+    dtor_tables_member.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        stubs_for_now({{c[2], (void *)stub_member_destructor}, {c[3], (void *)stub_destructor}});
+    };
+    dtor_tables_member.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1872,7 +1931,8 @@ static std::vector<Test> tests() {
                     &condition_name, &factory_k3, &field_factory, &global_factory_k1, &ref_interface,
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
-                    &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton}) {
+                    &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

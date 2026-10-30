@@ -962,16 +962,18 @@ static void *__cdecl free_list_take() {
     return item;
 }
 
-// The destructor of a listener: its table put back, then it leaves its list (a two-way node at +4); a node not
-// linked both ways means the list is broken, and it stops at a breakpoint, as the original does. Gives the node.
+// The destructor of a listener: its table put back, then it leaves its list (a two-way node at NODE); a node not
+// linked both ways means the list is broken: one kind stops at a breakpoint there, as the original does, the other
+// leaves it as it is. Gives the node.
 static volatile long g_listener_dtors;
-template <uint32_t TABLE> static void *__fastcall listener_dtor(uint32_t *self) {
+template <uint32_t TABLE, uint32_t NODE, bool BREAK = true> static void *__fastcall listener_dtor(uint32_t *self) {
     g_listener_dtors++;
-    uint32_t **node = (uint32_t **)(self + 1);
+    uint32_t **node = (uint32_t **)((uint8_t *)self + NODE);
     self[0] = TABLE;
     uint32_t *next = node[0], *prev = node[1];
-    if (!prev || !next || (uint32_t **)(uintptr_t)next[1] != node || (uint32_t **)(uintptr_t)prev[0] != node)
-        __builtin_debugtrap();
+    if (!prev || !next || (uint32_t **)(uintptr_t)next[1] != node || (uint32_t **)(uintptr_t)prev[0] != node) {
+        if (BREAK) __builtin_debugtrap();
+    }
     else {
         next[1] = (uint32_t)(uintptr_t)prev;
         ((uint32_t *)node[1])[0] = (uint32_t)(uintptr_t)node[0];
@@ -1003,9 +1005,37 @@ static void *__cdecl lazy_singleton() {
 }
 #define RENDER_STATE(at, kept, state, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("RenderState::Set", at, REWRITE_CAT(original_, at), 8, (void *)&render_state<kept, state>, &g_render_states);
 #define FREE_LIST_TAKE(at, base, make, first, block, free, made, most, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("FreeList::Take", at, REWRITE_CAT(original_, at), 8, (void *)&free_list_take<base, make, first, block, free, made, most>, &g_free_list_takes);
-#define LISTENER_DTOR(at, table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Listener::~Listener", at, REWRITE_CAT(original_, at), 8, (void *)&listener_dtor<table>, &g_listener_dtors);
+#define LISTENER_DTOR(at, table, node, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Listener::~Listener", at, REWRITE_CAT(original_, at), 8, (void *)&listener_dtor<table, node>, &g_listener_dtors);
+#define LISTENER_DTOR_QUIET(at, table, node, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Listener::~Listener(quiet)", at, REWRITE_CAT(original_, at), 8, (void *)&listener_dtor<table, node, false>, &g_listener_dtors);
 #define DTOR_MEMBER_IF(at, member, member_dtor, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::MemberThenBaseNullSafe", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_member_if<member, member_dtor, base>, &g_member_dtors);
 #define LAZY_SINGLETON(at, global, size, a, b, c, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Singleton::Get", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_singleton<global, size, a, b, c, ctor>, &g_singletons);
+// Destructors putting back tables (pairs of field and table), deleting members (their deleting destructors, slot 0,
+// with 1; none for a null one) or destroying one in place, then running the base destructor.
+template <uint32_t... OT> static void put_tables(uint8_t *self) {
+    const uint32_t ot[] = {OT...};
+    for (size_t i = 0; i < sizeof ot / sizeof ot[0]; i += 2) *(uint32_t *)(self + ot[i]) = ot[i + 1];
+}
+static void delete_member(uint8_t *self, uint32_t field) {
+    void *member = *(void **)(self + field);
+    if (member) ((void(__fastcall *)(void *, void *, uint32_t))(*(void ***)member)[0])(member, nullptr, 1);
+}
+template <uint32_t BASE, uint32_t M1, uint32_t M2, uint32_t... OT> static void __fastcall dtor_delete2(uint8_t *self) {
+    g_member_dtors++;
+    put_tables<OT...>(self);
+    delete_member(self, M1);
+    delete_member(self, M2);
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+template <uint32_t T0, uint32_t T4, uint32_t MEMBER, uint32_t MEMBER_TABLE, uint32_t MEMBER_DTOR, uint32_t BASE>
+static void __fastcall dtor_tables_member(uint8_t *self) {
+    g_member_dtors++;
+    put_tables<0, T0, 4, T4, MEMBER, MEMBER_TABLE>(self);
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self + MEMBER);
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+#define DTOR_TABLES_MEMBER(at, t0, t4, member, member_table, member_dtor, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::TablesAndMember", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_tables_member<t0, t4, member, member_table, member_dtor, base>, &g_member_dtors);
+#define DTOR_DELETE2(at, t0, t4, m1, m2, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::DeleteTwoMembers", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_delete2<base, m1, m2, 0, t0, 4, t4>, &g_member_dtors);
+#define DTOR5_DELETE2(at, t0, t4, o2, t2, o3, t3, o4, t4b, m1, m2, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::FiveTablesTwoMembers", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_delete2<base, m1, m2, 0, t0, 4, t4, o2, t2, o3, t3, o4, t4b>, &g_member_dtors);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -1090,6 +1120,14 @@ static void *__cdecl lazy_singleton() {
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef LISTENER_DTOR_QUIET
+#undef DTOR_TABLES_MEMBER
+#undef DTOR_DELETE2
+#undef DTOR5_DELETE2
+#define LISTENER_DTOR_QUIET(...)
+#define DTOR_TABLES_MEMBER(...)
+#define DTOR_DELETE2(...)
+#define DTOR5_DELETE2(...)
 #undef RENDER_STATE
 #undef FREE_LIST_TAKE
 #undef LISTENER_DTOR
@@ -1265,14 +1303,22 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef LISTENER_DTOR_QUIET
+#undef DTOR_TABLES_MEMBER
+#undef DTOR_DELETE2
+#undef DTOR5_DELETE2
+#define LISTENER_DTOR_QUIET(at, table, node, ...) {at, table, node},
+#undef LISTENER_DTOR
+#define LISTENER_DTOR(at, table, node, ...) {at, table, node},
+#define DTOR_TABLES_MEMBER(at, t0, t4, member, member_table, member_dtor, base, ...) {at, member, member_dtor, base},
+#define DTOR_DELETE2(at, t0, t4, m1, m2, base, ...) {at, m1, m2, base},
+#define DTOR5_DELETE2(at, t0, t4, o2, t2, o3, t3, o4, t4b, m1, m2, base, ...) {at, m1, m2, base},
 #undef RENDER_STATE
 #undef FREE_LIST_TAKE
-#undef LISTENER_DTOR
 #undef DTOR_MEMBER_IF
 #undef LAZY_SINGLETON
 #define RENDER_STATE(at, kept, state, ...) {at, kept, state},
 #define FREE_LIST_TAKE(at, base, make, ...) {at, base, make},
-#define LISTENER_DTOR(...)
 #define DTOR_MEMBER_IF(at, member, member_dtor, base, ...) {at, member, member_dtor, base},
 #define LAZY_SINGLETON(at, global, size, a, b, c, ctor, ...) {at, global, size, a, b, c, ctor},
 #undef LAZY_FACTORY_K1
