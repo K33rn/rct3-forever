@@ -832,6 +832,40 @@ static void *__fastcall field_factory(uint8_t *self) {
 #define FACTORY_K3(at, size, ctor, a, b, c, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateWith", at, REWRITE_CAT(original_, at), 8, (void *)&factory_k3<size, ctor, a, b, c>, &g_factories);
 #define GLOBAL_FACTORY_K1(at, size, ctor, a, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::GlobalWith", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory_k1<size, ctor, a, global>, &g_global_factories);
 #define FIELD_FACTORY(at, size, ctor, a, b, field, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::IntoField", at, REWRITE_CAT(original_, at), 8, (void *)&field_factory<size, ctor, a, b, field>, &g_factories);
+// The interface (id in the global ID, as QueryInterface) of the object the reference at REF refers to (its
+// handle's object at +0xC), or null.
+static volatile long g_ref_interfaces;
+template <uint32_t REF, uint32_t ID> static void *__fastcall ref_interface(uint8_t *self) {
+    g_ref_interfaces++;
+    void *object = *(void **)(*(uint8_t **)(self + REF) + 0xc);
+    if (!object) return nullptr;
+    ClassInterfaces *c = ((ClassInterfaces * (__fastcall *)(void *))(*(void ***)object)[1])(object);
+    if (!c) return nullptr;
+    int32_t id = *(int32_t *)ID;
+    if (id >= c->count || !c->by_id[id]) return nullptr;
+    return (uint8_t *)object + c->by_id[id]->offset;
+}
+
+// Destructors: tables put back, the object at MEMBER deleted (its deleting destructor, slot 0, with 1) if any, then
+// the base class's destructor; or the member at MEMBER destroyed (MEMBER_DTOR), then the base class's destructor.
+static volatile long g_member_dtors;
+template <uint32_t TABLE, uint32_t TABLE4, uint32_t MEMBER, uint32_t BASE_DTOR>
+static void __fastcall dtor_delete_member(uint32_t *self) {
+    g_member_dtors++;
+    self[0] = TABLE;
+    self[1] = TABLE4;
+    void *member = *(void **)((uint8_t *)self + MEMBER);
+    if (member) ((void(__fastcall *)(void *, void *, uint32_t))(*(void ***)member)[0])(member, nullptr, 1);
+    ((void(__fastcall *)(void *))BASE_DTOR)(self);
+}
+template <uint32_t MEMBER, uint32_t MEMBER_DTOR, uint32_t BASE_DTOR> static void __fastcall dtor_member_base(uint8_t *self) {
+    g_member_dtors++;
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self + MEMBER);
+    ((void(__fastcall *)(void *))BASE_DTOR)(self);
+}
+#define REF_INTERFACE(at, ref, id, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Reference::Interface", at, REWRITE_CAT(original_, at), 8, (void *)&ref_interface<ref, id>, &g_ref_interfaces);
+#define DTOR_DELETE_MEMBER(at, table, table4, member, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::DeleteMember", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_delete_member<table, table4, member, base>, &g_member_dtors);
+#define DTOR_MEMBER_BASE(at, member, member_dtor, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::MemberThenBase", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_member_base<member, member_dtor, base>, &g_member_dtors);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -916,6 +950,12 @@ static void *__fastcall field_factory(uint8_t *self) {
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef REF_INTERFACE
+#undef DTOR_DELETE_MEMBER
+#undef DTOR_MEMBER_BASE
+#define REF_INTERFACE(...)
+#define DTOR_DELETE_MEMBER(...)
+#define DTOR_MEMBER_BASE(...)
 #undef FACTORY_K3
 #undef GLOBAL_FACTORY_K1
 #undef FIELD_FACTORY
@@ -1061,6 +1101,12 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef REF_INTERFACE
+#undef DTOR_DELETE_MEMBER
+#undef DTOR_MEMBER_BASE
+#define REF_INTERFACE(at, ref, id, ...) {at, ref, id},
+#define DTOR_DELETE_MEMBER(at, table, table4, member, base, ...) {at, table, table4, member, base},
+#define DTOR_MEMBER_BASE(at, member, member_dtor, base, ...) {at, member, member_dtor, base},
 #undef FACTORY_K3
 #undef GLOBAL_FACTORY_K1
 #undef FIELD_FACTORY

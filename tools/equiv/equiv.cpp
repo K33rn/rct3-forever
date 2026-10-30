@@ -405,7 +405,7 @@ static void stubs_for_now(std::initializer_list<std::pair<uintptr_t, void *>> li
     }
 }
 static void unstub_many() {
-    for (auto &s : g_saved_many) memcpy((void *)s.first, &s.second, 5);
+    for (auto s = g_saved_many.rbegin(); s != g_saved_many.rend(); ++s) memcpy((void *)s->first, &s->second, 5);
     g_saved_many.clear();
 }
 
@@ -595,6 +595,9 @@ static void *__fastcall stub_named_ref_text(uint8_t *self, void *, int32_t **nam
     *(void **)(self + 8) = *arena<uint32_t>(0x3c) % 3 ? arena<void>(0x300) : nullptr;
     return self;
 }
+// destructors with a member: the member's field (for the test), and a member's destructor
+static uint32_t g_member_field;
+static void __fastcall stub_member_destructor(void *self) { record(0x8a, self); }
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -1548,6 +1551,60 @@ static std::vector<Test> tests() {
         gf_prepare(c[4], c[2], (void *)stub_ctor1);
     };
     global_factory_k1.finish = gf_finish;
+    // interfaces of what a reference refers to: the object at 0x4000 (its field a reference to the handle at 0x3000),
+    // the handle's object 0x3100 or none, with the class and interfaces of the QueryInterface test
+    static const uint32_t *ref_c;
+    Test ref_interface{0x4d1800,
+                       [=](Rng &r) {
+                           fresh(r);
+                           const uint32_t *c = ref_c;
+                           for (int i = 0; i < 0x1400 / 4; i++) arena<uint32_t>(0x3000)[i] = r.next();
+                           static void *vt[2] = {nullptr, (void *)stub_class_of};
+                           *(void **)arena<uint8_t>(0x4000 + c[1]) = arena<void>(0x3000);
+                           *(void **)arena<uint8_t>(0x300c) = r.next() % 5 ? arena<void>(0x3100) : nullptr;
+                           arena<void *>(0x3100)[0] = vt;
+                           uint8_t *cls = arena<uint8_t>(0x200);
+                           *arena<void *>(0x1f0) = r.next() % 5 ? cls : nullptr;
+                           *(void **)(cls + 0x14) = arena<void>(0x240);
+                           *(int32_t *)(cls + 0x18) = r.range(0, 8);
+                           for (int i = 0; i < 8; i++) {
+                               arena<void *>(0x240)[i] = r.next() % 4 ? arena<void>(0x300 + 0x20 * i) : nullptr;
+                               *(int32_t *)arena<uint8_t>(0x300 + 0x20 * i + 0x10) = r.range(-64, 64) * 4;
+                           }
+                           *(int32_t *)c[2] = r.range(0, 9);
+                       },
+                       [](void *fn) {
+                           return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x4000))};
+                       }};
+    ref_interface.prepare = [](const rewrite::Entry *e) { ref_c = rewrite::start_constants(e->at); };
+    // destructors with a member: the object at 0x800 (noise), the member deleted at 0x300 or none; the base
+    // destructor (and the member's) stood in for
+    Test dtor_delete_member{0x490070,
+                            [=](Rng &r) {
+                                fresh(r);
+                                static void *vt[1] = {(void *)stub_deleting};
+                                arena<void *>(0x300)[0] = vt;
+                                for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x800)[i] = r.next();
+                                arena<uint32_t>(0x10)[0] = r.next() % 4 ? 0x300 : 0;
+                            },
+                            [](void *fn) {
+                                uint32_t member = arena<uint32_t>(0x10)[0];
+                                *(void **)(arena<uint8_t>(0x800) + g_member_field) = member ? arena<void>(member) : nullptr;
+                                ((void(__fastcall *)(void *))fn)(arena<void>(0x800));
+                                return Result{};
+                            }};
+    dtor_delete_member.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        g_member_field = c[3];
+        stubs_for_now({{c[4], (void *)stub_destructor}});
+    };
+    dtor_delete_member.finish = [](const rewrite::Entry *) { unstub_many(); };
+    Test dtor_member_base{0x42e3b0, [=](Rng &r) { fresh(r); }, obj_call};
+    dtor_member_base.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        stubs_for_now({{c[2], (void *)stub_member_destructor}, {c[3], (void *)stub_destructor}});
+    };
+    dtor_member_base.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1612,7 +1669,8 @@ static std::vector<Test> tests() {
                     &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap,
                     &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two,
                     &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2,
-                    &condition_name, &factory_k3, &field_factory, &global_factory_k1}) {
+                    &condition_name, &factory_k3, &field_factory, &global_factory_k1, &ref_interface,
+                    &dtor_delete_member, &dtor_member_base}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

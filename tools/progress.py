@@ -76,7 +76,9 @@ def rewritten():
                  'OBJECT_RESIZE': 'ObjectArray::Resize', 'WITH_REFERENCE': 'ObjectRef::CallWith',
                  'POINTER_RESIZE': 'PointerArray::Resize', 'ARRAY_RESERVE': 'Array::Reserve', 'GUI_INIT': 'GuiPart::Init',
                  'GUI_MAKE': 'GuiPart::Make', 'GUI_CREATE2': 'GuiPart::Create', 'CONDITION_NAME': 'ObjectiveCondition::Name',
-                 'FACTORY_K3': 'Factory::CreateWith', 'GLOBAL_FACTORY_K1': 'Factory::GlobalWith', 'FIELD_FACTORY': 'Factory::IntoField'}
+                 'FACTORY_K3': 'Factory::CreateWith', 'GLOBAL_FACTORY_K1': 'Factory::GlobalWith', 'FIELD_FACTORY': 'Factory::IntoField',
+                 'REF_INTERFACE': 'Reference::Interface', 'DTOR_DELETE_MEMBER': 'Destructor::DeleteMember',
+                 'DTOR_MEMBER_BASE': 'Destructor::MemberThenBase'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found

@@ -76,6 +76,12 @@ MATCH = [
     ('GLOBAL_FACTORY_K1', 0x4137A0, [(1, 0)], [(6, 0), (15, 0), (13, 0), (16, 0)], (6, 13), [[(16, 0), (23, 0)]]),
     ('FIELD_FACTORY', 0x6D4300, [(1, 0)], [(7, 0), (19, 0), (17, 0), (16, 0), (20, 0)], (7, 16, 17, 20, 28),
      [[(20, 0), (28, 0)]]),   # size, ctor, two args (then this), the field
+    ('REF_INTERFACE', 0x4D1800, [], [(0, 1), (10, 1)], (0,)),                 # the reference's field, the id
+    ('REF_INTERFACE', 0x7307C0, [], [(0, 1), (10, 1)], (0,)),
+    ('REF_INTERFACE', 0x4CA9B0, [], [(0, 1), (11, 1)], (0,)),
+    ('ARRAY_FREE', 0x424510, [], [(10, 0), (8, 0)], (10,)),                     # another shape: size, dtor
+    ('DTOR_DELETE_MEMBER', 0x490070, [(1, 0)], [(9, 1), (10, 1), (11, 1), (20, 0)], (11,)),   # tables, member, base
+    ('DTOR_MEMBER_BASE', 0x42E3B0, [(1, 0)], [(9, 1), (11, 0), (14, 0)], (9,)),   # member field, its dtor, base dtor
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
     ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor
