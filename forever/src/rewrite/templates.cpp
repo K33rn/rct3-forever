@@ -866,6 +866,47 @@ template <uint32_t MEMBER, uint32_t MEMBER_DTOR, uint32_t BASE_DTOR> static void
 #define REF_INTERFACE(at, ref, id, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Reference::Interface", at, REWRITE_CAT(original_, at), 8, (void *)&ref_interface<ref, id>, &g_ref_interfaces);
 #define DTOR_DELETE_MEMBER(at, table, table4, member, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::DeleteMember", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_delete_member<table, table4, member, base>, &g_member_dtors);
 #define DTOR_MEMBER_BASE(at, member, member_dtor, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::MemberThenBase", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_member_base<member, member_dtor, base>, &g_member_dtors);
+// Factories giving their constructor constants (two or five), or a constant, the two arguments and a constant.
+template <uint32_t SIZE, uint32_t CTOR, uint32_t... ARGS> static void *__cdecl factory_k() {
+    g_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    typedef void *(__fastcall * Ctor)(void *, void *, decltype(ARGS)...);
+    return p ? ((Ctor)CTOR)(p, nullptr, ARGS...) : nullptr;
+}
+template <uint32_t SIZE, uint32_t CTOR, uint32_t FIRST, uint32_t LAST>
+static void *__stdcall factory_2k(uint32_t a, uint32_t b) {
+    g_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    typedef void *(__fastcall * Ctor)(void *, void *, uint32_t, uint32_t, uint32_t, uint32_t);
+    return p ? ((Ctor)CTOR)(p, nullptr, FIRST, a, b, LAST) : nullptr;
+}
+
+// A constructor with nothing of its own but its table: the base class's constructor, then the table.
+static volatile long g_ctor_tables;
+template <uint32_t BASE, uint32_t TABLE> static void *__fastcall ctor_base_table(uint32_t *self) {
+    g_ctor_tables++;
+    ((void(__fastcall *)(void *))BASE)(self);
+    self[0] = TABLE;
+    return self;
+}
+
+// Sets two 3-value vectors (+0, +0xC) and a value (+0x18) from the arguments; each vector is read whole before it
+// is written, as the original copies it through the stack. Gives the object.
+static volatile long g_vector_sets;
+static void *__fastcall set_two_vectors(uint32_t *self, void *, const uint32_t *a, const uint32_t *b, uint32_t value) {
+    g_vector_sets++;
+    uint32_t t0 = a[0], t1 = a[1], t2 = a[2];
+    self[0] = t0, self[1] = t1, self[2] = t2;
+    t0 = b[0], t1 = b[1], t2 = b[2];
+    self[3] = t0, self[4] = t1, self[5] = t2;
+    self[6] = value;
+    return self;
+}
+#define FACTORY_K2(at, size, ctor, a, b, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateWith2", at, REWRITE_CAT(original_, at), 8, (void *)&factory_k<size, ctor, a, b>, &g_factories);
+#define FACTORY_K5(at, size, ctor, a, b, c, d, e, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateWith5", at, REWRITE_CAT(original_, at), 8, (void *)&factory_k<size, ctor, a, b, c, d, e>, &g_factories);
+#define FACTORY_2K(at, size, ctor, first, last, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateAround", at, REWRITE_CAT(original_, at), 8, (void *)&factory_2k<size, ctor, first, last>, &g_factories);
+#define CTOR_BASE_TABLE(at, base, table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Constructor::BaseAndTable", at, REWRITE_CAT(original_, at), 8, (void *)&ctor_base_table<base, table>, &g_ctor_tables);
+#define SET_TWO_VECTORS(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Vectors::SetTwoAndValue", at, REWRITE_CAT(original_, at), 8, (void *)&set_two_vectors, &g_vector_sets);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -950,6 +991,16 @@ template <uint32_t MEMBER, uint32_t MEMBER_DTOR, uint32_t BASE_DTOR> static void
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef FACTORY_K2
+#undef FACTORY_K5
+#undef FACTORY_2K
+#undef CTOR_BASE_TABLE
+#undef SET_TWO_VECTORS
+#define FACTORY_K2(...)
+#define FACTORY_K5(...)
+#define FACTORY_2K(...)
+#define CTOR_BASE_TABLE(...)
+#define SET_TWO_VECTORS(...)
 #undef REF_INTERFACE
 #undef DTOR_DELETE_MEMBER
 #undef DTOR_MEMBER_BASE
@@ -1101,6 +1152,16 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef FACTORY_K2
+#undef FACTORY_K5
+#undef FACTORY_2K
+#undef CTOR_BASE_TABLE
+#undef SET_TWO_VECTORS
+#define FACTORY_K2(at, size, ctor, ...) {at, size, ctor},
+#define FACTORY_K5(at, size, ctor, ...) {at, size, ctor},
+#define FACTORY_2K(at, size, ctor, ...) {at, size, ctor},
+#define CTOR_BASE_TABLE(at, base, ...) {at, base},
+#define SET_TWO_VECTORS(...)
 #undef REF_INTERFACE
 #undef DTOR_DELETE_MEMBER
 #undef DTOR_MEMBER_BASE

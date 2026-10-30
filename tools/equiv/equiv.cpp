@@ -598,6 +598,19 @@ static void *__fastcall stub_named_ref_text(uint8_t *self, void *, int32_t **nam
 // destructors with a member: the member's field (for the test), and a member's destructor
 static uint32_t g_member_field;
 static void __fastcall stub_member_destructor(void *self) { record(0x8a, self); }
+// constructors with two or five arguments
+static void *__fastcall stub_ctor2(void *self, void *, uint32_t a, uint32_t b) {
+    record(0x8b, self);
+    record(0x8b, (void *)(uintptr_t)a);
+    record(0x8b, (void *)(uintptr_t)b);
+    return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
+}
+static void *__fastcall stub_ctor5(void *self, void *, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
+    record(0x8c, self);
+    uint32_t v[5] = {a, b, c, d, e};
+    for (uint32_t x : v) record(0x8c, (void *)(uintptr_t)x);
+    return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
+}
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -1605,6 +1618,45 @@ static std::vector<Test> tests() {
         stubs_for_now({{c[2], (void *)stub_member_destructor}, {c[3], (void *)stub_destructor}});
     };
     dtor_member_base.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // factories with constants: the copy's constructor stood in for (2 or 5 arguments, or 4 around the two given)
+    auto ctor_prepare = [](void *stand_in) {
+        return [=](const rewrite::Entry *e) {
+            stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {rewrite::start_constants(e->at)[2], stand_in}});
+        };
+    };
+    auto cdecl_call = [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()}; };
+    Test factory_k2{0x5f80d0, any_setup, cdecl_call};
+    factory_k2.prepare = ctor_prepare((void *)stub_ctor2);
+    Test factory_k5{0x6d02c0, any_setup, cdecl_call};
+    factory_k5.prepare = ctor_prepare((void *)stub_ctor5);
+    Test factory_2k{0x464620, any_setup, [](void *fn) {
+                        return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(uint32_t, uint32_t))fn)(
+                            arena<uint32_t>(0x20)[2], arena<uint32_t>(0x20)[3])};
+                    }};
+    factory_2k.prepare = ctor_prepare((void *)stub_ctor4);
+    for (Test *x : {&factory_k2, &factory_k5, &factory_2k}) x->finish = [](const rewrite::Entry *) { unstub_many(); };
+    // constructors: the base constructor stood in for; the object at 0x100
+    Test ctor_base_table{0x471ef0, [=](Rng &r) { fresh(r); }, [](void *fn) {
+                             return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                         }};
+    ctor_base_table.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{rewrite::start_constants(e->at)[1], (void *)stub_destructor}});
+    };
+    ctor_base_table.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // two vectors and a value: the object at 0x100, the vectors anywhere in 0x100..0x140 (overlapping it, too)
+    Test set_two_vectors{0x4884b0,
+                         [=](Rng &r) {
+                             fresh(r);
+                             arena<uint32_t>(0x10)[0] = 0x100 + 4 * r.range(0, 16);
+                             arena<uint32_t>(0x10)[1] = 0x100 + 4 * r.range(0, 16);
+                             arena<uint32_t>(0x10)[2] = r.next();
+                         },
+                         [](void *fn) {
+                             return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *, void *,
+                                                                                        uint32_t))fn)(
+                                 arena<void>(0x100), nullptr, arena<void>(arena<uint32_t>(0x10)[0]),
+                                 arena<void>(arena<uint32_t>(0x10)[1]), arena<uint32_t>(0x10)[2])};
+                         }};
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1670,7 +1722,8 @@ static std::vector<Test> tests() {
                     &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two,
                     &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2,
                     &condition_name, &factory_k3, &field_factory, &global_factory_k1, &ref_interface,
-                    &dtor_delete_member, &dtor_member_base}) {
+                    &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
+                    &ctor_base_table, &set_two_vectors}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);
