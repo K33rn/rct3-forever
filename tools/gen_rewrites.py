@@ -41,6 +41,8 @@ QUERY = ('push esi ; mov esi, ecx ; test esi, esi ; je N ; mov eax, dword ptr [e
 MATCH = [
     ('NAMED_TEXT_REF', 0x403F30, [(1, 0)], [(37, 0), (72, 1), (127, 1)]),   # suffix, first table, class table
     ('GAME_TEXT_COPY', 0x41F210, [(1, 0)], [(9, 0)]),                        # the text's name
+    ('TEXT_REF_FROM_TEXT', 0x403E50, [(1, 0)], [(16, 0), (30, 1), (49, 1)]),  # suffix, first table, class table
+    ('START_KEY', 0xEB2580, [], [(5, 0), (6, 0), (10, 0), (11, 0), (13, 1), (15, 0)]),   # keys, names, global, dtor
 ]
 
 

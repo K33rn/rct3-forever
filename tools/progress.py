@@ -62,7 +62,8 @@ def rewritten():
         names = {'DELETING': 'DeletingDestructor', 'QUERY': 'QueryInterface', 'MODULE': 'ModuleGlobal', 'CACHED': 'CachedInterface', 'LOAD': 'StructArrayLoad', 'CLEANUP': 'GlobalCleanup', 'REF_NULL': 'Reference::Reference',
                  'REF_TO': 'Reference::Reference(object)', 'ARRAY_FREE': 'ObjectArray::Free', 'SET_TABLE': 'SetTable',
                  'START_NAME': 'Start::Name', 'START_CLASS': 'Start::ClassDescription', 'START_SECTION': 'Start::Section',
-                 'NAMED_TEXT_REF': 'NamedTextRef::NamedTextRef', 'GAME_TEXT_COPY': 'GameText::Copy'}
+                 'NAMED_TEXT_REF': 'NamedTextRef::NamedTextRef', 'GAME_TEXT_COPY': 'GameText::Copy',
+                 'TEXT_REF_FROM_TEXT': 'NamedTextRef::NamedTextRef(text)', 'START_KEY': 'Start::KeyCommand'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found

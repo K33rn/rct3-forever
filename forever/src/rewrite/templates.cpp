@@ -345,6 +345,47 @@ template <uint32_t NAME> static Text *__stdcall game_text_copy(Text *out) {
     return out;
 }
 
+// The same from a text the caller has (not C text): with `with_suffix` it refers to that text with SUFFIX added
+// (0x403E10), the one made for it let go of after.
+static volatile long g_text_refs_from_text;
+template <uint32_t SUFFIX, uint32_t TABLE, uint32_t CLASS_TABLE>
+static void *__fastcall named_text_ref_from_text(uint32_t *self, void *, Text volatile *name, void *texts,
+                                                 uint32_t with_suffix) {
+    g_text_refs_from_text++;
+    typedef void(__fastcall * TextRefMake)(void *, void *, Text volatile *, void *);   // ret 8
+    if (with_suffix & 0xff) {
+        Text volatile named;
+        Text volatile *r = ((Text volatile * (__fastcall *)(Text volatile *, void *, Text volatile *, const char *))
+                                0x403e10)(name, nullptr, &named, (const char *)SUFFIX);
+        ((TextRefMake)0xbd15a0)(self, nullptr, r, texts);
+        self[0] = TABLE;
+        release_text(named);
+    } else {
+        ((TextRefMake)0xbd15a0)(self, nullptr, name, texts);
+        self[0] = TABLE;
+    }
+    self[0] = CLASS_TABLE;
+    return self;
+}
+
+// ---- start-up key commands ------------------------------------------------------------------------------------
+// A key command defined at start-up (0x6B2720 on its global: its group 0xF4473C, the setting's name and the
+// command's, its default keys made with KeyCombination::Set (0xBD1940) on the stack, then 1, 1); the global's
+// destructor registered with atexit.
+static volatile long g_key_commands;
+template <uint32_t KEY1, uint32_t KEY2, uint32_t NAME, uint32_t SETTING, uint32_t GLOBAL, uint32_t DTOR>
+static void __cdecl key_command() {
+    g_key_commands++;
+    alignas(4) uint8_t keys[0x14];
+    void *k = ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t, uint32_t))0xbd1940)(
+        keys, nullptr, KEY1, KEY2, 0, 0);
+    ((void(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t, void *, uint32_t, uint32_t))0x6b2720)(
+        (void *)GLOBAL, nullptr, 0xf4473c, SETTING, NAME, k, 1, 1);
+    game_atexit((void(__cdecl *)())DTOR);
+}
+
+#define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
+#define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, name, setting, global, dtor>, &g_key_commands);
 #define NAMED_TEXT_REF(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref<suffix, table, class_table>, &g_named_text_refs);
 #define GAME_TEXT_COPY(at, name, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GameText::Copy", at, REWRITE_CAT(original_, at), 8, (void *)&game_text_copy<name>, &g_game_text_copies);
 #define START_NAME(at, text, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Name", at, REWRITE_CAT(original_, at), 8, (void *)&registered_name<text, global>, &g_names);
@@ -377,6 +418,10 @@ template <uint32_t NAME> static Text *__stdcall game_text_copy(Text *out) {
 #undef GAME_TEXT_COPY
 #define NAMED_TEXT_REF(...)
 #define GAME_TEXT_COPY(...)
+#undef TEXT_REF_FROM_TEXT
+#undef START_KEY
+#define TEXT_REF_FROM_TEXT(...)
+#define START_KEY(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -451,7 +496,7 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef LOAD
 #define LOAD(...)
 
-// the start-up initialisers' and the text families' constants, for the equivalence test: {at, then the macro's constants (up to 4)}
+// the start-up initialisers' and the text families' constants, for the equivalence test: {at, then the macro's constants (up to 6)}
 #undef START_NAME
 #undef START_CLASS
 #undef START_SECTION
@@ -462,7 +507,11 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef GAME_TEXT_COPY
 #define NAMED_TEXT_REF(at, suffix, table, class_table, ...) {at, suffix, table, class_table},
 #define GAME_TEXT_COPY(at, name, ...) {at, name},
-static const uint32_t start_table[][5] = {
+#undef TEXT_REF_FROM_TEXT
+#undef START_KEY
+#define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) {at, suffix, table, class_table},
+#define START_KEY(at, key2, key1, name, setting, global, dtor, ...) {at, key2, key1, name, setting, global, dtor},
+static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };
 

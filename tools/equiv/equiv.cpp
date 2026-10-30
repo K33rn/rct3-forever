@@ -458,6 +458,26 @@ static void *__fastcall stub_wide_empty(char flag) {
     return arena<void>(0x260);
 }
 static void __fastcall stub_text_ref_free(void *self) { record(0x77, self == g_text_ref ? (void *)1 : self); }
+// key commands: the default keys are made on the stack (recorded as 1, as the String above)
+static void *g_keys;
+static void *__fastcall stub_key_combination(void *self, void *, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    g_keys = self;
+    record(0x78, (void *)(uintptr_t)a);
+    record(0x78, (void *)(uintptr_t)b);
+    record(0x78, (void *)(uintptr_t)c);
+    record(0x78, (void *)(uintptr_t)d);
+    return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
+}
+static void __fastcall stub_key_command(void *self, void *, uint32_t group, uint32_t setting, uint32_t name,
+                                        void *keys, uint32_t e, uint32_t f) {
+    record(0x79, self);
+    record(0x79, (void *)(uintptr_t)group);
+    record(0x79, (void *)(uintptr_t)setting);
+    record(0x79, (void *)(uintptr_t)name);
+    record(0x79, keys == g_keys ? (void *)1 : keys);
+    record(0x79, (void *)(uintptr_t)e);
+    record(0x79, (void *)(uintptr_t)f);
+}
 
 static void install_stubs() {
     stub(0xbce000, (void *)stub_free);
@@ -1045,10 +1065,40 @@ static std::vector<Test> tests() {
                        {0xbd1880, (void *)stub_text_ref_free}});
     };
     game_text_copy.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // NamedTextRef from a text: the reference at 0x100, its name the text at 0x240 (held at 0x1e0), the texts
+    // table 0x380, with the suffix or not
+    Test text_ref_from_text{0x403e50,
+                            [=](Rng &r) {
+                                fresh(r);
+                                text_counts(r);
+                                *arena<void *>(0x1e0) = arena<void>(0x240);
+                                arena<uint32_t>(0x10)[1] = r.next() % 2 ? r.next() & 0xff00 : r.next();
+                            },
+                            [](void *fn) {
+                                return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *,
+                                                                                           void *, uint32_t))fn)(
+                                    arena<void>(0x100), nullptr, arena<void>(0x1e0), arena<void>(0x380),
+                                    arena<uint32_t>(0x10)[1])};
+                            }};
+    text_ref_from_text.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x403e10, (void *)stub_text_concat}, {0xbd15a0, (void *)stub_text_ref}});
+    };
+    text_ref_from_text.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // start-up key commands
+    Test start_key{0xeb2580, [=](Rng &r) { fresh(r); for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next(); },
+                   [](void *fn) {
+                       ((void(__cdecl *)())fn)();
+                       return Result{};
+                   }};
+    start_key.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbd1940, (void *)stub_key_combination}, {0x6b2720, (void *)stub_key_command}});
+    };
+    start_key.finish = [](const rewrite::Entry *) { unstub_many(); };
 
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
-                    &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy}) {
+                    &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
+                    &text_ref_from_text, &start_key}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);
