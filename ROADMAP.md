@@ -21,8 +21,8 @@ Forever's launcher warns when both are installed.
 | Launcher (checks the game version, starts RCT3 with Forever loaded) | Done |
 | `forever.dll` (runs inside the game, puts the rewritten functions in place, leaves the game folder untouched) | Done |
 | Equivalence tester (checks every rewritten function against the original before it is used) | Done |
-| Rewriting the game, one function at a time | **In progress**: 7,563 functions, 6.48% of the game's code |
-| Understanding and documenting the game's code (`docs/notes`) | **Done**: 100% of the game's code is documented in `docs/notes` (6.48% of it also rewritten; `tools/rewritten_notes.py` keeps notes for the rewritten copies). Many rows are "In outline:" descriptions to revisit before rewriting |
+| Rewriting the game, one function at a time | **In progress**: 7,604 functions, 6.53% of the game's code |
+| Understanding and documenting the game's code (`docs/notes`) | **Done**: 100% of the game's code is documented in `docs/notes` (6.53% of it also rewritten; `tools/rewritten_notes.py` keeps notes for the rewritten copies). Many rows are "In outline:" descriptions to revisit before rewriting |
 
 The [progress page](docs/progress.md) has the current numbers, updated with every change.
 

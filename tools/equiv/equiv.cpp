@@ -1525,6 +1525,29 @@ static std::vector<Test> tests() {
                        {0xbd0490, (void *)stub_wide_empty}, {0xbd1880, (void *)stub_text_ref_free}});
     };
     condition_name.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // more factories: the copy's constructor stood in for (three arguments); memory sometimes runs out
+    auto ctor3_prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {rewrite::start_constants(e->at)[2], (void *)stub_ctor3}});
+    };
+    auto any_setup = [=](Rng &r) {
+        fresh(r);
+        for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next();
+    };
+    Test factory_k3{0x4aee60, any_setup, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()}; }};
+    factory_k3.prepare = ctor3_prepare;
+    factory_k3.finish = [](const rewrite::Entry *) { unstub_many(); };
+    Test field_factory{0x6d4300, any_setup, [](void *fn) {
+                           return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                       }};
+    field_factory.prepare = ctor3_prepare;
+    field_factory.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // a global factory with one argument: as the global factories above
+    Test global_factory_k1{0x4137a0, gf_setup, gf_call};
+    global_factory_k1.prepare = [=](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        gf_prepare(c[4], c[2], (void *)stub_ctor1);
+    };
+    global_factory_k1.finish = gf_finish;
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1589,7 +1612,7 @@ static std::vector<Test> tests() {
                     &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap,
                     &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two,
                     &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2,
-                    &condition_name}) {
+                    &condition_name, &factory_k3, &field_factory, &global_factory_k1}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

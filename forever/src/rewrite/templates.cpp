@@ -806,6 +806,32 @@ template <uint32_t TEXT> static Text *__stdcall condition_name(Text *out) {
     return out;
 }
 #define CONDITION_NAME(at, text, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectiveCondition::Name", at, REWRITE_CAT(original_, at), 8, (void *)&condition_name<text>, &g_condition_names);
+// More factories: SIZE bytes constructed with constant arguments (given back, kept in a global, or kept in a field
+// of `this`, the constructor then also given `this`); null without memory.
+template <uint32_t SIZE, uint32_t CTOR, uint32_t A, uint32_t B, uint32_t C> static void *__cdecl factory_k3() {
+    g_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    return p ? ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t))CTOR)(p, nullptr, A, B, C) : nullptr;
+}
+template <uint32_t SIZE, uint32_t CTOR, uint32_t A, uint32_t GLOBAL> static void *__cdecl global_factory_k1() {
+    g_global_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    void *made = p ? ((void *(__fastcall *)(void *, void *, uint32_t))CTOR)(p, nullptr, A) : nullptr;
+    *(void **)GLOBAL = made;
+    return made;
+}
+template <uint32_t SIZE, uint32_t CTOR, uint32_t A, uint32_t B, uint32_t FIELD>
+static void *__fastcall field_factory(uint8_t *self) {
+    g_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    void *made = p ? ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, void *))CTOR)(p, nullptr, A, B, self)
+                   : nullptr;
+    *(void **)(self + FIELD) = made;
+    return made;
+}
+#define FACTORY_K3(at, size, ctor, a, b, c, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateWith", at, REWRITE_CAT(original_, at), 8, (void *)&factory_k3<size, ctor, a, b, c>, &g_factories);
+#define GLOBAL_FACTORY_K1(at, size, ctor, a, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::GlobalWith", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory_k1<size, ctor, a, global>, &g_global_factories);
+#define FIELD_FACTORY(at, size, ctor, a, b, field, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::IntoField", at, REWRITE_CAT(original_, at), 8, (void *)&field_factory<size, ctor, a, b, field>, &g_factories);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -890,6 +916,12 @@ template <uint32_t TEXT> static Text *__stdcall condition_name(Text *out) {
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef FACTORY_K3
+#undef GLOBAL_FACTORY_K1
+#undef FIELD_FACTORY
+#define FACTORY_K3(...)
+#define GLOBAL_FACTORY_K1(...)
+#define FIELD_FACTORY(...)
 #undef CONDITION_NAME
 #define CONDITION_NAME(...)
 #undef POINTER_RESIZE
@@ -1029,6 +1061,12 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef FACTORY_K3
+#undef GLOBAL_FACTORY_K1
+#undef FIELD_FACTORY
+#define FACTORY_K3(at, size, ctor, ...) {at, size, ctor},
+#define GLOBAL_FACTORY_K1(at, size, ctor, a, global, ...) {at, size, ctor, a, global},
+#define FIELD_FACTORY(at, size, ctor, ...) {at, size, ctor},
 #undef CONDITION_NAME
 #define CONDITION_NAME(...)
 #undef POINTER_RESIZE
