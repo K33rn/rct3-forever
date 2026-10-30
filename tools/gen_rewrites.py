@@ -142,6 +142,12 @@ def main():
         fixed = {kj: v for kj, v in operands(b).items() if kj not in ignore and kj not in params}
         MATCHED.append((macro, rep, shape_of(b, loose), layout(b, rep), fixed, params, len(b), loose))
     counts = {m[0]: 0 for m in MATCH}
+    # ObjectArray::SetCapacity: matched by its shape with every constant masked (the copies differ in registers and
+    # in how they multiply by the item size), its constants found by their roles
+    def masked(ins):
+        return [(i.mnemonic, re.sub(r'(0x[0-9a-f]+|\d+)', 'N', i.op_str), i.size) for i in ins]
+    SETCAP = [masked(body(a)) for a in (0x420C10, 0x455CE0, 0x463060)]
+    n_sc_ = 0
     for r in funcs:
         va, n = int(r['address'], 16), int(r['size'])
         if n > 600 or va in handwritten:
@@ -160,6 +166,28 @@ def main():
             else:
                 n_rt += 1
             continue
+        if masked(ins) in SETCAP:
+            calls = [i.operands[0].imm & 0xffffffff for i in ins if i.mnemonic == 'call']
+            def pushes_before(target):
+                k = next(k for k, i in enumerate(ins) if i.mnemonic == 'call' and i.operands[0].imm & 0xffffffff == target)
+                found = []
+                for i in reversed(ins[:k]):
+                    if i.mnemonic == 'push' and i.operands[0].type == X.X86_OP_IMM:
+                        found.insert(0, i.operands[0].imm & 0xffffffff)
+                    if len(found) == {0xDDCF99: 3, 0xDDCF39: 2}[target] or i.mnemonic == 'call':
+                        break
+                return found
+            if len(calls) == 5 and calls[:2] == [0xBCDFD0, 0xDDCF99] and calls[3:] == [0xDDCF39, 0xBCE010]:
+                dtor, ctor, size = pushes_before(0xDDCF99)
+                dtor2, size2 = pushes_before(0xDDCF39)
+                # the header in front of the items (the count at its start): lea items, [block + header] when made,
+                # lea block, [items - header] when freed
+                leas = [i.operands[1].mem.disp for i in ins if i.mnemonic == 'lea' and i.operands[1].mem.index == 0]
+                header = next((d for d in leas if d > 0), None)
+                if (dtor, size) == (dtor2, size2) and header and -header in leas:
+                    out.append(f'OBJECT_SETCAP({va:#x}, {size:#x}, {header:#x}, {ctor:#x}, {dtor:#x}, {calls[2]:#x}, {first})')
+                    n_sc_ += 1
+                    continue
         hit = False
         for macro, rep, shape, lay, fixed, params, length, loose in MATCHED:
             if len(ins) != length or shape_of(ins, loose) != shape or layout(ins, va) != lay:
@@ -249,6 +277,7 @@ def main():
                 continue
             out.append(f'QUERY({va:#x}, {ins_id.operands[1].mem.disp & 0xffffffff:#x}, {first})')
             n_q += 1
+    counts['OBJECT_SETCAP'] = n_sc_
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

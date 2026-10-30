@@ -560,6 +560,41 @@ static void *__fastcall factory_fields(uint8_t *self) {
 }
 #define FACTORY2(at, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Create", at, REWRITE_CAT(original_, at), 8, (void *)&factory2<size, ctor>, &g_factories);
 #define FACTORY_FIELDS(at, size, field1, field2, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateFromFields", at, REWRITE_CAT(original_, at), 8, (void *)&factory_fields<size, field1, field2, ctor>, &g_factories);
+// ---- arrays of objects ------------------------------------------------------------------------------------------
+// ObjectArray::SetCapacity: an array {items, count} of SIZE-byte objects made with new[] (the count at the start of a
+// HEADER of 4 or 16 bytes in front of them) resized to n: the new items allocated (aligned) and constructed (the runtime's vector constructor iterator,
+// with CTOR and DTOR), the old ones that fit assigned over (ASSIGN on each new item, given the old one), the old
+// items destroyed and freed; gives n. No memory leaves the items null (the original then assigns into it too).
+static volatile long g_object_setcaps;
+template <uint32_t SIZE, uint32_t HEADER, uint32_t CTOR, uint32_t DTOR, uint32_t ASSIGN>
+static int32_t __fastcall object_set_capacity(uint8_t **array, void *, int32_t n) {
+    g_object_setcaps++;
+    int32_t count = ((int32_t *)array)[1];
+    if (n == count) return count;
+    uint8_t *items = nullptr;
+    if (n != 0) {
+        int32_t *block = ((int32_t * (__cdecl *)(uint32_t))0xbcdfd0)((uint32_t)n * SIZE + HEADER);
+        if (block) {
+            block[0] = n;
+            items = (uint8_t *)block + HEADER;
+            ((void(__stdcall *)(void *, uint32_t, int32_t, void *, void *))0xddcf99)(items, SIZE, n, (void *)CTOR,
+                                                                                   (void *)DTOR);
+        }
+        int32_t keep = n > count ? count : n;
+        for (int32_t i = 0; i < keep; i++)
+            ((void(__fastcall *)(void *, void *, void *))ASSIGN)(items + i * SIZE, nullptr, *array + i * SIZE);
+    }
+    if (*array) {
+        ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(*array, SIZE, *(int32_t *)(*array - HEADER),
+                                                                       (void *)DTOR);
+        ((void(__cdecl *)(void *))0xbce010)(*array - HEADER);
+        *array = nullptr;
+    }
+    ((int32_t *)array)[1] = n;
+    *array = items;
+    return n;
+}
+#define OBJECT_SETCAP(at, size, header, ctor, dtor, assign, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::SetCapacity", at, REWRITE_CAT(original_, at), 8, (void *)&object_set_capacity<size, header, ctor, dtor, assign>, &g_object_setcaps);
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, 0, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
 #define START_KEY3(at, key3, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, key3, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
@@ -631,6 +666,8 @@ static void *__fastcall factory_fields(uint8_t *self) {
 #undef FACTORY_FIELDS
 #define FACTORY2(...)
 #define FACTORY_FIELDS(...)
+#undef OBJECT_SETCAP
+#define OBJECT_SETCAP(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -738,6 +775,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef FACTORY_FIELDS
 #define FACTORY2(at, size, ctor, ...) {at, size, ctor},
 #define FACTORY_FIELDS(at, size, field1, field2, ctor, ...) {at, size, field1, field2, ctor},
+#undef OBJECT_SETCAP
+#define OBJECT_SETCAP(at, size, header, ctor, dtor, assign, ...) {at, size, header, ctor, dtor, assign},
 static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };

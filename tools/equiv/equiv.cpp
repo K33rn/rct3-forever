@@ -520,6 +520,19 @@ static void *__fastcall stub_ctor4(void *self, void *, uint32_t a, uint32_t b, u
     record(0x7f, (void *)(uintptr_t)d);
     return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
 }
+// arrays of objects: the runtime's vector constructor iterator, and an item's assignment from another
+static void __stdcall stub_vector_construct(void *items, uint32_t size, int32_t count, void *ctor, void *dtor) {
+    record(0xddcf99, items);
+    record(0xddcf99, (void *)(uintptr_t)size);
+    record(0xddcf99, (void *)(uintptr_t)count);
+    record(0xddcf99, ctor);
+    record(0xddcf99, dtor);
+}
+static void *__fastcall stub_assign(void *self, void *, void *from) {
+    record(0x80, self);
+    record(0x80, from);
+    return self;
+}
 // resource types: the base constructor, given the three texts (recorded by what they point to)
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
@@ -1264,6 +1277,26 @@ static std::vector<Test> tests() {
         stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {rewrite::start_constants(e->at)[4], (void *)stub_ctor4}});
     };
     factory_fields.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // ObjectArray::SetCapacity: the array {items, count} at 0x100, its items at 0x410 (the count 0..5 at the start of
+    // the header in front: 0x40C or 0x400) or none; the new count 0..6, sometimes the same
+    Test object_setcap{0x420c10,
+                       [=](Rng &r) {
+                           fresh(r);
+                           bool items = r.next() % 4;
+                           int32_t count = items ? r.range(0, 5) : r.range(0, 2);
+                           *arena<int32_t>(0x400) = *arena<int32_t>(0x40c) = count;
+                           *arena<void *>(0x100) = items ? arena<void>(0x410) : nullptr;
+                           arena<int32_t>(0x100)[1] = count;
+                           arena<int32_t>(0x10)[0] = r.next() % 4 ? r.range(0, 6) : count;
+                       },
+                       [](void *fn) {
+                           return Result{((uint32_t(__fastcall *)(void *, void *, int32_t))fn)(
+                               arena<void>(0x100), nullptr, arena<int32_t>(0x10)[0])};
+                       }};
+    object_setcap.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xddcf99, (void *)stub_vector_construct}, {rewrite::start_constants(e->at)[5], (void *)stub_assign}});
+    };
+    object_setcap.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Text::Widen (registers: ecx size, edx buffer at 0x800, edi C text at 0x400): sizes 0 (no limit) to 40, texts
     // of up to 60 characters; the result is eax, its top bit flipped if edx, esi or edi didn't come back the same
     Test text_widen{0x401050,
@@ -1319,7 +1352,7 @@ static std::vector<Test> tests() {
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
                     &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report,
-                    &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields}) {
+                    &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

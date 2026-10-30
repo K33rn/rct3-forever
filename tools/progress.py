@@ -69,7 +69,8 @@ def rewritten():
                  'QUERY_REPORT': 'QueryInterface::OrReport',
                  'WIDE_COPY_OBJECT': 'WideText::CopyOf(object)', 'WIDE_COPY_GLOBAL': 'WideText::CopyOf', 'WIDE_COPY_THIS': 'WideText::CopyOf(this)',
                  'START_BEHAVIOUR': 'Start::Behaviour',
-                 'FACTORY2': 'Factory::Create', 'FACTORY_FIELDS': 'Factory::CreateFromFields'}
+                 'FACTORY2': 'Factory::Create', 'FACTORY_FIELDS': 'Factory::CreateFromFields',
+                 'OBJECT_SETCAP': 'ObjectArray::SetCapacity'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found
