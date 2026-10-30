@@ -50,7 +50,8 @@ MATCH = [
     ('TEXT_CREATE', 0x45C000, [(1, 0)], [(14, 0), (16, 0)]),                  # the C text, the function making it
     ('TABLE20_FREE', 0x80F710, [(1, 0)], []),
     ('START_TEXT', 0xECA490, [(1, 0)], [(13, 0), (20, 0), (34, 1), (76, 0)]),  # text, suffix, global, dtor
-    ('RESOURCE_TYPE', 0xBB28E0, [(1, 0)], [(17, 0), (31, 0), (45, 0), (101, 1)]),   # name, extension, engine, table
+    ('RESOURCE_TYPE', 0xBB28E0, [(1, 0)], [(17, 0), (31, 0), (45, 0), (101, 1), (53, 0)], (53,)),   # + its flag
+    ('WITH_REFERENCE', 0x536EE0, [(1, 0)], [(25, 1), (30, 1), (32, 0), (35, 0)], (30,)),   # table, field, function, dtor
     ('QUERY_REPORT', 0x42A430, [], [(10, 1)]),                               # the global holding the id
     ('WIDE_COPY_OBJECT', 0x6D2F00, [(1, 0)], [(7, 1)]),
     ('WIDE_COPY_GLOBAL', 0x4CE710, [(1, 0)], [(7, 1)]),
@@ -158,7 +159,9 @@ def main():
     def masked(ins):
         return [(i.mnemonic, re.sub(r'(0x[0-9a-f]+|\d+)', 'N', i.op_str), i.size) for i in ins]
     SETCAP = [masked(body(a)) for a in (0x420C10, 0x455CE0, 0x463060)]
+    RESIZE = [masked(body(a)) for a in (0x420B70,)]   # ObjectArray::Resize: destroys first, then makes n new
     n_sc_ = 0
+    n_rs_ = 0
     for r in funcs:
         va, n = int(r['address'], 16), int(r['size'])
         if n > 600 or va in handwritten:
@@ -177,6 +180,16 @@ def main():
             else:
                 n_rt += 1
             continue
+        if masked(ins) in RESIZE:
+            calls = [i.operands[0].imm & 0xffffffff for i in ins if i.mnemonic == 'call']
+            imms = [i.operands[0].imm & 0xffffffff for i in ins if i.mnemonic == 'push' and i.operands[0].type == X.X86_OP_IMM]
+            leas = [i.operands[1].mem.disp for i in ins if i.mnemonic == 'lea' and i.operands[1].mem.index == 0]
+            header = next((d for d in leas if d > 0), None)
+            # pushes: -1, handler, then dtor, size (destroy), dtor, ctor, size (make)
+            if calls == [0xDDCF39, 0xBCE010, 0xBCDFD0, 0xDDCF99] and len(imms) == 7 and imms[2] == imms[4] and                     imms[3] == imms[6] and header and -header in leas:
+                out.append(f'OBJECT_RESIZE({va:#x}, {imms[3]:#x}, {header:#x}, {imms[5]:#x}, {imms[2]:#x}, {first})')
+                n_rs_ += 1
+                continue
         if masked(ins) in SETCAP:
             calls = [i.operands[0].imm & 0xffffffff for i in ins if i.mnemonic == 'call']
             def pushes_before(target):
@@ -291,6 +304,7 @@ def main():
             out.append(f'QUERY({va:#x}, {ins_id.operands[1].mem.disp & 0xffffffff:#x}, {first})')
             n_q += 1
     counts['OBJECT_SETCAP'] = n_sc_
+    counts['OBJECT_RESIZE'] = n_rs_
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

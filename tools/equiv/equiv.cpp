@@ -543,6 +543,26 @@ static void *__fastcall stub_ctor1(void *self, void *, uint32_t a) {
     record(0x82, (void *)(uintptr_t)a);
     return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
 }
+// a temporary reference on the stack: what it holds is recorded (its table, handle, value, flag, whether it points
+// at itself), not where it is; its destructor takes it out of the handle's list again
+static void record_reference(uint32_t fn, uint32_t *ref) {
+    record(fn, (void *)(uintptr_t)ref[0]);
+    record(fn, (void *)(uintptr_t)ref[1]);
+    record(fn, (void *)(uintptr_t)(ref[4] == (uint32_t)(uintptr_t)ref));
+    record(fn, (void *)(uintptr_t)ref[5]);
+    record(fn, (void *)(uintptr_t)((uint8_t *)ref)[0x18]);
+}
+static void __fastcall stub_with_reference(void *self, void *, uint32_t *ref) {
+    record(0x83, self);
+    record_reference(0x83, ref);
+}
+static uint32_t __fastcall stub_reference_free(uint32_t *ref) {
+    record_reference(0x84, ref);
+    uint32_t **node = (uint32_t **)(ref + 2);
+    node[0][1] = (uint32_t)(uintptr_t)node[1];
+    node[1][0] = (uint32_t)(uintptr_t)node[0];
+    return *arena<uint32_t>(0x20);
+}
 // resource types: the base constructor, given the three texts (recorded by what they point to)
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
@@ -1351,6 +1371,30 @@ static std::vector<Test> tests() {
         stubs_for_now({{rewrite::start_constants(e->at)[3], (void *)stub_destructor}});
     };
     dtor_tables.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // ObjectArray::Resize: as SetCapacity's
+    Test object_resize{0x420b70, object_setcap.setup, object_setcap.call};
+    object_resize.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcf99, (void *)stub_vector_construct}}); };
+    object_resize.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // calls with a temporary reference: the object at 0x100, the object referred to 0x300, whose handle (0x380, from
+    // the stand-in) has its list's head at 0x3c0 with one reference (0x3d0) in it
+    Test with_reference{0x536ee0,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next();
+                            *arena<void *>(0x3a0) = arena<void>(0x3c0);
+                            *arena<void *>(0x3c0) = arena<void>(0x3d0);
+                            arena<void *>(0x3d0)[1] = arena<void>(0x3c0);
+                        },
+                        [](void *fn) {
+                            return Result{((uint32_t(__fastcall *)(void *, void *, void *))fn)(
+                                arena<void>(0x100), nullptr, arena<void>(0x300))};
+                        }};
+    with_reference.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        stubs_for_now({{0x805700, (void *)stub_handle_of}, {c[3], (void *)stub_with_reference},
+                       {c[4], (void *)stub_reference_free}});
+    };
+    with_reference.finish = [](const rewrite::Entry *) { unstub_many(); };
     // two owned blocks: the object at 0x100, each field a block or nothing (the field is up to 0xFC on)
     Test free_two{0x42fd80,
                   [=](Rng &r) {
@@ -1414,7 +1458,8 @@ static std::vector<Test> tests() {
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
                     &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report,
                     &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap,
-                    &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two}) {
+                    &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two,
+                    &object_resize, &with_reference}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

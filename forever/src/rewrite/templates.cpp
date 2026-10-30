@@ -462,27 +462,27 @@ template <uint32_t TEXT, uint32_t SUFFIX, uint32_t GLOBAL, uint32_t DTOR> static
 // ---- resource types -----------------------------------------------------------------------------------------
 // The constructor of a resource type (a loader's description of the files it reads): its name, file extension and
 // engine as wide texts made from C text (0xBCF850), passed to the base constructor (0xC2FFB0: the engine, the
-// extension, 1, the name), let go of after; then the class's own table.
+// extension, a flag (1 or 2), the name), let go of after; then the class's own table.
 static volatile long g_resource_types;
 static Text wide_text(const char *c) {
     void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
     return p ? ((Text(__fastcall *)(void *, void *, const char *))0xbcf850)(p, nullptr, c) : nullptr;
 }
-template <uint32_t NAME, uint32_t EXTENSION, uint32_t ENGINE, uint32_t TABLE>
+template <uint32_t NAME, uint32_t EXTENSION, uint32_t ENGINE, uint32_t TABLE, uint32_t FLAG>
 static void *__fastcall resource_type(uint32_t *self) {
     g_resource_types++;
     Text volatile name = wide_text((const char *)NAME);
     Text volatile extension = wide_text((const char *)EXTENSION);
     Text volatile engine = wide_text((const char *)ENGINE);
     ((void(__fastcall *)(void *, void *, Text volatile *, Text volatile *, uint32_t, Text volatile *))0xc2ffb0)(
-        self, nullptr, &engine, &extension, 1, &name);
+        self, nullptr, &engine, &extension, FLAG, &name);
     release_text(engine);
     release_text(extension);
     release_text(name);
     self[0] = TABLE;
     return self;
 }
-#define RESOURCE_TYPE(at, name, extension, engine, table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ResourceType::ResourceType", at, REWRITE_CAT(original_, at), 8, (void *)&resource_type<name, extension, engine, table>, &g_resource_types);
+#define RESOURCE_TYPE(at, name, extension, engine, table, flag, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ResourceType::ResourceType", at, REWRITE_CAT(original_, at), 8, (void *)&resource_type<name, extension, engine, table, flag>, &g_resource_types);
 // QueryInterface that reports a miss: the interface (id in a global) of the object, as QueryInterface; when the
 // object has none, the source file (edx) and line (on the stack) are reported (0xBEC8A0) unless no file was given.
 // For no object at all it gives null without a report.
@@ -658,6 +658,52 @@ template <uint32_t FIELD> static void __fastcall free_two(uint8_t *self) {
         *(void **)self = nullptr;
     }
 }
+// ObjectArray::Resize: the array's old items destroyed and freed, then n new ones allocated and constructed (none
+// for n = 0 or without memory); gives n.
+static volatile long g_object_resizes;
+template <uint32_t SIZE, uint32_t HEADER, uint32_t CTOR, uint32_t DTOR>
+static int32_t __fastcall object_resize(uint8_t **array, void *, int32_t n) {
+    g_object_resizes++;
+    if (*array) {
+        ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(*array, SIZE, *(int32_t *)(*array - HEADER),
+                                                                       (void *)DTOR);
+        ((void(__cdecl *)(void *))0xbce010)(*array - HEADER);
+        *array = nullptr;
+    }
+    if (n != 0) {
+        int32_t *block = ((int32_t * (__cdecl *)(uint32_t))0xbcdfd0)((uint32_t)n * SIZE + HEADER);
+        uint8_t *items = nullptr;
+        if (block) {
+            block[0] = n;
+            items = (uint8_t *)block + HEADER;
+            ((void(__stdcall *)(void *, uint32_t, int32_t, void *, void *))0xddcf99)(items, SIZE, n, (void *)CTOR,
+                                                                                   (void *)DTOR);
+        }
+        *array = items;
+    }
+    ((int32_t *)array)[1] = n;
+    return n;
+}
+
+// Calls FUNCTION (on the part at FIELD) with a temporary reference to the given object: a reference (class TABLE,
+// built on the reference base 0xF26AE0) joined into the object's handle's list, then destroyed (DTOR); gives what
+// the destructor gives.
+static volatile long g_with_references;
+template <uint32_t TABLE, uint32_t FIELD, uint32_t FUNCTION, uint32_t DTOR>
+static uint32_t __fastcall with_reference(uint8_t *self, void *, void *object) {
+    g_with_references++;
+    uint32_t ref[7];
+    ref[0] = 0xf26ae0;
+    ref[4] = (uint32_t)(uintptr_t)ref;
+    join_list(ref, ((uint8_t * (__fastcall *)(void *))0x805700)(object));
+    ref[0] = TABLE;
+    ref[5] = (uint32_t)(uintptr_t)object;
+    ((uint8_t *)ref)[0x18] = 1;
+    ((void(__fastcall *)(void *, void *, void *))FUNCTION)(self + FIELD, nullptr, ref);
+    return ((uint32_t(__fastcall *)(void *))DTOR)(ref);
+}
+#define OBJECT_RESIZE(at, size, header, ctor, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Resize", at, REWRITE_CAT(original_, at), 8, (void *)&object_resize<size, header, ctor, dtor>, &g_object_resizes);
+#define WITH_REFERENCE(at, table, field, function, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectRef::CallWith", at, REWRITE_CAT(original_, at), 8, (void *)&with_reference<table, field, function, dtor>, &g_with_references);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -742,6 +788,10 @@ template <uint32_t FIELD> static void __fastcall free_two(uint8_t *self) {
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef OBJECT_RESIZE
+#undef WITH_REFERENCE
+#define OBJECT_RESIZE(...)
+#define WITH_REFERENCE(...)
 #define LAZY_FACTORY(...)
 #define LAZY_FACTORY_INIT(...)
 #define DTOR_TABLES(...)
@@ -865,6 +915,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef OBJECT_RESIZE
+#undef WITH_REFERENCE
+#define OBJECT_RESIZE(at, size, header, ctor, dtor, ...) {at, size, header, ctor, dtor},
+#define WITH_REFERENCE(at, table, field, function, dtor, ...) {at, table, field, function, dtor},
 static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };
