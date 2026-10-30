@@ -75,7 +75,7 @@ def rewritten():
                  'DTOR_TABLES': 'Destructor::Tables', 'FREE_TWO': 'OwnedPair::FreeFields',
                  'OBJECT_RESIZE': 'ObjectArray::Resize', 'WITH_REFERENCE': 'ObjectRef::CallWith',
                  'POINTER_RESIZE': 'PointerArray::Resize', 'ARRAY_RESERVE': 'Array::Reserve', 'GUI_INIT': 'GuiPart::Init',
-                 'GUI_MAKE': 'GuiPart::Make', 'GUI_CREATE2': 'GuiPart::Create'}
+                 'GUI_MAKE': 'GuiPart::Make', 'GUI_CREATE2': 'GuiPart::Create', 'CONDITION_NAME': 'ObjectiveCondition::Name'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found

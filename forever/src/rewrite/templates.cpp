@@ -784,6 +784,28 @@ static void *__stdcall gui_create2(uint32_t a, uint32_t b) {
 #define GUI_INIT(at, manager, t0, t1, t40, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GuiPart::Init", at, REWRITE_CAT(original_, at), 8, (void *)&gui_init<manager, t0, t1, t40>, &g_gui_parts);
 #define GUI_MAKE(at, size, manager, t0, t1, t40, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GuiPart::Make", at, REWRITE_CAT(original_, at), 8, (void *)&gui_make<size, manager, t0, t1, t40>, &g_gui_parts);
 #define GUI_CREATE2(at, size, manager, t0, t1, t40, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GuiPart::Create", at, REWRITE_CAT(original_, at), 8, (void *)&gui_create2<size, manager, t0, t1, t40>, &g_gui_parts);
+// The name of an objective condition: the game text found by the condition's name (a wide text, TEXT) after the
+// prefix 0xF65630 (0x403CE0), copied (0xBD01C0) and looked up as a NamedTextRef(text) in the texts table 0x1303CFC;
+// its text copied into `out` as a wide string of its own, or the empty one. The texts made are let go of after.
+static volatile long g_condition_names;
+template <uint32_t TEXT> static Text *__stdcall condition_name(Text *out) {
+    g_condition_names++;
+    Text made = wide_text((const char *)TEXT);
+    Text volatile name = made, joined, copy;
+    Text volatile *r = ((Text volatile * (__fastcall *)(Text volatile *, const char *, Text volatile *))0x403ce0)(
+        &joined, (const char *)0xf65630, &name);
+    ((void(__fastcall *)(Text volatile *, void *, Text volatile *))0xbd01c0)(&copy, nullptr, r);
+    alignas(4) uint8_t ref[0x20];
+    uint8_t *found = ((uint8_t * (__fastcall *)(void *, void *, Text volatile *, void *, uint32_t))0x410c90)(
+        ref, nullptr, &copy, (void *)0x1303cfc, 1);
+    *out = wide_copy(*(const wchar_t **)(found + 8));
+    ((void(__fastcall *)(void *))0xbd1880)(ref);
+    release_text(copy);
+    release_text(joined);
+    release_text(made);
+    return out;
+}
+#define CONDITION_NAME(at, text, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectiveCondition::Name", at, REWRITE_CAT(original_, at), 8, (void *)&condition_name<text>, &g_condition_names);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -868,6 +890,8 @@ static void *__stdcall gui_create2(uint32_t a, uint32_t b) {
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef CONDITION_NAME
+#define CONDITION_NAME(...)
 #undef POINTER_RESIZE
 #undef ARRAY_RESERVE
 #undef GUI_INIT
@@ -1005,6 +1029,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef CONDITION_NAME
+#define CONDITION_NAME(...)
 #undef POINTER_RESIZE
 #undef ARRAY_RESERVE
 #undef GUI_INIT

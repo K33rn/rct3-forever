@@ -579,6 +579,22 @@ static void __fastcall stub_gui_base(void *self, void *, void *owner, uint32_t a
 }
 static void __fastcall stub_activate(void *self) { record(0x87, self); }
 // resource types: the base constructor, given the three texts (recorded by what they point to)
+// objective condition names: the C text and wide text joined (into 0x2C0), and the text reference made from the copy
+// (on the stack, recorded as 1; its text 0x300 or none)
+static int32_t **__fastcall stub_text_join(int32_t **out, const char *c, int32_t **w) {
+    record(0x88, (void *)c);
+    record(0x88, *w);
+    *out = arena<int32_t>(0x2c0);
+    return out;
+}
+static void *__fastcall stub_named_ref_text(uint8_t *self, void *, int32_t **name, void *texts, uint32_t suffix) {
+    g_text_ref = self;
+    record(0x89, *name);
+    record(0x89, texts);
+    record(0x89, (void *)(uintptr_t)suffix);
+    *(void **)(self + 8) = *arena<uint32_t>(0x3c) % 3 ? arena<void>(0x300) : nullptr;
+    return self;
+}
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -1490,6 +1506,25 @@ static std::vector<Test> tests() {
     gui_create2.prepare = [=](const rewrite::Entry *e) { gui_prepare(e, 2); };
     for (Test *x : {&gui_init, &gui_make, &gui_create2}) x->finish = gui_finish;
     // two owned blocks: the object at 0x100, each field a block or nothing (the field is up to 0xFC on)
+    // objective condition names (memory for the name always there: the original crashes without; each text made
+    // in memory of its own)
+    Test condition_name{0x6dc430,
+                        [=](Rng &r) {
+                            fresh(r);
+                            text_counts(r);
+                            for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next();
+                            *arena<int32_t>(0x30) = r.range(1, 2);
+                        },
+                        [](void *fn) {
+                            return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *))fn)(arena<void>(0x180))};
+                        }};
+    condition_name.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}, {0xbcf850, (void *)stub_text_from_c},
+                       {0x403ce0, (void *)stub_text_join}, {0xbd01c0, (void *)stub_text_copy},
+                       {0x410c90, (void *)stub_named_ref_text}, {0xbcf7d0, (void *)stub_text_from_wide},
+                       {0xbd0490, (void *)stub_wide_empty}, {0xbd1880, (void *)stub_text_ref_free}});
+    };
+    condition_name.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1553,7 +1588,8 @@ static std::vector<Test> tests() {
                     &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report,
                     &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap,
                     &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two,
-                    &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2}) {
+                    &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2,
+                    &condition_name}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);
