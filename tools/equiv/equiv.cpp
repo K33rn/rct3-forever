@@ -1094,11 +1094,61 @@ static std::vector<Test> tests() {
         stubs_for_now({{0xbd1940, (void *)stub_key_combination}, {0x6b2720, (void *)stub_key_command}});
     };
     start_key.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Text::Widen (registers: ecx size, edx buffer at 0x800, edi C text at 0x400): sizes 0 (no limit) to 40, texts
+    // of up to 60 characters; the result is eax, its top bit flipped if edx, esi or edi didn't come back the same
+    Test text_widen{0x401050,
+                    [=](Rng &r) {
+                        fresh(r);
+                        int len = r.range(0, 60);
+                        for (int i = 0; i < 64; i++) arena<uint8_t>(0x400)[i] = i < len ? (uint8_t)r.range(1, 255) : 0;
+                        for (int i = 0; i < 64; i++) arena<uint32_t>(0x800)[i] = r.next();
+                        arena<uint32_t>(0x10)[0] = r.next() % 6 ? r.range(1, 40) : 0;
+                    },
+                    [](void *fn) {
+                        uint32_t eax, ecx = arena<uint32_t>(0x10)[0], edx = (uint32_t)(uintptr_t)arena<void>(0x800),
+                                      esi = 0x51515151, edi = (uint32_t)(uintptr_t)arena<void>(0x400);
+                        __asm__ volatile("call *%[f]"
+                                         : "=a"(eax), "+c"(ecx), "+d"(edx), "+S"(esi), "+D"(edi)
+                                         : [f] "b"(fn)
+                                         : "memory", "cc");
+                        bool kept = edx == (uint32_t)(uintptr_t)arena<void>(0x800) && esi == 0x51515151 &&
+                                    edi == (uint32_t)(uintptr_t)arena<void>(0x400);
+                        return Result{eax ^ (kept ? 0 : 0x80000000u)};
+                    }};
+    // Text::Create: the result at 0x180; memory sometimes runs out
+    Test text_create{0x45c000, [=](Rng &r) { fresh(r); text_counts(r); *arena<uint32_t>(0x28) = r.next(); },
+                     [](void *fn) {
+                         return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *))fn)(arena<void>(0x180))};
+                     }};
+    text_create.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {0xbcf850, (void *)stub_text_from_c},
+                       {0xbcfb10, (void *)stub_text_from_c}});
+    };
+    text_create.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Table20::Free: the table at 0x100 {entries at 0x400 (count -1..4) or none (count -1..0: with a count, both
+    // crash)}; each entry's pointers at 0x600 + 0x40 * i, their count -1..5
+    Test table20_free{0x80f710,
+                      [=](Rng &r) {
+                          fresh(r);
+                          for (int i = 0; i < 0x200 / 4; i++) arena<uint32_t>(0x400)[i] = r.next();
+                          for (int i = 0; i < 0x100 / 4; i++) arena<uint32_t>(0x600)[i] = r.next();
+                          *arena<void *>(0x100) = r.next() % 5 ? arena<void>(0x400) : nullptr;
+                          arena<int32_t>(0x100)[1] = *arena<void *>(0x100) ? r.range(-1, 4) : r.range(-1, 0);
+                          for (int i = 0; i < 4; i++) {
+                              uint8_t *e = arena<uint8_t>(0x400 + 0x14 * i);
+                              *(void **)(e + 4) = arena<void>(0x600 + 0x40 * i);
+                              *(int32_t *)(e + 8) = r.range(-1, 5);
+                          }
+                      },
+                      [](void *fn) {
+                          ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                          return Result{};
+                      }};
 
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
-                    &text_ref_from_text, &start_key}) {
+                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

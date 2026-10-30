@@ -43,6 +43,9 @@ MATCH = [
     ('GAME_TEXT_COPY', 0x41F210, [(1, 0)], [(9, 0)]),                        # the text's name
     ('TEXT_REF_FROM_TEXT', 0x403E50, [(1, 0)], [(16, 0), (30, 1), (49, 1)]),  # suffix, first table, class table
     ('START_KEY', 0xEB2580, [], [(5, 0), (6, 0), (10, 0), (11, 0), (13, 1), (15, 0)]),   # keys, names, global, dtor
+    ('TEXT_WIDEN', 0x401050, [], []),
+    ('TEXT_CREATE', 0x45C000, [(1, 0)], [(14, 0), (16, 0)]),                  # the C text, the function making it
+    ('TABLE20_FREE', 0x80F710, [(1, 0)], []),
 ]
 
 
@@ -142,7 +145,7 @@ def main():
             ops = operands(ins)
             if any(ops.get(kj) != v for kj, v in fixed.items()):
                 continue
-            out.append(f'{macro}({va:#x}, ' + ', '.join(f'{ops[kj]:#x}' for kj in params) + f', {first})')
+            out.append(f'{macro}(' + ', '.join([f'{va:#x}'] + [f'{ops[kj]:#x}' for kj in params] + [first]) + ')')
             counts[macro] += 1
             hit = True
         if hit:

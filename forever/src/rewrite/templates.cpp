@@ -384,6 +384,58 @@ static void __cdecl key_command() {
     game_atexit((void(__cdecl *)())DTOR);
 }
 
+// ---- small text and table helpers ---------------------------------------------------------------------------
+// Text::Widen: C text (edi) into a wide-character buffer (edx) of a given size (ecx), stopping at the text's end or
+// the buffer's last place, and ended with 0; returns how many characters were copied. Its arguments come in
+// registers: a wrapper passes them on, keeping edx as the original does (esi, edi and ebx are kept by the C
+// function itself). A size of 0 is taken as no limit, as in the original.
+static volatile long g_widens;
+extern "C" uint32_t __fastcall forever_text_widen(uint32_t size, uint16_t *buffer, const uint8_t *text) {
+    g_widens++;
+    uint32_t n = 0, last = size - 1;
+    if (last != 0)
+        while (text[n]) {
+            buffer[n] = text[n];
+            if (++n >= last) break;
+        }
+    buffer[n] = 0;
+    return n;
+}
+extern "C" __attribute__((naked)) void forever_text_widen_regs() {
+    __asm__("pushl %edx\n\tpushl %edi\n\tcall @forever_text_widen@12\n\tpopl %edx\n\tret");
+}
+
+// A new text from C text (MAKE: WideString::Create 0xBCF850 or String::FromC 0xBCFB10) in memory of its own, given
+// in `out`; null when there was no memory. Returns `out`.
+static volatile long g_text_creates;
+template <uint32_t TEXT, uint32_t MAKE> static void **__stdcall text_create(void **out) {
+    g_text_creates++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
+    *out = p ? ((void *(__fastcall *)(void *, void *, const char *))MAKE)(p, nullptr, (const char *)TEXT) : nullptr;
+    return out;
+}
+
+// Table20::Free: a table {entries, count} of 20-byte entries {?, pointers (+4), their count (+8), block (+0xC)}:
+// frees every entry's blocks, its array of them and its block (all aligned), then the entries, and clears them.
+static volatile long g_table20_frees;
+static void __fastcall table20_free(uint8_t **table) {
+    g_table20_frees++;
+    void (*const free_aligned)(void *) = (void (*)(void *))0xbce010;
+    for (int32_t i = 0; i < *(int32_t *)(table + 1); i++) {
+        uint8_t *e = *table + i * 0x14;
+        for (int32_t j = 0; j < *(int32_t *)(e + 8); j++) free_aligned((*(void ***)(e + 4))[j]);
+        free_aligned(*(void **)(e + 4));
+        free_aligned(*(void **)(e + 0xc));
+    }
+    if (*table) {
+        free_aligned(*table);
+        *table = nullptr;
+    }
+}
+
+#define TEXT_WIDEN(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Text::Widen", at, REWRITE_CAT(original_, at), 8, (void *)&forever_text_widen_regs, &g_widens);
+#define TEXT_CREATE(at, text, make, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Text::Create", at, REWRITE_CAT(original_, at), 8, (void *)&text_create<text, make>, &g_text_creates);
+#define TABLE20_FREE(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Table20::Free", at, REWRITE_CAT(original_, at), 8, (void *)&table20_free, &g_table20_frees);
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, name, setting, global, dtor>, &g_key_commands);
 #define NAMED_TEXT_REF(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref<suffix, table, class_table>, &g_named_text_refs);
@@ -422,6 +474,12 @@ static void __cdecl key_command() {
 #undef START_KEY
 #define TEXT_REF_FROM_TEXT(...)
 #define START_KEY(...)
+#undef TEXT_WIDEN
+#undef TEXT_CREATE
+#undef TABLE20_FREE
+#define TEXT_WIDEN(...)
+#define TEXT_CREATE(...)
+#define TABLE20_FREE(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -511,6 +569,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef START_KEY
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) {at, suffix, table, class_table},
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) {at, key2, key1, name, setting, global, dtor},
+#undef TEXT_CREATE
+#define TEXT_CREATE(at, text, make, ...) {at, text, make},
 static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };
