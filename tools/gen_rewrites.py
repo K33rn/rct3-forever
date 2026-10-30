@@ -90,6 +90,13 @@ MATCH = [
     ('SET_TWO_VECTORS', 0x4884B0, [], []),
     ('LAZY_FACTORY_K1', 0x425920, [(1, 0)], [(6, 1), (9, 0), (16, 0), (18, 0)], (9, 16), [[(6, 1), (19, 0), (25, 0)]]),
     ('FACTORY_REGS', 0x7FD540, [(1, 0)], [(8, 0), (20, 0)], (8,)),            # size, ctor; the two arguments in ecx, edx
+    ('RENDER_STATE', 0xC6F000, [], [(2, 1), (10, 0)], (2, 10, 13), [[(2, 1), (13, 0)]]),   # the kept value's field, state
+    ('FREE_LIST_TAKE', 0xBD2110, [], [(5, 1), (6, 0), (0, 1), (3, 1), (7, 1), (17, 1), (20, 1)], (),
+     [[(0, 1), (12, 1), (16, 0)], [(7, 1), (14, 1), (19, 0)], [(20, 1), (22, 0)]]),   # base, make, then its fields
+    ('LISTENER_DTOR', 0x440ED0, [], [(2, 1)]),                                  # the table put back
+    ('DTOR_MEMBER_IF', 0x4D3B50, [(1, 0)], [(13, 1), (14, 0), (17, 0)], (13,)),   # member field, its dtor, base dtor
+    ('LAZY_SINGLETON', 0x436100, [(1, 0)], [(6, 1), (9, 0), (16, 0), (17, 0), (18, 0), (20, 0)], (9, 16, 17, 18),
+     [[(6, 1), (21, 1), (27, 1)]]),   # global, size, ctor arguments, ctor
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
     ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor

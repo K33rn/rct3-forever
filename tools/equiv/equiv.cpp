@@ -617,6 +617,40 @@ static void *__fastcall stub_ctor5(void *self, void *, uint32_t a, uint32_t b, u
     for (uint32_t x : v) record(0x8c, (void *)(uintptr_t)x);
     return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
 }
+// a Direct3D device's SetRenderState
+static uint32_t __stdcall stub_set_render_state(void *device, uint32_t state, uint32_t value) {
+    record(0x8e, device);
+    record(0x8e, (void *)(uintptr_t)state);
+    record(0x8e, (void *)(uintptr_t)value);
+    return state * 7 + value;
+}
+// a free list's block maker: records the block size; gives the list an item (0x370), or none (then its free count
+// is 0, as when the game runs out of memory for a block)
+static void __fastcall stub_free_list_make(uint32_t *base, void *, uint32_t size) {
+    record(0x8f, base);
+    record(0x8f, (void *)(uintptr_t)size);
+    if (*arena<uint32_t>(0x24) % 2) {
+        base[4] = (uint32_t)(uintptr_t)arena<void>(0x370);
+        *arena<void *>(0x370) = nullptr;
+        base[6] += 1;
+    } else {
+        base[6] = 0;
+    }
+}
+// singletons: memory (0x200, sometimes none) and a constructor that keeps the object in its global
+static uint32_t g_singleton_global;
+static void *__cdecl stub_alloc_some(uint32_t size) {
+    record(0xbcdfc0, (void *)(uintptr_t)size);
+    return *arena<uint32_t>(0x28) % 4 ? arena<void>(0x200) : nullptr;
+}
+static void *__fastcall stub_singleton_ctor(void *self, void *, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x90, self);
+    record(0x90, (void *)(uintptr_t)a);
+    record(0x90, (void *)(uintptr_t)b);
+    record(0x90, (void *)(uintptr_t)c);
+    *(void **)g_singleton_global = self;
+    return self;
+}
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -1677,6 +1711,100 @@ static std::vector<Test> tests() {
                       }};
     factory_regs.prepare = ctor_prepare((void *)stub_ctor2);
     factory_regs.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // render states: the object at 0x100 (the device at +0x24C is 0x300 with SetRenderState at slot 57), the value
+    // the same as the kept one or not
+    Test render_state{0xc6f000,
+                      [=](Rng &r) {
+                          fresh(r);
+                          static void *vt[64];
+                          vt[0xe4 / 4] = (void *)stub_set_render_state;
+                          *arena<void *>(0x300) = vt;
+                          for (int i = 0; i < 0x420 / 4; i++) arena<uint32_t>(0x800)[i] = r.next() % 4;
+                          *(void **)arena<uint8_t>(0x800 + 0x24c) = arena<void>(0x300);
+                          arena<uint32_t>(0x10)[0] = r.next() % 4;
+                      },
+                      [](void *fn) {
+                          return Result{((uint32_t(__fastcall *)(void *, void *, uint32_t))fn)(
+                              arena<void>(0x800), nullptr, arena<uint32_t>(0x10)[0])};
+                      }};
+    // free lists: the copy's globals (game data, put back after each copy) set from the arena before each run; the
+    // list's items in the arena; the block maker stood in for (it may leave the list empty)
+    static uint32_t fl_base, fl_saved[8];
+    Test free_list_take{0xbd2110,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next() % 6;
+                            arena<void *>(0x20)[4] = r.next() % 3 ? arena<void>(0x340) : nullptr;
+                            *arena<void *>(0x340) = r.next() % 2 ? arena<void>(0x350) : nullptr;
+                        },
+                        [](void *fn) {
+                            memcpy((void *)fl_base, arena<void>(0x20), 0x20);
+                            uint32_t r = (uint32_t)(uintptr_t)((void *(__cdecl *)())fn)();
+                            memcpy(arena<void>(0x60), (void *)fl_base, 0x20);
+                            return Result{r};
+                        }};
+    free_list_take.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        fl_base = c[1];
+        memcpy(fl_saved, (void *)fl_base, 0x20);
+        stubs_for_now({{c[2], (void *)stub_free_list_make}});
+    };
+    free_list_take.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        memcpy((void *)fl_base, fl_saved, 0x20);
+    };
+    // listeners: the object at 0x100, its node at 0x104 linked between 0x300 and 0x310 (always properly: a broken
+    // list stops at a breakpoint in both)
+    Test listener_dtor{0x440ed0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           arena<void *>(0x100)[1] = arena<void>(0x300);
+                           arena<void *>(0x100)[2] = arena<void>(0x310);
+                           arena<void *>(0x300)[1] = arena<void>(0x104);
+                           arena<void *>(0x310)[0] = arena<void>(0x104);
+                       },
+                       [](void *fn) {
+                           return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                       }};
+    // destructors with a member (none for a null object): the object at 0x100 or null
+    Test dtor_member_if{0x4d3b50, [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = r.next() % 5 ? 0x100 : 0; },
+                        [](void *fn) {
+                            uint32_t o = arena<uint32_t>(0x10)[0];
+                            ((void(__fastcall *)(void *))fn)(o ? arena<void>(o) : nullptr);
+                            return Result{};
+                        }};
+    dtor_member_if.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        stubs_for_now({{c[2], (void *)stub_member_destructor}, {c[3], (void *)stub_destructor}});
+    };
+    dtor_member_if.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // lazy singletons: the global (game data) set before each run, empty or holding 0x380 (active or not); the
+    // constructor stood in for keeps the new object (at 0x200) in the global
+    static uint32_t sg_global, sg_saved;
+    Test lazy_singleton{0x436100,
+                        [=](Rng &r) {
+                            fresh(r);
+                            *arena<uint32_t>(0x28) = 1;   // memory always there: without, the original reads a null global
+                            *arena<void *>(0x1f8) = r.next() % 3 ? nullptr : arena<void>(0x380);
+                            arena<uint8_t>(0x380)[0x2c] = r.next() % 2;
+                            arena<uint8_t>(0x200)[0x2c] = r.next() % 2;
+                        },
+                        [](void *fn) {
+                            *(void **)sg_global = *arena<void *>(0x1f8);
+                            uint32_t r = (uint32_t)(uintptr_t)((void *(__cdecl *)())fn)();
+                            return Result{r ^ *(uint32_t *)sg_global};
+                        }};
+    lazy_singleton.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        sg_global = g_singleton_global = c[1];
+        sg_saved = *(uint32_t *)sg_global;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_some}, {c[6], (void *)stub_singleton_ctor},
+                       {0x800860, (void *)stub_activate}});
+    };
+    lazy_singleton.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        *(uint32_t *)sg_global = sg_saved;
+    };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1743,7 +1871,8 @@ static std::vector<Test> tests() {
                     &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2,
                     &condition_name, &factory_k3, &field_factory, &global_factory_k1, &ref_interface,
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
-                    &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs}) {
+                    &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
+                    &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

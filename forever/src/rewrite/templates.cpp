@@ -926,6 +926,86 @@ template <uint32_t SIZE, uint32_t CTOR> static void *__fastcall factory_regs(uin
 }
 #define LAZY_FACTORY_K1(at, global, size, a, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyWith", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_k1<global, size, a, ctor>, &g_global_factories);
 #define FACTORY_REGS(at, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateFromRegisters", at, REWRITE_CAT(original_, at), 8, (void *)&factory_regs<size, ctor>, &g_factories);
+// RenderState::Set: a Direct3D render state set through the device (+0x24C; SetRenderState, slot 57) only when the
+// value differs from the one kept at KEPT; gives the device's answer, or the value when nothing was set.
+static volatile long g_render_states;
+template <uint32_t KEPT, uint32_t STATE> static uint32_t __fastcall render_state(uint8_t *self, void *, uint32_t value) {
+    g_render_states++;
+    if (value == *(uint32_t *)(self + KEPT)) return value;
+    void *device = *(void **)(self + 0x24c);
+    uint32_t r = ((uint32_t(__stdcall *)(void *, uint32_t, uint32_t))(*(void ***)device)[0xe4 / 4])(device, STATE, value);
+    *(uint32_t *)(self + KEPT) = value;
+    return r;
+}
+
+// FreeList::Take, for a free list kept in globals {+4 block size, +0x10 first free item, +0x14 items made,
+// +0x18 items free, +0x1C most in use}: an item from the list, a new block of items made first (MAKE) when it is
+// empty; null when there are still none. Counts the item in use and keeps the most in use.
+static volatile long g_free_list_takes;
+template <uint32_t BASE, uint32_t MAKE, uint32_t FIRST, uint32_t BLOCK, uint32_t FREE, uint32_t MADE, uint32_t MOST>
+static void *__cdecl free_list_take() {
+    static_assert(FIRST == BASE + 0x10 && BLOCK == BASE + 4 && FREE == BASE + 0x18 && MADE == BASE + 0x14 &&
+                      MOST == BASE + 0x1c,
+                  "a free list's fields");
+    g_free_list_takes++;
+    void **item = *(void ***)FIRST;
+    if (!item) {
+        ((void(__fastcall *)(void *, void *, uint32_t))MAKE)((void *)BASE, nullptr, *(uint32_t *)BLOCK);
+        if (!*(uint32_t *)FREE) return nullptr;
+        item = *(void ***)FIRST;
+    }
+    *(void **)FIRST = *item;
+    uint32_t free = *(uint32_t *)FREE - 1;
+    uint32_t used = *(uint32_t *)MADE - free;
+    *(uint32_t *)FREE = free;
+    if (used > *(uint32_t *)MOST) *(uint32_t *)MOST = used;
+    return item;
+}
+
+// The destructor of a listener: its table put back, then it leaves its list (a two-way node at +4); a node not
+// linked both ways means the list is broken, and it stops at a breakpoint, as the original does. Gives the node.
+static volatile long g_listener_dtors;
+template <uint32_t TABLE> static void *__fastcall listener_dtor(uint32_t *self) {
+    g_listener_dtors++;
+    uint32_t **node = (uint32_t **)(self + 1);
+    self[0] = TABLE;
+    uint32_t *next = node[0], *prev = node[1];
+    if (!prev || !next || (uint32_t **)(uintptr_t)next[1] != node || (uint32_t **)(uintptr_t)prev[0] != node)
+        __builtin_debugtrap();
+    else {
+        next[1] = (uint32_t)(uintptr_t)prev;
+        ((uint32_t *)node[1])[0] = (uint32_t)(uintptr_t)node[0];
+        node[0] = node[1] = nullptr;
+    }
+    return node;
+}
+
+// A destructor: the member at MEMBER destroyed (MEMBER_DTOR; given null for a null object, the pointer adjusted
+// only when there is one), then the base destructor.
+template <uint32_t MEMBER, uint32_t MEMBER_DTOR, uint32_t BASE_DTOR> static void __fastcall dtor_member_if(uint8_t *self) {
+    g_member_dtors++;
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self ? self + MEMBER : nullptr);
+    ((void(__fastcall *)(void *))BASE_DTOR)(self);
+}
+
+// A lazy singleton: made the first time (SIZE bytes, its constructor given three constants; it keeps itself in
+// GLOBAL), then activated (ManagedObject::Activate) unless it is already active (bit 0 of +0x2C); gives the global.
+static volatile long g_singletons;
+template <uint32_t GLOBAL, uint32_t SIZE, uint32_t A, uint32_t B, uint32_t C, uint32_t CTOR>
+static void *__cdecl lazy_singleton() {
+    g_singletons++;
+    if (*(void **)GLOBAL) return *(void **)GLOBAL;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    if (p) ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t))CTOR)(p, nullptr, C, B, A);
+    uint8_t *made = *(uint8_t **)GLOBAL;
+    if (!(made[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(made);
+    return *(void **)GLOBAL;
+}
+#define RENDER_STATE(at, kept, state, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("RenderState::Set", at, REWRITE_CAT(original_, at), 8, (void *)&render_state<kept, state>, &g_render_states);
+#define FREE_LIST_TAKE(at, base, make, first, block, free, made, most, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("FreeList::Take", at, REWRITE_CAT(original_, at), 8, (void *)&free_list_take<base, make, first, block, free, made, most>, &g_free_list_takes);
+#define LISTENER_DTOR(at, table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Listener::~Listener", at, REWRITE_CAT(original_, at), 8, (void *)&listener_dtor<table>, &g_listener_dtors);
+#define DTOR_MEMBER_IF(at, member, member_dtor, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::MemberThenBaseNullSafe", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_member_if<member, member_dtor, base>, &g_member_dtors);
+#define LAZY_SINGLETON(at, global, size, a, b, c, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Singleton::Get", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_singleton<global, size, a, b, c, ctor>, &g_singletons);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -1010,6 +1090,16 @@ template <uint32_t SIZE, uint32_t CTOR> static void *__fastcall factory_regs(uin
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef RENDER_STATE
+#undef FREE_LIST_TAKE
+#undef LISTENER_DTOR
+#undef DTOR_MEMBER_IF
+#undef LAZY_SINGLETON
+#define RENDER_STATE(...)
+#define FREE_LIST_TAKE(...)
+#define LISTENER_DTOR(...)
+#define DTOR_MEMBER_IF(...)
+#define LAZY_SINGLETON(...)
 #undef LAZY_FACTORY_K1
 #undef FACTORY_REGS
 #define LAZY_FACTORY_K1(...)
@@ -1175,6 +1265,16 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef RENDER_STATE
+#undef FREE_LIST_TAKE
+#undef LISTENER_DTOR
+#undef DTOR_MEMBER_IF
+#undef LAZY_SINGLETON
+#define RENDER_STATE(at, kept, state, ...) {at, kept, state},
+#define FREE_LIST_TAKE(at, base, make, ...) {at, base, make},
+#define LISTENER_DTOR(...)
+#define DTOR_MEMBER_IF(at, member, member_dtor, base, ...) {at, member, member_dtor, base},
+#define LAZY_SINGLETON(at, global, size, a, b, c, ctor, ...) {at, global, size, a, b, c, ctor},
 #undef LAZY_FACTORY_K1
 #undef FACTORY_REGS
 #define LAZY_FACTORY_K1(at, global, size, a, ctor, ...) {at, global, size, a, ctor},
