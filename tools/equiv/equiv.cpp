@@ -349,6 +349,66 @@ static int __cdecl stub_atexit(void *fn) {
     return 0;
 }
 
+// start-up initialisers. The temporary String is on the stack, at a different address in the original and the
+// rewrite: what is recorded is whether a call gets that temporary (1), not its address. The String's constructor
+// gives either the temporary or another object (arena 0x24), the name registered is arena 0x20.
+static void *g_string;
+static void *__fastcall stub_string(void *self, void *, const char *text, int32_t flag) {
+    g_string = self;
+    record(0x40, (void *)text);
+    record(0x40, (void *)(uintptr_t)flag);
+    return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
+}
+static uint32_t __fastcall stub_register_name(void *s) {
+    record(0x41, s == g_string ? (void *)1 : s);
+    return *arena<uint32_t>(0x20);
+}
+static void __fastcall stub_string_free(void *self) { record(0x42, self == g_string ? (void *)1 : self); }
+// memory for a class description or a section's name (arena 0x200; none when arena 0x28 says so)
+static void *__cdecl stub_alloc(uint32_t size) {
+    record(0xbcdfc0, (void *)(uintptr_t)size);
+    return *arena<uint32_t>(0x28) % 4 ? arena<void>(0x200) : nullptr;
+}
+static void *__fastcall stub_class_description(void *self, void *, int32_t a, const char *name, void *factory) {
+    record(0x50, self);
+    record(0x50, (void *)(uintptr_t)a);
+    record(0x50, (void *)name);
+    record(0x50, factory);
+    return *arena<uint32_t>(0x2c) & 1 ? self : arena<void>(0x280);
+}
+// the wide string: its count from arena 0x30 (1 or 2), its text pointer arena 0x34
+static void *__fastcall stub_wide_string(int32_t *self, void *, const char *text) {
+    record(0x60, self);
+    record(0x60, (void *)text);
+    self[0] = *arena<int32_t>(0x30);
+    self[3] = *arena<int32_t>(0x34);
+    return self;
+}
+// the section takes a reference to its name, or not (arena 0x38); sometimes the name it was given is replaced
+// (arena 0x3c) by the wide string at 0x2c0, so whose count is dropped after is checked too
+static void __fastcall stub_section(void *self, void *, int32_t **name, uint32_t kind) {
+    record(0x61, self);
+    record(0x61, *name);
+    record(0x61, (void *)(uintptr_t)kind);
+    (*name)[0] += *arena<int32_t>(0x38);
+    if (*arena<uint32_t>(0x3c) % 4 == 0) *name = arena<int32_t>(0x2c0);
+}
+
+// stand-ins for one copy's test, several at a time
+static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
+static void stubs_for_now(std::initializer_list<std::pair<uintptr_t, void *>> list) {
+    for (auto &s : list) {
+        uint64_t was = 0;
+        memcpy(&was, (void *)s.first, 5);
+        g_saved_many.push_back({s.first, was});
+        stub(s.first, s.second);
+    }
+}
+static void unstub_many() {
+    for (auto &s : g_saved_many) memcpy((void *)s.first, &s.second, 5);
+    g_saved_many.clear();
+}
+
 static void install_stubs() {
     stub(0xbce000, (void *)stub_free);
     stub(0xbce010, (void *)stub_free_aligned);
@@ -842,9 +902,56 @@ static std::vector<Test> tests() {
                    }};
     cleanup.finish = [](const rewrite::Entry *) { *(uint32_t *)cleanup_g = cleanup_saved; };
 
+    // start-up initialisers: the game functions they call are stood in for while each copy is checked; the global
+    // they set is game data, so it is the result, and it is put back after each copy
+    static uint32_t start_g, start_saved;
+    auto start_setup = [=](Rng &r) {
+        fresh(r);
+        for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next();
+        *arena<int32_t>(0x30) = r.range(1, 2);
+        *arena<int32_t>(0x38) = r.range(0, 1);
+        *arena<int32_t>(0x2c0) = r.range(1, 2);
+        arena<int32_t>(0x2c0)[3] = (int32_t)r.next();
+        *arena<uint32_t>(0x28) |= 1;   // a section's name always gets memory (the original crashes without)
+    };
+    auto start_call = [](void *fn) {
+        ((void(__cdecl *)())fn)();
+        return Result{*(uint32_t *)start_g};
+    };
+    auto start_finish = [](const rewrite::Entry *) {
+        unstub_many();
+        *(uint32_t *)start_g = start_saved;
+    };
+    Test start_name{0xea8790, [=](Rng &r) { fresh(r); for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next(); },
+                    start_call};
+    start_name.prepare = [](const rewrite::Entry *e) {
+        start_g = rewrite::start_constants(e->at)[2];
+        start_saved = *(uint32_t *)start_g;
+        stubs_for_now({{0xbec4b0, (void *)stub_string}, {0xbeca70, (void *)stub_register_name},
+                       {0xbec5e0, (void *)stub_string_free}});
+    };
+    start_name.finish = start_finish;
+    Test start_class{0xea86c0, [=](Rng &r) { fresh(r); for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next(); },
+                     start_call};
+    start_class.prepare = [](const rewrite::Entry *e) {
+        start_g = rewrite::start_constants(e->at)[3];
+        start_saved = *(uint32_t *)start_g;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {0x805fd0, (void *)stub_class_description}});
+    };
+    start_class.finish = start_finish;
+    Test start_section{0xea93c0, start_setup, start_call};
+    start_section.prepare = [](const rewrite::Entry *e) {
+        start_g = rewrite::start_constants(e->at)[3];
+        start_saved = *(uint32_t *)start_g;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {0xbcf850, (void *)stub_wide_string},
+                       {0x46fad0, (void *)stub_section}});
+    };
+    start_section.finish = start_finish;
+
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
-                    &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table}) {
-        x->iterations = (x == &deleting || x == &query || x == &module) ? 4 : 20;   // thousands of copies: fewer cases each
+                    &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
+                    &start_name, &start_class, &start_section}) {
+        x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);
     }

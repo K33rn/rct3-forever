@@ -227,7 +227,59 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
     game_atexit((void(__cdecl *)())DTOR);
 }
 
-#define DELETING(at, dtor, freefn, ...)                                                                          \
+// ---- start-up names, class descriptions and sections ---------------------------------------------------------
+// Initialisers run before main (forever.dll is in place by then: the launcher loads it at the game's entry point).
+// The originals keep an exception frame for their temporary; these don't. An exception at start-up ends the game
+// either way, so all that is lost is the clean-up of that temporary on the way out.
+
+static volatile long g_names, g_class_descriptions, g_sections;
+
+// A name registered from C text (Name::Register, 0xBECA70, through a temporary String: 0xBEC4B0, freed by
+// 0xBEC5E0), the name object kept in a global.
+template <uint32_t TEXT, uint32_t GLOBAL> static void __cdecl registered_name() {
+    g_names++;
+    alignas(4) uint8_t text[12];
+    void *s = ((void *(__fastcall *)(void *, void *, const char *, int32_t))0xbec4b0)(text, nullptr,
+                                                                                      (const char *)TEXT, 0);
+    *(uint32_t *)GLOBAL = ((uint32_t(__fastcall *)(void *))0xbeca70)(s);
+    ((void(__fastcall *)(void *))0xbec5e0)(text);
+}
+
+// A class description (0x3C bytes, made by 0x805FD0 with the class's name and factory) kept in a global; null
+// when there was no memory for it.
+template <uint32_t NAME, uint32_t FACTORY, uint32_t GLOBAL> static void __cdecl class_description() {
+    g_class_descriptions++;
+    void *d = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x3c);
+    if (d)
+        d = ((void *(__fastcall *)(void *, void *, int32_t, const char *, void *))0x805fd0)(
+            d, nullptr, 0, (const char *)NAME, (void *)FACTORY);
+    *(void **)GLOBAL = d;
+}
+
+// A named section (Section::Section, 0x46FAD0) of the given kind, in a global. Its name is a wide string made for it
+// (0xBCF850; 0x10 bytes {references, ..., +0xC text}); the section takes a reference to it, and the one held here
+// is dropped after (the last one frees it). The section's destructor is registered with atexit. With no memory for
+// the name the original crashes on the null string, and so does this.
+template <uint32_t TEXT, uint32_t KIND, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl named_section() {
+    g_sections++;
+    int32_t *name = (int32_t *)((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
+    if (name)
+        name = ((int32_t * (__fastcall *)(void *, void *, const char *))0xbcf850)(name, nullptr, (const char *)TEXT);
+    int32_t *volatile held = name;   // the section is given its address
+    ((void(__fastcall *)(void *, void *, int32_t *volatile *, uint32_t))0x46fad0)((void *)GLOBAL, nullptr, &held,
+                                                                                 KIND);
+    name = held;
+    if (--name[0] == 0) {
+        ((void(__cdecl *)(void *))0xbce010)(*(void **)(name + 3));
+        memory_free(name);
+    }
+    game_atexit((void(__cdecl *)())DTOR);
+}
+
+#define START_NAME(at, text, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Name", at, REWRITE_CAT(original_, at), 8, (void *)&registered_name<text, global>, &g_names);
+#define START_CLASS(at, name, factory, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::ClassDescription", at, REWRITE_CAT(original_, at), 8, (void *)&class_description<name, factory, global>, &g_class_descriptions);
+#define START_SECTION(at, text, kind, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Section", at, REWRITE_CAT(original_, at), 8, (void *)&named_section<text, kind, global, dtor>, &g_sections);
+#define DELETING(at, dtor, freefn, ...)                                                                        \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("DeletingDestructor", at, REWRITE_CAT(original_, at), 8,     \
                                                   (void *)&deleting<dtor>, &g_deleting);
@@ -244,6 +296,12 @@ template <uint32_t START, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl mo
 #define ARRAY_FREE(at, size, dtor, ...)                                                                              static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Free", at, REWRITE_CAT(original_, at), 8,                                                        (void *)&object_array_free<size, dtor>, &g_array_frees);
 #define SET_TABLE(at, table, ...)                                                                                    static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("SetTable", at, REWRITE_CAT(original_, at), 7,                                                                 (void *)&set_table<table>, &g_table_sets);
 #include "generated.inc"
+#undef START_NAME
+#undef START_CLASS
+#undef START_SECTION
+#define START_NAME(...)
+#define START_CLASS(...)
+#define START_SECTION(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -311,6 +369,27 @@ static const uint32_t load_table[][3] = {
 namespace rewrite {
 const uint32_t *load_constants(uintptr_t at) {
     for (auto &c : load_table)
+        if (c[0] == at) return c;
+    return nullptr;
+}
+}
+#undef LOAD
+#define LOAD(...)
+
+// the start-up initialisers' constants, for the equivalence test: {at, then the macro's constants (up to 4)}
+#undef START_NAME
+#undef START_CLASS
+#undef START_SECTION
+#define START_NAME(at, text, global, ...) {at, text, global},
+#define START_CLASS(at, name, factory, global, ...) {at, name, factory, global},
+#define START_SECTION(at, text, kind, global, dtor, ...) {at, text, kind, global, dtor},
+static const uint32_t start_table[][5] = {
+#include "generated.inc"
+};
+
+namespace rewrite {
+const uint32_t *start_constants(uintptr_t at) {
+    for (auto &c : start_table)
         if (c[0] == at) return c;
     return nullptr;
 }

@@ -17,6 +17,7 @@ struct Entry {
 const Entry *list();
 const uint32_t *cached_constants(uintptr_t at);
 const uint32_t *load_constants(uintptr_t at);
+const uint32_t *start_constants(uintptr_t at);   // {at, constants...} of a Start:: initialiser copy
 uint32_t cleanup_global(uintptr_t at);            // the global a GlobalCleanup copy clears     // {at, stride, resize} of a StructArrayLoad copy   // {at, flag, ref, obj, id, cache} of a CachedInterface copy   // every registered rewrite (also used by tools/equiv)
 
 // One rewrite for every copy of a function the compiler made (tools/dupes.py lists them).

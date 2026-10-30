@@ -73,6 +73,16 @@ def main():
     FREE_LOOSE = (10,)   # push <item size>
     ARRAY_FREE = strict(body(0x420B40), FREE_LOOSE)
     n_rn = n_rt = n_af = n_st = 0
+    # start-up initialisers: also the same layout (instruction sizes, jumps to the same offsets)
+    def layout(ins, va):
+        return [(i.size, (i.operands[0].imm - va) if i.group(capstone.CS_GRP_JUMP) and i.operands[0].type == X.X86_OP_IMM
+                 else None) for i in ins]
+    section_shape = lambda ins: [x if k != 19 else re.sub(r'^push (0x[0-9a-f]+|\d+)$', 'push KIND', x) for k, x in enumerate(strict(ins))]   # the section's kind
+    START = {}
+    for kind, rep in (('name', 0xEA8790), ('class', 0xEA86C0), ('section', 0xEA93C0)):
+        b = body(rep)
+        START[kind] = (section_shape(b) if kind == 'section' else strict(b), layout(b, rep))
+    n_sn = n_sc = n_ss = 0
     # functions the hand-written rewrites already replace (REWRITE and the arrays of REWRITE_COPIES)
     handwritten = set()
     for p in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')):
@@ -97,6 +107,23 @@ def main():
                 n_rn += 1
             else:
                 n_rt += 1
+            continue
+        imm = lambda k, j=0: ins[k].operands[j].imm & 0xffffffff
+        disp = lambda k, j=0: ins[k].operands[j].mem.disp & 0xffffffff
+        if (st, layout(ins, va)) == START['name']:
+            if [imm(9), imm(12), imm(16)] == [0xBEC4B0, 0xBECA70, 0xBEC5E0]:
+                out.append(f'START_NAME({va:#x}, {imm(7):#x}, {disp(14):#x}, {first})')
+                n_sn += 1
+            continue
+        if (st, layout(ins, va)) == START['class']:
+            if [imm(7), imm(17)] == [0xBCDFC0, 0x805FD0] and disp(18) == disp(25) and imm(6) == 0x3C:
+                out.append(f'START_CLASS({va:#x}, {imm(14):#x}, {imm(13):#x}, {disp(18):#x}, {first})')
+                n_sc += 1
+            continue
+        if (section_shape(ins), layout(ins, va)) == START['section']:
+            if [imm(7), imm(15), imm(24), imm(35), imm(37), imm(41)] == [0xBCDFC0, 0xBCF850, 0x46FAD0, 0xBCE010, 0xBCE000, 0xDDC870]:
+                out.append(f'START_SECTION({va:#x}, {imm(13):#x}, {imm(19):#x}, {imm(22, 1):#x}, {imm(40):#x}, {first})')
+                n_ss += 1
             continue
         if strict(ins, FREE_LOOSE) == ARRAY_FREE:
             a = addresses(ins)   # the branch, the item destructor, the iterator, the free
@@ -160,7 +187,8 @@ def main():
             n_q += 1
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
-          'reference constructors,', n_af, 'object array frees,', n_st, 'table setters')
+          'reference constructors,', n_af, 'object array frees,', n_st, 'table setters,',
+          n_sn, 'start-up names,', n_sc, 'class descriptions,', n_ss, 'sections')
 
 
 if __name__ == '__main__':
