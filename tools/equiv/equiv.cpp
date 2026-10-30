@@ -504,6 +504,22 @@ static void __fastcall stub_register_behaviour(void *self, void *, int32_t **nam
     record(0x7d, factory);
     (*name)[0] += *arena<int32_t>(0x38);
 }
+// factories' constructors: what they're given; they give the object or another one (arena 0x24)
+static void *__fastcall stub_ctor3(void *self, void *, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x7e, self);
+    record(0x7e, (void *)(uintptr_t)a);
+    record(0x7e, (void *)(uintptr_t)b);
+    record(0x7e, (void *)(uintptr_t)c);
+    return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
+}
+static void *__fastcall stub_ctor4(void *self, void *, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x7f, self);
+    record(0x7f, (void *)(uintptr_t)a);
+    record(0x7f, (void *)(uintptr_t)b);
+    record(0x7f, (void *)(uintptr_t)c);
+    record(0x7f, (void *)(uintptr_t)d);
+    return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
+}
 // resource types: the base constructor, given the three texts (recorded by what they point to)
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
@@ -1229,6 +1245,25 @@ static std::vector<Test> tests() {
                        {0x833f90, (void *)stub_register_behaviour}});
     };
     start_behaviour.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // factories: memory sometimes runs out; the copy's own constructor is stood in for
+    Test factory2{0x430b70, [=](Rng &r) { fresh(r); for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next(); },
+                  [](void *fn) {
+                      return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(uint32_t, uint32_t))fn)(
+                          arena<uint32_t>(0x20)[2], arena<uint32_t>(0x20)[3])};
+                  }};
+    factory2.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {rewrite::start_constants(e->at)[2], (void *)stub_ctor3}});
+    };
+    factory2.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // from two fields of the object at 0x100 (noise)
+    Test factory_fields{0x633140, [=](Rng &r) { fresh(r); for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next(); },
+                        [](void *fn) {
+                            return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                        }};
+    factory_fields.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {rewrite::start_constants(e->at)[4], (void *)stub_ctor4}});
+    };
+    factory_fields.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Text::Widen (registers: ecx size, edx buffer at 0x800, edi C text at 0x400): sizes 0 (no limit) to 40, texts
     // of up to 60 characters; the result is eax, its top bit flipped if edx, esi or edi didn't come back the same
     Test text_widen{0x401050,
@@ -1284,7 +1319,7 @@ static std::vector<Test> tests() {
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
                     &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report,
-                    &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour}) {
+                    &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

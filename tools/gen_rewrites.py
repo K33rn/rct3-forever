@@ -56,6 +56,10 @@ MATCH = [
     ('WIDE_COPY_GLOBAL', 0x4CE710, [(1, 0)], [(7, 1)]),
     ('WIDE_COPY_THIS', 0x6DCDF0, [(1, 0)], [(8, 1)]),
     ('START_BEHAVIOUR', 0xEAAAD0, [(1, 0)], [(13, 0), (19, 0), (22, 1), (40, 0)]),
+    # factories: memory of SIZE bytes, constructed (or null): from two arguments, or from two fields of this
+    ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
+    ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
+    ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor
 ]
 
 
@@ -125,10 +129,18 @@ def main():
                     found[(k, j)] = v & 0xffffffff
         return found
     MATCHED = []
-    for macro, rep, ignore, params in MATCH:
+    # an entry may name instructions whose small constants are parameters too (masked in the shape): a 5th item
+    def shape_of(ins, loose):
+        return [re.sub(r'(0x[0-9a-f]+|\d+)', 'K', x) if k in loose else x for k, x in enumerate(strict(ins))]
+
+    def value(ins, k, j):
+        o = ins[k].operands[j]
+        return (o.imm if o.type == X.X86_OP_IMM else o.mem.disp) & 0xffffffff
+    for macro, rep, ignore, params, *rest in MATCH:
+        loose = rest[0] if rest else ()
         b = body(rep)
         fixed = {kj: v for kj, v in operands(b).items() if kj not in ignore and kj not in params}
-        MATCHED.append((macro, rep, strict(b), layout(b, rep), fixed, params, len(b)))
+        MATCHED.append((macro, rep, shape_of(b, loose), layout(b, rep), fixed, params, len(b), loose))
     counts = {m[0]: 0 for m in MATCH}
     for r in funcs:
         va, n = int(r['address'], 16), int(r['size'])
@@ -149,13 +161,13 @@ def main():
                 n_rt += 1
             continue
         hit = False
-        for macro, rep, shape, lay, fixed, params, length in MATCHED:
-            if len(ins) != length or strict(ins) != shape or layout(ins, va) != lay:
+        for macro, rep, shape, lay, fixed, params, length, loose in MATCHED:
+            if len(ins) != length or shape_of(ins, loose) != shape or layout(ins, va) != lay:
                 continue
             ops = operands(ins)
             if any(ops.get(kj) != v for kj, v in fixed.items()):
                 continue
-            out.append(f'{macro}(' + ', '.join([f'{va:#x}'] + [f'{ops[kj]:#x}' for kj in params] + [first]) + ')')
+            out.append(f'{macro}(' + ', '.join([f'{va:#x}'] + [f'{value(ins, *kj):#x}' for kj in params] + [first]) + ')')
             counts[macro] += 1
             hit = True
         if hit:

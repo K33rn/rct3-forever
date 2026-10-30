@@ -541,6 +541,25 @@ template <uint32_t NAME, uint32_t FACTORY, uint32_t GLOBAL, uint32_t DTOR> stati
 #define WIDE_COPY_GLOBAL(at, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("WideText::CopyOf", at, REWRITE_CAT(original_, at), 8, (void *)&wide_copy_of_global<global>, &g_wide_copies);
 #define WIDE_COPY_THIS(at, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("WideText::CopyOf(this)", at, REWRITE_CAT(original_, at), 8, (void *)&wide_copy_of_global_this<global>, &g_wide_copies);
 #define START_BEHAVIOUR(at, name, factory, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Behaviour", at, REWRITE_CAT(original_, at), 8, (void *)&start_behaviour<name, factory, global, dtor>, &g_behaviours);
+// ---- factories ------------------------------------------------------------------------------------------------
+// Create: a new object of SIZE bytes (0xBCDFC0) constructed by CTOR, or null when there was no memory. Either
+// from the two arguments (the constructor given 0 and them), or from two fields of `this` (given 0, 0 and them).
+static volatile long g_factories;
+template <uint32_t SIZE, uint32_t CTOR> static void *__stdcall factory2(uint32_t a, uint32_t b) {
+    g_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    return p ? ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t))CTOR)(p, nullptr, 0, a, b) : nullptr;
+}
+template <uint32_t SIZE, uint32_t FIELD1, uint32_t FIELD2, uint32_t CTOR>
+static void *__fastcall factory_fields(uint8_t *self) {
+    g_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    return p ? ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t, uint32_t))CTOR)(
+                   p, nullptr, 0, 0, *(uint32_t *)(self + FIELD1), *(uint32_t *)(self + FIELD2))
+             : nullptr;
+}
+#define FACTORY2(at, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Create", at, REWRITE_CAT(original_, at), 8, (void *)&factory2<size, ctor>, &g_factories);
+#define FACTORY_FIELDS(at, size, field1, field2, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::CreateFromFields", at, REWRITE_CAT(original_, at), 8, (void *)&factory_fields<size, field1, field2, ctor>, &g_factories);
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, 0, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
 #define START_KEY3(at, key3, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, key3, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
@@ -608,6 +627,10 @@ template <uint32_t NAME, uint32_t FACTORY, uint32_t GLOBAL, uint32_t DTOR> stati
 #define WIDE_COPY_GLOBAL(...)
 #define WIDE_COPY_THIS(...)
 #define START_BEHAVIOUR(...)
+#undef FACTORY2
+#undef FACTORY_FIELDS
+#define FACTORY2(...)
+#define FACTORY_FIELDS(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -711,6 +734,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define WIDE_COPY_GLOBAL(at, global, ...) {at, global},
 #define WIDE_COPY_THIS(at, global, ...) {at, global},
 #define START_BEHAVIOUR(at, name, factory, global, dtor, ...) {at, name, factory, global, dtor},
+#undef FACTORY2
+#undef FACTORY_FIELDS
+#define FACTORY2(at, size, ctor, ...) {at, size, ctor},
+#define FACTORY_FIELDS(at, size, field1, field2, ctor, ...) {at, size, field1, field2, ctor},
 static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };
