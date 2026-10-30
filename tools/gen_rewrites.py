@@ -57,6 +57,14 @@ MATCH = [
     ('WIDE_COPY_THIS', 0x6DCDF0, [(1, 0)], [(8, 1)]),
     ('START_BEHAVIOUR', 0xEAAAD0, [(1, 0)], [(13, 0), (19, 0), (22, 1), (40, 0)]),
     # factories: memory of SIZE bytes, constructed (or null): from two arguments, or from two fields of this
+    ('GLOBAL_FACTORY', 0x436210, [(1, 0)], [(6, 0), (14, 0), (15, 0)], (6,), [[(15, 0), (22, 0)]]),   # size, ctor, global
+    ('LAZY_FACTORY', 0x44CC40, [(1, 0)], [(6, 1), (9, 0), (17, 0)], (9,), [[(6, 1), (18, 0), (24, 0)]]),   # global, size, ctor
+    ('LAZY_FACTORY_INIT', 0x40DFE0, [(1, 0)], [(6, 1), (10, 0), (18, 0), (20, 0), (21, 1), (22, 0), (22, 1)],
+     (10, 18, 22), [[(6, 1), (26, 0)]]),   # global, size, ctor argument, ctor, table, byte field and its value
+    ('CACHED', 0x558F20, [], [(2, 1), (5, 1), (7, 1), (15, 1), (25, 0)], (2, 5, 7, 25, 26, 30, 31, 33),
+     [[(2, 1), (26, 0), (31, 0)], [(25, 0), (30, 0), (33, 1)]]),   # flag, reference, object, id, cache
+    ('DTOR_TABLES', 0x426C90, [(1, 0)], [(10, 1), (11, 1), (13, 0), (15, 1)]),   # tables, member destructor, base table
+    ('FREE_TWO', 0x42FD80, [(1, 0)], [(9, 1)], (9, 16), [[(9, 1), (16, 0)]]),   # the field freed first
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
     ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor
@@ -137,10 +145,13 @@ def main():
         o = ins[k].operands[j]
         return (o.imm if o.type == X.X86_OP_IMM else o.mem.disp) & 0xffffffff
     for macro, rep, ignore, params, *rest in MATCH:
+        # optional: instructions with masked constants, and groups of operands that must hold the same value
         loose = rest[0] if rest else ()
+        same = rest[1] if len(rest) > 1 else ()
         b = body(rep)
-        fixed = {kj: v for kj, v in operands(b).items() if kj not in ignore and kj not in params}
-        MATCHED.append((macro, rep, shape_of(b, loose), layout(b, rep), fixed, params, len(b), loose))
+        skip = set(ignore) | set(params) | {kj for group in same for kj in group}
+        fixed = {kj: v for kj, v in operands(b).items() if kj not in skip}
+        MATCHED.append((macro, rep, shape_of(b, loose), layout(b, rep), fixed, params, len(b), loose, same))
     counts = {m[0]: 0 for m in MATCH}
     # ObjectArray::SetCapacity: matched by its shape with every constant masked (the copies differ in registers and
     # in how they multiply by the item size), its constants found by their roles
@@ -189,11 +200,13 @@ def main():
                     n_sc_ += 1
                     continue
         hit = False
-        for macro, rep, shape, lay, fixed, params, length, loose in MATCHED:
+        for macro, rep, shape, lay, fixed, params, length, loose, same in MATCHED:
             if len(ins) != length or shape_of(ins, loose) != shape or layout(ins, va) != lay:
                 continue
             ops = operands(ins)
             if any(ops.get(kj) != v for kj, v in fixed.items()):
+                continue
+            if any(len({value(ins, *kj) for kj in group}) != 1 for group in same):
                 continue
             out.append(f'{macro}(' + ', '.join([f'{va:#x}'] + [f'{value(ins, *kj):#x}' for kj in params] + [first]) + ')')
             counts[macro] += 1

@@ -533,6 +533,16 @@ static void *__fastcall stub_assign(void *self, void *, void *from) {
     record(0x80, from);
     return self;
 }
+// constructors with no argument or one, giving the object or another one (arena 0x24)
+static void *__fastcall stub_ctor0(void *self) {
+    record(0x81, self);
+    return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
+}
+static void *__fastcall stub_ctor1(void *self, void *, uint32_t a) {
+    record(0x82, self);
+    record(0x82, (void *)(uintptr_t)a);
+    return *arena<uint32_t>(0x24) & 1 ? self : arena<void>(0x180);
+}
 // resource types: the base constructor, given the three texts (recorded by what they point to)
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
@@ -1297,6 +1307,57 @@ static std::vector<Test> tests() {
         stubs_for_now({{0xddcf99, (void *)stub_vector_construct}, {rewrite::start_constants(e->at)[5], (void *)stub_assign}});
     };
     object_setcap.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // global factories: the global (game data, put back after each copy) is empty or holds 0x1c0 (for the lazy ones);
+    // memory sometimes runs out; the copy's constructor is stood in for
+    static uint32_t gf_global, gf_saved;
+    auto gf_setup = [=](Rng &r) {
+        fresh(r);
+        for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next();
+        *arena<void *>(0x1f8) = r.next() % 3 ? nullptr : arena<void>(0x1c0);
+    };
+    auto gf_call = [](void *fn) {
+        *(void **)gf_global = *arena<void *>(0x1f8);   // game data: set from the arena before each run
+        uint32_t r = (uint32_t)(uintptr_t)((void *(__cdecl *)())fn)();
+        return Result{r ^ *(uint32_t *)gf_global};
+    };
+    auto gf_finish = [](const rewrite::Entry *) {
+        unstub_many();
+        *(uint32_t *)gf_global = gf_saved;
+    };
+    auto gf_prepare = [](uint32_t global, uint32_t ctor, void *stand_in) {
+        gf_global = global;
+        gf_saved = *(uint32_t *)global;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {ctor, stand_in}});
+    };
+    Test global_factory{0x436210, gf_setup, gf_call};
+    global_factory.prepare = [=](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        gf_prepare(c[3], c[2], (void *)stub_ctor0);
+    };
+    Test lazy_factory{0x44cc40, gf_setup, gf_call};
+    lazy_factory.prepare = [=](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        gf_prepare(c[1], c[3], (void *)stub_ctor0);
+    };
+    Test lazy_factory_init{0x40dfe0, gf_setup, gf_call};
+    lazy_factory_init.prepare = [=](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        gf_prepare(c[1], c[4], (void *)stub_ctor1);
+    };
+    for (Test *x : {&global_factory, &lazy_factory, &lazy_factory_init}) x->finish = gf_finish;
+    // destructors putting back tables: the object at 0x100 (noise); the member's destructor is stood in for
+    Test dtor_tables{0x426c90, [=](Rng &r) { fresh(r); }, obj_call};
+    dtor_tables.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{rewrite::start_constants(e->at)[3], (void *)stub_destructor}});
+    };
+    dtor_tables.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // two owned blocks: the object at 0x100, each field a block or nothing (the field is up to 0xFC on)
+    Test free_two{0x42fd80,
+                  [=](Rng &r) {
+                      fresh(r);
+                      for (int i = 0; i < 64; i++) arena<void *>(0x100)[i] = block(r);
+                  },
+                  obj_call};
     // Text::Widen (registers: ecx size, edx buffer at 0x800, edi C text at 0x400): sizes 0 (no limit) to 40, texts
     // of up to 60 characters; the result is eax, its top bit flipped if edx, esi or edi didn't come back the same
     Test text_widen{0x401050,
@@ -1352,7 +1413,8 @@ static std::vector<Test> tests() {
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
                     &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report,
-                    &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap}) {
+                    &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap,
+                    &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

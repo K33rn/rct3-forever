@@ -595,6 +595,74 @@ static int32_t __fastcall object_set_capacity(uint8_t **array, void *, int32_t n
     return n;
 }
 #define OBJECT_SETCAP(at, size, header, ctor, dtor, assign, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::SetCapacity", at, REWRITE_CAT(original_, at), 8, (void *)&object_set_capacity<size, header, ctor, dtor, assign>, &g_object_setcaps);
+// A global object made by a factory: SIZE bytes constructed by CTOR (or null without memory), kept in GLOBAL and
+// given back; the lazy ones only when the global is still empty, and give what it holds. One kind also gives its
+// constructor an argument, then sets its table and a byte field.
+static volatile long g_global_factories;
+template <uint32_t SIZE, uint32_t CTOR, uint32_t GLOBAL> static void *__cdecl global_factory() {
+    g_global_factories++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    void *made = p ? ((void *(__fastcall *)(void *))CTOR)(p) : nullptr;
+    *(void **)GLOBAL = made;
+    return made;
+}
+template <uint32_t GLOBAL, uint32_t SIZE, uint32_t CTOR> static void *__cdecl lazy_factory() {
+    g_global_factories++;
+    void *made = *(void **)GLOBAL;
+    if (!made) {
+        void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+        made = p ? ((void *(__fastcall *)(void *))CTOR)(p) : nullptr;
+        *(void **)GLOBAL = made;
+    }
+    return made;
+}
+template <uint32_t GLOBAL, uint32_t SIZE, uint32_t ARG, uint32_t CTOR, uint32_t TABLE, uint32_t FIELD, uint32_t VALUE>
+static void *__cdecl lazy_factory_init() {
+    g_global_factories++;
+    uint32_t *made = *(uint32_t **)GLOBAL;
+    if (!made) {
+        made = (uint32_t *)((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+        if (made) {
+            ((void(__fastcall *)(void *, void *, uint32_t))CTOR)(made, nullptr, ARG);
+            made[0] = TABLE;
+            ((uint8_t *)made)[FIELD] = (uint8_t)VALUE;
+        }
+        *(uint32_t **)GLOBAL = made;
+    }
+    return made;
+}
+
+// A destructor with nothing of its own to undo: its two tables put back, the member at +4 destroyed (DTOR), then the
+// base class's table.
+static volatile long g_dtor_tables;
+template <uint32_t TABLE, uint32_t MEMBER_TABLE, uint32_t DTOR, uint32_t BASE_TABLE>
+static void __fastcall dtor_tables(uint32_t *self) {
+    g_dtor_tables++;
+    self[0] = TABLE;
+    self[1] = MEMBER_TABLE;
+    ((void(__fastcall *)(void *))DTOR)(self + 1);
+    self[0] = BASE_TABLE;
+}
+
+// Frees two aligned blocks the object owns (the one at FIELD first, then the one at +0), clearing the pointers.
+static volatile long g_free_twos;
+template <uint32_t FIELD> static void __fastcall free_two(uint8_t *self) {
+    g_free_twos++;
+    void (*const free_aligned)(void *) = (void (*)(void *))0xbce010;
+    if (*(void **)(self + FIELD)) {
+        free_aligned(*(void **)(self + FIELD));
+        *(void **)(self + FIELD) = nullptr;
+    }
+    if (*(void **)self) {
+        free_aligned(*(void **)self);
+        *(void **)self = nullptr;
+    }
+}
+#define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
+#define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
+#define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
+#define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::Tables", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_tables<table, member_table, dtor, base_table>, &g_dtor_tables);
+#define FREE_TWO(at, field, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("OwnedPair::FreeFields", at, REWRITE_CAT(original_, at), 8, (void *)&free_two<field>, &g_free_twos);
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, 0, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
 #define START_KEY3(at, key3, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, key3, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
@@ -668,6 +736,16 @@ static int32_t __fastcall object_set_capacity(uint8_t **array, void *, int32_t n
 #define FACTORY_FIELDS(...)
 #undef OBJECT_SETCAP
 #define OBJECT_SETCAP(...)
+#undef GLOBAL_FACTORY
+#undef LAZY_FACTORY
+#undef LAZY_FACTORY_INIT
+#undef DTOR_TABLES
+#undef FREE_TWO
+#define GLOBAL_FACTORY(...)
+#define LAZY_FACTORY(...)
+#define LAZY_FACTORY_INIT(...)
+#define DTOR_TABLES(...)
+#define FREE_TWO(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -777,6 +855,16 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FACTORY_FIELDS(at, size, field1, field2, ctor, ...) {at, size, field1, field2, ctor},
 #undef OBJECT_SETCAP
 #define OBJECT_SETCAP(at, size, header, ctor, dtor, assign, ...) {at, size, header, ctor, dtor, assign},
+#undef GLOBAL_FACTORY
+#undef LAZY_FACTORY
+#undef LAZY_FACTORY_INIT
+#undef DTOR_TABLES
+#undef FREE_TWO
+#define GLOBAL_FACTORY(at, size, ctor, global, ...) {at, size, ctor, global},
+#define LAZY_FACTORY(at, global, size, ctor, ...) {at, global, size, ctor},
+#define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
+#define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
+#define FREE_TWO(at, field, ...) {at, field},
 static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };
