@@ -599,6 +599,12 @@ static void *__fastcall stub_named_ref_text(uint8_t *self, void *, int32_t **nam
 static uint32_t g_member_field;
 static void __fastcall stub_member_destructor(void *self) { record(0x8a, self); }
 // constructors with two or five arguments
+// a base class's constructor: sets its own table (so the order of the tables shows)
+static void __fastcall stub_base_ctor(uint32_t *self) {
+    record(0x8d, self);
+    record(0x8d, (void *)(uintptr_t)self[0]);
+    self[0] = 0xba5e0000;
+}
 static void *__fastcall stub_ctor2(void *self, void *, uint32_t a, uint32_t b) {
     record(0x8b, self);
     record(0x8b, (void *)(uintptr_t)a);
@@ -1640,15 +1646,16 @@ static std::vector<Test> tests() {
                              return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
                          }};
     ctor_base_table.prepare = [](const rewrite::Entry *e) {
-        stubs_for_now({{rewrite::start_constants(e->at)[1], (void *)stub_destructor}});
+        stubs_for_now({{rewrite::start_constants(e->at)[1], (void *)stub_base_ctor}});
     };
     ctor_base_table.finish = [](const rewrite::Entry *) { unstub_many(); };
-    // two vectors and a value: the object at 0x100, the vectors anywhere in 0x100..0x140 (overlapping it, too)
+    // two vectors and a value: the object at 0x100, the vectors anywhere in 0xE0..0x140 (overlapping it, too)
     Test set_two_vectors{0x4884b0,
                          [=](Rng &r) {
                              fresh(r);
-                             arena<uint32_t>(0x10)[0] = 0x100 + 4 * r.range(0, 16);
-                             arena<uint32_t>(0x10)[1] = 0x100 + 4 * r.range(0, 16);
+                             for (int i = 0; i < 8; i++) arena<uint32_t>(0xe0)[i] = r.next();
+                             arena<uint32_t>(0x10)[0] = 0xe0 + 4 * r.range(0, 24);
+                             arena<uint32_t>(0x10)[1] = 0xe0 + 4 * r.range(0, 24);
                              arena<uint32_t>(0x10)[2] = r.next();
                          },
                          [](void *fn) {
