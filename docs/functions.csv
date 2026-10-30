@@ -673,7 +673,7 @@ address,size,name,callers,status
 0x430f70,163,,2,documented
 0x431020,65,,0,documented
 0x431070,285,,31,documented
-0x4311c0,126,,6,documented
+0x4311c0,126,QuadTree::Insert,6,rewritten
 0x431240,273,,2,documented
 0x431360,230,,32,documented
 0x431450,958,,0,documented
@@ -1696,7 +1696,7 @@ address,size,name,callers,status
 0x489980,30,DeletingDestructor,1,rewritten
 0x4899b0,86,,2,documented
 0x489a10,98,,2,documented
-0x489ab0,126,,3,documented
+0x489ab0,126,QuadTree::Insert,3,rewritten
 0x489b30,273,,1,documented
 0x489c50,259,,3,documented
 0x489e60,319,,0,documented
@@ -9687,7 +9687,7 @@ address,size,name,callers,status
 0x7b5260,71,,1,documented
 0x7b52b0,95,,2,documented
 0x7b5310,91,,4,documented
-0x7b53a0,126,,3,documented
+0x7b53a0,126,QuadTree::Insert,3,rewritten
 0x7b5420,273,,1,documented
 0x7b5540,527,,3,documented
 0x7b5780,243,,3,documented
@@ -15274,7 +15274,7 @@ address,size,name,callers,status
 0xa0d300,754,,1,documented
 0xa0d600,97,,1,documented
 0xa0d670,42,,1,documented
-0xa0d6d0,126,,1,documented
+0xa0d6d0,126,QuadTree::Insert,1,rewritten
 0xa0d750,273,,1,documented
 0xa0db30,584,,1,documented
 0xa0dda0,30,DeletingDestructor,0,rewritten
@@ -18377,7 +18377,7 @@ address,size,name,callers,status
 0xb5c2e0,358,,6,documented
 0xb5c450,235,,0,documented
 0xb5ca50,218,,1,documented
-0xb5cc00,126,,3,documented
+0xb5cc00,126,QuadTree::Insert,3,rewritten
 0xb5cc80,273,,1,documented
 0xb5cda0,230,,3,documented
 0xb5d460,39,,1,documented
@@ -18552,7 +18552,7 @@ address,size,name,callers,status
 0xb70be0,201,,1,documented
 0xb70cb0,636,,1,documented
 0xb70f30,61,,0,documented
-0xb70fa0,126,,3,documented
+0xb70fa0,126,QuadTree::Insert,3,rewritten
 0xb71020,273,,1,documented
 0xb711a0,241,,3,documented
 0xb71870,39,,1,documented

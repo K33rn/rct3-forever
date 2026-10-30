@@ -660,6 +660,31 @@ static void __stdcall stub_vector_construct4(void *items, uint32_t size, int32_t
     record(0x402b90, (void *)(uintptr_t)count);
     record(0x402b90, ctor);
 }
+// quadtrees: finding a node (records what it is given: the box's corner and size by value), a node's Add and
+// MarkChanged
+static int32_t __fastcall stub_find_node(int32_t zero, uint32_t depth, void *origin, void *size, uint32_t *corner,
+                                         uint32_t *box) {
+    record(0xcdb600, (void *)(uintptr_t)zero);
+    record(0xcdb600, (void *)(uintptr_t)depth);
+    record(0xcdb600, origin);
+    record(0xcdb600, size);
+    record(0xcdb600, (void *)(uintptr_t)corner[0]);
+    record(0xcdb600, (void *)(uintptr_t)corner[1]);
+    record(0xcdb600, (void *)(uintptr_t)box[0]);
+    record(0xcdb600, (void *)(uintptr_t)box[1]);
+    return *arena<int32_t>(0x20);
+}
+static uint32_t __fastcall stub_node_add(void *node, void *, void *item, void *a, void *b) {
+    record(0x91, node);
+    record(0x91, item);
+    record(0x91, a);
+    record(0x91, b);
+    return 0x1234;
+}
+static void __fastcall stub_mark_changed(void *tree, void *, int32_t node) {
+    record(0x92, tree);
+    record(0x92, (void *)(uintptr_t)node);
+}
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -1910,6 +1935,24 @@ static std::vector<Test> tests() {
                       }};
     quadtree_add.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x402b90, (void *)stub_vector_construct4}}); };
     quadtree_add.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // quadtree inserts: the tree at 0x100 (its nodes at 0x4000), the item 0x340, the corners at 0x300 and 0x320 (any
+    // floats); FindNode, the node's Add and MarkChanged stood in for
+    Test quadtree_insert{0x4311c0,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 16; i++) arena<float>(0x300)[i] = r.any_float();
+                             arena<void *>(0x100)[2] = arena<void>(0x4000);
+                             *arena<int32_t>(0x20) = r.range(0, 20);
+                         },
+                         [](void *fn) {
+                             return Result{((uint32_t(__fastcall *)(void *, void *, void *, void *, void *))fn)(
+                                 arena<void>(0x100), nullptr, arena<void>(0x340), arena<void>(0x300), arena<void>(0x320))};
+                         }};
+    quadtree_insert.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        stubs_for_now({{0xcdb600, (void *)stub_find_node}, {c[1], (void *)stub_node_add}, {c[2], (void *)stub_mark_changed}});
+    };
+    quadtree_insert.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1978,7 +2021,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add}) {
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

@@ -1081,6 +1081,27 @@ static int32_t __fastcall quadtree_add(uint8_t *node, void *, const uint32_t *it
     while (first_free < used && items[first_free * 8 + 7]) first_free++;
     return slot;
 }
+// QuadTree::Insert(item, corner A, corner B): the node that should hold the box (QuadTree::FindNode, 0xCDB600:
+// ecx 0, edx the tree's depth (+4), then the root's origin (+0xC) and size (+0x14), the box's first corner (x, z) and
+// its size (B - A in x and z, worked out in the FPU and kept as floats)); the item added to it (ADD, the nodes 28
+// bytes apart at +8) and that node and those above it marked changed (MARK). Gives the node in the high 16 bits and
+// the item's slot in the low ones.
+static volatile long g_quadtree_inserts;
+template <uint32_t ADD, uint32_t MARK>
+static uint32_t __fastcall quadtree_insert(uint8_t *self, void *, void *item, const uint32_t *a, const uint32_t *b) {
+    g_quadtree_inserts++;
+    volatile float size[2];
+    size[0] = ((const float *)b)[0] - ((const float *)a)[0];
+    uint32_t corner[2] = {a[0], a[2]};
+    size[1] = ((const float *)b)[2] - ((const float *)a)[2];
+    typedef int32_t(__fastcall * Find)(int32_t, uint32_t, void *, void *, const uint32_t *, volatile float *);
+    int32_t node = ((Find)0xcdb600)(0, *(uint32_t *)(self + 4), self + 0xc, self + 0x14, corner, size);
+    uint32_t slot = ((uint32_t(__fastcall *)(void *, void *, void *, const uint32_t *, const uint32_t *))ADD)(
+        *(uint8_t **)(self + 8) + node * 0x1c, nullptr, item, a, b);
+    ((void(__fastcall *)(void *, void *, int32_t))MARK)(self, nullptr, node);
+    return ((uint32_t)node << 16) | slot;
+}
+#define QUADTREE_INSERT(at, add, mark, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("QuadTree::Insert", at, REWRITE_CAT(original_, at), 8, (void *)&quadtree_insert<add, mark>, &g_quadtree_inserts);
 #define QUADTREE_ADD(at, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("QuadTree::Node::Add", at, REWRITE_CAT(original_, at), 8, (void *)&quadtree_add<ctor>, &g_quadtree_adds);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
@@ -1166,6 +1187,8 @@ static int32_t __fastcall quadtree_add(uint8_t *node, void *, const uint32_t *it
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef QUADTREE_INSERT
+#define QUADTREE_INSERT(...)
 #undef QUADTREE_ADD
 #define QUADTREE_ADD(...)
 #undef LISTENER_DTOR_QUIET
@@ -1351,6 +1374,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef QUADTREE_INSERT
+#define QUADTREE_INSERT(at, add, mark, ...) {at, add, mark},
 #undef QUADTREE_ADD
 #define QUADTREE_ADD(...)
 #undef LISTENER_DTOR_QUIET
