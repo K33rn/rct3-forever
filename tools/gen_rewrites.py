@@ -37,6 +37,13 @@ QUERY = ('push esi ; mov esi, ecx ; test esi, esi ; je N ; mov eax, dword ptr [e
          'mov eax, dword ptr [eax + N] ; add eax, esi ; pop esi ; ret  ; xor eax, eax ; pop esi ; ret ')
 
 
+# matched families: (macro, representative, operands ignored, parameter operands), operands as (instruction, operand)
+MATCH = [
+    ('NAMED_TEXT_REF', 0x403F30, [(1, 0)], [(37, 0), (72, 1), (127, 1)]),   # suffix, first table, class table
+    ('GAME_TEXT_COPY', 0x41F210, [(1, 0)], [(9, 0)]),                        # the text's name
+]
+
+
 def main():
     pe = pefile.PE(sys.argv[1], fast_load=True)
     mem = pe.get_memory_mapped_image()
@@ -90,9 +97,27 @@ def main():
         handwritten |= {int(m.group(1), 16) for m in re.finditer(r'REWRITE\("[^"]+",\s*(0x[0-9a-fA-F]+)', src)}
         for m in re.finditer(r'uint32_t\s+\w+\[\]\s*=\s*\{([^}]*)\}', src):
             handwritten |= {int(h, 16) for h in re.findall(r'0x[0-9a-fA-F]+', m.group(1))}
+    # families matched against a representative: the same instructions and layout, every address the same as the
+    # representative's except the parameters (instruction, operand) and the ones ignored (exception handlers)
+    def operands(ins):
+        found = {}
+        for k, i in enumerate(ins):
+            for j, o in enumerate(i.operands):
+                v = o.imm if o.type == X.X86_OP_IMM else o.mem.disp if o.type == X.X86_OP_MEM else None
+                if i.group(capstone.CS_GRP_JUMP):   # jumps inside the function: compared by layout()
+                    continue
+                if v is not None and (v & 0xffffffff) >= BASE:
+                    found[(k, j)] = v & 0xffffffff
+        return found
+    MATCHED = []
+    for macro, rep, ignore, params in MATCH:
+        b = body(rep)
+        fixed = {kj: v for kj, v in operands(b).items() if kj not in ignore and kj not in params}
+        MATCHED.append((macro, rep, strict(b), layout(b, rep), fixed, params, len(b)))
+    counts = {m[0]: 0 for m in MATCH}
     for r in funcs:
         va, n = int(r['address'], 16), int(r['size'])
-        if n > 260 or va in handwritten:
+        if n > 600 or va in handwritten:
             continue
         ins = [i for i in md.disasm(mem[va - BASE:va - BASE + n], va) if i.mnemonic not in ('int3', 'nop')]
         s = ' ; '.join(i.mnemonic + ' ' + re.sub(r'\b\d+\b', 'N', re.sub(r'0x[0-9a-f]+', 'N', i.op_str)) for i in ins)
@@ -107,6 +132,18 @@ def main():
                 n_rn += 1
             else:
                 n_rt += 1
+            continue
+        hit = False
+        for macro, rep, shape, lay, fixed, params, length in MATCHED:
+            if len(ins) != length or strict(ins) != shape or layout(ins, va) != lay:
+                continue
+            ops = operands(ins)
+            if any(ops.get(kj) != v for kj, v in fixed.items()):
+                continue
+            out.append(f'{macro}({va:#x}, ' + ', '.join(f'{ops[kj]:#x}' for kj in params) + f', {first})')
+            counts[macro] += 1
+            hit = True
+        if hit:
             continue
         imm = lambda k, j=0: ins[k].operands[j].imm & 0xffffffff
         disp = lambda k, j=0: ins[k].operands[j].mem.disp & 0xffffffff
@@ -185,6 +222,7 @@ def main():
                 continue
             out.append(f'QUERY({va:#x}, {ins_id.operands[1].mem.disp & 0xffffffff:#x}, {first})')
             n_q += 1
+    print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
           'reference constructors,', n_af, 'object array frees,', n_st, 'table setters,',

@@ -276,6 +276,77 @@ template <uint32_t TEXT, uint32_t KIND, uint32_t GLOBAL, uint32_t DTOR> static v
     game_atexit((void(__cdecl *)())DTOR);
 }
 
+// ---- texts by name ---------------------------------------------------------------------------------------------
+// A shared text: {references, length, capacity, +0xC its characters (an aligned block)}; the last reference frees
+// both. As with the start-up ones above, the originals' exception frames (clean-up of their temporaries when a
+// called function throws) are left out.
+
+typedef int32_t *Text;
+
+static void release_text(Text t) {
+    if (--t[0] == 0) {
+        ((void(__cdecl *)(void *))0xbce010)(*(void **)(t + 3));
+        memory_free(t);
+    }
+}
+
+// String::FromC (0xBCFB10) in memory of its own, or the shared empty text (0xBD0520) for none; null when there
+// was no memory (the original goes on with it and crashes when it lets go of it, and so does this)
+static Text text_from_c(const char *c) {
+    if (!c) return ((Text(__fastcall *)(char))0xbd0520)(1);
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
+    return p ? ((Text(__fastcall *)(void *, void *, const char *))0xbcfb10)(p, nullptr, c) : nullptr;
+}
+
+static volatile long g_named_text_refs, g_game_text_copies;
+
+// NamedTextRef: a reference to the text of a texts table (TextRef::TextRef, 0xBD15A0) by its name, made from C
+// text; with `with_suffix`, the name with SUFFIX added (0x403E10). Its class tables are set in turn.
+template <uint32_t SUFFIX, uint32_t TABLE, uint32_t CLASS_TABLE>
+static void *__fastcall named_text_ref(uint32_t *self, void *, const char *name, void *texts, uint32_t with_suffix) {
+    g_named_text_refs++;
+    typedef void(__fastcall * TextRefMake)(void *, void *, Text volatile *, void *);   // ret 8
+    if (with_suffix & 0xff) {
+        Text volatile whole = text_from_c(name);
+        Text volatile named;
+        Text volatile *r = ((Text volatile * (__fastcall *)(Text volatile *, void *, Text volatile *, const char *))
+                                0x403e10)(&whole, nullptr, &named, (const char *)SUFFIX);
+        ((TextRefMake)0xbd15a0)(self, nullptr, r, texts);
+        self[0] = TABLE;
+        release_text(named);
+        release_text(whole);
+    } else {
+        Text volatile t = text_from_c(name);
+        ((TextRefMake)0xbd15a0)(self, nullptr, &t, texts);
+        self[0] = TABLE;
+        release_text(t);
+    }
+    self[0] = CLASS_TABLE;
+    return self;
+}
+
+// GameText::Copy: the game text NAME (a NamedTextRef in the texts table 0x1303CFC, with the suffix) copied into a
+// wide string of its own (0xBCF7D0), or the empty wide string (0xBD0490) when it has no text; returns `out`.
+template <uint32_t NAME> static Text *__stdcall game_text_copy(Text *out) {
+    g_game_text_copies++;
+    alignas(4) uint8_t ref[0x18];
+    uint8_t *r = ((uint8_t * (__fastcall *)(void *, void *, const char *, void *, uint32_t))0x4040f0)(
+        ref, nullptr, (const char *)NAME, (void *)0x1303cfc, 1);
+    const wchar_t *text = *(const wchar_t **)(r + 8);
+    Text t;
+    if (text) {
+        void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
+        t = p ? ((Text(__fastcall *)(void *, void *, const wchar_t *))0xbcf7d0)(p, nullptr, text) : nullptr;
+    } else {
+        t = ((Text(__fastcall *)(char))0xbd0490)(1);
+    }
+    *out = t;
+    ((void(__fastcall *)(void *))0xbd1880)(ref);
+    return out;
+}
+
+#define NAMED_TEXT_REF(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref<suffix, table, class_table>, &g_named_text_refs);
+#define GAME_TEXT_COPY(at, name, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GameText::Copy", at, REWRITE_CAT(original_, at), 8, (void *)&game_text_copy<name>, &g_game_text_copies);
 #define START_NAME(at, text, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Name", at, REWRITE_CAT(original_, at), 8, (void *)&registered_name<text, global>, &g_names);
 #define START_CLASS(at, name, factory, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::ClassDescription", at, REWRITE_CAT(original_, at), 8, (void *)&class_description<name, factory, global>, &g_class_descriptions);
 #define START_SECTION(at, text, kind, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Section", at, REWRITE_CAT(original_, at), 8, (void *)&named_section<text, kind, global, dtor>, &g_sections);
@@ -302,6 +373,10 @@ template <uint32_t TEXT, uint32_t KIND, uint32_t GLOBAL, uint32_t DTOR> static v
 #define START_NAME(...)
 #define START_CLASS(...)
 #define START_SECTION(...)
+#undef NAMED_TEXT_REF
+#undef GAME_TEXT_COPY
+#define NAMED_TEXT_REF(...)
+#define GAME_TEXT_COPY(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -376,13 +451,17 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef LOAD
 #define LOAD(...)
 
-// the start-up initialisers' constants, for the equivalence test: {at, then the macro's constants (up to 4)}
+// the start-up initialisers' and the text families' constants, for the equivalence test: {at, then the macro's constants (up to 4)}
 #undef START_NAME
 #undef START_CLASS
 #undef START_SECTION
 #define START_NAME(at, text, global, ...) {at, text, global},
 #define START_CLASS(at, name, factory, global, ...) {at, name, factory, global},
 #define START_SECTION(at, text, kind, global, dtor, ...) {at, text, kind, global, dtor},
+#undef NAMED_TEXT_REF
+#undef GAME_TEXT_COPY
+#define NAMED_TEXT_REF(at, suffix, table, class_table, ...) {at, suffix, table, class_table},
+#define GAME_TEXT_COPY(at, name, ...) {at, name},
 static const uint32_t start_table[][5] = {
 #include "generated.inc"
 };

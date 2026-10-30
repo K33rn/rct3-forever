@@ -409,6 +409,56 @@ static void unstub_many() {
     g_saved_many.clear();
 }
 
+// texts by name. Shared texts {references, ..., +0xC characters}: one from C text (made in the memory given, its
+// count from arena 0x30), the shared empty one (0x240) and the one with the suffix added (0x2C0), their counts set
+// by the test. The suffixed one is written to the result given, which is on the stack: what is recorded is the
+// text a pointer points to, not the pointer.
+static int32_t *__fastcall stub_text_from_c(int32_t *self, void *, const char *c) {
+    record(0x70, self);
+    record(0x70, (void *)c);
+    self[0] = *arena<int32_t>(0x30);
+    self[3] = *arena<int32_t>(0x34);
+    return self;
+}
+static int32_t *__fastcall stub_shared_empty(char flag) {
+    record(0x71, (void *)(uintptr_t)(uint8_t)flag);
+    return arena<int32_t>(0x240);
+}
+static int32_t **__fastcall stub_text_concat(int32_t **self, void *, int32_t **out, const char *c) {
+    record(0x72, *self);
+    record(0x72, (void *)c);
+    *out = arena<int32_t>(0x2c0);
+    return out;
+}
+// the reference takes one on its name, or not (arena 0x38)
+static void __fastcall stub_text_ref(void *self, void *, int32_t **name, void *texts) {
+    record(0x73, self);
+    record(0x73, *name);
+    record(0x73, texts);
+    (*name)[0] += *arena<int32_t>(0x38);
+}
+// GameText::Copy: the named reference is on the stack (recorded as 1, as the String above); its text (+8) is a
+// wide C text at 0x300 or none (arena 0x3c)
+static void *g_text_ref;
+static void *__fastcall stub_named_text_ref(uint8_t *self, void *, const char *name, void *texts, uint32_t suffix) {
+    g_text_ref = self;
+    record(0x74, (void *)name);
+    record(0x74, texts);
+    record(0x74, (void *)(uintptr_t)suffix);
+    *(void **)(self + 8) = *arena<uint32_t>(0x3c) % 3 ? arena<void>(0x300) : nullptr;
+    return self;
+}
+static void *__fastcall stub_text_from_wide(void *self, void *, const wchar_t *w) {
+    record(0x75, self);
+    record(0x75, (void *)w);
+    return self;
+}
+static void *__fastcall stub_wide_empty(char flag) {
+    record(0x76, (void *)(uintptr_t)(uint8_t)flag);
+    return arena<void>(0x260);
+}
+static void __fastcall stub_text_ref_free(void *self) { record(0x77, self == g_text_ref ? (void *)1 : self); }
+
 static void install_stubs() {
     stub(0xbce000, (void *)stub_free);
     stub(0xbce010, (void *)stub_free_aligned);
@@ -948,9 +998,57 @@ static std::vector<Test> tests() {
     };
     start_section.finish = start_finish;
 
+    // NamedTextRef: the reference at 0x100 (noise), its name C text at 0x340 or none, the texts table 0x380, with
+    // the suffix or not (any value: only its low byte counts); the counts of the texts made are 1 or 2
+    auto text_counts = [](Rng &r) {
+        *arena<int32_t>(0x30) = r.range(1, 2);
+        *arena<int32_t>(0x34) = (int32_t)r.next();
+        *arena<int32_t>(0x38) = r.range(0, 1);
+        *arena<int32_t>(0x240) = r.range(1, 2);
+        arena<int32_t>(0x240)[3] = (int32_t)r.next();
+        *arena<int32_t>(0x2c0) = r.range(1, 2);
+        arena<int32_t>(0x2c0)[3] = (int32_t)r.next();
+    };
+    Test named_text_ref{0x403f30,
+                        [=](Rng &r) {
+                            fresh(r);
+                            text_counts(r);
+                            *arena<uint32_t>(0x28) = 1;   // memory for the name (the original crashes without)
+                            arena<uint32_t>(0x10)[0] = r.next() % 4 ? 0x340 : 0;
+                            arena<uint32_t>(0x10)[1] = r.next() % 2 ? r.next() & 0xff00 : r.next();
+                        },
+                        [](void *fn) {
+                            uint32_t name = arena<uint32_t>(0x10)[0];
+                            return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *, void *,
+                                                                                       uint32_t))fn)(
+                                arena<void>(0x100), nullptr, name ? arena<void>(name) : nullptr, arena<void>(0x380),
+                                arena<uint32_t>(0x10)[1])};
+                        }};
+    named_text_ref.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {0xbcfb10, (void *)stub_text_from_c},
+                       {0xbd0520, (void *)stub_shared_empty}, {0x403e10, (void *)stub_text_concat},
+                       {0xbd15a0, (void *)stub_text_ref}});
+    };
+    named_text_ref.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // GameText::Copy: the result at 0x180; memory for the copy sometimes runs out
+    Test game_text_copy{0x41f210,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 8; i++) arena<uint32_t>(0x20)[i] = r.next();
+                        },
+                        [](void *fn) {
+                            return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *))fn)(arena<void>(0x180))};
+                        }};
+    game_text_copy.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x4040f0, (void *)stub_named_text_ref}, {0xbcdfc0, (void *)stub_alloc},
+                       {0xbcf7d0, (void *)stub_text_from_wide}, {0xbd0490, (void *)stub_wide_empty},
+                       {0xbd1880, (void *)stub_text_ref_free}});
+    };
+    game_text_copy.finish = [](const rewrite::Entry *) { unstub_many(); };
+
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
-                    &start_name, &start_class, &start_section}) {
+                    &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

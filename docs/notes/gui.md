@@ -1152,38 +1152,38 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x664620` | Window::Part664620 | In outline: a step with its part (+0x1B4 +0xC) |
 | `0x65ab80` | Window::Mode65AB80 | In outline: a step in mode 1 |
 | `0x98deb0` | Window::Mode98DEB0 | In outline: a step unless in mode 1 (+0x108) |
-| `0xb929f0` | Message::ResultB929F0 | In outline: another message result maker like Window::Message444890 |
-| `0xb32b60` | Message::ResultB32B60 | In outline: the same message result maker (another copy) |
-| `0xb10dc0` | Message::ResultB10DC0 | In outline: the same message result maker (another copy) |
-| `0xa2af70` | Message::ResultA2AF70 | In outline: the same message result maker (another copy) |
-| `0xa2a440` | Message::ResultA2A440 | In outline: the same message result maker (another copy) |
-| `0xa0af40` | Message::ResultA0AF40 | In outline: the same message result maker (another copy) |
-| `0x8fcd50` | Message::Result8FCD50 | In outline: the same message result maker (another copy) |
-| `0x8f8d10` | Message::Result8F8D10 | In outline: the same message result maker (another copy) |
-| `0x7bc4d0` | Message::Result7BC4D0 | In outline: the same message result maker (another copy) |
-| `0x7bc1b0` | Message::Result7BC1B0 | In outline: the same message result maker (another copy) |
-| `0x7578e0` | Message::Result7578E0 | In outline: the same message result maker (another copy) |
-| `0x703a90` | Message::Result703A90 | In outline: the same message result maker as Window::Message444890 (another copy) |
-| `0x69ae70` | Message::Result69AE70 | In outline: the same message result maker (another copy) |
-| `0x69acb0` | Message::Result69ACB0 | In outline: the same message result maker (another copy) |
-| `0x5a36f0` | Message::Result5A36F0 | In outline: the same message result maker (another copy) |
-| `0x5a3510` | Message::Result5A3510 | In outline: the same message result maker (another copy) |
-| `0x5a3350` | Message::Result5A3350 | In outline: the same message result maker (another copy) |
-| `0x59a5f0` | Message::Result59A5F0 | In outline: the same message result maker (another copy) |
-| `0x560d20` | Message::Result560D20 | In outline: the same message result maker (another copy) |
-| `0x4a33d0` | Message::Result4A33D0 | In outline: the same message result maker (another copy) |
-| `0x4a3130` | Message::Result4A3130 | In outline: the same message result maker (another copy) |
-| `0x4a2e90` | Message::Result4A2E90 | In outline: the same message result maker (another copy) |
-| `0x4a2bf0` | Message::Result4A2BF0 | In outline: the same message result maker (another copy) |
-| `0x4a2950` | Message::Result4A2950 | In outline: the same message result maker (another copy) |
-| `0x4a26b0` | Message::Result4A26B0 | In outline: the same message result maker (another copy) |
-| `0x4a2410` | Message::Result4A2410 | In outline: the same message result maker (another copy) |
-| `0x4a2170` | Message::Result4A2170 | In outline: the same message result maker (another copy) |
-| `0x4a1ed0` | Message::Result4A1ED0 | In outline: the same message result maker (another copy) |
-| `0x44e2a0` | Message::Result44E2A0 | In outline: the same message result maker (another copy) |
-| `0x41cb90` | Message::Result41CB90 | In outline: the same message result maker (another copy) |
-| `0x4040f0` | Message::Result4040F0 | In outline: the same message result maker (another copy) |
-| `0x403f30` | Message::Result403F30 | In outline: the same message result maker (another copy) |
+| `0xb929f0` | NamedTextRefF9C774::NamedTextRef | Constructor (class table `0xf9c774`, first `0xf9c76c`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:asd` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0xb32b60` | NamedTextRefF990A8::NamedTextRef | Constructor (class table `0xf990a8`, first `0xf990a0`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:was` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0xb10dc0` | NamedTextRefF97EB4::NamedTextRef | Constructor (class table `0xf97eb4`, first `0xf97eac`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:wai` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0xa2af70` | NamedTextRefF751B0::NamedTextRef | Constructor (class table `0xf751b0`, first `0xf751b8`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:cid` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0xa2a440` | NamedTextRefF8926C::NamedTextRef | Constructor (class table `0xf8926c`, first `0xf8925c`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:ced` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0xa0af40` | NamedTextRefF87A34::NamedTextRef | Constructor (class table `0xf87a34`, first `0xf87a24`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:mms` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x8fcd50` | NamedTextRefF7CF80::NamedTextRef | Constructor (class table `0xf7cf80`, first `0xf7cf78`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:psi` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x8f8d10` | NamedTextRefF7CDB8::NamedTextRef | Constructor (class table `0xf7cdb8`, first `0xf7cdc0`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:ter` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x7bc4d0` | NamedTextRefF719C4::NamedTextRef | Constructor (class table `0xf719c4`, first `0xf719cc`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:prt` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x7bc1b0` | NamedTextRefF719B4::NamedTextRef | Constructor (class table `0xf719b4`, first `0xf71994`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:ppg` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x7578e0` | NamedTextRefF6C51C::NamedTextRef | Constructor (class table `0xf6c51c`, first `0xf6c514`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:ent` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x703a90` | NamedTextRefF68AE8::NamedTextRef | Constructor (class table `0xf68ae8`, first `0xf68ae0`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:ftx` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x69ae70` | NamedTextRefF5323C::NamedTextRef | Constructor (class table `0xf5323c`, first `0xf5322c`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:shs` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x69acb0` | NamedTextRefF2EABC::NamedTextRef | Constructor (class table `0xf2eabc`, first `0xf2eaac`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:fct` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x5a36f0` | NamedTextRefF2EAC4::NamedTextRef | Constructor (class table `0xf2eac4`, first `0xf2eab4`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:flt` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x5a3510` | NamedTextRefF3DE78::NamedTextRef | Constructor (class table `0xf3de78`, first `0xf3de00`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:int` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x5a3350` | NamedTextRefF26AE4::NamedTextRef | Constructor (class table `0xf26ae4`, first `0xf26ad4`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:snd` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x59a5f0` | NamedTextRefF3D9F4::NamedTextRef | Constructor (class table `0xf3d9f4`, first `0xf3d9d8`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:tks` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x560d20` | NamedTextRefF2E03C::NamedTextRef | Constructor (class table `0xf2e03c`, first `0xf2e034`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:rit` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a33d0` | NamedTextRefF307F8::NamedTextRef | Constructor (class table `0xf307f8`, first `0xf30728`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:vwg` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a3130` | NamedTextRefF307E8::NamedTextRef | Constructor (class table `0xf307e8`, first `0xf30720`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:chg` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a2e90` | NamedTextRefF307D8::NamedTextRef | Constructor (class table `0xf307d8`, first `0xf30718`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:trr` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a2bf0` | NamedTextRefF307C8::NamedTextRef | Constructor (class table `0xf307c8`, first `0xf30710`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:sat` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a2950` | NamedTextRefF307B8::NamedTextRef | Constructor (class table `0xf307b8`, first `0xf30708`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:rst` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a26b0` | NamedTextRefF307A8::NamedTextRef | Constructor (class table `0xf307a8`, first `0xf30700`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:sta` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a2410` | NamedTextRefF30798::NamedTextRef | Constructor (class table `0xf30798`, first `0xf306f8`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:vtr` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a2170` | NamedTextRefF30788::NamedTextRef | Constructor (class table `0xf30788`, first `0xf306f0`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:sir` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4a1ed0` | NamedTextRefF30778::NamedTextRef | Constructor (class table `0xf30778`, first `0xf306e8`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:anr` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x44e2a0` | NamedTextRefF2951C::NamedTextRef | Constructor (class table `0xf2951c`, first `0xf29484`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:svd` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x41cb90` | NamedTextRefF27390::NamedTextRef | Constructor (class table `0xf27390`, first `0xf27364`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:gsi` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x4040f0` | NamedTextRefF26530::NamedTextRef | Constructor (class table `0xf26530`, first `0xf264ec`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:txt` added. Rewritten (forever/src/rewrite/templates.cpp) |
+| `0x403f30` | NamedTextRefF26520::NamedTextRef | Constructor (class table `0xf26520`, first `0xf264e4`) of a reference to a text of the given texts table, found by its name made from C text; when its last argument is set, the name with `:tex` added. Rewritten (forever/src/rewrite/templates.cpp) |
 | `0x68e200` | Window::Shared68E200 | In outline: a step when the shared value (`0x1305BE4`) is 0 |
 | `0x67b550` | Window::Mode67B550 | In outline: a step in modes 2 or 3 |
 | `0xae2670` | Window::DrawAE2670 | In outline: draws a window's frame (`0x6ACE50`) |
