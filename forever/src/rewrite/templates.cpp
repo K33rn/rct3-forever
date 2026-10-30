@@ -369,18 +369,20 @@ static void *__fastcall named_text_ref_from_text(uint32_t *self, void *, Text vo
 }
 
 // ---- start-up key commands ------------------------------------------------------------------------------------
-// A key command defined at start-up (0x6B2720 on its global: its group 0xF4473C, the setting's name and the
-// command's, its default keys made with KeyCombination::Set (0xBD1940) on the stack, then 1, 1); the global's
-// destructor registered with atexit.
+// A key command defined at start-up (0x6B2720 on its global: its key group, the setting's name and the command's,
+// its default keys made with KeyCombination::Set (0xBD1940, up to three keys) on the stack, then two flags); the
+// global's destructor registered with atexit. The copies differ in how many keys, the group and the flags, and in
+// whether the keys passed on are what KeyCombination::Set gave or the buffer itself (the same in the game).
 static volatile long g_key_commands;
-template <uint32_t KEY1, uint32_t KEY2, uint32_t NAME, uint32_t SETTING, uint32_t GLOBAL, uint32_t DTOR>
+template <uint32_t KEY1, uint32_t KEY2, uint32_t KEY3, uint32_t GROUP, uint32_t SETTING, uint32_t NAME, uint32_t FLAG1,
+          uint32_t FLAG2, uint32_t GLOBAL, uint32_t DTOR, bool GIVEN_KEYS>
 static void __cdecl key_command() {
     g_key_commands++;
     alignas(4) uint8_t keys[0x14];
     void *k = ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t, uint32_t))0xbd1940)(
-        keys, nullptr, KEY1, KEY2, 0, 0);
+        keys, nullptr, KEY1, KEY2, KEY3, 0);
     ((void(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t, void *, uint32_t, uint32_t))0x6b2720)(
-        (void *)GLOBAL, nullptr, 0xf4473c, SETTING, NAME, k, 1, 1);
+        (void *)GLOBAL, nullptr, GROUP, SETTING, NAME, GIVEN_KEYS ? k : keys, FLAG1, FLAG2);
     game_atexit((void(__cdecl *)())DTOR);
 }
 
@@ -481,8 +483,27 @@ static void *__fastcall resource_type(uint32_t *self) {
     return self;
 }
 #define RESOURCE_TYPE(at, name, extension, engine, table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ResourceType::ResourceType", at, REWRITE_CAT(original_, at), 8, (void *)&resource_type<name, extension, engine, table>, &g_resource_types);
+// QueryInterface that reports a miss: the interface (id in a global) of the object, as QueryInterface; when the
+// object has none, the source file (edx) and line (on the stack) are reported (0xBEC8A0) unless no file was given.
+// For no object at all it gives null without a report.
+static volatile long g_query_reports;
+template <uint32_t ID> static void *__fastcall query_or_report(void *object, const char *file, int32_t line) {
+    g_query_reports++;
+    if (!object) return nullptr;
+    ClassInterfaces *c = ((ClassInterfaces * (__fastcall *)(void *))(*(void ***)object)[1])(object);
+    if (c) {
+        int32_t id = *(int32_t *)ID;
+        if (id < c->count && c->by_id[id]) return (uint8_t *)object + c->by_id[id]->offset;
+    }
+    if (file) ((void(__fastcall *)(const char *, int32_t))0xbec8a0)(file, line);
+    return nullptr;
+}
+#define QUERY_REPORT(at, id, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface::OrReport", at, REWRITE_CAT(original_, at), 8, (void *)&query_or_report<id>, &g_query_reports);
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
-#define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, name, setting, global, dtor>, &g_key_commands);
+#define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, 0, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
+#define START_KEY3(at, key3, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, key3, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
+#define START_KEY1(at, key1, name, setting, group, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, 0, 0, group, setting, name, 1, 1, global, dtor, false>, &g_key_commands);
+#define START_KEY1_FLAG(at, key1, name, setting, group, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, 0, 0, group, setting, name, 1, 0, global, dtor, false>, &g_key_commands);
 #define NAMED_TEXT_REF(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref<suffix, table, class_table>, &g_named_text_refs);
 #define GAME_TEXT_COPY(at, name, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GameText::Copy", at, REWRITE_CAT(original_, at), 8, (void *)&game_text_copy<name>, &g_game_text_copies);
 #define START_NAME(at, text, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Name", at, REWRITE_CAT(original_, at), 8, (void *)&registered_name<text, global>, &g_names);
@@ -519,6 +540,12 @@ static void *__fastcall resource_type(uint32_t *self) {
 #undef START_KEY
 #define TEXT_REF_FROM_TEXT(...)
 #define START_KEY(...)
+#undef START_KEY3
+#undef START_KEY1
+#undef START_KEY1_FLAG
+#define START_KEY3(...)
+#define START_KEY1(...)
+#define START_KEY1_FLAG(...)
 #undef TEXT_WIDEN
 #undef TEXT_CREATE
 #undef TABLE20_FREE
@@ -529,6 +556,8 @@ static void *__fastcall resource_type(uint32_t *self) {
 #define START_TEXT(...)
 #undef RESOURCE_TYPE
 #define RESOURCE_TYPE(...)
+#undef QUERY_REPORT
+#define QUERY_REPORT(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -622,6 +651,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define TEXT_CREATE(at, text, make, ...) {at, text, make},
 #undef START_TEXT
 #define START_TEXT(at, text, suffix, global, dtor, ...) {at, text, suffix, global, dtor},
+#undef QUERY_REPORT
+#define QUERY_REPORT(at, id, ...) {at, id},
 static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };

@@ -492,6 +492,11 @@ static void *__cdecl stub_alloc_next(uint32_t size) {
     next += (size + 15) & ~15u;
     return p;
 }
+// a missing interface reported: the source file and line
+static void __fastcall stub_report_interface(const char *file, int32_t line) {
+    record(0xbec8a0, (void *)file);
+    record(0xbec8a0, (void *)(uintptr_t)line);
+}
 // resource types: the base constructor, given the three texts (recorded by what they point to)
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
@@ -1151,6 +1156,25 @@ static std::vector<Test> tests() {
                        {0xc2ffb0, (void *)stub_resource_base}});
     };
     resource_type.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // QueryInterface that reports a miss: the QueryInterface test's object and class, a source file (0x3f0) or
+    // none, and a line
+    Test query_report{0x42a430,
+                      [=](Rng &r) {
+                          query.setup(r);
+                          arena<uint32_t>(0x10)[0] = r.next() % 4 ? 0x3f0 : 0;
+                          arena<uint32_t>(0x10)[1] = r.next();
+                      },
+                      [](void *fn) {
+                          uint32_t o = arena<uint32_t>(0)[0], file = arena<uint32_t>(0x10)[0];
+                          return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, int32_t))fn)(
+                              o ? arena<void>(o) : nullptr, file ? arena<void>(file) : nullptr,
+                              arena<int32_t>(0x10)[1])};
+                      }};
+    query_report.prepare = [](const rewrite::Entry *e) {
+        g_query_id = rewrite::start_constants(e->at)[1];
+        stubs_for_now({{0xbec8a0, (void *)stub_report_interface}});
+    };
+    query_report.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Text::Widen (registers: ecx size, edx buffer at 0x800, edi C text at 0x400): sizes 0 (no limit) to 40, texts
     // of up to 60 characters; the result is eax, its top bit flipped if edx, esi or edi didn't come back the same
     Test text_widen{0x401050,
@@ -1205,7 +1229,7 @@ static std::vector<Test> tests() {
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
-                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type}) {
+                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

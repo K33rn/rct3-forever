@@ -43,11 +43,15 @@ MATCH = [
     ('GAME_TEXT_COPY', 0x41F210, [(1, 0)], [(9, 0)]),                        # the text's name
     ('TEXT_REF_FROM_TEXT', 0x403E50, [(1, 0)], [(16, 0), (30, 1), (49, 1)]),  # suffix, first table, class table
     ('START_KEY', 0xEB2580, [], [(5, 0), (6, 0), (10, 0), (11, 0), (13, 1), (15, 0)]),   # keys, names, global, dtor
+    ('START_KEY3', 0xEB23A0, [], [(4, 0), (5, 0), (6, 0), (10, 0), (11, 0), (13, 1), (15, 0)]),
+    ('START_KEY1', 0xEB25D0, [], [(4, 0), (11, 0), (12, 0), (13, 0), (14, 1), (16, 0)]),
+    ('START_KEY1_FLAG', 0xEB2940, [], [(4, 0), (11, 0), (12, 0), (13, 0), (14, 1), (16, 0)]),
     ('TEXT_WIDEN', 0x401050, [], []),
     ('TEXT_CREATE', 0x45C000, [(1, 0)], [(14, 0), (16, 0)]),                  # the C text, the function making it
     ('TABLE20_FREE', 0x80F710, [(1, 0)], []),
     ('START_TEXT', 0xECA490, [(1, 0)], [(13, 0), (20, 0), (34, 1), (76, 0)]),  # text, suffix, global, dtor
     ('RESOURCE_TYPE', 0xBB28E0, [(1, 0)], [(17, 0), (31, 0), (45, 0), (101, 1)]),   # name, extension, engine, table
+    ('QUERY_REPORT', 0x42A430, [], [(10, 1)]),                               # the global holding the id
 ]
 
 

@@ -63,8 +63,10 @@ def rewritten():
                  'REF_TO': 'Reference::Reference(object)', 'ARRAY_FREE': 'ObjectArray::Free', 'SET_TABLE': 'SetTable',
                  'START_NAME': 'Start::Name', 'START_CLASS': 'Start::ClassDescription', 'START_SECTION': 'Start::Section',
                  'NAMED_TEXT_REF': 'NamedTextRef::NamedTextRef', 'GAME_TEXT_COPY': 'GameText::Copy',
-                 'TEXT_REF_FROM_TEXT': 'NamedTextRef::NamedTextRef(text)', 'START_KEY': 'Start::KeyCommand',
-                 'TEXT_WIDEN': 'Text::Widen', 'TEXT_CREATE': 'Text::Create', 'TABLE20_FREE': 'Table20::Free', 'START_TEXT': 'Start::Text', 'RESOURCE_TYPE': 'ResourceType::ResourceType'}
+                 'TEXT_REF_FROM_TEXT': 'NamedTextRef::NamedTextRef(text)', 'START_KEY': 'Start::KeyCommand', 'START_KEY3': 'Start::KeyCommand', 'START_KEY1': 'Start::KeyCommand',
+                 'START_KEY1_FLAG': 'Start::KeyCommand',
+                 'TEXT_WIDEN': 'Text::Widen', 'TEXT_CREATE': 'Text::Create', 'TABLE20_FREE': 'Table20::Free', 'START_TEXT': 'Start::Text', 'RESOURCE_TYPE': 'ResourceType::ResourceType',
+                 'QUERY_REPORT': 'QueryInterface::OrReport'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found
