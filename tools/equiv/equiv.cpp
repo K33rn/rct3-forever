@@ -990,7 +990,7 @@ static std::vector<Test> tests() {
     };
     // one copy of each struct size
     for (uintptr_t at : {0x63fa30, 0x4c17d0, 0x54cd80, 0x512d40, 0x455970, 0x460960, 0x44ec90, 0x425260, 0x512b30,
-                         0x815ac0, 0x4c19e0, 0x46da20, 0x98cd50, 0x81d860, 0xb248b0, 0x6be040}) {
+                         0x815ac0, 0x4c19e0, 0x46da20, 0x98cd50, 0x81d860, 0xb248b0, 0x6be040, 0x460540, 0x460750}) {
         Test x{at, struct_array, struct_array_save};
         x.iterations = 20;
         x.data = false;

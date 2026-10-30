@@ -272,3 +272,12 @@ static const uint32_t size_116[] = {
 };
 REWRITE_COPIES("StructArrayField<116>::Size", size_116, size_original, size<116>,
                &Calls<116>::size);
+
+// The small sizes (4 and 8 bytes) were compiled another way (the item found as data + i * size, the first bytes
+// differ); they do the same.
+static const uint8_t save_scaled_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0x53,
+                                               0x55, 0x8b, 0xd9, 0x8b, 0x6b, 0x28, 0x8b, 0x4c};
+static const uint32_t save_4[] = {0x460540, 0x4ad8a0, 0x4adab0, 0x9850a0, 0xa5d150};
+REWRITE_COPIES("StructArrayField<4>::Save", save_4, save_scaled_original, save<4>, &Calls<4>::save);
+static const uint32_t save_8[] = {0x460750, 0xa536b0, 0xa5cf40, 0xae2ca0};
+REWRITE_COPIES("StructArrayField<8>::Save", save_8, save_scaled_original, save<8>, &Calls<8>::save);

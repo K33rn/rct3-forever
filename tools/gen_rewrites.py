@@ -102,6 +102,7 @@ MATCH = [
     ('DTOR_MEMBER_IF', 0x4D3B50, [(1, 0)], [(13, 1), (14, 0), (17, 0)], (13,)),   # member field, its dtor, base dtor
     ('LAZY_SINGLETON', 0x436100, [(1, 0)], [(6, 1), (9, 0), (16, 0), (17, 0), (18, 0), (20, 0)], (9, 16, 17, 18),
      [[(6, 1), (21, 1), (27, 1)]]),   # global, size, ctor arguments, ctor
+    ('LOAD', 0x462DB0, [], [(61, -1), (50, 0)], (61,)),                          # another shape: stride, resize
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
     ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor
@@ -189,7 +190,9 @@ def main():
     def shape_of(ins, loose):
         return [re.sub(r'(0x[0-9a-f]+|\d+)', 'K', x) if k in loose else x for k, x in enumerate(strict(ins))]
 
-    def value(ins, k, j):
+    def value(ins, k, j):   # j < 0: the scale of operand -j's memory reference (lea r, [x*scale])
+        if j < 0:
+            return ins[k].operands[-j].mem.scale
         o = ins[k].operands[j]
         return (o.imm if o.type == X.X86_OP_IMM else o.mem.disp) & 0xffffffff
     for macro, rep, ignore, params, *rest in MATCH:
