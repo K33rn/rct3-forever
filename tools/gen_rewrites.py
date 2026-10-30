@@ -52,6 +52,10 @@ MATCH = [
     ('START_TEXT', 0xECA490, [(1, 0)], [(13, 0), (20, 0), (34, 1), (76, 0)]),  # text, suffix, global, dtor
     ('RESOURCE_TYPE', 0xBB28E0, [(1, 0)], [(17, 0), (31, 0), (45, 0), (101, 1)]),   # name, extension, engine, table
     ('QUERY_REPORT', 0x42A430, [], [(10, 1)]),                               # the global holding the id
+    ('WIDE_COPY_OBJECT', 0x6D2F00, [(1, 0)], [(7, 1)]),
+    ('WIDE_COPY_GLOBAL', 0x4CE710, [(1, 0)], [(7, 1)]),
+    ('WIDE_COPY_THIS', 0x6DCDF0, [(1, 0)], [(8, 1)]),
+    ('START_BEHAVIOUR', 0xEAAAD0, [(1, 0)], [(13, 0), (19, 0), (22, 1), (40, 0)]),
 ]
 
 

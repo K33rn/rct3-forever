@@ -499,6 +499,48 @@ template <uint32_t ID> static void *__fastcall query_or_report(void *object, con
     return nullptr;
 }
 #define QUERY_REPORT(at, id, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface::OrReport", at, REWRITE_CAT(original_, at), 8, (void *)&query_or_report<id>, &g_query_reports);
+// ---- wide texts from globals -------------------------------------------------------------------------------
+// A new wide string copied from a wide C text (0xBCF7D0, in memory of its own; null when there was none), or the
+// empty one (0xBD0490) when there is no text. Kept in the global itself, or at +8 of the object the global points
+// to (the original reads it without checking the object, and so does this); given in `out`.
+static volatile long g_wide_copies;
+static Text wide_copy(const wchar_t *text) {
+    if (!text) return ((Text(__fastcall *)(char))0xbd0490)(1);
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
+    return p ? ((Text(__fastcall *)(void *, void *, const wchar_t *))0xbcf7d0)(p, nullptr, text) : nullptr;
+}
+template <uint32_t GLOBAL> static Text *__stdcall wide_copy_of_object(Text *out) {
+    g_wide_copies++;
+    *out = wide_copy(*(const wchar_t **)(*(uint8_t **)GLOBAL + 8));
+    return out;
+}
+template <uint32_t GLOBAL> static Text *__stdcall wide_copy_of_global(Text *out) {
+    g_wide_copies++;
+    *out = wide_copy(*(const wchar_t **)GLOBAL);
+    return out;
+}
+template <uint32_t GLOBAL> static Text *__fastcall wide_copy_of_global_this(Text *out) {
+    g_wide_copies++;
+    *out = wide_copy(*(const wchar_t **)GLOBAL);
+    return out;
+}
+
+// A scenery behaviour registered at start-up (0x833F90 on its global, with its name as a wide text and its
+// factory); the name let go of after, the global's destructor registered with atexit. With no memory for the name
+// the original crashes on the null text, and so does this.
+static volatile long g_behaviours;
+template <uint32_t NAME, uint32_t FACTORY, uint32_t GLOBAL, uint32_t DTOR> static void __cdecl start_behaviour() {
+    g_behaviours++;
+    Text volatile name = wide_text((const char *)NAME);
+    ((void(__fastcall *)(void *, void *, Text volatile *, void *))0x833f90)((void *)GLOBAL, nullptr, &name,
+                                                                           (void *)FACTORY);
+    release_text(name);
+    game_atexit((void(__cdecl *)())DTOR);
+}
+#define WIDE_COPY_OBJECT(at, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("WideText::CopyOf(object)", at, REWRITE_CAT(original_, at), 8, (void *)&wide_copy_of_object<global>, &g_wide_copies);
+#define WIDE_COPY_GLOBAL(at, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("WideText::CopyOf", at, REWRITE_CAT(original_, at), 8, (void *)&wide_copy_of_global<global>, &g_wide_copies);
+#define WIDE_COPY_THIS(at, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("WideText::CopyOf(this)", at, REWRITE_CAT(original_, at), 8, (void *)&wide_copy_of_global_this<global>, &g_wide_copies);
+#define START_BEHAVIOUR(at, name, factory, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Behaviour", at, REWRITE_CAT(original_, at), 8, (void *)&start_behaviour<name, factory, global, dtor>, &g_behaviours);
 #define TEXT_REF_FROM_TEXT(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef(text)", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref_from_text<suffix, table, class_table>, &g_text_refs_from_text);
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, 0, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
 #define START_KEY3(at, key3, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, key3, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
@@ -558,6 +600,14 @@ template <uint32_t ID> static void *__fastcall query_or_report(void *object, con
 #define RESOURCE_TYPE(...)
 #undef QUERY_REPORT
 #define QUERY_REPORT(...)
+#undef WIDE_COPY_OBJECT
+#undef WIDE_COPY_GLOBAL
+#undef WIDE_COPY_THIS
+#undef START_BEHAVIOUR
+#define WIDE_COPY_OBJECT(...)
+#define WIDE_COPY_GLOBAL(...)
+#define WIDE_COPY_THIS(...)
+#define START_BEHAVIOUR(...)
 #undef SET_TABLE
 #define SET_TABLE(...)
 #undef REF_NULL
@@ -653,6 +703,14 @@ const uint32_t *load_constants(uintptr_t at) {
 #define START_TEXT(at, text, suffix, global, dtor, ...) {at, text, suffix, global, dtor},
 #undef QUERY_REPORT
 #define QUERY_REPORT(at, id, ...) {at, id},
+#undef WIDE_COPY_OBJECT
+#undef WIDE_COPY_GLOBAL
+#undef WIDE_COPY_THIS
+#undef START_BEHAVIOUR
+#define WIDE_COPY_OBJECT(at, global, ...) {at, global},
+#define WIDE_COPY_GLOBAL(at, global, ...) {at, global},
+#define WIDE_COPY_THIS(at, global, ...) {at, global},
+#define START_BEHAVIOUR(at, name, factory, global, dtor, ...) {at, name, factory, global, dtor},
 static const uint32_t start_table[][7] = {
 #include "generated.inc"
 };

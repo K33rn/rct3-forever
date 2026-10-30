@@ -497,6 +497,13 @@ static void __fastcall stub_report_interface(const char *file, int32_t line) {
     record(0xbec8a0, (void *)file);
     record(0xbec8a0, (void *)(uintptr_t)line);
 }
+// a scenery behaviour registered: its name (recorded by what it points to) and factory
+static void __fastcall stub_register_behaviour(void *self, void *, int32_t **name, void *factory) {
+    record(0x7d, self);
+    record(0x7d, *name);
+    record(0x7d, factory);
+    (*name)[0] += *arena<int32_t>(0x38);
+}
 // resource types: the base constructor, given the three texts (recorded by what they point to)
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
@@ -1175,6 +1182,53 @@ static std::vector<Test> tests() {
         stubs_for_now({{0xbec8a0, (void *)stub_report_interface}});
     };
     query_report.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // wide texts from globals: the global (game data, put back after each copy) points at 0x300 or holds nothing;
+    // the object's text (+8) is 0x340 or none; the result at 0x180; memory sometimes runs out
+    static uint32_t wide_g, wide_saved;
+    auto wide_setup = [=](Rng &r) {
+        fresh(r);
+        *arena<uint32_t>(0x28) = r.next();
+        *(void **)wide_g = r.next() % 4 ? arena<void>(0x300) : nullptr;
+        *arena<void *>(0x308) = r.next() % 4 ? arena<void>(0x340) : nullptr;
+    };
+    auto wide_prepare = [](const rewrite::Entry *e) {
+        wide_g = rewrite::start_constants(e->at)[1];
+        wide_saved = *(uint32_t *)wide_g;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {0xbcf7d0, (void *)stub_text_from_wide},
+                       {0xbd0490, (void *)stub_wide_empty}});
+    };
+    auto wide_finish = [](const rewrite::Entry *) {
+        unstub_many();
+        *(uint32_t *)wide_g = wide_saved;
+    };
+    auto wide_stdcall = [](void *fn) {
+        return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *))fn)(arena<void>(0x180))};
+    };
+    Test wide_copy_object{0x6d2f00,
+                          [=](Rng &r) {
+                              wide_setup(r);
+                              *(void **)wide_g = arena<void>(0x300);   // the original reads the object unchecked
+                          },
+                          wide_stdcall};
+    Test wide_copy_global{0x4ce710, wide_setup, wide_stdcall};
+    Test wide_copy_this{0x6dcdf0, wide_setup, [](void *fn) {
+                            return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x180))};
+                        }};
+    for (Test *x : {&wide_copy_object, &wide_copy_global, &wide_copy_this}) {
+        x->prepare = wide_prepare;
+        x->finish = wide_finish;
+    }
+    // start-up scenery behaviours (memory for the name always there: the original crashes without)
+    Test start_behaviour{0xeaaad0, [=](Rng &r) { fresh(r); text_counts(r); *arena<uint32_t>(0x28) = 1; },
+                         [](void *fn) {
+                             ((void(__cdecl *)())fn)();
+                             return Result{};
+                         }};
+    start_behaviour.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {0xbcf850, (void *)stub_text_from_c},
+                       {0x833f90, (void *)stub_register_behaviour}});
+    };
+    start_behaviour.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Text::Widen (registers: ecx size, edx buffer at 0x800, edi C text at 0x400): sizes 0 (no limit) to 40, texts
     // of up to 60 characters; the result is eax, its top bit flipped if edx, esi or edi didn't come back the same
     Test text_widen{0x401050,
@@ -1229,7 +1283,8 @@ static std::vector<Test> tests() {
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
-                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report}) {
+                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report,
+                    &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

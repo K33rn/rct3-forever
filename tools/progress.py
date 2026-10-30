@@ -66,7 +66,9 @@ def rewritten():
                  'TEXT_REF_FROM_TEXT': 'NamedTextRef::NamedTextRef(text)', 'START_KEY': 'Start::KeyCommand', 'START_KEY3': 'Start::KeyCommand', 'START_KEY1': 'Start::KeyCommand',
                  'START_KEY1_FLAG': 'Start::KeyCommand',
                  'TEXT_WIDEN': 'Text::Widen', 'TEXT_CREATE': 'Text::Create', 'TABLE20_FREE': 'Table20::Free', 'START_TEXT': 'Start::Text', 'RESOURCE_TYPE': 'ResourceType::ResourceType',
-                 'QUERY_REPORT': 'QueryInterface::OrReport'}
+                 'QUERY_REPORT': 'QueryInterface::OrReport',
+                 'WIDE_COPY_OBJECT': 'WideText::CopyOf(object)', 'WIDE_COPY_GLOBAL': 'WideText::CopyOf', 'WIDE_COPY_THIS': 'WideText::CopyOf(this)',
+                 'START_BEHAVIOUR': 'Start::Behaviour'}
         for m in re.finditer(r'^(\w+)\((0x[0-9a-fA-F]+)', open(inc).read(), re.M):
             found[int(m.group(2), 16)] = names.get(m.group(1), m.group(1))
     return found
