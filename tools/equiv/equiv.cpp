@@ -653,6 +653,13 @@ static void *__fastcall stub_singleton_ctor(void *self, void *, uint32_t a, uint
 }
 static uint32_t g_members[2];   // the fields of the members a destructor deletes
 static uint32_t g_node;         // a listener's node field
+// the runtime's vector constructor iterator without a destructor
+static void __stdcall stub_vector_construct4(void *items, uint32_t size, int32_t count, void *ctor) {
+    record(0x402b90, items);
+    record(0x402b90, (void *)(uintptr_t)size);
+    record(0x402b90, (void *)(uintptr_t)count);
+    record(0x402b90, ctor);
+}
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -1882,6 +1889,27 @@ static std::vector<Test> tests() {
         stubs_for_now({{c[2], (void *)stub_member_destructor}, {c[3], (void *)stub_destructor}});
     };
     dtor_tables_member.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // quadtree nodes: the node at 0x100 {first free, used, capacity 0..8, items at 0x4000 or none}, the items' in-use
+    // flags random; the corners (any bits: NaNs too) at 0x300 and 0x320, the item at 0x340
+    Test quadtree_add{0x430520,
+                      [=](Rng &r) {
+                          fresh(r);
+                          for (int i = 0; i < 0x100 / 4; i++) arena<uint32_t>(0x300)[i] = r.next();
+                          for (int i = 0; i < 64; i++) arena<uint32_t>(0x4000)[i] = r.next();
+                          int32_t *n = arena<int32_t>(0x100);
+                          int32_t capacity = r.next() % 4 ? r.range(1, 8) : 0;
+                          n[5] = capacity;
+                          n[6] = capacity ? (int32_t)(uintptr_t)arena<void>(0x4000) : 0;
+                          n[3] = r.range(0, capacity);
+                          n[4] = r.range(n[3], capacity);
+                          for (int k = 0; k < 8; k++) arena<uint32_t>(0x4000)[k * 8 + 7] = r.next() % 2;
+                      },
+                      [](void *fn) {
+                          return Result{(uint32_t)((int32_t(__fastcall *)(void *, void *, void *, void *, void *))fn)(
+                              arena<void>(0x100), nullptr, arena<void>(0x340), arena<void>(0x300), arena<void>(0x320))};
+                      }};
+    quadtree_add.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x402b90, (void *)stub_vector_construct4}}); };
+    quadtree_add.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -1950,7 +1978,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member}) {
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);

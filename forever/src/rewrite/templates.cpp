@@ -1036,6 +1036,52 @@ static void __fastcall dtor_tables_member(uint8_t *self) {
 #define DTOR_TABLES_MEMBER(at, t0, t4, member, member_table, member_dtor, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::TablesAndMember", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_tables_member<t0, t4, member, member_table, member_dtor, base>, &g_member_dtors);
 #define DTOR_DELETE2(at, t0, t4, m1, m2, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::DeleteTwoMembers", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_delete2<base, m1, m2, 0, t0, 4, t4>, &g_member_dtors);
 #define DTOR5_DELETE2(at, t0, t4, o2, t2, o3, t3, o4, t4b, m1, m2, base, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::FiveTablesTwoMembers", at, REWRITE_CAT(original_, at), 8, (void *)&dtor_delete2<base, m1, m2, 0, t0, 4, t4, o2, t2, o3, t3, o4, t4b>, &g_member_dtors);
+// ---- quadtrees ----------------------------------------------------------------------------------------------------
+// QuadTree::Node::Add: a node {..., +0xC first free slot, +0x10 slots used up to, +0x14 capacity, +0x18 items} of
+// 32-byte items {corner A (3 values), corner B (3 values), the item, in use}. When full it grows (to 8, then twice
+// as many: aligned memory, the items constructed by the vector constructor iterator 0x402B90 with CTOR, the old ones
+// copied over and freed, the new ones marked free). Stores the item and its box in the first free slot, marks it,
+// and moves the first free slot on; gives the slot. The first two values of each corner are copied through the FPU,
+// as the original does (a signalling NaN comes out quiet).
+static volatile long g_quadtree_adds;
+static void copy_through_fpu(uint32_t *to, const uint32_t *from) {
+    __asm__ volatile("flds %1\n\tfstps %0" : "=m"(*to) : "m"(*from));
+}
+template <uint32_t CTOR>
+static int32_t __fastcall quadtree_add(uint8_t *node, void *, const uint32_t *item, const uint32_t *a, const uint32_t *b) {
+    g_quadtree_adds++;
+    int32_t &first_free = *(int32_t *)(node + 0xc), &used = *(int32_t *)(node + 0x10),
+            &capacity = *(int32_t *)(node + 0x14);
+    uint32_t *&items = *(uint32_t **)(node + 0x18);
+    if (first_free >= capacity) {
+        int32_t grown = capacity ? capacity * 2 : 8;
+        uint32_t *made = ((uint32_t * (__cdecl *)(uint32_t))0xbcdfd0)((uint32_t)grown << 5);
+        if (made)
+            ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0x402b90)(made, 0x20, grown, (void *)CTOR);
+        if (items) {
+            memcpy(made, items, (uint32_t)capacity << 5);
+            ((void(__cdecl *)(void *))0xbce010)(items);
+        }
+        for (int32_t k = capacity; k < grown; k++) made[k * 8 + 7] = 0;
+        capacity = grown;
+        items = made;
+    }
+    int32_t slot = first_free;
+    uint32_t *x = items + slot * 8;
+    copy_through_fpu(x, a);
+    copy_through_fpu(x + 1, a + 1);
+    x[2] = a[2];
+    x[5] = b[2];
+    copy_through_fpu(x + 3, b);
+    copy_through_fpu(x + 4, b + 1);
+    x[6] = *item;
+    x[7] = 1;
+    if (first_free == used) used++;
+    first_free++;
+    while (first_free < used && items[first_free * 8 + 7]) first_free++;
+    return slot;
+}
+#define QUADTREE_ADD(at, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("QuadTree::Node::Add", at, REWRITE_CAT(original_, at), 8, (void *)&quadtree_add<ctor>, &g_quadtree_adds);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -1120,6 +1166,8 @@ static void __fastcall dtor_tables_member(uint8_t *self) {
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef QUADTREE_ADD
+#define QUADTREE_ADD(...)
 #undef LISTENER_DTOR_QUIET
 #undef DTOR_TABLES_MEMBER
 #undef DTOR_DELETE2
@@ -1303,6 +1351,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef QUADTREE_ADD
+#define QUADTREE_ADD(...)
 #undef LISTENER_DTOR_QUIET
 #undef DTOR_TABLES_MEMBER
 #undef DTOR_DELETE2

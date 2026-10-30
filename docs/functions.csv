@@ -660,7 +660,7 @@ address,size,name,callers,status
 0x4300f0,49,,2,documented
 0x4301e0,220,,2,documented
 0x4303c0,351,,2,documented
-0x430520,356,,2,documented
+0x430520,356,QuadTree::Node::Add,2,rewritten
 0x430690,223,,1,documented
 0x430770,358,,3,documented
 0x430b70,102,Factory::Create,1,rewritten
@@ -1690,7 +1690,7 @@ address,size,name,callers,status
 0x488d90,32,,2,documented
 0x488db0,52,,1,documented
 0x488e50,220,,1,documented
-0x489030,356,,2,documented
+0x489030,356,QuadTree::Node::Add,2,rewritten
 0x4891a0,358,,6,documented
 0x489310,265,,0,documented
 0x489980,30,DeletingDestructor,1,rewritten
@@ -9669,7 +9669,7 @@ address,size,name,callers,status
 0x7b3d70,26,OwnedPointer::Reset,0,rewritten
 0x7b3d90,123,,0,documented
 0x7b3e60,220,,1,documented
-0x7b4040,356,,2,documented
+0x7b4040,356,QuadTree::Node::Add,2,rewritten
 0x7b41b0,358,,9,documented
 0x7b4320,552,,0,documented
 0x7b4570,246,,0,documented
@@ -15266,7 +15266,7 @@ address,size,name,callers,status
 0xa0c300,26,OwnedPointer::Reset,1,rewritten
 0xa0c320,26,OwnedPointer::Reset,0,rewritten
 0xa0c410,220,,1,documented
-0xa0c590,356,,2,documented
+0xa0c590,356,QuadTree::Node::Add,2,rewritten
 0xa0c700,48,,0,documented
 0xa0c730,358,,2,documented
 0xa0cb40,133,,2,documented
@@ -18373,7 +18373,7 @@ address,size,name,callers,status
 0xb5bda0,163,,0,documented
 0xb5bec0,64,,0,documented
 0xb5bf50,220,,1,documented
-0xb5c170,356,,2,documented
+0xb5c170,356,QuadTree::Node::Add,2,rewritten
 0xb5c2e0,358,,6,documented
 0xb5c450,235,,0,documented
 0xb5ca50,218,,1,documented
@@ -18530,7 +18530,7 @@ address,size,name,callers,status
 0xb6cff0,107,,1,documented
 0xb6d090,220,,1,documented
 0xb6d270,298,,2,documented
-0xb6d3a0,356,,2,documented
+0xb6d3a0,356,QuadTree::Node::Add,2,rewritten
 0xb6d510,358,,6,documented
 0xb6d680,245,,0,documented
 0xb6dd50,6280,,1,documented

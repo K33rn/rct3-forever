@@ -103,6 +103,7 @@ MATCH = [
     ('LAZY_SINGLETON', 0x436100, [(1, 0)], [(6, 1), (9, 0), (16, 0), (17, 0), (18, 0), (20, 0)], (9, 16, 17, 18),
      [[(6, 1), (21, 1), (27, 1)]]),   # global, size, ctor arguments, ctor
     ('LOAD', 0x462DB0, [], [(61, -1), (50, 0)], (61,)),                          # another shape: stride, resize
+    ('QUADTREE_ADD', 0x430520, [(2, 0)], [(29, 0)]),                            # the items' constructor
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
     ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor
