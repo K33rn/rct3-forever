@@ -10815,7 +10815,7 @@ address,size,name,callers,status
 0x81d990,124,StructArrayField<96>::Size,1,rewritten
 0x81da70,49,,1,documented
 0x81dac0,214,,1,documented
-0x81dc00,48,,2,documented
+0x81dc00,48,ARRAY_FREE16,2,rewritten
 0x81dc30,264,,2,documented
 0x81dd40,496,,2,documented
 0x81df80,195,,1,documented
@@ -14533,7 +14533,7 @@ address,size,name,callers,status
 0x9c6f00,105,OwnedPair::FreeFields,12,rewritten
 0x9c6f70,101,,4,documented
 0x9c70c0,30,DeletingDestructor,1,rewritten
-0x9c70f0,51,,2,documented
+0x9c70f0,51,ARRAY_FREE16,2,rewritten
 0x9c7130,160,,1,documented
 0x9c71d0,273,,4,documented
 0x9c72f0,29,,0,documented
@@ -14824,8 +14824,8 @@ address,size,name,callers,status
 0x9e1a20,132,,1,documented
 0x9e1ab0,223,,2,documented
 0x9e1c50,472,,2,documented
-0x9e1e60,48,,2,documented
-0x9e1e90,48,,2,documented
+0x9e1e60,48,ARRAY_FREE16,2,rewritten
+0x9e1e90,48,ARRAY_FREE16,2,rewritten
 0x9e1ec0,153,,1,documented
 0x9e1f60,258,ObjectArray::SetCapacity,1,rewritten
 0x9e2070,1027,,12,documented
@@ -17570,7 +17570,7 @@ address,size,name,callers,status
 0xb0c650,4925,,1,documented
 0xb0d990,30,DeletingDestructor,2,rewritten
 0xb0dd20,24,,4,documented
-0xb0dec0,48,,4,documented
+0xb0dec0,48,ARRAY_FREE16,4,rewritten
 0xb0def0,384,,9,documented
 0xb0e090,56,,2,documented
 0xb0e0d0,30,,11,documented

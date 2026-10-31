@@ -185,13 +185,13 @@ template <uint32_t TABLE> static void *__fastcall reference_to(uint32_t *self, v
 
 static volatile long g_array_frees;
 
-template <uint32_t SIZE, uint32_t DTOR> static void __fastcall object_array_free(uint8_t **array) {
+template <uint32_t SIZE, uint32_t DTOR, uint32_t HEADER = 4> static void __fastcall object_array_free(uint8_t **array) {
     g_array_frees++;
     uint8_t *items = *array;
     if (!items) return;
-    ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(items, SIZE, *(int32_t *)(items - 4),
+    ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(items, SIZE, *(int32_t *)(items - HEADER),
                                                                      (void *)DTOR);
-    ((void(__cdecl *)(void *))0xbce010)(items - 4);
+    ((void(__cdecl *)(void *))0xbce010)(items - HEADER);
     *array = nullptr;
 }
 
@@ -1162,6 +1162,7 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
 #define REF_NULL(at, table, ...)                                                                                     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("Reference::Reference", at, REWRITE_CAT(original_, at), 8,                                                     (void *)&reference_null<table>, &g_references);
 #define REF_TO(at, table, ...)                                                                                       static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("Reference::Reference(object)", at,                                                                            REWRITE_CAT(original_, at), 8, (void *)&reference_to<table>,                                                     &g_references);
 #define ARRAY_FREE(at, size, dtor, ...)                                                                              static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Free", at, REWRITE_CAT(original_, at), 8,                                                        (void *)&object_array_free<size, dtor>, &g_array_frees);
+#define ARRAY_FREE16(at, size, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Free", at, REWRITE_CAT(original_, at), 8, (void *)&object_array_free<size, dtor, 0x10>, &g_array_frees);
 #define SET_TABLE(at, table, ...)                                                                                    static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("SetTable", at, REWRITE_CAT(original_, at), 7,                                                                 (void *)&set_table<table>, &g_table_sets);
 #include "generated.inc"
 #undef START_NAME
@@ -1296,6 +1297,7 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
 #define REF_NULL(...)
 #define REF_TO(...)
 #define ARRAY_FREE(...)
+#define ARRAY_FREE16(...)
 
 // the cached interfaces' constants, for the equivalence test
 #undef DELETING
