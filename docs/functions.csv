@@ -1183,7 +1183,7 @@ address,size,name,callers,status
 0x460c60,212,ReferenceField::Load,1,rewritten
 0x460da0,61,Reference::Reference,1,rewritten
 0x460de0,159,ObjectRef::CallWith,2,rewritten
-0x460e80,152,,10,documented
+0x460e80,152,ObjectArray::Resize,10,rewritten
 0x460f20,339,,27,documented
 0x461080,266,,4,documented
 0x461190,48,ObjectArray::Free,4,rewritten
@@ -1203,7 +1203,7 @@ address,size,name,callers,status
 0x462fc0,153,,2,documented
 0x463060,258,ObjectArray::SetCapacity,2,rewritten
 0x463170,48,ObjectArray::Free,2,rewritten
-0x4631a0,152,,2,documented
+0x4631a0,152,ObjectArray::Resize,2,rewritten
 0x463250,102,Factory::Create,1,rewritten
 0x4632c0,30,DeletingDestructor,0,rewritten
 0x4632e0,285,,2,documented
@@ -15913,7 +15913,7 @@ address,size,name,callers,status
 0xa539a0,41,,0,documented
 0xa53a90,185,,6,documented
 0xa53b50,48,ObjectArray::Free,2,rewritten
-0xa53b80,152,,3,documented
+0xa53b80,152,ObjectArray::Resize,3,rewritten
 0xa53c20,335,,2,documented
 0xa53d70,107,,2,documented
 0xa53de0,283,,1,documented
@@ -16027,7 +16027,7 @@ address,size,name,callers,status
 0xa5d270,116,EngineEntryField::Size<4>,1,rewritten
 0xa5d3c0,294,,1,documented
 0xa5d510,48,ObjectArray::Free,2,rewritten
-0xa5d540,152,,1,documented
+0xa5d540,152,ObjectArray::Resize,1,rewritten
 0xa5d5e0,262,,2,documented
 0xa5d6f0,1092,,2,documented
 0xa5db60,194,,1,documented
@@ -19075,7 +19075,7 @@ address,size,name,callers,status
 0xb9ba90,30,DeletingDestructor,1,rewritten
 0xb9bab0,7,BaseClass::SetClass,1,rewritten
 0xb9bac0,48,ObjectArray::Free,2,rewritten
-0xb9baf0,152,,1,documented
+0xb9baf0,152,ObjectArray::Resize,1,rewritten
 0xb9bc00,139,,4,documented
 0xb9bc90,457,,3,documented
 0xb9be60,260,,6,documented

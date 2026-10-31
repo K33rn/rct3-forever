@@ -233,7 +233,7 @@ def main():
     def masked(ins):
         return [(i.mnemonic, re.sub(r'(0x[0-9a-f]+|\d+)', 'N', i.op_str), i.size) for i in ins]
     SETCAP = [masked(body(a)) for a in (0x420C10, 0x455CE0, 0x463060)]
-    RESIZE = [masked(body(a)) for a in (0x420B70, 0x68EFA0)]   # ObjectArray::Resize: destroys first, then makes n new (two item-size encodings)
+    RESIZE = [masked(body(a)) for a in (0x420B70, 0x68EFA0, 0x460E80)]   # ObjectArray::Resize: destroys first, then makes n new (two item-size encodings)
     n_sc_ = 0
     n_rs_ = 0
     for r in funcs:
