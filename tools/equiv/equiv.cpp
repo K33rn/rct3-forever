@@ -1048,7 +1048,8 @@ static std::vector<Test> tests() {
     t.push_back(list_save);
     // EngineEntryField::Size: the field at 0x600 (fields at 0x680), its +0x28 a base pointer 0x640, the array
     // {data at 0x3000, count 0..6} `offset` into it; the fields' Size stubbed (as the struct-array size test)
-    Test entry_size{0x460660,
+    for (uintptr_t at : {(uintptr_t)0x460660, (uintptr_t)0x460870}) {
+    Test entry_size{at,
                     [=](Rng &r) {
                         fresh(r);
                         static void *field_vt[3] = {nullptr, nullptr, (void *)stub_field_size};
@@ -1073,6 +1074,7 @@ static std::vector<Test> tests() {
     entry_size.iterations = 20;
     entry_size.data = false;
     t.push_back(entry_size);
+    }
     // one copy of each struct size
     for (uintptr_t at : {0x63fa30, 0x4c17d0, 0x54cd80, 0x512d40, 0x455970, 0x460960, 0x44ec90, 0x425260, 0x512b30,
                          0x815ac0, 0x4c19e0, 0x46da20, 0x98cd50, 0x81d860, 0xb248b0, 0x6be040, 0x460540, 0x460750}) {

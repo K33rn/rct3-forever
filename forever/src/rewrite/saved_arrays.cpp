@@ -319,7 +319,7 @@ REWRITE_COPIES("ListField::Save", list_save_copies, list_save_original, list_sav
 // every one of the field's fields' Size (slot 2) of its address. Like StructArrayField<4>::Size with the array found
 // through a pointer and an offset.
 static volatile long g_entry_sizes;
-static int32_t __fastcall entry_size(uint8_t *self, void *, int32_t offset) {
+template <uint32_t STRIDE> static int32_t __fastcall entry_size(uint8_t *self, void *, int32_t offset) {
     g_entry_sizes++;
     uint8_t *array = *(uint8_t **)(self + 0x28) + offset;
     int32_t count = *(int32_t *)(array + 4);
@@ -328,9 +328,11 @@ static int32_t __fastcall entry_size(uint8_t *self, void *, int32_t offset) {
     Field **fields = *(Field ***)(self + 0xc);
     int32_t total = 8;
     for (int32_t i = 0; i < count; i++)
-        for (int32_t j = 0; j < field_count; j++) total += field_size(fields[j], data + i * 4);
+        for (int32_t j = 0; j < field_count; j++) total += field_size(fields[j], data + i * STRIDE);
     return total;
 }
 static const uint8_t entry_size_original[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0x5c, 0x24, 0x10};
-static const uint32_t entry_size_copies[] = {0x460660, 0x4ad9c0, 0x4adbd0, 0x9851c0, 0xa5ce50, 0xa5d270};
-REWRITE_COPIES("EngineEntryField::Size", entry_size_copies, entry_size_original, entry_size, &g_entry_sizes);
+static const uint32_t entry_size4_copies[] = {0x460660, 0x4ad9c0, 0x4adbd0, 0x9851c0, 0xa5ce50, 0xa5d270};
+REWRITE_COPIES("EngineEntryField::Size<4>", entry_size4_copies, entry_size_original, entry_size<4>, &g_entry_sizes);
+static const uint32_t entry_size8_copies[] = {0x460870, 0xa537d0, 0xa5d060, 0xae2dc0};
+REWRITE_COPIES("EngineEntryField::Size<8>", entry_size8_copies, entry_size_original, entry_size<8>, &g_entry_sizes);
