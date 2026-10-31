@@ -9060,7 +9060,7 @@ address,size,name,callers,status
 0x773510,142,,1,documented
 0x7735c0,26,OwnedPointer::Reset,2,rewritten
 0x7735e0,130,Array<4>::SetCapacity,3,rewritten
-0x773670,107,,3,documented
+0x773670,107,MEMBER_DTOR,3,rewritten
 0x773710,69,,46,documented
 0x773760,107,,1,documented
 0x7737d0,112,,1,documented
@@ -9677,7 +9677,7 @@ address,size,name,callers,status
 0x7b4800,245,,0,documented
 0x7b4e10,81,,1,documented
 0x7b4e80,133,,4,documented
-0x7b4f10,133,,2,documented
+0x7b4f10,133,MEMBER_DTOR,2,rewritten
 0x7b4fa0,97,,1,documented
 0x7b5010,90,,38,documented
 0x7b5070,95,,1,documented
@@ -10081,7 +10081,7 @@ address,size,name,callers,status
 0x7e6750,303,,0,documented
 0x7e6890,33,,0,documented
 0x7e68c0,26,OwnedPointer::Reset,0,rewritten
-0x7e68e0,107,,2,documented
+0x7e68e0,107,MEMBER_DTOR,2,rewritten
 0x7e6950,107,,2,documented
 0x7e69c0,115,,0,documented
 0x7e6a40,308,,3,documented
@@ -12968,7 +12968,7 @@ address,size,name,callers,status
 0x91c600,30,DeletingDestructor,1,rewritten
 0x91c630,226,,2,documented
 0x91c720,639,,1,documented
-0x91c9c0,133,,4,documented
+0x91c9c0,133,MEMBER_DTOR,4,rewritten
 0x91ca60,105,OwnedPair::FreeFields,4,rewritten
 0x91cad0,3316,,1,documented
 0x91d7d0,159,,4,documented
@@ -15269,7 +15269,7 @@ address,size,name,callers,status
 0xa0c590,356,QuadTree::Node::Add,2,rewritten
 0xa0c700,48,,0,documented
 0xa0c730,358,,2,documented
-0xa0cb40,133,,2,documented
+0xa0cb40,133,MEMBER_DTOR,2,rewritten
 0xa0cbd0,1806,,1,documented
 0xa0d300,754,,1,documented
 0xa0d600,97,,1,documented
@@ -22395,7 +22395,7 @@ address,size,name,callers,status
 0xcb4f20,39,,2,documented
 0xcb5660,26,,0,documented
 0xcb5690,190,,0,documented
-0xcb5780,80,,1,documented
+0xcb5780,80,MEMBER_DTOR,1,rewritten
 0xcb5810,30,,2,documented
 0xcb58e0,22,,2,documented
 0xcb5900,22,,2,documented

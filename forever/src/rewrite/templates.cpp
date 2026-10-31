@@ -1039,9 +1039,16 @@ static void member_dtor_run(uint8_t *self, const uint32_t *data, int len) {
         if (data[i] == 0) *(uint32_t *)(self + data[i + 1]) = data[i + 2];          // store a field
         else if (data[i] == 1) delete_member(self, data[i + 1]);                    // delete a member (slot 0, flag 1)
         else if (data[i] == 2) ((void(__fastcall *)(void *))data[i + 1])(self + data[i + 2]);   // direct destructor on this/sub-object
-        else {                                                                      // free a pointer member (operator delete)
+        else if (data[i] == 3) {                                                    // free a pointer member (operator delete)
             void *p = *(void **)(self + data[i + 1]);
             if (p) { ((void(__cdecl *)(void *))data[i + 2])(p); *(void **)(self + data[i + 1]) = nullptr; }
+        } else {                                                                    // release a refcounted member (rc at p+data[i+2])
+            uint8_t *p = *(uint8_t **)(self + data[i + 1]);
+            if (p) {
+                if (--*(uint16_t *)(p + data[i + 2]) == 0)
+                    ((void(__fastcall *)(void *, void *, uint32_t))(*(void ***)p)[0])(p, nullptr, 1);
+                *(void **)(self + data[i + 1]) = nullptr;
+            }
         }
     }
 }

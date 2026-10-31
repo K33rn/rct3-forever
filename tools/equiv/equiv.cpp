@@ -2189,8 +2189,10 @@ static std::vector<Test> tests() {
                          static void *del_vt[1] = {(void *)stub_deleting};
                          for (int off = 0; off < 0x300; off += 4) {
                              if (r.next() % 3) {
-                                 void *d = arena<void>(0x3000 + off);
+                                 uint32_t da = 0x3000 + (off / 4) * 0x20;   // 0x20 apart so refcount words don't overlap
+                                 void *d = arena<void>(da);
                                  *(void **)d = del_vt;
+                                 for (int w = 1; w < 8; w++) arena<uint32_t>(da)[w] = r.next();  // refcount words for op-4
                                  *(void **)arena<uint8_t>(0x800 + off) = d;
                              } else {
                                  *(void **)arena<uint8_t>(0x800 + off) = nullptr;

@@ -392,8 +392,29 @@ def main():
         def is_seh(i):
             return (i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM
                     and i.operands[0].mem.base and i.reg_name(i.operands[0].mem.base) == 'esp' and not i.operands[0].mem.index)
-        xs = [i for i in xs0 if not is_seh(i)]
+        # a register zeroed once (xor r,r) stays zero through these destructors and the compiler places the zeroing
+        # anywhere; hoist them out so the rigid pattern matchers see the null-check right after the member load.
+        zeros = set()
+        for i in xs0:
+            if i.mnemonic == 'xor' and i.operands[0].type == X.X86_OP_REG and i.operands[1].type == X.X86_OP_REG \
+                    and i.operands[0].reg == i.operands[1].reg:
+                zeros.add(i.reg_name(i.operands[0].reg))
+        xs = [i for i in xs0 if not is_seh(i) and not (i.mnemonic == 'xor' and i.operands[0].type == X.X86_OP_REG
+              and i.operands[1].type == X.X86_OP_REG and i.operands[0].reg == i.operands[1].reg)]
         Ln = len(xs); used = [False] * Ln; regoff = {}; ops = []; nmembers = 0; ndirect = 0; args = False; k = 0
+        def is_null_check(ins, reg):   # test reg,reg  or  cmp reg, <a register known to be zero>
+            if ins.mnemonic == 'test' and ins.op_str == f'{reg}, {reg}':
+                return True
+            return (ins.mnemonic == 'cmp' and ins.operands[0].type == X.X86_OP_REG and ins.reg_name(ins.operands[0].reg) == reg
+                    and ins.operands[1].type == X.X86_OP_REG and ins.reg_name(ins.operands[1].reg) in zeros)
+        def is_clear(ins, off):   # mov [esi+off], 0  or  mov [esi+off], <zero register>
+            if ins.mnemonic != 'mov' or ins.operands[0].type != X.X86_OP_MEM:
+                return False
+            d = ins.operands[0].mem
+            if not (d.base and ins.reg_name(d.base) == 'esi' and not d.index and (d.disp & 0xffffffff) == off):
+                return False
+            s = ins.operands[1]
+            return (s.type == X.X86_OP_IMM and (s.imm & 0xffffffff) == 0) or (s.type == X.X86_OP_REG and ins.reg_name(s.reg) in zeros)
         # regoff maps a register to its offset within this (esi); ops is the exact order of field stores
         # (0, offset, value), member deletes (1, offset, 0) and direct destructor calls (2, addr, this-offset).
         # Register saves happen in the prologue (before the first op); any standalone push after that is a call
@@ -412,6 +433,30 @@ def main():
                 d = i.operands[0].mem; v = i.operands[1].imm & 0xffffffff; b = i.reg_name(d.base) if d.base else None
                 if not d.index and (b == 'esi' or b in regoff):   # a field store to this (any value, tables included)
                     ops.append((0, (d.disp & 0xffffffff) + (0 if b == 'esi' else regoff[b]), v)); used[k] = True; k += 1; continue
+            # release a refcounted member: mov ecx,[esi+off]; null-check; je L; dec word[ecx+rc]; cmp word[ecx+rc],0;
+            # jne CLR; mov e?x,[ecx]; push 1; call [e?x]; CLR: clear [esi+off]; L: ...  (standard scalar deleting dtor)
+            if (m == 'mov' and op.startswith('ecx, dword ptr [esi') and i.operands[1].type == X.X86_OP_MEM
+                    and not i.operands[1].mem.index and k + 9 < Ln
+                    and is_null_check(xs[k+1], 'ecx') and xs[k+2].mnemonic == 'je'
+                    and xs[k+3].mnemonic == 'dec' and xs[k+3].operands[0].type == X.X86_OP_MEM
+                    and xs[k+3].operands[0].size == 2 and xs[k+3].operands[0].mem.base
+                    and i.reg_name(xs[k+3].operands[0].mem.base) == 'ecx' and not xs[k+3].operands[0].mem.index
+                    and xs[k+4].mnemonic == 'cmp' and xs[k+4].operands[0].type == X.X86_OP_MEM
+                    and xs[k+4].operands[0].size == 2 and xs[k+4].operands[0].mem.base
+                    and i.reg_name(xs[k+4].operands[0].mem.base) == 'ecx'
+                    and (xs[k+4].operands[0].mem.disp & 0xffffffff) == (xs[k+3].operands[0].mem.disp & 0xffffffff)
+                    and xs[k+4].operands[1].type == X.X86_OP_IMM and (xs[k+4].operands[1].imm & 0xffffffff) == 0
+                    and xs[k+5].mnemonic == 'jne'
+                    and xs[k+6].op_str in ('eax, dword ptr [ecx]', 'edx, dword ptr [ecx]')
+                    and xs[k+7].mnemonic == 'push' and xs[k+7].op_str == '1'
+                    and xs[k+8].op_str in ('dword ptr [eax]', 'dword ptr [edx]')
+                    and is_clear(xs[k+9], i.operands[1].mem.disp & 0xffffffff)
+                    and xs[k+5].operands[0].imm == xs[k+9].address
+                    and xs[k+2].operands[0].imm == xs[k+10].address):
+                ops.append((4, i.operands[1].mem.disp & 0xffffffff, xs[k+3].operands[0].mem.disp & 0xffffffff)); nmembers += 1
+                for j in range(k, k+10): used[j] = True
+                for rr in ('ecx', 'eax', 'edx'): regoff.pop(rr, None)
+                k += 10; continue
             if (m == 'mov' and op.startswith('ecx, dword ptr [esi') and k + 5 < Ln
                     and xs[k+1].mnemonic == 'test' and xs[k+1].op_str == 'ecx, ecx' and xs[k+2].mnemonic == 'je'
                     and xs[k+3].op_str in ('eax, dword ptr [ecx]', 'edx, dword ptr [ecx]')
@@ -466,7 +511,7 @@ def main():
                 thiscalls.append(t[1])
             if t[0] == 3 and t[2] not in cdeclcalls:
                 cdeclcalls.append(t[2])
-        if nmembers >= 2 and ndirect >= 1 and len(thiscalls) <= 3 and len(cdeclcalls) <= 3:
+        if nmembers >= 2 and len(thiscalls) <= 3 and len(cdeclcalls) <= 3:
             return ops, thiscalls, cdeclcalls
         return None
 
