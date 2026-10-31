@@ -1416,6 +1416,9 @@ static volatile long g_ctor_base_args;
 // Call an allocator with ecx = (this with low byte set to 1), store the result at [this], return this.
 static volatile long g_alloc_stores;
 #define ALLOC_STORE(at, alloc, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__fastcall REWRITE_CAT(als_, at)(uint8_t *s) { g_alloc_stores++; void *r = ((void *(__fastcall *)(void *))alloc)((void *)(((uintptr_t)s & ~(uintptr_t)0xff) | 1)); *(void **)s = r; return s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::AllocStore", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(als_, at), &g_alloc_stores);
+// If the argument (signed) exceeds this->[4], call a member method with it; then store it at this->[8].
+static volatile long g_cond_call_sets;
+#define COND_CALL_SET(at, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __thiscall REWRITE_CAT(ccs_, at)(uint8_t *s, uint32_t arg) { g_cond_call_sets++; if ((int32_t)arg > *(int32_t *)(s + 4)) ((void(__thiscall *)(void *, uint32_t))method)(s, arg); *(uint32_t *)(s + 8) = arg; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CondCallSet", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ccs_, at), &g_cond_call_sets);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1527,6 +1530,8 @@ static volatile long g_alloc_stores;
 #define CTOR_BASE_ARG(...)
 #undef ALLOC_STORE
 #define ALLOC_STORE(...)
+#undef COND_CALL_SET
+#define COND_CALL_SET(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1770,6 +1775,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define CTOR_BASE_ARG(...)
 #undef ALLOC_STORE
 #define ALLOC_STORE(...)
+#undef COND_CALL_SET
+#define COND_CALL_SET(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1877,6 +1884,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define CTOR_BASE_ARG(...)
 #undef ALLOC_STORE
 #define ALLOC_STORE(...)
+#undef COND_CALL_SET
+#define COND_CALL_SET(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1901,6 +1910,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define CTOR_BASE_ARG(at, base, argimm, table, ...) {at, base, argimm, table},
 #undef ALLOC_STORE
 #define ALLOC_STORE(at, alloc, ...) {at, alloc},
+#undef COND_CALL_SET
+#define COND_CALL_SET(at, method, ...) {at, method},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

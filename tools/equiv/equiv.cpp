@@ -2228,6 +2228,13 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     delmemberfield.prepare = [](const rewrite::Entry *e) { g_dmf_off = rewrite::start_constants(e->at)[1]; };
+    // Object::CondCallSet: if((int)arg > this->[4]) method(this,arg); this->[8]=arg. method stubbed (thiscall,1).
+    static uint32_t g_ccs_m, g_ccs_arg;
+    Test condcallset{0x7e6b80,
+                     [=](Rng &r) { fresh(r); *(int32_t *)arena<uint8_t>(0x104) = (int32_t)r.next(); g_ccs_arg = r.next(); },
+                     [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), g_ccs_arg); return Result{arena<uint32_t>(0x100)[2]}; }};
+    condcallset.prepare = [](const rewrite::Entry *e) { g_ccs_m = rewrite::start_constants(e->at)[1]; stubs_for_now({{g_ccs_m, (void *)stub_thiscall1}}); };
+    condcallset.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::AllocStore: r = alloc((this&~0xff)|1); *this = r; return this. alloc stubbed (records ecx, fixed return).
     static uint32_t g_als_a;
     Test allocstore{0x4027f0,
@@ -2447,7 +2454,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
