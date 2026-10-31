@@ -396,7 +396,7 @@ static void __fastcall stub_section(void *self, void *, int32_t **name, uint32_t
 
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
-static void stubs_for_now(std::initializer_list<std::pair<uintptr_t, void *>> list) {
+template <class Range> static void stubs_for_now_range(const Range &list) {
     for (auto &s : list) {
         uint64_t was = 0;
         memcpy(&was, (void *)s.first, 5);
@@ -404,6 +404,8 @@ static void stubs_for_now(std::initializer_list<std::pair<uintptr_t, void *>> li
         stub(s.first, s.second);
     }
 }
+static void stubs_for_now(std::initializer_list<std::pair<uintptr_t, void *>> list) { stubs_for_now_range(list); }
+static void stubs_for_now(const std::vector<std::pair<uint32_t, void *>> &list) { stubs_for_now_range(list); }
 static void unstub_many() {
     for (auto s = g_saved_many.rbegin(); s != g_saved_many.rend(); ++s) memcpy((void *)s->first, &s->second, 5);
     g_saved_many.clear();
@@ -2200,7 +2202,11 @@ static std::vector<Test> tests() {
                          return Result{};
                      }};
     member_dtor.prepare = [](const rewrite::Entry *e) {
-        stubs_for_now({{rewrite::start_constants(e->at)[1], (void *)stub_destructor}});
+        const uint32_t *c = rewrite::start_constants(e->at);   // up to 4 direct-call (sub-object / base) destructor targets
+        std::vector<std::pair<uint32_t, void *>> st;
+        for (int i = 1; i <= 4; i++)
+            if (c[i]) st.push_back({c[i], (void *)stub_destructor});
+        stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,

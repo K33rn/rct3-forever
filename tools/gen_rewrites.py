@@ -393,16 +393,21 @@ def main():
             return (i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM
                     and i.operands[0].mem.base and i.reg_name(i.operands[0].mem.base) == 'esp' and not i.operands[0].mem.index)
         xs = [i for i in xs0 if not is_seh(i)]
-        Ln = len(xs); used = [False] * Ln; regoff = {}; ops = []; nmembers = 0; base = None; base_off = 0; k = 0
-        # ops is the exact order of field stores (0, offset, value) and member deletes (1, offset, 0)
+        Ln = len(xs); used = [False] * Ln; regoff = {}; ops = []; nmembers = 0; ndirect = 0; args = False; k = 0
+        # regoff maps a register to its offset within this (esi); ops is the exact order of field stores
+        # (0, offset, value), member deletes (1, offset, 0) and direct destructor calls (2, addr, this-offset).
+        # Register saves happen in the prologue (before the first op); any standalone push after that is a call
+        # argument, so the function is not a pure stores/deletes/thiscall-destructors sequence and we reject it.
         while k < Ln:
             i = xs[k]; m = i.mnemonic; op = i.op_str
             if m == 'lea' and i.operands[1].type == X.X86_OP_MEM:
                 me = i.operands[1].mem; b = i.reg_name(me.base) if me.base else None
                 if b == 'esi' and not me.index:
                     regoff[i.reg_name(i.operands[0].reg)] = me.disp & 0xffffffff; used[k] = True; k += 1; continue
-            if m == 'mov' and op == 'ecx, esi':
-                regoff['ecx'] = 0; used[k] = True; k += 1; continue
+            if m == 'mov' and i.operands[0].type == X.X86_OP_REG and i.operands[1].type == X.X86_OP_REG:
+                r0 = i.reg_name(i.operands[0].reg); r1 = i.reg_name(i.operands[1].reg)
+                if r1 == 'esi' or r1 in regoff:   # copy a this-pointer between registers
+                    regoff[r0] = 0 if r1 == 'esi' else regoff[r1]; used[k] = True; k += 1; continue
             if m == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM:
                 d = i.operands[0].mem; v = i.operands[1].imm & 0xffffffff; b = i.reg_name(d.base) if d.base else None
                 if not d.index and (b == 'esi' or b in regoff):   # a field store to this (any value, tables included)
@@ -415,12 +420,17 @@ def main():
                     and xs[k+2].operands[0].imm == xs[k+6].address):
                 ops.append((1, i.operands[1].mem.disp & 0xffffffff, 0)); nmembers += 1
                 for j in range(k, k+6): used[j] = True
-                regoff.pop('ecx', None)   # ecx now holds a member pointer
+                for rr in ('ecx', 'eax', 'edx'): regoff.pop(rr, None)   # clobbered by the delete
                 k += 6; continue
-            if m == 'call' and i.operands[0].type == X.X86_OP_IMM and nmembers and base is None:
-                if 'ecx' not in regoff:   # the base's `this` offset (self + base_off) must be known
-                    return None
-                base = i.operands[0].imm & 0xffffffff; base_off = regoff['ecx']; used[k] = True; k += 1; continue
+            if m == 'call' and i.operands[0].type == X.X86_OP_IMM:
+                # a direct thiscall destructor: ecx is a known this-offset and no argument was pushed for it
+                if 'ecx' in regoff and not args:
+                    ops.append((2, i.operands[0].imm & 0xffffffff, regoff['ecx'])); ndirect += 1
+                    for rr in ('ecx', 'eax', 'edx'): regoff.pop(rr, None)
+                    used[k] = True; k += 1; continue
+                return None   # a call we cannot replay exactly (takes args, or unknown this)
+            if m == 'push' and ops:
+                args = True   # an argument push after the first op: not a pure destructor
             k += 1
         # any leftover store to this (a reg-sourced one we can't replay) makes the rewrite inexact: reject it
         for j in range(Ln):
@@ -433,8 +443,12 @@ def main():
                 me = ins.operands[0].mem; b = ins.reg_name(me.base) if me.base else None
                 if b == 'esi' or b in regoff:
                     return None
-        if base and nmembers >= 2:
-            return ops, base, base_off
+        calls = []
+        for t in ops:
+            if t[0] == 2 and t[1] not in calls:
+                calls.append(t[1])
+        if nmembers >= 2 and ndirect >= 1 and len(calls) <= 4:
+            return ops, calls
         return None
 
     for r in funcs:
@@ -444,10 +458,12 @@ def main():
         res = parse_md(va, n)
         if not res:
             continue
-        ops, base, base_off = res
+        ops, calls = res
         data = [x for t in ops for x in t]
+        c = (calls + [0, 0, 0, 0])[:4]   # the distinct direct-call targets, for the equivalence test to stand in for
         first = ', '.join(f'0x{b:02x}' for b in mem[va - BASE:va - BASE + 8])
-        out.append(f'MEMBER_DTOR({va:#x}, {base:#x}, {base_off:#x}, {first}, ' + ', '.join(f'{x:#x}' for x in data) + ')')
+        out.append(f'MEMBER_DTOR({va:#x}, {c[0]:#x}, {c[1]:#x}, {c[2]:#x}, {c[3]:#x}, {first}, '
+                   + ', '.join(f'{x:#x}' for x in data) + ')')
         n_md += 1
     counts['MEMBER_DTOR'] = n_md
 
