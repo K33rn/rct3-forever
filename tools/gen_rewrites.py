@@ -105,6 +105,8 @@ MATCH = [
     ('LOAD', 0x462DB0, [], [(61, -1), (50, 0)], (61,)),                          # another shape: stride, resize
     ('QUADTREE_ADD', 0x430520, [(2, 0)], [(29, 0)]),                            # the items' constructor
     ('QUADTREE_INSERT', 0x4311C0, [], [(37, 0), (41, 0)]),                     # its node's Add, its MarkChanged
+    ('INTERFACE_FORWARD', 0x4AB940, [], [(6, 1), (2, 1), (26, 0), (15, 1), (61, 0)], (2, 6, 15, 26, 27, 28, 31, 34, 43, 54, 55, 56, 61),
+     [[(2, 1), (27, 0), (31, 1), (55, 0)], [(6, 1), (34, 1)], [(26, 0), (28, 1), (54, 0), (56, 1)], [(15, 1), (43, 1)]]),
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor
     ('FACTORY_FIELDS', 0x633140, [(1, 0)], [(7, 0), (16, 1), (15, 1), (22, 0)], (7, 15, 16)),   # size, fields, ctor

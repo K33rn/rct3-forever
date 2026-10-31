@@ -1103,6 +1103,33 @@ static uint32_t __fastcall quadtree_insert(uint8_t *self, void *, void *item, co
 }
 #define QUADTREE_INSERT(at, add, mark, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("QuadTree::Insert", at, REWRITE_CAT(original_, at), 8, (void *)&quadtree_insert<add, mark>, &g_quadtree_inserts);
 #define QUADTREE_ADD(at, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("QuadTree::Node::Add", at, REWRITE_CAT(original_, at), 8, (void *)&quadtree_add<ctor>, &g_quadtree_adds);
+// A call forwarded to an interface of what a reference refers to, looked up once (kept at CACHE, FLAG set): the
+// interface (id in ID, as QueryInterface) of the object the reference at REF points to (its handle's object at +0xC);
+// then a slot (SLOT bytes into its table) of the sub-object at +0x40 of that interface is tail-called with the two arguments (its `this` is that
+// sub-object). Gives null (nothing forwarded) when there is no interface.
+static volatile long g_interface_forwards;
+template <uint32_t REF, uint32_t FLAG, uint32_t CACHE, uint32_t ID, uint32_t SLOT>
+static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, uint32_t b) {
+    g_interface_forwards++;
+    if (!self[FLAG]) {
+        void *found = nullptr;
+        void *object = *(void **)(*(uint8_t **)(self + REF) + 0xc);
+        if (object) {
+            ClassInterfaces *c = ((ClassInterfaces * (__fastcall *)(void *))(*(void ***)object)[1])(object);
+            if (c) {
+                int32_t id = *(int32_t *)ID;
+                if (id < c->count && c->by_id[id]) found = (uint8_t *)object + c->by_id[id]->offset;
+            }
+        }
+        *(void **)(self + CACHE) = found;
+        self[FLAG] = 1;
+    }
+    uint8_t *interface = *(uint8_t **)(self + CACHE);
+    if (!interface) return 0;
+    uint8_t *part = interface + 0x40;
+    return ((uint32_t(__fastcall *)(void *, void *, uint32_t, uint32_t))(*(void ***)part)[SLOT / 4])(part, nullptr, a, b);
+}
+#define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Interface::Forward", at, REWRITE_CAT(original_, at), 8, (void *)&interface_forward<ref, flag, cache, id, slot>, &g_interface_forwards);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -1187,6 +1214,8 @@ static uint32_t __fastcall quadtree_insert(uint8_t *self, void *, void *item, co
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef INTERFACE_FORWARD
+#define INTERFACE_FORWARD(...)
 #undef QUADTREE_INSERT
 #define QUADTREE_INSERT(...)
 #undef QUADTREE_ADD
@@ -1374,6 +1403,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef INTERFACE_FORWARD
+#define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) {at, ref, flag, cache, id, slot},
 #undef QUADTREE_INSERT
 #define QUADTREE_INSERT(at, add, mark, ...) {at, add, mark},
 #undef QUADTREE_ADD

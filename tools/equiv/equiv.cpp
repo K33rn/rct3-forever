@@ -685,6 +685,14 @@ static void __fastcall stub_mark_changed(void *tree, void *, int32_t node) {
     record(0x92, tree);
     record(0x92, (void *)(uintptr_t)node);
 }
+// the forwarded method (one per slot of a part): records its slot, who and the two arguments
+template <int SLOT> static uint32_t __fastcall stub_forward(void *self, void *, uint32_t a, uint32_t b) {
+    record(0x93, (void *)(uintptr_t)SLOT);
+    record(0x93, self);
+    record(0x93, (void *)(uintptr_t)a);
+    record(0x93, (void *)(uintptr_t)b);
+    return 0xf0d2d3 + SLOT;
+}
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -1953,6 +1961,45 @@ static std::vector<Test> tests() {
         stubs_for_now({{0xcdb600, (void *)stub_find_node}, {c[1], (void *)stub_node_add}, {c[2], (void *)stub_mark_changed}});
     };
     quadtree_insert.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // a forwarded interface call: self at 0x4000; the reference at REF -> handle 0x3000 (its object at +0xC is 0x3100
+    // or none); the object's class/interfaces as the QueryInterface test, but the id's entry offset is 0 so the
+    // interface is the object, whose +0x40 (0x3140) holds a part with a stub in every slot
+    // (each records its slot). Flag/cache sometimes
+    // preset.
+    static const uint32_t *fwd_c;
+    Test interface_forward{0x4ab940,
+                           [=](Rng &r) {
+                               fresh(r);
+                               const uint32_t *c = fwd_c;
+                               static void *obj_vt[2] = {nullptr, (void *)stub_class_of};
+                               static void *part_vt[8] = {(void *)stub_forward<0>, (void *)stub_forward<1>,
+                                                          (void *)stub_forward<2>, (void *)stub_forward<3>,
+                                                          (void *)stub_forward<4>, (void *)stub_forward<5>,
+                                                          (void *)stub_forward<6>, (void *)stub_forward<7>};
+                               uint8_t *self = arena<uint8_t>(0x4000);
+                               *(void **)(self + c[1]) = arena<void>(0x3000);       // REF
+                               *(void **)arena<uint8_t>(0x300c) = r.next() % 5 ? arena<void>(0x3100) : nullptr;
+                               arena<void *>(0x3100)[0] = obj_vt;
+                               *arena<void *>(0x3140) = part_vt;
+                               uint8_t *cls = arena<uint8_t>(0x200);
+                               *arena<void *>(0x1f0) = r.next() % 5 ? cls : nullptr;
+                               *(void **)(cls + 0x14) = arena<void>(0x240);
+                               *(int32_t *)(cls + 0x18) = r.range(1, 8);
+                               for (int i = 0; i < 8; i++) {
+                                   arena<void *>(0x240)[i] = r.next() % 4 ? arena<void>(0x3200 + 0x20 * i) : nullptr;
+                                   *(int32_t *)arena<uint8_t>(0x3200 + 0x20 * i + 0x10) = 0;   // offset 0: interface = object
+                               }
+                               *(int32_t *)c[4] = r.range(0, 9);                    // ID
+                               self[c[2]] = r.next() % 3 == 0;                      // FLAG preset
+                               *(void **)(self + c[3]) = r.next() % 2 ? arena<void>(0x3100) : nullptr;   // CACHE
+                               arena<uint32_t>(0x10)[0] = r.next();
+                               arena<uint32_t>(0x10)[1] = r.next();
+                           },
+                           [](void *fn) {
+                               return Result{((uint32_t(__fastcall *)(void *, void *, uint32_t, uint32_t))fn)(
+                                   arena<void>(0x4000), nullptr, arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1])};
+                           }};
+    interface_forward.prepare = [](const rewrite::Entry *e) { fwd_c = rewrite::start_constants(e->at); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -2021,7 +2068,8 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert}) {
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert,
+                    &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
         t.push_back(*x);
