@@ -1029,6 +1029,18 @@ static void delete_member(uint8_t *self, uint32_t field) {
     void *member = *(void **)(self + field);
     if (member) ((void(__fastcall *)(void *, void *, uint32_t))(*(void ***)member)[0])(member, nullptr, 1);
 }
+// A destructor the compiler stamped out: it sets some tables, then deletes a list of members (each via its deleting
+// destructor, slot 0, flag 1, when not null), then runs the base-class destructor. tools/gen_rewrites finds each
+// one's tables, members (in order) and base. `data` holds the NTABLES (offset, value) pairs followed by the member
+// offsets; `len` is its length in words.
+static void member_dtor_run(uint8_t *self, const uint32_t *data, int len, uint32_t base, uint32_t base_off) {
+    g_member_dtors++;
+    for (int i = 0; i + 2 < len; i += 3) {   // (0, offset, value) stores a field; (1, offset, 0) deletes a member
+        if (data[i] == 0) *(uint32_t *)(self + data[i + 1]) = data[i + 2];
+        else delete_member(self, data[i + 1]);
+    }
+    ((void(__fastcall *)(void *))base)(self + base_off);
+}
 template <uint32_t BASE, uint32_t M1, uint32_t M2, uint32_t... OT> static void __fastcall dtor_delete2(uint8_t *self) {
     g_member_dtors++;
     put_tables<OT...>(self);
@@ -1285,6 +1297,7 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
     return obj;
 }
 #define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Construct", at, REWRITE_CAT(original_, at), 8, (void *)&object_construct<size, ctor, dtor>, &g_object_constructs);
+#define MEMBER_DTOR(at, base, base_off, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint32_t REWRITE_CAT(mddata_, at)[] = {__VA_ARGS__}; static void __fastcall REWRITE_CAT(mdfn_, at)(uint8_t *s) { member_dtor_run(s, REWRITE_CAT(mddata_, at), (int)(sizeof(REWRITE_CAT(mddata_, at)) / 4), (base), (base_off)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::Members", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(mdfn_, at), &g_member_dtors);
 #define BEHAVIOUR_CREATE(at, size, ctor, link, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Behaviour::Create", at, REWRITE_CAT(original_, at), 8, (void *)&behaviour_create<size, ctor, link>, &g_behaviour_creates);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
@@ -1380,6 +1393,8 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
 #undef OBJECT_CONSTRUCT
 #undef BEHAVIOUR_CREATE
 #define OBJECT_CONSTRUCT(...)
+#undef MEMBER_DTOR
+#define MEMBER_DTOR(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1585,6 +1600,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef OBJECT_CONSTRUCT
 #undef BEHAVIOUR_CREATE
 #define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) {at, size, ctor, dtor},
+#undef MEMBER_DTOR
+#define MEMBER_DTOR(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1656,6 +1673,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef WITH_REFERENCE
 #define OBJECT_RESIZE(at, size, header, ctor, dtor, ...) {at, size, header, ctor, dtor},
 #define WITH_REFERENCE(at, table, field, function, dtor, ...) {at, table, field, function, dtor},
+#undef MEMBER_DTOR
+#define MEMBER_DTOR(at, base, ...) {at, base},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

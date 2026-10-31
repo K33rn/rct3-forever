@@ -2177,6 +2177,32 @@ static std::vector<Test> tests() {
         stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}, {0x402b90, (void *)stub_vector_construct4}});
     };
     trivial_setcap.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Destructor::Members: the object at 0x800; every 4-aligned slot up to +0x200 points to a distinct deletable
+    // object (so whichever members a copy deletes are set up, and the stub records which, revealing the order) or is
+    // null; each copy's base destructor is stood in for (by its address from the constants). Tables land in the arena.
+    Test member_dtor{0x45c3b0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 0x300 / 4; i++) arena<uint32_t>(0x800)[i] = r.next();
+                         static void *del_vt[1] = {(void *)stub_deleting};
+                         for (int off = 0; off < 0x300; off += 4) {
+                             if (r.next() % 3) {
+                                 void *d = arena<void>(0x3000 + off);
+                                 *(void **)d = del_vt;
+                                 *(void **)arena<uint8_t>(0x800 + off) = d;
+                             } else {
+                                 *(void **)arena<uint8_t>(0x800 + off) = nullptr;
+                             }
+                         }
+                     },
+                     [](void *fn) {
+                         ((void(__fastcall *)(void *))fn)(arena<void>(0x800));
+                         return Result{};
+                     }};
+    member_dtor.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{rewrite::start_constants(e->at)[1], (void *)stub_destructor}});
+    };
+    member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -2259,7 +2285,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

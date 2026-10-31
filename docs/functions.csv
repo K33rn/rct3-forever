@@ -1114,7 +1114,7 @@ address,size,name,callers,status
 0x45c1a0,30,DeletingDestructor,2,rewritten
 0x45c1c0,137,,1,documented
 0x45c250,201,,1,documented
-0x45c3b0,337,,1,documented
+0x45c3b0,337,MEMBER_DTOR,1,rewritten
 0x45c520,453,,1,documented
 0x45c760,30,DeletingDestructor,2,rewritten
 0x45c780,1296,,1,documented
@@ -2289,7 +2289,7 @@ address,size,name,callers,status
 0x4b85a0,24,,1,documented
 0x4b85c0,20,,3,documented
 0x4b8610,48,QueryInterface,2,rewritten
-0x4b8640,219,,1,documented
+0x4b8640,219,MEMBER_DTOR,1,rewritten
 0x4b8740,30,DeletingDestructor,2,rewritten
 0x4b8760,1703,,2,documented
 0x4b8e10,718,,5,documented
@@ -2328,7 +2328,7 @@ address,size,name,callers,status
 0x4bd4e0,1150,,1,documented
 0x4bd980,63,,0,documented
 0x4bd9d0,48,Object::FitInterface,11,rewritten
-0x4bda00,203,,1,documented
+0x4bda00,203,MEMBER_DTOR,1,rewritten
 0x4bdb60,30,DeletingDestructor,2,rewritten
 0x4bdb80,763,,6,documented
 0x4bde80,3073,,1,documented
@@ -5261,7 +5261,7 @@ address,size,name,callers,status
 0x5f5000,87,,1,documented
 0x5f5060,7432,,1,documented
 0x5f6d70,549,,1,documented
-0x5f6fc0,139,,1,documented
+0x5f6fc0,139,MEMBER_DTOR,1,rewritten
 0x5f70f0,30,DeletingDestructor,2,rewritten
 0x5f7110,1364,,1,documented
 0x5f7690,87,,1,documented
@@ -5310,7 +5310,7 @@ address,size,name,callers,status
 0x5fb8e0,1000,,1,documented
 0x5fbd10,561,,1,documented
 0x5fbf70,98,Destructor::TablesAndMember,1,rewritten
-0x5fc010,145,,1,documented
+0x5fc010,145,MEMBER_DTOR,1,rewritten
 0x5fc0f0,17,,1,documented
 0x5fc2c0,26,OwnedPointer::Reset,0,rewritten
 0x5fc2e0,130,Array<4>::SetCapacity,3,rewritten
@@ -5394,7 +5394,7 @@ address,size,name,callers,status
 0x616260,11,,40,documented
 0x616270,85,,4,documented
 0x6162d0,90,,7,documented
-0x616350,219,,1,documented
+0x616350,219,MEMBER_DTOR,1,rewritten
 0x6164d0,30,DeletingDestructor,2,rewritten
 0x616520,105,,1,documented
 0x6165d0,30,DeletingDestructor,1,rewritten
@@ -5535,7 +5535,7 @@ address,size,name,callers,status
 0x621370,94,,1,documented
 0x6213f0,130,,1,documented
 0x621520,113,Destructor::DeleteTwoMembers,1,rewritten
-0x6215e0,175,,1,documented
+0x6215e0,175,MEMBER_DTOR,1,rewritten
 0x6216d0,26,OwnedPointer::Reset,4,rewritten
 0x6216f0,130,Array<4>::SetCapacity,1,rewritten
 0x6217d0,196,,1,documented
@@ -6438,7 +6438,7 @@ address,size,name,callers,status
 0x67c370,531,,9,documented
 0x67c5c0,13,,2,documented
 0x67c600,97,Destructor::DeleteMember,1,rewritten
-0x67c6a0,193,,1,documented
+0x67c6a0,193,MEMBER_DTOR,1,rewritten
 0x67c7c0,142,,4,documented
 0x67c8c0,26,OwnedPointer::Reset,1,rewritten
 0x67c8e0,61,Array<4>::Allocate,0,rewritten
@@ -7139,7 +7139,7 @@ address,size,name,callers,status
 0x6b8a40,56,,3,documented
 0x6b8ab0,113,Destructor::DeleteTwoMembers,1,rewritten
 0x6b8b40,183,,1,documented
-0x6b8c00,185,,1,documented
+0x6b8c00,185,MEMBER_DTOR,1,rewritten
 0x6b8cc0,6,,2,documented
 0x6b8cd0,17,,1,documented
 0x6b8d20,30,DeletingDestructor,2,rewritten
@@ -7355,7 +7355,7 @@ address,size,name,callers,status
 0x6cfd00,18,Constructor::BaseAndTable,1,rewritten
 0x6cfd40,18,Constructor::BaseAndTable,1,rewritten
 0x6cfd80,18,Constructor::BaseAndTable,1,rewritten
-0x6cfdd0,145,,1,documented
+0x6cfdd0,145,MEMBER_DTOR,1,rewritten
 0x6cfee0,61,Array<4>::Allocate,0,rewritten
 0x6cff20,130,Array<4>::SetCapacity,1,rewritten
 0x6cffc0,487,,25,documented
@@ -7418,7 +7418,7 @@ address,size,name,callers,status
 0x6d3b00,2018,,1,documented
 0x6d4300,106,Factory::IntoField,1,rewritten
 0x6d43a0,97,Destructor::DeleteMember,7,rewritten
-0x6d4430,161,,10,documented
+0x6d4430,161,MEMBER_DTOR,10,rewritten
 0x6d44f0,37,,3,documented
 0x6d4520,97,Destructor::DeleteMember,19,rewritten
 0x6d4600,30,DeletingDestructor,2,rewritten
@@ -7747,7 +7747,7 @@ address,size,name,callers,status
 0x6ea620,342,,1,documented
 0x6ea780,6,,2,documented
 0x6ea7b0,125,,1,documented
-0x6ea890,145,,1,documented
+0x6ea890,145,MEMBER_DTOR,1,rewritten
 0x6ea960,215,,1,documented
 0x6eaa40,6,,2,documented
 0x6eaa60,23,,1,documented
@@ -7806,7 +7806,7 @@ address,size,name,callers,status
 0x6f0fa0,1,,1,documented
 0x6f0fb0,88,,1,documented
 0x6f1010,52,,3,documented
-0x6f1050,161,,1,documented
+0x6f1050,161,MEMBER_DTOR,1,rewritten
 0x6f11c0,26,OwnedPointer::Reset,1,rewritten
 0x6f11e0,130,Array<4>::SetCapacity,2,rewritten
 0x6f1280,265,,1,documented
@@ -7915,13 +7915,13 @@ address,size,name,callers,status
 0x6ffc30,249,,1,documented
 0x6ffd40,30,DeletingDestructor,2,rewritten
 0x6ffd60,506,,1,documented
-0x6fffc0,129,,1,documented
+0x6fffc0,129,MEMBER_DTOR,1,rewritten
 0x700060,223,,1,documented
 0x700180,201,,1,documented
 0x700290,96,,1,documented
 0x7002f0,79,,1,documented
 0x7003c0,117,,1,documented
-0x700440,177,,1,documented
+0x700440,177,MEMBER_DTOR,1,rewritten
 0x700510,14,,1,documented
 0x700680,30,DeletingDestructor,2,rewritten
 0x7006a0,185,,1,documented
@@ -9263,7 +9263,7 @@ address,size,name,callers,status
 0x78a280,641,,1,documented
 0x78a510,30,DeletingDestructor,2,rewritten
 0x78a530,99,,1,documented
-0x78a5c0,289,,1,documented
+0x78a5c0,289,MEMBER_DTOR,1,rewritten
 0x78a730,30,DeletingDestructor,2,rewritten
 0x78a750,527,,1,documented
 0x78a960,2526,,1,documented
@@ -10131,7 +10131,7 @@ address,size,name,callers,status
 0x7ea780,29,,1,documented
 0x7ea7a0,831,,1,documented
 0x7eaaf0,30,DeletingDestructor,2,rewritten
-0x7eab10,123,,1,documented
+0x7eab10,123,MEMBER_DTOR,1,rewritten
 0x7eac20,2016,,9,documented
 0x7eb450,308,,23,documented
 0x7eb590,825,,9,documented
@@ -10583,7 +10583,7 @@ address,size,name,callers,status
 0x80ba60,30,DeletingDestructor,0,rewritten
 0x80ba80,128,,8,documented
 0x80bb10,30,DeletingDestructor,1,rewritten
-0x80bb50,123,,1,documented
+0x80bb50,123,MEMBER_DTOR,1,rewritten
 0x80bc00,30,DeletingDestructor,2,rewritten
 0x80bdb0,1280,,0,documented
 0x80c340,107,,3,documented
@@ -11953,7 +11953,7 @@ address,size,name,callers,status
 0x8850f0,233,,4,documented
 0x8851e0,202,,1,documented
 0x8852d0,65,,2,documented
-0x885360,273,,1,documented
+0x885360,273,MEMBER_DTOR,1,rewritten
 0x8854b0,1392,,1,documented
 0x885a40,73,,1,documented
 0x885ad0,429,,2,documented
@@ -11968,7 +11968,7 @@ address,size,name,callers,status
 0x886620,520,,1,documented
 0x8868b0,604,,2,documented
 0x886eb0,3154,,1,documented
-0x887b20,161,,1,documented
+0x887b20,161,MEMBER_DTOR,1,rewritten
 0x887bf0,148,,1,documented
 0x887c90,184,,1,documented
 0x887d70,37,,1,documented
@@ -12341,17 +12341,17 @@ address,size,name,callers,status
 0x8ce810,2835,,1,documented
 0x8cf340,64,,1,documented
 0x8cf3c0,30,DeletingDestructor,2,rewritten
-0x8cf3e0,187,,1,documented
+0x8cf3e0,187,MEMBER_DTOR,1,rewritten
 0x8cf4c0,2870,,1,documented
 0x8d0010,23,,1,documented
 0x8d0030,30,DeletingDestructor,2,rewritten
-0x8d0050,203,,1,documented
+0x8d0050,203,MEMBER_DTOR,1,rewritten
 0x8d0140,38,,1,documented
 0x8d0170,433,,2,documented
 0x8d0370,1744,,1,documented
 0x8d0ad0,79,,1,documented
 0x8d0b20,30,DeletingDestructor,2,rewritten
-0x8d0b40,139,,1,documented
+0x8d0b40,139,MEMBER_DTOR,1,rewritten
 0x8d0bf0,7292,,1,documented
 0x8d2870,718,,4,documented
 0x8d2b40,107,Factory::CreateFromFields,0,rewritten
@@ -14331,19 +14331,19 @@ address,size,name,callers,status
 0x9b2ef0,23,,1,documented
 0x9b2f10,84,,1,documented
 0x9b30b0,79,,0,documented
-0x9b3100,289,,1,documented
+0x9b3100,289,MEMBER_DTOR,1,rewritten
 0x9b3240,184,,1,documented
 0x9b33d0,356,,1,documented
 0x9b3550,217,,1,documented
-0x9b3670,289,,1,documented
+0x9b3670,289,MEMBER_DTOR,1,rewritten
 0x9b37b0,277,,1,documented
-0x9b38f0,257,,1,documented
+0x9b38f0,257,MEMBER_DTOR,1,rewritten
 0x9b3a30,281,,1,documented
 0x9b3ca0,259,,1,documented
 0x9b3dc0,156,,1,documented
-0x9b3ea0,241,,1,documented
+0x9b3ea0,241,MEMBER_DTOR,1,rewritten
 0x9b3fb0,195,,1,documented
-0x9b40a0,209,,1,documented
+0x9b40a0,209,MEMBER_DTOR,1,rewritten
 0x9b4190,182,,1,documented
 0x9b43e0,30,DeletingDestructor,2,rewritten
 0x9b4400,30,DeletingDestructor,2,rewritten
@@ -14454,7 +14454,7 @@ address,size,name,callers,status
 0x9c1f30,13,,1,documented
 0x9c1f40,115,,1,documented
 0x9c1fd0,563,,1,documented
-0x9c2270,209,,1,documented
+0x9c2270,209,MEMBER_DTOR,1,rewritten
 0x9c2360,247,,1,documented
 0x9c24e0,18,,1,documented
 0x9c2510,13,,3,documented
@@ -15510,7 +15510,7 @@ address,size,name,callers,status
 0xa23fd0,2420,,1,documented
 0xa24950,30,DeletingDestructor,2,rewritten
 0xa24a80,30,DeletingDestructor,3,rewritten
-0xa24c40,165,,1,documented
+0xa24c40,165,MEMBER_DTOR,1,rewritten
 0xa24d00,92,,1,documented
 0xa24d60,84,,2,documented
 0xa24e00,55,,1,documented
@@ -15617,7 +15617,7 @@ address,size,name,callers,status
 0xa2d5e0,26,OwnedPointer::Reset,2,rewritten
 0xa2d600,61,Array<4>::Allocate,0,rewritten
 0xa2d640,549,,1,documented
-0xa2d930,114,,2,documented
+0xa2d930,114,MEMBER_DTOR,2,rewritten
 0xa2d9b0,30,DeletingDestructor,0,rewritten
 0xa2d9e0,499,,2,documented
 0xa2dc40,67,Reference::Reference(object),0,rewritten
@@ -16228,7 +16228,7 @@ address,size,name,callers,status
 0xa7a910,136,,0,documented
 0xa7a9a0,83,,1,documented
 0xa7aa00,514,,1,documented
-0xa7ac40,133,,1,documented
+0xa7ac40,133,MEMBER_DTOR,1,rewritten
 0xa7ace0,48,,0,documented
 0xa7ad50,169,,1,documented
 0xa7aef0,35,,1,documented
@@ -16316,7 +16316,7 @@ address,size,name,callers,status
 0xa81ac0,48,QueryInterface,0,rewritten
 0xa81af0,48,QueryInterface,0,rewritten
 0xa81b40,137,,1,documented
-0xa81be0,289,,1,documented
+0xa81be0,289,MEMBER_DTOR,1,rewritten
 0xa81d50,161,,1,documented
 0xa81eb0,30,DeletingDestructor,2,rewritten
 0xa81ed0,393,,1,documented
@@ -16664,7 +16664,7 @@ address,size,name,callers,status
 0xaa1d90,260,,1,documented
 0xaa1ea0,30,DeletingDestructor,1,rewritten
 0xaa1ec0,524,,5,documented
-0xaa2310,219,,1,documented
+0xaa2310,219,MEMBER_DTOR,1,rewritten
 0xaa2400,400,,1,documented
 0xaa2590,144,,1,documented
 0xaa2630,30,DeletingDestructor,2,rewritten
@@ -17495,7 +17495,7 @@ address,size,name,callers,status
 0xaff6d0,247,,1,documented
 0xaff7d0,674,,1,documented
 0xaffa80,30,DeletingDestructor,2,rewritten
-0xaffae0,145,,1,documented
+0xaffae0,145,MEMBER_DTOR,1,rewritten
 0xaffc00,30,DeletingDestructor,2,rewritten
 0xaffc20,3654,,1,documented
 0xb00c00,187,,0,documented

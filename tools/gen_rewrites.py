@@ -381,6 +381,76 @@ def main():
             n_q += 1
     counts['OBJECT_SETCAP'] = n_sc_
     counts['OBJECT_RESIZE'] = n_rs_
+
+    # multi-member destructors: set K tables, delete N members (slot 0, flag 1, null-checked), run the base; each
+    # instruction is accounted for, so the rewrite is exact. Emitted as MEMBER_DTOR(at, base, ntables, first8, data...)
+    emitted = {int(l[l.index('(')+1:l.index(',')], 16) for l in out if '(' in l and ',' in l and l[l.index('(')+1:l.index(',')].startswith('0x')}
+    n_md = 0
+
+    def parse_md(a, n):
+        xs0 = [i for i in md.disasm(mem[a - BASE:a - BASE + n], a) if i.mnemonic not in ('nop', 'int3')]
+        def is_seh(i):
+            return (i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM
+                    and i.operands[0].mem.base and i.reg_name(i.operands[0].mem.base) == 'esp' and not i.operands[0].mem.index)
+        xs = [i for i in xs0 if not is_seh(i)]
+        Ln = len(xs); used = [False] * Ln; regoff = {}; ops = []; nmembers = 0; base = None; base_off = 0; k = 0
+        # ops is the exact order of field stores (0, offset, value) and member deletes (1, offset, 0)
+        while k < Ln:
+            i = xs[k]; m = i.mnemonic; op = i.op_str
+            if m == 'lea' and i.operands[1].type == X.X86_OP_MEM:
+                me = i.operands[1].mem; b = i.reg_name(me.base) if me.base else None
+                if b == 'esi' and not me.index:
+                    regoff[i.reg_name(i.operands[0].reg)] = me.disp & 0xffffffff; used[k] = True; k += 1; continue
+            if m == 'mov' and op == 'ecx, esi':
+                regoff['ecx'] = 0; used[k] = True; k += 1; continue
+            if m == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM:
+                d = i.operands[0].mem; v = i.operands[1].imm & 0xffffffff; b = i.reg_name(d.base) if d.base else None
+                if not d.index and (b == 'esi' or b in regoff):   # a field store to this (any value, tables included)
+                    ops.append((0, (d.disp & 0xffffffff) + (0 if b == 'esi' else regoff[b]), v)); used[k] = True; k += 1; continue
+            if (m == 'mov' and op.startswith('ecx, dword ptr [esi') and k + 5 < Ln
+                    and xs[k+1].mnemonic == 'test' and xs[k+1].op_str == 'ecx, ecx' and xs[k+2].mnemonic == 'je'
+                    and xs[k+3].op_str in ('eax, dword ptr [ecx]', 'edx, dword ptr [ecx]')
+                    and xs[k+4].mnemonic == 'push' and xs[k+4].op_str == '1'
+                    and xs[k+5].op_str in ('dword ptr [eax]', 'dword ptr [edx]')
+                    and xs[k+2].operands[0].imm == xs[k+6].address):
+                ops.append((1, i.operands[1].mem.disp & 0xffffffff, 0)); nmembers += 1
+                for j in range(k, k+6): used[j] = True
+                regoff.pop('ecx', None)   # ecx now holds a member pointer
+                k += 6; continue
+            if m == 'call' and i.operands[0].type == X.X86_OP_IMM and nmembers and base is None:
+                if 'ecx' not in regoff:   # the base's `this` offset (self + base_off) must be known
+                    return None
+                base = i.operands[0].imm & 0xffffffff; base_off = regoff['ecx']; used[k] = True; k += 1; continue
+            k += 1
+        # any leftover store to this (a reg-sourced one we can't replay) makes the rewrite inexact: reject it
+        for j in range(Ln):
+            if used[j]:
+                continue
+            ins = xs[j]
+            if ins.mnemonic not in ('push', 'pop', 'sub', 'add', 'ret', 'xor', 'jmp', 'lea', 'mov'):
+                return None
+            if ins.mnemonic == 'mov' and ins.operands[0].type == X.X86_OP_MEM:
+                me = ins.operands[0].mem; b = ins.reg_name(me.base) if me.base else None
+                if b == 'esi' or b in regoff:
+                    return None
+        if base and nmembers >= 2:
+            return ops, base, base_off
+        return None
+
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n < 50 or n > 400 or va in handwritten or va in emitted:
+            continue
+        res = parse_md(va, n)
+        if not res:
+            continue
+        ops, base, base_off = res
+        data = [x for t in ops for x in t]
+        first = ', '.join(f'0x{b:02x}' for b in mem[va - BASE:va - BASE + 8])
+        out.append(f'MEMBER_DTOR({va:#x}, {base:#x}, {base_off:#x}, {first}, ' + ', '.join(f'{x:#x}' for x in data) + ')')
+        n_md += 1
+    counts['MEMBER_DTOR'] = n_md
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
