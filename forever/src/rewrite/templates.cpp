@@ -1140,6 +1140,22 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
     return ((uint32_t(__fastcall *)(void *, void *, uint32_t, uint32_t))(*(void ***)part)[SLOT / 4])(part, nullptr, a, b);
 }
 #define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Interface::Forward", at, REWRITE_CAT(original_, at), 8, (void *)&interface_forward<ref, flag, cache, id, slot>, &g_interface_forwards);
+// SortedMap::SortedMap(n, cap): two n*4-byte blocks (keys at +0, values at +8), the counts at +4 and +0xC set to n,
+// the capacity at +0x10 set to cap (or 0x80 when cap <= 0), +0x14 cleared. Gives the map. (The order of the stores
+// and the two allocations matches the original.)
+static volatile long g_sorted_map_ctors;
+static void *__fastcall sorted_map_ctor(uint32_t *self, void *, int32_t n, int32_t cap) {
+    g_sorted_map_ctors++;
+    self[1] = n;
+    self[0] = (uint32_t)(uintptr_t)((void *(__cdecl *)(uint32_t))0xbcdfd0)((uint32_t)n * 4);
+    self[3] = n;
+    self[2] = (uint32_t)(uintptr_t)((void *(__cdecl *)(uint32_t))0xbcdfd0)((uint32_t)n * 4);
+    self[4] = cap > 0 ? (uint32_t)cap : 0x80;
+    self[5] = 0;
+    return self;
+}
+#define SORTED_MAP_CTOR(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("SortedMap::SortedMap", at, REWRITE_CAT(original_, at), 8, (void *)&sorted_map_ctor, &g_sorted_map_ctors);
+
 // ObjectPair::Release: drops a reference on the objects at +4 and +0 (each a reference count at its +0); when a
 // count reaches zero its aligned block (+0xC) and itself are freed. The count is decremented before the null check,
 // as the original does. (+4 first, then +0.)
@@ -1289,6 +1305,8 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
 #define OBJECT_CONSTRUCT(...)
 #undef PAIR_RELEASE
 #define PAIR_RELEASE(...)
+#undef SORTED_MAP_CTOR
+#define SORTED_MAP_CTOR(...)
 #define BEHAVIOUR_CREATE(...)
 #undef INTERFACE_FORWARD
 #define INTERFACE_FORWARD(...)

@@ -2091,6 +2091,23 @@ static std::vector<Test> tests() {
                           ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
                           return Result{};
                       }};
+    // SortedMap::SortedMap: the map at 0x100, n 0..6 and cap -1..6; the two allocations stood in for
+    Test sorted_map_ctor{0x7fbd70,
+                         [=](Rng &r) {
+                             fresh(r);
+                             arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 6);
+                             arena<uint32_t>(0x10)[1] = (uint32_t)r.range(-1, 6);
+                         },
+                         [](void *fn) {
+                             ((void *(__fastcall *)(void *, void *, int32_t, int32_t))fn)(
+                                 arena<void>(0x100), nullptr, (int32_t)arena<uint32_t>(0x10)[0],
+                                 (int32_t)arena<uint32_t>(0x10)[1]);
+                             uint32_t h = 0;
+                             for (int i = 0; i < 6; i++) h = h * 31 + arena<uint32_t>(0x100)[i];
+                             return Result{h};
+                         }};
+    sorted_map_ctor.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}}); };
+    sorted_map_ctor.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -2173,7 +2190,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &sorted_map_ctor,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

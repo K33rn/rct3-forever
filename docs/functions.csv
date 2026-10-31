@@ -10324,10 +10324,10 @@ address,size,name,callers,status
 0x7fbca0,53,,1,documented
 0x7fbce0,30,DeletingDestructor,0,rewritten
 0x7fbd00,105,OwnedPair::FreeFields,1,rewritten
-0x7fbd70,121,,0,documented
+0x7fbd70,121,SORTED_MAP_CTOR,0,rewritten
 0x7fbdf0,52,,0,documented
 0x7fbe30,153,,14,documented
-0x7fbed0,121,,0,documented
+0x7fbed0,121,SORTED_MAP_CTOR,0,rewritten
 0x7fbf50,153,,14,documented
 0x7fbff0,41,,13,documented
 0x7fc020,91,,1,documented
@@ -10450,7 +10450,7 @@ address,size,name,callers,status
 0x801fe0,846,,4,documented
 0x802330,219,,3,documented
 0x802410,1013,,1,documented
-0x802840,121,,0,documented
+0x802840,121,SORTED_MAP_CTOR,0,rewritten
 0x8028c0,52,,0,documented
 0x802900,153,,1,documented
 0x8029a0,128,,7,documented
@@ -10484,7 +10484,7 @@ address,size,name,callers,status
 0x805c10,177,,4,documented
 0x805cd0,163,,0,documented
 0x805d80,105,OwnedPair::FreeFields,2,rewritten
-0x805df0,121,,1,documented
+0x805df0,121,SORTED_MAP_CTOR,1,rewritten
 0x805e80,52,,0,documented
 0x805ec0,153,,1,documented
 0x805f60,106,,1,documented
@@ -10533,7 +10533,7 @@ address,size,name,callers,status
 0x808150,148,,1,documented
 0x8081f0,333,,1,documented
 0x808340,210,,1,documented
-0x808510,121,,0,documented
+0x808510,121,SORTED_MAP_CTOR,0,rewritten
 0x808590,52,,0,documented
 0x8085d0,153,,1,documented
 0x808680,115,,0,documented
@@ -13831,7 +13831,7 @@ address,size,name,callers,status
 0x982d50,105,OwnedPair::FreeFields,3,rewritten
 0x982dc0,247,,2,documented
 0x982ee0,30,DeletingDestructor,0,rewritten
-0x982f10,121,,0,documented
+0x982f10,121,SORTED_MAP_CTOR,0,rewritten
 0x982fe0,154,,1,documented
 0x983080,30,DeletingDestructor,0,rewritten
 0x9830a0,276,,1,documented
