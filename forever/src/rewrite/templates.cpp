@@ -1140,6 +1140,33 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
     return ((uint32_t(__fastcall *)(void *, void *, uint32_t, uint32_t))(*(void ***)part)[SLOT / 4])(part, nullptr, a, b);
 }
 #define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Interface::Forward", at, REWRITE_CAT(original_, at), 8, (void *)&interface_forward<ref, flag, cache, id, slot>, &g_interface_forwards);
+// A float field reached through a cached interface: the interface (id in ID, as QueryInterface) of the object the
+// reference at REF points to (its handle's object at +0xC), looked up once (kept at CACHE, FLAG set). Then an inner
+// object at +INNER of the interface, and one of its two float fields: F2 when the field at +COND of this is nonzero,
+// else F1. The interface is used without a null check (the original crashes without one, and so does this).
+static volatile long g_interface_floats;
+template <uint32_t REF, uint32_t FLAG, uint32_t CACHE, uint32_t ID, uint32_t COND, uint32_t INNER, uint32_t F1,
+          uint32_t F2>
+static float __fastcall interface_float(uint8_t *self) {
+    g_interface_floats++;
+    if (!self[FLAG]) {
+        void *found = nullptr;
+        void *object = *(void **)(*(uint8_t **)(self + REF) + 0xc);
+        if (object) {
+            ClassInterfaces *c = ((ClassInterfaces * (__fastcall *)(void *))(*(void ***)object)[1])(object);
+            if (c) {
+                int32_t id = *(int32_t *)ID;
+                if (id < c->count && c->by_id[id]) found = (uint8_t *)object + c->by_id[id]->offset;
+            }
+        }
+        *(void **)(self + CACHE) = found;
+        self[FLAG] = 1;
+    }
+    uint8_t *interface = *(uint8_t **)(self + CACHE);
+    uint8_t *inner = *(uint8_t **)(interface + INNER);
+    return *(float *)(inner + (*(uint32_t *)(self + COND) ? F2 : F1));
+}
+#define INTERFACE_FLOAT(at, ref, flag, cache, id, cond, inner, f1, f2, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Interface::Float", at, REWRITE_CAT(original_, at), 8, (void *)&interface_float<ref, flag, cache, id, cond, inner, f1, f2>, &g_interface_floats);
 // Frustum::FromCamera(camera, flags): copies the camera's six clipping planes into this frustum. Each plane in the
 // camera is a 3-value normal then its distance (stride 0x20, from +0x10); in the frustum they are packed at stride
 // 0x10 with the distance negated. The flags go at +0x60. The distance is negated through the x87 FPU, as the
@@ -1332,6 +1359,8 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
 #define PAIR_RELEASE(...)
 #undef SORTED_MAP_CTOR
 #define SORTED_MAP_CTOR(...)
+#undef INTERFACE_FLOAT
+#define INTERFACE_FLOAT(...)
 #define BEHAVIOUR_CREATE(...)
 #undef INTERFACE_FORWARD
 #define INTERFACE_FORWARD(...)
@@ -1483,6 +1512,7 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef START_CLASS
 #undef START_SECTION
 #define START_NAME(at, text, global, ...) {at, text, global},
+#define INTERFACE_FLOAT(at, ref, flag, cache, id, cond, inner, f1, f2, ...) {at, ref, flag, cache, id, cond, inner, f1, f2},
 #define START_CLASS(at, name, factory, global, ...) {at, name, factory, global},
 #define START_SECTION(at, text, kind, global, dtor, ...) {at, text, kind, global, dtor},
 #undef NAMED_TEXT_REF
@@ -1597,7 +1627,7 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef WITH_REFERENCE
 #define OBJECT_RESIZE(at, size, header, ctor, dtor, ...) {at, size, header, ctor, dtor},
 #define WITH_REFERENCE(at, table, field, function, dtor, ...) {at, table, field, function, dtor},
-static const uint32_t start_table[][7] = {
+static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
 

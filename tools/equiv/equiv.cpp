@@ -2122,6 +2122,41 @@ static std::vector<Test> tests() {
                      for (int i = 0; i < 0x64 / 4; i++) h = h * 31 + arena<uint32_t>(0x100)[i];
                      return Result{h};
                  }};
+    // Interface::Float: self at 0x4000; the reference at REF -> handle 0x3000 (object at +0xC = 0x3100); the class and
+    // interfaces of the QueryInterface test with the id's entry offset 0, so the interface is the object; the inner
+    // object at interface+INNER = 0x3200 holds two floats (any bits) at +F1 and +F2; the COND field is random.
+    static const uint32_t *iflt_c;
+    Test interface_float{0x52c870,
+                         [=](Rng &r) {
+                             fresh(r);
+                             const uint32_t *c = iflt_c;
+                             static void *vt[2] = {nullptr, (void *)stub_class_of};
+                             uint8_t *self = arena<uint8_t>(0x4000);
+                             *(void **)(self + c[1]) = arena<void>(0x3000);          // REF
+                             *(void **)arena<uint8_t>(0x300c) = arena<void>(0x3100); // handle's object
+                             arena<void *>(0x3100)[0] = vt;
+                             uint8_t *cls = arena<uint8_t>(0x200);
+                             *arena<void *>(0x1f0) = cls;
+                             *(void **)(cls + 0x14) = arena<void>(0x240);
+                             int32_t count = r.range(1, 8);
+                             *(int32_t *)(cls + 0x18) = count;
+                             for (int i = 0; i < 8; i++) {
+                                 arena<void *>(0x240)[i] = arena<void>(0x3400 + 0x20 * i);
+                                 *(int32_t *)arena<uint8_t>(0x3400 + 0x20 * i + 0x10) = 0;   // offset 0: interface = object
+                             }
+                             *(int32_t *)c[4] = r.range(0, count - 1);                // ID, always in range (so the interface resolves)
+                             *(void **)arena<uint8_t>(0x3100 + c[6]) = arena<void>(0x3200);   // inner object
+                             for (int i = 0; i < 64; i++) arena<float>(0x3200)[i] = r.any_float();
+                             self[c[2]] = r.next() % 3 == 0;                          // FLAG preset
+                             *(void **)(self + c[3]) = arena<void>(0x3100);           // CACHE
+                             *(uint32_t *)(self + c[5]) = r.next() % 2 ? 0 : r.next(); // COND
+                         },
+                         [](void *fn) {
+                             Result x;
+                             x.f = ((long double(__fastcall *)(void *))fn)(arena<void>(0x4000));
+                             return x;
+                         }};
+    interface_float.prepare = [](const rewrite::Entry *e) { iflt_c = rewrite::start_constants(e->at); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -2204,7 +2239,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &sorted_map_ctor, &frustum,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &sorted_map_ctor, &frustum, &interface_float,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
