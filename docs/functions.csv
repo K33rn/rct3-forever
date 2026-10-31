@@ -1174,7 +1174,7 @@ address,size,name,callers,status
 0x460490,67,Reference::Reference(object),0,rewritten
 0x4604e0,67,Reference::Reference(object),0,rewritten
 0x460540,281,StructArrayField<4>::Save,1,rewritten
-0x460660,116,,1,documented
+0x460660,116,EngineEntryField::Size,1,rewritten
 0x460750,281,StructArrayField<8>::Save,1,rewritten
 0x460870,116,,1,documented
 0x460960,293,StructArrayField<28>::Save,1,rewritten
@@ -2208,9 +2208,9 @@ address,size,name,callers,status
 0x4ad7c0,67,Reference::Reference(object),1,rewritten
 0x4ad820,118,ObjectRef::DeleteTarget,1,rewritten
 0x4ad8a0,281,StructArrayField<4>::Save,1,rewritten
-0x4ad9c0,116,,1,documented
+0x4ad9c0,116,EngineEntryField::Size,1,rewritten
 0x4adab0,281,StructArrayField<4>::Save,1,rewritten
-0x4adbd0,116,,1,documented
+0x4adbd0,116,EngineEntryField::Size,1,rewritten
 0x4adcc0,212,ReferenceField::Load,1,rewritten
 0x4adda0,212,ReferenceField::Load,1,rewritten
 0x4ade80,102,,10,documented
@@ -13877,7 +13877,7 @@ address,size,name,callers,status
 0x984ec0,340,,3,documented
 0x985050,20,,4,documented
 0x9850a0,281,StructArrayField<4>::Save,1,rewritten
-0x9851c0,116,,1,documented
+0x9851c0,116,EngineEntryField::Size,1,rewritten
 0x9852b0,1004,,2,documented
 0x9856e0,248,,1,documented
 0x9857e0,750,,2,documented
@@ -16020,11 +16020,11 @@ address,size,name,callers,status
 0xa5c8a0,167,,1,documented
 0xa5c970,587,,0,documented
 0xa5cbf0,320,,1,documented
-0xa5ce50,116,,1,documented
+0xa5ce50,116,EngineEntryField::Size,1,rewritten
 0xa5cf40,281,StructArrayField<8>::Save,1,rewritten
 0xa5d060,116,,1,documented
 0xa5d150,281,StructArrayField<4>::Save,1,rewritten
-0xa5d270,116,,1,documented
+0xa5d270,116,EngineEntryField::Size,1,rewritten
 0xa5d3c0,294,,1,documented
 0xa5d510,48,ObjectArray::Free,2,rewritten
 0xa5d540,152,,1,documented

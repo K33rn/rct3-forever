@@ -1046,6 +1046,33 @@ static std::vector<Test> tests() {
     list_save.iterations = 20;
     list_save.data = false;
     t.push_back(list_save);
+    // EngineEntryField::Size: the field at 0x600 (fields at 0x680), its +0x28 a base pointer 0x640, the array
+    // {data at 0x3000, count 0..6} `offset` into it; the fields' Size stubbed (as the struct-array size test)
+    Test entry_size{0x460660,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *field_vt[3] = {nullptr, nullptr, (void *)stub_field_size};
+                        uint8_t *f = arena<uint8_t>(0x600);
+                        *(void **)(f + 0xc) = arena<void>(0x6c0);
+                        *(int32_t *)(f + 0x18) = r.range(0, 3);
+                        for (int j = 0; j < 3; j++) {
+                            *(void **)arena<uint8_t>(0x680 + 0x10 * j) = field_vt;
+                            arena<void *>(0x6c0)[j] = arena<void>(0x680 + 0x10 * j);
+                        }
+                        int offset = r.range(0, 0x40) * 4;
+                        *(void **)(f + 0x28) = arena<uint8_t>(0x640) - offset;   // base + offset lands at 0x640
+                        *(void **)arena<uint8_t>(0x640) = arena<void>(0x3000);
+                        *(int32_t *)arena<uint8_t>(0x644) = r.range(-1, 6);
+                        *arena<int32_t>(8) = r.range(8, 0x1000);
+                        arena<uint32_t>(0x10)[0] = (uint32_t)offset;
+                    },
+                    [](void *fn) {
+                        return Result{(uint32_t)((int32_t(__fastcall *)(void *, void *, int32_t))fn)(
+                            arena<void>(0x600), nullptr, (int32_t)arena<uint32_t>(0x10)[0])};
+                    }};
+    entry_size.iterations = 20;
+    entry_size.data = false;
+    t.push_back(entry_size);
     // one copy of each struct size
     for (uintptr_t at : {0x63fa30, 0x4c17d0, 0x54cd80, 0x512d40, 0x455970, 0x460960, 0x44ec90, 0x425260, 0x512b30,
                          0x815ac0, 0x4c19e0, 0x46da20, 0x98cd50, 0x81d860, 0xb248b0, 0x6be040, 0x460540, 0x460750}) {
