@@ -637,6 +637,31 @@ def main():
         n_ff += 1
     counts['FREEFIELD'] = n_ff
 
+    # Destructor::TablesThenBase: mov [ecx+o0],t0; mov [ecx+o1],t1; jmp base.  A destructor thunk that sets two
+    # vtable fields then tail-calls the (void, this-only) base destructor.
+    n_ttb = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 18 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != ['mov', 'mov', 'jmp']:
+            continue
+        s0, s1, jm = xs
+        if not (s0.operands[0].type == X.X86_OP_MEM and s0.operands[0].mem.base and md.reg_name(s0.operands[0].mem.base) == 'ecx'
+                and not s0.operands[0].mem.index and s0.operands[1].type == X.X86_OP_IMM
+                and s1.operands[0].type == X.X86_OP_MEM and s1.operands[0].mem.base and md.reg_name(s1.operands[0].mem.base) == 'ecx'
+                and not s1.operands[0].mem.index and s1.operands[1].type == X.X86_OP_IMM
+                and jm.operands[0].type == X.X86_OP_IMM):
+            continue
+        off0 = s0.operands[0].mem.disp & 0xffffffff; t0 = s0.operands[1].imm & 0xffffffff
+        off1 = s1.operands[0].mem.disp & 0xffffffff; t1 = s1.operands[1].imm & 0xffffffff
+        base = jm.operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'TABLES_THEN_BASE({va:#x}, {off0:#x}, {t0:#x}, {off1:#x}, {t1:#x}, {base:#x}, {first})')
+        n_ttb += 1
+    counts['TABLES_THEN_BASE'] = n_ttb
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
