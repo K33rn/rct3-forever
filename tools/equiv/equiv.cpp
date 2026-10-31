@@ -2215,6 +2215,16 @@ static std::vector<Test> tests() {
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::CountList: count a null-terminated this->[0]-linked chain. Build a chain of N nodes at 0x200,0x210,...
+    Test countlist{0x5908f0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       int cnt = (int)(r.next() % 9) + 1;        // 1..9 chain nodes
+                       for (int i = 0; i < cnt; i++)
+                           *(void **)arena<uint8_t>(0x200 + i * 0x10) = (i + 1 < cnt) ? arena<void>(0x200 + (i + 1) * 0x10) : nullptr;
+                       *(void **)arena<uint8_t>(0x100) = arena<void>(0x200);   // this->[0] = first node
+                   },
+                   [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
     // Object::Forward2: method(this, a0, a1); return this. method stubbed (thiscall, 2 args).
     static uint32_t g_f2_m, g_f2_a0, g_f2_a1;
     Test forward2{0x66a350,
@@ -2346,7 +2356,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

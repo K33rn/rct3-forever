@@ -4218,7 +4218,7 @@ address,size,name,callers,status
 0x590500,129,,1,documented
 0x590590,323,,2,documented
 0x5906e0,30,DeletingDestructor,3,rewritten
-0x5908f0,30,,2,documented
+0x5908f0,30,Object::CountList,2,rewritten
 0x590fc0,30,DeletingDestructor,1,rewritten
 0x590ff0,30,DeletingDestructor,1,rewritten
 0x591010,7,BaseClass::SetClass,1,rewritten
@@ -7878,7 +7878,7 @@ address,size,name,callers,status
 0x6fcf50,540,,1,documented
 0x6fd190,205,,4,documented
 0x6fd260,40,,2,documented
-0x6fd3a0,30,,1,documented
+0x6fd3a0,30,Object::CountList,1,rewritten
 0x6fd640,102,Factory::Create,1,rewritten
 0x6fd6b0,30,DeletingDestructor,0,rewritten
 0x6fd6d0,57,,2,documented
@@ -9448,7 +9448,7 @@ address,size,name,callers,status
 0x79f8e0,143,,1,documented
 0x79f970,181,,1,documented
 0x79fa30,76,Destructor::MemberThenBase,4,rewritten
-0x79fb90,30,,1,documented
+0x79fb90,30,Object::CountList,1,rewritten
 0x79fdf0,105,Factory::Create,1,rewritten
 0x79fe60,210,,1,documented
 0x79ff40,191,,2,documented
@@ -9549,7 +9549,7 @@ address,size,name,callers,status
 0x7a9400,234,,1,documented
 0x7a94f0,67,Reference::Reference(object),14,rewritten
 0x7a9550,118,ObjectRef::DeleteTarget,11,rewritten
-0x7a96e0,30,,1,documented
+0x7a96e0,30,Object::CountList,1,rewritten
 0x7a9950,102,Factory::Create,1,rewritten
 0x7a99c0,105,Factory::Create,1,rewritten
 0x7a9a30,14,,28,documented
@@ -11030,7 +11030,7 @@ address,size,name,callers,status
 0x82e110,61,Reference::Reference,0,rewritten
 0x82e160,67,Reference::Reference(object),2,rewritten
 0x82e1b0,118,ObjectRef::DeleteTarget,2,rewritten
-0x82e340,30,,1,documented
+0x82e340,30,Object::CountList,1,rewritten
 0x82e450,293,StructArrayField<40>::Save,1,rewritten
 0x82e580,124,StructArrayField<40>::Size,1,rewritten
 0x82e660,212,ReferenceField::Load,1,rewritten
@@ -12124,7 +12124,7 @@ address,size,name,callers,status
 0x8b14b0,240,,1,documented
 0x8b15a0,130,,2,documented
 0x8b1690,606,,3,documented
-0x8b1a00,30,,1,documented
+0x8b1a00,30,Object::CountList,1,rewritten
 0x8b1b10,293,StructArrayField<28>::Save,1,rewritten
 0x8b1c40,124,StructArrayField<28>::Size,1,rewritten
 0x8b1d20,5,,3,documented
@@ -14990,7 +14990,7 @@ address,size,name,callers,status
 0x9f4da0,93,,10,documented
 0x9f4e10,1584,,1,documented
 0x9f5440,35,,7,documented
-0x9f55b0,30,,1,documented
+0x9f55b0,30,Object::CountList,1,rewritten
 0x9f56c0,102,Factory::Create,1,rewritten
 0x9f5730,30,DeletingDestructor,2,rewritten
 0x9f5750,22,,1,documented
@@ -15435,9 +15435,9 @@ address,size,name,callers,status
 0xa1d3c0,51,,1,documented
 0xa1d400,169,,2,documented
 0xa1d4b0,38,,4,documented
-0xa1d5f0,30,,1,documented
-0xa1d810,30,,1,documented
-0xa1da30,30,,1,documented
+0xa1d5f0,30,Object::CountList,1,rewritten
+0xa1d810,30,Object::CountList,1,rewritten
+0xa1da30,30,Object::CountList,1,rewritten
 0xa1dc90,34,,1,documented
 0xa1df70,105,Factory::Create,1,rewritten
 0xa1dfe0,31,,1,documented
@@ -16452,7 +16452,7 @@ address,size,name,callers,status
 0xa8d050,30,DeletingDestructor,1,rewritten
 0xa8d080,2049,,2,documented
 0xa8d8b0,346,,1,documented
-0xa8db80,30,,1,documented
+0xa8db80,30,Object::CountList,1,rewritten
 0xa8dc90,293,StructArrayField<24>::Save,1,rewritten
 0xa8ddc0,124,StructArrayField<24>::Size,1,rewritten
 0xa8dea0,44,ObjectRef::Construct,2,rewritten
@@ -17709,7 +17709,7 @@ address,size,name,callers,status
 0xb17ab0,61,Reference::Reference,0,rewritten
 0xb17af0,5,,2,documented
 0xb17b00,67,Reference::Reference(object),0,rewritten
-0xb17b50,30,,1,documented
+0xb17b50,30,Object::CountList,1,rewritten
 0xb17b70,212,ReferenceField::Load,1,rewritten
 0xb17c50,32,,2,documented
 0xb17c70,1069,,3,documented
@@ -19423,7 +19423,7 @@ address,size,name,callers,status
 0xbb7a20,25,,1,documented
 0xbb7a80,327,,3,documented
 0xbb7bd0,142,,2,documented
-0xbb7cf0,30,,1,documented
+0xbb7cf0,30,Object::CountList,1,rewritten
 0xbb7ea0,350,,0,documented
 0xbb8000,449,,0,documented
 0xbb81d0,423,,1,documented
@@ -21154,7 +21154,7 @@ address,size,name,callers,status
 0xc32c00,79,,1,documented
 0xc32c60,121,,1,documented
 0xc32e80,82,,6,documented
-0xc32ee0,30,,2,documented
+0xc32ee0,30,Object::CountList,2,rewritten
 0xc32f60,513,,1,documented
 0xc33170,30,DeletingDestructor,1,rewritten
 0xc331a0,239,,1,documented

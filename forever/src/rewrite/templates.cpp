@@ -1365,6 +1365,22 @@ static volatile long g_getrefs;
 // Forward both arguments to a member method (thiscall) and return this: method(this, a0, a1); return this.
 static volatile long g_forward2;
 #define FORWARD2(at, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__thiscall REWRITE_CAT(fwd2_, at)(uint8_t *s, uint32_t a0, uint32_t a1) { g_forward2++; ((void(__thiscall *)(void *, uint32_t, uint32_t))method)(s, a0, a1); return s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::Forward2", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(fwd2_, at), &g_forward2);
+// Count a chain: start at this->[0], follow each node's [0], counting, stopping when a node's [0] is null. The
+// nodes are dereferenced before the null test (as the original does), so a valid chain must be null-terminated.
+static volatile long g_count_lists;
+static uint32_t __fastcall count_list(uint8_t *self) {
+    g_count_lists++;
+    uint32_t *p = *(uint32_t **)self;
+    uint32_t nx = *p, eax = 0;
+    if (nx == 0 || p == nullptr) return 0;
+    for (;;) {
+        p = *(uint32_t **)p;
+        nx = *p;
+        eax++;
+        if (nx == 0 || p == nullptr) return eax;
+    }
+}
+#define COUNT_LIST(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CountList", at, REWRITE_CAT(original_, at), 8, (void *)&count_list, &g_count_lists);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1452,6 +1468,8 @@ static volatile long g_forward2;
 #define DELETING2(...)
 #undef FORWARD2
 #define FORWARD2(...)
+#undef COUNT_LIST
+#define COUNT_LIST(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1671,6 +1689,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DELETING2(...)
 #undef FORWARD2
 #define FORWARD2(...)
+#undef COUNT_LIST
+#define COUNT_LIST(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1754,6 +1774,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DELETING2(at, dtor, free, ...) {at, dtor, free},
 #undef FORWARD2
 #define FORWARD2(at, method, ...) {at, method},
+#undef COUNT_LIST
+#define COUNT_LIST(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 static const uint32_t start_table[][10] = {

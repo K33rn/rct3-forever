@@ -713,6 +713,20 @@ def main():
         n_f2 += 1
     counts['FORWARD2'] = n_f2
 
+    # Object::CountList: count a null-terminated this->[0]-linked chain. All copies byte-identical (no parameters).
+    clref = mem[0x5908f0 - BASE:0x5908f0 - BASE + 30]
+    n_cl = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 30 or va in handwritten or va in emitted:
+            continue
+        if mem[va - BASE:va - BASE + 30] != clref:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'COUNT_LIST({va:#x}, {first})')
+        n_cl += 1
+    counts['COUNT_LIST'] = n_cl
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
