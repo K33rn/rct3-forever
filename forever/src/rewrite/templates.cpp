@@ -1419,6 +1419,9 @@ static volatile long g_alloc_stores;
 // If the argument (signed) exceeds this->[4], call a member method with it; then store it at this->[8].
 static volatile long g_cond_call_sets;
 #define COND_CALL_SET(at, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __thiscall REWRITE_CAT(ccs_, at)(uint8_t *s, uint32_t arg) { g_cond_call_sets++; if ((int32_t)arg > *(int32_t *)(s + 4)) ((void(__thiscall *)(void *, uint32_t))method)(s, arg); *(uint32_t *)(s + 8) = arg; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CondCallSet", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ccs_, at), &g_cond_call_sets);
+// Set a table at [this], then operator delete two pointer fields (no null check, no clear).
+static volatile long g_free_two_tables;
+#define FREE_TWO_TABLE(at, table, off0, off1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(ftt_, at)(uint8_t *s) { g_free_two_tables++; *(uint32_t *)s = table; ((void(__cdecl *)(void *))0xbce010)(*(void **)(s + off0)); ((void(__cdecl *)(void *))0xbce010)(*(void **)(s + off1)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::FreeTwoTable", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ftt_, at), &g_free_two_tables);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1532,6 +1535,8 @@ static volatile long g_cond_call_sets;
 #define ALLOC_STORE(...)
 #undef COND_CALL_SET
 #define COND_CALL_SET(...)
+#undef FREE_TWO_TABLE
+#define FREE_TWO_TABLE(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1777,6 +1782,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define ALLOC_STORE(...)
 #undef COND_CALL_SET
 #define COND_CALL_SET(...)
+#undef FREE_TWO_TABLE
+#define FREE_TWO_TABLE(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1886,6 +1893,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define ALLOC_STORE(...)
 #undef COND_CALL_SET
 #define COND_CALL_SET(...)
+#undef FREE_TWO_TABLE
+#define FREE_TWO_TABLE(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1912,6 +1921,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define ALLOC_STORE(at, alloc, ...) {at, alloc},
 #undef COND_CALL_SET
 #define COND_CALL_SET(at, method, ...) {at, method},
+#undef FREE_TWO_TABLE
+#define FREE_TWO_TABLE(at, table, off0, off1, ...) {at, table, off0, off1},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

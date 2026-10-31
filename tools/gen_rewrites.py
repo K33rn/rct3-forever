@@ -1010,6 +1010,36 @@ def main():
         n_ccs += 1
     counts['COND_CALL_SET'] = n_ccs
 
+    # Object::FreeTwoTable: mov esi,ecx; mov eax,[esi+off0]; push eax; mov [esi],TABLE; call del; mov ecx,[esi+off1];
+    # push ecx; call del; add esp,8; ret.  Set table at [this], operator delete this->[off0] and this->[off1].
+    fttmn = [i.mnemonic for i in md.disasm(mem[0x88f900 - BASE:0x88f900 - BASE + 32], 0x88f900)]
+    n_ftt = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 32 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        if [i.mnemonic for i in xs] != fttmn:
+            continue
+        l0, tbl, l1 = xs[2], xs[4], xs[6]
+        calls = [i for i in xs if i.mnemonic == 'call']
+        if not (l0.operands[1].type == X.X86_OP_MEM and l0.operands[1].mem.base and md.reg_name(l0.operands[1].mem.base) == 'esi'
+                and tbl.mnemonic == 'mov' and tbl.operands[0].type == X.X86_OP_MEM and tbl.operands[0].mem.base
+                and md.reg_name(tbl.operands[0].mem.base) == 'esi' and (tbl.operands[0].mem.disp & 0xffffffff) == 0
+                and tbl.operands[1].type == X.X86_OP_IMM
+                and l1.operands[1].type == X.X86_OP_MEM and l1.operands[1].mem.base and md.reg_name(l1.operands[1].mem.base) == 'esi'
+                and len(calls) == 2 and all(c.operands[0].type == X.X86_OP_IMM and (c.operands[0].imm & 0xffffffff) == 0xbce010 for c in calls)):
+            continue
+        off0 = l0.operands[1].mem.disp & 0xffffffff
+        off1 = l1.operands[1].mem.disp & 0xffffffff
+        if off0 == 0 or off1 == 0:   # must not alias the table slot
+            continue
+        table = tbl.operands[1].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'FREE_TWO_TABLE({va:#x}, {table:#x}, {off0:#x}, {off1:#x}, {first})')
+        n_ftt += 1
+    counts['FREE_TWO_TABLE'] = n_ftt
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
