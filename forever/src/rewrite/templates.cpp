@@ -1225,6 +1225,31 @@ static void __fastcall pair_release(uint32_t **self) {
 }
 #define PAIR_RELEASE(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectPair::Release", at, REWRITE_CAT(original_, at), 8, (void *)&pair_release, &g_pair_releases);
 
+// Array::SetCapacity for trivially-copyable items (SIZE bytes, no per-item destructor): resized to n, the new items
+// allocated (aligned, no count header) and constructed (the vector constructor iterator 0x402B90, CTOR only), the old
+// ones that fit copied over as raw bytes, the old block freed. Gives n. (As the original, the copy runs even when the
+// allocation failed, so a crash there matches.)
+static volatile long g_trivial_setcaps;
+template <uint32_t SIZE, uint32_t CTOR> static int32_t __fastcall trivial_set_capacity(uint8_t **array, void *, int32_t n) {
+    g_trivial_setcaps++;
+    int32_t count = ((int32_t *)array)[1];
+    if (n == count) return n;
+    uint8_t *items = nullptr;
+    if (n != 0) {
+        items = (uint8_t *)((void *(__cdecl *)(uint32_t))0xbcdfd0)((uint32_t)n * SIZE);
+        if (items) ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0x402b90)(items, SIZE, n, (void *)CTOR);
+    }
+    int32_t keep = n > count ? count : n;
+    for (int32_t i = 0; i < keep; i++) __builtin_memcpy(items + i * SIZE, *array + i * SIZE, SIZE);
+    if (*array) {
+        ((void(__cdecl *)(void *))0xbce010)(*array);
+        *array = nullptr;
+    }
+    *array = items;
+    ((int32_t *)array)[1] = n;
+    return n;
+}
+#define TRIVIAL_SETCAP8(at, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Array8::SetCapacity", at, REWRITE_CAT(original_, at), 8, (void *)&trivial_set_capacity<8, ctor>, &g_trivial_setcaps);
 // ObjectArray::Construct: a new array of n SIZE-byte objects made with new[] (the count kept in front, at items-4),
 // the count also stored at +4 of the object; the items constructed by the vector constructor iterator with CTOR and
 // DTOR. No memory leaves the pointer null (the count at +4 is still set). Gives the object.
@@ -1355,6 +1380,8 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
 #undef OBJECT_CONSTRUCT
 #undef BEHAVIOUR_CREATE
 #define OBJECT_CONSTRUCT(...)
+#undef TRIVIAL_SETCAP8
+#define TRIVIAL_SETCAP8(...)
 #undef PAIR_RELEASE
 #define PAIR_RELEASE(...)
 #undef SORTED_MAP_CTOR
@@ -1558,6 +1585,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef OBJECT_CONSTRUCT
 #undef BEHAVIOUR_CREATE
 #define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) {at, size, ctor, dtor},
+#undef TRIVIAL_SETCAP8
+#define TRIVIAL_SETCAP8(at, ctor, ...) {at, ctor},
 #undef PAIR_RELEASE
 #define PAIR_RELEASE(...)
 #define BEHAVIOUR_CREATE(at, size, ctor, link, ...) {at, size, ctor, link},

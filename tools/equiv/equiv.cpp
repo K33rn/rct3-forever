@@ -2157,6 +2157,26 @@ static std::vector<Test> tests() {
                              return x;
                          }};
     interface_float.prepare = [](const rewrite::Entry *e) { iflt_c = rewrite::start_constants(e->at); };
+    // Array8::SetCapacity: the array {data at 0x400 or none, count/capacity at +4} at 0x100; n 0..6; the alloc always
+    // succeeds (the copy runs even on failure, so both would crash); the constructor stood in for
+    Test trivial_setcap{0x46f560,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 64; i++) arena<uint32_t>(0x400)[i] = r.next();
+                            bool data = r.next() % 4;
+                            *arena<void *>(0x100) = data ? arena<void>(0x400) : nullptr;
+                            arena<int32_t>(0x100)[1] = data ? r.range(0, 5) : 0;
+                            arena<int32_t>(0x10)[0] = r.range(0, 6);
+                        },
+                        [](void *fn) {
+                            ((int32_t(__fastcall *)(void *, void *, int32_t))fn)(arena<void>(0x100), nullptr,
+                                                                                arena<int32_t>(0x10)[0]);
+                            return Result{};
+                        }};
+    trivial_setcap.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}, {0x402b90, (void *)stub_vector_construct4}});
+    };
+    trivial_setcap.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -2239,7 +2259,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &sorted_map_ctor, &frustum, &interface_float,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
