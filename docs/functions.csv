@@ -769,7 +769,7 @@ address,size,name,callers,status
 0x438f30,60,,0,documented
 0x438f70,771,,1,documented
 0x439280,1201,,1,documented
-0x439740,29,,1,documented
+0x439740,29,Object::GetRef,1,rewritten
 0x439760,1319,,3,documented
 0x439c90,1061,,1,documented
 0x43a0c0,1641,,1,documented
@@ -2252,7 +2252,7 @@ address,size,name,callers,status
 0x4b4a70,28,,4,documented
 0x4b4a90,73,,2,documented
 0x4b4e60,117,TEXT_CREATE2,9,rewritten
-0x4b5040,29,,2,documented
+0x4b5040,29,Object::GetRef,2,rewritten
 0x4b5060,382,,1,documented
 0x4b51e0,239,,8,documented
 0x4b52d0,126,ObjectRef::Assign,14,rewritten
@@ -2812,7 +2812,7 @@ address,size,name,callers,status
 0x4e6080,30,DeletingDestructor,0,rewritten
 0x4e6350,30,DeletingDestructor,1,rewritten
 0x4e6370,7,BaseClass::SetClass,1,rewritten
-0x4e63e0,29,,7,documented
+0x4e63e0,29,Object::GetRef,7,rewritten
 0x4e6410,126,ObjectRef::Assign,90,rewritten
 0x4e6490,180,NamedTextRef::NamedTextRef(text),20,rewritten
 0x4e6550,30,DeletingDestructor,0,rewritten
@@ -3172,7 +3172,7 @@ address,size,name,callers,status
 0x50ff10,576,,2,documented
 0x510150,79,,1,documented
 0x5101a0,684,,2,documented
-0x510500,29,,1,documented
+0x510500,29,Object::GetRef,1,rewritten
 0x510520,152,,3,documented
 0x5105c0,137,,2,documented
 0x510650,60,,1,documented
@@ -4841,7 +4841,7 @@ address,size,name,callers,status
 0x5cdf10,30,DeletingDestructor,0,rewritten
 0x5cdf30,204,,6,documented
 0x5ce000,30,DeletingDestructor,0,rewritten
-0x5ce020,29,,1,documented
+0x5ce020,29,Object::GetRef,1,rewritten
 0x5ce040,387,,4,documented
 0x5ce1d0,3821,,4,documented
 0x5cf2c0,194,,2,documented
@@ -10128,7 +10128,7 @@ address,size,name,callers,status
 0x7ea320,441,,1,documented
 0x7ea4e0,494,,1,documented
 0x7ea6d0,37,,1,documented
-0x7ea780,29,,1,documented
+0x7ea780,29,Object::GetRef,1,rewritten
 0x7ea7a0,831,,1,documented
 0x7eaaf0,30,DeletingDestructor,2,rewritten
 0x7eab10,123,MEMBER_DTOR,1,rewritten
@@ -15729,8 +15729,8 @@ address,size,name,callers,status
 0xa39bb0,212,,1,documented
 0xa39c90,364,,2,documented
 0xa39e50,236,,1,documented
-0xa39f40,29,,1,documented
-0xa39f60,29,,1,documented
+0xa39f40,29,Object::GetRef,1,rewritten
+0xa39f60,29,Object::GetRef,1,rewritten
 0xa39f80,123,,1,documented
 0xa3a020,30,DeletingDestructor,3,rewritten
 0xa3a040,221,,1,documented
@@ -18822,7 +18822,7 @@ address,size,name,callers,status
 0xb87040,30,DeletingDestructor,1,rewritten
 0xb87070,30,DeletingDestructor,1,rewritten
 0xb87090,7,BaseClass::SetClass,1,rewritten
-0xb870a0,29,,2,documented
+0xb870a0,29,Object::GetRef,2,rewritten
 0xb87110,126,ObjectRef::Assign,1,rewritten
 0xb87190,126,ObjectRef::Assign,4,rewritten
 0xb87210,126,ObjectRef::Assign,1,rewritten

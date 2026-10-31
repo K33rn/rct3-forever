@@ -542,6 +542,23 @@ def main():
         n_md += 1
     counts['MEMBER_DTOR'] = n_md
 
+    # Object::GetRef: a 29-byte get-and-addref accessor `*out = this->[OFF]; ++*(uint32_t*)this->[OFF]; return out`.
+    # All copies are byte-identical but for the 4-byte field offset (push ecx; mov ecx,[ecx+OFF]; ...). OFF varies.
+    gref = mem[0x439740 - BASE:0x439740 - BASE + 29]
+    n_gr = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 29 or va in handwritten or va in emitted:
+            continue
+        b = mem[va - BASE:va - BASE + 29]
+        if b[:3] != gref[:3] or b[7:] != gref[7:]:   # same code, offset masked out (bytes 3..6)
+            continue
+        off = int.from_bytes(b[3:7], 'little')
+        first = ', '.join(f'0x{x:02x}' for x in b[:8])
+        out.append(f'GETREF({va:#x}, {off:#x}, {first})')
+        n_gr += 1
+    counts['GETREF'] = n_gr
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

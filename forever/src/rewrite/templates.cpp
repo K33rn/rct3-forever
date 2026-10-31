@@ -1313,6 +1313,9 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
     return obj;
 }
 #define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Construct", at, REWRITE_CAT(original_, at), 8, (void *)&object_construct<size, ctor, dtor>, &g_object_constructs);
+// A get-and-addref accessor: *out = this->[OFF] (a refcounted object), then ++ its refcount (first dword); gives out.
+static volatile long g_getrefs;
+#define GETREF(at, off, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__thiscall REWRITE_CAT(getref_, at)(uint8_t *s, void **out) { g_getrefs++; void *p = *(void **)(s + off); *out = p; ++*(uint32_t *)p; return out; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::GetRef", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(getref_, at), &g_getrefs);
 #define MEMBER_DTOR(at, t0, t1, t2, f0, f1, f2, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint32_t REWRITE_CAT(mddata_, at)[] = {__VA_ARGS__}; static void __fastcall REWRITE_CAT(mdfn_, at)(uint8_t *s) { member_dtor_run(s, REWRITE_CAT(mddata_, at), (int)(sizeof(REWRITE_CAT(mddata_, at)) / 4)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::Members", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(mdfn_, at), &g_member_dtors);
 #define BEHAVIOUR_CREATE(at, size, ctor, link, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Behaviour::Create", at, REWRITE_CAT(original_, at), 8, (void *)&behaviour_create<size, ctor, link>, &g_behaviour_creates);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
@@ -1411,6 +1414,8 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
 #define OBJECT_CONSTRUCT(...)
 #undef MEMBER_DTOR
 #define MEMBER_DTOR(...)
+#undef GETREF
+#define GETREF(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1618,6 +1623,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) {at, size, ctor, dtor},
 #undef MEMBER_DTOR
 #define MEMBER_DTOR(...)
+#undef GETREF
+#define GETREF(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1691,6 +1698,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define WITH_REFERENCE(at, table, field, function, dtor, ...) {at, table, field, function, dtor},
 #undef MEMBER_DTOR
 #define MEMBER_DTOR(at, t0, t1, t2, f0, f1, f2, ...) {at, t0, t1, t2, f0, f1, f2},
+#undef GETREF
+#define GETREF(at, off, ...) {at, off},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
