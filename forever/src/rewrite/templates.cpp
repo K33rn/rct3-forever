@@ -1381,6 +1381,9 @@ static uint32_t __fastcall count_list(uint8_t *self) {
     }
 }
 #define COUNT_LIST(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CountList", at, REWRITE_CAT(original_, at), 8, (void *)&count_list, &g_count_lists);
+// Call A(this), then tail-call B(this) (both void thiscall). Observationally A(this); B(this); for void B.
+static volatile long g_call_then_tail;
+#define CALL_THEN_TAIL(at, a, b, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(ctt_, at)(uint8_t *s) { g_call_then_tail++; ((void(__fastcall *)(void *))a)(s); ((void(__fastcall *)(void *))b)(s); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CallThenTail", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ctt_, at), &g_call_then_tail);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1470,6 +1473,8 @@ static uint32_t __fastcall count_list(uint8_t *self) {
 #define FORWARD2(...)
 #undef COUNT_LIST
 #define COUNT_LIST(...)
+#undef CALL_THEN_TAIL
+#define CALL_THEN_TAIL(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1691,6 +1696,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FORWARD2(...)
 #undef COUNT_LIST
 #define COUNT_LIST(...)
+#undef CALL_THEN_TAIL
+#define CALL_THEN_TAIL(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1776,8 +1783,12 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FORWARD2(at, method, ...) {at, method},
 #undef COUNT_LIST
 #define COUNT_LIST(...)
+#undef CALL_THEN_TAIL
+#define CALL_THEN_TAIL(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
+#undef CALL_THEN_TAIL
+#define CALL_THEN_TAIL(at, a, b, ...) {at, a, b},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

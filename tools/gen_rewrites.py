@@ -727,6 +727,26 @@ def main():
         n_cl += 1
     counts['COUNT_LIST'] = n_cl
 
+    # Object::CallThenTail: push esi; mov esi,ecx; call A; mov ecx,esi; pop esi; jmp B.  A(this); tail-call B(this).
+    cttmn = [i.mnemonic for i in md.disasm(mem[0x530130 - BASE:0x530130 - BASE + 16], 0x530130)]
+    n_ctt = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 16 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != cttmn:
+            continue
+        ca, jm = xs[2], xs[5]
+        if not (ca.mnemonic == 'call' and ca.operands[0].type == X.X86_OP_IMM and jm.mnemonic == 'jmp' and jm.operands[0].type == X.X86_OP_IMM):
+            continue
+        a_t = ca.operands[0].imm & 0xffffffff
+        b_t = jm.operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'CALL_THEN_TAIL({va:#x}, {a_t:#x}, {b_t:#x}, {first})')
+        n_ctt += 1
+    counts['CALL_THEN_TAIL'] = n_ctt
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
