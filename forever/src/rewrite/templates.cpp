@@ -1140,6 +1140,8 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
 #define START_KEY3(at, key3, key2, key1, name, setting, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, key3, 0xf4473c, setting, name, 1, 1, global, dtor, true>, &g_key_commands);
 #define START_KEY1(at, key1, name, setting, group, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, 0, 0, group, setting, name, 1, 1, global, dtor, false>, &g_key_commands);
 #define START_KEY1_FLAG(at, key1, name, setting, group, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, 0, 0, group, setting, name, 1, 0, global, dtor, false>, &g_key_commands);
+#define START_KEY_FULL(at, key1, key2, key3, group, setting, name, flag1, flag2, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, key3, group, setting, name, flag1, flag2, global, dtor, true>, &g_key_commands);
+#define START_KEY_FULL0(at, key1, key2, key3, group, setting, name, flag1, flag2, global, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::KeyCommand", at, REWRITE_CAT(original_, at), 8, (void *)&key_command<key1, key2, key3, group, setting, name, flag1, flag2, global, dtor, false>, &g_key_commands);
 #define NAMED_TEXT_REF(at, suffix, table, class_table, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("NamedTextRef::NamedTextRef", at, REWRITE_CAT(original_, at), 8, (void *)&named_text_ref<suffix, table, class_table>, &g_named_text_refs);
 #define GAME_TEXT_COPY(at, name, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("GameText::Copy", at, REWRITE_CAT(original_, at), 8, (void *)&game_text_copy<name>, &g_game_text_copies);
 #define START_NAME(at, text, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Start::Name", at, REWRITE_CAT(original_, at), 8, (void *)&registered_name<text, global>, &g_names);
@@ -1182,6 +1184,8 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
 #define START_KEY3(...)
 #define START_KEY1(...)
 #define START_KEY1_FLAG(...)
+#define START_KEY_FULL(...)
+#define START_KEY_FULL0(...)
 #undef TEXT_WIDEN
 #undef TEXT_CREATE
 #undef TABLE20_FREE
