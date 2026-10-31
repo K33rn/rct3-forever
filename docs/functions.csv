@@ -1338,7 +1338,7 @@ address,size,name,callers,status
 0x46f120,107,Factory::CreateFromFields,1,rewritten
 0x46f230,8,,3,documented
 0x46f240,760,,1,documented
-0x46f560,234,TRIVIAL_SETCAP8,43,rewritten
+0x46f560,234,TRIVIAL_SETCAP,43,rewritten
 0x46f650,89,,2,documented
 0x46f6b0,558,,5,documented
 0x46f8e0,142,,1,documented
@@ -3157,7 +3157,7 @@ address,size,name,callers,status
 0x50ee20,59,,5,documented
 0x50f0d0,51,ListNode::Unlink,1,rewritten
 0x50fb50,230,StructArrayLoad,0,rewritten
-0x50fc40,246,,1,documented
+0x50fc40,246,TRIVIAL_SETCAP,1,rewritten
 0x50fd40,30,DeletingDestructor,1,rewritten
 0x50fd60,7,BaseClass::SetClass,1,rewritten
 0x50fd70,30,DeletingDestructor,1,rewritten
@@ -8451,7 +8451,7 @@ address,size,name,callers,status
 0x733320,308,,2,documented
 0x733540,26,OwnedPointer::Reset,2,rewritten
 0x733560,134,,1,documented
-0x7335f0,234,TRIVIAL_SETCAP8,2,rewritten
+0x7335f0,234,TRIVIAL_SETCAP,2,rewritten
 0x7336e0,130,,1,documented
 0x733770,26,OwnedPointer::Reset,2,rewritten
 0x733790,61,Array<4>::Allocate,0,rewritten
@@ -10071,7 +10071,7 @@ address,size,name,callers,status
 0x7e52d0,76,,2,documented
 0x7e5350,132,,4,documented
 0x7e53e0,26,OwnedPointer::Reset,0,rewritten
-0x7e5400,258,,11,documented
+0x7e5400,258,TRIVIAL_SETCAP,11,rewritten
 0x7e5520,162,,4,documented
 0x7e55d0,2189,,3,documented
 0x7e5ee0,44,,0,documented
@@ -11650,7 +11650,7 @@ address,size,name,callers,status
 0x860d90,26,OwnedPointer::Reset,3,rewritten
 0x860db0,142,,1,documented
 0x860e40,26,OwnedPointer::Reset,3,rewritten
-0x860e60,234,TRIVIAL_SETCAP8,1,rewritten
+0x860e60,234,TRIVIAL_SETCAP,1,rewritten
 0x860f70,26,OwnedPointer::Reset,0,rewritten
 0x861050,333,,30,documented
 0x8611a0,404,,1,documented
@@ -12812,7 +12812,7 @@ address,size,name,callers,status
 0x90b390,18,Constructor::BaseAndTable,3,rewritten
 0x90b3b0,92,,2,documented
 0x90b410,126,,1,documented
-0x90b4a0,258,,1,documented
+0x90b4a0,258,TRIVIAL_SETCAP,1,rewritten
 0x90b640,405,,1,documented
 0x90b7e0,559,,1,documented
 0x90ba10,1388,,1,documented
@@ -12887,7 +12887,7 @@ address,size,name,callers,status
 0x913760,61,,0,documented
 0x9137a0,326,,1,documented
 0x9138f0,936,,2,documented
-0x913ca0,258,,2,documented
+0x913ca0,258,TRIVIAL_SETCAP,2,rewritten
 0x913e10,491,,3,documented
 0x914010,133,,1,documented
 0x9140a0,535,,1,documented
@@ -13145,7 +13145,7 @@ address,size,name,callers,status
 0x938e90,1061,,0,documented
 0x939340,54,Reference::Interface,3,rewritten
 0x939410,26,OwnedPointer::Reset,2,rewritten
-0x939430,246,,1,documented
+0x939430,246,TRIVIAL_SETCAP,1,rewritten
 0x939530,26,OwnedPointer::Reset,2,rewritten
 0x939550,97,,1,documented
 0x939610,589,,1,documented
@@ -16159,7 +16159,7 @@ address,size,name,callers,status
 0xa6b620,61,Array<4>::Allocate,0,rewritten
 0xa6b660,130,Array<4>::SetCapacity,2,rewritten
 0xa6b6f0,26,OwnedPointer::Reset,2,rewritten
-0xa6b710,246,,1,documented
+0xa6b710,246,TRIVIAL_SETCAP,1,rewritten
 0xa6b810,26,OwnedPointer::Reset,2,rewritten
 0xa6b830,130,Array<4>::SetCapacity,2,rewritten
 0xa6b8c0,26,OwnedPointer::Reset,2,rewritten
@@ -17427,7 +17427,7 @@ address,size,name,callers,status
 0xaf7690,26,OwnedPointer::Reset,4,rewritten
 0xaf76b0,61,Array<4>::Allocate,0,rewritten
 0xaf76f0,26,OwnedPointer::Reset,1,rewritten
-0xaf7710,234,TRIVIAL_SETCAP8,1,rewritten
+0xaf7710,234,TRIVIAL_SETCAP,1,rewritten
 0xaf7800,41,,1,documented
 0xaf7830,88,,1,documented
 0xaf7890,19,,3,documented
@@ -18751,7 +18751,7 @@ address,size,name,callers,status
 0xb82090,667,,2,documented
 0xb82330,120,,2,documented
 0xb82470,26,OwnedPointer::Reset,2,rewritten
-0xb82520,258,,2,documented
+0xb82520,258,TRIVIAL_SETCAP,2,rewritten
 0xb82630,26,OwnedPointer::Reset,2,rewritten
 0xb82650,61,Array<8>::Allocate,1,rewritten
 0xb82690,26,OwnedPointer::Reset,1,rewritten

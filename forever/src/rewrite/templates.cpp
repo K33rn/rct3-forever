@@ -1249,7 +1249,7 @@ template <uint32_t SIZE, uint32_t CTOR> static int32_t __fastcall trivial_set_ca
     ((int32_t *)array)[1] = n;
     return n;
 }
-#define TRIVIAL_SETCAP8(at, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Array8::SetCapacity", at, REWRITE_CAT(original_, at), 8, (void *)&trivial_set_capacity<8, ctor>, &g_trivial_setcaps);
+#define TRIVIAL_SETCAP(at, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ArrayTrivial::SetCapacity", at, REWRITE_CAT(original_, at), 8, (void *)&trivial_set_capacity<size, ctor>, &g_trivial_setcaps);
 // ObjectArray::Construct: a new array of n SIZE-byte objects made with new[] (the count kept in front, at items-4),
 // the count also stored at +4 of the object; the items constructed by the vector constructor iterator with CTOR and
 // DTOR. No memory leaves the pointer null (the count at +4 is still set). Gives the object.
@@ -1380,8 +1380,8 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
 #undef OBJECT_CONSTRUCT
 #undef BEHAVIOUR_CREATE
 #define OBJECT_CONSTRUCT(...)
-#undef TRIVIAL_SETCAP8
-#define TRIVIAL_SETCAP8(...)
+#undef TRIVIAL_SETCAP
+#define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
 #define PAIR_RELEASE(...)
 #undef SORTED_MAP_CTOR
@@ -1585,8 +1585,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef OBJECT_CONSTRUCT
 #undef BEHAVIOUR_CREATE
 #define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) {at, size, ctor, dtor},
-#undef TRIVIAL_SETCAP8
-#define TRIVIAL_SETCAP8(at, ctor, ...) {at, ctor},
+#undef TRIVIAL_SETCAP
+#define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
 #define PAIR_RELEASE(...)
 #define BEHAVIOUR_CREATE(at, size, ctor, link, ...) {at, size, ctor, link},
