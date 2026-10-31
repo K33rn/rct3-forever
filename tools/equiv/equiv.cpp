@@ -2215,6 +2215,13 @@ static std::vector<Test> tests() {
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::DbgSingleton: method(global); the checked-build esp assertion is left real (no-op). method stubbed.
+    static uint32_t g_ds_m;
+    Test dbgsingleton{0xcc17f0,
+                      [=](Rng &r) { fresh(r); },
+                      [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    dbgsingleton.prepare = [](const rewrite::Entry *e) { g_ds_m = rewrite::start_constants(e->at)[2]; stubs_for_now({{g_ds_m, (void *)stub_destructor}}); };
+    dbgsingleton.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::CallThenTail: A(this); then tail-call B(this). Both stubbed (void thiscall).
     static uint32_t g_ctt_a, g_ctt_b;
     Test callthentail{0x530130,
@@ -2363,7 +2370,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

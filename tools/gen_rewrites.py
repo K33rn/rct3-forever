@@ -747,6 +747,29 @@ def main():
         n_ctt += 1
     counts['CALL_THEN_TAIL'] = n_ctt
 
+    # Object::DbgSingleton: push ebp; mov ebp,esp; mov ecx,GLOBAL; call METHOD; cmp ebp,esp; call __RTC_CheckEsp;
+    # pop ebp; ret.  method(global); the checked-build esp assertion is omitted.
+    dsmn = [i.mnemonic for i in md.disasm(mem[0xcc17f0 - BASE:0xcc17f0 - BASE + 22], 0xcc17f0)]
+    n_ds = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 22 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != dsmn:
+            continue
+        movg, c1, c2 = xs[2], xs[3], xs[5]
+        if not (movg.mnemonic == 'mov' and movg.operands[0].type == X.X86_OP_REG and md.reg_name(movg.operands[0].reg) == 'ecx'
+                and movg.operands[1].type == X.X86_OP_IMM and c1.mnemonic == 'call' and c1.operands[0].type == X.X86_OP_IMM
+                and c2.mnemonic == 'call' and c2.operands[0].type == X.X86_OP_IMM and (c2.operands[0].imm & 0xffffffff) == 0xde120d):
+            continue
+        gaddr = movg.operands[1].imm & 0xffffffff
+        method = c1.operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f"DBG_SINGLETON({va:#x}, {gaddr:#x}, {method:#x}, {first})")
+        n_ds += 1
+    counts['DBG_SINGLETON'] = n_ds
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

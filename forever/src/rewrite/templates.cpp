@@ -1384,6 +1384,10 @@ static uint32_t __fastcall count_list(uint8_t *self) {
 // Call A(this), then tail-call B(this) (both void thiscall). Observationally A(this); B(this); for void B.
 static volatile long g_call_then_tail;
 #define CALL_THEN_TAIL(at, a, b, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(ctt_, at)(uint8_t *s) { g_call_then_tail++; ((void(__fastcall *)(void *))a)(s); ((void(__fastcall *)(void *))b)(s); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CallThenTail", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ctt_, at), &g_call_then_tail);
+// A checked-build singleton accessor wrapper: set ecx to a global, call a member method; the following
+// __RTC_CheckEsp is a no-op stack assertion, omitted. Ignores its own arguments; returns void.
+static volatile long g_dbg_singletons;
+#define DBG_SINGLETON(at, global, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(dbgs_, at)(uint8_t *) { g_dbg_singletons++; ((void(__thiscall *)(void *))method)((void *)global); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::DbgSingleton", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(dbgs_, at), &g_dbg_singletons);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1475,6 +1479,8 @@ static volatile long g_call_then_tail;
 #define COUNT_LIST(...)
 #undef CALL_THEN_TAIL
 #define CALL_THEN_TAIL(...)
+#undef DBG_SINGLETON
+#define DBG_SINGLETON(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1698,6 +1704,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define COUNT_LIST(...)
 #undef CALL_THEN_TAIL
 #define CALL_THEN_TAIL(...)
+#undef DBG_SINGLETON
+#define DBG_SINGLETON(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1785,10 +1793,14 @@ const uint32_t *load_constants(uintptr_t at) {
 #define COUNT_LIST(...)
 #undef CALL_THEN_TAIL
 #define CALL_THEN_TAIL(...)
+#undef DBG_SINGLETON
+#define DBG_SINGLETON(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
 #define CALL_THEN_TAIL(at, a, b, ...) {at, a, b},
+#undef DBG_SINGLETON
+#define DBG_SINGLETON(at, global, method, ...) {at, global, method},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
