@@ -770,6 +770,27 @@ def main():
         n_ds += 1
     counts['DBG_SINGLETON'] = n_ds
 
+    # Object::GetField: a (checked-build) getter returning this->[OFF]. Shape of 0xcc2610; OFF at the mov eax,[eax+OFF].
+    gfmn = [i.mnemonic for i in md.disasm(mem[0xcc2610 - BASE:0xcc2610 - BASE + 24], 0xcc2610)]
+    n_gf = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 24 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != gfmn:
+            continue
+        g = xs[6]
+        if not (g.mnemonic == 'mov' and g.operands[0].type == X.X86_OP_REG and md.reg_name(g.operands[0].reg) == 'eax'
+                and g.operands[1].type == X.X86_OP_MEM and g.operands[1].mem.base and md.reg_name(g.operands[1].mem.base) == 'eax'
+                and not g.operands[1].mem.index):
+            continue
+        off = g.operands[1].mem.disp & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'GETFIELD({va:#x}, {off:#x}, {first})')
+        n_gf += 1
+    counts['GETFIELD'] = n_gf
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

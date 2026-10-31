@@ -2215,6 +2215,12 @@ static std::vector<Test> tests() {
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::GetField: return this->[OFF]. OFF per copy.
+    static uint32_t g_gf_off;
+    Test getfield{0xcc2610,
+                  [=](Rng &r) { fresh(r); for (int i = 0; i < 64; i++) arena<uint32_t>(0x100)[i] = r.next(); },
+                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    getfield.prepare = [](const rewrite::Entry *e) { g_gf_off = rewrite::start_constants(e->at)[1]; };
     // Object::DbgSingleton: method(global); the checked-build esp assertion is left real (no-op). method stubbed.
     static uint32_t g_ds_m;
     Test dbgsingleton{0xcc17f0,
@@ -2370,7 +2376,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

@@ -1388,6 +1388,9 @@ static volatile long g_call_then_tail;
 // __RTC_CheckEsp is a no-op stack assertion, omitted. Ignores its own arguments; returns void.
 static volatile long g_dbg_singletons;
 #define DBG_SINGLETON(at, global, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(dbgs_, at)(uint8_t *) { g_dbg_singletons++; ((void(__thiscall *)(void *))method)((void *)global); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::DbgSingleton", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(dbgs_, at), &g_dbg_singletons);
+// A getter: return this->[OFF].
+static volatile long g_getfields;
+#define GETFIELD(at, off, b0, b1, b2, b3, b4, b5, b6, b7, ...) static uint32_t __fastcall REWRITE_CAT(getf_, at)(uint8_t *s) { g_getfields++; return *(uint32_t *)(s + off); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::GetField", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(getf_, at), &g_getfields);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1481,6 +1484,8 @@ static volatile long g_dbg_singletons;
 #define CALL_THEN_TAIL(...)
 #undef DBG_SINGLETON
 #define DBG_SINGLETON(...)
+#undef GETFIELD
+#define GETFIELD(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1706,6 +1711,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define CALL_THEN_TAIL(...)
 #undef DBG_SINGLETON
 #define DBG_SINGLETON(...)
+#undef GETFIELD
+#define GETFIELD(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1795,12 +1802,16 @@ const uint32_t *load_constants(uintptr_t at) {
 #define CALL_THEN_TAIL(...)
 #undef DBG_SINGLETON
 #define DBG_SINGLETON(...)
+#undef GETFIELD
+#define GETFIELD(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
 #define CALL_THEN_TAIL(at, a, b, ...) {at, a, b},
 #undef DBG_SINGLETON
 #define DBG_SINGLETON(at, global, method, ...) {at, global, method},
+#undef GETFIELD
+#define GETFIELD(at, off, ...) {at, off},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
