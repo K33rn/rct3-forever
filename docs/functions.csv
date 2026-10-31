@@ -107,7 +107,7 @@ address,size,name,callers,status
 0x40a120,19,,0,documented
 0x40a140,48,QueryInterface,4,rewritten
 0x40a1e0,48,QueryInterface,0,rewritten
-0x40a230,42,,1,documented
+0x40a230,42,Destructor::TablesThenBase,1,rewritten
 0x40a320,52,,13,documented
 0x40a6e0,136,,21,documented
 0x40a770,218,,2,documented
@@ -1156,7 +1156,7 @@ address,size,name,callers,status
 0x45ef10,73,,10,documented
 0x45efb0,247,,3,documented
 0x45f1e0,30,DeletingDestructor,2,rewritten
-0x45f200,25,,1,documented
+0x45f200,25,Destructor::TablesThenBase,1,rewritten
 0x45f860,30,DeletingDestructor,1,rewritten
 0x45f890,30,DeletingDestructor,1,rewritten
 0x45f8c0,30,DeletingDestructor,1,rewritten
@@ -2916,7 +2916,7 @@ address,size,name,callers,status
 0x4f0020,90,CachedInterface,1,rewritten
 0x4f0080,547,,1,documented
 0x4f02c0,30,DeletingDestructor,2,rewritten
-0x4f02e0,38,,1,documented
+0x4f02e0,38,Destructor::TablesThenBase,1,rewritten
 0x4f0390,520,,1,documented
 0x4f05b0,192,,1,documented
 0x4f0680,30,DeletingDestructor,2,rewritten
@@ -4110,7 +4110,7 @@ address,size,name,callers,status
 0x588260,1619,,2,documented
 0x588990,105,Factory::Create,1,rewritten
 0x588a00,30,DeletingDestructor,4,rewritten
-0x588a60,28,,1,documented
+0x588a60,28,Destructor::TablesThenBase,1,rewritten
 0x588ae0,85,,1,documented
 0x588b40,67,,1,documented
 0x588c00,498,,2,documented
@@ -4159,7 +4159,7 @@ address,size,name,callers,status
 0x58c500,140,,1,documented
 0x58c590,30,DeletingDestructor,1,rewritten
 0x58c5b0,7,SetTable,1,rewritten
-0x58c610,28,,1,documented
+0x58c610,28,Destructor::TablesThenBase,1,rewritten
 0x58c640,43,,1,documented
 0x58c670,171,,1,documented
 0x58c7b0,75,,1,documented
@@ -4209,7 +4209,7 @@ address,size,name,callers,status
 0x58fc90,129,,1,documented
 0x58fd30,119,,1,documented
 0x58fdc0,51,,1,documented
-0x58fe50,28,,1,documented
+0x58fe50,28,Destructor::TablesThenBase,1,rewritten
 0x590280,26,OwnedPointer::Reset,2,rewritten
 0x5902a0,130,Array<4>::SetCapacity,1,rewritten
 0x590370,68,,1,documented
@@ -4637,7 +4637,7 @@ address,size,name,callers,status
 0x5b8f90,198,,3,documented
 0x5b9060,105,Factory::Create,1,rewritten
 0x5b90d0,30,DeletingDestructor,2,rewritten
-0x5b9140,28,,1,documented
+0x5b9140,28,Destructor::TablesThenBase,1,rewritten
 0x5b9180,1646,,1,documented
 0x5b9860,327,,3,documented
 0x5b99b0,30,DeletingDestructor,3,rewritten
@@ -5610,12 +5610,12 @@ address,size,name,callers,status
 0x62e460,41,,1,documented
 0x62e490,24,,1,documented
 0x62e4c0,30,DeletingDestructor,2,rewritten
-0x62e4f0,38,,1,documented
+0x62e4f0,38,Destructor::TablesThenBase,1,rewritten
 0x62e530,30,DeletingDestructor,2,rewritten
 0x62e550,74,,5,documented
 0x62e5b0,32,,1,documented
 0x62e5f0,30,DeletingDestructor,2,rewritten
-0x62e610,38,,1,documented
+0x62e610,38,Destructor::TablesThenBase,1,rewritten
 0x62e670,263,MEMBER_DTOR,1,rewritten
 0x62e790,43,,2,documented
 0x62e7c0,39,,1,documented
@@ -5740,7 +5740,7 @@ address,size,name,callers,status
 0x6397c0,1455,,1,documented
 0x639d70,336,,0,documented
 0x639ec0,330,,4,documented
-0x63a030,48,,49,documented
+0x63a030,48,Destructor::TablesThenBase,49,rewritten
 0x63a060,6,,2,documented
 0x63a090,55,,17,documented
 0x63a0d0,168,,13,documented
@@ -5900,7 +5900,7 @@ address,size,name,callers,status
 0x644170,2795,,17,documented
 0x644c60,30,DeletingDestructor,2,rewritten
 0x644d20,4,,4,documented
-0x644d50,38,,1,documented
+0x644d50,38,Destructor::TablesThenBase,1,rewritten
 0x644d90,107,,1,documented
 0x644e00,136,,1,documented
 0x644e90,59,,10,documented
@@ -6176,7 +6176,7 @@ address,size,name,callers,status
 0x663680,1614,,2,documented
 0x663cd0,30,DeletingDestructor,1,rewritten
 0x663cf0,784,,3,documented
-0x664320,38,,1,documented
+0x664320,38,Destructor::TablesThenBase,1,rewritten
 0x664420,30,DeletingDestructor,2,rewritten
 0x6644d0,205,,1,documented
 0x6645b0,77,,1,documented
@@ -6210,7 +6210,7 @@ address,size,name,callers,status
 0x666d90,30,DeletingDestructor,2,rewritten
 0x666e30,46,,1,documented
 0x666e70,115,,1,documented
-0x666f40,38,,1,documented
+0x666f40,38,Destructor::TablesThenBase,1,rewritten
 0x666f90,82,,1,documented
 0x667000,213,MEMBER_DTOR,1,rewritten
 0x667120,102,,1,documented
@@ -6467,7 +6467,7 @@ address,size,name,callers,status
 0x67e6a0,325,,1,documented
 0x67e8f0,108,,1,documented
 0x67e960,206,,1,documented
-0x67eae0,38,,5,documented
+0x67eae0,38,Destructor::TablesThenBase,5,rewritten
 0x67eb20,360,,3,documented
 0x67ec90,177,,3,documented
 0x67ed60,30,DeletingDestructor,2,rewritten
@@ -6597,7 +6597,7 @@ address,size,name,callers,status
 0x687df0,316,,4,documented
 0x687f30,511,,1,documented
 0x688160,30,DeletingDestructor,2,rewritten
-0x688180,38,,1,documented
+0x688180,38,Destructor::TablesThenBase,1,rewritten
 0x6881d0,30,DeletingDestructor,2,rewritten
 0x6881f0,30,DeletingDestructor,2,rewritten
 0x688210,30,DeletingDestructor,2,rewritten
@@ -6843,10 +6843,10 @@ address,size,name,callers,status
 0x6a2be0,46,,4,documented
 0x6a2c40,107,,3,documented
 0x6a2f80,230,,3,documented
-0x6a3070,38,,1,documented
+0x6a3070,38,Destructor::TablesThenBase,1,rewritten
 0x6a3120,23,,79,documented
 0x6a3140,23,,7,documented
-0x6a3160,38,,1,documented
+0x6a3160,38,Destructor::TablesThenBase,1,rewritten
 0x6a31a0,21,,1,documented
 0x6a3240,30,DeletingDestructor,2,rewritten
 0x6a3260,30,DeletingDestructor,2,rewritten
@@ -6878,7 +6878,7 @@ address,size,name,callers,status
 0x6a5640,30,DeletingDestructor,2,rewritten
 0x6a57c0,515,,0,documented
 0x6a59e0,30,DeletingDestructor,2,rewritten
-0x6a5a00,38,,1,documented
+0x6a5a00,38,Destructor::TablesThenBase,1,rewritten
 0x6a5a80,69,,3,documented
 0x6a5d10,194,,1,documented
 0x6a5e00,30,DeletingDestructor,1,rewritten
@@ -7445,9 +7445,9 @@ address,size,name,callers,status
 0x6d60f0,106,Factory::IntoField,1,rewritten
 0x6d6160,25,,2,documented
 0x6d6180,138,,45,documented
-0x6d6250,25,,13,documented
+0x6d6250,25,Destructor::TablesThenBase,13,rewritten
 0x6d62a0,106,Factory::IntoField,2,rewritten
-0x6d6320,25,,75,documented
+0x6d6320,25,Destructor::TablesThenBase,75,rewritten
 0x6d6340,55,,19,documented
 0x6d6380,106,Factory::IntoField,13,rewritten
 0x6d6410,30,DeletingDestructor,2,rewritten
@@ -7769,7 +7769,7 @@ address,size,name,callers,status
 0x6ecf90,147,,3,documented
 0x6ed030,674,,1,documented
 0x6ed2e0,39,,2,documented
-0x6ed3c0,38,,1,documented
+0x6ed3c0,38,Destructor::TablesThenBase,1,rewritten
 0x6ed400,15,,2,documented
 0x6ed420,30,DeletingDestructor,2,rewritten
 0x6ed440,172,,1,documented
@@ -9277,7 +9277,7 @@ address,size,name,callers,status
 0x78b8d0,143,,1,documented
 0x78b970,157,,1,documented
 0x78ba20,179,,1,documented
-0x78baf0,28,,1,documented
+0x78baf0,28,Destructor::TablesThenBase,1,rewritten
 0x78bb20,267,,1,documented
 0x78bc40,223,,1,documented
 0x78bd30,245,,1,documented
@@ -10163,7 +10163,7 @@ address,size,name,callers,status
 0x7eed40,114,WideText::CopyOf,1,rewritten
 0x7eedc0,804,,1,documented
 0x7ef160,91,,1,documented
-0x7ef1c0,38,,1,documented
+0x7ef1c0,38,Destructor::TablesThenBase,1,rewritten
 0x7ef2f0,30,DeletingDestructor,1,rewritten
 0x7ef310,78,,1,documented
 0x7ef360,30,DeletingDestructor,2,rewritten
@@ -10225,7 +10225,7 @@ address,size,name,callers,status
 0x7f5f10,105,Factory::Create,1,rewritten
 0x7f5f80,30,DeletingDestructor,3,rewritten
 0x7f5fc0,54,Reference::Interface,1,rewritten
-0x7f6000,28,,1,documented
+0x7f6000,28,Destructor::TablesThenBase,1,rewritten
 0x7f6050,16,,1,documented
 0x7f6060,957,,1,documented
 0x7f6440,255,,1,documented
@@ -10698,10 +10698,10 @@ address,size,name,callers,status
 0x8153c0,114,,13,documented
 0x815470,376,,1,documented
 0x8155f0,126,ObjectRef::Assign,2,rewritten
-0x815670,25,,1,documented
+0x815670,25,Destructor::TablesThenBase,1,rewritten
 0x8156c0,126,ObjectRef::Assign,30,rewritten
-0x815850,25,,1,documented
-0x8158c0,25,,1,documented
+0x815850,25,Destructor::TablesThenBase,1,rewritten
+0x8158c0,25,Destructor::TablesThenBase,1,rewritten
 0x815910,67,Reference::Reference(object),7,rewritten
 0x815970,67,Reference::Reference(object),0,rewritten
 0x815ac0,293,StructArrayField<44>::Save,1,rewritten
@@ -15008,12 +15008,12 @@ address,size,name,callers,status
 0x9f6490,132,,1,documented
 0x9f6520,546,,1,documented
 0x9f6760,30,DeletingDestructor,2,rewritten
-0x9f6780,38,,1,documented
+0x9f6780,38,Destructor::TablesThenBase,1,rewritten
 0x9f67c0,195,,1,documented
 0x9f6890,132,,1,documented
 0x9f6920,487,,4,documented
 0x9f6b10,30,DeletingDestructor,2,rewritten
-0x9f6b50,28,,1,documented
+0x9f6b50,28,Destructor::TablesThenBase,1,rewritten
 0x9f6b80,88,,1,documented
 0x9f6c90,386,,1,documented
 0x9f6e30,30,DeletingDestructor,2,rewritten
@@ -15397,7 +15397,7 @@ address,size,name,callers,status
 0xa19310,1307,,1,documented
 0xa19830,587,,1,documented
 0xa19a80,626,,2,documented
-0xa19d10,32,,4,documented
+0xa19d10,32,Destructor::TablesThenBase,4,rewritten
 0xa19d30,64,,2,documented
 0xa19da0,105,Factory::Create,1,rewritten
 0xa19e10,30,DeletingDestructor,3,rewritten
@@ -15843,7 +15843,7 @@ address,size,name,callers,status
 0xa475b0,34,,1,documented
 0xa476b0,134,,6,documented
 0xa47750,30,DeletingDestructor,2,rewritten
-0xa47770,38,,1,documented
+0xa47770,38,Destructor::TablesThenBase,1,rewritten
 0xa47860,26,OwnedPointer::Reset,2,rewritten
 0xa47880,61,Array<4>::Allocate,0,rewritten
 0xa478c0,26,OwnedPointer::Reset,2,rewritten
@@ -16281,7 +16281,7 @@ address,size,name,callers,status
 0xa7e870,30,DeletingDestructor,4,rewritten
 0xa7e890,617,,1,documented
 0xa7eb40,54,Reference::Interface,4,rewritten
-0xa7eba0,28,,1,documented
+0xa7eba0,28,Destructor::TablesThenBase,1,rewritten
 0xa7ebe0,86,,14,documented
 0xa7ec40,243,,6,documented
 0xa7ed40,1144,,4,documented
@@ -17109,7 +17109,7 @@ address,size,name,callers,status
 0xacc280,194,,1,documented
 0xacc6a0,504,,1,documented
 0xacc8b0,30,DeletingDestructor,2,rewritten
-0xacc8d0,28,,1,documented
+0xacc8d0,28,Destructor::TablesThenBase,1,rewritten
 0xacc900,528,,1,documented
 0xaccb40,71,,0,documented
 0xaccbb0,30,DeletingDestructor,3,rewritten
@@ -18217,7 +18217,7 @@ address,size,name,callers,status
 0xb4c660,1082,,1,documented
 0xb4cb30,48,,1,documented
 0xb4cb70,321,,1,documented
-0xb4ccd0,38,,1,documented
+0xb4ccd0,38,Destructor::TablesThenBase,1,rewritten
 0xb4cd10,139,,1,documented
 0xb4cdc0,140,,2,documented
 0xb4ced0,30,DeletingDestructor,2,rewritten
@@ -26078,7 +26078,7 @@ address,size,name,callers,status
 0xdf7bf0,58,,1,documented
 0xdf7c90,157,,1,documented
 0xdf7d30,30,DeletingDestructor,1,rewritten
-0xdf7d50,45,,4,documented
+0xdf7d50,45,Destructor::TablesThenBase,4,rewritten
 0xdf7d80,191,,3,documented
 0xdf7e50,25,,2,documented
 0xdf7e90,23,,2,documented
