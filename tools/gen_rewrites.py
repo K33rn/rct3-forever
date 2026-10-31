@@ -814,6 +814,30 @@ def main():
         n_gmc += 1
     counts['GLOBAL_MEMBER_CALL'] = n_gmc
 
+    # Object::CondForward: byte-identical but the call target. if(this->[0xc]>=0) method(this->[0], this->[0xc], this->[8]).
+    cfref = mem[0x851c70 - BASE:0x851c70 - BASE + 20]
+    cfmn = [i.mnemonic for i in md.disasm(cfref, 0x851c70)]
+    n_cf = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 20 or va in handwritten or va in emitted:
+            continue
+        b = mem[va - BASE:va - BASE + n]
+        xs = list(md.disasm(b, va))
+        if [i.mnemonic for i in xs] != cfmn or xs[7].mnemonic != 'call' or xs[7].operands[0].type != X.X86_OP_IMM:
+            continue
+        ca = xs[7].address - va; cl = xs[7].size
+        m = bytearray(b); rf = bytearray(cfref)
+        for k in range(ca + cl - 4, ca + cl):
+            m[k] = 0; rf[k] = 0
+        if m != rf:
+            continue
+        method = xs[7].operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in b[:8])
+        out.append(f'COND_FORWARD({va:#x}, {method:#x}, {first})')
+        n_cf += 1
+    counts['COND_FORWARD'] = n_cf
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
