@@ -808,9 +808,9 @@ address,size,name,callers,status
 0x440e70,39,,9,documented
 0x440ea0,40,,2,documented
 0x440ed0,60,Listener::~Listener,161,rewritten
-0x440f10,60,,7,documented
-0x440f50,60,,18,documented
-0x440f90,60,,3,documented
+0x440f10,60,Listener::~Listener,7,rewritten
+0x440f50,60,Listener::~Listener,18,rewritten
+0x440f90,60,Listener::~Listener,3,rewritten
 0x440fd0,88,,246,documented
 0x441030,46,,56,documented
 0x441060,46,,3,documented
@@ -854,7 +854,7 @@ address,size,name,callers,status
 0x443ae0,142,,3,documented
 0x443b70,847,,2,documented
 0x443ee0,218,,9,documented
-0x443fe0,60,,26,documented
+0x443fe0,60,Listener::~Listener,26,rewritten
 0x444020,102,Factory::Create,1,rewritten
 0x444090,106,,127,documented
 0x444100,1651,,3,documented
@@ -1012,7 +1012,7 @@ address,size,name,callers,status
 0x4533c0,99,,11,documented
 0x453430,395,,5,documented
 0x4535c0,37,,12,documented
-0x4535f0,60,,33,documented
+0x4535f0,60,Listener::~Listener,33,rewritten
 0x453630,1347,,62,documented
 0x453b80,835,,3,documented
 0x453ed0,86,,1,documented
@@ -1634,7 +1634,7 @@ address,size,name,callers,status
 0x483d20,83,,3,documented
 0x483d80,36,,1,documented
 0x483db0,40,,4,documented
-0x483de0,60,,11,documented
+0x483de0,60,Listener::~Listener,11,rewritten
 0x483ec0,48,QueryInterface,6,rewritten
 0x483f00,48,QueryInterface,19,rewritten
 0x483f40,91,,0,documented
@@ -5519,7 +5519,7 @@ address,size,name,callers,status
 0x6208d0,88,,1,documented
 0x620930,44,,1,documented
 0x6209c0,182,,0,documented
-0x620a80,60,,6,documented
+0x620a80,60,Listener::~Listener,6,rewritten
 0x620ac0,267,,1,documented
 0x620bd0,36,SharedBuffer::Release,2,rewritten
 0x620c00,30,DeletingDestructor,0,rewritten
@@ -10289,7 +10289,7 @@ address,size,name,callers,status
 0x7faa80,140,,2,documented
 0x7fab10,389,,1,documented
 0x7fade0,50,,18,documented
-0x7fae20,60,,49,documented
+0x7fae20,60,Listener::~Listener,49,rewritten
 0x7fae60,98,,2,documented
 0x7faed0,58,,4,documented
 0x7faf10,30,DeletingDestructor,1,rewritten
@@ -11778,7 +11778,7 @@ address,size,name,callers,status
 0x871b80,30,DeletingDestructor,2,rewritten
 0x871cb0,522,,1,documented
 0x871f20,223,,1,documented
-0x8720c0,60,,2,documented
+0x8720c0,60,Listener::~Listener,2,rewritten
 0x872120,86,,1,documented
 0x872180,135,,1,documented
 0x872210,1056,,1,documented
@@ -12590,7 +12590,7 @@ address,size,name,callers,status
 0x8e92b0,61,,2,documented
 0x8e9330,326,,3,documented
 0x8e9480,37,,1,documented
-0x8e94e0,60,,4,documented
+0x8e94e0,60,Listener::~Listener,4,rewritten
 0x8e9520,211,,1,documented
 0x8e9650,82,,1,documented
 0x8e96b0,1426,,1,documented
@@ -13263,7 +13263,7 @@ address,size,name,callers,status
 0x946800,892,,1,documented
 0x946be0,874,,0,documented
 0x946f50,37,,3,documented
-0x946f80,60,,9,documented
+0x946f80,60,Listener::~Listener,9,rewritten
 0x946fc0,983,,1,documented
 0x9473a0,360,,1,documented
 0x947540,296,,1,documented

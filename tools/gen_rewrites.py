@@ -154,8 +154,11 @@ def main():
     ARRAY_FREE = strict(body(0x420B40), FREE_LOOSE)
     n_rn = n_rt = n_af = n_st = 0
     # start-up initialisers: also the same layout (instruction sizes, jumps to the same offsets)
-    def inside(ins, target):
-        return ins[0].address <= target < ins[-1].address + ins[-1].size
+    func_size = {int(r['address'], 16): int(r['size']) for r in funcs}
+
+    def inside(ins, target):   # within the function's whole byte range (not just the last disassembled instruction,
+        start = ins[0].address  # which can stop short of trailing bytes a jump may land on)
+        return start <= target < start + func_size.get(start, ins[-1].address + ins[-1].size - start)
 
     def layout_by_index(ins, loose):
         # as layout(), but jumps by the instruction they go to and no size for the instructions with masked constants
