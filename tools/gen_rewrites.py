@@ -938,6 +938,31 @@ def main():
         n_dw2 += 1
     counts['DBG_WRAP2'] = n_dw2
 
+    # Object::CtorBaseArg: push IMM; mov esi,ecx; call BASE; mov [esi],TABLE; mov eax,esi; pop esi; ret.
+    cbamn = [i.mnemonic for i in md.disasm(mem[0x9685d0 - BASE:0x9685d0 - BASE + 20], 0x9685d0)]
+    n_cba = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 20 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        if [i.mnemonic for i in xs] != cbamn:
+            continue
+        pa, call, st = xs[1], xs[3], xs[4]
+        if not (pa.mnemonic == 'push' and pa.operands[0].type == X.X86_OP_IMM
+                and call.mnemonic == 'call' and call.operands[0].type == X.X86_OP_IMM
+                and st.mnemonic == 'mov' and st.operands[0].type == X.X86_OP_MEM and st.operands[0].mem.base
+                and md.reg_name(st.operands[0].mem.base) == 'esi' and not st.operands[0].mem.index
+                and (st.operands[0].mem.disp & 0xffffffff) == 0 and st.operands[1].type == X.X86_OP_IMM):
+            continue
+        argimm = pa.operands[0].imm & 0xffffffff
+        base = call.operands[0].imm & 0xffffffff
+        table = st.operands[1].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'CTOR_BASE_ARG({va:#x}, {base:#x}, {argimm:#x}, {table:#x}, {first})')
+        n_cba += 1
+    counts['CTOR_BASE_ARG'] = n_cba
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

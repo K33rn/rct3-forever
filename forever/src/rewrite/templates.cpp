@@ -1410,6 +1410,9 @@ static volatile long g_free_two_fields;
 // __RTC_CheckEsp is a no-op, omitted.
 static volatile long g_dbg_wrap2;
 #define DBG_WRAP2(at, global, method, helper, argimm, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(dw2_, at)(uint8_t *) { g_dbg_wrap2++; ((void(__thiscall *)(void *))method)((void *)global); ((void(__cdecl *)(uint32_t))helper)(argimm); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::DbgWrap2", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(dw2_, at), &g_dbg_wrap2);
+// A constructor thunk: call the base constructor with one immediate argument, set a table at [this], return this.
+static volatile long g_ctor_base_args;
+#define CTOR_BASE_ARG(at, base, argimm, table, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__fastcall REWRITE_CAT(cba_, at)(uint8_t *s) { g_ctor_base_args++; ((void(__thiscall *)(void *, uint32_t))base)(s, argimm); *(uint32_t *)s = table; return s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CtorBaseArg", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(cba_, at), &g_ctor_base_args);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1517,6 +1520,8 @@ static volatile long g_dbg_wrap2;
 #define FREE_TWO_FIELDS(...)
 #undef DBG_WRAP2
 #define DBG_WRAP2(...)
+#undef CTOR_BASE_ARG
+#define CTOR_BASE_ARG(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1756,6 +1761,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FREE_TWO_FIELDS(...)
 #undef DBG_WRAP2
 #define DBG_WRAP2(...)
+#undef CTOR_BASE_ARG
+#define CTOR_BASE_ARG(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1859,6 +1866,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FREE_TWO_FIELDS(...)
 #undef DBG_WRAP2
 #define DBG_WRAP2(...)
+#undef CTOR_BASE_ARG
+#define CTOR_BASE_ARG(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1879,6 +1888,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FREE_TWO_FIELDS(at, off0, off1, ...) {at, off0, off1},
 #undef DBG_WRAP2
 #define DBG_WRAP2(at, global, method, helper, argimm, ...) {at, global, method, helper, argimm},
+#undef CTOR_BASE_ARG
+#define CTOR_BASE_ARG(at, base, argimm, table, ...) {at, base, argimm, table},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

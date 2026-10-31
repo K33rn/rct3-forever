@@ -13497,14 +13497,14 @@ address,size,name,callers,status
 0x968550,30,DeletingDestructor,1,rewritten
 0x968570,45,,1,documented
 0x9685a0,30,DeletingDestructor,1,rewritten
-0x9685d0,20,,1,documented
+0x9685d0,20,Object::CtorBaseArg,1,rewritten
 0x968630,109,,0,documented
 0x9686a0,1678,,1,documented
 0x968d30,30,DeletingDestructor,1,rewritten
 0x968d60,42,,2,documented
-0x968d90,20,,1,documented
+0x968d90,20,Object::CtorBaseArg,1,rewritten
 0x968db0,30,DeletingDestructor,1,rewritten
-0x968de0,20,,1,documented
+0x968de0,20,Object::CtorBaseArg,1,rewritten
 0x968e00,26,,1,documented
 0x968e20,26,Object::FreeTwoFields,2,rewritten
 0x968e40,1,,1,documented
@@ -13528,7 +13528,7 @@ address,size,name,callers,status
 0x969920,333,,0,documented
 0x969af0,31,,1,documented
 0x969b10,30,DeletingDestructor,1,rewritten
-0x969b40,20,,1,documented
+0x969b40,20,Object::CtorBaseArg,1,rewritten
 0x969c00,26,OwnedPointer::Reset,1,rewritten
 0x969c20,164,Array<20>::SetCapacity,1,rewritten
 0x969cd0,26,OwnedPointer::Reset,1,rewritten
@@ -13570,7 +13570,7 @@ address,size,name,callers,status
 0x96c150,79,Destructor::Tables,1,rewritten
 0x96c390,30,DeletingDestructor,2,rewritten
 0x96c3b0,187,,0,documented
-0x96c470,20,,1,documented
+0x96c470,20,Object::CtorBaseArg,1,rewritten
 0x96c4b0,26,Object::FreeTwoFields,2,rewritten
 0x96c5c0,26,OwnedPointer::Reset,1,rewritten
 0x96c5e0,164,Array<20>::SetCapacity,1,rewritten
@@ -13626,7 +13626,7 @@ address,size,name,callers,status
 0x970a90,172,,1,documented
 0x970b40,245,,0,documented
 0x970c40,30,DeletingDestructor,2,rewritten
-0x970c60,20,,1,documented
+0x970c60,20,Object::CtorBaseArg,1,rewritten
 0x970c80,164,,1,documented
 0x970da0,26,OwnedPointer::Reset,1,rewritten
 0x970dc0,26,OwnedPointer::Reset,1,rewritten
@@ -13732,7 +13732,7 @@ address,size,name,callers,status
 0x97aba0,30,DeletingDestructor,1,rewritten
 0x97abd0,196,,2,documented
 0x97aca0,224,,2,documented
-0x97ad80,20,,1,documented
+0x97ad80,20,Object::CtorBaseArg,1,rewritten
 0x97adf0,420,,1,documented
 0x97afa0,154,,1,documented
 0x97b040,1024,,1,documented
