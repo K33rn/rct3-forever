@@ -963,6 +963,26 @@ def main():
         n_cba += 1
     counts['CTOR_BASE_ARG'] = n_cba
 
+    # Object::AllocStore: push esi; mov esi,ecx; mov cl,1; call ALLOC; mov [esi],eax; mov eax,esi; pop esi; ret.
+    almn = [i.mnemonic for i in md.disasm(mem[0x4027f0 - BASE:0x4027f0 - BASE + 16], 0x4027f0)]
+    n_als = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 16 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        if [i.mnemonic for i in xs] != almn:
+            continue
+        clm, call, st = xs[2], xs[3], xs[4]
+        if not (clm.mnemonic == 'mov' and clm.op_str.startswith('cl,') and call.mnemonic == 'call' and call.operands[0].type == X.X86_OP_IMM
+                and (clm.operands[1].imm & 0xff) == 1 and st.mnemonic == 'mov' and st.op_str == 'dword ptr [esi], eax'):
+            continue
+        alloc = call.operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'ALLOC_STORE({va:#x}, {alloc:#x}, {first})')
+        n_als += 1
+    counts['ALLOC_STORE'] = n_als
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

@@ -12,7 +12,7 @@ address,size,name,callers,status
 0x402550,501,,5,documented
 0x402750,33,,2,documented
 0x4027b0,40,Text::Widen,0,rewritten
-0x4027f0,16,,10,documented
+0x4027f0,16,Object::AllocStore,10,rewritten
 0x4028c0,103,,5,documented
 0x402970,11,,56,documented
 0x4029c0,36,,1,documented
@@ -436,7 +436,7 @@ address,size,name,callers,status
 0x41f210,161,GameText::Copy,1,rewritten
 0x41f2c0,796,,1,documented
 0x41f760,67,Reference::Reference(object),1,rewritten
-0x41f850,16,,2,documented
+0x41f850,16,Object::AllocStore,2,rewritten
 0x41f910,53,,3,documented
 0x41f950,1,__break,2,library
 0x41f960,8,,2,documented
@@ -904,7 +904,7 @@ address,size,name,callers,status
 0x447530,216,,6,documented
 0x447610,294,,5,documented
 0x447740,2568,,5,documented
-0x448170,16,,20,documented
+0x448170,16,Object::AllocStore,20,rewritten
 0x448180,48,QueryInterface,1,rewritten
 0x448200,48,QueryInterface,29,rewritten
 0x4482a0,183,,1,documented
@@ -3176,7 +3176,7 @@ address,size,name,callers,status
 0x510520,152,,3,documented
 0x5105c0,137,,2,documented
 0x510650,60,,1,documented
-0x510690,16,,1,documented
+0x510690,16,Object::AllocStore,1,rewritten
 0x5106c0,36,SharedBuffer::Release,18,rewritten
 0x5106f0,16,,1,documented
 0x510710,83,,2,documented
@@ -6642,7 +6642,7 @@ address,size,name,callers,status
 0x68d840,1064,,2,documented
 0x68e200,438,,1,documented
 0x68e3c0,1251,,1,documented
-0x68e8b0,16,,2,documented
+0x68e8b0,16,Object::AllocStore,2,rewritten
 0x68e8c0,36,SharedBuffer::Release,6,rewritten
 0x68e950,628,,1,documented
 0x68ec00,322,,1,documented
@@ -7182,7 +7182,7 @@ address,size,name,callers,status
 0x6bcb20,90,,2,documented
 0x6bcd40,30,DeletingDestructor,1,rewritten
 0x6bcd70,30,DeletingDestructor,1,rewritten
-0x6bcda0,16,,3,documented
+0x6bcda0,16,Object::AllocStore,3,rewritten
 0x6bcdb0,36,SharedBuffer::Release,10,rewritten
 0x6bce00,1075,,59,documented
 0x6bd2a0,544,,3,documented
@@ -14634,7 +14634,7 @@ address,size,name,callers,status
 0x9d1340,36,SharedBuffer::Release,1,rewritten
 0x9d1370,117,,2,documented
 0x9d13f0,169,,1,documented
-0x9d1570,16,,0,documented
+0x9d1570,16,Object::AllocStore,0,rewritten
 0x9d1580,4269,,2,documented
 0x9d2640,126,ObjectRef::Assign,1,rewritten
 0x9d26f0,530,,2,documented
@@ -22379,7 +22379,7 @@ address,size,name,callers,status
 0xcb2940,91,Array::Reserve,5,rewritten
 0xcb29a0,91,Array::Reserve,3,rewritten
 0xcb2a00,81,,2,documented
-0xcb2a60,16,,1,documented
+0xcb2a60,16,Object::AllocStore,1,rewritten
 0xcb2a70,101,,1,documented
 0xcb2b00,32,Object::ArrayPush,0,rewritten
 0xcb2b20,32,Object::ArrayPush,0,rewritten
@@ -22508,7 +22508,7 @@ address,size,name,callers,status
 0xcbcc10,355,,2,documented
 0xcbce60,91,Array::Reserve,8,rewritten
 0xcbcf50,91,Array::Reserve,3,rewritten
-0xcbcfe0,16,,1,documented
+0xcbcfe0,16,Object::AllocStore,1,rewritten
 0xcbd010,26,Object::GetRef,1,rewritten
 0xcbd030,26,Object::GetRef,1,rewritten
 0xcbd050,98,,2,documented
@@ -22745,7 +22745,7 @@ address,size,name,callers,status
 0xcc91a0,239,,2,documented
 0xcc9290,586,,1,documented
 0xcc94e0,343,,1,documented
-0xcc9640,16,,2,documented
+0xcc9640,16,Object::AllocStore,2,rewritten
 0xcc96b0,6770,,2,documented
 0xccb130,287,,2,documented
 0xccb260,121,,1,documented
