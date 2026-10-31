@@ -1406,6 +1406,10 @@ static volatile long g_del_member_fields;
 // Free two pointer fields with operator delete (no null check, no clear).
 static volatile long g_free_two_fields;
 #define FREE_TWO_FIELDS(at, off0, off1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(ftf_, at)(uint8_t *s) { g_free_two_fields++; ((void(__cdecl *)(void *))0xbce010)(*(void **)(s + off0)); ((void(__cdecl *)(void *))0xbce010)(*(void **)(s + off1)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::FreeTwoFields", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ftf_, at), &g_free_two_fields);
+// A checked-build wrapper: call a member method on a global, then a __cdecl helper with an immediate; the trailing
+// __RTC_CheckEsp is a no-op, omitted.
+static volatile long g_dbg_wrap2;
+#define DBG_WRAP2(at, global, method, helper, argimm, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(dw2_, at)(uint8_t *) { g_dbg_wrap2++; ((void(__thiscall *)(void *))method)((void *)global); ((void(__cdecl *)(uint32_t))helper)(argimm); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::DbgWrap2", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(dw2_, at), &g_dbg_wrap2);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1511,6 +1515,8 @@ static volatile long g_free_two_fields;
 #define DELMEMBER_FIELD(...)
 #undef FREE_TWO_FIELDS
 #define FREE_TWO_FIELDS(...)
+#undef DBG_WRAP2
+#define DBG_WRAP2(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1748,6 +1754,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DELMEMBER_FIELD(...)
 #undef FREE_TWO_FIELDS
 #define FREE_TWO_FIELDS(...)
+#undef DBG_WRAP2
+#define DBG_WRAP2(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1849,6 +1857,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DELMEMBER_FIELD(...)
 #undef FREE_TWO_FIELDS
 #define FREE_TWO_FIELDS(...)
+#undef DBG_WRAP2
+#define DBG_WRAP2(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1867,6 +1877,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DELMEMBER_FIELD(at, off, ...) {at, off},
 #undef FREE_TWO_FIELDS
 #define FREE_TWO_FIELDS(at, off0, off1, ...) {at, off0, off1},
+#undef DBG_WRAP2
+#define DBG_WRAP2(at, global, method, helper, argimm, ...) {at, global, method, helper, argimm},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

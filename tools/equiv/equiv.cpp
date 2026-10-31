@@ -2227,6 +2227,13 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     delmemberfield.prepare = [](const rewrite::Entry *e) { g_dmf_off = rewrite::start_constants(e->at)[1]; };
+    // Object::DbgWrap2: method(global); helper(argimm). method stubbed (thiscall), helper stubbed (cdecl 1-arg).
+    static uint32_t g_dw_m, g_dw_h;
+    Test dbgwrap2{0xf042f0,
+                  [=](Rng &r) { fresh(r); },
+                  [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    dbgwrap2.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_dw_m = c[2]; g_dw_h = c[3]; stubs_for_now({{g_dw_m, (void *)stub_destructor}, {g_dw_h, (void *)stub_free}}); };
+    dbgwrap2.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::FreeTwoFields: operator delete this->[OFF0]; operator delete this->[OFF1] (0xbce010 globally stubbed).
     static uint32_t g_ftf_o0, g_ftf_o1;
     Test freetwofields{0x426770,
@@ -2425,7 +2432,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

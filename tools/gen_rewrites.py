@@ -913,6 +913,31 @@ def main():
         n_ftf += 1
     counts['FREE_TWO_FIELDS'] = n_ftf
 
+    # Object::DbgWrap2: ecx=GLOBAL; call METHOD; push ARGIMM; call HELPER; add esp,4; __RTC_CheckEsp (omitted).
+    dw2mn = [i.mnemonic for i in md.disasm(mem[0xf042f0 - BASE:0xf042f0 - BASE + 35], 0xf042f0)]
+    n_dw2 = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 35 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != dw2mn:
+            continue
+        movg, c1, pa, c2 = xs[2], xs[3], xs[4], xs[5]
+        if not (movg.mnemonic == 'mov' and movg.operands[0].type == X.X86_OP_REG and md.reg_name(movg.operands[0].reg) == 'ecx'
+                and movg.operands[1].type == X.X86_OP_IMM and c1.mnemonic == 'call' and c1.operands[0].type == X.X86_OP_IMM
+                and pa.mnemonic == 'push' and pa.operands[0].type == X.X86_OP_IMM
+                and c2.mnemonic == 'call' and c2.operands[0].type == X.X86_OP_IMM):
+            continue
+        gaddr3 = movg.operands[1].imm & 0xffffffff
+        method = c1.operands[0].imm & 0xffffffff
+        argimm = pa.operands[0].imm & 0xffffffff
+        helper = c2.operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'DBG_WRAP2({va:#x}, {gaddr3:#x}, {method:#x}, {helper:#x}, {argimm:#x}, {first})')
+        n_dw2 += 1
+    counts['DBG_WRAP2'] = n_dw2
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
