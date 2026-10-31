@@ -791,6 +791,29 @@ def main():
         n_gf += 1
     counts['GETFIELD'] = n_gf
 
+    # Object::GlobalMemberCall: test ecx,ecx; je; push ecx; mov ecx,[GLOBAL]; add ecx,4; call METHOD; ret.
+    # if(this) method(*GLOBAL + 4, this).
+    gmcmn = [i.mnemonic for i in md.disasm(mem[0xc0a840 - BASE:0xc0a840 - BASE + 20], 0xc0a840)]
+    n_gmc = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 20 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != gmcmn:
+            continue
+        movg, addi, call = xs[3], xs[4], xs[5]
+        if not (movg.mnemonic == 'mov' and movg.operands[1].type == X.X86_OP_MEM and not movg.operands[1].mem.base
+                and addi.mnemonic == 'add' and addi.operands[1].type == X.X86_OP_IMM and (addi.operands[1].imm & 0xffffffff) == 4
+                and call.mnemonic == 'call' and call.operands[0].type == X.X86_OP_IMM):
+            continue
+        gaddr2 = movg.operands[1].mem.disp & 0xffffffff
+        method = call.operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'GLOBAL_MEMBER_CALL({va:#x}, {gaddr2:#x}, {method:#x}, {first})')
+        n_gmc += 1
+    counts['GLOBAL_MEMBER_CALL'] = n_gmc
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

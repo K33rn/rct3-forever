@@ -1391,6 +1391,9 @@ static volatile long g_dbg_singletons;
 // A getter: return this->[OFF].
 static volatile long g_getfields;
 #define GETFIELD(at, off, b0, b1, b2, b3, b4, b5, b6, b7, ...) static uint32_t __fastcall REWRITE_CAT(getf_, at)(uint8_t *s) { g_getfields++; return *(uint32_t *)(s + off); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::GetField", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(getf_, at), &g_getfields);
+// If this is non-null, call a member method on (*GLOBAL + 4) passing this as the argument.
+static volatile long g_global_member_calls;
+#define GLOBAL_MEMBER_CALL(at, global, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(gmc_, at)(uint8_t *s) { g_global_member_calls++; if (s) ((void(__thiscall *)(void *, void *))method)((void *)(*(uintptr_t *)global + 4), s); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::GlobalMemberCall", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(gmc_, at), &g_global_member_calls);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1486,6 +1489,8 @@ static volatile long g_getfields;
 #define DBG_SINGLETON(...)
 #undef GETFIELD
 #define GETFIELD(...)
+#undef GLOBAL_MEMBER_CALL
+#define GLOBAL_MEMBER_CALL(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1713,6 +1718,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DBG_SINGLETON(...)
 #undef GETFIELD
 #define GETFIELD(...)
+#undef GLOBAL_MEMBER_CALL
+#define GLOBAL_MEMBER_CALL(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1804,6 +1811,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DBG_SINGLETON(...)
 #undef GETFIELD
 #define GETFIELD(...)
+#undef GLOBAL_MEMBER_CALL
+#define GLOBAL_MEMBER_CALL(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1812,6 +1821,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DBG_SINGLETON(at, global, method, ...) {at, global, method},
 #undef GETFIELD
 #define GETFIELD(at, off, ...) {at, off},
+#undef GLOBAL_MEMBER_CALL
+#define GLOBAL_MEMBER_CALL(at, global, method, ...) {at, global, method},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
