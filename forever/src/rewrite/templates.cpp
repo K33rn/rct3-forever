@@ -1325,6 +1325,9 @@ static void *setfields_run(uint8_t *self, const uint32_t *data, int len) {
     return self;
 }
 #define SETFIELDS(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint32_t REWRITE_CAT(sfdata_, at)[] = {__VA_ARGS__}; static void *__fastcall REWRITE_CAT(sffn_, at)(uint8_t *s) { return setfields_run(s, REWRITE_CAT(sfdata_, at), (int)(sizeof(REWRITE_CAT(sfdata_, at)) / 4)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::SetFields", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(sffn_, at), &g_setfields);
+// Free a pointer field: if this->[OFF] is non-null, operator delete it, then null the field.
+static volatile long g_freefields;
+#define FREEFIELD(at, off, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(fffn_, at)(uint8_t *s) { g_freefields++; void *p = *(void **)(s + off); if (p) ((void(__cdecl *)(void *))0xbce010)(p); *(void **)(s + off) = nullptr; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::FreeField", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(fffn_, at), &g_freefields);
 // A get-and-addref accessor: *out = this->[OFF] (a refcounted object), then ++ its refcount (first dword); gives out.
 static volatile long g_getrefs;
 #define GETREF(at, off, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__thiscall REWRITE_CAT(getref_, at)(uint8_t *s, void **out) { g_getrefs++; void *p = *(void **)(s + off); *out = p; ++*(uint32_t *)p; return out; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::GetRef", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(getref_, at), &g_getrefs);
@@ -1430,6 +1433,8 @@ static volatile long g_getrefs;
 #define GETREF(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
+#undef FREEFIELD
+#define FREEFIELD(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1641,6 +1646,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define GETREF(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
+#undef FREEFIELD
+#define FREEFIELD(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1716,6 +1723,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define MEMBER_DTOR(at, t0, t1, t2, f0, f1, f2, ...) {at, t0, t1, t2, f0, f1, f2},
 #undef GETREF
 #define GETREF(at, off, ...) {at, off},
+#undef FREEFIELD
+#define FREEFIELD(at, off, ...) {at, off},
 #undef SETFIELDS
 #define SETFIELDS(...)
 static const uint32_t start_table[][10] = {

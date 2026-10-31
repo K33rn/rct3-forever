@@ -606,6 +606,29 @@ def main():
         n_sf += 1
     counts['SETFIELDS'] = n_sf
 
+    # Object::FreeField: if this->[OFF] non-null, operator delete (0xbce010) it, then null the field.
+    ffref = [i.mnemonic for i in md.disasm(mem[0x42ff30 - BASE:0x42ff30 - BASE + 28], 0x42ff30)]
+    n_ff = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 28 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != ffref:
+            continue
+        load = xs[2]; clear = xs[8]; call = next((i for i in xs if i.mnemonic == 'call'), None)
+        if (load.operands[1].type != X.X86_OP_MEM or not load.operands[1].mem.base
+                or md.reg_name(load.operands[1].mem.base) != 'esi' or load.operands[1].mem.index
+                or clear.operands[0].type != X.X86_OP_MEM
+                or (clear.operands[0].mem.disp & 0xffffffff) != (load.operands[1].mem.disp & 0xffffffff)
+                or call is None or call.operands[0].type != X.X86_OP_IMM or (call.operands[0].imm & 0xffffffff) != 0xbce010):
+            continue
+        off = load.operands[1].mem.disp & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'FREEFIELD({va:#x}, {off:#x}, {first})')
+        n_ff += 1
+    counts['FREEFIELD'] = n_ff
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

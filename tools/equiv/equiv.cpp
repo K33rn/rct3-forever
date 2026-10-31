@@ -2214,6 +2214,15 @@ static std::vector<Test> tests() {
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::FreeField: if this->[OFF] is non-null, operator delete it (globally stubbed), then null the field.
+    static uint32_t g_ff_off;
+    Test freefield{0x42ff30,
+                   [=](Rng &r) {
+                       fresh(r);
+                       *(void **)(arena<uint8_t>(0x100) + g_ff_off) = (r.next() % 2) ? arena<void>(0x300) : nullptr;
+                   },
+                   [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    freefield.prepare = [](const rewrite::Entry *e) { g_ff_off = rewrite::start_constants(e->at)[1]; };
     // Object::SetFields: set some fields of this to constants, return this. No calls/params; pure memory + return.
     Test setfields{0x42d200,
                    [=](Rng &r) { fresh(r); for (int i = 0; i < 16; i++) arena<uint32_t>(0x100)[i] = r.next(); },
@@ -2315,7 +2324,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
