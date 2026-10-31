@@ -2202,10 +2202,12 @@ static std::vector<Test> tests() {
                          return Result{};
                      }};
     member_dtor.prepare = [](const rewrite::Entry *e) {
-        const uint32_t *c = rewrite::start_constants(e->at);   // up to 4 direct-call (sub-object / base) destructor targets
+        const uint32_t *c = rewrite::start_constants(e->at);   // 1..3 thiscall destructor targets, 4..6 operator-delete targets
         std::vector<std::pair<uint32_t, void *>> st;
-        for (int i = 1; i <= 4; i++)
+        for (int i = 1; i <= 3; i++)
             if (c[i]) st.push_back({c[i], (void *)stub_destructor});
+        for (int i = 4; i <= 6; i++)
+            if (c[i]) st.push_back({c[i], (void *)stub_free});
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };

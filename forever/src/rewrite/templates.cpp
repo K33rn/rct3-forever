@@ -1038,7 +1038,11 @@ static void member_dtor_run(uint8_t *self, const uint32_t *data, int len) {
     for (int i = 0; i + 2 < len; i += 3) {
         if (data[i] == 0) *(uint32_t *)(self + data[i + 1]) = data[i + 2];          // store a field
         else if (data[i] == 1) delete_member(self, data[i + 1]);                    // delete a member (slot 0, flag 1)
-        else ((void(__fastcall *)(void *))data[i + 1])(self + data[i + 2]);         // direct destructor call on this/sub-object
+        else if (data[i] == 2) ((void(__fastcall *)(void *))data[i + 1])(self + data[i + 2]);   // direct destructor on this/sub-object
+        else {                                                                      // free a pointer member (operator delete)
+            void *p = *(void **)(self + data[i + 1]);
+            if (p) { ((void(__cdecl *)(void *))data[i + 2])(p); *(void **)(self + data[i + 1]) = nullptr; }
+        }
     }
 }
 template <uint32_t BASE, uint32_t M1, uint32_t M2, uint32_t... OT> static void __fastcall dtor_delete2(uint8_t *self) {
@@ -1297,7 +1301,7 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
     return obj;
 }
 #define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Construct", at, REWRITE_CAT(original_, at), 8, (void *)&object_construct<size, ctor, dtor>, &g_object_constructs);
-#define MEMBER_DTOR(at, c0, c1, c2, c3, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint32_t REWRITE_CAT(mddata_, at)[] = {__VA_ARGS__}; static void __fastcall REWRITE_CAT(mdfn_, at)(uint8_t *s) { member_dtor_run(s, REWRITE_CAT(mddata_, at), (int)(sizeof(REWRITE_CAT(mddata_, at)) / 4)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::Members", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(mdfn_, at), &g_member_dtors);
+#define MEMBER_DTOR(at, t0, t1, t2, f0, f1, f2, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint32_t REWRITE_CAT(mddata_, at)[] = {__VA_ARGS__}; static void __fastcall REWRITE_CAT(mdfn_, at)(uint8_t *s) { member_dtor_run(s, REWRITE_CAT(mddata_, at), (int)(sizeof(REWRITE_CAT(mddata_, at)) / 4)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Destructor::Members", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(mdfn_, at), &g_member_dtors);
 #define BEHAVIOUR_CREATE(at, size, ctor, link, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Behaviour::Create", at, REWRITE_CAT(original_, at), 8, (void *)&behaviour_create<size, ctor, link>, &g_behaviour_creates);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
@@ -1674,7 +1678,7 @@ const uint32_t *load_constants(uintptr_t at) {
 #define OBJECT_RESIZE(at, size, header, ctor, dtor, ...) {at, size, header, ctor, dtor},
 #define WITH_REFERENCE(at, table, field, function, dtor, ...) {at, table, field, function, dtor},
 #undef MEMBER_DTOR
-#define MEMBER_DTOR(at, c0, c1, c2, c3, ...) {at, c0, c1, c2, c3},
+#define MEMBER_DTOR(at, t0, t1, t2, f0, f1, f2, ...) {at, t0, t1, t2, f0, f1, f2},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

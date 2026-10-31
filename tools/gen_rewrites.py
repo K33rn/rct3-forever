@@ -422,6 +422,23 @@ def main():
                 for j in range(k, k+6): used[j] = True
                 for rr in ('ecx', 'eax', 'edx'): regoff.pop(rr, None)   # clobbered by the delete
                 k += 6; continue
+            # free a pointer member: mov r,[esi+off]; test r,r; je L; push r; call DELETE (__cdecl); add esp,4;
+            # mov [esi+off],0; where L is the instruction after the clear (the whole thing runs only when non-null)
+            if (m == 'mov' and i.operands[0].type == X.X86_OP_REG and i.operands[1].type == X.X86_OP_MEM and k + 7 < Ln):
+                d = i.operands[1].mem; r0 = i.reg_name(i.operands[0].reg); b = i.reg_name(d.base) if d.base else None
+                off = d.disp & 0xffffffff
+                if (b == 'esi' and not d.index and xs[k+1].mnemonic == 'test' and xs[k+1].op_str == f'{r0}, {r0}'
+                        and xs[k+2].mnemonic == 'je' and xs[k+3].mnemonic == 'push' and xs[k+3].op_str == r0
+                        and xs[k+4].mnemonic == 'call' and xs[k+4].operands[0].type == X.X86_OP_IMM
+                        and xs[k+5].mnemonic == 'add' and xs[k+5].op_str == 'esp, 4'
+                        and xs[k+6].mnemonic == 'mov' and xs[k+6].operands[0].type == X.X86_OP_MEM
+                        and xs[k+6].operands[1].type == X.X86_OP_IMM and (xs[k+6].operands[1].imm & 0xffffffff) == 0
+                        and xs[k+6].operands[0].mem.base and i.reg_name(xs[k+6].operands[0].mem.base) == 'esi'
+                        and not xs[k+6].operands[0].mem.index and (xs[k+6].operands[0].mem.disp & 0xffffffff) == off
+                        and xs[k+2].operands[0].imm == xs[k+7].address):
+                    ops.append((3, off, xs[k+4].operands[0].imm & 0xffffffff)); nmembers += 1
+                    for j in range(k, k+7): used[j] = True
+                    k += 7; continue
             if m == 'call' and i.operands[0].type == X.X86_OP_IMM:
                 # a direct thiscall destructor: ecx is a known this-offset and no argument was pushed for it
                 if 'ecx' in regoff and not args:
@@ -443,12 +460,14 @@ def main():
                 me = ins.operands[0].mem; b = ins.reg_name(me.base) if me.base else None
                 if b == 'esi' or b in regoff:
                     return None
-        calls = []
+        thiscalls, cdeclcalls = [], []   # op-2 targets (this in ecx) and op-3 targets (operator delete, __cdecl)
         for t in ops:
-            if t[0] == 2 and t[1] not in calls:
-                calls.append(t[1])
-        if nmembers >= 2 and ndirect >= 1 and len(calls) <= 4:
-            return ops, calls
+            if t[0] == 2 and t[1] not in thiscalls:
+                thiscalls.append(t[1])
+            if t[0] == 3 and t[2] not in cdeclcalls:
+                cdeclcalls.append(t[2])
+        if nmembers >= 2 and ndirect >= 1 and len(thiscalls) <= 3 and len(cdeclcalls) <= 3:
+            return ops, thiscalls, cdeclcalls
         return None
 
     for r in funcs:
@@ -458,12 +477,13 @@ def main():
         res = parse_md(va, n)
         if not res:
             continue
-        ops, calls = res
+        ops, thiscalls, cdeclcalls = res
         data = [x for t in ops for x in t]
-        c = (calls + [0, 0, 0, 0])[:4]   # the distinct direct-call targets, for the equivalence test to stand in for
+        t3 = (thiscalls + [0, 0, 0])[:3]   # thiscall destructor targets, and operator-delete targets, for the test
+        f3 = (cdeclcalls + [0, 0, 0])[:3]
         first = ', '.join(f'0x{b:02x}' for b in mem[va - BASE:va - BASE + 8])
-        out.append(f'MEMBER_DTOR({va:#x}, {c[0]:#x}, {c[1]:#x}, {c[2]:#x}, {c[3]:#x}, {first}, '
-                   + ', '.join(f'{x:#x}' for x in data) + ')')
+        out.append(f'MEMBER_DTOR({va:#x}, {t3[0]:#x}, {t3[1]:#x}, {t3[2]:#x}, {f3[0]:#x}, {f3[1]:#x}, {f3[2]:#x}, '
+                   f'{first}, ' + ', '.join(f'{x:#x}' for x in data) + ')')
         n_md += 1
     counts['MEMBER_DTOR'] = n_md
 
