@@ -1422,6 +1422,74 @@ static volatile long g_cond_call_sets;
 // Set a table at [this], then operator delete two pointer fields (no null check, no clear).
 static volatile long g_free_two_tables;
 #define FREE_TWO_TABLE(at, table, off0, off1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(ftt_, at)(uint8_t *s) { g_free_two_tables++; *(uint32_t *)s = table; ((void(__cdecl *)(void *))0xbce010)(*(void **)(s + off0)); ((void(__cdecl *)(void *))0xbce010)(*(void **)(s + off1)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::FreeTwoTable", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ftt_, at), &g_free_two_tables);
+// A grid/quadtree level-grow: ensure the records array (this->[0], 20-byte records) covers `level` (reserve +
+// fill with q = 0x1000/(M*(1<<level)), clamped >=1), then for record[level] reallocate its r1 index buffer (+1
+// entry) and its r3 pointer table, subdividing the per-level block of M*(1<<level) bytes into r0 pieces. Returns
+// record[level].r3[--r4]. M (80 or 20) and the reserve call vary per copy; malloc(0xbcdfd0)/free(0xbce010) fixed.
+static volatile long g_grid_grows;
+template <uint32_t RESERVE, uint32_t M> static void *__thiscall grid_grow(uint8_t *self, int32_t level) {
+    g_grid_grows++;
+    uint32_t ebx = 1u << ((uint32_t)level & 31);
+    int32_t f4 = *(int32_t *)(self + 4);
+    if (level >= f4) {
+        ((void(__thiscall *)(void *, uint32_t))RESERVE)(self, (uint32_t)level + 1);
+        if (f4 <= level) {
+            uint32_t q = 0x1000u / (ebx * M);
+            uint32_t pos = (uint32_t)f4 * 20u;
+            int32_t cnt = level - f4 + 1;
+            do {
+                uint8_t *b = *(uint8_t **)self;
+                *(uint32_t *)(b + pos) = q;
+                b = *(uint8_t **)self;
+                if (*(int32_t *)(b + pos) < 1) *(int32_t *)(b + pos) = 1;
+                b = *(uint8_t **)self; *(uint32_t *)(b + pos + 4) = 0;
+                b = *(uint8_t **)self; *(uint32_t *)(b + pos + 8) = 0;
+                b = *(uint8_t **)self; *(uint32_t *)(b + pos + 0xc) = 0;
+                b = *(uint8_t **)self; *(uint32_t *)(b + pos + 0x10) = 0;
+                pos += 0x14;
+                cnt--;
+            } while (cnt != 0);
+        }
+    }
+    uint8_t *rec = *(uint8_t **)self + (uint32_t)level * 20u;
+    if (*(int32_t *)(rec + 0x10) <= 0) {
+        uint32_t r2p1 = *(uint32_t *)(rec + 8) + 1;
+        uint8_t *oldr1 = *(uint8_t **)(rec + 4);
+        *(void **)(rec + 4) = ((void *(__cdecl *)(uint32_t))0xbcdfd0)(r2p1 * 4u);
+        int32_t n = *(int32_t *)(rec + 8);
+        for (uint32_t i = 0; (int32_t)i < n; i++) {
+            *(uint32_t *)(*(uint8_t **)(rec + 4) + i * 4) = *(uint32_t *)(oldr1 + i * 4);
+            n = *(int32_t *)(rec + 8);
+        }
+        ((void(__cdecl *)(void *))0xbce010)(oldr1);
+        ((void(__cdecl *)(void *))0xbce010)(*(void **)(rec + 0xc));
+        *(void **)(rec + 0xc) = ((void *(__cdecl *)(uint32_t))0xbcdfd0)(*(uint32_t *)rec * r2p1 * 4u);
+        int32_t edi = (int32_t)r2p1 - 1;
+        while (edi >= *(int32_t *)(rec + 8)) {
+            *(void **)(*(uint8_t **)(rec + 4) + (uint32_t)edi * 4) = ((void *(__cdecl *)(uint32_t))0xbcdfd0)(*(uint32_t *)rec * ebx * M);
+            int32_t r0m1 = *(int32_t *)rec - 1;
+            if (r0m1 >= 0) {
+                uint32_t eax = (uint32_t)r0m1 * ebx * M;
+                uint32_t edx = ebx * (uint32_t)(-(int32_t)M);
+                uint32_t loopn = (uint32_t)r0m1 + 1;
+                do {
+                    uint32_t val = *(uint32_t *)(*(uint8_t **)(rec + 4) + (uint32_t)edi * 4);
+                    uint32_t r4 = *(uint32_t *)(rec + 0x10);
+                    *(uint32_t *)(*(uint8_t **)(rec + 0xc) + r4 * 4) = val + eax;
+                    *(uint32_t *)(rec + 0x10) = r4 + 1;
+                    eax += edx;
+                    loopn--;
+                } while (loopn != 0);
+            }
+            edi--;
+        }
+        *(uint32_t *)(rec + 8) = r2p1;
+    }
+    uint32_t r4 = *(uint32_t *)(rec + 0x10) - 1;
+    *(uint32_t *)(rec + 0x10) = r4;
+    return (void *)(uintptr_t) * (uint32_t *)(*(uint8_t **)(rec + 0xc) + r4 * 4);
+}
+#define GRID_GROW(at, reserve, m, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::GridGrow", at, REWRITE_CAT(original_, at), 8, (void *)&grid_grow<reserve, m>, &g_grid_grows);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1537,6 +1605,8 @@ static volatile long g_free_two_tables;
 #define COND_CALL_SET(...)
 #undef FREE_TWO_TABLE
 #define FREE_TWO_TABLE(...)
+#undef GRID_GROW
+#define GRID_GROW(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1784,6 +1854,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define COND_CALL_SET(...)
 #undef FREE_TWO_TABLE
 #define FREE_TWO_TABLE(...)
+#undef GRID_GROW
+#define GRID_GROW(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1895,6 +1967,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define COND_CALL_SET(...)
 #undef FREE_TWO_TABLE
 #define FREE_TWO_TABLE(...)
+#undef GRID_GROW
+#define GRID_GROW(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1923,6 +1997,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define COND_CALL_SET(at, method, ...) {at, method},
 #undef FREE_TWO_TABLE
 #define FREE_TWO_TABLE(at, table, off0, off1, ...) {at, table, off0, off1},
+#undef GRID_GROW
+#define GRID_GROW(at, reserve, m, ...) {at, reserve},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

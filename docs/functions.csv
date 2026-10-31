@@ -11464,11 +11464,11 @@ address,size,name,callers,status
 0x84ff70,180,Table20::Free,1,rewritten
 0x850030,387,,10,documented
 0x8501c0,126,Pool::Free,28,rewritten
-0x850240,391,,5,documented
+0x850240,391,Object::GridGrow,5,rewritten
 0x8503d0,126,Pool::Free,8,rewritten
-0x850450,391,,5,documented
+0x850450,391,Object::GridGrow,5,rewritten
 0x8505e0,126,Pool::Free,8,rewritten
-0x850660,391,,5,documented
+0x850660,391,Object::GridGrow,5,rewritten
 0x8507f0,126,Pool::Free,8,rewritten
 0x850870,387,,5,documented
 0x850a00,126,Pool::Free,8,rewritten
@@ -11478,7 +11478,7 @@ address,size,name,callers,status
 0x850e20,126,Pool::Free,8,rewritten
 0x850ea0,391,,5,documented
 0x851030,126,Pool::Free,8,rewritten
-0x8510b0,391,,4,documented
+0x8510b0,391,Object::GridGrow,4,rewritten
 0x851240,126,Pool::Free,7,rewritten
 0x8512c0,391,,4,documented
 0x851450,126,Pool::Free,6,rewritten
@@ -13597,7 +13597,7 @@ address,size,name,callers,status
 0x96e280,126,Pool::Free,3,rewritten
 0x96e300,16,Object::SetFields,1,rewritten
 0x96e310,180,Table20::Free,1,rewritten
-0x96e3d0,391,,2,documented
+0x96e3d0,391,Object::GridGrow,2,rewritten
 0x96e560,126,Pool::Free,3,rewritten
 0x96e5e0,196,,0,documented
 0x96e6b0,304,,0,documented

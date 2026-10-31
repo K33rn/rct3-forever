@@ -301,7 +301,8 @@ static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
 static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }
 static void __thiscall stub_thiscall2(void *self, uint32_t a0, uint32_t a1) { record(0x20, self); record(0x20, (void *)(uintptr_t)a0); record(0x20, (void *)(uintptr_t)a1); }
 static void __thiscall stub_thiscall1(void *self, void *arg) { record(0x21, self); record(0x21, arg); }
-static void *__fastcall stub_alloc_ecx(void *ecx) { record(0x22, ecx); return (void *)0x30001234; }   // a plain destructor, no flag argument
+static void *__fastcall stub_alloc_ecx(void *ecx) { record(0x22, ecx); return (void *)0x30001234; }
+static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
     return *arena<void *>(0x1f0);
@@ -2228,6 +2229,19 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     delmemberfield.prepare = [](const rewrite::Entry *e) { g_dmf_off = rewrite::start_constants(e->at)[1]; };
+    // Object::GridGrow: ensure records cover `level` then subdivide record[level]. reserve stubbed (noop);
+    // malloc/free are the global stubs. this at 0x100 (f0 = records buffer at 0x400, f4 = 0); level 0..6.
+    static int32_t g_gg_level;
+    Test gridgrow{0x850240,
+                  [=](Rng &r) {
+                      fresh(r);
+                      *(void **)arena<uint8_t>(0x100) = arena<void>(0x400);   // this->f0 = records buffer
+                      *(int32_t *)arena<uint8_t>(0x104) = 0;                   // this->f4 = 0
+                      g_gg_level = (int32_t)(r.next() % 7);                    // 0..6
+                  },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), g_gg_level)}; }};
+    gridgrow.prepare = [](const rewrite::Entry *e) { stubs_for_now({{rewrite::start_constants(e->at)[1], (void *)stub_reserve}}); };
+    gridgrow.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::FreeTwoTable: *this = table; operator delete this->[off0]; this->[off1] (0xbce010 globally stubbed).
     static uint32_t g_ftt_o0, g_ftt_o1;
     Test freetwotable{0x88f900,
@@ -2460,7 +2474,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

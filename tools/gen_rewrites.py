@@ -1040,6 +1040,40 @@ def main():
         n_ftt += 1
     counts['FREE_TWO_TABLE'] = n_ftt
 
+    # Object::GridGrow: the 391-byte grid level-grow family (0x850240 masked-shape). Reserve target and the element
+    # multiplier M (from `imul edx,edx,-M`) vary; malloc 0xbcdfd0 / free 0xbce010 are fixed.
+    def mask391(a):
+        out = bytearray(mem[a - BASE:a - BASE + 391])
+        for ins in md.disasm(bytes(out), a):
+            e = ins.encoding; b = ins.address - a
+            if e.disp_size:
+                for k in range(e.disp_offset, e.disp_offset + e.disp_size): out[b + k] = 0
+            if e.imm_size:
+                for k in range(e.imm_offset, e.imm_offset + e.imm_size): out[b + k] = 0
+        return bytes(out)
+    gg_ref = mask391(0x850240)
+    n_gg = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 391 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask391(va) != gg_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        calls = [i.operands[0].imm & 0xffffffff for i in xs if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        imuls = [i for i in xs if i.mnemonic == 'imul' and len(i.operands) == 3 and i.operands[2].type == X.X86_OP_IMM]
+        if len(calls) != 6 or calls[1] != 0xbcdfd0 or calls[2] != 0xbce010 or calls[3] != 0xbce010 or calls[4] != 0xbcdfd0 or calls[5] != 0xbcdfd0 or not imuls:
+            continue
+        reserve = calls[0]
+        m = (-(imuls[0].operands[2].imm)) & 0xffffffff   # imul r,r,-M  -> M
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'GRID_GROW({va:#x}, {reserve:#x}, {m:#x}, {first})')
+        n_gg += 1
+    counts['GRID_GROW'] = n_gg
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
