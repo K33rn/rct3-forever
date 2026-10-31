@@ -543,18 +543,26 @@ def main():
     counts['MEMBER_DTOR'] = n_md
 
     # Object::GetRef: a 29-byte get-and-addref accessor `*out = this->[OFF]; ++*(uint32_t*)this->[OFF]; return out`.
-    # All copies are byte-identical but for the 4-byte field offset (push ecx; mov ecx,[ecx+OFF]; ...). OFF varies.
-    gref = mem[0x439740 - BASE:0x439740 - BASE + 29]
+    # Shape-matched (so both disp8 and disp32 offset encodings are caught): push ecx; mov ecx,[ecx+OFF]; mov eax,
+    # [esp+8]; mov [eax],ecx; mov edx,[ecx]; inc edx; mov [esp],0; mov [ecx],edx; pop ecx; ret 4.  Only OFF varies.
+    gr_mn = ['push', 'mov', 'mov', 'mov', 'mov', 'inc', 'mov', 'mov', 'pop', 'ret']
+    gr_fixed = {2: 'eax, dword ptr [esp + 8]', 3: 'dword ptr [eax], ecx', 4: 'edx, dword ptr [ecx]',
+                5: 'edx', 6: 'dword ptr [esp], 0', 7: 'dword ptr [ecx], edx', 8: 'ecx', 9: '4'}
     n_gr = 0
     for r in funcs:
         va, n = int(r['address'], 16), int(r['size'])
-        if n != 29 or va in handwritten or va in emitted:
+        if n < 20 or n > 40 or va in handwritten or va in emitted:
             continue
-        b = mem[va - BASE:va - BASE + 29]
-        if b[:3] != gref[:3] or b[7:] != gref[7:]:   # same code, offset masked out (bytes 3..6)
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != gr_mn or xs[0].op_str != 'ecx':
             continue
-        off = int.from_bytes(b[3:7], 'little')
-        first = ', '.join(f'0x{x:02x}' for x in b[:8])
+        o = xs[1].operands
+        if not (xs[1].op_str.startswith('ecx, dword ptr [ecx') and o[1].type == X.X86_OP_MEM and not o[1].mem.index):
+            continue
+        if any(xs[k].op_str != v for k, v in gr_fixed.items()):
+            continue
+        off = o[1].mem.disp & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
         out.append(f'GETREF({va:#x}, {off:#x}, {first})')
         n_gr += 1
     counts['GETREF'] = n_gr
