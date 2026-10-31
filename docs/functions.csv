@@ -19913,7 +19913,7 @@ address,size,name,callers,status
 0xbd4490,25,,3,documented
 0xbd44b0,17,,7,documented
 0xbd44d0,1054,,0,documented
-0xbd48f0,78,,6,documented
+0xbd48f0,78,MEMBER_DTOR,6,rewritten
 0xbd4940,842,,3,documented
 0xbd4c90,149,,0,documented
 0xbd4e20,448,,5,documented
@@ -20669,7 +20669,7 @@ address,size,name,callers,status
 0xc089a0,252,,0,documented
 0xc08ba0,295,,0,documented
 0xc08dc0,596,,1,documented
-0xc09020,97,,6,documented
+0xc09020,97,MEMBER_DTOR,6,rewritten
 0xc09090,229,,4,documented
 0xc09180,33,,2,documented
 0xc091c0,113,,3,documented

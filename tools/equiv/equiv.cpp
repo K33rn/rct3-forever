@@ -298,6 +298,7 @@ static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
     record(0x11, (void *)(uintptr_t)flags);
     return self;
 }
+static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
     return *arena<void *>(0x1f0);
@@ -2186,13 +2187,13 @@ static std::vector<Test> tests() {
                      [=](Rng &r) {
                          fresh(r);
                          for (int i = 0; i < 0x300 / 4; i++) arena<uint32_t>(0x800)[i] = r.next();
-                         static void *del_vt[1] = {(void *)stub_deleting};
+                         static void *del_vt[2] = {(void *)stub_deleting, (void *)stub_plain_dtor};
                          for (int off = 0; off < 0x300; off += 4) {
                              if (r.next() % 3) {
                                  uint32_t da = 0x3000 + (off / 4) * 0x20;   // 0x20 apart so refcount words don't overlap
                                  void *d = arena<void>(da);
                                  *(void **)d = del_vt;
-                                 for (int w = 1; w < 8; w++) arena<uint32_t>(da)[w] = r.next();  // refcount words for op-4
+                                 for (int w = 1; w < 8; w++) arena<uint32_t>(da)[w] = r.next() % 4;  // small refcounts so release fires
                                  *(void **)arena<uint8_t>(0x800 + off) = d;
                              } else {
                                  *(void **)arena<uint8_t>(0x800 + off) = nullptr;

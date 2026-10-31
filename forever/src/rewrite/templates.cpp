@@ -1042,11 +1042,16 @@ static void member_dtor_run(uint8_t *self, const uint32_t *data, int len) {
         else if (data[i] == 3) {                                                    // free a pointer member (operator delete)
             void *p = *(void **)(self + data[i + 1]);
             if (p) { ((void(__cdecl *)(void *))data[i + 2])(p); *(void **)(self + data[i + 1]) = nullptr; }
-        } else {                                                                    // release a refcounted member (rc at p+data[i+2])
+        } else {                                                                    // release a refcounted member
             uint8_t *p = *(uint8_t **)(self + data[i + 1]);
             if (p) {
-                if (--*(uint16_t *)(p + data[i + 2]) == 0)
-                    ((void(__fastcall *)(void *, void *, uint32_t))(*(void ***)p)[0])(p, nullptr, 1);
+                uint32_t rc = data[i + 2] & 0xffff, slot = (data[i + 2] >> 16) & 0xff;
+                if (--*(uint16_t *)(p + rc) == 0) {
+                    if (data[i + 2] >> 24)   // scalar deleting destructor, flag 1 (free)
+                        ((void(__fastcall *)(void *, void *, uint32_t))(*(void ***)p)[slot / 4])(p, nullptr, 1);
+                    else                     // plain destructor, no flag
+                        ((void(__fastcall *)(void *))(*(void ***)p)[slot / 4])(p);
+                }
                 *(void **)(self + data[i + 1]) = nullptr;
             }
         }

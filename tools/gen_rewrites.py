@@ -434,9 +434,10 @@ def main():
                 if not d.index and (b == 'esi' or b in regoff):   # a field store to this (any value, tables included)
                     ops.append((0, (d.disp & 0xffffffff) + (0 if b == 'esi' else regoff[b]), v)); used[k] = True; k += 1; continue
             # release a refcounted member: mov ecx,[esi+off]; null-check; je L; dec word[ecx+rc]; cmp word[ecx+rc],0;
-            # jne CLR; mov e?x,[ecx]; push 1; call [e?x]; CLR: clear [esi+off]; L: ...  (standard scalar deleting dtor)
+            # jne CLR; mov e?x,[ecx]; [push 1;] call [e?x+slot]; CLR: clear [esi+off]; L: ...  The call is either the
+            # scalar deleting destructor (slot 0, push 1 = free) or a plain destructor (slot 4, no flag).
             if (m == 'mov' and op.startswith('ecx, dword ptr [esi') and i.operands[1].type == X.X86_OP_MEM
-                    and not i.operands[1].mem.index and k + 9 < Ln
+                    and not i.operands[1].mem.index and k + 8 < Ln
                     and is_null_check(xs[k+1], 'ecx') and xs[k+2].mnemonic == 'je'
                     and xs[k+3].mnemonic == 'dec' and xs[k+3].operands[0].type == X.X86_OP_MEM
                     and xs[k+3].operands[0].size == 2 and xs[k+3].operands[0].mem.base
@@ -447,16 +448,25 @@ def main():
                     and (xs[k+4].operands[0].mem.disp & 0xffffffff) == (xs[k+3].operands[0].mem.disp & 0xffffffff)
                     and xs[k+4].operands[1].type == X.X86_OP_IMM and (xs[k+4].operands[1].imm & 0xffffffff) == 0
                     and xs[k+5].mnemonic == 'jne'
-                    and xs[k+6].op_str in ('eax, dword ptr [ecx]', 'edx, dword ptr [ecx]')
-                    and xs[k+7].mnemonic == 'push' and xs[k+7].op_str == '1'
-                    and xs[k+8].op_str in ('dword ptr [eax]', 'dword ptr [edx]')
-                    and is_clear(xs[k+9], i.operands[1].mem.disp & 0xffffffff)
-                    and xs[k+5].operands[0].imm == xs[k+9].address
-                    and xs[k+2].operands[0].imm == xs[k+10].address):
-                ops.append((4, i.operands[1].mem.disp & 0xffffffff, xs[k+3].operands[0].mem.disp & 0xffffffff)); nmembers += 1
-                for j in range(k, k+10): used[j] = True
-                for rr in ('ecx', 'eax', 'edx'): regoff.pop(rr, None)
-                k += 10; continue
+                    and xs[k+6].op_str in ('eax, dword ptr [ecx]', 'edx, dword ptr [ecx]')):
+                vreg = xs[k+6].op_str[:3]   # eax or edx
+                flag1 = xs[k+7].mnemonic == 'push' and xs[k+7].op_str == '1'
+                ci = k + 8 if flag1 else k + 7                 # the call
+                cl = ci + 1                                    # the clear
+                call = xs[ci] if ci < Ln else None
+                if (call is not None and cl < Ln and call.mnemonic == 'call' and call.operands[0].type == X.X86_OP_MEM
+                        and call.operands[0].mem.base and i.reg_name(call.operands[0].mem.base) == vreg
+                        and not call.operands[0].mem.index and cl + 1 <= Ln
+                        and is_clear(xs[cl], i.operands[1].mem.disp & 0xffffffff)
+                        and xs[k+5].operands[0].imm == xs[cl].address and xs[k+2].operands[0].imm == xs[cl+1].address):
+                    slot = call.operands[0].mem.disp & 0xffffffff
+                    if (slot, flag1) in ((0, True), (4, False)):   # (scalar deleting, free) or (plain destructor)
+                        rc = xs[k+3].operands[0].mem.disp & 0xffffffff
+                        ops.append((4, i.operands[1].mem.disp & 0xffffffff, rc | (slot << 16) | ((1 if flag1 else 0) << 24)))
+                        nmembers += 1
+                        for j in range(k, cl + 1): used[j] = True
+                        for rr in ('ecx', 'eax', 'edx'): regoff.pop(rr, None)
+                        k = cl + 1; continue
             if (m == 'mov' and op.startswith('ecx, dword ptr [esi') and k + 5 < Ln
                     and xs[k+1].mnemonic == 'test' and xs[k+1].op_str == 'ecx, ecx' and xs[k+2].mnemonic == 'je'
                     and xs[k+3].op_str in ('eax, dword ptr [ecx]', 'edx, dword ptr [ecx]')
