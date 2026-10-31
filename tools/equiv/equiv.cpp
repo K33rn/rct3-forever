@@ -2075,6 +2075,22 @@ static std::vector<Test> tests() {
                        {0x800860, (void *)stub_activate}});
     };
     behaviour_create.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // ObjectPair::Release: the object at 0x100; +4 -> obj at 0x300, +0 -> obj at 0x340; each a count (1 or 2) at +0
+    // and a block pointer at +0xC; the frees stood in for
+    Test pair_release{0x4a35b0,
+                      [=](Rng &r) {
+                          fresh(r);
+                          arena<void *>(0x100)[1] = arena<void>(0x300);
+                          arena<void *>(0x100)[0] = arena<void>(0x340);
+                          arena<int32_t>(0x300)[0] = r.range(1, 2);
+                          arena<uint32_t>(0x300)[3] = r.next();
+                          arena<int32_t>(0x340)[0] = r.range(1, 2);
+                          arena<uint32_t>(0x340)[3] = r.next();
+                      },
+                      [](void *fn) {
+                          ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                          return Result{};
+                      }};
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -2157,7 +2173,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

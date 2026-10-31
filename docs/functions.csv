@@ -2099,7 +2099,7 @@ address,size,name,callers,status
 0x4a32f0,180,NamedTextRef::NamedTextRef(text),2,rewritten
 0x4a33b0,30,DeletingDestructor,0,rewritten
 0x4a33d0,438,NamedTextRef::NamedTextRef,1,rewritten
-0x4a35b0,131,,9,documented
+0x4a35b0,131,PAIR_RELEASE,9,rewritten
 0x4a3640,36,,5,documented
 0x4a3670,44,,5,documented
 0x4a36a0,26,,1,documented
@@ -3168,7 +3168,7 @@ address,size,name,callers,status
 0x50fe20,7,BaseClass::SetClass,1,rewritten
 0x50fe30,30,DeletingDestructor,1,rewritten
 0x50fe60,30,DeletingDestructor,1,rewritten
-0x50fe90,122,,1,documented
+0x50fe90,122,OBJECT_CONSTRUCT,1,rewritten
 0x50ff10,576,,2,documented
 0x510150,79,,1,documented
 0x5101a0,684,,2,documented
@@ -5486,7 +5486,7 @@ address,size,name,callers,status
 0x61dca0,87,,1,documented
 0x61dd20,30,DeletingDestructor,2,rewritten
 0x61dd40,144,,1,documented
-0x61ddd0,122,,1,documented
+0x61ddd0,122,OBJECT_CONSTRUCT,1,rewritten
 0x61de50,107,,1,documented
 0x61dec0,198,,1,documented
 0x61df90,162,,1,documented
@@ -6152,7 +6152,7 @@ address,size,name,callers,status
 0x6610f0,416,,2,documented
 0x6612a0,190,,5,documented
 0x661580,30,DeletingDestructor,3,rewritten
-0x6615d0,131,,17,documented
+0x6615d0,131,PAIR_RELEASE,17,rewritten
 0x661660,108,,11,documented
 0x6616d0,481,,1,documented
 0x6618c0,481,,1,documented
@@ -9097,7 +9097,7 @@ address,size,name,callers,status
 0x774ec0,97,,2,documented
 0x774f30,496,,2,documented
 0x775130,100,,1,documented
-0x7752f0,122,,1,documented
+0x7752f0,122,OBJECT_CONSTRUCT,1,rewritten
 0x7753d0,1676,,2,documented
 0x775b30,1731,,1,documented
 0x776200,1001,,7,documented
@@ -17966,7 +17966,7 @@ address,size,name,callers,status
 0xb32b40,30,DeletingDestructor,0,rewritten
 0xb32b60,438,NamedTextRef::NamedTextRef,1,rewritten
 0xb32d20,74,,0,documented
-0xb32d90,131,,7,documented
+0xb32d90,131,PAIR_RELEASE,7,rewritten
 0xb32e20,267,,1,documented
 0xb32f30,132,,1,documented
 0xb32fc0,627,,2,documented
@@ -18967,7 +18967,7 @@ address,size,name,callers,status
 0xb92910,180,NamedTextRef::NamedTextRef(text),1,rewritten
 0xb929d0,30,DeletingDestructor,0,rewritten
 0xb929f0,438,NamedTextRef::NamedTextRef,1,rewritten
-0xb92bb0,131,,7,documented
+0xb92bb0,131,PAIR_RELEASE,7,rewritten
 0xb92c80,316,,2,documented
 0xb92dc0,718,,2,documented
 0xb930b0,274,,1,documented
@@ -20127,7 +20127,7 @@ address,size,name,callers,status
 0xbe4800,30,DeletingDestructor,0,rewritten
 0xbe4940,163,,1,documented
 0xbe49f0,131,,1,documented
-0xbe4aa0,131,,2,documented
+0xbe4aa0,131,PAIR_RELEASE,2,rewritten
 0xbe4b30,406,,0,documented
 0xbe4cd0,324,,2,documented
 0xbe4ea0,137,,1,documented
@@ -21456,7 +21456,7 @@ address,size,name,callers,status
 0xc4c2c0,30,DeletingDestructor,0,rewritten
 0xc4c320,357,,1,documented
 0xc4c490,75,,0,documented
-0xc4c4e0,131,,2,documented
+0xc4c4e0,131,PAIR_RELEASE,2,rewritten
 0xc4c570,1949,,2,documented
 0xc4cd20,32,,0,documented
 0xc4cd40,32,,0,documented

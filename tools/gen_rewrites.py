@@ -115,6 +115,8 @@ MATCH = [
      (1, 2, 3, 4, 7, 8, 11, 12, 13, 14, 16)),
     ('ARRAY_FREE16', 0x81DC00, [], [(10, 0), (8, 0)], (10,)),                   # 16-byte header: size, dtor
     ('OBJECT_CONSTRUCT', 0x7404F0, [(2, 0)], [(25, 0), (22, 0), (21, 0)], (10, 25), [[(10, 2), (25, 0)]]),
+    ('OBJECT_CONSTRUCT', 0x50FE90, [(2, 0)], [(24, 0), (21, 0), (20, 0)], (24,)),
+    ('PAIR_RELEASE', 0x4A35B0, [(1, 0)], []),
     ('BEHAVIOUR_CREATE', 0x46DFA0, [(1, 0)], [(8, 0), (21, 0), (26, 0)], (8,)),
     ('FACTORY2', 0x430B70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm8), constructor
     ('FACTORY2', 0x5F2E70, [(1, 0)], [(6, 0), (19, 0)], (6,)),            # size (push imm32), constructor

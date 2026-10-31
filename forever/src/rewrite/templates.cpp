@@ -1140,6 +1140,23 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
     return ((uint32_t(__fastcall *)(void *, void *, uint32_t, uint32_t))(*(void ***)part)[SLOT / 4])(part, nullptr, a, b);
 }
 #define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Interface::Forward", at, REWRITE_CAT(original_, at), 8, (void *)&interface_forward<ref, flag, cache, id, slot>, &g_interface_forwards);
+// ObjectPair::Release: drops a reference on the objects at +4 and +0 (each a reference count at its +0); when a
+// count reaches zero its aligned block (+0xC) and itself are freed. The count is decremented before the null check,
+// as the original does. (+4 first, then +0.)
+static volatile long g_pair_releases;
+static void pair_release_one(uint32_t *obj) {
+    if (--obj[0] == 0 && obj) {
+        ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)obj[3]);
+        ((void(__cdecl *)(void *))0xbce000)(obj);
+    }
+}
+static void __fastcall pair_release(uint32_t **self) {
+    g_pair_releases++;
+    pair_release_one(self[1]);
+    pair_release_one(self[0]);
+}
+#define PAIR_RELEASE(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectPair::Release", at, REWRITE_CAT(original_, at), 8, (void *)&pair_release, &g_pair_releases);
+
 // ObjectArray::Construct: a new array of n SIZE-byte objects made with new[] (the count kept in front, at items-4),
 // the count also stored at +4 of the object; the items constructed by the vector constructor iterator with CTOR and
 // DTOR. No memory leaves the pointer null (the count at +4 is still set). Gives the object.
@@ -1270,6 +1287,8 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall b
 #undef OBJECT_CONSTRUCT
 #undef BEHAVIOUR_CREATE
 #define OBJECT_CONSTRUCT(...)
+#undef PAIR_RELEASE
+#define PAIR_RELEASE(...)
 #define BEHAVIOUR_CREATE(...)
 #undef INTERFACE_FORWARD
 #define INTERFACE_FORWARD(...)
@@ -1466,6 +1485,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #undef OBJECT_CONSTRUCT
 #undef BEHAVIOUR_CREATE
 #define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) {at, size, ctor, dtor},
+#undef PAIR_RELEASE
+#define PAIR_RELEASE(...)
 #define BEHAVIOUR_CREATE(at, size, ctor, link, ...) {at, size, ctor, link},
 #undef INTERFACE_FORWARD
 #define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) {at, ref, flag, cache, id, slot},
