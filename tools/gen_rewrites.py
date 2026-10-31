@@ -619,7 +619,7 @@ def main():
     n_ff = 0
     for r in funcs:
         va, n = int(r['address'], 16), int(r['size'])
-        if n != 28 or va in handwritten or va in emitted:
+        if n < 26 or n > 40 or va in handwritten or va in emitted:   # disp8 (28B) or disp32 (34B) offset encodings
             continue
         xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
         if [i.mnemonic for i in xs] != ffref:
