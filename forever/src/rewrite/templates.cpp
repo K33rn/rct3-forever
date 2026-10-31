@@ -1397,6 +1397,9 @@ static volatile long g_global_member_calls;
 // If this->[0xc] (signed) is >= 0, call a member method on this->[0] forwarding this->[0xc] and this->[8].
 static volatile long g_cond_forwards;
 #define COND_FORWARD(at, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(cf_, at)(uint8_t *s) { g_cond_forwards++; int32_t v = *(int32_t *)(s + 0xc); if (v >= 0) ((void(__thiscall *)(void *, uint32_t, uint32_t))method)(*(void **)s, (uint32_t)v, *(uint32_t *)(s + 8)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CondForward", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(cf_, at), &g_cond_forwards);
+// Append *arg to a counted array: reserve(count+1); this->[0xc][count] = *arg; ++count.
+static volatile long g_array_pushes;
+#define ARRAY_PUSH(at, reserve, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __thiscall REWRITE_CAT(ap_, at)(uint8_t *s, void *arg) { g_array_pushes++; uint32_t c = *(uint32_t *)s; ((void(__thiscall *)(void *, uint32_t))reserve)(s, c + 1); uint32_t c2 = *(uint32_t *)s; (*(uint32_t **)(s + 0xc))[c2] = *(uint32_t *)arg; ++*(uint32_t *)s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ArrayPush", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ap_, at), &g_array_pushes);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1496,6 +1499,8 @@ static volatile long g_cond_forwards;
 #define GLOBAL_MEMBER_CALL(...)
 #undef COND_FORWARD
 #define COND_FORWARD(...)
+#undef ARRAY_PUSH
+#define ARRAY_PUSH(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1727,6 +1732,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define GLOBAL_MEMBER_CALL(...)
 #undef COND_FORWARD
 #define COND_FORWARD(...)
+#undef ARRAY_PUSH
+#define ARRAY_PUSH(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1822,6 +1829,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define GLOBAL_MEMBER_CALL(...)
 #undef COND_FORWARD
 #define COND_FORWARD(...)
+#undef ARRAY_PUSH
+#define ARRAY_PUSH(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1834,6 +1843,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define GLOBAL_MEMBER_CALL(at, global, method, ...) {at, global, method},
 #undef COND_FORWARD
 #define COND_FORWARD(at, method, ...) {at, method},
+#undef ARRAY_PUSH
+#define ARRAY_PUSH(at, reserve, ...) {at, reserve},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

@@ -2216,6 +2216,19 @@ static std::vector<Test> tests() {
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::ArrayPush: reserve(count+1); this->[0xc][count]=*arg; ++count. reserve stubbed (thiscall, 1 arg).
+    static uint32_t g_ap_r;
+    Test arraypush{0xbd8060,
+                   [=](Rng &r) {
+                       fresh(r);
+                       *(uint32_t *)arena<uint8_t>(0x100) = r.next() % 6;              // count 0..5
+                       *(void **)arena<uint8_t>(0x10c) = arena<void>(0x300);            // array buffer
+                       for (int i = 0; i < 8; i++) arena<uint32_t>(0x300)[i] = r.next();
+                       arena<uint32_t>(0x200)[0] = r.next();                            // *arg
+                   },
+                   [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
+    arraypush.prepare = [](const rewrite::Entry *e) { g_ap_r = rewrite::start_constants(e->at)[1]; stubs_for_now({{g_ap_r, (void *)stub_thiscall1}}); };
+    arraypush.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::CondForward: if(this->[0xc]>=0) method(this->[0], this->[0xc], this->[8]). method stubbed (thiscall,2).
     static uint32_t g_cf_m;
     Test condforward{0x851c70,
@@ -2391,7 +2404,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

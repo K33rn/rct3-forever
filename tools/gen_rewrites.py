@@ -838,6 +838,33 @@ def main():
         n_cf += 1
     counts['COND_FORWARD'] = n_cf
 
+    # Object::ArrayPush: byte-identical but the reserve call target. reserve(count+1); this->[0xc][count]=*arg; ++count.
+    apref = mem[0xbd8060 - BASE:0xbd8060 - BASE + 32]
+    apmn = [i.mnemonic for i in md.disasm(apref, 0xbd8060)]
+    n_ap = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 32 or va in handwritten or va in emitted:
+            continue
+        b = mem[va - BASE:va - BASE + n]
+        xs = list(md.disasm(b, va))
+        if [i.mnemonic for i in xs] != apmn:
+            continue
+        ci = next(j for j, i in enumerate(xs) if i.mnemonic == 'call')
+        if xs[ci].operands[0].type != X.X86_OP_IMM:
+            continue
+        ca = xs[ci].address - va; cl = xs[ci].size
+        m = bytearray(b); rf = bytearray(apref)
+        for k in range(ca + cl - 4, ca + cl):
+            m[k] = 0; rf[k] = 0
+        if m != rf:
+            continue
+        reserve = xs[ci].operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in b[:8])
+        out.append(f'ARRAY_PUSH({va:#x}, {reserve:#x}, {first})')
+        n_ap += 1
+    counts['ARRAY_PUSH'] = n_ap
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

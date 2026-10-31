@@ -19966,8 +19966,8 @@ address,size,name,callers,status
 0xbd78a0,1656,,3,documented
 0xbd7f30,257,,1,documented
 0xbd8040,30,DeletingDestructor,0,rewritten
-0xbd8060,32,,0,documented
-0xbd8080,32,,0,documented
+0xbd8060,32,Object::ArrayPush,0,rewritten
+0xbd8080,32,Object::ArrayPush,0,rewritten
 0xbd80a0,285,,2,documented
 0xbd81c0,223,,1,documented
 0xbd82a0,1848,,5,documented
@@ -20956,7 +20956,7 @@ address,size,name,callers,status
 0xc1aea0,127,,1,documented
 0xc1af80,91,Array::Reserve,2,rewritten
 0xc1afe0,30,DeletingDestructor,1,rewritten
-0xc1b040,32,,0,documented
+0xc1b040,32,Object::ArrayPush,0,rewritten
 0xc1b060,59,Listener::~Listener(quiet),3,rewritten
 0xc1b130,142,,1,documented
 0xc1b1c0,264,,3,documented
@@ -21458,12 +21458,12 @@ address,size,name,callers,status
 0xc4c490,75,,0,documented
 0xc4c4e0,131,PAIR_RELEASE,2,rewritten
 0xc4c570,1949,,2,documented
-0xc4cd20,32,,0,documented
-0xc4cd40,32,,0,documented
-0xc4cd60,32,,0,documented
-0xc4cd80,32,,0,documented
-0xc4cda0,32,,0,documented
-0xc4cdc0,32,,0,documented
+0xc4cd20,32,Object::ArrayPush,0,rewritten
+0xc4cd40,32,Object::ArrayPush,0,rewritten
+0xc4cd60,32,Object::ArrayPush,0,rewritten
+0xc4cd80,32,Object::ArrayPush,0,rewritten
+0xc4cda0,32,Object::ArrayPush,0,rewritten
+0xc4cdc0,32,Object::ArrayPush,0,rewritten
 0xc4cde0,229,,1,documented
 0xc4ced0,229,,1,documented
 0xc4cfc0,52,,0,documented
@@ -22063,7 +22063,7 @@ address,size,name,callers,status
 0xc9c3c0,79,,1,documented
 0xc9c410,126,,0,documented
 0xc9c490,3127,,0,documented
-0xc9d0d0,32,,0,documented
+0xc9d0d0,32,Object::ArrayPush,0,rewritten
 0xc9d0f0,338,,1,documented
 0xc9d250,40,,0,documented
 0xc9d280,671,,3,documented
@@ -22381,8 +22381,8 @@ address,size,name,callers,status
 0xcb2a00,81,,2,documented
 0xcb2a60,16,,1,documented
 0xcb2a70,101,,1,documented
-0xcb2b00,32,,0,documented
-0xcb2b20,32,,0,documented
+0xcb2b00,32,Object::ArrayPush,0,rewritten
+0xcb2b20,32,Object::ArrayPush,0,rewritten
 0xcb2b40,44,,0,documented
 0xcb2b70,36,SharedBuffer::Release,10,rewritten
 0xcb2ba0,154,,1,documented
@@ -22517,7 +22517,7 @@ address,size,name,callers,status
 0xcbd220,180,,4,documented
 0xcbd2e0,241,,2,documented
 0xcbd3e0,172,,1,documented
-0xcbd490,32,,0,documented
+0xcbd490,32,Object::ArrayPush,0,rewritten
 0xcbd4b0,44,,0,documented
 0xcbd4e0,252,,2,documented
 0xcbd5e0,544,,1,documented
