@@ -6650,7 +6650,7 @@ address,size,name,callers,status
 0x68eda0,27,,3,documented
 0x68edc0,128,,0,documented
 0x68ee40,211,,2,documented
-0x68efa0,155,,1,documented
+0x68efa0,155,ObjectArray::Resize,1,rewritten
 0x68f040,350,,1,documented
 0x68f1a0,30,DeletingDestructor,2,rewritten
 0x68f1c0,548,,1,documented
@@ -7199,7 +7199,7 @@ address,size,name,callers,status
 0x6be770,2025,,40,documented
 0x6bef60,1268,,16,documented
 0x6bf460,48,ObjectArray::Free,1,rewritten
-0x6bf490,155,,3,documented
+0x6bf490,155,ObjectArray::Resize,3,rewritten
 0x6bf530,265,ObjectArray::SetCapacity,2,rewritten
 0x6bf640,299,,1,documented
 0x6bf770,141,,7,documented
@@ -7846,7 +7846,7 @@ address,size,name,callers,status
 0x6f5880,352,,2,documented
 0x6f59e0,106,Factory::IntoField,1,rewritten
 0x6f5a50,1230,,1,documented
-0x6f5f30,155,,4,documented
+0x6f5f30,155,ObjectArray::Resize,4,rewritten
 0x6f5fd0,4339,,2,documented
 0x6f7140,487,,1,documented
 0x6f7330,644,,1,documented
@@ -14034,7 +14034,7 @@ address,size,name,callers,status
 0x991820,230,StructArrayLoad,1,rewritten
 0x991910,268,,2,documented
 0x991a20,48,ObjectArray::Free,1,rewritten
-0x991a50,155,,3,documented
+0x991a50,155,ObjectArray::Resize,3,rewritten
 0x991af0,305,,4,documented
 0x991c30,490,,12,documented
 0x991e20,30,DeletingDestructor,2,rewritten
@@ -14718,7 +14718,7 @@ address,size,name,callers,status
 0x9d7a50,162,ObjectRef::CallWith,1,rewritten
 0x9d7b00,872,,1,documented
 0x9d7e70,321,,1,documented
-0x9d7fc0,155,,1,documented
+0x9d7fc0,155,ObjectArray::Resize,1,rewritten
 0x9d8060,265,ObjectArray::SetCapacity,2,rewritten
 0x9d8170,153,ObjectArray::Resize,2,rewritten
 0x9d8210,446,,17,documented
@@ -15077,7 +15077,7 @@ address,size,name,callers,status
 0x9faa40,147,,1,documented
 0x9faae0,168,,1,documented
 0x9fab90,48,ObjectArray::Free,2,rewritten
-0x9fabc0,155,,1,documented
+0x9fabc0,155,ObjectArray::Resize,1,rewritten
 0x9fac60,310,,1,documented
 0x9fadc0,446,,1,documented
 0x9faf80,759,,1,documented
@@ -16458,7 +16458,7 @@ address,size,name,callers,status
 0xa8dea0,44,ObjectRef::Construct,2,rewritten
 0xa8dee0,102,Factory::Create,1,rewritten
 0xa8dfb0,48,ObjectArray::Free,3,rewritten
-0xa8dfe0,155,,1,documented
+0xa8dfe0,155,ObjectArray::Resize,1,rewritten
 0xa8e080,164,,2,documented
 0xa8e130,998,,1,documented
 0xa8e680,104,,1,documented
@@ -19122,7 +19122,7 @@ address,size,name,callers,status
 0xba0150,212,ReferenceField::Load,1,rewritten
 0xba0230,212,ReferenceField::Load,1,rewritten
 0xba0310,48,ObjectArray::Free,3,rewritten
-0xba0340,155,,3,documented
+0xba0340,155,ObjectArray::Resize,3,rewritten
 0xba0490,59,Listener::~Listener(quiet),2,rewritten
 0xba04d0,256,,1,documented
 0xba05d0,810,,1,documented
