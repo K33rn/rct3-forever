@@ -559,6 +559,53 @@ def main():
         n_gr += 1
     counts['GETREF'] = n_gr
 
+    # Object::SetFields: set some fields of this to constants and return this (no calls, no branches, ret 0). The
+    # body is only prologue/epilogue reg saves, this propagation between registers, and `mov [this+off], imm`.
+    def parse_setfields(va, n):
+        xs = [i for i in md.disasm(mem[va - BASE:va - BASE + n], va) if i.mnemonic not in ('nop', 'int3')]
+        def is_seh(i):
+            return (i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM
+                    and i.operands[0].mem.base and i.reg_name(i.operands[0].mem.base) == 'esp' and not i.operands[0].mem.index)
+        xs = [i for i in xs if not is_seh(i)]
+        if not xs or xs[-1].mnemonic != 'ret' or (xs[-1].operands and (xs[-1].operands[0].imm & 0xffffffff) != 0):
+            return None
+        thisreg = {'ecx'}; pairs = []; retthis = False
+        for i in xs[:-1]:
+            m = i.mnemonic
+            if m == 'push' and i.operands[0].type == X.X86_OP_REG:
+                continue
+            if m == 'pop':
+                continue
+            if m == 'mov' and i.operands[0].type == X.X86_OP_REG and i.operands[1].type == X.X86_OP_REG:
+                r0 = i.reg_name(i.operands[0].reg); r1 = i.reg_name(i.operands[1].reg)
+                if r0 == 'eax' and r1 in thisreg:
+                    retthis = True
+                if r1 in thisreg:
+                    thisreg.add(r0)
+                continue
+            if m == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM:
+                d = i.operands[0].mem; b = i.reg_name(d.base) if d.base else None
+                if b in thisreg and not d.index:
+                    pairs.append((d.disp & 0xffffffff, i.operands[1].imm & 0xffffffff, i.operands[0].size)); continue
+            return None
+        if retthis and pairs:
+            return pairs
+        return None
+
+    n_sf = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n < 8 or n > 120 or va in handwritten or va in emitted:
+            continue
+        pairs = parse_setfields(va, n)
+        if not pairs:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        data = ', '.join(f'{x:#x}' for p in pairs for x in p)
+        out.append(f'SETFIELDS({va:#x}, {first}, {data})')
+        n_sf += 1
+    counts['SETFIELDS'] = n_sf
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
