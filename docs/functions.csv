@@ -6250,7 +6250,7 @@ address,size,name,callers,status
 0x669e60,133,,1,documented
 0x669f00,154,,1,documented
 0x66a020,529,,1,documented
-0x66a350,26,,1,documented
+0x66a350,26,Object::Forward2,1,rewritten
 0x66a460,26,OwnedPointer::Reset,2,rewritten
 0x66a480,61,Array<4>::Allocate,0,rewritten
 0x66a4c0,130,Array<4>::SetCapacity,2,rewritten
@@ -9214,7 +9214,7 @@ address,size,name,callers,status
 0x786bc0,201,,2,documented
 0x786cb0,112,,1,documented
 0x786d20,25,,1,documented
-0x786d40,26,,1,documented
+0x786d40,26,Object::Forward2,1,rewritten
 0x786da0,102,Factory::Create,1,rewritten
 0x786e10,110,BEHAVIOUR_CREATE,1,rewritten
 0x786eb0,30,DeletingDestructor,2,rewritten
@@ -9401,7 +9401,7 @@ address,size,name,callers,status
 0x79ae90,129,,1,documented
 0x79af30,30,DeletingDestructor,2,rewritten
 0x79af50,127,,1,documented
-0x79b090,26,,1,documented
+0x79b090,26,Object::Forward2,1,rewritten
 0x79b310,30,DeletingDestructor,1,rewritten
 0x79b330,7,BaseClass::SetClass,1,rewritten
 0x79b340,180,,1,documented
@@ -10469,7 +10469,7 @@ address,size,name,callers,status
 0x804590,191,,2,documented
 0x804650,1786,,1,documented
 0x804d50,1725,,13,documented
-0x805500,26,,1,documented
+0x805500,26,Object::Forward2,1,rewritten
 0x8055c0,79,,1073,documented
 0x805650,161,,98,documented
 0x805700,72,,1247,documented
@@ -10758,7 +10758,7 @@ address,size,name,callers,status
 0x819150,134,,1,documented
 0x819200,25,,1,documented
 0x819220,30,DeletingDestructor,2,rewritten
-0x819240,26,,1,documented
+0x819240,26,Object::Forward2,1,rewritten
 0x8192d0,30,DeletingDestructor,2,rewritten
 0x819320,647,,2,documented
 0x8195b0,30,DeletingDestructor,2,rewritten
@@ -10803,7 +10803,7 @@ address,size,name,callers,status
 0x81ce00,59,,1,documented
 0x81ce40,181,,1,documented
 0x81cf00,181,,1,documented
-0x81cfc0,26,,1,documented
+0x81cfc0,26,Object::Forward2,1,rewritten
 0x81d0e0,30,DeletingDestructor,1,rewritten
 0x81d120,152,,2,documented
 0x81d1c0,425,,1,documented
@@ -10828,7 +10828,7 @@ address,size,name,callers,status
 0x81e4e0,58,,1,documented
 0x81e520,22,,1,documented
 0x81e740,48,,0,documented
-0x81e8f0,26,,1,documented
+0x81e8f0,26,Object::Forward2,1,rewritten
 0x81edb0,30,DeletingDestructor,1,rewritten
 0x81ede0,30,DeletingDestructor,1,rewritten
 0x81ee00,7,BaseClass::SetClass,1,rewritten
@@ -12114,7 +12114,7 @@ address,size,name,callers,status
 0x8b07b0,509,,2,documented
 0x8b09b0,39,,1,documented
 0x8b09e0,207,,1,documented
-0x8b0ae0,26,,1,documented
+0x8b0ae0,26,Object::Forward2,1,rewritten
 0x8b0e70,30,DeletingDestructor,2,rewritten
 0x8b0e90,30,DeletingDestructor,1,rewritten
 0x8b0ec0,30,DeletingDestructor,1,rewritten
@@ -12159,7 +12159,7 @@ address,size,name,callers,status
 0x8b4680,632,,2,documented
 0x8b4930,146,,1,documented
 0x8b49d0,25,,1,documented
-0x8b49f0,26,,1,documented
+0x8b49f0,26,Object::Forward2,1,rewritten
 0x8b4a30,105,Factory::Create,1,rewritten
 0x8b4aa0,113,BEHAVIOUR_CREATE,1,rewritten
 0x8b4b50,30,DeletingDestructor,2,rewritten
@@ -12185,7 +12185,7 @@ address,size,name,callers,status
 0x8b5cc0,657,,2,documented
 0x8b5f60,465,,1,documented
 0x8b6140,517,,3,documented
-0x8b6380,26,,1,documented
+0x8b6380,26,Object::Forward2,1,rewritten
 0x8b64c0,30,DeletingDestructor,2,rewritten
 0x8b6570,167,,0,documented
 0x8b6620,77,,1,documented
@@ -12682,7 +12682,7 @@ address,size,name,callers,status
 0x8fb110,21,,52,documented
 0x8fb150,27,,18,documented
 0x8fb170,45,,1,documented
-0x8fb1a0,26,,1,documented
+0x8fb1a0,26,Object::Forward2,1,rewritten
 0x8fb1f0,125,,15,documented
 0x8fb270,112,,19,documented
 0x8fb340,31,,1,documented
@@ -13795,7 +13795,7 @@ address,size,name,callers,status
 0x981450,82,,1,documented
 0x9814b0,67,,4,documented
 0x981500,86,,2,documented
-0x981600,26,,1,documented
+0x981600,26,Object::Forward2,1,rewritten
 0x981700,173,,21,documented
 0x9817b0,44,,12,documented
 0x981990,126,ObjectRef::Assign,1,rewritten
@@ -14480,7 +14480,7 @@ address,size,name,callers,status
 0x9c4370,72,QueryInterface::OrReport,0,rewritten
 0x9c44b0,915,,1,documented
 0x9c4850,57,Reference::Interface,6,rewritten
-0x9c4890,26,,1,documented
+0x9c4890,26,Object::Forward2,1,rewritten
 0x9c48e0,371,,5,documented
 0x9c4a90,226,,1,documented
 0x9c4b80,139,,1,documented
@@ -18261,7 +18261,7 @@ address,size,name,callers,status
 0xb52cf0,30,DeletingDestructor,2,rewritten
 0xb52d60,48,QueryInterface,0,rewritten
 0xb53030,25,,1,documented
-0xb531a0,26,,1,documented
+0xb531a0,26,Object::Forward2,1,rewritten
 0xb535a0,30,DeletingDestructor,1,rewritten
 0xb535c0,7,BaseClass::SetClass,1,rewritten
 0xb535d0,30,DeletingDestructor,1,rewritten
@@ -18808,7 +18808,7 @@ address,size,name,callers,status
 0xb85be0,25,,8,documented
 0xb85c20,360,,1,documented
 0xb85d90,334,,1,documented
-0xb86270,26,,1,documented
+0xb86270,26,Object::Forward2,1,rewritten
 0xb86f20,30,DeletingDestructor,1,rewritten
 0xb86f40,7,BaseClass::SetClass,1,rewritten
 0xb86f50,30,DeletingDestructor,1,rewritten
@@ -19262,7 +19262,7 @@ address,size,name,callers,status
 0xbad070,308,,1,documented
 0xbad230,25,,4,documented
 0xbad250,167,,2,documented
-0xbad310,26,,1,documented
+0xbad310,26,Object::Forward2,1,rewritten
 0xbad490,30,DeletingDestructor,1,rewritten
 0xbad4d0,113,,3,documented
 0xbad550,99,,12,documented
@@ -21985,7 +21985,7 @@ address,size,name,callers,status
 0xc76f70,820,,1,documented
 0xc77340,24,,1,documented
 0xc77360,16,Object::SetFields,1,rewritten
-0xc77390,26,,1,documented
+0xc77390,26,Object::Forward2,1,rewritten
 0xc774c0,26,OwnedPointer::Reset,2,rewritten
 0xc774e0,130,Array<4>::SetCapacity,1,rewritten
 0xc77570,40,,1,documented

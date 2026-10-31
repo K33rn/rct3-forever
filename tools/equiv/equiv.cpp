@@ -298,7 +298,8 @@ static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
     record(0x11, (void *)(uintptr_t)flags);
     return self;
 }
-static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }   // a plain destructor, no flag argument
+static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }
+static void __thiscall stub_thiscall2(void *self, uint32_t a0, uint32_t a1) { record(0x20, self); record(0x20, (void *)(uintptr_t)a0); record(0x20, (void *)(uintptr_t)a1); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
     return *arena<void *>(0x1f0);
@@ -2214,6 +2215,13 @@ static std::vector<Test> tests() {
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::Forward2: method(this, a0, a1); return this. method stubbed (thiscall, 2 args).
+    static uint32_t g_f2_m, g_f2_a0, g_f2_a1;
+    Test forward2{0x66a350,
+                  [=](Rng &r) { fresh(r); g_f2_a0 = r.next(); g_f2_a1 = r.next(); },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), g_f2_a0, g_f2_a1)}; }};
+    forward2.prepare = [](const rewrite::Entry *e) { g_f2_m = rewrite::start_constants(e->at)[1]; stubs_for_now({{g_f2_m, (void *)stub_thiscall2}}); };
+    forward2.finish = [](const rewrite::Entry *) { unstub_many(); };
     // DeletingDestructor (member-free variant): dtor(this); if(flags&1) free(this); return this. Both stubbed.
     static uint32_t g_d2_dtor, g_d2_free, g_d2_flag;
     Test deleting2{0xbc0e50,
@@ -2338,7 +2346,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

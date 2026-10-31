@@ -1362,6 +1362,9 @@ static volatile long g_getrefs;
 // A scalar deleting destructor whose free is a member (thiscall) delete FREE rather than the plain operator delete:
 // dtor(this); if(flags&1) free(this); return this.
 #define DELETING2(at, dtor, free, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__fastcall REWRITE_CAT(del2_, at)(uint8_t *s, void *, uint32_t flags) { g_deleting++; ((void(__fastcall *)(void *))dtor)(s); if (flags & 1) ((void(__fastcall *)(void *))free)(s); return s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("DeletingDestructor(memberfree)", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(del2_, at), &g_deleting);
+// Forward both arguments to a member method (thiscall) and return this: method(this, a0, a1); return this.
+static volatile long g_forward2;
+#define FORWARD2(at, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__thiscall REWRITE_CAT(fwd2_, at)(uint8_t *s, uint32_t a0, uint32_t a1) { g_forward2++; ((void(__thiscall *)(void *, uint32_t, uint32_t))method)(s, a0, a1); return s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::Forward2", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(fwd2_, at), &g_forward2);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1447,6 +1450,8 @@ static volatile long g_getrefs;
 #define TABLES_THEN_BASE(...)
 #undef DELETING2
 #define DELETING2(...)
+#undef FORWARD2
+#define FORWARD2(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1664,6 +1669,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define TABLES_THEN_BASE(...)
 #undef DELETING2
 #define DELETING2(...)
+#undef FORWARD2
+#define FORWARD2(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1745,6 +1752,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define TABLES_THEN_BASE(at, base, ...) {at, base},
 #undef DELETING2
 #define DELETING2(at, dtor, free, ...) {at, dtor, free},
+#undef FORWARD2
+#define FORWARD2(at, method, ...) {at, method},
 #undef SETFIELDS
 #define SETFIELDS(...)
 static const uint32_t start_table[][10] = {

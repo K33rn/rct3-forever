@@ -686,6 +686,33 @@ def main():
         n_d2 += 1
     counts['DELETING2'] = n_d2
 
+    # Object::Forward2: forward both args to a member method (thiscall) and return this. Byte-identical but the call.
+    f2ref = mem[0x66a350 - BASE:0x66a350 - BASE + 26]
+    f2mn = [i.mnemonic for i in md.disasm(f2ref, 0x66a350)]
+    n_f2 = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 26 or va in handwritten or va in emitted:
+            continue
+        b = mem[va - BASE:va - BASE + n]
+        xs = list(md.disasm(b, va))
+        if [i.mnemonic for i in xs] != f2mn:
+            continue
+        ci = next(j for j, i in enumerate(xs) if i.mnemonic == 'call')
+        if xs[ci].operands[0].type != X.X86_OP_IMM:
+            continue
+        ca = xs[ci].address - va; cl = xs[ci].size
+        masked = bytearray(b); refm = bytearray(f2ref)
+        for k in range(ca + cl - 4, ca + cl):
+            masked[k] = 0; refm[k] = 0
+        if masked != refm:
+            continue
+        method = xs[ci].operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in b[:8])
+        out.append(f'FORWARD2({va:#x}, {method:#x}, {first})')
+        n_f2 += 1
+    counts['FORWARD2'] = n_f2
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
