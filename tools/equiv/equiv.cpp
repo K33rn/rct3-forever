@@ -2216,6 +2216,27 @@ static std::vector<Test> tests() {
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::DelMemberField: if(this->[OFF]) delete it (slot 0, flag 1); this->[OFF]=0. del target stubbed via vtable.
+    static uint32_t g_dmf_off;
+    Test delmemberfield{0x436b20,
+                        [=](Rng &r) {
+                            fresh(r);
+                            static void *dvt[1] = {(void *)stub_deleting};
+                            if (r.next() % 2) { void *d = arena<void>(0x8000); *(void **)d = dvt; *(void **)(arena<uint8_t>(0x100) + g_dmf_off) = d; }
+                            else *(void **)(arena<uint8_t>(0x100) + g_dmf_off) = nullptr;
+                        },
+                        [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    delmemberfield.prepare = [](const rewrite::Entry *e) { g_dmf_off = rewrite::start_constants(e->at)[1]; };
+    // Object::FreeTwoFields: operator delete this->[OFF0]; operator delete this->[OFF1] (0xbce010 globally stubbed).
+    static uint32_t g_ftf_o0, g_ftf_o1;
+    Test freetwofields{0x426770,
+                       [=](Rng &r) {
+                           fresh(r);
+                           *(void **)(arena<uint8_t>(0x100) + g_ftf_o0) = (r.next() % 2) ? arena<void>(0x300) : nullptr;
+                           *(void **)(arena<uint8_t>(0x100) + g_ftf_o1) = (r.next() % 2) ? arena<void>(0x380) : nullptr;
+                       },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    freetwofields.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_ftf_o0 = c[1]; g_ftf_o1 = c[2]; };
     // Object::ArrayPush: reserve(count+1); this->[0xc][count]=*arg; ++count. reserve stubbed (thiscall, 1 arg).
     static uint32_t g_ap_r;
     Test arraypush{0xbd8060,
@@ -2404,7 +2425,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

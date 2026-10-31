@@ -513,7 +513,7 @@ address,size,name,callers,status
 0x4263a0,435,,2,documented
 0x426560,315,,3,documented
 0x4266a0,181,,2,documented
-0x426770,25,,4,documented
+0x426770,25,Object::FreeTwoFields,4,rewritten
 0x426790,434,,144,documented
 0x426950,594,,39,documented
 0x426bc0,188,,1,documented
@@ -732,7 +732,7 @@ address,size,name,callers,status
 0x436a30,116,,1,documented
 0x436ac0,30,DeletingDestructor,0,rewritten
 0x436b00,7,SetTable,14,rewritten
-0x436b20,31,,0,documented
+0x436b20,31,Object::DelMemberField,0,rewritten
 0x436b40,191,,10,documented
 0x436c00,317,,4,documented
 0x436d40,8,,7,documented
@@ -741,7 +741,7 @@ address,size,name,callers,status
 0x436dd0,7,SetTable,2,rewritten
 0x436df0,65,,3,documented
 0x436eb0,755,,1,documented
-0x4371b0,31,,2,documented
+0x4371b0,31,Object::DelMemberField,2,rewritten
 0x4371d0,33,,4,documented
 0x437620,17,,1,documented
 0x437640,10,,1,documented
@@ -3589,12 +3589,12 @@ address,size,name,callers,status
 0x548cd0,28,,0,documented
 0x548cf0,424,,2,documented
 0x548ea0,145,,1,documented
-0x548f40,25,,0,documented
+0x548f40,25,Object::DelMemberField,0,rewritten
 0x548f60,147,,2,documented
 0x549000,142,,2,documented
 0x549090,47,,0,documented
 0x5490c0,28,,0,documented
-0x5490e0,25,,0,documented
+0x5490e0,25,Object::DelMemberField,0,rewritten
 0x549780,307,,2,documented
 0x5498c0,211,,2,documented
 0x5499a0,118,,2,documented
@@ -5751,7 +5751,7 @@ address,size,name,callers,status
 0x63a3a0,526,,16,documented
 0x63a5b0,231,,14,documented
 0x63a700,279,,7,documented
-0x63a840,31,,0,documented
+0x63a840,31,Object::DelMemberField,0,rewritten
 0x63a860,50,,16,documented
 0x63a8a0,59,,1,documented
 0x63a8e0,57,,19,documented
@@ -7443,7 +7443,7 @@ address,size,name,callers,status
 0x6d5fa0,185,,7,documented
 0x6d60c0,33,,7,documented
 0x6d60f0,106,Factory::IntoField,1,rewritten
-0x6d6160,25,,2,documented
+0x6d6160,25,Object::DelMemberField,2,rewritten
 0x6d6180,138,,45,documented
 0x6d6250,25,Destructor::TablesThenBase,13,rewritten
 0x6d62a0,106,Factory::IntoField,2,rewritten
@@ -7799,8 +7799,8 @@ address,size,name,callers,status
 0x6f0ce0,18,Constructor::BaseAndTable,1,rewritten
 0x6f0d80,232,,11,documented
 0x6f0e70,35,,0,documented
-0x6f0ea0,31,,3,documented
-0x6f0ec0,31,,2,documented
+0x6f0ea0,31,Object::DelMemberField,3,rewritten
+0x6f0ec0,31,Object::DelMemberField,2,rewritten
 0x6f0ee0,120,,1,documented
 0x6f0f60,49,,2,documented
 0x6f0fa0,1,,1,documented
@@ -8077,7 +8077,7 @@ address,size,name,callers,status
 0x7135a0,164,,3,documented
 0x713650,84,,3,documented
 0x7136d0,109,,2,documented
-0x713740,31,,2,documented
+0x713740,31,Object::DelMemberField,2,rewritten
 0x713760,95,,2,documented
 0x713810,112,,1,documented
 0x713880,118,,1,documented
@@ -10898,7 +10898,7 @@ address,size,name,callers,status
 0x8243e0,110,BEHAVIOUR_CREATE,1,rewritten
 0x824450,30,DeletingDestructor,2,rewritten
 0x824470,78,Destructor::MemberThenBaseNullSafe,1,rewritten
-0x8245b0,31,,0,documented
+0x8245b0,31,Object::DelMemberField,0,rewritten
 0x8245d0,37,,0,documented
 0x824610,38,,1,documented
 0x824670,39,,1,documented
@@ -13406,7 +13406,7 @@ address,size,name,callers,status
 0x95ec30,1435,,3,documented
 0x95f1e0,495,,1,documented
 0x95f3d0,184,,2,documented
-0x95f550,26,,0,documented
+0x95f550,26,Object::FreeTwoFields,0,rewritten
 0x95f650,613,,1,documented
 0x95f910,327,,0,documented
 0x95fa60,62,,2,documented
@@ -13506,7 +13506,7 @@ address,size,name,callers,status
 0x968db0,30,DeletingDestructor,1,rewritten
 0x968de0,20,,1,documented
 0x968e00,26,,1,documented
-0x968e20,26,,2,documented
+0x968e20,26,Object::FreeTwoFields,2,rewritten
 0x968e40,1,,1,documented
 0x968e50,199,,1,documented
 0x968f20,201,,1,documented
@@ -13571,7 +13571,7 @@ address,size,name,callers,status
 0x96c390,30,DeletingDestructor,2,rewritten
 0x96c3b0,187,,0,documented
 0x96c470,20,,1,documented
-0x96c4b0,26,,2,documented
+0x96c4b0,26,Object::FreeTwoFields,2,rewritten
 0x96c5c0,26,OwnedPointer::Reset,1,rewritten
 0x96c5e0,164,Array<20>::SetCapacity,1,rewritten
 0x96c690,26,OwnedPointer::Reset,1,rewritten
@@ -15475,7 +15475,7 @@ address,size,name,callers,status
 0xa1f8c0,12,,1,documented
 0xa1f8d0,1,,1,documented
 0xa1f8e0,123,,1,documented
-0xa1f960,25,,1,documented
+0xa1f960,25,Object::DelMemberField,1,rewritten
 0xa1f980,41,,1,documented
 0xa1f9b0,50,,0,documented
 0xa1f9f0,58,,1,documented
@@ -16340,7 +16340,7 @@ address,size,name,callers,status
 0xa84870,48,QueryInterface,0,rewritten
 0xa84950,76,,1,documented
 0xa84ac0,116,,2,documented
-0xa84b50,25,,2,documented
+0xa84b50,25,Object::DelMemberField,2,rewritten
 0xa84b80,63,,1,documented
 0xa84c60,30,DeletingDestructor,2,rewritten
 0xa84ca0,30,DeletingDestructor,2,rewritten
@@ -20015,7 +20015,7 @@ address,size,name,callers,status
 0xbdbeb0,30,DeletingDestructor,1,rewritten
 0xbdbf70,93,,4,documented
 0xbdbfd0,118,,2,documented
-0xbdc140,26,,0,documented
+0xbdc140,26,Object::FreeTwoFields,0,rewritten
 0xbdc210,34,,1,documented
 0xbdc4f0,54,,1,documented
 0xbdc5c0,42,,7,documented
@@ -22103,7 +22103,7 @@ address,size,name,callers,status
 0xca2710,135,,1,documented
 0xca27a0,99,Factory::CreateFromRegisters,0,rewritten
 0xca2850,30,DeletingDestructor,1,rewritten
-0xca28e0,26,,0,documented
+0xca28e0,26,Object::FreeTwoFields,0,rewritten
 0xca2990,11,,1,documented
 0xca29c0,130,,1,documented
 0xca2a90,47,,0,documented
@@ -22929,9 +22929,9 @@ address,size,name,callers,status
 0xcdf1e0,26,,1,documented
 0xcdf200,323,,5,documented
 0xcdf3c0,38,,3,documented
-0xcdf3f0,26,,12,documented
+0xcdf3f0,26,Object::FreeTwoFields,12,rewritten
 0xcdf410,38,,1,documented
-0xcdf440,26,,3,documented
+0xcdf440,26,Object::FreeTwoFields,3,rewritten
 0xcdf4c0,457,,2,documented
 0xcdf690,198,,12,documented
 0xcdf760,200,,0,documented

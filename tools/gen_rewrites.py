@@ -865,6 +865,54 @@ def main():
         n_ap += 1
     counts['ARRAY_PUSH'] = n_ap
 
+    # Object::DelMemberField: if(m=this->[OFF]) m->vtbl[0](m,1); this->[OFF]=0. Shape of 0x436b20; OFF varies.
+    dmfmn = [i.mnemonic for i in md.disasm(mem[0x436b20 - BASE:0x436b20 - BASE + 31], 0x436b20)]
+    n_dmf = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n < 25 or n > 40 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != dmfmn:
+            continue
+        load, clear = xs[2], xs[8]
+        if not (load.mnemonic == 'mov' and load.op_str.startswith('ecx, dword ptr [esi') and load.operands[1].type == X.X86_OP_MEM
+                and load.operands[1].mem.base and md.reg_name(load.operands[1].mem.base) == 'esi' and not load.operands[1].mem.index
+                and xs[5].op_str in ('eax, dword ptr [ecx]', 'edx, dword ptr [ecx]')   # load vtable
+                and xs[6].mnemonic == 'push' and xs[6].op_str == '1'                   # flag 1
+                and xs[7].op_str in ('dword ptr [eax]', 'dword ptr [edx]')             # call slot 0
+                and clear.operands[0].type == X.X86_OP_MEM
+                and (clear.operands[0].mem.disp & 0xffffffff) == (load.operands[1].mem.disp & 0xffffffff)):
+            continue
+        off = load.operands[1].mem.disp & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'DELMEMBER_FIELD({va:#x}, {off:#x}, {first})')
+        n_dmf += 1
+    counts['DELMEMBER_FIELD'] = n_dmf
+
+    # Object::FreeTwoFields: operator delete this->[OFF0]; operator delete this->[OFF1] (no null check, no clear).
+    ftfmn = [i.mnemonic for i in md.disasm(mem[0x95f550 - BASE:0x95f550 - BASE + 26], 0x95f550)]
+    n_ftf = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n < 22 or n > 40 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != ftfmn:
+            continue
+        l0, l1 = xs[2], xs[5]
+        calls = [i for i in xs if i.mnemonic == 'call']
+        if not (l0.operands[1].type == X.X86_OP_MEM and l0.operands[1].mem.base and md.reg_name(l0.operands[1].mem.base) == 'esi'
+                and l1.operands[1].type == X.X86_OP_MEM and l1.operands[1].mem.base and md.reg_name(l1.operands[1].mem.base) == 'esi'
+                and len(calls) == 2 and all(c.operands[0].type == X.X86_OP_IMM and (c.operands[0].imm & 0xffffffff) == 0xbce010 for c in calls)):
+            continue
+        off0 = l0.operands[1].mem.disp & 0xffffffff
+        off1 = l1.operands[1].mem.disp & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'FREE_TWO_FIELDS({va:#x}, {off0:#x}, {off1:#x}, {first})')
+        n_ftf += 1
+    counts['FREE_TWO_FIELDS'] = n_ftf
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

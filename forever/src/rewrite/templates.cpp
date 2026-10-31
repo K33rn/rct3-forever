@@ -1400,6 +1400,12 @@ static volatile long g_cond_forwards;
 // Append *arg to a counted array: reserve(count+1); this->[0xc][count] = *arg; ++count.
 static volatile long g_array_pushes;
 #define ARRAY_PUSH(at, reserve, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __thiscall REWRITE_CAT(ap_, at)(uint8_t *s, void *arg) { g_array_pushes++; uint32_t c = *(uint32_t *)s; ((void(__thiscall *)(void *, uint32_t))reserve)(s, c + 1); uint32_t c2 = *(uint32_t *)s; (*(uint32_t **)(s + 0xc))[c2] = *(uint32_t *)arg; ++*(uint32_t *)s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ArrayPush", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ap_, at), &g_array_pushes);
+// Delete a member field via its deleting destructor (slot 0, flag 1) when non-null, then null the field.
+static volatile long g_del_member_fields;
+#define DELMEMBER_FIELD(at, off, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(dmf_, at)(uint8_t *s) { g_del_member_fields++; void *m = *(void **)(s + off); if (m) ((void(__fastcall *)(void *, void *, uint32_t))(*(void ***)m)[0])(m, nullptr, 1); *(void **)(s + off) = nullptr; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::DelMemberField", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(dmf_, at), &g_del_member_fields);
+// Free two pointer fields with operator delete (no null check, no clear).
+static volatile long g_free_two_fields;
+#define FREE_TWO_FIELDS(at, off0, off1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(ftf_, at)(uint8_t *s) { g_free_two_fields++; ((void(__cdecl *)(void *))0xbce010)(*(void **)(s + off0)); ((void(__cdecl *)(void *))0xbce010)(*(void **)(s + off1)); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::FreeTwoFields", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ftf_, at), &g_free_two_fields);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1501,6 +1507,10 @@ static volatile long g_array_pushes;
 #define COND_FORWARD(...)
 #undef ARRAY_PUSH
 #define ARRAY_PUSH(...)
+#undef DELMEMBER_FIELD
+#define DELMEMBER_FIELD(...)
+#undef FREE_TWO_FIELDS
+#define FREE_TWO_FIELDS(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1734,6 +1744,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define COND_FORWARD(...)
 #undef ARRAY_PUSH
 #define ARRAY_PUSH(...)
+#undef DELMEMBER_FIELD
+#define DELMEMBER_FIELD(...)
+#undef FREE_TWO_FIELDS
+#define FREE_TWO_FIELDS(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1831,6 +1845,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define COND_FORWARD(...)
 #undef ARRAY_PUSH
 #define ARRAY_PUSH(...)
+#undef DELMEMBER_FIELD
+#define DELMEMBER_FIELD(...)
+#undef FREE_TWO_FIELDS
+#define FREE_TWO_FIELDS(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1845,6 +1863,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define COND_FORWARD(at, method, ...) {at, method},
 #undef ARRAY_PUSH
 #define ARRAY_PUSH(at, reserve, ...) {at, reserve},
+#undef DELMEMBER_FIELD
+#define DELMEMBER_FIELD(at, off, ...) {at, off},
+#undef FREE_TWO_FIELDS
+#define FREE_TWO_FIELDS(at, off0, off1, ...) {at, off0, off1},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
