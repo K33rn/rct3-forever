@@ -693,6 +693,18 @@ template <int SLOT> static uint32_t __fastcall stub_forward(void *self, void *, 
     record(0x93, (void *)(uintptr_t)b);
     return 0xf0d2d3 + SLOT;
 }
+// behaviour create: the constructor (ecx + three args, edx ignored) and the link (ecx + owner); both give the object
+static void *__fastcall stub_behaviour_ctor(void *self, void *, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x94, self);
+    record(0x94, (void *)(uintptr_t)a);
+    record(0x94, (void *)(uintptr_t)b);
+    record(0x94, (void *)(uintptr_t)c);
+    return self;
+}
+static void __fastcall stub_link(void *self, void *, void *owner) {
+    record(0x95, self);
+    record(0x95, owner);
+}
 static void *__fastcall stub_resource_base(void *self, void *, int32_t **engine, int32_t **extension, uint32_t one,
                                            int32_t **name) {
     record(0x7c, self);
@@ -2029,6 +2041,40 @@ static std::vector<Test> tests() {
                                    arena<void>(0x4000), nullptr, arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1])};
                            }};
     interface_forward.prepare = [](const rewrite::Entry *e) { fwd_c = rewrite::start_constants(e->at); };
+    // ObjectArray::Construct: the object at 0x100, n 0..6; the vector constructor stood in for (it gives the items at
+    // 0x3000 via stub_vector_construct? no - the real one is stubbed to only record). Memory from the arena.
+    Test object_construct{0x7404f0,
+                          [=](Rng &r) {
+                              fresh(r);
+                              *arena<uint32_t>(0x28) = r.next();   // alloc sometimes fails
+                              arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 6);
+                          },
+                          [](void *fn) {
+                              ((void *(__fastcall *)(void *, void *, int32_t))fn)(arena<void>(0x100), nullptr,
+                                                                                (int32_t)arena<uint32_t>(0x10)[0]);
+                              return Result{(arena<uint32_t>(0x100)[0] << 1) ^ arena<uint32_t>(0x100)[1]};
+                          }};
+    object_construct.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfd0, (void *)stub_alloc}, {0xddcf99, (void *)stub_vector_construct}});
+    };
+    object_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Behaviour::Create: the owner at 0x340; memory always there (the original crashes without); the copy's
+    // constructor and link stood in for, the shared activate too; the object's active flag random
+    Test behaviour_create{0x46dfa0,
+                          [=](Rng &r) {
+                              fresh(r);
+                              *arena<uint32_t>(0x28) = 1;
+                              arena<uint8_t>(0x200)[0x2c] = (uint8_t)r.next();
+                          },
+                          [](void *fn) {
+                              return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x340))};
+                          }};
+    behaviour_create.prepare = [](const rewrite::Entry *e) {
+        const uint32_t *c = rewrite::start_constants(e->at);
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc}, {c[2], (void *)stub_behaviour_ctor}, {c[3], (void *)stub_link},
+                       {0x800860, (void *)stub_activate}});
+    };
+    behaviour_create.finish = [](const rewrite::Entry *) { unstub_many(); };
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -2111,7 +2157,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

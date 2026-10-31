@@ -1327,7 +1327,7 @@ address,size,name,callers,status
 0x46dd10,230,StructArrayLoad,1,rewritten
 0x46de00,95,,0,documented
 0x46df30,105,Factory::Create,1,rewritten
-0x46dfa0,113,,1,documented
+0x46dfa0,113,BEHAVIOUR_CREATE,1,rewritten
 0x46e120,431,,2,documented
 0x46e2d0,30,DeletingDestructor,2,rewritten
 0x46e460,30,DeletingDestructor,2,rewritten
@@ -7998,7 +7998,7 @@ address,size,name,callers,status
 0x708c60,30,DeletingDestructor,2,rewritten
 0x708c80,464,,2,documented
 0x708e50,102,Factory::Create,1,rewritten
-0x708ec0,110,,1,documented
+0x708ec0,110,BEHAVIOUR_CREATE,1,rewritten
 0x708f50,948,,1,documented
 0x709530,26,,1,documented
 0x709560,35,,8,documented
@@ -8595,7 +8595,7 @@ address,size,name,callers,status
 0x73fa60,1904,,1,documented
 0x740390,79,,1,documented
 0x740420,196,,1,documented
-0x7404f0,120,,1,documented
+0x7404f0,120,OBJECT_CONSTRUCT,1,rewritten
 0x740570,48,ObjectArray::Free,2,rewritten
 0x7405a0,258,ObjectArray::SetCapacity,2,rewritten
 0x7406b0,2032,,2,documented
@@ -9015,7 +9015,7 @@ address,size,name,callers,status
 0x771f90,311,,2,documented
 0x772130,61,Reference::Reference,2,rewritten
 0x7722b0,173,,0,documented
-0x772360,120,,2,documented
+0x772360,120,OBJECT_CONSTRUCT,2,rewritten
 0x7723e0,48,ObjectArray::Free,2,rewritten
 0x772410,104,,8,documented
 0x7724a0,143,,3,documented
@@ -9216,7 +9216,7 @@ address,size,name,callers,status
 0x786d20,25,,1,documented
 0x786d40,26,,1,documented
 0x786da0,102,Factory::Create,1,rewritten
-0x786e10,110,,1,documented
+0x786e10,110,BEHAVIOUR_CREATE,1,rewritten
 0x786eb0,30,DeletingDestructor,2,rewritten
 0x786ed0,158,,3,documented
 0x786f70,294,,1,documented
@@ -10728,7 +10728,7 @@ address,size,name,callers,status
 0x817760,205,,2,documented
 0x817830,30,DeletingDestructor,2,rewritten
 0x817910,689,,1,documented
-0x817bd0,120,,1,documented
+0x817bd0,120,OBJECT_CONSTRUCT,1,rewritten
 0x817d10,104,Factory::CreateAround,1,rewritten
 0x817de0,104,Factory::CreateAround,1,rewritten
 0x817e50,94,,1,documented
@@ -10766,7 +10766,7 @@ address,size,name,callers,status
 0x819ab0,192,,1,documented
 0x819b70,395,,2,documented
 0x819d10,105,Factory::Create,1,rewritten
-0x819d80,113,,1,documented
+0x819d80,113,BEHAVIOUR_CREATE,1,rewritten
 0x819e00,393,,1,documented
 0x819f90,1501,,1,documented
 0x81a570,107,Factory::CreateFromFields,0,rewritten
@@ -10785,7 +10785,7 @@ address,size,name,callers,status
 0x81b360,533,,1,documented
 0x81b6f0,67,Reference::Reference(object),0,rewritten
 0x81b750,105,Factory::Create,1,rewritten
-0x81b7c0,113,,1,documented
+0x81b7c0,113,BEHAVIOUR_CREATE,1,rewritten
 0x81b850,573,,1,documented
 0x81ba90,33,,1,documented
 0x81bb00,194,,1,documented
@@ -10821,7 +10821,7 @@ address,size,name,callers,status
 0x81df80,195,,1,documented
 0x81e050,512,,1,documented
 0x81e340,102,Factory::Create,1,rewritten
-0x81e3b0,110,,1,documented
+0x81e3b0,110,BEHAVIOUR_CREATE,1,rewritten
 0x81e420,30,DeletingDestructor,2,rewritten
 0x81e440,40,Text::Widen,0,rewritten
 0x81e4b0,48,QueryInterface,0,rewritten
@@ -10855,7 +10855,7 @@ address,size,name,callers,status
 0x820170,293,StructArrayField<40>::Save,1,rewritten
 0x8202a0,124,StructArrayField<40>::Size,1,rewritten
 0x820380,212,ReferenceField::Load,1,rewritten
-0x820460,120,,1,documented
+0x820460,120,OBJECT_CONSTRUCT,1,rewritten
 0x820540,86,,3,documented
 0x820740,849,,1,documented
 0x820aa0,167,,1,documented
@@ -10890,12 +10890,12 @@ address,size,name,callers,status
 0x823d90,271,,1,documented
 0x823ea0,241,,1,documented
 0x823fa0,105,Factory::Create,1,rewritten
-0x824010,113,,1,documented
+0x824010,113,BEHAVIOUR_CREATE,1,rewritten
 0x824090,30,DeletingDestructor,2,rewritten
 0x8240b0,290,,2,documented
 0x824220,280,,1,documented
 0x824370,102,Factory::Create,1,rewritten
-0x8243e0,110,,1,documented
+0x8243e0,110,BEHAVIOUR_CREATE,1,rewritten
 0x824450,30,DeletingDestructor,2,rewritten
 0x824470,78,Destructor::MemberThenBaseNullSafe,1,rewritten
 0x8245b0,31,,0,documented
@@ -10912,7 +10912,7 @@ address,size,name,callers,status
 0x8250c0,30,DeletingDestructor,2,rewritten
 0x8250f0,233,,0,documented
 0x8251e0,105,Factory::Create,1,rewritten
-0x825250,113,,1,documented
+0x825250,113,BEHAVIOUR_CREATE,1,rewritten
 0x8252d0,582,,1,documented
 0x825530,173,,1,documented
 0x8255e0,30,DeletingDestructor,2,rewritten
@@ -11999,7 +11999,7 @@ address,size,name,callers,status
 0x88c3d0,234,,1,documented
 0x88c4c0,399,,3,documented
 0x88c650,105,Factory::Create,1,rewritten
-0x88c6c0,113,,1,documented
+0x88c6c0,113,BEHAVIOUR_CREATE,1,rewritten
 0x88c740,30,DeletingDestructor,2,rewritten
 0x88c760,23,,1,documented
 0x88c780,361,,1,documented
@@ -12149,7 +12149,7 @@ address,size,name,callers,status
 0x8b3e70,230,StructArrayLoad,1,rewritten
 0x8b3f60,258,ObjectArray::SetCapacity,1,rewritten
 0x8b4070,105,Factory::Create,1,rewritten
-0x8b40e0,113,,1,documented
+0x8b40e0,113,BEHAVIOUR_CREATE,1,rewritten
 0x8b4160,634,,1,documented
 0x8b43e0,84,,1,documented
 0x8b4440,30,DeletingDestructor,2,rewritten
@@ -12161,7 +12161,7 @@ address,size,name,callers,status
 0x8b49d0,25,,1,documented
 0x8b49f0,26,,1,documented
 0x8b4a30,105,Factory::Create,1,rewritten
-0x8b4aa0,113,,1,documented
+0x8b4aa0,113,BEHAVIOUR_CREATE,1,rewritten
 0x8b4b50,30,DeletingDestructor,2,rewritten
 0x8b4b70,1054,,1,documented
 0x8b4f90,378,,1,documented
@@ -12223,7 +12223,7 @@ address,size,name,callers,status
 0x8bb110,30,DeletingDestructor,2,rewritten
 0x8bb130,107,Factory::CreateFromFields,0,rewritten
 0x8bb1a0,105,Factory::Create,1,rewritten
-0x8bb210,113,,1,documented
+0x8bb210,113,BEHAVIOUR_CREATE,1,rewritten
 0x8bb290,30,DeletingDestructor,2,rewritten
 0x8bb960,17,,1,documented
 0x8bbb60,469,,2,documented
@@ -16380,7 +16380,7 @@ address,size,name,callers,status
 0xa879c0,130,,1,documented
 0xa87a50,369,,1,documented
 0xa87bd0,105,Factory::Create,1,rewritten
-0xa87c40,113,,1,documented
+0xa87c40,113,BEHAVIOUR_CREATE,1,rewritten
 0xa87cc0,30,DeletingDestructor,2,rewritten
 0xa87e00,787,,12,documented
 0xa88180,188,,3,documented
@@ -16568,7 +16568,7 @@ address,size,name,callers,status
 0xa996c0,734,,1,documented
 0xa999a0,230,StructArrayLoad,1,rewritten
 0xa99a90,105,Factory::Create,1,rewritten
-0xa99b00,113,,1,documented
+0xa99b00,113,BEHAVIOUR_CREATE,1,rewritten
 0xa99b80,30,DeletingDestructor,2,rewritten
 0xa99bc0,48,QueryInterface,0,rewritten
 0xa99c10,438,,2,documented
@@ -18169,7 +18169,7 @@ address,size,name,callers,status
 0xb46080,624,,4,documented
 0xb462f0,564,,2,documented
 0xb46530,619,,2,documented
-0xb467a0,120,,1,documented
+0xb467a0,120,OBJECT_CONSTRUCT,1,rewritten
 0xb46820,48,ObjectArray::Free,2,rewritten
 0xb46850,258,ObjectArray::SetCapacity,2,rewritten
 0xb46960,1321,,2,documented
@@ -18899,10 +18899,10 @@ address,size,name,callers,status
 0xb8c730,894,,2,documented
 0xb8cab0,48,ObjectArray::Free,2,rewritten
 0xb8cae0,153,ObjectArray::Resize,2,rewritten
-0xb8cb80,120,,1,documented
+0xb8cb80,120,OBJECT_CONSTRUCT,1,rewritten
 0xb8cc00,48,ObjectArray::Free,1,rewritten
 0xb8cc30,258,ObjectArray::SetCapacity,2,rewritten
-0xb8cd40,120,,1,documented
+0xb8cd40,120,OBJECT_CONSTRUCT,1,rewritten
 0xb8cdc0,48,ObjectArray::Free,2,rewritten
 0xb8cdf0,258,ObjectArray::SetCapacity,2,rewritten
 0xb8cf00,2569,,2,documented

@@ -1140,6 +1140,42 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
     return ((uint32_t(__fastcall *)(void *, void *, uint32_t, uint32_t))(*(void ***)part)[SLOT / 4])(part, nullptr, a, b);
 }
 #define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Interface::Forward", at, REWRITE_CAT(original_, at), 8, (void *)&interface_forward<ref, flag, cache, id, slot>, &g_interface_forwards);
+// ObjectArray::Construct: a new array of n SIZE-byte objects made with new[] (the count kept in front, at items-4),
+// the count also stored at +4 of the object; the items constructed by the vector constructor iterator with CTOR and
+// DTOR. No memory leaves the pointer null (the count at +4 is still set). Gives the object.
+static volatile long g_object_constructs;
+template <uint32_t SIZE, uint32_t CTOR, uint32_t DTOR>
+static void *__fastcall object_construct(uint8_t *self, void *, int32_t n) {
+    g_object_constructs++;
+    *(int32_t *)(self + 4) = n;
+    int32_t *block = ((int32_t * (__cdecl *)(uint32_t))0xbcdfd0)((uint32_t)n * SIZE + 4);
+    if (block) {
+        block[0] = n;
+        uint8_t *items = (uint8_t *)(block + 1);
+        ((void(__stdcall *)(void *, uint32_t, int32_t, void *, void *))0xddcf99)(items, SIZE, n, (void *)CTOR,
+                                                                               (void *)DTOR);
+        *(void **)self = items;
+    } else {
+        *(void **)self = nullptr;
+    }
+    return self;
+}
+
+// A behaviour object made at its owner's request: SIZE bytes constructed by CTOR (given three zeros), linked to the
+// owner (LINK, with the owner), then set up (ManagedObject::Activate 0x800860) unless already active (bit 0 of
+// +0x2C). Gives the object. With no memory the original goes on with null and crashes, and so does this.
+static volatile long g_behaviour_creates;
+template <uint32_t SIZE, uint32_t CTOR, uint32_t LINK> static void *__fastcall behaviour_create(void *owner) {
+    g_behaviour_creates++;
+    void *p = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(SIZE);
+    void *obj = p ? ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t))CTOR)(p, nullptr, 0, 0, 0)
+                  : nullptr;
+    ((void(__fastcall *)(void *, void *, void *))LINK)(obj, nullptr, owner);
+    if (!(*((uint8_t *)obj + 0x2c) & 1)) ((void(__fastcall *)(void *))0x800860)(obj);
+    return obj;
+}
+#define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Construct", at, REWRITE_CAT(original_, at), 8, (void *)&object_construct<size, ctor, dtor>, &g_object_constructs);
+#define BEHAVIOUR_CREATE(at, size, ctor, link, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Behaviour::Create", at, REWRITE_CAT(original_, at), 8, (void *)&behaviour_create<size, ctor, link>, &g_behaviour_creates);
 #define GLOBAL_FACTORY(at, size, ctor, global, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Global", at, REWRITE_CAT(original_, at), 8, (void *)&global_factory<size, ctor, global>, &g_global_factories);
 #define LAZY_FACTORY(at, global, size, ctor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::Lazy", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory<global, size, ctor>, &g_global_factories);
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, value, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Factory::LazyInit", at, REWRITE_CAT(original_, at), 8, (void *)&lazy_factory_init<global, size, arg, ctor, table, field, value>, &g_global_factories);
@@ -1231,6 +1267,10 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
 #undef DTOR_TABLES
 #undef FREE_TWO
 #define GLOBAL_FACTORY(...)
+#undef OBJECT_CONSTRUCT
+#undef BEHAVIOUR_CREATE
+#define OBJECT_CONSTRUCT(...)
+#define BEHAVIOUR_CREATE(...)
 #undef INTERFACE_FORWARD
 #define INTERFACE_FORWARD(...)
 #undef QUADTREE_INSERT
@@ -1423,6 +1463,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LAZY_FACTORY_INIT(at, global, size, arg, ctor, table, field, ...) {at, global, size, arg, ctor, table, field},
 #define DTOR_TABLES(at, table, member_table, dtor, base_table, ...) {at, table, member_table, dtor, base_table},
 #define FREE_TWO(at, field, ...) {at, field},
+#undef OBJECT_CONSTRUCT
+#undef BEHAVIOUR_CREATE
+#define OBJECT_CONSTRUCT(at, size, ctor, dtor, ...) {at, size, ctor, dtor},
+#define BEHAVIOUR_CREATE(at, size, ctor, link, ...) {at, size, ctor, link},
 #undef INTERFACE_FORWARD
 #define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) {at, ref, flag, cache, id, slot},
 #undef QUADTREE_INSERT
