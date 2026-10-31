@@ -10866,7 +10866,7 @@ address,size,name,callers,status
 0x8211f0,330,,11,documented
 0x821340,48,ObjectArray::Free,2,rewritten
 0x821370,258,ObjectArray::SetCapacity,2,rewritten
-0x821480,122,,1,documented
+0x821480,122,OBJECT_CONSTRUCT,1,rewritten
 0x821500,1198,,2,documented
 0x8219e0,249,,1,documented
 0x821ae0,719,,2,documented
