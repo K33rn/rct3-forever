@@ -665,6 +665,27 @@ def main():
         n_ttb += 1
     counts['TABLES_THEN_BASE'] = n_ttb
 
+    # DeletingDestructor (member-free variant): push esi; mov esi,ecx; call DTOR; test [esp+8],1; je; mov ecx,esi;
+    # call FREE; mov eax,esi; pop esi; ret 4.  dtor(this); if(flag&1) free(this); return this.  DTOR/FREE thiscall.
+    d2mn = [i.mnemonic for i in md.disasm(mem[0xbc0e50 - BASE:0xbc0e50 - BASE + 28], 0xbc0e50)]
+    n_d2 = 0
+    for r in funcs:
+        va, n = int(r['address'], 16), int(r['size'])
+        if n != 28 or va in handwritten or va in emitted:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + n], va))
+        if [i.mnemonic for i in xs] != d2mn:
+            continue
+        calls = [i for i in xs if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if len(calls) != 2:
+            continue
+        dtor = calls[0].operands[0].imm & 0xffffffff
+        free = calls[1].operands[0].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'DELETING2({va:#x}, {dtor:#x}, {free:#x}, {first})')
+        n_d2 += 1
+    counts['DELETING2'] = n_d2
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

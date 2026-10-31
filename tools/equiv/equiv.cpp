@@ -2214,6 +2214,13 @@ static std::vector<Test> tests() {
         stubs_for_now(st);
     };
     member_dtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // DeletingDestructor (member-free variant): dtor(this); if(flags&1) free(this); return this. Both stubbed.
+    static uint32_t g_d2_dtor, g_d2_free, g_d2_flag;
+    Test deleting2{0xbc0e50,
+                   [=](Rng &r) { fresh(r); arena<uint32_t>(0x100)[0] = r.next(); g_d2_flag = r.next(); },
+                   [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), nullptr, g_d2_flag)}; }};
+    deleting2.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_d2_dtor = c[1]; g_d2_free = c[2]; stubs_for_now({{g_d2_dtor, (void *)stub_destructor}, {g_d2_free, (void *)stub_destructor}}); };
+    deleting2.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Destructor::TablesThenBase: set two table fields on this, then tail-call the (stubbed) base destructor.
     static uint32_t g_ttb_base;
     Test tablesbase{0x41d050,
@@ -2331,7 +2338,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
