@@ -2108,6 +2108,20 @@ static std::vector<Test> tests() {
                          }};
     sorted_map_ctor.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}}); };
     sorted_map_ctor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Frustum::FromCamera: the frustum at 0x100, the camera at 0x300 (any floats, NaNs included), flags random
+    Test frustum{0x42fa40,
+                 [=](Rng &r) {
+                     fresh(r);
+                     for (int i = 0; i < 64; i++) arena<float>(0x300)[i] = r.any_float();
+                     arena<uint32_t>(0x10)[0] = r.next();
+                 },
+                 [](void *fn) {
+                     ((void *(__fastcall *)(void *, void *, void *, uint32_t))fn)(arena<void>(0x100), nullptr,
+                                                                                arena<void>(0x300), arena<uint32_t>(0x10)[0]);
+                     uint32_t h = 0;
+                     for (int i = 0; i < 0x64 / 4; i++) h = h * 31 + arena<uint32_t>(0x100)[i];
+                     return Result{h};
+                 }};
     Test free_two{0x42fd80,
                   [=](Rng &r) {
                       fresh(r);
@@ -2190,7 +2204,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &sorted_map_ctor,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &sorted_map_ctor, &frustum,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

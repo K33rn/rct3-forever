@@ -648,7 +648,7 @@ address,size,name,callers,status
 0x42f8e0,61,Array<4>::Allocate,0,rewritten
 0x42f920,130,Array<4>::SetCapacity,2,rewritten
 0x42f9b0,133,,1,documented
-0x42fa40,198,,1,documented
+0x42fa40,198,Frustum::FromCamera,1,rewritten
 0x42fb10,282,,0,documented
 0x42fd80,105,OwnedPair::FreeFields,2,rewritten
 0x42fdf0,69,,1,documented
@@ -920,7 +920,7 @@ address,size,name,callers,status
 0x449170,36,OwnedPair::Free,2,rewritten
 0x449270,26,OwnedPointer::Reset,2,rewritten
 0x449290,130,Array<4>::SetCapacity,2,rewritten
-0x449320,198,,1,documented
+0x449320,198,Frustum::FromCamera,1,rewritten
 0x4493f0,282,,0,documented
 0x449580,1038,,3,documented
 0x449990,43,,3,documented
@@ -1681,7 +1681,7 @@ address,size,name,callers,status
 0x488320,53,,5,documented
 0x4883c0,79,,2,documented
 0x4884b0,107,Vectors::SetTwoAndValue,1,rewritten
-0x488520,198,,1,documented
+0x488520,198,Frustum::FromCamera,1,rewritten
 0x4885f0,107,Vectors::SetTwoAndValue,1,rewritten
 0x488660,134,,1,documented
 0x488710,239,,0,documented
@@ -9646,7 +9646,7 @@ address,size,name,callers,status
 0x7b2bf0,26,OwnedPointer::Reset,0,rewritten
 0x7b2c10,107,Vectors::SetTwoAndValue,1,rewritten
 0x7b2c80,107,Vectors::SetTwoAndValue,1,rewritten
-0x7b2cf0,198,,1,documented
+0x7b2cf0,198,Frustum::FromCamera,1,rewritten
 0x7b2dc0,107,Vectors::SetTwoAndValue,1,rewritten
 0x7b2e30,134,,1,documented
 0x7b2ec0,107,Vectors::SetTwoAndValue,1,rewritten
@@ -15260,7 +15260,7 @@ address,size,name,callers,status
 0xa0bf70,26,OwnedPointer::Reset,0,rewritten
 0xa0bf90,26,OwnedPointer::Reset,0,rewritten
 0xa0bfb0,26,OwnedPointer::Reset,0,rewritten
-0xa0bfd0,198,,1,documented
+0xa0bfd0,198,Frustum::FromCamera,1,rewritten
 0xa0c0a0,282,,0,documented
 0xa0c2e0,26,OwnedPointer::Reset,1,rewritten
 0xa0c300,26,OwnedPointer::Reset,1,rewritten
@@ -18367,7 +18367,7 @@ address,size,name,callers,status
 0xb5b740,134,,0,documented
 0xb5b7d0,107,Vectors::SetTwoAndValue,0,rewritten
 0xb5b840,107,Vectors::SetTwoAndValue,1,rewritten
-0xb5b8d0,198,,1,documented
+0xb5b8d0,198,Frustum::FromCamera,1,rewritten
 0xb5bb70,104,,0,documented
 0xb5bbe0,282,,0,documented
 0xb5bda0,163,,0,documented
@@ -18494,7 +18494,7 @@ address,size,name,callers,status
 0xb6b900,79,,2,documented
 0xb6b9f0,26,OwnedPointer::Reset,2,rewritten
 0xb6ba10,130,Array<4>::SetCapacity,1,rewritten
-0xb6baa0,198,,1,documented
+0xb6baa0,198,Frustum::FromCamera,1,rewritten
 0xb6bb70,134,,1,documented
 0xb6bc00,107,Vectors::SetTwoAndValue,1,rewritten
 0xb6bc70,107,Vectors::SetTwoAndValue,1,rewritten

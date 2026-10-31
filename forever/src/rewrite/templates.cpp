@@ -1140,6 +1140,31 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
     return ((uint32_t(__fastcall *)(void *, void *, uint32_t, uint32_t))(*(void ***)part)[SLOT / 4])(part, nullptr, a, b);
 }
 #define INTERFACE_FORWARD(at, ref, flag, cache, id, slot, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Interface::Forward", at, REWRITE_CAT(original_, at), 8, (void *)&interface_forward<ref, flag, cache, id, slot>, &g_interface_forwards);
+// Frustum::FromCamera(camera, flags): copies the camera's six clipping planes into this frustum. Each plane in the
+// camera is a 3-value normal then its distance (stride 0x20, from +0x10); in the frustum they are packed at stride
+// 0x10 with the distance negated. The flags go at +0x60. The distance is negated through the x87 FPU, as the
+// original does (a signalling NaN comes back quiet), so a plain float negate would not match. Gives the frustum.
+static volatile long g_frustums;
+static void frustum_neg(uint32_t *to, const uint32_t *from) {
+    __asm__ volatile("flds %1\n\tfchs\n\tfstps %0" : "=m"(*to) : "m"(*from));
+}
+static void *__fastcall frustum_from_camera(uint8_t *self, void *, const uint8_t *camera, uint32_t flags) {
+    g_frustums++;
+    *(uint32_t *)(self + 0x60) = flags;
+    for (int i = 0; i < 6; i++) {
+        const uint8_t *s = camera + 0x10 + i * 0x20;
+        uint8_t *d = self + i * 0x10;
+        *(uint32_t *)(d + 0) = *(const uint32_t *)(s + 0);
+        *(uint32_t *)(d + 4) = *(const uint32_t *)(s + 4);
+        *(uint32_t *)(d + 8) = *(const uint32_t *)(s + 8);
+        frustum_neg((uint32_t *)(d + 0xc), (const uint32_t *)(s + 0x10));
+    }
+    return self;
+}
+static const uint8_t frustum_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x08, 0x89, 0x48};
+static const uint32_t frustum_copies[] = {0x42fa40, 0x449320, 0x488520, 0x7b2cf0, 0xa0bfd0, 0xb5b8d0, 0xb6baa0};
+REWRITE_COPIES("Frustum::FromCamera", frustum_copies, frustum_original, frustum_from_camera, &g_frustums);
+
 // SortedMap::SortedMap(n, cap): two n*4-byte blocks (keys at +0, values at +8), the counts at +4 and +0xC set to n,
 // the capacity at +0x10 set to cap (or 0x80 when cap <= 0), +0x14 cleared. Gives the map. (The order of the stores
 // and the two allocations matches the original.)
