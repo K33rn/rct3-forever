@@ -48,6 +48,8 @@ MATCH = [
     ('START_KEY1_FLAG', 0xEB2940, [], [(4, 0), (11, 0), (12, 0), (13, 0), (14, 1), (16, 0)]),
     ('TEXT_WIDEN', 0x401050, [], []),
     ('TEXT_CREATE', 0x45C000, [(1, 0)], [(14, 0), (16, 0)]),                  # the C text, the function making it
+    ('TEXT_CREATE2', 0x475020, [(1, 0)], [(14, 0), (16, 0)]),                 # ret 8: C text, make fn
+    ('TEXT_CREATE3', 0xB82F50, [(1, 0)], [(14, 0), (16, 0)]),                 # ret 0xc
     ('TABLE20_FREE', 0x80F710, [(1, 0)], []),
     ('START_TEXT', 0xECA490, [(1, 0)], [(13, 0), (20, 0), (34, 1), (76, 0)]),  # text, suffix, global, dtor
     ('RESOURCE_TYPE', 0xBB28E0, [(1, 0)], [(17, 0), (31, 0), (45, 0), (101, 1), (53, 0)], (53,)),   # + its flag

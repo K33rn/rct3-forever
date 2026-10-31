@@ -1415,7 +1415,7 @@ address,size,name,callers,status
 0x474a40,733,,2,documented
 0x474d20,638,,1,documented
 0x474fa0,117,Text::Create,11,rewritten
-0x475020,117,,25,documented
+0x475020,117,TEXT_CREATE2,25,rewritten
 0x475170,7,Random::SetState,8,rewritten
 0x475180,86,Random::Unit,667,rewritten
 0x4751e0,63,Random::Advance,140,rewritten
@@ -2251,7 +2251,7 @@ address,size,name,callers,status
 0x4b48a0,78,Destructor::MemberThenBaseNullSafe,26,rewritten
 0x4b4a70,28,,4,documented
 0x4b4a90,73,,2,documented
-0x4b4e60,117,,9,documented
+0x4b4e60,117,TEXT_CREATE2,9,rewritten
 0x4b5040,29,,2,documented
 0x4b5060,382,,1,documented
 0x4b51e0,239,,8,documented
@@ -7453,7 +7453,7 @@ address,size,name,callers,status
 0x6d6410,30,DeletingDestructor,2,rewritten
 0x6d6440,30,DeletingDestructor,2,rewritten
 0x6d6460,117,Text::Create,3,rewritten
-0x6d64e0,117,,1,documented
+0x6d64e0,117,TEXT_CREATE2,1,rewritten
 0x6d6560,117,Text::Create,3,rewritten
 0x6d65e0,704,,3,documented
 0x6d68c0,502,,7,documented
@@ -8718,7 +8718,7 @@ address,size,name,callers,status
 0x74e3a0,262,,1,documented
 0x74e4b0,136,,1,documented
 0x74e540,247,,1,documented
-0x74e690,117,,3,documented
+0x74e690,117,TEXT_CREATE2,3,rewritten
 0x74e710,1162,,5,documented
 0x74ebb0,132,,1,documented
 0x74ec40,30,DeletingDestructor,2,rewritten
@@ -18766,7 +18766,7 @@ address,size,name,callers,status
 0xb82be0,280,,1,documented
 0xb82e30,230,StructArrayLoad,0,rewritten
 0xb82f20,30,DeletingDestructor,1,rewritten
-0xb82f50,117,,2,documented
+0xb82f50,117,TEXT_CREATE3,2,rewritten
 0xb82fd0,232,,1,documented
 0xb830d0,30,DeletingDestructor,1,rewritten
 0xb830f0,69,,1,documented

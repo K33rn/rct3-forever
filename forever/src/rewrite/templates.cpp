@@ -417,6 +417,14 @@ template <uint32_t TEXT, uint32_t MAKE> static void **__stdcall text_create(void
     return out;
 }
 
+// The same, with one or two extra arguments it ignores (they change only how many bytes it clears from the stack).
+template <uint32_t TEXT, uint32_t MAKE> static void **__stdcall text_create2(void **out, uint32_t) {
+    return text_create<TEXT, MAKE>(out);
+}
+template <uint32_t TEXT, uint32_t MAKE> static void **__stdcall text_create3(void **out, uint32_t, uint32_t) {
+    return text_create<TEXT, MAKE>(out);
+}
+
 // Table20::Free: a table {entries, count} of 20-byte entries {?, pointers (+4), their count (+8), block (+0xC)}:
 // frees every entry's blocks, its array of them and its block (all aligned), then the entries, and clears them.
 static volatile long g_table20_frees;
@@ -437,6 +445,8 @@ static void __fastcall table20_free(uint8_t **table) {
 
 #define TEXT_WIDEN(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Text::Widen", at, REWRITE_CAT(original_, at), 8, (void *)&forever_text_widen_regs, &g_widens);
 #define TEXT_CREATE(at, text, make, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Text::Create", at, REWRITE_CAT(original_, at), 8, (void *)&text_create<text, make>, &g_text_creates);
+#define TEXT_CREATE2(at, text, make, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Text::Create(2args)", at, REWRITE_CAT(original_, at), 8, (void *)&text_create2<text, make>, &g_text_creates);
+#define TEXT_CREATE3(at, text, make, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Text::Create(3args)", at, REWRITE_CAT(original_, at), 8, (void *)&text_create3<text, make>, &g_text_creates);
 #define TABLE20_FREE(at, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("Table20::Free", at, REWRITE_CAT(original_, at), 8, (void *)&table20_free, &g_table20_frees);
 // A text reference in a global, made at start-up: the wide text TEXT (0xBCF850) with SUFFIX added (0x403BE0),
 // copied (0xBD01C0) and looked up as a NamedTextRef (0x410C90, in the texts table 0x1303CFC, with its suffix); the
@@ -1192,6 +1202,8 @@ static uint32_t __fastcall interface_forward(uint8_t *self, void *, uint32_t a, 
 #undef TABLE20_FREE
 #define TEXT_WIDEN(...)
 #define TEXT_CREATE(...)
+#define TEXT_CREATE2(...)
+#define TEXT_CREATE3(...)
 #define TABLE20_FREE(...)
 #undef START_TEXT
 #define START_TEXT(...)
@@ -1381,6 +1393,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define START_KEY(at, key2, key1, name, setting, global, dtor, ...) {at, key2, key1, name, setting, global, dtor},
 #undef TEXT_CREATE
 #define TEXT_CREATE(at, text, make, ...) {at, text, make},
+#define TEXT_CREATE2(at, text, make, ...) {at, text, make},
+#define TEXT_CREATE3(at, text, make, ...) {at, text, make},
 #undef START_TEXT
 #define START_TEXT(at, text, suffix, global, dtor, ...) {at, text, suffix, global, dtor},
 #undef QUERY_REPORT

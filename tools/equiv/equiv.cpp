@@ -2066,6 +2066,20 @@ static std::vector<Test> tests() {
                        {0xbcfb10, (void *)stub_text_from_c}});
     };
     text_create.finish = [](const rewrite::Entry *) { unstub_many(); };
+    Test text_create2{0x475020, text_create.setup,
+                      [](void *fn) {
+                          return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *, uint32_t))fn)(
+                              arena<void>(0x180), 0)};
+                      }};
+    text_create2.prepare = text_create.prepare;
+    text_create2.finish = text_create.finish;
+    Test text_create3{0xb82f50, text_create.setup,
+                      [](void *fn) {
+                          return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *, uint32_t, uint32_t))fn)(
+                              arena<void>(0x180), 0, 0)};
+                      }};
+    text_create3.prepare = text_create.prepare;
+    text_create3.finish = text_create.finish;
     // Table20::Free: the table at 0x100 {entries at 0x400 (count -1..4) or none (count -1..0: with a count, both
     // crash)}; each entry's pointers at 0x600 + 0x40 * i, their count -1..5
     Test table20_free{0x80f710,
@@ -2089,7 +2103,7 @@ static std::vector<Test> tests() {
     for (Test *x : {&owned, &pair, &shared, &unlink, &base, &assign, &delete_target, &load, &construct, &pool_free,
                     &deleting, &query, &module, &cached, &array_load, &cleanup, &reference_null, &reference_to, &array_free, &set_table,
                     &start_name, &start_class, &start_section, &named_text_ref, &game_text_copy,
-                    &text_ref_from_text, &start_key, &text_widen, &text_create, &table20_free, &start_text, &resource_type, &query_report,
+                    &text_ref_from_text, &start_key, &text_widen, &text_create, &text_create2, &text_create3, &table20_free, &start_text, &resource_type, &query_report,
                     &wide_copy_object, &wide_copy_global, &wide_copy_this, &start_behaviour, &factory2, &factory_fields, &object_setcap,
                     &global_factory, &lazy_factory, &lazy_factory_init, &dtor_tables, &free_two,
                     &object_resize, &with_reference, &pointer_resize, &array_reserve, &gui_init, &gui_make, &gui_create2,
