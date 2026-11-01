@@ -1226,6 +1226,29 @@ def main():
         n_f2c += 1
     counts['FWD2_CLEAR'] = n_f2c
 
+    # Object::SetFieldTail: mov eax,[esp+4]; mov [ecx+OFF],eax; call METHOD; ret 4. OFF and METHOD vary.
+    sft_ref = mask_n(0x4c1e80, 18)
+    n_sft = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 18 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 18) != sft_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        stores = [i for i in xs if i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_MEM]
+        cs = [i.operands[0].imm & 0xffffffff for i in xs if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if not stores or len(cs) != 1:
+            continue
+        off = stores[0].operands[0].mem.disp & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'SETFIELD_TAIL({va:#x}, {off:#x}, {cs[0]:#x}, {first})')
+        n_sft += 1
+    counts['SETFIELD_TAIL'] = n_sft
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

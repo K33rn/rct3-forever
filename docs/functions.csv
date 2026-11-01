@@ -2404,7 +2404,7 @@ address,size,name,callers,status
 0x4c1bf0,212,ReferenceField::Load,1,rewritten
 0x4c1cd0,70,,1,documented
 0x4c1d20,347,,7,documented
-0x4c1e80,18,,6,documented
+0x4c1e80,18,Object::SetFieldTail,6,rewritten
 0x4c1f70,400,,9,documented
 0x4c2100,611,,4,documented
 0x4c2370,112,,9,documented
@@ -4396,7 +4396,7 @@ address,size,name,callers,status
 0x59dc20,55,,2,documented
 0x59dc60,521,,5,documented
 0x59de70,422,,1,documented
-0x59e020,18,,1,documented
+0x59e020,18,Object::SetFieldTail,1,rewritten
 0x59e200,105,Factory::Create,1,rewritten
 0x59e270,181,,1,documented
 0x59e330,347,,1,documented
@@ -7968,11 +7968,11 @@ address,size,name,callers,status
 0x704160,1900,,2,documented
 0x7048e0,110,Factory::LazyWith,35,rewritten
 0x704a50,86,,7,documented
-0x704c50,18,,1,documented
-0x704c70,18,,1,documented
+0x704c50,18,Object::SetFieldTail,1,rewritten
+0x704c70,18,Object::SetFieldTail,1,rewritten
 0x704c90,26,,3,documented
-0x704cb0,18,,2,documented
-0x704cd0,18,,2,documented
+0x704cb0,18,Object::SetFieldTail,2,rewritten
+0x704cd0,18,Object::SetFieldTail,2,rewritten
 0x704cf0,294,,1,documented
 0x704e20,19,,1,documented
 0x704e40,30,DeletingDestructor,1,rewritten

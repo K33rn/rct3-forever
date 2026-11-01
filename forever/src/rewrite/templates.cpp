@@ -1557,6 +1557,9 @@ static volatile long g_set_table_vcalls;
 // Forward both arguments to a member method, then clear this->[0x30]. METHOD varies per copy.
 static volatile long g_fwd2_clears;
 #define FWD2_CLEAR(at, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __thiscall REWRITE_CAT(f2c_, at)(uint8_t *s, uint32_t a0, uint32_t a1) { g_fwd2_clears++; ((void(__thiscall *)(void *, uint32_t, uint32_t))method)(s, a0, a1); *(uint32_t *)(s + 0x30) = 0; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::Fwd2Clear", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(f2c_, at), &g_fwd2_clears);
+// Store the argument into a field, then tail-call a member method with no args. OFF and METHOD vary per copy.
+static volatile long g_setfield_tails;
+#define SETFIELD_TAIL(at, off, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __thiscall REWRITE_CAT(sft_, at)(uint8_t *s, uint32_t a) { g_setfield_tails++; *(uint32_t *)(s + off) = a; ((void(__thiscall *)(void *))method)(s); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::SetFieldTail", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(sft_, at), &g_setfield_tails);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1686,6 +1689,8 @@ static volatile long g_fwd2_clears;
 #define SET_TABLE_VCALL(...)
 #undef FWD2_CLEAR
 #define FWD2_CLEAR(...)
+#undef SETFIELD_TAIL
+#define SETFIELD_TAIL(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1947,6 +1952,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define SET_TABLE_VCALL(...)
 #undef FWD2_CLEAR
 #define FWD2_CLEAR(...)
+#undef SETFIELD_TAIL
+#define SETFIELD_TAIL(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -2072,6 +2079,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define SET_TABLE_VCALL(...)
 #undef FWD2_CLEAR
 #define FWD2_CLEAR(...)
+#undef SETFIELD_TAIL
+#define SETFIELD_TAIL(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -2114,6 +2123,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define SET_TABLE_VCALL(at, table, ...) {at, table},
 #undef FWD2_CLEAR
 #define FWD2_CLEAR(at, method, ...) {at, method},
+#undef SETFIELD_TAIL
+#define SETFIELD_TAIL(at, off, method, ...) {at, off, method},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
