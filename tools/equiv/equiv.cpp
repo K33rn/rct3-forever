@@ -2378,6 +2378,22 @@ static std::vector<Test> tests() {
                    [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{arena<uint32_t>(0x100)[0]}; }};
     tabledtor.prepare = [](const rewrite::Entry *e) { g_tdt_dtor = rewrite::start_constants(e->at)[2]; stubs_for_now({{g_tdt_dtor, (void *)stub_plain_dtor}}); };
     tabledtor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    static int32_t g_bsm_key;
+    // Object::BSearchMap: sorted int keys at this->[8], parallel vals at this->[0xc], count this->[0x10]; return val or -1.
+    Test bsearchmap{0x40b7d0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        int n = r.range(1, 10);
+                        int32_t *keys = arena<int32_t>(0x300);
+                        uint32_t *vals = arena<uint32_t>(0x400);
+                        int32_t k = r.range(-5, 5);
+                        for (int i = 0; i < n; i++) { keys[i] = k; k += r.range(1, 4); vals[i] = r.next(); } // strictly ascending
+                        *(void **)(arena<uint8_t>(0x100) + 8) = keys;
+                        *(void **)(arena<uint8_t>(0x100) + 0xc) = vals;
+                        *(int32_t *)(arena<uint8_t>(0x100) + 0x10) = n;
+                        g_bsm_key = (r.next() & 1) ? keys[r.range(0, n - 1)] : (int32_t)r.range(-8, 40); // hit or miss
+                    },
+                    [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), g_bsm_key)}; }};
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2654,7 +2670,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &tablevrel, &tabledtor, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &bsearchmap, &tablevrel, &tabledtor, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

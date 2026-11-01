@@ -1534,6 +1534,36 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// Binary search over a sorted int key array (this->[8]); return the parallel value array (this->[0xc]) at the match, or -1.
+static volatile long g_bsearch_maps;
+static uint32_t __thiscall bsearch_map(uint8_t *self, int32_t key) {
+    g_bsearch_maps++;
+    int32_t count = *(int32_t *)(self + 0x10);
+    if (count <= 0)
+        return 0xffffffffu;
+    int32_t *keys = *(int32_t **)(self + 8);
+    uint32_t *vals = *(uint32_t **)(self + 0xc);
+    int32_t lo = 0, hi = count - 1;
+    if (keys[0] == key)
+        return vals[0];
+    if (keys[hi] == key)
+        return vals[hi];
+    if (keys[0] > key || keys[hi] < key || hi <= 1)
+        return 0xffffffffu;
+    for (;;) {
+        int32_t mid = lo + (hi - lo) / 2;
+        int32_t v = keys[mid];
+        if (v == key)
+            return vals[mid];
+        if (v >= key)
+            hi = mid;
+        else
+            lo = mid;
+        if (hi <= lo + 1)
+            return 0xffffffffu;
+    }
+}
+#define BSEARCH_MAP(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::BSearchMap", at, REWRITE_CAT(original_, at), 8, (void *)&bsearch_map, &g_bsearch_maps);
 // Set a table at [this]; if this->[OFF] is set, call its vtable slot 2 with (obj,obj) and clear the field. TABLE,OFF vary.
 static volatile long g_table_vrels;
 template <uint32_t TABLE, uint32_t OFF> static void __thiscall table_vrel(uint8_t *self) {
@@ -1797,6 +1827,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef BSEARCH_MAP
+#define BSEARCH_MAP(...)
 #undef TABLE_VREL
 #define TABLE_VREL(...)
 #undef TABLE_DTOR
@@ -2080,6 +2112,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef BSEARCH_MAP
+#define BSEARCH_MAP(...)
 #undef TABLE_VREL
 #define TABLE_VREL(...)
 #undef TABLE_DTOR
@@ -2227,6 +2261,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef BSEARCH_MAP
+#define BSEARCH_MAP(...)
 #undef TABLE_VREL
 #define TABLE_VREL(...)
 #undef TABLE_DTOR
@@ -2291,6 +2327,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef BSEARCH_MAP
+#define BSEARCH_MAP(at, ...) {at},
 #undef TABLE_VREL
 #define TABLE_VREL(at, table, off, ...) {at, table, off},
 #undef TABLE_DTOR

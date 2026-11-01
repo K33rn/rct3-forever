@@ -1466,6 +1466,23 @@ def main():
         n_tdt += 1
     counts['TABLE_DTOR'] = n_tdt
 
+    # Object::BSearchMap: binary search sorted int keys (this->[8]) -> parallel vals (this->[0xc]) or -1. shape 0x40b7d0 (137 B).
+    bsm_ref = mask_n(0x40b7d0, 137)
+    n_bsm = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 137 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 137) != bsm_ref:
+                continue
+        except Exception:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'BSEARCH_MAP({va:#x}, {first})')
+        n_bsm += 1
+    counts['BSEARCH_MAP'] = n_bsm
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
