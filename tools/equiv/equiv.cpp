@@ -299,6 +299,9 @@ static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
     return self;
 }
 static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }
+static void *__thiscall stub_grid_h2(void *obj, int32_t level) { record(0x50, obj); record(0x50, (void *)(uintptr_t)level); return arena<void>(0x600); }
+static void __thiscall stub_grid_h1(void *obj, int32_t a, void *b) { record(0x51, obj); record(0x51, (void *)(uintptr_t)a); record(0x51, b); }
+static void __thiscall stub_grid_h3(void *dst, void *src) { record(0x52, dst); record(0x52, src); }
 static uint32_t __fastcall stub_helper3(uint32_t a, uint32_t b, int32_t c) { record(0x47, (void *)(uintptr_t)a); return 0x1234u; }
 static int32_t __fastcall stub_pos_count(void *self) { record(0x45, self); return 7; }
 static int32_t __fastcall stub_sub_val(void *self) { record(0x46, self); return 5; }
@@ -2415,6 +2418,24 @@ static std::vector<Test> tests() {
     Test structcopy44{0x46c480,
                       [=](Rng &r) { fresh(r); for (int i = 0; i < 0x48; i++) arena<uint8_t>(0x300)[i] = (uint8_t)r.next(); },
                       [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x300))}; }};
+    // Object::GridInsert: grid level grow/reshape. H1/H2/H3 stubbed; exercise early-return, flag!=0, flag==0 paths.
+    static uint32_t g_gi_h1, g_gi_h2, g_gi_h3, g_gi_flag;
+    Test gridinsert{0x851e80,
+                    [=](Rng &r) {
+                        fresh(r);
+                        *(void **)(arena<uint8_t>(0x100) + 0) = arena<void>(0x200);
+                        *(int32_t *)(arena<uint8_t>(0x100) + 4) = r.range(0, 4);
+                        *(void **)(arena<uint8_t>(0x100) + 8) = arena<void>(0x400);
+                        *(int32_t *)(arena<uint8_t>(0x100) + 0xc) = r.range(-1, 3);
+                        *(int32_t *)(arena<uint8_t>(0x100) + 0x10) = r.range(0, 6);
+                        g_gi_flag = r.next() & 1;
+                    },
+                    [](void *fn) {
+                        ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), g_gi_flag);
+                        return Result{*(uint32_t *)(arena<uint8_t>(0x100) + 0xc) ^ (*(uint32_t *)(arena<uint8_t>(0x100) + 0x10) << 8) ^ (uint32_t)(uintptr_t)*(void **)(arena<uint8_t>(0x100) + 8)};
+                    }};
+    gridinsert.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_gi_h1 = c[1]; g_gi_h2 = c[2]; g_gi_h3 = c[3]; stubs_for_now({{g_gi_h1, (void *)stub_grid_h1}, {g_gi_h2, (void *)stub_grid_h2}, {g_gi_h3, (void *)stub_grid_h3}}); };
+    gridinsert.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2691,7 +2712,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &structcopy44, &compact4, &bsearchmap, &tablevrel, &tabledtor, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &gridinsert, &structcopy44, &compact4, &bsearchmap, &tablevrel, &tabledtor, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

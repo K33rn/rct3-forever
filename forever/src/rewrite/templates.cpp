@@ -1534,6 +1534,44 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// Grid level-insert: grow/reshape the grid level array. Fields: [0]=obj,[4]=cap,[8]=block,[0xc]=level,[0x10]=count.
+// H1=release/shrink helper, H2=grid grow (returns new block), H3=per-record move (STRIDE-byte records).
+static volatile long g_grid_inserts;
+template <uint32_t H1, uint32_t H2, uint32_t H3, uint32_t STRIDE> static void __thiscall grid_insert(uint8_t *self, uint32_t flag_arg) {
+    g_grid_inserts++;
+    int32_t L = *(int32_t *)(self + 0xc);
+    int32_t cap = (L >= 0) ? (int32_t)(1u << (uint32_t)L) : 0;
+    if (*(int32_t *)(self + 0x10) < cap) {
+        (*(int32_t *)(self + 0x10))++;
+        return;
+    }
+    void *obj = *(void **)(self + 0);
+    int32_t cap4 = *(int32_t *)(self + 4);
+    int32_t newlevel = (L + 1 < cap4) ? cap4 : (L + 1); // max(L+1, cap4)
+    if ((uint8_t)flag_arg != 0) {
+        if (L >= 0)
+            ((void(__thiscall *)(void *, int32_t, void *))H1)(obj, L, *(void **)(self + 8));
+        *(int32_t *)(self + 0xc) = newlevel;
+        *(void **)(self + 8) = ((void *(__thiscall *)(void *, int32_t))H2)(obj, newlevel);
+        (*(int32_t *)(self + 0x10))++;
+        return;
+    }
+    void *oldblock = *(void **)(self + 8);
+    *(void **)(self + 8) = ((void *(__thiscall *)(void *, int32_t))H2)(obj, newlevel);
+    if (L >= 0) {
+        int32_t count = *(int32_t *)(self + 0x10);
+        uint32_t off = 0;
+        for (int32_t b = 0; b < count; b++) {
+            ((void(__thiscall *)(void *, void *))H3)((uint8_t *)*(void **)(self + 8) + off, (uint8_t *)oldblock + off);
+            off += STRIDE;
+            count = *(int32_t *)(self + 0x10);
+        }
+        ((void(__thiscall *)(void *, int32_t, void *))H1)(obj, *(int32_t *)(self + 0xc), oldblock);
+    }
+    *(int32_t *)(self + 0xc) = newlevel;
+    (*(int32_t *)(self + 0x10))++;
+}
+#define GRID_INSERT(at, h1, h2, h3, stride, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::GridInsert", at, REWRITE_CAT(original_, at), 8, (void *)&grid_insert<h1, h2, h3, stride>, &g_grid_inserts);
 // Copy 0x44 bytes (17 dwords) from the argument into this, then return this. Fixed across copies.
 static volatile long g_struct_copy44s;
 static void *__thiscall struct_copy44(uint8_t *self, uint8_t *src) {
@@ -1869,6 +1907,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef GRID_INSERT
+#define GRID_INSERT(...)
 #undef STRUCT_COPY44
 #define STRUCT_COPY44(...)
 #undef COMPACT4
@@ -2158,6 +2198,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef GRID_INSERT
+#define GRID_INSERT(...)
 #undef STRUCT_COPY44
 #define STRUCT_COPY44(...)
 #undef COMPACT4
@@ -2311,6 +2353,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef GRID_INSERT
+#define GRID_INSERT(...)
 #undef STRUCT_COPY44
 #define STRUCT_COPY44(...)
 #undef COMPACT4
@@ -2381,6 +2425,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef GRID_INSERT
+#define GRID_INSERT(at, h1, h2, h3, stride, ...) {at, h1, h2, h3, stride},
 #undef STRUCT_COPY44
 #define STRUCT_COPY44(at, ...) {at},
 #undef COMPACT4

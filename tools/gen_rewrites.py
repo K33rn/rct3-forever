@@ -1525,6 +1525,29 @@ def main():
         n_sc += 1
     counts['STRUCT_COPY44'] = n_sc
 
+    # Object::GridInsert: grid level grow/reshape. shape 0x851e80 (225 B). Params: H1(+0x32), H2(+0x50), H3(+0xa9), STRIDE(+0xb2).
+    gi_ref = mask_n(0x851e80, 225)
+    n_gi = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 225 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 225) != gi_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        callt = {i.address - va: (i.operands[0].imm & 0xffffffff) for i in xs if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM}
+        strides = [i.operands[1].imm & 0xffffffff for i in xs if i.mnemonic == 'add' and i.address - va == 0xb2]
+        if 0x32 not in callt or 0x50 not in callt or 0xa9 not in callt or not strides:
+            continue
+        h1, h2, h3, stride = callt[0x32], callt[0x50], callt[0xa9], strides[0]
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'GRID_INSERT({va:#x}, {h1:#x}, {h2:#x}, {h3:#x}, {stride:#x}, {first})')
+        n_gi += 1
+    counts['GRID_INSERT'] = n_gi
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
