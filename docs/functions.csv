@@ -503,9 +503,9 @@ address,size,name,callers,status
 0x425b80,435,,6,documented
 0x425d40,1004,,2,documented
 0x426130,1,,2,documented
-0x426140,33,,1,documented
-0x426170,33,,1,documented
-0x4261a0,33,,1,documented
+0x426140,33,Object::DerefChain,1,rewritten
+0x426170,33,Object::DerefChain,1,rewritten
+0x4261a0,33,Object::DerefChain,1,rewritten
 0x4261d0,7,,10,documented
 0x4261e0,7,,10,documented
 0x4261f0,64,,13,documented
@@ -15096,7 +15096,7 @@ address,size,name,callers,status
 0x9fbd90,313,,2,documented
 0x9fbed0,23,,3,documented
 0x9fbef0,28,,2,documented
-0x9fbf10,33,,5,documented
+0x9fbf10,33,Object::DerefChain,5,rewritten
 0x9fbf40,974,,3,documented
 0x9fc310,184,,1,documented
 0x9fc3e0,36,OwnedPair::Free,2,rewritten

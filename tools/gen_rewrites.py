@@ -1133,6 +1133,34 @@ def main():
         n_ld += 1
     counts['LIST_DRAIN'] = n_ld
 
+    # Object::DerefChain: a=this->[O0]->[O1]; if(word a->[O2]) return ***(a->[O3]). Shape of 0x426140 (33 B).
+    dc_ref = mask_n(0x426140, 33)
+    n_dc = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 33 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 33) != dc_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        if not (xs[0].mnemonic == 'mov' and xs[1].mnemonic == 'mov' and xs[2].mnemonic == 'cmp'):
+            continue
+        o0 = xs[0].operands[1].mem.disp & 0xffffffff
+        o1 = xs[1].operands[1].mem.disp & 0xffffffff
+        o2 = xs[2].operands[0].mem.disp & 0xffffffff
+        o3list = [i.operands[1].mem.disp & 0xffffffff for i in xs if i.mnemonic == 'mov'
+                  and i.operands[0].type == X.X86_OP_REG and md.reg_name(i.operands[0].reg) == 'ecx'
+                  and i.operands[1].type == X.X86_OP_MEM and i.operands[1].mem.base]
+        if not o3list:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'DEREF_CHAIN({va:#x}, {o0:#x}, {o1:#x}, {o2:#x}, {o3list[0]:#x}, {first})')
+        n_dc += 1
+    counts['DEREF_CHAIN'] = n_dc
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

@@ -1534,6 +1534,20 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// A pointer-chain getter: a = this->[O0]->[O1]; if (word a->[O2] != 0) return ***(a->[O3]); else trap (unreachable).
+static volatile long g_deref_chains;
+template <uint32_t O0, uint32_t O1, uint32_t O2, uint32_t O3> static uint32_t __fastcall deref_chain(uint8_t *self) {
+    g_deref_chains++;
+    uint8_t *a = *(uint8_t **)(*(uint8_t **)(self + O0) + O1);
+    if (*(uint16_t *)(a + O2) != 0) {
+        uint8_t *p = *(uint8_t **)(a + O3);
+        p = *(uint8_t **)p;
+        p = *(uint8_t **)p;
+        return *(uint32_t *)p;
+    }
+    return *(volatile uint32_t *)(uintptr_t)0;
+}
+#define DEREF_CHAIN(at, o0, o1, o2, o3, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::DerefChain", at, REWRITE_CAT(original_, at), 8, (void *)&deref_chain<o0, o1, o2, o3>, &g_deref_chains);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1655,6 +1669,8 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef DEREF_CHAIN
+#define DEREF_CHAIN(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1908,6 +1924,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef DEREF_CHAIN
+#define DEREF_CHAIN(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -2025,6 +2043,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef DEREF_CHAIN
+#define DEREF_CHAIN(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -2059,6 +2079,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef DEREF_CHAIN
+#define DEREF_CHAIN(at, o0, o1, o2, o3, ...) {at, o0, o1, o2, o3},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

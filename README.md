@@ -39,8 +39,8 @@ and pieces the compiler split off from functions are counted separately; they do
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 8,597 | 630,577 bytes | 7.58% |
-| Documented, not rewritten yet | 17,121 | 7,686,090 bytes | 92.42% |
+| Rewritten | 8,601 | 630,709 bytes | 7.58% |
+| Documented, not rewritten yet | 17,117 | 7,685,958 bytes | 92.42% |
 | To do | 0 | 0 bytes | 0.00% |
 | **Game total** | **25,718** | **8,316,667 bytes** | |
 | Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |
