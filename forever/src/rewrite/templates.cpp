@@ -1534,6 +1534,15 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// r = helper(a0, 0, -1); if r != 0, call this's vtable slot 1 with r. HELPER varies per copy.
+static volatile long g_cond_vcall_hs;
+template <uint32_t HELPER> static void __thiscall cond_vcall_h(uint8_t *self, uint32_t a0) {
+    g_cond_vcall_hs++;
+    uint32_t r = ((uint32_t(__fastcall *)(uint32_t, uint32_t, int32_t))HELPER)(a0, 0, -1);
+    if (r)
+        ((void(__thiscall *)(void *, uint32_t))(*(void ***)self)[1])(self, r);
+}
+#define COND_VCALL_H(at, helper, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CondVCallH", at, REWRITE_CAT(original_, at), 8, (void *)&cond_vcall_h<helper>, &g_cond_vcall_hs);
 // If this->[0x104] is set, call this's vtable slot 0 with (this+4, that pointer), then clear the field. Fixed across copies.
 static volatile long g_cond_vrels;
 static void __thiscall cond_vrel(uint8_t *self) {
@@ -1763,6 +1772,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_VCALL_H
+#define COND_VCALL_H(...)
 #undef COND_VREL
 #define COND_VREL(...)
 #undef BRANCH_OFF
@@ -2040,6 +2051,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_VCALL_H
+#define COND_VCALL_H(...)
 #undef COND_VREL
 #define COND_VREL(...)
 #undef BRANCH_OFF
@@ -2181,6 +2194,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_VCALL_H
+#define COND_VCALL_H(...)
 #undef COND_VREL
 #define COND_VREL(...)
 #undef BRANCH_OFF
@@ -2239,6 +2254,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef COND_VCALL_H
+#define COND_VCALL_H(at, helper, ...) {at, helper},
 #undef COND_VREL
 #define COND_VREL(at, ...) {at},
 #undef BRANCH_OFF

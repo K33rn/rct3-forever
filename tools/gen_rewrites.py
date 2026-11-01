@@ -1401,6 +1401,27 @@ def main():
         n_bo += 1
     counts['BRANCH_OFF'] = n_bo
 
+    # Object::CondVCallH: r=helper(a0,0,-1); if r then this->vtbl[1](r). HELPER varies; vslot fixed. shape 0x67b980 (32 B).
+    cvh_ref = mask_n(0x67b980, 32)
+    n_cvh = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 32 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 32) != cvh_ref:
+                continue
+        except Exception:
+            continue
+        cs = [i.operands[0].imm & 0xffffffff for i in md.disasm(mem[va - BASE:va - BASE + nn], va)
+              if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if len(cs) != 1:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'COND_VCALL_H({va:#x}, {cs[0]:#x}, {first})')
+        n_cvh += 1
+    counts['COND_VCALL_H'] = n_cvh
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

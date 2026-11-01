@@ -299,6 +299,7 @@ static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
     return self;
 }
 static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }
+static uint32_t __fastcall stub_helper3(uint32_t a, uint32_t b, int32_t c) { record(0x47, (void *)(uintptr_t)a); return 0x1234u; }
 static int32_t __fastcall stub_pos_count(void *self) { record(0x45, self); return 7; }
 static int32_t __fastcall stub_sub_val(void *self) { record(0x46, self); return 5; }
 static void *__fastcall stub_head(void *self) { record(0x40, self); return arena<void>(0x300); }
@@ -2347,6 +2348,18 @@ static std::vector<Test> tests() {
                    [](void *fn) { return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
     branchoff.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_bo_off = c[1]; g_bo_sub = c[2]; stubs_for_now({{g_bo_sub, (void *)stub_pos_count}}); };
     branchoff.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::CondVCallH: r=helper(a0,0,-1); if r this->vtbl[1](r). helper returns 0x1234; vtbl[1]=stub_thiscall1.
+    static uint32_t g_cvh_h, g_cvh_a;
+    Test condvcallh{0x67b980,
+                    [=](Rng &r) {
+                        fresh(r);
+                        g_cvh_a = r.next();
+                        static void *vt[2] = {nullptr, (void *)stub_thiscall1};
+                        *(void **)arena<uint8_t>(0x100) = vt; // this's vtable
+                    },
+                    [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), g_cvh_a); return Result{0u}; }};
+    condvcallh.prepare = [](const rewrite::Entry *e) { g_cvh_h = rewrite::start_constants(e->at)[1]; stubs_for_now({{g_cvh_h, (void *)stub_helper3}}); };
+    condvcallh.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2623,7 +2636,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

@@ -6427,7 +6427,7 @@ address,size,name,callers,status
 0x67b820,167,,72,documented
 0x67b910,38,,54,documented
 0x67b960,30,DeletingDestructor,2,rewritten
-0x67b980,32,,1,documented
+0x67b980,32,COND_VCALL_H,1,rewritten
 0x67b9a0,72,QueryInterface::OrReport,1,rewritten
 0x67b9f0,258,,139,documented
 0x67bb20,50,,44,documented
@@ -6501,7 +6501,7 @@ address,size,name,callers,status
 0x680be0,268,,4,documented
 0x680d20,163,,2,documented
 0x681050,547,,2,documented
-0x681280,32,,10,documented
+0x681280,32,COND_VCALL_H,10,rewritten
 0x6812a0,72,QueryInterface::OrReport,1,rewritten
 0x681330,36,,2,documented
 0x681360,1163,,1,documented
@@ -6801,7 +6801,7 @@ address,size,name,callers,status
 0x6a0100,837,,1,documented
 0x6a0560,455,,184,documented
 0x6a0730,16,Object::CallThenTail,1,rewritten
-0x6a0740,32,,3,documented
+0x6a0740,32,COND_VCALL_H,3,rewritten
 0x6a0760,72,QueryInterface::OrReport,1,rewritten
 0x6a07e0,783,,11,documented
 0x6a0b20,65,,85,documented
