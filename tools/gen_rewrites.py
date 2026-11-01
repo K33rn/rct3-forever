@@ -1362,6 +1362,45 @@ def main():
         n_stt += 1
     counts['SET_TABLE_TAIL'] = n_stt
 
+    # Object::CondVRelease: if this->[0x104] then this->vtbl[0](this+4, that); this->[0x104]=0. Fixed. shape 0x7b24a0 (34 B).
+    cvr_ref = mask_n(0x7b24a0, 34)
+    n_cvr = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 34 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 34) != cvr_ref:
+                continue
+        except Exception:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'COND_VREL({va:#x}, {first})')
+        n_cvr += 1
+    counts['COND_VREL'] = n_cvr
+
+    # Object::BranchOff: if *(int)this==-1 return this->[OFF]; else return this - sub(this). shape 0xbb3e70 (24 B).
+    bo_ref = mask_n(0xbb3e70, 24)
+    n_bo = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 24 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 24) != bo_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        offs = [i.operands[1].mem.disp & 0xffffffff for i in xs if i.mnemonic == 'mov' and i.operands[1].type == X.X86_OP_MEM and i.operands[1].mem.base]
+        cs = [i.operands[0].imm & 0xffffffff for i in xs if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if not offs or len(cs) != 1:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'BRANCH_OFF({va:#x}, {offs[0]:#x}, {cs[0]:#x}, {first})')
+        n_bo += 1
+    counts['BRANCH_OFF'] = n_bo
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

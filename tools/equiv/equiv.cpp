@@ -2331,6 +2331,22 @@ static std::vector<Test> tests() {
                       [](void *fn) { uint32_t rv = ((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{rv ^ *(uint32_t *)(arena<uint8_t>(0x100) + g_stt_off)}; }};
     settabletail.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_stt_off = c[1]; g_stt_base = c[3]; stubs_for_now({{g_stt_base, (void *)stub_pos_count}}); };
     settabletail.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::CondVRelease: if this->[0x104] then this->vtbl[0](this+4, that); clear it. vtbl[0]=stub_thiscall2.
+    Test condvrel{0x7b24a0,
+                  [=](Rng &r) {
+                      fresh(r);
+                      static void *vt[1] = {(void *)stub_thiscall2};
+                      *(void **)arena<uint8_t>(0x100) = vt;                            // this's vtable
+                      *(void **)(arena<uint8_t>(0x100) + 0x104) = arena<void>(0x300);  // this->[0x104] = obj
+                  },
+                  [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{*(uint32_t *)(arena<uint8_t>(0x100) + 0x104)}; }};
+    // Object::BranchOff: if *(int)this==-1 ret this->[OFF]; else ret this - sub(this). sub stubbed.
+    static uint32_t g_bo_off, g_bo_sub;
+    Test branchoff{0xbb3e70,
+                   [=](Rng &r) { fresh(r); *(int32_t *)arena<void>(0x100) = 1; /* not -1: exercise the else (call + subtract) path */ },
+                   [](void *fn) { return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
+    branchoff.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_bo_off = c[1]; g_bo_sub = c[2]; stubs_for_now({{g_bo_sub, (void *)stub_pos_count}}); };
+    branchoff.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2607,7 +2623,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

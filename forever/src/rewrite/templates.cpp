@@ -1534,6 +1534,27 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// If this->[0x104] is set, call this's vtable slot 0 with (this+4, that pointer), then clear the field. Fixed across copies.
+static volatile long g_cond_vrels;
+static void __thiscall cond_vrel(uint8_t *self) {
+    g_cond_vrels++;
+    void *obj = *(void **)(self + 0x104);
+    if (obj) {
+        ((void(__thiscall *)(void *, void *, void *))(*(void ***)self)[0])(self, self + 4, obj);
+        *(void **)(self + 0x104) = nullptr;
+    }
+}
+#define COND_VREL(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CondVRelease", at, REWRITE_CAT(original_, at), 8, (void *)&cond_vrel, &g_cond_vrels);
+// Branch getter: if *(int*)this == -1 return this->[OFF]; else return (this - sub()). OFF, SUB vary per copy.
+static volatile long g_branch_offs;
+template <uint32_t OFF, uint32_t SUB> static uint32_t __thiscall branch_off(uint8_t *self) {
+    g_branch_offs++;
+    if (*(int32_t *)self == -1)
+        return *(uint32_t *)(self + OFF);
+    uint32_t r = ((uint32_t(__thiscall *)(void *))SUB)(self);
+    return (uint32_t)(uintptr_t)self - r;
+}
+#define BRANCH_OFF(at, off, sub, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::BranchOff", at, REWRITE_CAT(original_, at), 8, (void *)&branch_off<off, sub>, &g_branch_offs);
 // Set a vtable at this->[OFF], then tail-call a base constructor. OFF, TABLE, BASE vary per copy.
 static volatile long g_set_table_tails;
 template <uint32_t OFF, uint32_t TABLE, uint32_t BASE> static uint32_t __thiscall set_table_tail(uint8_t *self) {
@@ -1742,6 +1763,10 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_VREL
+#define COND_VREL(...)
+#undef BRANCH_OFF
+#define BRANCH_OFF(...)
 #undef SET_TABLE_TAIL
 #define SET_TABLE_TAIL(...)
 #undef COND_NOTIFY
@@ -2015,6 +2040,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_VREL
+#define COND_VREL(...)
+#undef BRANCH_OFF
+#define BRANCH_OFF(...)
 #undef SET_TABLE_TAIL
 #define SET_TABLE_TAIL(...)
 #undef COND_NOTIFY
@@ -2152,6 +2181,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_VREL
+#define COND_VREL(...)
+#undef BRANCH_OFF
+#define BRANCH_OFF(...)
 #undef SET_TABLE_TAIL
 #define SET_TABLE_TAIL(...)
 #undef COND_NOTIFY
@@ -2206,6 +2239,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef COND_VREL
+#define COND_VREL(at, ...) {at},
+#undef BRANCH_OFF
+#define BRANCH_OFF(at, off, sub, ...) {at, off, sub},
 #undef SET_TABLE_TAIL
 #define SET_TABLE_TAIL(at, off, table, base, ...) {at, off, table, base},
 #undef COND_NOTIFY

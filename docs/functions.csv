@@ -9627,7 +9627,7 @@ address,size,name,callers,status
 0x7b23a0,39,,1,documented
 0x7b23d0,131,,1,documented
 0x7b2460,30,DeletingDestructor,2,rewritten
-0x7b24a0,34,,0,documented
+0x7b24a0,34,COND_VREL,0,rewritten
 0x7b24d0,30,DeletingDestructor,0,rewritten
 0x7b2560,357,,0,documented
 0x7b2730,143,,1,documented
@@ -18361,7 +18361,7 @@ address,size,name,callers,status
 0xb5b230,41,,1,documented
 0xb5b270,30,DeletingDestructor,2,rewritten
 0xb5b290,554,,0,documented
-0xb5b4c0,34,,0,documented
+0xb5b4c0,34,COND_VREL,0,rewritten
 0xb5b5d0,53,,5,documented
 0xb5b650,79,,2,documented
 0xb5b740,134,,0,documented
@@ -18480,7 +18480,7 @@ address,size,name,callers,status
 0xb6b0e0,761,,5,documented
 0xb6b3e0,30,DeletingDestructor,2,rewritten
 0xb6b400,102,Factory::Create,1,rewritten
-0xb6b490,34,,0,documented
+0xb6b490,34,COND_VREL,0,rewritten
 0xb6b560,27,GlobalCleanup,1,rewritten
 0xb6b580,30,DeletingDestructor,0,rewritten
 0xb6b5b0,8,,2,documented
@@ -19366,7 +19366,7 @@ address,size,name,callers,status
 0xbb3de0,41,,2,documented
 0xbb3e20,39,,2,documented
 0xbb3e50,19,,4,documented
-0xbb3e70,24,,244,documented
+0xbb3e70,24,BRANCH_OFF,244,rewritten
 0xbb3e90,467,,0,documented
 0xbb40e0,111,,2,documented
 0xbb4190,47,,9,documented
@@ -19380,11 +19380,11 @@ address,size,name,callers,status
 0xbb45f0,463,,0,documented
 0xbb47d0,2377,,2,documented
 0xbb5120,11,,30,documented
-0xbb5130,24,,21,documented
+0xbb5130,24,BRANCH_OFF,21,rewritten
 0xbb5150,11,,1,documented
-0xbb5160,24,,22,documented
+0xbb5160,24,BRANCH_OFF,22,rewritten
 0xbb5180,11,,8,documented
-0xbb5190,24,,13,documented
+0xbb5190,24,BRANCH_OFF,13,rewritten
 0xbb51b0,6,,9,documented
 0xbb52b0,52,,3,documented
 0xbb5310,302,,1,documented
