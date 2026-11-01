@@ -2436,6 +2436,24 @@ static std::vector<Test> tests() {
                     }};
     gridinsert.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_gi_h1 = c[1]; g_gi_h2 = c[2]; g_gi_h3 = c[3]; stubs_for_now({{g_gi_h1, (void *)stub_grid_h1}, {g_gi_h2, (void *)stub_grid_h2}, {g_gi_h3, (void *)stub_grid_h3}}); };
     gridinsert.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::GridRemove: grid level shrink; reuses the grid-helper stubs. Exercise count<=1, flag!=0, flag==0 paths.
+    static uint32_t g_grm_h1, g_grm_h2, g_grm_h3, g_grm_flag;
+    Test gridremove{0x851f70,
+                    [=](Rng &r) {
+                        fresh(r);
+                        *(void **)(arena<uint8_t>(0x100) + 0) = arena<void>(0x200);
+                        *(int32_t *)(arena<uint8_t>(0x100) + 4) = r.range(0, 4);
+                        *(void **)(arena<uint8_t>(0x100) + 8) = arena<void>(0x400);
+                        *(int32_t *)(arena<uint8_t>(0x100) + 0xc) = r.range(-1, 4);
+                        *(int32_t *)(arena<uint8_t>(0x100) + 0x10) = r.range(0, 8);
+                        g_grm_flag = r.next() & 1;
+                    },
+                    [](void *fn) {
+                        ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), g_grm_flag);
+                        return Result{*(uint32_t *)(arena<uint8_t>(0x100) + 0xc) ^ (*(uint32_t *)(arena<uint8_t>(0x100) + 0x10) << 8) ^ (uint32_t)(uintptr_t)*(void **)(arena<uint8_t>(0x100) + 8)};
+                    }};
+    gridremove.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_grm_h1 = c[1]; g_grm_h2 = c[2]; g_grm_h3 = c[3]; stubs_for_now({{g_grm_h1, (void *)stub_grid_h1}, {g_grm_h2, (void *)stub_grid_h2}, {g_grm_h3, (void *)stub_grid_h3}}); };
+    gridremove.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2712,7 +2730,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &gridinsert, &structcopy44, &compact4, &bsearchmap, &tablevrel, &tabledtor, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &gridremove, &gridinsert, &structcopy44, &compact4, &bsearchmap, &tablevrel, &tabledtor, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

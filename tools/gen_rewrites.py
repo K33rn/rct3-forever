@@ -1548,6 +1548,29 @@ def main():
         n_gi += 1
     counts['GRID_INSERT'] = n_gi
 
+    # Object::GridRemove: grid level shrink. shape 0x851f70 (228 B). H1(+0x3a), H2(+0x76), H3(+0xb1), STRIDE(+0xba).
+    gr_ref = mask_n(0x851f70, 228)
+    n_gr = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 228 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 228) != gr_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        callt = {i.address - va: (i.operands[0].imm & 0xffffffff) for i in xs if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM}
+        strides = [i.operands[1].imm & 0xffffffff for i in xs if i.mnemonic == 'add' and i.address - va == 0xba]
+        if 0x3a not in callt or 0x76 not in callt or 0xb1 not in callt or not strides:
+            continue
+        h1, h2, h3, stride = callt[0x3a], callt[0x76], callt[0xb1], strides[0]
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'GRID_REMOVE({va:#x}, {h1:#x}, {h2:#x}, {h3:#x}, {stride:#x}, {first})')
+        n_gr += 1
+    counts['GRID_REMOVE'] = n_gr
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
