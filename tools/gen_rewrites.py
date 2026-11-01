@@ -1270,6 +1270,27 @@ def main():
         n_vf2 += 1
     counts['VFWD2_RET'] = n_vf2
 
+    # Object::VCountProduct: n=vtbl[33](this); if n<=0 return 0; else vtbl[33](this)*sub(this). Fixed logic. shape 0x4aede0 (47 B).
+    vcp_ref = mask_n(0x4aede0, 47)
+    n_vcp = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 47 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 47) != vcp_ref:
+                continue
+        except Exception:
+            continue
+        cs = [i.operands[0].imm & 0xffffffff for i in md.disasm(mem[va - BASE:va - BASE + nn], va)
+              if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if cs != [0x4bfa20]:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'VCOUNT_PROD({va:#x}, {first})')
+        n_vcp += 1
+    counts['VCOUNT_PROD'] = n_vcp
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

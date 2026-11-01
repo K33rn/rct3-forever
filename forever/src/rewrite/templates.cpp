@@ -1534,6 +1534,19 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// n = this->vtbl[33](this); if n <= 0 return 0; else return this->vtbl[33](this) * sub(this). Fixed logic across copies.
+static volatile long g_vcount_prods;
+static uint32_t __thiscall vcount_prod(uint8_t *self) {
+    g_vcount_prods++;
+    void **vt = *(void ***)self;
+    int32_t n = ((int32_t(__thiscall *)(void *))vt[33])(self);
+    if (n <= 0)
+        return 0;
+    int32_t x = ((int32_t(__thiscall *)(void *))vt[33])(self);
+    int32_t y = ((int32_t(__thiscall *)(void *))0x4bfa20)(self);
+    return (uint32_t)(x * y);
+}
+#define VCOUNT_PROD(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::VCountProduct", at, REWRITE_CAT(original_, at), 8, (void *)&vcount_prod, &g_vcount_prods);
 // A pointer-chain getter: a = this->[O0]->[O1]; if (word a->[O2] != 0) return ***(a->[O3]); else trap (unreachable).
 static volatile long g_deref_chains;
 template <uint32_t O0, uint32_t O1, uint32_t O2, uint32_t O3> static uint32_t __fastcall deref_chain(uint8_t *self) {
@@ -1691,6 +1704,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef VCOUNT_PROD
+#define VCOUNT_PROD(...)
 #undef DEREF_CHAIN
 #define DEREF_CHAIN(...)
 #undef INIT_EDX
@@ -1956,6 +1971,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef VCOUNT_PROD
+#define VCOUNT_PROD(...)
 #undef DEREF_CHAIN
 #define DEREF_CHAIN(...)
 #undef INIT_EDX
@@ -2085,6 +2102,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef VCOUNT_PROD
+#define VCOUNT_PROD(...)
 #undef DEREF_CHAIN
 #define DEREF_CHAIN(...)
 #undef INIT_EDX
@@ -2131,6 +2150,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef VCOUNT_PROD
+#define VCOUNT_PROD(at, ...) {at},
 #undef DEREF_CHAIN
 #define DEREF_CHAIN(at, o0, o1, o2, o3, ...) {at, o0, o1, o2, o3},
 #undef INIT_EDX

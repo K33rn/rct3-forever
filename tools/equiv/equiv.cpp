@@ -299,6 +299,8 @@ static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
     return self;
 }
 static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }
+static int32_t __fastcall stub_pos_count(void *self) { record(0x45, self); return 7; }
+static int32_t __fastcall stub_sub_val(void *self) { record(0x46, self); return 5; }
 static void *__fastcall stub_head(void *self) { record(0x40, self); return arena<void>(0x300); }
 static void __fastcall stub_fastcall2(void *ecx, void *edx) { record(0x42, ecx); record(0x42, edx); }
 static void *__fastcall stub_next(void *n) { record(0x41, n); return *(void **)n; }
@@ -2289,6 +2291,17 @@ static std::vector<Test> tests() {
                     },
                     [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
     derefchain.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_dc0 = c[1]; g_dc1 = c[2]; g_dc2 = c[3]; g_dc3 = c[4]; };
+    // Object::VCountProduct: n=vtbl[33](this); if n<=0 ret 0; else vtbl[33](this)*sub(this). stubs return 7 and 5.
+    Test vcountproduct{0x4aede0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           static void *vt[34];
+                           vt[33] = (void *)stub_pos_count;
+                           *(void **)arena<uint8_t>(0x100) = vt; // this's vtable
+                       },
+                       [](void *fn) { return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
+    vcountproduct.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x4bfa20, (void *)stub_sub_val}}); };
+    vcountproduct.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2565,7 +2578,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
