@@ -1295,7 +1295,7 @@ address,size,name,callers,status
 0x46c3d0,30,DeletingDestructor,2,rewritten
 0x46c3f0,26,OwnedPointer::Reset,2,rewritten
 0x46c430,26,OwnedPointer::Reset,1,rewritten
-0x46c480,109,,1,documented
+0x46c480,109,STRUCT_COPY44,1,rewritten
 0x46c500,130,Array<4>::SetCapacity,4,rewritten
 0x46c5b0,26,OwnedPointer::Reset,2,rewritten
 0x46c5d0,179,MEMBER_DTOR,1,rewritten
@@ -14816,7 +14816,7 @@ address,size,name,callers,status
 0x9e12c0,26,OwnedPointer::Reset,2,rewritten
 0x9e12f0,28,Object::FreeField,4,rewritten
 0x9e1310,28,Object::FreeField,6,rewritten
-0x9e1340,109,,1,documented
+0x9e1340,109,STRUCT_COPY44,1,rewritten
 0x9e13b0,586,,2,documented
 0x9e1600,99,,1,documented
 0x9e16e0,247,,1,documented
@@ -22028,7 +22028,7 @@ address,size,name,callers,status
 0xc93cc0,103,,1,documented
 0xc946d0,148,,2,documented
 0xc947f0,1803,,2,documented
-0xc94f00,109,,1,documented
+0xc94f00,109,STRUCT_COPY44,1,rewritten
 0xc95510,673,,1,documented
 0xc957e0,1693,,1,documented
 0xc95ee0,818,,1,documented

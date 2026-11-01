@@ -1534,6 +1534,15 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// Copy 0x44 bytes (17 dwords) from the argument into this, then return this. Fixed across copies.
+static volatile long g_struct_copy44s;
+static void *__thiscall struct_copy44(uint8_t *self, uint8_t *src) {
+    g_struct_copy44s++;
+    for (int i = 0; i <= 0x40; i += 4)
+        *(uint32_t *)(self + i) = *(uint32_t *)(src + i);
+    return self;
+}
+#define STRUCT_COPY44(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::StructCopy44", at, REWRITE_CAT(original_, at), 8, (void *)&struct_copy44, &g_struct_copy44s);
 // Compact four parallel arrays, dropping entries whose [0]-array value is 0, using a scratch global remap table G.
 static volatile long g_compact4s;
 template <uint32_t G> static void __thiscall compact4(uint8_t *self) {
@@ -1860,6 +1869,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef STRUCT_COPY44
+#define STRUCT_COPY44(...)
 #undef COMPACT4
 #define COMPACT4(...)
 #undef BSEARCH_MAP
@@ -2147,6 +2158,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef STRUCT_COPY44
+#define STRUCT_COPY44(...)
 #undef COMPACT4
 #define COMPACT4(...)
 #undef BSEARCH_MAP
@@ -2298,6 +2311,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef STRUCT_COPY44
+#define STRUCT_COPY44(...)
 #undef COMPACT4
 #define COMPACT4(...)
 #undef BSEARCH_MAP
@@ -2366,6 +2381,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef STRUCT_COPY44
+#define STRUCT_COPY44(at, ...) {at},
 #undef COMPACT4
 #define COMPACT4(at, g, ...) {at, g},
 #undef BSEARCH_MAP

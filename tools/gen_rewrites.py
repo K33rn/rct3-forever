@@ -1508,6 +1508,23 @@ def main():
         n_c4 += 1
     counts['COMPACT4'] = n_c4
 
+    # Object::StructCopy44: copy 0x44 bytes from arg into this, return this. shape 0x46c480 (109 B).
+    sc_ref = mask_n(0x46c480, 109)
+    n_sc = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 109 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 109) != sc_ref:
+                continue
+        except Exception:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'STRUCT_COPY44({va:#x}, {first})')
+        n_sc += 1
+    counts['STRUCT_COPY44'] = n_sc
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
