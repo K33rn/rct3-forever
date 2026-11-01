@@ -1534,6 +1534,31 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// Set a table at [this]; if this->[OFF] is set, call its vtable slot 2 with (obj,obj) and clear the field. TABLE,OFF vary.
+static volatile long g_table_vrels;
+template <uint32_t TABLE, uint32_t OFF> static void __thiscall table_vrel(uint8_t *self) {
+    g_table_vrels++;
+    void *obj = *(void **)(self + OFF);
+    *(uint32_t *)self = TABLE;
+    if (obj) {
+        void **vt = *(void ***)obj;                                   // original passes ecx = vtable, arg = obj
+        ((void(__thiscall *)(void *, void *))vt[2])(vt, obj);
+        *(void **)(self + OFF) = nullptr;
+    }
+}
+#define TABLE_VREL(at, table, off, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::TableVRel", at, REWRITE_CAT(original_, at), 8, (void *)&table_vrel<table, off>, &g_table_vrels);
+// Set a table at [this]; if this->[8] is set, run its destructor and operator-delete it. TABLE, DTOR vary.
+static volatile long g_table_dtors;
+template <uint32_t TABLE, uint32_t DTOR> static void __thiscall table_dtor(uint8_t *self) {
+    g_table_dtors++;
+    void *obj = *(void **)(self + 8);
+    *(uint32_t *)self = TABLE;
+    if (obj) {
+        ((void(__thiscall *)(void *))DTOR)(obj);
+        ((void(__cdecl *)(void *))0xbce000)(obj);
+    }
+}
+#define TABLE_DTOR(at, table, dtor, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::TableDtor", at, REWRITE_CAT(original_, at), 8, (void *)&table_dtor<table, dtor>, &g_table_dtors);
 // r = helper(a0, 0, -1); if r != 0, call this's vtable slot 1 with r. HELPER varies per copy.
 static volatile long g_cond_vcall_hs;
 template <uint32_t HELPER> static void __thiscall cond_vcall_h(uint8_t *self, uint32_t a0) {
@@ -1772,6 +1797,10 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef TABLE_VREL
+#define TABLE_VREL(...)
+#undef TABLE_DTOR
+#define TABLE_DTOR(...)
 #undef COND_VCALL_H
 #define COND_VCALL_H(...)
 #undef COND_VREL
@@ -2051,6 +2080,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef TABLE_VREL
+#define TABLE_VREL(...)
+#undef TABLE_DTOR
+#define TABLE_DTOR(...)
 #undef COND_VCALL_H
 #define COND_VCALL_H(...)
 #undef COND_VREL
@@ -2194,6 +2227,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef TABLE_VREL
+#define TABLE_VREL(...)
+#undef TABLE_DTOR
+#define TABLE_DTOR(...)
 #undef COND_VCALL_H
 #define COND_VCALL_H(...)
 #undef COND_VREL
@@ -2254,6 +2291,10 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef TABLE_VREL
+#define TABLE_VREL(at, table, off, ...) {at, table, off},
+#undef TABLE_DTOR
+#define TABLE_DTOR(at, table, dtor, ...) {at, table, dtor},
 #undef COND_VCALL_H
 #define COND_VCALL_H(at, helper, ...) {at, helper},
 #undef COND_VREL

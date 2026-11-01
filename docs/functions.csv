@@ -4873,7 +4873,7 @@ address,size,name,callers,status
 0x5d0630,10,,6,documented
 0x5d0640,121,,7,documented
 0x5d06c0,34,,2,documented
-0x5d0700,32,,7,documented
+0x5d0700,32,TABLE_DTOR,7,rewritten
 0x5d0720,92,,2,documented
 0x5d0780,48,,1,documented
 0x5d07e0,63,,0,documented
@@ -4889,7 +4889,7 @@ address,size,name,callers,status
 0x5d0ea0,271,,1,documented
 0x5d0fc0,56,,0,documented
 0x5d1000,30,DeletingDestructor,0,rewritten
-0x5d1020,32,,2,documented
+0x5d1020,32,TABLE_DTOR,2,rewritten
 0x5d1040,59,,4,documented
 0x5d1080,34,,6,documented
 0x5d10b0,54,,17,documented
@@ -4962,7 +4962,7 @@ address,size,name,callers,status
 0x5d3f70,62,,0,documented
 0x5d3fb0,62,,0,documented
 0x5d3ff0,86,,1,documented
-0x5d4050,32,,1,documented
+0x5d4050,32,TABLE_DTOR,1,rewritten
 0x5d4070,90,,1,documented
 0x5d40f0,32,,8,documented
 0x5d4120,105,OwnedPair::FreeFields,2,rewritten
@@ -21651,9 +21651,9 @@ address,size,name,callers,status
 0xc5c040,25,,0,documented
 0xc5c060,205,,0,documented
 0xc5c180,1,,1,documented
-0xc5c390,31,,0,documented
-0xc5c400,31,,0,documented
-0xc5c470,31,,0,documented
+0xc5c390,31,TABLE_VREL,0,rewritten
+0xc5c400,31,TABLE_VREL,0,rewritten
+0xc5c470,31,TABLE_VREL,0,rewritten
 0xc5c5b0,51,,2,documented
 0xc5c5f0,51,,2,documented
 0xc5c630,51,,2,documented

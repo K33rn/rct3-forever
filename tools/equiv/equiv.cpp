@@ -2360,6 +2360,24 @@ static std::vector<Test> tests() {
                     [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), g_cvh_a); return Result{0u}; }};
     condvcallh.prepare = [](const rewrite::Entry *e) { g_cvh_h = rewrite::start_constants(e->at)[1]; stubs_for_now({{g_cvh_h, (void *)stub_helper3}}); };
     condvcallh.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::TableVRel: *this=TABLE; if this->[OFF] then obj->vtbl[2](obj,obj); clear. vtbl[2]=stub_thiscall1.
+    static uint32_t g_tvr_off;
+    Test tablevrel{0xc5c390,
+                   [=](Rng &r) {
+                       fresh(r);
+                       static void *vt[3] = {nullptr, nullptr, (void *)stub_thiscall1};
+                       *(void **)(arena<uint8_t>(0x100) + g_tvr_off) = arena<void>(0x300);
+                       *(void **)arena<uint8_t>(0x300) = vt;
+                   },
+                   [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{arena<uint32_t>(0x100)[0] ^ *(uint32_t *)(arena<uint8_t>(0x100) + g_tvr_off)}; }};
+    tablevrel.prepare = [](const rewrite::Entry *e) { g_tvr_off = rewrite::start_constants(e->at)[2]; };
+    // Object::TableDtor: obj=this->[8]; *this=TABLE; if obj: dtor(obj); delete(obj). dtor stubbed; delete global-stubbed.
+    static uint32_t g_tdt_dtor;
+    Test tabledtor{0x5d0700,
+                   [=](Rng &r) { fresh(r); *(void **)(arena<uint8_t>(0x100) + 8) = arena<void>(0x300); },
+                   [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{arena<uint32_t>(0x100)[0]}; }};
+    tabledtor.prepare = [](const rewrite::Entry *e) { g_tdt_dtor = rewrite::start_constants(e->at)[2]; stubs_for_now({{g_tdt_dtor, (void *)stub_plain_dtor}}); };
+    tabledtor.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2636,7 +2654,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &tablevrel, &tabledtor, &condvcallh, &condvrel, &branchoff, &settabletail, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

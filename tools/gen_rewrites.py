@@ -1422,6 +1422,50 @@ def main():
         n_cvh += 1
     counts['COND_VCALL_H'] = n_cvh
 
+    # Object::TableVRel: *this=TABLE; if this->[OFF] then obj->vtbl[2](obj,obj); clear. shape 0xc5c390 (31 B).
+    tvr_ref = mask_n(0xc5c390, 31)
+    n_tvr = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 31 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 31) != tvr_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        tbl = [i.operands[1].imm & 0xffffffff for i in xs if i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM and i.operands[1].imm != 0]
+        offs = [i.operands[1].mem.disp & 0xffffffff for i in xs if i.mnemonic == 'mov' and i.operands[1].type == X.X86_OP_MEM and i.operands[1].mem.base]
+        if not tbl or not offs:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'TABLE_VREL({va:#x}, {tbl[0]:#x}, {offs[0]:#x}, {first})')
+        n_tvr += 1
+    counts['TABLE_VREL'] = n_tvr
+
+    # Object::TableDtor: obj=this->[8]; *this=TABLE; if obj: dtor(obj); operator-delete(obj). shape 0x5d0700 (32 B).
+    tdt_ref = mask_n(0x5d0700, 32)
+    n_tdt = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 32 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 32) != tdt_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        tbl = [i.operands[1].imm & 0xffffffff for i in xs if i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM]
+        cs = [i.operands[0].imm & 0xffffffff for i in xs if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if not tbl or len(cs) != 2 or cs[1] != 0xbce000:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'TABLE_DTOR({va:#x}, {tbl[0]:#x}, {cs[0]:#x}, {first})')
+        n_tdt += 1
+    counts['TABLE_DTOR'] = n_tdt
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
