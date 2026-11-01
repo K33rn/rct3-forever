@@ -1184,6 +1184,27 @@ def main():
         n_ie += 1
     counts['INIT_EDX'] = n_ie
 
+    # Object::SetTableVCall: mov [ecx],TABLE; mov ecx,[ecx+4]; mov eax,[ecx]; push ecx; call [eax+8]. TABLE varies.
+    stv_ref = mask_n(0xbe9410, 16)
+    n_stv = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 16 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 16) != stv_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        if not (xs[0].mnemonic == 'mov' and xs[0].operands[0].type == X.X86_OP_MEM and xs[0].operands[1].type == X.X86_OP_IMM):
+            continue
+        table = xs[0].operands[1].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'SET_TABLE_VCALL({va:#x}, {table:#x}, {first})')
+        n_stv += 1
+    counts['SET_TABLE_VCALL'] = n_stv
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

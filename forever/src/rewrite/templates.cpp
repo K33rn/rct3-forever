@@ -1551,6 +1551,9 @@ template <uint32_t O0, uint32_t O1, uint32_t O2, uint32_t O3> static uint32_t __
 // Call a helper (0xbcde60) with this in ecx and a global in edx, then return this. GLOBAL varies per copy.
 static volatile long g_init_edx;
 #define INIT_EDX(at, global, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__fastcall REWRITE_CAT(ie_, at)(uint8_t *s) { g_init_edx++; ((void(__fastcall *)(void *, void *))0xbcde60)(s, (void *)(uintptr_t)global); return s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::InitEdx", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ie_, at), &g_init_edx);
+// Set a table at [this], then call this->[4]'s vtable slot 2 passing it as the argument. TABLE varies per copy.
+static volatile long g_set_table_vcalls;
+#define SET_TABLE_VCALL(at, table, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __fastcall REWRITE_CAT(stv_, at)(uint8_t *s) { g_set_table_vcalls++; *(uint32_t *)s = table; uint8_t *obj = *(uint8_t **)(s + 4); ((void(__thiscall *)(void *, void *))(*(void ***)obj)[2])(obj, obj); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::SetTableVCall", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(stv_, at), &g_set_table_vcalls);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1676,6 +1679,8 @@ static volatile long g_init_edx;
 #define DEREF_CHAIN(...)
 #undef INIT_EDX
 #define INIT_EDX(...)
+#undef SET_TABLE_VCALL
+#define SET_TABLE_VCALL(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1933,6 +1938,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DEREF_CHAIN(...)
 #undef INIT_EDX
 #define INIT_EDX(...)
+#undef SET_TABLE_VCALL
+#define SET_TABLE_VCALL(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -2054,6 +2061,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DEREF_CHAIN(...)
 #undef INIT_EDX
 #define INIT_EDX(...)
+#undef SET_TABLE_VCALL
+#define SET_TABLE_VCALL(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -2092,6 +2101,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define DEREF_CHAIN(at, o0, o1, o2, o3, ...) {at, o0, o1, o2, o3},
 #undef INIT_EDX
 #define INIT_EDX(at, global, ...) {at, global},
+#undef SET_TABLE_VCALL
+#define SET_TABLE_VCALL(at, table, ...) {at, table},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
