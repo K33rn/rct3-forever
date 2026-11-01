@@ -1534,6 +1534,39 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// Compact four parallel arrays, dropping entries whose [0]-array value is 0, using a scratch global remap table G.
+static volatile long g_compact4s;
+template <uint32_t G> static void __thiscall compact4(uint8_t *self) {
+    g_compact4s++;
+    int32_t count = *(int32_t *)(self + 0x10);
+    uint32_t *remap = (uint32_t *)(uintptr_t)G;
+    int32_t w = 0; // pass 1: compact arrays [0] and [4]; remap[old] = new index, or -1 if dropped
+    for (int32_t i = 0; i < count; i++) {
+        uint32_t *a0 = *(uint32_t **)(self + 0);
+        uint32_t v = a0[i];
+        if (v == 0) {
+            remap[i] = 0xffffffffu;
+        } else {
+            a0[w] = v;
+            uint32_t *a4 = *(uint32_t **)(self + 4);
+            a4[w] = a4[i];
+            remap[i] = (uint32_t)w;
+            w++;
+        }
+    }
+    int32_t w2 = 0; // pass 2: rebuild arrays [8] and [0xc] through the remap
+    for (int32_t i = 0; i < count; i++) {
+        uint32_t key = (*(uint32_t **)(self + 0xc))[i];
+        uint32_t ra = remap[key];
+        if (ra == 0xffffffffu)
+            continue;
+        (*(uint32_t **)(self + 8))[w2] = (*(uint32_t **)(self + 4))[ra];
+        (*(uint32_t **)(self + 0xc))[w2] = ra;
+        w2++;
+    }
+    *(int32_t *)(self + 0x10) = w2;
+}
+#define COMPACT4(at, g, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::Compact4", at, REWRITE_CAT(original_, at), 8, (void *)&compact4<g>, &g_compact4s);
 // Binary search over a sorted int key array (this->[8]); return the parallel value array (this->[0xc]) at the match, or -1.
 static volatile long g_bsearch_maps;
 static uint32_t __thiscall bsearch_map(uint8_t *self, int32_t key) {
@@ -1827,6 +1860,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COMPACT4
+#define COMPACT4(...)
 #undef BSEARCH_MAP
 #define BSEARCH_MAP(...)
 #undef TABLE_VREL
@@ -2112,6 +2147,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COMPACT4
+#define COMPACT4(...)
 #undef BSEARCH_MAP
 #define BSEARCH_MAP(...)
 #undef TABLE_VREL
@@ -2261,6 +2298,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COMPACT4
+#define COMPACT4(...)
 #undef BSEARCH_MAP
 #define BSEARCH_MAP(...)
 #undef TABLE_VREL
@@ -2327,6 +2366,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef COMPACT4
+#define COMPACT4(at, g, ...) {at, g},
 #undef BSEARCH_MAP
 #define BSEARCH_MAP(at, ...) {at},
 #undef TABLE_VREL
