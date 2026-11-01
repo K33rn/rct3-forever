@@ -1490,6 +1490,38 @@ template <uint32_t RESERVE, uint32_t M> static void *__thiscall grid_grow(uint8_
     return (void *)(uintptr_t) * (uint32_t *)(*(uint8_t **)(rec + 0xc) + r4 * 4);
 }
 #define GRID_GROW(at, reserve, m, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::GridGrow", at, REWRITE_CAT(original_, at), 8, (void *)&grid_grow<reserve, m>, &g_grid_grows);
+// A recursive quadtree collect: for node[idx] (this->[8], 0x1c-byte nodes), if it has entries (f_c or f_10), append
+// each of its f_10 children's f_18 (whose f_1c != 0) to a collector (arg1->[COFF], buffer at +4, count at +0x104,
+// flushing via vtbl[0] when count hits 0x40); then for each set low-nibble bit of node.f_0, recurse into child
+// node (idx*4 + bit + 1). COFF (the collector-pointer field offset) varies per copy.
+static volatile long g_quad_collects;
+template <uint32_t COFF> static void __thiscall quad_collect(uint8_t *self, int32_t idx, uint8_t *arg1) {
+    g_quad_collects++;
+    uint8_t *node = *(uint8_t **)(self + 8) + (uint32_t)idx * 0x1c;
+    uint32_t a = *(uint32_t *)(node + 0xc);
+    if (a != 0 || *(uint32_t *)(node + 0x10) != 0) {
+        int32_t cnt = *(int32_t *)(node + 0x10);
+        for (int32_t ebp = 0, ebx = 0; ebp < cnt; ebp++, ebx += 0x20) {
+            uint8_t *ch = *(uint8_t **)(node + 0x18);
+            if (*(uint32_t *)(ch + ebx + 0x1c) != 0) {
+                uint8_t *col = *(uint8_t **)(arg1 + COFF);
+                uint32_t v = *(uint32_t *)(ch + ebx + 0x18);
+                *(uint32_t *)(col + (uint32_t)*(int32_t *)(col + 0x104) * 4 + 4) = v;
+                int32_t nc = *(int32_t *)(col + 0x104) + 1;
+                *(int32_t *)(col + 0x104) = nc;
+                if (nc == 0x40) {
+                    ((void(__thiscall *)(void *, void *, uint32_t))(*(void ***)col)[0])(col, col + 4, 0x40);
+                    *(int32_t *)(col + 0x104) = 0;
+                }
+            }
+            cnt = *(int32_t *)(node + 0x10);
+        }
+    }
+    if (*(uint8_t *)node & 0xf)
+        for (int32_t s = 0; s < 4; s++)
+            if (*(uint32_t *)node & (1u << s)) quad_collect<COFF>(self, s + idx * 4 + 1, arg1);
+}
+#define QUAD_COLLECT(at, coff, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::QuadCollect", at, REWRITE_CAT(original_, at), 8, (void *)&quad_collect<coff>, &g_quad_collects);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1607,6 +1639,8 @@ template <uint32_t RESERVE, uint32_t M> static void *__thiscall grid_grow(uint8_
 #define FREE_TWO_TABLE(...)
 #undef GRID_GROW
 #define GRID_GROW(...)
+#undef QUAD_COLLECT
+#define QUAD_COLLECT(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1856,6 +1890,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FREE_TWO_TABLE(...)
 #undef GRID_GROW
 #define GRID_GROW(...)
+#undef QUAD_COLLECT
+#define QUAD_COLLECT(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -1969,6 +2005,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FREE_TWO_TABLE(...)
 #undef GRID_GROW
 #define GRID_GROW(...)
+#undef QUAD_COLLECT
+#define QUAD_COLLECT(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -1999,6 +2037,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FREE_TWO_TABLE(at, table, off0, off1, ...) {at, table, off0, off1},
 #undef GRID_GROW
 #define GRID_GROW(at, reserve, m, ...) {at, reserve},
+#undef QUAD_COLLECT
+#define QUAD_COLLECT(at, coff, ...) {at, coff},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

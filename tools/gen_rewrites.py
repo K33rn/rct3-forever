@@ -1074,6 +1074,43 @@ def main():
         n_gg += 1
     counts['GRID_GROW'] = n_gg
 
+    # Object::QuadCollect: recursive quadtree collect (0x7b72c0 masked-shape, 194 B). Only the collector-pointer
+    # field offset (mov esi,[ecx+COFF]) varies per copy.
+    qc_ref = mask391(0x7b72c0) if False else None
+    def mask_n(a, n):
+        out = bytearray(mem[a - BASE:a - BASE + n])
+        for ins in md.disasm(bytes(out), a):
+            e = ins.encoding; b = ins.address - a
+            if e.disp_size:
+                for k in range(e.disp_offset, e.disp_offset + e.disp_size): out[b + k] = 0
+            if e.imm_size:
+                for k in range(e.imm_offset, e.imm_offset + e.imm_size): out[b + k] = 0
+        return bytes(out)
+    qc_ref = mask_n(0x7b72c0, 194)
+    n_qc = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 194 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 194) != qc_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        coff = None
+        for i in xs:
+            if (i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_REG and md.reg_name(i.operands[0].reg) == 'esi'
+                    and i.operands[1].type == X.X86_OP_MEM and i.operands[1].mem.base and md.reg_name(i.operands[1].mem.base) == 'ecx'
+                    and not i.operands[1].mem.index):
+                coff = i.operands[1].mem.disp & 0xffffffff; break
+        if coff is None:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'QUAD_COLLECT({va:#x}, {coff:#x}, {first})')
+        n_qc += 1
+    counts['QUAD_COLLECT'] = n_qc
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

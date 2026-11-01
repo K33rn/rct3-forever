@@ -2229,6 +2229,30 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     delmemberfield.prepare = [](const rewrite::Entry *e) { g_dmf_off = rewrite::start_constants(e->at)[1]; };
+    // Object::QuadCollect: recursive quadtree collect. Bounded tree (8 nodes, depth-1 recursion, appends < 0x40 so
+    // no flush). this at 0x100 (nodes at 0x400); each node's children buffer at 0x500+i*0x40; collector at 0x900.
+    static uint32_t g_qc_coff;
+    Test quadcollect{0x7b72c0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         *(void **)arena<uint8_t>(0x108) = arena<void>(0x400);   // this->[8] = nodes
+                         for (int i = 0; i < 8; i++) {
+                             uint8_t *nd = arena<uint8_t>(0x400 + i * 0x1c);
+                             *(uint32_t *)(nd + 0) = (i == 0) ? (r.next() & 0xf) : 0;   // f_0 (recursion only from node 0)
+                             *(uint32_t *)(nd + 0xc) = r.next();                        // f_c
+                             *(int32_t *)(nd + 0x10) = (int32_t)(r.next() % 3);         // f_10 (0..2 children)
+                             *(void **)(nd + 0x18) = arena<void>(0x500 + i * 0x40);     // f_18 = children
+                             for (int c = 0; c < 2; c++) {
+                                 uint8_t *ch = arena<uint8_t>(0x500 + i * 0x40 + c * 0x20);
+                                 *(uint32_t *)(ch + 0x1c) = r.next() & 1 ? r.next() : 0;  // f_1c (filter)
+                                 *(uint32_t *)(ch + 0x18) = r.next();                     // f_18 (value)
+                             }
+                         }
+                         *(void **)(arena<uint8_t>(0x800) + g_qc_coff) = arena<void>(0x900);  // arg1->[COFF] = collector
+                         *(int32_t *)arena<uint8_t>(0x900 + 0x104) = 0;                       // collector count
+                     },
+                     [](void *fn) { ((void(__thiscall *)(void *, int32_t, void *))fn)(arena<void>(0x100), 0, arena<void>(0x800)); return Result{}; }};
+    quadcollect.prepare = [](const rewrite::Entry *e) { g_qc_coff = rewrite::start_constants(e->at)[1]; };
     // Object::GridGrow: ensure records cover `level` then subdivide record[level]. reserve stubbed (noop);
     // malloc/free are the global stubs. this at 0x100 (f0 = records buffer at 0x400, f4 = 0); level 0..6.
     static int32_t g_gg_level;
@@ -2474,7 +2498,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
