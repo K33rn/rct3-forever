@@ -299,6 +299,8 @@ static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
     return self;
 }
 static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }
+static void *__fastcall stub_head(void *self) { record(0x40, self); return arena<void>(0x300); }
+static void *__fastcall stub_next(void *n) { record(0x41, n); return *(void **)n; }
 static void __thiscall stub_thiscall2(void *self, uint32_t a0, uint32_t a1) { record(0x20, self); record(0x20, (void *)(uintptr_t)a0); record(0x20, (void *)(uintptr_t)a1); }
 static void __thiscall stub_thiscall1(void *self, void *arg) { record(0x21, self); record(0x21, arg); }
 static void *__fastcall stub_alloc_ecx(void *ecx) { record(0x22, ecx); return (void *)0x30001234; }
@@ -2229,6 +2231,13 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     delmemberfield.prepare = [](const rewrite::Entry *e) { g_dmf_off = rewrite::start_constants(e->at)[1]; };
+    // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
+    static uint32_t g_ld_m1;
+    Test listdrain{0x59c780,
+                   [=](Rng &r) { fresh(r); *(void **)arena<uint8_t>(0x300) = arena<void>(0x320); *(void **)arena<uint8_t>(0x320) = nullptr; },
+                   [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    listdrain.prepare = [](const rewrite::Entry *e) { g_ld_m1 = rewrite::start_constants(e->at)[1]; stubs_for_now({{0x59b030, (void *)stub_head}, {0x5d49d0, (void *)stub_next}, {g_ld_m1, (void *)stub_destructor}}); };
+    listdrain.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::QuadCollect: recursive quadtree collect. Bounded tree (8 nodes, depth-1 recursion, appends < 0x40 so
     // no flush). this at 0x100 (nodes at 0x400); each node's children buffer at 0x500+i*0x40; collector at 0x900.
     static uint32_t g_qc_coff;
@@ -2498,7 +2507,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

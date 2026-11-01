@@ -1111,6 +1111,28 @@ def main():
         n_qc += 1
     counts['QUAD_COLLECT'] = n_qc
 
+    # Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head 0x59b030 / next 0x5d49d0
+    # fixed; visit M1 varies. Shape of 0x59c780 (38 B).
+    ld_ref = mask_n(0x59c780, 38)
+    n_ld = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 38 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 38) != ld_ref:
+                continue
+        except Exception:
+            continue
+        cs = [i.operands[0].imm & 0xffffffff for i in md.disasm(mem[va - BASE:va - BASE + nn], va)
+              if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if len(cs) != 3 or cs[0] != 0x59b030 or cs[2] != 0x5d49d0:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'LIST_DRAIN({va:#x}, {cs[1]:#x}, {first})')
+        n_ld += 1
+    counts['LIST_DRAIN'] = n_ld
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

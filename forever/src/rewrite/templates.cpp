@@ -1522,6 +1522,18 @@ template <uint32_t COFF> static void __thiscall quad_collect(uint8_t *self, int3
             if (*(uint32_t *)node & (1u << s)) quad_collect<COFF>(self, s + idx * 4 + 1, arg1);
 }
 #define QUAD_COLLECT(at, coff, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::QuadCollect", at, REWRITE_CAT(original_, at), 8, (void *)&quad_collect<coff>, &g_quad_collects);
+// Drain a list: node = head(this); while (node) { visit(node); node = next(node); }. head (0x59b030) and next
+// (0x5d49d0) are fixed thiscalls; the visit method M1 varies per copy.
+static volatile long g_list_drains;
+template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
+    g_list_drains++;
+    void *node = ((void *(__fastcall *)(void *))0x59b030)(self);
+    while (node) {
+        ((void(__fastcall *)(void *))M1)(node);
+        node = ((void *(__fastcall *)(void *))0x5d49d0)(node);
+    }
+}
+#define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1641,6 +1653,8 @@ template <uint32_t COFF> static void __thiscall quad_collect(uint8_t *self, int3
 #define GRID_GROW(...)
 #undef QUAD_COLLECT
 #define QUAD_COLLECT(...)
+#undef LIST_DRAIN
+#define LIST_DRAIN(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1892,6 +1906,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define GRID_GROW(...)
 #undef QUAD_COLLECT
 #define QUAD_COLLECT(...)
+#undef LIST_DRAIN
+#define LIST_DRAIN(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -2007,6 +2023,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define GRID_GROW(...)
 #undef QUAD_COLLECT
 #define QUAD_COLLECT(...)
+#undef LIST_DRAIN
+#define LIST_DRAIN(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -2039,6 +2057,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define GRID_GROW(at, reserve, m, ...) {at, reserve},
 #undef QUAD_COLLECT
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
+#undef LIST_DRAIN
+#define LIST_DRAIN(at, m1, ...) {at, m1},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
