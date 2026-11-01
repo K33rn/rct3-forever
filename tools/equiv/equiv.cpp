@@ -2310,6 +2310,20 @@ static std::vector<Test> tests() {
                          *(uint32_t *)arena<uint8_t>(0x600) = r.next() % 4u;                            // count 0..3 -> n<=448
                      },
                      [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x600))}; }};
+    // Object::CondNotify: if this->[OFF] && byte[G1] then singleton(*0x13d0db8)->vtbl[17](obj). vtbl[17]=stub_thiscall1.
+    static uint32_t g_cn_off, g_cn_g1;
+    Test condnotify{0x919a50,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[18];
+                        vt[17] = (void *)stub_thiscall1;
+                        *(void **)(arena<uint8_t>(0x100) + g_cn_off) = arena<void>(0x300); // this->[OFF] = obj (nonzero)
+                        *(uint8_t *)(uintptr_t)g_cn_g1 = 1;                                // global flag != 0
+                        *(void **)(uintptr_t)0x13d0db8 = arena<void>(0x400);               // global singleton
+                        *(void **)arena<uint8_t>(0x400) = vt;                              // singleton's vtable
+                    },
+                    [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{0u}; }};
+    condnotify.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_cn_off = c[1]; g_cn_g1 = c[2]; };
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2586,7 +2600,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &condnotify, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

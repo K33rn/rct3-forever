@@ -12932,10 +12932,10 @@ address,size,name,callers,status
 0x919610,389,,6,documented
 0x9197a0,513,,2,documented
 0x9199b0,149,,4,documented
-0x919a50,33,,1,documented
-0x919a80,33,,1,documented
-0x919ab0,33,,1,documented
-0x919ae0,33,,1,documented
+0x919a50,33,COND_NOTIFY,1,rewritten
+0x919a80,33,COND_NOTIFY,1,rewritten
+0x919ab0,33,COND_NOTIFY,1,rewritten
+0x919ae0,33,COND_NOTIFY,1,rewritten
 0x919b10,1,,1,documented
 0x919b20,186,,2,documented
 0x919be0,83,,1,documented

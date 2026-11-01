@@ -1534,6 +1534,19 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// If this->[OFF] is set and a global flag G1 is nonzero, notify a global singleton via its vtable slot 17. OFF, G1 vary.
+static volatile long g_cond_notifies;
+template <uint32_t OFF, uint32_t G1> static void __thiscall cond_notify(uint8_t *self) {
+    g_cond_notifies++;
+    void *obj = *(void **)(self + OFF);
+    if (obj == nullptr)
+        return;
+    if (*(uint8_t *)(uintptr_t)G1 == 0)
+        return;
+    uint8_t *g = *(uint8_t **)(uintptr_t)0x13d0db8;
+    ((void(__thiscall *)(void *, void *))(*(void ***)g)[17])(g, obj);
+}
+#define COND_NOTIFY(at, off, g1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CondNotify", at, REWRITE_CAT(original_, at), 8, (void *)&cond_notify<off, g1>, &g_cond_notifies);
 // Block-copy src into this: n = (*src)*144 + 16 bytes (rep movsd + movsb); return this. Fixed sizes across copies.
 static volatile long g_obj_copies;
 static void *__thiscall obj_copy(uint8_t *dest, uint8_t *src) {
@@ -1717,6 +1730,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_NOTIFY
+#define COND_NOTIFY(...)
 #undef OBJ_COPY
 #define OBJ_COPY(...)
 #undef VCOUNT_PROD
@@ -1986,6 +2001,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_NOTIFY
+#define COND_NOTIFY(...)
 #undef OBJ_COPY
 #define OBJ_COPY(...)
 #undef VCOUNT_PROD
@@ -2119,6 +2136,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef COND_NOTIFY
+#define COND_NOTIFY(...)
 #undef OBJ_COPY
 #define OBJ_COPY(...)
 #undef VCOUNT_PROD
@@ -2169,6 +2188,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef COND_NOTIFY
+#define COND_NOTIFY(at, off, g1, ...) {at, off, g1},
 #undef OBJ_COPY
 #define OBJ_COPY(at, ...) {at},
 #undef VCOUNT_PROD
