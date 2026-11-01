@@ -743,7 +743,7 @@ address,size,name,callers,status
 0x436eb0,755,,1,documented
 0x4371b0,31,Object::DelMemberField,2,rewritten
 0x4371d0,33,,4,documented
-0x437620,17,,1,documented
+0x437620,17,Object::InitEdx,1,rewritten
 0x437640,10,,1,documented
 0x437770,26,OwnedPointer::Reset,2,rewritten
 0x437790,26,OwnedPointer::Reset,1,rewritten
@@ -10478,7 +10478,7 @@ address,size,name,callers,status
 0x8058f0,202,,3,documented
 0x8059c0,53,,1,documented
 0x805a00,162,,1,documented
-0x805ab0,17,,294,documented
+0x805ab0,17,Object::InitEdx,294,rewritten
 0x805b60,26,OwnedPointer::Reset,0,rewritten
 0x805b80,130,Array<4>::SetCapacity,1,rewritten
 0x805c10,177,,4,documented
@@ -19778,7 +19778,7 @@ address,size,name,callers,status
 0xbce060,19,,38,documented
 0xbce080,54,,1,documented
 0xbce120,60,,0,documented
-0xbce1a0,17,,1052,documented
+0xbce1a0,17,Object::InitEdx,1052,rewritten
 0xbce1c0,10,,1053,documented
 0xbce1d0,51,,9,documented
 0xbce240,40,Text::Widen,0,rewritten
@@ -19902,7 +19902,7 @@ address,size,name,callers,status
 0xbd3850,36,,2,documented
 0xbd3880,60,,1,documented
 0xbd38c0,60,,1,documented
-0xbd3bf0,17,,1,documented
+0xbd3bf0,17,Object::InitEdx,1,rewritten
 0xbd3c10,10,,2,documented
 0xbd3c60,228,,20,documented
 0xbd3dc0,293,,7,documented
@@ -20410,7 +20410,7 @@ address,size,name,callers,status
 0xbf9760,578,,0,documented
 0xbf9a00,108,,4,documented
 0xbf9bb0,131,,0,documented
-0xbf9c50,17,,4,documented
+0xbf9c50,17,Object::InitEdx,4,rewritten
 0xbf9c80,129,,13,documented
 0xbf9d10,7,SetTable,2,rewritten
 0xbf9d70,49,,0,documented
@@ -20590,7 +20590,7 @@ address,size,name,callers,status
 0xc02fe0,93,,0,documented
 0xc03040,304,,1,documented
 0xc03170,2091,,1,documented
-0xc03a50,17,,2,documented
+0xc03a50,17,Object::InitEdx,2,rewritten
 0xc03a70,10,,3,documented
 0xc03a80,6,,43,documented
 0xc03a90,174,,3,documented
@@ -20941,7 +20941,7 @@ address,size,name,callers,status
 0xc1a420,166,,1,documented
 0xc1a4d0,30,DeletingDestructor,1,rewritten
 0xc1a4f0,830,,2,documented
-0xc1a890,17,,7,documented
+0xc1a890,17,Object::InitEdx,7,rewritten
 0xc1a8b0,10,,5,documented
 0xc1a8c0,83,,30,documented
 0xc1aa80,129,,1,documented

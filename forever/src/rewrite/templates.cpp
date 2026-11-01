@@ -1548,6 +1548,9 @@ template <uint32_t O0, uint32_t O1, uint32_t O2, uint32_t O3> static uint32_t __
     return *(volatile uint32_t *)(uintptr_t)0;
 }
 #define DEREF_CHAIN(at, o0, o1, o2, o3, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::DerefChain", at, REWRITE_CAT(original_, at), 8, (void *)&deref_chain<o0, o1, o2, o3>, &g_deref_chains);
+// Call a helper (0xbcde60) with this in ecx and a global in edx, then return this. GLOBAL varies per copy.
+static volatile long g_init_edx;
+#define INIT_EDX(at, global, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void *__fastcall REWRITE_CAT(ie_, at)(uint8_t *s) { g_init_edx++; ((void(__fastcall *)(void *, void *))0xbcde60)(s, (void *)(uintptr_t)global); return s; } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::InitEdx", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(ie_, at), &g_init_edx);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1671,6 +1674,8 @@ template <uint32_t O0, uint32_t O1, uint32_t O2, uint32_t O3> static uint32_t __
 #define LIST_DRAIN(...)
 #undef DEREF_CHAIN
 #define DEREF_CHAIN(...)
+#undef INIT_EDX
+#define INIT_EDX(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1926,6 +1931,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LIST_DRAIN(...)
 #undef DEREF_CHAIN
 #define DEREF_CHAIN(...)
+#undef INIT_EDX
+#define INIT_EDX(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -2045,6 +2052,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LIST_DRAIN(...)
 #undef DEREF_CHAIN
 #define DEREF_CHAIN(...)
+#undef INIT_EDX
+#define INIT_EDX(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -2081,6 +2090,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define LIST_DRAIN(at, m1, ...) {at, m1},
 #undef DEREF_CHAIN
 #define DEREF_CHAIN(at, o0, o1, o2, o3, ...) {at, o0, o1, o2, o3},
+#undef INIT_EDX
+#define INIT_EDX(at, global, ...) {at, global},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };

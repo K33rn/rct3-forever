@@ -1161,6 +1161,29 @@ def main():
         n_dc += 1
     counts['DEREF_CHAIN'] = n_dc
 
+    # Object::InitEdx: mov edx,GLOBAL; mov esi,ecx; call 0xbcde60; mov eax,esi; ret. GLOBAL (edx) varies; call fixed.
+    ie_ref = mask_n(0x437620, 17)
+    n_ie = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 17 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 17) != ie_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        gmov = [i for i in xs if i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_REG and md.reg_name(i.operands[0].reg) == 'edx' and i.operands[1].type == X.X86_OP_IMM]
+        cs = [i.operands[0].imm & 0xffffffff for i in xs if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if not gmov or cs != [0xbcde60]:
+            continue
+        g = gmov[0].operands[1].imm & 0xffffffff
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'INIT_EDX({va:#x}, {g:#x}, {first})')
+        n_ie += 1
+    counts['INIT_EDX'] = n_ie
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

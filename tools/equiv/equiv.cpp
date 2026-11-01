@@ -300,6 +300,7 @@ static void *__fastcall stub_deleting(void *self, void *, uint32_t flags) {
 }
 static void __fastcall stub_plain_dtor(void *self) { record(0x12, self); }
 static void *__fastcall stub_head(void *self) { record(0x40, self); return arena<void>(0x300); }
+static void __fastcall stub_fastcall2(void *ecx, void *edx) { record(0x42, ecx); record(0x42, edx); }
 static void *__fastcall stub_next(void *n) { record(0x41, n); return *(void **)n; }
 static void __thiscall stub_thiscall2(void *self, uint32_t a0, uint32_t a1) { record(0x20, self); record(0x20, (void *)(uintptr_t)a0); record(0x20, (void *)(uintptr_t)a1); }
 static void __thiscall stub_thiscall1(void *self, void *arg) { record(0x21, self); record(0x21, arg); }
@@ -2231,6 +2232,12 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     delmemberfield.prepare = [](const rewrite::Entry *e) { g_dmf_off = rewrite::start_constants(e->at)[1]; };
+    // Object::InitEdx: helper(this, GLOBAL in edx); return this. helper (0xbcde60) stubbed (fastcall, records ecx/edx).
+    Test initedx{0x437620,
+                 [=](Rng &r) { fresh(r); },
+                 [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    initedx.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcde60, (void *)stub_fastcall2}}); };
+    initedx.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::DerefChain: a=this->[O0]->[O1]; if(word a->[O2]) return ***(a->[O3]). No stubs; build the pointer chain.
     static uint32_t g_dc0, g_dc1, g_dc2, g_dc3;
     Test derefchain{0x426140,
@@ -2522,7 +2529,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &derefchain, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &derefchain, &initedx, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;
