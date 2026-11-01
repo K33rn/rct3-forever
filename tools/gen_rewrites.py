@@ -1051,14 +1051,14 @@ def main():
             if e.imm_size:
                 for k in range(e.imm_offset, e.imm_offset + e.imm_size): out[b + k] = 0
         return bytes(out)
-    gg_ref = mask391(0x850240)
+    gg_refs = {mask391(0x850240), mask391(0x850a80)}   # ×5/shl and ×3/shl variants (same logic, M differs)
     n_gg = 0
     for r in funcs:
         va, nn = int(r['address'], 16), int(r['size'])
         if nn != 391 or va in handwritten or va in emitted:
             continue
         try:
-            if mask391(va) != gg_ref:
+            if mask391(va) not in gg_refs:
                 continue
         except Exception:
             continue
