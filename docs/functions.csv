@@ -21948,7 +21948,7 @@ address,size,name,callers,status
 0xc719f0,26,OwnedPointer::Reset,2,rewritten
 0xc71a10,130,Array<4>::SetCapacity,1,rewritten
 0xc71aa0,93,,6,documented
-0xc71b00,40,,1,documented
+0xc71b00,40,OBJ_COPY,1,rewritten
 0xc71b30,123,,1,documented
 0xc72210,301,,1,documented
 0xc72410,825,,1,documented
@@ -21989,7 +21989,7 @@ address,size,name,callers,status
 0xc774c0,26,OwnedPointer::Reset,2,rewritten
 0xc774e0,130,Array<4>::SetCapacity,1,rewritten
 0xc77570,40,,1,documented
-0xc775a0,40,,1,documented
+0xc775a0,40,OBJ_COPY,1,rewritten
 0xc775d0,30,DeletingDestructor,1,rewritten
 0xc77600,40,,0,documented
 0xc776d0,251,,1,documented
@@ -22034,7 +22034,7 @@ address,size,name,callers,status
 0xc95ee0,818,,1,documented
 0xc96350,26,OwnedPointer::Reset,2,rewritten
 0xc96370,130,Array<4>::SetCapacity,1,rewritten
-0xc96400,40,,1,documented
+0xc96400,40,OBJ_COPY,1,rewritten
 0xc96450,123,,1,documented
 0xc964d0,297,,1,documented
 0xc96610,214,,0,documented

@@ -1291,6 +1291,32 @@ def main():
         n_vcp += 1
     counts['VCOUNT_PROD'] = n_vcp
 
+    # Object::CopyRecords: block-copy src into this, n=(*src)*144+16 bytes, return this. Fixed sizes. shape 0xc71b00 (40 B).
+    oc_ref = mask_n(0xc71b00, 40)
+    n_oc = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 40 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 40) != oc_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        lea = [i for i in xs if i.mnemonic == 'lea']
+        shl = [i.operands[1].imm for i in xs if i.mnemonic == 'shl']
+        add = [i.operands[1].imm for i in xs if i.mnemonic == 'add' and i.operands[0].type == X.X86_OP_REG and md.reg_name(i.operands[0].reg) == 'ecx']
+        if not lea or not shl or not add:
+            continue
+        mult = (1 + lea[0].operands[1].mem.scale) << shl[0]
+        if mult != 144 or add[0] != 16:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'OBJ_COPY({va:#x}, {first})')
+        n_oc += 1
+    counts['OBJ_COPY'] = n_oc
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

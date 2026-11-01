@@ -2302,6 +2302,14 @@ static std::vector<Test> tests() {
                        [](void *fn) { return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
     vcountproduct.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x4bfa20, (void *)stub_sub_val}}); };
     vcountproduct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    // Object::CopyRecords: n=(*src)*144+16 bytes copied src->this; return this. No stubs; src a filled buffer.
+    Test copyrecords{0xc71b00,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 0x200; i++) arena<uint8_t>(0x600)[i] = (uint8_t)r.next(); // src buffer
+                         *(uint32_t *)arena<uint8_t>(0x600) = r.next() % 4u;                            // count 0..3 -> n<=448
+                     },
+                     [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x600))}; }};
     // Object::ListDrain: node=head(this); while(node){ M1(node); node=next(node); }. head/next/M1 stubbed; chain 0x300->0x320->0.
     static uint32_t g_ld_m1;
     Test listdrain{0x59c780,
@@ -2578,7 +2586,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &copyrecords, &vcountproduct, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

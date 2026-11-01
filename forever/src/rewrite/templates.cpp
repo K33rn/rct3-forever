@@ -1534,6 +1534,19 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// Block-copy src into this: n = (*src)*144 + 16 bytes (rep movsd + movsb); return this. Fixed sizes across copies.
+static volatile long g_obj_copies;
+static void *__thiscall obj_copy(uint8_t *dest, uint8_t *src) {
+    g_obj_copies++;
+    uint32_t n = *(uint32_t *)src * 144u + 16u;
+    uint32_t dwords = n >> 2;
+    for (uint32_t i = 0; i < dwords; i++)
+        ((uint32_t *)dest)[i] = ((uint32_t *)src)[i];
+    for (uint32_t i = dwords * 4; i < n; i++)
+        dest[i] = src[i];
+    return dest;
+}
+#define OBJ_COPY(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CopyRecords", at, REWRITE_CAT(original_, at), 8, (void *)&obj_copy, &g_obj_copies);
 // n = this->vtbl[33](this); if n <= 0 return 0; else return this->vtbl[33](this) * sub(this). Fixed logic across copies.
 static volatile long g_vcount_prods;
 static uint32_t __thiscall vcount_prod(uint8_t *self) {
@@ -1704,6 +1717,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef OBJ_COPY
+#define OBJ_COPY(...)
 #undef VCOUNT_PROD
 #define VCOUNT_PROD(...)
 #undef DEREF_CHAIN
@@ -1971,6 +1986,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef OBJ_COPY
+#define OBJ_COPY(...)
 #undef VCOUNT_PROD
 #define VCOUNT_PROD(...)
 #undef DEREF_CHAIN
@@ -2102,6 +2119,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef OBJ_COPY
+#define OBJ_COPY(...)
 #undef VCOUNT_PROD
 #define VCOUNT_PROD(...)
 #undef DEREF_CHAIN
@@ -2150,6 +2169,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef OBJ_COPY
+#define OBJ_COPY(at, ...) {at},
 #undef VCOUNT_PROD
 #define VCOUNT_PROD(at, ...) {at},
 #undef DEREF_CHAIN
