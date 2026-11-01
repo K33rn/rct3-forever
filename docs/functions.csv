@@ -225,7 +225,7 @@ address,size,name,callers,status
 0x40f1a0,30,DeletingDestructor,2,rewritten
 0x40f1c0,30,DeletingDestructor,2,rewritten
 0x40f1e0,30,DeletingDestructor,2,rewritten
-0x40f200,31,,1,documented
+0x40f200,31,SET_TABLE_TAIL,1,rewritten
 0x40f220,30,DeletingDestructor,1,rewritten
 0x40f250,30,DeletingDestructor,1,rewritten
 0x40f280,30,DeletingDestructor,1,rewritten
@@ -2335,7 +2335,7 @@ address,size,name,callers,status
 0x4beb20,7,SetTable,6,rewritten
 0x4bec20,7,SetTable,5,rewritten
 0x4becf0,105,Factory::Lazy,9,rewritten
-0x4bede0,31,,13,documented
+0x4bede0,31,SET_TABLE_TAIL,13,rewritten
 0x4bee00,30,DeletingDestructor,0,rewritten
 0x4bee20,25,,9,documented
 0x4bee40,8,,7,documented
@@ -2542,7 +2542,7 @@ address,size,name,callers,status
 0x4cca70,136,,1,documented
 0x4ccc10,203,,2,documented
 0x4ccd30,30,DeletingDestructor,1,rewritten
-0x4ccd50,31,,1,documented
+0x4ccd50,31,SET_TABLE_TAIL,1,rewritten
 0x4ccd70,52,,1,documented
 0x4ccdb0,48,,2,documented
 0x4ccde0,52,,1,documented
@@ -15827,7 +15827,7 @@ address,size,name,callers,status
 0xa45700,159,,35,documented
 0xa457a0,145,,36,documented
 0xa45840,30,DeletingDestructor,1,rewritten
-0xa45860,31,,1,documented
+0xa45860,31,SET_TABLE_TAIL,1,rewritten
 0xa459e0,63,,2,documented
 0xa45a20,2427,,5,documented
 0xa463a0,393,,4,documented

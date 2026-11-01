@@ -1339,6 +1339,29 @@ def main():
         n_cn += 1
     counts['COND_NOTIFY'] = n_cn
 
+    # Object::SetTableTail: if this set *(this+OFF)=TABLE; tail-jmp BASE (else null-deref). shape 0x40f200 (31 B).
+    stt_ref = mask_n(0x40f200, 31)
+    n_stt = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 31 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 31) != stt_ref:
+                continue
+        except Exception:
+            continue
+        xs = list(md.disasm(mem[va - BASE:va - BASE + nn], va))
+        lea = [i.operands[1].mem.disp & 0xffffffff for i in xs if i.mnemonic == 'lea']
+        tbl = [i.operands[1].imm & 0xffffffff for i in xs if i.mnemonic == 'mov' and i.operands[0].type == X.X86_OP_MEM and i.operands[1].type == X.X86_OP_IMM]
+        jmp = [i.operands[0].imm & 0xffffffff for i in xs if i.mnemonic == 'jmp' and i.operands[0].type == X.X86_OP_IMM]
+        if not lea or not tbl or not jmp:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'SET_TABLE_TAIL({va:#x}, {lea[0]:#x}, {tbl[0]:#x}, {jmp[0]:#x}, {first})')
+        n_stt += 1
+    counts['SET_TABLE_TAIL'] = n_stt
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

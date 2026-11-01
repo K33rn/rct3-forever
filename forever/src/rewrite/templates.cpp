@@ -1534,6 +1534,18 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// Set a vtable at this->[OFF], then tail-call a base constructor. OFF, TABLE, BASE vary per copy.
+static volatile long g_set_table_tails;
+template <uint32_t OFF, uint32_t TABLE, uint32_t BASE> static uint32_t __thiscall set_table_tail(uint8_t *self) {
+    g_set_table_tails++;
+    if (self != nullptr) {
+        *(uint32_t *)(self + OFF) = TABLE;
+        return ((uint32_t(__thiscall *)(void *))BASE)(self);
+    }
+    *(volatile uint32_t *)(uintptr_t)0 = TABLE;
+    return ((uint32_t(__thiscall *)(void *))BASE)((void *)0);
+}
+#define SET_TABLE_TAIL(at, off, table, base, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::SetTableTail", at, REWRITE_CAT(original_, at), 8, (void *)&set_table_tail<off, table, base>, &g_set_table_tails);
 // If this->[OFF] is set and a global flag G1 is nonzero, notify a global singleton via its vtable slot 17. OFF, G1 vary.
 static volatile long g_cond_notifies;
 template <uint32_t OFF, uint32_t G1> static void __thiscall cond_notify(uint8_t *self) {
@@ -1730,6 +1742,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef SET_TABLE_TAIL
+#define SET_TABLE_TAIL(...)
 #undef COND_NOTIFY
 #define COND_NOTIFY(...)
 #undef OBJ_COPY
@@ -2001,6 +2015,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef SET_TABLE_TAIL
+#define SET_TABLE_TAIL(...)
 #undef COND_NOTIFY
 #define COND_NOTIFY(...)
 #undef OBJ_COPY
@@ -2136,6 +2152,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef SET_TABLE_TAIL
+#define SET_TABLE_TAIL(...)
 #undef COND_NOTIFY
 #define COND_NOTIFY(...)
 #undef OBJ_COPY
@@ -2188,6 +2206,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef SET_TABLE_TAIL
+#define SET_TABLE_TAIL(at, off, table, base, ...) {at, off, table, base},
 #undef COND_NOTIFY
 #define COND_NOTIFY(at, off, g1, ...) {at, off, g1},
 #undef OBJ_COPY
