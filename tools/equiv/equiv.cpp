@@ -2232,6 +2232,19 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     delmemberfield.prepare = [](const rewrite::Entry *e) { g_dmf_off = rewrite::start_constants(e->at)[1]; };
+    // Object::VFwd2Ret: obj=this->[O0]; obj->vtbl[2](obj,arg,this->[O1]); return arg. vtbl[2] stubbed (thiscall,2 args).
+    static uint32_t g_vf2_o0, g_vf2_o1, g_vf2_a;
+    Test vfwd2ret{0x50b310,
+                  [=](Rng &r) {
+                      fresh(r);
+                      g_vf2_a = r.next();
+                      static void *vt[3] = {nullptr, nullptr, (void *)stub_thiscall2};
+                      *(void **)(arena<uint8_t>(0x100) + g_vf2_o0) = arena<void>(0x300); // this->[O0] = obj
+                      *(void **)arena<uint8_t>(0x300) = vt;                              // obj's vtable
+                      *(uint32_t *)(arena<uint8_t>(0x100) + g_vf2_o1) = r.next();        // this->[O1]
+                  },
+                  [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), g_vf2_a)}; }};
+    vfwd2ret.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_vf2_o0 = c[1]; g_vf2_o1 = c[2]; };
     // Object::SetFieldTail: this->[OFF]=arg; method(this). method stubbed (thiscall, no args).
     static uint32_t g_sft_off, g_sft_m, g_sft_a;
     Test setfieldtail{0x4c1e80,
@@ -2552,7 +2565,7 @@ static std::vector<Test> tests() {
                     &dtor_delete_member, &dtor_member_base, &factory_k2, &factory_k5, &factory_2k,
                     &ctor_base_table, &set_two_vectors, &lazy_factory_k1, &factory_regs, &render_state,
                     &free_list_take, &listener_dtor, &dtor_member_if, &lazy_singleton, &listener_quiet,
-                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
+                    &dtor_delete2, &dtor5_delete2, &dtor_tables_member, &quadtree_add, &quadtree_insert, &object_construct, &behaviour_create, &pair_release, &member_dtor, &getref, &setfields, &freefield, &tablesbase, &deleting2, &forward2, &countlist, &callthentail, &dbgsingleton, &getfield, &globalmembercall, &condforward, &arraypush, &delmemberfield, &freetwofields, &dbgwrap2, &ctorbasearg, &allocstore, &condcallset, &freetwotable, &gridgrow, &quadcollect, &listdrain, &derefchain, &initedx, &settablevcall, &fwd2clear, &setfieldtail, &vfwd2ret, &sorted_map_ctor, &frustum, &interface_float, &trivial_setcap,
                     &interface_forward}) {
         x->iterations = (x == &deleting || x == &query || x == &module || x == &start_name) ? 4 : 20;   // thousands of copies: fewer cases each
         x->data = false;

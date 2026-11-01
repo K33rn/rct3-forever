@@ -1249,6 +1249,27 @@ def main():
         n_sft += 1
     counts['SETFIELD_TAIL'] = n_sft
 
+    # Object::VFwd2Ret: obj=this->[O0]; obj->vtbl[2](obj, arg, this->[O1]); return arg. shape of 0x50b310 (32 B).
+    vf2_ref = mask_n(0x50b310, 32)
+    n_vf2 = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 32 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 32) != vf2_ref:
+                continue
+        except Exception:
+            continue
+        ds = [i.operands[1].mem.disp & 0xffffffff for i in md.disasm(mem[va - BASE:va - BASE + nn], va)
+              if i.mnemonic == 'mov' and i.operands[1].type == X.X86_OP_MEM and i.operands[1].mem.base]
+        if len(ds) < 2:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'VFWD2_RET({va:#x}, {ds[0]:#x}, {ds[1]:#x}, {first})')
+        n_vf2 += 1
+    counts['VFWD2_RET'] = n_vf2
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,

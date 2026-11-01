@@ -3095,10 +3095,10 @@ address,size,name,callers,status
 0x50b130,152,,0,documented
 0x50b240,21,,1,documented
 0x50b260,21,,1,documented
-0x50b310,32,,6,documented
-0x50b330,32,,3,documented
-0x50b350,32,,2,documented
-0x50b370,32,,2,documented
+0x50b310,32,Object::VFwd2Ret,6,rewritten
+0x50b330,32,Object::VFwd2Ret,3,rewritten
+0x50b350,32,Object::VFwd2Ret,2,rewritten
+0x50b370,32,Object::VFwd2Ret,2,rewritten
 0x50b390,120,,1,documented
 0x50b450,28,,3,documented
 0x50b470,52,,0,documented

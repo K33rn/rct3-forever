@@ -1560,6 +1560,16 @@ static volatile long g_fwd2_clears;
 // Store the argument into a field, then tail-call a member method with no args. OFF and METHOD vary per copy.
 static volatile long g_setfield_tails;
 #define SETFIELD_TAIL(at, off, method, b0, b1, b2, b3, b4, b5, b6, b7, ...) static void __thiscall REWRITE_CAT(sft_, at)(uint8_t *s, uint32_t a) { g_setfield_tails++; *(uint32_t *)(s + off) = a; ((void(__thiscall *)(void *))method)(s); } static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::SetFieldTail", at, REWRITE_CAT(original_, at), 8, (void *)&REWRITE_CAT(sft_, at), &g_setfield_tails);
+// Call this->[O0]'s vtable slot 2 with (obj, arg, this->[O1]), then return the argument. O0,O1 vary per copy.
+static volatile long g_vfwd2_rets;
+template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t *self, uint32_t a0) {
+    g_vfwd2_rets++;
+    uint8_t *obj = *(uint8_t **)(self + O0);
+    uint32_t f1 = *(uint32_t *)(self + O1);
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))(*(void ***)obj)[2])(obj, a0, f1);
+    return a0;
+}
+#define VFWD2_RET(at, o0, o1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::VFwd2Ret", at, REWRITE_CAT(original_, at), 8, (void *)&vfwd2_ret<o0, o1>, &g_vfwd2_rets);
 #define QUERY(at, id, ...)                                                                                       \
     static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                        \
     static rewrite::Entry REWRITE_CAT(entry_, at)("QueryInterface", at, REWRITE_CAT(original_, at), 8,         \
@@ -1691,6 +1701,8 @@ static volatile long g_setfield_tails;
 #define FWD2_CLEAR(...)
 #undef SETFIELD_TAIL
 #define SETFIELD_TAIL(...)
+#undef VFWD2_RET
+#define VFWD2_RET(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(...)
 #undef PAIR_RELEASE
@@ -1954,6 +1966,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FWD2_CLEAR(...)
 #undef SETFIELD_TAIL
 #define SETFIELD_TAIL(...)
+#undef VFWD2_RET
+#define VFWD2_RET(...)
 #undef TRIVIAL_SETCAP
 #define TRIVIAL_SETCAP(at, size, ctor, ...) {at, size, ctor},
 #undef PAIR_RELEASE
@@ -2081,6 +2095,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FWD2_CLEAR(...)
 #undef SETFIELD_TAIL
 #define SETFIELD_TAIL(...)
+#undef VFWD2_RET
+#define VFWD2_RET(...)
 #undef SETFIELDS
 #define SETFIELDS(...)
 #undef CALL_THEN_TAIL
@@ -2125,6 +2141,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define FWD2_CLEAR(at, method, ...) {at, method},
 #undef SETFIELD_TAIL
 #define SETFIELD_TAIL(at, off, method, ...) {at, off, method},
+#undef VFWD2_RET
+#define VFWD2_RET(at, o0, o1, ...) {at, o0, o1},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
 };
