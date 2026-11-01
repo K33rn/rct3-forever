@@ -1534,6 +1534,28 @@ template <uint32_t M1> static void __fastcall list_drain(uint8_t *self) {
     }
 }
 #define LIST_DRAIN(at, m1, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::ListDrain", at, REWRITE_CAT(original_, at), 8, (void *)&list_drain<m1>, &g_list_drains);
+// Measure size: total starts at 8; for each row, for each item in this->[0xc], add item->vtbl[2](rowdata). STRIDE = row bytes.
+static volatile long g_size_sums;
+template <uint32_t STRIDE> static uint32_t __thiscall size_sum(uint8_t *self, uint32_t arg) {
+    g_size_sums++;
+    uint8_t *record = (uint8_t *)(uintptr_t)(*(uint32_t *)(self + 0x28) + arg);
+    int32_t outerCount = *(int32_t *)(record + 4);
+    uint32_t total = 8;
+    if (outerCount <= 0)
+        return total;
+    uint32_t rowOffset = 0;
+    for (int32_t o = 0; o < outerCount; o++) {
+        uint8_t *rowdata = *(uint8_t **)record + rowOffset;
+        int32_t inner = *(int32_t *)(self + 0x18);
+        for (int32_t i = 0; i < inner; i++) {
+            void *item = ((void **)(uintptr_t)*(uint32_t *)(self + 0xc))[i];
+            total += (uint32_t)((int32_t(__thiscall *)(void *, void *))(*(void ***)item)[2])(item, rowdata);
+        }
+        rowOffset += STRIDE;
+    }
+    return total;
+}
+#define SIZE_SUM(at, stride, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::SizeSum", at, REWRITE_CAT(original_, at), 8, (void *)&size_sum<stride>, &g_size_sums);
 // Grid level-remove (mirror of GridInsert): shrink the level array, moving records to a smaller block. Same helpers.
 static volatile long g_grid_removes;
 template <uint32_t H1, uint32_t H2, uint32_t H3, uint32_t STRIDE> static void __thiscall grid_remove(uint8_t *self, uint32_t flag_arg) {
@@ -1950,6 +1972,8 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef SIZE_SUM
+#define SIZE_SUM(...)
 #undef GRID_REMOVE
 #define GRID_REMOVE(...)
 #undef GRID_INSERT
@@ -2243,6 +2267,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef SIZE_SUM
+#define SIZE_SUM(...)
 #undef GRID_REMOVE
 #define GRID_REMOVE(...)
 #undef GRID_INSERT
@@ -2400,6 +2426,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(...)
 #undef LIST_DRAIN
 #define LIST_DRAIN(...)
+#undef SIZE_SUM
+#define SIZE_SUM(...)
 #undef GRID_REMOVE
 #define GRID_REMOVE(...)
 #undef GRID_INSERT
@@ -2474,6 +2502,8 @@ const uint32_t *load_constants(uintptr_t at) {
 #define QUAD_COLLECT(at, coff, ...) {at, coff},
 #undef LIST_DRAIN
 #define LIST_DRAIN(at, m1, ...) {at, m1},
+#undef SIZE_SUM
+#define SIZE_SUM(at, stride, ...) {at, stride},
 #undef GRID_REMOVE
 #define GRID_REMOVE(at, h1, h2, h3, stride, ...) {at, h1, h2, h3, stride},
 #undef GRID_INSERT

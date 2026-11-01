@@ -3435,7 +3435,7 @@ address,size,name,callers,status
 0x533210,61,Reference::Reference,2,rewritten
 0x533250,280,ListField::Save,1,rewritten
 0x533460,296,,1,documented
-0x533590,127,,1,documented
+0x533590,127,SIZE_SUM,1,rewritten
 0x533680,212,ReferenceField::Load,1,rewritten
 0x533760,212,ReferenceField::Load,1,rewritten
 0x5339d0,212,ReferenceField::Load,1,rewritten
@@ -3798,7 +3798,7 @@ address,size,name,callers,status
 0x55bc50,29,,1,documented
 0x55bc70,94,,1,documented
 0x55bcd0,296,,1,documented
-0x55be00,127,,1,documented
+0x55be00,127,SIZE_SUM,1,rewritten
 0x55bef0,233,StructArrayLoad,1,rewritten
 0x55bfe0,102,Factory::Create,1,rewritten
 0x55c050,30,DeletingDestructor,2,rewritten
@@ -14548,7 +14548,7 @@ address,size,name,callers,status
 0x9c8c80,298,,2,documented
 0x9c8e10,162,,1,documented
 0x9c8ec0,296,,1,documented
-0x9c8ff0,127,,1,documented
+0x9c8ff0,127,SIZE_SUM,1,rewritten
 0x9c90e0,233,StructArrayLoad,0,rewritten
 0x9c91d0,77,,0,documented
 0x9c9220,3401,,4,documented
@@ -19118,7 +19118,7 @@ address,size,name,callers,status
 0xb9fd20,293,StructArrayField<24>::Save,1,rewritten
 0xb9fe50,124,StructArrayField<24>::Size,1,rewritten
 0xb9ff30,296,,1,documented
-0xba0060,127,,1,documented
+0xba0060,127,SIZE_SUM,1,rewritten
 0xba0150,212,ReferenceField::Load,1,rewritten
 0xba0230,212,ReferenceField::Load,1,rewritten
 0xba0310,48,ObjectArray::Free,3,rewritten

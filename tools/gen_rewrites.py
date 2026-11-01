@@ -1571,6 +1571,27 @@ def main():
         n_gr += 1
     counts['GRID_REMOVE'] = n_gr
 
+    # Object::SizeSum: nested-loop size accumulator. shape 0x533590 (127 B); STRIDE = `add esi, imm` at +0x62.
+    ss_ref = mask_n(0x533590, 127)
+    n_ss = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 127 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 127) != ss_ref:
+                continue
+        except Exception:
+            continue
+        strides = [i.operands[1].imm & 0xffffffff for i in md.disasm(mem[va - BASE:va - BASE + nn], va)
+                   if i.mnemonic == 'add' and (i.address - va) == 0x62 and i.operands[1].type == X.X86_OP_IMM]
+        if not strides:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'SIZE_SUM({va:#x}, {strides[0]:#x}, {first})')
+        n_ss += 1
+    counts['SIZE_SUM'] = n_ss
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
