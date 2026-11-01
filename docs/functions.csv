@@ -120,7 +120,7 @@ address,size,name,callers,status
 0x40aec0,4,,2,documented
 0x40aed0,4,,2,documented
 0x40aee0,32,CRect,10,library
-0x40b190,31,,6,documented
+0x40b190,31,Object::Fwd2Clear,6,rewritten
 0x40b290,25,,0,documented
 0x40b390,30,DeletingDestructor,0,rewritten
 0x40b3b0,110,,1,documented
@@ -707,7 +707,7 @@ address,size,name,callers,status
 0x435a00,7,SetTable,7,rewritten
 0x435a40,115,,39,documented
 0x435ad0,7,SetTable,4,rewritten
-0x435bf0,31,,5,documented
+0x435bf0,31,Object::Fwd2Clear,5,rewritten
 0x435c10,7,SetTable,37,rewritten
 0x435dc0,96,,1,documented
 0x435ea0,283,,0,documented
@@ -3075,7 +3075,7 @@ address,size,name,callers,status
 0x509be0,105,Factory::Create,1,rewritten
 0x509c50,1963,,5,documented
 0x50a450,40,Text::Widen,0,rewritten
-0x50a500,31,,1,documented
+0x50a500,31,Object::Fwd2Clear,1,rewritten
 0x50a550,103,,1,documented
 0x50a6a0,45,,0,documented
 0x50a6d0,45,,0,documented
@@ -3580,7 +3580,7 @@ address,size,name,callers,status
 0x548890,48,QueryInterface,0,rewritten
 0x548930,48,QueryInterface,0,rewritten
 0x5489c0,48,QueryInterface,0,rewritten
-0x548a70,31,,1,documented
+0x548a70,31,Object::Fwd2Clear,1,rewritten
 0x548a90,79,,0,documented
 0x548b40,85,,1,documented
 0x548bf0,74,,1,documented

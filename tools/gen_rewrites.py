@@ -1205,6 +1205,27 @@ def main():
         n_stv += 1
     counts['SET_TABLE_VCALL'] = n_stv
 
+    # Object::Fwd2Clear: forward 2 args to a method, then clear this->[0x30]. shape of 0x40b190 (31 B); method varies.
+    f2c_ref = mask_n(0x40b190, 31)
+    n_f2c = 0
+    for r in funcs:
+        va, nn = int(r['address'], 16), int(r['size'])
+        if nn != 31 or va in handwritten or va in emitted:
+            continue
+        try:
+            if mask_n(va, 31) != f2c_ref:
+                continue
+        except Exception:
+            continue
+        cs = [i.operands[0].imm & 0xffffffff for i in md.disasm(mem[va - BASE:va - BASE + nn], va)
+              if i.mnemonic == 'call' and i.operands[0].type == X.X86_OP_IMM]
+        if len(cs) != 1:
+            continue
+        first = ', '.join(f'0x{x:02x}' for x in mem[va - BASE:va - BASE + 8])
+        out.append(f'FWD2_CLEAR({va:#x}, {cs[0]:#x}, {first})')
+        n_f2c += 1
+    counts['FWD2_CLEAR'] = n_f2c
+
     print(', '.join(f'{n} {m}' for m, n in counts.items()))
     open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'generated.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
     print(n_del, 'deleting destructors,', n_q, 'interface queries,', n_m, 'module globals,', n_c, 'cached interfaces,', n_l, 'struct array loads,', n_g, 'global clean-ups,', n_rn + n_rt,
