@@ -450,3 +450,155 @@ REWRITE("Shared::Delete", 0xc0f290, (shared_delete_original<0xc0f290, 0xc0f2c0>)
 REWRITE("Shared::Delete", 0xc0f480, (shared_delete_original<0xc0f480, 0xc0f4b0>), (&shared_delete<0xc0f4b0>), &g_shared_deletes);
 REWRITE("Shared::Delete", 0xc0f680, (shared_delete_original<0xc0f680, 0xc0f6b0>), (&shared_delete<0xc0f6b0>), &g_shared_deletes);
 REWRITE("Shared::Delete", 0xc0f820, (shared_delete_original<0xc0f820, 0xc0d460>), (&shared_delete<0xc0d460>), &g_shared_deletes);
+
+// ---- Items::ByIndex: a per-item value from the 0xe0-byte items at +0x40 of the interface kept at +0x218 (flag +0x21c,
+// reference +0x208, id global 0x12f5338); 0 past the end. The class's count is its virtual slot 0x4e. Some copies also
+// turn down a negative index -----------------------------------------------------------------------------------------
+static volatile long g_by_index;
+template <bool CHECK_NEGATIVE, uint32_t GET> static uint32_t __thiscall item_by_index(uint8_t *self, int32_t index) {
+    g_by_index++;
+    if (CHECK_NEGATIVE && index < 0) return 0;
+    if (index >= ((int32_t(__fastcall *)(void *))(*(void ***)self)[0x4e])(self)) return 0;
+    if (!self[0x21c]) {
+        *(void **)(self + 0x218) = find_interface(*(uint8_t **)(self + 0x208), (const int32_t *)0x12f5338);
+        self[0x21c] = 1;
+    }
+    uint8_t *items = *(uint8_t **)(*(uint8_t **)(self + 0x218) + 0x40);
+    return ((uint32_t(__fastcall *)(void *))GET)(items + index * 0xe0);
+}
+static const uint8_t by_index_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x85, 0xdb, 0x57};
+static const uint8_t by_index_unchecked_original[] = {0x53, 0x57, 0x8b, 0xf9, 0x8b, 0x07, 0xff, 0x90};
+REWRITE("Items::ByIndex", 0x531a80, by_index_original, (&item_by_index<true, 0x5591e0>), &g_by_index);
+REWRITE("Items::ByIndex", 0x531b10, by_index_original, (&item_by_index<true, 0x559400>), &g_by_index);
+REWRITE("Items::ByIndex", 0x531ba0, by_index_original, (&item_by_index<true, 0x559830>), &g_by_index);
+REWRITE("Items::ByIndex", 0x532930, by_index_original, (&item_by_index<true, 0x557b30>), &g_by_index);
+REWRITE("Items::ByIndexUnchecked", 0x531580, by_index_unchecked_original, (&item_by_index<false, 0x558f20>), &g_by_index);
+REWRITE("Items::ByIndexUnchecked", 0x531610, by_index_unchecked_original, (&item_by_index<false, 0x558fe0>), &g_by_index);
+REWRITE("Items::ByIndexUnchecked", 0x5316a0, by_index_unchecked_original, (&item_by_index<false, 0x558f80>), &g_by_index);
+REWRITE("Items::ByIndexUnchecked", 0x531730, by_index_unchecked_original, (&item_by_index<false, 0x559040>), &g_by_index);
+
+// ---- Names::Find: binary search of a sorted table of names, by bytes as signed chars. True with the position; false
+// with where the name would go ------------------------------------------------------------------------------------------
+static int compare_names(const char *a, const char *b) {
+    for (; *a && *b; a++, b++)
+        if (*a != *b) return *a < *b ? -1 : 1;
+    return *a ? 1 : *b ? -1 : 0;
+}
+static volatile long g_name_finds;
+static uint8_t __fastcall names_find(const char **name, const char **table, int32_t count, int32_t *at, uint32_t) {
+    g_name_finds++;
+    if (count < 1) {
+        *at = 0;
+        return 0;
+    }
+    int32_t lo = 0, hi = count - 1;
+    for (;;) {
+        int32_t mid = (hi + lo) >> 1;
+        int order = compare_names(*name, table[mid]);
+        if (!order) {
+            *at = mid;
+            return 1;
+        }
+        if (order < 0) {
+            if (mid <= lo) {
+                *at = lo;
+                return 0;
+            }
+            hi = mid - 1;
+        } else {
+            if (mid >= hi) {
+                *at = hi + 1;
+                return 0;
+            }
+            lo = mid + 1;
+        }
+    }
+}
+static const uint32_t names_find_copies[] = {0x7fb900, 0x805c10, 0x807970};
+static const uint8_t names_find_original[] = {0x51, 0x8b, 0x44, 0x24, 0x08, 0x83, 0xf8, 0x01};
+REWRITE_COPIES("Names::Find", names_find_copies, names_find_original, names_find, &g_name_finds);
+
+// ---- Chained::~Chained: leaves the singly linked chain (next at +0x14) that starts at +0x3c of its owner (+0x10) -----
+static volatile long g_chained;
+static void __fastcall chained_destroy(uint32_t *self) {
+    g_chained++;
+    self[0] = 0xfbf370;
+    uint32_t *link = (uint32_t *)(uintptr_t)(self[4] + 0x3c);
+    while (*link != (uint32_t)(uintptr_t)self) link = (uint32_t *)(uintptr_t)(*link + 0x14);
+    *link = self[5];
+    self[0] = 0xfa589c;
+}
+static const uint32_t chained_copies[] = {0xca3810, 0xca38a0, 0xca3a20, 0xca3ae0, 0xca3be0, 0xca3da0, 0xca3ea0,
+                                          0xca41e0, 0xca4230, 0xca4280, 0xca42d0, 0xca4320, 0xca4370};
+static const uint8_t chained_original[] = {0x8b, 0x41, 0x10, 0x83, 0xc0, 0x3c, 0xc7, 0x01};
+REWRITE_COPIES("Chained::Destroy", chained_copies, chained_original, chained_destroy, &g_chained);
+
+// ---- Bits::Reset(n): {used, capacity, ?, data}: emptied, with fresh room for n words -----------------------------------
+static volatile long g_word_resets;
+static void *__thiscall words_reset(uint32_t *self, uint32_t n) {
+    g_word_resets++;
+    memory_free_aligned((void *)(uintptr_t)self[3]);
+    self[0] = 0;
+    self[1] = n;
+    void *data = n ? memory_alloc_aligned(n * 4) : nullptr;
+    self[3] = (uint32_t)(uintptr_t)data;
+    return data;
+}
+static const uint32_t words_reset_copies[] = {0xc479c0, 0xc47a50, 0xc47ae0, 0xc47b70, 0xc47c00, 0xc47c90, 0xcb22a0, 0xcb2330};
+static const uint8_t words_reset_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x0c, 0x50, 0xe8};
+REWRITE_COPIES("Words::Reset", words_reset_copies, words_reset_original, words_reset, &g_word_resets);
+
+// ---- Words::Resize(n): {data, capacity, count}: keeps the first min(n, capacity) words; both sizes become n ---------
+static volatile long g_word_resizes;
+static void __thiscall words_resize(uint32_t *self, int32_t n) {
+    g_word_resizes++;
+    int32_t capacity = (int32_t)self[1];
+    if (n == capacity) return;
+    uint32_t *fresh = nullptr;
+    if (n) {
+        fresh = (uint32_t *)memory_alloc_aligned((uint32_t)n * 4);
+        capacity = (int32_t)self[1];
+        int32_t keep = capacity < n ? capacity : n;
+        for (int32_t i = 0; i < keep; i++) fresh[i] = ((uint32_t *)(uintptr_t)self[0])[i];
+    }
+    memory_free_aligned((void *)(uintptr_t)self[0]);
+    self[0] = (uint32_t)(uintptr_t)fresh;
+    self[2] = (uint32_t)n;
+    self[1] = (uint32_t)n;
+}
+static const uint32_t words_resize_copies[] = {0x665780, 0x665850, 0x665920, 0xafeeb0};
+static const uint8_t words_resize_original[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0x5c, 0x24, 0x10};
+REWRITE_COPIES("Words::Resize", words_resize_copies, words_resize_original, words_resize, &g_word_resizes);
+
+// ---- Slots::Free(i): 32-byte slots at +0x18 (in use flag at +0x1c); +0xc is the lowest free, +0x10 the end, which is
+// pulled back over any free slots ---------------------------------------------------------------------------------------
+static volatile long g_slot_frees;
+static void __thiscall slots_free(uint8_t *self, int32_t index) {
+    g_slot_frees++;
+    uint8_t *slots = *(uint8_t **)(self + 0x18);
+    *(uint32_t *)(slots + (uint32_t)index * 32 + 0x1c) = 0;
+    int32_t *lowest = (int32_t *)(self + 0xc), *end = (int32_t *)(self + 0x10);
+    if (index < *lowest) *lowest = index;
+    if (index + 1 != *end) return;
+    --*end;
+    while (*end > 0 && !*(uint32_t *)(slots + (uint32_t)*end * 32 - 4)) --*end;
+}
+static const uint32_t slots_free_copies[] = {0x42f6f0, 0x4883c0, 0x7b2ac0, 0xa0bec0, 0xb5b650, 0xb6b900};
+static const uint8_t slots_free_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0xd0, 0xc1, 0xe2};
+REWRITE_COPIES("Slots::Free", slots_free_copies, slots_free_original, slots_free, &g_slot_frees);
+
+// ---- Prime::After(n): the smallest prime above n (2 at the least), for hash table sizes ---------------------------------
+static volatile long g_primes;
+static uint32_t __fastcall prime_after(uint32_t n) {
+    g_primes++;
+    uint32_t candidate = n + 1 > 2 ? n + 1 : 2;
+    for (uint32_t d = 2; d < candidate; d++)
+        if (candidate % d == 0) {
+            candidate++;
+            d = 1;
+        }
+    return candidate;
+}
+static const uint32_t prime_copies[] = {0xbd6620, 0xbdd460, 0xbdd4b0, 0xc478d0, 0xc47920, 0xcbc4f0};
+static const uint8_t prime_original[] = {0x83, 0xec, 0x0c, 0x41, 0x89, 0x0c, 0x24, 0xb9};
+REWRITE_COPIES("Prime::After", prime_copies, prime_original, prime_after, &g_primes);

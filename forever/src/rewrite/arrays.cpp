@@ -160,3 +160,8 @@ static const uint32_t set_capacity_32[] = {0x446710, 0x498210, 0x7250a0, 0x860db
 static const uint8_t set_capacity_32_original[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0xd9, 0x8b, 0x43};
 REWRITE_COPIES("Array<32>::SetCapacity", set_capacity_32, set_capacity_32_original, set_capacity<32>,
                &Calls<32>::set_capacity);
+
+static const uint32_t set_capacity_1[] = {0x5b9b20, 0x671ab0, 0xa3d440};
+static const uint8_t set_capacity_1_original[] = {0x83, 0xec, 0x08, 0x55, 0x8b, 0x6c, 0x24, 0x10};
+REWRITE_COPIES("Array<1>::SetCapacity", set_capacity_1, set_capacity_1_original, set_capacity<1>,
+               &Calls<1>::set_capacity);

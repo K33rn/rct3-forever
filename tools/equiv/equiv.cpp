@@ -333,6 +333,8 @@ static uint8_t __fastcall stub_mapped_lookup(uint8_t kind, uint8_t side, int32_t
     return kind != 3;
 }
 static int __cdecl stub_same_pointer(const char *a, const char *b) { record(0x6b, (void *)a); record(0x6b, (void *)b); return a != b; }
+static int32_t __fastcall stub_item_count(void *self) { record(0x6c, self); return 3; }
+static uint32_t __fastcall stub_item_value(void *item) { record(0x6d, item); return (uint32_t)(uintptr_t)item ^ 0x5a5a; }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -3274,6 +3276,154 @@ static std::vector<Test> tests() {
     ref_push.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x805700, (void *)stub_handle_of}, {0x5501e0, (void *)stub_reserve}}); };
     ref_push.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(ref_push);
+    // Items::ByIndex: self at 0x800 with a class count of 3 (stub); an index below, in or past the range
+    auto by_index_setup = [=](Rng &r) {
+        fresh(r);
+        iface_handle(r);
+        static void *vt[0x4f];
+        vt[0x4e] = (void *)stub_item_count;
+        uint8_t *self = arena<uint8_t>(0x800);
+        *(void **)self = vt;
+        *(void **)(self + 0x208) = arena<void>(0x340);
+        // the interface always exists in these (the game reads through it without a check)
+        *(void **)arena<uint8_t>(0x34c) = arena<void>(0x360);
+        *arena<void *>(0x1f0) = arena<void>(0x200);
+        *g_iface_id = 1;
+        bool kept = r.range(0, 1);
+        self[0x21c] = kept;
+        *(void **)(self + 0x218) = kept ? arena<void>(0x360) : nullptr;
+        *(void **)arena<uint8_t>(0x360 + 0x40) = arena<void>(0x1000);
+        arena<int32_t>(0x10)[0] = r.range(-2, 4);
+    };
+    auto by_index_call = [](void *fn) {
+        return Result{((uint32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x800), arena<int32_t>(0x10)[0])};
+    };
+    Test by_index{0x531a80, [=](Rng &r) { by_index_setup(r); }, by_index_call};
+    by_index.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f5338;
+        stubs_for_now({{(uintptr_t)(e->at + 0x7a + 5 + *(int32_t *)(e->at + 0x7b)), (void *)stub_item_value}});
+    };
+    by_index.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(by_index);
+    // the unchecked copies pass a negative index on (the items' getter is a stand-in, so nothing is read there)
+    Test by_index_unchecked{0x531580, [=](Rng &r) { by_index_setup(r); }, by_index_call};
+    by_index_unchecked.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f5338;
+        stubs_for_now({{(uintptr_t)(e->at + 0x7d + 5 + *(int32_t *)(e->at + 0x7e)), (void *)stub_item_value}});
+    };
+    by_index_unchecked.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(by_index_unchecked);
+    // Names::Find: a sorted table of up to 8 names (two letters, some bytes above 0x7f, some prefixes of others); the
+    // name is one of them or near one
+    Test names_find{0x7fb900,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static const char *const pool[] = {"\xc1", "\xc1z", "\xf0q", "a", "ab", "abc", "b", "ba", "c", "cc", "z"};
+                        int n = r.range(0, 8), at = r.range(0, 10 - n);
+                        for (int i = 0; i < 8; i++) {
+                            char *s = arena<char>(0x400 + i * 8);
+                            memset(s, 0, 8);
+                            strcpy(s, pool[at + (i < n ? i : 0)]);
+                            arena<void *>(0x300)[i] = s;
+                        }
+                        char *key = arena<char>(0x480);
+                        memset(key, 0, 8);
+                        strcpy(key, pool[r.range(0, 10)]);
+                        if (r.range(0, 3) == 0) { key[strlen(key)] = 'm'; }
+                        arena<void *>(0x4a0)[0] = key;
+                        arena<int32_t>(0x10)[0] = n;
+                        arena<int32_t>(0x20)[0] = -1;
+                    },
+                    [](void *fn) {
+                        return Result{((uint8_t(__fastcall *)(void *, void *, int32_t, void *, uint32_t))fn)(
+                            arena<void>(0x4a0), arena<void>(0x300), arena<int32_t>(0x10)[0], arena<void>(0x20), 0)};
+                    }};
+    quick(names_find);
+    // Chained::Destroy: self is the 1st-4th of a chain from +0x3c of the owner at 0x300
+    Test chained{0xca3810,
+                 [=](Rng &r) {
+                     fresh(r);
+                     int n = r.range(1, 4), who = r.range(0, n - 1);
+                     uint32_t *owner = arena<uint32_t>(0x300);
+                     uint32_t *link = owner + 0x3c / 4;
+                     for (int i = 0; i < n; i++) {
+                         uint32_t *x = arena<uint32_t>(0x400 + i * 0x20);
+                         *link = (uint32_t)(uintptr_t)x;
+                         link = x + 5;
+                         x[4] = (uint32_t)(uintptr_t)owner;
+                     }
+                     *link = 0;
+                     arena<int32_t>(0x10)[0] = who;
+                 },
+                 [](void *fn) {
+                     ((void(__fastcall *)(void *))fn)(arena<void>(0x400 + arena<int32_t>(0x10)[0] * 0x20));
+                     return Result{};
+                 }};
+    quick(chained);
+    // Words::Reset: to 0 or some words
+    Test words_reset{0xc479c0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         *arena<uint32_t>(ALLOC_NEXT) = 0;
+                         arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)r.range(1, 9) : 0;
+                     },
+                     [](void *fn) {
+                         return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])};
+                     }};
+    words_reset.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}}); };
+    words_reset.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(words_reset);
+    // Words::Resize: from up to 8 words to 0-10 (sometimes the same)
+    Test words_resize{0x665780,
+                      [=](Rng &r) {
+                          fresh(r);
+                          *arena<uint32_t>(ALLOC_NEXT) = 0;
+                          int cap = r.range(0, 8);
+                          arena<void *>(0x100)[0] = arena<void>(0x400);
+                          arena<int32_t>(0x100)[1] = cap;
+                          for (int i = 0; i < 8; i++) arena<uint32_t>(0x400)[i] = r.next();
+                          arena<int32_t>(0x10)[0] = r.range(0, 3) ? r.range(0, 10) : cap;
+                      },
+                      [](void *fn) {
+                          ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0]);
+                          return Result{};
+                      }};
+    words_resize.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}}); };
+    words_resize.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(words_resize);
+    // Slots::Free: up to 8 slots at 0x400, some in use; the one freed is the last or another
+    Test slots_free{0x42f6f0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        uint8_t *self = arena<uint8_t>(0x100);
+                        int end = r.range(1, 8);
+                        *(void **)(self + 0x18) = arena<void>(0x400);
+                        *(int32_t *)(self + 0x10) = end;
+                        *(int32_t *)(self + 0xc) = r.range(0, end);
+                        for (int i = 0; i < 8; i++) *(uint32_t *)arena<uint8_t>(0x400 + i * 32 + 0x1c) = (uint32_t)r.range(0, 1);
+                        arena<int32_t>(0x10)[0] = r.range(0, 1) ? end - 1 : r.range(0, end - 1);
+                    },
+                    [](void *fn) {
+                        ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0]);
+                        return Result{};
+                    }};
+    quick(slots_free);
+    // Prime::After: small numbers, and the wrap of the largest
+    Test prime{0xbd6620,
+               [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = r.range(0, 9) ? (uint32_t)r.range(0, 3000) : 0xffffffffu; },
+               [](void *fn) { return Result{((uint32_t(__fastcall *)(uint32_t))fn)(arena<uint32_t>(0x10)[0])}; }};
+    quick(prime);
+    // Array<1>::SetCapacity: as the other sizes
+    Test setcap1{0x5b9b20, array, [](void *fn) {
+                     return Result{((uint32_t(__fastcall *)(void *, void *, int32_t))fn)(arena<void>(0x100), nullptr, *arena<int32_t>(0))};
+                 }};
+    quick(setcap1);
+    // ObjectRef::AssignWide: as ObjectRef::Assign, with a whole word after the extra
+    Test assign_wide{0x749cf0, handles, [](void *fn) {
+                         return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *))fn)(
+                             arena<void>(0x100), nullptr, arena<void>(0x180))};
+                     }};
+    quick(assign_wide);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

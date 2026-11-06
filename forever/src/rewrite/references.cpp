@@ -127,6 +127,21 @@ static ObjectRef *__fastcall assign_extra(ObjectRef *r, void *, const ObjectRef 
 static const uint32_t assign_extra_copies[] = {0x6e75c0, 0x7a3030, 0x8760c0, 0x876190, 0xa8e8f0, 0xab4250};
 REWRITE_COPIES("ObjectRef::AssignExtra", assign_extra_copies, assign_original, assign_extra, &g_assign_extras);
 
+// The same with a whole word after the extra.
+static volatile long g_assign_wides;
+static ObjectRef *__fastcall assign_wide(ObjectRef *r, void *, const ObjectRef *other) {
+    g_assign_wides++;
+    leave(r);
+    other->handle->references++;
+    join(r, other->handle);
+    changed(r);
+    r->extra = other->extra;
+    *(uint32_t *)&r->flag = *(const uint32_t *)&other->flag;
+    return r;
+}
+static const uint32_t assign_wide_copies[] = {0x749cf0, 0x77a530, 0xa97ef0};
+REWRITE_COPIES("ObjectRef::AssignWide", assign_wide_copies, assign_original, assign_wide, &g_assign_wides);
+
 // RefArray::Remove(object): an array {data, capacity, count} of 20-byte references. Drops the first one to that object:
 // each later reference is assigned to the one before it, and the count goes down. The last is left as it was.
 struct RefArray {
