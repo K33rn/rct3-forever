@@ -113,6 +113,50 @@ static const uint32_t assign_copies[] = {
 static const uint8_t assign_original[] = {0x53, 0x56, 0x57, 0x8b, 0xf9, 0x8d, 0x77, 0x08, 0x85, 0xf6, 0x74, 0x2f};
 REWRITE_COPIES("ObjectRef::Assign", assign_copies, assign_original, assign, &g_assigns);
 
+// The same without the flag, for references with no flag.
+static volatile long g_assign_extras;
+static ObjectRef *__fastcall assign_extra(ObjectRef *r, void *, const ObjectRef *other) {
+    g_assign_extras++;
+    leave(r);
+    other->handle->references++;
+    join(r, other->handle);
+    changed(r);
+    r->extra = other->extra;
+    return r;
+}
+static const uint32_t assign_extra_copies[] = {0x6e75c0, 0x7a3030, 0x8760c0, 0x876190, 0xa8e8f0, 0xab4250};
+REWRITE_COPIES("ObjectRef::AssignExtra", assign_extra_copies, assign_original, assign_extra, &g_assign_extras);
+
+// RefArray::Remove(object): an array {data, ?, count} of 20-byte references. Drops the first one to that object:
+// each later reference is assigned to the one before it, and the count goes down. The last is left as it was.
+struct RefArray {
+    uint8_t *data;
+    int32_t unknown;
+    int32_t count;
+};
+static volatile long g_ref_removes;
+static void __fastcall ref_array_remove(RefArray *a, void *, void *object) {
+    g_ref_removes++;
+    int32_t count = a->count, i = 0;
+    for (;;) {
+        if (i >= count) return;
+        ObjectRef *r = (ObjectRef *)(a->data + i * 20);
+        i++;
+        if (r->handle->object == object) break;
+    }
+    for (; i < a->count; i++) {
+        ObjectRef *from = (ObjectRef *)(a->data + i * 20), *to = (ObjectRef *)((uint8_t *)from - 20);
+        leave(to);
+        from->handle->references++;
+        join(to, from->handle);
+        changed(to);
+    }
+    a->count--;
+}
+static const uint32_t ref_remove_copies[] = {0x731880, 0x739ad0, 0xac3510, 0xba5380};
+static const uint8_t ref_remove_original[] = {0x51, 0x53, 0x8b, 0xd9, 0x8b, 0x4b, 0x08, 0x55};
+REWRITE_COPIES("RefArray::Remove", ref_remove_copies, ref_remove_original, ref_array_remove, &g_ref_removes);
+
 // ---- DeleteTarget: delete the object referred to (if any) and refer to nothing -------------------------------
 // Returns what the class's own reaction returns.
 

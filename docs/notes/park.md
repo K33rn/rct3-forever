@@ -1365,7 +1365,7 @@
 | `0x826c60` | Scenery::Check826C60 | In outline: a check with its part |
 | `0x74e3a0` | Guest::Load74E3A0 | In outline: a guest part (Guest::Part744550), a loader find (Loader::Find744A90) and more |
 | `0x6bc580` | Attractions::Pass6BC580 | In outline: goes over the attractions from the first (AttractionInstance::FirstOf(0)) |
-| `0x49a4b0` | Effects::Add49A4B0 | In outline: for 0x10, makes a 0x1C-byte record for an id (IdMap::Remove7) when there is none |
+| `0x49a4b0` | Effects::Add49A4B0 | In outline: for 0x10, makes a 0x1C-byte record for an id (IdMap::FindOrAdd) when there is none |
 | `0x444780` | Effects::Time444780 | In outline: a value from the shared object's time (`0x1106C54` +0x54), rounded |
 | `0x8f34a0` | Terrain::Centre8F34A0 | In outline: a terrain patch's centre from its size and place |
 | `0x862df0` | Scenery::Part862DF0 | In outline: a value for part n (0x48 bytes) under a count (+0x108) |
@@ -1494,7 +1494,7 @@
 | `0x9f9da0` | Fireworks::Find9F9DA0 | In outline: a find over entries (+0x1C) |
 | `0x81b260` | SceneryBehaviour::Text81B260 | In outline: with no part (+0xC8), a text check (`0x403C20`) |
 | `0x960480` | Water::Next960480 | In outline: a step for the next entry of a list (+0x60) |
-| `0x8e90e0` | Water::Remove8E90E0 | In outline: removes by id (IdMap::Remove6) and acts |
+| `0x8e90e0` | Water::Remove8E90E0 | In outline: removes by id (IdMap::FindOrAdd) and acts |
 | `0x885c80` | Scenery::Value885C80 | In outline: a value from its part (+0xFC +0xDC) and a step (`0x884B50`) |
 | `0xa1d240` | Window::ValueA1D240 | In outline: a value from a part (+0xB4) |
 | `0xb84800` | Animal::AddB84800 | In outline: adds to an entry's value (`0xB829C0`) |
@@ -1866,7 +1866,7 @@
 | `0x8152a0` | SceneryBehaviour::Check8152A0 | In outline: a check when not flagged (+0x18) |
 | `0x761a80` | Guest::Check761A80 | In outline: a check when not flagged (+0x530) |
 | `0x71ba90` | Path::Step71BA90 | In outline: a step with a value (+0xA4) and slot 0x30 |
-| `0x8ea090` | Terrain::Remove8EA090 | In outline: removes from a map (IdMap::Remove5 on +0x158) |
+| `0x8ea090` | Terrain::Remove8EA090 | In outline: removes from a map (IdMap::FindOrAdd on +0x158) |
 | `0x77f960` | Park::Add77F960 | In outline: grows a list by 8 when full (Array::Resize5501E0) and adds |
 | `0x71b010` | Path::Terrain71B010 | In outline: a step when the terrain is not flagged |
 | `0x703320` | Grid::Terrain703320 | In outline: the same (another copy) |

@@ -312,6 +312,15 @@ static void *__fastcall stub_next(void *n) { record(0x41, n); return *(void **)n
 static void __thiscall stub_thiscall2(void *self, uint32_t a0, uint32_t a1) { record(0x20, self); record(0x20, (void *)(uintptr_t)a0); record(0x20, (void *)(uintptr_t)a1); }
 static void __thiscall stub_thiscall1(void *self, void *arg) { record(0x21, self); record(0x21, arg); }
 static void *__fastcall stub_alloc_ecx(void *ecx) { record(0x22, ecx); return (void *)0x30001234; }
+static void __thiscall stub_shared_free(void *pool, void *item) { record(0x60, pool); record(0x60, item); }
+static void *__thiscall stub_shared_convert(void *value, uint32_t kind) {
+    record(0x61, value); record(0x61, (void *)(uintptr_t)kind);
+    return (kind & 1) ? arena<void>(0x5e0) : nullptr;
+}
+static void __thiscall stub_row_field(void *self, void *row, void *stream, uint32_t context) {
+    record(0x62, self); record(0x62, row); record(0x62, stream); record(0x62, (void *)(uintptr_t)context);
+}
+static void __thiscall stub_rows_resize(void *store, int32_t count) { record(0x63, store); record(0x63, (void *)(uintptr_t)count); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -2785,6 +2794,266 @@ static std::vector<Test> tests() {
                      [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     id_map_free.data = false;
     t.push_back(id_map_free);
+    auto quick = [&](Test &x) { x.data = false; t.push_back(x); };
+    // List::Insert, before a node of a ring 0x300..0x360 (nodes {next, prev, value}); the new node comes from the
+    // arena, and `a` is sometimes that same address
+    auto list_ring = [=](Rng &r) {
+        fresh(r);
+        *arena<uint32_t>(ALLOC_NEXT) = 0;
+        for (int i = 0; i < 4; i++) {
+            void **n = arena<void *>(0x300 + i * 0x20);
+            n[0] = arena<void>(0x300 + (i + 1) % 4 * 0x20);
+            n[1] = arena<void>(0x300 + (i + 3) % 4 * 0x20);
+            n[2] = (void *)(uintptr_t)r.next();
+        }
+        arena<uint32_t>(0x10)[0] = r.next();
+        arena<uint32_t>(0x10)[1] = r.next();
+        arena<uint32_t>(0x10)[2] = r.range(0, 3);
+    };
+    Test list_insert{0x476830,
+                     [=](Rng &r) {
+                         list_ring(r);
+                         if (r.range(0, 2) == 0) arena<uint32_t>(0x10)[0] = (uint32_t)(uintptr_t)arena<void>(ALLOC_START);
+                     },
+                     [](void *fn) {
+                         uint32_t *a = arena<uint32_t>(0x10);
+                         return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, uint32_t, uint32_t, void *, uint32_t))fn)(
+                             arena<void>(0x100), arena<void>(0x40), a[0], a[1], arena<void>(0x300 + a[2] * 0x20), 0x1234)};
+                     }};
+    list_insert.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}}); };
+    list_insert.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(list_insert);
+    // List::Erase, of a node of the ring, the list's own node (self + 0xc is node 0, so self is 0x2f4) or node `b`
+    Test list_erase{0x476880,
+                    [=](Rng &r) {
+                        list_ring(r);
+                        arena<uint32_t>(0x10)[1] = (uint32_t)(uintptr_t)arena<void>(0x300 + r.range(0, 3) * 0x20);
+                    },
+                    [](void *fn) {
+                        uint32_t *a = arena<uint32_t>(0x10);
+                        return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, uint32_t, uint32_t, void *))fn)(
+                            arena<void>(0x2f4), arena<void>(0x40), a[0], a[1], arena<void>(0x300 + a[2] * 0x20))};
+                    }};
+    quick(list_erase);
+    // IntArray::Assign: from an array of up to 12 at 0x180 (data 0x400) to one at 0x100
+    Test int_assign{0x423fb0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        *arena<uint32_t>(ALLOC_NEXT) = 0;
+                        arena<void *>(0x100)[0] = arena<void>(0x500);
+                        arena<int32_t>(0x100)[1] = r.range(0, 12);
+                        arena<void *>(0x180)[0] = arena<void>(0x400);
+                        arena<int32_t>(0x180)[1] = r.range(0, 12);
+                        for (int i = 0; i < 12; i++) arena<uint32_t>(0x400)[i] = r.next();
+                    },
+                    [](void *fn) {
+                        return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x180))};
+                    }};
+    int_assign.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}}); };
+    int_assign.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(int_assign);
+    // BlockPool::Return: 3 pools of 20 bytes at 0x200, blocks listed at 0x400.., returned lists at 0x500..; 0 is none
+    Test pool_return{0x80f990,
+                     [=](Rng &r) {
+                         fresh(r);
+                         arena<void *>(0x100)[0] = arena<void>(0x200);
+                         for (int k = 0; k < 3; k++) {
+                             int32_t *p = arena<int32_t>(0x200 + 20 * k);
+                             int per = r.range(0, 3), blocks = r.range(0, 3);
+                             p[0] = per; p[2] = blocks;
+                             p[1] = (int32_t)(uintptr_t)arena<void>(0x400 + k * 0x20);
+                             p[3] = (int32_t)(uintptr_t)arena<void>(0x500 + k * 0x40);
+                             p[4] = per * blocks ? r.range(0, per * blocks - 1) : 0;
+                             for (int i = 0; i < 3; i++) arena<uint32_t>(0x400 + k * 0x20)[i] = r.next();
+                         }
+                         arena<int32_t>(0x10)[0] = r.range(0, 2);
+                         arena<uint32_t>(0x10)[1] = r.next();
+                     },
+                     [](void *fn) {
+                         ((void(__thiscall *)(void *, int32_t, uint32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<uint32_t>(0x10)[1]);
+                         return Result{};
+                     }};
+    quick(pool_return);
+    // SharedSlots::Set: 4 slots at 0x108; defaults table 0x180 (some null when the value is null); shared values at
+    // 0x5a0.. with low reference counts; the value is null, or of the default's kind or another
+    Test shared_set{0xc0d780,
+                    [=](Rng &r) {
+                        fresh(r);
+                        uint32_t *self = arena<uint32_t>(0x100);
+                        self[1] = (uint32_t)(uintptr_t)arena<void>(0x180);
+                        uint16_t *v[5];
+                        for (int i = 0; i < 5; i++) {
+                            v[i] = arena<uint16_t>(0x5a0 + i * 0x10);
+                            v[i][0] = (uint16_t)r.range(1, 2);
+                            v[i][1] = (uint16_t)r.range(1, 3);
+                        }
+                        int value = r.range(0, 2), index = r.range(0, 3);
+                        for (int i = 0; i < 4; i++) {
+                            arena<void *>(0x180)[i] = (value == 0 && r.range(0, 3) == 0) ? nullptr : (void *)v[r.range(0, 1)];
+                            self[2 + i] = r.range(0, 3) ? (uint32_t)(uintptr_t)v[r.range(2, 3)] : 0;
+                        }
+                        arena<uint32_t>(0x10)[0] = (uint32_t)index;
+                        arena<void *>(0x10)[1] = value ? (void *)v[4] : nullptr;
+                        *(uint32_t *)0x13e3318 = (uint32_t)(uintptr_t)arena<void>(0x5f0);
+                    },
+                    [](void *fn) {
+                        ((void(__thiscall *)(void *, uint32_t, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<void *>(0x10)[1]);
+                        return Result{};
+                    }};
+    shared_set.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xc09bf0, (void *)stub_plain_dtor}, {0xca1f80, (void *)stub_shared_free}, {0xc0cff0, (void *)stub_shared_convert}});
+    };
+    shared_set.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(shared_set);
+    // Rows::Load: self at 0x100 (record 0x1a0 with +0x28 = 0x300, the store `offset` past it), up to 3 field loaders;
+    // the stream at 0x700 holds {size, count} in its buffer, or runs out so the stream reads them
+    Test rows_load{0x44f150,
+                   [=](Rng &r) {
+                       fresh(r);
+                       static void *vt[2] = {nullptr, (void *)stub_row_field};
+                       uint8_t *self = arena<uint8_t>(0x100);
+                       int offset = r.range(0, 0x40);
+                       *(void **)(self + 4) = arena<void>(0x1a0);
+                       *(uint32_t *)arena<uint8_t>(0x1a0 + 0x28) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                       *(int32_t *)(self + 0x10) = r.range(0, 3);
+                       *(void **)(self + 0xc) = arena<void>(0x3c0);
+                       for (int i = 0; i < 4; i++) {
+                           arena<void *>(0x3c0)[i] = arena<void>(0x400 + i * 0x10);
+                           arena<void *>(0x400 + i * 0x10)[0] = vt;
+                       }
+                       *(void **)arena<uint8_t>(0x300 + offset) = arena<void>(0x500);
+                       uint8_t *s = arena<uint8_t>(0x700);
+                       int start = r.range(0, 8), inside = r.range(0, 3);
+                       *(int32_t *)(s + 4) = start;
+                       *(int32_t *)(s + 8) = start;
+                       *(int32_t *)(s + 0xc) = start + (inside ? 8 : r.range(0, 7));
+                       *(int32_t *)(s + 0x14) = (int32_t)r.next();
+                       *(int32_t *)(s + 0x18) = r.range(-1, 4);
+                       arena<int32_t>(0x10)[0] = offset;
+                       arena<uint32_t>(0x10)[1] = r.next();
+                   },
+                   [](void *fn) {
+                       ((void(__thiscall *)(void *, int32_t, void *, uint32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<void>(0x700), arena<uint32_t>(0x10)[1]);
+                       return Result{};
+                   }};
+    rows_load.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0x84 + 5 + *(int32_t *)(e->at + 0x85)), (void *)stub_rows_resize}});
+    };
+    rows_load.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(rows_load);
+    // cached interfaces: a handle at 0x340 whose object at 0x360 has a class (0x200) with entries for ids 1 and 2
+    // (offsets 0 and 8); the id's global decides, and sometimes there is no object or no class
+    static uint32_t *g_iface_id;
+    auto iface_handle = [=](Rng &r) {
+        static void *vt[2] = {(void *)stub_deleting, (void *)stub_class_of};
+        arena<void *>(0x360)[0] = vt;
+        arena<void *>(0x368)[0] = vt;
+        *(void **)arena<uint8_t>(0x340 + 0xc) = r.range(0, 4) ? arena<void>(0x360) : nullptr;
+        uint8_t *cls = arena<uint8_t>(0x200);
+        *arena<void *>(0x1f0) = r.range(0, 4) ? cls : nullptr;
+        *(void **)(cls + 0x14) = arena<void>(0x240);
+        *(int32_t *)(cls + 0x18) = 3;
+        arena<void *>(0x240)[0] = nullptr;
+        arena<void *>(0x240)[1] = arena<void>(0x260);
+        arena<void *>(0x240)[2] = arena<void>(0x280);
+        *(int32_t *)arena<uint8_t>(0x260 + 0x10) = 0;
+        *(int32_t *)arena<uint8_t>(0x280 + 0x10) = 8;
+        *g_iface_id = (uint32_t)r.range(0, 3);
+    };
+    // List::DrainOwners: head at 0x400, 0-3 nodes at 0x420.., then the end node (next null); records at 0x500..
+    Test list_drain{0x551390,
+                    [=](Rng &r) {
+                        fresh(r);
+                        iface_handle(r);
+                        static void *vt[1] = {(void *)stub_deleting};
+                        arena<void *>(0x3a0)[0] = vt;
+                        int n = r.range(0, 3);
+                        void **prev = arena<void *>(0x400);
+                        for (int i = 0; i < n; i++) {
+                            void **node = arena<void *>(0x420 + i * 0x20);
+                            prev[0] = node; node[1] = prev; prev = node;
+                            uint8_t *rec = arena<uint8_t>(0x500 + i * 0x40);
+                            node[2] = rec;
+                            *(void **)(rec + 4) = arena<void>(0x340);
+                            bool kept = r.range(0, 2) == 0;
+                            rec[0x18] = kept;
+                            *(void **)(rec + 0x14) = kept && r.range(0, 1) ? arena<void>(0x3a0) : nullptr;
+                        }
+                        void **end = arena<void *>(0x4e0);
+                        prev[0] = end; end[0] = nullptr; end[1] = prev;
+                    },
+                    [](void *fn) {
+                        ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x400));
+                        return Result{};
+                    }};
+    list_drain.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = *(uint32_t **)(e->at + 0x6a);
+        stubs_for_now({{(uintptr_t)(e->at + 0xa3 + 5 + *(int32_t *)(e->at + 0xa4)), (void *)stub_plain_dtor}});
+    };
+    list_drain.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(list_drain);
+    // Notify::Pass: self at 0x800, with the interface sometimes already kept and each listener sometimes there
+    Test notify{0x5c0a30,
+                [=](Rng &r) {
+                    fresh(r);
+                    iface_handle(r);
+                    static void *part_vt[5] = {nullptr, (void *)stub_thiscall2, (void *)stub_thiscall2, (void *)stub_thiscall2, (void *)stub_thiscall2};
+                    arena<void *>(0x360 + 0x40)[0] = part_vt;
+                    arena<void *>(0x368 + 0x40)[0] = part_vt;
+                    uint8_t *self = arena<uint8_t>(0x800);
+                    *(void **)(self + 0x160) = arena<void>(0x340);
+                    bool kept = r.range(0, 2) == 0;
+                    self[0x174] = kept;
+                    *(void **)(self + 0x170) = kept && r.range(0, 1) ? arena<void>(0x360) : nullptr;
+                    *(void **)(self + 0x2b4) = r.range(0, 1) ? arena<void>(0x3e0) : nullptr;
+                    *(void **)(self + 0x2b8) = r.range(0, 1) ? arena<void>(0x3f0) : nullptr;
+                    arena<uint32_t>(0x10)[0] = r.next();
+                    arena<uint32_t>(0x10)[1] = r.next();
+                },
+                [](void *fn) {
+                    ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1]);
+                    return Result{};
+                }};
+    notify.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f561c;
+        stubs_for_now({{(uintptr_t)(e->at + 0x10 + 5 + *(int32_t *)(e->at + 0x11)), (void *)stub_thiscall2},
+                       {(uintptr_t)(e->at + 0xd6 + 5 + *(int32_t *)(e->at + 0xd7)), (void *)stub_thiscall2}});
+    };
+    notify.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(notify);
+    // ObjectRef::AssignExtra: as ObjectRef::Assign
+    Test assign_extra{0x6e75c0, handles, [](void *fn) {
+                          return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *))fn)(
+                              arena<void>(0x100), nullptr, arena<void>(0x180))};
+                      }};
+    quick(assign_extra);
+    // RefArray::Remove: up to 5 references of 20 bytes at 0x800, each the only one in its handle's list (0xa00..); the
+    // object to remove is one of theirs or nobody's
+    Test ref_remove{0x731880,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[1] = {(void *)stub_virtual0};
+                        int n = r.range(0, 5);
+                        arena<void *>(0x100)[0] = arena<void>(0x800);
+                        arena<int32_t>(0x100)[2] = n;
+                        for (int i = 0; i < 5; i++) {
+                            uint32_t h = 0xa00 + i * 0x80, ref = 0x800 + i * 20;
+                            uint8_t *hp = arena<uint8_t>(h);
+                            *(int32_t *)(hp + 8) = r.range(1, 5);
+                            *(uint32_t *)(hp + 0xc) = 0x1000 + (uint32_t)r.range(0, 4);
+                            void **head = (void **)(hp + 0x40), **node = arena<void *>(ref + 8);
+                            *(void ***)(hp + 0x20) = head;
+                            node[0] = head; node[1] = head; head[0] = node; head[1] = node;
+                            arena<void *>(ref)[0] = vt;
+                            arena<void *>(ref)[1] = hp;
+                        }
+                        arena<uint32_t>(0x10)[0] = 0x1000 + (uint32_t)r.range(0, 5);
+                    },
+                    [](void *fn) {
+                        ((void(__fastcall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), nullptr, arena<uint32_t>(0x10)[0]);
+                        return Result{};
+                    }};
+    quick(ref_remove);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
@@ -2808,7 +3077,16 @@ static std::vector<Test> tests() {
     return t;
 }
 
-static const char *g_only = getenv("EQUIV_ONLY");   // only the rewrites whose name has this in it
+static const char *g_only = getenv("EQUIV_ONLY");   // only the rewrites whose name has one of these (a|b) in it
+static bool only_matches(const char *name) {
+    for (const char *p = g_only;;) {
+        const char *end = strchr(p, '|');
+        size_t n = end ? (size_t)(end - p) : strlen(p);
+        for (const char *c = name; *c; c++) if (!strncmp(c, p, n)) return true;
+        if (!end) return false;
+        p = end + 1;
+    }
+}
 
 int main(int argc, char **argv) {
     if (argc < 2) { printf("usage: equiv.exe \"<game folder>\\RCT3plus.exe\" [iterations]\n"); return 2; }
@@ -2836,7 +3114,7 @@ int main(int argc, char **argv) {
         for (auto n : done) if (!strcmp(n, e->name)) seen = true;
         if (seen) continue;
         done.push_back(e->name);
-        if (g_only && !strstr(e->name, g_only)) continue;
+        if (g_only && !only_matches(e->name)) continue;
         const Test *t = nullptr;
         for (auto &x : all)
             for (const rewrite::Entry *c = rewrite::list(); c; c = c->next)

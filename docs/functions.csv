@@ -472,7 +472,7 @@ address,size,name,callers,status
 0x423d80,26,OwnedPointer::Reset,33,rewritten
 0x423da0,61,Array<4>::Allocate,1,rewritten
 0x423de0,261,,31,documented
-0x423fb0,73,,15,documented
+0x423fb0,73,IntArray::Assign,15,rewritten
 0x424000,173,,1,documented
 0x4240b0,197,,2,documented
 0x424260,30,DeletingDestructor,1,rewritten
@@ -994,7 +994,7 @@ address,size,name,callers,status
 0x44eeb0,212,ReferenceField::Load,1,rewritten
 0x44ef90,212,ReferenceField::Load,0,rewritten
 0x44f070,212,ReferenceField::Load,0,rewritten
-0x44f150,237,,0,documented
+0x44f150,237,Rows::Load,0,rewritten
 0x44f240,2359,,2,documented
 0x44fb80,30,DeletingDestructor,2,rewritten
 0x44fba0,212,,1,documented
@@ -1451,8 +1451,8 @@ address,size,name,callers,status
 0x476450,805,,1,documented
 0x476790,63,,2,documented
 0x4767d0,86,,6,documented
-0x476830,78,,2,documented
-0x476880,135,,1,documented
+0x476830,78,List::Insert,2,rewritten
+0x476880,135,List::Erase,1,rewritten
 0x476910,30,DeletingDestructor,1,rewritten
 0x476930,24,,6,documented
 0x476950,223,,1,documented
@@ -1548,8 +1548,8 @@ address,size,name,callers,status
 0x47c950,30,DeletingDestructor,1,rewritten
 0x47ca60,24,,2,documented
 0x47ca80,24,,2,documented
-0x47cac0,78,,3,documented
-0x47cb10,135,,2,documented
+0x47cac0,78,List::Insert,3,rewritten
+0x47cb10,135,List::Erase,2,rewritten
 0x47cba0,259,,4,documented
 0x47ccd0,255,,1,documented
 0x47cdd0,220,,1,documented
@@ -2250,7 +2250,7 @@ address,size,name,callers,status
 0x4b4880,27,GlobalCleanup,1,rewritten
 0x4b48a0,78,Destructor::MemberThenBaseNullSafe,26,rewritten
 0x4b4a70,28,Object::FreeField,4,rewritten
-0x4b4a90,73,,2,documented
+0x4b4a90,73,IntArray::Assign,2,rewritten
 0x4b4e60,117,TEXT_CREATE2,9,rewritten
 0x4b5040,29,Object::GetRef,2,rewritten
 0x4b5060,382,,1,documented
@@ -3604,7 +3604,7 @@ address,size,name,callers,status
 0x549ba0,176,,2,documented
 0x549c50,705,,2,documented
 0x549f20,145,,1,documented
-0x54ad80,237,,1,documented
+0x54ad80,237,Rows::Load,1,rewritten
 0x54ae70,30,DeletingDestructor,1,rewritten
 0x54aea0,30,DeletingDestructor,1,rewritten
 0x54aed0,30,DeletingDestructor,1,rewritten
@@ -3690,10 +3690,10 @@ address,size,name,callers,status
 0x5511d0,57,,1,documented
 0x551210,84,,1,documented
 0x5512a0,230,StructArrayLoad,1,rewritten
-0x551390,197,,1,documented
-0x551460,197,,1,documented
-0x551530,197,,1,documented
-0x551600,197,,1,documented
+0x551390,197,List::DrainOwners,1,rewritten
+0x551460,197,List::DrainOwners,1,rewritten
+0x551530,197,List::DrainOwners,1,rewritten
+0x551600,197,List::DrainOwners,1,rewritten
 0x5516d0,495,,1,documented
 0x552030,105,Factory::Create,1,rewritten
 0x5520a0,105,Factory::Create,1,rewritten
@@ -4756,10 +4756,10 @@ address,size,name,callers,status
 0x5c0200,1297,,3,documented
 0x5c0720,200,,14,documented
 0x5c07f0,567,,15,documented
-0x5c0a30,243,,1,documented
-0x5c0b30,243,,1,documented
-0x5c0c30,243,,1,documented
-0x5c0d30,243,,1,documented
+0x5c0a30,243,Notify::Pass,1,rewritten
+0x5c0b30,243,Notify::Pass,1,rewritten
+0x5c0c30,243,Notify::Pass,1,rewritten
+0x5c0d30,243,Notify::Pass,1,rewritten
 0x5c0e30,259,,3,documented
 0x5c0f40,52,,1,documented
 0x5c0f80,135,,1,documented
@@ -5818,7 +5818,7 @@ address,size,name,callers,status
 0x63ee40,7,BaseClass::SetClass,1,rewritten
 0x63ee50,30,DeletingDestructor,1,rewritten
 0x63ee70,7,BaseClass::SetClass,1,rewritten
-0x63ee80,73,,2,documented
+0x63ee80,73,IntArray::Assign,2,rewritten
 0x63eed0,1059,,1,documented
 0x63f310,573,,1,documented
 0x63f550,314,,2,documented
@@ -6884,8 +6884,8 @@ address,size,name,callers,status
 0x6a5e00,30,DeletingDestructor,1,rewritten
 0x6a5e20,280,,117,documented
 0x6a5f40,83,,1,documented
-0x6a6020,135,,1,documented
-0x6a60b0,78,,1,documented
+0x6a6020,135,List::Erase,1,rewritten
+0x6a60b0,78,List::Insert,1,rewritten
 0x6a6100,499,,0,documented
 0x6a6300,6,,2,documented
 0x6a6320,30,DeletingDestructor,2,rewritten
@@ -7512,7 +7512,7 @@ address,size,name,callers,status
 0x6d9480,151,,1,documented
 0x6d9580,18,Constructor::BaseAndTable,1,rewritten
 0x6d9630,18,Constructor::BaseAndTable,1,rewritten
-0x6d96f0,73,,1,documented
+0x6d96f0,73,IntArray::Assign,1,rewritten
 0x6d9760,26,OwnedPointer::Reset,4,rewritten
 0x6d9780,130,Array<4>::SetCapacity,2,rewritten
 0x6d9980,147,GuiPart::Create,1,rewritten
@@ -7689,7 +7689,7 @@ address,size,name,callers,status
 0x6e7370,293,StructArrayField<24>::Save,1,rewritten
 0x6e74a0,124,StructArrayField<24>::Size,1,rewritten
 0x6e7580,44,ObjectRef::Construct,1,rewritten
-0x6e75c0,120,,1,documented
+0x6e75c0,120,ObjectRef::AssignExtra,1,rewritten
 0x6e7660,151,WideText::CopyOf(this),1,rewritten
 0x6e7720,151,WideText::CopyOf(this),1,rewritten
 0x6e78c0,1356,,1,documented
@@ -8437,7 +8437,7 @@ address,size,name,callers,status
 0x7312d0,151,,1,documented
 0x7313c0,228,,1,documented
 0x7314b0,965,,1,documented
-0x731880,236,,1,documented
+0x731880,236,RefArray::Remove,1,rewritten
 0x731970,1035,,1,documented
 0x731d80,105,Factory::Create,1,rewritten
 0x731df0,26,,1,documented
@@ -8455,10 +8455,10 @@ address,size,name,callers,status
 0x7336e0,130,,1,documented
 0x733770,26,OwnedPointer::Reset,2,rewritten
 0x733790,61,Array<4>::Allocate,0,rewritten
-0x7337d0,73,,1,documented
+0x7337d0,73,IntArray::Assign,1,rewritten
 0x733820,26,OwnedPointer::Reset,2,rewritten
 0x733840,61,Array<4>::Allocate,0,rewritten
-0x733880,73,,1,documented
+0x733880,73,IntArray::Assign,1,rewritten
 0x7338d0,66,,3,documented
 0x733920,136,,1,documented
 0x7339b0,94,,1,documented
@@ -8539,7 +8539,7 @@ address,size,name,callers,status
 0x7395f0,151,,1,documented
 0x7396e0,228,,1,documented
 0x7397d0,755,,2,documented
-0x739ad0,236,,1,documented
+0x739ad0,236,RefArray::Remove,1,rewritten
 0x739bc0,1035,,1,documented
 0x739fd0,67,Reference::Reference(object),0,rewritten
 0x73a030,212,ReferenceField::Load,1,rewritten
@@ -8972,7 +8972,7 @@ address,size,name,callers,status
 0x76aeb0,48,ObjectArray::Free,2,rewritten
 0x76aee0,838,,6,documented
 0x76b260,1317,,1,documented
-0x76b790,237,,1,documented
+0x76b790,237,Rows::Load,1,rewritten
 0x76b880,6558,,4,documented
 0x76d220,30,DeletingDestructor,3,rewritten
 0x76d240,1604,,17,documented
@@ -9490,7 +9490,7 @@ address,size,name,callers,status
 0x7a2e90,75,,3,documented
 0x7a2ee0,58,,0,documented
 0x7a3000,30,DeletingDestructor,1,rewritten
-0x7a3030,120,,5,documented
+0x7a3030,120,ObjectRef::AssignExtra,5,rewritten
 0x7a3100,293,StructArrayField<24>::Save,1,rewritten
 0x7a3230,124,StructArrayField<24>::Size,1,rewritten
 0x7a3370,44,ObjectRef::Construct,1,rewritten
@@ -10642,7 +10642,7 @@ address,size,name,callers,status
 0x80f700,16,Object::SetFields,1,rewritten
 0x80f710,180,Table20::Free,1,rewritten
 0x80f7d0,433,,1,documented
-0x80f990,126,,1,documented
+0x80f990,126,BlockPool::Return,1,rewritten
 0x80fa40,304,,2,documented
 0x80fb70,238,,1,documented
 0x80fc60,88,,1,documented
@@ -11809,8 +11809,8 @@ address,size,name,callers,status
 0x875ce0,347,,1,documented
 0x875e40,242,,1,documented
 0x876020,156,,1,documented
-0x8760c0,120,,2,documented
-0x876190,120,,3,documented
+0x8760c0,120,ObjectRef::AssignExtra,2,rewritten
+0x876190,120,ObjectRef::AssignExtra,3,rewritten
 0x876250,145,,4,documented
 0x8762f0,144,,1,documented
 0x876380,114,,1,documented
@@ -11870,7 +11870,7 @@ address,size,name,callers,status
 0x87bbe0,16,Object::SetFields,1,rewritten
 0x87bbf0,180,Table20::Free,1,rewritten
 0x87bcb0,430,,3,documented
-0x87be60,126,,1,documented
+0x87be60,126,BlockPool::Return,1,rewritten
 0x87bee0,326,,2,documented
 0x87c030,242,,1,documented
 0x87c130,465,,1,documented
@@ -12796,11 +12796,11 @@ address,size,name,callers,status
 0x909b40,16,Object::SetFields,1,rewritten
 0x909b50,180,Table20::Free,1,rewritten
 0x909c10,430,,5,documented
-0x909dc0,126,,15,documented
+0x909dc0,126,BlockPool::Return,15,rewritten
 0x909e40,16,Object::SetFields,1,rewritten
 0x909e50,180,Table20::Free,1,rewritten
 0x909f10,433,,1,documented
-0x90a0d0,126,,3,documented
+0x90a0d0,126,BlockPool::Return,3,rewritten
 0x90a150,319,,3,documented
 0x90a290,2963,,1,documented
 0x90ae30,184,,5,documented
@@ -14047,7 +14047,7 @@ address,size,name,callers,status
 0x992e60,139,,3,documented
 0x992fd0,222,,1,documented
 0x9933f0,494,,1,documented
-0x9935e0,237,,1,documented
+0x9935e0,237,Rows::Load,1,rewritten
 0x9936d0,230,StructArrayLoad,1,rewritten
 0x9937c0,102,Factory::Create,1,rewritten
 0x993830,216,,1,documented
@@ -15831,7 +15831,7 @@ address,size,name,callers,status
 0xa459e0,63,,2,documented
 0xa45a20,2427,,5,documented
 0xa463a0,393,,4,documented
-0xa46590,78,,1,documented
+0xa46590,78,List::Insert,1,rewritten
 0xa465e0,515,,2,documented
 0xa46840,30,DeletingDestructor,2,rewritten
 0xa46870,1776,,4,documented
@@ -15995,7 +15995,7 @@ address,size,name,callers,status
 0xa5b530,26,OwnedPointer::Reset,1,rewritten
 0xa5b550,61,Array<4>::Allocate,0,rewritten
 0xa5b5c0,26,OwnedPointer::Reset,0,rewritten
-0xa5b5e0,73,,1,documented
+0xa5b5e0,73,IntArray::Assign,1,rewritten
 0xa5b630,302,,2,documented
 0xa5b7a0,30,DeletingDestructor,2,rewritten
 0xa5b7c0,94,Destructor::DeleteMember,1,rewritten
@@ -16464,7 +16464,7 @@ address,size,name,callers,status
 0xa8e680,104,,1,documented
 0xa8e6f0,230,StructArrayLoad,1,rewritten
 0xa8e7e0,265,ObjectArray::SetCapacity,1,rewritten
-0xa8e8f0,120,,1,documented
+0xa8e8f0,120,ObjectRef::AssignExtra,1,rewritten
 0xa8e970,230,,1,documented
 0xa8ea60,30,DeletingDestructor,0,rewritten
 0xa8ea80,193,,1,documented
@@ -16852,7 +16852,7 @@ address,size,name,callers,status
 0xab3f40,124,StructArrayField<24>::Size,1,rewritten
 0xab4020,212,ReferenceField::Load,1,rewritten
 0xab4100,212,ReferenceField::Load,1,rewritten
-0xab4250,120,,1,documented
+0xab4250,120,ObjectRef::AssignExtra,1,rewritten
 0xab42d0,162,ObjectRef::CallWith,0,rewritten
 0xab4380,162,ObjectRef::CallWith,0,rewritten
 0xab4430,409,,1,documented
@@ -16974,7 +16974,7 @@ address,size,name,callers,status
 0xac3270,172,,1,documented
 0xac3320,165,,1,documented
 0xac3420,228,,1,documented
-0xac3510,236,,1,documented
+0xac3510,236,RefArray::Remove,1,rewritten
 0xac3600,1035,,1,documented
 0xac3a10,105,Factory::Create,1,rewritten
 0xac3a80,929,,2,documented
@@ -17129,7 +17129,7 @@ address,size,name,callers,status
 0xacd610,161,GameText::Copy,1,rewritten
 0xacd6c0,185,,2,documented
 0xacd780,86,,2,documented
-0xacd810,78,,47,documented
+0xacd810,78,List::Insert,47,rewritten
 0xacd860,180,,0,documented
 0xacd960,30,DeletingDestructor,2,rewritten
 0xacd980,18,Destructor::TablesThenBase,1,rewritten
@@ -18071,7 +18071,7 @@ address,size,name,callers,status
 0xb3a6d0,67,Reference::Reference(object),6,rewritten
 0xb3a720,67,Reference::Reference(object),0,rewritten
 0xb3a780,280,ListField::Save,1,rewritten
-0xb3a990,78,,1,documented
+0xb3a990,78,List::Insert,1,rewritten
 0xb3a9e0,212,ReferenceField::Load,1,rewritten
 0xb3aac0,212,ReferenceField::Load,1,rewritten
 0xb3aba0,130,,1,documented
@@ -19038,7 +19038,7 @@ address,size,name,callers,status
 0xb99440,83,,2,documented
 0xb994a0,26,OwnedPointer::Reset,0,rewritten
 0xb994c0,61,Array<4>::Allocate,0,rewritten
-0xb99500,73,,2,documented
+0xb99500,73,IntArray::Assign,2,rewritten
 0xb99570,26,OwnedPointer::Reset,1,rewritten
 0xb99590,57,Array<2>::Allocate,0,rewritten
 0xb995d0,132,Array<2>::SetCapacity,4,rewritten
@@ -19172,7 +19172,7 @@ address,size,name,callers,status
 0xba5000,457,,2,documented
 0xba5230,160,,1,documented
 0xba52d0,162,,2,documented
-0xba5380,236,,1,documented
+0xba5380,236,RefArray::Remove,1,rewritten
 0xba5470,931,,1,documented
 0xba5820,466,,1,documented
 0xba5a00,105,Factory::Create,1,rewritten
@@ -19441,9 +19441,9 @@ address,size,name,callers,status
 0xbbbe30,418,,1,documented
 0xbbbfe0,2294,,3,documented
 0xbbcac0,97,,1,documented
-0xbbcb30,135,,1,documented
+0xbbcb30,135,List::Erase,1,rewritten
 0xbbcbc0,72,,1,documented
-0xbbcc40,78,,1,documented
+0xbbcc40,78,List::Insert,1,rewritten
 0xbbcc90,75,,1,documented
 0xbbcce0,84,,1,documented
 0xbbcd40,123,,2,documented
@@ -20772,14 +20772,14 @@ address,size,name,callers,status
 0xc0d5a0,156,,7,documented
 0xc0d640,206,,9,documented
 0xc0d740,64,,4,documented
-0xc0d780,180,,3,documented
+0xc0d780,180,SharedSlots::Set,3,rewritten
 0xc0d840,64,,4,documented
-0xc0d880,180,,18,documented
+0xc0d880,180,SharedSlots::Set,18,rewritten
 0xc0d940,112,,2,documented
 0xc0d9d0,64,,4,documented
-0xc0da10,180,,5,documented
+0xc0da10,180,SharedSlots::Set,5,rewritten
 0xc0dad0,64,,4,documented
-0xc0db10,180,,1,documented
+0xc0db10,180,SharedSlots::Set,1,rewritten
 0xc0dbd0,30,DeletingDestructor,1,rewritten
 0xc0dbf0,30,DeletingDestructor,1,rewritten
 0xc0dc10,30,DeletingDestructor,1,rewritten
@@ -23058,7 +23058,7 @@ address,size,name,callers,status
 0xce75e0,16,Object::SetFields,1,rewritten
 0xce75f0,180,Table20::Free,1,rewritten
 0xce76b0,428,,2,documented
-0xce7860,126,,2,documented
+0xce7860,126,BlockPool::Return,2,rewritten
 0xce78e0,310,,3,documented
 0xce7a50,52,,1,documented
 0xce7a90,339,,2,documented
