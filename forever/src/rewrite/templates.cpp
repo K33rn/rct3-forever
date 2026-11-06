@@ -1754,16 +1754,16 @@ static void __thiscall cond_vrel(uint8_t *self) {
     }
 }
 #define COND_VREL(at, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::CondVRelease", at, REWRITE_CAT(original_, at), 8, (void *)&cond_vrel, &g_cond_vrels);
-// Branch getter: if *(int*)this == -1 return this->[OFF]; else return (this - sub()). OFF, SUB vary per copy.
+// Branch getter: if *(int*)this == KEY return this->[OFF]; else return (this - sub()). OFF, SUB and KEY vary per copy.
 static volatile long g_branch_offs;
-template <uint32_t OFF, uint32_t SUB> static uint32_t __thiscall branch_off(uint8_t *self) {
+template <uint32_t OFF, uint32_t SUB, int32_t KEY> static uint32_t __thiscall branch_off(uint8_t *self) {
     g_branch_offs++;
-    if (*(int32_t *)self == -1)
+    if (*(int32_t *)self == KEY)
         return *(uint32_t *)(self + OFF);
     uint32_t r = ((uint32_t(__thiscall *)(void *))SUB)(self);
     return (uint32_t)(uintptr_t)self - r;
 }
-#define BRANCH_OFF(at, off, sub, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::BranchOff", at, REWRITE_CAT(original_, at), 8, (void *)&branch_off<off, sub>, &g_branch_offs);
+#define BRANCH_OFF(at, off, sub, b0, b1, b2, b3, b4, b5, b6, b7, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {b0, b1, b2, b3, b4, b5, b6, b7}; static rewrite::Entry REWRITE_CAT(entry_, at)("Object::BranchOff", at, REWRITE_CAT(original_, at), 8, (void *)&branch_off<off, sub, (int8_t)(b5)>, &g_branch_offs);
 // Set a vtable at this->[OFF], then tail-call a base constructor. OFF, TABLE, BASE vary per copy.
 static volatile long g_set_table_tails;
 template <uint32_t OFF, uint32_t TABLE, uint32_t BASE> static uint32_t __thiscall set_table_tail(uint8_t *self) {

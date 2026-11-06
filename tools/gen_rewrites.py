@@ -1379,7 +1379,8 @@ def main():
         n_cvr += 1
     counts['COND_VREL'] = n_cvr
 
-    # Object::BranchOff: if *(int)this==-1 return this->[OFF]; else return this - sub(this). shape 0xbb3e70 (24 B).
+    # Object::BranchOff: if *(int)this==KEY return this->[OFF]; else return this - sub(this). shape 0xbb3e70 (24 B).
+    # KEY differs between copies (-1, 2): it's the sixth byte, taken from the first bytes by the macro.
     bo_ref = mask_n(0xbb3e70, 24)
     n_bo = 0
     for r in funcs:

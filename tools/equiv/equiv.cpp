@@ -2391,10 +2391,11 @@ static std::vector<Test> tests() {
                   [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{*(uint32_t *)(arena<uint8_t>(0x100) + 0x104)}; }};
     // Object::BranchOff: if *(int)this==-1 ret this->[OFF]; else ret this - sub(this). sub stubbed.
     static uint32_t g_bo_off, g_bo_sub;
+    static int32_t g_bo_key;   // what the copy compares with: it differs between copies
     Test branchoff{0xbb3e70,
-                   [=](Rng &r) { fresh(r); *(int32_t *)arena<void>(0x100) = 1; /* not -1: exercise the else (call + subtract) path */ },
+                   [=](Rng &r) { fresh(r); int pick = r.range(0, 3); *(int32_t *)arena<void>(0x100) = pick == 0 ? g_bo_key : pick == 1 ? -1 : pick == 2 ? 2 : 1; },
                    [](void *fn) { return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
-    branchoff.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_bo_off = c[1]; g_bo_sub = c[2]; stubs_for_now({{g_bo_sub, (void *)stub_pos_count}}); };
+    branchoff.prepare = [](const rewrite::Entry *e) { const uint32_t *c = rewrite::start_constants(e->at); g_bo_key = *(int8_t *)(e->at + 5); g_bo_off = c[1]; g_bo_sub = c[2]; stubs_for_now({{g_bo_sub, (void *)stub_pos_count}}); };
     branchoff.finish = [](const rewrite::Entry *) { unstub_many(); };
     // Object::CondVCallH: r=helper(a0,0,-1); if r this->vtbl[1](r). helper returns 0x1234; vtbl[1]=stub_thiscall1.
     static uint32_t g_cvh_h, g_cvh_a;
