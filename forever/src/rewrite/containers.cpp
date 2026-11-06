@@ -602,3 +602,152 @@ static uint32_t __fastcall prime_after(uint32_t n) {
 static const uint32_t prime_copies[] = {0xbd6620, 0xbdd460, 0xbdd4b0, 0xc478d0, 0xc47920, 0xcbc4f0};
 static const uint8_t prime_original[] = {0x83, 0xec, 0x0c, 0x41, 0x89, 0x0c, 0x24, 0xb9};
 REWRITE_COPIES("Prime::After", prime_copies, prime_original, prime_after, &g_primes);
+
+// ---- Names::Add: a name and its value into parallel arrays {names, capacity, values, ?, growth, count}, the names kept in
+// order; full arrays grow by `growth` first. A name already there goes in again, at its place -----------------------------
+static volatile long g_name_adds;
+template <uint32_t GROW_NAMES, uint32_t GROW_VALUES, uint32_t FIND>
+static void __thiscall names_add(uint8_t *self, uint32_t *name, uint32_t *value) {
+    g_name_adds++;
+    int32_t *count = (int32_t *)(self + 0x14);
+    if (*count == *(int32_t *)(self + 4)) {
+        int32_t grown = *(int32_t *)(self + 0x10) + *count;
+        ((void(__thiscall *)(void *, int32_t))GROW_NAMES)(self, grown);
+        ((void(__thiscall *)(void *, int32_t))GROW_VALUES)(self + 8, grown);
+    }
+    int32_t at = 0;
+    ((uint8_t(__fastcall *)(void *, void *, int32_t, int32_t *, int32_t *))FIND)(name, *(void **)self, *count, &at, &at);
+    uint32_t *names = *(uint32_t **)self;
+    for (int32_t i = *count; i > at; i--) names[i] = names[i - 1];
+    names[at] = *name;
+    uint32_t *values = *(uint32_t **)(self + 8);
+    for (int32_t i = *count; i > at; i--) values[i] = values[i - 1];
+    values[at] = *value;
+    ++*count;
+}
+static const uint8_t names_add_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x14, 0x3b, 0x46};
+REWRITE("Names::Add", 0x7fbe30, names_add_original, (&names_add<0x7fb570, 0x7fb6f0, 0x7fb900>), &g_name_adds);
+REWRITE("Names::Add", 0x7fbf50, names_add_original, (&names_add<0x417c20, 0x7fb7c0, 0x7fb9c0>), &g_name_adds);
+REWRITE("Names::Add", 0x802900, names_add_original, (&names_add<0x801370, 0x8012a0, 0x801450>), &g_name_adds);
+REWRITE("Names::Add", 0x805ec0, names_add_original, (&names_add<0x7fb570, 0x805b80, 0x805c10>), &g_name_adds);
+REWRITE("Names::Add", 0x8085d0, names_add_original, (&names_add<0x7fb570, 0x8078c0, 0x807970>), &g_name_adds);
+
+// ---- Linked::Delete: a deleting destructor for a small object that is a list node at +4 ---------------------------------
+static volatile long g_linked_deletes;
+template <uint32_t TABLE> static void *__thiscall linked_delete(uint32_t *self, uint32_t flags) {
+    g_linked_deletes++;
+    self[0] = TABLE;
+    unlink((Node *)(self + 1));
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t linked_delete_original[] = {0x56, 0x8b, 0xf1, 0x8d, 0x46, 0x04, 0x85, 0xc0};
+REWRITE("Linked::Delete", 0x453ed0, linked_delete_original, (&linked_delete<0xf296f8>), &g_linked_deletes);
+REWRITE("Linked::Delete", 0x7faf30, linked_delete_original, (&linked_delete<0xf75138>), &g_linked_deletes);
+REWRITE("Linked::Delete", 0x872120, linked_delete_original, (&linked_delete<0xf78b60>), &g_linked_deletes);
+REWRITE("Linked::Delete", 0x8ea2b0, linked_delete_original, (&linked_delete<0xf7ccbc>), &g_linked_deletes);
+REWRITE("Linked::Delete", 0x9491b0, linked_delete_original, (&linked_delete<0xf7e29c>), &g_linked_deletes);
+
+// ---- Compare::MappedThen: map the second object's value (the other side), then hand both on, with the first object's two
+// bytes at +0x88 and +0x89 in the low bytes of the first and second arguments -----------------------------------------------
+static volatile long g_mapped_thens;
+template <int32_t STEP> static uint8_t __thiscall mapped_then(void *self, uint32_t a, uint8_t *b, uint32_t side) {
+    g_mapped_thens++;
+    int32_t value = *(int32_t *)(b + 0xa4);
+    if (!((uint8_t(__fastcall *)(uint8_t, uint8_t, int32_t *, int32_t))0x71b0f0)(b[0x8d], (uint8_t)side ^ 1, &value, STEP))
+        return 0;
+    uint8_t *first = (uint8_t *)(uintptr_t)a;
+    return ((uint8_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, int32_t))0x71d6e0)(
+        self, (a & ~0xffu) | first[0x88], (side & ~0xffu) | first[0x89], side, value);
+}
+static const uint8_t mapped_then_original[] = {0x8b, 0x44, 0x24, 0x08, 0x53, 0x8b, 0x5c, 0x24};
+REWRITE("Compare::MappedThen", 0x71ea70, mapped_then_original, (&mapped_then<2>), &g_mapped_thens);
+REWRITE("Compare::MappedThen", 0x71eae0, mapped_then_original, (&mapped_then<-2>), &g_mapped_thens);
+REWRITE("Compare::MappedThen", 0x71eb50, mapped_then_original, (&mapped_then<1>), &g_mapped_thens);
+REWRITE("Compare::MappedThen", 0x71ebc0, mapped_then_original, (&mapped_then<-1>), &g_mapped_thens);
+
+// ---- Refs::Visit: an array {data, capacity, count} of 20-byte references: the visitor sees each one's interface (or null) -
+static volatile long g_ref_visits;
+template <uint32_t ID> static void __thiscall refs_visit(uint8_t *self, void *visitor) {
+    g_ref_visits++;
+    for (int32_t i = 0; i < *(int32_t *)(self + 8); i++) {
+        uint8_t *handle = *(uint8_t **)(*(uint8_t **)self + i * 20 + 4);
+        void *interface = find_interface(handle, (const int32_t *)ID);
+        ((void(__thiscall *)(void *, void *))(*(void ***)visitor)[0])(visitor, interface);
+    }
+}
+static const uint8_t refs_visit_original[] = {0x53, 0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x08, 0x33};
+REWRITE("Refs::Visit", 0x730b80, refs_visit_original, (&refs_visit<0x13063f0>), &g_ref_visits);
+REWRITE("Refs::Visit", 0x738620, refs_visit_original, (&refs_visit<0x130646c>), &g_ref_visits);
+REWRITE("Refs::Visit", 0xac2ca0, refs_visit_original, (&refs_visit<0x13ce3f8>), &g_ref_visits);
+REWRITE("Refs::Visit", 0xba4dd0, refs_visit_original, (&refs_visit<0x13d05fc>), &g_ref_visits);
+
+// ---- Cloned::Copy: a copy constructor: an empty list at +4 (first +4, end node +0x10, its own head link at +0x14), filled
+// with a clone of each item of the other's list; each clone's list node is at +OFF, and goes at the front -------------------
+static volatile long g_cloned;
+template <uint32_t TABLE, uint32_t CLONE, uint32_t OFF> static uint32_t *__thiscall cloned_copy(uint32_t *self, uint8_t *other) {
+    g_cloned++;
+    self[0] = TABLE;
+    uint32_t *list = self + 1;
+    list[2] = 0;
+    list[5] = 0;
+    list[1] = 0;
+    list[0] = (uint32_t)(uintptr_t)(list + 3);
+    list[4] = (uint32_t)(uintptr_t)list;
+    list[3] = 0;
+    for (Node *n = *(Node **)(other + 4); n->next; n = n->next) {
+        uint8_t *clone = ((uint8_t * (__thiscall *)(void *, int32_t))CLONE)(n->value, 0);
+        Node *added = (Node *)(clone + OFF), *head = (Node *)(uintptr_t)self[5];
+        added->next = head->next;
+        head->next->prev = added;
+        added->prev = head;
+        head->next = added;
+    }
+    return self;
+}
+static const uint8_t cloned_original[] = {0x56, 0x57, 0x8b, 0xf9, 0xc7, 0x07};
+REWRITE("Cloned::Copy", 0xc0d940, cloned_original, (&cloned_copy<0xfafa94, 0xc0bad0, 4>), &g_cloned);
+REWRITE("Cloned::Copy", 0xc10570, cloned_original, (&cloned_copy<0xfafa90, 0xc0e1b0, 0x4c>), &g_cloned);
+REWRITE("Cloned::Copy", 0xc105e0, cloned_original, (&cloned_copy<0xfafa98, 0xc0bb70, 4>), &g_cloned);
+REWRITE("Cloned::Copy", 0xc124f0, cloned_original, (&cloned_copy<0xfafaa4, 0xc110e0, 0x48>), &g_cloned);
+
+// ---- Checked::ByIndex: an 8-byte table entry (+0x190, count +0x164) passed to GET; a bad index reports at source line LINE
+// and stops at a breakpoint when the report asks to ---------------------------------------------------------------------------
+static volatile long g_checked;
+template <uint32_t LINE, uint32_t GET> static uint32_t __thiscall checked_by_index(uint8_t *self, int32_t index, uint32_t arg) {
+    g_checked++;
+    if (index >= *(int32_t *)(self + 0x164)) {
+        typedef uint8_t(__fastcall * Report)(uint32_t, uint32_t, uint32_t, uint32_t);
+        if (((Report)0x68f640)(0xf52e20, LINE, 0xf52e08, 0xf52e60) == 1) __builtin_debugtrap();
+    }
+    void *item = *(void **)(*(uint8_t **)(self + 0x190) + index * 8);
+    return ((uint32_t(__thiscall *)(void *, uint32_t))GET)(item, arg);
+}
+static const uint8_t checked_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0x64, 0x01, 0x00};
+REWRITE("Checked::ByIndex", 0x68fe00, checked_original, (&checked_by_index<0x1ce, 0x6ae070>), &g_checked);
+REWRITE("Checked::ByIndex", 0x68fe50, checked_original, (&checked_by_index<0x1df, 0x67a7a0>), &g_checked);
+REWRITE("Checked::ByIndex", 0x68fef0, checked_original, (&checked_by_index<0x203, 0x67bb20>), &g_checked);
+REWRITE("Checked::ByIndex", 0x68ff40, checked_original, (&checked_by_index<0x214, 0x67b4f0>), &g_checked);
+REWRITE("Checked::ByIndex", 0x68ffe0, checked_original, (&checked_by_index<0x232, 0x67a8c0>), &g_checked);
+REWRITE("Checked::ByIndex", 0x690030, checked_original, (&checked_by_index<0x242, 0x67a8a0>), &g_checked);
+
+// ---- Pool::Take: {items, free list, used, capacity}: marks the next free item in use and returns it; a full pool doubles
+// (from nothing: 200). Items are 1 << SHIFT bytes, in use flag first ------------------------------------------------------------
+static volatile long g_pool_takes;
+template <uint32_t GROW, uint32_t SHIFT> static int32_t __fastcall pool_take(uint8_t *self) {
+    g_pool_takes++;
+    int32_t *used = (int32_t *)(self + 8), *capacity = (int32_t *)(self + 0xc);
+    if (*used >= *capacity) ((void(__thiscall *)(void *, int32_t))GROW)(self, *capacity > 0 ? *capacity * 2 : 200);
+    int32_t item = (*(int32_t **)(self + 4))[*capacity - *used - 1];
+    (*(uint8_t **)self)[(uint32_t)item << SHIFT] = 1;
+    ++*used;
+    return item;
+}
+static const uint8_t pool_take_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x0c, 0x39, 0x46};
+REWRITE("Pool::Take", 0x42dda0, pool_take_original, (&pool_take<0x42d730, 4>), &g_pool_takes);
+REWRITE("Pool::Take", 0x42e950, pool_take_original, (&pool_take<0x42e780, 4>), &g_pool_takes);
+REWRITE("Pool::Take", 0x49aae0, pool_take_original, (&pool_take<0x49a7e0, 4>), &g_pool_takes);
+REWRITE("Pool::Take", 0x8103a0, pool_take_original, (&pool_take<0x80fa40, 4>), &g_pool_takes);
+REWRITE("Pool::Take", 0x87c670, pool_take_original, (&pool_take<0x87bee0, 7>), &g_pool_takes);
+REWRITE("Pool::Take", 0x9d29e0, pool_take_original, (&pool_take<0x9d0f40, 6>), &g_pool_takes);
+REWRITE("Pool::Take", 0x9f82c0, pool_take_original, (&pool_take<0x9f7fc0, 6>), &g_pool_takes);

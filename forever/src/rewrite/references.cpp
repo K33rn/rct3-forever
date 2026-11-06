@@ -192,6 +192,13 @@ REWRITE("ObjectRef::SetMember", 0x7c7d60, ref_set_member_original<0x1e0>, (&ref_
 REWRITE("ObjectRef::SetMember", 0x7ca730, ref_set_member_original<0x1ec>, (&ref_set_member<0x1ec>), &g_member_sets);
 REWRITE("ObjectRef::SetMember", 0xb13680, ref_set_member_original<0x80>, (&ref_set_member<0x80>), &g_member_sets);
 
+// The same for references close enough to their owner for a one-byte offset in the code.
+template <uint32_t OFF> static const uint8_t ref_set_near_original[] = {0x56, 0x57, 0x8d, 0x79, (uint8_t)OFF, 0x8d, 0x77, 0x08};
+REWRITE("ObjectRef::SetMemberNear", 0x6df9e0, ref_set_near_original<0x7c>, (&ref_set_member<0x7c>), &g_member_sets);
+REWRITE("ObjectRef::SetMemberNear", 0x7426a0, ref_set_near_original<0x48>, (&ref_set_member<0x48>), &g_member_sets);
+REWRITE("ObjectRef::SetMemberNear", 0x777180, ref_set_near_original<0x4c>, (&ref_set_member<0x4c>), &g_member_sets);
+REWRITE("ObjectRef::SetMemberNear", 0x833cc0, ref_set_near_original<0x40>, (&ref_set_member<0x40>), &g_member_sets);
+
 // RefArray::Push(object): the next slot (already a reference) now refers to the object; a full array grows by 16 first.
 static volatile long g_ref_pushes;
 static void __fastcall ref_array_push(RefArray *a, void *, void *object) {
