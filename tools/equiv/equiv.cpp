@@ -3100,7 +3100,7 @@ int main(int argc, char **argv) {
     // check the code before the stubs change any of it
     int bad = 0, ok = 0, untested = 0;
     for (const rewrite::Entry *e = rewrite::list(); e; e = e->next)
-        if (memcmp((void *)e->at, e->original, e->original_len)) {
+        if (e->original_len < 5 || memcmp((void *)e->at, e->original, e->original_len)) {   // as replace_function
             printf("  %-34s 0x%06x  the exe's code there isn't the known version\n", e->name, (unsigned)e->at);
             bad++;
         }

@@ -40,9 +40,17 @@ static uint32_t *__thiscall list_insert(void *, uint32_t *result, uint32_t a, ui
     result[2] = (uint32_t)(uintptr_t)((uint32_t)(uintptr_t)n == a ? where : n);
     return result;
 }
-static const uint32_t list_insert_copies[] = {0x476830, 0x47cac0, 0x6a60b0, 0xa46590, 0xacd810, 0xb3a990, 0xbbcc40};
-static const uint8_t list_insert_original[] = {0x6a, 0x0c, 0xe8};
-REWRITE_COPIES("List::Insert", list_insert_copies, list_insert_original, list_insert, &g_list_inserts);
+// Replacing needs at least 5 known bytes, and the fourth on are the allocator call's offset, which differs by copy.
+template <uint32_t AT> static const uint8_t list_insert_original[] = {
+    0x6a, 0x0c, 0xe8, (uint8_t)(0xbcdfc0 - (AT + 7)), (uint8_t)((0xbcdfc0 - (AT + 7)) >> 8),
+    (uint8_t)((0xbcdfc0 - (AT + 7)) >> 16), (uint8_t)((0xbcdfc0 - (AT + 7)) >> 24)};
+REWRITE("List::Insert", 0x476830, list_insert_original<0x476830>, list_insert, &g_list_inserts);
+REWRITE("List::Insert", 0x47cac0, list_insert_original<0x47cac0>, list_insert, &g_list_inserts);
+REWRITE("List::Insert", 0x6a60b0, list_insert_original<0x6a60b0>, list_insert, &g_list_inserts);
+REWRITE("List::Insert", 0xa46590, list_insert_original<0xa46590>, list_insert, &g_list_inserts);
+REWRITE("List::Insert", 0xacd810, list_insert_original<0xacd810>, list_insert, &g_list_inserts);
+REWRITE("List::Insert", 0xb3a990, list_insert_original<0xb3a990>, list_insert, &g_list_inserts);
+REWRITE("List::Insert", 0xbbcc40, list_insert_original<0xbbcc40>, list_insert, &g_list_inserts);
 
 // ---- List::Erase: remove and free a node (not the list's own, at +0xc); the result is {a, b, the node after it,
 // or the node itself when it is `b`} -----------------------------------------------------------------------------
