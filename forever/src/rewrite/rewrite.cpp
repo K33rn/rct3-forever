@@ -1,4 +1,5 @@
 #include "rewrite.h"
+#include <stdlib.h>
 #include <string.h>
 
 namespace rewrite {
@@ -17,6 +18,20 @@ Copies::Copies(const char *name, const uint32_t *at, size_t n, const uint8_t *or
 
 const Entry *list() { return g_list; }
 
+// For tracking a fault down: FOREVER_SKIP=a|b leaves out the rewrites with one of those in their name.
+static bool skipped(const char *name) {
+    const char *list = getenv("FOREVER_SKIP");
+    if (!list || !*list) return false;
+    for (const char *p = list;;) {
+        const char *end = strchr(p, '|');
+        size_t n = end ? (size_t)(end - p) : strlen(p);
+        for (const char *c = name; *c; c++)
+            if (!strncmp(c, p, n)) return true;
+        if (!end) return false;
+        p = end + 1;
+    }
+}
+
 void install_all() {
     int n = 0, done = 0;
     // one log line per rewrite, however many copies of the function it replaces
@@ -28,6 +43,7 @@ void install_all() {
         for (Entry *c = e; c; c = c->next) {
             if (strcmp(c->name, e->name)) continue;
             if (first) {
+                if (skipped(c->name)) { copies++; continue; }
                 copies++;
                 if (replace_function(c->name, c->at, c->original, c->original_len, c->with)) replaced++;
             }

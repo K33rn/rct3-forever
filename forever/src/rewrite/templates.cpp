@@ -329,7 +329,7 @@ static void *__fastcall named_text_ref(uint32_t *self, void *, const char *name,
 // wide string of its own (0xBCF7D0), or the empty wide string (0xBD0490) when it has no text; returns `out`.
 template <uint32_t NAME> static Text *__stdcall game_text_copy(Text *out) {
     g_game_text_copies++;
-    alignas(4) uint8_t ref[0x18];
+    alignas(4) uint8_t ref[0x1c];
     uint8_t *r = ((uint8_t * (__fastcall *)(void *, void *, const char *, void *, uint32_t))0x4040f0)(
         ref, nullptr, (const char *)NAME, (void *)0x1303cfc, 1);
     const wchar_t *text = *(const wchar_t **)(r + 8);

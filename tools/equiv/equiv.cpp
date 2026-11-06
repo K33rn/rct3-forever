@@ -502,6 +502,7 @@ static void __fastcall stub_text_ref(void *self, void *, int32_t **name, void *t
 static void *g_text_ref;
 static void *__fastcall stub_named_text_ref(uint8_t *self, void *, const char *name, void *texts, uint32_t suffix) {
     g_text_ref = self;
+    memset(self, 0xa5, 0x1c);   // all of it, as the real one: a rewrite with too small a space for it overruns its stack
     record(0x74, (void *)name);
     record(0x74, texts);
     record(0x74, (void *)(uintptr_t)suffix);
