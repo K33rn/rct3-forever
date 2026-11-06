@@ -2753,6 +2753,38 @@ static std::vector<Test> tests() {
         t.push_back(*x);
     }
 
+    // IdMap::FindOrAdd: the map at 0x100, its four arrays at 0x400.. with up to 12 ids, sorted with gaps so that ids
+    // land before, between, after and on the ones present; a full map grows (from nothing: 200)
+    Test id_map{0x408240,
+                [=](Rng &r) {
+                    fresh(r);
+                    *arena<uint32_t>(ALLOC_NEXT) = 0;
+                    int count = r.range(0, 12), id = r.range(-20, 0);
+                    uint32_t *m = arena<uint32_t>(0x100);
+                    for (int a = 0; a < 4; a++) {
+                        m[a] = (uint32_t)(uintptr_t)arena<void>(0x400 + a * 0x100);
+                        for (int i = 0; i < 64; i++) arena<uint32_t>(0x400 + a * 0x100)[i] = r.next();
+                    }
+                    for (int i = 0; i < count; i++) {
+                        arena<int32_t>(0x600)[i] = id;
+                        id += r.range(1, 3);
+                    }
+                    m[4] = (uint32_t)count;
+                    m[5] = (uint32_t)(r.range(0, 1) ? count : count + r.range(1, 5));
+                    *arena<int32_t>(0x10) = r.range(-24, id + 4);
+                },
+                [](void *fn) {
+                    return Result{((uint32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), *arena<int32_t>(0x10))};
+                }};
+    id_map.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}}); };
+    id_map.finish = [](const rewrite::Entry *) { unstub_many(); };
+    id_map.data = false;
+    t.push_back(id_map);
+    Test id_map_free{0x408210,
+                     [=](Rng &r) { fresh(r); },
+                     [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    id_map_free.data = false;
+    t.push_back(id_map_free);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

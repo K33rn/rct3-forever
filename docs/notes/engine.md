@@ -1659,15 +1659,15 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x8860f0` | List::Index8860F0 | In outline: makes an index for a list (+0xD4 +8) |
 | `0x840900` | Scenery::Make840900 | In outline: makes a scenery list member (ListMember with `0x10EC9F0`) with a path table (`0x488290`) |
 | `0xc55580` | Stream::SetPausedC55580 | In outline: pauses or resumes the stream system (`0x13E6CF8`) |
-| `0xcea730` | IdMap::Remove | In outline: removes the entry with the id given from an id map (the partner of IdMap::Find) and gives its place |
-| `0xcea320` | IdMap::Remove2 | In outline: the same id map remove (another copy) |
-| `0xce9f00` | IdMap::Remove3 | In outline: the same id map remove (another copy) |
-| `0x9cdd70` | IdMap::Remove4 | In outline: the same id map remove (another copy) |
-| `0x8e7b00` | IdMap::Remove5 | In outline: the same id map remove (another copy) |
-| `0x8e7770` | IdMap::Remove6 | In outline: the same id map remove (another copy) |
-| `0x49a150` | IdMap::Remove7 | In outline: the same id map remove (another copy) |
-| `0x40b550` | IdMap::Remove8 | In outline: the same id map remove (another copy) |
-| `0x408240` | IdMap::Remove9 | In outline: the same id map remove (another copy) |
+| `0xcea730` | IdMap::FindOrAdd | The number of an id in an id map, giving a new id the next number (the arrays double when full) |
+| `0xcea320` | IdMap::FindOrAdd | In outline: the same id map find-or-add (another copy) |
+| `0xce9f00` | IdMap::FindOrAdd | In outline: the same id map find-or-add (another copy) |
+| `0x9cdd70` | IdMap::FindOrAdd | In outline: the same id map find-or-add (another copy) |
+| `0x8e7b00` | IdMap::FindOrAdd | In outline: the same id map find-or-add (another copy) |
+| `0x8e7770` | IdMap::FindOrAdd | In outline: the same id map find-or-add (another copy) |
+| `0x49a150` | IdMap::FindOrAdd | In outline: the same id map find-or-add (another copy) |
+| `0x40b550` | IdMap::FindOrAdd | In outline: the same id map find-or-add (another copy) |
+| `0x408240` | IdMap::FindOrAdd | In outline: the same id map find-or-add (another copy) |
 | `0x881900` | Text::Make881900 | In outline: makes a text from an empty one |
 | `0xc54dc0` | Stream::NameC54DC0 | In outline: makes a stream's name (`0xCA24F0`) |
 | `0x4cbaa0` | Name::Find4CBAA0 | In outline: finds a name in a list ignoring case (WideString::ToLower, WideString::Compare) |
@@ -1718,7 +1718,7 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0x808910` | Save::Text808910 | In outline: writes a text to a save, two bytes at a time (SaveWriter::Write) |
 | `0xcb1f40` | ShaderFile::ReadCB1F40 | In outline: reads a shader file entry, clearing a pair first (ClearPair) |
 | `0x806610` | Load::Read806610 | In outline: reads a two-byte value from a saved block |
-| `0xceb190` | IdMap::Take | In outline: removes an entry by id (IdMap::Remove3) and acts on it |
+| `0xceb190` | IdMap::Take | In outline: gets an entry by id (IdMap::FindOrAdd) and acts on it |
 | `0xae6460` | List::AddAE6460 | In outline: grows a list by one (ObjectArray::SetCapacity) |
 | `0x4a0470` | NamedObject::Make4A0470 | In outline: makes a list member object (ListMember with `0x10EC9E4`) |
 | `0xc102d0` | Resource::MakeC102D0 | In outline: makes a resource record (`0xC0A670`) |
