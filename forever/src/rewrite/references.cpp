@@ -127,11 +127,11 @@ static ObjectRef *__fastcall assign_extra(ObjectRef *r, void *, const ObjectRef 
 static const uint32_t assign_extra_copies[] = {0x6e75c0, 0x7a3030, 0x8760c0, 0x876190, 0xa8e8f0, 0xab4250};
 REWRITE_COPIES("ObjectRef::AssignExtra", assign_extra_copies, assign_original, assign_extra, &g_assign_extras);
 
-// RefArray::Remove(object): an array {data, ?, count} of 20-byte references. Drops the first one to that object:
+// RefArray::Remove(object): an array {data, capacity, count} of 20-byte references. Drops the first one to that object:
 // each later reference is assigned to the one before it, and the count goes down. The last is left as it was.
 struct RefArray {
     uint8_t *data;
-    int32_t unknown;
+    int32_t capacity;
     int32_t count;
 };
 static volatile long g_ref_removes;
@@ -156,6 +156,41 @@ static void __fastcall ref_array_remove(RefArray *a, void *, void *object) {
 static const uint32_t ref_remove_copies[] = {0x731880, 0x739ad0, 0xac3510, 0xba5380};
 static const uint8_t ref_remove_original[] = {0x51, 0x53, 0x8b, 0xd9, 0x8b, 0x4b, 0x08, 0x55};
 REWRITE_COPIES("RefArray::Remove", ref_remove_copies, ref_remove_original, ref_array_remove, &g_ref_removes);
+
+static Handle *(__fastcall *const handle_of)(void *) = (Handle * (__fastcall *)(void *))0x805700;   // with one more reference
+
+// ObjectRef::SetMember(object): a reference kept at +OFF of its owner now refers to the object.
+static volatile long g_member_sets;
+template <uint32_t OFF> static void __fastcall ref_set_member(uint8_t *owner, void *, void *object) {
+    g_member_sets++;
+    ObjectRef *r = (ObjectRef *)(owner + OFF);
+    leave(r);
+    join(r, handle_of(object));
+    changed(r);
+}
+template <uint32_t OFF> static const uint8_t ref_set_member_original[] = {
+    0x56, 0x57, 0x8d, 0xb9, (uint8_t)OFF, (uint8_t)(OFF >> 8), (uint8_t)(OFF >> 16), (uint8_t)(OFF >> 24)};
+REWRITE("ObjectRef::SetMember", 0x6dfa50, ref_set_member_original<0x90>, (&ref_set_member<0x90>), &g_member_sets);
+REWRITE("ObjectRef::SetMember", 0x714340, ref_set_member_original<0x13c>, (&ref_set_member<0x13c>), &g_member_sets);
+REWRITE("ObjectRef::SetMember", 0x760790, ref_set_member_original<0x4ec>, (&ref_set_member<0x4ec>), &g_member_sets);
+REWRITE("ObjectRef::SetMember", 0x7c7d60, ref_set_member_original<0x1e0>, (&ref_set_member<0x1e0>), &g_member_sets);
+REWRITE("ObjectRef::SetMember", 0x7ca730, ref_set_member_original<0x1ec>, (&ref_set_member<0x1ec>), &g_member_sets);
+REWRITE("ObjectRef::SetMember", 0xb13680, ref_set_member_original<0x80>, (&ref_set_member<0x80>), &g_member_sets);
+
+// RefArray::Push(object): the next slot (already a reference) now refers to the object; a full array grows by 16 first.
+static volatile long g_ref_pushes;
+static void __fastcall ref_array_push(RefArray *a, void *, void *object) {
+    g_ref_pushes++;
+    if (a->count == a->capacity) ((void(__thiscall *)(RefArray *, int32_t))0x5501e0)(a, a->count + 0x10);
+    ObjectRef *r = (ObjectRef *)(a->data + a->count * 20);
+    a->count++;
+    leave(r);
+    join(r, handle_of(object));
+    changed(r);
+}
+static const uint32_t ref_push_copies[] = {0x732270, 0x73ac30, 0xac3ee0, 0xba5ef0};
+static const uint8_t ref_push_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x08, 0x3b, 0x46};
+REWRITE_COPIES("RefArray::Push", ref_push_copies, ref_push_original, ref_array_push, &g_ref_pushes);
 
 // ---- DeleteTarget: delete the object referred to (if any) and refer to nothing -------------------------------
 // Returns what the class's own reaction returns.

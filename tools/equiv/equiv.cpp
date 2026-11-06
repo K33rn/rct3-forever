@@ -321,6 +321,18 @@ static void __thiscall stub_row_field(void *self, void *row, void *stream, uint3
     record(0x62, self); record(0x62, row); record(0x62, stream); record(0x62, (void *)(uintptr_t)context);
 }
 static void __thiscall stub_rows_resize(void *store, int32_t count) { record(0x63, store); record(0x63, (void *)(uintptr_t)count); }
+static int32_t __thiscall stub_rows_size(void *self, int32_t offset) { record(0x64, self); record(0x64, (void *)(uintptr_t)offset); return arena<int32_t>(0x10)[1]; }
+static void __thiscall stub_row_save(void *self, void *row, void *stream) { record(0x65, self); record(0x65, row); record(0x65, stream); }
+static void __thiscall stub_stream_write(void *stream, int32_t *value, int32_t size) { record(0x66, stream); record(0x66, (void *)(uintptr_t)*value); record(0x66, (void *)(uintptr_t)size); }
+static void *__fastcall stub_item_table(void *self) { record(0x67, self); return arena<void>(0x4a0); }
+static void *__thiscall stub_item_find(void *self, uint32_t item, uint32_t arg) { record(0x68, self); record(0x68, (void *)(uintptr_t)item); record(0x68, (void *)(uintptr_t)arg); return arena<void>(0x4b0); }
+static uint8_t __fastcall stub_item_check(void *self) { record(0x69, self); return arena<int32_t>(0x20)[0]-- == 0 ? 2 : 0; }
+static uint8_t __fastcall stub_mapped_lookup(uint8_t kind, uint8_t side, int32_t *value, int32_t step) {
+    record(0x6a, (void *)(uintptr_t)kind); record(0x6a, (void *)(uintptr_t)side); record(0x6a, (void *)(uintptr_t)step);
+    *value += step;
+    return kind != 3;
+}
+static int __cdecl stub_same_pointer(const char *a, const char *b) { record(0x6b, (void *)a); record(0x6b, (void *)b); return a != b; }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -3054,6 +3066,214 @@ static std::vector<Test> tests() {
                         return Result{};
                     }};
     quick(ref_remove);
+    // Rows::Save: self at 0x100 (vtable slot 2 gives the size; +0x28 is the store's base), up to 3 savers; the stream at
+    // 0x700 has a running checksum; the rows are at 0x500
+    Test rows_save{0x533460,
+                   [=](Rng &r) {
+                       fresh(r);
+                       static void *vt[3] = {nullptr, nullptr, (void *)stub_rows_size};
+                       static void *field_vt[4] = {nullptr, nullptr, nullptr, (void *)stub_row_save};
+                       uint8_t *self = arena<uint8_t>(0x100);
+                       int offset = r.range(0, 0x40);
+                       *(void **)self = vt;
+                       *(uint32_t *)(self + 0x28) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                       *(int32_t *)(self + 0x18) = r.range(0, 3);
+                       *(void **)(self + 0xc) = arena<void>(0x3c0);
+                       for (int i = 0; i < 4; i++) {
+                           arena<void *>(0x3c0)[i] = arena<void>(0x400 + i * 0x10);
+                           arena<void *>(0x400 + i * 0x10)[0] = field_vt;
+                       }
+                       *(void **)arena<uint8_t>(0x300 + offset) = arena<void>(0x500);
+                       *(int32_t *)arena<uint8_t>(0x300 + offset + 4) = r.range(-1, 4);
+                       *(uint32_t *)arena<uint8_t>(0x710) = r.next();
+                       *(uint32_t *)arena<uint8_t>(0x714) = r.next();
+                       arena<int32_t>(0x10)[0] = offset;
+                       arena<int32_t>(0x10)[1] = r.range(4, 0x10000);
+                   },
+                   [](void *fn) {
+                       ((void(__thiscall *)(void *, int32_t, void *))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<void>(0x700));
+                       return Result{};
+                   }};
+    rows_save.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbe4060, (void *)stub_stream_write}}); };
+    rows_save.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(rows_save);
+    // Items::AnyMatch: up to 4 items at 0x3c0; the interface kept or found; the check passes after 0-5 calls
+    Test any_match{0x5d68e0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       iface_handle(r);
+                       uint8_t *self = arena<uint8_t>(0x800);
+                       *(void **)(self + 0x54) = arena<void>(0x340);
+                       bool kept = r.range(0, 1);
+                       self[0x68] = kept;
+                       *(void **)(self + 0x64) = kept ? arena<void>(0x360) : nullptr;
+                       *(int32_t *)(self + 0xe8) = r.range(0, 4);
+                       *(void **)(self + 0xe4) = arena<void>(0x3c0);
+                       for (int i = 0; i < 4; i++) arena<uint32_t>(0x3c0)[i] = r.next();
+                       arena<int32_t>(0x20)[0] = r.range(0, 5);
+                       arena<uint32_t>(0x10)[0] = r.next();
+                   },
+                   [](void *fn) {
+                       return Result{((uint8_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x10)[0])};
+                   }};
+    any_match.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f54e0;
+        stubs_for_now({{0x59acc0, (void *)stub_item_table}, {0x5a7300, (void *)stub_item_find},
+                       {(uintptr_t)(e->at + 0x73 + 5 + *(int32_t *)(e->at + 0x74)), (void *)stub_item_check}});
+    };
+    any_match.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(any_match);
+    // Items::EachInterface: up to 3 references of 28 bytes at 0x900, kept or found through the handle
+    Test each_interface{0x563420,
+                        [=](Rng &r) {
+                            fresh(r);
+                            iface_handle(r);
+                            uint8_t *self = arena<uint8_t>(0x800);
+                            int n = r.range(0, 3);
+                            *(int32_t *)(self + 0xc4) = n;
+                            *(void **)(self + 0xc0) = arena<void>(0x900);
+                            for (int i = 0; i < 3; i++) {
+                                uint8_t *ref = arena<uint8_t>(0x900 + i * 0x1c);
+                                *(void **)(ref + 4) = arena<void>(0x340);
+                                bool kept = r.range(0, 1);
+                                ref[0x18] = kept;
+                                *(void **)(ref + 0x14) = kept ? arena<void>(0x3a0) : nullptr;
+                            }
+                            arena<uint32_t>(0x10)[0] = r.next();
+                            arena<uint32_t>(0x10)[1] = r.next();
+                        },
+                        [](void *fn) {
+                            ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1]);
+                            return Result{};
+                        }};
+    each_interface.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f50d4;
+        stubs_for_now({{(uintptr_t)(e->at + 0x7b + 5 + *(int32_t *)(e->at + 0x7c)), (void *)stub_thiscall2}});
+    };
+    each_interface.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(each_interface);
+    // Compare::Mapped: two objects at 0x100 and 0x300; the lookup (stubbed) changes the value by its step, and fails
+    // for some kinds
+    Test mapped{0x71d1e0,
+                [=](Rng &r) {
+                    fresh(r);
+                    uint8_t *a = arena<uint8_t>(0x100), *b = arena<uint8_t>(0x300);
+                    *(int32_t *)(a + 0xa4) = r.range(0, 3);
+                    *(int32_t *)(b + 0xa4) = r.range(0, 3);
+                    a[0x8d] = (uint8_t)r.range(0, 4);
+                    b[0x8d] = (uint8_t)r.range(0, 4);
+                    arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 1) | 0xabcd00;
+                },
+                [](void *fn) {
+                    return Result{((uint8_t(__stdcall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x300), arena<uint32_t>(0x10)[0])};
+                }};
+    mapped.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x71b0f0, (void *)stub_mapped_lookup}}); };
+    mapped.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(mapped);
+    // List::FindNamed: a list of up to 3 items at +OFF; the name is one of theirs, another, empty or null
+    static uint32_t g_named_off;
+    Test find_named{0xc0ccf0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        uint8_t *self = arena<uint8_t>(0x800);
+                        int n = r.range(0, 3);
+                        *(void **)(self + g_named_off) = arena<void>(0x400);
+                        for (int i = 0; i <= n; i++) {
+                            void **node = arena<void *>(0x400 + i * 0x20);
+                            node[0] = i < n ? arena<void>(0x420 + i * 0x20) : nullptr;
+                            node[2] = arena<void>(0x500 + i * 0x10);
+                            arena<void *>(0x500 + i * 0x10)[1] = arena<void>(0x600 + i * 8);
+                            *arena<char>(0x600 + i * 8) = 'a';
+                        }
+                        *arena<char>(0x640) = 0;
+                        int pick = r.range(0, 5);
+                        arena<void *>(0x10)[0] = pick == 5 ? nullptr : pick == 4 ? arena<void>(0x640) : arena<void>(0x600 + pick * 8);
+                    },
+                    [](void *fn) {
+                        return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void *>(0x10)[0])};
+                    }};
+    find_named.prepare = [](const rewrite::Entry *e) {
+        g_named_off = *(uint32_t *)(e->at + 0x11);
+        stubs_for_now({{0xde22df, (void *)stub_same_pointer}});
+    };
+    find_named.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(find_named);
+    // List::LeaveIfLinked: a node between two neighbours, each link sometimes missing or wrong
+    Test leave_linked{0xc0dd30,
+                      [=](Rng &r) {
+                          fresh(r);
+                          void **n = arena<void *>(0x300), **next = arena<void *>(0x320), **prev = arena<void *>(0x340);
+                          int broken = r.range(0, 7);
+                          n[0] = broken == 1 ? nullptr : (void *)next;
+                          n[1] = broken == 2 ? nullptr : (void *)prev;
+                          next[1] = broken == 3 ? (void *)prev : (void *)n;
+                          prev[0] = broken == 4 ? (void *)next : (void *)n;
+                      },
+                      [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x300)); return Result{}; }};
+    leave_linked.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0x1f + 5 + *(int32_t *)(e->at + 0x20)), (void *)stub_plain_dtor}});
+    };
+    leave_linked.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(leave_linked);
+    // Shared::Delete: with and without the flag
+    Test shared_delete{0xc0a5b0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           *(uint32_t *)0x13e3318 = (uint32_t)(uintptr_t)arena<void>(0x5f0);
+                           arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 3);
+                       },
+                       [](void *fn) {
+                           return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])};
+                       }};
+    shared_delete.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 3 + 5 + *(int32_t *)(e->at + 4)), (void *)stub_plain_dtor}, {0xca1f80, (void *)stub_shared_free}});
+    };
+    shared_delete.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(shared_delete);
+    // Array<32>::SetCapacity: as the other sizes
+    Test setcap32{0x446710, array, [](void *fn) {
+                      return Result{((uint32_t(__fastcall *)(void *, void *, int32_t))fn)(arena<void>(0x100), nullptr, *arena<int32_t>(0))};
+                  }};
+    quick(setcap32);
+    // ObjectRef::SetMember: the reference `off` into self sits at 0x100, and the object's handle is 0x380
+    static uint32_t g_member_off;
+    Test ref_member{0x6dfa50, handles, [](void *fn) {
+                        ((void(__fastcall *)(void *, void *, void *))fn)(arena<uint8_t>(0x100) - g_member_off, nullptr, arena<void>(0x500));
+                        return Result{};
+                    }};
+    ref_member.prepare = [](const rewrite::Entry *e) {
+        g_member_off = *(uint32_t *)(e->at + 4);
+        stubs_for_now({{0x805700, (void *)stub_handle_of}});
+    };
+    ref_member.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(ref_member);
+    // RefArray::Push: 6 references at 0x800, a full array asks for more room first
+    Test ref_push{0x732270,
+                  [=](Rng &r) {
+                      handles(r);
+                      static void *vt[1] = {(void *)stub_virtual0};
+                      int n = r.range(0, 5);
+                      arena<void *>(0x100)[0] = arena<void>(0x800);
+                      arena<int32_t>(0x100)[1] = r.range(0, 1) ? n : n + 1;
+                      arena<int32_t>(0x100)[2] = n;
+                      for (int i = 0; i < 6; i++) {
+                          uint32_t ref = 0x800 + i * 20;
+                          uint8_t *hp = arena<uint8_t>(0xa00 + i * 0x80);
+                          *(int32_t *)(hp + 8) = r.range(1, 5);
+                          void **head = (void **)(hp + 0x40), **node = arena<void *>(ref + 8);
+                          *(void ***)(hp + 0x20) = head;
+                          node[0] = head; node[1] = head; head[0] = node; head[1] = node;
+                          arena<void *>(ref)[0] = vt;
+                          arena<void *>(ref)[1] = hp;
+                      }
+                  },
+                  [](void *fn) {
+                      ((void(__fastcall *)(void *, void *, void *))fn)(arena<void>(0x100), nullptr, arena<void>(0x500));
+                      return Result{};
+                  }};
+    ref_push.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x805700, (void *)stub_handle_of}, {0x5501e0, (void *)stub_reserve}}); };
+    ref_push.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(ref_push);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

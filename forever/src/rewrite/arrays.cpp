@@ -155,3 +155,8 @@ static const uint32_t allocate_44[] = {
     0xa33c90,
 };
 REWRITE_COPIES("Array<44>::Allocate", allocate_44, allocate_original, allocate<44>, &Calls<44>::allocate);
+
+static const uint32_t set_capacity_32[] = {0x446710, 0x498210, 0x7250a0, 0x860db0};
+static const uint8_t set_capacity_32_original[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0xd9, 0x8b, 0x43};
+REWRITE_COPIES("Array<32>::SetCapacity", set_capacity_32, set_capacity_32_original, set_capacity<32>,
+               &Calls<32>::set_capacity);

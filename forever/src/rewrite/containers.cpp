@@ -279,3 +279,174 @@ REWRITE("Notify::Pass", 0x5c0a30, notify_original, (&notify_pass<0x848840, 1, 0x
 REWRITE("Notify::Pass", 0x5c0b30, notify_original, (&notify_pass<0x8489b0, 2, 0x86d000>), &g_notifies);
 REWRITE("Notify::Pass", 0x5c0c30, notify_original, (&notify_pass<0x848b20, 3, 0x86d050>), &g_notifies);
 REWRITE("Notify::Pass", 0x5c0d30, notify_original, (&notify_pass<0x848c90, 4, 0x86d0a0>), &g_notifies);
+
+// ---- Rows::Save: the opposite of Rows::Load: the size and row count, each added to the stream's checksum, then each
+// row's fields by their savers (virtual slot 3 of each, at +0xc, count +0x18). STRIDE is the row's size ---------------
+static void stream_write_counted(uint8_t *s, int32_t *value) {
+    ((void(__thiscall *)(void *, void *, int32_t))0xbe4060)(s, value, 4);
+    for (int i = 0; i < 4; i++) {
+        uint16_t check = *(uint16_t *)(s + 0x14);
+        uint8_t coded = (uint8_t)(check >> 8) ^ ((uint8_t *)value)[i];
+        *(uint16_t *)(s + 0x14) = (uint16_t)(0x58bf - (uint16_t)(coded + check) * 0x3193);
+        *(uint32_t *)(s + 0x10) += coded;
+    }
+}
+static volatile long g_rows_saves;
+template <uint32_t STRIDE> static void __thiscall rows_save(uint8_t *self, int32_t offset, uint8_t *s) {
+    g_rows_saves++;
+    uint8_t *store = (uint8_t *)(uintptr_t)(*(uint32_t *)(self + 0x28) + (uint32_t)offset);
+    int32_t count = ((int32_t *)store)[1];
+    int32_t size = ((int32_t(__thiscall *)(void *, int32_t))(*(void ***)self)[2])(self, offset) - 4;
+    stream_write_counted(s, &size);
+    stream_write_counted(s, &count);
+    for (int32_t row = 0; row < count; row++) {
+        uint8_t *data = *(uint8_t **)store + (uint32_t)row * STRIDE;
+        for (int32_t i = 0; i < *(int32_t *)(self + 0x18); i++) {
+            void *field = (*(void ***)(self + 0xc))[i];
+            ((void(__thiscall *)(void *, void *, void *))(*(void ***)field)[3])(field, data, s);
+        }
+    }
+}
+static const uint8_t rows_save_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x44, 0x24, 0x10, 0x53};
+REWRITE("Rows::Save", 0x533460, rows_save_original, (&rows_save<0x90>), &g_rows_saves);
+REWRITE("Rows::Save", 0x55bcd0, rows_save_original, (&rows_save<0xe0>), &g_rows_saves);
+REWRITE("Rows::Save", 0x9c8ec0, rows_save_original, (&rows_save<0x90>), &g_rows_saves);
+REWRITE("Rows::Save", 0xb9ff30, rows_save_original, (&rows_save<0xb8>), &g_rows_saves);
+
+// ---- Items::AnyMatch: whether any item (+0xe4, count +0xe8), looked up through the interface kept at +0x64 (flag +0x68,
+// reference +0x54), passes CHECK ---------------------------------------------------------------------------------------
+static volatile long g_any_matches;
+template <uint32_t CHECK> static bool __thiscall any_match(uint8_t *self, uint32_t arg) {
+    g_any_matches++;
+    for (int32_t i = 0; i < *(int32_t *)(self + 0xe8); i++) {
+        if (!self[0x68]) {
+            *(void **)(self + 0x64) = find_interface(*(uint8_t **)(self + 0x54), (const int32_t *)0x12f54e0);
+            self[0x68] = 1;
+        }
+        void *table = ((void *(__fastcall *)(void *))0x59acc0)(*(void **)(self + 0x64));
+        uint32_t item = (*(uint32_t **)(self + 0xe4))[i];
+        void *found = ((void *(__thiscall *)(void *, uint32_t, uint32_t))0x5a7300)(table, item, arg);
+        if (((uint8_t(__fastcall *)(void *))CHECK)(found)) return true;
+    }
+    return false;
+}
+static const uint8_t any_match_original[] = {0x53, 0x55, 0x56, 0x8b, 0xf1, 0x8b, 0x86, 0xe8};
+REWRITE("Items::AnyMatch", 0x5d68e0, any_match_original, (&any_match<0x5639c0>), &g_any_matches);
+REWRITE("Items::AnyMatch", 0x5d6980, any_match_original, (&any_match<0x563a30>), &g_any_matches);
+REWRITE("Items::AnyMatch", 0x5d6a20, any_match_original, (&any_match<0x563b30>), &g_any_matches);
+REWRITE("Items::AnyMatch", 0x5d6c00, any_match_original, (&any_match<0x563c50>), &g_any_matches);
+REWRITE("Items::AnyMatch", 0x5d6ca0, any_match_original, (&any_match<0x563cc0>), &g_any_matches);
+REWRITE("Items::AnyMatch", 0x5d6d40, any_match_original, (&any_match<0x563da0>), &g_any_matches);
+
+// ---- Items::EachInterface: pass two arguments to the interface of each 28-byte reference (+0xc0, count +0xc4; each with
+// its interface kept at +0x14, flag +0x18) -----------------------------------------------------------------------------
+static volatile long g_each_interfaces;
+template <uint32_t CALL> static void __thiscall each_interface(uint8_t *self, uint32_t a, uint32_t b) {
+    g_each_interfaces++;
+    for (int32_t i = 0; i < *(int32_t *)(self + 0xc4); i++) {
+        uint8_t *ref = *(uint8_t **)(self + 0xc0) + i * 0x1c;
+        if (!ref[0x18]) {
+            *(void **)(ref + 0x14) = find_interface(*(uint8_t **)(ref + 4), (const int32_t *)0x12f50d4);
+            ref[0x18] = 1;
+        }
+        ((void(__thiscall *)(void *, uint32_t, uint32_t))CALL)(*(void **)(ref + 0x14), a, b);
+    }
+}
+static const uint8_t each_interface_original[] = {0x51, 0x53, 0x55, 0x8b, 0xe9, 0x8b, 0x85, 0xc4};
+REWRITE("Items::EachInterface", 0x563420, each_interface_original, (&each_interface<0x511d40>), &g_each_interfaces);
+REWRITE("Items::EachInterface", 0x5634c0, each_interface_original, (&each_interface<0x511950>), &g_each_interfaces);
+REWRITE("Items::EachInterface", 0x563560, each_interface_original, (&each_interface<0x511aa0>), &g_each_interfaces);
+REWRITE("Items::EachInterface", 0x563600, each_interface_original, (&each_interface<0x511bf0>), &g_each_interfaces);
+
+// ---- Compare::Mapped: two values (+0xa4), each mapped by a lookup using the object's kind (+0x8d) and a side (the second
+// object takes the other side) with a step per copy; true when both map and the results agree ---------------------------
+static volatile long g_mapped_compares;
+template <int32_t STEP_A, int32_t STEP_B> static uint8_t __stdcall mapped_equal(uint8_t *a, uint8_t *b, uint8_t side) {
+    g_mapped_compares++;
+    typedef uint8_t(__fastcall * Lookup)(uint8_t, uint8_t, int32_t *, int32_t);
+    const Lookup lookup = (Lookup)0x71b0f0;
+    int32_t x = *(int32_t *)(a + 0xa4), y = *(int32_t *)(b + 0xa4);
+    if (!lookup(a[0x8d], side, &x, STEP_A)) return 0;
+    if (!lookup(b[0x8d], side ^ 1, &y, STEP_B)) return 0;
+    return x == y;
+}
+static const uint8_t mapped_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x88, 0xa4, 0x00};
+REWRITE("Compare::Mapped", 0x71d1e0, mapped_original, (&mapped_equal<2, 2>), &g_mapped_compares);
+REWRITE("Compare::Mapped", 0x71d250, mapped_original, (&mapped_equal<2, -2>), &g_mapped_compares);
+REWRITE("Compare::Mapped", 0x71d2c0, mapped_original, (&mapped_equal<-2, -2>), &g_mapped_compares);
+REWRITE("Compare::Mapped", 0x71d520, mapped_original, (&mapped_equal<2, 1>), &g_mapped_compares);
+REWRITE("Compare::Mapped", 0x71d590, mapped_original, (&mapped_equal<2, -1>), &g_mapped_compares);
+REWRITE("Compare::Mapped", 0x71d600, mapped_original, (&mapped_equal<-2, -1>), &g_mapped_compares);
+REWRITE("Compare::Mapped", 0x71d670, mapped_original, (&mapped_equal<-2, 1>), &g_mapped_compares);
+
+// ---- List::FindNamed: the first item of the list at +OFF whose name (+4) matches; null for no name -----------------
+static volatile long g_named_finds;
+template <uint32_t OFF> static void *__thiscall find_named(uint8_t *self, const char *name) {
+    g_named_finds++;
+    if (!name || !*name) return nullptr;
+    for (Node *n = *(Node **)(self + OFF); n->next; n = n->next) {
+        void *item = n->value;
+        if (!((int(__cdecl *)(const char *, const char *))0xde22df)(((const char **)item)[1], name)) return item;
+    }
+    return nullptr;
+}
+static const uint8_t find_named_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x85, 0xdb, 0x74};
+REWRITE("List::FindNamed", 0xc0ccf0, find_named_original, (&find_named<0xac>), &g_named_finds);
+REWRITE("List::FindNamed", 0xc0cd50, find_named_original, (&find_named<0xc4>), &g_named_finds);
+REWRITE("List::FindNamed", 0xc0cdb0, find_named_original, (&find_named<0xdc>), &g_named_finds);
+REWRITE("List::FindNamed", 0xc0ce10, find_named_original, (&find_named<0xf4>), &g_named_finds);
+REWRITE("List::FindNamed", 0xc0ce70, find_named_original, (&find_named<0x10c>), &g_named_finds);
+REWRITE("List::FindNamed", 0xc0ced0, find_named_original, (&find_named<0x124>), &g_named_finds);
+REWRITE("List::FindNamed", 0xc0cf30, find_named_original, (&find_named<0x13c>), &g_named_finds);
+REWRITE("List::FindNamed", 0xc0cf90, find_named_original, (&find_named<0x154>), &g_named_finds);
+
+// ---- List::LeaveIfLinked: a node in a sound list leaves it through REMOVE and is cleared; otherwise nothing ------------
+static volatile long g_leaves;
+template <uint32_t REMOVE> static void __fastcall leave_if_linked(Node *n) {
+    g_leaves++;
+    if (n && n->prev && n->next && n->next->prev == n && n->prev->next == n) {
+        ((void(__fastcall *)(Node *))REMOVE)(n);
+        n->next = nullptr;
+        n->prev = nullptr;
+    }
+}
+static const uint8_t leave_original[] = {0x56, 0x8b, 0xf1, 0x85, 0xf6, 0x74, 0x2a, 0x8b};
+REWRITE("List::LeaveIfLinked", 0xc0dd30, leave_original, (&leave_if_linked<0xc0dd70>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0de70, leave_original, (&leave_if_linked<0xc0deb0>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0df90, leave_original, (&leave_if_linked<0xc0dfd0>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0e340, leave_original, (&leave_if_linked<0xc0e380>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0e650, leave_original, (&leave_if_linked<0xc0e690>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0e9a0, leave_original, (&leave_if_linked<0xc0e9e0>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0ed70, leave_original, (&leave_if_linked<0xc0edb0>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0f090, leave_original, (&leave_if_linked<0xc0f0d0>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0f350, leave_original, (&leave_if_linked<0xc0f390>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0f550, leave_original, (&leave_if_linked<0xc0f590>), &g_leaves);
+REWRITE("List::LeaveIfLinked", 0xc0f720, leave_original, (&leave_if_linked<0xc0f760>), &g_leaves);
+
+// ---- Shared::Delete: a deleting destructor for shared values, which go back to the pool shared_release uses ---------
+static volatile long g_shared_deletes;
+template <uint32_t DESTROY> static void *__thiscall shared_delete(void *self, uint32_t flags) {
+    g_shared_deletes++;
+    ((void(__fastcall *)(void *))DESTROY)(self);
+    if ((flags & 1) && self)
+        ((void(__thiscall *)(void *, void *))0xca1f80)(*(uint8_t **)0x13e3318 + 4, self);
+    return self;
+}
+// Five known bytes are needed; the fifth on are the destructor call's offset, so each copy has its own.
+template <uint32_t AT, uint32_t DESTROY> static const uint8_t shared_delete_original[] = {
+    0x56, 0x8b, 0xf1, 0xe8, (uint8_t)(DESTROY - (AT + 8)), (uint8_t)((DESTROY - (AT + 8)) >> 8),
+    (uint8_t)((DESTROY - (AT + 8)) >> 16), (uint8_t)((DESTROY - (AT + 8)) >> 24)};
+REWRITE("Shared::Delete", 0xc0a5b0, (shared_delete_original<0xc0a5b0, 0xc09bf0>), (&shared_delete<0xc09bf0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0a860, (shared_delete_original<0xc0a860, 0xc0a750>), (&shared_delete<0xc0a750>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0dc50, (shared_delete_original<0xc0dc50, 0xc0dc80>), (&shared_delete<0xc0dc80>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0ddb0, (shared_delete_original<0xc0ddb0, 0xc0dde0>), (&shared_delete<0xc0dde0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0def0, (shared_delete_original<0xc0def0, 0xc0df20>), (&shared_delete<0xc0df20>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0e2a0, (shared_delete_original<0xc0e2a0, 0xc0e2d0>), (&shared_delete<0xc0e2d0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0e5b0, (shared_delete_original<0xc0e5b0, 0xc0e5e0>), (&shared_delete<0xc0e5e0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0e8b0, (shared_delete_original<0xc0e8b0, 0xc0e8e0>), (&shared_delete<0xc0e8e0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0eca0, (shared_delete_original<0xc0eca0, 0xc0ecd0>), (&shared_delete<0xc0ecd0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0efb0, (shared_delete_original<0xc0efb0, 0xc0efe0>), (&shared_delete<0xc0efe0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0f290, (shared_delete_original<0xc0f290, 0xc0f2c0>), (&shared_delete<0xc0f2c0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0f480, (shared_delete_original<0xc0f480, 0xc0f4b0>), (&shared_delete<0xc0f4b0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0f680, (shared_delete_original<0xc0f680, 0xc0f6b0>), (&shared_delete<0xc0f6b0>), &g_shared_deletes);
+REWRITE("Shared::Delete", 0xc0f820, (shared_delete_original<0xc0f820, 0xc0d460>), (&shared_delete<0xc0d460>), &g_shared_deletes);
