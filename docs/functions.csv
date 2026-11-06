@@ -7992,6 +7992,7 @@ address,size,name,callers,status
 0x708900,75,,1,documented
 0x708960,6,ParkEntrances::Count,4,rewritten
 0x708970,9,ParkEntrances::At,2,rewritten
+0x708980,82,ParkEntrances::Random,0,rewritten
 0x7089e0,68,,8,documented
 0x708a30,106,,2,documented
 0x708ac0,407,,2,documented
