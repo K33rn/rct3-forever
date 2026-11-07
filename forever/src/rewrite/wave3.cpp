@@ -1422,3 +1422,61 @@ template <uint32_t TARGET> static void __thiscall w3b_draw_all(uint8_t *self, ui
 static const uint8_t w3b_draw_all_original[] = {0xa1, 0x8c, 0x01, 0x2f, 0x01, 0x53, 0x8b, 0xd9};
 REWRITE("Items::DrawAll974900", 0x974900, w3b_draw_all_original, (&w3b_draw_all<0x54>), &g_w3b_draw_all);
 REWRITE("Items::DrawAll974900", 0x9797c0, w3b_draw_all_original, (&w3b_draw_all<0x18>), &g_w3b_draw_all);
+
+// ---- Parts::Tell: does the base work, then tells the interface of each of the two parts, if the part has an object --------
+static volatile long g_w3b_tell;
+static inline void w3b_tell_part(uint8_t *part, uint32_t value) {
+    if (!*(void **)(part + 0xc)) return;
+    ((void(__thiscall *)(void *, uint32_t))0x9d4f70)(find_interface(part, (const int32_t *)0x13417cc), value);
+}
+template <uintptr_t BASE> static void __thiscall w3b_tell(uint8_t *self, uint32_t value) {
+    g_w3b_tell++;
+    ((void(__thiscall *)(void *, uint32_t))BASE)(self, value);
+    w3b_tell_part(*(uint8_t **)(self + 0x4c), value);
+    w3b_tell_part(*(uint8_t **)(self + 0x60), value);
+}
+static const uint8_t w3b_tell_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x57, 0x53, 0x8b, 0xf9};
+REWRITE("Parts::Tell548EA0", 0x548ea0, w3b_tell_original, (&w3b_tell<0x548cf0>), &g_w3b_tell);
+REWRITE("Parts::Tell548EA0", 0x549f20, w3b_tell_original, (&w3b_tell<0x549c50>), &g_w3b_tell);
+
+// ---- Span::Start: where a span goes so that it centres on a stored position, kept on the map --------------------------------
+static volatile long g_w3b_span;
+template <uint32_t PLACED, uint32_t LOOSE, uint32_t LENGTH, uint32_t TURNED, uint32_t LIMIT> static int32_t __fastcall w3b_span(uint8_t *self) {
+    g_w3b_span++;
+    uint8_t *shape = *(uint8_t **)(self + 0x16c);
+    if (!shape) return self[LOOSE];
+    uint32_t kind = *(uint32_t *)(shape + 8) & 0xffff;
+    int32_t centre = kind == 1 || kind == 2 || kind == 6 || kind == 8 ? self[PLACED] : self[LOOSE];
+    uint8_t *map = ((uint8_t * (__cdecl *)())0x40a090)();
+    if (!(map[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(map);
+    shape = *(uint8_t **)(self + 0x16c);
+    int32_t turn = *(int32_t *)(self + 0x17c);
+    int32_t length = *(int32_t *)(shape + (turn == 1 || turn == 3 ? TURNED : LENGTH));
+    int32_t start = centre - (length >> 1);
+    if (start < 0) start = 0;
+    int32_t limit = (*(uint8_t **)(map + 0x54))[LIMIT];
+    return start + length > limit ? limit - length : start;
+}
+static const uint8_t w3b_span_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x8e, 0x6c, 0x01};
+REWRITE("Span::Start838AC0", 0x838ac0, w3b_span_original, (&w3b_span<0x208, 0x185, 0x10, 0x14, 4>), &g_w3b_span);
+REWRITE("Span::Start838AC0", 0x838b60, w3b_span_original, (&w3b_span<0x209, 0x186, 0x14, 0x10, 5>), &g_w3b_span);
+
+// ---- Rows::Count: how many of the rows of the (remembered) interface pass a check ---------------------------------------------
+static volatile long g_w3b_rows;
+static inline uint8_t *w3b_rows_of(uint8_t *self) {
+    if (!self[0x21c]) {
+        *(void **)(self + 0x218) = find_interface(*(uint8_t **)(self + 0x208), (const int32_t *)0x12f5338);
+        self[0x21c] = 1;
+    }
+    return *(uint8_t **)(self + 0x218);
+}
+template <uintptr_t CHECK> static int32_t __fastcall w3b_rows(uint8_t *self) {
+    g_w3b_rows++;
+    int32_t passed = 0;
+    for (int32_t i = 0; i < *(int32_t *)(w3b_rows_of(self) + 0x44); i++)
+        if (((uint8_t(__fastcall *)(void *))CHECK)(*(uint8_t **)(w3b_rows_of(self) + 0x40) + i * 0xe0)) passed++;
+    return passed;
+}
+static const uint8_t w3b_rows_original[] = {0x51, 0x53, 0x55, 0x56, 0x33, 0xed, 0x57, 0x8b, 0xf9};
+REWRITE("Rows::Count533FF0", 0x533ff0, w3b_rows_original, (&w3b_rows<0x559bc0>), &g_w3b_rows);
+REWRITE("Rows::Count533FF0", 0x5340e0, w3b_rows_original, (&w3b_rows<0x559bf0>), &g_w3b_rows);

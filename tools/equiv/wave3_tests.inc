@@ -1265,3 +1265,66 @@
     };
     w3b_draw_test.finish = [](const rewrite::Entry *) { unstub_many(); *(void **)0x12f018c = w3b_settings_was; *(void **)0x13d0db8 = w3b_device_was2; };
     quick(w3b_draw_test);
+
+    // Parts::Tell: each part with an object or none, the interface found or not
+    Test w3b_tell_test{0x548ea0,
+                       [=](Rng &r) {
+                           fresh(r); iface_handle(r);
+                           arena<void *>(0x60c)[0] = nullptr;
+                           *(void **)arena<uint8_t>(0x14c) = r.range(0, 2) ? arena<void>(0x340) : arena<void>(0x600);
+                           *(void **)arena<uint8_t>(0x160) = r.range(0, 2) ? arena<void>(0x340) : arena<void>(0x600);
+                           arena<uint32_t>(0x24)[0] = r.next();
+                       },
+                       [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x24)[0]); return Result{}; }};
+    w3b_tell_test.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x13417cc;
+        stubs_for_now({{0x9d4f70, (void *)stub_thiscall1}, {(uintptr_t)(e->at + 0xa + 5 + *(int32_t *)(e->at + 0xb)), (void *)stub_thiscall1}});
+    };
+    w3b_tell_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_tell_test);
+    // Span::Start: no shape, every kind and turn, spans hitting either edge of maps of 0-40
+    Test w3b_span_test{0x838ac0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           uint8_t *self = arena<uint8_t>(0x1000);
+                           for (int i = 0; i < 0x90; i++) ((uint32_t *)self)[i] = r.next();
+                           *(void **)(self + 0x16c) = r.range(0, 5) ? arena<void>(0x300) : nullptr;
+                           *(int32_t *)(self + 0x17c) = r.range(0, 4);
+                           for (int at : {0x185, 0x186, 0x208, 0x209}) self[at] = (uint8_t)r.range(0, 45);
+                           arena<uint32_t>(0x308)[0] = (r.next() << 16) | (uint32_t)r.range(0, 9);
+                           arena<int32_t>(0x310)[0] = r.range(0, 34) - 2;
+                           arena<int32_t>(0x314)[0] = r.range(0, 34) - 2;
+                           arena<uint32_t>(0x42c)[0] = r.next();
+                           *(void **)arena<uint8_t>(0x454) = arena<void>(0x500);
+                           arena<uint8_t>(0x504)[0] = (uint8_t)r.range(0, 40);
+                           arena<uint8_t>(0x505)[0] = (uint8_t)r.range(0, 40);
+                       },
+                       [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x1000))}; }};
+    w3b_span_test.iterations = 2000;
+    w3b_span_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x40a090, (void *)w3_stub_registry}, {0x800860, (void *)stub_plain_dtor}}); };
+    w3b_span_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_span_test);
+    // Rows::Count: remembered or looked up, at either interface offset, 0-3 rows passing or not
+    Test w3b_rows_test{0x533ff0,
+                       [=](Rng &r) {
+                           fresh(r); iface_handle(r);
+                           uint8_t *self = arena<uint8_t>(0x1000);
+                           *(void **)arena<uint8_t>(0x34c) = arena<void>(0x360);
+                           *arena<void *>(0x1f0) = arena<void>(0x200);
+                           *g_iface_id = (uint32_t)r.range(1, 2);
+                           *(void **)(self + 0x208) = arena<void>(0x340);
+                           self[0x21c] = (uint8_t)r.range(0, 1);
+                           *(void **)(self + 0x218) = arena<void>(0x360);
+                           for (int at : {0x3a0, 0x3a8}) {
+                               *(void **)arena<uint8_t>(at) = arena<void>(0x800);
+                               arena<int32_t>(at + 4)[0] = r.range(0, 3);
+                           }
+                           for (int i = 0; i < 4; i++) arena<uint8_t>(0x800 + i * 0xe0)[0] = (uint8_t)r.range(0, 1);
+                       },
+                       [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x1000))}; }};
+    w3b_rows_test.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f5338;
+        stubs_for_now({{(uintptr_t)(e->at + 0xc0 + 5 + *(int32_t *)(e->at + 0xc1)), (void *)w3b_stub_row}});
+    };
+    w3b_rows_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_rows_test);

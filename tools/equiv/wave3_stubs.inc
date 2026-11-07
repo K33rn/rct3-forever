@@ -204,3 +204,5 @@ static void __thiscall w3b_stub_draw(void *self, void *item, uint32_t a, uint32_
     for (uint32_t v : {a, b, c, d}) record(0x7b25, (void *)(uintptr_t)v);
 }
 static void __thiscall w3b_stub_state(void *self, uint32_t a, uint32_t b) { record(0x7b26, self); record(0x7b26, (void *)(uintptr_t)a); record(0x7b26, (void *)(uintptr_t)b); }
+
+static uint32_t __fastcall w3b_stub_row(uint8_t *row) { record(0x7b30, row); return 0xabcd00 | row[0]; }
