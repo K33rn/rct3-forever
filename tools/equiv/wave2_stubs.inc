@@ -215,3 +215,19 @@ static uint32_t __fastcall w2b_stub_check2(void *self) {
     record(0xe279, self);
     return arena<uint32_t>(0x20)[1];
 }
+// hands out arena memory, or fails, as the seed says
+static void *__cdecl w2b_stub_alloc(uint32_t size) {
+    record(0xe27a, (void *)(uintptr_t)size);
+    return arena<uint32_t>(0x20)[1] & 1 ? arena<void>(0x900) : nullptr;
+}
+static void __stdcall w2b_stub_build(void *rows, uint32_t size, uint32_t count, uint32_t init) {
+    record(0xe27b, rows);
+    record(0xe27b, (void *)(uintptr_t)size);
+    record(0xe27b, (void *)(uintptr_t)count);
+    record(0xe27b, (void *)(uintptr_t)init);
+}
+static uint32_t __thiscall w2b_stub_find(void *table, uint32_t key) {
+    record(0xe27c, table);
+    record(0xe27c, (void *)(uintptr_t)key);
+    return arena<uint32_t>(0x20)[0] & 3;
+}

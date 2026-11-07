@@ -892,3 +892,31 @@
     };
     w2b_setup_test.finish = w2_unstub;
     quick(w2b_setup_test);
+    // Rows::Resize: an old table or none; a zero count, a count that gets its memory, one that does not
+    Test w2b_resize_test{0x5d4350,
+                         [=](Rng &r) {
+                             w2_values(r);
+                             arena<void *>(0x100)[0] = r.range(0, 1) ? arena<void>(0xa00) : nullptr;
+                             arena<uint32_t>(0x20)[2] = (uint32_t)r.range(0, 3);
+                         },
+                         [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[2])}; }};
+    w2b_resize_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbce010, (void *)w2b_stub_free_table}, {0xbcdfd0, (void *)w2b_stub_alloc}, {0x5d3d00, (void *)w2b_stub_build}});
+    };
+    w2b_resize_test.finish = w2_unstub;
+    quick(w2b_resize_test);
+    // Weights::Ensure: a place already filled, an empty one that gets its weight, an empty one that does not
+    Test w2b_ensure_test{0x40c160,
+                         [=](Rng &r) {
+                             w2_values(r);
+                             *(void **)(arena<uint8_t>(0x100) + 0x14) = arena<void>(0x800);
+                             *(void **)(arena<uint8_t>(0x100) + 0x28) = arena<void>(0x800);
+                             for (int i = 0; i < 4; i++) arena<uint32_t>(0x800)[i] = r.range(0, 1) ? r.next() | 1 : 0;
+                             arena<uint32_t>(0x900)[0] = r.next();
+                         },
+                         [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[2])}; }};
+    w2b_ensure_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x40b550, (void *)w2b_stub_find}, {0xcea320, (void *)w2b_stub_find}, {0xbcdfc0, (void *)w2b_stub_alloc}});
+    };
+    w2b_ensure_test.finish = w2_unstub;
+    quick(w2b_ensure_test);

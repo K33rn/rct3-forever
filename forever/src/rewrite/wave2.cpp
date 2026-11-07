@@ -1095,3 +1095,40 @@ template <uint32_t FLAG, uint32_t CHECK1, uint32_t DO1, uint32_t CHECK2, uint32_
 template <uint32_t FLAG> static const uint8_t w2b_setup_original[] = {0x56, 0x8b, 0xf1, 0x8a, 0x86, (uint8_t)FLAG, (uint8_t)(FLAG >> 8), 0x00, 0x00, 0x84, 0xc0};
 REWRITE("Setup::OnceA12CB0", 0xa12cb0, w2b_setup_original<0x15c>, (&w2b_setup<0x15c, 0xa113d0, 0xa11680, 0xa114a0, 0xa11570>), &g_w2b_setups);
 REWRITE("Setup::OnceA12CB0", 0xa161d0, w2b_setup_original<0x14c>, (&w2b_setup<0x14c, 0xa14bf0, 0xa14ef0, 0xa14cc0, 0xa14d90>), &g_w2b_setups);
+
+// ---- Rows::Resize: frees the old {data, count} table and, for a nonzero count, builds a new one of 20-byte rows with INIT ------------------
+static volatile long g_w2b_resizes;
+template <uint32_t INIT> static uint32_t __thiscall w2b_resize(uint32_t *self, uint32_t count) {
+    g_w2b_resizes++;
+    if (self[0]) {
+        ((void(__cdecl *)(uint32_t))0xbce010)(self[0]);
+        self[0] = 0;
+    }
+    if (count) {
+        void *rows = ((void *(__cdecl *)(uint32_t))0xbcdfd0)(count * 20);
+        if (rows) ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0x5d3d00)(rows, 0x14, count, INIT);
+        self[0] = (uint32_t)(uintptr_t)rows;
+    }
+    self[1] = count;
+    return count;
+}
+static const uint8_t w2b_resize_original[] = {0x53, 0x8b, 0xd9, 0x8b, 0x03, 0x85, 0xc0, 0x56};
+REWRITE("Rows::Resize5D4350", 0x5d4350, w2b_resize_original, (&w2b_resize<0x5d3da0>), &g_w2b_resizes);
+REWRITE("Rows::Resize5D4350", 0x5d4470, w2b_resize_original, (&w2b_resize<0x5d3dc0>), &g_w2b_resizes);
+
+// ---- Weights::Ensure: finds the key's place in the table at +OFF, and gives an empty place a new weight of 1.0 ---------------------------
+static volatile long g_w2b_ensures;
+template <uint32_t OFF, uint32_t FIND> static uint32_t __thiscall w2b_ensure(uint8_t *self, uint32_t key) {
+    g_w2b_ensures++;
+    uint32_t ***table = (uint32_t ***)(self + OFF);
+    uint32_t place = ((uint32_t(__thiscall *)(void *, uint32_t))FIND)(table, key);
+    if (!(*table)[place]) {
+        uint32_t *weight = ((uint32_t *(__cdecl *)(uint32_t))0xbcdfc0)(4);
+        if (weight) *weight = 0x3f800000;   // 1.0f, as bits
+        (*table)[place] = weight;
+    }
+    return place;
+}
+static const uint8_t w2b_ensure_original[] = {0x8b, 0x44, 0x24, 0x04, 0x56, 0x57, 0x8d, 0x71};
+REWRITE("Weights::Ensure40C160", 0x40c160, w2b_ensure_original, (&w2b_ensure<0x14, 0x40b550>), &g_w2b_ensures);
+REWRITE("Weights::Ensure40C160", 0xceb3c0, w2b_ensure_original, (&w2b_ensure<0x28, 0xcea320>), &g_w2b_ensures);
