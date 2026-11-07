@@ -75,7 +75,7 @@ for macro, at, params, nb in gen:
     by_shape.setdefault(shape(ops), []).append((macro, at, params, nb, ops))
 
 emitted = {at for _, at, _, _ in gen}
-cands = [int(x, 16) for x in sys.argv[2:]] or [a for a in size if status[a] == 'documented']
+cands = [int(x, 16) for x in sys.argv[2:] if x.startswith('0x')] or [a for a in size if status[a] == 'documented']
 lines, taken = [], 0
 for a in cands:
     if a in emitted or status.get(a) != 'documented':
@@ -121,7 +121,76 @@ for a in cands:
                 lines.append(f'{macro}({a:#x}, ' + ', '.join(f'{v:#x}' for v in newp) + (', ' if newp else '') + f'{first})')
                 taken += size[a]
                 break
-open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'extra.inc'), 'w', newline='\n').write('\n'.join(lines) + '\n')
+_path = os.path.join(HERE, 'forever', 'src', 'rewrite', 'extra.inc')
+if '--loose' not in sys.argv:   # add to the list, never drop copies found before
+    _old = open(_path).read().splitlines() if os.path.exists(_path) else []
+    _keys = {l.split(',')[0] for l in _old}
+    open(_path, 'w', newline='\n').write('\n'.join(_old + [l for l in lines if l.split(',')[0] not in _keys]) + '\n')
 print(len(lines), 'copies,', taken, 'bytes')
 for l in lines[:12]:
     print(' ', l[:110])
+
+
+def code_values(a):
+    """immediates pushed and absolute call targets, in order (the exception frame's handler left out)"""
+    out = []
+    for i in md.disasm(bytes(img[a - BASE:a - BASE + size[a]]), a):
+        for o in i.operands:
+            if o.type == capstone.x86.X86_OP_IMM and i.mnemonic in ('push', 'call'):
+                v = o.imm & 0xffffffff
+                if i.mnemonic == 'push' and 0xdf0000 <= v < 0xeb0000:
+                    continue
+                if i.mnemonic == 'call' and a <= v < a + size[a]:
+                    continue
+                out.append((i.mnemonic, v))
+    return out
+
+
+def loose(macros, cands):
+    """array resizers whose only differences are how count * size is worked out and which registers hold what: the
+    parameters are read from the pushes and calls at the same places, and every other push and call must agree;
+    the template's own test then decides"""
+    import difflib
+    reps = [(m, at, p, nb) for m, at, p, nb in gen if m in macros and at in size]
+    found = []
+    for a in cands:
+        if a in emitted or status.get(a) != 'documented' or a not in size:
+            continue
+        tv = code_values(a)
+        mnt = [i.mnemonic for i in md.disasm(bytes(img[a - BASE:a - BASE + size[a]]), a)]
+        for m, at, params, nb in reps:
+            if abs(size[at] - size[a]) > 24:
+                continue
+            rv = code_values(at)
+            if len(rv) != len(tv) or [x[0] for x in rv] != [x[0] for x in tv]:
+                continue
+            mnr = [i.mnemonic for i in md.disasm(bytes(img[at - BASE:at - BASE + size[at]]), at)]
+            if difflib.SequenceMatcher(None, mnr, mnt, autojunk=False).ratio() < 0.85:
+                continue
+            newp, ok = [], True
+            for pv in params:
+                idx = [k for k, x in enumerate(rv) if x[1] == pv]
+                if not idx:
+                    newp.append(pv)   # not pushed or called (a header size, say): the same as the representative
+                    continue
+                got = {tv[k][1] for k in idx}
+                if len(got) != 1:
+                    ok = False
+                    break
+                newp.append(got.pop())
+            pidx = {k for k, x in enumerate(rv) if x[1] in params}
+            if ok and all(rv[k][1] == tv[k][1] for k in range(len(rv)) if k not in pidx):
+                found.append(f'{m}({a:#x}, ' + ', '.join(f'{v:#x}' for v in newp) + ', ' + ', '.join(f'0x{b:02x}' for b in img[a - BASE:a - BASE + max(nb, 8)]) + ')')
+                break
+    return found
+
+
+if '--loose' in sys.argv:
+    extra = loose({'OBJECT_SETCAP', 'OBJECT_RESIZE', 'TRIVIAL_SETCAP'}, [a for a in size if status[a] == 'documented'])
+    have = open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'extra.inc')).read().splitlines()
+    keep = {l.split(',')[0] for l in have}
+    extra = [l for l in extra if l.split(',')[0] not in keep]
+    open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'extra.inc'), 'w', newline='\n').write('\n'.join(have + extra) + '\n')
+    print('loose:', len(extra), 'more copies', sum(size[int(l.split('(')[1].split(',')[0], 16)] for l in extra), 'bytes')
+    for l in extra[:8]:
+        print(' ', l[:100])
