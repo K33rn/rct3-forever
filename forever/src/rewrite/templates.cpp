@@ -1865,6 +1865,7 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define ARRAY_FREE16(at, size, dtor, ...) static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__}; static rewrite::Entry REWRITE_CAT(entry_, at)("ObjectArray::Free", at, REWRITE_CAT(original_, at), 8, (void *)&object_array_free<size, dtor, 0x10>, &g_array_frees);
 #define SET_TABLE(at, table, ...)                                                                                    static const uint8_t REWRITE_CAT(original_, at)[] = {__VA_ARGS__};                                            static rewrite::Entry REWRITE_CAT(entry_, at)("SetTable", at, REWRITE_CAT(original_, at), 7,                                                                 (void *)&set_table<table>, &g_table_sets);
 #include "generated.inc"
+#include "extra.inc"   // more copies found by tools/extend_family.py
 #undef START_NAME
 #undef START_CLASS
 #undef START_SECTION
@@ -2118,6 +2119,7 @@ template <uint32_t O0, uint32_t O1> static uint32_t __thiscall vfwd2_ret(uint8_t
 #define CACHED(at, flag, ref, obj, id, cache, ...) {at, flag, ref, obj, id, cache},
 static const uint32_t cached_table[][6] = {
 #include "generated.inc"
+#include "extra.inc"   // more copies found by tools/extend_family.py
 };
 
 namespace rewrite {
@@ -2137,6 +2139,7 @@ const uint32_t *cached_constants(uintptr_t at) {
 #define CLEANUP(at, global, ...) {at, global},
 static const uint32_t cleanup_table[][2] = {
 #include "generated.inc"
+#include "extra.inc"   // more copies found by tools/extend_family.py
 };
 
 namespace rewrite {
@@ -2156,6 +2159,7 @@ uint32_t cleanup_global(uintptr_t at) {
 #define LOAD(at, stride, resize, ...) {at, stride, resize},
 static const uint32_t load_table[][3] = {
 #include "generated.inc"
+#include "extra.inc"   // more copies found by tools/extend_family.py
 };
 
 namespace rewrite {
@@ -2546,6 +2550,7 @@ const uint32_t *load_constants(uintptr_t at) {
 #define VFWD2_RET(at, o0, o1, ...) {at, o0, o1},
 static const uint32_t start_table[][10] = {
 #include "generated.inc"
+#include "extra.inc"   // more copies found by tools/extend_family.py
 };
 
 namespace rewrite {

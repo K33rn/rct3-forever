@@ -2168,7 +2168,7 @@ address,size,name,callers,status
 0x4aa060,30,DeletingDestructor,1,rewritten
 0x4aa080,7,BaseClass::SetClass,1,rewritten
 0x4aa090,476,,1,documented
-0x4aa270,270,,8,documented
+0x4aa270,270,ObjectArray::SetCapacity,8,rewritten
 0x4aa3e0,263,,5,documented
 0x4aa4f0,167,,0,documented
 0x4aa5b0,175,,5,documented
@@ -3793,7 +3793,7 @@ address,size,name,callers,status
 0x55b630,54,,1,documented
 0x55b750,30,DeletingDestructor,1,rewritten
 0x55b780,51,ObjectArray::Free,1,rewritten
-0x55b7c0,162,,2,documented
+0x55b7c0,162,ObjectArray::Resize,2,rewritten
 0x55b870,959,,5,documented
 0x55bc50,29,,1,documented
 0x55bc70,94,,1,documented
@@ -5487,7 +5487,7 @@ address,size,name,callers,status
 0x61dd20,30,DeletingDestructor,2,rewritten
 0x61dd40,144,MEMBER_DTOR,1,rewritten
 0x61ddd0,122,OBJECT_CONSTRUCT,1,rewritten
-0x61de50,107,,1,documented
+0x61de50,107,Factory::CreateAround,1,rewritten
 0x61dec0,198,,1,documented
 0x61df90,162,,1,documented
 0x61e040,822,,1,documented
@@ -9598,7 +9598,7 @@ address,size,name,callers,status
 0x7aea40,269,,1,documented
 0x7aeb50,164,,0,documented
 0x7aecc0,30,DeletingDestructor,2,rewritten
-0x7aece0,34,,1,documented
+0x7aece0,34,SET_TABLE_TAIL,1,rewritten
 0x7aed10,169,,1,documented
 0x7aee50,7,SetTable,3,rewritten
 0x7aef00,30,DeletingDestructor,1,rewritten
@@ -12896,7 +12896,7 @@ address,size,name,callers,status
 0x914390,48,,0,documented
 0x9143c0,322,,2,documented
 0x914510,51,ObjectArray::Free,4,rewritten
-0x914550,270,,4,documented
+0x914550,270,ObjectArray::SetCapacity,4,rewritten
 0x914660,350,,1,documented
 0x9147c0,222,,1,documented
 0x9148a0,3799,,2,documented
@@ -15790,7 +15790,7 @@ address,size,name,callers,status
 0xa3fc20,937,,2,documented
 0xa40080,547,,0,documented
 0xa402b0,79,,2,documented
-0xa40300,15,,2,documented
+0xa40300,15,Object::SetFieldTail,2,rewritten
 0xa40340,40,Text::Widen,0,rewritten
 0xa40450,371,,3,documented
 0xa40610,26,OwnedPointer::Reset,2,rewritten
@@ -18772,9 +18772,9 @@ address,size,name,callers,status
 0xb830d0,30,DeletingDestructor,1,rewritten
 0xb830f0,69,Part::Destroy6A5A80,1,rewritten
 0xb83140,466,,5,documented
-0xb83320,15,,1,documented
-0xb83330,15,,1,documented
-0xb83340,15,,1,documented
+0xb83320,15,Object::SetFieldTail,1,rewritten
+0xb83330,15,Object::SetFieldTail,1,rewritten
+0xb83340,15,Object::SetFieldTail,1,rewritten
 0xb83350,33,,2,documented
 0xb83380,390,,2,documented
 0xb83510,1294,,7,documented
@@ -19375,7 +19375,7 @@ address,size,name,callers,status
 0xbb41e0,7,,4,documented
 0xbb41f0,28,,3,documented
 0xbb4230,11,,15,documented
-0xbb4280,27,,195,documented
+0xbb4280,27,BRANCH_OFF,195,rewritten
 0xbb42a0,433,,0,documented
 0xbb4460,390,,10,documented
 0xbb45f0,463,,0,documented
@@ -22657,7 +22657,7 @@ address,size,name,callers,status
 0xcc4660,33,,1,documented
 0xcc4690,104,,1,documented
 0xcc4700,61,Debug::Delete,1,rewritten
-0xcc4740,23,,1,documented
+0xcc4740,23,Object::GetField,1,rewritten
 0xcc4760,24,Object::GetField,1,rewritten
 0xcc4780,24,Object::GetField,1,rewritten
 0xcc47a0,24,Object::GetField,6,rewritten
@@ -68934,7 +68934,7 @@ address,size,name,callers,status
 0xeb3200,71,Start::KeyCommand,1,rewritten
 0xeb3250,73,Start::KeyCommand,1,rewritten
 0xeb32a0,70,Start::KeyCommand,1,rewritten
-0xeb32f0,67,,1,documented
+0xeb32f0,67,Start::KeyCommand,1,rewritten
 0xeb3340,70,Start::KeyCommand,1,rewritten
 0xeb3390,70,Start::KeyCommand,1,rewritten
 0xeb33e0,70,Start::KeyCommand,1,rewritten
