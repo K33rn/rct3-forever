@@ -174,8 +174,8 @@ static bool check_copy(const rewrite::Entry *e, const Test &t, int iterations, u
             memcpy(g_arena, g_arena0.data(), sizeof g_arena);
             if (!same) {
                 // (the C runtime's printf has no 80-bit long double, so the float results are shown as doubles)
-                printf("  DIFFERENT %s, case %d, %s-bit FPU: original %08x / %.9g, rewrite %08x / %.9g%s\n",
-                       e->name, it, p.name, a.i, (double)a.f, b.i, (double)b.f, a == b ? " (memory differs)" : "");
+                printf("  DIFFERENT %s at 0x%x, case %d, %s-bit FPU: original %08x / %.9g, rewrite %08x / %.9g%s\n",
+                       e->name, (unsigned)e->at, it, p.name, a.i, (double)a.f, b.i, (double)b.f, a == b ? " (memory differs)" : "");
                 set_fpu(0x200);
                 return false;
             }
@@ -355,6 +355,10 @@ static uint8_t __fastcall stub_report(uint32_t file, uint32_t line, uint32_t a, 
     return 0;
 }
 static uint32_t __thiscall stub_item_arg(void *item, uint32_t arg) { record(0x72, item); record(0x72, (void *)(uintptr_t)arg); return arg ^ 0x77; }
+static void __thiscall stub_field_ctor(void *self, uint32_t a, uint32_t d, uint32_t k, uint32_t b) {
+    record(0x73, self); record(0x73, (void *)(uintptr_t)a); record(0x73, (void *)(uintptr_t)d); record(0x73, (void *)(uintptr_t)k); record(0x73, (void *)(uintptr_t)b);
+}
+static uint8_t __thiscall stub_ask(void *self, uint32_t a, uint32_t b) { record(0x78, self); record(0x78, (void *)(uintptr_t)a); record(0x78, (void *)(uintptr_t)b); return (uint8_t)((a ^ b) & 2); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -3612,6 +3616,127 @@ static std::vector<Test> tests() {
     };
     queue_surface.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(queue_surface);
+    // Global::Delete: the object at 0x500 in the copy's global, or none
+    static uint32_t g_gd_global;
+    Test global_delete{0x409ec0,
+                       [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x500) : 0; },
+                       [](void *fn) { *(uint32_t *)g_gd_global = arena<uint32_t>(0x10)[0]; ((void(__cdecl *)())fn)(); return Result{*(uint32_t *)g_gd_global}; }};   // set here: the game's globals aren't put back between the two runs
+    global_delete.prepare = [](const rewrite::Entry *e) {
+        g_gd_global = *(uint32_t *)(e->at + 2);
+        stubs_for_now({{(uintptr_t)(e->at + 0xd + 5 + *(int32_t *)(e->at + 0xe)), (void *)stub_plain_dtor}});
+    };
+    global_delete.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(global_delete);
+    // Field::Construct: the constructor is a stand-in
+    Test field_construct{0x423b70,
+                         [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = r.next(); arena<uint32_t>(0x10)[1] = r.next(); },
+                         [](void *fn) {
+                             return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1])};
+                         }};
+    field_construct.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x8088c0, (void *)stub_field_ctor}}); };
+    field_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(field_construct);
+    // Event::IfAccepted: the interface kept or found; the answer depends on the arguments
+    Test if_accepted{0xaa90d0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         iface_handle(r);
+                         uint8_t *self = arena<uint8_t>(0x800);
+                         *(void **)(self + 0xf8) = arena<void>(0x340);
+                         bool kept = r.range(0, 1);
+                         self[0x10c] = kept;
+                         *(void **)(self + 0x108) = kept ? arena<void>(0x360) : nullptr;
+                         arena<uint32_t>(0x10)[0] = r.next();
+                         arena<uint32_t>(0x10)[1] = r.next();
+                     },
+                     [](void *fn) {
+                         ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1]);
+                         return Result{};
+                     }};
+    if_accepted.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x13ce3bc;
+        stubs_for_now({{(uintptr_t)(e->at + 0x62 + 5 + *(int32_t *)(e->at + 0x63)), (void *)stub_ask},
+                       {(uintptr_t)(e->at + 0x6f + 5 + *(int32_t *)(e->at + 0x70)), (void *)stub_thiscall2}});
+    };
+    if_accepted.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(if_accepted);
+    // Refs::InterfaceAt: up to 3 references at 0x900; the index may be past the end
+    static uint32_t g_ria_count, g_ria_array;
+    Test ref_interface_at{0x561240,
+                          [=](Rng &r) {
+                              fresh(r);
+                              iface_handle(r);
+                              uint8_t *self = arena<uint8_t>(0x1800);
+                              *(int32_t *)(self + g_ria_count) = r.range(0, 3);
+                              *(void **)(self + g_ria_array) = arena<void>(0x900);
+                              for (int i = 0; i < 3; i++) {
+                                  uint8_t *ref = arena<uint8_t>(0x900 + i * 0x1c);
+                                  *(void **)(ref + 4) = arena<void>(0x340);
+                                  bool kept = r.range(0, 1);
+                                  ref[0x18] = kept;
+                                  *(void **)(ref + 0x14) = kept ? arena<void>(0x3a0) : nullptr;
+                              }
+                              arena<int32_t>(0x10)[0] = r.range(0, 3);
+                          },
+                          [](void *fn) {
+                              return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t))fn)(arena<void>(0x1800), arena<int32_t>(0x10)[0])};
+                          }};
+    ref_interface_at.prepare = [](const rewrite::Entry *e) {
+        g_ria_count = *(uint32_t *)(e->at + 6);
+        g_ria_array = *(uint32_t *)(e->at + 0xe);
+        g_iface_id = *(uint32_t **)(e->at + 0x39);
+    };
+    quick(ref_interface_at);
+    // Grid::Collect: 5 nodes (a root and 4 children) of up to 3 entries, items at 0x700.. matching the query's masks or
+    // not; the buffer holds 3, so it sometimes fills
+    static uint32_t g_gc_query;
+    Test grid_collect{0x48a4e0,
+                      [=](Rng &r) {
+                          fresh(r);
+                          static void *vt[2] = {nullptr, (void *)stub_thiscall1};
+                          arena<void *>(0x100)[2] = arena<void>(0x400);
+                          for (int k = 0; k < 5; k++) {
+                              uint32_t *n = arena<uint32_t>(0x400 + k * 0x1c);
+                              n[0] = k ? 0 : (uint32_t)r.range(0, 15) | ((uint32_t)r.range(0, 1) << 4);
+                              n[3] = (uint32_t)r.range(0, 1);
+                              n[4] = (uint32_t)r.range(0, 3);
+                              n[6] = (uint32_t)(uintptr_t)arena<void>(0xa00 + k * 0x80);
+                              for (int i = 0; i < 3; i++) {
+                                  uint32_t *e = arena<uint32_t>(0xa00 + k * 0x80 + i * 0x20);
+                                  e[7] = (uint32_t)r.range(0, 3);
+                                  e[6] = (uint32_t)(uintptr_t)arena<void>(0x700 + (k * 3 + i) * 0x20);
+                                  uint32_t *item = arena<uint32_t>(0x700 + (k * 3 + i) * 0x20);
+                                  item[2] = r.next(); item[6] = (uint32_t)r.range(0, 3); item[7] = (uint32_t)r.range(0, 3);
+                              }
+                          }
+                          uint32_t *q = arena<uint32_t>(0x600);
+                          q[0] = (uint32_t)(uintptr_t)vt;
+                          q[2] = 1; q[3] = 1; q[4] = (uint32_t)r.range(0, 1); q[5] = (uint32_t)r.range(0, 1);
+                          q[6] = 0; q[7] = (uint32_t)r.range(1, 3);
+                          q[8] = (uint32_t)(uintptr_t)arena<void>(0x680);
+                          *(void **)arena<uint8_t>(0x800 + g_gc_query) = q;
+                      },
+                      [](void *fn) {
+                          ((void(__thiscall *)(void *, int32_t, void *))fn)(arena<void>(0x100), 0, arena<void>(0x800));
+                          return Result{};
+                      }};
+    grid_collect.prepare = [](const rewrite::Entry *e) { g_gc_query = *(uint8_t *)(e->at + 0x46); };
+    quick(grid_collect);
+    // Settings::Copy: from noise to noise, the padding kept
+    Test settings_copy{0x425b80,
+                       [=](Rng &r) {
+                           fresh(r);
+                           for (int i = 0; i < 0x40; i++) { arena<uint32_t>(0x400)[i] = r.next(); arena<uint32_t>(0x600)[i] = r.next(); }
+                       },
+                       [](void *fn) {
+                           return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x400), arena<void>(0x600))};
+                       }};
+    quick(settings_copy);
+    // Rows::SaveBytes: as Rows::Save
+    Test rows_save_bytes{0x5ba680, rows_save.setup, rows_save.call};
+    rows_save_bytes.prepare = rows_save.prepare;
+    rows_save_bytes.finish = rows_save.finish;
+    quick(rows_save_bytes);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

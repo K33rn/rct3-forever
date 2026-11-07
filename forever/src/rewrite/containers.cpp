@@ -771,3 +771,163 @@ static void __fastcall queue_surface_activate(uint8_t *self) {
 }
 static const uint8_t queue_surface_original[] = {0x56, 0x8b, 0xf1, 0x8a, 0x46, 0x60, 0x84, 0xc0};
 REWRITE("QueueSurface::Activate", 0x73aa80, queue_surface_original, queue_surface_activate, &g_queue_surfaces);
+
+// ---- Global::Delete: a heap object kept in a global: destroyed, freed and the global cleared ---------------------------
+static volatile long g_global_deletes;
+template <uint32_t GLOBAL, uint32_t DESTROY> static void __cdecl global_delete() {
+    g_global_deletes++;
+    void *object = *(void **)GLOBAL;
+    if (object) {
+        ((void(__fastcall *)(void *))DESTROY)(object);
+        memory_free(object);
+    }
+    *(void **)GLOBAL = nullptr;
+}
+template <uint32_t GLOBAL> static const uint8_t global_delete_original[] = {
+    0x8b, 0x0d, (uint8_t)GLOBAL, (uint8_t)(GLOBAL >> 8), (uint8_t)(GLOBAL >> 16), (uint8_t)(GLOBAL >> 24), 0x85, 0xc9};
+REWRITE("Global::Delete", 0x409ec0, global_delete_original<0x10ff9c4>, (&global_delete<0x10ff9c4, 0x409ba0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x40d980, global_delete_original<0x10ffa14>, (&global_delete<0x10ffa14, 0x40c980>), &g_global_deletes);
+REWRITE("Global::Delete", 0x42dde0, global_delete_original<0x1103be0>, (&global_delete<0x1103be0, 0x42d350>), &g_global_deletes);
+REWRITE("Global::Delete", 0x47eb50, global_delete_original<0x12f018c>, (&global_delete<0x12f018c, 0x47e4e0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x49abb0, global_delete_original<0x12f46dc>, (&global_delete<0x12f46dc, 0x49a980>), &g_global_deletes);
+REWRITE("Global::Delete", 0x6926e0, global_delete_original<0x12f84c8>, (&global_delete<0x12f84c8, 0x6914a0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x7260e0, global_delete_original<0x1306344>, (&global_delete<0x1306344, 0x725de0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x744f00, global_delete_original<0x13064a4>, (&global_delete<0x13064a4, 0x743f60>), &g_global_deletes);
+REWRITE("Global::Delete", 0x757b10, global_delete_original<0x1306530>, (&global_delete<0x1306530, 0x7576d0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x7fa7c0, global_delete_original<0x130abd8>, (&global_delete<0x130abd8, 0x7fa630>), &g_global_deletes);
+REWRITE("Global::Delete", 0x8545c0, global_delete_original<0x130bbf8>, (&global_delete<0x130bbf8, 0x851a50>), &g_global_deletes);
+REWRITE("Global::Delete", 0x8b09b0, global_delete_original<0x1311230>, (&global_delete<0x1311230, 0x8b0400>), &g_global_deletes);
+REWRITE("Global::Delete", 0x8f9310, global_delete_original<0x1339fb4>, (&global_delete<0x1339fb4, 0x8f8a00>), &g_global_deletes);
+REWRITE("Global::Delete", 0x983700, global_delete_original<0x13412dc>, (&global_delete<0x13412dc, 0x982dc0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x409db0, global_delete_original<0x10ff9c8>, (&global_delete<0x10ff9c8, 0x409980>), &g_global_deletes);
+REWRITE("Global::Delete", 0x4965e0, global_delete_original<0x12f4694>, (&global_delete<0x12f4694, 0x495e90>), &g_global_deletes);
+REWRITE("Global::Delete", 0x496b70, global_delete_original<0x12f469c>, (&global_delete<0x12f469c, 0xc091b0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x512480, global_delete_original<0x12f50b4>, (&global_delete<0x12f50b4, 0x50cda0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x620d90, global_delete_original<0x12f57d0>, (&global_delete<0x12f57d0, 0x620bd0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x85bce0, global_delete_original<0x130bc98>, (&global_delete<0x130bc98, 0x85abe0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x884310, global_delete_original<0x1310f74>, (&global_delete<0x1310f74, 0x883020>), &g_global_deletes);
+REWRITE("Global::Delete", 0x9655a0, global_delete_original<0x133b4d4>, (&global_delete<0x133b4d4, 0x964fe0>), &g_global_deletes);
+REWRITE("Global::Delete", 0x9c6030, global_delete_original<0x13414ec>, (&global_delete<0x13414ec, 0x9c5c90>), &g_global_deletes);
+REWRITE("Global::Delete", 0xce92a0, global_delete_original<0x1400b70>, (&global_delete<0x1400b70, 0xce8a10>), &g_global_deletes);
+REWRITE("Global::Delete", 0xcee290, global_delete_original<0x1408b80>, (&global_delete<0x1408b80, 0xced240>), &g_global_deletes);
+REWRITE("Global::Delete", 0xcefda0, global_delete_original<0x141ab2c>, (&global_delete<0x141ab2c, 0xcef7e0>), &g_global_deletes);
+
+// ---- Field::Construct: a saved field's constructor (0x8088C0) with its class's description and kind, then its own table --
+static volatile long g_field_constructs;
+template <uint32_t KIND, uint32_t DESCRIPTION, uint32_t TABLE>
+static uint32_t *__thiscall field_construct(uint32_t *self, uint32_t a, uint32_t b) {
+    g_field_constructs++;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))0x8088c0)(self, a, DESCRIPTION, KIND, b);
+    self[0] = TABLE;
+    return self;
+}
+static const uint8_t field_construct_original[] = {0x8b, 0x44, 0x24, 0x08, 0x56, 0x50, 0x6a};
+REWRITE("Field::Construct", 0x423b70, field_construct_original, (&field_construct<0x4, 0xf27b18, 0xf27b04>), &g_field_constructs);
+REWRITE("Field::Construct", 0x423bb0, field_construct_original, (&field_construct<0x0, 0xf27b34, 0xf27b20>), &g_field_constructs);
+REWRITE("Field::Construct", 0x44cac0, field_construct_original, (&field_construct<0x1, 0xf28d50, 0xf2942c>), &g_field_constructs);
+REWRITE("Field::Construct", 0x455710, field_construct_original, (&field_construct<0x0, 0xf29794, 0xf29780>), &g_field_constructs);
+REWRITE("Field::Construct", 0x4a8bf0, field_construct_original, (&field_construct<0x0, 0xf27b94, 0xf30a40>), &g_field_constructs);
+REWRITE("Field::Construct", 0x4e6050, field_construct_original, (&field_construct<0x8, 0xf294a0, 0xf35524>), &g_field_constructs);
+REWRITE("Field::Construct", 0x50c680, field_construct_original, (&field_construct<0x8, 0xf294a0, 0xf36e4c>), &g_field_constructs);
+REWRITE("Field::Construct", 0x5a22b0, field_construct_original, (&field_construct<0x0, 0xf27b94, 0xf3de30>), &g_field_constructs);
+REWRITE("Field::Construct", 0x5a22e0, field_construct_original, (&field_construct<0x0, 0xf27b94, 0xf3de44>), &g_field_constructs);
+REWRITE("Field::Construct", 0xb0e270, field_construct_original, (&field_construct<0x0, 0xf97b50, 0xf97b3c>), &g_field_constructs);
+
+// ---- Event::IfAccepted: asks the interface kept at +0x108 (flag +0x10c, reference +0xf8) whether to take a two-argument
+// event, and passes it to the object's own handler if so ------------------------------------------------------------------
+static volatile long g_if_accepted;
+template <uint32_t ASK, uint32_t HANDLE> static void __thiscall event_if_accepted(uint8_t *self, uint32_t a, uint32_t b) {
+    g_if_accepted++;
+    if (!self[0x10c]) {
+        *(void **)(self + 0x108) = find_interface(*(uint8_t **)(self + 0xf8), (const int32_t *)0x13ce3bc);
+        self[0x10c] = 1;
+    }
+    if (((uint8_t(__thiscall *)(void *, uint32_t, uint32_t))ASK)(*(void **)(self + 0x108), a, b))
+        ((void(__thiscall *)(void *, uint32_t, uint32_t))HANDLE)(self, a, b);
+}
+static const uint8_t if_accepted_original[] = {0x53, 0x56, 0x57, 0x8b, 0xf9, 0x8a, 0x87, 0x0c};
+REWRITE("Event::IfAccepted", 0xaa90d0, if_accepted_original, (&event_if_accepted<0xaae180, 0x848840>), &g_if_accepted);
+REWRITE("Event::IfAccepted", 0xaa9150, if_accepted_original, (&event_if_accepted<0xaae1b0, 0x8489b0>), &g_if_accepted);
+REWRITE("Event::IfAccepted", 0xaa91d0, if_accepted_original, (&event_if_accepted<0xaae1e0, 0x848b20>), &g_if_accepted);
+REWRITE("Event::IfAccepted", 0xaa9250, if_accepted_original, (&event_if_accepted<0xaae210, 0x848c90>), &g_if_accepted);
+
+// ---- Refs::InterfaceAt(i): the interface of the i-th 28-byte reference (array at +ARRAY, count at +COUNT), or null past
+// the end. Each keeps its interface at +0x14, flag +0x18 ----------------------------------------------------------------------
+static volatile long g_ref_interfaces;
+template <uint32_t COUNT, uint32_t ARRAY, uint32_t ID> static void *__thiscall ref_interface_at(uint8_t *self, int32_t i) {
+    g_ref_interfaces++;
+    if (i >= *(int32_t *)(self + COUNT)) return nullptr;
+    uint8_t *ref = *(uint8_t **)(self + ARRAY) + i * 0x1c;
+    if (!ref[0x18]) {
+        *(void **)(ref + 0x14) = find_interface(*(uint8_t **)(ref + 4), (const int32_t *)ID);
+        ref[0x18] = 1;
+    }
+    return *(void **)(ref + 0x14);
+}
+static const uint8_t ref_interface_original[] = {0x8b, 0x44, 0x24, 0x04, 0x3b, 0x81};
+REWRITE("Refs::InterfaceAt", 0x561240, ref_interface_original, (&ref_interface_at<0xc4, 0xc0, 0x12f50d4>), &g_ref_interfaces);
+REWRITE("Refs::InterfaceAt", 0x5a7300, ref_interface_original, (&ref_interface_at<0x6b0, 0x6ac, 0x12f537c>), &g_ref_interfaces);
+REWRITE("Refs::InterfaceAt", 0x5d67e0, ref_interface_original, (&ref_interface_at<0xe0, 0xdc, 0x12f537c>), &g_ref_interfaces);
+REWRITE("Refs::InterfaceAt", 0x5d6860, ref_interface_original, (&ref_interface_at<0x100, 0xfc, 0x12f537c>), &g_ref_interfaces);
+
+// ---- Grid::Collect: a quadtree walk from node `index` (28-byte nodes at +8; children 4n+1.. flagged in the low bits of
+// their parent). Each entry (32 bytes, at +0x18, count +0x10) whose item matches the query's masks has its value added to
+// the query's buffer, which is handed on (virtual slot 1) whenever it fills. The query is at +QUERY of `request` -------------
+struct GridQuery {
+    void **table;
+    uint32_t unknown;
+    uint32_t mask[2];    // +8
+    uint32_t bits[2];    // +0x10
+    int32_t count;       // +0x18
+    int32_t capacity;    // +0x1c
+    uint32_t *buffer;    // +0x20
+};
+static volatile long g_grid_collects;
+template <uint32_t QUERY> static void __thiscall grid_collect(uint8_t *self, int32_t index, uint8_t *request) {
+    g_grid_collects++;
+    uint8_t *node = *(uint8_t **)(self + 8) + index * 0x1c;
+    if (*(uint32_t *)(node + 0xc) || *(uint32_t *)(node + 0x10)) {
+        for (int32_t i = 0; i < *(int32_t *)(node + 0x10); i++) {
+            uint8_t *entry = *(uint8_t **)(node + 0x18) + i * 0x20;
+            if (!*(uint32_t *)(entry + 0x1c)) continue;
+            uint8_t *item = *(uint8_t **)(entry + 0x18);
+            GridQuery *q = *(GridQuery **)(request + QUERY);
+            if (((*(uint32_t *)(item + 0x18) ^ q->bits[0]) & q->mask[0]) | ((*(uint32_t *)(item + 0x1c) ^ q->bits[1]) & q->mask[1]))
+                continue;
+            q->buffer[q->count] = *(uint32_t *)(item + 8);
+            q->count++;
+            if (q->count >= q->capacity && q->count) {
+                ((void(__thiscall *)(void *, int32_t))q->table[1])(q, q->count);
+                q->count = 0;
+            }
+        }
+    }
+    uint32_t children = *(uint32_t *)node;
+    if (!(children & 0xf)) return;
+    for (int32_t i = 0; i < 4; i++)
+        if (*(uint32_t *)node & (1u << i)) grid_collect<QUERY>(self, index * 4 + i + 1, request);
+}
+static const uint8_t grid_collect_original[] = {0x51, 0x8b, 0x51, 0x08, 0x56, 0x57, 0x8b, 0x7c};
+REWRITE("Grid::Collect", 0x48a4e0, grid_collect_original, (&grid_collect<0x18>), &g_grid_collects);
+REWRITE("Grid::Collect", 0x48a6e0, grid_collect_original, (&grid_collect<0x28>), &g_grid_collects);
+REWRITE("Grid::Collect", 0x48b370, grid_collect_original, (&grid_collect<0x60>), &g_grid_collects);
+
+// ---- Settings::Copy: copies a settings block, leaving out the padding between its groups ---------------------------------
+static volatile long g_settings_copies;
+static uint8_t *__thiscall settings_copy(uint8_t *self, const uint8_t *other) {
+    g_settings_copies++;
+    __builtin_memcpy(self, other, 0xc);
+    __builtin_memcpy(self + 0x10, other + 0x10, 0xc);
+    __builtin_memcpy(self + 0x20, other + 0x20, 0x31);
+    __builtin_memcpy(self + 0x60, other + 0x60, 0xc);
+    __builtin_memcpy(self + 0x70, other + 0x70, 0x78);
+    return self;
+}
+static const uint32_t settings_copies[] = {0x425b80, 0x4263a0};
+static const uint8_t settings_copy_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x11};
+REWRITE_COPIES("Settings::Copy", settings_copies, settings_copy_original, settings_copy, &g_settings_copies);
+
+// Rows::Save for rows of single bytes.
+static const uint8_t rows_save_bytes_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0x53};
+REWRITE("Rows::SaveBytes", 0x5ba680, rows_save_bytes_original, (&rows_save<1>), &g_rows_saves);
+REWRITE("Rows::SaveBytes", 0xa01ce0, rows_save_bytes_original, (&rows_save<1>), &g_rows_saves);
