@@ -2296,3 +2296,55 @@ static const uint8_t w3e_restart_a[] = {0x56, 0x8b, 0x35, 0xf8, 0x32, 0x3e, 0x01
 static const uint8_t w3e_restart_b[] = {0x56, 0x8b, 0x35, 0x14, 0x70, 0x3f, 0x01};
 REWRITE("Scanner::RestartC0F7B0", 0xc0f7b0, w3e_restart_a, (&w3e_restart<0x13e32f8, 0x13e3304, 0xc0be40, 0xc09740, 0x13e32e8, 0x13e32e4, 0x13e32fc, 0x13d32c0>), &g_w3e_restart);
 REWRITE("Scanner::RestartC0F7B0", 0xcbda80, w3e_restart_b, (&w3e_restart<0x13f7014, 0x13f7020, 0xcbd050, 0xcbbd70, 0x13f7004, 0x13f6ffc, 0x13f7018, 0x13e6fe8>), &g_w3e_restart);
+
+// ---- Holder::Dtor: puts back its own vtables, deletes the two objects it owns (each through its deleting destructor) and clears
+// both slots, then runs the base destructor ---------------------------------------------------------------------------------------
+static volatile long g_w3e_holder;
+template <uint32_t VT0, uint32_t VT1, uint32_t FIRST, uint32_t SECOND> static void __fastcall w3e_holder(uint8_t *self) {
+    g_w3e_holder++;
+    ((uint32_t *)self)[0] = VT0;
+    ((uint32_t *)self)[1] = VT1;
+    const uint32_t slots[2] = {FIRST, SECOND};
+    for (uint32_t at : slots) {
+        void *owned = *(void **)(self + at);
+        if (owned) (*(void(__thiscall **)(void *, uint32_t)) * (void **)owned)(owned, 1);
+        *(void **)(self + at) = nullptr;
+    }
+    ((void(__fastcall *)(void *))0x6b0ea0)(self);
+}
+REWRITE("Holder::Dtor669E60", 0x669e60, w3c_start<0x6400e3755868ff6a>, (&w3e_holder<0xf4f070, 0xf4f058, 0xdc, 0xd8>), &g_w3e_holder);
+REWRITE("Holder::Dtor669E60", 0x69e8a0, w3c_start<0x6400e3c87868ff6a>, (&w3e_holder<0xf5e1e0, 0xf5e1c8, 0xe0, 0xe4>), &g_w3e_holder);
+
+// ---- Pair::Dtor: own vtables back (the object and its member at +0x18), the copy's member destroyed, then the +0x18 member, then
+// the shared base -----------------------------------------------------------------------------------------------------------------
+static volatile long g_w3e_pair;
+template <uint32_t VT0, uint32_t VT1, uint32_t MEMBER, uint32_t MEMBER_DTOR, uint32_t INNER_DTOR> static void __fastcall w3e_pair(uint8_t *self) {
+    g_w3e_pair++;
+    *(uint32_t *)self = VT0;
+    *(uint32_t *)(self + 0x18) = VT1;
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self + MEMBER);
+    ((void(__fastcall *)(void *))INNER_DTOR)(self + 0x18);
+    ((void(__fastcall *)(void *))0xc0e010)(self);
+}
+REWRITE("Pair::DtorC0E2D0", 0xc0e2d0, w3c_start<0x6400e9f19f68ff6a>, (&w3e_pair<0xfafaec, 0xfafae8, 0x4c, 0xc0e340, 0xc0d740>), &g_w3e_pair);
+REWRITE("Pair::DtorC0E2D0", 0xc0f6b0, w3c_start<0x6400e9f45f68ff6a>, (&w3e_pair<0xfafb4c, 0xfafb48, 0x34, 0xc0f720, 0xc0b820>), &g_w3e_pair);
+
+// ---- Viewer::Dtor: own three vtables back (two at the start, one on the member), the copy's cleanup on itself, its buffer freed
+// (aligned) and cleared, the member destroyed, then the base ---------------------------------------------------------------------
+static volatile long g_w3e_viewer;
+template <uint32_t VT0, uint32_t VT1, uint32_t VT2, uint32_t MEMBER, uint32_t CLEANUP, uint32_t BUFFER, uint32_t MEMBER_DTOR, uint32_t BASE>
+static void __fastcall w3e_viewer(uint8_t *self) {
+    g_w3e_viewer++;
+    ((uint32_t *)self)[0] = VT0;
+    ((uint32_t *)self)[1] = VT1;
+    *(uint32_t *)(self + MEMBER) = VT2;
+    ((void(__fastcall *)(void *))CLEANUP)(self);
+    if (void *buffer = *(void **)(self + BUFFER)) {
+        memory_free_aligned(buffer);
+        *(void **)(self + BUFFER) = nullptr;
+    }
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self + MEMBER);
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Viewer::Dtor4CA3A0", 0x4ca3a0, w3c_start<0x6400e139ff68ff6a>, (&w3e_viewer<0xf32cb0, 0xf32c98, 0xf32c90, 0x16c, 0x4c9e50, 0x174, 0xcd2b50, 0x6a3df0>), &g_w3e_viewer);
+REWRITE("Viewer::Dtor4CA3A0", 0xa4c590, w3c_start<0x6400e7ff2f68ff6a>, (&w3e_viewer<0xf8e5d0, 0xf8e5b8, 0xf8e5b0, 0xd4, 0xa49200, 0xe4, 0x4535f0, 0x6b0ea0>), &g_w3e_viewer);

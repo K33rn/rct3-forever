@@ -1902,3 +1902,49 @@
         for (int i = 0; i < 6; i++) *(uint32_t *)(uintptr_t)w3e_g[i] = w3e_g_was[i];
     };
     quick(w3e_restart_test);
+    // ---- batch e: destructors; every call stubbed, recording the object it got ----
+    static uint32_t w3e_off[2];
+    auto w3e_self_fill = [=](Rng &r) {
+        fresh(r);
+        for (int i = 0; i < 0x80; i++) arena<uint32_t>(0x100)[i] = r.next();
+        static void *vt[1] = {(void *)stub_thiscall1};
+        arena<void *>(0x400)[0] = vt;
+        arena<void *>(0x440)[0] = vt;
+    };
+    auto w3e_self_call = [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; };
+    auto w3e_unstub = [](const rewrite::Entry *) { unstub_many(); };
+    // Holder::Dtor: each owned object there or not
+    Test w3e_holder_test{0x669e60,
+                         [=](Rng &r) {
+                             w3e_self_fill(r);
+                             for (int i = 0; i < 2; i++) *(void **)(arena<uint8_t>(0x100) + w3e_off[i]) = r.range(0, 1) ? arena<void>(0x400 + 0x40 * i) : nullptr;
+                         },
+                         w3e_self_call};
+    w3e_holder_test.prepare = [](const rewrite::Entry *e) {
+        w3e_off[0] = *(uint32_t *)(e->at + 0x2c);
+        w3e_off[1] = *(uint32_t *)(e->at + 0x44);
+        stubs_for_now({{w3e_target(e, 0x70), (void *)stub_plain_dtor}});
+    };
+    w3e_holder_test.finish = w3e_unstub;
+    quick(w3e_holder_test);
+    // Pair::Dtor
+    Test w3e_pair_test{0xc0e2d0, w3e_self_fill, w3e_self_call};
+    w3e_pair_test.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{w3e_target(e, 0x3a), (void *)stub_plain_dtor}, {w3e_target(e, 0x46), (void *)stub_plain_dtor}, {0xc0e010, (void *)stub_destructor}});
+    };
+    w3e_pair_test.finish = w3e_unstub;
+    quick(w3e_pair_test);
+    // Viewer::Dtor: the buffer there or not
+    Test w3e_viewer_test{0x4ca3a0,
+                         [=](Rng &r) {
+                             w3e_self_fill(r);
+                             *(void **)(arena<uint8_t>(0x100) + w3e_off[0]) = r.range(0, 1) ? arena<void>(0x480) : nullptr;
+                         },
+                         w3e_self_call};
+    w3e_viewer_test.prepare = [](const rewrite::Entry *e) {
+        w3e_off[0] = *(uint32_t *)(e->at + 0x48);
+        stubs_for_now({{w3e_target(e, 0x41), (void *)stub_plain_dtor}, {w3e_target(e, 0x6f), (void *)stub_plain_dtor},
+                       {w3e_target(e, 0x7e), (void *)stub_destructor}, {0xbce010, (void *)stub_free_aligned}});
+    };
+    w3e_viewer_test.finish = w3e_unstub;
+    quick(w3e_viewer_test);
