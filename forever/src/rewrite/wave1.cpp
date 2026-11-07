@@ -860,3 +860,212 @@ template <uint32_t DESTROY> static void __fastcall held_delete(void **self) {
 static const uint8_t held_delete_original[] = {0x56, 0x8b, 0x31, 0x85, 0xf6, 0x74, 0x10};
 REWRITE("Owned::DeleteHeld4085F0", 0x4085f0, held_delete_original, (&held_delete<0xcc2090>), &g_held_deletes);
 REWRITE("Owned::DeleteHeld4085F0", 0x809410, held_delete_original, (&held_delete<0xbe4f30>), &g_held_deletes);
+
+// ---- Second wave-1 pass ----------------------------------------------------------------------------------------------------------
+
+// ---- Device::Destroy: the held COM object released, then the memory freed if asked ---------------------------------------------------
+static volatile long g_w1b_com_dtors;
+template <uint32_t TABLE, uint32_t HELD> static void *__thiscall w1b_com_dtor(uint8_t *self, uint32_t flags) {
+    g_w1b_com_dtors++;
+    *(uint32_t *)self = TABLE;
+    void *held = *(void **)(self + HELD);
+    if (held) {
+        ((void(__stdcall *)(void *))(*(void ***)held)[2])(held);
+        *(void **)(self + HELD) = nullptr;
+    }
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t w1b_com_dtor_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+REWRITE("Device::DestroyC5C5B0", 0xc5c5b0, w1b_com_dtor_original, (&w1b_com_dtor<0xfb7588, 0x28>), &g_w1b_com_dtors);
+REWRITE("Device::DestroyC5C5B0", 0xc5c5f0, w1b_com_dtor_original, (&w1b_com_dtor<0xfb758c, 0x28>), &g_w1b_com_dtors);
+REWRITE("Device::DestroyC5C5B0", 0xc5c630, w1b_com_dtor_original, (&w1b_com_dtor<0xfb7590, 0x24>), &g_w1b_com_dtors);
+
+// ---- Pair::Construct: the base built from two 8-byte values passed by value, with its storage right after it ---------------------------
+struct W1bPair { uint32_t first, second; };
+static volatile long g_w1b_pair_ctors;
+template <uint32_t TABLE> static void *__thiscall w1b_pair_ctor(uint8_t *self, W1bPair a, W1bPair b) {
+    g_w1b_pair_ctors++;
+    ((void(__thiscall *)(void *, uint32_t, void *, W1bPair *, W1bPair *))0x488290)(self, 0x40, self + 0x28, &a, &b);
+    *(uint32_t *)self = TABLE;
+    return self;
+}
+static const uint8_t w1b_pair_ctor_original[] = {0x56, 0x8b, 0xf1, 0x8d, 0x44, 0x24, 0x10, 0x50};
+REWRITE("Pair::Construct6412A0", 0x6412a0, w1b_pair_ctor_original, (&w1b_pair_ctor<0xf4994c>), &g_w1b_pair_ctors);
+REWRITE("Pair::Construct6412A0", 0x6412f0, w1b_pair_ctor_original, (&w1b_pair_ctor<0xf49954>), &g_w1b_pair_ctors);
+REWRITE("Pair::Construct6412A0", 0x641320, w1b_pair_ctor_original, (&w1b_pair_ctor<0xf4995c>), &g_w1b_pair_ctors);
+
+// ---- Twin::Copy: a copy of an object with two tables, the base given the field at +0x34 of the other ---------------------------------------
+static volatile long g_w1b_twin_copies;
+template <uint32_t TABLE, uint32_t SECOND> static void *__thiscall w1b_twin_copy(uint8_t *self, uint8_t *other) {
+    g_w1b_twin_copies++;
+    ((void(__thiscall *)(void *, uint32_t))0xbd9b20)(self, *(uint32_t *)(other + 0x34));
+    *(uint32_t *)self = TABLE;
+    *(uint32_t *)(self + 0x20) = SECOND;
+    *(uint32_t *)(self + 0x34) = *(uint32_t *)(other + 0x34);
+    return self;
+}
+static const uint8_t w1b_twin_copy_original[] = {0x56, 0x57, 0x8b, 0x7c, 0x24, 0x0c, 0x8b, 0x47, 0x34, 0x50};
+REWRITE("Twin::CopyBDBE10", 0xbdbe10, w1b_twin_copy_original, (&w1b_twin_copy<0xfa5420, 0xfa5418>), &g_w1b_twin_copies);
+REWRITE("Twin::CopyBDBE10", 0xcaf8e0, w1b_twin_copy_original, (&w1b_twin_copy<0xfc091c, 0xfc0914>), &g_w1b_twin_copies);
+
+// ---- Children::Each: virtual +0xe4 of everything on a list that ends at the end node inside the object --------------------------------------
+static volatile long g_w1b_eaches;
+template <uint32_t FIRST, uint32_t END> static void __fastcall w1b_each(uint8_t *self) {
+    g_w1b_eaches++;
+    Node *end = (Node *)(self + END);
+    for (Node *n = *(Node **)(self + FIRST); n != end; n = n->next) call_virtual<0xe4>(n->value);
+}
+template <uint8_t FIRST> static const uint8_t w1b_each_original[] = {0x53, 0x56, 0x8b, 0xb1, FIRST, 0x00, 0x00, 0x00};
+REWRITE("Children::EachAD1350", 0xad1350, w1b_each_original<0xec>, (&w1b_each<0xec, 0xf8>), &g_w1b_eaches);
+REWRITE("Children::EachAD1350", 0xaecbb0, w1b_each_original<0xe8>, (&w1b_each<0xe8, 0xf4>), &g_w1b_eaches);
+
+// ---- Slot::Release: a held slot number given back to its owner; negative means none --------------------------------------------------------
+static volatile long g_w1b_slot_releases;
+template <uint32_t SLOT, uint32_t OWNER, uint32_t GIVE_BACK> static void __fastcall w1b_slot_release(uint8_t *self) {
+    g_w1b_slot_releases++;
+    int32_t slot = *(int32_t *)(self + SLOT);
+    if (slot < 0) return;
+    ((void(__thiscall *)(void *, int32_t))GIVE_BACK)(*(void **)OWNER, slot);
+    *(int32_t *)(self + SLOT) = -1;
+}
+static const uint8_t w1b_slot_release_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86};
+REWRITE("Slot::Release557C20", 0x557c20, w1b_slot_release_original, (&w1b_slot_release<0x8c, 0x12f4e4c, 0x4cde30>), &g_w1b_slot_releases);
+REWRITE("Slot::Release557C20", 0xaae260, w1b_slot_release_original, (&w1b_slot_release<0x13c, 0x13cdfe4, 0xa9ef40>), &g_w1b_slot_releases);
+
+// ---- Registered::Destroy: the table set, and the object taken off the global register if it is on it ----------------------------------------
+static volatile long g_w1b_unregisters;
+template <uint32_t TABLE, uint32_t FLAG, uint32_t REMOVE> static void __fastcall w1b_unregister(uint8_t *self) {
+    g_w1b_unregisters++;
+    *(uint32_t *)self = TABLE;
+    if (!self[FLAG]) return;
+    self[FLAG] = 0;
+    ((void(__thiscall *)(void *, void *))REMOVE)(*(void **)0x13d0d84, self);
+}
+template <uint8_t LOW, uint8_t HIGH> static const uint8_t w1b_unregister_original[] = {0x8a, 0x81, LOW, HIGH, 0x00, 0x00};
+REWRITE("Registered::DestroyBD37E0", 0xbd37e0, (w1b_unregister_original<0x98, 0x00>), (&w1b_unregister<0xfa1538, 0x98, 0xbd2960>), &g_w1b_unregisters);
+REWRITE("Registered::DestroyBD37E0", 0xbd3850, (w1b_unregister_original<0x18, 0x01>), (&w1b_unregister<0xfa153c, 0x118, 0xbd29e0>), &g_w1b_unregisters);
+
+// ---- Attached::Attach: the owner kept, and a new entry of `KIND` added to it, written into a field of the object ------------------------------
+static volatile long g_w1b_attaches;
+template <uint32_t HELD, uint32_t KIND> static uint32_t __thiscall w1b_attach(uint8_t *self, void *owner) {
+    g_w1b_attaches++;
+    *(void **)(self + HELD) = owner;
+    uint32_t entry = ((uint32_t(__fastcall *)(void *))0xc51360)(owner);
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *, uint32_t, uint32_t, uint32_t, uint32_t))0xc53340)(owner, entry, self + HELD + 4, KIND, 0, 0, 0);
+}
+static const uint8_t w1b_attach_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x6a, 0x00, 0x6a, 0x00};
+REWRITE("Attached::AttachCB0BB0", 0xcb0bb0, w1b_attach_original, (&w1b_attach<0x30, 0x2e>), &g_w1b_attaches);
+REWRITE("Attached::AttachCB0BB0", 0xcb7980, w1b_attach_original, (&w1b_attach<0x1c, 0x06>), &g_w1b_attaches);
+
+// ---- Named::Value: something named looked up through a reference on the stack, its value kept past the end of the reference --------------------
+static volatile long g_w1b_named_values;
+template <uint32_t NAME> static uint32_t __cdecl w1b_named_value() {
+    g_w1b_named_values++;
+    uint8_t reference[0x1c];
+    uint8_t *found = ((uint8_t * (__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x41cb90)(reference, NAME, 0x1303cfc, 1);
+    uint32_t value = *(uint32_t *)(found + 8);
+    ((void(__fastcall *)(void *))0xbd1880)(reference);
+    return value;
+}
+static const uint8_t w1b_named_value_original[] = {0x83, 0xec, 0x1c, 0x56, 0x6a, 0x01, 0x68, 0xfc, 0x3c, 0x30, 0x01};
+REWRITE("Named::ValueB70080", 0xb70080, w1b_named_value_original, (&w1b_named_value<0xf9b4e4>), &g_w1b_named_values);
+REWRITE("Named::ValueB70080", 0xb700b0, w1b_named_value_original, (&w1b_named_value<0xf9b4f0>), &g_w1b_named_values);
+REWRITE("Named::ValueB70080", 0xb700e0, w1b_named_value_original, (&w1b_named_value<0xf9b4fc>), &g_w1b_named_values);
+REWRITE("Named::ValueB70080", 0xb70110, w1b_named_value_original, (&w1b_named_value<0xf9b50c>), &g_w1b_named_values);
+
+// ---- Buffers::Destroy: two aligned buffers freed, then the memory if asked ---------------------------------------------------------------------
+static volatile long g_w1b_buffer_dtors;
+template <uint32_t TABLE, uint32_t FIRST, uint32_t SECOND> static void *__thiscall w1b_buffer_dtor(uint8_t *self, uint32_t flags) {
+    g_w1b_buffer_dtors++;
+    *(uint32_t *)self = TABLE;
+    memory_free_aligned(*(void **)(self + FIRST));
+    memory_free_aligned(*(void **)(self + SECOND));
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t w1b_buffer_dtor_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+REWRITE("Buffers::Destroy891760", 0x891760, w1b_buffer_dtor_original, (&w1b_buffer_dtor<0xf7a1ec, 0x14, 0x50>), &g_w1b_buffer_dtors);
+REWRITE("Buffers::Destroy891760", 0xbdd7e0, w1b_buffer_dtor_original, (&w1b_buffer_dtor<0xfa55dc, 0x04, 0x08>), &g_w1b_buffer_dtors);
+REWRITE("Buffers::Destroy891760", 0xc50d60, w1b_buffer_dtor_original, (&w1b_buffer_dtor<0xfb7364, 0x08, 0x0c>), &g_w1b_buffer_dtors);
+
+// ---- Twice::Whole: the same two steps as Twice::Run, over the whole of the area from (0,0) ---------------------------------------------------
+static volatile long g_w1b_wholes;
+template <uint32_t SECOND> static void __fastcall w1b_whole(uint8_t *self) {
+    g_w1b_wholes++;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))0xb9dae0)(
+        self, 0, 0, *(uint32_t *)(self + 0x64) - 1, *(uint32_t *)(self + 0x68) - 1, 1);
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))SECOND)(self, 0, 0, *(uint32_t *)(self + 0x64) - 1, *(uint32_t *)(self + 0x68) - 1);
+}
+static const uint8_t w1b_whole_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x68, 0x8b, 0x4e, 0x64};
+REWRITE("Twice::WholeBA2FB0", 0xba2fb0, w1b_whole_original, (&w1b_whole<0xb9de50>), &g_w1b_wholes);
+REWRITE("Twice::WholeBA2FB0", 0xba3030, w1b_whole_original, (&w1b_whole<0xb9dee0>), &g_w1b_wholes);
+
+// ---- Array::Delete: a counted array destroyed item by item, freed from its count, and forgotten ---------------------------------------------
+static volatile long g_w1b_array_deletes;
+template <uint32_t HELD, uint32_t SIZE, uint32_t ITEM_DTOR> static void __fastcall w1b_array_delete(uint8_t *self) {
+    g_w1b_array_deletes++;
+    uint8_t *items = *(uint8_t **)(self + HELD);
+    if (!items) return;
+    uint32_t *block = (uint32_t *)items - 1;
+    ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0xddcf39)(items, SIZE, *block, ITEM_DTOR);
+    memory_free_aligned(block);
+    *(void **)(self + HELD) = nullptr;
+}
+static const uint8_t w1b_array_delete_original[] = {0x57, 0x8b, 0xf9, 0x8b, 0x47};
+REWRITE("Array::Delete421120", 0x421120, w1b_array_delete_original, (&w1b_array_delete<0x20, 0x14, 0x41bc10>), &g_w1b_array_deletes);
+REWRITE("Array::Delete421120", 0x43ef00, w1b_array_delete_original, (&w1b_array_delete<0x10, 0x04, 0x4012e0>), &g_w1b_array_deletes);
+REWRITE("Array::Delete421120", 0x519eb0, w1b_array_delete_original, (&w1b_array_delete<0x08, 0x10, 0x5106c0>), &g_w1b_array_deletes);
+
+// ---- Pending::Finish: the common step, then a pending number (0 to 3) handed to the manager and cleared ------------------------------------------
+static volatile long g_w1b_finishes;
+template <uint32_t STEP, uint32_t PENDING> static void __fastcall w1b_finish(uint8_t *self) {
+    g_w1b_finishes++;
+    call_plain<STEP>(self);
+    int32_t pending = *(int32_t *)(self + PENDING);
+    if (pending < 0 || pending > 3) return;
+    *(int32_t *)(self + PENDING) = -1;
+    void *manager = ((void *(__cdecl *)())0x42df90)();
+    ((void(__thiscall *)(void *, int32_t))0x6595d0)(manager, pending);
+}
+REWRITE("Pending::Finish65EA60", 0x65ea60, (push_call_original<0x65ea60, 0x5f7710>), (&w1b_finish<0x5f7710, 0x134>), &g_w1b_finishes);
+REWRITE("Pending::Finish65EA60", 0xa04d70, (push_call_original<0xa04d70, 0x8e58f0>), (&w1b_finish<0x8e58f0, 0x130>), &g_w1b_finishes);
+REWRITE("Pending::Finish65EA60", 0xa086d0, (push_call_original<0xa086d0, 0x5f7710>), (&w1b_finish<0x5f7710, 0x1d4>), &g_w1b_finishes);
+
+// ---- Held::Past: the address of the held object, moved past two fixed sizes if it is in use --------------------------------------------------
+static volatile long g_w1b_pasts;
+template <uint32_t HELD, uint32_t IN_USE> static uint32_t __fastcall w1b_past(uint8_t *self) {
+    g_w1b_pasts++;
+    uint8_t *held = *(uint8_t **)(self + HELD);
+    if (!held) return 0;
+    if (!(uint8_t)((uint32_t(__fastcall *)(void *))IN_USE)(held)) return (uint32_t)(uintptr_t)held;
+    uint32_t first = ((uint32_t(__cdecl *)())0xbb3d70)();
+    return ((uint32_t(__cdecl *)())0xbb51b0)() + (uint32_t)(uintptr_t)held + first;
+}
+template <uint8_t LOW, uint8_t HIGH> static const uint8_t w1b_past_original[] = {0x56, 0x8b, 0xb1, LOW, HIGH, 0x00, 0x00};
+REWRITE("Held::Past4A1800", 0x4a1800, (w1b_past_original<0xc8, 0x00>), (&w1b_past<0xc8, 0xbb5120>), &g_w1b_pasts);
+REWRITE("Held::Past4A1800", 0x4a1840, (w1b_past_original<0x00, 0x01>), (&w1b_past<0x100, 0xbb4230>), &g_w1b_pasts);
+
+// ---- Panel::Sync: the held panel told yes or no, from what the current state answers ------------------------------------------------------------
+static volatile long g_w1b_syncs;
+static void __fastcall w1b_sync(uint8_t *self) {
+    g_w1b_syncs++;
+    void *state = ((void *(__fastcall *)(void *))0x40a090)(self);
+    bool yes = (uint8_t)((uint32_t(__fastcall *)(void *))0x8d30d0)(state);
+    ((void(__thiscall *)(void *, uint32_t))0x67a580)(*(void **)(self + 0x13c), yes ? 1 : 0);
+}
+REWRITE("Panel::Sync62E790", 0x62e790, (push_call_original<0x62e790, 0x40a090>), (&w1b_sync), &g_w1b_syncs);
+REWRITE("Panel::Sync62E790", 0x62e810, (push_call_original<0x62e810, 0x40a090>), (&w1b_sync), &g_w1b_syncs);
+
+// ---- Sample::Drop: the held sample given back to the system that made it, and the object marked -----------------------------------------------------
+static volatile long g_w1b_drops;
+template <uint32_t SAMPLE, uint32_t OWNER, uint32_t GIVE_BACK, uint32_t MARK> static void __fastcall w1b_drop(uint8_t *self) {
+    g_w1b_drops++;
+    void *system = *(void **)(*(uint8_t **)(self + OWNER) + 0x470);
+    ((void(__thiscall *)(void *, uint32_t))GIVE_BACK)(system, *(uint32_t *)(self + SAMPLE));
+    *(uint32_t *)(self + SAMPLE) = 0;
+    self[MARK] = 1;
+}
+static const uint8_t w1b_drop_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+REWRITE("Sample::DropBFA530", 0xbfa530, w1b_drop_original, (&w1b_drop<0x28, 0x30, 0xc5cb90, 0x34>), &g_w1b_drops);
+REWRITE("Sample::DropBFA530", 0xc2f080, w1b_drop_original, (&w1b_drop<0x24, 0x28, 0xc5cc00, 0x2c>), &g_w1b_drops);

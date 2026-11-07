@@ -51,3 +51,28 @@ static void __thiscall w1_stub_five(void *self, uint32_t a, uint32_t b, uint32_t
 static void __thiscall w1_stub_four(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
     record(0x204, self); record(0x204, (void *)(uintptr_t)a); record(0x204, (void *)(uintptr_t)b); record(0x204, (void *)(uintptr_t)c); record(0x204, (void *)(uintptr_t)d);
 }
+// Second pass.
+static uint32_t w1b_at1, w1b_at2;
+static void __thiscall w1b_stub_pair_base(void *self, uint32_t size, void *storage, uint32_t *a, uint32_t *b) {
+    record(0x210, self); record(0x210, (void *)(uintptr_t)size); record(0x210, storage);
+    record(0x210, (void *)(uintptr_t)a[0]); record(0x210, (void *)(uintptr_t)a[1]); record(0x210, (void *)(uintptr_t)b[0]); record(0x210, (void *)(uintptr_t)b[1]);
+}
+static uint32_t __fastcall w1b_stub_entry(void *owner) { record(0x211, owner); return *arena<uint32_t>(0x24); }
+static uint32_t __thiscall w1b_stub_add(void *owner, uint32_t entry, void *field, uint32_t kind, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x212, owner); record(0x212, (void *)(uintptr_t)entry); record(0x212, field); record(0x212, (void *)(uintptr_t)kind);
+    record(0x212, (void *)(uintptr_t)a); record(0x212, (void *)(uintptr_t)b); record(0x212, (void *)(uintptr_t)c);
+    return entry ^ 0x5555;
+}
+// The reference lives on the stack: filled whole and returned; the end records what it holds, then wipes it.
+static void *__thiscall w1b_stub_ref(uint32_t *self, uint32_t name, uint32_t where, uint32_t flag) {
+    record(0x213, (void *)(uintptr_t)name); record(0x213, (void *)(uintptr_t)where); record(0x213, (void *)(uintptr_t)flag);
+    for (uint32_t i = 0; i < 7; i++) self[i] = name * 3 + i * 0x101;
+    return self;
+}
+static void __fastcall w1b_stub_ref_end(uint32_t *self) {
+    for (uint32_t i = 0; i < 7; i++) { record(0x214, (void *)(uintptr_t)self[i]); self[i] = 0; }
+}
+static void __stdcall w1b_stub_vector_dtor(void *items, uint32_t size, uint32_t count, uint32_t dtor) {
+    record(0x215, items); record(0x215, (void *)(uintptr_t)size); record(0x215, (void *)(uintptr_t)count); record(0x215, (void *)(uintptr_t)dtor);
+}
+static void *__cdecl w1b_stub_manager() { record(0x216, nullptr); return arena<void>(0x510); }
