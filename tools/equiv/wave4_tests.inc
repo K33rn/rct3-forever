@@ -1738,3 +1738,93 @@
     };
     w4d_is.finish = w4c_unstub;
     quick(w4d_is);
+    // Text::PrintWord: the word at the value at +4, buffer sizes 0-39
+    Test w4_e_print_word{0xca7490,
+                         [=](Rng &r) {
+                             fresh(r);
+                             *(void **)(arena<uint8_t>(0x100) + 4) = arena<void>(0x300);
+                             arena<uint32_t>(0x300)[0] = r.next();
+                             arena<uint32_t>(0x24)[0] = (uint32_t)r.range(1, 39);
+                             for (int i = 0; i < 16; i++) arena<uint32_t>(0x7f0)[i] = r.next();
+                         },
+                         [](void *fn) { ((void(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x800), arena<uint32_t>(0x24)[0]); return Result{}; }};
+    w4_e_print_word.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcdb5, (void *)w3b_stub_sprintf}, {0xddef30, (void *)w3b_stub_strncpy}}); };
+    w4_e_print_word.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_e_print_word);
+    // Pool::Intern: 0-4 entries of two-letter blocks over {0,1}, sizes 0-2, the block found or not, a listener or not
+    static uint32_t w4_e_list, w4_e_slot;
+    Test w4_e_intern{0xcb2ec0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         uint8_t *self = arena<uint8_t>(0x100);
+                         uint32_t count = (uint32_t)r.range(0, 4);
+                         *(uint32_t *)(self + w4_e_list) = count;
+                         *(uint32_t *)(self + w4_e_list + 4) = count;
+                         *(void **)(self + w4_e_list + 0xc) = arena<void>(0x400);
+                         for (uint32_t i = 0; i < 8; i++) {
+                             arena<void *>(0x400)[i] = arena<void>(0x500 + i * 8);
+                             *(void **)arena<void>(0x500 + i * 8) = arena<void>(0x600 + i * 16);
+                             arena<uint32_t>(0x504 + i * 8)[0] = r.next();
+                             for (int k = 0; k < 4; k++) arena<uint8_t>(0x600 + i * 16)[k] = (uint8_t)r.range(0, 1);
+                         }
+                         for (int k = 0; k < 4; k++) arena<uint8_t>(0x700)[k] = (uint8_t)r.range(0, 1);
+                         *arena<uint32_t>(0x28) = (uint32_t)r.range(0, 2);
+                         *(void **)(self + 0x34) = r.range(0, 1) ? arena<void>(0x900) : nullptr;
+                         *(void **)arena<void>(0x900) = arena<void>(0xa00);
+                         *(void **)(arena<uint8_t>(0xa00) + w4_e_slot) = (void *)w4_e_stub_listener;
+                     },
+                     [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x700))}; }};
+    w4_e_intern.prepare = [](const rewrite::Entry *e) {
+        w4_e_list = *(uint8_t *)(e->at + 0x19);
+        w4_e_slot = *(uint32_t *)(e->at + 0xa4);
+        stubs_for_now({{0xcf6b63, (void *)w4_e_stub_size}, {0xbcdfc0, (void *)stub_alloc_next}, {0xbcdfd0, (void *)stub_alloc_aligned}, {w4c_target(e, 0xb3), (void *)w4_e_stub_grow}});
+    };
+    w4_e_intern.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_e_intern);
+    // Picker::TakeFirst: 0-3 objects, each with or without class (so interfaces there or not), busy or not, answers 0-3 from both offers
+    static uint32_t w4_e_busy_id;
+    Test w4_e_take_first{0x7ac350,
+                         [=](Rng &r) {
+                             fresh(r);
+                             static void *vt[0x50];
+                             vt[1] = (void *)w4_e_stub_class;
+                             vt[0x13c / 4] = (void *)w4_e_stub_busy;
+                             static void *link_vt[1] = {(void *)w4_e_stub_told};
+                             *(uint32_t *)(uintptr_t)w4_e_busy_id = (uint32_t)r.range(0, 4) ? 1 : (uint32_t)r.range(0, 3);
+                             *(uint32_t *)(uintptr_t)0x12f51b4 = (uint32_t)r.range(0, 4) ? 2 : (uint32_t)r.range(0, 3);
+                             *(void **)(uintptr_t)0x12f4e4c = arena<void>(0x400);
+                             for (int i = 0; i < 0x90 / 4; i++) arena<uint32_t>(0x400 + 0x80)[i] = r.next();
+                             *arena<uint32_t>(0x2c) = (uint32_t)r.range(0, 3);
+                             for (int i = 0; i < 16; i++) arena<uint8_t>(0x30)[i] = (uint8_t)r.range(0, 3);
+                             uint8_t *cls = arena<uint8_t>(0x600);
+                             *(void **)(cls + 0x14) = arena<void>(0x640);
+                             *(int32_t *)(cls + 0x18) = 3;
+                             arena<void *>(0x640)[0] = nullptr;
+                             arena<void *>(0x640)[1] = arena<void>(0x660);
+                             arena<void *>(0x640)[2] = arena<void>(0x680);
+                             *(int32_t *)arena<uint8_t>(0x660 + 0x10) = 0x20;
+                             *(int32_t *)arena<uint8_t>(0x680 + 0x10) = 0x40;
+                             for (int i = 0; i < 3; i++)
+                                 for (int part = 0; part < 0x60; part += 0x20) {
+                                     uint8_t *p = arena<uint8_t>(0x1000 + i * 0x100 + part);
+                                     *(void **)p = vt;
+                                     *(void **)(p + 4) = r.range(0, 5) ? cls : nullptr;
+                                     p[8] = (uint8_t)r.range(0, 2) == 0;
+                                 }
+                             uint8_t *link = arena<uint8_t>(0x100 + 0x1bc);
+                             *(void **)link = link_vt;
+                             *(void **)(link + 4) = arena<void>(0x780);
+                             void **node = (void **)(link + 8), **a = arena<void *>(0x700), **b = arena<void *>(0x720);
+                             a[0] = node; node[1] = a; node[0] = b; b[1] = node; b[0] = a; a[1] = b;
+                             *(void **)arena<uint8_t>(0x800 + 0x20) = arena<void>(0x880);
+                             void **h = arena<void *>(0x880), **t = arena<void *>(0x8a0);
+                             h[0] = t; t[1] = h; t[0] = h; h[1] = t;
+                         },
+                         [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100)) & 0xff}; }};
+    w4_e_take_first.prepare = [](const rewrite::Entry *e) {
+        w4_e_busy_id = *(uint32_t *)(e->at + 0x40);
+        stubs_for_now({{0x4cce80, (void *)w4_e_stub_next}, {0x7aad50, (void *)w4_e_stub_offer}, {0x7ab810, (void *)w4_e_stub_offer_owner}, {0x8055c0, (void *)w4_e_stub_release},
+                       {0x805700, (void *)w4_e_stub_handle}, {0x4bf1f0, (void *)w4_e_stub_spot}, {0x7cd220, (void *)w4_e_stub_mode}});
+    };
+    w4_e_take_first.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_e_take_first);

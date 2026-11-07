@@ -261,3 +261,46 @@ static int32_t __thiscall w4d_stub_compare(void *self, int32_t **other) {
     return (int32_t)(*arena<uint32_t>(0x24) & 1);
 }
 static void *__thiscall w4d_stub_text_counted(uint32_t *p, const void *characters) { record(0x4d19, (void *)characters); p[1] = 0x4d19; return p; }
+
+// ---- wave 4e ----
+static uint32_t __stdcall w4_e_stub_size(const void *block) {
+    record(0x7e00, (void *)(uintptr_t)((const uint8_t *)block - arena<uint8_t>(0)));
+    return *arena<uint32_t>(0x28);
+}
+static void __stdcall w4_e_stub_listener(void *listener, uint8_t *copy, uint32_t *word) {
+    record(0x7e01, (void *)(uintptr_t)(copy - arena<uint8_t>(0)));
+    record(0x7e01, (void *)(uintptr_t)(copy[0] | copy[1] << 8));
+    record(0x7e01, (void *)(uintptr_t)*word);
+    *word = 0x5a;
+}
+static void __fastcall w4_e_stub_grow(uint32_t *list, void *, uint32_t count) {
+    record(0x7e02, (void *)(uintptr_t)count);
+    list[1] = count;
+}
+// Picker::TakeFirst: objects at 0x1000 + i*0x100 (count at 0x2c); answers per object at 0x30 (picker) and 0x38 (owner)
+static uint32_t w4_e_index(void *object) { return object ? (uint32_t)(((uint8_t *)object - arena<uint8_t>(0x1000)) / 0x100) : 0xff; }
+static void *__fastcall w4_e_stub_class(uint8_t *self) { return *(void **)(self + 4); }
+static uint32_t __fastcall w4_e_stub_busy(uint8_t *self) { return 0x12345600u | self[8]; }
+static void *__fastcall w4_e_stub_next(void *world, void *, void *prev) {
+    record(0x7e10, (void *)(uintptr_t)w4_e_index(prev));
+    uint32_t i = prev ? w4_e_index(prev) + 1 : 0;
+    return i < *arena<uint32_t>(0x2c) ? arena<void>(0x1000 + i * 0x100) : nullptr;
+}
+static uint32_t __fastcall w4_e_stub_offer(void *self, void *, void *object) {
+    record(0x7e11, (void *)(uintptr_t)w4_e_index(object));
+    return arena<uint8_t>(0x30)[w4_e_index(object) & 7];
+}
+static uint32_t __fastcall w4_e_stub_offer_owner(void *self, void *, uint8_t *owner) {
+    record(0x7e12, (void *)(uintptr_t)(owner ? owner - arena<uint8_t>(0) : 0));
+    return owner ? arena<uint8_t>(0x38)[w4_e_index(owner) & 7] : arena<uint8_t>(0x3f)[0];
+}
+static void __fastcall w4_e_stub_release(void *handle, void *, uint32_t flag) { record(0x7e13, (void *)(uintptr_t)((uint8_t *)handle - arena<uint8_t>(0))); record(0x7e13, (void *)(uintptr_t)flag); }
+static void *__fastcall w4_e_stub_handle(void *object) { record(0x7e14, (void *)(uintptr_t)w4_e_index(object)); return arena<void>(0x800); }
+static void __fastcall w4_e_stub_told(void *link) { record(0x7e15, (void *)(uintptr_t)((uint8_t *)link - arena<uint8_t>(0))); }
+static uint32_t __fastcall w4_e_stub_spot(void *object, void *, uint32_t *position, uint32_t flag) {
+    record(0x7e16, (void *)(uintptr_t)w4_e_index(object));
+    for (int i = 0; i < 3; i++) record(0x7e16, (void *)(uintptr_t)position[i]);
+    record(0x7e16, (void *)(uintptr_t)flag);
+    return position[0] ^ 0x77;
+}
+static void __fastcall w4_e_stub_mode(void *world, void *, uint32_t mode, uint32_t value) { record(0x7e17, (void *)(uintptr_t)mode); record(0x7e17, (void *)(uintptr_t)value); }

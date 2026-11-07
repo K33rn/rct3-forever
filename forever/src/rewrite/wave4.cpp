@@ -1948,3 +1948,96 @@ template <uint32_t MAKE, uint32_t EMPTY, uint32_t COMPARE> static bool __thiscal
 REWRITE("Text::Is403C20", 0x403c20, (w4c_seh<0xe04a73>), (&w4d_text_is<0xbcf850, 0xbd0490, 0xbce970>), &g_w4d_text_is);
 REWRITE("Text::Is403C20", 0x41c660, (w4c_seh<0xe065b3>), (&w4d_text_is<0xbcfb10, 0xbd0520, 0xbcf040>), &g_w4d_text_is);
 REWRITE("Text::Is403C20", 0x6209c0, (w4c_seh<0xe2c7e3>), (&w4d_text_is<0xbcf7d0, 0xbd0490, 0xbce970>), &g_w4d_text_is);
+
+// ---- Text::PrintWord: the number in the word at the value at +4, as text, cut to fit the buffer ------------------------------------------------
+static volatile long g_w4e_print_word;
+static void __thiscall w4e_print_word(uint8_t *self, char *out, uint32_t size) {
+    g_w4e_print_word++;
+    char text[0x64];
+    ((int(__cdecl *)(char *, const char *, ...))0xddcdb5)(text, (const char *)0xf28e5c, **(uint32_t **)(self + 4));
+    ((char *(__cdecl *)(char *, const char *, uint32_t))0xddef30)(out, text, size);
+    out[size - 1] = 0;
+}
+static const uint8_t w4e_print_word_original[] = {0x83, 0xec, 0x68, 0xa1, 0x34, 0xe6, 0x0f, 0x01};
+REWRITE("Text::PrintWordCA7490", 0xca7490, w4e_print_word_original, w4e_print_word, &g_w4e_print_word);
+REWRITE("Text::PrintWordCA7490", 0xca78b0, w4e_print_word_original, w4e_print_word, &g_w4e_print_word);
+
+// ---- Pool::Intern: the index of the block in the pool (entries from 1 on, compared byte for byte over the block's measured size); a block not
+// there is copied into a new entry, announced to the listener at +0x34 (its SLOT gets the copy and the entry's second word), and appended ------
+static volatile long g_w4e_intern;
+template <uint32_t LIST, uint32_t SLOT, uint32_t GROW> static uint32_t __thiscall w4e_intern(uint8_t *self, const uint8_t *block) {
+    g_w4e_intern++;
+    uint32_t size = ((uint32_t(__stdcall *)(const void *))0xcf6b63)(block);
+    uint32_t *list = (uint32_t *)(self + LIST);
+    uint32_t count = list[0];
+    uint8_t ***entries = *(uint8_t ****)(self + LIST + 0xc);
+    for (uint32_t i = 1; i < count; i++) {
+        const uint8_t *have = *entries[i];
+        uint32_t k = 0;
+        while (k < size && have[k] == block[k]) k++;
+        if (k == size) return i;
+    }
+    uint32_t *entry = (uint32_t *)memory_alloc(8);
+    entry[1] = 0;
+    uint8_t *copy = (uint8_t *)memory_alloc_aligned(size);
+    entry[0] = (uint32_t)(uintptr_t)copy;
+    for (uint32_t k = 0; k < size; k++) copy[k] = block[k];
+    void **listener = *(void ***)(self + 0x34);
+    if (listener) ((void(__stdcall *)(void *, void *, void *))(*(void ***)listener)[SLOT / 4])(listener, copy, &entry[1]);
+    ((void(__thiscall *)(void *, uint32_t))GROW)(list, list[0] + 1);
+    (*(uint32_t ***)(self + LIST + 0xc))[list[0]] = entry;
+    return list[0]++;
+}
+static const uint8_t w4e_intern_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x44, 0x24, 0x10, 0x53, 0x55, 0x56, 0x57, 0x8b, 0xf1};
+REWRITE("Pool::InternCB2EC0", 0xcb2ec0, w4e_intern_original, (&w4e_intern<0x14, 0x16c, 0xcb28e0>), &g_w4e_intern);
+REWRITE("Pool::InternCB2EC0", 0xcb2fa0, w4e_intern_original, (&w4e_intern<0x24, 0x1a8, 0xcb2940>), &g_w4e_intern);
+
+// ---- Picker::TakeFirst: walks the world's objects for one whose ID interface is not busy; each is offered to the picker (0 stops with false,
+// 2 skips it), then its owner (the 0x12f51b4 interface of that interface) is offered too (0 false, 2 skip). The first taken one becomes the
+// picker's target: its link moves to that object's handle, the picker is told, and gets the object's spot at the picker's own position, then
+// mode 0xb. True when taken or when nothing was left ----------------------------------------------------------------------------------------
+static void *w4e_interface_of(void *object, const int32_t *id) {
+    ClassInterfaces *c = ((ClassInterfaces * (__fastcall *)(void *))(*(void ***)object)[1])(object);
+    if (!c || *id >= c->count || !c->by_id[*id]) return nullptr;
+    return (void *)((uintptr_t)object + c->by_id[*id]->offset);
+}
+static volatile long g_w4e_take_first;
+template <uint32_t ID> static bool __fastcall w4e_take_first(uint8_t *self) {
+    g_w4e_take_first++;
+    uint8_t *world = *(uint8_t **)0x12f4e4c;
+    auto next_object = (void *(__thiscall *)(void *, void *))0x4cce80;
+    void *object = next_object(world, nullptr);
+    for (; object; object = next_object(world, object)) {
+        void *busy = w4e_interface_of(object, (const int32_t *)ID);
+        if (!busy || (uint8_t)((uint32_t(__fastcall *)(void *))(*(void ***)busy)[0x13c / 4])(busy)) continue;
+        uint32_t answer = ((uint32_t(__thiscall *)(void *, void *))0x7aad50)(self, object);
+        if (answer == 0) return false;
+        if (answer == 2) continue;
+        void *owner = w4e_interface_of(object, (const int32_t *)0x12f51b4);
+        if (owner) owner = w4e_interface_of(owner, (const int32_t *)0x12f51b4);
+        answer = ((uint32_t(__thiscall *)(void *, void *))0x7ab810)(self, owner);
+        if (answer == 0) return false;
+        if (answer == 2) continue;
+        uint8_t *link = self + 0x1bc;
+        Node *node = (Node *)(link + 8);
+        unlink(node);
+        ((void(__thiscall *)(void *, uint32_t))0x8055c0)(*(void **)(link + 4), 0);
+        uint8_t *handle = ((uint8_t * (__fastcall *)(void *))0x805700)(object);
+        *(uint8_t **)(link + 4) = handle;
+        Node *head = *(Node **)(handle + 0x20);
+        node->next = head->next;
+        head->next->prev = node;
+        node->prev = head;
+        head->next = node;
+        ((void(__fastcall *)(void *))(*(void ***)link)[0])(link);
+        uint32_t position[3] = {*(uint32_t *)(self + 0x80), *(uint32_t *)(self + 0x84), *(uint32_t *)(self + 0x88)};
+        *(uint32_t *)(self + 0x2b8) = ((uint32_t(__thiscall *)(void *, void *, uint32_t))0x4bf1f0)(object, position, 1);
+        *(uint32_t *)(self + 0x2dc) = 0;
+        ((void(__thiscall *)(void *, uint32_t, uint32_t))0x7cd220)(self, 0xb, 0);
+        return true;
+    }
+    return true;
+}
+static const uint8_t w4e_take_first_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x24, 0x53, 0x56};
+REWRITE("Picker::TakeFirst7AC350", 0x7ac350, w4e_take_first_original, (&w4e_take_first<0x12f4b54>), &g_w4e_take_first);
+REWRITE("Picker::TakeFirst7AC350", 0x7ac530, w4e_take_first_original, (&w4e_take_first<0x12f5544>), &g_w4e_take_first);
