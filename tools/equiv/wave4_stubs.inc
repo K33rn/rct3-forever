@@ -247,3 +247,11 @@ static void *__fastcall w4d_stub_target(void *key) { record(0x4d13, key); return
 struct W4dNode { W4dNode *next, *prev; void *value; };
 static void *__thiscall w4d_stub_text(uint32_t *p, const void *characters) { record(0x4d14, p); record(0x4d14, (void *)characters); for (int i = 0; i < 4; i++) p[i] = 0x4d140000 + i; return p; }
 static void *__fastcall w4d_stub_empty(uint32_t flag) { record(0x4d15, (void *)(uintptr_t)(flag & 0xff)); return arena<void>(0x2200); }
+// fills the whole 28-byte temporary; the found record at 0x2300 has text (+8) when the word at 0x24 is not a multiple of 3
+static void *__thiscall w4d_stub_lookup(uint32_t *temporary, uint32_t name, uint32_t table, uint32_t flag) {
+    record(0x4d16, (void *)(uintptr_t)name); record(0x4d16, (void *)(uintptr_t)table); record(0x4d16, (void *)(uintptr_t)flag);
+    for (int i = 0; i < 7; i++) temporary[i] = 0x4d160000 + i;
+    arena<uint32_t>(0x2300)[2] = *arena<uint32_t>(0x24) % 3 ? (uint32_t)(uintptr_t)arena<void>(0x2100) : 0;
+    return arena<void>(0x2300);
+}
+static void __fastcall w4d_stub_temporary_gone(uint32_t *temporary) { for (int i = 0; i < 7; i++) record(0x4d17, (void *)(uintptr_t)temporary[i]); }

@@ -1719,3 +1719,11 @@
     };
     w4d_set.finish = w4c_unstub;
     quick(w4d_set);
+    // Text::FromName: the name having text or not, memory or not
+    Test w4d_from_name{0x6e5860, w4d_texts, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4d_from_name.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x4040f0, (void *)w4d_stub_lookup}, {0xbcdfc0, (void *)w4c_stub_alloc}, {0xbcf7d0, (void *)w4d_stub_text}, {0xbd0490, (void *)w4d_stub_empty},
+                       {0xbd1880, (void *)w4d_stub_temporary_gone}});
+    };
+    w4d_from_name.finish = w4c_unstub;
+    quick(w4d_from_name);

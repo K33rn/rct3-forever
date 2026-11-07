@@ -1905,3 +1905,26 @@ template <uint32_t SLOT> static void __thiscall w4d_text_set(uint8_t *self, int3
 REWRITE("Text::Set57AC20", 0x57ac20, w4d_seh_late, (&w4d_text_set<0x194>), &g_w4d_sets);
 REWRITE("Text::Set57AC20", 0x70c2a0, w4d_seh_late, (&w4d_text_set<0x1d8>), &g_w4d_sets);
 REWRITE("Text::Set57AC20", 0xa1d330, w4d_seh_late, (&w4d_text_set<0xb4>), &g_w4d_sets);
+
+// ---- Text::FromName: looks up the name NAME (in table 0x1303cfc) into a 28-byte temporary and takes its text (+8) as a new counted text, or the
+// empty text when it has none; the temporary is then destroyed -----------------------------------------------------------------------------------
+static volatile long g_w4d_from_names;
+template <uint32_t NAME> static int32_t **__fastcall w4d_text_from_name(int32_t **self) {
+    g_w4d_from_names++;
+    uint32_t temporary[7];
+    uint32_t *found = ((uint32_t * (__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x4040f0)(temporary, NAME, 0x1303cfc, 1);
+    const void *characters = (const void *)(uintptr_t)found[2];
+    int32_t *made;
+    if (characters) {
+        void *memory = memory_alloc(0x10);
+        made = memory ? ((int32_t * (__thiscall *)(void *, const void *))0xbcf7d0)(memory, characters) : nullptr;
+    } else {
+        made = ((int32_t * (__fastcall *)(uint8_t))0xbd0490)(1);
+    }
+    *self = made;
+    ((void(__fastcall *)(void *))0xbd1880)(temporary);
+    return self;
+}
+REWRITE("Text::FromName6E5860", 0x6e5860, (w4c_seh<0xe4579c>), (&w4d_text_from_name<0xf65b74>), &g_w4d_from_names);
+REWRITE("Text::FromName6E5860", 0x6e5e00, (w4c_seh<0xe458ec>), (&w4d_text_from_name<0xf65bd0>), &g_w4d_from_names);
+REWRITE("Text::FromName6E5860", 0x6e6e40, (w4c_seh<0xe45bec>), (&w4d_text_from_name<0xf65cd8>), &g_w4d_from_names);
