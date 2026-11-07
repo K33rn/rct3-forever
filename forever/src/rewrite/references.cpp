@@ -306,3 +306,41 @@ static const uint32_t load_copies[] = {
 static const uint8_t load_original[] = {0x83, 0xec, 0x08, 0x53, 0x55, 0x56, 0x57, 0x8b,
                                         0xf9, 0x8b, 0x4c, 0x24, 0x20, 0x8b, 0x41, 0x04};
 REWRITE_COPIES("ReferenceField::Load", load_copies, load_original, load_field, &g_loads);
+
+// ObjectRef::ConstructMember: a reference at +OFF of its new owner, to nothing; returns the owner.
+static volatile long g_member_constructs;
+template <uint32_t OFF, uint32_t TABLE> static uint8_t *__fastcall ref_construct_member(uint8_t *owner) {
+    g_member_constructs++;
+    ObjectRef *r = (ObjectRef *)(owner + OFF);
+    r->vtable = (void **)0xf26ae0;
+    r->owner = r;
+    join(r, null_handle());
+    r->vtable = (void **)TABLE;
+    r->extra = 0;
+    r->flag = 1;
+    return owner;
+}
+template <uint32_t OFF> static const uint8_t member_construct_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8d, 0x77, (uint8_t)OFF, 0xc7};
+REWRITE("ObjectRef::ConstructMember", 0x518950, member_construct_original<0x4>, (&ref_construct_member<0x4, 0xf36f6c>), &g_member_constructs);
+REWRITE("ObjectRef::ConstructMember", 0x5ae940, member_construct_original<0xc>, (&ref_construct_member<0xc, 0xf32724>), &g_member_constructs);
+REWRITE("ObjectRef::ConstructMember", 0x98ffa0, member_construct_original<0x4>, (&ref_construct_member<0x4, 0xf7ff14>), &g_member_constructs);
+REWRITE("ObjectRef::ConstructMember", 0x990050, member_construct_original<0x8>, (&ref_construct_member<0x8, 0xf2776c>), &g_member_constructs);
+REWRITE("ObjectRef::ConstructMember", 0xb958a0, member_construct_original<0x4>, (&ref_construct_member<0x4, 0xf9c950>), &g_member_constructs);
+
+// ObjectRef::CopyTo(out): a new plain reference at `out` to the handle held at +OFF; returns it.
+static volatile long g_ref_copies;
+template <uint32_t OFF> static ObjectRef *__thiscall ref_copy_to(uint8_t *self, ObjectRef *out) {
+    g_ref_copies++;
+    out->vtable = (void **)0xf26ae0;
+    out->owner = out;
+    Handle *h = *(Handle **)(self + OFF);
+    h->references++;
+    join(out, h);
+    return out;
+}
+static const uint8_t ref_copy_original[] = {0x51, 0x8b, 0x44, 0x24, 0x08, 0xc7, 0x00, 0xe0};
+REWRITE("ObjectRef::CopyTo", 0x6dfad0, ref_copy_original, (&ref_copy_to<0x80>), &g_ref_copies);
+REWRITE("ObjectRef::CopyTo", 0x6dfb10, ref_copy_original, (&ref_copy_to<0x94>), &g_ref_copies);
+REWRITE("ObjectRef::CopyTo", 0x7f4a80, ref_copy_original, (&ref_copy_to<0xec>), &g_ref_copies);
+REWRITE("ObjectRef::CopyTo", 0x825b20, ref_copy_original, (&ref_copy_to<0xc0>), &g_ref_copies);
+REWRITE("ObjectRef::CopyTo", 0x98a5f0, ref_copy_original, (&ref_copy_to<0xa0>), &g_ref_copies);

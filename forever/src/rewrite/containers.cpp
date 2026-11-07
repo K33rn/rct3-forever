@@ -931,3 +931,281 @@ REWRITE_COPIES("Settings::Copy", settings_copies, settings_copy_original, settin
 static const uint8_t rows_save_bytes_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0x53};
 REWRITE("Rows::SaveBytes", 0x5ba680, rows_save_bytes_original, (&rows_save<1>), &g_rows_saves);
 REWRITE("Rows::SaveBytes", 0xa01ce0, rows_save_bytes_original, (&rows_save<1>), &g_rows_saves);
+
+// ---- Cached::Forward: hands on to a method of the interface kept at +CACHE (flag +FLAG, reference +REF) ---------------
+static volatile long g_cached_forwards;
+template <uint32_t REF, uint32_t FLAG, uint32_t CACHE, uint32_t ID, uint32_t CALL> static uint32_t __fastcall cached_forward(uint8_t *self) {
+    g_cached_forwards++;
+    if (!self[FLAG]) {
+        *(void **)(self + CACHE) = find_interface(*(uint8_t **)(self + REF), (const int32_t *)ID);
+        self[FLAG] = 1;
+    }
+    return ((uint32_t(__fastcall *)(void *))CALL)(*(void **)(self + CACHE));
+}
+static const uint8_t cached_forward_original[] = {0x57, 0x8b, 0xf9, 0x8a, 0x87};
+REWRITE("Cached::Forward", 0x532a20, cached_forward_original, (&cached_forward<0x208, 0x21c, 0x218, 0x12f5338, 0x55b630>), &g_cached_forwards);
+REWRITE("Cached::Forward", 0x5ec260, cached_forward_original, (&cached_forward<0x104, 0x118, 0x114, 0x12f5608, 0x5c6c80>), &g_cached_forwards);
+REWRITE("Cached::Forward", 0x5ec2c0, cached_forward_original, (&cached_forward<0x104, 0x118, 0x114, 0x12f5608, 0x5c6c80>), &g_cached_forwards);
+REWRITE("Cached::Forward", 0x66bb50, cached_forward_original, (&cached_forward<0x168, 0x17c, 0x178, 0x12f4b34, 0x4a1840>), &g_cached_forwards);
+REWRITE("Cached::Forward", 0xb54910, cached_forward_original, (&cached_forward<0xb0, 0xc4, 0xc0, 0x13cea88, 0xb53da0>), &g_cached_forwards);
+
+// ---- Words::Append: one more word in an exactly sized array {count at +COUNT, data at +DATA}: copied to a new block -----
+static volatile long g_word_appends;
+template <uint32_t COUNT, uint32_t DATA> static void __thiscall words_append(uint8_t *self, uint32_t word) {
+    g_word_appends++;
+    int32_t *count = (int32_t *)(self + COUNT);
+    uint32_t **data = (uint32_t **)(self + DATA), *old = *data;
+    *data = (uint32_t *)memory_alloc_aligned((uint32_t)*count * 4 + 4);
+    for (int32_t i = 0; i < *count; i++) (*data)[i] = old[i];
+    (*data)[*count] = word;
+    ++*count;
+    memory_free_aligned(old);
+}
+static const uint8_t words_append_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+REWRITE("Words::Append", 0xcc8320, words_append_original, (&words_append<0x24, 0x28>), &g_word_appends);
+REWRITE("Words::Append", 0xce2250, words_append_original, (&words_append<0x14, 0x18>), &g_word_appends);
+REWRITE("Words::Append", 0xce22b0, words_append_original, (&words_append<0x3c, 0x40>), &g_word_appends);
+REWRITE("Words::Append", 0xce2310, words_append_original, (&words_append<0x3c, 0x44>), &g_word_appends);
+REWRITE("Words::Append", 0xceedc0, words_append_original, (&words_append<0x24, 0x28>), &g_word_appends);
+
+// ---- Vector::Free: an array of objects with its count in a header before it: each destroyed (0xDDCF39), the block freed --
+typedef void(__stdcall *DestroyEach)(void *, uint32_t, int32_t, void *);
+static const DestroyEach destroy_each = (DestroyEach)0xddcf39;
+static void vector_free(uint8_t *items, int32_t header, uint32_t size, uint32_t destroy) {
+    uint8_t *block = items - header;
+    destroy_each(items, size, *(int32_t *)block, (void *)(uintptr_t)destroy);
+    memory_free_aligned(block);
+}
+static volatile long g_vector_frees;
+// With a header of 16 or 4 bytes, and a second block at +4.
+template <int32_t HEADER, uint32_t SIZE, uint32_t DESTROY> static void __fastcall vector_free_pair(uint8_t **self) {
+    g_vector_frees++;
+    if (self[0]) vector_free(self[0], HEADER, SIZE, DESTROY);
+    if (self[1]) memory_free_aligned(self[1]);
+}
+static const uint8_t vector_pair_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x85, 0xc0, 0x74};
+REWRITE("Vector::FreePair", 0x40c550, vector_pair_original, (&vector_free_pair<16, 0x70, 0x40b470>), &g_vector_frees);
+REWRITE("Vector::FreePair", 0x40c5c0, vector_pair_original, (&vector_free_pair<4, 0x24, 0x40b4c0>), &g_vector_frees);
+REWRITE("Vector::FreePair", 0x4998d0, vector_pair_original, (&vector_free_pair<4, 0x18, 0x4992a0>), &g_vector_frees);
+REWRITE("Vector::FreePair", 0x4d0940, vector_pair_original, (&vector_free_pair<4, 0x2c, 0x4cef40>), &g_vector_frees);
+REWRITE("Vector::FreePair", 0x9d0d90, vector_pair_original, (&vector_free_pair<16, 0x40, 0x9cdb00>), &g_vector_frees);
+REWRITE("Vector::FreePair", 0xce7570, vector_pair_original, (&vector_free_pair<16, 0x70, 0xce6810>), &g_vector_frees);
+REWRITE("Vector::FreePair", 0xcebdd0, vector_pair_original, (&vector_free_pair<16, 0x70, 0xce95e0>), &g_vector_frees);
+
+// A vector with a 4-byte header at +OFF, left in place.
+template <uint32_t OFF, uint32_t SIZE, uint32_t DESTROY> static void __fastcall vector_free_field(uint8_t *self) {
+    g_vector_frees++;
+    uint8_t *items = *(uint8_t **)(self + OFF);
+    if (items) vector_free(items, 4, SIZE, DESTROY);
+}
+template <uint32_t OFF> static const uint8_t vector_field_original[] = {0x8b, 0x41, (uint8_t)OFF, 0x85, 0xc0, 0x74};
+REWRITE("Vector::FreeField", 0x48a420, vector_field_original<0x8>, (&vector_free_field<0x8, 0x1c, 0x4883b0>), &g_vector_frees);
+REWRITE("Vector::FreeField", 0x7b6680, vector_field_original<0x8>, (&vector_free_field<0x8, 0x1c, 0x7b2ab0>), &g_vector_frees);
+REWRITE("Vector::FreeField", 0x8fcfe0, vector_field_original<0x8>, (&vector_free_field<0x8, 0x28, 0x8fc8f0>), &g_vector_frees);
+REWRITE("Vector::FreeField", 0xa0ddc0, vector_field_original<0x8>, (&vector_free_field<0x8, 0x1c, 0xa0beb0>), &g_vector_frees);
+REWRITE("Vector::FreeField", 0xb5d460, vector_field_original<0x8>, (&vector_free_field<0x8, 0x1c, 0xb5b640>), &g_vector_frees);
+REWRITE("Vector::FreeField", 0xb71870, vector_field_original<0x8>, (&vector_free_field<0x8, 0x1c, 0xb6b8f0>), &g_vector_frees);
+REWRITE("Vector::FreeField", 0xcb4f20, vector_field_original<0xc>, (&vector_free_field<0xc, 0x10, 0xcb2b70>), &g_vector_frees);
+REWRITE("Vector::FreeField", 0xcbe140, vector_field_original<0xc>, (&vector_free_field<0xc, 0xc, 0xcbd0e0>), &g_vector_frees);
+
+// ---- Level::Reached: whether a level byte (+1 of a settings record, reached through two lookups) is at least LEVEL, and
+// the field at +OFF is set ----------------------------------------------------------------------------------------------------
+static volatile long g_level_checks;
+template <uint32_t LEVEL, uint32_t OFF> static uint8_t __fastcall level_reached(uint8_t *self) {
+    g_level_checks++;
+    void *a = ((void *(__fastcall *)(void *))0xbb4280)(self);
+    uint8_t *record = ((uint8_t * (__fastcall *)(void *))0xbb3e70)(a);
+    uint8_t level = record[1];
+    if (!level || level < LEVEL) return 0;
+    return *(uint32_t *)(self + OFF) != 0;
+}
+template <uint32_t AT> static const uint8_t level_original[] = {
+    0x56, 0x8b, 0xf1, 0xe8, (uint8_t)(0xbb4280 - (AT + 8)), (uint8_t)((0xbb4280 - (AT + 8)) >> 8),
+    (uint8_t)((0xbb4280 - (AT + 8)) >> 16), (uint8_t)((0xbb4280 - (AT + 8)) >> 24)};
+REWRITE("Level::Reached", 0x4e28f0, level_original<0x4e28f0>, (&level_reached<3, 0x1a0>), &g_level_checks);
+REWRITE("Level::Reached", 0x4ed510, level_original<0x4ed510>, (&level_reached<3, 0x1a4>), &g_level_checks);
+REWRITE("Level::Reached", 0x55eea0, level_original<0x55eea0>, (&level_reached<2, 0x178>), &g_level_checks);
+REWRITE("Level::Reached", 0x55eee0, level_original<0x55eee0>, (&level_reached<2, 0x184>), &g_level_checks);
+REWRITE("Level::Reached", 0x5a1200, level_original<0x5a1200>, (&level_reached<2, 0x180>), &g_level_checks);
+REWRITE("Level::Reached", 0x5a12b0, level_original<0x5a12b0>, (&level_reached<3, 0x1b4>), &g_level_checks);
+REWRITE("Level::Reached", 0x5d2710, level_original<0x5d2710>, (&level_reached<3, 0x1a8>), &g_level_checks);
+
+// ---- Recycled::Delete: a deleting destructor whose block goes on a free list (head and count in globals) -----------------
+static volatile long g_recycled;
+template <uint32_t DESTROY, uint32_t HEAD, uint32_t COUNT> static uint32_t *__thiscall recycled_delete(uint32_t *self, uint32_t flags) {
+    g_recycled++;
+    ((void(__fastcall *)(void *))DESTROY)(self);
+    if (flags & 1) {
+        self[0] = *(uint32_t *)HEAD;
+        *(uint32_t *)HEAD = (uint32_t)(uintptr_t)self;
+        ++*(uint32_t *)COUNT;
+    }
+    return self;
+}
+template <uint32_t AT, uint32_t DESTROY> static const uint8_t recycled_original[] = {
+    0x56, 0x8b, 0xf1, 0xe8, (uint8_t)(DESTROY - (AT + 8)), (uint8_t)((DESTROY - (AT + 8)) >> 8),
+    (uint8_t)((DESTROY - (AT + 8)) >> 16), (uint8_t)((DESTROY - (AT + 8)) >> 24)};
+REWRITE("Recycled::Delete", 0xbe8fb0, (recycled_original<0xbe8fb0, 0xbe8b10>), (&recycled_delete<0xbe8b10, 0x13d0eb4, 0x13d0ebc>), &g_recycled);
+REWRITE("Recycled::Delete", 0xbeb790, (recycled_original<0xbeb790, 0xbeb7c0>), (&recycled_delete<0xbeb7c0, 0x13d0ee0, 0x13d0ee8>), &g_recycled);
+REWRITE("Recycled::Delete", 0xbebac0, (recycled_original<0xbebac0, 0xbeba10>), (&recycled_delete<0xbeba10, 0x13d0f28, 0x13d0f30>), &g_recycled);
+REWRITE("Recycled::Delete", 0xbebc80, (recycled_original<0xbebc80, 0xbebcb0>), (&recycled_delete<0xbebcb0, 0x13d0f04, 0x13d0f0c>), &g_recycled);
+REWRITE("Recycled::Delete", 0xbff0b0, (recycled_original<0xbff0b0, 0xbff0e0>), (&recycled_delete<0xbff0e0, 0x13d2a30, 0x13d2a38>), &g_recycled);
+REWRITE("Recycled::Delete", 0xbff3b0, (recycled_original<0xbff3b0, 0xbff310>), (&recycled_delete<0xbff310, 0x13d2a78, 0x13d2a80>), &g_recycled);
+REWRITE("Recycled::Delete", 0xbff5e0, (recycled_original<0xbff5e0, 0xbff610>), (&recycled_delete<0xbff610, 0x13d2a54, 0x13d2a5c>), &g_recycled);
+REWRITE("Recycled::Delete", 0xc9be00, (recycled_original<0xc9be00, 0xc9bab0>), (&recycled_delete<0xc9bab0, 0x13e6df4, 0x13e6dfc>), &g_recycled);
+
+// ---- OwnerList::~OwnerList: deletes each item of the list at +4 ---------------------------------------------------------
+static volatile long g_owner_lists;
+template <uint32_t TABLE> static void __fastcall owner_list_destroy(uint32_t *self) {
+    g_owner_lists++;
+    self[0] = TABLE;
+    Node *n = (Node *)(uintptr_t)self[1];
+    if (!n->next) return;
+    while (n) {
+        void *item = n->value;
+        Node *next = n->next->next ? n->next : nullptr;
+        if (item) ((void(__thiscall *)(void *, int32_t))(*(void ***)item)[0])(item, 1);
+        n = next;
+    }
+}
+template <uint32_t TABLE> static const uint8_t owner_list_original[] = {
+    0xc7, 0x01, (uint8_t)TABLE, (uint8_t)(TABLE >> 8), (uint8_t)(TABLE >> 16), (uint8_t)(TABLE >> 24), 0x8b, 0x49};
+REWRITE("OwnerList::Destroy", 0xc0b4e0, owner_list_original<0xfafa90>, (&owner_list_destroy<0xfafa90>), &g_owner_lists);
+REWRITE("OwnerList::Destroy", 0xc0b570, owner_list_original<0xfafa94>, (&owner_list_destroy<0xfafa94>), &g_owner_lists);
+REWRITE("OwnerList::Destroy", 0xc0b600, owner_list_original<0xfafa98>, (&owner_list_destroy<0xfafa98>), &g_owner_lists);
+REWRITE("OwnerList::Destroy", 0xc0b670, owner_list_original<0xfafa9c>, (&owner_list_destroy<0xfafa9c>), &g_owner_lists);
+REWRITE("OwnerList::Destroy", 0xc0b700, owner_list_original<0xfafaa0>, (&owner_list_destroy<0xfafaa0>), &g_owner_lists);
+REWRITE("OwnerList::Destroy", 0xc0b790, owner_list_original<0xfafaa4>, (&owner_list_destroy<0xfafaa4>), &g_owner_lists);
+REWRITE("OwnerList::Destroy", 0xc0b820, owner_list_original<0xfafaa8>, (&owner_list_destroy<0xfafaa8>), &g_owner_lists);
+
+// ---- SharedBlock: {references, ..., +0xc data}. Release drops a reference held at +OFF, freeing at none ---------------------
+static volatile long g_block_releases;
+template <uint32_t OFF> static void __fastcall shared_block_release(uint8_t *self) {
+    g_block_releases++;
+    int32_t *block = *(int32_t **)(self + OFF);
+    if (--*block || !block) return;
+    memory_free_aligned((void *)(uintptr_t)block[3]);
+    memory_free(block);
+}
+template <uint32_t OFF> static const uint8_t block_release_original[] = {0x8b, 0x41, (uint8_t)OFF, 0xff, 0x08, 0x56, 0x8b, 0x71};
+REWRITE("SharedBlock::Release", 0x44a0f0, block_release_original<0x4>, (&shared_block_release<0x4>), &g_block_releases);
+REWRITE("SharedBlock::Release", 0x4c0c60, block_release_original<0x4>, (&shared_block_release<0x4>), &g_block_releases);
+REWRITE("SharedBlock::Release", 0x66b330, block_release_original<0x8>, (&shared_block_release<0x8>), &g_block_releases);
+REWRITE("SharedBlock::Release", 0x66c6f0, block_release_original<0x8>, (&shared_block_release<0x8>), &g_block_releases);
+REWRITE("SharedBlock::Release", 0x746500, block_release_original<0x4>, (&shared_block_release<0x4>), &g_block_releases);
+REWRITE("SharedBlock::Release", 0x7512b0, block_release_original<0x4>, (&shared_block_release<0x4>), &g_block_releases);
+REWRITE("SharedBlock::Release", 0x7512e0, block_release_original<0x10>, (&shared_block_release<0x10>), &g_block_releases);
+REWRITE("SharedBlock::Release", 0xa1d4b0, block_release_original<0x4>, (&shared_block_release<0x4>), &g_block_releases);
+REWRITE("SharedBlock::Release", 0xbdf6a0, block_release_original<0x4>, (&shared_block_release<0x4>), &g_block_releases);
+
+// A deleting destructor for an object owning a block at +OFF.
+static volatile long g_field_deletes;
+template <uint32_t OFF> static void *__thiscall field_delete(uint8_t *self, uint32_t flags) {
+    g_field_deletes++;
+    memory_free_aligned(*(void **)(self + OFF));
+    if (flags & 1) memory_free(self);
+    return self;
+}
+template <uint32_t OFF> static const uint8_t field_delete_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, (uint8_t)OFF, 0x50, 0xe8};
+REWRITE("Field::Delete", 0x401200, field_delete_original<0xc>, (&field_delete<0xc>), &g_field_deletes);
+REWRITE("Field::Delete", 0x4035b0, field_delete_original<0xc>, (&field_delete<0xc>), &g_field_deletes);
+REWRITE("Field::Delete", 0x59ea40, field_delete_original<0x4>, (&field_delete<0x4>), &g_field_deletes);
+REWRITE("Field::Delete", 0xbcba60, field_delete_original<0x4>, (&field_delete<0x4>), &g_field_deletes);
+REWRITE("Field::Delete", 0xc32450, field_delete_original<0xc>, (&field_delete<0xc>), &g_field_deletes);
+REWRITE("Field::Delete", 0xc32480, field_delete_original<0x4>, (&field_delete<0x4>), &g_field_deletes);
+
+// ---- Debug builds of small wrappers (these copies keep the compiler's stack checks, which do nothing here) --------------
+static volatile long g_debug_wrappers;
+template <uint32_t CALL> static uint32_t __fastcall debug_forward(void *self) {
+    g_debug_wrappers++;
+    return ((uint32_t(__fastcall *)(void *))CALL)(self);
+}
+template <uint32_t DESTROY> static void *__thiscall debug_delete(void *self, uint32_t flags) {
+    g_debug_wrappers++;
+    ((void(__fastcall *)(void *))DESTROY)(self);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t debug_original[] = {0x55, 0x8b, 0xec, 0x51, 0xc7, 0x45, 0xfc, 0xcc};
+REWRITE("Debug::Forward", 0xcc1d70, debug_original, (&debug_forward<0xbe86e0>), &g_debug_wrappers);
+REWRITE("Debug::Forward", 0xcc1f00, debug_original, (&debug_forward<0xbe88b0>), &g_debug_wrappers);
+REWRITE("Debug::Forward", 0xcc2630, debug_original, (&debug_forward<0xcc25d0>), &g_debug_wrappers);
+REWRITE("Debug::Forward", 0xcc4520, debug_original, (&debug_forward<0xbe86e0>), &g_debug_wrappers);
+REWRITE("Debug::Forward", 0xcc45b0, debug_original, (&debug_forward<0xbe86e0>), &g_debug_wrappers);
+REWRITE("Debug::Forward", 0xcc49d0, debug_original, (&debug_forward<0xbe88b0>), &g_debug_wrappers);
+REWRITE("Debug::Forward", 0xcc4a00, debug_original, (&debug_forward<0xbe88b0>), &g_debug_wrappers);
+REWRITE("Debug::Forward", 0xcc5610, debug_original, (&debug_forward<0xbe86e0>), &g_debug_wrappers);
+REWRITE("Debug::Forward", 0xcc56d0, debug_original, (&debug_forward<0xbe88b0>), &g_debug_wrappers);
+REWRITE("Debug::Delete", 0xcc1cd0, debug_original, (&debug_delete<0xcc1b90>), &g_debug_wrappers);
+REWRITE("Debug::Delete", 0xcc4480, debug_original, (&debug_delete<0xcc4140>), &g_debug_wrappers);
+REWRITE("Debug::Delete", 0xcc4700, debug_original, (&debug_delete<0xcc2ed0>), &g_debug_wrappers);
+REWRITE("Debug::Delete", 0xcc5530, debug_original, (&debug_delete<0xcc5240>), &g_debug_wrappers);
+REWRITE("Debug::Delete", 0xcc5570, debug_original, (&debug_delete<0xcc57d0>), &g_debug_wrappers);
+
+// ---- Grid::MarkUp: flags a quadtree node and its parents (bit 4), stopping at one already flagged ------------------------
+static volatile long g_grid_marks;
+static void __thiscall grid_mark_up(uint8_t *self, int32_t index) {
+    g_grid_marks++;
+    for (;;) {
+        uint32_t *node = (uint32_t *)(*(uint8_t **)(self + 8) + index * 0x1c);
+        if (*node & 0x10) return;
+        *node |= 0x10;
+        if (!index) return;
+        index = (index - 1) >> 2;
+        if (index < 0) return;
+    }
+}
+static const uint32_t grid_mark_copies[] = {0x42f670, 0x488320, 0x7b2a40, 0xa0be40, 0xb5b5d0, 0xb6b880};
+static const uint8_t grid_mark_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x57, 0x8b, 0xf9};
+REWRITE_COPIES("Grid::MarkUp", grid_mark_copies, grid_mark_original, grid_mark_up, &g_grid_marks);
+
+// ---- Names::Value: where a name's value is kept, or null when the name isn't there (see Names::Add) ------------------------
+static volatile long g_name_values;
+template <uint32_t FIND> static uint32_t *__thiscall names_value(uint8_t *self, void *name) {
+    g_name_values++;
+    int32_t at = (int32_t)(uintptr_t)name;   // the argument's slot is reused
+    uint8_t found = ((uint8_t(__fastcall *)(void *, void *, int32_t, int32_t *, int32_t *))FIND)(
+        name, *(void **)self, *(int32_t *)(self + 0x14), &at, &at);
+    return found ? *(uint32_t **)(self + 8) + at : nullptr;
+}
+static const uint8_t names_value_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x56, 0x14, 0x8d, 0x44};
+REWRITE("Names::Value", 0x7fbdf0, names_value_original, (&names_value<0x7fb900>), &g_name_values);
+REWRITE("Names::Value", 0x7fd920, names_value_original, (&names_value<0x7fb9c0>), &g_name_values);
+REWRITE("Names::Value", 0x8028c0, names_value_original, (&names_value<0x801450>), &g_name_values);
+REWRITE("Names::Value", 0x805e80, names_value_original, (&names_value<0x805c10>), &g_name_values);
+REWRITE("Names::Value", 0x808590, names_value_original, (&names_value<0x807970>), &g_name_values);
+REWRITE("Names::Value", 0xb11c30, names_value_original, (&names_value<0xb117e0>), &g_name_values);
+
+// ---- Pool::TakeSized: as Pool::Take, for items of a size that isn't a power of two -------------------------------------------
+template <uint32_t GROW, uint32_t SIZE> static int32_t __fastcall pool_take_sized(uint8_t *self) {
+    g_pool_takes++;
+    int32_t *used = (int32_t *)(self + 8), *capacity = (int32_t *)(self + 0xc);
+    if (*used >= *capacity) ((void(__thiscall *)(void *, int32_t))GROW)(self, *capacity > 0 ? *capacity * 2 : 200);
+    int32_t item = (*(int32_t **)(self + 4))[*capacity - *used - 1];
+    (*(uint8_t **)self)[(uint32_t)item * SIZE] = 1;
+    ++*used;
+    return item;
+}
+REWRITE("Pool::TakeSized", 0x409b60, pool_take_original, (&pool_take_sized<0x409660, 0x70>), &g_pool_takes);
+REWRITE("Pool::TakeSized", 0x40d440, pool_take_original, (&pool_take_sized<0x40c6a0, 0x70>), &g_pool_takes);
+REWRITE("Pool::TakeSized", 0x4d0980, pool_take_original, (&pool_take_sized<0x4d01a0, 0x2c>), &g_pool_takes);
+REWRITE("Pool::TakeSized", 0xce7c80, pool_take_original, (&pool_take_sized<0xce78e0, 0x70>), &g_pool_takes);
+REWRITE("Pool::TakeSized", 0xcec4c0, pool_take_original, (&pool_take_sized<0xcebe40, 0x70>), &g_pool_takes);
+
+// ---- Array::NextIndex: the index of a new item, the array grown by 16 first when full -------------------------------------
+static volatile long g_next_indexes;
+template <uint32_t GROW> static int32_t __fastcall array_next_index(uint8_t *self) {
+    g_next_indexes++;
+    int32_t *count = (int32_t *)(self + 8);
+    if (*count >= *(int32_t *)(self + 4)) ((void(__thiscall *)(void *, int32_t))GROW)(self, *count + 0x10);
+    return (*count)++;
+}
+static const uint8_t next_index_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x08, 0x3b, 0x46};
+REWRITE("Array::NextIndex", 0x7c0a60, next_index_original, (&array_next_index<0x7c06e0>), &g_next_indexes);
+REWRITE("Array::NextIndex", 0x7c0ab0, next_index_original, (&array_next_index<0x7c0780>), &g_next_indexes);
+REWRITE("Array::NextIndex", 0x7c0b00, next_index_original, (&array_next_index<0x7c0830>), &g_next_indexes);
+REWRITE("Array::NextIndex", 0xa0ee90, next_index_original, (&array_next_index<0xa0ecb0>), &g_next_indexes);
+REWRITE("Array::NextIndex", 0xa0eee0, next_index_original, (&array_next_index<0xa0ed40>), &g_next_indexes);
+REWRITE("Array::NextIndex", 0xa0ef30, next_index_original, (&array_next_index<0xa0edf0>), &g_next_indexes);
+REWRITE("Array::NextIndex", 0xb75db0, next_index_original, (&array_next_index<0xb75ba0>), &g_next_indexes);
+REWRITE("Array::NextIndex", 0xb76260, next_index_original, (&array_next_index<0xb76170>), &g_next_indexes);

@@ -359,6 +359,17 @@ static void __thiscall stub_field_ctor(void *self, uint32_t a, uint32_t d, uint3
     record(0x73, self); record(0x73, (void *)(uintptr_t)a); record(0x73, (void *)(uintptr_t)d); record(0x73, (void *)(uintptr_t)k); record(0x73, (void *)(uintptr_t)b);
 }
 static uint8_t __thiscall stub_ask(void *self, uint32_t a, uint32_t b) { record(0x78, self); record(0x78, (void *)(uintptr_t)a); record(0x78, (void *)(uintptr_t)b); return (uint8_t)((a ^ b) & 2); }
+static void __stdcall stub_destroy_each(void *items, uint32_t size, int32_t count, void *destroy) {
+    record(0x79, items); record(0x79, (void *)(uintptr_t)size); record(0x79, (void *)(uintptr_t)count); record(0x79, destroy);
+}
+static void *__fastcall stub_lookup_a(void *self) { record(0x7a, self); return arena<void>(0x500); }
+static void *__fastcall stub_lookup_b(void *self) { record(0x7b, self); return arena<void>(0x510); }
+static uint8_t __fastcall stub_name_found(void *name, void *table, int32_t count, int32_t *at, int32_t *at2) {
+    record(0x7c, name); record(0x7c, table); record(0x7c, (void *)(uintptr_t)count);
+    (void)at2;
+    *at = arena<int32_t>(0x20)[0];
+    return (uint8_t)arena<int32_t>(0x20)[1] * 3;
+}
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -3737,6 +3748,202 @@ static std::vector<Test> tests() {
     rows_save_bytes.prepare = rows_save.prepare;
     rows_save_bytes.finish = rows_save.finish;
     quick(rows_save_bytes);
+    // Cached::Forward: the interface kept or found, the method a stand-in
+    static uint32_t g_cf2_ref, g_cf2_flag, g_cf2_cache;
+    Test cached_forward{0x532a20,
+                        [=](Rng &r) {
+                            fresh(r); iface_handle(r);
+                            uint8_t *self = arena<uint8_t>(0x800);
+                            *(void **)(self + g_cf2_ref) = arena<void>(0x340);
+                            bool kept = r.range(0, 1);
+                            self[g_cf2_flag] = kept;
+                            *(void **)(self + g_cf2_cache) = kept ? arena<void>(0x3a0) : nullptr;
+                        },
+                        [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    cached_forward.prepare = [](const rewrite::Entry *e) {
+        g_cf2_flag = *(uint32_t *)(e->at + 5); g_cf2_ref = *(uint32_t *)(e->at + 0xf); g_cf2_cache = *(uint32_t *)(e->at + 0x46);
+        g_iface_id = *(uint32_t **)(e->at + 0x28);
+        stubs_for_now({{(uintptr_t)(e->at + 0x59 + 5 + *(int32_t *)(e->at + 0x5a)), (void *)stub_item_value}});
+    };
+    cached_forward.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(cached_forward);
+    // Words::Append: up to 8 words into a new block
+    static uint32_t g_wa_count, g_wa_data;
+    Test words_append{0xcc8320,
+                      [=](Rng &r) {
+                          fresh(r);
+                          *arena<uint32_t>(ALLOC_NEXT) = 0;
+                          uint8_t *self = arena<uint8_t>(0x800);
+                          *(int32_t *)(self + g_wa_count) = r.range(0, 8);
+                          *(void **)(self + g_wa_data) = arena<void>(0x400);
+                          for (int i = 0; i < 8; i++) arena<uint32_t>(0x400)[i] = r.next();
+                          arena<uint32_t>(0x10)[0] = r.next();
+                      },
+                      [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x10)[0]); return Result{}; }};
+    words_append.prepare = [](const rewrite::Entry *e) {
+        g_wa_count = *(uint8_t *)(e->at + 5); g_wa_data = *(uint8_t *)(e->at + 9);
+        stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}});
+    };
+    words_append.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(words_append);
+    // Vector::FreePair: the items after their header, sometimes none; the second block sometimes none
+    static uint32_t g_vf_header;
+    Test vector_pair{0x40c550,
+                     [=](Rng &r) {
+                         fresh(r);
+                         arena<void *>(0x100)[0] = r.range(0, 2) ? arena<void>(0x500 + g_vf_header) : nullptr;
+                         arena<void *>(0x100)[1] = r.range(0, 1) ? arena<void>(0x600) : nullptr;
+                         *arena<int32_t>(0x500) = r.range(0, 5);
+                     },
+                     [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    vector_pair.prepare = [](const rewrite::Entry *e) {
+        g_vf_header = 0x100 - *(uint8_t *)(e->at + 0xb);
+        stubs_for_now({{0xddcf39, (void *)stub_destroy_each}});
+    };
+    vector_pair.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(vector_pair);
+    static uint32_t g_vff_off;
+    Test vector_field{0x48a420,
+                      [=](Rng &r) {
+                          fresh(r);
+                          *(void **)arena<uint8_t>(0x100 + g_vff_off) = r.range(0, 2) ? arena<void>(0x504) : nullptr;
+                          *arena<int32_t>(0x500) = r.range(0, 5);
+                      },
+                      [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    vector_field.prepare = [](const rewrite::Entry *e) {
+        g_vff_off = *(uint8_t *)(e->at + 2);
+        stubs_for_now({{0xddcf39, (void *)stub_destroy_each}});
+    };
+    vector_field.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(vector_field);
+    // Level::Reached: both lookups stand-ins; the level below, at or above the copy's, or none; the field set or not
+    static uint32_t g_lr_off;
+    Test level_reached{0x4e28f0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           arena<uint8_t>(0x510)[1] = (uint8_t)r.range(0, 5);
+                           *(uint32_t *)arena<uint8_t>(0x800 + g_lr_off) = (uint32_t)r.range(0, 1);
+                       },
+                       [](void *fn) { return Result{((uint8_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    level_reached.prepare = [](const rewrite::Entry *e) {
+        g_lr_off = *(uint32_t *)(e->at + 0x20);
+        stubs_for_now({{0xbb4280, (void *)stub_lookup_a}, {0xbb3e70, (void *)stub_lookup_b}});
+    };
+    level_reached.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(level_reached);
+    // Recycled::Delete: with and without the flag; the list's head and count are set at the call
+    static uint32_t g_rd_head, g_rd_count;
+    Test recycled{0xbe8fb0,
+                  [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 3); arena<uint32_t>(0x10)[1] = r.next(); arena<uint32_t>(0x10)[2] = r.next(); },
+                  [](void *fn) {
+                      *(uint32_t *)g_rd_head = arena<uint32_t>(0x10)[1];
+                      *(uint32_t *)g_rd_count = arena<uint32_t>(0x10)[2];
+                      uint32_t got = (uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0]);
+                      return Result{got ^ *(uint32_t *)g_rd_head ^ (*(uint32_t *)g_rd_count * 3)};
+                  }};
+    recycled.prepare = [](const rewrite::Entry *e) {
+        g_rd_head = *(uint32_t *)(e->at + 0x10); g_rd_count = *(uint32_t *)(e->at + 0x17);
+        stubs_for_now({{(uintptr_t)(e->at + 3 + 5 + *(int32_t *)(e->at + 4)), (void *)stub_plain_dtor}});
+    };
+    recycled.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(recycled);
+    // OwnerList::Destroy: a list of 0-3 items, some null, then the end node
+    Test owner_list{0xc0b4e0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[1] = {(void *)stub_deleting};
+                        int n = r.range(0, 3);
+                        arena<void *>(0x100)[1] = arena<void>(0x400);
+                        for (int i = 0; i <= n; i++) {
+                            void **node = arena<void *>(0x400 + i * 0x20);
+                            node[0] = i < n ? arena<void>(0x420 + i * 0x20) : nullptr;
+                            arena<void *>(0x500 + i * 0x10)[0] = vt;
+                            node[2] = r.range(0, 3) ? arena<void>(0x500 + i * 0x10) : nullptr;
+                        }
+                    },
+                    [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(owner_list);
+    // SharedBlock::Release: down to none or not
+    static uint32_t g_sbr_off;
+    Test block_release{0x44a0f0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           *(void **)arena<uint8_t>(0x100 + g_sbr_off) = arena<void>(0x500);
+                           arena<int32_t>(0x500)[0] = r.range(1, 3);
+                           arena<uint32_t>(0x500)[3] = r.next();
+                       },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    block_release.prepare = [](const rewrite::Entry *e) { g_sbr_off = *(uint8_t *)(e->at + 2); };
+    quick(block_release);
+    // Field::Delete: with and without the flag
+    Test field_delete{0x401200,
+                      [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 3); },
+                      [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    quick(field_delete);
+    // Debug wrappers
+    Test debug_forward{0xcc1d70, fresh, [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    debug_forward.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x11 + 5 + *(int32_t *)(e->at + 0x12)), (void *)stub_item_value}}); };
+    debug_forward.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(debug_forward);
+    Test debug_delete{0xcc1cd0,
+                      [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 3); },
+                      [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    debug_delete.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x11 + 5 + *(int32_t *)(e->at + 0x12)), (void *)stub_plain_dtor}}); };
+    debug_delete.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(debug_delete);
+    // Grid::MarkUp: 21 nodes, some already flagged
+    Test grid_mark{0x42f670,
+                   [=](Rng &r) {
+                       fresh(r);
+                       arena<void *>(0x100)[2] = arena<void>(0x400);
+                       for (int k = 0; k < 21; k++) arena<uint32_t>(0x400 + k * 0x1c)[0] = r.range(0, 3) ? 0xf : 0x1f;
+                       arena<int32_t>(0x10)[0] = r.range(0, 20);
+                   },
+                   [](void *fn) { ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0]); return Result{}; }};
+    quick(grid_mark);
+    // Names::Value: the find a stand-in, found or not
+    Test names_value{0x7fbdf0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         uint8_t *self = arena<uint8_t>(0x800);
+                         *(void **)self = arena<void>(0x300);
+                         *(void **)(self + 8) = arena<void>(0x380);
+                         *(int32_t *)(self + 0x14) = r.range(0, 6);
+                         arena<int32_t>(0x20)[0] = r.range(0, 6);
+                         arena<int32_t>(0x20)[1] = r.range(0, 1);
+                     },
+                     [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x400))}; }};
+    names_value.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x17 + 5 + *(int32_t *)(e->at + 0x18)), (void *)stub_name_found}}); };
+    names_value.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(names_value);
+    // Pool::TakeSized: as Pool::Take
+    Test pool_take_sized{0x409b60, pool_take.setup, pool_take.call};
+    pool_take_sized.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1b + 5 + *(int32_t *)(e->at + 0x1c)), (void *)stub_reserve}}); };
+    pool_take_sized.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(pool_take_sized);
+    // Array::NextIndex: full or not
+    Test next_index{0x7c0a60,
+                    [=](Rng &r) { fresh(r); int n = r.range(0, 5); arena<int32_t>(0x100)[2] = n; arena<int32_t>(0x100)[1] = r.range(0, 1) ? n : n + 2; },
+                    [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    next_index.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x11 + 5 + *(int32_t *)(e->at + 0x12)), (void *)stub_reserve}}); };
+    next_index.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(next_index);
+    // ObjectRef::ConstructMember: at +OFF of noise, joining the null handle's list
+    Test member_construct{0x518950,
+                          [=](Rng &r) { handles(r); for (int i = 0; i < 16; i++) arena<uint32_t>(0x600)[i] = r.next(); },
+                          [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x600))}; }};
+    quick(member_construct);
+    // ObjectRef::CopyTo: the handle at 0x380 held at +OFF, the new reference at 0x600
+    static uint32_t g_rc_off;
+    Test ref_copy{0x6dfad0,
+                  [=](Rng &r) {
+                      handles(r);
+                      *(void **)arena<uint8_t>(0x900 + g_rc_off) = arena<void>(0x380);
+                      for (int i = 0; i < 8; i++) arena<uint32_t>(0x600)[i] = r.next();
+                  },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x900), arena<void>(0x600))}; }};
+    ref_copy.prepare = [](const rewrite::Entry *e) { g_rc_off = *(uint32_t *)(e->at + 0x10); };
+    quick(ref_copy);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

@@ -6,7 +6,7 @@ from collections import defaultdict
 pe = pefile.PE(sys.argv[1], fast_load=True); img = pe.get_memory_mapped_image(); BASE = 0x400000
 md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32); md.detail = True
 args = sys.argv[4:]
-show = int(args[args.index('--show') + 1], 16) if '--show' in args else None
+show = {int(x, 16) for x in args[args.index('--show') + 1].split(',')} if '--show' in args else None
 minc = int(args[0]) if args and args[0].isdigit() else 3
 
 
@@ -48,7 +48,7 @@ for g in groups.values():
 rows.sort(key=lambda r: -r[0])
 if show is not None:
     for tot, g, vary in rows:
-        if any(x[0] == show for x in g):
+        if any(x[0] in show for x in g):
             print('copies', [hex(x[0]) for x in g])
             for k in vary:
                 print(f'  +{g[0][2][k][0]:#x} {g[0][2][k][1]}:', [hex(x[2][k][2]) for x in g])
