@@ -192,3 +192,26 @@ static void *__cdecl w2b_stub_manager() {
 }
 static void __cdecl w2b_stub_free_item(void *item) { record(0xe273, item); }
 static void __cdecl w2b_stub_free_table(void *table) { record(0xe274, table); }
+static void *__fastcall w2b_stub_root(void *self) {
+    record(0xe275, self);
+    return arena<void>(0x800);
+}
+static void __thiscall w2b_stub_scene(void *scene, uint32_t kind, void *part) {
+    record(0xe276, scene);
+    record(0xe276, (void *)(uintptr_t)kind);
+    record(0xe276, part);
+}
+// the visitor is on the caller's stack, so its contents are recorded and not its place
+static void __thiscall w2b_stub_visit(void *self, uint32_t *visitor) {
+    record(0xe277, self);
+    record(0xe277, (void *)(uintptr_t)visitor[0]);
+    record(0xe277, (void *)(uintptr_t)visitor[1]);
+}
+static uint32_t __fastcall w2b_stub_check1(void *self) {
+    record(0xe278, self);
+    return arena<uint32_t>(0x20)[0];
+}
+static uint32_t __fastcall w2b_stub_check2(void *self) {
+    record(0xe279, self);
+    return arena<uint32_t>(0x20)[1];
+}

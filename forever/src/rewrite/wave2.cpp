@@ -997,3 +997,101 @@ template <uint32_t DESTROY> static void __thiscall w2b_clear(int32_t *self) {
 static const uint8_t w2b_clear_original[] = {0x53, 0x8b, 0xd9, 0x8b, 0x03, 0x57, 0x33, 0xff, 0x85, 0xc0};
 REWRITE("Owned::ClearC2B760", 0xc2b760, w2b_clear_original, (&w2b_clear<0xc25690>), &g_w2b_clears);
 REWRITE("Owned::ClearC2B760", 0xc43910, w2b_clear_original, (&w2b_clear<0xc437f0>), &g_w2b_clears);
+
+// ---- Part::Attach: readies the part, then tells its scene (at +OFF, when there is one) that a part of KIND has arrived -----------------
+static volatile long g_w2b_attaches;
+template <uint32_t OFF, uint32_t KIND> static void __fastcall w2b_attach(uint8_t *self) {
+    g_w2b_attaches++;
+    ((void(__fastcall *)(void *))0x6afd60)(self);
+    void *scene = *(void **)(self + OFF);
+    if (scene) ((void(__thiscall *)(void *, uint32_t, void *))0x6b1330)(scene, KIND, self);
+}
+template <uint32_t REL> static const uint8_t w2b_call_first_original[] = {
+    0x56, 0x8b, 0xf1, 0xe8, (uint8_t)REL, (uint8_t)(REL >> 8), (uint8_t)(REL >> 16), (uint8_t)(REL >> 24)};
+REWRITE("Part::Attach67ABE0", 0x67abe0, w2b_call_first_original<0x6afd60u - 0x67abe8u>, (&w2b_attach<0xf8, 2>), &g_w2b_attaches);
+REWRITE("Part::Attach67ABE0", 0x870a20, w2b_call_first_original<0x6afd60u - 0x870a28u>, (&w2b_attach<0x12c, 1>), &g_w2b_attaches);
+
+// ---- Stages::Run: four steps of the same object, one after another -----------------------------------------------------------------------
+static volatile long g_w2b_stages;
+template <uint32_t A, uint32_t B, uint32_t C, uint32_t D> static uint32_t __fastcall w2b_stages(void *self) {
+    g_w2b_stages++;
+    ((void(__fastcall *)(void *))A)(self);
+    ((void(__fastcall *)(void *))B)(self);
+    ((void(__fastcall *)(void *))C)(self);
+    return ((uint32_t(__fastcall *)(void *))D)(self);
+}
+REWRITE("Stages::Run550AF0", 0x550af0, w2b_call_first_original<0x549aa0u - 0x550af8u>, (&w2b_stages<0x549aa0, 0x5498c0, 0x54e360, 0x5499a0>), &g_w2b_stages);
+REWRITE("Stages::Run550AF0", 0x8f7730, w2b_call_first_original<0x8f6cb0u - 0x8f7738u>, (&w2b_stages<0x8f6cb0, 0x8f6920, 0x8f33f0, 0x8f3b90>), &g_w2b_stages);
+
+// ---- Group::Update: updates the two fixed members at +0x3c and +0x40, then the {items +0x44, count +0x48} list --------------------------
+static volatile long g_w2b_groups;
+template <uint32_t UPDATE> static void __fastcall w2b_group(uint8_t *self) {
+    g_w2b_groups++;
+    auto update = (void(__fastcall *)(void *))UPDATE;
+    update(*(void **)(self + 0x3c));
+    update(*(void **)(self + 0x40));
+    for (int32_t i = 0; i < *(int32_t *)(self + 0x48); i++) update((*(void ***)(self + 0x44))[i]);
+}
+static const uint8_t w2b_group_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x3c, 0x57};
+REWRITE("Group::Update74D800", 0x74d800, w2b_group_original, (&w2b_group<0x6b0990>), &g_w2b_groups);
+REWRITE("Group::Update74D800", 0x74d840, w2b_group_original, (&w2b_group<0x6afc20>), &g_w2b_groups);
+
+// ---- Node::Announce: walks a {vtable, self} visitor over the node, then reports it if the root has the reporting flag set ----------------
+static volatile long g_w2b_announces;
+template <uint32_t VTABLE, uint32_t REPORT> static void __fastcall w2b_announce(void *self) {
+    g_w2b_announces++;
+    uint32_t visitor[2] = {VTABLE, (uint32_t)(uintptr_t)self};
+    ((void(__thiscall *)(void *, void *))0x6ae7c0)(self, visitor);
+    uint8_t *root = *(uint8_t **)0x12f83f0;
+    if (root && (*(uint32_t *)(root + 0x94) >> 0x17 & 1))
+        ((void(__thiscall *)(void *, void *))REPORT)(*(void **)0x1342708, self);
+}
+static const uint8_t w2b_announce_original[] = {0x83, 0xec, 0x08, 0x56, 0x8d, 0x44, 0x24, 0x04, 0x8b, 0xf1};
+REWRITE("Node::Announce6AFDC0", 0x6afdc0, w2b_announce_original, (&w2b_announce<0xf606f8, 0xa1f890>), &g_w2b_announces);
+REWRITE("Node::Announce6AFDC0", 0x6afe10, w2b_announce_original, (&w2b_announce<0xf60700, 0xa1f8a0>), &g_w2b_announces);
+
+// ---- Shared::Assign: takes a counted block {count, .., data at +0xc} into +OFF; the last holder of the old one frees it and its data ----
+static volatile long g_w2b_assigns;
+template <uint32_t OFF> static int32_t *__thiscall w2b_assign(uint8_t *self, int32_t **other) {
+    g_w2b_assigns++;
+    int32_t *old = *(int32_t **)(self + OFF);
+    if (*other == old) return old;
+    if (--*old == 0) {
+        ((void(__cdecl *)(void *))0xbce010)(*(void **)(old + 3));
+        ((void(__cdecl *)(void *))0xbce000)(old);
+    }
+    int32_t *taken = *other;
+    *(int32_t **)(self + OFF) = taken;
+    ++*taken;
+    return taken;
+}
+static const uint8_t w2b_assign_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x57, 0x8b, 0xf9};
+REWRITE("Shared::Assign41BEA0", 0x41bea0, w2b_assign_original, (&w2b_assign<0x114>), &g_w2b_assigns);
+REWRITE("Shared::Assign41BEA0", 0x4a90a0, w2b_assign_original, (&w2b_assign<0xb0>), &g_w2b_assigns);
+
+// ---- Quarter::Value: reads the +OFF field of the quarter that the index at +0xa4 picks, from the object the source gives ------------------
+static volatile long g_w2b_quarters;
+template <uint32_t OFF> static uint32_t __fastcall w2b_quarter(uint8_t *self) {
+    g_w2b_quarters++;
+    int32_t which = *(int32_t *)(self + 0xa4);
+    uint8_t *source = ((uint8_t *(__fastcall *)(void *))0xb44970)(self);
+    uint8_t *table = *(uint8_t **)(source + 0x54);
+    int slot = which == 0 ? 0x18 : which == 1 ? 0x1c : which == 2 ? 0x20 : 0x24;
+    return *(uint32_t *)(*(uint8_t **)(table + slot) + OFF);
+}
+static const uint8_t w2b_quarter_original[] = {0x56, 0x8b, 0xb1, 0xa4, 0x00, 0x00, 0x00, 0xe8};
+REWRITE("Quarter::ValueB35490", 0xb35490, w2b_quarter_original, (&w2b_quarter<0x2c>), &g_w2b_quarters);
+REWRITE("Quarter::ValueB35490", 0xb35520, w2b_quarter_original, (&w2b_quarter<0x14>), &g_w2b_quarters);
+
+// ---- Setup::Once: the first time only, does each of the two jobs its check asks for, then remembers it has run --------------------------
+static volatile long g_w2b_setups;
+template <uint32_t FLAG, uint32_t CHECK1, uint32_t DO1, uint32_t CHECK2, uint32_t DO2> static void __fastcall w2b_setup(uint8_t *self) {
+    g_w2b_setups++;
+    if (self[FLAG]) return;
+    if (((uint8_t(__fastcall *)(void *))CHECK1)(self)) ((void(__fastcall *)(void *))DO1)(self);
+    if (((uint8_t(__fastcall *)(void *))CHECK2)(self)) ((void(__fastcall *)(void *))DO2)(self);
+    self[FLAG] = 1;
+}
+template <uint32_t FLAG> static const uint8_t w2b_setup_original[] = {0x56, 0x8b, 0xf1, 0x8a, 0x86, (uint8_t)FLAG, (uint8_t)(FLAG >> 8), 0x00, 0x00, 0x84, 0xc0};
+REWRITE("Setup::OnceA12CB0", 0xa12cb0, w2b_setup_original<0x15c>, (&w2b_setup<0x15c, 0xa113d0, 0xa11680, 0xa114a0, 0xa11570>), &g_w2b_setups);
+REWRITE("Setup::OnceA12CB0", 0xa161d0, w2b_setup_original<0x14c>, (&w2b_setup<0x14c, 0xa14bf0, 0xa14ef0, 0xa14cc0, 0xa14d90>), &g_w2b_setups);
