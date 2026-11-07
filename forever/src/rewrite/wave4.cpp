@@ -939,3 +939,162 @@ static void __cdecl queue_delete_all() {
 static const uint8_t queue_delete_original[] = {0xa1, 0xcc, 0x6b, 0x30, 0x01, 0x2b, 0x05, 0xd8, 0x6b, 0x30, 0x01};
 REWRITE("Queue::DeleteAll79BFD0", 0x79bfd0, queue_delete_original, (&queue_delete_all), &g_queue_deletes);
 REWRITE("Queue::DeleteAll79BFD0", 0x79c010, queue_delete_original, (&queue_delete_all), &g_queue_deletes);
+
+// ---- Global::Free: frees the block a global points at, if any, and clears the global ------------------------------------------
+static volatile long g_w4b_global_frees;
+template <uint32_t GLOBAL> static void __cdecl w4b_global_free() {
+    g_w4b_global_frees++;
+    void *block = *(void **)GLOBAL;
+    if (block) memory_free(block);
+    *(void **)GLOBAL = nullptr;
+}
+static const uint8_t w4b_global_free_a[] = {0xa1, 0x38, 0x18, 0x34, 0x01, 0x85, 0xc0};
+static const uint8_t w4b_global_free_b[] = {0xa1, 0x40, 0x18, 0x34, 0x01, 0x85, 0xc0};
+REWRITE("Global::Free9DE660", 0x9de660, w4b_global_free_a, (&w4b_global_free<0x1341838>), &g_w4b_global_frees);
+REWRITE("Global::Free9DE660", 0x9df9e0, w4b_global_free_b, (&w4b_global_free<0x1341840>), &g_w4b_global_frees);
+
+// ---- Out::Fill: fills the result the caller passed from the value at +OFF and hands the result back ------------------------------
+static volatile long g_w4b_out_fills;
+template <uint32_t OFF, uint32_t FILL> static void *__thiscall w4b_out_fill(uint8_t *self, void *out) {
+    g_w4b_out_fills++;
+    ((void(__fastcall *)(void *, uint32_t))FILL)(out, *(uint32_t *)(self + OFF));
+    return out;
+}
+static const uint8_t w4b_out_fill_a[] = {0x51, 0x8b, 0x51, 0x54, 0x56, 0x8b, 0x74, 0x24, 0x0c};
+static const uint8_t w4b_out_fill_b[] = {0x51, 0x8b, 0x51, 0x58, 0x56, 0x8b, 0x74, 0x24, 0x0c};
+REWRITE("Out::Fill9DA5E0", 0x9da5e0, w4b_out_fill_a, (&w4b_out_fill<0x54, 0x9da260>), &g_w4b_out_fills);
+REWRITE("Out::Fill9DA5E0", 0x9da600, w4b_out_fill_b, (&w4b_out_fill<0x58, 0x9da430>), &g_w4b_out_fills);
+
+// ---- Block::Past: the block at +OFF, moved past its 0x38-byte header unless its first word says it has none -------------------
+static volatile long g_w4b_block_pasts;
+template <uint32_t OFF, int32_t NONE> static uint8_t *__fastcall w4b_block_past(uint8_t *self) {
+    g_w4b_block_pasts++;
+    uint8_t *block = *(uint8_t **)(self + OFF);
+    if (block && *(int32_t *)block != NONE) block += 0x38;
+    return block;
+}
+static const uint8_t w4b_block_past_a[] = {0x56, 0x8b, 0xb1, 0x38, 0x01, 0x00, 0x00};
+static const uint8_t w4b_block_past_b[] = {0x56, 0x8b, 0xb1, 0x70, 0x01, 0x00, 0x00};
+REWRITE("Block::Past4A1880", 0x4a1880, w4b_block_past_a, (&w4b_block_past<0x138, -1>), &g_w4b_block_pasts);
+REWRITE("Block::Past4A1880", 0x4a18b0, w4b_block_past_b, (&w4b_block_past<0x170, 2>), &g_w4b_block_pasts);
+
+// ---- Bar::Add: asks the part at +0x54 to take an amount; if it can, adds it to the byte at +OFF and updates ----------------------
+static volatile long g_w4b_bar_adds;
+template <uint32_t OFF, uint32_t TAKE> static uint8_t __thiscall w4b_bar_add(uint8_t *self, uint32_t amount) {
+    g_w4b_bar_adds++;
+    if (!((uint8_t(__thiscall *)(void *, uint32_t))TAKE)(self + 0x54, amount)) return 0;
+    self[OFF] += (uint8_t)amount;
+    ((void(__fastcall *)(void *))0x723e50)(self);
+    return 1;
+}
+static const uint8_t w4b_bar_add_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x8b, 0xf1, 0x53, 0x8d, 0x4e, 0x54};
+REWRITE("Bar::Add724490", 0x724490, w4b_bar_add_original, (&w4b_bar_add<0x5c, 0x730020>), &g_w4b_bar_adds);
+REWRITE("Bar::Add724490", 0x724540, w4b_bar_add_original, (&w4b_bar_add<0x5d, 0x730400>), &g_w4b_bar_adds);
+
+// ---- Owner::Delete: back to the base table, the member at +OFF destroyed, the object freed when asked --------------------------
+static volatile long g_w4b_owner_deletes;
+template <uint32_t TABLE, uint32_t OFF, uint32_t MEMBER> static void *__thiscall w4b_owner_delete(uint8_t *self, uint32_t flags) {
+    g_w4b_owner_deletes++;
+    *(uint32_t *)self = TABLE;
+    ((void(__fastcall *)(void *))MEMBER)(self + OFF);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t w4b_owner_delete_original[] = {0x56, 0x8b, 0xf1, 0x8d, 0x4e};
+REWRITE("Owner::Delete73EE00", 0x73ee00, w4b_owner_delete_original, (&w4b_owner_delete<0xf6ac88, 0xc, 0x5c24f0>), &g_w4b_owner_deletes);
+REWRITE("Owner::Delete73EE00", 0xc33fe0, w4b_owner_delete_original, (&w4b_owner_delete<0xfb06bc, 0x1c, 0xc32e80>), &g_w4b_owner_deletes);
+
+// ---- Pair::Delete: frees the two buffers an object holds, then the object when asked ---------------------------------------------
+static volatile long g_w4b_pair_deletes;
+template <uint32_t FIRST, uint32_t SECOND> static void *__thiscall w4b_pair_delete(uint8_t *self, uint32_t flags) {
+    g_w4b_pair_deletes++;
+    memory_free_aligned(*(void **)(self + FIRST));
+    memory_free_aligned(*(void **)(self + SECOND));
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t w4b_pair_delete_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+REWRITE("Pair::DeleteBDD150", 0xbdd150, w4b_pair_delete_original, (&w4b_pair_delete<0x4, 0x8>), &g_w4b_pair_deletes);
+REWRITE("Pair::DeleteBDD150", 0xca2a90, w4b_pair_delete_original, (&w4b_pair_delete<0x2c, 0x30>), &g_w4b_pair_deletes);
+
+// ---- Vector::FreeBoth: an array of objects (count in a header before it) destroyed and freed, then the plain buffer beside it -----
+static volatile long g_w4b_vector_frees;
+template <int32_t HEADER, uint32_t SIZE, uint32_t DTOR> static void __fastcall w4b_vector_free_both(uint8_t **self) {
+    g_w4b_vector_frees++;
+    uint8_t *items = self[0];
+    if (items) {
+        ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(items, SIZE, *(int32_t *)(items - HEADER), (void *)DTOR);
+        memory_free_aligned(items - HEADER);
+    }
+    if (self[1]) memory_free_aligned(self[1]);
+}
+static const uint8_t w4b_vector_free_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x85, 0xc0};
+REWRITE("Vector::FreeBoth735AE0", 0x735ae0, w4b_vector_free_original, (&w4b_vector_free_both<4, 0x98, 0x7340b0>), &g_w4b_vector_frees);
+REWRITE("Vector::FreeBoth735AE0", 0x87bb70, w4b_vector_free_original, (&w4b_vector_free_both<0x10, 0x80, 0x87b5e0>), &g_w4b_vector_frees);
+REWRITE("Vector::FreeBoth735AE0", 0x8e92b0, w4b_vector_free_original, (&w4b_vector_free_both<0x10, 0x130, 0x8e71c0>), &g_w4b_vector_frees);
+
+// ---- Table::Free: back to the base table; the object's array of 0x70-byte items is destroyed, freed and forgotten ---------------
+static volatile long g_w4b_table_frees;
+template <uint32_t TABLE, uint32_t OFF> static void __fastcall w4b_table_free(uint8_t *self) {
+    g_w4b_table_frees++;
+    *(uint32_t *)self = TABLE;
+    uint8_t *items = *(uint8_t **)(self + OFF);
+    if (!items) return;
+    ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(items, 0x70, *(int32_t *)(items - 0x10), (void *)0x73b900);
+    memory_free_aligned(items - 0x10);
+    *(uint8_t **)(self + OFF) = nullptr;
+}
+static const uint8_t w4b_table_free_original[] = {0x56, 0x8b, 0xf1, 0xc7, 0x06};
+REWRITE("Table::FreeB0E090", 0xb0e090, w4b_table_free_original, (&w4b_table_free<0xf97b38, 0x4>), &g_w4b_table_frees);
+REWRITE("Table::FreeB0E090", 0xb790d0, w4b_table_free_original, (&w4b_table_free<0xf9b6d8, 0x10>), &g_w4b_table_frees);
+
+// ---- Shared references: a slot takes the object of another; the old one is released (data at +0xc freed at zero), the new one counted ---
+static inline uint32_t *w4b_shared_take(uint32_t **slot, uint32_t **source) {
+    if (*source != *slot) {
+        uint32_t *old = *slot;
+        if (!--*old) {
+            memory_free_aligned((void *)(uintptr_t)old[3]);
+            memory_free(old);
+        }
+        *slot = *source;
+        ++**source;
+    }
+    return *source;
+}
+// Shared::AssignAt: the slot is at +SLOT of the object at +OWNER
+static volatile long g_w4b_shared_assigns;
+template <uint32_t OWNER, uint32_t SLOT> static uint32_t *__thiscall w4b_shared_assign_at(uint8_t *self, uint32_t **source) {
+    g_w4b_shared_assigns++;
+    return w4b_shared_take((uint32_t **)(*(uint8_t **)(self + OWNER) + SLOT), source);
+}
+static const uint8_t w4b_shared_assign_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x8b, 0xb1};
+REWRITE("Shared::AssignAt615D70", 0x615d70, w4b_shared_assign_original, (&w4b_shared_assign_at<0xd8, 0x114>), &g_w4b_shared_assigns);
+REWRITE("Shared::AssignAt615D70", 0x6a8180, w4b_shared_assign_original, (&w4b_shared_assign_at<0xdc, 0x124>), &g_w4b_shared_assigns);
+// Shared::Refresh: the slot at +SLOT takes what GET finds for the object at +OWNER (the stack argument is unused)
+static volatile long g_w4b_shared_refreshes;
+template <uint32_t OWNER, uint32_t SLOT, uint32_t GET> static uint32_t *__thiscall w4b_shared_refresh(uint8_t *self, uint32_t) {
+    g_w4b_shared_refreshes++;
+    uint32_t **found = ((uint32_t **(__fastcall *)(uint32_t))GET)(*(uint32_t *)(self + OWNER));
+    return w4b_shared_take((uint32_t **)(self + SLOT), found);
+}
+static const uint8_t w4b_shared_refresh_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x4e};
+REWRITE("Shared::Refresh4D6D80", 0x4d6d80, w4b_shared_refresh_original, (&w4b_shared_refresh<0x34, 0x28, 0x4c0850>), &g_w4b_shared_refreshes);
+REWRITE("Shared::Refresh4D6D80", 0x4ec590, w4b_shared_refresh_original, (&w4b_shared_refresh<0x2c, 0x30, 0x4c0850>), &g_w4b_shared_refreshes);
+REWRITE("Shared::Refresh4D6D80", 0xb917c0, w4b_shared_refresh_original, (&w4b_shared_refresh<0x28, 0x24, 0xb87790>), &g_w4b_shared_refreshes);
+
+// ---- Owned::FreeAll: destroys and frees every object an array holds (the count is read afresh each time), then the array ---------
+static volatile long g_w4b_owned_frees;
+template <uint32_t DESTROY> static void __fastcall w4b_owned_free_all(uint32_t *self) {
+    g_w4b_owned_frees++;
+    for (int32_t i = 0; i < (int32_t)self[1]; i++) {
+        void *object = ((void **)(uintptr_t)self[0])[i];
+        if (object) {
+            ((void(__fastcall *)(void *))DESTROY)(object);
+            memory_free(object);
+        }
+    }
+    memory_free_aligned((void *)(uintptr_t)self[0]);
+}
+static const uint8_t w4b_owned_free_original[] = {0x53, 0x8b, 0xd9, 0x8b, 0x43, 0x04};
+REWRITE("Owned::FreeAll811820", 0x811820, w4b_owned_free_original, (&w4b_owned_free_all<0x811760>), &g_w4b_owned_frees);
+REWRITE("Owned::FreeAll811820", 0xcdcf10, w4b_owned_free_original, (&w4b_owned_free_all<0xcdbb00>), &g_w4b_owned_frees);

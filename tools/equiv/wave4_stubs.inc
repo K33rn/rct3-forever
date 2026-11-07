@@ -120,3 +120,10 @@ static void *__thiscall w4_stub_dequeue(void *self, uint32_t flags) {
     ++*(int32_t *)0x1306be0;
     return self;
 }
+static void __fastcall w4b_stub_fill(void *out, uint32_t value) { record(0x4050, out); record(0x4050, (void *)(uintptr_t)value); }
+static uint8_t __thiscall w4b_stub_take(void *self, uint32_t amount) {
+    record(0x4051, self); record(0x4051, (void *)(uintptr_t)amount);
+    return *arena<uint8_t>(0x20);
+}
+// finds the reference kept at 0x10
+static void *__fastcall w4b_stub_get(uint32_t owner) { record(0x4052, (void *)(uintptr_t)owner); return arena<void>(0x10); }

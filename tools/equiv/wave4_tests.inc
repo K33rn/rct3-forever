@@ -869,3 +869,124 @@
         *(uint32_t *)0x1306bcc = w4_queue_saved[2]; *(uint32_t *)0x1306be0 = w4_queue_saved[3];
     };
     quick(w4_queue);
+    // Global::Free: the copy's own global, empty or holding a block
+    static uint32_t w4b_global, w4b_global_saved;
+    Test w4b_gfree{0x9de660,
+                   [=](Rng &r) { fresh(r); *arena<uint32_t>(0x10) = r.range(0, 2) ? r.next() | 1 : 0; },
+                   [](void *fn) {
+                       *(uint32_t *)(uintptr_t)w4b_global = *arena<uint32_t>(0x10);
+                       ((void(__cdecl *)())fn)();
+                       return Result{*(uint32_t *)(uintptr_t)w4b_global};
+                   }};
+    w4b_gfree.prepare = [](const rewrite::Entry *e) { w4b_global = *(uint32_t *)(e->at + 1); w4b_global_saved = *(uint32_t *)(uintptr_t)w4b_global; };
+    w4b_gfree.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_global = w4b_global_saved; };
+    quick(w4b_gfree);
+    // Out::Fill
+    Test w4b_fill{0x9da5e0,
+                  [=](Rng &r) { fresh(r); for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x800)[i] = r.next(); },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x300))}; }};
+    w4b_fill.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x13 + 5 + *(int32_t *)(e->at + 0x14)), (void *)w4b_stub_fill}}); };
+    w4b_fill.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_fill);
+    // Block::Past: no block, a block saying it has no header (each copy's own word, and the other's), or any other
+    Test w4b_past{0x4a1880,
+                  [=](Rng &r) {
+                      fresh(r);
+                      static const int32_t words[] = {-1, 2, 0, 1, 0x1234};
+                      *arena<void *>(0x800 + 0x138) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                      *arena<void *>(0x800 + 0x170) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                      *arena<int32_t>(0x300) = words[r.range(0, 4)];
+                  },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    quick(w4b_past);
+    // Bar::Add: taken or refused; the bytes around the bar's are random
+    Test w4b_bar{0x724490,
+                 [=](Rng &r) {
+                     fresh(r);
+                     for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x800)[i] = r.next();
+                     *arena<uint32_t>(0x20) = r.range(0, 1);
+                     *arena<uint32_t>(0x10) = r.next();
+                 },
+                 [](void *fn) { return Result{((uint8_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10))}; }};
+    w4b_bar.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0xc + 5 + *(int32_t *)(e->at + 0xd)), (void *)w4b_stub_take}, {0x723e50, (void *)stub_plain_dtor}});
+    };
+    w4b_bar.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_bar);
+    // Owner::Delete: the object's table is overwritten, its member destroyed, and freed for odd flags
+    Test w4b_owner{0x73ee00,
+                   [=](Rng &r) { fresh(r); *arena<uint32_t>(0x800) = r.next(); *arena<uint32_t>(0x10) = r.range(0, 3); },
+                   [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10))}; }};
+    w4b_owner.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0xc + 5 + *(int32_t *)(e->at + 0xd)), (void *)stub_plain_dtor}}); };
+    w4b_owner.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_owner);
+    // Pair::Delete
+    Test w4b_pair{0xbdd150,
+                  [=](Rng &r) { fresh(r); for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x800)[i] = r.next(); *arena<uint32_t>(0x10) = r.range(0, 3); },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10))}; }};
+    quick(w4b_pair);
+    // Vector::FreeBoth: each of the two may be missing; the count sits in the copy's own header
+    Test w4b_vec{0x735ae0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     for (int i = 0; i < 8; i++) arena<uint32_t>(0x300)[i] = r.next();
+                     arena<void *>(0x800)[0] = r.range(0, 3) ? arena<void>(0x310) : nullptr;
+                     arena<void *>(0x800)[1] = r.range(0, 3) ? (void *)(uintptr_t)(r.next() | 1) : nullptr;
+                 },
+                 [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    quick(w4b_vec);
+    // Table::Free: the array at the copy's field, or none
+    static uint32_t w4b_table_off;
+    Test w4b_table{0xb0e090,
+                   [=](Rng &r) {
+                       fresh(r);
+                       for (int i = 0; i < 8; i++) { arena<uint32_t>(0x300)[i] = r.next(); arena<uint32_t>(0x800)[i] = r.next(); }
+                       *arena<void *>(0x800 + w4b_table_off) = r.range(0, 3) ? arena<void>(0x310) : nullptr;
+                   },
+                   [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w4b_table.prepare = [](const rewrite::Entry *e) { w4b_table_off = *(uint8_t *)(e->at + 0xb); };
+    quick(w4b_table);
+    // Shared::AssignAt: the same object or another; the old count reaching zero or not
+    static uint32_t w4b_owner_off, w4b_slot_off;
+    auto w4b_shared_setup = [=](Rng &r, uint32_t **slot) {
+        for (int i = 0; i < 8; i++) { arena<uint32_t>(0x300)[i] = r.next(); arena<uint32_t>(0x340)[i] = r.next(); }
+        *arena<int32_t>(0x300) = r.range(1, 3);
+        *arena<int32_t>(0x340) = r.range(1, 3);
+        *slot = arena<uint32_t>(0x300);
+        *arena<void *>(0x10) = r.range(0, 3) ? arena<void>(0x340) : arena<void>(0x300);
+    };
+    Test w4b_assign{0x615d70,
+                    [=](Rng &r) {
+                        fresh(r);
+                        *arena<void *>(0x800 + w4b_owner_off) = arena<void>(0x400);
+                        w4b_shared_setup(r, arena<uint32_t *>(0x400 + w4b_slot_off));
+                    },
+                    [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x10))}; }};
+    w4b_assign.prepare = [](const rewrite::Entry *e) { w4b_owner_off = *(uint32_t *)(e->at + 8); w4b_slot_off = *(uint32_t *)(e->at + 0xe); };
+    quick(w4b_assign);
+    // Shared::Refresh: the object found is the slot's or another
+    Test w4b_refresh{0x4d6d80,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x800)[i] = r.next();
+                         w4b_shared_setup(r, arena<uint32_t *>(0x800 + w4b_slot_off));
+                     },
+                     [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), 7)}; }};
+    w4b_refresh.prepare = [](const rewrite::Entry *e) {
+        w4b_slot_off = *(uint8_t *)(e->at + 0x10);
+        stubs_for_now({{(uintptr_t)(e->at + 7 + 5 + *(int32_t *)(e->at + 8)), (void *)w4b_stub_get}});
+    };
+    w4b_refresh.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_refresh);
+    // Owned::FreeAll: none to several, some slots empty, a negative count too
+    Test w4b_owned{0x811820,
+                   [=](Rng &r) {
+                       fresh(r);
+                       arena<void *>(0x800)[0] = arena<void>(0x300);
+                       arena<int32_t>(0x800)[1] = r.range(0, 5) ? r.range(0, 6) : -1;
+                       for (int i = 0; i < 6; i++) arena<void *>(0x300)[i] = r.range(0, 2) ? arena<void>(0x400 + i * 0x10) : nullptr;
+                   },
+                   [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w4b_owned.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1b + 5 + *(int32_t *)(e->at + 0x1c)), (void *)stub_plain_dtor}}); };
+    w4b_owned.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_owned);
