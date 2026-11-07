@@ -1335,3 +1335,18 @@
     };
     w1d_block_reset_test.finish = w1_unstub;
     quick(w1d_block_reset_test);
+    Test w1d_text_resize_test{0x460f20,
+                              [=](Rng &r) {
+                                  w1d_array_setup(r, 4);
+                                  arena<uint32_t>(0x20)[2] = r.next();
+                                  w1_fill(r, 0xe00, 0x80);
+                                  for (int i = 0; i < 4; i++) arena<uint32_t>(0xe00 + i * 0x20)[0] = r.range(0, 2);
+                                  for (int i = 0; i < 6; i++) arena<uint32_t>(0x904)[i] = (uint32_t)(uintptr_t)arena<void>(0xe00 + r.range(0, 3) * 0x20);
+                              },
+                              w1d_array_call};
+    w1d_text_resize_test.prepare = [=](const rewrite::Entry *e) {
+        w1d_array_prepare(e);
+        stubs_for_now({{0xddcf99, (void *)w1d_stub_build_texts}, {0xbce000, (void *)w1d_stub_free}});
+    };
+    w1d_text_resize_test.finish = w1_unstub;
+    quick(w1d_text_resize_test);

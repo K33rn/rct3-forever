@@ -1919,3 +1919,28 @@ template <uint32_t HEADER, uint32_t END, uint32_t BUILD> static uint32_t __thisc
 REWRITE("Blocks::Reset462FC0", 0x462fc0, w1c_seh_late, (&w1d_block_reset<4, 0x41f860, 0x45f980>), &g_w1d_block_resets);
 REWRITE("Blocks::Reset462FC0", 0x991f50, w1c_seh_late, (&w1d_block_reset<4, 0x438c00, 0x98ffa0>), &g_w1d_block_resets);
 REWRITE("Blocks::Reset462FC0", 0x9e1ec0, w1c_seh_late, (&w1d_block_reset<0x10, 0x9e1310, 0x9e1670>), &g_w1d_block_resets);
+
+// ---- Texts::Resize: `count` new shared texts, as many old ones as fit assigned over (the replaced one let go, the new
+// one held), the old array deleted -------------------------------------------------------------------------------------------
+static volatile long g_w1d_text_resizes;
+template <uint32_t END, uint32_t BUILD> static int32_t __thiscall w1d_text_resize(uint32_t *self, int32_t count) {
+    g_w1d_text_resizes++;
+    if (count == (int32_t)self[1]) return count;
+    int32_t **items = count ? (int32_t **)w1d_new_items<4, 4, BUILD, END>(count) : nullptr;
+    if (count) {
+        int32_t keep = count < (int32_t)self[1] ? count : (int32_t)self[1];
+        for (int32_t i = 0; i < keep; i++) {
+            int32_t *from = ((int32_t **)(uintptr_t)self[0])[i];
+            if (from == items[i]) continue;
+            w1d_release_text(items[i]);
+            items[i] = from;
+            ++from[0];
+        }
+    }
+    w1d_delete_items<4, 4, END>(self);
+    self[1] = count;
+    self[0] = (uint32_t)(uintptr_t)items;
+    return count;
+}
+REWRITE("Texts::Resize460F20", 0x460f20, (w1c_seh<0xe0ba1b>), (&w1d_text_resize<0x4012e0, 0x4027f0>), &g_w1d_text_resizes);
+REWRITE("Texts::Resize460F20", 0xb11d40, (w1c_seh<0xe90a3b>), (&w1d_text_resize<0x403de0, 0x448170>), &g_w1d_text_resizes);

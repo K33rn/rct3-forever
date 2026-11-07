@@ -193,3 +193,13 @@ static void __stdcall w1d_stub_destroy_items(void *items, uint32_t size, uint32_
     record(0x272, items); record(0x272, (void *)(uintptr_t)size); record(0x272, (void *)(uintptr_t)count); record(0x272, (void *)(uintptr_t)end);
 }
 static void __thiscall w1d_stub_assign(uint32_t *self, uint32_t *from) { record(0x273, self); record(0x273, (void *)(uintptr_t)from[0]); self[0] = from[0]; self[1] = from[1] ^ 1; }
+// new shared texts: each item points at one of four text blocks at 0xe00.. (a count, then the text pointer at +0xc)
+static void __stdcall w1d_stub_build_texts(uint32_t *items, uint32_t size, uint32_t count, uint32_t build, uint32_t end) {
+    record(0x274, items); record(0x274, (void *)(uintptr_t)size); record(0x274, (void *)(uintptr_t)count);
+    record(0x274, (void *)(uintptr_t)build); record(0x274, (void *)(uintptr_t)end);
+    for (uint32_t i = 0; i < count; i++) {
+        uint32_t *text = arena<uint32_t>(0xe00 + ((i + arena<uint32_t>(0x20)[2]) & 3) * 0x20);
+        items[i] = (uint32_t)(uintptr_t)text;
+        text[0]++;
+    }
+}
