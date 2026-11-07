@@ -985,3 +985,54 @@ static const uint8_t map_original[] = {0x8b, 0xc1, 0x8d, 0x50, 0xff, 0x83, 0xfa}
 REWRITE("Value::MapBC41B0", 0xbc41b0, map_original, (&value_map<map_rotate, 6>), &g_w3_map);
 REWRITE("Value::MapBC41B0", 0xbc4b50, map_original, (&value_map<map_pairs, 6>), &g_w3_map);
 REWRITE("Value::MapBC41B0", 0xbc4c00, map_original, (&value_map<map_reverse, 7>), &g_w3_map);
+
+// ---- Refs::Sum: the total of a field over the interfaces of the references at +0xcc (count at +0xd0) ------------------
+static volatile long g_w3_refs_sum;
+template <uint32_t FIELD> static int32_t __fastcall refs_sum(uint8_t *self) {
+    g_w3_refs_sum++;
+    int32_t total = 0;
+    for (int32_t i = 0; i < *(int32_t *)(self + 0xd0); i++) {
+        uint8_t *part = (uint8_t *)ref_interface<0x13cde74>(*(uint8_t **)(self + 0xcc) + i * 0x1c);
+        if (part) total += *(int32_t *)(part + FIELD);
+    }
+    return total;
+}
+static const uint8_t refs_sum_original[] = {0x83, 0xec, 0x08, 0x53, 0x55, 0x8b, 0xe9, 0x8b};
+REWRITE("Refs::SumA895B0", 0xa895b0, refs_sum_original, (&refs_sum<0x74>), &g_w3_refs_sum);
+REWRITE("Refs::SumA895B0", 0xa89af0, refs_sum_original, (&refs_sum<0x78>), &g_w3_refs_sum);
+
+// ---- Hash::Find: the value of a key: its bucket holds a run of items and of values at the same indices ---------------------
+static volatile long g_w3_hash;
+static uint32_t *__thiscall hash_find(uint8_t *self, uint32_t key) {
+    g_w3_hash++;
+    uint32_t hash = ((uint32_t(__thiscall *)(void *, uint32_t))0xbdbf70)(self, key);
+    uint32_t bucket = hash % *(uint32_t *)(self + 4);
+    uint32_t *starts = *(uint32_t **)(self + 0xc);
+    uint32_t end = starts[bucket + 1];
+    for (uint32_t i = starts[bucket]; i < end; i++)
+        if (((uint8_t(__thiscall *)(void *, uint32_t, uint32_t *))0xbdbfd0)(self + 1, key, *(uint32_t **)(self + 0x10) + i))
+            return *(uint32_t **)(self + 0x14) + i;
+    return nullptr;
+}
+static const uint8_t hash_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x56, 0x57};
+REWRITE("Hash::FindBDD210", 0xbdd210, hash_original, hash_find, &g_w3_hash);
+REWRITE("Hash::FindBDD210", 0xbdd290, hash_original, hash_find, &g_w3_hash);
+
+// ---- Area::Around: the area at +0x40 grown by MARGIN on each side, kept within the map ---------------------------------
+static volatile long g_w3_area;
+template <int32_t MARGIN> static void __thiscall area_around(uint8_t *self, int32_t *x0, int32_t *y0, int32_t *x1, int32_t *y1) {
+    g_w3_area++;
+    uint8_t *map = ((uint8_t * (__cdecl *)())0x40a090)();
+    if (!(map[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(map);
+    uint8_t *size = *(uint8_t **)(map + 0x54);
+    int32_t *area = (int32_t *)(self + 0x40);
+    int32_t low_x = area[0] - MARGIN, low_y = area[2] - MARGIN, high_x = area[1] + MARGIN, high_y = area[3] + MARGIN;
+    int32_t last_x = size[4] - 1, last_y = size[5] - 1;
+    *x0 = low_x > 0 ? low_x : 0;
+    *y0 = low_y > 0 ? low_y : 0;
+    *x1 = last_x > high_x ? high_x : last_x;
+    *y1 = last_y > high_y ? high_y : last_y;
+}
+static const uint8_t area_original[] = {0x83, 0xec, 0x08, 0x56, 0x57, 0x8b, 0xf1};
+REWRITE("Area::Around8DCAA0", 0x8dcaa0, area_original, (&area_around<2>), &g_w3_area);
+REWRITE("Area::Around8DCAA0", 0x8dcb70, area_original, (&area_around<3>), &g_w3_area);

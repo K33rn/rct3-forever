@@ -83,3 +83,9 @@ static int __cdecl w3_stub_compare_name(void *name, void *other) {
     record(0xde22df, other);
     return arena<int32_t>(0x20)[0]-- == 0 ? 0 : -1;
 }
+static uint32_t __thiscall w3_stub_hash(void *self, uint32_t key) { record(0xbdbf70, self); record(0xbdbf70, (void *)(uintptr_t)key); return arena<uint32_t>(0x20)[0]; }
+static uint8_t __thiscall w3_stub_same(void *self, uint32_t key, uint32_t *item) {
+    record(0xbdbfd0, self);
+    record(0xbdbfd0, (void *)(uintptr_t)*item);
+    return *item == key ? 3 : 0;
+}

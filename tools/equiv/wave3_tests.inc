@@ -802,3 +802,58 @@
                 [=](Rng &r) { fresh(r); arena<int32_t>(0x10)[0] = r.range(0, 10) - 1; },
                 [](void *fn) { return Result{((uint32_t(__fastcall *)(int32_t))fn)(arena<int32_t>(0x10)[0])}; }};
     quick(w3_map);
+    // Refs::Sum: 0-3 references, looked up or kept, with or without an interface
+    Test w3_refs_sum{0xa895b0,
+                     [=](Rng &r) {
+                         fresh(r); iface_handle(r);
+                         for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x3c0)[i] = r.next();
+                         int n = r.range(0, 3);
+                         *(void **)arena<uint8_t>(0x10cc) = arena<void>(0x800);
+                         *(int32_t *)arena<uint8_t>(0x10d0) = n;
+                         for (int i = 0; i < n; i++) {
+                             uint8_t *ref = arena<uint8_t>(0x800 + i * 0x1c);
+                             *(void **)(ref + 4) = arena<void>(0x340);
+                             *(void **)(ref + 0x14) = r.range(0, 2) ? arena<void>(0x368) : nullptr;
+                             ref[0x18] = (uint8_t)r.range(0, 1);
+                         }
+                     },
+                     [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x1000))}; }};
+    w3_refs_sum.prepare = [](const rewrite::Entry *) { g_iface_id = (uint32_t *)0x13cde74; };
+    quick(w3_refs_sum);
+    // Hash::Find: 1-4 buckets of 0-3 items, the key among them or not
+    Test w3_hash{0xbdd210,
+                 [=](Rng &r) {
+                     fresh(r);
+                     int buckets = r.range(1, 4);
+                     arena<uint32_t>(0x100)[1] = (uint32_t)buckets;
+                     arena<void *>(0x100)[3] = arena<void>(0x800);
+                     arena<void *>(0x100)[4] = arena<void>(0x900);
+                     arena<void *>(0x100)[5] = arena<void>(0xa00);
+                     uint32_t at = 0;
+                     for (int b = 0; b <= buckets; b++) { arena<uint32_t>(0x800)[b] = at; at += (uint32_t)r.range(0, 3); }
+                     for (int i = 0; i < 16; i++) arena<uint32_t>(0x900)[i] = (uint32_t)r.range(0, 3);
+                     arena<uint32_t>(0x20)[0] = r.next();
+                     arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 3);
+                 },
+                 [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    w3_hash.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbdbf70, (void *)w3_stub_hash}, {0xbdbfd0, (void *)w3_stub_same}}); };
+    w3_hash.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_hash);
+    // Area::Around: near each edge of maps of 0-12, the map up to date or not
+    Test w3_area{0x8dcaa0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     for (int i = 0; i < 4; i++) arena<int32_t>(0x140)[i] = r.range(0, 12);
+                     arena<uint32_t>(0x42c)[0] = r.next();
+                     *(void **)arena<uint8_t>(0x454) = arena<void>(0x500);
+                     arena<uint8_t>(0x504)[0] = (uint8_t)r.range(0, 12);
+                     arena<uint8_t>(0x505)[0] = (uint8_t)r.range(0, 12);
+                 },
+                 [](void *fn) {
+                     int32_t *o = arena<int32_t>(0x800);
+                     ((void(__thiscall *)(void *, int32_t *, int32_t *, int32_t *, int32_t *))fn)(arena<void>(0x100), o, o + 1, o + 2, o + 3);
+                     return Result{};
+                 }};
+    w3_area.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x40a090, (void *)w3_stub_registry}, {0x800860, (void *)stub_plain_dtor}}); };
+    w3_area.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_area);
