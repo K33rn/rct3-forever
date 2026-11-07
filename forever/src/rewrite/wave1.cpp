@@ -732,3 +732,131 @@ template <uint32_t CURRENT> static void __fastcall buffer_free(uint8_t *self) {
 static const uint8_t buffer_free_original[] = {0x56, 0x8b, 0xf1, 0x85, 0xf6, 0x74, 0x2e};
 REWRITE("Buffer::FreeC0ACF0", 0xc0acf0, buffer_free_original, (&buffer_free<0x13e32f8>), &g_buffer_frees);
 REWRITE("Buffer::FreeC0ACF0", 0xcbc7a0, buffer_free_original, (&buffer_free<0x13f7014>), &g_buffer_frees);
+
+// ---- Chain::Broadcast: a value given to each object of a chain; with no key it is also kept here ---------------------------------
+static volatile long g_broadcasts;
+template <uint32_t KEPT, uint32_t SLOT> static void __thiscall chain_broadcast(uint8_t *self, uint32_t key, uint32_t value) {
+    g_broadcasts++;
+    if (!key) *(uint32_t *)(self + KEPT) = value;
+    for (uint8_t *item = (uint8_t *)ref_interface<0x12f5638>(self + 0x2c); item;
+         item = ((uint8_t * (__fastcall *)(void *))0x5d49d0)(item)) {
+        void *listener = item + 0x40;
+        ((void(__thiscall *)(void *, uint32_t, uint32_t))*(void **)(*(uint8_t **)listener + SLOT))(listener, key, value);
+    }
+}
+static const uint8_t broadcast_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x85, 0xdb};
+REWRITE("Chain::Broadcast59BB40", 0x59bb40, broadcast_original, (&chain_broadcast<0x64, 4>), &g_broadcasts);
+REWRITE("Chain::Broadcast59BB40", 0x59bbc0, broadcast_original, (&chain_broadcast<0x68, 8>), &g_broadcasts);
+REWRITE("Chain::Broadcast59BB40", 0x59bc40, broadcast_original, (&chain_broadcast<0x6c, 0xc>), &g_broadcasts);
+
+// ---- Grid::InterfaceAt: the interface of the entry at a row and column of a table of 20-byte entries ---------------------------------
+static volatile long g_grid_interfaces;
+template <uint32_t TABLE> static void *__thiscall grid_interface(uint8_t *self, int32_t row, int32_t column) {
+    g_grid_interfaces++;
+    uint8_t *entry = self + TABLE + (column + row * 4) * 20;
+    return find_interface(*(uint8_t **)(entry + 4), (const int32_t *)0x1310f90);
+}
+static const uint8_t grid_interface_original[] = {0x8b, 0x44, 0x24, 0x08, 0x8b, 0x54, 0x24, 0x04, 0x8d, 0x04, 0x90};
+REWRITE("Grid::InterfaceAt730720", 0x730720, grid_interface_original, (&grid_interface<0xe4>), &g_grid_interfaces);
+REWRITE("Grid::InterfaceAt730720", 0x730770, grid_interface_original, (&grid_interface<0x6d4>), &g_grid_interfaces);
+
+// ---- Sound: a sound {name at NAME, loaded at LOADED, owner at OWNER, stopped flag at FLAG} and the mixer its owner holds at +0x470 -
+template <uint32_t OWNER> static inline void *sound_mixer(uint8_t *sound) { return *(void **)(*(uint8_t **)(sound + OWNER) + 0x470); }
+template <uint32_t LOAD, uint32_t OWNER, uint32_t NAME> static inline uint32_t sound_load(uint8_t *sound) {
+    return ((uint32_t(__thiscall *)(void *, void *))LOAD)(sound_mixer<OWNER>(sound), sound + NAME);
+}
+static const uint8_t sound_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+static const uint8_t sound_list_original[] = {0x57, 0x8b, 0x79, 0x04, 0x83, 0x3f, 0x00};
+// Sound::Load: loaded again from its name.
+static volatile long g_sound_loads;
+template <uint32_t LOAD, uint32_t OWNER, uint32_t NAME, uint32_t LOADED> static void __fastcall sound_reload(uint8_t *self) {
+    g_sound_loads++;
+    *(uint32_t *)(self + LOADED) = sound_load<LOAD, OWNER, NAME>(self);
+}
+REWRITE("Sound::LoadBFA560", 0xbfa560, sound_original, (&sound_reload<0xc5c7f0, 0x30, 0x08, 0x28>), &g_sound_loads);
+REWRITE("Sound::LoadBFA560", 0xc2f0b0, sound_original, (&sound_reload<0xc5c990, 0x28, 0x14, 0x24>), &g_sound_loads);
+// Sounds::LoadAll: the same for each sound of a list.
+static volatile long g_sound_load_alls;
+template <uint32_t LOAD, uint32_t OWNER, uint32_t NAME, uint32_t LOADED> static void __fastcall sounds_load_all(uint8_t *self) {
+    g_sound_load_alls++;
+    for (Node *n = *(Node **)(self + 4); n->next; n = n->next) {
+        uint8_t *sound = (uint8_t *)n->value;
+        *(uint32_t *)(sound + LOADED) = sound_load<LOAD, OWNER, NAME>(sound);
+    }
+}
+REWRITE("Sounds::LoadAllBFA8E0", 0xbfa8e0, sound_list_original, (&sounds_load_all<0xc5c7f0, 0x30, 0x08, 0x28>), &g_sound_load_alls);
+REWRITE("Sounds::LoadAllBFA8E0", 0xc2f250, sound_list_original, (&sounds_load_all<0xc5c990, 0x28, 0x14, 0x24>), &g_sound_load_alls);
+// Sounds::UnloadAll: each sound given back to its mixer and marked stopped.
+static volatile long g_sound_unloads;
+template <uint32_t UNLOAD, uint32_t OWNER, uint32_t LOADED, uint32_t FLAG> static void __fastcall sounds_unload_all(uint8_t *self) {
+    g_sound_unloads++;
+    for (Node *n = *(Node **)(self + 4); n->next; n = n->next) {
+        uint8_t *sound = (uint8_t *)n->value;
+        ((void(__thiscall *)(void *, uint32_t))UNLOAD)(sound_mixer<OWNER>(sound), *(uint32_t *)(sound + LOADED));
+        *(uint32_t *)(sound + LOADED) = 0;
+        sound[FLAG] = 1;
+    }
+}
+REWRITE("Sounds::UnloadAllBFA8A0", 0xbfa8a0, sound_list_original, (&sounds_unload_all<0xc5cb90, 0x30, 0x28, 0x34>), &g_sound_unloads);
+REWRITE("Sounds::UnloadAllBFA8A0", 0xc2f210, sound_list_original, (&sounds_unload_all<0xc5cc00, 0x28, 0x24, 0x2c>), &g_sound_unloads);
+// Sound::Length: loading it if needed; the loaded sound's own value, or 0 if it can't be loaded.
+static volatile long g_sound_lengths;
+template <uint32_t LOAD, uint32_t OWNER, uint32_t NAME, uint32_t LOADED, uint32_t FLAG> static uint32_t __fastcall sound_length(uint8_t *self) {
+    g_sound_lengths++;
+    if (!*(uint32_t *)(self + LOADED)) {
+        *(uint32_t *)(self + LOADED) = sound_load<LOAD, OWNER, NAME>(self);
+        if (!*(uint32_t *)(self + LOADED)) return 0;
+    }
+    self[FLAG] = 0;
+    return *(uint32_t *)(*(uint8_t **)(self + LOADED) + LOADED);
+}
+REWRITE("Sound::LengthBF9D70", 0xbf9d70, sound_original, (&sound_length<0xc5c7f0, 0x30, 0x08, 0x28, 0x34>), &g_sound_lengths);
+REWRITE("Sound::LengthBF9D70", 0xbfb610, sound_original, (&sound_length<0xc5c990, 0x28, 0x14, 0x24, 0x2c>), &g_sound_lengths);
+
+// ---- Control::PassOn: an argument given to the held control, if it is willing ------------------------------------------------------
+static volatile long g_pass_ons;
+template <uint32_t SLOT> static void __thiscall control_pass_on(uint8_t *self, uint32_t value) {
+    g_pass_ons++;
+    void *control = *(void **)(self + 0x120);
+    if (!control) return;
+    if (!(uint8_t)((uint32_t(__fastcall *)(void *))*(void **)(*(uint8_t **)control + 0x110))(control)) return;
+    ((void(__thiscall *)(void *, uint32_t))*(void **)(*(uint8_t **)control + SLOT))(control, value);
+}
+static const uint8_t pass_on_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0x20, 0x01, 0x00, 0x00};
+REWRITE("Control::PassOnB5B1D0", 0xb5b1d0, pass_on_original, (&control_pass_on<0x50>), &g_pass_ons);
+REWRITE("Control::PassOnB5B1D0", 0xb5b200, pass_on_original, (&control_pass_on<0x5c>), &g_pass_ons);
+
+// ---- Twice::Run: two steps given the same four arguments; the first also takes a zero ----------------------------------------------
+static volatile long g_twice_runs;
+template <uint32_t SECOND> static void __thiscall twice_run(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    g_twice_runs++;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))0xb9dae0)(self, a, b, c, d, 0);
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))SECOND)(self, a, b, c, d);
+}
+static const uint8_t twice_run_original[] = {0x8b, 0x44, 0x24, 0x04, 0x53, 0x8b, 0x5c, 0x24, 0x10};
+REWRITE("Twice::RunBA2FF0", 0xba2ff0, twice_run_original, (&twice_run<0xb9de50>), &g_twice_runs);
+REWRITE("Twice::RunBA2FF0", 0xba3070, twice_run_original, (&twice_run<0xb9dee0>), &g_twice_runs);
+
+// ---- Ready::Value: a value of the held object, once its reference is ready ---------------------------------------------------------
+static volatile long g_ready_values;
+template <uint32_t VALUE> static uint32_t __fastcall ready_value(uint8_t *self) {
+    g_ready_values++;
+    if (!(uint8_t)((uint32_t(__thiscall *)(void *, uint32_t))0xbd1420)(self + 0x84, 0)) return 0;
+    return *(uint32_t *)(*(uint8_t **)(self + 0x8c) + VALUE);
+}
+static const uint8_t ready_value_original[] = {0x56, 0x8b, 0xf1, 0x6a, 0x00, 0x8d, 0x8e};
+REWRITE("Ready::Value87F210", 0x87f210, ready_value_original, (&ready_value<0x3c>), &g_ready_values);
+REWRITE("Ready::Value87F210", 0x87f240, ready_value_original, (&ready_value<0x40>), &g_ready_values);
+
+// ---- Owned::DeleteHeld: the held object destroyed with its own function, and its memory freed ----------------------------------------
+static volatile long g_held_deletes;
+template <uint32_t DESTROY> static void __fastcall held_delete(void **self) {
+    g_held_deletes++;
+    void *held = *self;
+    if (!held) return;
+    call_plain<DESTROY>(held);
+    memory_free(held);
+}
+static const uint8_t held_delete_original[] = {0x56, 0x8b, 0x31, 0x85, 0xf6, 0x74, 0x10};
+REWRITE("Owned::DeleteHeld4085F0", 0x4085f0, held_delete_original, (&held_delete<0xcc2090>), &g_held_deletes);
+REWRITE("Owned::DeleteHeld4085F0", 0x809410, held_delete_original, (&held_delete<0xbe4f30>), &g_held_deletes);

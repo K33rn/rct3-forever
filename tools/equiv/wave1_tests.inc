@@ -418,3 +418,122 @@
     w1_buffer.prepare = [](const rewrite::Entry *e) { w1_a = *(uint32_t *)(e->at + 9); stubs_for_now({{0xdddc77, (void *)w1_stub_crt_free}}); };
     w1_buffer.finish = w1_unstub;
     quick(w1_buffer);
+    // Chain::Broadcast: the chain starts at the interface found (0x360, 0x368) or kept (0x900), linked at +4, listeners at +0x40
+    Test w1_broadcast{0x59bb40,
+                      [=](Rng &r) {
+                          fresh(r); w1_fill(r, 0x800, 0x100);
+                          iface_handle(r);
+                          w1_ref_setup(r, arena<uint8_t>(0x82c));
+                          for (int i = 0; i < 3; i++) {
+                              w1_object(0x1040 + i * 0x80, 0x700);
+                              arena<void *>(0x1000 + i * 0x80)[1] = i < 2 && r.range(0, 2) ? arena<void>(0x1000 + (i + 1) * 0x80) : nullptr;
+                          }
+                          w1_object(0x3a0, 0x700); w1_object(0x3a8, 0x700); w1_object(0x940, 0x700);
+                          arena<void *>(0x364)[0] = arena<void>(0x1000);
+                          arena<void *>(0x36c)[0] = nullptr;
+                          arena<void *>(0x904)[0] = arena<void>(0x1080);
+                          for (int i = 0; i < 4; i++) arena<void *>(0x700)[i] = i & 1 ? (void *)stub_thiscall2 : (void *)w1_stub_two_b;
+                          arena<uint32_t>(0x20)[0] = r.range(0, 1) ? r.next() : 0;
+                          arena<uint32_t>(0x20)[1] = r.next();
+                      },
+                      [](void *fn) { ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[0], arena<uint32_t>(0x20)[1]); return Result{}; }};
+    w1_broadcast.prepare = [](const rewrite::Entry *) { g_iface_id = (uint32_t *)0x12f5638; stubs_for_now({{0x5d49d0, (void *)w1_stub_next}}); };
+    w1_broadcast.finish = w1_unstub;
+    quick(w1_broadcast);
+    Test w1_grid{0x730720,
+                 [=](Rng &r) {
+                     fresh(r); w1_fill(r, 0x800, 0x900);
+                     iface_handle(r);
+                     arena<int32_t>(0x20)[0] = r.range(0, 1);
+                     arena<int32_t>(0x20)[1] = r.range(0, 3);
+                     for (int i = 0; i < 10; i++) *(void **)arena<uint8_t>(0x800 + w1_a + i * 20 + 4) = arena<void>(0x3c0);   // the others have no object
+                     *(void **)arena<uint8_t>(0x3cc) = nullptr;
+                     uint32_t at = 0x800 + w1_a + (arena<int32_t>(0x20)[1] + arena<int32_t>(0x20)[0] * 4) * 20;
+                     *(void **)arena<uint8_t>(at + 4) = arena<void>(0x340);
+                 },
+                 [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x800), arena<int32_t>(0x20)[0], arena<int32_t>(0x20)[1])}; }};
+    w1_grid.prepare = [](const rewrite::Entry *e) { w1_a = *(uint32_t *)(e->at + 0x11); g_iface_id = (uint32_t *)0x1310f90; };
+    quick(w1_grid);
+    // sounds: each at 0x2000 + i*0x40 with an owner at 0x600, for either layout
+    static auto w1_sound = [](Rng &r, uint32_t off) {
+        w1_fill(r, off, 0x40);
+        *(void **)arena<uint8_t>(off + 0x30) = arena<void>(0x600);
+        *(void **)arena<uint8_t>(off + 0x28) = arena<void>(0x600);
+    };
+    auto w1_sound_list = [=](Rng &r) {
+        w1_two(r); w1_fill(r, 0x600, 0x500); w1_fill(r, 0xb00, 0x40);
+        arena<uint32_t>(0x24)[0] = r.next();
+        int n = r.range(0, 4);
+        arena<void *>(0x100)[1] = w1_chain(0x300, n, 0x700);
+        for (int i = 0; i < n; i++) {
+            w1_sound(r, 0x2000 + i * 0x40);
+            arena<void *>(0x300 + i * 0x10)[2] = arena<void>(0x2000 + i * 0x40);
+        }
+    };
+    auto w1_sound_one = [=](Rng &r) {
+        fresh(r); w1_fill(r, 0x600, 0x500);
+        arena<uint32_t>(0x24)[0] = r.next();
+        w1_sound(r, 0x100);
+    };
+    auto w1_sound_stubs = [](const rewrite::Entry *) {
+        stubs_for_now({{0xc5c7f0, (void *)w1_stub_load}, {0xc5c990, (void *)w1_stub_load}, {0xc5cb90, (void *)stub_thiscall1}, {0xc5cc00, (void *)stub_thiscall1}});
+    };
+    Test w1_sound_load{0xbfa560, w1_sound_one, w1_void_call};
+    w1_sound_load.prepare = w1_sound_stubs; w1_sound_load.finish = w1_unstub;
+    quick(w1_sound_load);
+    Test w1_sound_all{0xbfa8e0, w1_sound_list, w1_void_call};
+    w1_sound_all.prepare = w1_sound_stubs; w1_sound_all.finish = w1_unstub;
+    quick(w1_sound_all);
+    Test w1_sound_unload{0xbfa8a0, w1_sound_list, w1_void_call};
+    w1_sound_unload.prepare = w1_sound_stubs; w1_sound_unload.finish = w1_unstub;
+    quick(w1_sound_unload);
+    Test w1_sound_length{0xbf9d70,
+                         [=](Rng &r) {
+                             w1_sound_one(r);
+                             *(void **)arena<uint8_t>(0x100 + w1_a) = r.range(0, 1) ? arena<void>(0x900) : nullptr;
+                         },
+                         w1_self_call};
+    w1_sound_length.prepare = [=](const rewrite::Entry *e) { w1_a = *(uint8_t *)(e->at + 5); w1_sound_stubs(e); };
+    w1_sound_length.finish = w1_unstub;
+    quick(w1_sound_length);
+    Test w1_pass_on{0xb5b1d0,
+                    [=](Rng &r) {
+                        fresh(r); w1_fill(r, 0x800, 0x200);
+                        *(void **)arena<uint8_t>(0x920) = r.range(0, 3) ? w1_object(0x300, 0xa00) : nullptr;
+                        arena<void *>(0xa00)[0x44] = (void *)w1_stub_willing;
+                        arena<void *>(0xa00)[0x14] = (void *)stub_thiscall1;
+                        arena<void *>(0xa00)[0x17] = (void *)w1_stub_one_b;
+                        arena<uint32_t>(0x20)[0] = r.next();
+                        arena<uint32_t>(0x24)[0] = r.next();
+                    },
+                    [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[0]); return Result{}; }};
+    quick(w1_pass_on);
+    Test w1_twice{0xba2ff0,
+                  [=](Rng &r) { w1_two(r); for (int i = 0; i < 4; i++) arena<uint32_t>(0x20)[i] = r.next(); },
+                  [](void *fn) {
+                      uint32_t *a = arena<uint32_t>(0x20);
+                      ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), a[0], a[1], a[2], a[3]);
+                      return Result{};
+                  }};
+    w1_twice.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb9dae0, (void *)w1_stub_five}, {0xb9de50, (void *)w1_stub_four}, {0xb9dee0, (void *)w1_stub_four}}); };
+    w1_twice.finish = w1_unstub;
+    quick(w1_twice);
+    Test w1_ready{0x87f210,
+                  [=](Rng &r) {
+                      fresh(r); w1_fill(r, 0x800, 0x100); w1_fill(r, 0x600, 0x80);
+                      *(void **)arena<uint8_t>(0x88c) = arena<void>(0x600);
+                      arena<uint32_t>(0x24)[0] = r.next();
+                  },
+                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w1_ready.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbd1420, (void *)w1_stub_ask}}); };
+    w1_ready.finish = w1_unstub;
+    quick(w1_ready);
+    Test w1_held{0x4085f0,
+                 [=](Rng &r) {
+                     w1_two(r); w1_fill(r, 0x300, 0x20);
+                     arena<void *>(0x100)[0] = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                 },
+                 w1_void_call};
+    w1_held.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xcc2250, (void *)w1_stub_value}, {0xbe4f30, (void *)w1_stub_value}}); };
+    w1_held.finish = w1_unstub;
+    quick(w1_held);
