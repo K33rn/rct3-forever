@@ -1572,3 +1572,34 @@
     };
     w3d_send_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3d_send_test);
+    w3c_make(Test{0x818050, w3c_maker, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()}; }}, 0x3d, (void *)w3c_stub_ctor4);
+    w3c_make(Test{0x5f4f30, w3c_maker, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[1])}; }},
+             0x3c, (void *)w3d_stub_ctor2);
+    // Range::Add: memory there or not; the item goes to the copy's own add
+    for (uintptr_t at : {(uintptr_t)0xc33da0, (uintptr_t)0xc33e20}) {
+        Test w3d_range_test{at, w3c_maker,
+                            [](void *fn) {
+                                return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1])};
+                            }};
+        uint32_t add_at = at == 0xc33da0 ? 0x60 : 0x5d;
+        uintptr_t ctor = at == 0xc33da0 ? 0xca8630 : 0xca8660;
+        w3d_range_test.prepare = [=](const rewrite::Entry *e) {
+            stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {ctor, (void *)w3c_stub_ctor4}, {w3d_rel(e, add_at), (void *)w3d_stub_handler2}});
+        };
+        w3d_range_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(w3d_range_test);
+    }
+    // Single::Get (three zeros): already there or not; the copy's own global, kept for after
+    static void *w3d_single_was;
+    Test w3d_single_test{0x4779c0, w3c_maker,
+                         [](void *fn) {
+                             *w3d_single_global = arena<uint32_t>(0x10)[0] & 1 ? arena<void>(0x100) : nullptr;
+                             return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()};
+                         }};
+    w3d_single_test.prepare = [=](const rewrite::Entry *e) {
+        w3d_single_global = *(void ***)(e->at + 0x17);
+        w3d_single_was = *w3d_single_global;
+        stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {w3d_rel(e, 0x44), (void *)w3d_stub_single3}});
+    };
+    w3d_single_test.finish = [](const rewrite::Entry *) { unstub_many(); *w3d_single_global = w3d_single_was; };
+    quick(w3d_single_test);

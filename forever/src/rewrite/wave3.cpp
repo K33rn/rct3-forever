@@ -1877,3 +1877,44 @@ template <uint32_t SIZE, uintptr_t BUILD, uintptr_t DELIVER> static void __thisc
 }
 REWRITE("Message::Send48C5D0", 0x48c5d0, w3c_start<0xff85398b571cec83>, (&w3d_send<0x1c, 0x4884b0, 0x48bb30>), &g_w3d_send);
 REWRITE("Message::Send48C5D0", 0x48c8e0, w3c_start<0xff85398b572cec83>, (&w3d_send<0x2c, 0x488660, 0x48bd10>), &g_w3d_send);
+
+// ---- Maker::Blank (another size): a new object built with four zeros -----------------------------------------------------------
+REWRITE("Maker::Blank818050", 0x818050, w3c_start<0x6400e5d79b68ff6a>, (&w3c_make0<0xb8, 0x817070>), &g_w3c_make0);
+REWRITE("Maker::Blank818050", 0x818e80, w3c_start<0x6400e5d93b68ff6a>, (&w3c_make0<0x80, 0x8185b0>), &g_w3c_make0);
+
+// ---- Child::Attach: makes a new 0xa0-byte child of this object and keeps it at +0x1c (null if out of memory) -----------------
+static volatile long g_w3d_attach;
+template <uintptr_t CTOR> static void *__thiscall w3d_attach(uint8_t *self, uint32_t) {
+    g_w3d_attach++;
+    void *made = memory_alloc(0xa0);
+    void *child = made ? ((void *(__thiscall *)(void *, uint32_t, void *))CTOR)(made, 0, self) : nullptr;
+    *(void **)(self + 0x1c) = child;
+    return child;
+}
+REWRITE("Child::Attach5F4F30", 0x5f4f30, w3c_start<0x6400e26d8b68ff6a>, (&w3d_attach<0x712190>), &g_w3d_attach);
+REWRITE("Child::Attach5F4F30", 0x616680, w3c_start<0x6400e2affb68ff6a>, (&w3d_attach<0x8d0bf0>), &g_w3d_attach);
+
+// ---- Range::Add: a new ranged value (signed or unsigned 16-bit limits) from the second argument, added under the first ------
+static volatile long g_w3d_range;
+template <int32_t LOW, int32_t HIGH, uintptr_t CTOR, uintptr_t ADD> static uint32_t __thiscall w3d_range(void *self, uint32_t key, uint32_t value) {
+    g_w3d_range++;
+    void *made = memory_alloc(0x14);
+    void *item = made ? ((void *(__thiscall *)(void *, uint32_t, int32_t, int32_t, uint32_t))CTOR)(made, value, LOW, HIGH, 1) : nullptr;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *))ADD)(self, key, item);
+}
+REWRITE("Range::AddC33DA0", 0xc33da0, w3c_start<0x6400ea049b68ff6a>, (&w3d_range<-0x8000, 0x7fff, 0xca8630, 0xc33c00>), &g_w3d_range);
+REWRITE("Range::AddC33DA0", 0xc344e0, w3c_start<0x6400ea05db68ff6a>, (&w3d_range<-0x8000, 0x7fff, 0xca8630, 0xc34340>), &g_w3d_range);
+REWRITE("Range::AddC33E20", 0xc33e20, w3c_start<0x6400ea04bb68ff6a>, (&w3d_range<0, 0xffff, 0xca8660, 0xc33c00>), &g_w3d_range);
+REWRITE("Range::AddC33E20", 0xc34560, w3c_start<0x6400ea05fb68ff6a>, (&w3d_range<0, 0xffff, 0xca8660, 0xc34340>), &g_w3d_range);
+
+// ---- Single::Get (three zeros): the one instance; building it makes it register itself in the global ---------------------------
+static volatile long g_w3d_single;
+template <uint32_t INSTANCE, uint32_t SIZE, uintptr_t CTOR> static void *__cdecl w3d_single() {
+    g_w3d_single++;
+    void *&instance = *(void **)INSTANCE;
+    if (!instance)
+        if (void *made = memory_alloc(SIZE)) ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))CTOR)(made, 0, 0, 0);
+    return instance;
+}
+REWRITE("Single::Get4779C0", 0x4779c0, w3c_start<0x6400e0d58b68ff6a>, (&w3d_single<0x12f523c, 0xf0, 0x54bc30>), &g_w3d_single);
+REWRITE("Single::Get4779C0", 0x7728d0, w3c_start<0x6400e5165b68ff6a>, (&w3d_single<0x1306568, 0xb8, 0x771670>), &g_w3d_single);

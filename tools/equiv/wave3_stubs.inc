@@ -318,3 +318,16 @@ static void __thiscall w3d_stub_deliver(void *target, uint32_t *message) {
     record(0x7d05, target);
     for (uint32_t i = 0; i < w3d_message_size / 4; i++) record(0x7d05, (void *)(uintptr_t)message[i]);
 }
+static void *__thiscall w3d_stub_ctor2(uint8_t *self, uint32_t a, void *b) {
+    record(0x7d06, self);
+    record(0x7d06, (void *)(uintptr_t)a);
+    record(0x7d06, b);
+    return self + 2;
+}
+// Single::Get (three zeros): registers itself in the copy's global, or sometimes doesn't
+static void **w3d_single_global;
+static void __thiscall w3d_stub_single3(void *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x7d07, self);
+    for (uint32_t v : {a, b, c}) record(0x7d07, (void *)(uintptr_t)v);
+    if (arena<uint32_t>(0x24)[0] & 1) *w3d_single_global = self;
+}
