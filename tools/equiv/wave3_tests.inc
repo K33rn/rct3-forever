@@ -1803,3 +1803,27 @@
     };
     w3d_notice_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3d_notice_test);
+    // Kind::Name: kinds 0-7, each copy's globals set or not (kept for after)
+    static uint32_t *w3d_k_globals[3];
+    static uint32_t w3d_k_was[3];
+    Test w3d_kind_test{0xb16890,
+                       [=](Rng &r) {
+                           w3c_maker(r);
+                           arena<uint32_t>(0x100)[0x78 / 4] = (uint32_t)r.range(0, 7);
+                       },
+                       [](void *fn) {
+                           for (int i = 0; i < 3; i++) *w3d_k_globals[i] = arena<uint32_t>(0x10)[1] >> i & 1 ? (uint32_t)(uintptr_t)arena<void>(0x1e0 + 4 * i) : 0;
+                           return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))};
+                       }};
+    w3d_kind_test.prepare = [](const rewrite::Entry *e) {
+        w3d_k_globals[0] = *(uint32_t **)(e->at + 0x32);
+        w3d_k_globals[1] = *(uint32_t **)(e->at + 0x55);
+        w3d_k_globals[2] = (uint32_t *)0x1300494;
+        for (int i = 0; i < 3; i++) w3d_k_was[i] = *w3d_k_globals[i];
+        stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {0xbcf7d0, (void *)w3d_stub_ctor1}, {0xbcf850, (void *)w3d_stub_ctor1}, {0xbd0490, (void *)w3d_stub_empty}});
+    };
+    w3d_kind_test.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        for (int i = 0; i < 3; i++) *w3d_k_globals[i] = w3d_k_was[i];
+    };
+    quick(w3d_kind_test);

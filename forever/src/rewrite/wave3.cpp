@@ -2197,3 +2197,24 @@ template <uint32_t FORMAT, uint32_t TARGET> static void __fastcall w3d_notice(ui
 }
 REWRITE("Notice::Post4A4860", 0x4a4860, w3c_start<0x6400e109d968ff6a>, (&w3d_notice<0xf30868, 0x17c>), &g_w3d_notice);
 REWRITE("Notice::Post4A4860", 0x881db0, w3c_start<0x6400e63de968ff6a>, (&w3d_notice<0xf79334, 0x88>), &g_w3d_notice);
+
+// ---- Kind::Name: the name of this object's kind (+0x78) as a text: kinds 0-3, 4 and 5 read their name from a global (the
+// shared empty text when it is unset); any other kind gets the fixed fallback name ---------------------------------------------------
+static volatile long g_w3d_kind;
+template <uint32_t FIRST, uint32_t FOURTH> static void **__thiscall w3d_kind_name(uint8_t *self, void **out) {
+    g_w3d_kind++;
+    uint32_t kind = *(uint32_t *)(self + 0x78);
+    void *text;
+    if (kind > 5) {
+        void *made = memory_alloc(0x10);
+        text = made ? ((void *(__thiscall *)(void *, uint32_t))0xbcf850)(made, 0xf981a0) : nullptr;
+    } else if (uint32_t name = *(uint32_t *)(kind < 4 ? FIRST : kind == 4 ? FOURTH : 0x1300494)) {
+        void *made = memory_alloc(0x10);
+        text = made ? ((void *(__thiscall *)(void *, uint32_t))0xbcf7d0)(made, name) : nullptr;
+    } else
+        text = ((void *(__fastcall *)(uint8_t))0xbd0490)(1);
+    *out = text;
+    return out;
+}
+REWRITE("Kind::NameB16890", 0xb16890, w3c_start<0x6400e9118c68ff6a>, (&w3d_kind_name<0x130228c, 0x1303214>), &g_w3d_kind);
+REWRITE("Kind::NameB16890", 0xb2c490, w3c_start<0x6400e9264c68ff6a>, (&w3d_kind_name<0x12fefb0, 0x12ff774>), &g_w3d_kind);
