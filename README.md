@@ -130,16 +130,17 @@ your RCT3plus.exe (see [docs/rewriting.md](docs/rewriting.md)). Dear ImGui is do
 
 ## Contributing a rewritten function
 
-Read [docs/rewriting.md](docs/rewriting.md) first. In short, you work out what a game function does, then write new
-code that does the same. Never paste decompiler output, and never commit anything from the game: no game files,
-no copied code. Then prove in the game that it behaves the same.
+See [CONTRIBUTING.md](CONTRIBUTING.md), then [docs/rewriting.md](docs/rewriting.md). In short, you work out what a game
+function does, then write new code that does the same. Never paste decompiler output, and never commit anything from
+the game: no game files, no copied code. Then prove in the game that it behaves the same.
 
 ## Legal
 
 RCT3 Forever is an independent fan project, not affiliated with or endorsed by Frontier Developments or Atari.
 RollerCoaster Tycoon is their trademark. The project contains no game code, files or assets. It only runs on a
 copy of the game you own, and it changes the running game in memory, never the game's files. Its code was written
-for this project and is under the [MIT license](LICENSE). Dear ImGui is under its own MIT license.
+for this project and is under the [MIT license](LICENSE), which covers RCT3 Forever's own code only, not RollerCoaster
+Tycoon 3 or any file from the game. Dear ImGui (third_party/, downloaded when building) keeps its own MIT license.
 
 ## Credits
 
