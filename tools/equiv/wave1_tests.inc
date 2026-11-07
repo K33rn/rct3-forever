@@ -1097,7 +1097,7 @@
                             w1_fill(r, 0x800, 0x40);
                             arena<void *>(0x800)[7] = arena<void>(0x900);
                             static void *vt[1] = {(void *)w1d_stub_delete};
-                            for (int i = 0; i < 4; i++) {
+                            for (int i = 0; i < 5; i++) {
                                 arena<void *>(0xc00 + i * 0x10)[0] = vt;
                                 arena<void *>(0x900 + 0x190)[i] = r.range(0, 2) ? arena<void>(0xc00 + i * 0x10) : nullptr;
                             }
