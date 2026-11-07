@@ -246,3 +246,244 @@ template <uint8_t FLAG> static void __fastcall slots_reset(uint8_t *self) {
 static const uint8_t slots_reset_original[] = {0x8b, 0x51, 0x08, 0x33, 0xc0, 0x85, 0xd2, 0xc6, 0x01};
 REWRITE("Slots::Reset581240", 0x581240, slots_reset_original, (&slots_reset<1>), &g_w2_resets);
 REWRITE("Slots::Reset581240", 0x581270, slots_reset_original, (&slots_reset<0>), &g_w2_resets);
+
+// ---- Rows::Resize: throws away the rows and makes room for `count` new ones of 20 bytes ---------------------------------------------
+static volatile long g_w2_row_resizes;
+static uint32_t __thiscall rows_resize(void **self, uint32_t count) {
+    g_w2_row_resizes++;
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    if (count) self[0] = memory_alloc_aligned(count * 20);
+    *(uint32_t *)&self[1] = count;
+    return count;
+}
+static const uint8_t rows_resize_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x07, 0x85, 0xc0};
+REWRITE("Rows::Resize45E8C0", 0x45e8c0, rows_resize_original, rows_resize, &g_w2_row_resizes);
+REWRITE("Rows::Resize45E8C0", 0xa6bbc0, rows_resize_original, rows_resize, &g_w2_row_resizes);
+
+// ---- Block::Delete: a deleting destructor that frees the block it holds at +0 -------------------------------------------------------
+static volatile long g_w2_block_deletes;
+static void *__thiscall block_delete(void **self, uint32_t flags) {
+    g_w2_block_deletes++;
+    memory_free_aligned(self[0]);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t block_delete_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x50, 0xe8};
+REWRITE("Block::Delete72F200", 0x72f200, block_delete_original, block_delete, &g_w2_block_deletes);
+REWRITE("Block::Delete72F200", 0xbb6620, block_delete_original, block_delete, &g_w2_block_deletes);
+REWRITE("Block::Delete72F200", 0xc22ad0, block_delete_original, block_delete, &g_w2_block_deletes);
+
+// ---- SharedBlock: a count at +0 and data at +0xc; the last to let go frees both --------------------------------------------------
+static void shared_block_drop(uint32_t *block) {
+    if (--block[0] == 0) {
+        memory_free_aligned((void *)(uintptr_t)block[3]);
+        memory_free(block);
+    }
+}
+static volatile long g_w2_block_drops;
+static void __stdcall shared_block_release(uint32_t *block) {
+    g_w2_block_drops++;
+    shared_block_drop(block);
+}
+static const uint8_t block_release_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0xff, 0x0e, 0x75};
+REWRITE("SharedBlock::Release75A530", 0x75a530, block_release_original, shared_block_release, &g_w2_block_drops);
+REWRITE("SharedBlock::Release75A530", 0x761420, block_release_original, shared_block_release, &g_w2_block_drops);
+REWRITE("SharedBlock::Release75A530", 0xb46ed0, block_release_original, shared_block_release, &g_w2_block_drops);
+
+// ---- SharedBlock::Delete: a deleting destructor of a holder of one, at +0 ---------------------------------------------------------
+static void *__thiscall shared_block_delete(uint32_t **self, uint32_t flags) {
+    g_w2_block_drops++;
+    shared_block_drop(self[0]);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t block_holder_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0xff, 0x08, 0x57};
+REWRITE("SharedBlock::Delete438F30", 0x438f30, block_holder_original, shared_block_delete, &g_w2_block_drops);
+REWRITE("SharedBlock::Delete438F30", 0x496500, block_holder_original, shared_block_delete, &g_w2_block_drops);
+
+// ---- Owner::Allowed: yes when the global flag at 0x12f552a is set; otherwise by the record flag 0x200, or the state being 12 -----
+static volatile long g_w2_allowed;
+static uint32_t __fastcall owner_allowed(uint8_t *self) {
+    g_w2_allowed++;
+    if (*(uint8_t *)0x12f552a) return 1;
+    void *owner = ((void *(__fastcall *)(void *))0xbb4280)(*(void **)(self + 0x6f4));
+    uint8_t *record = ((uint8_t * (__fastcall *)(void *))0xbb3e70)(owner);
+    if (*(uint32_t *)(record + 0x30) & 0x200) return 1;
+    return *(int32_t *)(self + 0x38c) == 12;
+}
+static const uint8_t owner_allowed_original[] = {0xa0, 0x2a, 0x55, 0x2f, 0x01, 0x84, 0xc0, 0x56};
+REWRITE("Owner::Allowed5A1760", 0x5a1760, owner_allowed_original, owner_allowed, &g_w2_allowed);
+REWRITE("Owner::Allowed5A1760", 0x5a1980, owner_allowed_original, owner_allowed, &g_w2_allowed);
+
+// ---- Field::Is: is the word at +0x18 this value? -----------------------------------------------------------------------------------
+static volatile long g_w2_field_is;
+static uint8_t __thiscall field_is(uint8_t *self, uint32_t value) {
+    g_w2_field_is++;
+    return *(uint32_t *)(self + 0x18) == value;
+}
+static const uint8_t debug_frame_original[] = {0x55, 0x8b, 0xec, 0x51, 0xc7, 0x45, 0xfc, 0xcc};
+REWRITE("Field::IsCC1C30", 0xcc1c30, debug_frame_original, field_is, &g_w2_field_is);
+REWRITE("Field::IsCC1C30", 0xcc5350, debug_frame_original, field_is, &g_w2_field_is);
+
+// ---- Ref::Copy, Ref::Assign: a counted pointer taken from another, the assignment letting go of the old one first ---------------------
+static volatile long g_w2_refs;
+static void **__thiscall ref_copy(void **self, void **from) {
+    g_w2_refs++;
+    *self = *from;
+    ((void(__fastcall *)(void *))0xcc2110)(*self);
+    return self;
+}
+static void **__thiscall ref_assign(void **self, void **from) {
+    g_w2_refs++;
+    ((void(__fastcall *)(void *))0xcc2250)(*self);
+    *self = *from;
+    ((void(__fastcall *)(void *))0xcc2110)(*self);
+    return self;
+}
+REWRITE("Ref::CopyCC2010", 0xcc2010, debug_frame_original, ref_copy, &g_w2_refs);
+REWRITE("Ref::CopyCC2010", 0xcc5860, debug_frame_original, ref_copy, &g_w2_refs);
+REWRITE("Ref::AssignCC2050", 0xcc2050, debug_frame_original, ref_assign, &g_w2_refs);
+REWRITE("Ref::AssignCC2050", 0xcc58a0, debug_frame_original, ref_assign, &g_w2_refs);
+
+// ---- Text::Store: measures a string and passes it on to the real function with its length -----------------------------------------
+static volatile long g_w2_texts;
+template <uint32_t TARGET> static void *__thiscall text_store(void *self, void *into, const char *text) {
+    g_w2_texts++;
+    uint32_t length = 0;
+    while (text[length]) length++;
+    ((void(__thiscall *)(void *, void *, const char *, uint32_t))TARGET)(self, into, text, length);
+    return into;
+}
+static const uint8_t text_store_original[] = {0x51, 0x8b, 0x54, 0x24, 0x0c, 0x53, 0x80, 0x3a};
+REWRITE("Text::Store403BE0", 0x403be0, text_store_original, (&text_store<0xbd0720>), &g_w2_texts);
+REWRITE("Text::Store403BE0", 0x403e10, text_store_original, (&text_store<0xbd0ce0>), &g_w2_texts);
+
+// ---- Entries::Visit: passes each active 12-byte entry of the array at +0x54 (the count at +0x60) to the real function ---------------
+static volatile long g_w2_visits;
+template <uint32_t TARGET> static void __fastcall entries_visit(uint8_t *self) {
+    g_w2_visits++;
+    for (int32_t i = 0; i < *(int32_t *)(self + 0x60); i++) {
+        uint8_t *entry = *(uint8_t **)(self + 0x54) + i * 12;
+        if (entry[0]) ((void(__fastcall *)(void *))TARGET)(*(void **)(entry + 4));
+    }
+}
+static const uint8_t entries_visit_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x60, 0x33};
+REWRITE("Entries::VisitB6C360", 0xb6c360, entries_visit_original, (&entries_visit<0xb39260>), &g_w2_visits);
+REWRITE("Entries::VisitB6C360", 0xb6cf00, entries_visit_original, (&entries_visit<0xb36820>), &g_w2_visits);
+
+// ---- Writer::Put: writes a value at the place at +0xc through virtual slot SLOT, then moves on a word; the new place ----------------
+static volatile long g_w2_puts;
+template <uint32_t SLOT> static uint32_t __thiscall writer_put(uint32_t *self, uint32_t value) {
+    g_w2_puts++;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))(*(void ***)self)[SLOT])(self, self[3], value);
+    return self[3] += 4;
+}
+static const uint8_t writer_put_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4c, 0x24, 0x08, 0x8b};
+REWRITE("Writer::PutCA55F0", 0xca55f0, writer_put_original, (&writer_put<3>), &g_w2_puts);
+REWRITE("Writer::PutCA55F0", 0xca5610, writer_put_original, (&writer_put<5>), &g_w2_puts);
+REWRITE("Writer::PutCA55F0", 0xca5670, writer_put_original, (&writer_put<7>), &g_w2_puts);
+
+// ---- Typed::Forward: passes a value on to the real function with a type marker of this copy ----------------------------------------
+static volatile long g_w2_typed;
+template <uint32_t TABLE> static uint32_t __thiscall typed_forward(void *self, uint32_t value) {
+    g_w2_typed++;
+    uint32_t marker = TABLE;
+    return ((uint32_t(__thiscall *)(void *, uint32_t *, uint32_t))0x6aed50)(self, &marker, value);
+}
+static const uint8_t typed_forward_original[] = {0x51, 0x8b, 0x44, 0x24, 0x08, 0x50, 0x8d, 0x54};
+REWRITE("Typed::Forward6AF080", 0x6af080, typed_forward_original, (&typed_forward<0xf60660>), &g_w2_typed);
+REWRITE("Typed::Forward6AF080", 0x6af0a0, typed_forward_original, (&typed_forward<0xf60670>), &g_w2_typed);
+REWRITE("Typed::Forward6AF080", 0x6af0c0, typed_forward_original, (&typed_forward<0xf606a0>), &g_w2_typed);
+REWRITE("Typed::Forward6AF080", 0x6af0e0, typed_forward_original, (&typed_forward<0xf606b0>), &g_w2_typed);
+REWRITE("Typed::Forward6AF080", 0x6af100, typed_forward_original, (&typed_forward<0xf606d0>), &g_w2_typed);
+
+// ---- Event::Ask: sends an event with an answer word, starting at 0, and gives back what the handler left there ---------------------
+static volatile long g_w2_asks;
+template <uint32_t TABLE> static uint32_t __fastcall event_ask(void **self) {
+    g_w2_asks++;
+    uint32_t event[2] = {TABLE, 0};
+    ((void(__thiscall *)(void *, uint32_t *))(*(void ***)self)[0x20])(self, event);
+    return event[1];
+}
+static const uint8_t event_ask_original[] = {0x83, 0xec, 0x08, 0x8b, 0x01, 0x8d, 0x14, 0x24};
+REWRITE("Event::Ask845AB0", 0x845ab0, event_ask_original, (&event_ask<0xf77bdc>), &g_w2_asks);
+REWRITE("Event::Ask845AB0", 0x845bb0, event_ask_original, (&event_ask<0xf77be4>), &g_w2_asks);
+REWRITE("Event::Ask845AB0", 0x845dd0, event_ask_original, (&event_ask<0xf77bf4>), &g_w2_asks);
+
+// ---- Event::AskFlag: the same with a one-byte answer that starts at ANSWER ----------------------------------------------------------
+template <uint32_t TABLE, uint8_t ANSWER> static uint8_t __fastcall event_ask_flag(void **self) {
+    g_w2_asks++;
+    struct {
+        uint32_t table;
+        uint8_t answer;
+    } event = {TABLE, ANSWER};
+    ((void(__thiscall *)(void *, void *))(*(void ***)self)[0x20])(self, &event);
+    return event.answer;
+}
+REWRITE("Event::AskFlag845A50", 0x845a50, event_ask_original, (&event_ask_flag<0xf77bd8, 0>), &g_w2_asks);
+REWRITE("Event::AskFlag845A50", 0x845d20, event_ask_original, (&event_ask_flag<0xf77bec, 1>), &g_w2_asks);
+REWRITE("Event::AskFlag845A50", 0x845d50, event_ask_original, (&event_ask_flag<0xf77bf0, 1>), &g_w2_asks);
+
+// ---- Level::Field: a field that only means something from level 2 on, 0 before ------------------------------------------------------
+static volatile long g_w2_level_fields;
+template <uint32_t OFF> static uint32_t __fastcall level_field(uint8_t *self) {
+    g_w2_level_fields++;
+    void *owner = ((void *(__fastcall *)(void *))0xbb5130)(self);
+    uint8_t *record = ((uint8_t * (__fastcall *)(void *))0xbb3e70)(owner);
+    return record[1] >= 2 ? *(uint32_t *)(self + OFF) : 0;
+}
+// the bytes past the third are the call offset, which differs by copy
+template <uint32_t AT> static const uint8_t level_field_original[] = {
+    0x56, 0x8b, 0xf1, 0xe8, (uint8_t)(0xbb5130 - (AT + 8)), (uint8_t)((0xbb5130 - (AT + 8)) >> 8),
+    (uint8_t)((0xbb5130 - (AT + 8)) >> 16), (uint8_t)((0xbb5130 - (AT + 8)) >> 24)};
+REWRITE("Level::Field4A15F0", 0x4a15f0, level_field_original<0x4a15f0>, (&level_field<0x24>), &g_w2_level_fields);
+REWRITE("Level::Field4A15F0", 0x4a9070, level_field_original<0x4a9070>, (&level_field<0x1c>), &g_w2_level_fields);
+
+// ---- Holder::Delete: a deleting destructor that tells the object at +4 to go, through its slot 2 --------------------------------------
+static volatile long g_w2_holder_deletes;
+template <uint32_t TABLE> static void *__thiscall holder_delete(uint32_t *self, uint32_t flags) {
+    g_w2_holder_deletes++;
+    self[0] = TABLE;
+    void **object = (void **)(uintptr_t)self[1];
+    ((void(__stdcall *)(void *))(*(void ***)object)[2])(object);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t holder_delete_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x04, 0xc7, 0x06};
+REWRITE("Holder::DeleteBEA240", 0xbea240, holder_delete_original, (&holder_delete<0xfa5730>), &g_w2_holder_deletes);
+REWRITE("Holder::DeleteBEA240", 0xbfde60, holder_delete_original, (&holder_delete<0xfa5ca4>), &g_w2_holder_deletes);
+
+// ---- Counted::Drop: lets go of a counted object (the count at +4); the last one deletes it -------------------------------------------
+static volatile long g_w2_counted;
+static void __fastcall counted_drop(uint32_t **self) {
+    g_w2_counted++;
+    uint32_t *object = *self;
+    if (--object[1] == 0) ((void(__thiscall *)(void *, uint32_t))(*(void ***)object)[0])(object, 1);
+}
+static const uint8_t counted_drop_original[] = {0x8b, 0x01, 0xff, 0x48, 0x04, 0x8b, 0x09, 0x8b};
+REWRITE("Counted::DropC321E0", 0xc321e0, counted_drop_original, counted_drop, &g_w2_counted);
+REWRITE("Counted::DropC321E0", 0xc425c0, counted_drop_original, counted_drop, &g_w2_counted);
+
+// ---- Items::Pass: passes two values on to the real function of the index'th item of the array at +0x54 -----------------------------
+static volatile long g_w2_passes;
+template <uint32_t TARGET> static uint32_t __thiscall items_pass(uint8_t *self, int32_t index, uint32_t a, uint32_t b) {
+    g_w2_passes++;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))TARGET)((*(void ***)(self + 0x54))[index], a, b);
+}
+static const uint8_t items_pass_original[] = {0x8b, 0x44, 0x24, 0x0c, 0x8b, 0x54, 0x24, 0x08};
+REWRITE("Items::Pass8387C0", 0x8387c0, items_pass_original, (&items_pass<0xce23a0>), &g_w2_passes);
+REWRITE("Items::Pass8387C0", 0x8387e0, items_pass_original, (&items_pass<0xce23e0>), &g_w2_passes);
+
+// ---- Word::MakeDefault: the word is what the real function gives for 1 ---------------------------------------------------------------
+static volatile long g_w2_defaults;
+static uint32_t *__fastcall word_make_default(uint32_t *self) {
+    g_w2_defaults++;
+    *self = ((uint32_t(__fastcall *)(uint8_t))0xbd0490)(1);
+    return self;
+}
+static const uint8_t word_default_original[] = {0x51, 0x56, 0x8b, 0xf1, 0xb1, 0x01, 0xc7, 0x44};
+REWRITE("Word::MakeDefault49CD50", 0x49cd50, word_default_original, word_make_default, &g_w2_defaults);
+REWRITE("Word::MakeDefault49CD50", 0x49cd70, word_default_original, word_make_default, &g_w2_defaults);

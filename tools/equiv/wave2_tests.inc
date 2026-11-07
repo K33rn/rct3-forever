@@ -202,3 +202,171 @@
                   },
                   [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     quick(w2_slots);
+    auto w2_values = [=](Rng &r) { fresh(r); for (int i = 0; i < 6; i++) arena<uint32_t>(0x20)[i] = r.next(); };
+    auto w2_unstub = [](const rewrite::Entry *) { unstub_many(); };
+    // Rows::Resize: rows held or not, a count of none or some
+    Test w2_rows{0x45e8c0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     arena<void *>(0x100)[0] = r.range(0, 2) ? arena<void>(0x800) : nullptr;
+                     arena<uint32_t>(0x20)[0] = (uint32_t)r.range(0, 5);
+                     *arena<uint32_t>(ALLOC_NEXT) = 0;
+                 },
+                 [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0])}; }};
+    w2_rows.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_aligned}}); };
+    w2_rows.finish = w2_unstub;
+    quick(w2_rows);
+    // Block::Delete: with or without freeing itself
+    Test w2_block{0x72f200,
+                  [=](Rng &r) { fresh(r); arena<void *>(0x100)[0] = arena<void>(0x800); arena<uint32_t>(0x20)[0] = (uint32_t)r.range(0, 3); },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0])}; }};
+    quick(w2_block);
+    // SharedBlock: the last reference or not
+    auto w2_shared_block = [=](Rng &r) {
+        fresh(r);
+        arena<uint32_t>(0x800)[0] = (uint32_t)r.range(1, 3);
+        arena<void *>(0x800)[3] = arena<void>(0x900);
+        arena<void *>(0x100)[0] = arena<void>(0x800);
+        arena<uint32_t>(0x20)[0] = (uint32_t)r.range(0, 3);
+    };
+    Test w2_block_release{0x75a530, w2_shared_block, [](void *fn) { ((void(__stdcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    quick(w2_block_release);
+    Test w2_block_delete{0x438f30, w2_shared_block,
+                         [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0])}; }};
+    quick(w2_block_delete);
+    // Owner::Allowed: the global flag, the record flag, the state
+    Test w2_allowed{0x5a1760,
+                    [=](Rng &r) {
+                        fresh(r);
+                        *(uint8_t *)0x12f552a = r.range(0, 3) ? 0 : (uint8_t)r.range(1, 255);
+                        *(uint32_t *)arena<uint8_t>(0x510 + 0x30) = r.next() & ~0x200u | (r.range(0, 1) ? 0x200 : 0);
+                        *(void **)arena<uint8_t>(0x800 + 0x6f4) = arena<void>(0x700);
+                        *(int32_t *)arena<uint8_t>(0x800 + 0x38c) = r.range(10, 14);
+                    },
+                    [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w2_allowed.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbb4280, (void *)stub_lookup_a}, {0xbb3e70, (void *)stub_lookup_b}}); };
+    w2_allowed.finish = [](const rewrite::Entry *) { *(uint8_t *)0x12f552a = 0; unstub_many(); };
+    quick(w2_allowed);
+    // Field::Is
+    Test w2_field_is{0xcc1c30,
+                     [=](Rng &r) {
+                         fresh(r);
+                         arena<uint32_t>(0x20)[0] = r.range(0, 1) ? arena<uint32_t>(0x100)[6] : r.next();
+                     },
+                     [](void *fn) { return Result{((uint8_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0])}; }};
+    quick(w2_field_is);
+    // Ref::Copy, Ref::Assign
+    auto w2_ref_setup = [=](Rng &r) {
+        fresh(r);
+        arena<void *>(0x100)[0] = arena<void>(0x800);
+        arena<void *>(0x100)[1] = arena<void>(0x810);
+    };
+    auto w2_ref_call = [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x104))}; };
+    auto w2_ref_stubs = [](const rewrite::Entry *) { stubs_for_now({{0xcc2110, (void *)w2_stub_add_ref}, {0xcc2250, (void *)w2_stub_drop_ref}}); };
+    Test w2_ref_copy{0xcc2010, w2_ref_setup, w2_ref_call};
+    w2_ref_copy.prepare = w2_ref_stubs;
+    w2_ref_copy.finish = w2_unstub;
+    quick(w2_ref_copy);
+    Test w2_ref_assign{0xcc2050, w2_ref_setup, w2_ref_call};
+    w2_ref_assign.prepare = w2_ref_stubs;
+    w2_ref_assign.finish = w2_unstub;
+    quick(w2_ref_assign);
+    // Text::Store: strings from empty up
+    Test w2_text{0x403be0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     int n = r.range(0, 12);
+                     for (int i = 0; i < n; i++) arena<char>(0x800)[i] = (char)r.range(1, 255);
+                     arena<char>(0x800)[n] = 0;
+                 },
+                 [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x180), arena<void>(0x800))}; }};
+    w2_text.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at + 0x2c + *(int32_t *)(e->at + 0x28), (void *)w2_stub_text}}); };
+    w2_text.finish = w2_unstub;
+    quick(w2_text);
+    // Entries::Visit: some entries active; a visit may shorten the count
+    Test w2_visit{0xb6c360,
+                  [=](Rng &r) {
+                      fresh(r);
+                      arena<void *>(0x154)[0] = arena<void>(0x800);
+                      arena<int32_t>(0x160)[0] = r.range(-1, 5);
+                      for (int i = 0; i < 5; i++) {
+                          arena<uint8_t>(0x800 + i * 12)[0] = (uint8_t)(r.range(0, 2) ? r.range(1, 255) : 0);
+                          arena<uint32_t>(0x804 + i * 12)[0] = r.next();
+                      }
+                      arena<uint32_t>(0x20)[0] = r.next();
+                  },
+                  [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    w2_visit.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at + 0x24 + *(int32_t *)(e->at + 0x20), (void *)w2_stub_visit}}); };
+    w2_visit.finish = w2_unstub;
+    quick(w2_visit);
+    // Writer::Put: the write can move the place
+    Test w2_put{0xca55f0,
+                [=](Rng &r) { w2_values(r); arena<void *>(0x100)[0] = w2_put_table; },
+                [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[2])}; }};
+    quick(w2_put);
+    // Typed::Forward
+    Test w2_typed{0x6af080, w2_values,
+                  [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[1])}; }};
+    w2_typed.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6aed50, (void *)w2_stub_typed}}); };
+    w2_typed.finish = w2_unstub;
+    quick(w2_typed);
+    // Event::Ask, Event::AskFlag: the handler answers or leaves the starting answer
+    Test w2_ask{0x845ab0,
+                [=](Rng &r) { w2_values(r); w2_ask_table[0x20] = (void *)w2_stub_ask; arena<void *>(0x100)[0] = w2_ask_table; },
+                [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    quick(w2_ask);
+    Test w2_ask_flag{0x845a50,
+                     [=](Rng &r) { w2_values(r); w2_ask_flag_table[0x20] = (void *)w2_stub_ask_flag; arena<void *>(0x100)[0] = w2_ask_flag_table; },
+                     [](void *fn) { return Result{((uint8_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    quick(w2_ask_flag);
+    // Level::Field: each level around the limit; each copy has its own field, and both are filled
+    Test w2_level_field{0x4a15f0,
+                        [=](Rng &r) {
+                            w2_values(r);
+                            arena<uint8_t>(0x510)[1] = (uint8_t)r.range(0, 4);
+                        },
+                        [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2_level_field.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbb5130, (void *)stub_lookup_a}, {0xbb3e70, (void *)stub_lookup_b}}); };
+    w2_level_field.finish = w2_unstub;
+    quick(w2_level_field);
+    // Holder::Delete
+    Test w2_holder{0xbea240,
+                   [=](Rng &r) {
+                       fresh(r);
+                       arena<void *>(0x100)[1] = arena<void>(0x800);
+                       arena<void *>(0x800)[0] = w2_go_table;
+                       arena<uint32_t>(0x20)[0] = (uint32_t)r.range(0, 3);
+                   },
+                   [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0])}; }};
+    quick(w2_holder);
+    // Counted::Drop: the last or not
+    Test w2_counted{0xc321e0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        arena<void *>(0x100)[0] = arena<void>(0x800);
+                        arena<void *>(0x800)[0] = w2_counted_table;
+                        arena<uint32_t>(0x800)[1] = (uint32_t)r.range(1, 3);
+                    },
+                    [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(w2_counted);
+    // Items::Pass: each copy has its own target, read from its call
+    Test w2_pass{0x8387c0,
+                 [=](Rng &r) {
+                     w2_values(r);
+                     arena<void *>(0x154)[0] = arena<void>(0x800);
+                     for (int i = 0; i < 4; i++) arena<void *>(0x800)[i] = arena<void>(0x900 + i * 0x10);
+                     arena<uint32_t>(0x20)[1] = (uint32_t)r.range(0, 3);
+                 },
+                 [](void *fn) {
+                     uint32_t *v = arena<uint32_t>(0x20);
+                     return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), v[1], v[2], v[3])};
+                 }};
+    w2_pass.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at + 0x19 + *(int32_t *)(e->at + 0x15), (void *)w2_stub_pass}}); };
+    w2_pass.finish = w2_unstub;
+    quick(w2_pass);
+    // Word::MakeDefault
+    Test w2_default{0x49cd50, w2_values,
+                    [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2_default.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbd0490, (void *)w2_stub_default}}); };
+    w2_default.finish = w2_unstub;
+    quick(w2_default);

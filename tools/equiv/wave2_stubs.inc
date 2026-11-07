@@ -27,3 +27,59 @@ static void __thiscall w2_stub_delete_array(void *self, uint32_t flags) {
     record(0xe20a, (void *)(uintptr_t)flags);
 }
 static void *w2_array_table[1] = {(void *)w2_stub_delete_array};
+static void __fastcall w2_stub_add_ref(void *object) { record(0xe210, object); }
+static void __fastcall w2_stub_drop_ref(void *object) { record(0xe211, object); }
+static void __thiscall w2_stub_text(void *self, void *into, const char *text, uint32_t length) {
+    record(0xe212, self);
+    record(0xe212, into);
+    record(0xe212, (void *)text);
+    record(0xe212, (void *)(uintptr_t)length);
+}
+static void __fastcall w2_stub_visit(void *value) {
+    record(0xe213, value);
+    if (arena<uint32_t>(0x20)[0] % 7 == 0) (*arena<int32_t>(0x160))--;   // an entry can go away during the visit
+}
+template <uint32_t SLOT> static void __thiscall w2_stub_put(uint32_t *self, uint32_t place, uint32_t value) {
+    record(0xe220 + SLOT, self);
+    record(0xe220 + SLOT, (void *)(uintptr_t)place);
+    record(0xe220 + SLOT, (void *)(uintptr_t)value);
+    if (arena<uint32_t>(0x20)[1] % 3 == 0) self[3] += 8;   // the place can move during the write
+}
+static void *w2_put_table[8] = {nullptr, nullptr, nullptr, (void *)w2_stub_put<3>, nullptr, (void *)w2_stub_put<5>, nullptr, (void *)w2_stub_put<7>};
+static uint32_t __thiscall w2_stub_typed(void *self, uint32_t *marker, uint32_t value) {
+    record(0xe230, self);
+    record(0xe230, (void *)(uintptr_t)*marker);
+    record(0xe230, (void *)(uintptr_t)value);
+    return arena<uint32_t>(0x20)[0];
+}
+static void __thiscall w2_stub_ask(void *self, uint32_t *event) {
+    record(0xe231, self);
+    record(0xe231, (void *)(uintptr_t)event[0]);
+    record(0xe231, (void *)(uintptr_t)event[1]);
+    if (arena<uint32_t>(0x20)[0] & 1) event[1] = arena<uint32_t>(0x20)[1];
+}
+static void __thiscall w2_stub_ask_flag(void *self, uint32_t *event) {
+    record(0xe232, self);
+    record(0xe232, (void *)(uintptr_t)event[0]);
+    record(0xe232, (void *)(uintptr_t)*(uint8_t *)&event[1]);
+    if (arena<uint32_t>(0x20)[0] & 1) *(uint8_t *)&event[1] = (uint8_t)arena<uint32_t>(0x20)[1];
+}
+static void *w2_ask_table[0x21] = {};
+static void *w2_ask_flag_table[0x21] = {};
+static void __stdcall w2_stub_go(void *object) { record(0xe233, object); }
+static void *w2_go_table[3] = {nullptr, nullptr, (void *)w2_stub_go};
+static void __thiscall w2_stub_counted_delete(void *object, uint32_t flags) {
+    record(0xe234, object);
+    record(0xe234, (void *)(uintptr_t)flags);
+}
+static void *w2_counted_table[1] = {(void *)w2_stub_counted_delete};
+static uint32_t __thiscall w2_stub_pass(void *item, uint32_t a, uint32_t b) {
+    record(0xe235, item);
+    record(0xe235, (void *)(uintptr_t)a);
+    record(0xe235, (void *)(uintptr_t)b);
+    return arena<uint32_t>(0x20)[0];
+}
+static uint32_t __fastcall w2_stub_default(uint8_t kind) {
+    record(0xe236, (void *)(uintptr_t)kind);
+    return arena<uint32_t>(0x20)[0];
+}
