@@ -1283,3 +1283,55 @@ static const uint8_t w4b_once_make_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0
 REWRITE("Once::Make696000", 0x696000, w4b_once_make_original, (&w4b_once_make<0x12f8678, 0x12f8650, 0x1d, 7>), &g_w4b_once_makes);
 REWRITE("Once::Make696000", 0x8c8a70, w4b_once_make_original, (&w4b_once_make<0x1311360, 0x1311338, 4, 6>), &g_w4b_once_makes);
 REWRITE("Once::Make696000", 0xc73150, w4b_once_make_original, (&w4b_once_make<0x13e6d38, 0x13e6d10, 0x1d, 6>), &g_w4b_once_makes);
+
+// ---- Matrix::Refresh: without a live source (the handle at +0x510) takes the first path; with one, either the second path or, when the bit is set, a fresh
+// copy of the 16-word matrix the current view gives (the stack argument is unused) --------------------------------------------------------
+static volatile long g_w4b_refreshes;
+template <uint32_t BIT> static uint32_t __thiscall w4b_matrix_refresh(uint8_t *self, uint32_t) {
+    g_w4b_refreshes++;
+    typedef uint32_t(__fastcall * Path)(void *);
+    uint8_t *handle = *(uint8_t **)(self + 0x510);
+    void *live = nullptr;
+    if (*(void **)(handle + 0xc)) {
+        void *source = find_interface(handle, (const int32_t *)0x12f4f44);
+        live = ((void *(__fastcall *)(void *))(*(void ***)source)[5])(source);
+    }
+    if (!live) return ((Path)0x7a0000)(self);
+    if (!(self[0x408] & BIT)) return ((Path)0x7a0480)(self);
+    void *view = ((void *(__fastcall *)(void *))0x79e260)(self);
+    const uint32_t *matrix = ((const uint32_t *(__fastcall *)(void *))(*(void ***)view)[7])(view);
+    uint32_t *kept = (uint32_t *)(self + 0x50);
+    for (int i = 0; i < 16; i++) kept[i] = matrix[i];
+    return (uint32_t)(uintptr_t)matrix;
+}
+static const uint8_t w4b_matrix_refresh_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0x10, 0x05, 0x00, 0x00};
+REWRITE("Matrix::Refresh7A0FD0", 0x7a0fd0, w4b_matrix_refresh_original, (&w4b_matrix_refresh<2>), &g_w4b_refreshes);
+REWRITE("Matrix::Refresh7A0FD0", 0x7a10b0, w4b_matrix_refresh_original, (&w4b_matrix_refresh<1>), &g_w4b_refreshes);
+
+// ---- Scanner::Switch: the scanner moves to another input buffer. The current one (if any) gets its position and count back, with the byte held
+// out of it restored; the new one's position, count and file become the scanner's and its first byte is held --------------------------------
+static volatile long g_w4b_switches;
+template <uint32_t CURRENT, uint32_t HOLD, uint32_t POSITION, uint32_t COUNT, uint32_t TEXT, uint32_t FILE_, uint32_t FRESH>
+static void __fastcall w4b_scanner_switch(uint32_t *buffer) {
+    g_w4b_switches++;
+    uint32_t *&current = *(uint32_t **)CURRENT;
+    if (current == buffer) return;
+    uint8_t *&position = *(uint8_t **)POSITION;
+    if (current) {
+        *position = *(uint8_t *)HOLD;
+        current[2] = (uint32_t)(uintptr_t)position;
+        current[4] = *(uint32_t *)COUNT;
+    }
+    *(uint32_t *)COUNT = buffer[4];
+    uint8_t *start = (uint8_t *)(uintptr_t)buffer[2];
+    *(uint8_t **)TEXT = start;
+    current = buffer;
+    *(uint32_t *)FILE_ = buffer[0];
+    position = start;
+    *(uint8_t *)HOLD = *start;
+    *(uint32_t *)FRESH = 1;
+}
+static const uint8_t w4b_scanner_switch_a[] = {0xa1, 0xf8, 0x32, 0x3e, 0x01, 0x3b, 0xc1};
+static const uint8_t w4b_scanner_switch_b[] = {0xa1, 0x14, 0x70, 0x3f, 0x01, 0x3b, 0xc1};
+REWRITE("Scanner::SwitchC0AC90", 0xc0ac90, w4b_scanner_switch_a, (&w4b_scanner_switch<0x13e32f8, 0x13d32c0, 0x13e32fc, 0x13e32e8, 0x13e32e4, 0x13e3304, 0x13e32f0>), &g_w4b_switches);
+REWRITE("Scanner::SwitchC0AC90", 0xcbc740, w4b_scanner_switch_b, (&w4b_scanner_switch<0x13f7014, 0x13e6fe8, 0x13f7018, 0x13f7004, 0x13f6ffc, 0x13f7020, 0x13f700c>), &g_w4b_switches);

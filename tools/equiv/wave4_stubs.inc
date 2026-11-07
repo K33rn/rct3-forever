@@ -160,3 +160,8 @@ static void __thiscall w4b_stub_table(void *self, uint32_t a, uint32_t b, uint32
     record(0x405b, self);
     for (uint32_t v : {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p}) record(0x405b, (void *)(uintptr_t)(v & 0xffff));
 }
+static void *__fastcall w4b_stub_live(void *self) { record(0x405c, self); return (void *)(uintptr_t)*arena<uint32_t>(0x20); }
+static uint32_t __fastcall w4b_stub_path_a(void *self) { record(0x405d, self); return 0xa1; }
+static uint32_t __fastcall w4b_stub_path_b(void *self) { record(0x405e, self); return 0xb2; }
+static void *__fastcall w4b_stub_view(void *self) { record(0x405f, self); return arena<void>(0x700); }
+static void *__fastcall w4b_stub_view_matrix(void *self) { record(0x4060, self); return arena<void>(0x600); }

@@ -1213,3 +1213,60 @@
     };
     w4b_once.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_made = w4b_made_saved; unstub_many(); };
     quick(w4b_once);
+    // Matrix::Refresh: no object behind the handle, a source not live, or live with the bits of 0x408 either way
+    Test w4b_mrefresh{0x7a0fd0,
+                      [=](Rng &r) {
+                          fresh(r);
+                          iface_handle(r);
+                          static void *vt[6] = {(void *)stub_deleting, (void *)stub_class_of, nullptr, nullptr, nullptr, (void *)w4b_stub_live};
+                          static void *view_vt[8] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, (void *)w4b_stub_view_matrix};
+                          arena<void *>(0x360)[0] = vt;
+                          arena<void *>(0x368)[0] = vt;
+                          *arena<void *>(0x700) = view_vt;
+                          *arena<void *>(0x1f0) = arena<void>(0x200);
+                          *g_iface_id = (uint32_t)r.range(1, 2);
+                          uint8_t *self = arena<uint8_t>(0x800);
+                          for (int i = 0; i < 0x30; i++) arena<uint32_t>(0x800)[i] = r.next();
+                          for (int i = 0; i < 16; i++) arena<uint32_t>(0x600)[i] = r.next();
+                          *(void **)(self + 0x510) = arena<void>(0x340);
+                          self[0x408] = (uint8_t)r.range(0, 3);
+                          *arena<uint32_t>(0x20) = r.range(0, 2) ? r.next() | 1 : 0;
+                      },
+                      [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), 5)}; }};
+    w4b_mrefresh.prepare = [](const rewrite::Entry *) {
+        g_iface_id = (uint32_t *)0x12f4f44;
+        stubs_for_now({{0x7a0000, (void *)w4b_stub_path_a}, {0x7a0480, (void *)w4b_stub_path_b}, {0x79e260, (void *)w4b_stub_view}});
+    };
+    w4b_mrefresh.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_mrefresh);
+    // Scanner::Switch: no buffer yet, the same buffer, or another; the scanner's globals are the copy's own, set in the call
+    static uint32_t w4b_scan[7], w4b_scan_saved[7];   // current, hold, position, count, text, file, fresh
+    Test w4b_scanner{0xc0ac90,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 16; i++) { arena<uint32_t>(0x300)[i] = r.next(); arena<uint32_t>(0x340)[i] = r.next(); arena<uint32_t>(0x380)[i] = r.next(); }
+                         arena<void *>(0x340)[2] = arena<void>(0x3a0);
+                         uint32_t choice = r.range(0, 3);
+                         arena<void *>(0x10)[0] = choice == 0 ? nullptr : choice == 1 ? arena<void>(0x340) : arena<void>(0x300);
+                         for (int i = 1; i < 6; i++) arena<uint32_t>(0x10)[i] = r.next();
+                     },
+                     [](void *fn) {
+                         uint32_t *a = arena<uint32_t>(0x10);
+                         *(uint32_t *)(uintptr_t)w4b_scan[0] = a[0];
+                         *(uint8_t *)(uintptr_t)w4b_scan[1] = (uint8_t)a[1];
+                         *(void **)(uintptr_t)w4b_scan[2] = arena<void>(0x384);
+                         *(uint32_t *)(uintptr_t)w4b_scan[3] = a[2];
+                         *(uint32_t *)(uintptr_t)w4b_scan[4] = a[3];
+                         *(uint32_t *)(uintptr_t)w4b_scan[5] = a[4];
+                         *(uint32_t *)(uintptr_t)w4b_scan[6] = a[5];
+                         ((void(__fastcall *)(void *))fn)(arena<void>(0x340));
+                         uint32_t mix = *(uint8_t *)(uintptr_t)w4b_scan[1];
+                         for (int i : {0, 2, 3, 4, 5, 6}) mix = mix * 31 + *(uint32_t *)(uintptr_t)w4b_scan[i];
+                         return Result{mix};
+                     }};
+    w4b_scanner.prepare = [](const rewrite::Entry *e) {
+        static const uint8_t at[7] = {0x1, 0xf, 0x16, 0x1e, 0x35, 0x43, 0x56};
+        for (int i = 0; i < 7; i++) { w4b_scan[i] = *(uint32_t *)(e->at + at[i]); w4b_scan_saved[i] = *(uint32_t *)(uintptr_t)w4b_scan[i]; }
+    };
+    w4b_scanner.finish = [](const rewrite::Entry *) { for (int i = 0; i < 7; i++) *(uint32_t *)(uintptr_t)w4b_scan[i] = w4b_scan_saved[i]; };
+    quick(w4b_scanner);
