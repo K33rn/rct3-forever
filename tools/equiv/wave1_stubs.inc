@@ -76,3 +76,13 @@ static void __stdcall w1b_stub_vector_dtor(void *items, uint32_t size, uint32_t 
     record(0x215, items); record(0x215, (void *)(uintptr_t)size); record(0x215, (void *)(uintptr_t)count); record(0x215, (void *)(uintptr_t)dtor);
 }
 static void *__cdecl w1b_stub_manager() { record(0x216, nullptr); return arena<void>(0x510); }
+static uint32_t w1b_clones;
+static void *__thiscall w1b_stub_clone(void *value, uint32_t flag) {
+    record(0x217, value); record(0x217, (void *)(uintptr_t)flag);
+    return arena<void>(0x2000 + w1b_clones++ * 0x100);
+}
+static void __thiscall w1b_stub_spot(void *self, uint32_t *spot, uint32_t flag) {   // the spot is on the stack: its values are recorded
+    record(0x218, self); record(0x218, (void *)(uintptr_t)flag);
+    record(0x218, (void *)(uintptr_t)((uintptr_t)spot & 0xf));
+    for (int i = 0; i < 3; i++) record(0x218, (void *)(uintptr_t)spot[i]);
+}

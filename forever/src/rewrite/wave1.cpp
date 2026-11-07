@@ -1069,3 +1069,137 @@ template <uint32_t SAMPLE, uint32_t OWNER, uint32_t GIVE_BACK, uint32_t MARK> st
 static const uint8_t w1b_drop_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
 REWRITE("Sample::DropBFA530", 0xbfa530, w1b_drop_original, (&w1b_drop<0x28, 0x30, 0xc5cb90, 0x34>), &g_w1b_drops);
 REWRITE("Sample::DropBFA530", 0xc2f080, w1b_drop_original, (&w1b_drop<0x24, 0x28, 0xc5cc00, 0x2c>), &g_w1b_drops);
+
+// ---- Six::Free: six aligned buffers, one after the other ------------------------------------------------------------------------------
+static volatile long g_w1b_six_frees;
+static void __fastcall w1b_six_free(void **self) {
+    g_w1b_six_frees++;
+    for (int i = 0; i < 6; i++) memory_free_aligned(self[i]);
+}
+static const uint8_t w1b_six_free_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x50};
+REWRITE("Six::Free85A5E0", 0x85a5e0, w1b_six_free_original, (&w1b_six_free), &g_w1b_six_frees);
+REWRITE("Six::Free85A5E0", 0xceab10, w1b_six_free_original, (&w1b_six_free), &g_w1b_six_frees);
+
+// ---- Parts::Interface: the interface kept in reference number `index` of an array of 28-byte references -----------------------------------
+static volatile long g_w1b_part_interfaces;
+template <uint32_t ITEMS, uint32_t ID> static void *__thiscall w1b_part_interface(uint8_t *self, int32_t index) {
+    g_w1b_part_interfaces++;
+    return ref_interface<ID>(*(uint8_t **)(self + ITEMS) + index * 0x1c);
+}
+template <uint8_t ITEMS> static const uint8_t w1b_part_interface_original[] = {0x8b, 0x51, ITEMS, 0x56, 0x8b, 0x74, 0x24, 0x08};
+REWRITE("Parts::Interface81F0B0", 0x81f0b0, w1b_part_interface_original<0x48>, (&w1b_part_interface<0x48, 0x130b540>), &g_w1b_part_interfaces);
+REWRITE("Parts::Interface81F0B0", 0xae1130, w1b_part_interface_original<0x40>, (&w1b_part_interface<0x40, 0x13ce570>), &g_w1b_part_interfaces);
+
+// ---- List::DeleteAll: every node taken off the list, and what it held destroyed and freed ---------------------------------------------------
+static volatile long g_w1b_delete_alls;
+template <uint32_t HEAD, uint32_t DESTROY> static void __fastcall w1b_delete_all(uint8_t *self) {
+    g_w1b_delete_alls++;
+    for (Node *n = *(Node **)(self + HEAD); n->next; n = *(Node **)(self + HEAD)) {
+        unlink(n);
+        void *value = n->value;
+        if (value) {
+            call_plain<DESTROY>(value);
+            memory_free(value);
+        }
+    }
+}
+static const uint8_t w1b_delete_all_original[] = {0x53, 0x8b, 0xd9, 0x8b, 0x43};
+REWRITE("List::DeleteAll419000", 0x419000, w1b_delete_all_original, (&w1b_delete_all<0x20, 0x4188f0>), &g_w1b_delete_alls);
+REWRITE("List::DeleteAll419000", 0x82a670, w1b_delete_all_original, (&w1b_delete_all<0x28, 0x827660>), &g_w1b_delete_alls);
+
+// ---- List::CopyFrom: an empty list built in place, then a clone of each item of the other list linked in at the front -----------------------
+static volatile long g_w1b_list_copies;
+template <uint32_t TABLE, uint32_t CLONE, uint32_t NODE> static void *__thiscall w1b_list_copy(uint32_t *self, uint8_t *other) {
+    g_w1b_list_copies++;
+    self[0] = TABLE;
+    self[1] = (uint32_t)(uintptr_t)&self[4];   // the list: its own node at +4, its end node at +0x10
+    self[2] = 0;
+    self[3] = 0;
+    self[4] = 0;
+    self[5] = (uint32_t)(uintptr_t)&self[1];
+    self[6] = 0;
+    for (Node *n = *(Node **)(other + 4); n->next; n = n->next) {
+        uint8_t *clone = ((uint8_t * (__thiscall *)(void *, uint32_t))CLONE)(n->value, 0);
+        link_after((Node *)(uintptr_t)self[5], (Node *)(clone + NODE));
+    }
+    return self;
+}
+static const uint8_t w1b_list_copy_original[] = {0x56, 0x57, 0x8b, 0xf9, 0xc7, 0x07};
+REWRITE("List::CopyFromC106B0", 0xc106b0, w1b_list_copy_original, (&w1b_list_copy<0xfafa9c, 0xc0e4c0, 0x80>), &g_w1b_list_copies);
+REWRITE("List::CopyFromC106B0", 0xc10f90, w1b_list_copy_original, (&w1b_list_copy<0xfafaa0, 0xc10ca0, 0xb0>), &g_w1b_list_copies);
+
+// ---- Items::Clear: each 28-byte item ended, then the array sized down to nothing --------------------------------------------------------------
+static volatile long g_w1b_item_clears;
+template <uint32_t ITEMS, uint32_t END_ITEM, uint32_t RESIZE> static void __fastcall w1b_item_clear(uint8_t *self) {
+    g_w1b_item_clears++;
+    for (int32_t i = 0; i < *(int32_t *)(self + ITEMS + 4); i++) call_plain<END_ITEM>(*(uint8_t **)(self + ITEMS) + i * 0x1c);
+    ((void(__thiscall *)(void *, uint32_t))RESIZE)(self + ITEMS, 0);
+}
+static const uint8_t w1b_item_clear_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86};
+REWRITE("Items::Clear5DFB60", 0x5dfb60, w1b_item_clear_original, (&w1b_item_clear<0xfc, 0x5aaa50, 0x5aec30>), &g_w1b_item_clears);
+REWRITE("Items::Clear5DFB60", 0xb8df10, w1b_item_clear_original, (&w1b_item_clear<0xd8, 0x4ad740, 0xb8cae0>), &g_w1b_item_clears);
+
+// ---- Preset::Apply: row `index` of a table of 20-byte rows given to the target, first three fields of it, then the whole row ---------------------
+static volatile long g_w1b_presets;
+template <uint32_t TABLE, uint32_t FIELDS, uint32_t ROW> static uint32_t __fastcall w1b_preset(uint32_t index, void *target) {
+    g_w1b_presets++;
+    uint8_t *row = (uint8_t *)TABLE + index * 20;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))FIELDS)(target, *(uint32_t *)(row + 8), *(uint32_t *)(row + 0xc), *(uint32_t *)(row + 0x10));
+    return ((uint32_t(__thiscall *)(void *, void *))ROW)(target, row);
+}
+static const uint8_t w1b_preset_original[] = {0x56, 0x8d, 0x34, 0x89, 0x8b, 0x04, 0xb5};
+REWRITE("Preset::Apply4796B0", 0x4796b0, w1b_preset_original, (&w1b_preset<0x10ed668, 0x6a8350, 0x6a8380>), &g_w1b_presets);
+REWRITE("Preset::Apply4796B0", 0x479770, w1b_preset_original, (&w1b_preset<0x10ed860, 0x6a82d0, 0x6a8300>), &g_w1b_presets);
+
+// ---- Spot::Send: three fields of the current object copied to the stack, 16-aligned, and handed on by address ------------------------------------
+static volatile long g_w1b_spots;
+static uint32_t __fastcall w1b_spot(void *self) {
+    g_w1b_spots++;
+    uint8_t *current = ((uint8_t * (__fastcall *)(void *))0x833850)(self);
+    alignas(16) uint32_t spot[4];
+    spot[0] = *(uint32_t *)(current + 0x120);
+    spot[1] = *(uint32_t *)(current + 0x124);
+    spot[2] = *(uint32_t *)(current + 0x128);
+    void *target = ((void *(__cdecl *)())0x40a010)();
+    return ((uint32_t(__thiscall *)(void *, void *, uint32_t))0x71b370)(target, spot, 0);
+}
+static const uint8_t w1b_spot_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10};
+REWRITE("Spot::Send7089E0", 0x7089e0, w1b_spot_original, (&w1b_spot), &g_w1b_spots);
+REWRITE("Spot::Send7089E0", 0x786a40, w1b_spot_original, (&w1b_spot), &g_w1b_spots);
+
+// ---- Chain::Run: a value worked out, the current holder fetched, and the value given to the holder ---------------------------------------------
+static volatile long g_w1b_chain_runs;
+template <uint32_t GIVE> static uint32_t __fastcall w1b_chain_run(void *self) {
+    g_w1b_chain_runs++;
+    uint32_t value = ((uint32_t(__fastcall *)(void *))0x5ebeb0)(self);
+    void *holder = ((void *(__fastcall *)(void *))0x5ec2c0)(self);
+    return ((uint32_t(__thiscall *)(void *, uint32_t))GIVE)(holder, value);
+}
+REWRITE("Chain::Run5EDDF0", 0x5eddf0, (push_call_original<0x5eddf0, 0x5ebeb0>), (&w1b_chain_run<0x5f1a50>), &g_w1b_chain_runs);
+REWRITE("Chain::Run5EDDF0", 0x5ede10, (push_call_original<0x5ede10, 0x5ebeb0>), (&w1b_chain_run<0x5f1a80>), &g_w1b_chain_runs);
+
+// ---- Ref::Tell: the interface in a reference inside the object, told about the object ------------------------------------------------------------
+static volatile long g_w1b_ref_tells;
+template <uint32_t REF, uint32_t ID, uint32_t TELL> static uint32_t __fastcall w1b_ref_tell(uint8_t *self) {
+    g_w1b_ref_tells++;
+    return ((uint32_t(__thiscall *)(void *, void *))TELL)(ref_interface<ID>(self + REF), self);
+}
+static const uint8_t w1b_ref_tell_original[] = {0x57, 0x8b, 0xf9, 0x8a, 0x87};
+REWRITE("Ref::Tell5329C0", 0x5329c0, w1b_ref_tell_original, (&w1b_ref_tell<0x204, 0x12f5338, 0x55b5f0>), &g_w1b_ref_tells);
+REWRITE("Ref::Tell5329C0", 0x564480, w1b_ref_tell_original, (&w1b_ref_tell<0xd8, 0x12f5638, 0x5e02c0>), &g_w1b_ref_tells);
+
+// ---- Seven::First: the first of seven 20-byte entries whose interface has a state bit set is acted on; false if there is none ---------------------
+static volatile long g_w1b_seven_firsts;
+template <uint32_t BIT> static uint32_t __fastcall w1b_seven_first(uint8_t *self) {
+    g_w1b_seven_firsts++;
+    for (int32_t i = 0; i < 7; i++) {
+        uint8_t *part = (uint8_t *)find_interface(*(uint8_t **)(self + 0x60 + i * 0x14), (const int32_t *)0x1342768);
+        if (!part) continue;
+        uint32_t state = *(uint32_t *)(*(uint8_t **)(part + 0xa0) + 0x28);
+        if ((state >> BIT) & 1) return ((uint32_t(__thiscall *)(void *, int32_t))0x784320)(self, i);
+    }
+    return 0;
+}
+static const uint8_t w1b_seven_first_original[] = {0x53, 0x55, 0x56, 0x8b, 0xe9, 0x57, 0x33, 0xff};
+REWRITE("Seven::First7854E0", 0x7854e0, w1b_seven_first_original, (&w1b_seven_first<7>), &g_w1b_seven_firsts);
+REWRITE("Seven::First7854E0", 0x785560, w1b_seven_first_original, (&w1b_seven_first<2>), &g_w1b_seven_firsts);
