@@ -1649,3 +1649,56 @@
     };
     w3d_own_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3d_own_test);
+    // Path::Tail: paths of 0-15 characters, some separators of each kind
+    Test w3d_tail_test{0xca64c0,
+                       [=](Rng &r) {
+                           w3c_maker(r);
+                           char *path = arena<char>(0x1448);
+                           int n = (int)r.range(0, 15);
+                           for (int i = 0; i < n; i++) {
+                               int k = (int)r.range(0, 5);
+                               path[i] = k == 0 ? (char)0x5c : k == 1 ? (char)0x2e : (char)(0x61 + r.range(0, 25));
+                           }
+                           path[n] = 0;
+                       },
+                       [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x1000), arena<void>(0x40))}; }};
+    w3d_tail_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {0xbcf850, (void *)w3d_stub_text}, {0xbd0490, (void *)w3d_stub_empty}});
+    };
+    w3d_tail_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_tail_test);
+    // Hash::Init: 1-9 buckets; the slot array there or not
+    Test w3d_hash_test{0xbdfae0, [=](Rng &r) { w3c_maker(r); arena<uint32_t>(0x28)[0] = 0; },
+                       [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    w3d_hash_test.prepare = [=](const rewrite::Entry *e) {
+        stubs_for_now({{w3d_rel(e, 0x1f), (void *)w3d_stub_size_for}, {0xbcdfd0, (void *)w3d_stub_alloc_nth}, {0xddcf99, (void *)w3d_stub_vector}});
+    };
+    w3d_hash_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_hash_test);
+    // Text::Pass: a string or none; the text let go of or still held
+    Test w3d_pass_test{0x4042f0,
+                       [=](Rng &r) {
+                           w3c_maker(r);
+                           static void *vt[0x70 / 4] = {};
+                           vt[0x68 / 4] = (void *)w3d_stub_pass;
+                           arena<void *>(0x300)[0] = vt;
+                           arena<int32_t>(0x980)[0] = (int32_t)r.range(1, 2);
+                           arena<uint32_t>(0x980)[1] = r.next();
+                           arena<uint32_t>(0x980)[3] = r.next();
+                           char *s = arena<char>(0x1e0);
+                           s[0] = (char)(0x41 + r.range(0, 25));
+                           s[1] = r.range(0, 1) ? (char)0x62 : (char)0;
+                           s[2] = 0;
+                       },
+                       [](void *fn) {
+                           uint32_t *k = arena<uint32_t>(0x10);
+                           ((void(__thiscall *)(void *, uint32_t, const char *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(
+                               arena<void>(0x300), k[0], k[1] & 3 ? arena<char>(0x1e0) : nullptr, k[2], k[3], arena<uint32_t>(0x100)[0], arena<uint32_t>(0x100)[1]);
+                           return Result{0};
+                       }};
+    w3d_pass_test.prepare = [=](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}, {w3d_rel(e, 0x40), (void *)w3d_stub_text}, {0xbd0490, (void *)w3d_stub_empty},
+                       {0xbce000, (void *)stub_free}, {0xbce010, (void *)stub_free_aligned}});
+    };
+    w3d_pass_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_pass_test);

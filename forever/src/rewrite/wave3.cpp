@@ -2001,3 +2001,69 @@ template <uintptr_t COPY, uintptr_t CHANGE> static uint32_t __thiscall w3d_own(i
 }
 REWRITE("Shared::OwnBCFFE0", 0xbcffe0, w3c_start<0x6400e9d4cb68ff6a>, (&w3d_own<0xbcf8c0, 0xbcf980>), &g_w3d_own);
 REWRITE("Shared::OwnBCFFE0", 0xbd02b0, w3c_start<0x6400e9d54b68ff6a>, (&w3d_own<0xbcfb80, 0xbcfc30>), &g_w3d_own);
+
+// ---- Path::Tail: the text after the last separator (a backslash for the name, '.' for the extension) in the path at +0x448 --
+static volatile long g_w3d_tail;
+template <char SEPARATOR> static void **__thiscall w3d_tail(uint8_t *self, void **out) {
+    g_w3d_tail++;
+    const char *path = (const char *)self + 0x448;
+    uintptr_t at = (uintptr_t)path + __builtin_strlen(path) - 1;
+    while (at >= (uintptr_t)path && *(const char *)at != SEPARATOR) at--;
+    uintptr_t tail = at + 1;
+    void *text;
+    if (tail) {
+        void *made = memory_alloc(0x10);
+        text = made ? ((void *(__thiscall *)(void *, uintptr_t))0xbcf850)(made, tail) : nullptr;
+    } else
+        text = ((void *(__fastcall *)(uint8_t))0xbd0490)(1);
+    *out = text;
+    return out;
+}
+REWRITE("Path::TailCA64C0", 0xca64c0, w3c_start<0x6400ea494b68ff6a>, (&w3d_tail<0x5c>), &g_w3d_tail);
+REWRITE("Path::TailCA64C0", 0xca6620, w3c_start<0x6400ea498b68ff6a>, (&w3d_tail<0x2e>), &g_w3d_tail);
+
+// ---- Hash::Init: a table sized for the wanted count: a cleared bucket array, the built slot array (count first) and a third
+// array ------------------------------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_hash;
+template <uintptr_t SIZE_FOR> static void *__thiscall w3d_hash(uint32_t *self, uint32_t wanted) {
+    g_w3d_hash++;
+    self[1] = ((uint32_t(__fastcall *)(uint32_t))SIZE_FOR)(wanted);
+    self[2] = 0;
+    self[3] = (uint32_t)(uintptr_t)memory_alloc_aligned(self[1] * 4 + 4);
+    uint32_t count = self[1];
+    uint32_t *block = (uint32_t *)memory_alloc_aligned(count * 4 + 4);
+    uint32_t *slots = nullptr;
+    if (block) {
+        block[0] = count;
+        ((void(__stdcall *)(void *, uint32_t, uint32_t, void *, void *))0xddcf99)(block + 1, 4, count, (void *)0x448170, (void *)0x403de0);
+        slots = block + 1;
+    }
+    self[4] = (uint32_t)(uintptr_t)slots;
+    self[5] = (uint32_t)(uintptr_t)memory_alloc_aligned(self[1] * 4);
+    __builtin_memset((void *)(uintptr_t)self[3], 0, self[1] * 4 + 4);
+    return self;
+}
+REWRITE("Hash::InitBDFAE0", 0xbdfae0, w3c_start<0xff6a00000000a164>, (&w3d_hash<0xbdd460>), &g_w3d_hash);
+REWRITE("Hash::InitBDFAE0", 0xbdfbb0, w3c_start<0xff6a00000000a164>, (&w3d_hash<0xbdd4b0>), &g_w3d_hash);
+
+// ---- Text::Pass: the C string (or the shared empty text) as a text, handed to the object's virtual (slot 0x68) with the other
+// arguments, then let go of --------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_pass;
+template <uintptr_t FROM>
+static void __thiscall w3d_pass(void **self, uint32_t a, const char *string, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
+    g_w3d_pass++;
+    int32_t *text;
+    if (string) {
+        void *made = memory_alloc(0x10);
+        text = made ? ((int32_t * (__thiscall *)(void *, const char *))FROM)(made, string) : nullptr;
+    } else
+        text = ((int32_t * (__fastcall *)(uint8_t))0xbd0490)(1);
+    ((void(__thiscall *)(void *, uint32_t, int32_t **, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))(*(void ***)self)[0x68 / 4])(
+        self, a, &text, (uint32_t)text[1], b, c, d, e);
+    if (--*text == 0) {
+        memory_free_aligned((void *)(uintptr_t)text[3]);
+        memory_free(text);
+    }
+}
+REWRITE("Text::Pass4042F0", 0x4042f0, w3c_start<0x6400e04be368ff6a>, (&w3d_pass<0xbcf7d0>), &g_w3d_pass);
+REWRITE("Text::Pass4042F0", 0xbf92c0, w3c_start<0x6400e9e75368ff6a>, (&w3d_pass<0xbcf850>), &g_w3d_pass);

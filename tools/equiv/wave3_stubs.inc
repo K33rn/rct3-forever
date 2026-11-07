@@ -348,3 +348,29 @@ static void *__fastcall w3d_stub_empty(uint8_t flag) {
     record(0xbd0490, (void *)(uintptr_t)flag);
     return arena<void>(0x980);
 }
+// a text made from a C string: records the string; refcount 1 or 2 (arena 0x24 bit 2), a buffer at +0xc
+static int32_t *__thiscall w3d_stub_text(int32_t *self, const char *s) {
+    record(0x7d09, self);
+    for (int i = 0; i < 24 && s[i]; i++) record(0x7d09, (void *)(uintptr_t)(uint8_t)s[i]);
+    self[0] = arena<uint32_t>(0x24)[0] & 4 ? 2 : 1;
+    self[1] = arena<int32_t>(0x10)[2];
+    self[3] = (int32_t)(uintptr_t)arena<void>(0x9c0);
+    return self;
+}
+// aligned memory in turn; the second one asked for is sometimes not there
+static void *__cdecl w3d_stub_alloc_nth(uint32_t size) {
+    uint32_t n = arena<uint32_t>(0x28)[0]++;
+    record(0xbcdfd0, (void *)(uintptr_t)size);
+    void *p = arena<void>(0x3000 + 0x100 * (n & 3));
+    return n == 1 && arena<uint32_t>(0x24)[0] & 1 ? nullptr : p;
+}
+static uint32_t __fastcall w3d_stub_size_for(uint32_t wanted) {
+    record(0x7d0a, (void *)(uintptr_t)wanted);
+    return wanted % 9 + 1;
+}
+static void __thiscall w3d_stub_pass(void *self, uint32_t a, int32_t **text, uint32_t t1, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
+    record(0x7d0b, self);
+    record(0x7d0b, *text);
+    for (uint32_t v : {a, t1, b, c, d, e}) record(0x7d0b, (void *)(uintptr_t)v);
+    if (arena<uint32_t>(0x24)[0] & 2) ++**text;
+}
