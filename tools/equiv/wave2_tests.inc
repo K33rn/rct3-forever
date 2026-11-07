@@ -370,3 +370,198 @@
     w2_default.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbd0490, (void *)w2_stub_default}}); };
     w2_default.finish = w2_unstub;
     quick(w2_default);
+    // a list of `count` nodes from `at` (each 0x10 apart), ending in an end node; its values from `value`
+    auto w2_chain = [](size_t at, int count, const std::function<void *(int)> &value) {
+        for (int i = 0; i <= count; i++) {
+            void **n = arena<void *>(at + i * 0x10);
+            n[0] = i < count ? (void *)arena<void>(at + (i + 1) * 0x10) : nullptr;
+            n[1] = i ? (void *)arena<void>(at + (i - 1) * 0x10) : (void *)arena<void>(at + 0x100);
+            n[2] = i < count ? value(i) : nullptr;
+        }
+        arena<void *>(at + 0x100)[0] = arena<void>(at);
+    };
+    // List::RemoveAll: 0-5 nodes holding one of two values
+    static uint32_t g_w2_ra_off;
+    Test w2_remove_all{0x59ab70,
+                       [=](Rng &r) {
+                           fresh(r);
+                           *(void **)arena<uint8_t>(0x800 + g_w2_ra_off) = arena<void>(0xc00);
+                           w2_chain(0xc00, r.range(0, 5), [&](int) { return (void *)(uintptr_t)r.range(1, 2); });
+                       },
+                       [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x800), (void *)1); return Result{}; }};
+    w2_remove_all.prepare = [](const rewrite::Entry *e) { g_w2_ra_off = *(uint32_t *)(e->at + 3); };
+    quick(w2_remove_all);
+    // Rows::Total: 0-4 rows; all three fields filled, each copy reads its own
+    Test w2_total{0x6bc850,
+                  [=](Rng &r) {
+                      fresh(r);
+                      *(void **)arena<uint8_t>(0x16c) = arena<void>(0x800);
+                      *(int32_t *)arena<uint8_t>(0x170) = r.range(-1, 4);
+                      for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x800)[i] = r.next();
+                      *(void **)0x13ce934 = arena<void>(0x700);
+                  },
+                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2_total.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb329f0, (void *)stub_thiscall1}}); };
+    w2_total.finish = [](const rewrite::Entry *) { *(void **)0x13ce934 = nullptr; unstub_many(); };
+    quick(w2_total);
+    // Interface::Member: found or not (then it is the offset alone)
+    Test w2_member{0x736010,
+                   [=](Rng &r) {
+                       fresh(r);
+                       iface_handle(r);
+                       *(void **)arena<uint8_t>(0x800 + 0x94) = arena<void>(0x340);
+                   },
+                   [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w2_member.prepare = [](const rewrite::Entry *) { g_iface_id = (uint32_t *)0x12f51b4; };
+    quick(w2_member);
+    // Lookup::Then
+    Test w2_lookup{0x48ca20, w2_values,
+                   [](void *fn) {
+                       uint32_t *v = arena<uint32_t>(0x20);
+                       return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), v[2], v[3])};
+                   }};
+    w2_lookup.prepare = [](const rewrite::Entry *e) { stubs_for_now({{0x44cc40, (void *)w2_stub_lookup}, {e->at + 0x17 + *(int32_t *)(e->at + 0x13), (void *)w2_stub_found}}); };
+    w2_lookup.finish = w2_unstub;
+    quick(w2_lookup);
+    // Member::Read, Member::Into
+    auto w2_member_call = [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; };
+    Test w2_read{0x9eaf10, w2_values, w2_member_call};
+    w2_read.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x9ea680, (void *)w2_stub_read}}); };
+    w2_read.finish = w2_unstub;
+    quick(w2_read);
+    Test w2_into{0x495bf0, w2_values, w2_member_call};
+    w2_into.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at + 0x19 + *(int32_t *)(e->at + 0x15), (void *)w2_stub_into}}); };
+    w2_into.finish = w2_unstub;
+    quick(w2_into);
+    // Base::Delete: each copy has its own destructor, read from its call
+    auto w2_flags_call = [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0] & 3)}; };
+    Test w2_base{0x4029c0, w2_values, w2_flags_call};
+    w2_base.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at + 0xe + *(int32_t *)(e->at + 0xa), (void *)w2_stub_update}}); };
+    w2_base.finish = w2_unstub;
+    quick(w2_base);
+    // Member::Update: each copy has its own update, read from its call
+    Test w2_update{0x6c6db0,
+                   [=](Rng &r) { w2_values(r); for (int i = 0; i < 0x40; i++) arena<void *>(0x800)[0x40 + i] = arena<void>(0x400 + i * 4); },
+                   [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[1])}; }};
+    w2_update.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at + 8 + *(int32_t *)(e->at + 4), (void *)w2_stub_update}, {0x6a0040, (void *)w2_stub_one}}); };
+    w2_update.finish = w2_unstub;
+    quick(w2_update);
+    // Refs::TellFlagged: 0-4 references, looked up or kept, with the flag or without; each copy has its own id and function
+    Test w2_flagged{0x54b020,
+                    [=](Rng &r) {
+                        fresh(r);
+                        iface_handle(r);
+                        arena<void *>(0x100)[0] = arena<void>(0xc00);
+                        w2_chain(0xc00, r.range(0, 4), [&](int i) {
+                            uint8_t *ref = arena<uint8_t>(0xe00 + i * 0x20);
+                            *(void **)(ref + 4) = arena<void>(0x340);
+                            ref[0x18] = (uint8_t)r.range(0, 1);
+                            *(void **)(ref + 0x14) = r.range(0, 3) ? arena<void>(0x3c0) : nullptr;
+                            return (void *)ref;
+                        });
+                        for (size_t at : {0x3a0, 0x3a8, 0x400}) *arena<uint8_t>(at) = (uint8_t)r.next();
+                        arena<uint32_t>(0x20)[0] = r.next();
+                    },
+                    [](void *fn) { ((void(__stdcall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0]); return Result{}; }};
+    w2_flagged.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = *(uint32_t **)(e->at + 0x38);
+        stubs_for_now({{e->at + 0x70 + *(int32_t *)(e->at + 0x6c), (void *)stub_thiscall1}});
+    };
+    w2_flagged.finish = w2_unstub;
+    quick(w2_flagged);
+    // Log::Line: with a log or without, with text or without
+    Test w2_log{0xa3e860,
+                [=](Rng &r) {
+                    fresh(r);
+                    arena<void *>(0x100)[0] = r.range(0, 3) ? arena<void>(0x700) : nullptr;
+                    int n = r.range(0, 9);
+                    for (int i = 0; i < n; i++) arena<char>(0x800)[i] = (char)r.range(1, 255);
+                    arena<char>(0x800)[n] = 0;
+                    arena<uint32_t>(0x20)[0] = r.range(0, 3);
+                },
+                [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0] ? arena<void>(0x800) : nullptr); return Result{}; }};
+    w2_log.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbe4060, (void *)w2_stub_log}}); };
+    w2_log.finish = w2_unstub;
+    quick(w2_log);
+    // Chunks::Take: no chunk yet, room left, full with a next chunk, full without
+    Test w2_chunks{0x42c7d0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       *arena<uint32_t>(ALLOC_NEXT) = 0;
+                       void **self = arena<void *>(0x100);
+                       self[0] = self[1] = r.range(0, 3) ? arena<void>(0x800) : nullptr;
+                       arena<int32_t>(0x800 + 0x500)[0] = r.range(0x3e, 0x41);
+                       arena<void *>(0x800 + 0x504)[0] = r.range(0, 1) ? arena<void>(0xe00) : nullptr;
+                       arena<int32_t>(0xe00 + 0x500)[0] = r.range(0, 9);
+                   },
+                   [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2_chunks.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}, {e->at + 0x22 + *(int32_t *)(e->at + 0x1e), (void *)w2_stub_chunk}});
+    };
+    w2_chunks.finish = w2_unstub;
+    quick(w2_chunks);
+    // Order::Move*: five items on the order list, edges only to later items; marks, ranks and the pass all small so every test goes both ways
+    auto w2_order = [=](Rng &r) {
+        fresh(r);
+        uint8_t *self = arena<uint8_t>(0x100);
+        *(int32_t *)(self + 0x18) = r.range(1, 3);
+        *(uint32_t *)(self + 0x1c) = (uint32_t)r.range(0, 3);
+        *(uint32_t *)(self + 0x20) = (uint32_t)r.range(0, 3);
+        auto item = [](int i) { return arena<uint8_t>(0x800 + i * 0x80); };
+        void **start = arena<void *>(0xc00), **end = arena<void *>(0xc10);
+        start[0] = item(0) + 0x50; start[1] = arena<void>(0xc20);
+        end[0] = arena<void>(0xc30); end[1] = item(4) + 0x50;
+        for (int i = 0; i < 5; i++) {
+            uint8_t *it = item(i);
+            *(int32_t *)(it + 0x18) = r.range(0, 3);
+            *(int32_t *)(it + 0x1c) = r.range(0, 5);
+            *(void **)(it + 0x50) = i < 4 ? (void *)(item(i + 1) + 0x50) : (void *)end;
+            *(void **)(it + 0x54) = i ? (void *)(item(i - 1) + 0x50) : (void *)start;
+            size_t edges = 0x1000 + i * 0x100;
+            *(void **)(it + 0x20) = arena<void>(edges);
+            int n = 0;
+            for (int j = i + 1; j < 5; j++)
+                if (r.range(0, 1)) {
+                    void **e = arena<void *>(edges + n * 0x10);
+                    e[0] = arena<void>(edges + (n + 1) * 0x10);
+                    e[2] = item(j);
+                    n++;
+                }
+            arena<void *>(edges + n * 0x10)[0] = nullptr;
+        }
+        int a = r.range(0, 3);
+        arena<uint32_t>(0x20)[0] = a;
+        arena<uint32_t>(0x20)[1] = (uint32_t)r.range(a + 1, 4);
+    };
+    auto w2_order_call = [](void *fn) {
+        uint32_t *v = arena<uint32_t>(0x20);
+        return Result{((uint8_t(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x800 + v[0] * 0x80), arena<void>(0x800 + v[1] * 0x80))};
+    };
+    Test w2_before{0x42c490, w2_order, w2_order_call};
+    quick(w2_before);
+    Test w2_after{0x42c550, w2_order, w2_order_call};
+    quick(w2_after);
+    // List::VisitAt: each copy has its own function, read from its call
+    static uint32_t g_w2_va_off;
+    Test w2_visit_at{0x6a1e20,
+                     [=](Rng &r) {
+                         fresh(r);
+                         *(void **)arena<uint8_t>(0x800 + g_w2_va_off) = arena<void>(0xc00);
+                         w2_chain(0xc00, r.range(0, 4), [&](int) { return (void *)(uintptr_t)r.next(); });
+                     },
+                     [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w2_visit_at.prepare = [](const rewrite::Entry *e) {
+        g_w2_va_off = *(uint8_t *)(e->at + 3);
+        stubs_for_now({{e->at + 0x18 + *(int32_t *)(e->at + 0x14), (void *)stub_plain_dtor}});
+    };
+    w2_visit_at.finish = w2_unstub;
+    quick(w2_visit_at);
+    // Owner::Delete: owning or not
+    Test w2_owner{0x99af20,
+                  [=](Rng &r) {
+                      w2_values(r);
+                      arena<void *>(0x100)[1] = r.range(0, 3) ? arena<void>(0x800) : nullptr;
+                      arena<void *>(0x800)[0] = w2_counted_table;
+                  },
+                  w2_flags_call};
+    quick(w2_owner);

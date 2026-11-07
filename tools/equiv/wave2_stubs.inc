@@ -83,3 +83,40 @@ static uint32_t __fastcall w2_stub_default(uint8_t kind) {
     record(0xe236, (void *)(uintptr_t)kind);
     return arena<uint32_t>(0x20)[0];
 }
+static uint32_t __thiscall w2_stub_one(void *self, uint32_t value) {
+    record(0xe240, self);
+    record(0xe240, (void *)(uintptr_t)value);
+    return arena<uint32_t>(0x20)[0];
+}
+static void *__stdcall w2_stub_lookup(void *self, uint32_t a, uint32_t b) {
+    record(0xe241, self);
+    record(0xe241, (void *)(uintptr_t)a);
+    record(0xe241, (void *)(uintptr_t)b);
+    return arena<void>(0x700);
+}
+static uint32_t __fastcall w2_stub_found(void *found) {
+    record(0xe242, found);
+    return arena<uint32_t>(0x20)[1];
+}
+static void __thiscall w2_stub_read(void *self, void *out, void *member) {
+    record(0xe243, self);
+    record(0xe243, out);
+    record(0xe243, member);
+}
+static void __thiscall w2_stub_into(void *out, void *member) {
+    record(0xe244, out);
+    record(0xe244, member);
+}
+static void __fastcall w2_stub_update(void *self) { record(0xe245, self); }
+static void __thiscall w2_stub_log(void *log, const char *text, uint32_t length) {
+    record(0xe246, log);
+    record(0xe246, (void *)text);
+    record(0xe246, (void *)(uintptr_t)length);
+}
+static void *__thiscall w2_stub_chunk(uint8_t *self, uint32_t zero) {
+    record(0xe247, self);
+    record(0xe247, (void *)(uintptr_t)zero);
+    *(uint32_t *)(self + 0x500) = 0;
+    *(uint32_t *)(self + 0x504) = 0;
+    return self;
+}

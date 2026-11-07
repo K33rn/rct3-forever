@@ -487,3 +487,248 @@ static uint32_t *__fastcall word_make_default(uint32_t *self) {
 static const uint8_t word_default_original[] = {0x51, 0x56, 0x8b, 0xf1, 0xb1, 0x01, 0xc7, 0x44};
 REWRITE("Word::MakeDefault49CD50", 0x49cd50, word_default_original, word_make_default, &g_w2_defaults);
 REWRITE("Word::MakeDefault49CD50", 0x49cd70, word_default_original, word_make_default, &g_w2_defaults);
+
+// ---- List::RemoveAll: frees every node holding `value` from the list held at +OFF (an end node stops the walk) ------------------------
+static volatile long g_w2_remove_all;
+template <uint32_t OFF> static void __thiscall list_remove_all(uint8_t *self, void *value) {
+    g_w2_remove_all++;
+    Node *n = *(Node **)(self + OFF);
+    if (!n->next) return;
+    while (n) {
+        Node *next = n->next->next ? n->next : nullptr;
+        if (n->value == value) {
+            unlink(n);
+            memory_free(n);
+        }
+        n = next;
+    }
+}
+template <uint32_t OFF> static const uint8_t list_remove_all_original[] = {
+    0x56, 0x8b, 0xb1, (uint8_t)OFF, (uint8_t)(OFF >> 8), (uint8_t)(OFF >> 16), (uint8_t)(OFF >> 24), 0x83, 0x3e, 0x00};
+REWRITE("List::RemoveAll59AB70", 0x59ab70, list_remove_all_original<0xb8>, (&list_remove_all<0xb8>), &g_w2_remove_all);
+REWRITE("List::RemoveAll59AB70", 0x5c20e0, list_remove_all_original<0x338>, (&list_remove_all<0x338>), &g_w2_remove_all);
+
+// ---- Rows::Total: tells the manager about itself, then adds up a field of each 24-byte row to the base value --------------------------
+static volatile long g_w2_totals;
+template <uint32_t FIELD, uint32_t BASE> static int32_t __fastcall rows_total(uint8_t *self) {
+    g_w2_totals++;
+    ((void(__thiscall *)(void *, void *))0xb329f0)(*(void **)0x13ce934, self);
+    int32_t total = 0, count = *(int32_t *)(self + 0x70);
+    uint8_t *row = *(uint8_t **)(self + 0x6c);
+    for (int32_t i = 0; i < count; i++) total += *(int32_t *)(row + i * 0x18 + FIELD);
+    return *(int32_t *)(self + BASE) + total;
+}
+static const uint8_t rows_total_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x0d, 0x34, 0xe9, 0x3c, 0x01};
+REWRITE("Rows::Total6BC850", 0x6bc850, rows_total_original, (&rows_total<0x14, 0x68>), &g_w2_totals);
+REWRITE("Rows::Total6BC850", 0x6bc880, rows_total_original, (&rows_total<0xc, 0x60>), &g_w2_totals);
+REWRITE("Rows::Total6BC850", 0x6bc8f0, rows_total_original, (&rows_total<0x10, 0x64>), &g_w2_totals);
+
+// ---- Interface::Member: the address of a member at +OFF of the interface of the handle at +0x94 ----------------------------------------
+static volatile long g_w2_members;
+// (added as a number: with no interface the result is the offset alone)
+template <uint32_t OFF> static uint32_t __fastcall interface_member(uint8_t *self) {
+    g_w2_members++;
+    return (uint32_t)(uintptr_t)find_interface(*(uint8_t **)(self + 0x94), (const int32_t *)0x12f51b4) + OFF;
+}
+static const uint8_t interface_member_original[] = {0x8b, 0x89, 0x94, 0x00, 0x00, 0x00, 0x56, 0x8b};
+REWRITE("Interface::Member736010", 0x736010, interface_member_original, (&interface_member<0x1b4>), &g_w2_members);
+REWRITE("Interface::Member736010", 0x736060, interface_member_original, (&interface_member<0x1c0>), &g_w2_members);
+
+// ---- Lookup::Then: looks an object up from two values and runs the real function on it ---------------------------------------------
+static volatile long g_w2_lookups;
+template <uint32_t TARGET> static uint32_t __thiscall lookup_then(void *self, uint32_t a, uint32_t b) {
+    g_w2_lookups++;
+    void *found = ((void *(__stdcall *)(void *, uint32_t, uint32_t))0x44cc40)(self, a, b);
+    return ((uint32_t(__fastcall *)(void *))TARGET)(found);
+}
+static const uint8_t lookup_then_original[] = {0x8b, 0x44, 0x24, 0x08, 0x8b, 0x54, 0x24, 0x04};
+REWRITE("Lookup::Then48CA20", 0x48ca20, lookup_then_original, (&lookup_then<0x48a4b0>), &g_w2_lookups);
+REWRITE("Lookup::Then48CA20", 0x48caf0, lookup_then_original, (&lookup_then<0x489a10>), &g_w2_lookups);
+
+// ---- Member::Read: the real function fills `out` from the member at +OFF; the result is `out` --------------------------------------
+static volatile long g_w2_reads;
+template <uint32_t OFF> static void *__thiscall member_read(uint8_t *self, void *out) {
+    g_w2_reads++;
+    ((void(__thiscall *)(void *, void *, void *))0x9ea680)(self, out, self + OFF);
+    return out;
+}
+static const uint8_t member_read_original[] = {0x51, 0x56, 0x8b, 0x74, 0x24, 0x0c, 0x8d, 0x41};
+REWRITE("Member::Read9EAF10", 0x9eaf10, member_read_original, (&member_read<0x5c>), &g_w2_reads);
+REWRITE("Member::Read9EAF10", 0x9eaf30, member_read_original, (&member_read<0x70>), &g_w2_reads);
+
+// ---- Member::Into: as Member::Read, with `out` itself the object of the real function -----------------------------------------------
+template <uint32_t OFF, uint32_t TARGET> static void *__thiscall member_into(uint8_t *self, void *out) {
+    g_w2_reads++;
+    ((void(__thiscall *)(void *, void *))TARGET)(out, self + OFF);
+    return out;
+}
+static const uint8_t member_into_original[] = {0x51, 0x56, 0x8b, 0x74, 0x24, 0x0c, 0x83, 0xc1};
+REWRITE("Member::Into495BF0", 0x495bf0, member_into_original, (&member_into<0x5c, 0xbd9c10>), &g_w2_reads);
+REWRITE("Member::Into495BF0", 0x8fc950, member_into_original, (&member_into<0x1c, 0xbdbe10>), &g_w2_reads);
+REWRITE("Member::Into495BF0", 0x9ffb70, member_into_original, (&member_into<0x1c, 0xbdbe10>), &g_w2_reads);
+
+// ---- Base::Delete: a deleting destructor that sets the table and leaves the rest to the real destructor ------------------------------
+static volatile long g_w2_base_deletes;
+template <uint32_t TABLE, uint32_t DESTROY> static void *__thiscall base_delete(uint32_t *self, uint32_t flags) {
+    g_w2_base_deletes++;
+    self[0] = TABLE;
+    ((void(__fastcall *)(void *))DESTROY)(self);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t base_delete_original[] = {0x56, 0x8b, 0xf1, 0xc7, 0x06};
+REWRITE("Base::Delete4029C0", 0x4029c0, base_delete_original, (&base_delete<0xf264b0, 0xbd36c0>), &g_w2_base_deletes);
+REWRITE("Base::Delete4029C0", 0x6b26e0, base_delete_original, (&base_delete<0xf60c64, 0xbd3170>), &g_w2_base_deletes);
+
+// ---- Member::Update: runs its own update, then passes the value to the object held at +OFF --------------------------------------------
+static volatile long g_w2_updates;
+template <uint32_t UPDATE, uint32_t OFF> static uint32_t __thiscall member_update(uint8_t *self, uint32_t value) {
+    g_w2_updates++;
+    ((void(__fastcall *)(void *))UPDATE)(self);
+    return ((uint32_t(__thiscall *)(void *, uint32_t))0x6a0040)(*(void **)(self + OFF), value);
+}
+// the bytes past the third are the call offset, which differs by copy
+template <uint32_t AT, uint32_t UPDATE> static const uint8_t member_update_original[] = {
+    0x56, 0x8b, 0xf1, 0xe8, (uint8_t)(UPDATE - (AT + 8)), (uint8_t)((UPDATE - (AT + 8)) >> 8),
+    (uint8_t)((UPDATE - (AT + 8)) >> 16), (uint8_t)((UPDATE - (AT + 8)) >> 24)};
+REWRITE("Member::Update6C6DB0", 0x6c6db0, (member_update_original<0x6c6db0, 0x6c6c10>), (&member_update<0x6c6c10, 0x11c>), &g_w2_updates);
+REWRITE("Member::Update6C6DB0", 0x6c9d30, (member_update_original<0x6c9d30, 0x6c9b80>), (&member_update<0x6c9b80, 0x1a8>), &g_w2_updates);
+REWRITE("Member::Update6C6DB0", 0x6ebd20, (member_update_original<0x6ebd20, 0x6eb470>), (&member_update<0x6eb470, 0x158>), &g_w2_updates);
+
+// ---- Refs::TellFlagged: each reference on a list whose interface has flag 1 at +0x40 is told the value through the real function -------
+static volatile long g_w2_flagged;
+template <uint32_t ID, uint32_t TELL> static void __stdcall refs_tell_flagged(Node **list, uint32_t value) {
+    g_w2_flagged++;
+    Node *n = *list;
+    if (!n->next) return;
+    for (;;) {
+        uint8_t *interface = (uint8_t *)ref_interface<ID>((uint8_t *)n->value);
+        if (interface && (interface[0x40] & 1)) ((void(__thiscall *)(void *, uint32_t))TELL)(interface, value);
+        if (!n->next->next) return;
+        n = n->next;
+    }
+}
+static const uint8_t refs_flagged_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x00, 0x83, 0x38};
+REWRITE("Refs::TellFlagged54B020", 0x54b020, refs_flagged_original, (&refs_tell_flagged<0x12f52bc, 0x548cf0>), &g_w2_flagged);
+REWRITE("Refs::TellFlagged54B020", 0x54b0b0, refs_flagged_original, (&refs_tell_flagged<0x12f5284, 0x549c50>), &g_w2_flagged);
+REWRITE("Refs::TellFlagged54B020", 0x550360, refs_flagged_original, (&refs_tell_flagged<0x12f5264, 0x54e720>), &g_w2_flagged);
+
+// ---- Log::Line: writes the prefix of this level ("Trace: ", "Warning: ", "Error: "), the text and a line end to the log held at +0 -----
+static volatile long g_w2_log_lines;
+static void log_write(void *log, const char *text) {
+    uint32_t length = 0;
+    while (text[length]) length++;
+    ((void(__thiscall *)(void *, const char *, uint32_t))0xbe4060)(log, text, length);
+}
+template <uint32_t PREFIX> static void __thiscall log_line(void **self, const char *text) {
+    g_w2_log_lines++;
+    if (!*self || !text) return;
+    log_write(*self, (const char *)PREFIX);
+    log_write(*self, text);
+    log_write(*self, (const char *)0xf27cb4);
+}
+static const uint8_t log_line_original[] = {0x53, 0x8b, 0xd9, 0x8b, 0x0b, 0x85, 0xc9, 0x74};
+REWRITE("Log::LineA3E860", 0xa3e860, log_line_original, (&log_line<0xf8b5b0>), &g_w2_log_lines);
+REWRITE("Log::LineA3E860", 0xa3e8e0, log_line_original, (&log_line<0xf8b5b8>), &g_w2_log_lines);
+REWRITE("Log::LineA3E860", 0xa3e960, log_line_original, (&log_line<0xf8b5c4>), &g_w2_log_lines);
+
+// ---- Chunks::Take: the next 20-byte slot of a chain of 64-slot chunks {slots, +0x500 used, +0x504 next}; {+0 first, +4 current} --------
+static volatile long g_w2_chunk_takes;
+template <uint32_t CONSTRUCT> static uint8_t *new_chunk() {
+    void *block = memory_alloc(0x508);
+    return block ? ((uint8_t * (__thiscall *)(void *, uint32_t))CONSTRUCT)(block, 0) : nullptr;
+}
+template <uint32_t CONSTRUCT> static uint8_t *__fastcall chunks_take(uint8_t **self) {
+    g_w2_chunk_takes++;
+    if (!self[0]) self[0] = self[1] = new_chunk<CONSTRUCT>();
+    uint8_t *chunk = self[1];
+    int32_t &used = *(int32_t *)(chunk + 0x500);
+    if (used < 0x40) return chunk + used++ * 20;
+    uint8_t *&next = *(uint8_t **)(chunk + 0x504);
+    if (!next) next = new_chunk<CONSTRUCT>();
+    self[1] = next;
+    *(int32_t *)(next + 0x500) = 1;
+    return next;
+}
+static const uint8_t chunks_take_original[] = {0x56, 0x8b, 0xf1, 0x83, 0x3e, 0x00, 0x75, 0x23};
+REWRITE("Chunks::Take42C7D0", 0x42c7d0, chunks_take_original, (&chunks_take<0x42c270>), &g_w2_chunk_takes);
+REWRITE("Chunks::Take42C7D0", 0x42c870, chunks_take_original, (&chunks_take<0x42c2b0>), &g_w2_chunk_takes);
+
+// ---- Order::MoveBefore, Order::MoveAfter: moves an item next to another on the order list (its node at +0x50), first moving the later
+// items it depends on (the edges at +0x20) that this pass (the mark at +0x18) has not reached. MoveBefore fails on reaching the target ----
+static volatile long g_w2_order_moves;
+template <uint32_t PASS, uint32_t FIRST> static uint8_t __thiscall order_move_before(uint8_t *self, uint8_t *item, uint8_t *target);
+template <uint32_t PASS, uint32_t FIRST> static bool order_edges(uint8_t *self, uint8_t *item, uint8_t *target, bool stop_at_target) {
+    Node *n = *(Node **)(item + 0x20);
+    if (!n->next) return true;
+    for (;;) {
+        uint8_t *other = (uint8_t *)n->value;
+        if (stop_at_target && other == target) return false;
+        int32_t pass = *(int32_t *)(self + PASS);
+        if (*(int32_t *)(other + 0x1c) > *(int32_t *)(target + 0x1c) && *(int32_t *)(other + 0x18) < pass) {
+            *(int32_t *)(other + 0x18) = pass;
+            if (!order_move_before<PASS, FIRST>(self, (uint8_t *)n->value, target)) return false;
+        }
+        n = n->next;
+        if (!n->next) return true;
+    }
+}
+template <uint32_t PASS, uint32_t FIRST> static uint8_t __thiscall order_move_before(uint8_t *self, uint8_t *item, uint8_t *target) {
+    g_w2_order_moves++;
+    if (!order_edges<PASS, FIRST>(self, item, target, true)) return 0;
+    Node *n = (Node *)(item + 0x50), *place = (Node *)(target + 0x50);
+    unlink(n);
+    n->prev = place->prev;
+    place->prev->next = n;
+    n->next = place;
+    place->prev = n;
+    if (!*(void **)(self + FIRST)) *(void **)(self + FIRST) = item;
+    return 1;
+}
+template <uint32_t PASS, uint32_t FIRST> static uint8_t __thiscall order_move_after(uint8_t *self, uint8_t *item, uint8_t *target) {
+    g_w2_order_moves++;
+    if (!order_edges<PASS, FIRST>(self, item, target, false)) return 0;
+    Node *n = (Node *)(item + 0x50), *place = (Node *)(target + 0x50);
+    unlink(n);
+    n->next = place->next;
+    place->next->prev = n;
+    n->prev = place;
+    place->next = n;
+    if (!*(void **)(self + FIRST)) *(void **)(self + FIRST) = item;
+    return 1;
+}
+static const uint8_t order_move_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x0c, 0x55, 0x8b, 0x6c};
+REWRITE("Order::MoveBefore42C490", 0x42c490, order_move_original, (&order_move_before<0x18, 0x1c>), &g_w2_order_moves);
+REWRITE("Order::MoveBefore42C490", 0x965a50, order_move_original, (&order_move_before<0x1c, 0x20>), &g_w2_order_moves);
+REWRITE("Order::MoveAfter42C550", 0x42c550, order_move_original, (&order_move_after<0x18, 0x1c>), &g_w2_order_moves);
+REWRITE("Order::MoveAfter42C550", 0x965b10, order_move_original, (&order_move_after<0x1c, 0x20>), &g_w2_order_moves);
+
+// ---- List::VisitAt: runs the real function on the value of each node of the list held at +OFF ---------------------------------------
+static volatile long g_w2_visit_at;
+template <uint32_t OFF, uint32_t TARGET> static void __fastcall list_visit_at(uint8_t *self) {
+    g_w2_visit_at++;
+    Node *n = *(Node **)(self + OFF);
+    if (!n->next) return;
+    for (;;) {
+        ((void(__fastcall *)(void *))TARGET)(n->value);
+        n = n->next;
+        if (!n->next) return;
+    }
+}
+template <uint8_t OFF> static const uint8_t list_visit_at_original[] = {0x56, 0x8b, 0x71, OFF, 0x83, 0x3e, 0x00, 0x74, 0x1a};
+REWRITE("List::VisitAt6A1E20", 0x6a1e20, list_visit_at_original<0x4>, (&list_visit_at<0x4, 0x6a1e70>), &g_w2_visit_at);
+REWRITE("List::VisitAt6A1E20", 0x936f90, list_visit_at_original<0x5c>, (&list_visit_at<0x5c, 0x935a30>), &g_w2_visit_at);
+
+// ---- Owner::Delete: a deleting destructor that deletes the object it owns at +4, if any ----------------------------------------------
+static volatile long g_w2_owner_deletes;
+template <uint32_t TABLE> static void *__thiscall owner_delete(uint32_t *self, uint32_t flags) {
+    g_w2_owner_deletes++;
+    void **owned = (void **)(uintptr_t)self[1];
+    self[0] = TABLE;
+    if (owned) ((void(__thiscall *)(void *, uint32_t))(*(void ***)owned)[0])(owned, 1);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t owner_delete_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x04, 0x85, 0xc9};
+REWRITE("Owner::Delete99AF20", 0x99af20, owner_delete_original, (&owner_delete<0xf80c2c>), &g_w2_owner_deletes);
+REWRITE("Owner::Delete99AF20", 0xca2230, owner_delete_original, (&owner_delete<0xfbf2b8>), &g_w2_owner_deletes);
