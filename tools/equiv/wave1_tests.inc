@@ -1306,3 +1306,32 @@
     w1d_record_resize_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)w1d_stub_alloc_always}, {0xbce010, (void *)w1_stub_crt_free}, {0x402b90, (void *)w1b_stub_vector_dtor}}); };
     w1d_record_resize_test.finish = w1_unstub;
     quick(w1d_record_resize_test);
+    auto w1d_array_setup = [=](Rng &r, uint32_t header) {
+        fresh(r);
+        w1_fill(r, 0x900, 0x200);
+        uint32_t old = r.range(0, 3) ? r.range(1, 5) : 0;
+        arena<uint32_t>(0x900)[0] = old;
+        arena<uint32_t>(0x800)[0] = old ? (uint32_t)(uintptr_t)arena<void>(0x900 + header) : 0;
+        arena<uint32_t>(0x800)[1] = old;
+        arena<uint32_t>(0x20)[1] = r.range(0, 2) ? r.range(0, 6) : old;
+    };
+    auto w1d_array_prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfd0, (void *)w1d_stub_alloc_always}, {0xbce010, (void *)w1_stub_crt_free}, {0xddcf99, (void *)w1d_stub_build_items},
+                       {0xddcf39, (void *)w1d_stub_destroy_items}});
+    };
+    auto w1d_array_call = [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[1])}; };
+    Test w1d_slot_resize_test{0x424540, [=](Rng &r) { w1d_array_setup(r, 4); }, w1d_array_call};
+    w1d_slot_resize_test.prepare = [=](const rewrite::Entry *e) {
+        w1d_array_prepare(e);
+        stubs_for_now({{w1c_at(e, 0xb0), (void *)w1d_stub_assign}});
+    };
+    w1d_slot_resize_test.finish = w1_unstub;
+    quick(w1d_slot_resize_test);
+    static uint32_t w1d_header;
+    Test w1d_block_reset_test{0x462fc0, [=](Rng &r) { w1d_array_setup(r, w1d_header); }, w1d_array_call};
+    w1d_block_reset_test.prepare = [=](const rewrite::Entry *e) {
+        w1d_header = 0x100 - *(uint8_t *)(e->at + 0x24);
+        w1d_array_prepare(e);
+    };
+    w1d_block_reset_test.finish = w1_unstub;
+    quick(w1d_block_reset_test);

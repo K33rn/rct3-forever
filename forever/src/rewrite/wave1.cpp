@@ -1867,3 +1867,55 @@ template <uint32_t BUILD> static int32_t __thiscall w1d_record_resize(uint32_t *
 }
 REWRITE("Records::Resize80C8B0", 0x80c8b0, w1c_seh_late, (&w1d_record_resize<0x80c520>), &g_w1d_record_resizes);
 REWRITE("Records::Resize80C8B0", 0x96f7f0, w1c_seh_late, (&w1d_record_resize<0x96edf0>), &g_w1d_record_resizes);
+
+// Arrays made with new[]: the count is kept HEADER bytes before the items, which are built and destroyed by the runtime's
+// vector iterators.
+static void(__stdcall *const w1d_build_items)(void *, uint32_t, uint32_t, uint32_t, uint32_t) = (void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))0xddcf99;
+static void(__stdcall *const w1d_destroy_items)(void *, uint32_t, uint32_t, uint32_t) = (void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0xddcf39;
+template <uint32_t ITEM, uint32_t HEADER, uint32_t BUILD, uint32_t END> static uint8_t *w1d_new_items(uint32_t count) {
+    uint8_t *block = (uint8_t *)memory_alloc_aligned(count * ITEM + HEADER);
+    if (!block) return nullptr;
+    *(uint32_t *)block = count;
+    w1d_build_items(block + HEADER, ITEM, count, BUILD, END);
+    return block + HEADER;
+}
+template <uint32_t ITEM, uint32_t HEADER, uint32_t END> static void w1d_delete_items(uint32_t *self) {
+    uint8_t *items = (uint8_t *)(uintptr_t)self[0];
+    if (!items) return;
+    w1d_destroy_items(items, ITEM, *(uint32_t *)(items - HEADER), END);
+    memory_free_aligned(items - HEADER);
+    self[0] = 0;
+}
+
+// ---- Slots::Resize: `count` new 8-byte slots, as many old ones as fit assigned over, the old array deleted -------------
+static volatile long g_w1d_slot_resizes;
+template <uint32_t END, uint32_t BUILD, uint32_t ASSIGN> static int32_t __thiscall w1d_slot_resize(uint32_t *self, int32_t count) {
+    g_w1d_slot_resizes++;
+    if (count == (int32_t)self[1]) return count;
+    uint8_t *items = count ? w1d_new_items<8, 4, BUILD, END>(count) : nullptr;
+    if (count) {
+        int32_t keep = count < (int32_t)self[1] ? count : (int32_t)self[1];
+        for (int32_t i = 0; i < keep; i++)
+            ((void(__thiscall *)(void *, void *))ASSIGN)(items + i * 8, (uint8_t *)(uintptr_t)self[0] + i * 8);
+    }
+    w1d_delete_items<8, 4, END>(self);
+    self[1] = count;
+    self[0] = (uint32_t)(uintptr_t)items;
+    return count;
+}
+REWRITE("Slots::Resize424540", 0x424540, w1c_seh_late, (&w1d_slot_resize<0x423d80, 0x423ce0, 0x423fb0>), &g_w1d_slot_resizes);
+REWRITE("Slots::Resize424540", 0x464510, w1c_seh_late, (&w1d_slot_resize<0x43e700, 0x45e600, 0x461080>), &g_w1d_slot_resizes);
+REWRITE("Slots::Resize424540", 0xa5d5e0, w1c_seh_late, (&w1d_slot_resize<0xa5bfe0, 0xa5bfd0, 0xa5b5e0>), &g_w1d_slot_resizes);
+
+// ---- Blocks::Reset: the old array of 32-byte blocks deleted and `count` new ones made ----------------------------------
+static volatile long g_w1d_block_resets;
+template <uint32_t HEADER, uint32_t END, uint32_t BUILD> static uint32_t __thiscall w1d_block_reset(uint32_t *self, uint32_t count) {
+    g_w1d_block_resets++;
+    w1d_delete_items<0x20, HEADER, END>(self);
+    if (count) self[0] = (uint32_t)(uintptr_t)w1d_new_items<0x20, HEADER, BUILD, END>(count);
+    self[1] = count;
+    return count;
+}
+REWRITE("Blocks::Reset462FC0", 0x462fc0, w1c_seh_late, (&w1d_block_reset<4, 0x41f860, 0x45f980>), &g_w1d_block_resets);
+REWRITE("Blocks::Reset462FC0", 0x991f50, w1c_seh_late, (&w1d_block_reset<4, 0x438c00, 0x98ffa0>), &g_w1d_block_resets);
+REWRITE("Blocks::Reset462FC0", 0x9e1ec0, w1c_seh_late, (&w1d_block_reset<0x10, 0x9e1310, 0x9e1670>), &g_w1d_block_resets);

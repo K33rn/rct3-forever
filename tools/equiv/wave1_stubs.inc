@@ -184,3 +184,12 @@ static void __thiscall w1d_stub_label(void *self, uint32_t *out) {
     *out = (uint32_t)(uintptr_t)(arena<uint32_t>(0x20)[0] & 1 ? arena<void>(0xc00) : *(void **)arena<uint8_t>(0xb00 + 0x114));
     ++*(int32_t *)(uintptr_t)*out;
 }
+static void __stdcall w1d_stub_build_items(uint32_t *items, uint32_t size, uint32_t count, uint32_t build, uint32_t end) {
+    record(0x271, items); record(0x271, (void *)(uintptr_t)size); record(0x271, (void *)(uintptr_t)count);
+    record(0x271, (void *)(uintptr_t)build); record(0x271, (void *)(uintptr_t)end);
+    for (uint32_t i = 0; i < count * size / 4; i++) items[i] = 0x7700 + i;
+}
+static void __stdcall w1d_stub_destroy_items(void *items, uint32_t size, uint32_t count, uint32_t end) {
+    record(0x272, items); record(0x272, (void *)(uintptr_t)size); record(0x272, (void *)(uintptr_t)count); record(0x272, (void *)(uintptr_t)end);
+}
+static void __thiscall w1d_stub_assign(uint32_t *self, uint32_t *from) { record(0x273, self); record(0x273, (void *)(uintptr_t)from[0]); self[0] = from[0]; self[1] = from[1] ^ 1; }
