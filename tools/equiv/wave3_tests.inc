@@ -1328,3 +1328,125 @@
     };
     w3b_rows_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3b_rows_test);
+    // Third pass.
+    // Destructors: the object at 0x800, its slots holding deletable objects (distinct by position) or nothing
+    auto w3c_object = [=](Rng &r) {
+        fresh(r);
+        for (uint32_t i = 0; i < 0x600 / 4; i++) {
+            uint32_t at = 0x3000 + (i & 0x7f) * 0x20;
+            *arena<void *>(at) = w3c_delete_table;
+            arena<void *>(0x800)[i] = r.next() % 3 ? arena<void>(at) : nullptr;
+        }
+    };
+    auto w3c_dtor = [&](uintptr_t at, std::vector<std::pair<uint32_t, void *>> stubs) {
+        stubs.push_back({0xbce010, (void *)w3c_stub_free_aligned});
+        Test x{at, w3c_object, [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+        x.prepare = [stubs](const rewrite::Entry *) { stubs_for_now(stubs); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    };
+    void *w3c_a = (void *)w3c_stub_base_a, *w3c_b = (void *)w3c_stub_base_b, *w3c_c = (void *)w3c_stub_base_c;
+    w3c_dtor(0x5f0520, {{0x5ef9b0, w3c_a}, {0x67b9f0, w3c_a}, {0x69f600, w3c_a}, {0xb7b9d0, w3c_a}});
+    w3c_dtor(0x65b590, {{0x6a1df0, w3c_a}, {0x6d6320, w3c_a}, {0x4882d0, w3c_a}});
+    w3c_dtor(0x666e70, {{0x6b0ea0, w3c_a}});
+    w3c_dtor(0xb1b0e0, {{0x40f730, w3c_a}, {0xb7b9d0, w3c_b}});
+    w3c_dtor(0x4e4110, {{0x63d010, w3c_a}, {0x6a1df0, w3c_a}});
+    w3c_dtor(0x923e10, {{0x40f730, w3c_a}, {0x5f7b70, w3c_b}, {0x9b2640, w3c_b}});
+    w3c_dtor(0x6b20e0, {{0x6af760, w3c_a}, {0x6b0150, w3c_b}, {0xcd2b50, w3c_c}});
+    w3c_dtor(0x641690, {{0xddcf39, (void *)w3c_stub_each}, {0x4882d0, w3c_a}});
+    w3c_dtor(0x4a8fd0, {{0x52edd0, w3c_a}, {0x751830, w3c_a}});
+    w3c_dtor(0x757670, {{0xbd1880, w3c_a}, {0xbd99e0, w3c_b}});
+    // Shared::Dtor: a shared block in every slot, its count 1 or 2
+    Test w3c_shared_test{0x6f21f0,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 8; i++) {
+                                 uint32_t at = 0x3000 + i * 0x20;
+                                 arena<uint32_t>(at)[0] = (uint32_t)r.range(1, 2);
+                                 arena<uint32_t>(at)[3] = r.next();
+                                 arena<void *>(0x800)[i] = arena<void>(at);
+                             }
+                         },
+                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w3c_shared_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbce000, (void *)w3c_stub_free}, {0xbce010, (void *)w3c_stub_free_aligned}}); };
+    w3c_shared_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3c_shared_test);
+    // Selected::Dtor: the global is set in the call and shown by the base
+    static uint32_t w3c_selection_was;
+    Test w3c_selected_test{0x5a0a30, w3c_object,
+                           [](void *fn) { *(uint32_t *)0x10eeab0 = 0x55; ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w3c_selected_test.prepare = [](const rewrite::Entry *) {
+        w3c_selection_was = *(uint32_t *)0x10eeab0;
+        stubs_for_now({{0x63a9c0, (void *)w3c_stub_base_selected}});
+    };
+    w3c_selected_test.finish = [](const rewrite::Entry *) { unstub_many(); *(uint32_t *)0x10eeab0 = w3c_selection_was; };
+    quick(w3c_selected_test);
+    // Entries::Dtor: 0-3 entries at 0x1000 (or no array at all); deleting one takes it off the list
+    Test w3c_entries_test{0x7321d0,
+                          [=](Rng &r) {
+                              fresh(r);
+                              uint32_t n = (uint32_t)r.range(0, 3);
+                              arena<void *>(0x800)[0] = r.range(0, 3) || n ? arena<void>(0x1000) : nullptr;
+                              arena<uint32_t>(0x800)[2] = n;
+                              arena<uint32_t>(0xffc)[0] = r.next() & 0xff;
+                              for (uint32_t i = 0; i < n; i++) {
+                                  *(void **)arena<uint8_t>(0x1004 + i * 0x14) = arena<void>(0x1800 + i * 0x20);
+                                  arena<void *>(0x180c + i * 0x20)[0] = arena<void>(0x1c00 + i * 0x20);
+                                  *arena<void *>(0x1c00 + i * 0x20) = w3c_gone_table;
+                              }
+                          },
+                          [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w3c_entries_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcf39, (void *)w3c_stub_each}, {0xbce010, (void *)w3c_stub_free_aligned}}); };
+    w3c_entries_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3c_entries_test);
+    // Makers: memory sometimes runs out (the word at 0x20 decides)
+    auto w3c_maker = [=](Rng &r) {
+        fresh(r);
+        for (int i = 0; i < 4; i++) arena<uint32_t>(0x10)[i] = r.next();
+        arena<uint32_t>(0x20)[0] = r.next();
+        arena<uint32_t>(0x24)[0] = r.next();
+    };
+    auto w3c_make = [&](Test x, uintptr_t ctor_at, void *stub) {
+        x.prepare = [=](const rewrite::Entry *e) {
+            uintptr_t ctor = e->at + ctor_at + 4 + *(int32_t *)(e->at + ctor_at);
+            stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {ctor, stub}});
+        };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    };
+    w3c_make(Test{0xcb8cc0, w3c_maker, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(uint32_t))fn)(arena<uint32_t>(0x10)[0])}; }}, 0x39, (void *)w3c_stub_ctor2);
+    w3c_make(Test{0x817e50, w3c_maker, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()}; }}, 0x3a, (void *)w3c_stub_ctor4);
+    w3c_make(Test{0x6b2150, w3c_maker, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }}, 0x3e, (void *)w3c_stub_ctor3);
+    // Binding::Make
+    Test w3c_binding_test{0x7ff460, w3c_maker,
+                          [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(uint32_t, void *))fn)(arena<uint32_t>(0x10)[0], arena<void>(0x100))}; }};
+    w3c_binding_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {0x7fbf50, (void *)w3c_stub_bind}}); };
+    w3c_binding_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3c_binding_test);
+    // Single::Get: already there or not; the copy's own global, kept for after
+    static void *w3c_single_was;
+    Test w3c_single_test{0x42df90, w3c_maker,
+                         [](void *fn) {
+                             *w3c_single_global = arena<uint32_t>(0x10)[0] & 1 ? arena<void>(0x100) : nullptr;
+                             return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()};
+                         }};
+    w3c_single_test.prepare = [](const rewrite::Entry *e) {
+        w3c_single_global = *(void ***)(e->at + 0x17);
+        w3c_single_was = *w3c_single_global;
+        stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {e->at + 0x3d + 4 + *(int32_t *)(e->at + 0x3d), (void *)w3c_stub_single}});
+    };
+    w3c_single_test.finish = [](const rewrite::Entry *) { unstub_many(); *w3c_single_global = w3c_single_was; };
+    quick(w3c_single_test);
+    // Array::Size: old data or none, 0-3 new elements, memory sometimes out
+    Test w3c_sized_test{0x9d1120,
+                        [=](Rng &r) {
+                            fresh(r);
+                            arena<void *>(0x100)[0] = r.range(0, 1) ? arena<void>(0x900) : nullptr;
+                            arena<uint32_t>(0x100)[1] = r.next();
+                            arena<uint32_t>(0x20)[0] = r.next();
+                            arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 3);
+                        },
+                        [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    w3c_sized_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)w3_stub_alloc_maybe}, {0xbce010, (void *)w3c_stub_free_aligned}, {0x402b90, (void *)w3c_stub_construct}}); };
+    w3c_sized_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3c_sized_test);

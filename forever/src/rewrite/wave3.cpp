@@ -1480,3 +1480,293 @@ template <uintptr_t CHECK> static int32_t __fastcall w3b_rows(uint8_t *self) {
 static const uint8_t w3b_rows_original[] = {0x51, 0x53, 0x55, 0x56, 0x33, 0xed, 0x57, 0x8b, 0xf9};
 REWRITE("Rows::Count533FF0", 0x533ff0, w3b_rows_original, (&w3b_rows<0x559bc0>), &g_w3b_rows);
 REWRITE("Rows::Count533FF0", 0x5340e0, w3b_rows_original, (&w3b_rows<0x559bf0>), &g_w3b_rows);
+
+// ---- Third pass. An original's first eight bytes as one little-endian number: the start of an exception frame holds a handler
+// address that differs per copy, so every copy names its own.
+template <uint64_t V> static const uint8_t w3c_start[8] = {(uint8_t)V, (uint8_t)(V >> 8), (uint8_t)(V >> 16), (uint8_t)(V >> 24),
+                                                           (uint8_t)(V >> 32), (uint8_t)(V >> 40), (uint8_t)(V >> 48), (uint8_t)(V >> 56)};
+template <uintptr_t FN> static inline void w3c_run(void *self) { ((void(__fastcall *)(void *))FN)(self); }
+// Deletes an object through its virtual destructor (the slot it sits in differs), if there is one.
+template <int SLOT = 0> static inline void w3c_delete(void *object) {
+    if (object) ((void(__thiscall *)(void *, uint32_t))(*(void ***)object)[SLOT])(object, 1);
+}
+static inline void w3c_destroy_texts(void *first, uint32_t count) {
+    ((void(__stdcall *)(void *, uint32_t, uint32_t, void *))0xddcf39)(first, 0x14, count, (void *)0x40f730);
+}
+
+// ---- Owner::Dtor: frees the block it owns and clears the pointer, then the base destructor ---------------------------------
+static volatile long g_w3c_owner;
+template <uint32_t BLOCK, uintptr_t BASE> static void __fastcall w3c_owner(uint8_t *self) {
+    g_w3c_owner++;
+    void *&block = *(void **)(self + BLOCK);
+    if (block) {
+        memory_free_aligned(block);
+        block = nullptr;
+    }
+    w3c_run<BASE>(self);
+}
+REWRITE("Owner::Dtor5F0520", 0x5f0520, w3c_start<0x6400e2680868ff6a>, (&w3c_owner<0x90, 0x5ef9b0>), &g_w3c_owner);
+REWRITE("Owner::Dtor5F0520", 0x5fcb90, w3c_start<0x6400e27e8868ff6a>, (&w3c_owner<0x148, 0x67b9f0>), &g_w3c_owner);
+REWRITE("Owner::Dtor5F0520", 0x69fe90, w3c_start<0x6400e3cb4868ff6a>, (&w3c_owner<0x578, 0x69f600>), &g_w3c_owner);
+REWRITE("Owner::Dtor5F0520", 0x6f2cd0, w3c_start<0x6400e477c868ff6a>, (&w3c_owner<0x578, 0x69f600>), &g_w3c_owner);
+REWRITE("Owner::Dtor5F0520", 0xb7e190, w3c_start<0x6400e9806868ff6a>, (&w3c_owner<0x98, 0xb7b9d0>), &g_w3c_owner);
+
+// ---- The same with the block near the start of the object ------------------------------------------------------------------
+static volatile long g_w3c_owner8;
+template <uint32_t BLOCK, uintptr_t BASE> static void __fastcall w3c_owner8(uint8_t *self) {
+    g_w3c_owner8++;
+    void *&block = *(void **)(self + BLOCK);
+    if (block) {
+        memory_free_aligned(block);
+        block = nullptr;
+    }
+    w3c_run<BASE>(self);
+}
+REWRITE("Owner::Dtor65B590", 0x65b590, w3c_start<0x6400e3585868ff6a>, (&w3c_owner8<0x24, 0x6a1df0>), &g_w3c_owner8);
+REWRITE("Owner::Dtor65B590", 0x6e3a80, w3c_start<0x6400e4522868ff6a>, (&w3c_owner8<0x7c, 0x6d6320>), &g_w3c_owner8);
+REWRITE("Owner::Dtor65B590", 0xa00a90, w3c_start<0x6400e784c868ff6a>, (&w3c_owner8<0x68, 0x4882d0>), &g_w3c_owner8);
+REWRITE("Owner::Dtor65B590", 0xa06290, w3c_start<0x6400e78c7868ff6a>, (&w3c_owner8<0x5c, 0x4882d0>), &g_w3c_owner8);
+
+// ---- Slots::Dtor: deletes every object of a fixed row of slots, then the base -----------------------------------------------
+static volatile long g_w3c_slots_dtor;
+template <uint32_t TABLE, uint32_t TABLE2, uint32_t ROW, uint32_t COUNT> static void __fastcall w3c_slots_dtor(uint8_t *self) {
+    g_w3c_slots_dtor++;
+    *(uint32_t *)self = TABLE;
+    *(uint32_t *)(self + 4) = TABLE2;
+    for (uint32_t i = 0; i < COUNT; i++) w3c_delete(((void **)(self + ROW))[i]);
+    w3c_run<0x6b0ea0>(self);
+}
+REWRITE("Slots::Dtor666E70", 0x666e70, w3c_start<0x6400e36fd868ff6a>, (&w3c_slots_dtor<0xf4e900, 0xf4e8e8, 0xe0, 0x10>), &g_w3c_slots_dtor);
+REWRITE("Slots::Dtor666E70", 0x9962a0, w3c_start<0x6400e6ec7868ff6a>, (&w3c_slots_dtor<0xf803c0, 0xf803a8, 0x100, 0x8>), &g_w3c_slots_dtor);
+REWRITE("Slots::Dtor666E70", 0x9c1f40, w3c_start<0x6400e739d868ff6a>, (&w3c_slots_dtor<0xf842e0, 0xf842c8, 0x130, 0xa>), &g_w3c_slots_dtor);
+REWRITE("Slots::Dtor666E70", 0xa35300, w3c_start<0x6400e7d61868ff6a>, (&w3c_slots_dtor<0xf89a60, 0xf89a48, 0xd8, 0x6>), &g_w3c_slots_dtor);
+
+// ---- Texts::Dtor: two text members, the later one first, then the base ------------------------------------------------------
+static volatile long g_w3c_two_texts;
+template <uint32_t LATER, uint32_t EARLIER> static void __fastcall w3c_two_texts(uint8_t *self) {
+    g_w3c_two_texts++;
+    w3c_run<0x40f730>(self + LATER);
+    w3c_run<0x40f730>(self + EARLIER);
+    w3c_run<0xb7b9d0>(self);
+}
+REWRITE("Texts::DtorB1B0E0", 0xb1b0e0, w3c_start<0x6400e9166668ff6a>, (&w3c_two_texts<0xb4, 0x98>), &g_w3c_two_texts);
+REWRITE("Texts::DtorB1B0E0", 0xb1f470, w3c_start<0x6400e91ab668ff6a>, (&w3c_two_texts<0x114, 0xa0>), &g_w3c_two_texts);
+REWRITE("Texts::DtorB1B0E0", 0xb29470, w3c_start<0x6400e9244668ff6a>, (&w3c_two_texts<0xb4, 0x98>), &g_w3c_two_texts);
+REWRITE("Texts::DtorB1B0E0", 0xb7cfa0, w3c_start<0x6400e97e2668ff6a>, (&w3c_two_texts<0xb4, 0x98>), &g_w3c_two_texts);
+
+// ---- Shared::Dtor: gives up one reference to a shared block {count, ..., +0xc data}; the last one out frees it ---------------
+static volatile long g_w3c_shared;
+template <uint32_t BLOCK, uint32_t TABLE> static void __fastcall w3c_shared(uint8_t *self) {
+    g_w3c_shared++;
+    int32_t *block = *(int32_t **)(self + BLOCK);
+    if (--block[0] == 0) {
+        memory_free_aligned(*(void **)(block + 3));
+        memory_free(block);
+    }
+    *(uint32_t *)self = TABLE;
+}
+REWRITE("Shared::Dtor6F21F0", 0x6f21f0, w3c_start<0x6400e476f868ff6a>, (&w3c_shared<0x8, 0xf328c0>), &g_w3c_shared);
+REWRITE("Shared::Dtor6F21F0", 0x6f2640, w3c_start<0x6400e4773868ff6a>, (&w3c_shared<0x4, 0xf328c0>), &g_w3c_shared);
+REWRITE("Shared::Dtor6F21F0", 0x7fe8c0, w3c_start<0x6400e5b7c868ff6a>, (&w3c_shared<0x10, 0xf75170>), &g_w3c_shared);
+REWRITE("Shared::Dtor6F21F0", 0xca34e0, w3c_start<0x6400ea479868ff6a>, (&w3c_shared<0x8, 0xfa5600>), &g_w3c_shared);
+
+// ---- Holder::Dtor: deletes the one object it holds, then the base -----------------------------------------------------------
+static volatile long g_w3c_holder;
+template <uint32_t TABLE, uint32_t HELD, uintptr_t BASE> static void __fastcall w3c_holder(uint8_t *self) {
+    g_w3c_holder++;
+    *(uint32_t *)self = TABLE;
+    w3c_delete(*(void **)(self + HELD));
+    w3c_run<BASE>(self);
+}
+REWRITE("Holder::Dtor4E4110", 0x4e4110, w3c_start<0x6400e1644868ff6a>, (&w3c_holder<0xf34ea8, 0x8, 0x63d010>), &g_w3c_holder);
+REWRITE("Holder::Dtor4E4110", 0x5f5000, w3c_start<0x6400e26da868ff6a>, (&w3c_holder<0xf400d8, 0x1c, 0x6a1df0>), &g_w3c_holder);
+REWRITE("Holder::Dtor4E4110", 0x6165f0, w3c_start<0x6400e2afd868ff6a>, (&w3c_holder<0xf42f4c, 0x1c, 0x6a1df0>), &g_w3c_holder);
+REWRITE("Holder::Dtor4E4110", 0x616750, w3c_start<0x6400e2b01868ff6a>, (&w3c_holder<0xf42f60, 0x1c, 0x6a1df0>), &g_w3c_holder);
+
+// ---- Selected::Dtor: forgets the global selection, deletes what it holds, then the base -------------------------------------
+static volatile long g_w3c_selected;
+template <uint32_t TABLE, uint32_t TABLE2, uint32_t HELD> static void __fastcall w3c_selected(uint8_t *self) {
+    g_w3c_selected++;
+    *(uint32_t *)self = TABLE;
+    *(uint32_t *)(self + 4) = TABLE2;
+    *(int32_t *)0x10eeab0 = -1;
+    w3c_delete(*(void **)(self + HELD));
+    w3c_run<0x63a9c0>(self);
+}
+REWRITE("Selected::Dtor5A0A30", 0x5a0a30, w3c_start<0x6400e2274868ff6a>, (&w3c_selected<0xf3dca0, 0xf3dc88, 0xdc>), &g_w3c_selected);
+REWRITE("Selected::Dtor5A0A30", 0x6685a0, w3c_start<0x6400e3721868ff6a>, (&w3c_selected<0xf4ecf8, 0xf4ece0, 0xd8>), &g_w3c_selected);
+REWRITE("Selected::Dtor5A0A30", 0x668620, w3c_start<0x6400e3723868ff6a>, (&w3c_selected<0xf4ee00, 0xf4edec, 0xd8>), &g_w3c_selected);
+
+// ---- Panel::Dtor: three tables back to the class's own, deletes the held object, the text member, then the base --------------
+static volatile long g_w3c_panel;
+template <uint32_t TABLE, uint32_t TABLE2, uint32_t AT3, uint32_t TABLE3, uint32_t HELD, uint32_t TEXT, uintptr_t BASE>
+static void __fastcall w3c_panel(uint8_t *self) {
+    g_w3c_panel++;
+    *(uint32_t *)self = TABLE;
+    *(uint32_t *)(self + 4) = TABLE2;
+    *(uint32_t *)(self + AT3) = TABLE3;
+    w3c_delete<1>(*(void **)(self + HELD));
+    w3c_run<0x40f730>(self + TEXT);
+    w3c_run<BASE>(self);
+}
+REWRITE("Panel::Dtor923E10", 0x923e10, w3c_start<0x6400e6997668ff6a>, (&w3c_panel<0xf7d488, 0xf7d470, 0x11c, 0xf7d46c, 0x150, 0x154, 0x5f7b70>), &g_w3c_panel);
+REWRITE("Panel::Dtor923E10", 0xad6a10, w3c_start<0x6400e8afe668ff6a>, (&w3c_panel<0xf951d0, 0xf951b8, 0xd4, 0xf951ac, 0x110, 0xf4, 0x9b2640>), &g_w3c_panel);
+REWRITE("Panel::Dtor923E10", 0xaefe80, w3c_start<0x6400e8d60668ff6a>, (&w3c_panel<0xf96508, 0xf964f4, 0xd4, 0xf964e8, 0x110, 0xf4, 0x9b2640>), &g_w3c_panel);
+REWRITE("Panel::Dtor923E10", 0xaf2010, w3c_start<0x6400e8d8d668ff6a>, (&w3c_panel<0xf966c8, 0xf966b4, 0xd4, 0xf966a8, 0x110, 0xf4, 0x9b2640>), &g_w3c_panel);
+
+// ---- Parts::Dtor: its three parts, the last first, then the base table ------------------------------------------------------
+static volatile long g_w3c_parts;
+static void __fastcall w3c_parts(uint8_t *self) {
+    g_w3c_parts++;
+    w3c_run<0x6af760>(self + 0x3c);
+    w3c_run<0x6b0150>(self + 0x1c);
+    w3c_run<0xcd2b50>(self + 4);
+    *(uint32_t *)self = 0xf2694c;
+}
+REWRITE("Parts::Dtor6B20E0", 0x6b20e0, w3c_start<0x6400e3e5f668ff6a>, (&w3c_parts), &g_w3c_parts);
+REWRITE("Parts::Dtor6B20E0", 0x6b2370, w3c_start<0x6400e3e6b668ff6a>, (&w3c_parts), &g_w3c_parts);
+REWRITE("Parts::Dtor6B20E0", 0x6b2600, w3c_start<0x6400e3e77668ff6a>, (&w3c_parts), &g_w3c_parts);
+
+// ---- Row::Dtor: a row of 0x40 text members, then the base -------------------------------------------------------------------
+static volatile long g_w3c_text_row;
+static void __fastcall w3c_text_row(uint8_t *self) {
+    g_w3c_text_row++;
+    w3c_destroy_texts(self + 0x128, 0x40);
+    w3c_run<0x4882d0>(self);
+}
+REWRITE("Row::Dtor641690", 0x641690, w3c_start<0x6400e31b9868ff6a>, (&w3c_text_row), &g_w3c_text_row);
+REWRITE("Row::Dtor641690", 0x6416f0, w3c_start<0x6400e31bb868ff6a>, (&w3c_text_row), &g_w3c_text_row);
+
+// ---- Store::Dtor: empties itself, then frees its block ----------------------------------------------------------------------
+static volatile long g_w3c_store;
+template <uintptr_t EMPTY> static void __fastcall w3c_store(void **self) {
+    g_w3c_store++;
+    w3c_run<EMPTY>(self);
+    if (*self) {
+        memory_free_aligned(*self);
+        *self = nullptr;
+    }
+}
+REWRITE("Store::Dtor4A8FD0", 0x4a8fd0, w3c_start<0x6400e1122868ff6a>, (&w3c_store<0x52edd0>), &g_w3c_store);
+REWRITE("Store::Dtor4A8FD0", 0x752380, w3c_start<0x6400e4fac868ff6a>, (&w3c_store<0x751830>), &g_w3c_store);
+
+// ---- Named::Dtor: its text at +0x3c, its part at +8, then the base table ----------------------------------------------------
+static volatile long g_w3c_named;
+template <uint32_t TABLE> static void __fastcall w3c_named(uint8_t *self) {
+    g_w3c_named++;
+    *(uint32_t *)self = TABLE;
+    w3c_run<0xbd1880>(self + 0x3c);
+    w3c_run<0xbd99e0>(self + 8);
+    *(uint32_t *)self = 0xf306b8;
+}
+REWRITE("Named::Dtor757670", 0x757670, w3c_start<0x6400e5013368ff6a>, (&w3c_named<0xf6c504>), &g_w3c_named);
+REWRITE("Named::Dtor757670", 0x7fa5d0, w3c_start<0x6400e5b04368ff6a>, (&w3c_named<0xf7510c>), &g_w3c_named);
+
+// ---- Entries::Dtor: every entry's object leaves the list by itself when deleted, last first; then the array of 20-byte entries
+// goes (its element count sits just before it)
+static volatile long g_w3c_entries;
+static void __fastcall w3c_entries(uint8_t **self) {
+    g_w3c_entries++;
+    uint32_t &count = *(uint32_t *)(self + 2);
+    while (count) {
+        uint8_t *holder = *(uint8_t **)(self[0] + count * 0x14 - 0x10);
+        w3c_delete(*(void **)(holder + 0xc));
+    }
+    if (uint8_t *entries = self[0]) {
+        w3c_destroy_texts(entries, *(uint32_t *)(entries - 4));
+        memory_free_aligned(entries - 4);
+        self[0] = nullptr;
+    }
+}
+REWRITE("Entries::Dtor7321D0", 0x7321d0, w3c_start<0x6400e4cca868ff6a>, (&w3c_entries), &g_w3c_entries);
+REWRITE("Entries::Dtor7321D0", 0x73ab90, w3c_start<0x6400e4d94868ff6a>, (&w3c_entries), &g_w3c_entries);
+REWRITE("Entries::Dtor7321D0", 0xac3e40, w3c_start<0x6400e88a3868ff6a>, (&w3c_entries), &g_w3c_entries);
+REWRITE("Entries::Dtor7321D0", 0xba5e50, w3c_start<0x6400e9b03868ff6a>, (&w3c_entries), &g_w3c_entries);
+
+// ---- Binding::Make: a two-word binding of a value, registered with the target before it takes its final table ---------------
+static volatile long g_w3c_binding;
+template <uint32_t TABLE> static void *__fastcall w3c_binding(uint32_t value, void *target) {
+    g_w3c_binding++;
+    uint32_t *binding = (uint32_t *)memory_alloc(8);
+    if (!binding) return nullptr;
+    binding[0] = 0xf75170;
+    binding[1] = value;
+    uint32_t *made = binding, key = value;
+    ((void(__thiscall *)(void *, void *, void *))0x7fbf50)(target, &key, &made);
+    binding[0] = TABLE;
+    return binding;
+}
+REWRITE("Binding::Make7FF460", 0x7ff460, w3c_start<0x6400e5b99b68ff6a>, (&w3c_binding<0xf751e0>), &g_w3c_binding);
+REWRITE("Binding::Make7FF460", 0x7ff550, w3c_start<0x6400e5b9db68ff6a>, (&w3c_binding<0xf751e8>), &g_w3c_binding);
+REWRITE("Binding::Make7FF460", 0x7ff640, w3c_start<0x6400e5ba1b68ff6a>, (&w3c_binding<0xf751f0>), &g_w3c_binding);
+REWRITE("Binding::Make7FF460", 0x7ff730, w3c_start<0x6400e5ba5b68ff6a>, (&w3c_binding<0xf751f8>), &g_w3c_binding);
+REWRITE("Binding::Make7FF460", 0x7ff820, w3c_start<0x6400e5ba9b68ff6a>, (&w3c_binding<0xf75200>), &g_w3c_binding);
+
+// ---- Maker::One: a new object built with a zero and the given argument ------------------------------------------------------
+static volatile long g_w3c_make1;
+template <uint32_t SIZE, uintptr_t CTOR> static void *__stdcall w3c_make1(uint32_t argument) {
+    g_w3c_make1++;
+    void *made = memory_alloc(SIZE);
+    return made ? ((void *(__thiscall *)(void *, uint32_t, uint32_t))CTOR)(made, 0, argument) : nullptr;
+}
+REWRITE("Maker::OneCB8CC0", 0xcb8cc0, w3c_start<0x6400ea611b68ff6a>, (&w3c_make1<0x14, 0xcb81f0>), &g_w3c_make1);
+REWRITE("Maker::OneCB8CC0", 0xcb8e70, w3c_start<0x6400ea615b68ff6a>, (&w3c_make1<0x20, 0xcb8420>), &g_w3c_make1);
+REWRITE("Maker::OneCB8CC0", 0xcb8f80, w3c_start<0x6400ea617b68ff6a>, (&w3c_make1<0x20, 0xcb8630>), &g_w3c_make1);
+REWRITE("Maker::OneCB8CC0", 0xcb9090, w3c_start<0x6400ea619b68ff6a>, (&w3c_make1<0x18, 0xcb8860>), &g_w3c_make1);
+
+// ---- Maker::Blank: a new object built with four zeros -----------------------------------------------------------------------
+static volatile long g_w3c_make0;
+template <uint32_t SIZE, uintptr_t CTOR> static void *__cdecl w3c_make0() {
+    g_w3c_make0++;
+    void *made = memory_alloc(SIZE);
+    return made ? ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))CTOR)(made, 0, 0, 0, 0) : nullptr;
+}
+REWRITE("Maker::Blank817E50", 0x817e50, w3c_start<0x6400e5d6fb68ff6a>, (&w3c_make0<0x78, 0x8161a0>), &g_w3c_make0);
+REWRITE("Maker::Blank817E50", 0x817f20, w3c_start<0x6400e5d73b68ff6a>, (&w3c_make0<0x78, 0x816a10>), &g_w3c_make0);
+REWRITE("Maker::Blank817E50", 0x817f80, w3c_start<0x6400e5d75b68ff6a>, (&w3c_make0<0x78, 0x816a10>), &g_w3c_make0);
+REWRITE("Maker::Blank817E50", 0x818130, w3c_start<0x6400e5d7db68ff6a>, (&w3c_make0<0x70, 0x817760>), &g_w3c_make0);
+
+// ---- Maker::Child: a new 0x5c-byte object built with a zero, its parent and the given argument ------------------------------
+static volatile long g_w3c_child;
+template <uintptr_t CTOR> static void *__thiscall w3c_child(void *parent, uint32_t argument) {
+    g_w3c_child++;
+    void *made = memory_alloc(0x5c);
+    return made ? ((void *(__thiscall *)(void *, uint32_t, void *, uint32_t))CTOR)(made, 0, parent, argument) : nullptr;
+}
+REWRITE("Maker::Child6B2150", 0x6b2150, w3c_start<0x6400e3e60b68ff6a>, (&w3c_child<0x6b1f20>), &g_w3c_child);
+REWRITE("Maker::Child6B2150", 0x6b23e0, w3c_start<0x6400e3e6cb68ff6a>, (&w3c_child<0x6b21b0>), &g_w3c_child);
+REWRITE("Maker::Child6B2150", 0x6b2670, w3c_start<0x6400e3e78b68ff6a>, (&w3c_child<0x6b2440>), &g_w3c_child);
+
+// ---- Single::Get: the one instance; building it makes it register itself in the global ---------------------------------------
+static volatile long g_w3c_single;
+template <uint32_t INSTANCE, uint32_t SIZE, uintptr_t CTOR> static void *__cdecl w3c_single() {
+    g_w3c_single++;
+    void *&instance = *(void **)INSTANCE;
+    if (!instance)
+        if (void *made = memory_alloc(SIZE)) ((void(__thiscall *)(void *, uint32_t))CTOR)(made, 0);
+    return instance;
+}
+REWRITE("Single::Get42DF90", 0x42df90, w3c_start<0x6400e07e8b68ff6a>, (&w3c_single<0x12f8084, 0x54, 0x659770>), &g_w3c_single);
+REWRITE("Single::Get42DF90", 0x47dbd0, w3c_start<0x6400e0dd0b68ff6a>, (&w3c_single<0x13063f4, 0x1c, 0x735b70>), &g_w3c_single);
+REWRITE("Single::Get42DF90", 0x47dcb0, w3c_start<0x6400e0dd4b68ff6a>, (&w3c_single<0x133a25c, 0x38, 0x93c390>), &g_w3c_single);
+REWRITE("Single::Get42DF90", 0x6c37d0, w3c_start<0x6400e4072b68ff6a>, (&w3c_single<0x13060fc, 0x48, 0x6ef4f0>), &g_w3c_single);
+
+// ---- Array::Size: drops the old elements and makes `count` new ones, built by the element's constructor ---------------------
+static volatile long g_w3c_sized;
+template <uint32_t ELEMENT, uintptr_t CTOR> static uint32_t __thiscall w3c_sized(void **self, uint32_t count) {
+    g_w3c_sized++;
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    if (count) {
+        void *data = memory_alloc_aligned(count * ELEMENT);
+        if (data) ((void(__stdcall *)(void *, uint32_t, uint32_t, void *))0x402b90)(data, ELEMENT, count, (void *)CTOR);
+        self[0] = data;
+    }
+    *(uint32_t *)(self + 1) = count;
+    return count;
+}
+REWRITE("Array::Size9D1120", 0x9d1120, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x44, 0x9ce670>), &g_w3c_sized);
+REWRITE("Array::Size9D1120", 0x9e1a20, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x44, 0x9e1330>), &g_w3c_sized);
+REWRITE("Array::Size9D1120", 0xaf9d40, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x2c, 0xaf8cf0>), &g_w3c_sized);
