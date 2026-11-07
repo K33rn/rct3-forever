@@ -2067,3 +2067,39 @@ static void __thiscall w3d_pass(void **self, uint32_t a, const char *string, uin
 }
 REWRITE("Text::Pass4042F0", 0x4042f0, w3c_start<0x6400e04be368ff6a>, (&w3d_pass<0xbcf7d0>), &g_w3d_pass);
 REWRITE("Text::Pass4042F0", 0xbf92c0, w3c_start<0x6400e9e75368ff6a>, (&w3d_pass<0xbcf850>), &g_w3d_pass);
+
+// ---- Array::Resize: new 32-byte elements (built by the copy's constructor), the kept ones assigned over from the old array
+// (an element of the exact class also takes its virtual base's first field), then the old array freed ---------------------------
+static volatile long g_w3d_resize;
+template <uintptr_t CTOR, uint32_t VBTABLE> static int32_t __thiscall w3d_resize(uint8_t **self, int32_t count) {
+    g_w3d_resize++;
+    int32_t old_count = *(int32_t *)(self + 1);
+    if (count == old_count) return count;
+    uint8_t *data = nullptr;
+    if (count) {
+        data = (uint8_t *)memory_alloc_aligned((uint32_t)count << 5);
+        if (data) ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0x5d3d00)(data, 0x20, count, (void *)CTOR);
+        int32_t kept = count < old_count ? count : old_count;
+        for (int32_t i = 0; i < kept; i++) {
+            uint8_t *to = data + i * 0x20;
+            uintptr_t from = (uintptr_t)self[0] + i * 0x20;
+            uint32_t *table = *(uint32_t **)to;
+            if ((uint32_t)(uintptr_t)table == VBTABLE) {
+                uintptr_t base = from ? from + (*(uint32_t **)from)[1] : 0;
+                *(uint32_t *)(to + table[1]) = *(uint32_t *)base;
+            }
+            ((void(__thiscall *)(void *, uintptr_t))0x5d2970)(to, from);
+            *(uint32_t *)(to + 0x18) = *(uint32_t *)(from + 0x18);
+        }
+    }
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    self[0] = data;
+    *(int32_t *)(self + 1) = count;
+    return count;
+}
+REWRITE("Array::Resize5D73D0", 0x5d73d0, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4600, 0xf3f734>), &g_w3d_resize);
+REWRITE("Array::Resize5D73D0", 0x5d7530, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4620, 0xf3afc0>), &g_w3d_resize);
+REWRITE("Array::Resize5D73D0", 0x5d7630, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4640, 0xf3affc>), &g_w3d_resize);

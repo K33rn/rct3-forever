@@ -1702,3 +1702,27 @@
     };
     w3d_pass_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3d_pass_test);
+    // Array::Resize: 0-4 old elements to 0-4 new ones (same count: nothing done)
+    Test w3d_resize_test{0x5d73d0,
+                         [=](Rng &r) {
+                             w3c_maker(r);
+                             int32_t old_count = (int32_t)r.range(0, 4);
+                             arena<void *>(0x100)[0] = old_count || r.range(0, 1) ? arena<void>(0x1000) : nullptr;
+                             arena<int32_t>(0x100)[1] = old_count;
+                             arena<uint32_t>(0x700)[0] = 0;
+                             arena<uint32_t>(0x700)[1] = 8;
+                             for (int i = 0; i < 4; i++) {
+                                 uint32_t *e = arena<uint32_t>(0x1000 + 0x20 * i);
+                                 for (int j = 0; j < 8; j++) e[j] = r.next();
+                                 e[0] = (uint32_t)(uintptr_t)arena<void>(0x700);
+                             }
+                             arena<int32_t>(0x10)[0] = (int32_t)r.range(0, 4);
+                         },
+                         [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0])}; }};
+    w3d_resize_test.prepare = [](const rewrite::Entry *e) {
+        w3d_vbtable = *(uint32_t *)(e->at + 0x88);
+        stubs_for_now({{0xbcdfd0, (void *)w3d_stub_alloc_2000}, {0x5d3d00, (void *)w3d_stub_build_elements}, {0x5d2970, (void *)stub_thiscall1},
+                       {0xbce010, (void *)stub_free_aligned}});
+    };
+    w3d_resize_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_resize_test);

@@ -374,3 +374,20 @@ static void __thiscall w3d_stub_pass(void *self, uint32_t a, int32_t **text, uin
     for (uint32_t v : {a, t1, b, c, d, e}) record(0x7d0b, (void *)(uintptr_t)v);
     if (arena<uint32_t>(0x24)[0] & 2) ++**text;
 }
+// Array::Resize: memory always there; the elements built get the copy's exact-class table or another one
+static uint32_t w3d_vbtable;
+static void *__cdecl w3d_stub_alloc_2000(uint32_t size) {
+    record(0xbcdfd0, (void *)(uintptr_t)size);
+    return arena<void>(0x2000);
+}
+static void __stdcall w3d_stub_build_elements(uint8_t *first, uint32_t size, int32_t count, void *ctor) {
+    record(0x5d3d00, first);
+    record(0x5d3d00, (void *)(uintptr_t)size);
+    record(0x5d3d00, (void *)(uintptr_t)count);
+    record(0x5d3d00, ctor);
+    for (int32_t i = 0; i < count; i++) {
+        uint32_t *e = (uint32_t *)(first + i * size);
+        for (int j = 0; j < 8; j++) e[j] = 0x1000 * i + j;
+        e[0] = arena<uint32_t>(0x24)[0] >> i & 1 ? w3d_vbtable : (uint32_t)(uintptr_t)arena<void>(0x740);
+    }
+}
