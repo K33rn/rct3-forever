@@ -210,3 +210,5 @@ static uint32_t __fastcall w4d_stub_convert(uint32_t side, uint32_t end, uint32_
     return ((*arena<uint32_t>(0x20) >> ((side + end) & 7)) & 3) != 0;
 }
 static void __stdcall w4d_stub_vector_dtor(void *p, uint32_t size, uint32_t n, void *dtor) { record(0x4d04, p); record(0x4d04, (void *)(uintptr_t)size); record(0x4d04, (void *)(uintptr_t)n); record(0x4d04, dtor); }
+struct W4dWords14 { uint32_t words[14]; };
+static void __thiscall w4d_stub_grow(uint32_t *list, int32_t n) { record(0x4d05, (void *)(uintptr_t)n); record(0x4d05, (void *)(uintptr_t)list[2]); list[0] = (uint32_t)(uintptr_t)arena<void>(0x2400); list[1] = (uint32_t)n; }

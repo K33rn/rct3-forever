@@ -1512,3 +1512,63 @@
     w4d_batch.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcf39, (void *)w4d_stub_vector_dtor}, {0xbce010, (void *)stub_free_aligned}}); };
     w4d_batch.finish = w4c_unstub;
     quick(w4d_batch);
+    // Once::Make2: made or not, in the copy's own global
+    Test w4d_once{0x85b290,
+                  [=](Rng &r) {
+                      w4c_fill(r);
+                      for (int i = 0; i < 4; i++) arena<uint32_t>(0x10)[i] = r.next();
+                  },
+                  [](void *fn) {
+                      uint32_t *a = arena<uint32_t>(0x10);
+                      *(uint32_t *)(uintptr_t)w4c_global = a[3];
+                      W4dWords14 unused{};
+                      void *back = ((void *(__thiscall *)(void *, void *, void *, W4dWords14))fn)(arena<void>(0x800), a, a + 1, unused);
+                      return Result{(uint32_t)(uintptr_t)back ^ *(uint32_t *)(uintptr_t)w4c_global};
+                  }};
+    w4d_once.prepare = [](const rewrite::Entry *e) {
+        w4c_global = *(uint32_t *)(e->at + 0x1a); w4c_global_saved = *(uint32_t *)(uintptr_t)w4c_global;
+        stubs_for_now({{0x416110, (void *)w4b_stub_table}});
+    };
+    w4d_once.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4c_global = w4c_global_saved; unstub_many(); };
+    quick(w4d_once);
+    // Grid::CellRef: bounds of 1-3 cells each way, points just inside and outside; each cell's reference cached or not, on the shared handle
+    Test w4d_cell{0xabd360,
+                  [=](Rng &r) {
+                      w4c_fill(r);
+                      iface_handle(r);
+                      uint8_t *self = arena<uint8_t>(0x800);
+                      int32_t x0 = r.range(0, 4) - 2, y0 = r.range(0, 4) - 2, x1 = x0 + r.range(0, 2), y1 = y0 + r.range(0, 2);
+                      *(int32_t *)(self + 0x4c) = x0; *(int32_t *)(self + 0x50) = y0; *(int32_t *)(self + 0x54) = x1; *(int32_t *)(self + 0x58) = y1;
+                      *(void **)(self + 0x5c) = arena<void>(0x2000);
+                      for (int c = 0; c < 9; c++)
+                          for (uint32_t ref : {0u, 0x1cu}) {
+                              uint8_t *at = arena<uint8_t>(0x2000 + c * 0x58 + ref);
+                              *(void **)(at + 4) = arena<void>(0x340);
+                              *(uint32_t *)(at + 0x14) = r.next();
+                              at[0x18] = (uint8_t)r.range(0, 1);
+                          }
+                      *arena<int32_t>(0x10) = x0 - 1 + r.range(0, 4);
+                      *arena<int32_t>(0x14) = y0 - 1 + r.range(0, 4);
+                  },
+                  [](void *fn) {
+                      return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x800), *arena<int32_t>(0x10), *arena<int32_t>(0x14))};
+                  }};
+    w4d_cell.prepare = [](const rewrite::Entry *) { g_iface_id = (uint32_t *)0x13ce3bc; };
+    quick(w4d_cell);
+    // Words::Push: full or not, empty or not, growing through the copy's own call
+    Test w4d_push{0x427790,
+                  [=](Rng &r) {
+                      w4c_fill(r);
+                      uint32_t *list = arena<uint32_t>(0x800 + w4c_off);
+                      int32_t cap = r.range(0, 4);
+                      list[0] = (uint32_t)(uintptr_t)arena<void>(0x2000);
+                      list[1] = (uint32_t)cap;
+                      list[2] = (uint32_t)(r.range(0, 1) ? cap : r.range(0, cap));
+                  },
+                  [](void *fn) {
+                      ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x20));
+                      return Result{};
+                  }};
+    w4d_push.prepare = [](const rewrite::Entry *e) { w4c_off = *(uint32_t *)(e->at + 5) - 8; stubs_for_now({{w4c_target(e, 0x25), (void *)w4d_stub_grow}}); };
+    w4d_push.finish = w4c_unstub;
+    quick(w4d_push);

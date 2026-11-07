@@ -1637,3 +1637,55 @@ template <uint32_t SIZE, uint32_t DTOR> static void __thiscall w4d_batch_add(W4d
 static const uint8_t w4d_batch_add_original[] = {0x8b, 0x44, 0x24, 0x04, 0x55, 0x33, 0xed, 0x3b, 0xc5};
 REWRITE("Batches::Add8552B0", 0x8552b0, w4d_batch_add_original, (&w4d_batch_add<0x30, 0x8535c0>), &g_w4d_adds);
 REWRITE("Batches::Add8552B0", 0x8ff9c0, w4d_batch_add_original, (&w4d_batch_add<0x5c, 0x90a150>), &g_w4d_adds);
+
+// ---- Once::Make2: keeps two values; the shared table is set up once (first pairs (0, 0), (SECOND, 0), then all 0xff) and becomes the vtable --
+struct W4dUnusedWords {
+    uint32_t words[14];
+};
+static volatile long g_w4d_once_makes;
+template <uint32_t MADE, uint32_t TABLE, uint32_t SECOND> static void *__thiscall w4d_once_make2(uint32_t *self, uint32_t *a, uint32_t *b, W4dUnusedWords) {
+    g_w4d_once_makes++;
+    self[1] = *a;
+    self[2] = *b;
+    uint32_t &made = *(uint32_t *)MADE;
+    if (!(made & 1)) {
+        made |= 1;
+        const uint32_t ff = 0xffff;
+        ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t,
+                             uint32_t, uint32_t, uint32_t, uint32_t))0x416110)((void *)TABLE, 0, SECOND, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff);
+    }
+    self[0] = TABLE;
+    return self;
+}
+static const uint8_t w4d_once_make2_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x54, 0x24, 0x08, 0x83, 0xec, 0x38, 0x56, 0x8b, 0xf1};
+REWRITE("Once::Make285B290", 0x85b290, w4d_once_make2_original, (&w4d_once_make2<0x1310dd8, 0x1310db0, 6>), &g_w4d_once_makes);
+REWRITE("Once::Make285B290", 0x87c800, w4d_once_make2_original, (&w4d_once_make2<0x1310f70, 0x1310f48, 2>), &g_w4d_once_makes);
+REWRITE("Once::Make285B290", 0xc1cc20, w4d_once_make2_original, (&w4d_once_make2<0x13e484c, 0x13e4824, 4>), &g_w4d_once_makes);
+
+// ---- Grid::CellRef: the interface (id 0x13ce3bc) kept in the reference at REF of the cell (0x58 bytes) at (x, y), if inside the bounds --------
+static volatile long g_w4d_cell_refs;
+template <uint32_t REF> static void *__thiscall w4d_cell_ref(uint8_t *self, int32_t x, int32_t y) {
+    g_w4d_cell_refs++;
+    int32_t x0 = *(int32_t *)(self + 0x4c), y0 = *(int32_t *)(self + 0x50), x1 = *(int32_t *)(self + 0x54), y1 = *(int32_t *)(self + 0x58);
+    if (x < x0 || x > x1 || y < y0 || y > y1) return nullptr;
+    uint8_t *cell = *(uint8_t **)(self + 0x5c) + ((x1 - x0 + 1) * (y - y0) + x - x0) * 0x58;
+    if (!cell) return nullptr;
+    return ref_interface<0x13ce3bc>(cell + REF);
+}
+static const uint8_t w4d_cell_ref_original[] = {0x8b, 0x41, 0x4c, 0x53, 0x8b, 0x5c, 0x24, 0x08};
+REWRITE("Grid::CellRefABD360", 0xabd360, w4d_cell_ref_original, (&w4d_cell_ref<0>), &g_w4d_cell_refs);
+REWRITE("Grid::CellRefABD360", 0xabd410, w4d_cell_ref_original, (&w4d_cell_ref<0x1c>), &g_w4d_cell_refs);
+
+// ---- Words::Push: appends a word to the list {data, capacity, count} at LIST, doubling it (FIRST at first) through GROW when full -----------------
+static volatile long g_w4d_pushes;
+template <uint32_t LIST, uint32_t GROW, int32_t FIRST> static void __thiscall w4d_words_push(uint8_t *self, uint32_t value) {
+    g_w4d_pushes++;
+    uint32_t *list = (uint32_t *)(self + LIST);
+    int32_t count = (int32_t)list[2];
+    if (count >= (int32_t)list[1]) ((void(__thiscall *)(void *, int32_t))GROW)(list, count > 0 ? count * 2 : FIRST);
+    ((uint32_t *)(uintptr_t)list[0])[list[2]] = value;
+    list[2]++;
+}
+static const uint8_t w4d_words_push_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86};
+REWRITE("Words::Push427790", 0x427790, w4d_words_push_original, (&w4d_words_push<0x678, 0x426d40, 4>), &g_w4d_pushes);
+REWRITE("Words::Push427790", 0x80ee30, w4d_words_push_original, (&w4d_words_push<0x8c, 0x80ebb0, 0x20>), &g_w4d_pushes);
