@@ -1551,3 +1551,400 @@ template <uint32_t WORK> static uint32_t __thiscall w4c_big_run(void *self, uint
 static const uint8_t w4c_big_run_original[] = {0xb8, 0x40, 0x11, 0x00, 0x00, 0xe8};
 REWRITE("Big::RunC161E0", 0xc161e0, w4c_big_run_original, (&w4c_big_run<0xc160b0>), &g_w4c_big_runs);
 REWRITE("Big::RunC161E0", 0xc16280, w4c_big_run_original, (&w4c_big_run<0xc16180>), &g_w4c_big_runs);
+
+// ======== fourth batch ========
+// ---- Pack::Send: packs the value at OFF (the packer's fifteen other outputs are not wanted) and hands it, with the word at +0xdc, to the renderer
+static volatile long g_w4d_sends;
+typedef uint8_t W4dB;
+template <uint32_t OFF> static uint32_t __fastcall w4d_pack_send(uint8_t *self) {
+    g_w4d_sends++;
+    uint32_t value = *(uint32_t *)(self + OFF);
+    uint32_t key = *(uint32_t *)(self + 0xdc);
+    void *renderer = *(void **)0x13d0db8;
+    void *slot = (*(void ***)renderer)[0xb0 / 4];
+    uint8_t unused;
+    uint32_t packed[3];
+    W4dB *u = &unused;
+    uint32_t made = ((uint32_t(__thiscall *)(void *, uint32_t *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *,
+                                             W4dB *))0x431070)(packed, &value, u, u, u, u, u, u, u, u, u, u, u, u, u, u, u);
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))slot)(renderer, key, made);
+}
+static const uint8_t w4d_pack_send_original[] = {0x83, 0xec, 0x20, 0x8b, 0x81};
+REWRITE("Pack::Send949090", 0x949090, w4d_pack_send_original, (&w4d_pack_send<0xe0>), &g_w4d_sends);
+REWRITE("Pack::Send949090", 0x949120, w4d_pack_send_original, (&w4d_pack_send<0xe4>), &g_w4d_sends);
+
+// ---- Parts::FindKind: the first part (list at +0x60, count +0x48, 20 bytes each) whose interface 0x130654c has kind KIND at +0x190 -----------
+// (a part with no such interface is read at address 0x190, as the original does)
+static volatile long g_w4d_finds;
+template <int32_t KIND> static uint8_t *__fastcall w4d_find_kind(uint8_t *self) {
+    g_w4d_finds++;
+    for (int32_t i = 0; i < *(int32_t *)(self + 0x48); i++) {
+        uint8_t *part = (uint8_t *)find_interface(*(uint8_t **)(*(uint8_t **)(self + 0x60) + i * 0x14 + 4), (const int32_t *)0x130654c);
+        if (*(int32_t *)(part + 0x190) == KIND) return part;
+    }
+    return nullptr;
+}
+static const uint8_t w4d_find_kind_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x48};
+REWRITE("Parts::FindKind7743D0", 0x7743d0, w4d_find_kind_original, (&w4d_find_kind<8>), &g_w4d_finds);
+REWRITE("Parts::FindKind7743D0", 0x774440, w4d_find_kind_original, (&w4d_find_kind<0xc>), &g_w4d_finds);
+
+// ---- Slots::Match: do two pieces' slots (+0xa4) meet? Same side and slot with the side bit 2 set agrees at once unless forced; otherwise both
+// slots are converted (the second from the other end) and must come out equal -------------------------------------------------------------------
+static volatile long g_w4d_matches;
+template <uint32_t MODE> static bool __stdcall w4d_slots_match(uint8_t *a, uint8_t *b, uint32_t end_word, uint32_t forced_word) {
+    uint8_t end = (uint8_t)end_word, forced = (uint8_t)forced_word;   // bytes passed in words
+    g_w4d_matches++;
+    typedef bool(__fastcall * Convert)(uint8_t, uint8_t, uint32_t *, uint32_t);
+    uint32_t slot_a = *(uint32_t *)(a + 0xa4), slot_b = *(uint32_t *)(b + 0xa4);
+    if (!forced && a[0x8d] == b[0x8d] && slot_a == slot_b && ((a[0x8d] ^ end) & 2)) return true;
+    if (!((Convert)0x71b0f0)(a[0x8d], end, &slot_a, MODE)) return false;
+    if (!((Convert)0x71b0f0)(b[0x8d], (uint8_t)(end ^ 1), &slot_b, MODE)) return false;
+    return slot_a == slot_b;
+}
+static const uint8_t w4d_slots_match_original[] = {0x8b, 0x4c, 0x24, 0x04, 0x8a, 0x44, 0x24, 0x10};
+REWRITE("Slots::Match71D330", 0x71d330, w4d_slots_match_original, (&w4d_slots_match<1>), &g_w4d_matches);
+REWRITE("Slots::Match71D330", 0x71d480, w4d_slots_match_original, (&w4d_slots_match<0xffffffff>), &g_w4d_matches);
+
+// ---- Batches::Add: queues a value in batch INDEX of the table; once the batch holds per * blocks values, its blocks (arrays of SIZE-byte
+// objects ended with DTOR) and both lists are freed and the batch starts empty. Index 0 is no batch. ----------------------------------------------
+struct W4dBatch {
+    int32_t per;
+    uint8_t **blocks;
+    int32_t blocks_n;
+    uint32_t *items;
+    int32_t count;
+};
+static volatile long g_w4d_adds;
+template <uint32_t SIZE, uint32_t DTOR> static void __thiscall w4d_batch_add(W4dBatch **self, uint32_t index, uint32_t value) {
+    g_w4d_adds++;
+    if (!index) return;
+    W4dBatch &b = (*self)[index];
+    b.items[b.count++] = value;
+    if (b.count < b.per * b.blocks_n) return;
+    for (int32_t i = 0; i < b.blocks_n; i++) {
+        uint8_t *block = b.blocks[i];
+        if (!block) continue;
+        ((void(__stdcall *)(void *, uint32_t, uint32_t, void *))0xddcf39)(block, SIZE, *(uint32_t *)(block - 4), (void *)DTOR);
+        memory_free_aligned(block - 4);
+    }
+    memory_free_aligned(b.blocks);
+    memory_free_aligned(b.items);
+    b.blocks = nullptr;
+    b.blocks_n = 0;
+    b.items = nullptr;
+    b.count = 0;
+}
+static const uint8_t w4d_batch_add_original[] = {0x8b, 0x44, 0x24, 0x04, 0x55, 0x33, 0xed, 0x3b, 0xc5};
+REWRITE("Batches::Add8552B0", 0x8552b0, w4d_batch_add_original, (&w4d_batch_add<0x30, 0x8535c0>), &g_w4d_adds);
+REWRITE("Batches::Add8552B0", 0x8ff9c0, w4d_batch_add_original, (&w4d_batch_add<0x5c, 0x90a150>), &g_w4d_adds);
+
+// ---- Once::Make2: keeps two values; the shared table is set up once (first pairs (0, 0), (SECOND, 0), then all 0xff) and becomes the vtable --
+struct W4dUnusedWords {
+    uint32_t words[14];
+};
+static volatile long g_w4d_once_makes;
+template <uint32_t MADE, uint32_t TABLE, uint32_t SECOND> static void *__thiscall w4d_once_make2(uint32_t *self, uint32_t *a, uint32_t *b, W4dUnusedWords) {
+    g_w4d_once_makes++;
+    self[1] = *a;
+    self[2] = *b;
+    uint32_t &made = *(uint32_t *)MADE;
+    if (!(made & 1)) {
+        made |= 1;
+        const uint32_t ff = 0xffff;
+        ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t,
+                             uint32_t, uint32_t, uint32_t, uint32_t))0x416110)((void *)TABLE, 0, SECOND, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff);
+    }
+    self[0] = TABLE;
+    return self;
+}
+static const uint8_t w4d_once_make2_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x54, 0x24, 0x08, 0x83, 0xec, 0x38, 0x56, 0x8b, 0xf1};
+REWRITE("Once::Make285B290", 0x85b290, w4d_once_make2_original, (&w4d_once_make2<0x1310dd8, 0x1310db0, 6>), &g_w4d_once_makes);
+REWRITE("Once::Make285B290", 0x87c800, w4d_once_make2_original, (&w4d_once_make2<0x1310f70, 0x1310f48, 2>), &g_w4d_once_makes);
+REWRITE("Once::Make285B290", 0xc1cc20, w4d_once_make2_original, (&w4d_once_make2<0x13e484c, 0x13e4824, 4>), &g_w4d_once_makes);
+
+// ---- Grid::CellRef: the interface (id 0x13ce3bc) kept in the reference at REF of the cell (0x58 bytes) at (x, y), if inside the bounds --------
+static volatile long g_w4d_cell_refs;
+template <uint32_t REF> static void *__thiscall w4d_cell_ref(uint8_t *self, int32_t x, int32_t y) {
+    g_w4d_cell_refs++;
+    int32_t x0 = *(int32_t *)(self + 0x4c), y0 = *(int32_t *)(self + 0x50), x1 = *(int32_t *)(self + 0x54), y1 = *(int32_t *)(self + 0x58);
+    if (x < x0 || x > x1 || y < y0 || y > y1) return nullptr;
+    uint8_t *cell = *(uint8_t **)(self + 0x5c) + ((x1 - x0 + 1) * (y - y0) + x - x0) * 0x58;
+    if (!cell) return nullptr;
+    return ref_interface<0x13ce3bc>(cell + REF);
+}
+static const uint8_t w4d_cell_ref_original[] = {0x8b, 0x41, 0x4c, 0x53, 0x8b, 0x5c, 0x24, 0x08};
+REWRITE("Grid::CellRefABD360", 0xabd360, w4d_cell_ref_original, (&w4d_cell_ref<0>), &g_w4d_cell_refs);
+REWRITE("Grid::CellRefABD360", 0xabd410, w4d_cell_ref_original, (&w4d_cell_ref<0x1c>), &g_w4d_cell_refs);
+
+// ---- Words::Push: appends a word to the list {data, capacity, count} at LIST, doubling it (FIRST at first) through GROW when full -----------------
+static volatile long g_w4d_pushes;
+template <uint32_t LIST, uint32_t GROW, int32_t FIRST> static void __thiscall w4d_words_push(uint8_t *self, uint32_t value) {
+    g_w4d_pushes++;
+    uint32_t *list = (uint32_t *)(self + LIST);
+    int32_t count = (int32_t)list[2];
+    if (count >= (int32_t)list[1]) ((void(__thiscall *)(void *, int32_t))GROW)(list, count > 0 ? count * 2 : FIRST);
+    ((uint32_t *)(uintptr_t)list[0])[list[2]] = value;
+    list[2]++;
+}
+static const uint8_t w4d_words_push_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86};
+REWRITE("Words::Push427790", 0x427790, w4d_words_push_original, (&w4d_words_push<0x678, 0x426d40, 4>), &g_w4d_pushes);
+REWRITE("Words::Push427790", 0x80ee30, w4d_words_push_original, (&w4d_words_push<0x8c, 0x80ebb0, 0x20>), &g_w4d_pushes);
+
+// ---- Owned::Destroy: destructor that frees the aligned block at OWNED, passing through its own vtable and ending at the base's -------------------
+static volatile long g_w4d_owned_destroys;
+template <uint32_t VTABLE, uint32_t OWNED, uint32_t BASE_VTABLE> static void __fastcall w4d_owned_destroy(uint32_t *self) {
+    g_w4d_owned_destroys++;
+    self[0] = VTABLE;
+    memory_free_aligned(*(void **)((uint8_t *)self + OWNED));
+    self[0] = BASE_VTABLE;
+}
+REWRITE("Owned::DestroyC65790", 0xc65790, (w4c_seh<0xea2738>), (&w4d_owned_destroy<0xfb7614, 0xc, 0xfb0350>), &g_w4d_owned_destroys);
+REWRITE("Owned::DestroyC65790", 0xca57b0, (w4c_seh<0xea48b8>), (&w4d_owned_destroy<0xfbf5f0, 0x24, 0xfbf5b0>), &g_w4d_owned_destroys);
+
+// ---- Single::Get: the single instance in the global INSTANCE, made the first time (SIZE bytes, built by MAKE, which registers itself) ----------
+static volatile long g_w4d_singles;
+template <uint32_t INSTANCE, uint32_t SIZE, uint32_t MAKE> static void *__cdecl w4d_single_get() {
+    g_w4d_singles++;
+    if (!*(void **)INSTANCE) {
+        void *made = memory_alloc(SIZE);
+        if (made) ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))MAKE)(made, 0, 0, 0);
+    }
+    return *(void **)INSTANCE;
+}
+REWRITE("Single::Get436350", 0x436350, (w4c_seh<0xe0828b>), (&w4d_single_get<0x1306c68, 0x58, 0x7a70a0>), &g_w4d_singles);
+REWRITE("Single::Get436350", 0x7bbce0, (w4c_seh<0xe5728b>), (&w4d_single_get<0x13070c8, 0x68, 0x7bb7d0>), &g_w4d_singles);
+
+// ---- Holder::Destroy: destructor: the inner part's vtable at INNER is reset, the member at MEMBER is destroyed, then the base destructor ---------
+static volatile long g_w4d_holder_destroys;
+template <uint32_t INNER, uint32_t MEMBER, uint32_t BASE> static void __fastcall w4d_holder_destroy(uint8_t *self) {
+    g_w4d_holder_destroys++;
+    *(uint32_t *)(self + INNER) = 0xf2694c;
+    ((void(__fastcall *)(void *))0xcd2b50)(self ? self + MEMBER : nullptr);
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Holder::Destroy42BAE0", 0x42bae0, (w4c_seh<0xe07d98>), (&w4d_holder_destroy<0x18, 0x10, 0x440ed0>), &g_w4d_holder_destroys);
+REWRITE("Holder::Destroy42BAE0", 0x7726c0, (w4c_seh<0xe51618>), (&w4d_holder_destroy<0x20, 0x18, 0x772410>), &g_w4d_holder_destroys);
+
+// ---- Thing::New: allocates SIZE bytes and builds them with MAKE(0, a, b, -1); null when out of memory --------------------------------------------
+static volatile long g_w4d_news;
+template <uint32_t SIZE, uint32_t MAKE> static void *__stdcall w4d_thing_new(uint32_t a, uint32_t b) {
+    g_w4d_news++;
+    void *made = memory_alloc(SIZE);
+    if (!made) return nullptr;
+    return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, int32_t))MAKE)(made, 0, a, b, -1);
+}
+REWRITE("Thing::New6C6150", 0x6c6150, (w4c_seh<0xe40dab>), (&w4d_thing_new<0x90, 0x6c3f30>), &g_w4d_news);
+REWRITE("Thing::New6C6150", 0xbaa270, (w4c_seh<0xe9bafb>), (&w4d_thing_new<0xd0, 0xba9840>), &g_w4d_news);
+
+// ---- Boxed::Destroy: destructor that destroys and frees the object it owns at OWNED (if any), then runs the base destructor ----------------------
+static volatile long g_w4d_boxed_destroys;
+template <uint32_t VTABLE, uint32_t OWNED, uint32_t OWNED_DTOR, uint32_t BASE> static void __fastcall w4d_boxed_destroy(uint32_t *self) {
+    g_w4d_boxed_destroys++;
+    self[0] = VTABLE;
+    void *owned = *(void **)((uint8_t *)self + OWNED);
+    if (owned) {
+        ((void(__fastcall *)(void *))OWNED_DTOR)(owned);
+        memory_free(owned);
+    }
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Boxed::DestroyBFCA60", 0xbfca60, (w4c_seh<0xe9e888>), (&w4d_boxed_destroy<0xfa5c28, 0x40, 0xbe69d0, 0xbfc920>), &g_w4d_boxed_destroys);
+REWRITE("Boxed::DestroyBFCA60", 0xc57be0, (w4c_seh<0xea23d8>), (&w4d_boxed_destroy<0xfb74f4, 0x3c, 0xc18640, 0xc16f60>), &g_w4d_boxed_destroys);
+
+// ---- Shared::Release: destroys the member at MEMBER, then drops one count of the shared block {count, .., .., data}, freeing it at zero ---------
+static volatile long g_w4d_releases;
+template <uint32_t MEMBER, uint32_t MEMBER_DTOR> static void __fastcall w4d_shared_release(uint8_t *self) {
+    g_w4d_releases++;
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self + MEMBER);
+    int32_t *shared = *(int32_t **)self;
+    --shared[0];
+    shared = *(int32_t **)self;
+    if (shared[0] == 0 && shared) {
+        memory_free_aligned((void *)(uintptr_t)shared[3]);
+        memory_free(shared);
+    }
+}
+REWRITE("Shared::ReleaseB367B0", 0xb367b0, (w4c_seh<0xe93448>), (&w4d_shared_release<8, 0x40f730>), &g_w4d_releases);
+REWRITE("Shared::ReleaseB367B0", 0xc36530, (w4c_seh<0xea0a98>), (&w4d_shared_release<4, 0xbd99e0>), &g_w4d_releases);
+
+// ---- Twin::Destroy: destructor of a two-vtable object: lets go of the thing at +0x90, destroys the member at MEMBER, then the base ------------
+static volatile long g_w4d_twin_destroys;
+template <uint32_t VTABLE, uint32_t VTABLE2, uint32_t MEMBER> static void __fastcall w4d_twin_destroy(uint32_t *self) {
+    g_w4d_twin_destroys++;
+    self[0] = VTABLE;
+    self[1] = VTABLE2;
+    ((void(__fastcall *)(void *))0xb0e0d0)(*(void **)((uint8_t *)self + 0x90));
+    ((void(__fastcall *)(void *))0x40f730)((uint8_t *)self + MEMBER);
+    ((void(__fastcall *)(void *))0xb7a4c0)(self);
+}
+REWRITE("Twin::DestroyB15320", 0xb15320, (w4c_seh<0xe90f96>), (&w4d_twin_destroy<0xf980b8, 0xf980b0, 0x98>), &g_w4d_twin_destroys);
+REWRITE("Twin::DestroyB15320", 0xb2d2d0, (w4c_seh<0xe92796>), (&w4d_twin_destroy<0xf98d18, 0xf98d14, 0x94>), &g_w4d_twin_destroys);
+
+// ---- Pair::Release: gives back the two pool slots it holds ({pool, item, slot} at +0x14 and at +0), each only when its slot is not negative -----
+static volatile long g_w4d_pair_releases;
+static void __fastcall w4d_pair_release(uint32_t *self) {
+    g_w4d_pair_releases++;
+    typedef void(__thiscall * GiveBack)(void *, int32_t, uint32_t);
+    if ((int32_t)self[8] >= 0) ((GiveBack)0x8501c0)((void *)(uintptr_t)self[5], (int32_t)self[8], self[7]);
+    if ((int32_t)self[3] >= 0) ((GiveBack)0x8501c0)((void *)(uintptr_t)self[0], (int32_t)self[3], self[2]);
+}
+REWRITE("Pair::Release8535C0", 0x8535c0, (w4c_seh<0xe61588>), (&w4d_pair_release), &g_w4d_pair_releases);
+REWRITE("Pair::Release8535C0", 0x9f9d10, (w4c_seh<0xe77fb8>), (&w4d_pair_release), &g_w4d_pair_releases);
+
+// ---- Owners::Clear: deletes every object in the pointer list {+4 items, +8 count} and frees the list (the count is left as it was) -----------
+static volatile long g_w4d_owner_clears;
+static void __fastcall w4d_owners_clear(uint32_t *self) {
+    g_w4d_owner_clears++;
+    for (int32_t i = 0; i < (int32_t)self[2]; i++) {
+        void *owned = ((void **)(uintptr_t)self[1])[i];
+        if (owned) ((void(__thiscall *)(void *, uint32_t))(*(void ***)owned)[0])(owned, 1);
+    }
+    if (self[1]) {
+        memory_free_aligned((void *)(uintptr_t)self[1]);
+        self[1] = 0;
+    }
+}
+REWRITE("Owners::Clear7FBAD0", 0x7fbad0, (w4c_seh<0xe5b1bb>), (&w4d_owners_clear), &g_w4d_owner_clears);
+REWRITE("Owners::Clear7FBAD0", 0x801860, (w4c_seh<0xe5bdfb>), (&w4d_owners_clear), &g_w4d_owner_clears);
+
+// ---- Mark::New: a new 0x78-byte mark built empty, given this one's three words at +0x98 (to +0x64) --------------------------------------------
+static volatile long g_w4d_mark_news;
+static uint8_t *__fastcall w4d_mark_new(uint8_t *self) {
+    g_w4d_mark_news++;
+    void *memory = memory_alloc(0x78);
+    uint8_t *made = memory ? ((uint8_t * (__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0xb60b60)(memory, 0, 0, 0) : nullptr;
+    *(uint32_t *)(made + 0x6c) = *(uint32_t *)(self + 0xa0);
+    *(uint32_t *)(made + 0x64) = *(uint32_t *)(self + 0x98);
+    *(uint32_t *)(made + 0x68) = *(uint32_t *)(self + 0x9c);
+    return made;
+}
+REWRITE("Mark::NewB14B70", 0xb14b70, (w4c_seh<0xe90eab>), (&w4d_mark_new), &g_w4d_mark_news);
+REWRITE("Mark::NewB14B70", 0xb7b3b0, (w4c_seh<0xe97bab>), (&w4d_mark_new), &g_w4d_mark_news);
+
+// ---- Boxed::Add: wraps the value in a new 8-byte box (null when out of memory) and adds it under the key through ADD -----------------------------
+static volatile long g_w4d_boxed_adds;
+template <uint32_t ADD> static uint32_t __thiscall w4d_boxed_add(void *self, uint32_t key, uint32_t value) {
+    g_w4d_boxed_adds++;
+    void *memory = memory_alloc(8);
+    void *box = memory ? ((void *(__thiscall *)(void *, uint32_t))0xca8610)(memory, value) : nullptr;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *))ADD)(self, key, box);
+}
+REWRITE("Boxed::AddC33CB0", 0xc33cb0, (w4c_seh<0xea045b>), (&w4d_boxed_add<0xc33c00>), &g_w4d_boxed_adds);
+REWRITE("Boxed::AddC33CB0", 0xc343f0, (w4c_seh<0xea059b>), (&w4d_boxed_add<0xc34340>), &g_w4d_boxed_adds);
+
+// ---- Watch::Add: a new list node holding a new watcher (vtable 0xf26ae0) of the key's target, linked into the target's watchers; the node goes
+// into the list whose head is at LIST. If the watcher cannot be had the node holds null. -------------------------------------------------------
+static volatile long g_w4d_watch_adds;
+static inline void w4d_link_after(Node *node, Node *head) {
+    node->next = head->next;
+    head->next->prev = node;
+    node->prev = head;
+    head->next = node;
+}
+template <uint32_t LIST> static Node *__thiscall w4d_watch_add(uint8_t *self, void *key) {
+    g_w4d_watch_adds++;
+    Node *node = (Node *)memory_alloc(sizeof(Node));
+    if (node) {
+        uint32_t *watcher = (uint32_t *)memory_alloc(0x14);
+        if (watcher) {
+            watcher[0] = 0xf26ae0;
+            watcher[4] = (uint32_t)(uintptr_t)watcher;
+            uint8_t *target = ((uint8_t * (__fastcall *)(void *))0x805700)(key);
+            watcher[1] = (uint32_t)(uintptr_t)target;
+            w4d_link_after((Node *)(watcher + 2), *(Node **)(target + 0x20));
+        }
+        node->value = watcher;
+    }
+    w4d_link_after(node, *(Node **)(self + LIST));
+    return node;
+}
+REWRITE("Watch::Add784B20", 0x784b20, (w4c_seh<0xe521b6>), (&w4d_watch_add<0x54>), &g_w4d_watch_adds);
+REWRITE("Watch::Add784B20", 0x871240, (w4c_seh<0xe629d6>), (&w4d_watch_add<0x48>), &g_w4d_watch_adds);
+
+// ---- Shared text: a counted block {count, .., .., data} freed (data aligned, then the block) when its count drops to zero --------------------
+static const uint8_t w4d_seh_late[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff, 0x68};   // the frame set up after reading fs:[0]
+static inline void w4d_release(int32_t **slot) {
+    --(*slot)[0];
+    int32_t *block = *slot;
+    if (block[0] == 0 && block) {
+        memory_free_aligned((void *)(uintptr_t)block[3]);
+        memory_free(block);
+    }
+}
+// ---- Text::Assign: lets go of the current text and takes a new one made from the characters by MAKE, or the empty text from EMPTY for null -----
+static volatile long g_w4d_assigns;
+template <uint32_t MAKE, uint32_t EMPTY> static int32_t **__thiscall w4d_text_assign(int32_t **self, const void *characters) {
+    g_w4d_assigns++;
+    w4d_release(self);
+    int32_t *made;
+    if (characters) {
+        void *memory = memory_alloc(0x10);
+        made = memory ? ((int32_t * (__thiscall *)(void *, const void *))MAKE)(memory, characters) : nullptr;
+    } else {
+        made = ((int32_t * (__fastcall *)(uint8_t))EMPTY)(1);
+    }
+    *self = made;
+    return self;
+}
+REWRITE("Text::Assign40A6E0", 0x40a6e0, w4d_seh_late, (&w4d_text_assign<0xbcf850, 0xbd0490>), &g_w4d_assigns);
+REWRITE("Text::Assign40A6E0", 0x410980, w4d_seh_late, (&w4d_text_assign<0xbcf7d0, 0xbd0490>), &g_w4d_assigns);
+REWRITE("Text::Assign40A6E0", 0x4576b0, w4d_seh_late, (&w4d_text_assign<0xbcfb10, 0xbd0520>), &g_w4d_assigns);
+
+// ---- Text::Set: the text at SLOT becomes the given one (passed by value, so its own count is dropped at the end) --------------------------------
+static volatile long g_w4d_sets;
+template <uint32_t SLOT> static void __thiscall w4d_text_set(uint8_t *self, int32_t *text) {
+    g_w4d_sets++;
+    int32_t **slot = (int32_t **)(self + SLOT);
+    if (text != *slot) {
+        w4d_release(slot);
+        *slot = text;
+        text[0]++;
+    }
+    w4d_release(&text);
+}
+REWRITE("Text::Set57AC20", 0x57ac20, w4d_seh_late, (&w4d_text_set<0x194>), &g_w4d_sets);
+REWRITE("Text::Set57AC20", 0x70c2a0, w4d_seh_late, (&w4d_text_set<0x1d8>), &g_w4d_sets);
+REWRITE("Text::Set57AC20", 0xa1d330, w4d_seh_late, (&w4d_text_set<0xb4>), &g_w4d_sets);
+
+// ---- Text::FromName: looks up the name NAME (in table 0x1303cfc) into a 28-byte temporary and takes its text (+8) as a new counted text, or the
+// empty text when it has none; the temporary is then destroyed -----------------------------------------------------------------------------------
+static volatile long g_w4d_from_names;
+template <uint32_t NAME> static int32_t **__fastcall w4d_text_from_name(int32_t **self) {
+    g_w4d_from_names++;
+    uint32_t temporary[7];
+    uint32_t *found = ((uint32_t * (__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x4040f0)(temporary, NAME, 0x1303cfc, 1);
+    const void *characters = (const void *)(uintptr_t)found[2];
+    int32_t *made;
+    if (characters) {
+        void *memory = memory_alloc(0x10);
+        made = memory ? ((int32_t * (__thiscall *)(void *, const void *))0xbcf7d0)(memory, characters) : nullptr;
+    } else {
+        made = ((int32_t * (__fastcall *)(uint8_t))0xbd0490)(1);
+    }
+    *self = made;
+    ((void(__fastcall *)(void *))0xbd1880)(temporary);
+    return self;
+}
+REWRITE("Text::FromName6E5860", 0x6e5860, (w4c_seh<0xe4579c>), (&w4d_text_from_name<0xf65b74>), &g_w4d_from_names);
+REWRITE("Text::FromName6E5860", 0x6e5e00, (w4c_seh<0xe458ec>), (&w4d_text_from_name<0xf65bd0>), &g_w4d_from_names);
+REWRITE("Text::FromName6E5860", 0x6e6e40, (w4c_seh<0xe45bec>), (&w4d_text_from_name<0xf65cd8>), &g_w4d_from_names);
+
+// ---- Text::Is: does this text equal the characters? They are made into a counted text first (by MAKE, or EMPTY for null), compared with COMPARE
+// (zero means equal), and let go ------------------------------------------------------------------------------------------------------------------
+static volatile long g_w4d_text_is;
+template <uint32_t MAKE, uint32_t EMPTY, uint32_t COMPARE> static bool __thiscall w4d_text_is(void *self, const void *characters) {
+    g_w4d_text_is++;
+    int32_t *other;
+    if (characters) {
+        void *memory = memory_alloc(0x10);
+        other = memory ? ((int32_t * (__thiscall *)(void *, const void *))MAKE)(memory, characters) : nullptr;
+    } else {
+        other = ((int32_t * (__fastcall *)(uint8_t))EMPTY)(1);
+    }
+    bool same = ((int32_t(__thiscall *)(void *, int32_t **))COMPARE)(self, &other) == 0;
+    w4d_release(&other);
+    return same;
+}
+REWRITE("Text::Is403C20", 0x403c20, (w4c_seh<0xe04a73>), (&w4d_text_is<0xbcf850, 0xbd0490, 0xbce970>), &g_w4d_text_is);
+REWRITE("Text::Is403C20", 0x41c660, (w4c_seh<0xe065b3>), (&w4d_text_is<0xbcfb10, 0xbd0520, 0xbcf040>), &g_w4d_text_is);
+REWRITE("Text::Is403C20", 0x6209c0, (w4c_seh<0xe2c7e3>), (&w4d_text_is<0xbcf7d0, 0xbd0490, 0xbce970>), &g_w4d_text_is);

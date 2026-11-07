@@ -192,3 +192,72 @@ static uint32_t __thiscall w4c_stub_job(uint32_t *job, void *self, uint32_t argu
     return argument + 1;
 }
 struct W4cWords { uint32_t words[13]; };
+// ---- fourth batch ----
+typedef uint8_t *W4dP;
+static uint32_t __thiscall w4d_stub_pack(uint32_t *packed, uint32_t *value, W4dP u1, W4dP u2, W4dP u3, W4dP u4, W4dP u5, W4dP u6, W4dP u7, W4dP u8, W4dP u9, W4dP u10,
+                                         W4dP u11, W4dP u12, W4dP u13, W4dP u14, W4dP u15) {
+    record(0x4d00, (void *)(uintptr_t)*value);
+    for (W4dP u : {u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, u11, u12, u13, u14, u15}) *u = 0x77;
+    for (int i = 0; i < 3; i++) packed[i] = *value ^ (0x1111 * i);
+    return *value * 3 + 1;
+}
+static uint32_t __thiscall w4d_stub_render(void *self, uint32_t key, uint32_t made) { record(0x4d01, self); record(0x4d01, (void *)(uintptr_t)key); record(0x4d01, (void *)(uintptr_t)made); return key ^ made; }
+static void *__fastcall w4d_stub_class(void *object) { record(0x4d02, object); return arena<void>(0x2000); }
+static uint32_t __fastcall w4d_stub_convert(uint32_t side, uint32_t end, uint32_t *slot, uint32_t mode) {
+    side &= 0xff; end &= 0xff;
+    record(0x4d03, (void *)(uintptr_t)side); record(0x4d03, (void *)(uintptr_t)end); record(0x4d03, (void *)(uintptr_t)*slot); record(0x4d03, (void *)(uintptr_t)mode);
+    *slot = (*slot + (side & 1) + (end & 1)) & 1;
+    return ((*arena<uint32_t>(0x20) >> ((side + end) & 7)) & 3) != 0;
+}
+static void __stdcall w4d_stub_vector_dtor(void *p, uint32_t size, uint32_t n, void *dtor) { record(0x4d04, p); record(0x4d04, (void *)(uintptr_t)size); record(0x4d04, (void *)(uintptr_t)n); record(0x4d04, dtor); }
+struct W4dWords14 { uint32_t words[14]; };
+static void __thiscall w4d_stub_grow(uint32_t *list, int32_t n) { record(0x4d05, (void *)(uintptr_t)n); record(0x4d05, (void *)(uintptr_t)list[2]); list[0] = (uint32_t)(uintptr_t)arena<void>(0x2400); list[1] = (uint32_t)n; }
+static uint32_t w4d_instance;   // the global a Single::Get copy keeps its instance in
+// registers itself in the instance global when the word at 0x24 is odd
+static void *__thiscall w4d_stub_make3(uint32_t *p, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x4d06, p); record(0x4d06, (void *)(uintptr_t)a); record(0x4d06, (void *)(uintptr_t)b); record(0x4d06, (void *)(uintptr_t)c);
+    p[0] = 0x4d060000;
+    if (*arena<uint32_t>(0x24) & 1) *(void **)(uintptr_t)w4d_instance = p;
+    return p;
+}
+static void *__thiscall w4d_stub_make4(uint32_t *p, uint32_t w, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x4d07, p); for (uint32_t v : {w, a, b, c}) record(0x4d07, (void *)(uintptr_t)v);
+    for (int i = 0; i < 4; i++) p[i] = 0x4d070000 + i;
+    return (uint8_t *)p + 4;
+}
+static void __fastcall w4d_stub_member_gone(void *p) { record(0x4d08, p); }
+static void __fastcall w4d_stub_base_gone(uint32_t *p) { record(0x4d09, p); for (int i = 0; i < 12; i++) record(0x4d09, (void *)(uintptr_t)p[i]); }
+static void __fastcall w4d_stub_gone_a(void *p) { record(0x4d0a, p); }
+static void __fastcall w4d_stub_gone_b(void *p) { record(0x4d0b, p); }
+static void __thiscall w4d_stub_give_back(void *pool, int32_t item, uint32_t slot) { record(0x4d0c, pool); record(0x4d0c, (void *)(uintptr_t)item); record(0x4d0c, (void *)(uintptr_t)slot); }
+static void __thiscall w4d_stub_delete(void *self, uint32_t flags) { record(0x4d0d, self); record(0x4d0d, (void *)(uintptr_t)flags); }
+static void *__cdecl w4d_stub_alloc_ok(uint32_t size) { record(0x4d0e, (void *)(uintptr_t)size); return arena<void>(0xc00); }
+static void *__thiscall w4d_stub_box(uint32_t *p, uint32_t value) { record(0x4d0f, p); record(0x4d0f, (void *)(uintptr_t)value); p[0] = value; p[1] = 0x4d0f; return p + 1; }
+static uint32_t __thiscall w4d_stub_add(void *self, uint32_t key, void *box) { record(0x4d10, self); record(0x4d10, (void *)(uintptr_t)key); record(0x4d10, box); return key + 7; }
+static void *__thiscall w4d_stub_mark(uint32_t *p, uint32_t a, uint32_t b, uint32_t c) { for (uint32_t v : {a, b, c}) record(0x4d11, (void *)(uintptr_t)v); for (int i = 0; i < 0x78 / 4; i++) p[i] = 0x4d110000 + i; return p; }
+// successive blocks; the second fails when the word at 0x20 is odd
+static int w4d_allocs;
+static void *__cdecl w4d_stub_alloc_two(uint32_t size) {
+    record(0x4d12, (void *)(uintptr_t)size);
+    int n = w4d_allocs++;
+    if (n == 1 && (*arena<uint32_t>(0x20) & 1)) return nullptr;
+    return arena<void>(0x2400 + n * 0x40);
+}
+static void *__fastcall w4d_stub_target(void *key) { record(0x4d13, key); return arena<void>(0x2600); }
+struct W4dNode { W4dNode *next, *prev; void *value; };
+static void *__thiscall w4d_stub_text(uint32_t *p, const void *characters) { record(0x4d14, p); record(0x4d14, (void *)characters); for (int i = 0; i < 4; i++) p[i] = 0x4d140000 + i; return p; }
+static void *__fastcall w4d_stub_empty(uint32_t flag) { record(0x4d15, (void *)(uintptr_t)(flag & 0xff)); return arena<void>(0x2200); }
+// fills the whole 28-byte temporary; the found record at 0x2300 has text (+8) when the word at 0x24 is not a multiple of 3
+static void *__thiscall w4d_stub_lookup(uint32_t *temporary, uint32_t name, uint32_t table, uint32_t flag) {
+    record(0x4d16, (void *)(uintptr_t)name); record(0x4d16, (void *)(uintptr_t)table); record(0x4d16, (void *)(uintptr_t)flag);
+    for (int i = 0; i < 7; i++) temporary[i] = 0x4d160000 + i;
+    arena<uint32_t>(0x2300)[2] = *arena<uint32_t>(0x24) % 3 ? (uint32_t)(uintptr_t)arena<void>(0x2100) : 0;
+    return arena<void>(0x2300);
+}
+static void __fastcall w4d_stub_temporary_gone(uint32_t *temporary) { for (int i = 0; i < 7; i++) record(0x4d17, (void *)(uintptr_t)temporary[i]); }
+// equal (0) when the word at 0x24 is even; records the other text, not where it is held
+static int32_t __thiscall w4d_stub_compare(void *self, int32_t **other) {
+    record(0x4d18, self); record(0x4d18, *other); record(0x4d18, (void *)(uintptr_t)(*other)[0]);
+    return (int32_t)(*arena<uint32_t>(0x24) & 1);
+}
+static void *__thiscall w4d_stub_text_counted(uint32_t *p, const void *characters) { record(0x4d19, (void *)characters); p[1] = 0x4d19; return p; }

@@ -1424,3 +1424,317 @@
     w4c_big.prepare = [](const rewrite::Entry *e) { stubs_for_now({{w4c_target(e, 0x82), (void *)w4c_stub_job}}); };
     w4c_big.finish = w4c_unstub;
     quick(w4c_big);
+    // ---- fourth batch ----
+    static uint32_t w4d_saved;
+    // Pack::Send: the copy's own word packed and sent with +0xdc to the renderer in the global
+    Test w4d_pack{0x949090, w4c_fill, [](void *fn) {
+                      static void *vt[0x40];
+                      vt[0xb0 / 4] = (void *)w4d_stub_render;
+                      arena<void *>(0x2100)[0] = vt;
+                      *(void **)0x13d0db8 = arena<void>(0x2100);
+                      return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))};
+                  }};
+    w4d_pack.prepare = [](const rewrite::Entry *) { w4d_saved = *(uint32_t *)0x13d0db8; stubs_for_now({{0x431070, (void *)w4d_stub_pack}}); };
+    w4d_pack.finish = [](const rewrite::Entry *) { *(uint32_t *)0x13d0db8 = w4d_saved; unstub_many(); };
+    quick(w4d_pack);
+    // Parts::FindKind: 0-4 parts whose interfaces (offset 0 or 8) carry kinds 8, 0xc or 5; every lookup succeeds (a failed one reads 0x190)
+    Test w4d_find{0x7743d0,
+                  [=](Rng &r) {
+                      w4c_fill(r);
+                      static void *vt[2] = {nullptr, (void *)w4d_stub_class};
+                      uint8_t *self = arena<uint8_t>(0x800);
+                      *(int32_t *)(self + 0x48) = r.range(0, 4);
+                      *(void **)(self + 0x60) = arena<void>(0x2200);
+                      uint8_t *cls = arena<uint8_t>(0x2000);
+                      *(void **)(cls + 0x14) = arena<void>(0x2040);
+                      *(int32_t *)(cls + 0x18) = 3;
+                      arena<void *>(0x2040)[1] = arena<void>(0x2080);
+                      *arena<int32_t>(0x2090) = r.range(0, 1) * 8;
+                      static const int32_t kinds[3] = {8, 0xc, 5};
+                      for (int k = 0; k < 4; k++) {
+                          *(void **)arena<uint8_t>(0x2200 + k * 0x14 + 4) = arena<void>(0x2300 + k * 0x10);
+                          *(void **)arena<uint8_t>(0x2300 + k * 0x10 + 0xc) = arena<void>(0x3000 + k * 0x400);
+                          arena<void *>(0x3000 + k * 0x400)[0] = vt;
+                          *arena<int32_t>(0x3000 + k * 0x400 + 0x190) = kinds[r.range(0, 2)];
+                          *arena<int32_t>(0x3000 + k * 0x400 + 0x198) = kinds[r.range(0, 2)];
+                      }
+                  },
+                  [](void *fn) {
+                      *(int32_t *)0x130654c = 1;
+                      return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x800))};
+                  }};
+    w4d_find.prepare = [](const rewrite::Entry *) { w4d_saved = *(uint32_t *)0x130654c; };
+    w4d_find.finish = [](const rewrite::Entry *) { *(uint32_t *)0x130654c = w4d_saved; };
+    quick(w4d_find);
+    // Slots::Match: sides 0-3, slots 0-1, ends and forced flags in words with junk above the byte; conversions fail now and then
+    Test w4d_match{0x71d330,
+                   [=](Rng &r) {
+                       w4c_fill(r);
+                       for (uint32_t at : {0x2000u, 0x2100u}) {
+                           arena<uint8_t>(at)[0x8d] = (uint8_t)r.range(0, 3);
+                           *arena<uint32_t>(at + 0xa4) = r.range(0, 1);
+                       }
+                       *arena<uint32_t>(0x10) = (r.next() & ~0xffu) | r.range(0, 3);
+                       *arena<uint32_t>(0x14) = (r.next() & ~0xffu) | (r.range(0, 2) ? 0 : r.range(1, 255));
+                   },
+                   [](void *fn) {
+                       return Result{((uint32_t(__stdcall *)(void *, void *, uint32_t, uint32_t))fn)(arena<void>(0x2000), arena<void>(0x2100), *arena<uint32_t>(0x10),
+                                                                                                   *arena<uint32_t>(0x14)) & 0xff};
+                   }};
+    w4d_match.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x71b0f0, (void *)w4d_stub_convert}}); };
+    w4d_match.finish = w4c_unstub;
+    quick(w4d_match);
+    // Batches::Add: four batches, one picked (or index 0); some fill up and are freed, blocks present or not
+    Test w4d_batch{0x8552b0,
+                   [=](Rng &r) {
+                       w4c_fill(r);
+                       *arena<void *>(0x800) = arena<void>(0x2000);
+                       for (int i = 0; i < 4; i++) {
+                           uint8_t *b = arena<uint8_t>(0x2000 + i * 0x14);
+                           int32_t per = r.range(1, 3), n = r.range(0, 3);
+                           *(int32_t *)b = per;
+                           *(void **)(b + 4) = arena<void>(0x2100 + i * 0x10);
+                           *(int32_t *)(b + 8) = n;
+                           *(void **)(b + 0xc) = arena<void>(0x2200 + i * 0x40);
+                           *(int32_t *)(b + 0x10) = per * n ? r.range(0, per * n - 1) : 0;
+                           for (int j = 0; j < 4; j++) {
+                               uint8_t *block = arena<uint8_t>(0x2400 + (i * 4 + j) * 0x20);
+                               *(uint32_t *)block = r.range(1, 9);
+                               arena<void *>(0x2100 + i * 0x10)[j] = r.range(0, 3) ? block + 4 : nullptr;
+                           }
+                       }
+                       *arena<uint32_t>(0x10) = r.range(0, 3);
+                   },
+                   [](void *fn) {
+                       ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10), *arena<uint32_t>(0x20));
+                       return Result{};
+                   }};
+    w4d_batch.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcf39, (void *)w4d_stub_vector_dtor}, {0xbce010, (void *)stub_free_aligned}}); };
+    w4d_batch.finish = w4c_unstub;
+    quick(w4d_batch);
+    // Once::Make2: made or not, in the copy's own global
+    Test w4d_once{0x85b290,
+                  [=](Rng &r) {
+                      w4c_fill(r);
+                      for (int i = 0; i < 4; i++) arena<uint32_t>(0x10)[i] = r.next();
+                  },
+                  [](void *fn) {
+                      uint32_t *a = arena<uint32_t>(0x10);
+                      *(uint32_t *)(uintptr_t)w4c_global = a[3];
+                      W4dWords14 unused{};
+                      void *back = ((void *(__thiscall *)(void *, void *, void *, W4dWords14))fn)(arena<void>(0x800), a, a + 1, unused);
+                      return Result{(uint32_t)(uintptr_t)back ^ *(uint32_t *)(uintptr_t)w4c_global};
+                  }};
+    w4d_once.prepare = [](const rewrite::Entry *e) {
+        w4c_global = *(uint32_t *)(e->at + 0x1a); w4c_global_saved = *(uint32_t *)(uintptr_t)w4c_global;
+        stubs_for_now({{0x416110, (void *)w4b_stub_table}});
+    };
+    w4d_once.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4c_global = w4c_global_saved; unstub_many(); };
+    quick(w4d_once);
+    // Grid::CellRef: bounds of 1-3 cells each way, points just inside and outside; each cell's reference cached or not, on the shared handle
+    Test w4d_cell{0xabd360,
+                  [=](Rng &r) {
+                      w4c_fill(r);
+                      iface_handle(r);
+                      uint8_t *self = arena<uint8_t>(0x800);
+                      int32_t x0 = r.range(0, 4) - 2, y0 = r.range(0, 4) - 2, x1 = x0 + r.range(0, 2), y1 = y0 + r.range(0, 2);
+                      *(int32_t *)(self + 0x4c) = x0; *(int32_t *)(self + 0x50) = y0; *(int32_t *)(self + 0x54) = x1; *(int32_t *)(self + 0x58) = y1;
+                      *(void **)(self + 0x5c) = arena<void>(0x2000);
+                      for (int c = 0; c < 9; c++)
+                          for (uint32_t ref : {0u, 0x1cu}) {
+                              uint8_t *at = arena<uint8_t>(0x2000 + c * 0x58 + ref);
+                              *(void **)(at + 4) = arena<void>(0x340);
+                              *(uint32_t *)(at + 0x14) = r.next();
+                              at[0x18] = (uint8_t)r.range(0, 1);
+                          }
+                      *arena<int32_t>(0x10) = x0 - 1 + r.range(0, 4);
+                      *arena<int32_t>(0x14) = y0 - 1 + r.range(0, 4);
+                  },
+                  [](void *fn) {
+                      return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x800), *arena<int32_t>(0x10), *arena<int32_t>(0x14))};
+                  }};
+    w4d_cell.prepare = [](const rewrite::Entry *) { g_iface_id = (uint32_t *)0x13ce3bc; };
+    quick(w4d_cell);
+    // Words::Push: full or not, empty or not, growing through the copy's own call
+    Test w4d_push{0x427790,
+                  [=](Rng &r) {
+                      w4c_fill(r);
+                      uint32_t *list = arena<uint32_t>(0x800 + w4c_off);
+                      int32_t cap = r.range(0, 4);
+                      list[0] = (uint32_t)(uintptr_t)arena<void>(0x2000);
+                      list[1] = (uint32_t)cap;
+                      list[2] = (uint32_t)(r.range(0, 1) ? cap : r.range(0, cap));
+                  },
+                  [](void *fn) {
+                      ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x20));
+                      return Result{};
+                  }};
+    w4d_push.prepare = [](const rewrite::Entry *e) { w4c_off = *(uint32_t *)(e->at + 5) - 8; stubs_for_now({{w4c_target(e, 0x25), (void *)w4d_stub_grow}}); };
+    w4d_push.finish = w4c_unstub;
+    quick(w4d_push);
+    // Owned::Destroy
+    Test w4d_owned{0xc65790, w4c_fill, w4c_self};
+    w4d_owned.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbce010, (void *)stub_free_aligned}}); };
+    w4d_owned.finish = w4c_unstub;
+    quick(w4d_owned);
+    // Single::Get: there already or not; out of memory or not; the maker registering itself or not
+    Test w4d_single{0x436350, [=](Rng &r) { w4c_fill(r); *arena<uint32_t>(0x24) = r.next(); }, [](void *fn) {
+                        *(void **)(uintptr_t)w4d_instance = *arena<uint32_t>(0x20) & 2 ? arena<void>(0x900) : nullptr;
+                        return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()};
+                    }};
+    w4d_single.prepare = [](const rewrite::Entry *e) {
+        w4d_instance = *(uint32_t *)(e->at + 0x17); w4c_global_saved = *(uint32_t *)(uintptr_t)w4d_instance;
+        stubs_for_now({{0xbcdfc0, (void *)w4c_stub_alloc}, {w4c_target(e, 0x41), (void *)w4d_stub_make3}});
+    };
+    w4d_single.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4d_instance = w4c_global_saved; unstub_many(); };
+    quick(w4d_single);
+    // Holder::Destroy
+    Test w4d_holder{0x42bae0, w4c_fill, w4c_self};
+    w4d_holder.prepare = [](const rewrite::Entry *e) { stubs_for_now({{0xcd2b50, (void *)w4d_stub_member_gone}, {w4c_target(e, 0x4b), (void *)w4d_stub_base_gone}}); };
+    w4d_holder.finish = w4c_unstub;
+    quick(w4d_holder);
+    // Thing::New: out of memory or not
+    Test w4d_new{0x6c6150, w4c_fill, [](void *fn) {
+                     return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(uint32_t, uint32_t))fn)(*arena<uint32_t>(0x800), *arena<uint32_t>(0x804))};
+                 }};
+    w4d_new.prepare = [](const rewrite::Entry *e) { stubs_for_now({{0xbcdfc0, (void *)w4c_stub_alloc}, {w4c_target(e, 0x43), (void *)w4d_stub_make4}}); };
+    w4d_new.finish = w4c_unstub;
+    quick(w4d_new);
+    // Boxed::Destroy: owning something or not, at the copy's own offset
+    Test w4d_boxed{0xbfca60, [=](Rng &r) { w4c_fill(r); *(void **)arena<uint8_t>(0x800 + w4c_off) = r.range(0, 2) ? arena<void>(0x900) : nullptr; }, w4c_self};
+    w4d_boxed.prepare = [](const rewrite::Entry *e) {
+        w4c_off = *(uint8_t *)(e->at + 0x26);
+        stubs_for_now({{w4c_target(e, 0x36), (void *)w4d_stub_gone_a}, {0xbce000, (void *)stub_free}, {w4c_target(e, 0x4e), (void *)w4d_stub_base_gone}});
+    };
+    w4d_boxed.finish = w4c_unstub;
+    quick(w4d_boxed);
+    // Shared::Release: the count reaching zero or not
+    Test w4d_shared{0xb367b0,
+                    [=](Rng &r) {
+                        w4c_fill(r);
+                        *arena<void *>(0x800) = arena<void>(0x900);
+                        *arena<int32_t>(0x900) = r.range(1, 2);
+                    },
+                    w4c_self};
+    w4d_shared.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{w4c_target(e, 0x29), (void *)w4d_stub_gone_a}, {0xbce010, (void *)stub_free_aligned}, {0xbce000, (void *)stub_free}});
+    };
+    w4d_shared.finish = w4c_unstub;
+    quick(w4d_shared);
+    // Twin::Destroy
+    Test w4d_twin{0xb15320, w4c_fill, w4c_self};
+    w4d_twin.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xb0e0d0, (void *)w4d_stub_gone_a}, {0x40f730, (void *)w4d_stub_gone_b}, {0xb7a4c0, (void *)w4d_stub_base_gone}});
+    };
+    w4d_twin.finish = w4c_unstub;
+    quick(w4d_twin);
+    // Pair::Release: each slot negative, zero or positive
+    Test w4d_pair{0x8535c0, [=](Rng &r) { w4c_fill(r); arena<int32_t>(0x800)[3] = r.range(0, 3) - 1; arena<int32_t>(0x800)[8] = r.range(0, 3) - 1; }, w4c_self};
+    w4d_pair.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x8501c0, (void *)w4d_stub_give_back}}); };
+    w4d_pair.finish = w4c_unstub;
+    quick(w4d_pair);
+    // Owners::Clear: 0-4 items, some empty; the list there or not
+    Test w4d_clear{0x7fbad0,
+                   [=](Rng &r) {
+                       w4c_fill(r);
+                       static void *vt[1] = {(void *)w4d_stub_delete};
+                       uint32_t *self = arena<uint32_t>(0x800);
+                       self[1] = r.range(0, 4) ? (uint32_t)(uintptr_t)arena<void>(0x2000) : 0;
+                       self[2] = (uint32_t)(r.range(0, 5) - 1);
+                       for (int i = 0; i < 4; i++) {
+                           arena<void *>(0x2100 + i * 0x10)[0] = vt;
+                           arena<void *>(0x2000)[i] = r.range(0, 3) ? arena<void>(0x2100 + i * 0x10) : nullptr;
+                       }
+                       if (!self[1] && (int32_t)self[2] > 0) self[2] = 0;
+                   },
+                   w4c_self};
+    w4d_clear.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbce010, (void *)stub_free_aligned}}); };
+    w4d_clear.finish = w4c_unstub;
+    quick(w4d_clear);
+    // Mark::New (out of memory would write through null in both, so memory is always there)
+    Test w4d_mark{0xb14b70, w4c_fill, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4d_mark.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfc0, (void *)w4d_stub_alloc_ok}, {0xb60b60, (void *)w4d_stub_mark}}); };
+    w4d_mark.finish = w4c_unstub;
+    quick(w4d_mark);
+    // Boxed::Add: out of memory or not, through the copy's own adder
+    Test w4d_badd{0xc33cb0, w4c_fill, [](void *fn) {
+                      return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x804), *arena<uint32_t>(0x808))};
+                  }};
+    w4d_badd.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)w4c_stub_alloc}, {0xca8610, (void *)w4d_stub_box}, {w4c_target(e, 0x54), (void *)w4d_stub_add}});
+    };
+    w4d_badd.finish = w4c_unstub;
+    quick(w4d_badd);
+    // Watch::Add: the watcher had or not; both lists empty or holding one node
+    Test w4d_watch{0x784b20,
+                   [=](Rng &r) {
+                       w4c_fill(r);
+                       *arena<void *>(0x2620) = arena<void>(0x2700);
+                       *(void **)arena<uint8_t>(0x800 + w4c_off) = arena<void>(0x2800);
+                       for (uint32_t h : {0x2700u, 0x2800u}) {
+                           W4dNode *head = arena<W4dNode>(h), *other = arena<W4dNode>(h + 0x10);
+                           if (r.range(0, 1)) {
+                               head->next = head->prev = other;
+                               other->next = other->prev = head;
+                           } else {
+                               head->next = head->prev = head;
+                           }
+                       }
+                   },
+                   [](void *fn) {
+                       w4d_allocs = 0;
+                       return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x804))};
+                   }};
+    w4d_watch.prepare = [](const rewrite::Entry *e) {
+        w4c_off = *(uint8_t *)(e->at + 0x91);
+        stubs_for_now({{0xbcdfc0, (void *)w4d_stub_alloc_two}, {0x805700, (void *)w4d_stub_target}});
+    };
+    w4d_watch.finish = w4c_unstub;
+    quick(w4d_watch);
+    // counted texts at 0x2000 and 0x2040, counts 1-2
+    auto w4d_texts = [=](Rng &r) {
+        w4c_fill(r);
+        for (uint32_t at : {0x2000u, 0x2040u}) *arena<int32_t>(at) = r.range(1, 2);
+        *arena<uint32_t>(0x24) = r.next();
+    };
+    // Text::Assign: from characters (memory or not) or from null
+    Test w4d_assign{0x40a6e0, [=](Rng &r) { w4d_texts(r); *arena<void *>(0x800) = arena<void>(r.range(0, 1) ? 0x2000 : 0x2040); }, [](void *fn) {
+                        void *characters = *arena<uint32_t>(0x24) % 3 ? arena<void>(0x2100) : nullptr;
+                        return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x800), characters)};
+                    }};
+    w4d_assign.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbce010, (void *)stub_free_aligned}, {0xbce000, (void *)stub_free}, {0xbcdfc0, (void *)w4c_stub_alloc}, {w4c_target(e, 0x60), (void *)w4d_stub_text},
+                       {w4c_target(e, 0x6d), (void *)w4d_stub_empty}});
+    };
+    w4d_assign.finish = w4c_unstub;
+    quick(w4d_assign);
+    // Text::Set: the same text or another, at the copy's own slot
+    Test w4d_set{0x57ac20, [=](Rng &r) { w4d_texts(r); *(void **)arena<uint8_t>(0x800 + w4c_off) = arena<void>(r.range(0, 1) ? 0x2000 : 0x2040); }, [](void *fn) {
+                     ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(*arena<uint32_t>(0x24) & 1 ? 0x2000 : 0x2040));
+                     return Result{};
+                 }};
+    w4d_set.prepare = [](const rewrite::Entry *e) {
+        w4c_off = *(uint32_t *)(e->at + 0x1c);
+        stubs_for_now({{0xbce010, (void *)stub_free_aligned}, {0xbce000, (void *)stub_free}});
+    };
+    w4d_set.finish = w4c_unstub;
+    quick(w4d_set);
+    // Text::FromName: the name having text or not, memory or not
+    Test w4d_from_name{0x6e5860, w4d_texts, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4d_from_name.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x4040f0, (void *)w4d_stub_lookup}, {0xbcdfc0, (void *)w4c_stub_alloc}, {0xbcf7d0, (void *)w4d_stub_text}, {0xbd0490, (void *)w4d_stub_empty},
+                       {0xbd1880, (void *)w4d_stub_temporary_gone}});
+    };
+    w4d_from_name.finish = w4c_unstub;
+    quick(w4d_from_name);
+    // Text::Is: from characters or null, equal or not, the made text dropped (and freed when its count was 1)
+    Test w4d_is{0x403c20, [=](Rng &r) { w4d_texts(r); arena<uint32_t>(0xc00)[0] = r.range(1, 2); arena<uint32_t>(0x2200)[0] = r.range(1, 2); }, [](void *fn) {
+                    void *characters = *arena<uint32_t>(0x24) % 3 ? arena<void>(0x2100) : nullptr;
+                    return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x800), characters) & 0xff};
+                }};
+    w4d_is.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbce010, (void *)stub_free_aligned}, {0xbce000, (void *)stub_free}, {0xbcdfc0, (void *)w4d_stub_alloc_ok}, {w4c_target(e, 0x41), (void *)w4d_stub_text_counted},
+                       {w4c_target(e, 0x4e), (void *)w4d_stub_empty}, {w4c_target(e, 0x66), (void *)w4d_stub_compare}});
+    };
+    w4d_is.finish = w4c_unstub;
+    quick(w4d_is);
