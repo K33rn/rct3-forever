@@ -990,3 +990,164 @@
     w4b_owned.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1b + 5 + *(int32_t *)(e->at + 0x1c)), (void *)stub_plain_dtor}}); };
     w4b_owned.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w4b_owned);
+    // Owned::DeleteAll: 0-4 objects, some slots empty; no array when the count is 0
+    static uint32_t w4b_items_off, w4b_count_off;
+    Test w4b_delall{0xa40680,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[1] = {(void *)stub_deleting};
+                        int32_t n = r.range(0, 4);
+                        *arena<int32_t>(0x800 + w4b_count_off) = n;
+                        *arena<void *>(0x800 + w4b_items_off) = n || r.range(0, 1) ? arena<void>(0x300) : nullptr;
+                        for (int i = 0; i < 4; i++) {
+                            arena<void *>(0x300)[i] = r.range(0, 3) ? arena<void>(0x400 + i * 0x10) : nullptr;
+                            *arena<void *>(0x400 + i * 0x10) = vt;
+                        }
+                    },
+                    [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w4b_delall.prepare = [](const rewrite::Entry *e) { w4b_count_off = *(uint32_t *)(e->at + 5); w4b_items_off = *(uint32_t *)(e->at + 0x12); };
+    quick(w4b_delall);
+    // Matrix::Of
+    Test w4b_matrix{0xb88270,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[3] = {nullptr, nullptr, (void *)w4b_stub_matrix};
+                        *arena<void *>(0x308) = vt;
+                        *arena<uint32_t>(0x20) = r.range(0, 1);
+                        for (int i = 0; i < 16; i++) arena<uint32_t>(0x600)[i] = r.next();
+                        for (int i = 0; i < 0x70; i++) arena<uint32_t>(0x800)[i] = r.next();
+                    },
+                    [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x700))}; }};
+    w4b_matrix.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb87f70, (void *)w4b_stub_owner}}); };
+    w4b_matrix.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_matrix);
+    // Listeners::Notify: an empty list or 1-4 listeners, kept or looked up, some matching one key or both
+    Test w4b_notify{0x54f880,
+                    [=](Rng &r) {
+                        fresh(r);
+                        iface_handle(r);
+                        for (uint32_t o : {0x3a4u, 0x3acu, 0x3d4u, 0x3dcu, 0x404u, 0x434u}) *arena<uint32_t>(o) = r.range(0, 1);
+                        int n = r.range(0, 4);
+                        for (int i = 0; i <= n; i++) {
+                            void **node = arena<void *>(0x900 + i * 0x10);
+                            node[0] = i < n ? arena<void>(0x900 + (i + 1) * 0x10) : nullptr;
+                            node[2] = arena<void>(0x680 + i * 0x1c);
+                            uint8_t *ref = arena<uint8_t>(0x680 + i * 0x1c);
+                            *(void **)(ref + 4) = arena<void>(0x340);
+                            ref[0x18] = (uint8_t)r.range(0, 1);
+                            *(void **)(ref + 0x14) = r.range(0, 3) ? arena<void>(0x3c0) : nullptr;
+                        }
+                        *arena<void *>(0x800 + 0x78) = arena<void>(0x900);
+                        arena<uint32_t>(0x10)[0] = r.range(0, 1);
+                        arena<uint32_t>(0x10)[1] = r.range(0, 1);
+                    },
+                    [](void *fn) {
+                        uint32_t *a = arena<uint32_t>(0x10);
+                        ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), a[0], a[1]);
+                        return Result{};
+                    }};
+    w4b_notify.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f52bc;
+        stubs_for_now({{(uintptr_t)(e->at + 0x6f + 5 + *(int32_t *)(e->at + 0x70)), (void *)stub_plain_dtor}});
+    };
+    w4b_notify.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_notify);
+    // Items::Any: none to four items; the check holds on some call or never
+    Test w4b_any{0x5d6ac0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     iface_handle(r);
+                     uint8_t *self = arena<uint8_t>(0x800);
+                     *(void **)(self + 0x54) = arena<void>(0x340);
+                     *(void **)(self + 0x64) = r.range(0, 3) ? arena<void>(0x3c0) : nullptr;
+                     self[0x68] = (uint8_t)r.range(0, 1);
+                     *(int32_t *)(self + 0xe8) = r.range(0, 4);
+                     *(void **)(self + 0xe4) = arena<void>(0x4a0);
+                     for (int i = 0; i < 4; i++) arena<uint32_t>(0x4a0)[i] = r.next();
+                     *arena<int32_t>(0x20) = r.range(0, 5);
+                     arena<uint32_t>(0x10)[0] = r.next();
+                     arena<uint32_t>(0x10)[1] = r.next();
+                 },
+                 [](void *fn) {
+                     uint32_t *a = arena<uint32_t>(0x10);
+                     return Result{((uint8_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), a[0], a[1])};
+                 }};
+    w4b_any.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f54e0;
+        stubs_for_now({{0x59acc0, (void *)w4b_stub_of_iface}, {0x5a7300, (void *)w4b_stub_item},
+                       {(uintptr_t)(e->at + 0x78 + 5 + *(int32_t *)(e->at + 0x79)), (void *)w4b_stub_check}});
+    };
+    w4b_any.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_any);
+    // Chain::Clear: links at 0x1000 each going on, back to the start or nowhere, kept or looked up; a looked-up link at 0x360/0x368 ends there
+    Test w4b_chain{0x5d55f0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       iface_handle(r);
+                       for (uint32_t o : {0x360u, 0x368u}) {
+                           *arena<void *>(o + 0x16c) = nullptr;
+                           *arena<uint8_t>(o + 0x170) = 1;
+                       }
+                       uint8_t *chain[4];
+                       for (int i = 0; i < 4; i++) chain[i] = arena<uint8_t>(0x1000 + i * 0x180);
+                       for (int i = 0; i < 4; i++) {
+                           uint8_t *link = chain[i];
+                           link[0x10] = (uint8_t)r.next();
+                           *(void **)(link + 0x15c) = arena<void>(0x340);
+                           int to = r.range(0, 5);
+                           *(void **)(link + 0x16c) = to == 0 ? nullptr : to == 1 || i == 3 ? chain[0] : chain[i + 1];
+                           link[0x170] = r.range(0, 4) != 0;
+                       }
+                       uint8_t *self = arena<uint8_t>(0x800);
+                       *(void **)(self + 8) = r.range(0, 7) ? chain[0] : nullptr;
+                       *(void **)(self + 0x14) = r.range(0, 1) ? chain[r.range(0, 3)] : nullptr;
+                       *arena<uint32_t>(0x10) = r.next();
+                   },
+                   [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10)); return Result{}; }};
+    w4b_chain.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f5608;
+        stubs_for_now({{0x5c00c0, (void *)w4b_stub_held}, {(uintptr_t)(e->at + 0x2a + 5 + *(int32_t *)(e->at + 0x2b)), (void *)stub_thiscall1}});
+    };
+    w4b_chain.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_chain);
+    // Members: the global list in the arena, set in the call; none yet, or 0-1 other members before this one
+    static uint32_t w4b_list, w4b_list_saved;
+    auto w4b_members = [=](Rng &r, bool self_in) {
+        void **list = arena<void *>(0x300), **other = arena<void *>(0x340), **self = arena<void *>(0x804);
+        void **end = list + 3, **last = list;
+        memset(list, 0, 0x18);
+        if (r.range(0, 1)) { other[1] = last; other[2] = (void *)(uintptr_t)r.next(); last[0] = other; last = other; }
+        if (self_in) { self[1] = last; last[0] = self; last = self; }
+        last[0] = end;
+        end[1] = last;
+    };
+    auto w4b_list_call = [](void *fn) {
+        *(uint32_t *)(uintptr_t)w4b_list = *arena<uint32_t>(0x10);
+        ((void(__fastcall *)(void *))fn)(arena<void>(0x800));
+        return Result{*(uint32_t *)(uintptr_t)w4b_list};
+    };
+    Test w4b_join{0x49cc80,
+                  [=](Rng &r) {
+                      fresh(r);
+                      for (int i = 0; i < 4; i++) arena<uint32_t>(0x800)[i] = r.next();
+                      w4b_members(r, false);
+                      *arena<void *>(0x10) = r.range(0, 1) ? arena<void>(0x300) : nullptr;
+                  },
+                  w4b_list_call};
+    w4b_join.prepare = [](const rewrite::Entry *e) {
+        w4b_list = *(uint32_t *)(e->at + 0xe); w4b_list_saved = *(uint32_t *)(uintptr_t)w4b_list;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}});
+    };
+    w4b_join.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_list = w4b_list_saved; unstub_many(); };
+    quick(w4b_join);
+    Test w4b_leave{0x49ccf0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       *arena<uint32_t>(0x800) = r.next();
+                       w4b_members(r, true);
+                       *arena<void *>(0x10) = arena<void>(0x300);
+                   },
+                   w4b_list_call};
+    w4b_leave.prepare = [](const rewrite::Entry *e) { w4b_list = *(uint32_t *)(e->at + 0x3e); w4b_list_saved = *(uint32_t *)(uintptr_t)w4b_list; };
+    w4b_leave.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_list = w4b_list_saved; };
+    quick(w4b_leave);

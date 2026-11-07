@@ -127,3 +127,23 @@ static uint8_t __thiscall w4b_stub_take(void *self, uint32_t amount) {
 }
 // finds the reference kept at 0x10
 static void *__fastcall w4b_stub_get(uint32_t owner) { record(0x4052, (void *)(uintptr_t)owner); return arena<void>(0x10); }
+static void *__fastcall w4b_stub_owner(void *self) { record(0x4053, self); return arena<void>(0x300); }
+// a matrix from 0x600: written to the space given, or (odd 0x20) handed back from where it is
+static void *__thiscall w4b_stub_matrix(void *self, void *space, uint32_t value) {
+    record(0x4054, self); record(0x4054, (void *)(uintptr_t)value);
+    if (*arena<uint32_t>(0x20) & 1) return arena<void>(0x600);
+    memcpy(space, arena<void>(0x600), 0x40);
+    return space;
+}
+static void *__fastcall w4b_stub_of_iface(void *iface) { record(0x4055, iface); return arena<void>(0x480); }
+static void *__thiscall w4b_stub_item(void *self, uint32_t which) {
+    record(0x4056, self); record(0x4056, (void *)(uintptr_t)which);
+    return arena<void>(0x490);
+}
+// holds on the call the count at 0x20 runs out
+static uint8_t __thiscall w4b_stub_check(void *self, uint32_t a, uint32_t b) {
+    record(0x4057, self); record(0x4057, (void *)(uintptr_t)a); record(0x4057, (void *)(uintptr_t)b);
+    return --*arena<int32_t>(0x20) == 0;
+}
+// a link holds something when it says so at +0x10
+static void *__fastcall w4b_stub_held(uint8_t *link) { record(0x4058, link); return link[0x10] & 1 ? link + 0x20 : nullptr; }
