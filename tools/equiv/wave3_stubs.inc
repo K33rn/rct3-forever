@@ -50,3 +50,36 @@ static void *__thiscall w3_stub_lookup(void *self, uint32_t *key) {
     return arena<uint32_t>(0x20)[0] & 3 ? arena<void>(0x360) : nullptr;
 }
 static void __fastcall w3_stub_report(uint32_t file, uint32_t line) { record(0xbec8a0, (void *)(uintptr_t)file); record(0xbec8a0, (void *)(uintptr_t)line); }
+static void *__thiscall w3_stub_item(void *self, uint32_t key, uint32_t *slot) {
+    record(0x8fd720, self);
+    record(0x8fd720, (void *)(uintptr_t)key);
+    record(0x8fd720, (void *)(uintptr_t)*slot);
+    return arena<uint32_t>(0x20)[0] & 3 ? arena<void>(0x400) : nullptr;
+}
+static uint32_t __thiscall w3_stub_four(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x901810, self);
+    for (uint32_t v : {a, b, c, d}) record(0x901810, (void *)(uintptr_t)v);
+    return a + b;
+}
+static uint32_t __thiscall w3_stub_four_ref(void *self, uint32_t *a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x7b5420, self);
+    for (uint32_t v : {*a, b, c, d}) record(0x7b5420, (void *)(uintptr_t)v);
+    return b ^ c;
+}
+static void *__fastcall w3_stub_next(void **self) { record(0x4bf970, self); return *self; }
+static void *__cdecl w3_stub_alloc_maybe(uint32_t size) { record(0xbcdfc0, (void *)(uintptr_t)size); return arena<uint32_t>(0x20)[0] & 3 ? arena<void>(0x2000) : nullptr; }
+static void __thiscall w3_stub_three(void *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x6aae60, self);
+    for (uint32_t v : {a, b, c}) record(0x6aae60, (void *)(uintptr_t)v);
+}
+static uint8_t __thiscall w3_stub_take(void *self, uint32_t amount) {
+    record(0x72f820, self);
+    record(0x72f820, (void *)(uintptr_t)amount);
+    return (uint8_t)(arena<uint32_t>(0x20)[0] & 3 ? 0x7 : 0);
+}
+static void __fastcall w3_stub_fill(void *out, uint32_t a) { record(0x442570, out); record(0x442570, (void *)(uintptr_t)a); }
+static int __cdecl w3_stub_compare_name(void *name, void *other) {
+    record(0xde22df, name);
+    record(0xde22df, other);
+    return arena<int32_t>(0x20)[0]-- == 0 ? 0 : -1;
+}
