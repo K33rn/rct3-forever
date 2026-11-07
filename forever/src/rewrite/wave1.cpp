@@ -1233,3 +1233,198 @@ template <uint32_t ID, uint32_t GIVE> static uint32_t __thiscall w1b_take(uint8_
 static const uint8_t w1b_take_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x57, 0x56, 0x8b, 0xf9};
 REWRITE("Object::Take4B7090", 0x4b7090, w1b_take_original, (&w1b_take<0x12f5544, 0x4b6d10>), &g_w1b_takes);
 REWRITE("Object::Take4B7090", 0xa67c00, w1b_take_original, (&w1b_take<0x13429c8, 0xa64760>), &g_w1b_takes);
+
+// ---- Third pass. seh=1 functions start `push -1; push HANDLER`, the handler being different in every copy ------------
+template <uint32_t HANDLER> static const uint8_t w1c_seh[] = {0x6a, 0xff, 0x68, (uint8_t)HANDLER, (uint8_t)(HANDLER >> 8), (uint8_t)(HANDLER >> 16), (uint8_t)(HANDLER >> 24)};
+static const uint8_t w1c_seh_late[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff, 0x68};   // the frame's old value read first
+
+// Tell a registry about a class: its name and the offset of what it registers, through a 20-byte text on the stack.
+static inline void w1c_register(void *registry, uint32_t name, uint32_t offset) {
+    uint32_t text[5];
+    void *made = ((void *(__thiscall *)(void *, uint32_t, uint32_t))0xbeca40)(text, name, offset);
+    ((void(__thiscall *)(void *, void *))0xbecc10)(registry, made);
+    ((void(__fastcall *)(void *))0xbec5e0)(text);
+}
+
+// ---- Registered::Construct: made on the given registry or the class's own, which is marked as filled in afterwards ---
+static volatile long g_w1c_registered;
+template <uint32_t BASE, uint32_t OWN, uint32_t TABLE, uint32_t TABLE2, uint32_t NAME>
+static uint32_t *__thiscall w1c_registered(uint32_t *self, uint8_t *registry, uint32_t a, uint32_t b) {
+    g_w1c_registered++;
+    bool own = !registry;
+    uint8_t *&global = *(uint8_t **)OWN;
+    ((void(__thiscall *)(void *, void *, uint32_t, uint32_t))BASE)(self, own ? global : registry, a, b);
+    self[0] = TABLE;
+    self[1] = TABLE2;
+    if (own) registry = global;
+    if (!registry[4]) {
+        w1c_register(registry, NAME, 0);
+        ((void(__fastcall *)(void *))(*(void ***)registry)[1])(registry);
+    }
+    if (own) global[4] = 1;
+    return self;
+}
+REWRITE("Registered::Construct4D3CB0", 0x4d3cb0, (w1c_seh<0xe14330>), (&w1c_registered<0x800a80, 0x12f4eb4, 0xf335bc, 0xf335b8, 0x12f4ea4>), &g_w1c_registered);
+REWRITE("Registered::Construct4D3CB0", 0x72c500, (w1c_seh<0xe4c4f0>), (&w1c_registered<0x72b390, 0x13063a8, 0xf6a6a8, 0xf6a6a0, 0x130636c>), &g_w1c_registered);
+REWRITE("Registered::Construct4D3CB0", 0x98a480, (w1c_seh<0xe6dd00>), (&w1c_registered<0x800a80, 0x13ce440, 0xf7fc60, 0xf7fc5c, 0x13ce470>), &g_w1c_registered);
+REWRITE("Registered::Construct4D3CB0", 0xa180c0, (w1c_seh<0xe7a0a0>), (&w1c_registered<0x800a80, 0x13426b8, 0xf87df0, 0xf87dec, 0x13426c0>), &g_w1c_registered);
+REWRITE("Registered::Construct4D3CB0", 0xad93d0, (w1c_seh<0xe8b400>), (&w1c_registered<0xad8d10, 0x13ce4f4, 0xf95360, 0xf9535c, 0x13ce50c>), &g_w1c_registered);
+REWRITE("Registered::Construct4D3CB0", 0xaf5d50, (w1c_seh<0xe8e060>), (&w1c_registered<0xaf58a0, 0x13ce63c, 0xf96924, 0xf96920, 0x13ce640>), &g_w1c_registered);
+REWRITE("Registered::Construct4D3CB0", 0xb7d520, (w1c_seh<0xe97ee0>), (&w1c_registered<0xb7c7a0, 0x13d0128, 0xf9ba48, 0xf9ba44, 0x13d0078>), &g_w1c_registered);
+REWRITE("Registered::Construct4D3CB0", 0xb7e580, (w1c_seh<0xe98190>), (&w1c_registered<0xb7c7a0, 0x13d00a8, 0xf9bbb8, 0xf9bbb0, 0x13d00e8>), &g_w1c_registered);
+
+// ---- Interfaced::Construct: a second part at +4 made, then the class told to the registry with that part's offset ----
+static volatile long g_w1c_interfaced;
+template <uint32_t PART, uint32_t TABLE, uint32_t TABLE2, uint32_t OWN, uint32_t NAME>
+static uint32_t *__thiscall w1c_interfaced(uint32_t *self, uint8_t *registry) {
+    g_w1c_interfaced++;
+    self[0] = 0xf2694c;
+    ((void(__fastcall *)(void *))PART)(self + 1);
+    self[0] = TABLE;
+    self[1] = TABLE2;
+    uint8_t *&global = *(uint8_t **)OWN;
+    bool own = !registry;
+    if (own) registry = global;
+    if (!registry[4]) w1c_register(registry, NAME, 4);
+    if (own) global[4] = 1;
+    return self;
+}
+REWRITE("Interfaced::Construct79B340", 0x79b340, (w1c_seh<0xe5537b>), (&w1c_interfaced<0x8fb150, 0xf6fd00, 0xf6fcf4, 0x1306bc4, 0x1339fc4>), &g_w1c_interfaced);
+REWRITE("Interfaced::Construct79B340", 0x967f20, (w1c_seh<0xe6b7bb>), (&w1c_interfaced<0x9655d0, 0xf7e6b4, 0xf7e6a0, 0x133d08c, 0x133b4dc>), &g_w1c_interfaced);
+REWRITE("Interfaced::Construct79B340", 0x96afe0, (w1c_seh<0xe6ba2b>), (&w1c_interfaced<0x9655d0, 0xf7e74c, 0xf7e738, 0x133d0c8, 0x133b4dc>), &g_w1c_interfaced);
+REWRITE("Interfaced::Construct79B340", 0x96b1d0, (w1c_seh<0xe6ba9b>), (&w1c_interfaced<0x9655d0, 0xf7e780, 0xf7e76c, 0x133d0d0, 0x133b4dc>), &g_w1c_interfaced);
+REWRITE("Interfaced::Construct79B340", 0x96b6d0, (w1c_seh<0xe6bb0b>), (&w1c_interfaced<0x9655d0, 0xf7e7b4, 0xf7e7a0, 0x133d0d8, 0x133b4dc>), &g_w1c_interfaced);
+REWRITE("Interfaced::Construct79B340", 0x96ba80, (w1c_seh<0xe6bb7b>), (&w1c_interfaced<0x9655d0, 0xf7e7f8, 0xf7e7e4, 0x133d0e0, 0x133b4dc>), &g_w1c_interfaced);
+
+// ---- Named::Send: refresh, then a named reference on the stack is handed to what the object holds --------------------
+static volatile long g_w1c_named_sends;
+template <uint32_t NAME, uint32_t HELD> static void __fastcall w1c_named_send(uint8_t *self) {
+    g_w1c_named_sends++;
+    ((void(__fastcall *)(void *))0x6afd60)(self);
+    uint8_t reference[0x1c];
+    void *made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x4040f0)(reference, NAME, 0x1303cfc, 1);
+    ((void(__thiscall *)(void *, void *))0xbd14e0)(*(uint8_t **)(self + HELD) + 0x114, made);
+    ((void(__fastcall *)(void *))0xbd1880)(reference);
+}
+REWRITE("Named::Send5FD440", 0x5fd440, (w1c_seh<0xe27f68>), (&w1c_named_send<0xf414fc, 0xdc>), &g_w1c_named_sends);
+REWRITE("Named::Send5FD440", 0x5fe210, (w1c_seh<0xe281e8>), (&w1c_named_send<0xf41560, 0xec>), &g_w1c_named_sends);
+REWRITE("Named::Send5FD440", 0x601980, (w1c_seh<0xe289e8>), (&w1c_named_send<0xf41864, 0xe4>), &g_w1c_named_sends);
+REWRITE("Named::Send5FD440", 0x605810, (w1c_seh<0xe29138>), (&w1c_named_send<0xf41c5c, 0xd4>), &g_w1c_named_sends);
+REWRITE("Named::Send5FD440", 0x607500, (w1c_seh<0xe29418>), (&w1c_named_send<0xf41c84, 0xdc>), &g_w1c_named_sends);
+REWRITE("Named::Send5FD440", 0x6baae0, (w1c_seh<0xe3f6a8>), (&w1c_named_send<0xf61900, 0xec>), &g_w1c_named_sends);
+
+// ---- Spawn::Start: a new object for the owner 0x50 before this part; its third virtual function is given the value ---
+static volatile long g_w1c_spawns;
+template <uint32_t SIZE, uint32_t MAKE> static uint32_t __thiscall w1c_spawn(uint8_t *self, uint32_t value, uint32_t) {
+    g_w1c_spawns++;
+    void *memory = memory_alloc(SIZE);
+    void *object = memory ? ((void *(__thiscall *)(void *, uint32_t, void *))MAKE)(memory, 0, self - 0x50) : nullptr;
+    return ((uint32_t(__thiscall *)(void *, uint32_t))(*(void ***)object)[2])(object, value);
+}
+REWRITE("Spawn::Start52F4C0", 0x52f4c0, (w1c_seh<0xe1aecb>), (&w1c_spawn<0x2ec, 0x6377d0>), &g_w1c_spawns);
+REWRITE("Spawn::Start52F4C0", 0x58fbe0, (w1c_seh<0xe2150b>), (&w1c_spawn<0x240, 0x635e90>), &g_w1c_spawns);
+REWRITE("Spawn::Start52F4C0", 0x5a1530, (w1c_seh<0xe227eb>), (&w1c_spawn<0x344, 0x638790>), &g_w1c_spawns);
+REWRITE("Spawn::Start52F4C0", 0xa7b310, (w1c_seh<0xe839cb>), (&w1c_spawn<0x290, 0x6367b0>), &g_w1c_spawns);
+REWRITE("Spawn::Start52F4C0", 0xbacb70, (w1c_seh<0xe9be9b>), (&w1c_spawn<0x1e8, 0x637250>), &g_w1c_spawns);
+
+// ---- Singleton::Make: a new object (which sets the global), started if its first flag bit is clear --------------------
+static volatile long g_w1c_singletons;
+template <uint32_t SIZE, uint32_t MAKE, uint32_t GLOBAL> static uint8_t *__cdecl w1c_singleton() {
+    g_w1c_singletons++;
+    void *memory = memory_alloc(SIZE);
+    if (memory) ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))MAKE)(memory, 0, 0, 0);
+    uint8_t *&global = *(uint8_t **)GLOBAL;
+    if (!(global[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(global);
+    return global;
+}
+REWRITE("Singleton::Make6C1DA0", 0x6c1da0, (w1c_seh<0xe404bb>), (&w1c_singleton<0x1d8, 0x6bfce0, 0x1305dd8>), &g_w1c_singletons);
+REWRITE("Singleton::Make6C1DA0", 0x708520, (w1c_seh<0xe49c6b>), (&w1c_singleton<0x1f0, 0x707680, 0x1306194>), &g_w1c_singletons);
+REWRITE("Singleton::Make6C1DA0", 0x9ead70, (w1c_seh<0xe76fab>), (&w1c_singleton<0x118, 0x9e8ff0, 0x1341930>), &g_w1c_singletons);
+REWRITE("Singleton::Make6C1DA0", 0xa5de40, (w1c_seh<0xe82b2b>), (&w1c_singleton<0x88, 0xa5d6f0, 0x134297c>), &g_w1c_singletons);
+REWRITE("Singleton::Make6C1DA0", 0xa63450, (w1c_seh<0xe82e8b>), (&w1c_singleton<0x420, 0xa630e0, 0x13429a8>), &g_w1c_singletons);
+
+// ---- Twice::Add: a temporary's part added, then a bare object of this class on the stack added -----------------------
+static volatile long g_w1c_twice;
+template <uint32_t TABLE> static uint32_t __thiscall w1c_twice(void *self, uint32_t value) {
+    g_w1c_twice++;
+    auto add = (uint32_t(__thiscall *)(void *, void *, uint32_t))0x6aed50;
+    uint8_t temporary[0x34];
+    uint8_t *made = ((uint8_t * (__thiscall *)(void *, uint32_t))0x6b0370)(temporary, 0);
+    add(self, made ? made + 4 : nullptr, value);
+    ((void(__fastcall *)(void *))0x6b0a90)(temporary);
+    uint32_t bare = TABLE;
+    return add(self, &bare, value);
+}
+REWRITE("Twice::Add6B0B50", 0x6b0b50, (w1c_seh<0xe3e308>), (&w1c_twice<0xf60650>), &g_w1c_twice);
+REWRITE("Twice::Add6B0B50", 0x6b0bd0, (w1c_seh<0xe3e328>), (&w1c_twice<0xf60680>), &g_w1c_twice);
+REWRITE("Twice::Add6B0B50", 0x6b0c50, (w1c_seh<0xe3e348>), (&w1c_twice<0xf60690>), &g_w1c_twice);
+REWRITE("Twice::Add6B0B50", 0x6b0cd0, (w1c_seh<0xe3e368>), (&w1c_twice<0xf606c0>), &g_w1c_twice);
+
+// ---- Pool::Make: if the value is accepted, a new object from the pool built on it; null if not or if the pool is full -
+static volatile long g_w1c_pool_makes;
+template <uint32_t SIZE, uint32_t MAKE> static void *w1c_pool_make_body(void *self, uint32_t value) {
+    g_w1c_pool_makes++;
+    if (!((uint8_t(__thiscall *)(void *, uint32_t))0xc0d5a0)(self, value)) return nullptr;
+    void *memory = ((void *(__thiscall *)(void *, uint32_t, uint32_t))0xca1eb0)(*(uint8_t **)0x13e3318 + 4, 4, SIZE);
+    return memory ? ((void *(__thiscall *)(void *, void *, uint32_t))MAKE)(memory, self, value) : nullptr;
+}
+template <uint32_t SIZE, uint32_t MAKE> static void *__thiscall w1c_pool_make(void *self, uint32_t value) { return w1c_pool_make_body<SIZE, MAKE>(self, value); }
+template <uint32_t SIZE, uint32_t MAKE> static void *__thiscall w1c_pool_make2(void *self, uint32_t value, uint32_t) { return w1c_pool_make_body<SIZE, MAKE>(self, value); }
+REWRITE("Pool::MakeC0E1B0", 0xc0e1b0, w1c_seh_late, (&w1c_pool_make<0x58, 0xc0e120>), &g_w1c_pool_makes);
+REWRITE("Pool::MakeC0E1B0", 0xc0ec20, w1c_seh_late, (&w1c_pool_make<0x44, 0xc0eab0>), &g_w1c_pool_makes);
+REWRITE("Pool::MakeC0E1B0", 0xc110e0, w1c_seh_late, (&w1c_pool_make<0x54, 0xc11010>), &g_w1c_pool_makes);
+REWRITE("Pool::MakeC12600", 0xc12600, w1c_seh_late, (&w1c_pool_make2<0x44, 0xc12560>), &g_w1c_pool_makes);
+
+// ---- Managed::Destroy: the class's global cleared, a member destroyed, then the base -----------------------------------
+static volatile long g_w1c_managed;
+template <uint32_t TABLE, uint32_t TABLE2, uint32_t MEMBER, uint32_t GLOBAL, uint32_t END> static void __fastcall w1c_managed(uint32_t *self) {
+    g_w1c_managed++;
+    self[0] = TABLE;
+    self[1] = TABLE2;
+    *(uint32_t *)GLOBAL = 0;
+    ((void(__fastcall *)(void *))END)((uint8_t *)self + MEMBER);
+    ((void(__fastcall *)(void *))0x800940)(self);
+}
+REWRITE("Managed::Destroy46D230", 0x46d230, (w1c_seh<0xe0c948>), (&w1c_managed<0xf2cabc, 0xf2cab8, 0x44, 0x12f0028, 0x40f730>), &g_w1c_managed);
+REWRITE("Managed::Destroy46D230", 0x63f6b0, (w1c_seh<0xe317f8>), (&w1c_managed<0xf49814, 0xf49810, 0x40, 0x12f7eb4, 0x40f730>), &g_w1c_managed);
+REWRITE("Managed::Destroy46D230", 0x7a7200, (w1c_seh<0xe561a8>), (&w1c_managed<0xf70910, 0xf7090c, 0x40, 0x1306c68, 0x40f730>), &g_w1c_managed);
+REWRITE("Managed::Destroy46D230", 0x7bb910, (w1c_seh<0xe57208>), (&w1c_managed<0xf71978, 0xf71974, 0x40, 0x13070c8, 0x4951b0>), &g_w1c_managed);
+
+// ---- Listener::Make: a 16-byte listener on `owner`, entered into `list` as a pair, then given its final table ----------
+static volatile long g_w1c_listeners;
+template <uint32_t TABLE> static uint32_t *__fastcall w1c_listener(uint32_t owner, void *list) {
+    g_w1c_listeners++;
+    uint32_t *made = (uint32_t *)memory_alloc(0x10);
+    if (!made) return nullptr;
+    made[0] = 0xf75170;
+    made[1] = owner;
+    uint32_t pair[2] = {(uint32_t)(uintptr_t)made, owner};
+    ((void(__thiscall *)(void *, void *, void *))0x7fbf50)(list, &pair[1], &pair[0]);
+    made[0] = TABLE;
+    made[2] = 0xffffffff;
+    made[3] = (uint32_t)(uintptr_t)list;
+    return made;
+}
+REWRITE("Listener::Make7FD780", 0x7fd780, (w1c_seh<0xe5b50b>), (&w1c_listener<0xf75188>), &g_w1c_listeners);
+REWRITE("Listener::Make7FD780", 0x7fe5c0, (w1c_seh<0xe5b74b>), (&w1c_listener<0xf7519c>), &g_w1c_listeners);
+REWRITE("Listener::Make7FD780", 0x7fe920, (w1c_seh<0xe5b7eb>), (&w1c_listener<0xf751c8>), &g_w1c_listeners);
+
+// ---- Items::Resize: the old storage dropped and `count` new 16-byte items built --------------------------------------
+static volatile long g_w1c_resizes;
+template <uint32_t BUILD> static uint32_t __thiscall w1c_resize(uint32_t *self, uint32_t count) {
+    g_w1c_resizes++;
+    if (self[0]) {
+        memory_free_aligned((void *)(uintptr_t)self[0]);
+        self[0] = 0;
+    }
+    if (count) {
+        void *items = memory_alloc_aligned(count << 4);
+        if (items) ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0x402b90)(items, 0x10, count, BUILD);
+        self[0] = (uint32_t)(uintptr_t)items;
+    }
+    self[1] = count;
+    return count;
+}
+REWRITE("Items::Resize7E5350", 0x7e5350, w1c_seh_late, (&w1c_resize<0x407490>), &g_w1c_resizes);
+REWRITE("Items::Resize7E5350", 0x980400, w1c_seh_late, (&w1c_resize<0x97ffb0>), &g_w1c_resizes);
+REWRITE("Items::Resize7E5350", 0xabc440, w1c_seh_late, (&w1c_resize<0xabc130>), &g_w1c_resizes);

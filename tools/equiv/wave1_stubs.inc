@@ -86,3 +86,44 @@ static void __thiscall w1b_stub_spot(void *self, uint32_t *spot, uint32_t flag) 
     record(0x218, (void *)(uintptr_t)((uintptr_t)spot & 0xf));
     for (int i = 0; i < 3; i++) record(0x218, (void *)(uintptr_t)spot[i]);
 }
+// Third pass.
+static uint32_t *w1c_global;   // the global of the copy under test
+static uint32_t w1c_at(const rewrite::Entry *e, uint32_t operand) { return e->at + operand + 4 + *(int32_t *)(e->at + operand); }   // a call's target
+static uint32_t w1c_word(const rewrite::Entry *e, uint32_t operand) { return *(uint32_t *)(e->at + operand); }
+static void *__thiscall w1c_stub_text(uint32_t *self, uint32_t name, uint32_t offset) {   // the text is on the stack
+    record(0x220, (void *)(uintptr_t)name); record(0x220, (void *)(uintptr_t)offset);
+    for (uint32_t i = 0; i < 5; i++) self[i] = name * 5 + offset + i * 0x11;
+    return arena<void>(0x580);
+}
+static void __fastcall w1c_stub_text_end(uint32_t *self) { for (uint32_t i = 0; i < 5; i++) { record(0x221, (void *)(uintptr_t)self[i]); self[i] = 0; } }
+static void __thiscall w1c_stub_take_ref(void *self, uint32_t *ref) { record(0x222, self); for (int i = 0; i < 7; i++) record(0x222, (void *)(uintptr_t)ref[i]); }
+static uint32_t __thiscall w1c_stub_virtual(void *self, uint32_t a) { record(0x223, self); record(0x223, (void *)(uintptr_t)a); return a ^ 0x5a5a; }
+static void *__thiscall w1c_stub_spawned(uint32_t *self, uint32_t a, void *b) {
+    record(0x224, self); record(0x224, (void *)(uintptr_t)a); record(0x224, b);
+    self[0] = arena<uint32_t>(0x640)[0];
+    return self;
+}
+static void *__cdecl w1c_stub_alloc_maybe(uint32_t size) { record(0x225, (void *)(uintptr_t)size); return arena<uint32_t>(0x20)[0] & 3 ? arena<void>(0x2000) : nullptr; }
+static void __fastcall w1c_stub_swap(void *self) { record(0x226, self); *w1c_global = (uint32_t)(uintptr_t)arena<void>(0x6a0); }
+static void *__thiscall w1c_stub_mid(uint32_t *self, uint32_t flag) {
+    record(0x227, (void *)(uintptr_t)flag);
+    for (uint32_t i = 0; i < 13; i++) self[i] = 0x7000 + i * 3;
+    return arena<uint32_t>(0x20)[0] & 1 ? self : nullptr;
+}
+static void __fastcall w1c_stub_mid_end(uint32_t *self) { for (uint32_t i = 0; i < 13; i++) { record(0x228, (void *)(uintptr_t)self[i]); self[i] = 0; } }
+static uint32_t __thiscall w1c_stub_add(void *self, uint32_t *what, uint32_t value) {
+    record(0x229, self); record(0x229, (void *)(uintptr_t)(what ? *what : 0)); record(0x229, (void *)(uintptr_t)value);
+    return value + 7;
+}
+static void *__thiscall w1c_stub_pool(void *self, uint32_t a, uint32_t size) {
+    record(0x22a, self); record(0x22a, (void *)(uintptr_t)a); record(0x22a, (void *)(uintptr_t)size);
+    return arena<uint32_t>(0x20)[0] & 3 ? arena<void>(0x2000) : nullptr;
+}
+static uint32_t __thiscall w1c_stub_built(void *self, void *a, uint32_t b) { record(0x22b, self); record(0x22b, a); record(0x22b, (void *)(uintptr_t)b); return b ^ 0x3333; }
+static void __fastcall w1c_stub_see_global(void *self) { record(0x22c, self); record(0x22c, (void *)(uintptr_t)*w1c_global); }
+static void __thiscall w1c_stub_pair(void *self, uint32_t *owner, uint32_t *made) {
+    record(0x22d, self); record(0x22d, (void *)(uintptr_t)*owner); record(0x22d, (void *)(uintptr_t)*made);
+    record(0x22d, (void *)(uintptr_t)((uint8_t *)owner - (uint8_t *)made));
+    uint32_t *object = (uint32_t *)(uintptr_t)*made;
+    record(0x22d, (void *)(uintptr_t)object[0]); record(0x22d, (void *)(uintptr_t)object[1]);
+}
