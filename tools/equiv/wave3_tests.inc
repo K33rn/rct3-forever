@@ -1004,3 +1004,172 @@
     w3b_print_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcdb5, (void *)w3b_stub_sprintf}, {0xddef30, (void *)w3b_stub_strncpy}}); };
     w3b_print_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3b_print_test);
+
+    // Child::DropBoth: each of the two present or not, each copy's fields
+    static uint32_t w3b_db_child, w3b_db_owned;
+    Test w3b_drop_both_test{0x63a180,
+                            [=](Rng &r) {
+                                fresh(r);
+                                static void *vt[1] = {(void *)stub_deleting};
+                                *(void **)arena<uint8_t>(0x300) = vt;
+                                *(void **)(arena<uint8_t>(0x100) + w3b_db_child) = r.range(0, 1) ? arena<void>(0x800) : nullptr;
+                                *(void **)(arena<uint8_t>(0x100) + w3b_db_owned) = r.range(0, 1) ? arena<void>(0x300) : nullptr;
+                            },
+                            [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), 7); return Result{}; }};
+    w3b_drop_both_test.prepare = [](const rewrite::Entry *e) {
+        w3b_db_child = *(uint8_t *)(e->at + 6); w3b_db_owned = *(uint8_t *)(e->at + 0x1d);
+        stubs_for_now({{0x6af760, (void *)stub_plain_dtor}, {0x6a1e20, (void *)stub_plain_dtor}});
+    };
+    w3b_drop_both_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_drop_both_test);
+    // Task::Release: with and without the COM object; the two virtual slots tell each copy's call apart
+    static uint32_t w3b_rel_worker, w3b_rel_com;
+    Test w3b_release_test{0xbfc3c0,
+                          [=](Rng &r) {
+                              fresh(r);
+                              static void *vt[6] = {nullptr, nullptr, nullptr, nullptr, (void *)w3b_stub_slot_a, (void *)w3b_stub_slot_b};
+                              static void *com_vt[3] = {nullptr, nullptr, (void *)w3b_stub_com_release};
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              *(void **)(self + 0x14) = arena<void>(0x300);
+                              arena<uint32_t>(0x770)[0] = r.next();
+                              *(void **)arena<uint8_t>(0x900) = vt;
+                              *(void **)arena<uint8_t>(0x950) = com_vt;
+                              *(void **)(self + w3b_rel_worker) = arena<void>(0x900);
+                              *(void **)(self + w3b_rel_com) = r.range(0, 1) ? arena<void>(0x950) : nullptr;
+                          },
+                          [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    w3b_release_test.prepare = [](const rewrite::Entry *e) {
+        w3b_rel_worker = *(uint8_t *)(e->at + 0x17); w3b_rel_com = *(uint8_t *)(e->at + 0x26);
+        stubs_for_now({{0xc5cb30, (void *)stub_thiscall1}});
+    };
+    w3b_release_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_release_test);
+    // Map::Refresh: flags of every kind, each map missing, up to date or not
+    Test w3b_refresh_test{0x54b740,
+                          [=](Rng &r) {
+                              fresh(r);
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              *(void **)(self + 0x4c) = arena<void>(0x300);
+                              *(void **)(self + 0x60) = arena<void>(0x320);
+                              *(void **)arena<uint8_t>(0x30c) = r.range(0, 2) ? arena<void>(0x400) : nullptr;
+                              *(void **)arena<uint8_t>(0x32c) = r.range(0, 2) ? arena<void>(0x440) : nullptr;
+                              arena<uint8_t>(0x42c)[0] = (uint8_t)r.next();
+                              arena<uint8_t>(0x46c)[0] = (uint8_t)r.next();
+                          },
+                          [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    w3b_refresh_test.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0x800860, (void *)w3b_stub_slot_a}, {(uintptr_t)(e->at + 0x4a + 5 + *(int32_t *)(e->at + 0x4b)), (void *)stub_plain_dtor}});
+    };
+    w3b_refresh_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_refresh_test);
+    // Job::Poll: waiting or not, failed or not, every status, each copy's states
+    static uint32_t w3b_waiting; static void *w3b_query_was;
+    Test w3b_poll_test{0x45e270,
+                       [=](Rng &r) {
+                           fresh(r);
+                           for (int i = 0; i < 4; i++) arena<uint32_t>(0x300)[i] = r.next();
+                           arena<uint32_t>(0x300)[1] = r.range(0, 4) ? w3b_waiting : w3b_waiting + 1;
+                           arena<int32_t>(0x24)[0] = r.range(0, 3) ? 0 : 5;
+                           arena<uint32_t>(0x28)[0] = (uint32_t)r.range(0, 3);
+                       },
+                       [](void *fn) {
+                           *(void **)0x1106e0c = (void *)w3b_stub_query;
+                           ((void(__thiscall *)(void *, void *))fn)(nullptr, arena<void>(0x300));
+                           return Result{};
+                       }};
+    w3b_poll_test.prepare = [](const rewrite::Entry *e) { w3b_waiting = *(uint8_t *)(e->at + 9); w3b_query_was = *(void **)0x1106e0c; };
+    w3b_poll_test.finish = [](const rewrite::Entry *) { *(void **)0x1106e0c = w3b_query_was; };
+    quick(w3b_poll_test);
+    // Choice::Set: both kinds, the value new or the same, each copy's fields and call
+    static uint32_t w3b_ch_main, w3b_ch_other;
+    Test w3b_choice_test{0x82fa30,
+                         [=](Rng &r) {
+                             fresh(r);
+                             uint8_t *self = arena<uint8_t>(0x1000);
+                             for (int i = 0; i < 0x40; i++) ((uint32_t *)self)[i] = r.next();
+                             *(void **)(self + 0x9c) = arena<void>(0x800);
+                             arena<uint32_t>(0x800)[0] = r.next();
+                             *(uint32_t *)(self + w3b_ch_main) = (uint32_t)r.range(0, 1);
+                             *(uint32_t *)(self + w3b_ch_other) = (uint32_t)r.range(0, 1);
+                             arena<uint32_t>(0x24)[0] = (uint32_t)r.range(0, 2);
+                             arena<uint32_t>(0x28)[0] = (uint32_t)r.range(0, 1);
+                         },
+                         [](void *fn) { ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x24)[0], arena<uint32_t>(0x28)[0]); return Result{}; }};
+    w3b_choice_test.prepare = [](const rewrite::Entry *e) {
+        w3b_ch_main = *(uint32_t *)(e->at + 0xd); w3b_ch_other = *(uint32_t *)(e->at + 0x54);
+        stubs_for_now({{0x82b350, (void *)stub_plain_dtor}, {0x87eee0, (void *)stub_thiscall1},
+                       {(uintptr_t)(e->at + 0x30 + 5 + *(int32_t *)(e->at + 0x31)), (void *)stub_thiscall2}});
+    };
+    w3b_choice_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_choice_test);
+    // Tint::Apply: on and off, with junk above the byte that counts
+    static void *w3b_device_was;
+    Test w3b_tint_test{0x9122a0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           static void *vt[0x2d];
+                           vt[0x2c] = (void *)w3b_stub_device;
+                           *(void **)arena<uint8_t>(0x300) = vt;
+                           arena<uint32_t>(0x24)[0] = r.next();
+                           arena<uint32_t>(0x28)[0] = r.next() & 0xffffff00 | (r.range(0, 1) ? r.next() & 0xff : 0);
+                       },
+                       [](void *fn) {
+                           *(void **)0x13d0db8 = arena<void>(0x300);
+                           return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x28)[0])};
+                       }};
+    w3b_tint_test.prepare = [](const rewrite::Entry *) { w3b_device_was = *(void **)0x13d0db8; stubs_for_now({{0x431070, (void *)w3b_stub_table}}); };
+    w3b_tint_test.finish = [](const rewrite::Entry *) { unstub_many(); *(void **)0x13d0db8 = w3b_device_was; };
+    quick(w3b_tint_test);
+    // Slots::FirstFlagged: seven slots, each with an interface or none, flags set or not on the two states
+    Test w3b_flagged_test{0x7857c0,
+                          [=](Rng &r) {
+                              fresh(r); iface_handle(r);
+                              arena<void *>(0x60c)[0] = nullptr;
+                              for (int i = 0; i < 7; i++) *(void **)(arena<uint8_t>(0x1060) + i * 0x14) = r.range(0, 2) ? arena<void>(0x340) : arena<void>(0x600);
+                              *(void **)arena<uint8_t>(0x400) = arena<void>(0x500);
+                              *(void **)arena<uint8_t>(0x408) = arena<void>(0x540);
+                              arena<uint32_t>(0x528)[0] = r.range(0, 1) ? r.next() : 0;
+                              arena<uint32_t>(0x568)[0] = r.range(0, 1) ? r.next() : 0;
+                              arena<uint32_t>(0x24)[0] = r.next();
+                          },
+                          [](void *fn) { return Result{(uint8_t)((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x1000))}; }};
+    w3b_flagged_test.prepare = [](const rewrite::Entry *) { g_iface_id = (uint32_t *)0x1342768; stubs_for_now({{0x784030, (void *)w3b_stub_act}}); };
+    w3b_flagged_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_flagged_test);
+    // Child::Refresh: each copy's child, the flag cleared, both calls
+    static uint32_t w3b_cr_child;
+    Test w3b_child_refresh_test{0xc69560,
+                                [=](Rng &r) {
+                                    fresh(r);
+                                    static void *vt[0x21];
+                                    vt[0x20] = (void *)stub_plain_dtor;
+                                    *(void **)arena<uint8_t>(0x300) = vt;
+                                    for (int i = 1; i < 0x20; i++) arena<uint32_t>(0x300)[i] = r.next();
+                                    *(void **)(arena<uint8_t>(0x100) + w3b_cr_child) = arena<void>(0x300);
+                                },
+                                [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    w3b_child_refresh_test.prepare = [](const rewrite::Entry *e) { w3b_cr_child = *(uint32_t *)(e->at + 5); stubs_for_now({{0xc66cd0, (void *)stub_plain_dtor}}); };
+    w3b_child_refresh_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_child_refresh_test);
+    // Text::Use: the text room or none, ending in a zero or not, grown in place or replaced
+    Test w3b_text_use_test{0xc57a80,
+                           [=](Rng &r) {
+                               fresh(r);
+                               *(void **)arena<uint8_t>(0x100) = arena<void>(0x300);
+                               arena<uint32_t>(0x304)[0] = (uint32_t)r.range(0, 3);
+                               arena<uint32_t>(0x308)[0] = (uint32_t)r.range(0, 4);
+                               *(void **)arena<uint8_t>(0x30c) = arena<void>(0x400);
+                               for (int i = 0; i < 8; i++) arena<uint8_t>(0x400)[i] = (uint8_t)(r.range(0, 1) ? r.next() | 1 : 0);
+                               arena<uint32_t>(0x504)[0] = 2;
+                               arena<uint32_t>(0x508)[0] = 9;
+                               *(void **)arena<uint8_t>(0x50c) = arena<void>(0x600);
+                               for (int i = 0; i < 2; i++) arena<uint32_t>(0x600)[i] = 0xffffffff;
+                               arena<uint32_t>(0x24)[0] = r.next();
+                               arena<uint32_t>(0x28)[0] = r.next();
+                           },
+                           [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(nullptr, arena<void>(0x100))}; }};
+    w3b_text_use_test.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbd02b0, (void *)w3b_stub_grow}, {(uintptr_t)(e->at + 0x32 + 5 + *(int32_t *)(e->at + 0x33)), (void *)w3b_stub_use}});
+    };
+    w3b_text_use_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_text_use_test);

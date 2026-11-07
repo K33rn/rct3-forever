@@ -140,3 +140,39 @@ static char *__cdecl w3b_stub_strncpy(char *out, const char *text, uint32_t size
     for (; i < size; i++) out[i] = 0;
     return out;
 }
+
+static void __fastcall w3b_stub_slot_a(void *self) { record(0x7b10, self); }
+static void __fastcall w3b_stub_slot_b(void *self) { record(0x7b11, self); }
+static uint32_t __stdcall w3b_stub_com_release(void *self) { record(0x7b12, self); return 0; }
+static int32_t __cdecl w3b_stub_query(uint32_t handle, uint32_t *status) {
+    record(0x7b13, (void *)(uintptr_t)handle);
+    record(0x7b13, (void *)(uintptr_t)*status);
+    *status = arena<uint32_t>(0x28)[0];
+    return arena<int32_t>(0x24)[0];
+}
+static void *__thiscall w3b_stub_table(void *self, uint32_t *a, uint32_t *b, uint32_t *c, uint32_t *d, uint32_t *e, uint32_t *f, uint32_t *g, uint32_t *h,
+                                       uint32_t *i, uint32_t *j, uint32_t *k, uint32_t *l, uint32_t *m, uint32_t *n, uint32_t *o, uint32_t *p) {
+    uint32_t sum = 0;
+    for (uint32_t *v : {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p}) sum = sum * 31 + *v;
+    record(0x7b14, (void *)(uintptr_t)sum);
+    memset(self, 0x5a, 0x18);
+    return arena<void>(0x500);
+}
+static uint32_t __thiscall w3b_stub_device(void *self, uint32_t mesh, void *built) {
+    record(0x7b15, self); record(0x7b15, (void *)(uintptr_t)mesh); record(0x7b15, built);
+    return arena<uint32_t>(0x24)[0];
+}
+static uint32_t __thiscall w3b_stub_act(void *self, int32_t slot, uint32_t how) {
+    record(0x7b16, self); record(0x7b16, (void *)(uintptr_t)slot); record(0x7b16, (void *)(uintptr_t)how);
+    return arena<uint32_t>(0x24)[0];
+}
+static void __thiscall w3b_stub_grow(void **holder, uint32_t size) {
+    record(0x7b17, holder);
+    record(0x7b17, (void *)(uintptr_t)size);
+    if (arena<uint32_t>(0x28)[0] & 1) *holder = arena<void>(0x500);
+}
+static uint32_t __cdecl w3b_stub_use(uint8_t *text) {
+    record(0x7b18, text);
+    record(0x7b18, (void *)(uintptr_t)text[0]);
+    return arena<uint32_t>(0x24)[0];
+}

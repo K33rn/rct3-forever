@@ -1181,3 +1181,160 @@ static void __thiscall w3b_print(uint8_t *self, char *out, uint32_t size) {
 static const uint8_t w3b_print_original[] = {0x83, 0xec, 0x68, 0xa1, 0x34, 0xe6, 0x0f, 0x01};
 REWRITE("Text::PrintCA71D0", 0xca71d0, w3b_print_original, w3b_print, &g_w3b_print);
 REWRITE("Text::PrintCA71D0", 0xca7580, w3b_print_original, w3b_print, &g_w3b_print);
+
+// ---- Child::DropBoth: destroys and frees the child, deletes the owned object, then clears the part at the start ------
+static volatile long g_w3b_drop_both;
+template <uint32_t CHILD, uint32_t OWNED> static void __thiscall w3b_drop_both(uint8_t *self, uint32_t) {
+    g_w3b_drop_both++;
+    void *child = *(void **)(self + CHILD);
+    if (child) {
+        ((void(__fastcall *)(void *))0x6af760)(child);
+        memory_free(child);
+    }
+    void *owned = *(void **)(self + OWNED);
+    *(void **)(self + CHILD) = nullptr;
+    if (owned) ((void(__thiscall *)(void *, uint32_t))(*(void ***)owned)[0])(owned, 1);
+    *(void **)(self + OWNED) = nullptr;
+    ((void(__fastcall *)(void *))0x6a1e20)(self);
+}
+static const uint8_t w3b_drop_both_original[] = {0x56, 0x8b, 0xf1, 0x57, 0x8b, 0x7e};
+REWRITE("Child::DropBoth63A180", 0x63a180, w3b_drop_both_original, (&w3b_drop_both<0x3c, 0x40>), &g_w3b_drop_both);
+REWRITE("Child::DropBoth63A180", 0x670670, w3b_drop_both_original, (&w3b_drop_both<0x58, 0x54>), &g_w3b_drop_both);
+
+// ---- Task::Release: gives back the handle at +0x1c, tells the worker, and releases the COM object if there is one ---------
+static volatile long g_w3b_release;
+template <uint32_t WORKER, uint32_t SLOT, uint32_t COM> static void __fastcall w3b_release(uint8_t *self) {
+    g_w3b_release++;
+    void *pool = *(void **)(*(uint8_t **)(self + 0x14) + 0x470);
+    ((void(__thiscall *)(void *, uint32_t))0xc5cb30)(pool, *(uint32_t *)(self + 0x1c));
+    *(uint32_t *)(self + 0x1c) = 0;
+    void *worker = *(void **)(self + WORKER);
+    ((void(__fastcall *)(void *))(*(void ***)worker)[SLOT / 4])(worker);
+    void *com = *(void **)(self + COM);
+    if (com) {
+        ((uint32_t(__stdcall *)(void *))(*(void ***)com)[2])(com);
+        *(void **)(self + COM) = nullptr;
+    }
+}
+static const uint8_t w3b_release_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x1c, 0x8b, 0x4e, 0x14};
+REWRITE("Task::ReleaseBFC3C0", 0xbfc3c0, w3b_release_original, (&w3b_release<0x38, 0x10, 0x3c>), &g_w3b_release);
+REWRITE("Task::ReleaseBFC3C0", 0xbfc570, w3b_release_original, (&w3b_release<0x3c, 0x14, 0x40>), &g_w3b_release);
+
+// ---- Map::Refresh: clears a pending flag and its value, brings both maps up to date, then does the rest --------------------
+static volatile long g_w3b_refresh;
+static inline void w3b_map_up_to_date(uint8_t *part) {
+    uint8_t *map = *(uint8_t **)(part + 0xc);
+    if (map && !(map[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(map);
+}
+template <uint32_t BIT, uintptr_t REST> static void __fastcall w3b_refresh(uint8_t *self) {
+    g_w3b_refresh++;
+    uint32_t *flags = (uint32_t *)(self + 0x40);
+    if (*flags >> BIT & 1) {
+        *(uint32_t *)(self + 0x74) = 0;
+        *flags &= ~(1u << BIT);
+    }
+    w3b_map_up_to_date(*(uint8_t **)(self + 0x4c));
+    w3b_map_up_to_date(*(uint8_t **)(self + 0x60));
+    ((void(__fastcall *)(void *))REST)(self);
+}
+static const uint8_t w3b_refresh_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x40, 0x8b, 0xc8, 0xc1, 0xe9};
+REWRITE("Map::Refresh54B740", 0x54b740, w3b_refresh_original, (&w3b_refresh<3, 0x549b10>), &g_w3b_refresh);
+REWRITE("Map::Refresh54B740", 0x54bab0, w3b_refresh_original, (&w3b_refresh<2, 0x549ba0>), &g_w3b_refresh);
+
+// ---- Job::Poll: asks whether a waiting job is finished, and moves it on to ready or done -------------------------------------
+static volatile long g_w3b_poll;
+template <uint32_t WAITING, uint32_t READY, uint32_t DONE> static void __thiscall w3b_poll(void *, uint32_t *job) {
+    g_w3b_poll++;
+    if (job[1] != WAITING) return;
+    uint32_t status = 0;
+    int32_t failed = (*(int32_t(__cdecl **)(uint32_t, uint32_t *))0x1106e0c)(job[3], &status);
+    if (failed) {
+        job[2] = 0;
+        job[1] = DONE;
+    } else if (status == 1) {
+        job[1] = READY;
+    } else if (status != 2) {
+        job[3] = 0;
+        job[1] = DONE;
+    }
+}
+static const uint8_t w3b_poll_original[] = {0x51, 0x56, 0x8b, 0x74, 0x24, 0x0c, 0x83, 0x7e, 0x04};
+REWRITE("Job::Poll45E270", 0x45e270, w3b_poll_original, (&w3b_poll<4, 6, 5>), &g_w3b_poll);
+REWRITE("Job::Poll45E270", 0x45e320, w3b_poll_original, (&w3b_poll<7, 9, 8>), &g_w3b_poll);
+
+// ---- Choice::Set: stores a new choice of either kind when it changed, and passes it on; kind 0 also resets and announces ---
+static volatile long g_w3b_choice;
+template <uint32_t MAIN, uint32_t OTHER, uintptr_t PASS> static void __thiscall w3b_choice(uint8_t *self, uint32_t kind, uint32_t value) {
+    g_w3b_choice++;
+    uint32_t *stored = (uint32_t *)(self + (kind ? OTHER : MAIN));
+    if (value == *stored) return;
+    if (!kind) ((void(__fastcall *)(void *))0x82b350)(self);
+    *stored = value;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))PASS)(*(void **)(self + 0x84), kind, value);
+    if (!kind) ((void(__thiscall *)(void *, void *))0x87eee0)(**(void ***)(self + 0x9c), self + 0xcc);
+}
+static const uint8_t w3b_choice_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4c, 0x24, 0x08};
+REWRITE("Choice::Set82FA30", 0x82fa30, w3b_choice_original, (&w3b_choice<0xd0, 0xdc, 0x86d000>), &g_w3b_choice);
+REWRITE("Choice::Set82FA30", 0x82fab0, w3b_choice_original, (&w3b_choice<0xd4, 0xe0, 0x86d050>), &g_w3b_choice);
+
+// ---- Tint::Apply: builds a table of sixteen entries all of one of two stored values, and gives it to the device -----------
+static volatile long g_w3b_tint;
+template <uint32_t MESH, uint32_t ON, uint32_t OFF> static uint32_t __thiscall w3b_tint(uint8_t *self, uint32_t on) {
+    g_w3b_tint++;
+    uint32_t value = *(uint32_t *)(self + ((uint8_t)on ? ON : OFF));
+    uint32_t *v = &value;
+    void **device = *(void ***)0x13d0db8;
+    uint8_t table[0x18];
+    void *built = ((void *(__thiscall *)(void *, uint32_t *, uint32_t *, uint32_t *, uint32_t *, uint32_t *, uint32_t *, uint32_t *, uint32_t *, uint32_t *,
+                                         uint32_t *, uint32_t *, uint32_t *, uint32_t *, uint32_t *, uint32_t *, uint32_t *))0x431070)(
+        table, v, v, v, v, v, v, v, v, v, v, v, v, v, v, v, v);
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *))(*(void ***)device)[0xb0 / 4])(device, *(uint32_t *)(self + MESH), built);
+}
+static const uint8_t w3b_tint_original[] = {0x8a, 0x44, 0x24, 0x04, 0x83, 0xec, 0x18, 0x53, 0x56, 0x57, 0x8b, 0x79};
+REWRITE("Tint::Apply9122A0", 0x9122a0, w3b_tint_original, (&w3b_tint<0x34, 0x44, 0x3c>), &g_w3b_tint);
+REWRITE("Tint::Apply9122A0", 0x912340, w3b_tint_original, (&w3b_tint<0x38, 0x48, 0x40>), &g_w3b_tint);
+
+// ---- Slots::FirstFlagged: acts on the first of seven slots whose interface's state has a flag; false if none has ----------
+static volatile long g_w3b_flagged;
+template <uint32_t BIT, uint32_t HOW> static uint8_t __fastcall w3b_flagged(uint8_t *self) {
+    g_w3b_flagged++;
+    for (int32_t i = 0; i < 7; i++) {
+        uint8_t *part = (uint8_t *)find_interface(*(uint8_t **)(self + 0x60 + i * 0x14), (const int32_t *)0x1342768);
+        if (part && *(uint32_t *)(*(uint8_t **)(part + 0xa0) + 0x28) >> BIT & 1)
+            return ((uint8_t(__thiscall *)(void *, int32_t, uint32_t))0x784030)(self, i, HOW);
+    }
+    return 0;
+}
+static const uint8_t w3b_flagged_original[] = {0x53, 0x55, 0x56, 0x8b, 0xe9, 0x57, 0x33, 0xff};
+REWRITE("Slots::FirstFlagged7857C0", 0x7857c0, w3b_flagged_original, (&w3b_flagged<0xd, 2>), &g_w3b_flagged);
+REWRITE("Slots::FirstFlagged7857C0", 0x785840, w3b_flagged_original, (&w3b_flagged<0xf, 1>), &g_w3b_flagged);
+
+// ---- Child::Refresh: clears the child's flag, has it redo itself, then does the same work for this object --------------------
+static volatile long g_w3b_child_refresh;
+template <uint32_t CHILD> static void __fastcall w3b_child_refresh(uint8_t *self) {
+    g_w3b_child_refresh++;
+    uint8_t *child = *(uint8_t **)(self + CHILD);
+    child[0x70] = 0;
+    ((void(__fastcall *)(void *))(*(void ***)child)[0x80 / 4])(child);
+    ((void(__fastcall *)(void *))0xc66cd0)(self);
+}
+static const uint8_t w3b_child_refresh_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86};
+REWRITE("Child::RefreshC69560", 0xc69560, w3b_child_refresh_original, (&w3b_child_refresh<0xec>), &g_w3b_child_refresh);
+REWRITE("Child::RefreshC69560", 0xc697e0, w3b_child_refresh_original, (&w3b_child_refresh<0xe0>), &g_w3b_child_refresh);
+
+// ---- Text::Use: makes sure a growing text ends in a zero, then passes its characters to a C function ------------------------
+static volatile long g_w3b_text_use;
+template <uintptr_t USE> static uint32_t __thiscall w3b_text_use(void *, uint8_t **holder) {
+    g_w3b_text_use++;
+    uint8_t *text = *holder;
+    uint32_t size = *(uint32_t *)(text + 4);
+    if (*(uint32_t *)(text + 8) <= size || (*(uint8_t **)(text + 0xc))[size]) {
+        ((void(__thiscall *)(void *, uint32_t))0xbd02b0)(holder, size);
+        text = *holder;
+        (*(uint8_t **)(text + 0xc))[*(uint32_t *)(text + 4)] = 0;
+    }
+    return ((uint32_t(__cdecl *)(void *))USE)(*(void **)((*holder) + 0xc));
+}
+static const uint8_t w3b_text_use_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x8b, 0x06};
+REWRITE("Text::UseC57A80", 0xc57a80, w3b_text_use_original, (&w3b_text_use<0xde0dfd>), &g_w3b_text_use);
+REWRITE("Text::UseC57A80", 0xc57ac0, w3b_text_use_original, (&w3b_text_use<0xe04588>), &g_w3b_text_use);
