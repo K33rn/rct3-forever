@@ -127,3 +127,36 @@ static void __thiscall w1c_stub_pair(void *self, uint32_t *owner, uint32_t *made
     uint32_t *object = (uint32_t *)(uintptr_t)*made;
     record(0x22d, (void *)(uintptr_t)object[0]); record(0x22d, (void *)(uintptr_t)object[1]);
 }
+static void *__cdecl w1d_stub_aligned(uint32_t size) { record(0x240, (void *)(uintptr_t)size); return arena<uint32_t>(0x20)[0] & 1 ? arena<void>(0x2000) : nullptr; }
+static void __fastcall w1d_stub_member_end(uint32_t *self) {
+    record(0x241, self); record(0x241, (void *)(uintptr_t)self[-1]); record(0x241, (void *)(uintptr_t)self[-9]);
+    self[0] = 0x4444;
+}
+static uint32_t __fastcall w1d_stub_empty_text(uint8_t flag) { record(0x242, (void *)(uintptr_t)flag); return ++arena<uint32_t>(0x30)[0]; }
+static uint32_t __thiscall w1d_stub_act(void *self, void *who, uint32_t value) { record(0x243, self); record(0x243, who); record(0x243, (void *)(uintptr_t)value); return value * 3 + 1; }
+static void __stdcall w1d_stub_release(uint32_t *self) { record(0x244, self); record(0x244, (void *)(uintptr_t)arena<uint32_t>(0x800)[0]); self[1] = 0x5151; }
+static void *__cdecl w1d_stub_record() { record(0x245, (void *)(uintptr_t)arena<uint32_t>(0x800)[8]); return arena<void>(0x2000); }
+static void __cdecl w1d_stub_free(void *p) { record(0x246, p); }
+static void __fastcall w1d_stub_end_seen(void *self) { record(0x247, self); record(0x247, (void *)(uintptr_t)arena<uint32_t>(0x800)[0]); record(0x247, (void *)(uintptr_t)arena<uint32_t>(0x800)[2]); }
+static void *__thiscall w1d_stub_build3(void *self, void *a, uint32_t b, uint32_t c) {
+    record(0x248, self); record(0x248, a); record(0x248, (void *)(uintptr_t)b); record(0x248, (void *)(uintptr_t)c);
+    return (uint8_t *)self + 4;
+}
+static void __thiscall w1d_stub_base4(uint32_t *self, uint32_t a, uint32_t b, void *d, uint32_t e) {
+    record(0x249, self); record(0x249, (void *)(uintptr_t)a); record(0x249, (void *)(uintptr_t)b); record(0x249, d); record(0x249, (void *)(uintptr_t)e);
+    self[0] = 0x1111; self[1] = a ^ e;
+}
+static void __thiscall w1d_stub_apply(void *self, uint32_t c) { record(0x24a, self); record(0x24a, (void *)(uintptr_t)c); record(0x24a, (void *)(uintptr_t)arena<uint32_t>(0x800)[0]); }
+static void *__thiscall w1d_stub_build_ref(void *self, uint32_t a, uint32_t *p) {
+    record(0x24b, self); record(0x24b, (void *)(uintptr_t)a); record(0x24b, (void *)(uintptr_t)*p);
+    return (uint8_t *)self + 8;
+}
+static void __fastcall w1d_stub_first(void *self) { record(0x24c, self); record(0x24c, (void *)(uintptr_t)arena<uint32_t>(0x800)[0]); }
+static void *__cdecl w1d_stub_alloc_always(uint32_t size) { record(0x24d, (void *)(uintptr_t)size); return arena<void>(0x2000); }
+static void __fastcall w1d_stub_registers(void *self) { record(0x24e, self); if (arena<uint32_t>(0x20)[1] & 1) *w1c_global = (uint32_t)(uintptr_t)self; }
+static void *__thiscall w1d_stub_build_flags(uint8_t *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x24f, self); record(0x24f, (void *)(uintptr_t)(a + b + c));
+    self[0x2c] = (uint8_t)arena<uint32_t>(0x20)[1];
+    return self;
+}
+static void __thiscall w1d_stub_delete(void *self, uint32_t flag) { record(0x250, self); record(0x250, (void *)(uintptr_t)flag); }

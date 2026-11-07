@@ -1428,3 +1428,231 @@ template <uint32_t BUILD> static uint32_t __thiscall w1c_resize(uint32_t *self, 
 REWRITE("Items::Resize7E5350", 0x7e5350, w1c_seh_late, (&w1c_resize<0x407490>), &g_w1c_resizes);
 REWRITE("Items::Resize7E5350", 0x980400, w1c_seh_late, (&w1c_resize<0x97ffb0>), &g_w1c_resizes);
 REWRITE("Items::Resize7E5350", 0xabc440, w1c_seh_late, (&w1c_resize<0xabc130>), &g_w1c_resizes);
+
+// ---- Holder::Construct: a holder of `value` with its counts cleared and an empty aligned buffer ------------------------
+static volatile long g_w1d_holders;
+static uint32_t *__thiscall w1d_holder(uint32_t *self, uint32_t value) {
+    g_w1d_holders++;
+    self[0] = value;
+    self[1] = 0;
+    self[2] = 0;
+    self[5] = 0;
+    self[4] = (uint32_t)(uintptr_t)memory_alloc_aligned(0);
+    self[6] = 0;
+    return self;
+}
+REWRITE("Holder::Construct7E6D70", 0x7e6d70, (w1c_seh<0xe595fb>), (&w1d_holder), &g_w1d_holders);
+REWRITE("Holder::Construct7E6D70", 0xaaaf70, (w1c_seh<0xe87c9b>), (&w1d_holder), &g_w1d_holders);
+
+// ---- Watched::Destroy: the inner part's table restored, its member at +0x24 destroyed, then the base table --------------
+static volatile long g_w1d_watched;
+static void __fastcall w1d_watched(uint32_t *self) {
+    g_w1d_watched++;
+    self[8] = 0xf70de0;
+    ((void(__fastcall *)(void *))0x40f730)(self + 9);
+    self[0] = 0xf708c8;
+}
+REWRITE("Watched::Destroy7CD180", 0x7cd180, (w1c_seh<0xe58128>), (&w1d_watched), &g_w1d_watched);
+REWRITE("Watched::Destroy7CD180", 0x7cd1d0, (w1c_seh<0xe58148>), (&w1d_watched), &g_w1d_watched);
+
+// ---- TextPair::Construct: two empty texts ------------------------------------------------------------------------------
+static volatile long g_w1d_text_pairs;
+static uint32_t *__fastcall w1d_text_pair(uint32_t *self) {
+    g_w1d_text_pairs++;
+    self[0] = ((uint32_t(__fastcall *)(uint8_t))0xbd0490)(1);
+    self[1] = ((uint32_t(__fastcall *)(uint8_t))0xbd0490)(1);
+    return self;
+}
+REWRITE("TextPair::Construct87F560", 0x87f560, (w1c_seh<0xe63958>), (&w1d_text_pair), &g_w1d_text_pairs);
+REWRITE("TextPair::Construct87F560", 0xb32d20, (w1c_seh<0xe92f88>), (&w1d_text_pair), &g_w1d_text_pairs);
+
+// ---- Handled::Forward: the handle's interface (by the id in a global, null if it has none) asked to act for us --------
+static volatile long g_w1d_forwards;
+template <uint32_t ID, uint32_t ACT> static uint32_t __thiscall w1d_forward(uint8_t *self, uint32_t value) {
+    g_w1d_forwards++;
+    void *iface = find_interface(*(uint8_t **)(self + 0x44), (const int32_t *)ID);
+    return ((uint32_t(__thiscall *)(void *, void *, uint32_t))ACT)(iface, self, value);
+}
+static const uint8_t w1d_forward_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x44, 0x8b, 0x70, 0x0c};
+REWRITE("Handled::Forward588AE0", 0x588ae0, w1d_forward_original, (&w1d_forward<0x12f53f0, 0x588260>), &g_w1d_forwards);
+REWRITE("Handled::Forward588AE0", 0x5936a0, w1d_forward_original, (&w1d_forward<0x12f5494, 0x592240>), &g_w1d_forwards);
+
+// ---- Linked::Destroy: the held object released, our list node taken out, the owner's back pointer cleared ------------
+static volatile long g_w1d_linked;
+template <uint32_t TABLE> static void __fastcall w1d_linked(uint32_t *self) {
+    g_w1d_linked++;
+    self[0] = TABLE;
+    if (void *held = (void *)(uintptr_t)self[5]) ((void(__stdcall *)(void *))(*(void ***)held)[2])(held);
+    unlink((Node *)(self + 1));
+    *(uint32_t *)(uintptr_t)self[4] = 0;
+    self[0] = 0xfb951c;
+}
+REWRITE("Linked::DestroyC72810", 0xc72810, (w1c_seh<0xea3bb8>), (&w1d_linked<0xfb9660>), &g_w1d_linked);
+REWRITE("Linked::DestroyC72810", 0xc8b760, (w1c_seh<0xea4398>), (&w1d_linked<0xfbee2c>), &g_w1d_linked);
+
+// ---- Owned::Construct: owner and size kept, a fresh 28-byte record (from ALLOC) that points back at us --------------
+static volatile long g_w1d_owned;
+template <uint32_t TABLE, uint32_t ALLOC> static uint32_t *__thiscall w1d_owned(uint32_t *self, uint32_t owner, uint32_t size) {
+    g_w1d_owned++;
+    self[1] = owner;
+    self[2] = size;
+    ((uint16_t *)self)[6] = 0;
+    ((uint16_t *)self)[7] = 0;
+    self[0] = TABLE;
+    self[6] = (uint32_t)(uintptr_t)self;
+    self[7] = size;
+    uint32_t *record = ((uint32_t * (__cdecl *)())ALLOC)();   // a 28-byte record from its pool
+    if (record)
+        for (int i = 0; i < 7; i++) record[i] = 0;
+    self[8] = (uint32_t)(uintptr_t)record;
+    self[0xb] = 0;
+    record[1] = (uint32_t)(uintptr_t)self;
+    record[4] = size;
+    return self;
+}
+REWRITE("Owned::ConstructBEA2D0", 0xbea2d0, (w1c_seh<0xe9e4b8>), (&w1d_owned<0xfa5734, 0xbea270>), &g_w1d_owned);
+REWRITE("Owned::ConstructBEA2D0", 0xbfdef0, (w1c_seh<0xe9e968>), (&w1d_owned<0xfa5ca8, 0xbfde90>), &g_w1d_owned);
+
+// ---- Shared::Destroy: our buffer freed, a member destroyed, and the shared block let go (freed with its data when its
+// count reaches zero) ------------------------------------------------------------------------------------------------------
+static volatile long g_w1d_shared;
+template <uint32_t TABLE> static void __fastcall w1d_shared(uint32_t *self) {
+    g_w1d_shared++;
+    self[0] = TABLE;
+    memory_free_aligned((void *)(uintptr_t)self[4]);
+    ((void(__fastcall *)(void *))0xbd99e0)(self + 6);
+    int32_t *shared = (int32_t *)(uintptr_t)self[2];
+    if (--shared[0] == 0 && shared) {
+        memory_free_aligned((void *)(uintptr_t)shared[3]);
+        memory_free(shared);
+    }
+    self[0] = 0xf306b8;
+}
+REWRITE("Shared::Destroy87F8C0", 0x87f8c0, (w1c_seh<0xe639fe>), (&w1d_shared<0xf78f88>), &g_w1d_shared);
+REWRITE("Shared::Destroy87F8C0", 0xb32f30, (w1c_seh<0xe9301e>), (&w1d_shared<0xf990b8>), &g_w1d_shared);
+
+// ---- Maker::Make: when we are active, a new SIZE-byte object built for us from the two values; null otherwise --------
+static volatile long g_w1d_makers;
+template <uint32_t SIZE, uint32_t BUILD> static void *__thiscall w1d_maker(uint32_t *self, uint32_t a, uint32_t b) {
+    g_w1d_makers++;
+    if (!self[8]) return nullptr;
+    void *made = memory_alloc(SIZE);
+    return made ? ((void *(__thiscall *)(void *, void *, uint32_t, uint32_t))BUILD)(made, self, a, b) : nullptr;
+}
+REWRITE("Maker::MakeC59F00", 0xc59f00, (w1c_seh<0xea269b>), (&w1d_maker<0x18, 0xc59ab0>), &g_w1d_makers);
+REWRITE("Maker::MakeC59F00", 0xca3440, (w1c_seh<0xea477b>), (&w1d_maker<0x14, 0xca2f10>), &g_w1d_makers);
+
+// ---- Derived::Construct: the base built from four of the five values, our table, then the third value applied to the
+// fourth --------------------------------------------------------------------------------------------------------------------
+static volatile long g_w1d_derived;
+template <uint32_t TABLE> static uint32_t *__thiscall w1d_derived(uint32_t *self, uint32_t a, uint32_t b, uint32_t c, void *d, uint32_t e) {
+    g_w1d_derived++;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, void *, uint32_t))0xca3750)(self, a, b, d, e);
+    self[0] = TABLE;
+    ((void(__thiscall *)(void *, uint32_t))0xcb8360)(d, c);
+    return self;
+}
+REWRITE("Derived::ConstructCA3D30", 0xca3d30, (w1c_seh<0xea4818>), (&w1d_derived<0xfbf438>), &g_w1d_derived);
+REWRITE("Derived::ConstructCA3D30", 0xca3e30, (w1c_seh<0xea4838>), (&w1d_derived<0xfbf460>), &g_w1d_derived);
+
+// ---- Fresh::Make: a new SIZE-byte object built from the value (passed by address); null if out of memory ----------------
+static volatile long g_w1d_fresh;
+template <uint32_t SIZE, uint32_t BUILD> static void *__stdcall w1d_fresh(uint32_t value, uint32_t) {
+    g_w1d_fresh++;
+    void *made = memory_alloc(SIZE);
+    return made ? ((void *(__thiscall *)(void *, uint32_t, uint32_t *))BUILD)(made, 0, &value) : nullptr;
+}
+REWRITE("Fresh::Make77A5B0", 0x77a5b0, (w1c_seh<0xe5194b>), (&w1d_fresh<0xf0, 0x7753d0>), &g_w1d_fresh);
+REWRITE("Fresh::Make77A5B0", 0xa03b40, (w1c_seh<0xe7877b>), (&w1d_fresh<0x90, 0xa02e50>), &g_w1d_fresh);
+
+// ---- Buffered::Destroy: the member at +0x10 destroyed, then the aligned buffer in SLOT freed and cleared ------------------
+static volatile long g_w1d_buffered;
+template <uint32_t END, uint32_t SLOT> static void __fastcall w1d_buffered(uint8_t *self) {
+    g_w1d_buffered++;
+    ((void(__fastcall *)(void *))END)(self + 0x10);
+    void **buffer = (void **)(self + SLOT);
+    if (*buffer) {
+        memory_free_aligned(*buffer);
+        *buffer = nullptr;
+    }
+}
+REWRITE("Buffered::Destroy90B3B0", 0x90b3b0, (w1c_seh<0xe68fcb>), (&w1d_buffered<0xbd1880, 4>), &g_w1d_buffered);
+REWRITE("Buffered::Destroy90B3B0", 0xaa0b80, (w1c_seh<0xe86b9b>), (&w1d_buffered<0x40f730, 8>), &g_w1d_buffered);
+
+// ---- Pooled::Destroy: the pooled pointer dropped, the aligned buffer freed, then the base ---------------------------------
+static volatile long g_w1d_pooled;
+template <uint32_t TABLE, uint32_t HELD, uint32_t BUFFER, uint32_t BASE> static void __fastcall w1d_pooled(uint8_t *self) {
+    g_w1d_pooled++;
+    *(uint32_t *)self = TABLE;
+    if (*(uint32_t *)(self + HELD)) *(uint32_t *)(self + HELD) = 0;
+    memory_free_aligned(*(void **)(self + BUFFER));
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Pooled::DestroyBEBCB0", 0xbebcb0, (w1c_seh<0xe9e598>), (&w1d_pooled<0xfa57b4, 0x20, 0x30, 0xbeba10>), &g_w1d_pooled);
+REWRITE("Pooled::DestroyBEBCB0", 0xbff610, (w1c_seh<0xe9ea48>), (&w1d_pooled<0xfa5d0c, 0x24, 0x34, 0xbff310>), &g_w1d_pooled);
+
+// ---- Paired::Destroy: both tables restored, the object kept at PART told to finish, then the base ---------------------
+static volatile long g_w1d_paired;
+template <uint32_t TABLE, uint32_t TABLE2, uint32_t PART, uint32_t FINISH, uint32_t BASE> static void __fastcall w1d_paired(uint32_t *self) {
+    g_w1d_paired++;
+    self[0] = TABLE;
+    self[1] = TABLE2;
+    ((void(__fastcall *)(void *))FINISH)(*(void **)((uint8_t *)self + PART));
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Paired::Destroy8CDCD0", 0x8cdcd0, (w1c_seh<0xe66858>), (&w1d_paired<0xf7b468, 0xf7b454, 0xd8, 0x6b0990, 0x63a9c0>), &g_w1d_paired);
+REWRITE("Paired::Destroy8CDCD0", 0xb19110, (w1c_seh<0xe91438>), (&w1d_paired<0xf98308, 0xf98304, 0x90, 0xb0e0d0, 0xb7a4c0>), &g_w1d_paired);
+
+// ---- Built::Make: a new SIZE-byte object (null if out of memory) stored in `out`, then set up and started --------------
+static volatile long g_w1d_built;
+template <uint32_t SIZE, uint32_t BUILD> static void __fastcall w1d_built(void **out, uint32_t value, uint32_t extra) {
+    g_w1d_built++;
+    void *made = memory_alloc(SIZE);
+    if (made) made = ((void *(__thiscall *)(void *, uint32_t, uint32_t))BUILD)(made, value, extra);
+    *out = made;
+    ((void(__fastcall *)(void *))0xc51900)(made);
+    ((void(__fastcall *)(void *))0xc501a0)(*out);
+}
+REWRITE("Built::MakeC595A0", 0xc595a0, (w1c_seh<0xea259b>), (&w1d_built<0x154, 0xc58f40>), &g_w1d_built);
+REWRITE("Built::MakeC595A0", 0xc59620, (w1c_seh<0xea25bb>), (&w1d_built<0x18c, 0xc59040>), &g_w1d_built);
+
+// ---- Single::Get: the one instance, built on first use (its constructor records itself in the global) -----------------
+static volatile long g_w1d_singles;
+template <uint32_t GLOBAL, uint32_t SIZE, uint32_t BUILD> static uint32_t __cdecl w1d_single() {
+    g_w1d_singles++;
+    if (*(uint32_t *)GLOBAL) return *(uint32_t *)GLOBAL;
+    if (void *made = memory_alloc(SIZE)) ((void(__fastcall *)(void *))BUILD)(made);
+    return *(uint32_t *)GLOBAL;
+}
+REWRITE("Single::Get402F70", 0x402f70, (w1c_seh<0xe048ab>), (&w1d_single<0x12f84c8, 0x38, 0x699ea0>), &g_w1d_singles);
+REWRITE("Single::Get402F70", 0x741e60, (w1c_seh<0xe4df0b>), (&w1d_single<0x13070cc, 0x6c, 0x7be2f0>), &g_w1d_singles);
+REWRITE("Single::Get402F70", 0xa04bc0, (w1c_seh<0xe7897b>), (&w1d_single<0x1341dcc, 0x28, 0xa048f0>), &g_w1d_singles);
+
+// ---- Started::Get: the one instance, built on first use and started unless its flag says it already is --------------
+static volatile long g_w1d_started;
+template <uint32_t GLOBAL, uint32_t SIZE, uint32_t BUILD> static uint8_t *__cdecl w1d_started_get() {
+    g_w1d_started++;
+    uint8_t **instance = (uint8_t **)GLOBAL;
+    if (*instance) return *instance;
+    uint8_t *made = (uint8_t *)memory_alloc(SIZE);
+    *instance = made ? ((uint8_t * (__thiscall *)(void *, uint32_t, uint32_t, uint32_t))BUILD)(made, 0, 0, 0) : nullptr;
+    if (!((*instance)[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(*instance);
+    return *instance;
+}
+REWRITE("Started::Get416F10", 0x416f10, (w1c_seh<0xe0633b>), (&w1d_started_get<0x1103c1c, 0x58, 0x430010>), &g_w1d_started);
+REWRITE("Started::Get416F10", 0x87ecd0, (w1c_seh<0xe638fb>), (&w1d_started_get<0x130ac4c, 0x48, 0x80d930>), &g_w1d_started);
+
+// ---- Parts::Drop: three owned parts of the model deleted and cleared, then the rest finished -----------------------------
+static volatile long g_w1d_parts;
+template <uint32_t FIRST> static void __thiscall w1d_parts(uint32_t *self, uint32_t) {
+    g_w1d_parts++;
+    for (uint32_t at = FIRST; at < FIRST + 12; at += 4) {
+        void **part = (void **)((uint8_t *)(uintptr_t)self[7] + at);
+        if (*part) delete_object(*part);
+        *part = nullptr;
+    }
+    ((void(__fastcall *)(void *))0x6a1e20)(self);
+}
+static const uint8_t w1d_parts_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x1c, 0x8b, 0x88};
+REWRITE("Parts::Drop598620", 0x598620, w1d_parts_original, (&w1d_parts<0x198>), &g_w1d_parts);
+REWRITE("Parts::Drop598620", 0x630d80, w1d_parts_original, (&w1d_parts<0x190>), &g_w1d_parts);
