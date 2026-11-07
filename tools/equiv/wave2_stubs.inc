@@ -353,3 +353,17 @@ static uint32_t *__fastcall w2d_look_make(uint32_t *made, uint32_t kind, uint32_
     for (int i = 0; i < 4; i++) made[i] = kind * 0x1000 + first * 0x10 + second + i * W2C_RET;
     return made;
 }
+// hands out the text set aside at 0x60 and points the caller either at it or at the slot at 0x3c0
+static int32_t **__thiscall w2d_find_text(void *self, int32_t **out) {
+    record(0xe2dc, self);
+    *out = arena<int32_t *>(0x60)[0];
+    return arena<uint32_t>(0x20)[4] & 1 ? out : arena<int32_t *>(0x3c0);
+}
+// gives the next entry of either queue of the object at 0x100, as many as the seed says
+static void *__fastcall w2d_queue_next(uint8_t *queue) {
+    record(0xe2dd, queue);
+    int which = queue == arena<uint8_t>(0x100) + 0xc ? 0 : 1;
+    uint32_t &taken = arena<uint32_t>(0x40)[which];
+    if (taken >= arena<uint32_t>(0x20)[which] % 4) return nullptr;
+    return arena<uint8_t>(which ? 0x600 : 0x300) + 0x40 * taken++;
+}

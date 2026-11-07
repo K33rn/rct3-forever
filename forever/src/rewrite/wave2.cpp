@@ -1995,3 +1995,51 @@ template <uint32_t T0, uint32_t ACTIVE, uint32_t SETTLE, uint32_t HOLDER, uint32
 }
 REWRITE("Dtor::BoundBEBF70", 0xbebf70, w2c_seh<0xe9e5b8>, (&w2d_bound<0xfa57d0, 0x20, 0xbe9dd0, 0x18, 0x24, 0xfa5718>), &g_w2d_bound);
 REWRITE("Dtor::BoundBEBF70", 0xbff950, w2c_seh<0xe9ea68>, (&w2d_bound<0xfa5d28, 0x24, 0xbfdbc0, 0x20, 0x28, 0xfa5c8c>), &g_w2d_bound);
+
+// Lets go of one reference to a counted text, freeing it with the last (the copy at hand checks for none first).
+template <bool CHECK> static inline void w2d_text_release(int32_t *text) {
+    --*text;
+    if (*text == 0 && (!CHECK || text)) {
+        memory_free_aligned(*(void **)(text + 3));
+        memory_free(text);
+    }
+}
+
+// ---- Text::Refresh: asks the source at HOLDER (by FIND) for its current text and keeps it at FIELD when it changed; the asked-for reference is let go -----
+static volatile long g_w2d_refresh;
+template <uint32_t HOLDER, uint32_t FIND, uint32_t FIELD> static void __thiscall w2d_refresh(uint8_t *self, uint32_t) {
+    g_w2d_refresh++;
+    int32_t *asked;
+    int32_t **current = ((int32_t * *(__thiscall *)(void *, int32_t **))FIND)((void *)(uintptr_t)w2c_u32(self, HOLDER), &asked);
+    int32_t *&kept = *(int32_t **)(self + FIELD);
+    if (*current != kept) {
+        w2d_text_release<true>(kept);
+        kept = *current;
+        ++*kept;
+    }
+    w2d_text_release<false>(asked);
+}
+REWRITE("Text::Refresh64A320", 0x64a320, w2c_seh<0xe32cf8>, (&w2d_refresh<0x30, 0x7c8700, 0x28>), &g_w2d_refresh);
+REWRITE("Text::Refresh64A320", 0x7ee540, w2c_seh<0xe59de8>, (&w2d_refresh<0x38, 0x7c8700, 0x30>), &g_w2d_refresh);
+REWRITE("Text::Refresh64A320", 0xa35ee0, w2c_seh<0xe7d698>, (&w2d_refresh<0x2c, 0xa30980, 0x4c>), &g_w2d_refresh);
+
+// ---- Dtor::Queues: deletes everything left in the first queue (+0xc); takes each entry out of the second (+0x1c) and frees it; the shared text at +0x18 -----
+static volatile long g_w2d_queues;
+template <uint32_t T0, uint32_t T1, uint32_t DROP> static void __fastcall w2d_queues(uint8_t *self) {
+    g_w2d_queues++;
+    auto next = (uint8_t * (__fastcall *)(void *))0xbe8400;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 8) = T1;
+    while (void **object = (void **)next(self + 0xc)) ((void(__thiscall *)(void *, uint32_t))(*(void ***)object)[0])(object, 1);
+    while (uint8_t *entry = next(self + 0x1c)) {
+        ((void(__thiscall *)(void *, void *, uint32_t))0xbe8230)(self + 0x1c, entry + 0xc, 0);
+        w2c_run<DROP>(entry + 0xc);
+        memory_free(entry);
+    }
+    w2c_run<0xbe88b0>(self + 0x1c);
+    w2d_text_release<true>(*(int32_t **)(self + 0x18));
+    w2c_run<0xbe88b0>(self + 0xc);
+    w2c_u32(self, 0) = 0xf306b8;
+}
+REWRITE("Dtor::Queues4A71F0", 0x4a71f0, w2c_seh<0xe11069>, (&w2d_queues<0xf30900, 0xf308fc, 0x4a35b0>), &g_w2d_queues);
+REWRITE("Dtor::Queues4A71F0", 0xb943f0, w2c_seh<0xe99e49>, (&w2d_queues<0xf9c7dc, 0xf9c7d8, 0xb92bb0>), &g_w2d_queues);

@@ -1456,3 +1456,35 @@
                 g_w2c_a = *(uint8_t *)(e->at + 0x26) | *(uint8_t *)(e->at + 0x3a) << 8 | *(uint8_t *)(e->at + 0x85) << 16;
                 stubs_for_now({{w2c_target(e->at, 0x34), (void *)w2d_s_table<0xe2d6>}});
             });
+    // Text::Refresh: the text unchanged or new, the kept one let go or not, the asked one let go or not
+    w2c_add(0x64a320,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<uint32_t>(0x40)[0] = 0;
+                arena<int32_t>(0x340)[0] = r.range(1, 4);
+                arena<int32_t>(0x380)[0] = r.range(1, 4);
+                *(void **)(arena<uint8_t>(0x100) + (g_w2c_a & 0xff)) = arena<void>(0x340);
+                *(void **)(arena<uint8_t>(0x100) + (g_w2c_a >> 8)) = arena<void>(0x700);
+                arena<void *>(0x60)[0] = arena<void>(r.range(0, 3) ? 0x380 : 0x340);
+                arena<void *>(0x3c0)[0] = arena<void>(r.range(0, 2) ? 0x380 : 0x340);
+            },
+            w2c_void_arg,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x2b) | *(uint8_t *)(e->at + 0x1c) << 8;
+                stubs_for_now({{w2c_target(e->at, 0x23), (void *)w2d_find_text}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Dtor::Queues: each queue empty or holding some; the text kept or freed
+    w2c_add(0x4a71f0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<uint32_t>(0x40)[0] = arena<uint32_t>(0x40)[1] = 0;
+                arena<void *>(0x400)[0] = (void *)w2c_s1<0xe2d5>;
+                for (int i = 0; i < 4; i++) arena<void *>(0x300 + 0x40 * i)[0] = arena<void>(0x400);
+                arena<void *>(0x100)[0x18 / 4] = arena<void>(0x700);
+                arena<int32_t>(0x700)[0] = r.range(1, 4);
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{0xbe8400, (void *)w2d_queue_next}, {0xbe8230, (void *)w2c_s2<0xe2d6>}, {w2c_target(e->at, 0x7a), (void *)w2c_s0<0xe2da>},
+                               {0xbe88b0, (void *)w2d_s_table<0xe2db>}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
