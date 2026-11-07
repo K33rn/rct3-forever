@@ -565,3 +565,77 @@
                   },
                   w2_flags_call};
     quick(w2_owner);
+    // Ref::Field: looked up or kept; always found, as the game assumes; each copy has its own place, id and field
+    static uint32_t g_w2_rf_ref;
+    Test w2_ref_field{0x532ea0,
+                      [=](Rng &r) {
+                          fresh(r);
+                          iface_handle(r);
+                          *(void **)arena<uint8_t>(0x340 + 0xc) = arena<void>(0x360);
+                          *arena<void *>(0x1f0) = arena<void>(0x200);
+                          *g_iface_id = (uint32_t)r.range(1, 2);
+                          for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x3a0)[i] = r.next();
+                          uint8_t *ref = arena<uint8_t>(0x800 + g_w2_rf_ref);
+                          *(void **)(ref + 4) = arena<void>(0x340);
+                          *(void **)(ref + 0x14) = arena<void>(0x368);
+                          ref[0x18] = (uint8_t)r.range(0, 1);
+                      },
+                      [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w2_ref_field.prepare = [](const rewrite::Entry *e) {
+        g_w2_rf_ref = *(uint32_t *)(e->at + 0xf) - 4;
+        g_iface_id = *(uint32_t **)(e->at + 0x28);
+    };
+    quick(w2_ref_field);
+    // Message::Post: each copy has its size, queue and functions; the stubs write and read the whole message
+    Test w2_post{0x7bb470,
+                 [=](Rng &r) {
+                     w2_values(r);
+                     arena<void *>(0x800)[0] = w2_flush_table;
+                     *(uint32_t *)arena<uint8_t>(0x800 + 0x104) = r.range(0, 1) ? r.next() : 0;
+                 },
+                 [](void *fn) {
+                     uint32_t *v = arena<uint32_t>(0x20);
+                     ((void(__thiscall *)(void *, uint32_t, uint32_t, void *))fn)(arena<void>(0x100), v[0], v[1], arena<void>(0x800));
+                     return Result{};
+                 }};
+    w2_post.prepare = [](const rewrite::Entry *e) {
+        g_w2_message_size = *(uint8_t *)(e->at + 6);
+        stubs_for_now({{e->at + 0x20 + *(int32_t *)(e->at + 0x1c), (void *)w2_stub_build}, {e->at + 0x2c + *(int32_t *)(e->at + 0x28), (void *)w2_stub_post}});
+    };
+    w2_post.finish = w2_unstub;
+    quick(w2_post);
+    // SharedBlock::AssignPair: the same block or another, the last reference or not
+    Test w2_block_pair{0x4a1670,
+                       [=](Rng &r) {
+                           fresh(r);
+                           for (int i = 0; i < 4; i++) {
+                               arena<uint32_t>(0x800 + i * 0x20)[0] = (uint32_t)r.range(1, 3);
+                               arena<void *>(0x800 + i * 0x20)[3] = arena<void>(0xa00 + i * 0x10);
+                           }
+                           for (int k = 0; k < 2; k++) {
+                               arena<void *>(0x100)[k] = arena<void>(0x800 + k * 0x40);
+                               arena<void *>(0x180)[k] = arena<void>(0x800 + k * 0x40 + r.range(0, 1) * 0x20);
+                           }
+                       },
+                       [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x180))}; }};
+    quick(w2_block_pair);
+    // State::Step: with a target or without, the check passing or failing, each state around the two that act
+    Test w2_step{0x4e5fb0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     w2_state_table[0x15] = (void *)w2_stub_state2;
+                     w2_member_table[4] = (void *)w2_stub_member;
+                     arena<void *>(0x800)[0] = w2_state_table;
+                     arena<void *>(0x800 + 0xe0)[0] = w2_member_table;
+                     *(int32_t *)arena<uint8_t>(0x800 + 0xb0) = r.range(1, 6);
+                     arena<void *>(0x20)[0] = r.range(0, 2) ? arena<void>(0xc00) : nullptr;
+                     arena<uint32_t>(0x20)[1] = (uint32_t)r.range(0, 1) * 0x100;
+                     arena<uint32_t>(0x20)[2] = (uint32_t)r.range(0, 1) * 3 + 0x100;
+                     arena<uint32_t>(0x20)[3] = r.next();
+                 },
+                 [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[3]); return Result{}; }};
+    w2_step.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x4d18c0, (void *)w2_stub_target}, {0x4d1840, (void *)w2_stub_has_target}, {0x4d2800, (void *)w2_stub_check}, {0x7a1840, (void *)stub_plain_dtor}});
+    };
+    w2_step.finish = w2_unstub;
+    quick(w2_step);

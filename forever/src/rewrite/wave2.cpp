@@ -732,3 +732,79 @@ template <uint32_t TABLE> static void *__thiscall owner_delete(uint32_t *self, u
 static const uint8_t owner_delete_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x04, 0x85, 0xc9};
 REWRITE("Owner::Delete99AF20", 0x99af20, owner_delete_original, (&owner_delete<0xf80c2c>), &g_w2_owner_deletes);
 REWRITE("Owner::Delete99AF20", 0xca2230, owner_delete_original, (&owner_delete<0xfbf2b8>), &g_w2_owner_deletes);
+
+// ---- Ref::Field: a field of the interface of the reference held at +REF, which must be there ----------------------------------------
+static volatile long g_w2_ref_fields;
+template <uint32_t REF, uint32_t ID, uint32_t FIELD> static uint32_t __fastcall ref_field(uint8_t *self) {
+    g_w2_ref_fields++;
+    return *(uint32_t *)((uint8_t *)ref_interface<ID>(self + REF) + FIELD);
+}
+static const uint8_t ref_field_original[] = {0x57, 0x8b, 0xf9, 0x8a, 0x87};
+REWRITE("Ref::Field532EA0", 0x532ea0, ref_field_original, (&ref_field<0x204, 0x12f5338, 0x44>), &g_w2_ref_fields);
+REWRITE("Ref::Field532EA0", 0xab1570, ref_field_original, (&ref_field<0x198, 0x13ce028, 0x64>), &g_w2_ref_fields);
+REWRITE("Ref::Field532EA0", 0xab15e0, ref_field_original, (&ref_field<0x198, 0x13ce028, 0x68>), &g_w2_ref_fields);
+REWRITE("Ref::Field532EA0", 0xb88850, ref_field_original, (&ref_field<0xe0, 0x13d0188, 0x44>), &g_w2_ref_fields);
+
+// ---- Message::Post: builds a message of SIZE bytes on the stack, posts it to the queue at +OFF, then flushes the sender's pending bytes
+// {+4 data, +0x104 count} through its own virtual slot 0 ---------------------------------------------------------------------------
+static volatile long g_w2_posts;
+template <uint32_t SIZE, uint32_t OFF, uint32_t BUILD, uint32_t POST>
+static void __thiscall message_post(uint8_t *self, uint32_t a, uint32_t b, uint8_t *sender) {
+    g_w2_posts++;
+    alignas(4) uint8_t message[SIZE];
+    void *queue = *(void **)(self + OFF);
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, void *))BUILD)(message, a, b, sender);
+    ((void(__thiscall *)(void *, void *))POST)(queue, message);
+    uint32_t &pending = *(uint32_t *)(sender + 0x104);
+    if (pending) {
+        ((void(__thiscall *)(void *, void *, uint32_t))(*(void ***)sender)[0])(sender, sender + 4, pending);
+        pending = 0;
+    }
+}
+static const uint8_t message_post_original[] = {0x8b, 0x44, 0x24, 0x08, 0x83, 0xec};
+REWRITE("Message::Post7BB470", 0x7bb470, message_post_original, (&message_post<0x2c, 0x4c, 0x7b2e30, 0x7b9300>), &g_w2_posts);
+REWRITE("Message::Post7BB470", 0x7bb4d0, message_post_original, (&message_post<0x1c, 0x4c, 0x7b2ec0, 0x7b93b0>), &g_w2_posts);
+REWRITE("Message::Post7BB470", 0xb75820, message_post_original, (&message_post<0x2c, 0x64, 0xb6bb70, 0xb74dd0>), &g_w2_posts);
+REWRITE("Message::Post7BB470", 0xb75880, message_post_original, (&message_post<0x1c, 0x64, 0xb6bc00, 0xb74e80>), &g_w2_posts);
+
+// ---- SharedBlock::AssignPair: takes on another pair of shared blocks, letting go of the old ones --------------------------------------
+static volatile long g_w2_block_assigns;
+static void shared_block_take(uint32_t **slot, uint32_t **from) {
+    if (*from == *slot) return;
+    shared_block_drop(*slot);
+    *slot = *from;
+    ++**slot;
+}
+static uint32_t **__thiscall shared_block_assign_pair(uint32_t **self, uint32_t **other) {
+    g_w2_block_assigns++;
+    shared_block_take(&self[0], &other[0]);
+    shared_block_take(&self[1], &other[1]);
+    return self;
+}
+static const uint8_t block_assign_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x8b, 0xf1};
+REWRITE("SharedBlock::AssignPair4A1670", 0x4a1670, block_assign_original, shared_block_assign_pair, &g_w2_block_assigns);
+REWRITE("SharedBlock::AssignPair4A1670", 0xb927b0, block_assign_original, shared_block_assign_pair, &g_w2_block_assigns);
+
+// ---- State::Step: checks with the target if there is one, then in state 2 calls its virtual slot 0x15 with the value, and in state 5
+// moves to state 6 and hands the target's data at +0x140 on through the member at +0xe0 ---------------------------------------------
+static volatile long g_w2_steps;
+static void __thiscall state_step(uint8_t *self, uint32_t value) {
+    g_w2_steps++;
+    uint8_t *target = ((uint8_t * (__fastcall *)(void *))0x4d18c0)(self);
+    if (((uint32_t(__fastcall *)(void *))0x4d1840)(self) &&
+        !((uint8_t(__thiscall *)(void *, uint32_t, void *))0x4d2800)(self, 0, target))
+        return;
+    int32_t &state = *(int32_t *)(self + 0xb0);
+    if (state == 2) {
+        ((void(__thiscall *)(void *, uint32_t))(*(void ***)self)[0x15])(self, value);
+    } else if (state == 5) {
+        state = 6;
+        uint8_t *member = self + 0xe0;
+        void *data = target ? target + 0x140 : nullptr;
+        void *result = ((void *(__thiscall *)(void *, void *))(*(void ***)member)[4])(member, data);
+        ((void(__fastcall *)(void *))0x7a1840)(result);
+    }
+}
+static const uint8_t state_step_original[] = {0x56, 0x57, 0x8b, 0xf1, 0xe8};
+REWRITE("State::Step4E5FB0", 0x4e5fb0, state_step_original, state_step, &g_w2_steps);
+REWRITE("State::Step4E5FB0", 0x5eb0e0, state_step_original, state_step, &g_w2_steps);

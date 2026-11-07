@@ -120,3 +120,45 @@ static void *__thiscall w2_stub_chunk(uint8_t *self, uint32_t zero) {
     *(uint32_t *)(self + 0x504) = 0;
     return self;
 }
+static uint32_t g_w2_message_size;
+static void __thiscall w2_stub_build(uint8_t *message, uint32_t a, uint32_t b, void *sender) {
+    record(0xe250, (void *)(uintptr_t)a);
+    record(0xe250, (void *)(uintptr_t)b);
+    record(0xe250, sender);
+    for (uint32_t i = 0; i < g_w2_message_size; i++) message[i] = (uint8_t)(a + i);
+}
+static void __thiscall w2_stub_post(void *queue, uint8_t *message) {
+    record(0xe251, queue);
+    for (uint32_t i = 0; i < g_w2_message_size; i += 4) record(0xe251, (void *)(uintptr_t)*(uint32_t *)(message + i));
+}
+static void __thiscall w2_stub_flush(void *self, void *data, uint32_t count) {
+    record(0xe252, self);
+    record(0xe252, data);
+    record(0xe252, (void *)(uintptr_t)count);
+}
+static void *w2_flush_table[1] = {(void *)w2_stub_flush};
+static void *__fastcall w2_stub_target(void *self) {
+    record(0xe253, self);
+    return arena<void *>(0x20)[0];
+}
+static uint32_t __fastcall w2_stub_has_target(void *self) {
+    record(0xe254, self);
+    return arena<uint32_t>(0x20)[1];
+}
+static uint8_t __thiscall w2_stub_check(void *self, uint32_t zero, void *target) {
+    record(0xe255, self);
+    record(0xe255, (void *)(uintptr_t)zero);
+    record(0xe255, target);
+    return (uint8_t)arena<uint32_t>(0x20)[2];
+}
+static void __thiscall w2_stub_state2(void *self, uint32_t value) {
+    record(0xe256, self);
+    record(0xe256, (void *)(uintptr_t)value);
+}
+static void *__thiscall w2_stub_member(void *member, void *data) {
+    record(0xe257, member);
+    record(0xe257, data);
+    return arena<void>(0x780);
+}
+static void *w2_state_table[0x16] = {};
+static void *w2_member_table[5] = {};
