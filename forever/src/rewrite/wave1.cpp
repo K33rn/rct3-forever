@@ -1714,3 +1714,51 @@ template <uint32_t AT, uint32_t TARGET> static const uint8_t w1d_matrix_original
     (uint8_t)((TARGET - (AT + 9)) >> 16), (uint8_t)((TARGET - (AT + 9)) >> 24)};
 REWRITE("Placed::Matrix559C20", 0x559c20, (w1d_matrix_original<0x559c20, 0x558f20>), (&w1d_matrix<0x558f20>), &g_w1d_matrices);
 REWRITE("Placed::Matrix559C20", 0x559d10, (w1d_matrix_original<0x559d10, 0x558fe0>), (&w1d_matrix<0x558fe0>), &g_w1d_matrices);
+
+// ---- Ride::Pass: the event handed to our helper, then to the vehicle (mode 4) or, in modes 2 and 3, to the car found by
+// the right lookup when that car is active; SLOT picks the handler ---------------------------------------------------------
+static volatile long g_w1d_passes;
+template <uint32_t HELPER, uint32_t SLOT> static void __thiscall w1d_pass(uint8_t *self, uint32_t a, uint32_t b) {
+    g_w1d_passes++;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))HELPER)(*(void **)(self + 0x148), a, b);
+    auto hand = [&](uint8_t *to) {
+        uint8_t *part = to + 0x40;
+        ((void(__thiscall *)(void *, uint32_t, uint32_t))(*(void ***)part)[SLOT])(part, a, b);
+    };
+    int32_t mode = *(int32_t *)(self + 0x144);
+    if (mode == 4 && *(uint8_t **)(self + 0x660)) return hand(*(uint8_t **)(self + 0x660));
+    if (mode != 3 && mode != 2) return;
+    void *cars = *(void **)(self + 0x5d4);
+    uint8_t *car = (uint8_t *)((void *(__fastcall *)(void *))(self[0x668] ? 0x5d5030 : 0x5d4fd0))(cars);
+    if (car && car[0xd4]) hand(car);
+}
+static const uint8_t w1d_pass_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x57};
+REWRITE("Ride::Pass4EE6B0", 0x4ee6b0, w1d_pass_original, (&w1d_pass<0x4bbd60, 1>), &g_w1d_passes);
+REWRITE("Ride::Pass4EE6B0", 0x4ee760, w1d_pass_original, (&w1d_pass<0x4bbd80, 2>), &g_w1d_passes);
+REWRITE("Ride::Pass4EE6B0", 0x4ee810, w1d_pass_original, (&w1d_pass<0x4bbda0, 3>), &g_w1d_passes);
+
+// ---- Placed::Update: the handle's interface asked about the three values, then its 64-byte transform copied into us ----
+static volatile long g_w1d_updates;
+template <uint32_t ASK> static bool __thiscall w1d_update(uint8_t *self, uint32_t a, uint32_t b, uint32_t c) {
+    g_w1d_updates++;
+    uint8_t *handle = *(uint8_t **)(self + 0x58);
+    bool answer = ((bool(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))ASK)(find_interface(handle, (const int32_t *)0x1309020), a, b, c);
+    uint32_t *from = (uint32_t *)((uint8_t *)find_interface(handle, (const int32_t *)0x1309020) + 0x50);
+    for (int i = 0; i < 16; i++) ((uint32_t *)(self + 0x70))[i] = from[i];
+    return answer;
+}
+static const uint8_t w1d_update_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x58, 0x57};
+REWRITE("Placed::Update4D1E80", 0x4d1e80, w1d_update_original, (&w1d_update<0x7c2970>), &g_w1d_updates);
+REWRITE("Placed::Update4D1E80", 0x4d1fa0, w1d_update_original, (&w1d_update<0x7c6280>), &g_w1d_updates);
+
+// ---- Placed::Owner: through two cached interfaces (ours at REF, then the part's), the value the owner keeps at +0x84 -----
+static volatile long g_w1d_owners;
+template <uint32_t REF> static uint32_t __fastcall w1d_owner(uint8_t *self) {
+    g_w1d_owners++;
+    uint8_t *part = (uint8_t *)ref_interface<0x130bbec>(self + REF);
+    uint8_t *owner = (uint8_t *)ref_interface<0x130b5c8>(part + 0x94);
+    return *(uint32_t *)(owner + 0x84);
+}
+static const uint8_t w1d_owner_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8a, 0x87};
+REWRITE("Placed::OwnerB87EB0", 0xb87eb0, w1d_owner_original, (&w1d_owner<0xa0>), &g_w1d_owners);
+REWRITE("Placed::OwnerB87EB0", 0xb87f70, w1d_owner_original, (&w1d_owner<0xbc>), &g_w1d_owners);

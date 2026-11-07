@@ -169,3 +169,8 @@ static uint32_t __thiscall w1d_stub_owner(void *self, void *who) {
 static void __thiscall w1d_stub_switch(void *self, uint32_t code) { record(0x252, self); record(0x252, (void *)(uintptr_t)code); }
 static void *__fastcall w1d_stub_part(void *self) { record(0x253, self); return arena<uint32_t>(0x20)[0] & 1 ? arena<void>(0xa00) : nullptr; }
 static void __thiscall w1d_stub_slow(void *self, uint32_t *out, uint32_t extra) { record(0x254, self); record(0x254, (void *)(uintptr_t)extra); out[3] = extra; }
+static void __thiscall w1d_stub_helper(void *self, uint32_t a, uint32_t b) { record(0x255, self); record(0x255, (void *)(uintptr_t)(a ^ b)); }
+template <int N> static void __thiscall w1d_stub_slot(void *self, uint32_t a, uint32_t b) { record(0x256 + N, self); record(0x256 + N, (void *)(uintptr_t)(a - b)); }
+static void *__fastcall w1d_stub_car_a(void *self) { record(0x25a, self); return arena<uint32_t>(0x20)[0] & 1 ? arena<void>(0xb00) : nullptr; }
+static void *__fastcall w1d_stub_car_b(void *self) { record(0x25b, self); return arena<uint32_t>(0x20)[0] & 2 ? arena<void>(0xb00) : nullptr; }
+static bool __thiscall w1d_stub_ask(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x25c, self); record(0x25c, (void *)(uintptr_t)(a + b * 3 + c * 7)); return (a ^ c) & 1; }
