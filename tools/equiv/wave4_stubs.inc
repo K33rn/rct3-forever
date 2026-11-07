@@ -245,3 +245,5 @@ static void *__cdecl w4d_stub_alloc_two(uint32_t size) {
 }
 static void *__fastcall w4d_stub_target(void *key) { record(0x4d13, key); return arena<void>(0x2600); }
 struct W4dNode { W4dNode *next, *prev; void *value; };
+static void *__thiscall w4d_stub_text(uint32_t *p, const void *characters) { record(0x4d14, p); record(0x4d14, (void *)characters); for (int i = 0; i < 4; i++) p[i] = 0x4d140000 + i; return p; }
+static void *__fastcall w4d_stub_empty(uint32_t flag) { record(0x4d15, (void *)(uintptr_t)(flag & 0xff)); return arena<void>(0x2200); }

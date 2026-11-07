@@ -1578,7 +1578,7 @@
     w4d_owned.finish = w4c_unstub;
     quick(w4d_owned);
     // Single::Get: there already or not; out of memory or not; the maker registering itself or not
-    Test w4d_single{0x436350, w4c_fill, [](void *fn) {
+    Test w4d_single{0x436350, [=](Rng &r) { w4c_fill(r); *arena<uint32_t>(0x24) = r.next(); }, [](void *fn) {
                         *(void **)(uintptr_t)w4d_instance = *arena<uint32_t>(0x20) & 2 ? arena<void>(0x900) : nullptr;
                         return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()};
                     }};
@@ -1691,3 +1691,31 @@
     };
     w4d_watch.finish = w4c_unstub;
     quick(w4d_watch);
+    // counted texts at 0x2000 and 0x2040, counts 1-2
+    auto w4d_texts = [=](Rng &r) {
+        w4c_fill(r);
+        for (uint32_t at : {0x2000u, 0x2040u}) *arena<int32_t>(at) = r.range(1, 2);
+        *arena<uint32_t>(0x24) = r.next();
+    };
+    // Text::Assign: from characters (memory or not) or from null
+    Test w4d_assign{0x40a6e0, [=](Rng &r) { w4d_texts(r); *arena<void *>(0x800) = arena<void>(r.range(0, 1) ? 0x2000 : 0x2040); }, [](void *fn) {
+                        void *characters = *arena<uint32_t>(0x24) % 3 ? arena<void>(0x2100) : nullptr;
+                        return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x800), characters)};
+                    }};
+    w4d_assign.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbce010, (void *)stub_free_aligned}, {0xbce000, (void *)stub_free}, {0xbcdfc0, (void *)w4c_stub_alloc}, {w4c_target(e, 0x60), (void *)w4d_stub_text},
+                       {w4c_target(e, 0x6d), (void *)w4d_stub_empty}});
+    };
+    w4d_assign.finish = w4c_unstub;
+    quick(w4d_assign);
+    // Text::Set: the same text or another, at the copy's own slot
+    Test w4d_set{0x57ac20, [=](Rng &r) { w4d_texts(r); *(void **)arena<uint8_t>(0x800 + w4c_off) = arena<void>(r.range(0, 1) ? 0x2000 : 0x2040); }, [](void *fn) {
+                     ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(*arena<uint32_t>(0x24) & 1 ? 0x2000 : 0x2040));
+                     return Result{};
+                 }};
+    w4d_set.prepare = [](const rewrite::Entry *e) {
+        w4c_off = *(uint32_t *)(e->at + 0x1c);
+        stubs_for_now({{0xbce010, (void *)stub_free_aligned}, {0xbce000, (void *)stub_free}});
+    };
+    w4d_set.finish = w4c_unstub;
+    quick(w4d_set);

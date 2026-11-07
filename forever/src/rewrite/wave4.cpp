@@ -1860,3 +1860,48 @@ template <uint32_t LIST> static Node *__thiscall w4d_watch_add(uint8_t *self, vo
 }
 REWRITE("Watch::Add784B20", 0x784b20, (w4c_seh<0xe521b6>), (&w4d_watch_add<0x54>), &g_w4d_watch_adds);
 REWRITE("Watch::Add784B20", 0x871240, (w4c_seh<0xe629d6>), (&w4d_watch_add<0x48>), &g_w4d_watch_adds);
+
+// ---- Shared text: a counted block {count, .., .., data} freed (data aligned, then the block) when its count drops to zero --------------------
+static const uint8_t w4d_seh_late[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff, 0x68};   // the frame set up after reading fs:[0]
+static inline void w4d_release(int32_t **slot) {
+    --(*slot)[0];
+    int32_t *block = *slot;
+    if (block[0] == 0 && block) {
+        memory_free_aligned((void *)(uintptr_t)block[3]);
+        memory_free(block);
+    }
+}
+// ---- Text::Assign: lets go of the current text and takes a new one made from the characters by MAKE, or the empty text from EMPTY for null -----
+static volatile long g_w4d_assigns;
+template <uint32_t MAKE, uint32_t EMPTY> static int32_t **__thiscall w4d_text_assign(int32_t **self, const void *characters) {
+    g_w4d_assigns++;
+    w4d_release(self);
+    int32_t *made;
+    if (characters) {
+        void *memory = memory_alloc(0x10);
+        made = memory ? ((int32_t * (__thiscall *)(void *, const void *))MAKE)(memory, characters) : nullptr;
+    } else {
+        made = ((int32_t * (__fastcall *)(uint8_t))EMPTY)(1);
+    }
+    *self = made;
+    return self;
+}
+REWRITE("Text::Assign40A6E0", 0x40a6e0, w4d_seh_late, (&w4d_text_assign<0xbcf850, 0xbd0490>), &g_w4d_assigns);
+REWRITE("Text::Assign40A6E0", 0x410980, w4d_seh_late, (&w4d_text_assign<0xbcf7d0, 0xbd0490>), &g_w4d_assigns);
+REWRITE("Text::Assign40A6E0", 0x4576b0, w4d_seh_late, (&w4d_text_assign<0xbcfb10, 0xbd0520>), &g_w4d_assigns);
+
+// ---- Text::Set: the text at SLOT becomes the given one (passed by value, so its own count is dropped at the end) --------------------------------
+static volatile long g_w4d_sets;
+template <uint32_t SLOT> static void __thiscall w4d_text_set(uint8_t *self, int32_t *text) {
+    g_w4d_sets++;
+    int32_t **slot = (int32_t **)(self + SLOT);
+    if (text != *slot) {
+        w4d_release(slot);
+        *slot = text;
+        text[0]++;
+    }
+    w4d_release(&text);
+}
+REWRITE("Text::Set57AC20", 0x57ac20, w4d_seh_late, (&w4d_text_set<0x194>), &g_w4d_sets);
+REWRITE("Text::Set57AC20", 0x70c2a0, w4d_seh_late, (&w4d_text_set<0x1d8>), &g_w4d_sets);
+REWRITE("Text::Set57AC20", 0xa1d330, w4d_seh_late, (&w4d_text_set<0xb4>), &g_w4d_sets);
