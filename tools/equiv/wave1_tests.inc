@@ -1350,3 +1350,15 @@
     };
     w1d_text_resize_test.finish = w1_unstub;
     quick(w1d_text_resize_test);
+    Test w1d_plain_resize_test{0x863a60,
+                               [=](Rng &r) {
+                                   fresh(r);
+                                   w1_fill(r, 0x900, 0x200);
+                                   arena<uint32_t>(0x20)[1] = r.range(0, 6);
+                                   arena<uint32_t>(0x800)[0] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x900) : 0;
+                                   arena<uint32_t>(0x800)[1] = arena<uint32_t>(0x800)[0] ? r.range(0, 6) : 0;
+                               },
+                               [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[1])}; }};
+    w1d_plain_resize_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)w1d_stub_alloc_always}, {0xbce010, (void *)w1_stub_crt_free}, {0x402b90, (void *)w1b_stub_vector_dtor}}); };
+    w1d_plain_resize_test.finish = w1_unstub;
+    quick(w1d_plain_resize_test);

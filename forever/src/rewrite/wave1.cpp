@@ -1944,3 +1944,28 @@ template <uint32_t END, uint32_t BUILD> static int32_t __thiscall w1d_text_resiz
 }
 REWRITE("Texts::Resize460F20", 0x460f20, (w1c_seh<0xe0ba1b>), (&w1d_text_resize<0x4012e0, 0x4027f0>), &g_w1d_text_resizes);
 REWRITE("Texts::Resize460F20", 0xb11d40, (w1c_seh<0xe90a3b>), (&w1d_text_resize<0x403de0, 0x448170>), &g_w1d_text_resizes);
+
+// ---- Plain::Resize: `count` new ITEM-byte records built, as many old ones as fit copied over, the old storage freed -----
+static volatile long g_w1d_plain_resizes;
+template <uint32_t ITEM, uint32_t BUILD> static int32_t __thiscall w1d_plain_resize(uint32_t *self, int32_t count) {
+    g_w1d_plain_resizes++;
+    if (count == (int32_t)self[1]) return count;
+    uint32_t *items = nullptr;
+    if (count) {
+        items = (uint32_t *)memory_alloc_aligned(count * ITEM);
+        if (items) ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0x402b90)(items, ITEM, count, BUILD);
+    }
+    int32_t keep = count < (int32_t)self[1] ? count : (int32_t)self[1];
+    uint32_t *old = (uint32_t *)(uintptr_t)self[0];
+    for (int32_t i = 0; i < keep * (int32_t)(ITEM / 4); i++) items[i] = old[i];
+    if (self[0]) {
+        memory_free_aligned(old);
+        self[0] = 0;
+    }
+    self[1] = count;
+    self[0] = (uint32_t)(uintptr_t)items;
+    return count;
+}
+REWRITE("Plain::Resize863A60", 0x863a60, w1c_seh_late, (&w1d_plain_resize<0x1c, 0x860f50>), &g_w1d_plain_resizes);
+REWRITE("Plain::Resize863A60", 0x91a0b0, w1c_seh_late, (&w1d_plain_resize<0x2c, 0x9176a0>), &g_w1d_plain_resizes);
+REWRITE("Plain::Resize863A60", 0x91c630, w1c_seh_late, (&w1d_plain_resize<0x1c, 0x91a270>), &g_w1d_plain_resizes);
