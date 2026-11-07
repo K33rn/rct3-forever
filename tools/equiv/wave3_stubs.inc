@@ -265,3 +265,157 @@ static void __stdcall w3c_stub_construct(void *first, uint32_t size, uint32_t co
     record(0x402b90, (void *)(uintptr_t)count);
     record(0x402b90, fn);
 }
+
+// ---- wave 3, part d ----
+static uint8_t __fastcall w3d_stub_assert(uint32_t file, uint32_t line, uint32_t a, uint32_t b) {
+    for (uint32_t v : {file, line, a, b}) record(0x68f640, (void *)(uintptr_t)v);
+    return 0;
+}
+static uint32_t __thiscall w3d_stub_handler2(void *self, uint32_t a, uint32_t b) {
+    record(0x7d01, self);
+    record(0x7d01, (void *)(uintptr_t)a);
+    record(0x7d01, (void *)(uintptr_t)b);
+    return (uint32_t)(uintptr_t)self ^ a ^ (b << 7);
+}
+static uint32_t __thiscall w3d_stub_handler3(void *self, void *p, uint32_t a, uint32_t b) {
+    record(0x7d02, self);
+    record(0x7d02, p);
+    record(0x7d02, (void *)(uintptr_t)a);
+    record(0x7d02, (void *)(uintptr_t)b);
+    return (uint32_t)(uintptr_t)p ^ a ^ (b << 5);
+}
+// Cached::Find: the object's table (or none)
+static void *__thiscall w3d_stub_table(void *self) {
+    record(0x7d03, self);
+    return arena<uint32_t>(0x24)[0] & 1 ? arena<void>(0x600) : nullptr;
+}
+static void *w3d_stub_vt[3] = {nullptr, (void *)w3d_stub_table, nullptr};
+// Piece::Place: the part found
+static void *__thiscall w3d_stub_part(void *self, uint32_t a, uint32_t b, int32_t c, void *d) {
+    record(0x89caf0, self);
+    for (uint32_t v : {a, b, (uint32_t)c}) record(0x89caf0, (void *)(uintptr_t)v);
+    record(0x89caf0, d);
+    return arena<void>(0x700);
+}
+// Keyed::Init: the base set up; records the keys' values (they live on the stack)
+static void __thiscall w3d_stub_base(uint8_t *self, uint32_t one, void *field, uint32_t *k2, uint32_t *k0) {
+    record(0x488290, self);
+    record(0x488290, (void *)(uintptr_t)one);
+    record(0x488290, field);
+    for (uint32_t v : {k2[0], k2[1], k0[0], k0[1]}) record(0x488290, (void *)(uintptr_t)v);
+    *(uint32_t *)(self + 4) = k2[0] ^ k0[0];
+}
+// Message::Send: builds the whole message; delivery records all of it
+static uint32_t w3d_message_size;
+static void *__thiscall w3d_stub_build(uint32_t *message, uint32_t a, uint32_t b, void *source) {
+    record(0x7d04, (void *)(uintptr_t)a);
+    record(0x7d04, (void *)(uintptr_t)b);
+    record(0x7d04, source);
+    for (uint32_t i = 0; i < w3d_message_size / 4; i++) message[i] = a * (i + 1) ^ b;
+    return message;
+}
+static void __thiscall w3d_stub_deliver(void *target, uint32_t *message) {
+    record(0x7d05, target);
+    for (uint32_t i = 0; i < w3d_message_size / 4; i++) record(0x7d05, (void *)(uintptr_t)message[i]);
+}
+static void *__thiscall w3d_stub_ctor2(uint8_t *self, uint32_t a, void *b) {
+    record(0x7d06, self);
+    record(0x7d06, (void *)(uintptr_t)a);
+    record(0x7d06, b);
+    return self + 2;
+}
+// Single::Get (three zeros): registers itself in the copy's global, or sometimes doesn't
+static void **w3d_single_global;
+static void __thiscall w3d_stub_single3(void *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x7d07, self);
+    for (uint32_t v : {a, b, c}) record(0x7d07, (void *)(uintptr_t)v);
+    if (arena<uint32_t>(0x24)[0] & 1) *w3d_single_global = self;
+}
+static void *__thiscall w3d_stub_ctor1(uint8_t *self, uint32_t a) {
+    record(0x7d08, self);
+    record(0x7d08, (void *)(uintptr_t)a);
+    return self + 3;
+}
+static void __stdcall w3d_stub_vector(void *first, uint32_t size, uint32_t count, void *ctor, void *dtor) {
+    for (void *v : {first, (void *)(uintptr_t)size, (void *)(uintptr_t)count, ctor, dtor}) record(0xddcf99, v);
+}
+static void *__thiscall w3d_stub_find(void *map, uint32_t key) {
+    record(0xbe82b0, map);
+    record(0xbe82b0, (void *)(uintptr_t)key);
+    return arena<uint32_t>(0x24)[0] & 1 ? arena<void>(0x900) : nullptr;
+}
+static void *__fastcall w3d_stub_empty(uint8_t flag) {
+    record(0xbd0490, (void *)(uintptr_t)flag);
+    return arena<void>(0x980);
+}
+// a text made from a C string: records the string; refcount 1 or 2 (arena 0x24 bit 2), a buffer at +0xc
+static int32_t *__thiscall w3d_stub_text(int32_t *self, const char *s) {
+    record(0x7d09, self);
+    for (int i = 0; i < 24 && s[i]; i++) record(0x7d09, (void *)(uintptr_t)(uint8_t)s[i]);
+    self[0] = arena<uint32_t>(0x24)[0] & 4 ? 2 : 1;
+    self[1] = arena<int32_t>(0x10)[2];
+    self[3] = (int32_t)(uintptr_t)arena<void>(0x9c0);
+    return self;
+}
+// aligned memory in turn; the second one asked for is sometimes not there
+static void *__cdecl w3d_stub_alloc_nth(uint32_t size) {
+    uint32_t n = arena<uint32_t>(0x28)[0]++;
+    record(0xbcdfd0, (void *)(uintptr_t)size);
+    void *p = arena<void>(0x3000 + 0x100 * (n & 3));
+    return n == 1 && arena<uint32_t>(0x24)[0] & 1 ? nullptr : p;
+}
+static uint32_t __fastcall w3d_stub_size_for(uint32_t wanted) {
+    record(0x7d0a, (void *)(uintptr_t)wanted);
+    return wanted % 9 + 1;
+}
+static void __thiscall w3d_stub_pass(void *self, uint32_t a, int32_t **text, uint32_t t1, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
+    record(0x7d0b, self);
+    record(0x7d0b, *text);
+    for (uint32_t v : {a, t1, b, c, d, e}) record(0x7d0b, (void *)(uintptr_t)v);
+    if (arena<uint32_t>(0x24)[0] & 2) ++**text;
+}
+// Array::Resize: memory always there; the elements built get the copy's exact-class table or another one
+static uint32_t w3d_vbtable;
+static void *__cdecl w3d_stub_alloc_2000(uint32_t size) {
+    record(0xbcdfd0, (void *)(uintptr_t)size);
+    return arena<void>(0x2000);
+}
+static void __stdcall w3d_stub_build_elements(uint8_t *first, uint32_t size, int32_t count, void *ctor) {
+    record(0x5d3d00, first);
+    record(0x5d3d00, (void *)(uintptr_t)size);
+    record(0x5d3d00, (void *)(uintptr_t)count);
+    record(0x5d3d00, ctor);
+    for (int32_t i = 0; i < count; i++) {
+        uint32_t *e = (uint32_t *)(first + i * size);
+        for (int j = 0; j < 8; j++) e[j] = 0x1000 * i + j;
+        e[0] = arena<uint32_t>(0x24)[0] >> i & 1 ? w3d_vbtable : (uint32_t)(uintptr_t)arena<void>(0x740);
+    }
+}
+// Item::Enlist: the item (set up already or not); the registry, which puts itself in the global
+static uint8_t *__thiscall w3d_stub_item(uint8_t *self, uint32_t a, uint32_t b, uint32_t c, void *owner) {
+    record(0x7d0c, self);
+    for (uint32_t v : {a, b, c}) record(0x7d0c, (void *)(uintptr_t)v);
+    record(0x7d0c, owner);
+    self[0x2c] = (uint8_t)(arena<uint32_t>(0x24)[0] & 1);
+    return self;
+}
+static void __thiscall w3d_stub_registry(uint8_t *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x61e450, self);
+    for (uint32_t v : {a, b, c}) record(0x61e450, (void *)(uintptr_t)v);
+    self[0x2c] = (uint8_t)(arena<uint32_t>(0x24)[0] >> 1 & 1);
+    *(void **)0x12f5798 = self;
+}
+// Notice::Post: sprintf records the format's address and writes a short line; the post records the text it was given
+static int __cdecl w3d_stub_sprintf(char *buffer, const char *format) {
+    record(0xddcdb5, (void *)format);
+    buffer[0] = (char)(0x41 + arena<uint32_t>(0x10)[3] % 26);
+    buffer[1] = arena<uint32_t>(0x10)[3] & 0x100 ? (char)0x7a : (char)0;
+    buffer[2] = 0;
+    return 2;
+}
+static void __fastcall w3d_stub_post(void *target, int32_t **text, uint32_t kind) {
+    record(0xc211c0, target);
+    record(0xc211c0, *text);
+    record(0xc211c0, (void *)(uintptr_t)kind);
+    if (arena<uint32_t>(0x24)[0] & 2) ++**text;
+}

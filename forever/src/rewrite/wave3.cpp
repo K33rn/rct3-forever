@@ -1770,3 +1770,451 @@ template <uint32_t ELEMENT, uintptr_t CTOR> static uint32_t __thiscall w3c_sized
 REWRITE("Array::Size9D1120", 0x9d1120, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x44, 0x9ce670>), &g_w3c_sized);
 REWRITE("Array::Size9D1120", 0x9e1a20, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x44, 0x9e1330>), &g_w3c_sized);
 REWRITE("Array::Size9D1120", 0xaf9d40, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x2c, 0xaf8cf0>), &g_w3c_sized);
+
+// ======== wave 3, part d ========================================================================================================
+
+// ---- Table::Call: checks the index against the count (the game's assert), then calls that entry's handler with the argument
+// and the copy's flag ----------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_table;
+template <uint32_t LINE, uint32_t FLAG, uintptr_t HANDLER> static uint32_t __thiscall w3d_table_call(uint8_t *self, int32_t index, uint32_t argument) {
+    g_w3d_table++;
+    if (index >= *(int32_t *)(self + 0x164) &&
+        ((uint8_t(__fastcall *)(uint32_t, uint32_t, uint32_t, uint32_t))0x68f640)(0xf52e20, LINE, 0xf52e08, 0xf52e60) == 1)
+        __builtin_debugtrap();
+    void *entry = *(void **)(*(uint8_t **)(self + 0x190) + index * 8);
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))HANDLER)(entry, argument, FLAG);
+}
+REWRITE("Table::Call68FCC0", 0x68fcc0, w3c_start<0x000164868bf18b56>, (&w3d_table_call<0x17b, 0, 0x67b4b0>), &g_w3d_table);
+REWRITE("Table::Call68FCC0", 0x68fd10, w3c_start<0x000164868bf18b56>, (&w3d_table_call<0x18c, 0, 0x67b3c0>), &g_w3d_table);
+REWRITE("Table::Call68FCC0", 0x68fdb0, w3c_start<0x000164868bf18b56>, (&w3d_table_call<0x1ac, 1, 0x67b800>), &g_w3d_table);
+
+// ---- Cached::Find: reports a flag byte; the first time, looks the value up (the owner's object asks its table for the
+// current slot's entry: an offset from the object) and keeps it ---------------------------------------------------------------
+static volatile long g_w3d_cached;
+template <uint32_t FLAG, uint32_t CACHED, uint32_t OWNER, uint32_t VALUE> static uint32_t __thiscall w3d_cached(uint8_t *self, uint8_t *flag) {
+    g_w3d_cached++;
+    if (flag) *flag = self[FLAG];
+    if (!self[CACHED]) {
+        uint8_t *object = *(uint8_t **)(*(uint8_t **)(self + OWNER) + 0xc);
+        uint32_t found = 0;
+        if (object) {
+            uint8_t *table = ((uint8_t * (__thiscall *)(void *))(*(void ***)object)[1])(object);
+            int32_t slot = *(int32_t *)0x12f5608;
+            if (table && slot < *(int32_t *)(table + 0x18))
+                if (uint8_t *entry = (*(uint8_t ***)(table + 0x14))[slot]) found = *(uint32_t *)(entry + 0x10) + (uint32_t)(uintptr_t)object;
+        }
+        *(uint32_t *)(self + VALUE) = found;
+        self[CACHED] = 1;
+    }
+    return *(uint32_t *)(self + VALUE);
+}
+REWRITE("Cached::Find559FB0", 0x559fb0, w3c_start<0x8b57c0850424448b>, (&w3d_cached<0xd4, 0xb4, 0xa0, 0xb0>), &g_w3d_cached);
+REWRITE("Cached::Find559FB0", 0x55a020, w3c_start<0x8b57c0850424448b>, (&w3d_cached<0xd5, 0xd0, 0xbc, 0xcc>), &g_w3d_cached);
+
+// ---- Slots::Detach: takes an item out of the list it is in, marks it out, and gives its packed (group, slot) back to the
+// owner if there is one ----------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_detach;
+template <uint32_t INDEX, uint32_t LIST, uint32_t OWNER, uintptr_t RELEASE_SLOT, uintptr_t RELEASE_GROUP>
+static void __thiscall w3d_detach(uint8_t *self, uint8_t *item) {
+    g_w3d_detach++;
+    int32_t index = *(int32_t *)(item + INDEX);
+    if (index < 0) return;
+    ((void(__thiscall *)(void *, int32_t))0xcdede0)(self + LIST, index);
+    *(int32_t *)(item + INDEX) = -1;
+    uint8_t *owner = *(uint8_t **)(self + OWNER);
+    if (!owner) return;
+    uint32_t packed = *(uint32_t *)(item + INDEX + 4), group = packed >> 16 & 0xffff;
+    ((void(__thiscall *)(void *, uint32_t))RELEASE_SLOT)(*(uint8_t **)(owner + 8) + group * 0x1c, packed & 0xffff);
+    ((void(__thiscall *)(void *, uint32_t))RELEASE_GROUP)(owner, group);
+}
+REWRITE("Slots::Detach7B4FA0", 0x7b4fa0, w3c_start<0x88838b08245c8b53>, (&w3d_detach<0x188, 0x1c, 0x4c, 0x7b2ac0, 0x7b2a40>), &g_w3d_detach);
+REWRITE("Slots::Detach7B4FA0", 0xa0d600, w3c_start<0xe4838b08245c8b53>, (&w3d_detach<0xe4, 0x10, 0x30, 0xa0bec0, 0xa0be40>), &g_w3d_detach);
+
+// ---- Piece::Place: an entry either lives here (low bit set) or in a part found from its packed fields; places it there ------
+static volatile long g_w3d_place;
+template <uintptr_t PLACE> static uint32_t __thiscall w3d_place(uint8_t *self, int32_t index, uint32_t a, uint32_t b) {
+    g_w3d_place++;
+    auto place = (uint32_t(__thiscall *)(void *, void *, uint32_t, uint32_t))PLACE;
+    uint32_t flags = (*(uint32_t **)(self + 0x3b0))[index];
+    if (flags & 1) return place(self, *(uint8_t **)(self + 0x3c4) + (*(uint32_t **)(self + 0x3b4))[index] * 0x150, a, b);
+    void *source = (*(void ***)(self + 0x390))[flags >> 25 & 0xf];
+    uint8_t *part = ((uint8_t * (__thiscall *)(void *, uint32_t, uint32_t, int32_t, void *))0x89caf0)(
+        source, flags >> 12 & 0xfff, flags >> 1 & 0x7ff, (int32_t)(flags >> 29 & 7) - 1, self);
+    return place(*(void **)(part + 0x10), *(uint8_t **)(part + 0x14) + (*(uint32_t **)(self + 0x3b4))[index] * 0x150, a, b);
+}
+REWRITE("Piece::Place89CF30", 0x89cf30, w3c_start<0x0003b0868bf18b56>, (&w3d_place<0x88d460>), &g_w3d_place);
+REWRITE("Piece::Place89CF30", 0x8a0660, w3c_start<0x0003b0868bf18b56>, (&w3d_place<0x89ed50>), &g_w3d_place);
+
+// ---- Keyed::Init: base set up with the copy's two keys, then the argument, the vtable and a cleared field ------------------
+static volatile long g_w3d_init;
+template <uint32_t K0, uint32_t K2, uint32_t K3, uint32_t ARG, uint32_t CLEAR, uint32_t VTABLE>
+static void *__thiscall w3d_init(uint8_t *self, uint32_t argument) {
+    g_w3d_init++;
+    uint32_t keys[4] = {K0, 0, K2, K3};
+    ((void(__thiscall *)(void *, uint32_t, void *, void *, void *))0x488290)(self, 1, self + 0x28, &keys[2], &keys[0]);
+    *(uint32_t *)(self + ARG) = argument;
+    *(uint32_t *)self = VTABLE;
+    *(uint32_t *)(self + CLEAR) = 0;
+    return self;
+}
+REWRITE("Keyed::Init506130", 0x506130, w3c_start<0x448df18b5610ec83>, (&w3d_init<0, 0x81fbc001, 0x4780d, 0x30, 0x2c, 0xf36bc0>), &g_w3d_init);
+REWRITE("Keyed::Init506130", 0x5bde60, w3c_start<0x448df18b5610ec83>, (&w3d_init<0x80000000, 0x8000000c, 0, 0x34, 0x30, 0xf3f078>), &g_w3d_init);
+
+// ---- Message::Send: if there is a target, builds a message from the arguments and hands it over; then lets go of what the
+// source holds -------------------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_send;
+template <uint32_t SIZE, uintptr_t BUILD, uintptr_t DELIVER> static void __thiscall w3d_send(void **self, uint32_t a, uint32_t b, uint8_t *source) {
+    g_w3d_send++;
+    void *target = *self;
+    if (!target) return;
+    alignas(4) uint8_t message[SIZE];
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, void *))BUILD)(message, a, b, source);
+    ((void(__thiscall *)(void *, void *))DELIVER)(target, message);
+    if (uint32_t held = *(uint32_t *)(source + 0x18)) {
+        ((void(__thiscall *)(void *, uint32_t))(*(void ***)source)[1])(source, held);
+        *(uint32_t *)(source + 0x18) = 0;
+    }
+}
+REWRITE("Message::Send48C5D0", 0x48c5d0, w3c_start<0xff85398b571cec83>, (&w3d_send<0x1c, 0x4884b0, 0x48bb30>), &g_w3d_send);
+REWRITE("Message::Send48C5D0", 0x48c8e0, w3c_start<0xff85398b572cec83>, (&w3d_send<0x2c, 0x488660, 0x48bd10>), &g_w3d_send);
+
+// ---- Maker::Blank (another size): a new object built with four zeros -----------------------------------------------------------
+REWRITE("Maker::Blank818050", 0x818050, w3c_start<0x6400e5d79b68ff6a>, (&w3c_make0<0xb8, 0x817070>), &g_w3c_make0);
+REWRITE("Maker::Blank818050", 0x818e80, w3c_start<0x6400e5d93b68ff6a>, (&w3c_make0<0x80, 0x8185b0>), &g_w3c_make0);
+
+// ---- Child::Attach: makes a new 0xa0-byte child of this object and keeps it at +0x1c (null if out of memory) -----------------
+static volatile long g_w3d_attach;
+template <uintptr_t CTOR> static void *__thiscall w3d_attach(uint8_t *self, uint32_t) {
+    g_w3d_attach++;
+    void *made = memory_alloc(0xa0);
+    void *child = made ? ((void *(__thiscall *)(void *, uint32_t, void *))CTOR)(made, 0, self) : nullptr;
+    *(void **)(self + 0x1c) = child;
+    return child;
+}
+REWRITE("Child::Attach5F4F30", 0x5f4f30, w3c_start<0x6400e26d8b68ff6a>, (&w3d_attach<0x712190>), &g_w3d_attach);
+REWRITE("Child::Attach5F4F30", 0x616680, w3c_start<0x6400e2affb68ff6a>, (&w3d_attach<0x8d0bf0>), &g_w3d_attach);
+
+// ---- Range::Add: a new ranged value (signed or unsigned 16-bit limits) from the second argument, added under the first ------
+static volatile long g_w3d_range;
+template <int32_t LOW, int32_t HIGH, uintptr_t CTOR, uintptr_t ADD> static uint32_t __thiscall w3d_range(void *self, uint32_t key, uint32_t value) {
+    g_w3d_range++;
+    void *made = memory_alloc(0x14);
+    void *item = made ? ((void *(__thiscall *)(void *, uint32_t, int32_t, int32_t, uint32_t))CTOR)(made, value, LOW, HIGH, 1) : nullptr;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *))ADD)(self, key, item);
+}
+REWRITE("Range::AddC33DA0", 0xc33da0, w3c_start<0x6400ea049b68ff6a>, (&w3d_range<-0x8000, 0x7fff, 0xca8630, 0xc33c00>), &g_w3d_range);
+REWRITE("Range::AddC33DA0", 0xc344e0, w3c_start<0x6400ea05db68ff6a>, (&w3d_range<-0x8000, 0x7fff, 0xca8630, 0xc34340>), &g_w3d_range);
+REWRITE("Range::AddC33E20", 0xc33e20, w3c_start<0x6400ea04bb68ff6a>, (&w3d_range<0, 0xffff, 0xca8660, 0xc33c00>), &g_w3d_range);
+REWRITE("Range::AddC33E20", 0xc34560, w3c_start<0x6400ea05fb68ff6a>, (&w3d_range<0, 0xffff, 0xca8660, 0xc34340>), &g_w3d_range);
+
+// ---- Single::Get (three zeros): the one instance; building it makes it register itself in the global ---------------------------
+static volatile long g_w3d_single;
+template <uint32_t INSTANCE, uint32_t SIZE, uintptr_t CTOR> static void *__cdecl w3d_single() {
+    g_w3d_single++;
+    void *&instance = *(void **)INSTANCE;
+    if (!instance)
+        if (void *made = memory_alloc(SIZE)) ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))CTOR)(made, 0, 0, 0);
+    return instance;
+}
+REWRITE("Single::Get4779C0", 0x4779c0, w3c_start<0x6400e0d58b68ff6a>, (&w3d_single<0x12f523c, 0xf0, 0x54bc30>), &g_w3d_single);
+REWRITE("Single::Get4779C0", 0x7728d0, w3c_start<0x6400e5165b68ff6a>, (&w3d_single<0x1306568, 0xb8, 0x771670>), &g_w3d_single);
+
+// ---- Holder::Init: two vtables, the list member built from the argument, the second base built, then the list told its owner
+static volatile long g_w3d_holder;
+template <uint32_t VTABLE> static void *__thiscall w3d_holder(uint32_t *self, uint32_t argument) {
+    g_w3d_holder++;
+    self[1] = 0xf6c524;
+    self[0] = VTABLE;
+    ((void(__thiscall *)(void *, uint32_t))0xbd9c10)(self + 2, argument);
+    ((void(__thiscall *)(void *))0xbd1550)(self + 15);
+    self[15] = 0xf6c51c;
+    ((void(__thiscall *)(void *, void *))0xbd9a90)(self + 2, self);
+    return self;
+}
+REWRITE("Holder::Init7577E0", 0x7577e0, w3c_start<0x6400e5015e68ff6a>, (&w3d_holder<0xf6c504>), &g_w3d_holder);
+REWRITE("Holder::Init7577E0", 0x7fa670, w3c_start<0x6400e5b06e68ff6a>, (&w3d_holder<0xf7510c>), &g_w3d_holder);
+
+// ---- Array::Make: `count` 12-byte elements built in one block that starts with the count (null if out of memory) -------------
+static volatile long g_w3d_array;
+template <uintptr_t CTOR, uintptr_t DTOR> static void *__thiscall w3d_array(uint32_t *self, uint32_t count) {
+    g_w3d_array++;
+    self[1] = count;
+    uint32_t *block = (uint32_t *)memory_alloc_aligned(count * 12 + 4);
+    if (block) {
+        block[0] = count;
+        ((void(__stdcall *)(void *, uint32_t, uint32_t, void *, void *))0xddcf99)(block + 1, 12, count, (void *)CTOR, (void *)DTOR);
+        self[0] = (uint32_t)(uintptr_t)(block + 1);
+    } else
+        self[0] = 0;
+    return self;
+}
+REWRITE("Array::Make823180", 0x823180, w3c_start<0xff6a00000000a164>, (&w3d_array<0x822c70, 0x822bc0>), &g_w3d_array);
+REWRITE("Array::Make823180", 0xa320b0, w3c_start<0xff6a00000000a164>, (&w3d_array<0xa30810, 0xa30820>), &g_w3d_array);
+
+// ---- Map::Get: the item under the key, made and added (under its own key field at +8) when it is missing -------------------
+static volatile long g_w3d_get;
+template <uint32_t MAP, uintptr_t CTOR> static void *__thiscall w3d_get(uint8_t *self, uint32_t key) {
+    g_w3d_get++;
+    void *map = self + MAP;
+    if (void *found = ((void *(__thiscall *)(void *, uint32_t))0xbe82b0)(map, key)) return found;
+    void *made = memory_alloc(0x4c);
+    uint8_t *item = made ? ((uint8_t * (__thiscall *)(void *, uint32_t))CTOR)(made, key) : nullptr;
+    ((void(__thiscall *)(void *, uintptr_t, void *))0xbe8230)(map, (uintptr_t)item + 8, item);   // +8 even for null
+    return item;
+}
+REWRITE("Map::Get881EE0", 0x881ee0, w3c_start<0xff6a00000000a164>, (&w3d_get<0x34, 0x87f7b0>), &g_w3d_get);
+REWRITE("Map::Get881EE0", 0xb33760, w3c_start<0xff6a00000000a164>, (&w3d_get<0x14, 0xb32e20>), &g_w3d_get);
+
+// ---- Text::From: a new text copied from the source's text, or the shared empty one when the source has none, or the copy's
+// default text when there is no source; returned through `out` -------------------------------------------------------------------
+static volatile long g_w3d_text;
+template <uint32_t SOURCE, uint32_t FIELD, uint32_t TEXT> static void **__thiscall w3d_text(uint8_t *self, void **out) {
+    g_w3d_text++;
+    void *text;
+    if (uint8_t *source = *(uint8_t **)(self + SOURCE)) {
+        if (void *from = *(void **)(source + FIELD)) {
+            void *made = memory_alloc(0x10);
+            text = made ? ((void *(__thiscall *)(void *, void *))0xbcf7d0)(made, from) : nullptr;
+        } else
+            text = ((void *(__fastcall *)(uint8_t))0xbd0490)(1);
+    } else {
+        void *made = memory_alloc(0x10);
+        text = made ? ((void *(__thiscall *)(void *, uint32_t))0xbcf850)(made, TEXT) : nullptr;
+    }
+    *out = text;
+    return out;
+}
+REWRITE("Text::FromA2C8E0", 0xa2c8e0, w3c_start<0x6400e7c76668ff6a>, (&w3d_text<0x7c, 0xc, 0xf65930>), &g_w3d_text);
+REWRITE("Text::FromA2C8E0", 0xba52d0, w3c_start<0x6400e9aec668ff6a>, (&w3d_text<0x50, 0x4, 0xf9d13c>), &g_w3d_text);
+
+// ---- Shared::Own: before changing a shared buffer, a buffer still used elsewhere is let go of and copied (with the argument);
+// one used only here is changed in place --------------------------------------------------------------------------------------------
+static volatile long g_w3d_own;
+template <uintptr_t COPY, uintptr_t CHANGE> static uint32_t __thiscall w3d_own(int32_t **self, uint32_t argument) {
+    g_w3d_own++;
+    int32_t *shared = *self;
+    if (*shared <= 1) return ((uint32_t(__thiscall *)(void *, uint32_t))CHANGE)(shared, argument);
+    --*shared;
+    void *made = memory_alloc(0x10);
+    *self = made ? ((int32_t * (__thiscall *)(void *, void *, uint32_t))COPY)(made, shared, argument) : nullptr;
+    return (uint32_t)(uintptr_t)*self;
+}
+REWRITE("Shared::OwnBCFFE0", 0xbcffe0, w3c_start<0x6400e9d4cb68ff6a>, (&w3d_own<0xbcf8c0, 0xbcf980>), &g_w3d_own);
+REWRITE("Shared::OwnBCFFE0", 0xbd02b0, w3c_start<0x6400e9d54b68ff6a>, (&w3d_own<0xbcfb80, 0xbcfc30>), &g_w3d_own);
+
+// ---- Path::Tail: the text after the last separator (a backslash for the name, '.' for the extension) in the path at +0x448 --
+static volatile long g_w3d_tail;
+template <char SEPARATOR> static void **__thiscall w3d_tail(uint8_t *self, void **out) {
+    g_w3d_tail++;
+    const char *path = (const char *)self + 0x448;
+    uintptr_t at = (uintptr_t)path + __builtin_strlen(path) - 1;
+    while (at >= (uintptr_t)path && *(const char *)at != SEPARATOR) at--;
+    uintptr_t tail = at + 1;
+    void *text;
+    if (tail) {
+        void *made = memory_alloc(0x10);
+        text = made ? ((void *(__thiscall *)(void *, uintptr_t))0xbcf850)(made, tail) : nullptr;
+    } else
+        text = ((void *(__fastcall *)(uint8_t))0xbd0490)(1);
+    *out = text;
+    return out;
+}
+REWRITE("Path::TailCA64C0", 0xca64c0, w3c_start<0x6400ea494b68ff6a>, (&w3d_tail<0x5c>), &g_w3d_tail);
+REWRITE("Path::TailCA64C0", 0xca6620, w3c_start<0x6400ea498b68ff6a>, (&w3d_tail<0x2e>), &g_w3d_tail);
+
+// ---- Hash::Init: a table sized for the wanted count: a cleared bucket array, the built slot array (count first) and a third
+// array ------------------------------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_hash;
+template <uintptr_t SIZE_FOR> static void *__thiscall w3d_hash(uint32_t *self, uint32_t wanted) {
+    g_w3d_hash++;
+    self[1] = ((uint32_t(__fastcall *)(uint32_t))SIZE_FOR)(wanted);
+    self[2] = 0;
+    self[3] = (uint32_t)(uintptr_t)memory_alloc_aligned(self[1] * 4 + 4);
+    uint32_t count = self[1];
+    uint32_t *block = (uint32_t *)memory_alloc_aligned(count * 4 + 4);
+    uint32_t *slots = nullptr;
+    if (block) {
+        block[0] = count;
+        ((void(__stdcall *)(void *, uint32_t, uint32_t, void *, void *))0xddcf99)(block + 1, 4, count, (void *)0x448170, (void *)0x403de0);
+        slots = block + 1;
+    }
+    self[4] = (uint32_t)(uintptr_t)slots;
+    self[5] = (uint32_t)(uintptr_t)memory_alloc_aligned(self[1] * 4);
+    __builtin_memset((void *)(uintptr_t)self[3], 0, self[1] * 4 + 4);
+    return self;
+}
+REWRITE("Hash::InitBDFAE0", 0xbdfae0, w3c_start<0xff6a00000000a164>, (&w3d_hash<0xbdd460>), &g_w3d_hash);
+REWRITE("Hash::InitBDFAE0", 0xbdfbb0, w3c_start<0xff6a00000000a164>, (&w3d_hash<0xbdd4b0>), &g_w3d_hash);
+
+// ---- Text::Pass: the C string (or the shared empty text) as a text, handed to the object's virtual (slot 0x68) with the other
+// arguments, then let go of --------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_pass;
+template <uintptr_t FROM>
+static void __thiscall w3d_pass(void **self, uint32_t a, const char *string, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
+    g_w3d_pass++;
+    int32_t *text;
+    if (string) {
+        void *made = memory_alloc(0x10);
+        text = made ? ((int32_t * (__thiscall *)(void *, const char *))FROM)(made, string) : nullptr;
+    } else
+        text = ((int32_t * (__fastcall *)(uint8_t))0xbd0490)(1);
+    ((void(__thiscall *)(void *, uint32_t, int32_t **, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))(*(void ***)self)[0x68 / 4])(
+        self, a, &text, (uint32_t)text[1], b, c, d, e);
+    if (--*text == 0) {
+        memory_free_aligned((void *)(uintptr_t)text[3]);
+        memory_free(text);
+    }
+}
+REWRITE("Text::Pass4042F0", 0x4042f0, w3c_start<0x6400e04be368ff6a>, (&w3d_pass<0xbcf7d0>), &g_w3d_pass);
+REWRITE("Text::Pass4042F0", 0xbf92c0, w3c_start<0x6400e9e75368ff6a>, (&w3d_pass<0xbcf850>), &g_w3d_pass);
+
+// ---- Array::Resize: new 32-byte elements (built by the copy's constructor), the kept ones assigned over from the old array
+// (an element of the exact class also takes its virtual base's first field), then the old array freed ---------------------------
+static volatile long g_w3d_resize;
+template <uintptr_t CTOR, uint32_t VBTABLE> static int32_t __thiscall w3d_resize(uint8_t **self, int32_t count) {
+    g_w3d_resize++;
+    int32_t old_count = *(int32_t *)(self + 1);
+    if (count == old_count) return count;
+    uint8_t *data = nullptr;
+    if (count) {
+        data = (uint8_t *)memory_alloc_aligned((uint32_t)count << 5);
+        if (data) ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0x5d3d00)(data, 0x20, count, (void *)CTOR);
+        int32_t kept = count < old_count ? count : old_count;
+        for (int32_t i = 0; i < kept; i++) {
+            uint8_t *to = data + i * 0x20;
+            uintptr_t from = (uintptr_t)self[0] + i * 0x20;
+            uint32_t *table = *(uint32_t **)to;
+            if ((uint32_t)(uintptr_t)table == VBTABLE) {
+                uintptr_t base = from ? from + (*(uint32_t **)from)[1] : 0;
+                *(uint32_t *)(to + table[1]) = *(uint32_t *)base;
+            }
+            ((void(__thiscall *)(void *, uintptr_t))0x5d2970)(to, from);
+            *(uint32_t *)(to + 0x18) = *(uint32_t *)(from + 0x18);
+        }
+    }
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    self[0] = data;
+    *(int32_t *)(self + 1) = count;
+    return count;
+}
+REWRITE("Array::Resize5D73D0", 0x5d73d0, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4600, 0xf3f734>), &g_w3d_resize);
+REWRITE("Array::Resize5D73D0", 0x5d7530, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4620, 0xf3afc0>), &g_w3d_resize);
+REWRITE("Array::Resize5D73D0", 0x5d7630, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4640, 0xf3affc>), &g_w3d_resize);
+
+// ---- Entries::UpdateAll: every 28-byte entry whose (lazily looked up, as Cached::Find does) target is there gets updated -----
+static inline uint32_t w3d_entry_target(uint8_t *entry) {
+    if (!entry[0x18]) {
+        uint8_t *object = *(uint8_t **)(*(uint8_t **)(entry + 4) + 0xc);
+        uint32_t found = 0;
+        if (object) {
+            uint8_t *table = ((uint8_t * (__thiscall *)(void *))(*(void ***)object)[1])(object);
+            int32_t slot = *(int32_t *)0x13ce3d8;
+            if (table && slot < *(int32_t *)(table + 0x18))
+                if (uint8_t *found_entry = (*(uint8_t ***)(table + 0x14))[slot]) found = *(uint32_t *)(found_entry + 0x10) + (uint32_t)(uintptr_t)object;
+        }
+        *(uint32_t *)(entry + 0x14) = found;
+        entry[0x18] = 1;
+    }
+    return *(uint32_t *)(entry + 0x14);
+}
+static volatile long g_w3d_update;
+template <uintptr_t UPDATE> static int32_t __fastcall w3d_update_all(uint8_t *self) {
+    g_w3d_update++;
+    int32_t count = *(int32_t *)(self + 0x28);
+    if (count <= 0) return count;
+    int32_t i = 0;
+    do {
+        if (w3d_entry_target(*(uint8_t **)(self + 0x24) + i * 0x1c))
+            ((void(__thiscall *)(uint32_t))UPDATE)(w3d_entry_target(*(uint8_t **)(self + 0x24) + i * 0x1c));
+    } while (++i < *(int32_t *)(self + 0x28));
+    return i;
+}
+REWRITE("Entries::UpdateAllA9F7E0", 0xa9f7e0, w3c_start<0x28458be98b555351>, (&w3d_update_all<0xabd040>), &g_w3d_update);
+REWRITE("Entries::UpdateAllA9F7E0", 0xaa0680, w3c_start<0x28458be98b555351>, (&w3d_update_all<0xabfe20>), &g_w3d_update);
+
+// ---- Item::Enlist: a new item for this owner (set up unless it already is), handed to the one registry (made, and set up,
+// when there is none yet) ----------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_enlist;
+template <uint32_t SIZE, uintptr_t CTOR> static uint32_t __fastcall w3d_enlist(void *owner) {
+    g_w3d_enlist++;
+    void *made = memory_alloc(SIZE);
+    uint8_t *item = made ? ((uint8_t * (__thiscall *)(void *, uint32_t, uint32_t, uint32_t, void *))CTOR)(made, 0, 0, 0, owner) : nullptr;
+    auto set_up = (void(__thiscall *)(void *))0x800860;
+    if (!(item[0x2c] & 1)) set_up(item);
+    uint8_t *&registry = *(uint8_t **)0x12f5798;
+    if (!registry)
+        if (void *made_registry = memory_alloc(0x58)) ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x61e450)(made_registry, 0, 0, 0);
+    if (!(registry[0x2c] & 1)) set_up(registry);
+    return ((uint32_t(__thiscall *)(void *, void *))0x61ffe0)(registry, item);
+}
+REWRITE("Item::Enlist6203A0", 0x6203a0, w3c_start<0x6400e2c68668ff6a>, (&w3d_enlist<0x70, 0x61c9b0>), &g_w3d_enlist);
+REWRITE("Item::Enlist6203A0", 0x9daf50, w3c_start<0x6400e757c668ff6a>, (&w3d_enlist<0x78, 0x9dad90>), &g_w3d_enlist);
+REWRITE("Item::Enlist6203A0", 0xa5b830, w3c_start<0x6400e8268668ff6a>, (&w3d_enlist<0x78, 0xa5b630>), &g_w3d_enlist);
+
+// ---- Array::Resize (plain elements): new elements built by the copy's constructor, the kept ones assigned over, the old array
+// freed ------------------------------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_resize2;
+template <uint32_t SHIFT, uintptr_t CTOR, uintptr_t ASSIGN> static int32_t __thiscall w3d_resize2(uint8_t **self, int32_t count) {
+    g_w3d_resize2++;
+    int32_t old_count = *(int32_t *)(self + 1);
+    if (count == old_count) return count;
+    uint8_t *data = nullptr;
+    if (count) {
+        data = (uint8_t *)memory_alloc_aligned((uint32_t)count << SHIFT);
+        if (data) ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0x402b90)(data, 1u << SHIFT, count, (void *)CTOR);
+        int32_t kept = count < old_count ? count : old_count;
+        for (int32_t i = 0; i < kept; i++)
+            ((void(__thiscall *)(uintptr_t, uintptr_t))ASSIGN)((uintptr_t)data + (i << SHIFT), (uintptr_t)self[0] + (i << SHIFT));
+    }
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    self[0] = data;
+    *(int32_t *)(self + 1) = count;
+    return count;
+}
+REWRITE("Array::Resize61C320", 0x61c320, w3c_start<0xff6a00000000a164>, (&w3d_resize2<4, 0x4073a0, 0xbe7450>), &g_w3d_resize2);
+REWRITE("Array::Resize61C320", 0x693300, w3c_start<0xff6a00000000a164>, (&w3d_resize2<6, 0x691b00, 0x691b10>), &g_w3d_resize2);
+
+// ---- Notice::Post: the copy's fixed message (through the game's sprintf) as a text, posted with kind 3 to the target at the
+// copy's field, then let go of -------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_notice;
+template <uint32_t FORMAT, uint32_t TARGET> static void __fastcall w3d_notice(uint8_t *self) {
+    g_w3d_notice++;
+    char line[0x400];
+    ((int(__cdecl *)(char *, const char *))0xddcdb5)(line, (const char *)FORMAT);
+    void *made = memory_alloc(0x10);
+    int32_t *text = made ? ((int32_t * (__thiscall *)(void *, const char *))0xbcf850)(made, line) : nullptr;
+    ((void(__fastcall *)(void *, int32_t **, uint32_t))0xc211c0)(*(void **)(self + TARGET), &text, 3);
+    if (--*text == 0) {
+        memory_free_aligned((void *)(uintptr_t)text[3]);
+        memory_free(text);
+    }
+}
+REWRITE("Notice::Post4A4860", 0x4a4860, w3c_start<0x6400e109d968ff6a>, (&w3d_notice<0xf30868, 0x17c>), &g_w3d_notice);
+REWRITE("Notice::Post4A4860", 0x881db0, w3c_start<0x6400e63de968ff6a>, (&w3d_notice<0xf79334, 0x88>), &g_w3d_notice);
+
+// ---- Kind::Name: the name of this object's kind (+0x78) as a text: kinds 0-3, 4 and 5 read their name from a global (the
+// shared empty text when it is unset); any other kind gets the fixed fallback name ---------------------------------------------------
+static volatile long g_w3d_kind;
+template <uint32_t FIRST, uint32_t FOURTH> static void **__thiscall w3d_kind_name(uint8_t *self, void **out) {
+    g_w3d_kind++;
+    uint32_t kind = *(uint32_t *)(self + 0x78);
+    void *text;
+    if (kind > 5) {
+        void *made = memory_alloc(0x10);
+        text = made ? ((void *(__thiscall *)(void *, uint32_t))0xbcf850)(made, 0xf981a0) : nullptr;
+    } else if (uint32_t name = *(uint32_t *)(kind < 4 ? FIRST : kind == 4 ? FOURTH : 0x1300494)) {
+        void *made = memory_alloc(0x10);
+        text = made ? ((void *(__thiscall *)(void *, uint32_t))0xbcf7d0)(made, name) : nullptr;
+    } else
+        text = ((void *(__fastcall *)(uint8_t))0xbd0490)(1);
+    *out = text;
+    return out;
+}
+REWRITE("Kind::NameB16890", 0xb16890, w3c_start<0x6400e9118c68ff6a>, (&w3d_kind_name<0x130228c, 0x1303214>), &g_w3d_kind);
+REWRITE("Kind::NameB16890", 0xb2c490, w3c_start<0x6400e9264c68ff6a>, (&w3d_kind_name<0x12fefb0, 0x12ff774>), &g_w3d_kind);
