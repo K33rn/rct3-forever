@@ -1175,3 +1175,400 @@ template <uint32_t SEEN, uint32_t FETCH> static uint32_t __fastcall w2b_cached(u
 }
 REWRITE("Cached::PassA80240", 0xa80240, w2b_setup_original<0x154>, (&w2b_cached<0x154, 0x4a8700>), &g_w2b_cached);
 REWRITE("Cached::PassA80240", 0xba8db0, w2b_setup_original<0x158>, (&w2b_cached<0x158, 0xb85520>), &g_w2b_cached);
+
+// ======== Third pass of wave 2: destructors, makers and singletons that carry an exception frame (left out here) ========
+template <uint32_t HANDLER>
+static const uint8_t w2c_seh[] = {0x6a, 0xff, 0x68, (uint8_t)HANDLER, (uint8_t)(HANDLER >> 8), (uint8_t)(HANDLER >> 16), (uint8_t)(HANDLER >> 24)};
+static const uint8_t w2c_seh_late[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff};
+static inline uint32_t &w2c_u32(void *p, uint32_t off) { return *(uint32_t *)((uint8_t *)p + off); }
+template <uint32_t FN> static inline void w2c_run(void *self) { ((void(__fastcall *)(void *))FN)(self); }
+constexpr uint32_t w2c_text_drop = 0x40f730;   // a member text's destructor
+
+// Reference-counted text buffer {count, .., .., data}: the last owner frees it.
+struct W2cShared {
+    int32_t count;
+    uint32_t unknown[2];
+    void *data;
+};
+static inline void w2c_drop(W2cShared *s) {
+    if (--s->count == 0) {
+        memory_free_aligned(s->data);
+        memory_free(s);
+    }
+}
+
+// ---- Singleton::Get: the object in GLOBAL; the first call builds it, and its constructor fills GLOBAL in --------------------------------
+static volatile long g_w2c_singletons;
+template <uint32_t GLOBAL, uint32_t SIZE, uint32_t CTOR> static void *__cdecl w2c_singleton() {
+    g_w2c_singletons++;
+    void **the_one = (void **)GLOBAL;
+    if (!*the_one) {
+        void *object = memory_alloc(SIZE);
+        if (object) ((void(__thiscall *)(void *, uint32_t))CTOR)(object, 0);
+    }
+    return *the_one;
+}
+REWRITE("Singleton::Get40DA80", 0x40da80, w2c_seh<0xe053fb>, (&w2c_singleton<0x1306cd0, 0xe4, 0x7b6180>), &g_w2c_singletons);
+REWRITE("Singleton::Get40DA80", 0x41b0b0, w2c_seh<0xe0652b>, (&w2c_singleton<0x12f80fc, 0x84, 0x662750>), &g_w2c_singletons);
+REWRITE("Singleton::Get40DA80", 0x440fd0, w2c_seh<0xe094ab>, (&w2c_singleton<0x1106c48, 0x90, 0x4405f0>), &g_w2c_singletons);
+REWRITE("Singleton::Get40DA80", 0x6d56d0, w2c_seh<0xe4309b>, (&w2c_singleton<0x13060b8, 0x88, 0x6e9d70>), &g_w2c_singletons);
+REWRITE("Singleton::Get40DA80", 0x98e940, w2c_seh<0xe6e1cb>, (&w2c_singleton<0x134131c, 0x270, 0x98e760>), &g_w2c_singletons);
+REWRITE("Singleton::Get40DA80", 0xa64700, w2c_seh<0xe82f7b>, (&w2c_singleton<0x13429b8, 0x290, 0xa644a0>), &g_w2c_singletons);
+REWRITE("Singleton::Get40DA80", 0xb04840, w2c_seh<0xe8ee1b>, (&w2c_singleton<0x13ce688, 0x350, 0xb04200>), &g_w2c_singletons);
+
+// ---- Singleton::Keep: as above, but the object is stored here and is told its callback -------------------------------------------------
+static volatile long g_w2c_kept;
+template <uint32_t GLOBAL, uint32_t TOLD> static void *__cdecl w2c_kept() {
+    g_w2c_kept++;
+    void **the_one = (void **)GLOBAL;
+    if (!*the_one) {
+        void *object = memory_alloc(0xc);
+        if (object) ((void(__thiscall *)(void *, uint32_t, uint32_t))0xbe79b0)(object, TOLD, 0);
+        *the_one = object;
+    }
+    return *the_one;
+}
+REWRITE("Singleton::Keep4095B0", 0x4095b0, w2c_seh<0xe0511b>, (&w2c_kept<0x10ff9c8, 0x408120>), &g_w2c_kept);
+REWRITE("Singleton::Keep4095B0", 0x496040, w2c_seh<0xe0f3db>, (&w2c_kept<0x12f4694, 0x495c10>), &g_w2c_kept);
+
+// ---- Factory::Make: a new 32-byte entry with its two buffers, its type and the function that makes its kind ------------------------------
+static volatile long g_w2c_factories;
+template <uint32_t TYPE, uint32_t MAKE> static void *__cdecl w2c_factory() {
+    g_w2c_factories++;
+    uint8_t *entry = (uint8_t *)memory_alloc(0x20);
+    if (!entry) return nullptr;
+    w2c_run<0x808700>(entry);
+    w2c_u32(entry, 0x18) = TYPE;
+    w2c_u32(entry, 0x1c) = MAKE;
+    return entry;
+}
+REWRITE("Factory::Make7FF4E0", 0x7ff4e0, w2c_seh<0xe5b9bb>, (&w2c_factory<0xf7526c, 0x7ff460>), &g_w2c_factories);
+REWRITE("Factory::Make7FF4E0", 0x7ff5d0, w2c_seh<0xe5b9fb>, (&w2c_factory<0xf75278, 0x7ff550>), &g_w2c_factories);
+REWRITE("Factory::Make7FF4E0", 0x7ff6c0, w2c_seh<0xe5ba3b>, (&w2c_factory<0xf75288, 0x7ff640>), &g_w2c_factories);
+REWRITE("Factory::Make7FF4E0", 0x7ff7b0, w2c_seh<0xe5ba7b>, (&w2c_factory<0xf75298, 0x7ff730>), &g_w2c_factories);
+REWRITE("Factory::Make7FF4E0", 0x7ff8a0, w2c_seh<0xe5babb>, (&w2c_factory<0xf752ac, 0x7ff820>), &g_w2c_factories);
+
+// ---- Shared::Assign: the buffer at +OFF becomes `value`, which arrived as an owned copy that is given up on the way out -------------------
+static volatile long g_w2c_assigns;
+template <uint32_t OFF> static void __thiscall w2c_assign(uint8_t *self, W2cShared *value) {
+    g_w2c_assigns++;
+    W2cShared *&slot = *(W2cShared **)(self + OFF);
+    if (value != slot) {
+        w2c_drop(slot);
+        slot = value;
+        value->count++;
+    }
+    w2c_drop(value);
+}
+REWRITE("Shared::Assign591190", 0x591190, w2c_seh_late, (&w2c_assign<0x64>), &g_w2c_assigns);
+REWRITE("Shared::Assign591190", 0x8098f0, w2c_seh_late, (&w2c_assign<0x20>), &g_w2c_assigns);
+REWRITE("Shared::Assign591190", 0x872180, w2c_seh_late, (&w2c_assign<0x68>), &g_w2c_assigns);
+REWRITE("Shared::Assign591190", 0x9ed9c0, w2c_seh_late, (&w2c_assign<0x40>), &g_w2c_assigns);
+REWRITE("Shared::Assign591190", 0xa561d0, w2c_seh_late, (&w2c_assign<0x4>), &g_w2c_assigns);
+
+// ---- Shared::DropTwo: gives up the buffers at +A and +B, then falls back to the base's table ------------------------------------------
+static volatile long g_w2c_drop_twos;
+template <uint32_t A, uint32_t B> static void __fastcall w2c_drop_two(uint8_t *self) {
+    g_w2c_drop_twos++;
+    w2c_drop(*(W2cShared **)(self + A));
+    w2c_drop(*(W2cShared **)(self + B));
+    w2c_u32(self, 0) = 0xf75170;
+}
+REWRITE("Shared::DropTwo7FD6F0", 0x7fd6f0, w2c_seh<0xe5b4f3>, (&w2c_drop_two<0x14, 0x10>), &g_w2c_drop_twos);
+REWRITE("Shared::DropTwo7FD6F0", 0x7fe530, w2c_seh<0xe5b733>, (&w2c_drop_two<0x14, 0x10>), &g_w2c_drop_twos);
+REWRITE("Shared::DropTwo7FD6F0", 0x7ff3d0, w2c_seh<0xe5b983>, (&w2c_drop_two<0xc, 0x8>), &g_w2c_drop_twos);
+
+// ---- Dtor::TablesMember: sets its two tables, destroys the member at +OFF, then the base ------------------------------------------------
+static volatile long g_w2c_tables_member;
+template <uint32_t T0, uint32_t T1, uint32_t OFF, uint32_t MEMBER, uint32_t BASE> static void __fastcall w2c_tables_member(uint8_t *self) {
+    g_w2c_tables_member++;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 4) = T1;
+    w2c_run<MEMBER>(self + OFF);
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::TablesMember456980", 0x456980, w2c_seh<0xe0ab58>, (&w2c_tables_member<0xf29834, 0xf29830, 0x40, 0x4560b0, 0x800940>), &g_w2c_tables_member);
+REWRITE("Dtor::TablesMember456980", 0x5ef9b0, w2c_seh<0xe266a8>, (&w2c_tables_member<0xf3fc54, 0xf3fc50, 0x40, 0x40f730, 0x800940>), &g_w2c_tables_member);
+REWRITE("Dtor::TablesMember456980", 0x98d7e0, w2c_seh<0xe6dfc8>, (&w2c_tables_member<0xf7ff38, 0xf7ff34, 0x70, 0x40f730, 0x61bed0>), &g_w2c_tables_member);
+REWRITE("Dtor::TablesMember456980", 0xa313d0, w2c_seh<0xe7cfc8>, (&w2c_tables_member<0xf8970c, 0xf89708, 0x40, 0x40f730, 0x800940>), &g_w2c_tables_member);
+REWRITE("Dtor::TablesMember456980", 0xb7a4c0, w2c_seh<0xe979e8>, (&w2c_tables_member<0xf9b720, 0xf9b718, 0x44, 0x40f730, 0x800940>), &g_w2c_tables_member);
+
+// ---- Dtor::TwoTexts: destroys the member texts at +A and +B, then the base ---------------------------------------------------------------
+static volatile long g_w2c_two_texts;
+template <uint32_t A, uint32_t B, uint32_t BASE> static void __fastcall w2c_two_texts(uint8_t *self) {
+    g_w2c_two_texts++;
+    w2c_run<w2c_text_drop>(self + A);
+    w2c_run<w2c_text_drop>(self + B);
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::TwoTexts4C68D0", 0x4c68d0, w2c_seh<0xe135a3>, (&w2c_two_texts<0x5c, 0x40, 0x4d3c20>), &g_w2c_two_texts);
+REWRITE("Dtor::TwoTexts4C68D0", 0x4d4f10, w2c_seh<0xe144b3>, (&w2c_two_texts<0x5c, 0x40, 0x4d3c20>), &g_w2c_two_texts);
+REWRITE("Dtor::TwoTexts4C68D0", 0x533dc0, w2c_seh<0xe1b1e3>, (&w2c_two_texts<0x50, 0x1c, 0x40f730>), &g_w2c_two_texts);
+REWRITE("Dtor::TwoTexts4C68D0", 0xabed50, w2c_seh<0xe88573>, (&w2c_two_texts<0x38, 0x1c, 0x40f730>), &g_w2c_two_texts);
+
+// ---- Dtor::JustTexts: destroys the member texts at +A and +B -----------------------------------------------------------------------------
+static volatile long g_w2c_just_texts;
+template <uint32_t A, uint32_t B> static void __fastcall w2c_just_texts(uint8_t *self) {
+    g_w2c_just_texts++;
+    w2c_run<w2c_text_drop>(self + A);
+    w2c_run<w2c_text_drop>(self + B);
+}
+REWRITE("Dtor::JustTexts49BBC0", 0x49bbc0, w2c_seh<0xe0fabb>, (&w2c_just_texts<0x20, 0xc>), &g_w2c_just_texts);
+REWRITE("Dtor::JustTexts49BBC0", 0x725de0, w2c_seh<0xe4c16b>, (&w2c_just_texts<0x18, 0x4>), &g_w2c_just_texts);
+
+// ---- Dtor::Pair: runs the object's own cleanup, then its base's ----------------------------------------------------------------------------
+static volatile long g_w2c_pairs;
+template <uint32_t FIRST, uint32_t BASE> static void __fastcall w2c_pair(void *self) {
+    g_w2c_pairs++;
+    w2c_run<FIRST>(self);
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::Pair496DC0", 0x496dc0, w2c_seh<0xe0f5d8>, (&w2c_pair<0xbe5360, 0xbe4f30>), &g_w2c_pairs);
+REWRITE("Dtor::Pair496DC0", 0x496e50, w2c_seh<0xe0f5f8>, (&w2c_pair<0xbe5360, 0xbe4f30>), &g_w2c_pairs);
+REWRITE("Dtor::Pair496DC0", 0x594000, w2c_seh<0xe21778>, (&w2c_pair<0x5937e0, 0x40f730>), &g_w2c_pairs);
+REWRITE("Dtor::Pair496DC0", 0x594050, w2c_seh<0xe21798>, (&w2c_pair<0x593900, 0x40f730>), &g_w2c_pairs);
+
+// ---- Dtor::TablesPair: sets its two tables (the second at +OFF), then its own cleanup and its base's ---------------------------------------
+static volatile long g_w2c_tables_pairs;
+template <uint32_t T0, uint32_t OFF, uint32_t T1, uint32_t FIRST, uint32_t BASE> static void __fastcall w2c_tables_pair(uint8_t *self) {
+    g_w2c_tables_pairs++;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, OFF) = T1;
+    w2c_run<FIRST>(self);
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::TablesPair4DD140", 0x4dd140, w2c_seh<0xe15718>, (&w2c_tables_pair<0xf344b8, 4, 0xf344a0, 0x6af540, 0x63a9c0>), &g_w2c_tables_pairs);
+REWRITE("Dtor::TablesPair4DD140", 0x7f0550, w2c_seh<0xe5a308>, (&w2c_tables_pair<0xf74508, 4, 0xf744f4, 0x6af540, 0x6b0ea0>), &g_w2c_tables_pairs);
+REWRITE("Dtor::TablesPair4DD140", 0xa9cb10, w2c_seh<0xe86648>, (&w2c_tables_pair<0xf91eb8, 4, 0xf91ea0, 0x6af540, 0x63a9c0>), &g_w2c_tables_pairs);
+REWRITE("Dtor::TablesPair4DD140", 0xc3a7f0, w2c_seh<0xea10c8>, (&w2c_tables_pair<0xfb0af0, 0xc, 0xfb0aec, 0xc3a4b0, 0xc424f0>), &g_w2c_tables_pairs);
+
+// ---- Dtor::FourTables: sets its four tables, deletes the object it owns at +CHILD, then the base ------------------------------------------
+static volatile long g_w2c_four_tables;
+template <uint32_t T0, uint32_t T1, uint32_t O2, uint32_t T2, uint32_t O3, uint32_t T3, uint32_t CHILD, uint32_t BASE>
+static void __fastcall w2c_four_tables(uint8_t *self) {
+    g_w2c_four_tables++;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 4) = T1;
+    w2c_u32(self, O2) = T2;
+    w2c_u32(self, O3) = T3;
+    void ***child = *(void ****)(self + CHILD);
+    if (child) ((void(__thiscall *)(void *, uint32_t))(*child)[0])(child, 1);
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::FourTables41B1A0", 0x41b1a0, w2c_seh<0xe06548>, (&w2c_four_tables<0xf27130, 0xf2711c, 0x108, 0xf27118, 0x118, 0xf27110, 0x158, 0x676220>), &g_w2c_four_tables);
+REWRITE("Dtor::FourTables41B1A0", 0x99a7f0, w2c_seh<0xe6f3c8>, (&w2c_four_tables<0xf80b18, 0xf80b04, 0xd4, 0xf80af0, 0xec, 0xf80ae8, 0xf4, 0x659b40>), &g_w2c_four_tables);
+REWRITE("Dtor::FourTables41B1A0", 0xa3c990, w2c_seh<0xe7e598>, (&w2c_four_tables<0xf8a118, 0xf8a104, 0x108, 0xf8a100, 0x118, 0xf8a0f8, 0x158, 0x676220>), &g_w2c_four_tables);
+REWRITE("Dtor::FourTables41B1A0", 0xa40a00, w2c_seh<0xe7e9c8>, (&w2c_four_tables<0xf8d7e8, 0xf8d7d4, 0xd4, 0xf8d7c0, 0xdc, 0xf8d7bc, 0x13c, 0x67b9f0>), &g_w2c_four_tables);
+
+// ---- Buffers::Init: two empty buffers, and the step their size grows by ------------------------------------------------------------------
+static volatile long g_w2c_buffers;
+template <uint32_t STEP> static uint32_t *__fastcall w2c_buffers(uint32_t *self) {
+    g_w2c_buffers++;
+    self[1] = 0;
+    self[0] = (uint32_t)(uintptr_t)memory_alloc_aligned(0);
+    self[3] = 0;
+    self[2] = (uint32_t)(uintptr_t)memory_alloc_aligned(0);
+    self[5] = 0;
+    self[4] = STEP;
+    return self;
+}
+REWRITE("Buffers::Init7FC020", 0x7fc020, w2c_seh<0xe5b238>, (&w2c_buffers<0x80>), &g_w2c_buffers);
+REWRITE("Buffers::Init7FC020", 0x7fd440, w2c_seh<0xe5b458>, (&w2c_buffers<0x80>), &g_w2c_buffers);
+REWRITE("Buffers::Init7FC020", 0x808700, w2c_seh<0xe5c8f8>, (&w2c_buffers<0x20>), &g_w2c_buffers);
+
+// ---- Buffers::Free: frees the aligned block at +A, and the one at +B if there is one (and forgets it) ------------------------------------
+static volatile long g_w2c_frees;
+template <uint32_t A, uint32_t B> static void __fastcall w2c_free_two(uint8_t *self) {
+    g_w2c_frees++;
+    memory_free_aligned(*(void **)(self + A));
+    if (void *block = *(void **)(self + B)) {
+        memory_free_aligned(block);
+        *(void **)(self + B) = nullptr;
+    }
+}
+REWRITE("Buffers::Free84F220", 0x84f220, w2c_seh<0xe6135b>, (&w2c_free_two<0x4, 0x10>), &g_w2c_frees);
+REWRITE("Buffers::Free84F220", 0x983870, w2c_seh<0xe6d77b>, (&w2c_free_two<0x18, 0x20>), &g_w2c_frees);
+
+// ---- Make::OnceFor: unless one is already there, makes a helper that knows its owner (who sits 0x40 before this interface) -----------------
+static volatile long g_w2c_once;
+template <uint32_t SIZE, uint32_t CTOR> static uint8_t __thiscall w2c_once(uint8_t *self, uint32_t) {
+    g_w2c_once++;
+    if (!w2c_u32(self, 0x4b4)) {
+        void *helper = memory_alloc(SIZE);
+        if (helper) ((void(__thiscall *)(void *, uint32_t, void *))CTOR)(helper, 0, self - 0x40);
+    }
+    return 1;
+}
+REWRITE("Make::OnceFor754DE0", 0x754de0, w2c_seh<0xe4fdcb>, (&w2c_once<0x148, 0x78f490>), &g_w2c_once);
+REWRITE("Make::OnceFor754DE0", 0x7971c0, w2c_seh<0xe54d8b>, (&w2c_once<0x188, 0x78dfc0>), &g_w2c_once);
+REWRITE("Make::OnceFor754DE0", 0x7a68f0, w2c_seh<0xe5613b>, (&w2c_once<0x184, 0x78f9f0>), &g_w2c_once);
+REWRITE("Make::OnceFor754DE0", 0x7e8f50, w2c_seh<0xe596fb>, (&w2c_once<0x134, 0x78ed20>), &g_w2c_once);
+
+// ---- Make::FromField: builds an object from the value at +0x28; the argument is not used ---------------------------------------------------
+static volatile long g_w2c_from_field;
+template <uint32_t SIZE, uint32_t CTOR> static uint32_t __thiscall w2c_from_field(uint8_t *self, uint32_t) {
+    g_w2c_from_field++;
+    void *object = memory_alloc(SIZE);
+    return object ? ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))CTOR)(object, 0, w2c_u32(self, 0x28)) : 0;
+}
+REWRITE("Make::FromField555CB0", 0x555cb0, w2c_seh<0xe1e09b>, (&w2c_from_field<0x170, 0xba78d0>), &g_w2c_from_field);
+REWRITE("Make::FromField555CB0", 0x5560c0, w2c_seh<0xe1e0fb>, (&w2c_from_field<0x224, 0xa857e0>), &g_w2c_from_field);
+
+// ---- Make::FromThree: builds an object from the values at +0x40, +0x4c and +0x50 -----------------------------------------------------------
+static volatile long g_w2c_from_three;
+template <uint32_t SIZE, uint32_t CTOR> static uint32_t __fastcall w2c_from_three(uint8_t *self) {
+    g_w2c_from_three++;
+    void *object = memory_alloc(SIZE);
+    if (!object) return 0;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))CTOR)(object, 0, 0, w2c_u32(self, 0x40), w2c_u32(self, 0x4c),
+                                                                                                    w2c_u32(self, 0x50));
+}
+REWRITE("Make::FromThree632790", 0x632790, w2c_seh<0xe2f97b>, (&w2c_from_three<0x198, 0x4d9ef0>), &g_w2c_from_three);
+REWRITE("Make::FromThree632790", 0x632870, w2c_seh<0xe2f99b>, (&w2c_from_three<0x148, 0x57e180>), &g_w2c_from_three);
+
+// ---- Make::FromArgs: builds an object from the two arguments, with the rest of the constructor's arguments cleared -------------------------
+static volatile long g_w2c_from_args;
+template <uint32_t SIZE, uint32_t CTOR> static uint32_t __stdcall w2c_from_args(uint32_t a, uint32_t b) {
+    g_w2c_from_args++;
+    void *object = memory_alloc(SIZE);
+    if (!object) return 0;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))CTOR)(object, 0, a, b, 0, 0);
+}
+REWRITE("Make::FromArgs6D1060", 0x6d1060, w2c_seh<0xe424fb>, (&w2c_from_args<0x80, 0x6cffc0>), &g_w2c_from_args);
+REWRITE("Make::FromArgs6D1060", 0xb295f0, w2c_seh<0xe9247b>, (&w2c_from_args<0xd0, 0xb29210>), &g_w2c_from_args);
+
+// ---- Make::WithTail: the same with a fixed last argument --------------------------------------------------------------------------------
+static volatile long g_w2c_with_tail;
+template <uint32_t SIZE, uint32_t CTOR, int32_t TAIL> static uint32_t __stdcall w2c_with_tail(uint32_t a, uint32_t b) {
+    g_w2c_with_tail++;
+    void *object = memory_alloc(SIZE);
+    if (!object) return 0;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, int32_t))CTOR)(object, 0, a, b, 0, TAIL);
+}
+REWRITE("Make::WithTail6D5BD0", 0x6d5bd0, w2c_seh<0xe4312b>, (&w2c_with_tail<0x50, 0x6d59b0, -1>), &g_w2c_with_tail);
+REWRITE("Make::WithTail6D5BD0", 0xb612d0, w2c_seh<0xe96adb>, (&w2c_with_tail<0x70, 0xb606e0, 0>), &g_w2c_with_tail);
+
+// ---- Make::FromPool: if the argument is accepted, builds an object in the pool's memory -----------------------------------------------------
+static volatile long g_w2c_from_pool;
+template <uint32_t SIZE, uint32_t CTOR> static uint32_t __thiscall w2c_from_pool(void *self, uint32_t arg) {
+    g_w2c_from_pool++;
+    if (!((uint8_t(__thiscall *)(void *, uint32_t))0xc0d5a0)(self, arg)) return 0;
+    uint8_t *pool = *(uint8_t **)0x13e3318;
+    void *object = ((void *(__thiscall *)(void *, uint32_t, uint32_t))0xca1eb0)(pool + 4, 4, SIZE);
+    return object ? ((uint32_t(__thiscall *)(void *, void *, uint32_t))CTOR)(object, self, arg) : 0;
+}
+REWRITE("Make::FromPoolC0E4C0", 0xc0e4c0, w2c_seh_late, (&w2c_from_pool<0x8c, 0xc0e420>), &g_w2c_from_pool);
+REWRITE("Make::FromPoolC0E4C0", 0xc10940, w2c_seh_late, (&w2c_from_pool<0x94, 0xc10840>), &g_w2c_from_pool);
+REWRITE("Make::FromPoolC0E4C0", 0xc10ca0, w2c_seh_late, (&w2c_from_pool<0xc4, 0xc10b30>), &g_w2c_from_pool);
+
+// ---- Make::Choosing: builds an object, passing the source's first word or the one at +ALT, as the source itself says -----------------------
+static volatile long g_w2c_choosing;
+template <uint32_t OFF, uint32_t CHECK, uint32_t ALT> static uint32_t __fastcall w2c_choosing(uint8_t *self) {
+    g_w2c_choosing++;
+    void *object = memory_alloc(0xac);
+    if (!object) return 0;
+    uint8_t *source = *(uint8_t **)(self + OFF);
+    uint32_t value = ((uint8_t(__fastcall *)(void *))CHECK)(source) ? w2c_u32(source, 0) : w2c_u32(source, ALT);
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *, uint32_t))0x4e2630)(object, 0, self, value);
+}
+REWRITE("Make::Choosing4A8910", 0x4a8910, w2c_seh<0xe1120b>, (&w2c_choosing<0x3a8, 0xbb5120, 0x18>), &g_w2c_choosing);
+REWRITE("Make::Choosing4A8910", 0x585b20, w2c_seh<0xe20dfb>, (&w2c_choosing<0x1d0, 0xbb5180, 0x8>), &g_w2c_choosing);
+
+// ---- Text::Copy: a new holder made from the other's text, kept in the first word -------------------------------------------------------------
+struct W2cTextBody {
+    uint32_t unknown;
+    uint32_t length;   // +4
+    uint32_t unknown2;
+    void *data;        // +0xc
+};
+static volatile long g_w2c_text_copies;
+template <uint32_t CTOR> static uint32_t *__thiscall w2c_text_copy(uint32_t *self, W2cTextBody **other) {
+    g_w2c_text_copies++;
+    void *holder = memory_alloc(0x10);
+    *self = holder ? ((uint32_t(__thiscall *)(void *, void *, uint32_t))CTOR)(holder, (*other)->data, (*other)->length) : 0;
+    return self;
+}
+REWRITE("Text::CopyBCFEF0", 0xbcfef0, w2c_seh<0xe9d48b>, (&w2c_text_copy<0xbcf770>), &g_w2c_text_copies);
+REWRITE("Text::CopyBCFEF0", 0xbd01c0, w2c_seh<0xe9d50b>, (&w2c_text_copy<0xbcf9e0>), &g_w2c_text_copies);
+
+// ---- Text::CopyLeft: the same, of at most `limit` characters ---------------------------------------------------------------------------------
+static volatile long g_w2c_text_lefts;
+template <uint32_t CTOR> static uint32_t *__thiscall w2c_text_left(uint32_t *self, W2cTextBody **other, uint32_t limit) {
+    g_w2c_text_lefts++;
+    void *holder = memory_alloc(0x10);
+    uint32_t made = 0;
+    if (holder) {
+        W2cTextBody *body = *other;
+        uint32_t length = limit > body->length ? body->length : limit;
+        made = ((uint32_t(__thiscall *)(void *, void *, uint32_t))CTOR)(holder, body->data, length);
+    }
+    *self = made;
+    return self;
+}
+REWRITE("Text::CopyLeftBCFF60", 0xbcff60, w2c_seh<0xe9d4ab>, (&w2c_text_left<0xbcf770>), &g_w2c_text_lefts);
+REWRITE("Text::CopyLeftBCFF60", 0xbd0230, w2c_seh<0xe9d52b>, (&w2c_text_left<0xbcf9e0>), &g_w2c_text_lefts);
+
+// ---- Text::FromField: the out holder gets a copy of the text at +OFF, or a new empty one if there is none --------------------------------------
+static volatile long g_w2c_from_text;
+template <uint32_t OFF> static uint32_t *__thiscall w2c_from_text(uint8_t *self, uint32_t *out) {
+    g_w2c_from_text++;
+    uint32_t source = w2c_u32(self, OFF), made;
+    if (source) {
+        void *holder = memory_alloc(0x10);
+        made = holder ? ((uint32_t(__thiscall *)(void *, uint32_t))0xbcf7d0)(holder, source) : 0;
+    } else {
+        made = ((uint32_t(__fastcall *)(uint8_t))0xbd0490)(1);
+    }
+    *out = made;
+    return out;
+}
+REWRITE("Text::FromField6AADE0", 0x6aade0, w2c_seh<0xe3ddbb>, (&w2c_from_text<0x11c>), &g_w2c_from_text);
+REWRITE("Text::FromField6AADE0", 0xb073b0, w2c_seh<0xe8f4bb>, (&w2c_from_text<0xa4>), &g_w2c_from_text);
+
+// ---- Lookup::ByPair: looks up a key made of two counted references in the table at +4; the key lives only for the call -----------------------
+static volatile long g_w2c_by_pair;
+template <uint32_t DROP> static uint32_t __thiscall w2c_by_pair(uint8_t *self, int32_t **a, int32_t **b) {
+    g_w2c_by_pair++;
+    int32_t *key[2] = {*a, *b};
+    ++*key[0];
+    ++*key[1];
+    uint32_t found = ((uint32_t(__thiscall *)(void *, void *))0xbe82b0)(self + 4, key);
+    w2c_run<DROP>(key);
+    return found;
+}
+REWRITE("Lookup::ByPair661660", 0x661660, w2c_seh<0xe36498>, (&w2c_by_pair<0x6615d0>), &g_w2c_by_pair);
+REWRITE("Lookup::ByPair661660", 0xb33a80, w2c_seh<0xe93208>, (&w2c_by_pair<0xb32d90>), &g_w2c_by_pair);
+
+// ---- Ctor::Registered: joins `owner`, then settles as the final class with two empty counted texts -------------------------------------------
+static volatile long g_w2c_registered;
+template <uint32_t T0, uint32_t T1> static uint8_t *__thiscall w2c_registered(uint8_t *self, uint32_t value, void *owner) {
+    g_w2c_registered++;
+    w2c_u32(self, 4) = value;
+    w2c_u32(self, 0) = 0xf75170;
+    uint32_t held = value;
+    uint8_t *me = self;
+    ((void(__thiscall *)(void *, uint32_t *, uint8_t **))0x7fbf50)(owner, &held, &me);
+    w2c_u32(self, 8) = 0xf75178;
+    self[0xc] = 0;
+    self[0xd] = 0;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 8) = T1;
+    w2c_u32(self, 0x10) = ((uint32_t(__fastcall *)(uint8_t))0xbd0490)(1);
+    w2c_u32(self, 0x14) = ((uint32_t(__fastcall *)(uint8_t))0xbd0490)(1);
+    return self;
+}
+REWRITE("Ctor::Registered7FC400", 0x7fc400, w2c_seh<0xe5b293>, (&w2c_registered<0xf75180, 0xf7517c>), &g_w2c_registered);
+REWRITE("Ctor::Registered7FC400", 0x7fc730, w2c_seh<0xe5b303>, (&w2c_registered<0xf75194, 0xf75190>), &g_w2c_registered);
+
+// ---- Ctor::Grid: the base from two pairs of values, then 64 texts of 20 bytes from +0x128 --------------------------------------------------------
+static volatile long g_w2c_grids;
+template <uint32_t TABLE> static uint8_t *__thiscall w2c_grid(uint8_t *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    g_w2c_grids++;
+    uint32_t first[2] = {a, b}, second[2] = {c, d};
+    ((void(__thiscall *)(void *, uint32_t, void *, void *, void *))0x488290)(self, 0x40, self + 0x28, first, second);
+    ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))0xddcf99)(self + 0x128, 0x14, 0x40, 0x42e030, 0x40f730);
+    w2c_u32(self, 0) = TABLE;
+    return self;
+}
+REWRITE("Ctor::Grid641750", 0x641750, w2c_seh<0xe31bd8>, (&w2c_grid<0xf49aa0>), &g_w2c_grids);
+REWRITE("Ctor::Grid641750", 0x641950, w2c_seh<0xe31bf8>, (&w2c_grid<0xf49aa8>), &g_w2c_grids);

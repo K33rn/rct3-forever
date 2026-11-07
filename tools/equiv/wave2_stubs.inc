@@ -236,3 +236,71 @@ static uint32_t __thiscall w2b_stub_verdict(void *self, uint32_t subject) {
     record(0xe27d, (void *)(uintptr_t)subject);
     return arena<uint32_t>(0x20)[1] & 3;
 }
+// ---- third pass ----
+static uint32_t g_w2c_a, g_w2c_b;   // per-copy constants of the test being run
+static uint32_t w2c_target(uintptr_t at, uint32_t off) { return (uint32_t)(at + off + 4 + *(int32_t *)(at + off)); }
+static uint32_t w2c_word(uintptr_t at, uint32_t off) { return *(uint32_t *)(at + off); }
+#define W2C_RET arena<uint32_t>(0x20)[3]
+#define W2C_REC(tag, v) record(tag, (void *)(uintptr_t)(v))
+template <uint32_t TAG> static uint32_t __fastcall w2c_s0(void *self) { record(TAG, self); return W2C_RET; }
+template <uint32_t TAG> static uint32_t __thiscall w2c_s1(void *self, uint32_t a) { record(TAG, self); W2C_REC(TAG, a); return W2C_RET; }
+template <uint32_t TAG> static uint32_t __thiscall w2c_s2(void *self, uint32_t a, uint32_t b) { record(TAG, self); W2C_REC(TAG, a); W2C_REC(TAG, b); return W2C_RET; }
+template <uint32_t TAG> static uint32_t __thiscall w2c_s3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(TAG, self); W2C_REC(TAG, a); W2C_REC(TAG, b); W2C_REC(TAG, c); return W2C_RET; }
+template <uint32_t TAG> static uint32_t __thiscall w2c_s4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) { record(TAG, self); W2C_REC(TAG, a); W2C_REC(TAG, b); W2C_REC(TAG, c); W2C_REC(TAG, d); return W2C_RET; }
+template <uint32_t TAG> static uint32_t __thiscall w2c_s5(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) { record(TAG, self); W2C_REC(TAG, a); W2C_REC(TAG, b); W2C_REC(TAG, c); W2C_REC(TAG, d); W2C_REC(TAG, e); return W2C_RET; }
+template <uint32_t TAG> static void __cdecl w2c_free(void *p) { record(TAG, p); }
+// memory, or none, as the seed says
+static void *__cdecl w2c_alloc(uint32_t size) {
+    W2C_REC(0xe2c0, size);
+    return arena<uint32_t>(0x20)[4] % 3 ? arena<void>(0x1800) : nullptr;
+}
+// a different block on every call, whatever the size
+static void *__cdecl w2c_alloc_step(uint32_t size) {
+    W2C_REC(0xe2c1, size);
+    return arena<void>(0x1900 + 0x10 * (*arena<uint32_t>(0x40))++);
+}
+// a constructor that fills in the singleton's global
+static uint32_t __thiscall w2c_ctor_sets(void *self, uint32_t a) {
+    record(0xe2c2, self);
+    W2C_REC(0xe2c2, a);
+    *(void **)(uintptr_t)g_w2c_a = self;
+    return 0x7777;
+}
+static uint32_t __fastcall w2c_flag(uint32_t flag) {
+    W2C_REC(0xe2c3, flag & 0xff);
+    return W2C_RET + (*arena<uint32_t>(0x40))++;
+}
+static void *__thiscall w2c_pool(void *self, uint32_t a, uint32_t b) {
+    record(0xe2c4, self);
+    W2C_REC(0xe2c4, a);
+    W2C_REC(0xe2c4, b);
+    return arena<uint32_t>(0x20)[4] % 3 ? arena<void>(0x1800) : nullptr;
+}
+static uint32_t __thiscall w2c_key_find(void *self, uint32_t **key) {
+    record(0xe2c5, self);
+    for (int i = 0; i < 2; i++) { W2C_REC(0xe2c5, key[i]); W2C_REC(0xe2c5, *key[i]); }
+    return W2C_RET;
+}
+static void __fastcall w2c_key_drop(uint32_t **key) {
+    for (int i = 0; i < 2; i++) { W2C_REC(0xe2c6, key[i]); W2C_REC(0xe2c6, *key[i]); }
+}
+static void __thiscall w2c_join(void *owner, uint32_t *held, uint8_t **me) {
+    record(0xe2c7, owner);
+    W2C_REC(0xe2c7, *held);
+    record(0xe2c7, *me);
+    W2C_REC(0xe2c7, *(uint32_t *)*me);   // the class it is at this point
+}
+static void __thiscall w2c_grid_base(void *self, uint32_t n, void *p, uint32_t *first, uint32_t *second) {
+    record(0xe2c8, self);
+    W2C_REC(0xe2c8, n);
+    record(0xe2c8, p);
+    for (int i = 0; i < 2; i++) { W2C_REC(0xe2c8, first[i]); W2C_REC(0xe2c8, second[i]); }
+}
+static void __stdcall w2c_vector_make(void *at, uint32_t size, uint32_t n, uint32_t make, uint32_t drop) {
+    record(0xe2c9, at);
+    W2C_REC(0xe2c9, size);
+    W2C_REC(0xe2c9, n);
+    W2C_REC(0xe2c9, make);
+    W2C_REC(0xe2c9, drop);
+}
+static void *w2c_table[1] = {(void *)w2c_s1<0xe2ca>};
