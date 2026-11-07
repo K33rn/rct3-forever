@@ -304,3 +304,28 @@ static void __stdcall w2c_vector_make(void *at, uint32_t size, uint32_t n, uint3
     W2C_REC(0xe2c9, drop);
 }
 static void *w2c_table[1] = {(void *)w2c_s1<0xe2ca>};
+// ---- fourth pass ----
+// memory always (for the callers that would fault without it)
+static void *__cdecl w2d_alloc_always(uint32_t size) {
+    W2C_REC(0xe2d0, size);
+    return arena<void>(0x1800);
+}
+// makes the text in its block with the seeded reference count (sometimes none), and gives the block back
+static uint32_t __thiscall w2d_text_make(uint32_t *self, uint32_t source) {
+    record(0xe2d1, self);
+    W2C_REC(0xe2d1, source);
+    self[0] = arena<uint32_t>(0x20)[5] % 3;
+    self[3] = arena<uint32_t>(0x20)[2];
+    return (uint32_t)(uintptr_t)self;
+}
+// fills the whole 0x1c-byte temporary, and gives back a value (never the temporary's address)
+static uint32_t __thiscall w2d_build(uint32_t *self, uint32_t value, void *part, uint32_t zero) {
+    W2C_REC(0xe2d2, value);
+    record(0xe2d2, part);
+    W2C_REC(0xe2d2, zero);
+    for (int i = 0; i < 7; i++) self[i] = value + i * 0x101;
+    return W2C_RET;
+}
+static void __fastcall w2d_build_drop(uint32_t *self) {
+    for (int i = 0; i < 7; i++) W2C_REC(0xe2d3, self[i]);
+}

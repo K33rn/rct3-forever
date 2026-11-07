@@ -1164,3 +1164,61 @@
                 return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), v[0], v[1], v[2], v[5])};
             },
             [](const rewrite::Entry *) { stubs_for_now({{0x488290, (void *)w2c_grid_base}, {0xddcf99, (void *)w2c_vector_make}}); });
+    // ======== fourth pass ========
+    // Text::FromField: nothing held; held with and without memory; the copy's own field, maker and empty maker
+    w2c_add(0x61cb70,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(uint32_t *)(arena<uint8_t>(0x100) + g_w2c_a) = r.range(0, 2) ? r.next() | 1 : 0;
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x21);
+                stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {w2c_target(e->at, 0x44), (void *)w2c_s1<0xe2d5>}, {w2c_target(e->at, 0x51), (void *)w2c_flag}});
+            });
+    // Text::Ctor: no string; a string with and without memory
+    w2c_add(0x401080, w2c_seed,
+            [](void *fn) {
+                uint32_t s = arena<uint32_t>(0x20)[0] & 1 ? arena<uint32_t>(0x20)[1] | 1 : 0;
+                return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), s)};
+            },
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {w2c_target(e->at, 0x3f), (void *)w2c_s1<0xe2d5>}, {w2c_target(e->at, 0x4c), (void *)w2c_flag}});
+            });
+    // Text::FromOwner: no owner; an owner without and with a source (at the copy's own place); memory or none
+    w2c_add(0x7312d0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x100)[0x8c / 4] = r.range(0, 4) ? arena<void>(0x300) : nullptr;
+                *(uint32_t *)(arena<uint8_t>(0x300) + g_w2c_a) = r.range(0, 2) ? r.next() | 1 : 0;
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x2a);
+                stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {0xbcf7d0, (void *)w2c_s1<0xe2d5>}, {0xbcf850, (void *)w2c_s1<0xe2d6>}});
+            });
+    // Text::NameOr: an object (at the copy's own place) with its name; none, the temporary kept alive or let go
+    w2c_add(0x99ad00,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_a) = r.range(0, 2) ? arena<void>(0x300) : nullptr;
+                *(void **)(arena<uint8_t>(0x300) + 0xf0) = arena<void>(0x380);
+                arena<uint32_t>(0x380)[0] = r.range(1, 5);
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x800), arena<uint32_t>(0x20)[0])}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x1f);
+                stubs_for_now({{0xbcdfc0, (void *)w2d_alloc_always}, {0xbcf850, (void *)w2d_text_make}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Reset::WithName: the text handed over, with and without memory
+    w2c_add(0xbaa100, w2c_seed,
+            [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x140)); return Result{}; },
+            [](const rewrite::Entry *) { stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {0xbcf850, (void *)w2c_s1<0xe2d5>}, {0xba9700, (void *)w2c_s1<0xe2d6>}}); });
+    // Add::Made: the part as built, with and without memory, added by the copy's own adder
+    w2c_add(0xc33d20, w2c_seed,
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0], arena<uint32_t>(0x20)[1])}; },
+            [](const rewrite::Entry *e) { stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {0xca8000, (void *)w2c_s4<0xe2d5>}, {w2c_target(e->at, 0x60), (void *)w2c_s2<0xe2d6>}}); });
+    // Text::SetBuilt: the temporary built, its text stored, then let go
+    w2c_add(0x757aa0, w2c_seed,
+            [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0]); return Result{}; },
+            [](const rewrite::Entry *) { stubs_for_now({{0x7578e0, (void *)w2d_build}, {0xbd14e0, (void *)w2c_s1<0xe2d5>}, {0xbd1880, (void *)w2d_build_drop}}); });

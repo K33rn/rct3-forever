@@ -1572,3 +1572,100 @@ template <uint32_t TABLE> static uint8_t *__thiscall w2c_grid(uint8_t *self, uin
 }
 REWRITE("Ctor::Grid641750", 0x641750, w2c_seh<0xe31bd8>, (&w2c_grid<0xf49aa0>), &g_w2c_grids);
 REWRITE("Ctor::Grid641750", 0x641950, w2c_seh<0xe31bf8>, (&w2c_grid<0xf49aa8>), &g_w2c_grids);
+
+// ======== Fourth pass of wave 2: more counted-text makers behind an exception frame (left out here) ========
+// A counted text made by MAKE from `source` in a fresh 16-byte block, or none when memory runs out.
+template <uint32_t MAKE> static inline uint32_t w2d_text_from(uint32_t source) {
+    void *holder = memory_alloc(0x10);
+    return holder ? ((uint32_t(__thiscall *)(void *, uint32_t))MAKE)(holder, source) : 0;
+}
+
+// ---- Text::FromField: the text made from the source held at OFF, or the empty text when nothing is held ---------------------------------------
+static volatile long g_w2d_from_field;
+template <uint32_t OFF, uint32_t MAKE, uint32_t EMPTY> static uint32_t *__thiscall w2d_from_field(uint8_t *self, uint32_t *out) {
+    g_w2d_from_field++;
+    uint32_t source = w2c_u32(self, OFF);
+    *out = source ? w2d_text_from<MAKE>(source) : ((uint32_t(__fastcall *)(uint8_t))EMPTY)(1);
+    return out;
+}
+REWRITE("Text::FromField61CB70", 0x61cb70, w2c_seh<0xe2c02b>, (&w2d_from_field<0x48, 0xbcf7d0, 0xbd0490>), &g_w2d_from_field);
+REWRITE("Text::FromField61CB70", 0xb0abc0, w2c_seh<0xe8fe4b>, (&w2d_from_field<0x30, 0xbcf850, 0xbd0490>), &g_w2d_from_field);
+
+// ---- Text::Ctor: a text from a string, or the empty text for no string --------------------------------------------------------------------------
+static volatile long g_w2d_text_ctor;
+template <uint32_t MAKE, uint32_t EMPTY> static uint32_t *__thiscall w2d_text_ctor(uint32_t *self, uint32_t string) {
+    g_w2d_text_ctor++;
+    *self = string ? w2d_text_from<MAKE>(string) : ((uint32_t(__fastcall *)(uint8_t))EMPTY)(1);
+    return self;
+}
+REWRITE("Text::Ctor401080", 0x401080, w2c_seh_late, (&w2d_text_ctor<0xbcf850, 0xbd0490>), &g_w2d_text_ctor);
+REWRITE("Text::Ctor401080", 0x4028c0, w2c_seh_late, (&w2d_text_ctor<0xbcfb10, 0xbd0520>), &g_w2d_text_ctor);
+
+// ---- Text::FromOwner: the owner at +0x8c gives its source at INNER; with no owner or no source, a fixed default string ----------------------------
+static volatile long g_w2d_from_owner;
+template <uint32_t INNER, uint32_t DEFAULT> static uint32_t *__thiscall w2d_from_owner(uint8_t *self, uint32_t *out) {
+    g_w2d_from_owner++;
+    uint8_t *owner = (uint8_t *)(uintptr_t)w2c_u32(self, 0x8c);
+    uint32_t source = owner ? w2c_u32(owner, INNER) : 0;
+    *out = source ? w2d_text_from<0xbcf7d0>(source) : w2d_text_from<0xbcf850>(DEFAULT);
+    return out;
+}
+REWRITE("Text::FromOwner7312D0", 0x7312d0, w2c_seh<0xe4cab6>, (&w2d_from_owner<0x8, 0xf6a8e4>), &g_w2d_from_owner);
+REWRITE("Text::FromOwner7312D0", 0x7395f0, w2c_seh<0xe4d6a6>, (&w2d_from_owner<0x4, 0xf6ab84>), &g_w2d_from_owner);
+
+// ---- Text::NameOr: a new reference to the name the object at OFF keeps at +0xf0; with no object, a copy of a fixed string (made and let go) --------
+static volatile long g_w2d_name_or;
+template <uint32_t OFF> static int32_t **__thiscall w2d_name_or(uint8_t *self, int32_t **out, uint32_t) {
+    g_w2d_name_or++;
+    uint8_t *object = (uint8_t *)(uintptr_t)w2c_u32(self, OFF);
+    if (object) {
+        int32_t *name = *(int32_t **)(object + 0xf0);
+        *out = name;
+        ++*name;
+        return out;
+    }
+    int32_t *made = (int32_t *)(uintptr_t)w2d_text_from<0xbcf850>(0xf264ad);
+    *out = made;
+    ++*made;
+    if (--*made == 0) {   // the temporary's reference
+        memory_free_aligned(*(void **)(made + 3));
+        memory_free(made);
+    }
+    return out;
+}
+REWRITE("Text::NameOr99AD00", 0x99ad00, w2c_seh<0xe6f474>, (&w2d_name_or<0x4>), &g_w2d_name_or);
+REWRITE("Text::NameOr99AD00", 0x99fdb0, w2c_seh<0xe6faf4>, (&w2d_name_or<0x28>), &g_w2d_name_or);
+
+// ---- Reset::WithName: clears +0x14, then hands the outer object (0x40 before) a text of a fixed string ------------------------------------------
+static volatile long g_w2d_reset_named;
+template <uint32_t STRING> static void __fastcall w2d_reset_named(uint8_t *self) {
+    g_w2d_reset_named++;
+    w2c_u32(self, 0x14) = 0;
+    uint32_t text = w2d_text_from<0xbcf850>(STRING);
+    ((void(__thiscall *)(void *, uint32_t))0xba9700)(self - 0x40, text);
+}
+REWRITE("Reset::WithNameBAA100", 0xbaa100, w2c_seh<0xe9ba9b>, (&w2d_reset_named<0xf9d868>), &g_w2d_reset_named);
+REWRITE("Reset::WithNameBAA100", 0xbaa180, w2c_seh<0xe9babb>, (&w2d_reset_named<0xf9d884>), &g_w2d_reset_named);
+
+// ---- Add::Made: builds a 20-byte part from `what` (with 0, 1.0 and 0.1) and adds it under `key` --------------------------------------------------
+static volatile long g_w2d_add_made;
+template <uint32_t ADD> static uint32_t __thiscall w2d_add_made(void *self, uint32_t key, uint32_t what) {
+    g_w2d_add_made++;
+    void *holder = memory_alloc(0x14);
+    uint32_t part = holder ? ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))0xca8000)(holder, what, 0, 0x3f800000, 0x3dcccccd) : 0;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))ADD)(self, key, part);
+}
+REWRITE("Add::MadeC33D20", 0xc33d20, w2c_seh<0xea047b>, (&w2d_add_made<0xc33c00>), &g_w2d_add_made);
+REWRITE("Add::MadeC33D20", 0xc34460, w2c_seh<0xea05bb>, (&w2d_add_made<0xc34340>), &g_w2d_add_made);
+
+// ---- Text::SetBuilt: builds a temporary from `value` and the part at +8, stores its text at +0x3c, then lets the temporary go ----------------------
+static volatile long g_w2d_set_built;
+static void __thiscall w2d_set_built(uint8_t *self, uint32_t value) {
+    g_w2d_set_built++;
+    uint32_t temporary[7];   // 0x1c bytes, as the original's frame
+    uint32_t text = ((uint32_t(__thiscall *)(void *, uint32_t, void *, uint32_t))0x7578e0)(temporary, value, self + 8, 0);
+    ((void(__thiscall *)(void *, uint32_t))0xbd14e0)(self + 0x3c, text);
+    ((void(__fastcall *)(void *))0xbd1880)(temporary);
+}
+REWRITE("Text::SetBuilt757AA0", 0x757aa0, w2c_seh<0xe501f8>, (&w2d_set_built), &g_w2d_set_built);
+REWRITE("Text::SetBuilt757AA0", 0x7fa750, w2c_seh<0xe5b088>, (&w2d_set_built), &g_w2d_set_built);
