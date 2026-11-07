@@ -751,3 +751,23 @@ REWRITE("Pool::Take", 0x8103a0, pool_take_original, (&pool_take<0x80fa40, 4>), &
 REWRITE("Pool::Take", 0x87c670, pool_take_original, (&pool_take<0x87bee0, 7>), &g_pool_takes);
 REWRITE("Pool::Take", 0x9d29e0, pool_take_original, (&pool_take<0x9d0f40, 6>), &g_pool_takes);
 REWRITE("Pool::Take", 0x9f82c0, pool_take_original, (&pool_take<0x9f7fc0, 6>), &g_pool_takes);
+
+// ---- QueueSurface::Activate: a queue's ground surface takes its place in its queue type's database entry, reached
+// through the reference at +0x4c (kept at +0x5c, flag +0x60). A park saved with custom queues this install doesn't have
+// leaves no entry; the game crashes on that, this does without the surface ------------------------------------------------
+static volatile long g_queue_surfaces;
+static void __fastcall queue_surface_activate(uint8_t *self) {
+    g_queue_surfaces++;
+    if (!self[0x60]) {
+        *(void **)(self + 0x5c) = find_interface(*(uint8_t **)(self + 0x4c), (const int32_t *)0x130646c);
+        self[0x60] = 1;
+    }
+    uint8_t *entry = *(uint8_t **)(self + 0x5c);
+    if (!entry) return;
+    if (!(entry[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(entry);
+    ++*(int32_t *)(entry + 0x16c);
+    if (!entry[0x168]) ((void(__fastcall *)(void *))0x7397d0)(entry);
+    ((void(__thiscall *)(void *, void *, void *))0xbe8230)(entry + 0x174, self + 0x64, self);
+}
+static const uint8_t queue_surface_original[] = {0x56, 0x8b, 0xf1, 0x8a, 0x46, 0x60, 0x84, 0xc0};
+REWRITE("QueueSurface::Activate", 0x73aa80, queue_surface_original, queue_surface_activate, &g_queue_surfaces);

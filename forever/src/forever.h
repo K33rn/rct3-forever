@@ -4,6 +4,7 @@
 
 void flog(const char *fmt, ...);   // RCT3Forever.log beside forever.dll
 int setting(const char *section, const char *key, int def);
+void install_fixes();   // fixes.cpp
 
 // Send every call of the game's function at `at` to `with`. The function's first bytes must be `expect` (the
 // known RCT3plus.exe), or nothing is changed and false comes back.

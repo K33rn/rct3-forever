@@ -3586,6 +3586,32 @@ static std::vector<Test> tests() {
     };
     ref_member_near.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(ref_member_near);
+    // QueueSurface::Activate: the entry at 0x900 (the game crashes without one, so that isn't compared), kept or found
+    Test queue_surface{0x73aa80,
+                       [=](Rng &r) {
+                           fresh(r);
+                           g_iface_id = (uint32_t *)0x130646c;
+                           iface_handle(r);
+                           *(void **)arena<uint8_t>(0x34c) = arena<void>(0x360);
+                           *arena<void *>(0x1f0) = arena<void>(0x200);
+                           arena<void *>(0x240)[1] = arena<void>(0x260);
+                           *(int32_t *)arena<uint8_t>(0x270) = 0x5a0;   // the entry, from the object at 0x360
+                           *g_iface_id = 1;
+                           uint8_t *self = arena<uint8_t>(0x800), *entry = arena<uint8_t>(0x900);
+                           *(void **)(self + 0x4c) = arena<void>(0x340);
+                           bool kept = r.range(0, 1);
+                           self[0x60] = kept;
+                           *(void **)(self + 0x5c) = kept ? (void *)entry : nullptr;
+                           entry[0x2c] = (uint8_t)r.range(0, 1);
+                           entry[0x168] = (uint8_t)r.range(0, 1);
+                           *(int32_t *)(entry + 0x16c) = r.range(0, 5);
+                       },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    queue_surface.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x800860, (void *)stub_plain_dtor}, {0x7397d0, (void *)stub_plain_dtor}, {0xbe8230, (void *)stub_thiscall2}});
+    };
+    queue_surface.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(queue_surface);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

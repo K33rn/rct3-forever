@@ -8552,7 +8552,7 @@ address,size,name,callers,status
 0x73a5e0,124,,3,documented
 0x73a660,929,,2,documented
 0x73aa10,105,Factory::Create,1,rewritten
-0x73aa80,200,,1,documented
+0x73aa80,200,QueueSurface::Activate,1,rewritten
 0x73ab50,40,,2,documented
 0x73ab80,13,,4,documented
 0x73ab90,147,,2,documented

@@ -83,6 +83,7 @@ BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
 
     if (setting("Forever", "Rewrites", 1)) rewrite::install_all();
     else flog("rewritten functions off (Rewrites=0): the game's own code runs");
+    if (setting("Forever", "GameFixes", 1)) install_fixes();
     CloseHandle(CreateThread(nullptr, 0, reporter, nullptr, 0, nullptr));
     return TRUE;
 }
