@@ -1945,3 +1945,53 @@ template <uint32_t FREE, uint32_t COUNT> static void __thiscall w2d_pool_release
 }
 REWRITE("Pool::ReleaseBE9590", 0xbe9590, w2d_pool_release_original, (&w2d_pool_release<0x13d0f4c, 0x13d0f54>), &g_w2d_pool_release);
 REWRITE("Pool::ReleaseBE9590", 0xbfd270, w2d_pool_release_original, (&w2d_pool_release<0x13d2a0c, 0x13d2a14>), &g_w2d_pool_release);
+
+// Takes a link {previous, next} out of its ring; a link not properly in a ring stops at a breakpoint, as the original does.
+static inline void w2d_unlink(uint32_t *link) {
+    if (!link) __builtin_debugtrap();
+    uint32_t *previous = (uint32_t *)(uintptr_t)link[0], *next = (uint32_t *)(uintptr_t)link[1];
+    if (!next || !previous || previous[1] != (uint32_t)(uintptr_t)link || next[0] != (uint32_t)(uintptr_t)link) __builtin_debugtrap();
+    previous[1] = link[1];
+    next[0] = link[0];
+    link[0] = 0;
+    link[1] = 0;
+}
+
+// ---- Dtor::Linked: this class's table, out of its ring (link at LINK), frees the shared block at SHARED once it is empty, lets go of the text at TEXT --------
+static volatile long g_w2d_linked;
+template <uint32_t TABLE, uint32_t LINK, uint32_t SHARED, uint32_t TEXT> static void __fastcall w2d_linked(uint8_t *self) {
+    g_w2d_linked++;
+    w2c_u32(self, 0) = TABLE;
+    w2d_unlink((uint32_t *)(self + LINK));
+    uint32_t **shared = (uint32_t **)(uintptr_t)SHARED;
+    if (**(uint32_t **)*shared == 0) {
+        memory_free(*shared);
+        *shared = nullptr;
+    }
+    int32_t *text = *(int32_t **)(self + TEXT);
+    --*text;
+    if (*text == 0 && text) {
+        memory_free_aligned(*(void **)(text + 3));
+        memory_free(text);
+    }
+}
+REWRITE("Dtor::LinkedC18490", 0xc18490, w2c_seh<0xe9fa3b>, (&w2d_linked<0xfafc88, 8, 0x13e33a8, 4>), &g_w2d_linked);
+REWRITE("Dtor::LinkedC18490", 0xc18640, w2c_seh<0xe9fa7b>, (&w2d_linked<0xfafc8c, 8, 0x13e33a4, 4>), &g_w2d_linked);
+REWRITE("Dtor::LinkedC18490", 0xc434f0, w2c_seh<0xea16fb>, (&w2d_linked<0xfb12a4, 4, 0x13e6b50, 0x10>), &g_w2d_linked);
+
+// ---- Dtor::Bound: this class's table; settles first when ACTIVE is set; deletes the bound object (out of its ring first), leaves its own ring, base table ---
+static volatile long g_w2d_bound;
+template <uint32_t T0, uint32_t ACTIVE, uint32_t SETTLE, uint32_t HOLDER, uint32_t LINK, uint32_t T1> static void __fastcall w2d_bound(uint8_t *self) {
+    g_w2d_bound++;
+    w2c_u32(self, 0) = T0;
+    if (w2c_u32(self, ACTIVE)) w2c_run<SETTLE>(self);
+    if (uint8_t *holder = (uint8_t *)(uintptr_t)w2c_u32(self, HOLDER)) {
+        uint8_t *bound = (uint8_t *)(uintptr_t)w2c_u32(holder, 4);
+        w2d_unlink(bound ? (uint32_t *)(bound + 0x10) : nullptr);
+        if (bound) ((void(__thiscall *)(void *, uint32_t))(*(void ***)bound)[0])(bound, 1);
+    }
+    w2d_unlink((uint32_t *)(self + LINK));
+    w2c_u32(self, 0) = T1;
+}
+REWRITE("Dtor::BoundBEBF70", 0xbebf70, w2c_seh<0xe9e5b8>, (&w2d_bound<0xfa57d0, 0x20, 0xbe9dd0, 0x18, 0x24, 0xfa5718>), &g_w2d_bound);
+REWRITE("Dtor::BoundBEBF70", 0xbff950, w2c_seh<0xe9ea68>, (&w2d_bound<0xfa5d28, 0x24, 0xbfdbc0, 0x20, 0x28, 0xfa5c8c>), &g_w2d_bound);

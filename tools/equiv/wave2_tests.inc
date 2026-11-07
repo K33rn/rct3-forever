@@ -1406,3 +1406,53 @@
                 g_w2c_a = w2c_word(e->at, 0x3e);
                 g_w2c_b = w2c_word(e->at, 0x4b);
             });
+    // a link properly in a ring (a broken one stops at a breakpoint in the original), its neighbours sometimes the same node
+    auto w2d_ring = [](Rng &r, uint8_t *link, uint32_t at_prev, uint32_t at_next) {
+        uint32_t *l = (uint32_t *)link, *p = arena<uint32_t>(at_prev), *n = arena<uint32_t>(at_next);
+        if (r.range(0, 4) == 0) n = p;
+        l[0] = (uint32_t)(uintptr_t)p;
+        l[1] = (uint32_t)(uintptr_t)n;
+        p[1] = (uint32_t)(uintptr_t)l;
+        n[0] = (uint32_t)(uintptr_t)l;
+    };
+    // Dtor::Linked: out of its ring, the shared block still used or empty, the text kept or freed
+    w2c_add(0xc18490,
+            [=](Rng &r) {
+                w2c_seed(r);
+                w2d_ring(r, arena<uint8_t>(0x100) + (g_w2c_a & 0xff), 0x300, 0x340);
+                *(void **)(arena<uint8_t>(0x100) + (g_w2c_a >> 8)) = arena<void>(0x700);
+                arena<uint32_t>(0x700)[0] = r.range(1, 4);
+                arena<void *>(0x380)[0] = arena<void>(0x3c0);
+                arena<uint32_t>(0x3c0)[0] = r.range(0, 2);
+            },
+            [](void *fn) {
+                void **shared = (void **)(uintptr_t)g_w2c_b, *keep = *shared;
+                *shared = arena<void>(0x380);
+                ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                arena<void *>(0x60)[0] = *shared;
+                *shared = keep;
+                return Result{};
+            },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x25) | *(uint8_t *)(e->at + 0x83) << 8;
+                g_w2c_b = w2c_word(e->at, 0x63);
+                stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Dtor::Bound: settling or not; a bound object or none, each taken out of its ring
+    w2c_add(0xbebf70,
+            [=](Rng &r) {
+                w2c_seed(r);
+                uint8_t *self = arena<uint8_t>(0x100);
+                *(uint32_t *)(self + (g_w2c_a & 0xff)) = r.range(0, 2);
+                *(void **)(self + (g_w2c_a >> 8 & 0xff)) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                arena<void *>(0x300)[1] = arena<void>(0x340);
+                arena<void *>(0x340)[0] = arena<void>(0x400);
+                arena<void *>(0x400)[0] = (void *)w2c_s1<0xe2d5>;
+                w2d_ring(r, arena<uint8_t>(0x350), 0x380, 0x3a0);
+                w2d_ring(r, self + (g_w2c_a >> 16), 0x3c0, 0x3e0);
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x26) | *(uint8_t *)(e->at + 0x3a) << 8 | *(uint8_t *)(e->at + 0x85) << 16;
+                stubs_for_now({{w2c_target(e->at, 0x34), (void *)w2d_s_table<0xe2d6>}});
+            });
