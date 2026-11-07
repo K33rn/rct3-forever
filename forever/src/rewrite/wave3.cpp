@@ -287,3 +287,431 @@ template <uint32_t ID> static void *__fastcall list_first_interface(uint8_t *sel
 static const uint8_t first_interface_original[] = {0x56, 0x57, 0x8b, 0x79, 0x74, 0x8b, 0x47, 0x04};
 REWRITE("List::FirstInterface4CCF50", 0x4ccf50, first_interface_original, (&list_first_interface<0x12f4b54>), &g_w3_first);
 REWRITE("List::FirstInterface4CCF50", 0x4cd030, first_interface_original, (&list_first_interface<0x12f5544>), &g_w3_first);
+
+// ---- Array::Push: adds a value to the array {data, capacity, count} at +BASE, growing it first when full -----------
+static volatile long g_w3_array_push;
+template <uint32_t BASE, int32_t FIRST, uint32_t GROW> static void __thiscall array_push(uint8_t *self, uint32_t value) {
+    g_w3_array_push++;
+    uint8_t *array = self + BASE;
+    int32_t &count = *(int32_t *)(array + 8);
+    if (count >= *(int32_t *)(array + 4)) ((void(__thiscall *)(void *, int32_t))GROW)(array, count > 0 ? count * 2 : FIRST);
+    (*(uint32_t **)array)[count] = value;
+    count++;
+}
+static const uint8_t array_push_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+REWRITE("Array::Push80ED30", 0x80ed30, array_push_original, (&array_push<0x5c, 0x20, 0x80ebb0>), &g_w3_array_push);
+REWRITE("Array::Push80ED30", 0x9f9060, array_push_original, (&array_push<0x6c, 0x20, 0x417c20>), &g_w3_array_push);
+REWRITE("Array::Push80ED30", 0xa6bcc0, array_push_original, (&array_push<0x40, 0x80, 0xa6b660>), &g_w3_array_push);
+REWRITE("Array::Push80ED30", 0xa6bda0, array_push_original, (&array_push<0x54, 0x80, 0xa6b830>), &g_w3_array_push);
+REWRITE("Array::Push80ED30", 0xa6bde0, array_push_original, (&array_push<0x60, 0x80, 0xa6b8e0>), &g_w3_array_push);
+
+// ---- Stream::Skip: moves a stream on by a distance; some copies take a third argument they don't use ----------------
+static volatile long g_w3_skip;
+static uint32_t stream_skip_by(void *stream, int32_t distance) {
+    g_w3_skip++;
+    int32_t at = ((int32_t(__fastcall *)(void *))0xbe40b0)(stream);
+    return ((uint32_t(__thiscall *)(void *, int32_t))0xbe4090)(stream, at + distance);
+}
+static uint32_t __stdcall stream_skip(void *stream, int32_t distance) { return stream_skip_by(stream, distance); }
+static uint32_t __stdcall stream_skip3(void *stream, int32_t distance, uint32_t) { return stream_skip_by(stream, distance); }
+static const uint8_t stream_skip_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x8b, 0xce, 0xe8};
+REWRITE("Stream::SkipBBDF90", 0xbbdf90, stream_skip_original, stream_skip, &g_w3_skip);
+REWRITE("Stream::SkipBBDF90", 0xbc95f0, stream_skip_original, stream_skip3, &g_w3_skip);
+REWRITE("Stream::SkipBBDF90", 0xbc9840, stream_skip_original, stream_skip, &g_w3_skip);
+REWRITE("Stream::SkipBBDF90", 0xbccaa0, stream_skip_original, stream_skip, &g_w3_skip);
+REWRITE("Stream::SkipBBDF90", 0xce5e80, stream_skip_original, stream_skip3, &g_w3_skip);
+
+// ---- FreeList::Add: puts a block on a global free list and counts it ------------------------------------------------
+static volatile long g_w3_free_add;
+template <uint32_t HEAD, uint32_t COUNT> static uint32_t __fastcall free_list_add(uint32_t *block) {
+    g_w3_free_add++;
+    *block = *(uint32_t *)HEAD;
+    *(uint32_t *)HEAD = (uint32_t)(uintptr_t)block;
+    return ++*(uint32_t *)COUNT;
+}
+template <uint32_t HEAD> static const uint8_t free_list_original[] = {
+    0xa1, (uint8_t)HEAD, (uint8_t)(HEAD >> 8), (uint8_t)(HEAD >> 16), (uint8_t)(HEAD >> 24), 0x89, 0x01, 0xa1};
+REWRITE("FreeList::AddBE8940", 0xbe8940, free_list_original<0x13d0eb4>, (&free_list_add<0x13d0eb4, 0x13d0ebc>), &g_w3_free_add);
+REWRITE("FreeList::AddBE8940", 0xbe9910, free_list_original<0x13d0ee0>, (&free_list_add<0x13d0ee0, 0x13d0ee8>), &g_w3_free_add);
+REWRITE("FreeList::AddBE8940", 0xbe9c70, free_list_original<0x13d0f04>, (&free_list_add<0x13d0f04, 0x13d0f0c>), &g_w3_free_add);
+REWRITE("FreeList::AddBE8940", 0xbfd630, free_list_original<0x13d2a30>, (&free_list_add<0x13d2a30, 0x13d2a38>), &g_w3_free_add);
+REWRITE("FreeList::AddBE8940", 0xbfd990, free_list_original<0x13d2a54>, (&free_list_add<0x13d2a54, 0x13d2a5c>), &g_w3_free_add);
+
+// ---- Visitor::Run: a small visitor of the given type, holding this object, handed to 0x6ae7c0 -----------------------
+static volatile long g_w3_visit;
+template <uint32_t TABLE> static uint32_t __thiscall visitor_run(void *self) {
+    g_w3_visit++;
+    uint32_t visitor[2] = {TABLE, (uint32_t)(uintptr_t)self};
+    return ((uint32_t(__thiscall *)(void *, void *))0x6ae7c0)(self, visitor);
+}
+static const uint8_t visitor_original[] = {0x83, 0xec, 0x08, 0x8d, 0x04, 0x24, 0x50};
+REWRITE("Visitor::Run6AF3A0", 0x6af3a0, visitor_original, (&visitor_run<0xf60708>), &g_w3_visit);
+REWRITE("Visitor::Run6AF3A0", 0x6af3c0, visitor_original, (&visitor_run<0xf60710>), &g_w3_visit);
+REWRITE("Visitor::Run6AF3A0", 0x6af420, visitor_original, (&visitor_run<0xf60718>), &g_w3_visit);
+REWRITE("Visitor::Run6AF3A0", 0x6af440, visitor_original, (&visitor_run<0xf60720>), &g_w3_visit);
+
+// ---- Static::Init: builds a global object with its function and arranges its cleanup at exit --------------------------
+static volatile long g_w3_static;
+template <uint32_t OBJECT, uint32_t FN, uint32_t BUILD, uint32_t CLEANUP> static void __cdecl static_init() {
+    g_w3_static++;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))BUILD)((void *)OBJECT, FN, 0);
+    ((int(__cdecl *)(uint32_t))0xddc870)(CLEANUP);
+}
+static const uint8_t static_init_original[] = {0x55, 0x8b, 0xec, 0x6a, 0x00, 0x68};
+REWRITE("Static::InitF04320", 0xf04320, static_init_original, (&static_init<0x13f7088, 0xcc1880, 0xcc1ec0, 0xf25630>), &g_w3_static);
+REWRITE("Static::InitF04320", 0xf04490, static_init_original, (&static_init<0x13f70e4, 0xcc2d40, 0xcc4950, 0xf25710>), &g_w3_static);
+REWRITE("Static::InitF04320", 0xf044c0, static_init_original, (&static_init<0x13f70f0, 0xcc3eb0, 0xcc4990, 0xf25730>), &g_w3_static);
+REWRITE("Static::InitF04320", 0xf13820, static_init_original, (&static_init<0x13fa010, 0xcc4f80, 0xcc5690, 0xf257b0>), &g_w3_static);
+
+// ---- Value::Describe: asks the owner's table (at +0x84, then +8) to fill `out` for the value at +OFF ---------------
+static volatile long g_w3_describe;
+template <uint32_t OFF> static void *__thiscall value_describe(uint8_t *self, void *out) {
+    g_w3_describe++;
+    uint8_t *owner = ((uint8_t * (__fastcall *)(void *))0x833850)(self);
+    uint8_t *table = *(uint8_t **)(owner + 0x84) + 8;
+    ((void(__thiscall *)(void *, void *, uint32_t))(*(void ***)table)[2])(table, out, *(uint32_t *)(self + OFF));
+    return out;
+}
+template <uint32_t AT> static const uint8_t describe_original[] = {
+    0x56, 0x8b, 0xf1, 0xe8, (uint8_t)(0x833850 - (AT + 8)), (uint8_t)((0x833850 - (AT + 8)) >> 8),
+    (uint8_t)((0x833850 - (AT + 8)) >> 16), (uint8_t)((0x833850 - (AT + 8)) >> 24)};
+REWRITE("Value::Describe8B5320", 0x8b5320, describe_original<0x8b5320>, (&value_describe<0xf8>), &g_w3_describe);
+REWRITE("Value::Describe8B5320", 0x8b5350, describe_original<0x8b5350>, (&value_describe<0x104>), &g_w3_describe);
+REWRITE("Value::Describe8B5320", 0x8b5380, describe_original<0x8b5380>, (&value_describe<0xf4>), &g_w3_describe);
+
+// ---- Block::Delete: a deleting destructor that frees the aligned block at +OFF ------------------------------------
+static volatile long g_w3_block_delete;
+template <uint32_t TABLE, uint32_t OFF> static uint32_t *__thiscall block_delete(uint32_t *self, uint8_t flags) {
+    g_w3_block_delete++;
+    self[0] = TABLE;
+    memory_free_aligned(*(void **)((uint8_t *)self + OFF));
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint8_t block_delete_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+REWRITE("Block::DeleteBD6FB0", 0xbd6fb0, block_delete_original, (&block_delete<0xfa533c, 4>), &g_w3_block_delete);
+REWRITE("Block::DeleteBD6FB0", 0xc015d0, block_delete_original, (&block_delete<0xfa5e00, 4>), &g_w3_block_delete);
+REWRITE("Block::DeleteBD6FB0", 0xc73a30, block_delete_original, (&block_delete<0xfba0bc, 0xc>), &g_w3_block_delete);
+
+// ---- Slot::Release: gives the slot number at +OFF back to the global pool, if it has one, then carries on -------------
+static volatile long g_w3_slot_release;
+template <uint32_t OFF, uint32_t POOL> static uint32_t __fastcall slot_release(uint8_t *self) {
+    g_w3_slot_release++;
+    int32_t &slot = *(int32_t *)(self + OFF);
+    if (slot >= 0) {
+        ((void(__thiscall *)(void *, int32_t))0xcdede0)((void *)POOL, slot);
+        slot = -1;
+    }
+    return ((uint32_t(__fastcall *)(void *))0x8338b0)(self);
+}
+static const uint8_t slot_release_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
+REWRITE("Slot::Release818F80", 0x818f80, slot_release_original, (&slot_release<0x58, 0x130b420>), &g_w3_slot_release);
+REWRITE("Slot::Release818F80", 0x81ca20, slot_release_original, (&slot_release<0x60, 0x130b49c>), &g_w3_slot_release);
+REWRITE("Slot::Release818F80", 0x8b44a0, slot_release_original, (&slot_release<0x60, 0x1311290>), &g_w3_slot_release);
+
+// ---- Part::Clear: lets the part at +OFF go, if any, and clears the field at +FIELD (in some copies the part's own field) --
+static volatile long g_w3_part_clear;
+template <uint32_t OFF, uint32_t GO, uint32_t FIELD> static void __fastcall part_clear(uint8_t *self) {
+    g_w3_part_clear++;
+    void *part = *(void **)(self + OFF);
+    if (part) ((void(__fastcall *)(void *))GO)(part);
+    *(uint32_t *)(self + FIELD) = 0;
+}
+static const uint8_t part_clear_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e};
+REWRITE("Part::Clear4E2C10", 0x4e2c10, part_clear_original, (&part_clear<0x74, 0x4edbf0, 0x1c>), &g_w3_part_clear);
+REWRITE("Part::Clear4E2C10", 0xc3ab60, part_clear_original, (&part_clear<8, 0xc30fc0, 8>), &g_w3_part_clear);
+REWRITE("Part::Clear4E2C10", 0xc3b960, part_clear_original, (&part_clear<8, 0xc30fc0, 8>), &g_w3_part_clear);
+
+// ---- Setting::Set: stores one of two settings if it changed, and brings what depends on it up to date ------------------
+static volatile long g_w3_setting;
+template <uint32_t FIRST, uint32_t SECOND> static void __thiscall setting_set(uint8_t *self, int32_t second, int32_t value) {
+    g_w3_setting++;
+    int32_t &setting = *(int32_t *)(self + (second ? SECOND : FIRST));
+    if (value == setting) return;
+    setting = value;
+    if (!second) {
+        ((void(__fastcall *)(void *))0x8699c0)(self);
+        return;
+    }
+    for (int32_t i = 0; i < *(int32_t *)(self + 0x108); i++) ((void(__thiscall *)(void *, int32_t))0x8625d0)(self, i);
+}
+static const uint8_t setting_original[] = {0x8b, 0x44, 0x24, 0x04, 0x56, 0x85, 0xc0, 0x8b};
+REWRITE("Setting::Set86CFB0", 0x86cfb0, setting_original, (&setting_set<0x30, 0x3c>), &g_w3_setting);
+REWRITE("Setting::Set86CFB0", 0x86d000, setting_original, (&setting_set<0x34, 0x40>), &g_w3_setting);
+REWRITE("Setting::Set86CFB0", 0x86d050, setting_original, (&setting_set<0x38, 0x44>), &g_w3_setting);
+
+// ---- Flags::SetVisible: bit 22 of the flags at +0x94 of the object at +OFF is set when hidden ----------------------
+static volatile long g_w3_visible;
+template <uint32_t OFF> static uint8_t *__thiscall flags_set_visible(uint8_t *self, uint8_t visible) {
+    g_w3_visible++;
+    uint8_t *object = *(uint8_t **)(self + OFF);
+    uint32_t &flags = *(uint32_t *)(object + 0x94);
+    flags = visible ? flags & ~0x400000u : flags | 0x400000;
+    return object;
+}
+static const uint8_t visible_original[] = {0x8a, 0x44, 0x24, 0x04, 0x84, 0xc0, 0x8b, 0x81};
+REWRITE("Flags::SetVisible6A7C70", 0x6a7c70, visible_original, (&flags_set_visible<0xe0>), &g_w3_visible);
+REWRITE("Flags::SetVisible6A7C70", 0x6a7cb0, visible_original, (&flags_set_visible<0xdc>), &g_w3_visible);
+
+// ---- SharedSlots::Copy: copies a set of shared slots, taking a count on each value ---------------------------------
+static volatile long g_w3_slots_copy;
+template <uint32_t TABLE, uint32_t COUNT> static uint32_t *__thiscall shared_slots_copy(uint32_t *self, const uint32_t *from) {
+    g_w3_slots_copy++;
+    self[0] = TABLE;
+    self[1] = from[1];
+    for (uint32_t i = 2; i < 2 + COUNT; i++) {
+        uint16_t *value = (uint16_t *)(uintptr_t)from[i];
+        self[i] = (uint32_t)(uintptr_t)value;
+        if (value) ++*value;
+    }
+    return self;
+}
+static const uint8_t slots_copy_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x56, 0xc7};
+REWRITE("SharedSlots::CopyC09FA0", 0xc09fa0, slots_copy_original, (&shared_slots_copy<0xfaf9b0, 0xb>), &g_w3_slots_copy);
+REWRITE("SharedSlots::CopyC09FA0", 0xc0a110, slots_copy_original, (&shared_slots_copy<0xfaf9b8, 0x1d>), &g_w3_slots_copy);
+
+// ---- Kind::Matches: the other's kind is the one wanted, or both are of the paired kind with the other at stage 2 --------
+static volatile long g_w3_matches;
+template <int32_t WANTED, int32_t MINE> static uint8_t __thiscall kind_matches(uint8_t *self, uint8_t *other) {
+    g_w3_matches++;
+    int32_t kind = *(int32_t *)(other + 0x190);
+    if (kind == WANTED) return 1;
+    return *(int32_t *)(self + 0x7c) == MINE && kind == 0x10 && *(int32_t *)(other + 0x194) == 2;
+}
+static const uint8_t matches_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0x82, 0x90, 0x01};
+REWRITE("Kind::Matches772F10", 0x772f10, matches_original, (&kind_matches<4, 0x10>), &g_w3_matches);
+REWRITE("Kind::Matches772F10", 0x772f40, matches_original, (&kind_matches<0xe, 0xe>), &g_w3_matches);
+
+// ---- Pool::Take: marks the next free entry used (its first byte) and gives its index; doubles the pool when full ----
+struct IndexPool {
+    uint8_t *entries;
+    int32_t *free_indices;
+    int32_t used;
+    int32_t capacity;
+};
+static volatile long g_w3_take;
+template <uint32_t SIZE, uint32_t GROW> static int32_t __fastcall index_pool_take(IndexPool *self) {
+    g_w3_take++;
+    if (self->used >= self->capacity) ((void(__thiscall *)(void *, int32_t))GROW)(self, self->capacity > 0 ? self->capacity * 2 : 200);
+    int32_t index = self->free_indices[self->capacity - self->used - 1];
+    self->entries[index * SIZE] = 1;
+    self->used++;
+    return index;
+}
+static const uint8_t pool_take_w3_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x0c, 0x39, 0x46};
+REWRITE("Pool::Take40D480", 0x40d480, pool_take_w3_original, (&index_pool_take<36, 0x40c7e0>), &g_w3_take);
+REWRITE("Pool::Take40D480", 0x9f9b50, pool_take_w3_original, (&index_pool_take<36, 0x9f99d0>), &g_w3_take);
+REWRITE("Pool::TakeCEFD20", 0xcefd20, pool_take_w3_original, (&index_pool_take<8, 0xcef970>), &g_w3_take);
+REWRITE("Pool::TakeCEFD20", 0xcefd60, pool_take_w3_original, (&index_pool_take<8, 0xcefa90>), &g_w3_take);
+
+// ---- Row::Draw: passes a row of the table at +0x9c, with this object's settings, to 0x8275d0 ----------------------
+static volatile long g_w3_row;
+template <uint32_t LOW, uint32_t HIGH> static uint32_t __thiscall row_draw(uint8_t *self, int32_t index, uint32_t a, uint32_t b) {
+    g_w3_row++;
+    uint8_t *table = *(uint8_t **)(self + 0x9c);
+    uint8_t *row = *(uint8_t **)(table + 0x38) + index * 0x58;
+    return ((uint32_t(__fastcall *)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, void *))0x8275d0)(
+        *(uint32_t *)(self + 0xa0), *(uint32_t *)(self + 0xa4), *(uint32_t *)(row + LOW), *(uint32_t *)(row + HIGH), a, b,
+        *(uint32_t *)(self + 0xac), table);
+}
+static const uint8_t row_original[] = {0x8b, 0x91, 0x9c, 0x00, 0x00, 0x00, 0x8b, 0x44};
+REWRITE("Row::Draw828FC0", 0x828fc0, row_original, (&row_draw<0x1c, 0x20>), &g_w3_row);
+REWRITE("Row::Draw828FC0", 0x829010, row_original, (&row_draw<0x34, 0x38>), &g_w3_row);
+
+// ---- Lists::DeleteAll: deletes the values of the lists at +4 and +0x1c; each value takes its node away when it goes ---
+static volatile long g_w3_delete_all;
+static void delete_list_values(Node *const volatile *list) {
+    for (;;) {
+        Node *n = *list;
+        if (!n->next || !n) return;
+        void *value = n->value;
+        if (value) ((void *(__thiscall *)(void *, uint32_t))(*(void ***)value)[0])(value, 1);
+    }
+}
+static void __fastcall lists_delete_all(uint8_t *self) {
+    g_w3_delete_all++;
+    delete_list_values((Node **)(self + 4));
+    delete_list_values((Node **)(self + 0x1c));
+}
+static const uint8_t delete_all_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x04, 0x83, 0x38};
+REWRITE("Lists::DeleteAllBFA860", 0xbfa860, delete_all_original, lists_delete_all, &g_w3_delete_all);
+REWRITE("Lists::DeleteAllBFA860", 0xc2f1d0, delete_all_original, lists_delete_all, &g_w3_delete_all);
+
+// ---- Named::Create: a debug-built constructor: two fields, then the name at +8 ------------------------------------
+static volatile long g_w3_named;
+static uint32_t *__thiscall named_create(uint32_t *self, uint32_t a, uint32_t b, uint32_t name) {
+    g_w3_named++;
+    self[0] = a;
+    self[1] = b;
+    ((void(__thiscall *)(void *, uint32_t))0x407350)(self + 2, name);
+    return self;
+}
+static const uint8_t named_original[] = {0x55, 0x8b, 0xec, 0x51, 0xc7, 0x45, 0xfc, 0xcc};
+REWRITE("Named::CreateCC3E60", 0xcc3e60, named_original, named_create, &g_w3_named);
+REWRITE("Named::CreateCC3E60", 0xcc4f30, named_original, named_create, &g_w3_named);
+
+// ---- Reader::Create: a reader of a range; the two copies keep start and end the other way round ---------------------
+static volatile long g_w3_reader;
+template <uint32_t KEPT, uint32_t CLEARED> static uint8_t *__thiscall reader_create(uint8_t *self, uint32_t a, uint32_t b, uint8_t flag) {
+    g_w3_reader++;
+    *(uint32_t *)(self + KEPT) = a;
+    *(uint32_t *)(self + 0x14) = b;
+    *(uint32_t *)(self + 4) = 0;
+    *(uint32_t *)(self + CLEARED) = 0;
+    self[0x18] = flag;
+    *(uint32_t *)(self + 0x1c) = 0;
+    return self;
+}
+static const uint8_t reader_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0xc1, 0x89, 0x50};
+REWRITE("Reader::CreateC30260", 0xc30260, reader_original, (&reader_create<0xc, 0x10>), &g_w3_reader);
+REWRITE("Reader::CreateC30260", 0xc30290, reader_original, (&reader_create<0x10, 0xc>), &g_w3_reader);
+
+// ---- Pick::Value: a field of one of two records by flag bit 0, passed through a conversion when bit 1 is set -----------
+static volatile long g_w3_pick;
+template <uint32_t OFF, uint32_t CONVERT> static uint32_t __fastcall pick_value(uint32_t *self) {
+    g_w3_pick++;
+    uint8_t flags = *(uint8_t *)(self + 1);
+    uint8_t *record = (uint8_t *)(uintptr_t)self[0] + (flags & 1 ? 0x38 : 0x54);
+    uint32_t value = *(uint32_t *)(record + OFF);
+    return flags & 2 ? ((uint32_t(__fastcall *)(uint32_t))CONVERT)(value) : value;
+}
+static const uint8_t pick_original[] = {0xf6, 0x41, 0x04, 0x01, 0x8b, 0x01, 0x74, 0x05};
+REWRITE("Pick::ValueBC54B0", 0xbc54b0, pick_original, (&pick_value<0x10, 0xbc4b50>), &g_w3_pick);
+REWRITE("Pick::ValueBC54B0", 0xbc54e0, pick_original, (&pick_value<0x14, 0xbc4c00>), &g_w3_pick);
+
+// ---- Three::Each: runs a function for each of the three items, with a flag -----------------------------------------
+static volatile long g_w3_three;
+template <uint32_t EACH> static void __fastcall three_each(uint8_t flag) {
+    g_w3_three++;
+    for (int32_t i = 0; i < 3; i++) ((void(__fastcall *)(int32_t, uint8_t))EACH)(i, flag);
+}
+static const uint8_t three_original[] = {0x53, 0x56, 0x8a, 0xd9, 0x33, 0xf6, 0x8a, 0xd3};
+REWRITE("Three::Each47CA60", 0x47ca60, three_original, (&three_each<0x47c3f0>), &g_w3_three);
+REWRITE("Three::Each47CA60", 0x47ca80, three_original, (&three_each<0x47c470>), &g_w3_three);
+
+// ---- Reference::CreateAt: an empty reference at +OFF of a new object, in the null handle's list ------------------------
+static volatile long g_w3_ref_create;
+template <uint32_t OFF> static uint8_t *__fastcall reference_create_at(uint8_t *self) {
+    g_w3_ref_create++;
+    uint32_t *ref = (uint32_t *)(self + OFF);
+    ref[0] = 0xf26ae0;
+    ref[4] = (uint32_t)(uintptr_t)ref;
+    uint8_t *handle = ((uint8_t * (__cdecl *)())0x805750)();
+    ref[1] = (uint32_t)(uintptr_t)handle;
+    link_after(*(Link **)(handle + 0x20), (Link *)(ref + 2));
+    return self;
+}
+static const uint8_t ref_create_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8d, 0x77};
+REWRITE("Reference::CreateAt7142F0", 0x7142f0, ref_create_original, (&reference_create_at<0x10>), &g_w3_ref_create);
+REWRITE("Reference::CreateAt7142F0", 0x81da70, ref_create_original, (&reference_create_at<0x40>), &g_w3_ref_create);
+
+// ---- Reference::Assign: this reference moves to the other's handle, then takes its three values -----------------------
+static volatile long g_w3_ref_assign;
+static uint8_t *__thiscall reference_assign(uint8_t *self, uint8_t *from) {
+    g_w3_ref_assign++;
+    unlink((Node *)(self + 8));
+    ((void(__thiscall *)(void *, int32_t))0x8055c0)(*(void **)(self + 4), 0);
+    uint8_t *handle = *(uint8_t **)(from + 4);
+    ++*(int32_t *)(handle + 8);
+    *(uint8_t **)(self + 4) = handle;
+    link_after(*(Link **)(handle + 0x20), (Link *)(self + 8));
+    ((void(__fastcall *)(void *))(*(void ***)self)[0])(self);
+    for (int i = 0x14; i < 0x20; i += 4) *(uint32_t *)(self + i) = *(uint32_t *)(from + i);
+    return self;
+}
+static const uint8_t ref_assign_original[] = {0x53, 0x56, 0x57, 0x8b, 0xf9, 0x8d, 0x77, 0x08};
+REWRITE("Reference::Assign71F220", 0x71f220, ref_assign_original, reference_assign, &g_w3_ref_assign);
+REWRITE("Reference::Assign71F220", 0x762980, ref_assign_original, reference_assign, &g_w3_ref_assign);
+
+// ---- Reference::ResetAt: the reference at +OFF goes back to the null handle ----------------------------------------
+static volatile long g_w3_ref_reset;
+template <uint32_t OFF> static uint32_t __fastcall reference_reset_at(uint8_t *self) {
+    g_w3_ref_reset++;
+    uint8_t *ref = self + OFF;
+    unlink((Node *)(ref + 8));
+    ((void(__thiscall *)(void *, int32_t))0x8055c0)(*(void **)(ref + 4), 0);
+    uint8_t *handle = ((uint8_t * (__cdecl *)())0x805750)();
+    *(uint8_t **)(ref + 4) = handle;
+    link_after(*(Link **)(handle + 0x20), (Link *)(ref + 8));
+    return ((uint32_t(__fastcall *)(void *))(*(void ***)ref)[0])(ref);
+}
+template <uint8_t OFF> static const uint8_t ref_reset_original[] = {0x56, 0x57, 0x8d, 0x79, OFF, 0x8d, 0x77, 0x08};
+REWRITE("Reference::ResetAt742710", 0x742710, ref_reset_original<0x48>, (&reference_reset_at<0x48>), &g_w3_ref_reset);
+REWRITE("Reference::ResetAt742710", 0xb7bbd0, ref_reset_original<0x78>, (&reference_reset_at<0x78>), &g_w3_ref_reset);
+
+// ---- Objects::Clear: deletes every object of the array at +0x214, frees it, and optionally finishes the main task ---------
+static volatile long g_w3_objects;
+static void __thiscall objects_clear(uint8_t *self, uint8_t finish) {
+    g_w3_objects++;
+    void **&objects = *(void ***)(self + 0x214);
+    int32_t &count = *(int32_t *)(self + 0x218);
+    for (int32_t i = 0; i < count; i++)
+        if (void *object = objects[i]) ((void *(__thiscall *)(void *, uint32_t))(*(void ***)object)[0])(object, 1);
+    if (objects) {
+        memory_free_aligned(objects);
+        objects = nullptr;
+    }
+    count = 0;
+    if (finish) {
+        uint8_t *task = ((uint8_t * (__cdecl *)())0x40a090)();
+        if (!(task[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(task);
+    }
+}
+static const uint8_t objects_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0x18, 0x02, 0x00};
+REWRITE("Objects::Clear9D0AC0", 0x9d0ac0, objects_original, objects_clear, &g_w3_objects);
+REWRITE("Objects::Clear9D0AC0", 0x9d0b40, objects_original, objects_clear, &g_w3_objects);
+
+// ---- Tree::Walk: visits a node's marked items, then its children (four to a node, picked by the low bits of its mask) ---
+static volatile long g_w3_tree;
+template <uint32_t VISIT> static void __thiscall tree_walk(uint8_t *self, int32_t index, uint32_t passed) {
+    g_w3_tree++;
+    uint8_t *node = *(uint8_t **)(self + 8) + index * 0x1c;
+    for (int32_t i = 0; i < *(int32_t *)(node + 0x10); i++) {
+        uint8_t *item = *(uint8_t **)(node + 0x18) + i * 0x20;
+        if (*(uint32_t *)(item + 0x1c)) ((void(__fastcall *)(void *))VISIT)(*(void **)(item + 0x18));
+    }
+    for (int32_t child = 0; child < 4; child++)
+        if (*(uint32_t *)node & (1u << child)) tree_walk<VISIT>(self, index * 4 + child + 1, passed);
+}
+static const uint8_t tree_original[] = {0x53, 0x55, 0x56, 0x8b, 0x74, 0x24, 0x10, 0x6b};
+REWRITE("Tree::WalkA0E240", 0xa0e240, tree_original, (&tree_walk<0xa0a330>), &g_w3_tree);
+REWRITE("Tree::WalkA0E240", 0xb74250, tree_original, (&tree_walk<0xb44a30>), &g_w3_tree);
+
+// ---- Com::Query: gets the COM object of the source at +0x18 and asks it for an interface; E_NOTIMPL on any failure ------
+static volatile long g_w3_com;
+template <uint32_t IID> static uint32_t __thiscall com_query(uint8_t *self, void **out) {
+    g_w3_com++;
+    *out = nullptr;
+    void *source = *(void **)(self + 0x18);
+    void *object;
+    if (((int32_t(__stdcall *)(void *, void **))(*(void ***)source)[6])(source, &object) < 0) return 0x80004001;
+    void *found;
+    int32_t result = ((int32_t(__stdcall *)(void *, uint32_t, void **))(*(void ***)object)[0])(object, IID, &found);
+    ((uint32_t(__stdcall *)(void *))(*(void ***)object)[2])(object);
+    if (result < 0) return 0x80004001;
+    *out = found;
+    return 0;
+}
+static const uint8_t com_original[] = {0x51, 0x57, 0x8b, 0x7c, 0x24, 0x0c, 0x8d, 0x54};
+REWRITE("Com::QueryDFF1B0", 0xdff1b0, com_original, (&com_query<0x10451b4>), &g_w3_com);
+REWRITE("Com::QueryDFF1B0", 0xdff220, com_original, (&com_query<0x1044b64>), &g_w3_com);
+
+// ---- Registry::Find: the interface of the object registered under a key; a found object without it is reported ---------
+static volatile long g_w3_find;
+template <uint32_t KEY, uint32_t TABLE, uint32_t ID, uint32_t LINE> static void *__fastcall registry_find(void *self) {
+    g_w3_find++;
+    uint32_t key[2];
+    ((void(__thiscall *)(void *, uint32_t))0xbf47b0)(key, *(uint32_t *)KEY);
+    key[0] = TABLE;
+    void *object = ((void *(__thiscall *)(void *, void *))0xbf5b60)(self, key);
+    if (!object) return nullptr;
+    if (void *part = w3_interface_of(object, (const int32_t *)ID)) return part;
+    ((void(__fastcall *)(uint32_t, uint32_t))0xbec8a0)(0xfc0e04, LINE);
+    return nullptr;
+}
+template <uint32_t KEY> static const uint8_t registry_find_original[] = {
+    0x83, 0xec, 0x08, 0xa1, (uint8_t)KEY, (uint8_t)(KEY >> 8), (uint8_t)(KEY >> 16), (uint8_t)(KEY >> 24)};
+REWRITE("Registry::FindCB8DE0", 0xcb8de0, registry_find_original<0x13e6fa0>, (&registry_find<0x13e6fa0, 0xfc0d14, 0x13e6fdc, 0xc9>), &g_w3_find);
+REWRITE("Registry::FindCB8DE0", 0xcb8f10, registry_find_original<0x13e6fa4>, (&registry_find<0x13e6fa4, 0xfc0d60, 0x13e6fcc, 0x163>), &g_w3_find);
+REWRITE("Registry::FindCB8DE0", 0xcb9020, registry_find_original<0x13e6f98>, (&registry_find<0x13e6f98, 0xfc0d88, 0x13e6fb8, 0x1dc>), &g_w3_find);
+REWRITE("Registry::FindCB8DE0", 0xcb9130, registry_find_original<0x13e6f9c>, (&registry_find<0x13e6f9c, 0xfc0db0, 0x13e6f80, 0x24f>), &g_w3_find);

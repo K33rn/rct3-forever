@@ -253,3 +253,331 @@
                   [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
     w3_first.prepare = [](const rewrite::Entry *e) { g_iface_id = *(uint32_t **)(e->at + 0x24); };
     quick(w3_first);
+    // Array::Push: full or not, empty or not, the array at the copy's own offset
+    static uint32_t w3_ap_base;
+    Test w3_array_push{0x80ed30,
+                       [=](Rng &r) {
+                           fresh(r);
+                           uint8_t *array = arena<uint8_t>(0x100 + w3_ap_base);
+                           *(void **)array = arena<void>(0x800);
+                           *(int32_t *)(array + 4) = r.range(0, 6);
+                           *(int32_t *)(array + 8) = r.range(0, 6);
+                           arena<uint32_t>(0x10)[0] = r.next();
+                       },
+                       [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0]); return Result{}; }};
+    w3_array_push.prepare = [](const rewrite::Entry *e) {
+        w3_ap_base = *(uint8_t *)(e->at + 0x1a);
+        stubs_for_now({{(uintptr_t)(e->at + 0x1b + 5 + *(int32_t *)(e->at + 0x1c)), (void *)stub_thiscall1}});
+    };
+    w3_array_push.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_array_push);
+    // Stream::Skip: through the two stream calls; the copies of ret 0xc are given their third argument
+    static bool w3_skip3;
+    Test w3_skip{0xbbdf90,
+                 [=](Rng &r) { fresh(r); arena<uint32_t>(0x20)[0] = r.next(); arena<uint32_t>(0x10)[0] = r.next(); },
+                 [](void *fn) {
+                     if (w3_skip3) return Result{((uint32_t(__stdcall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], 7)};
+                     return Result{((uint32_t(__stdcall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])};
+                 }};
+    w3_skip.prepare = [](const rewrite::Entry *e) {
+        w3_skip3 = *(uint8_t *)(e->at + 0x1a) == 0xc;
+        stubs_for_now({{0xbe40b0, (void *)w3_stub_tell}, {0xbe4090, (void *)w3_stub_seek}});
+    };
+    w3_skip.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_skip);
+    // FreeList::Add: the globals set in the call
+    static uint32_t *w3_fl_head, *w3_fl_count;
+    Test w3_free_add{0xbe8940,
+                     [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = r.next(); arena<uint32_t>(0x10)[1] = r.next(); },
+                     [](void *fn) {
+                         *w3_fl_head = arena<uint32_t>(0x10)[0];
+                         *w3_fl_count = arena<uint32_t>(0x10)[1];
+                         return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                     }};
+    w3_free_add.prepare = [](const rewrite::Entry *e) {
+        w3_fl_head = *(uint32_t **)(e->at + 1);
+        w3_fl_count = *(uint32_t **)(e->at + 8);
+    };
+    quick(w3_free_add);
+    // Visitor::Run: what the visitor holds
+    Test w3_visit{0x6af3a0, fresh, [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w3_visit.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6ae7c0, (void *)w3_stub_visit}}); };
+    w3_visit.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_visit);
+    // Static::Init: the base constructor under the real builder, and the exit function
+    Test w3_static{0xf04320, fresh, [](void *fn) { ((void(__cdecl *)())fn)(); return Result{}; }};
+    w3_static.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbe79b0, (void *)stub_thiscall2}}); };
+    w3_static.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_static);
+    // Value::Describe: the owner at 0x400, its table at 0x508
+    Test w3_describe{0x8b5320,
+                     [=](Rng &r) {
+                         fresh(r);
+                         static void *vt[3] = {nullptr, nullptr, (void *)stub_thiscall2};
+                         for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                         *(void **)arena<uint8_t>(0x484) = arena<void>(0x500);
+                         *(void **)arena<uint8_t>(0x508) = vt;
+                         arena<uint32_t>(0x10)[0] = r.next();
+                     },
+                     [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x10)[0])}; }};
+    w3_describe.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x833850, (void *)w3_stub_registry}}); };
+    w3_describe.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_describe);
+    // Block::Delete: with and without the flag, noise above it
+    Test w3_block_delete{0xbd6fb0,
+                         [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = r.next(); },
+                         [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    quick(w3_block_delete);
+    // Slot::Release: a slot, none, or slot 0
+    static uint32_t w3_sr_off;
+    Test w3_slot_release{0x818f80,
+                         [=](Rng &r) { fresh(r); arena<int32_t>(0x100 + w3_sr_off)[0] = r.range(0, 3) - 1; },
+                         [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w3_slot_release.prepare = [](const rewrite::Entry *e) {
+        w3_sr_off = *(uint8_t *)(e->at + 5);
+        stubs_for_now({{0xcdede0, (void *)stub_thiscall1}, {0x8338b0, (void *)w3_stub_then}});
+    };
+    w3_slot_release.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_slot_release);
+    // Part::Clear: a part or none
+    static uint32_t w3_pc_off;
+    Test w3_part_clear{0x4e2c10,
+                       [=](Rng &r) { fresh(r); arena<void *>(0x100 + w3_pc_off)[0] = r.range(0, 1) ? arena<void>(0x800) : nullptr; },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    w3_part_clear.prepare = [](const rewrite::Entry *e) {
+        w3_pc_off = *(uint8_t *)(e->at + 5);
+        stubs_for_now({{(uintptr_t)(e->at + 0xa + 5 + *(int32_t *)(e->at + 0xb)), (void *)stub_plain_dtor}});
+    };
+    w3_part_clear.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_part_clear);
+    // Setting::Set: either setting, changed or not, 0-3 things to update
+    Test w3_setting{0x86cfb0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x1000)[i] = r.range(0, 2);
+                        *(int32_t *)arena<uint8_t>(0x1108) = r.range(0, 3);
+                        arena<int32_t>(0x10)[0] = r.range(0, 1);
+                        arena<int32_t>(0x10)[1] = r.range(0, 2);
+                    },
+                    [](void *fn) { ((void(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x1000), arena<int32_t>(0x10)[0], arena<int32_t>(0x10)[1]); return Result{}; }};
+    w3_setting.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x8699c0, (void *)stub_plain_dtor}, {0x8625d0, (void *)stub_thiscall1}}); };
+    w3_setting.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_setting);
+    // Flags::SetVisible: the object at the copy's own offset
+    static uint32_t w3_fv_off;
+    Test w3_visible{0x6a7c70,
+                    [=](Rng &r) {
+                        fresh(r);
+                        for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x1000)[i] = (uint32_t)(uintptr_t)arena<void>(0x1800);
+                        arena<void *>(0x1000 + w3_fv_off)[0] = arena<void>(0x800);
+                        arena<uint32_t>(0x894)[0] = r.next();
+                        arena<uint32_t>(0x1894)[0] = r.next();
+                        arena<uint32_t>(0x10)[0] = (r.next() & 0xffffff00) | (uint32_t)r.range(0, 1);
+                    },
+                    [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x10)[0])}; }};
+    w3_visible.prepare = [](const rewrite::Entry *e) { w3_fv_off = *(uint32_t *)(e->at + 8); };
+    quick(w3_visible);
+    // SharedSlots::Copy: each slot a shared value or none
+    Test w3_slots_copy{0xc09fa0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           for (int i = 0; i < 3; i++) arena<uint16_t>(0x5a0 + i * 0x10)[0] = (uint16_t)r.next();
+                           for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x800)[i] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x5a0 + r.range(0, 2) * 0x10) : 0;
+                           for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                       },
+                       [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x1000), arena<void>(0x800))}; }};
+    quick(w3_slots_copy);
+    // Kind::Matches: the kinds of all the copies, and something else
+    Test w3_matches{0x772f10,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static const int32_t kinds[] = {4, 0xe, 0x10, 5};
+                        *(int32_t *)arena<uint8_t>(0x990) = kinds[r.range(0, 3)];
+                        *(int32_t *)arena<uint8_t>(0x994) = r.range(1, 3);
+                        *(int32_t *)arena<uint8_t>(0x17c) = kinds[r.range(1, 3)];
+                    },
+                    [](void *fn) { return Result{((uint8_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; }};
+    quick(w3_matches);
+    // Pool::Take: full or not; indices around the free list's start at 0x840, entries at 0x1000
+    auto w3_pool_setup = [=](Rng &r) {
+        fresh(r);
+        arena<void *>(0x100)[0] = arena<void>(0x1000);
+        arena<void *>(0x100)[1] = arena<void>(0x840);
+        arena<int32_t>(0x100)[2] = r.range(0, 6);
+        arena<int32_t>(0x100)[3] = r.range(0, 6);
+        for (int i = 0; i < 0x20; i++) arena<int32_t>(0x800)[i] = r.range(0, 7);
+        for (int i = 0; i < 0x50; i++) arena<uint32_t>(0x1000)[i] = r.next();
+    };
+    auto w3_pool_call = [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; };
+    auto w3_pool_prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0x1b + 5 + *(int32_t *)(e->at + 0x1c)), (void *)stub_thiscall1}});
+    };
+    Test w3_take36{0x40d480, w3_pool_setup, w3_pool_call};
+    w3_take36.prepare = w3_pool_prepare;
+    w3_take36.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_take36);
+    Test w3_take8{0xcefd20, w3_pool_setup, w3_pool_call};
+    w3_take8.prepare = w3_pool_prepare;
+    w3_take8.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_take8);
+    // Row::Draw: rows of noise
+    Test w3_row{0x828fc0,
+                [=](Rng &r) {
+                    fresh(r);
+                    for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x800)[i] = r.next();
+                    for (int i = 0; i < 0x30; i++) arena<uint32_t>(0x1080)[i] = r.next();
+                    *(void **)arena<uint8_t>(0x109c) = arena<void>(0x400);
+                    *(void **)arena<uint8_t>(0x438) = arena<void>(0x800);
+                    arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 2);
+                    arena<uint32_t>(0x10)[1] = r.next();
+                    arena<uint32_t>(0x10)[2] = r.next();
+                },
+                [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1], arena<uint32_t>(0x10)[2])}; }};
+    w3_row.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x8275d0, (void *)w3_stub_eight}}); };
+    w3_row.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_row);
+    // Lists::DeleteAll: two lists of 0-2 values, each taking its node away
+    Test w3_delete_all{0xbfa860,
+                       [=](Rng &r) {
+                           fresh(r);
+                           static void *vt[1] = {(void *)w3_stub_drop};
+                           for (int l = 0; l < 2; l++) {
+                               int n = r.range(0, 2);
+                               uint32_t *slot = arena<uint32_t>(0x100 + (l ? 0x1c : 4));
+                               *slot = (uint32_t)(uintptr_t)arena<void>(0x800 + l * 0x100);
+                               for (int i = 0; i <= n; i++) {
+                                   void **node = arena<void *>(0x800 + l * 0x100 + i * 0x20);
+                                   node[0] = i < n ? arena<void>(0x820 + l * 0x100 + i * 0x20) : nullptr;
+                                   uint32_t *value = arena<uint32_t>(0x1000 + l * 0x200 + i * 0x40);
+                                   node[2] = value;
+                                   *(void **)value = vt;
+                                   value[1] = (uint32_t)(uintptr_t)slot;
+                                   value[2] = (uint32_t)(uintptr_t)node[0];
+                               }
+                           }
+                       },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(w3_delete_all);
+    // Named::Create: three arguments
+    Test w3_named{0xcc3e60,
+                  [=](Rng &r) { fresh(r); for (int i = 0; i < 3; i++) arena<uint32_t>(0x10)[i] = r.next(); },
+                  [](void *fn) { uint32_t *a = arena<uint32_t>(0x10); return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), a[0], a[1], a[2])}; }};
+    w3_named.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x407350, (void *)stub_thiscall1}}); };
+    w3_named.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_named);
+    // Reader::Create: over noise
+    Test w3_reader{0xc30260,
+                   [=](Rng &r) { fresh(r); for (int i = 0; i < 3; i++) arena<uint32_t>(0x10)[i] = r.next(); },
+                   [](void *fn) { uint32_t *a = arena<uint32_t>(0x10); return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), a[0], a[1], a[2])}; }};
+    quick(w3_reader);
+    // Pick::Value: both records, converted or not
+    Test w3_pick{0xbc54b0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x400)[i] = r.next();
+                     arena<void *>(0x100)[0] = arena<void>(0x400);
+                 },
+                 [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w3_pick.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1b + 5 + *(int32_t *)(e->at + 0x1c)), (void *)w3_stub_then}}); };
+    w3_pick.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_pick);
+    // Three::Each: the flag with noise above its byte
+    Test w3_three{0x47ca60,
+                  [=](Rng &r) { fresh(r); arena<uint32_t>(0x10)[0] = r.next(); },
+                  [](void *fn) { ((void(__fastcall *)(uint32_t))fn)(arena<uint32_t>(0x10)[0]); return Result{}; }};
+    w3_three.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0xa + 5 + *(int32_t *)(e->at + 0xb)), (void *)w3_stub_each}}); };
+    w3_three.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_three);
+    // Reference::CreateAt: a new object at 0x600 over noise
+    Test w3_ref_create{0x7142f0,
+                       [=](Rng &r) { handles(r); for (int i = 0; i < 0x30; i++) arena<uint32_t>(0x600)[i] = r.next(); },
+                       [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x600))}; }};
+    quick(w3_ref_create);
+    // Reference::Assign: the reference at 0x100 takes on the one at 0x180
+    Test w3_ref_assign{0x71f220, handles,
+                       [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x180))}; }};
+    quick(w3_ref_assign);
+    // Reference::ResetAt: the reference at 0x100 is at the copy's own offset of its object
+    static uint32_t w3_rr_off;
+    Test w3_ref_reset{0x742710, handles,
+                      [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100 - w3_rr_off))}; }};
+    w3_ref_reset.prepare = [](const rewrite::Entry *e) { w3_rr_off = *(uint8_t *)(e->at + 4); };
+    quick(w3_ref_reset);
+    // Objects::Clear: 0-3 objects, some null, or no array; the task finished or not
+    Test w3_objects{0x9d0ac0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[1] = {(void *)stub_deleting};
+                        int n = r.range(0, 3);
+                        uint8_t *self = arena<uint8_t>(0x1000);
+                        *(void **)(self + 0x214) = n || r.range(0, 1) ? arena<void>(0x800) : nullptr;
+                        *(int32_t *)(self + 0x218) = n;
+                        for (int i = 0; i < n; i++) {
+                            arena<void *>(0x900 + i * 0x10)[0] = vt;
+                            arena<void *>(0x800)[i] = r.range(0, 3) ? arena<void>(0x900 + i * 0x10) : nullptr;
+                        }
+                        arena<uint32_t>(0x42c)[0] = r.next();
+                        arena<uint32_t>(0x10)[0] = (r.next() & 0xffffff00) | (uint32_t)r.range(0, 1);
+                    },
+                    [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x10)[0]); return Result{}; }};
+    w3_objects.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x40a090, (void *)w3_stub_registry}, {0x800860, (void *)stub_plain_dtor}}); };
+    w3_objects.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_objects);
+    // Tree::Walk: 21 nodes at 0x1000, the last 16 without children; 0-2 items each at 0x1400..
+    Test w3_tree{0xa0e240,
+                 [=](Rng &r) {
+                     fresh(r);
+                     arena<void *>(0x100)[2] = arena<void>(0x1000);
+                     for (int i = 0; i < 21; i++) {
+                         uint8_t *node = arena<uint8_t>(0x1000 + i * 0x1c);
+                         *(uint32_t *)node = (r.next() & ~0xfu) | (i < 5 ? (uint32_t)r.range(0, 15) : 0);
+                         *(int32_t *)(node + 0xc) = r.range(0, 1);
+                         *(int32_t *)(node + 0x10) = r.range(0, 2);
+                         *(void **)(node + 0x18) = arena<void>(0x1400 + i * 0x40);
+                         for (int j = 0; j < 2; j++) {
+                             uint8_t *item = arena<uint8_t>(0x1400 + i * 0x40 + j * 0x20);
+                             *(void **)(item + 0x18) = arena<void>(0x1c00 + i * 0x10 + j * 8);
+                             *(uint32_t *)(item + 0x1c) = (uint32_t)r.range(0, 1);
+                         }
+                     }
+                     arena<int32_t>(0x10)[0] = r.range(0, 1) ? 0 : r.range(1, 4);
+                     arena<uint32_t>(0x10)[1] = r.next();
+                 },
+                 [](void *fn) { ((void(__thiscall *)(void *, int32_t, uint32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<uint32_t>(0x10)[1]); return Result{}; }};
+    w3_tree.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x40 + 5 + *(int32_t *)(e->at + 0x41)), (void *)stub_plain_dtor}}); };
+    w3_tree.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_tree);
+    // Com::Query: each step failing or not
+    Test w3_com{0xdff1b0,
+                [=](Rng &r) {
+                    fresh(r);
+                    static void *source_vt[7] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, (void *)w3_com_get};
+                    static void *object_vt[3] = {(void *)w3_com_query, nullptr, (void *)w3_com_release};
+                    *(void **)arena<uint8_t>(0x118) = arena<void>(0x380);
+                    arena<void *>(0x380)[0] = source_vt;
+                    arena<void *>(0x400)[0] = object_vt;
+                    arena<int32_t>(0x20)[0] = r.range(0, 3) ? r.range(0, 5) : -r.range(1, 5);
+                    arena<int32_t>(0x20)[1] = r.range(0, 3) ? r.range(0, 5) : -r.range(1, 5);
+                    arena<uint32_t>(0x800)[0] = r.next();
+                },
+                [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; }};
+    quick(w3_com);
+    // Registry::Find: found or not, with or without the interface
+    static uint32_t *w3_rf_key;
+    Test w3_find{0xcb8de0,
+                 [=](Rng &r) {
+                     fresh(r); iface_handle(r);
+                     arena<uint32_t>(0x20)[0] = r.next();
+                     arena<uint32_t>(0x10)[0] = r.next();
+                 },
+                 [](void *fn) {
+                     *w3_rf_key = arena<uint32_t>(0x10)[0];
+                     return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                 }};
+    w3_find.prepare = [](const rewrite::Entry *e) {
+        w3_rf_key = *(uint32_t **)(e->at + 4);
+        g_iface_id = *(uint32_t **)(e->at + 0x3c);
+        stubs_for_now({{0xbf47b0, (void *)w3_stub_key}, {0xbf5b60, (void *)w3_stub_lookup}, {0xbec8a0, (void *)w3_stub_report}});
+    };
+    w3_find.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3_find);
