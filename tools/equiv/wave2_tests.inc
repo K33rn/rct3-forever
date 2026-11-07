@@ -1488,3 +1488,16 @@
                 stubs_for_now({{0xbe8400, (void *)w2d_queue_next}, {0xbe8230, (void *)w2c_s2<0xe2d6>}, {w2c_target(e->at, 0x7a), (void *)w2c_s0<0xe2da>},
                                {0xbe88b0, (void *)w2d_s_table<0xe2db>}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
             });
+    // Array::Resize: the same count; none; fewer and more than before, from an old block or none
+    w2c_add(0x430690,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x100)[0] = r.range(0, 4) ? arena<void>(0x300) : nullptr;
+                arena<int32_t>(0x100)[1] = r.range(0, 5);
+                arena<int32_t>(0x20)[0] = r.range(0, 4) ? r.range(0, 6) : arena<int32_t>(0x100)[1];
+            },
+            w2c_self_arg,
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbcdfd0, (void *)w2d_alloc_always}, {0x402b90, (void *)w2d_vector_make},
+                               {w2c_target(e->at, 0x9c), (void *)w2c_s1<0xe2d5>}});
+            });

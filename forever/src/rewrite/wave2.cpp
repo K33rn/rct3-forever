@@ -2043,3 +2043,27 @@ template <uint32_t T0, uint32_t T1, uint32_t DROP> static void __fastcall w2d_qu
 }
 REWRITE("Dtor::Queues4A71F0", 0x4a71f0, w2c_seh<0xe11069>, (&w2d_queues<0xf30900, 0xf308fc, 0x4a35b0>), &g_w2d_queues);
 REWRITE("Dtor::Queues4A71F0", 0xb943f0, w2c_seh<0xe99e49>, (&w2d_queues<0xf9c7dc, 0xf9c7d8, 0xb92bb0>), &g_w2d_queues);
+
+// ---- Array::Resize: a new block of `count` SIZE-byte elements made by MAKE, the first ones copied over by COPY, the old block freed (not destroyed) -------
+static volatile long g_w2d_resize;
+template <uint32_t SIZE, uint32_t MAKE, uint32_t COPY> static uint32_t __thiscall w2d_resize(uint8_t **self, int32_t count) {
+    g_w2d_resize++;
+    if ((uint32_t)count == (uint32_t)(uintptr_t)self[1]) return (uint32_t)count;
+    uint8_t *block = nullptr;
+    if (count) {
+        block = (uint8_t *)memory_alloc_aligned(count * SIZE);
+        if (block) ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0x402b90)(block, SIZE, count, MAKE);
+        int32_t old = (int32_t)(uintptr_t)self[1];
+        int32_t keep = count > old ? old : count;
+        for (int32_t i = 0; i < keep; i++) ((void(__thiscall *)(void *, void *))COPY)(block + i * SIZE, self[0] + i * SIZE);
+    }
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    self[0] = block;
+    self[1] = (uint8_t *)(uintptr_t)count;
+    return (uint32_t)count;
+}
+REWRITE("Array::Resize430690", 0x430690, w2c_seh_late, (&w2d_resize<0x70, 0x42f2f0, 0x42f9b0>), &g_w2d_resize);
+REWRITE("Array::Resize430690", 0x9e1ab0, w2c_seh_late, (&w2d_resize<0x44, 0x9e1330, 0x9e1340>), &g_w2d_resize);
