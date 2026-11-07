@@ -1228,3 +1228,58 @@ template <uint32_t TABLE, uint32_t LIST> static void __fastcall w4b_member_leave
 static const uint8_t w4b_member_leave_original[] = {0x8d, 0x41, 0x04, 0x85, 0xc0, 0xc7, 0x01};
 REWRITE("Members::Leave49CCF0", 0x49ccf0, w4b_member_leave_original, (&w4b_member_leave<0xf30550, 0x12f4aec>), &g_w4b_leaves);
 REWRITE("Members::Leave49CCF0", 0xc07c20, w4b_member_leave_original, (&w4b_member_leave<0xfa6270, 0x13d322c>), &g_w4b_leaves);
+
+// ---- Grid::Neighbours: a cell's four links cleared, then joined to each neighbour inside the grid (left, right, up, down) ---------------
+static volatile long g_w4b_neighbours;
+template <uint32_t JOIN> static void __thiscall w4b_grid_neighbours(uint8_t *self, uint8_t *cell) {
+    g_w4b_neighbours++;
+    typedef uint32_t(__thiscall * Join)(void *, void *, uint32_t, uint32_t);
+    uint32_t *links = (uint32_t *)(cell + 0x64);
+    links[0] = links[1] = links[2] = links[3] = 0;
+    auto at = [self](uint32_t x, uint32_t y) { return (*(uint32_t **)(self + 0x58))[y * self[0x54] + x]; };
+    uint8_t &x = cell[0x88], &y = cell[0x89];
+    if (x > 0) links[0] = ((Join)JOIN)(self, cell, at(x - 1, y), 0);
+    if (x < self[0x5c]) links[1] = ((Join)JOIN)(self, cell, at(x + 1, y), 1);
+    if (y > 0) links[2] = ((Join)JOIN)(self, cell, at(x, y - 1), 2);
+    if (y < self[0x5d]) links[3] = ((Join)JOIN)(self, cell, at(x, y + 1), 3);
+}
+static const uint8_t w4b_grid_neighbours_original[] = {0x53, 0x56, 0x8b, 0x74, 0x24, 0x0c, 0x33, 0xc0, 0x57};
+REWRITE("Grid::Neighbours7238A0", 0x7238a0, w4b_grid_neighbours_original, (&w4b_grid_neighbours<0x7221e0>), &g_w4b_neighbours);
+REWRITE("Grid::Neighbours7238A0", 0x723990, w4b_grid_neighbours_original, (&w4b_grid_neighbours<0x7223a0>), &g_w4b_neighbours);
+REWRITE("Grid::Neighbours7238A0", 0x723a80, w4b_grid_neighbours_original, (&w4b_grid_neighbours<0x7227f0>), &g_w4b_neighbours);
+
+// ---- Kept::Then: the interface kept in the reference at +REF (looked up the first time) handed on to the next function ------------------
+static volatile long g_w4b_kept_thens;
+template <uint32_t REF, uint32_t ID, uint32_t THEN> static uint32_t __fastcall w4b_kept_then(uint8_t *self) {
+    g_w4b_kept_thens++;
+    return ((uint32_t(__fastcall *)(void *))THEN)(ref_interface<ID>(self + REF));
+}
+static const uint8_t w4b_kept_then_original[] = {0x57, 0x8b, 0xf9, 0x8a, 0x47};
+REWRITE("Kept::Then4C5890", 0x4c5890, w4b_kept_then_original, (&w4b_kept_then<0x5c, 0x12f5300, 0x4d1840>), &g_w4b_kept_thens);
+REWRITE("Kept::Then4C5890", 0x5efd60, w4b_kept_then_original, (&w4b_kept_then<0x40, 0x12f565c, 0x5ec200>), &g_w4b_kept_thens);
+
+// ---- Once::Make: takes two values, makes the shared table the first time (its bit in a global says it's made) and points at it. The table's
+// sixteen arguments are two-byte pairs, (FIRST, 0), (SECOND, 0) then all 0xff; the other fourteen words passed here are not used ----------
+struct W4bUnusedWords {
+    uint32_t words[14];
+};
+static volatile long g_w4b_once_makes;
+template <uint32_t MADE, uint32_t TABLE, uint32_t SECOND, uint32_t FIRST>
+static void *__thiscall w4b_once_make(uint32_t *self, uint32_t *a, uint32_t *b, W4bUnusedWords) {
+    g_w4b_once_makes++;
+    self[1] = *a;
+    self[2] = *b;
+    uint32_t &made = *(uint32_t *)MADE;
+    if (!(made & 1)) {
+        made |= 1;
+        const uint32_t ff = 0xffff;
+        ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t,
+                             uint32_t, uint32_t, uint32_t, uint32_t))0x416110)((void *)TABLE, FIRST, SECOND, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff);
+    }
+    self[0] = TABLE;
+    return self;
+}
+static const uint8_t w4b_once_make_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x54, 0x24, 0x08, 0x83, 0xec, 0x38, 0x56, 0x8b, 0xf1};
+REWRITE("Once::Make696000", 0x696000, w4b_once_make_original, (&w4b_once_make<0x12f8678, 0x12f8650, 0x1d, 7>), &g_w4b_once_makes);
+REWRITE("Once::Make696000", 0x8c8a70, w4b_once_make_original, (&w4b_once_make<0x1311360, 0x1311338, 4, 6>), &g_w4b_once_makes);
+REWRITE("Once::Make696000", 0xc73150, w4b_once_make_original, (&w4b_once_make<0x13e6d38, 0x13e6d10, 0x1d, 6>), &g_w4b_once_makes);

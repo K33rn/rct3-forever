@@ -1151,3 +1151,65 @@
     w4b_leave.prepare = [](const rewrite::Entry *e) { w4b_list = *(uint32_t *)(e->at + 0x3e); w4b_list_saved = *(uint32_t *)(uintptr_t)w4b_list; };
     w4b_leave.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_list = w4b_list_saved; };
     quick(w4b_leave);
+    // Grid::Neighbours: cells at every edge of small grids
+    Test w4b_grid{0x7238a0,
+                  [=](Rng &r) {
+                      fresh(r);
+                      uint8_t *self = arena<uint8_t>(0x800), *cell = arena<uint8_t>(0x400);
+                      for (int i = 0; i < 0x28; i++) arena<uint32_t>(0x400)[i] = r.next();
+                      for (int i = 0; i < 48; i++) arena<uint32_t>(0x300 - 0x40)[i] = r.next();
+                      self[0x54] = (uint8_t)r.range(1, 5);
+                      self[0x5c] = (uint8_t)r.range(0, 3);
+                      self[0x5d] = (uint8_t)r.range(0, 3);
+                      *(void **)(self + 0x58) = arena<void>(0x300);
+                      cell[0x88] = (uint8_t)r.range(0, 4);
+                      cell[0x89] = (uint8_t)r.range(0, 4);
+                      *arena<uint32_t>(0x20) = r.range(0, 1);
+                  },
+                  [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x400)); return Result{}; }};
+    w4b_grid.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x46 + 5 + *(int32_t *)(e->at + 0x47)), (void *)w4b_stub_join}}); };
+    w4b_grid.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_grid);
+    // Kept::Then: kept, or looked up (found or not), in the copy's own reference
+    static uint32_t w4b_ref_off;
+    Test w4b_then{0x4c5890,
+                  [=](Rng &r) {
+                      fresh(r);
+                      iface_handle(r);
+                      uint8_t *ref = arena<uint8_t>(0x800 + w4b_ref_off);
+                      *(void **)(ref + 4) = arena<void>(0x340);
+                      ref[0x18] = (uint8_t)r.range(0, 1);
+                      *(void **)(ref + 0x14) = r.range(0, 1) ? arena<void>(0x380) : nullptr;
+                  },
+                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4b_then.prepare = [](const rewrite::Entry *e) {
+        w4b_ref_off = *(uint8_t *)(e->at + 0xc) - 4;
+        g_iface_id = *(uint32_t **)(e->at + 0x22);
+        stubs_for_now({{(uintptr_t)(e->at + 0x45 + 5 + *(int32_t *)(e->at + 0x46)), (void *)w4b_stub_then}});
+    };
+    w4b_then.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_then);
+    // Once::Make: made already or not, with the flag's other bits random
+    struct W4bWords { uint32_t words[14]; };
+    static uint32_t w4b_made, w4b_made_saved;
+    Test w4b_once{0x696000,
+                  [=](Rng &r) {
+                      fresh(r);
+                      for (int i = 0; i < 4; i++) arena<uint32_t>(0x800)[i] = r.next();
+                      arena<uint32_t>(0x10)[0] = r.next();
+                      arena<uint32_t>(0x10)[1] = r.next();
+                      arena<uint32_t>(0x10)[2] = r.next();
+                  },
+                  [](void *fn) {
+                      uint32_t *a = arena<uint32_t>(0x10);
+                      *(uint32_t *)(uintptr_t)w4b_made = a[2];
+                      W4bWords unused{};
+                      void *back = ((void *(__thiscall *)(void *, void *, void *, W4bWords))fn)(arena<void>(0x800), a, a + 1, unused);
+                      return Result{(uint32_t)(uintptr_t)back ^ *(uint32_t *)(uintptr_t)w4b_made};
+                  }};
+    w4b_once.prepare = [](const rewrite::Entry *e) {
+        w4b_made = *(uint32_t *)(e->at + 0x1a); w4b_made_saved = *(uint32_t *)(uintptr_t)w4b_made;
+        stubs_for_now({{0x416110, (void *)w4b_stub_table}});
+    };
+    w4b_once.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_made = w4b_made_saved; unstub_many(); };
+    quick(w4b_once);
