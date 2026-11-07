@@ -1553,3 +1553,19 @@
                 return Result{};
             },
             [](const rewrite::Entry *) { stubs_for_now({{0xcd78a0, (void *)w2e_make_matrix}, {0x480f80, (void *)w2c_s2<0xe2f5>}}); });
+    // Node::Ctor: a context given or the default taken
+    w2c_add(0x661ab0, w2c_seed,
+            [](void *fn) {
+                static uint32_t was;
+                uint32_t def = w2c_word(g_w2c_a, 0);
+                was = *(uint32_t *)(uintptr_t)def;
+                *(uint32_t *)(uintptr_t)def = arena<uint32_t>(0x20)[1];
+                uint32_t ctx = arena<uint32_t>(0x20)[2] & 1 ? arena<uint32_t>(0x20)[3] | 1 : 0;
+                Result out{((uint32_t(__thiscall *)(void *, uint32_t, void *))fn)(arena<void>(0x100), ctx, arena<void>(0x300))};
+                *(uint32_t *)(uintptr_t)def = was;
+                return out;
+            },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = (uint32_t)(e->at + 0xf);
+                stubs_for_now({{0x8749e0, (void *)w2c_s0<0xe2f6>}, {w2c_target(e->at, 0x2b), (void *)w2c_s2<0xe2f7>}, {0x6610f0, (void *)w2c_s3<0xe2f8>}});
+            });

@@ -2139,3 +2139,25 @@ template <uint32_t OFF> static void __fastcall w2e_apply(uint8_t *self) {
 }
 REWRITE("View::ApplyTransform630250", 0x630250, w2e_apply_original, (&w2e_apply<0x110>), &g_w2e_apply);
 REWRITE("View::ApplyTransform630250", 0x9f6b80, w2e_apply_original, (&w2e_apply<0xe0>), &g_w2e_apply);
+
+// ---- Node::Ctor661AB0: builds the base part with the given context (or the default one when none), the
+// owner and a slot PICKed from the owner for the shared table at OFF, then sets this class's six vtables ---------
+static volatile long g_w2e_ctor;
+static const uint8_t w2e_ctor_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x85, 0xdb, 0x56, 0x57};
+template <uint32_t DEFAULT, uint32_t FLAG, uint32_t OFF, uint32_t PICK, uint32_t V0, uint32_t V4, uint32_t V10, uint32_t V14, uint32_t V18, uint32_t VC8>
+static uint8_t *__thiscall w2e_ctor(uint8_t *self, uint32_t context, void *owner) {
+    g_w2e_ctor++;
+    if (!context) context = *(uint32_t *)DEFAULT;
+    uintptr_t table = ((uintptr_t(__fastcall *)(uint32_t, uint32_t))0x8749e0)(0, 0);
+    uint32_t slot = ((uint32_t(__thiscall *)(void *, uintptr_t, uint32_t))PICK)(owner, table + OFF, FLAG);
+    ((void(__thiscall *)(void *, uint32_t, void *, uint32_t))0x6610f0)(self, context, owner, slot);
+    w2c_u32(self, 0) = V0;
+    w2c_u32(self, 4) = V4;
+    w2c_u32(self, 0x10) = V10;
+    w2c_u32(self, 0x14) = V14;
+    w2c_u32(self, 0x18) = V18;
+    w2c_u32(self, 0xc8) = VC8;
+    return self;
+}
+REWRITE("Node::Ctor661AB0", 0x661ab0, w2e_ctor_original, (&w2e_ctor<0x12f80f8, 1, 0x1b0, 0x6616d0, 0xf4e3c0, 0xf4e3b8, 0xf4e3a8, 0xf4e3a0, 0xf4e398, 0xf4e390>), &g_w2e_ctor);
+REWRITE("Node::Ctor661AB0", 0x661b80, w2e_ctor_original, (&w2e_ctor<0x12f80f4, 0, 0x1c8, 0x6618c0, 0xf4e3fc, 0xf4e3f4, 0xf4e3e4, 0xf4e3dc, 0xf4e3d4, 0xf4e3cc>), &g_w2e_ctor);
