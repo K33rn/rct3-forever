@@ -1572,3 +1572,498 @@ template <uint32_t TABLE> static uint8_t *__thiscall w2c_grid(uint8_t *self, uin
 }
 REWRITE("Ctor::Grid641750", 0x641750, w2c_seh<0xe31bd8>, (&w2c_grid<0xf49aa0>), &g_w2c_grids);
 REWRITE("Ctor::Grid641750", 0x641950, w2c_seh<0xe31bf8>, (&w2c_grid<0xf49aa8>), &g_w2c_grids);
+
+// ======== Fourth pass of wave 2: more counted-text makers behind an exception frame (left out here) ========
+// A counted text made by MAKE from `source` in a fresh 16-byte block, or none when memory runs out.
+template <uint32_t MAKE> static inline uint32_t w2d_text_from(uint32_t source) {
+    void *holder = memory_alloc(0x10);
+    return holder ? ((uint32_t(__thiscall *)(void *, uint32_t))MAKE)(holder, source) : 0;
+}
+
+// ---- Text::FromField: the text made from the source held at OFF, or the empty text when nothing is held ---------------------------------------
+static volatile long g_w2d_from_field;
+template <uint32_t OFF, uint32_t MAKE, uint32_t EMPTY> static uint32_t *__thiscall w2d_from_field(uint8_t *self, uint32_t *out) {
+    g_w2d_from_field++;
+    uint32_t source = w2c_u32(self, OFF);
+    *out = source ? w2d_text_from<MAKE>(source) : ((uint32_t(__fastcall *)(uint8_t))EMPTY)(1);
+    return out;
+}
+REWRITE("Text::FromField61CB70", 0x61cb70, w2c_seh<0xe2c02b>, (&w2d_from_field<0x48, 0xbcf7d0, 0xbd0490>), &g_w2d_from_field);
+REWRITE("Text::FromField61CB70", 0xb0abc0, w2c_seh<0xe8fe4b>, (&w2d_from_field<0x30, 0xbcf850, 0xbd0490>), &g_w2d_from_field);
+
+// ---- Text::Ctor: a text from a string, or the empty text for no string --------------------------------------------------------------------------
+static volatile long g_w2d_text_ctor;
+template <uint32_t MAKE, uint32_t EMPTY> static uint32_t *__thiscall w2d_text_ctor(uint32_t *self, uint32_t string) {
+    g_w2d_text_ctor++;
+    *self = string ? w2d_text_from<MAKE>(string) : ((uint32_t(__fastcall *)(uint8_t))EMPTY)(1);
+    return self;
+}
+REWRITE("Text::Ctor401080", 0x401080, w2c_seh_late, (&w2d_text_ctor<0xbcf850, 0xbd0490>), &g_w2d_text_ctor);
+REWRITE("Text::Ctor401080", 0x4028c0, w2c_seh_late, (&w2d_text_ctor<0xbcfb10, 0xbd0520>), &g_w2d_text_ctor);
+
+// ---- Text::FromOwner: the owner at +0x8c gives its source at INNER; with no owner or no source, a fixed default string ----------------------------
+static volatile long g_w2d_from_owner;
+template <uint32_t INNER, uint32_t DEFAULT> static uint32_t *__thiscall w2d_from_owner(uint8_t *self, uint32_t *out) {
+    g_w2d_from_owner++;
+    uint8_t *owner = (uint8_t *)(uintptr_t)w2c_u32(self, 0x8c);
+    uint32_t source = owner ? w2c_u32(owner, INNER) : 0;
+    *out = source ? w2d_text_from<0xbcf7d0>(source) : w2d_text_from<0xbcf850>(DEFAULT);
+    return out;
+}
+REWRITE("Text::FromOwner7312D0", 0x7312d0, w2c_seh<0xe4cab6>, (&w2d_from_owner<0x8, 0xf6a8e4>), &g_w2d_from_owner);
+REWRITE("Text::FromOwner7312D0", 0x7395f0, w2c_seh<0xe4d6a6>, (&w2d_from_owner<0x4, 0xf6ab84>), &g_w2d_from_owner);
+
+// ---- Text::NameOr: a new reference to the name the object at OFF keeps at +0xf0; with no object, a copy of a fixed string (made and let go) --------
+static volatile long g_w2d_name_or;
+template <uint32_t OFF> static int32_t **__thiscall w2d_name_or(uint8_t *self, int32_t **out, uint32_t) {
+    g_w2d_name_or++;
+    uint8_t *object = (uint8_t *)(uintptr_t)w2c_u32(self, OFF);
+    if (object) {
+        int32_t *name = *(int32_t **)(object + 0xf0);
+        *out = name;
+        ++*name;
+        return out;
+    }
+    int32_t *made = (int32_t *)(uintptr_t)w2d_text_from<0xbcf850>(0xf264ad);
+    *out = made;
+    ++*made;
+    if (--*made == 0) {   // the temporary's reference
+        memory_free_aligned(*(void **)(made + 3));
+        memory_free(made);
+    }
+    return out;
+}
+REWRITE("Text::NameOr99AD00", 0x99ad00, w2c_seh<0xe6f474>, (&w2d_name_or<0x4>), &g_w2d_name_or);
+REWRITE("Text::NameOr99AD00", 0x99fdb0, w2c_seh<0xe6faf4>, (&w2d_name_or<0x28>), &g_w2d_name_or);
+
+// ---- Reset::WithName: clears +0x14, then hands the outer object (0x40 before) a text of a fixed string ------------------------------------------
+static volatile long g_w2d_reset_named;
+template <uint32_t STRING> static void __fastcall w2d_reset_named(uint8_t *self) {
+    g_w2d_reset_named++;
+    w2c_u32(self, 0x14) = 0;
+    uint32_t text = w2d_text_from<0xbcf850>(STRING);
+    ((void(__thiscall *)(void *, uint32_t))0xba9700)(self - 0x40, text);
+}
+REWRITE("Reset::WithNameBAA100", 0xbaa100, w2c_seh<0xe9ba9b>, (&w2d_reset_named<0xf9d868>), &g_w2d_reset_named);
+REWRITE("Reset::WithNameBAA100", 0xbaa180, w2c_seh<0xe9babb>, (&w2d_reset_named<0xf9d884>), &g_w2d_reset_named);
+
+// ---- Add::Made: builds a 20-byte part from `what` (with 0, 1.0 and 0.1) and adds it under `key` --------------------------------------------------
+static volatile long g_w2d_add_made;
+template <uint32_t ADD> static uint32_t __thiscall w2d_add_made(void *self, uint32_t key, uint32_t what) {
+    g_w2d_add_made++;
+    void *holder = memory_alloc(0x14);
+    uint32_t part = holder ? ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))0xca8000)(holder, what, 0, 0x3f800000, 0x3dcccccd) : 0;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))ADD)(self, key, part);
+}
+REWRITE("Add::MadeC33D20", 0xc33d20, w2c_seh<0xea047b>, (&w2d_add_made<0xc33c00>), &g_w2d_add_made);
+REWRITE("Add::MadeC33D20", 0xc34460, w2c_seh<0xea05bb>, (&w2d_add_made<0xc34340>), &g_w2d_add_made);
+
+// ---- Text::SetBuilt: builds a temporary from `value` and the part at +8, stores its text at +0x3c, then lets the temporary go ----------------------
+static volatile long g_w2d_set_built;
+static void __thiscall w2d_set_built(uint8_t *self, uint32_t value) {
+    g_w2d_set_built++;
+    uint32_t temporary[7];   // 0x1c bytes, as the original's frame
+    uint32_t text = ((uint32_t(__thiscall *)(void *, uint32_t, void *, uint32_t))0x7578e0)(temporary, value, self + 8, 0);
+    ((void(__thiscall *)(void *, uint32_t))0xbd14e0)(self + 0x3c, text);
+    ((void(__fastcall *)(void *))0xbd1880)(temporary);
+}
+REWRITE("Text::SetBuilt757AA0", 0x757aa0, w2c_seh<0xe501f8>, (&w2d_set_built), &g_w2d_set_built);
+REWRITE("Text::SetBuilt757AA0", 0x7fa750, w2c_seh<0xe5b088>, (&w2d_set_built), &g_w2d_set_built);
+
+// ---- Dtor::TwoTexts: drops the member texts at A and B (by the copy's own text destructor), then the base when there is one ------------------------
+static volatile long g_w2d_two_texts;
+template <uint32_t A, uint32_t B, uint32_t DROP, uint32_t BASE> static void __fastcall w2d_two_texts(uint8_t *self) {
+    g_w2d_two_texts++;
+    w2c_run<DROP>(self + A);
+    w2c_run<DROP>(self + B);
+    if (BASE) ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Dtor::TwoTexts6E8280", 0x6e8280, w2c_seh<0xe45ed3>, (&w2d_two_texts<0x90, 0x7c, w2c_text_drop, 0x6d6320>), &g_w2d_two_texts);
+REWRITE("Dtor::TwoTexts6E8280", 0xb22ff0, w2c_seh<0xe91db3>, (&w2d_two_texts<0x98, 0x7c, w2c_text_drop, 0xb7a4c0>), &g_w2d_two_texts);
+REWRITE("Dtor::TwoTexts510710", 0x510710, w2c_seh<0xe1989e>, (&w2d_two_texts<0x154, 0x138, w2c_text_drop, 0>), &g_w2d_two_texts);
+REWRITE("Dtor::TwoTexts510710", 0xc25690, w2c_seh<0xe9febe>, (&w2d_two_texts<0x140, 0x100, 0xc21320, 0>), &g_w2d_two_texts);
+
+// ---- Dtor::SharedText: lets go of the counted text at OFF (freeing it with the last reference), then the base --------------------------------------
+static volatile long g_w2d_shared_text;
+template <uint32_t OFF, uint32_t BASE> static void __fastcall w2d_shared_text(uint8_t *self) {
+    g_w2d_shared_text++;
+    int32_t *text = *(int32_t **)(self + OFF);
+    --*text;
+    if (*text == 0 && text) {
+        memory_free_aligned(*(void **)(text + 3));
+        memory_free(text);
+    }
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::SharedText478630", 0x478630, w2c_seh<0xe0d748>, (&w2d_shared_text<0x20, 0x478360>), &g_w2d_shared_text);
+REWRITE("Dtor::SharedText478630", 0x63fea0, w2c_seh<0xe31858>, (&w2d_shared_text<0x14, 0x45b240>), &g_w2d_shared_text);
+
+// ---- Dtor::ThreeFaces: back to this class's three tables (0, 4, 0x11c), its own teardown, the part at 0x11c, then the base ------------------------
+static volatile long g_w2d_three_faces;
+template <uint32_t T0, uint32_t T1, uint32_t T2, uint32_t TEARDOWN> static void __fastcall w2d_three_faces(uint8_t *self) {
+    g_w2d_three_faces++;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 4) = T1;
+    w2c_u32(self, 0x11c) = T2;
+    w2c_run<TEARDOWN>(self);
+    w2c_run<0x6835a0>(self + 0x11c);
+    w2c_run<0x5f7b70>(self);
+}
+REWRITE("Dtor::ThreeFaces8E5D50", 0x8e5d50, w2c_seh<0xe68681>, (&w2d_three_faces<0xf7cb90, 0xf7cb78, 0xf7cb64, 0x8e5910>), &g_w2d_three_faces);
+REWRITE("Dtor::ThreeFaces8E5D50", 0x9efac0, w2c_seh<0xe776d1>, (&w2d_three_faces<0xf864d8, 0xf864c0, 0xf864ac, 0x9eedb0>), &g_w2d_three_faces);
+
+// ---- Dtor::Parts: the part at A, then the one at B (seen from a possibly-null object), then the base ------------------------------------------------
+static volatile long g_w2d_parts;
+template <uint32_t A, uint32_t FA, uint32_t B, uint32_t FB, uint32_t BASE> static void __fastcall w2d_parts(uint8_t *self) {
+    g_w2d_parts++;
+    w2c_run<FA>(self + A);
+    w2c_run<FB>(self ? self + B : nullptr);
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::Parts6B1EB0", 0x6b1eb0, w2c_seh<0xe3e531>, (&w2d_parts<0xf4, 0x6af760, 0xd4, 0x6b0150, 0x6b0ea0>), &g_w2d_parts);
+REWRITE("Dtor::Parts6B1EB0", 0x7ef990, w2c_seh<0xe5a161>, (&w2d_parts<0x174, 0x6a1df0, 0x164, 0xcd2b50, 0x6a28b0>), &g_w2d_parts);
+
+// ---- Dtor::Handles: this class's table; tells the first handle to stop (its own slot), releases the second and forgets it; then the base ---------------
+static volatile long g_w2d_handles;
+template <uint32_t TABLE, uint32_t FIRST, uint32_t SLOT, uint32_t SECOND> static void __fastcall w2d_handles(uint8_t *self) {
+    g_w2d_handles++;
+    w2c_u32(self, 0) = TABLE;
+    if (void **first = *(void ***)(self + FIRST)) ((void(__thiscall *)(void *))(*(void ***)first)[SLOT / 4])(first);
+    if (void **second = *(void ***)(self + SECOND)) {
+        ((void(__stdcall *)(void *))(*(void ***)second)[2])(second);
+        w2c_u32(self, SECOND) = 0;
+    }
+    w2c_run<0xbfc840>(self);
+}
+REWRITE("Dtor::HandlesBFC920", 0xbfc920, w2c_seh<0xe9e848>, (&w2d_handles<0xfa5b68, 0x38, 0x4c, 0x3c>), &g_w2d_handles);
+REWRITE("Dtor::HandlesBFC920", 0xbfc9c0, w2c_seh<0xe9e868>, (&w2d_handles<0xfa5bc8, 0x3c, 0x38, 0x40>), &g_w2d_handles);
+
+// ---- Dtor::Owned: three tables, deletes the object owned at +0x44, the parts at 0x20 and 4, and ends as the shared base's table ------------------------
+static volatile long g_w2d_owned;
+template <uint32_t T0, uint32_t T1, uint32_t T2> static void __fastcall w2d_owned(uint8_t *self) {
+    g_w2d_owned++;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 4) = T1;
+    w2c_u32(self, 0x20) = T2;
+    if (void **owned = *(void ***)(self + 0x44)) ((void(__thiscall *)(void *, uint32_t))(*(void ***)owned)[0])(owned, 1);
+    w2c_run<0x6b0150>(self + 0x20);
+    w2c_run<0x6a1df0>(self + 4);
+    w2c_u32(self, 0) = 0xf2694c;
+}
+REWRITE("Dtor::Owned63AB90", 0x63ab90, w2c_seh<0xe30f46>, (&w2d_owned<0xf49148, 0xf49134, 0xf49108>), &g_w2d_owned);
+REWRITE("Dtor::Owned63AB90", 0x86e450, w2c_seh<0xe624c6>, (&w2d_owned<0xf78500, 0xf784ec, 0xf784c0>), &g_w2d_owned);
+
+// ---- Array::Remake: frees the old elements, makes `count` new ones of SIZE bytes with MAKE (none for zero or no memory), keeps the count -----------
+static volatile long g_w2d_remake;
+template <uint32_t SIZE, uint32_t MAKE> static uint32_t __thiscall w2d_remake(uint32_t *self, uint32_t count) {
+    g_w2d_remake++;
+    if (self[0]) {
+        memory_free_aligned((void *)(uintptr_t)self[0]);
+        self[0] = 0;
+    }
+    if (count) {
+        void *block = memory_alloc_aligned(count * SIZE);
+        if (block) ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0x402b90)(block, SIZE, count, MAKE);
+        self[0] = (uint32_t)(uintptr_t)block;
+    }
+    self[1] = count;
+    return count;
+}
+REWRITE("Array::Remake967360", 0x967360, w2c_seh_late, (&w2d_remake<0x18, 0x966ea0>), &g_w2d_remake);
+REWRITE("Array::Remake967360", 0xafd320, w2c_seh_late, (&w2d_remake<0x30, 0xaf9f20>), &g_w2d_remake);
+
+// ---- Release::Five: lets go of the five parts held at O1, 0xf0, 0xf4, O4 and O5 (the first three by FA, the last two by FB) -----------------------
+static volatile long g_w2d_release_five;
+static const uint8_t w2d_release_five_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x8e};
+template <uint32_t O1, uint32_t O4, uint32_t O5, uint32_t FA, uint32_t FB> static void __fastcall w2d_release_five(uint8_t *self) {
+    g_w2d_release_five++;
+    w2c_run<FA>((void *)(uintptr_t)w2c_u32(self, O1));
+    w2c_run<FA>((void *)(uintptr_t)w2c_u32(self, 0xf0));
+    w2c_run<FA>((void *)(uintptr_t)w2c_u32(self, 0xf4));
+    w2c_run<FB>((void *)(uintptr_t)w2c_u32(self, O4));
+    w2c_run<FB>((void *)(uintptr_t)w2c_u32(self, O5));
+}
+REWRITE("Release::Five501E90", 0x501e90, w2d_release_five_original, (&w2d_release_five<0xe8, 0xfc, 0xf8, 0x6b0990, 0x6b0990>), &g_w2d_release_five);
+REWRITE("Release::Five501E90", 0x501ed0, w2d_release_five_original, (&w2d_release_five<0xe8, 0xfc, 0xf8, 0x6afc20, 0x6afc20>), &g_w2d_release_five);
+REWRITE("Release::Five501E90", 0x63a8a0, w2d_release_five_original, (&w2d_release_five<0xec, 0xe4, 0xe8, 0x6b0990, 0x6afc20>), &g_w2d_release_five);
+
+// ---- Dtor::TextAndPart: lets go of the counted text at TEXT, the part at PART (seen from a possibly-null object), then the base ------------------------
+static volatile long g_w2d_text_part;
+template <uint32_t TEXT, uint32_t PART, uint32_t FPART, uint32_t BASE> static void __fastcall w2d_text_part(uint8_t *self) {
+    g_w2d_text_part++;
+    int32_t *text = *(int32_t **)(self + TEXT);
+    --*text;
+    if (*text == 0 && text) {
+        memory_free_aligned(*(void **)(text + 3));
+        memory_free(text);
+    }
+    w2c_run<FPART>(self ? self + PART : nullptr);
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::TextAndPart45C1C0", 0x45c1c0, w2c_seh<0xe0b4a1>, (&w2d_text_part<0x2f8, 0x2e8, 0x8002c0, 0x68a3d0>), &g_w2d_text_part);
+REWRITE("Dtor::TextAndPart45C1C0", 0x634f10, w2c_seh<0xe2feb1>, (&w2d_text_part<0x150, 0x13c, 0x4535f0, 0x67b9f0>), &g_w2d_text_part);
+
+// ---- Text::ItemOr: a new reference to item `index` of the list (count at COUNT, items at ITEMS); past the end, a copy of a fixed string ---------------
+static volatile long g_w2d_item_or;
+template <uint32_t COUNT, uint32_t ITEMS> static int32_t **__thiscall w2d_item_or(uint8_t *self, int32_t **out, uint32_t index) {
+    g_w2d_item_or++;
+    if (index < w2c_u32(self, COUNT)) {
+        int32_t *item = (*(int32_t ***)(self + ITEMS))[index];
+        *out = item;
+        ++*item;
+        return out;
+    }
+    int32_t *made = (int32_t *)(uintptr_t)w2d_text_from<0xbcfb10>(0xf264ad);
+    *out = made;
+    ++*made;
+    if (--*made == 0) {   // the temporary's reference
+        memory_free_aligned(*(void **)(made + 3));
+        memory_free(made);
+    }
+    return out;
+}
+REWRITE("Text::ItemOrC3C610", 0xc3c610, w2c_seh<0xea1234>, (&w2d_item_or<0x58, 0x5c>), &g_w2d_item_or);
+REWRITE("Text::ItemOrC3C610", 0xc3c6d0, w2c_seh<0xea1264>, (&w2d_item_or<0x50, 0x54>), &g_w2d_item_or);
+
+// ---- Look::Pair: the two bytes the look gives (0x120, 0x121) turned into three values, of kind ONE when +0xc0 is 1 and OTHER otherwise --------------
+static volatile long g_w2d_look_pair;
+template <uint32_t ONE, uint32_t OTHER> static uint32_t *__thiscall w2d_look_pair(uint8_t *self, uint32_t *out) {
+    g_w2d_look_pair++;
+    auto look = (uint8_t *(__fastcall *)(void *))0x4c5890;
+    uint32_t kind = w2c_u32(self, 0xc0) == 1 ? ONE : OTHER;
+    uint8_t second = look(self)[0x121];
+    uint8_t first = look(self)[0x120];
+    uint32_t made[4];
+    uint32_t *value = ((uint32_t * (__fastcall *)(void *, uint32_t, uint32_t, uint32_t))0xa87e00)(made, kind, first, second);
+    out[0] = value[0];
+    out[1] = value[1];
+    out[2] = value[2];
+    return out;
+}
+static const uint8_t w2d_look_pair_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28};
+REWRITE("Look::Pair4C5E10", 0x4c5e10, w2d_look_pair_original, (&w2d_look_pair<9, 3>), &g_w2d_look_pair);
+REWRITE("Look::Pair4C5E10", 0x4c5ea0, w2d_look_pair_original, (&w2d_look_pair<8, 4>), &g_w2d_look_pair);
+
+// ---- Dtor::OwnedPart: three tables, deletes the part at PART and the object owned at OWNED (forgetting both), the parts at 0x20 and 4, then the shared base's table
+static volatile long g_w2d_owned_part;
+template <uint32_t T0, uint32_t T1, uint32_t T2, uint32_t PART, uint32_t OWNED> static void __fastcall w2d_owned_part(uint8_t *self) {
+    g_w2d_owned_part++;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 4) = T1;
+    w2c_u32(self, 0x20) = T2;
+    if (void *part = *(void **)(self + PART)) {
+        w2c_run<0x6af760>(part);
+        memory_free(part);
+    }
+    w2c_u32(self, PART) = 0;
+    if (void **owned = *(void ***)(self + OWNED)) ((void(__thiscall *)(void *, uint32_t))(*(void ***)owned)[0])(owned, 1);
+    w2c_u32(self, OWNED) = 0;
+    w2c_run<0x6b0150>(self + 0x20);
+    w2c_run<0x6a1df0>(self + 4);
+    w2c_u32(self, 0) = 0xf2694c;
+}
+REWRITE("Dtor::OwnedPart63A2A0", 0x63a2a0, w2c_seh<0xe30de6>, (&w2d_owned_part<0xf48e7c, 0xf48e68, 0xf48e3c, 0x40, 0x44>), &g_w2d_owned_part);
+REWRITE("Dtor::OwnedPart63A2A0", 0x7462b0, w2c_seh<0xe4e646>, (&w2d_owned_part<0xf6b230, 0xf6b21c, 0xf6b1f0, 0x44, 0x40>), &g_w2d_owned_part);
+
+// ---- Grid::Mark: sets the flag byte FLAG in every 0x34-byte cell of the clamped rectangle [x0,x1) x [y0,y1), and widens the box kept at BOX ----------------
+static volatile long g_w2d_grid_mark;
+static const uint8_t w2d_grid_mark_original[] = {0x55, 0x8b, 0x6c, 0x24, 0x08, 0x85, 0xed};
+template <uint32_t FLAG, uint32_t BOX> static void __thiscall w2d_grid_mark(uint8_t *self, int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
+    g_w2d_grid_mark++;
+    int32_t width = (int32_t)w2c_u32(self, 0x48);
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > width) x1 = width;
+    if (y1 > (int32_t)w2c_u32(self, 0x4c)) y1 = (int32_t)w2c_u32(self, 0x4c);
+    if (x0 >= x1 || y0 >= y1) return;
+    for (int32_t y = y0; y < y1; y++)
+        for (int32_t x = x0; x < x1; x++) {
+            uint8_t *cells = (uint8_t *)(uintptr_t)w2c_u32(self, 0x50);
+            cells[((int32_t)w2c_u32(self, 0x48) * y + x) * 0x34 + FLAG] = 1;
+        }
+    int32_t *box = (int32_t *)(self + BOX);
+    if (x0 < box[0]) box[0] = x0;
+    if (y0 < box[1]) box[1] = y0;
+    if (x1 > box[2]) box[2] = x1;
+    if (y1 > box[3]) box[3] = y1;
+}
+REWRITE("Grid::Mark874D90", 0x874d90, w2d_grid_mark_original, (&w2d_grid_mark<2, 0x64>), &g_w2d_grid_mark);
+REWRITE("Grid::Mark874D90", 0x874e40, w2d_grid_mark_original, (&w2d_grid_mark<1, 0x54>), &g_w2d_grid_mark);
+
+// ---- Stat::Get: statistic `which`: five plain fields (0 and 3 the same one), or entry `which - 6` of the table when it is in use and in range; else 0 -----
+static volatile long g_w2d_stat_get;
+static const uint8_t w2d_stat_get_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0x05, 0x77, 0x2b};
+template <uint32_t A, uint32_t B, uint32_t C, uint32_t D, uint32_t E, uint32_t ENTRY> static uint32_t __thiscall w2d_stat_get(uint8_t *self, int32_t which) {
+    g_w2d_stat_get++;
+    switch (which) {
+    case 0:
+    case 3: return w2c_u32(self, A);
+    case 1: return w2c_u32(self, B);
+    case 2: return w2c_u32(self, C);
+    case 4: return w2c_u32(self, D);
+    case 5: return w2c_u32(self, E);
+    }
+    if (which < 6 || which > 0x19) return 0;
+    int32_t index = which - 6;
+    int32_t used = (w2c_u32(self, 0x18) & 0x400000) && (int32_t)w2c_u32(self, 0xe4) >= 2 ? (int32_t)w2c_u32(self, 0x11c) : 0;
+    if (index >= used) return 0;
+    return w2c_u32((void *)(uintptr_t)w2c_u32(self, 0x120), index * 12 + ENTRY);
+}
+REWRITE("Stat::GetBC5AB0", 0xbc5ab0, w2d_stat_get_original, (&w2d_stat_get<0x20, 0x28, 0x30, 0xd8, 0x10c, 4>), &g_w2d_stat_get);
+REWRITE("Stat::GetBC5AB0", 0xbc5b40, w2d_stat_get_original, (&w2d_stat_get<0x24, 0x2c, 0x34, 0xdc, 0x110, 8>), &g_w2d_stat_get);
+
+// ---- Pool::Release: marks the block free and merges it with a free neighbour on each side; merged-away headers go on the spare list (FREE, COUNT) --------
+// Block: +0 spare link, +8 in use, +0x10 size, +0x14 previous, +0x18 next. The pool keeps its largest free size at +0x1c.
+static volatile long g_w2d_pool_release;
+static const uint8_t w2d_pool_release_original[] = {0x8b, 0x44, 0x24, 0x04, 0x56, 0x8b, 0x70, 0x14};
+template <uint32_t FREE, uint32_t COUNT> static void __thiscall w2d_pool_release(uint8_t *self, uint8_t *block) {
+    g_w2d_pool_release++;
+    auto field = [](uint8_t *b, uint32_t off) -> uint8_t *& { return *(uint8_t **)(b + off); };
+    auto spare = [](uint8_t *b) {
+        *(uint32_t *)b = *(uint32_t *)(uintptr_t)FREE;
+        *(uint8_t **)(uintptr_t)FREE = b;
+        ++*(uint32_t *)(uintptr_t)COUNT;
+    };
+    w2c_u32(block, 8) = 0;
+    uint8_t *kept = block;
+    uint8_t *before = field(block, 0x14);
+    if (before && !w2c_u32(before, 8)) {
+        w2c_u32(before, 0x10) += w2c_u32(block, 0x10);
+        field(before, 0x18) = field(block, 0x18);
+        if (uint8_t *after = field(block, 0x18)) field(after, 0x14) = before;
+        kept = before;
+        spare(block);
+    }
+    uint8_t *after = field(kept, 0x18);
+    if (after && !w2c_u32(after, 8)) {
+        w2c_u32(kept, 0x10) += w2c_u32(after, 0x10);
+        field(kept, 0x18) = field(after, 0x18);
+        spare(after);
+        if (uint8_t *next = field(kept, 0x18)) field(next, 0x14) = kept;
+    }
+    if ((int32_t)w2c_u32(kept, 0x10) > (int32_t)w2c_u32(self, 0x1c)) w2c_u32(self, 0x1c) = w2c_u32(kept, 0x10);
+}
+REWRITE("Pool::ReleaseBE9590", 0xbe9590, w2d_pool_release_original, (&w2d_pool_release<0x13d0f4c, 0x13d0f54>), &g_w2d_pool_release);
+REWRITE("Pool::ReleaseBE9590", 0xbfd270, w2d_pool_release_original, (&w2d_pool_release<0x13d2a0c, 0x13d2a14>), &g_w2d_pool_release);
+
+// Takes a link {previous, next} out of its ring; a link not properly in a ring stops at a breakpoint, as the original does.
+static inline void w2d_unlink(uint32_t *link) {
+    if (!link) __builtin_debugtrap();
+    uint32_t *previous = (uint32_t *)(uintptr_t)link[0], *next = (uint32_t *)(uintptr_t)link[1];
+    if (!next || !previous || previous[1] != (uint32_t)(uintptr_t)link || next[0] != (uint32_t)(uintptr_t)link) __builtin_debugtrap();
+    previous[1] = link[1];
+    next[0] = link[0];
+    link[0] = 0;
+    link[1] = 0;
+}
+
+// ---- Dtor::Linked: this class's table, out of its ring (link at LINK), frees the shared block at SHARED once it is empty, lets go of the text at TEXT --------
+static volatile long g_w2d_linked;
+template <uint32_t TABLE, uint32_t LINK, uint32_t SHARED, uint32_t TEXT> static void __fastcall w2d_linked(uint8_t *self) {
+    g_w2d_linked++;
+    w2c_u32(self, 0) = TABLE;
+    w2d_unlink((uint32_t *)(self + LINK));
+    uint32_t **shared = (uint32_t **)(uintptr_t)SHARED;
+    if (**(uint32_t **)*shared == 0) {
+        memory_free(*shared);
+        *shared = nullptr;
+    }
+    int32_t *text = *(int32_t **)(self + TEXT);
+    --*text;
+    if (*text == 0 && text) {
+        memory_free_aligned(*(void **)(text + 3));
+        memory_free(text);
+    }
+}
+REWRITE("Dtor::LinkedC18490", 0xc18490, w2c_seh<0xe9fa3b>, (&w2d_linked<0xfafc88, 8, 0x13e33a8, 4>), &g_w2d_linked);
+REWRITE("Dtor::LinkedC18490", 0xc18640, w2c_seh<0xe9fa7b>, (&w2d_linked<0xfafc8c, 8, 0x13e33a4, 4>), &g_w2d_linked);
+REWRITE("Dtor::LinkedC18490", 0xc434f0, w2c_seh<0xea16fb>, (&w2d_linked<0xfb12a4, 4, 0x13e6b50, 0x10>), &g_w2d_linked);
+
+// ---- Dtor::Bound: this class's table; settles first when ACTIVE is set; deletes the bound object (out of its ring first), leaves its own ring, base table ---
+static volatile long g_w2d_bound;
+template <uint32_t T0, uint32_t ACTIVE, uint32_t SETTLE, uint32_t HOLDER, uint32_t LINK, uint32_t T1> static void __fastcall w2d_bound(uint8_t *self) {
+    g_w2d_bound++;
+    w2c_u32(self, 0) = T0;
+    if (w2c_u32(self, ACTIVE)) w2c_run<SETTLE>(self);
+    if (uint8_t *holder = (uint8_t *)(uintptr_t)w2c_u32(self, HOLDER)) {
+        uint8_t *bound = (uint8_t *)(uintptr_t)w2c_u32(holder, 4);
+        w2d_unlink(bound ? (uint32_t *)(bound + 0x10) : nullptr);
+        if (bound) ((void(__thiscall *)(void *, uint32_t))(*(void ***)bound)[0])(bound, 1);
+    }
+    w2d_unlink((uint32_t *)(self + LINK));
+    w2c_u32(self, 0) = T1;
+}
+REWRITE("Dtor::BoundBEBF70", 0xbebf70, w2c_seh<0xe9e5b8>, (&w2d_bound<0xfa57d0, 0x20, 0xbe9dd0, 0x18, 0x24, 0xfa5718>), &g_w2d_bound);
+REWRITE("Dtor::BoundBEBF70", 0xbff950, w2c_seh<0xe9ea68>, (&w2d_bound<0xfa5d28, 0x24, 0xbfdbc0, 0x20, 0x28, 0xfa5c8c>), &g_w2d_bound);
+
+// Lets go of one reference to a counted text, freeing it with the last (the copy at hand checks for none first).
+template <bool CHECK> static inline void w2d_text_release(int32_t *text) {
+    --*text;
+    if (*text == 0 && (!CHECK || text)) {
+        memory_free_aligned(*(void **)(text + 3));
+        memory_free(text);
+    }
+}
+
+// ---- Text::Refresh: asks the source at HOLDER (by FIND) for its current text and keeps it at FIELD when it changed; the asked-for reference is let go -----
+static volatile long g_w2d_refresh;
+template <uint32_t HOLDER, uint32_t FIND, uint32_t FIELD> static void __thiscall w2d_refresh(uint8_t *self, uint32_t) {
+    g_w2d_refresh++;
+    int32_t *asked;
+    int32_t **current = ((int32_t * *(__thiscall *)(void *, int32_t **))FIND)((void *)(uintptr_t)w2c_u32(self, HOLDER), &asked);
+    int32_t *&kept = *(int32_t **)(self + FIELD);
+    if (*current != kept) {
+        w2d_text_release<true>(kept);
+        kept = *current;
+        ++*kept;
+    }
+    w2d_text_release<false>(asked);
+}
+REWRITE("Text::Refresh64A320", 0x64a320, w2c_seh<0xe32cf8>, (&w2d_refresh<0x30, 0x7c8700, 0x28>), &g_w2d_refresh);
+REWRITE("Text::Refresh64A320", 0x7ee540, w2c_seh<0xe59de8>, (&w2d_refresh<0x38, 0x7c8700, 0x30>), &g_w2d_refresh);
+REWRITE("Text::Refresh64A320", 0xa35ee0, w2c_seh<0xe7d698>, (&w2d_refresh<0x2c, 0xa30980, 0x4c>), &g_w2d_refresh);
+
+// ---- Dtor::Queues: deletes everything left in the first queue (+0xc); takes each entry out of the second (+0x1c) and frees it; the shared text at +0x18 -----
+static volatile long g_w2d_queues;
+template <uint32_t T0, uint32_t T1, uint32_t DROP> static void __fastcall w2d_queues(uint8_t *self) {
+    g_w2d_queues++;
+    auto next = (uint8_t * (__fastcall *)(void *))0xbe8400;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 8) = T1;
+    while (void **object = (void **)next(self + 0xc)) ((void(__thiscall *)(void *, uint32_t))(*(void ***)object)[0])(object, 1);
+    while (uint8_t *entry = next(self + 0x1c)) {
+        ((void(__thiscall *)(void *, void *, uint32_t))0xbe8230)(self + 0x1c, entry + 0xc, 0);
+        w2c_run<DROP>(entry + 0xc);
+        memory_free(entry);
+    }
+    w2c_run<0xbe88b0>(self + 0x1c);
+    w2d_text_release<true>(*(int32_t **)(self + 0x18));
+    w2c_run<0xbe88b0>(self + 0xc);
+    w2c_u32(self, 0) = 0xf306b8;
+}
+REWRITE("Dtor::Queues4A71F0", 0x4a71f0, w2c_seh<0xe11069>, (&w2d_queues<0xf30900, 0xf308fc, 0x4a35b0>), &g_w2d_queues);
+REWRITE("Dtor::Queues4A71F0", 0xb943f0, w2c_seh<0xe99e49>, (&w2d_queues<0xf9c7dc, 0xf9c7d8, 0xb92bb0>), &g_w2d_queues);
+
+// ---- Array::Resize: a new block of `count` SIZE-byte elements made by MAKE, the first ones copied over by COPY, the old block freed (not destroyed) -------
+static volatile long g_w2d_resize;
+template <uint32_t SIZE, uint32_t MAKE, uint32_t COPY> static uint32_t __thiscall w2d_resize(uint8_t **self, int32_t count) {
+    g_w2d_resize++;
+    if ((uint32_t)count == (uint32_t)(uintptr_t)self[1]) return (uint32_t)count;
+    uint8_t *block = nullptr;
+    if (count) {
+        block = (uint8_t *)memory_alloc_aligned(count * SIZE);
+        if (block) ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0x402b90)(block, SIZE, count, MAKE);
+        int32_t old = (int32_t)(uintptr_t)self[1];
+        int32_t keep = count > old ? old : count;
+        for (int32_t i = 0; i < keep; i++) ((void(__thiscall *)(void *, void *))COPY)(block + i * SIZE, self[0] + i * SIZE);
+    }
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    self[0] = block;
+    self[1] = (uint8_t *)(uintptr_t)count;
+    return (uint32_t)count;
+}
+REWRITE("Array::Resize430690", 0x430690, w2c_seh_late, (&w2d_resize<0x70, 0x42f2f0, 0x42f9b0>), &g_w2d_resize);
+REWRITE("Array::Resize430690", 0x9e1ab0, w2c_seh_late, (&w2d_resize<0x44, 0x9e1330, 0x9e1340>), &g_w2d_resize);

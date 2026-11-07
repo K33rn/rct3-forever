@@ -304,3 +304,66 @@ static void __stdcall w2c_vector_make(void *at, uint32_t size, uint32_t n, uint3
     W2C_REC(0xe2c9, drop);
 }
 static void *w2c_table[1] = {(void *)w2c_s1<0xe2ca>};
+// ---- fourth pass ----
+// memory always (for the callers that would fault without it)
+static void *__cdecl w2d_alloc_always(uint32_t size) {
+    W2C_REC(0xe2d0, size);
+    return arena<void>(0x1800);
+}
+// makes the text in its block with the seeded reference count (sometimes none), and gives the block back
+static uint32_t __thiscall w2d_text_make(uint32_t *self, uint32_t source) {
+    record(0xe2d1, self);
+    W2C_REC(0xe2d1, source);
+    self[0] = arena<uint32_t>(0x20)[5] % 3;
+    self[3] = arena<uint32_t>(0x20)[2];
+    return (uint32_t)(uintptr_t)self;
+}
+// fills the whole 0x1c-byte temporary, and gives back a value (never the temporary's address)
+static uint32_t __thiscall w2d_build(uint32_t *self, uint32_t value, void *part, uint32_t zero) {
+    W2C_REC(0xe2d2, value);
+    record(0xe2d2, part);
+    W2C_REC(0xe2d2, zero);
+    for (int i = 0; i < 7; i++) self[i] = value + i * 0x101;
+    return W2C_RET;
+}
+static void __fastcall w2d_build_drop(uint32_t *self) {
+    for (int i = 0; i < 7; i++) W2C_REC(0xe2d3, self[i]);
+}
+// a teardown that also notes which table the object has at that moment
+template <uint32_t TAG> static void __fastcall w2d_s_table(uint32_t *self) {
+    record(TAG, self);
+    W2C_REC(TAG, *self);
+}
+template <uint32_t TAG> static void __stdcall w2d_release(void *p) { record(TAG, p); }
+static void __stdcall w2d_vector_make(void *at, uint32_t size, uint32_t n, uint32_t make) {
+    record(0xe2d9, at);
+    W2C_REC(0xe2d9, size);
+    W2C_REC(0xe2d9, n);
+    W2C_REC(0xe2d9, make);
+}
+static uint8_t *__fastcall w2d_look(void *self) {
+    record(0xe2da, self);
+    return arena<uint8_t>(0x600);
+}
+// fills the caller's 16-byte result from the kind and the two bytes, and gives it back
+static uint32_t *__fastcall w2d_look_make(uint32_t *made, uint32_t kind, uint32_t first, uint32_t second) {
+    W2C_REC(0xe2db, kind);
+    W2C_REC(0xe2db, first);
+    W2C_REC(0xe2db, second);
+    for (int i = 0; i < 4; i++) made[i] = kind * 0x1000 + first * 0x10 + second + i * W2C_RET;
+    return made;
+}
+// hands out the text set aside at 0x60 and points the caller either at it or at the slot at 0x3c0
+static int32_t **__thiscall w2d_find_text(void *self, int32_t **out) {
+    record(0xe2dc, self);
+    *out = arena<int32_t *>(0x60)[0];
+    return arena<uint32_t>(0x20)[4] & 1 ? out : arena<int32_t *>(0x3c0);
+}
+// gives the next entry of either queue of the object at 0x100, as many as the seed says
+static void *__fastcall w2d_queue_next(uint8_t *queue) {
+    record(0xe2dd, queue);
+    int which = queue == arena<uint8_t>(0x100) + 0xc ? 0 : 1;
+    uint32_t &taken = arena<uint32_t>(0x40)[which];
+    if (taken >= arena<uint32_t>(0x20)[which] % 4) return nullptr;
+    return arena<uint8_t>(which ? 0x600 : 0x300) + 0x40 * taken++;
+}

@@ -1164,3 +1164,340 @@
                 return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), v[0], v[1], v[2], v[5])};
             },
             [](const rewrite::Entry *) { stubs_for_now({{0x488290, (void *)w2c_grid_base}, {0xddcf99, (void *)w2c_vector_make}}); });
+    // ======== fourth pass ========
+    // Text::FromField: nothing held; held with and without memory; the copy's own field, maker and empty maker
+    w2c_add(0x61cb70,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(uint32_t *)(arena<uint8_t>(0x100) + g_w2c_a) = r.range(0, 2) ? r.next() | 1 : 0;
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x21);
+                stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {w2c_target(e->at, 0x44), (void *)w2c_s1<0xe2d5>}, {w2c_target(e->at, 0x51), (void *)w2c_flag}});
+            });
+    // Text::Ctor: no string; a string with and without memory
+    w2c_add(0x401080, w2c_seed,
+            [](void *fn) {
+                uint32_t s = arena<uint32_t>(0x20)[0] & 1 ? arena<uint32_t>(0x20)[1] | 1 : 0;
+                return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), s)};
+            },
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {w2c_target(e->at, 0x3f), (void *)w2c_s1<0xe2d5>}, {w2c_target(e->at, 0x4c), (void *)w2c_flag}});
+            });
+    // Text::FromOwner: no owner; an owner without and with a source (at the copy's own place); memory or none
+    w2c_add(0x7312d0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x100)[0x8c / 4] = r.range(0, 4) ? arena<void>(0x300) : nullptr;
+                *(uint32_t *)(arena<uint8_t>(0x300) + g_w2c_a) = r.range(0, 2) ? r.next() | 1 : 0;
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x2a);
+                stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {0xbcf7d0, (void *)w2c_s1<0xe2d5>}, {0xbcf850, (void *)w2c_s1<0xe2d6>}});
+            });
+    // Text::NameOr: an object (at the copy's own place) with its name; none, the temporary kept alive or let go
+    w2c_add(0x99ad00,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_a) = r.range(0, 2) ? arena<void>(0x300) : nullptr;
+                *(void **)(arena<uint8_t>(0x300) + 0xf0) = arena<void>(0x380);
+                arena<uint32_t>(0x380)[0] = r.range(1, 5);
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x800), arena<uint32_t>(0x20)[0])}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x1f);
+                stubs_for_now({{0xbcdfc0, (void *)w2d_alloc_always}, {0xbcf850, (void *)w2d_text_make}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Reset::WithName: the text handed over, with and without memory
+    w2c_add(0xbaa100, w2c_seed,
+            [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x140)); return Result{}; },
+            [](const rewrite::Entry *) { stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {0xbcf850, (void *)w2c_s1<0xe2d5>}, {0xba9700, (void *)w2c_s1<0xe2d6>}}); });
+    // Add::Made: the part as built, with and without memory, added by the copy's own adder
+    w2c_add(0xc33d20, w2c_seed,
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0], arena<uint32_t>(0x20)[1])}; },
+            [](const rewrite::Entry *e) { stubs_for_now({{0xbcdfc0, (void *)w2c_alloc}, {0xca8000, (void *)w2c_s4<0xe2d5>}, {w2c_target(e->at, 0x60), (void *)w2c_s2<0xe2d6>}}); });
+    // Text::SetBuilt: the temporary built, its text stored, then let go
+    w2c_add(0x757aa0, w2c_seed,
+            [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0]); return Result{}; },
+            [](const rewrite::Entry *) { stubs_for_now({{0x7578e0, (void *)w2d_build}, {0xbd14e0, (void *)w2c_s1<0xe2d5>}, {0xbd1880, (void *)w2d_build_drop}}); });
+    // Dtor::TwoTexts: both texts, in order, then the copy's own base
+    w2c_add(0x6e8280, w2c_seed, w2c_self_call,
+            [](const rewrite::Entry *e) { stubs_for_now({{0x40f730, (void *)w2c_s0<0xe2d5>}, {w2c_target(e->at, 0x48), (void *)w2d_s_table<0xe2d6>}}); });
+    w2c_add(0x510710, w2c_seed, w2c_self_call,
+            [](const rewrite::Entry *e) { stubs_for_now({{w2c_target(e->at, 0x2c), (void *)w2c_s0<0xe2d5>}}); });
+    // Dtor::SharedText: the text (at the copy's own place) kept or freed
+    w2c_add(0x478630,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_a) = arena<void>(0x300);
+                arena<uint32_t>(0x300)[0] = r.range(1, 4);
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x20);
+                stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}, {w2c_target(e->at, 0x54), (void *)w2c_s0<0xe2d5>}});
+            });
+    // Dtor::ThreeFaces: the tables each step sees
+    w2c_add(0x8e5d50, w2c_seed, w2c_self_call,
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{w2c_target(e->at, 0x42), (void *)w2d_s_table<0xe2d5>}, {0x6835a0, (void *)w2d_s_table<0xe2d6>}, {0x5f7b70, (void *)w2d_s_table<0xe2d7>}});
+            });
+    // Dtor::Parts: an object and no object, with the copy's own parts
+    w2c_add(0x6b1eb0, w2c_seed,
+            [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<uint32_t>(0x20)[0] % 4 ? arena<void>(0x100) : nullptr); return Result{}; },
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{w2c_target(e->at, 0x2e), (void *)w2c_s0<0xe2d5>}, {w2c_target(e->at, 0x43), (void *)w2c_s0<0xe2d6>}, {w2c_target(e->at, 0x52), (void *)w2c_s0<0xe2d7>}});
+            });
+    // Dtor::Handles: each handle there or not; the first called through the copy's own slot
+    w2c_add(0xbfc920,
+            [=](Rng &r) {
+                w2c_seed(r);
+                for (int i = 0; i < 24; i++) arena<void *>(0x400)[i] = (void *)w2c_s0<0xe2d5>;
+                arena<void *>(0x400)[g_w2c_a / 4] = (void *)w2c_s0<0xe2d6>;
+                for (int i = 0; i < 4; i++) arena<void *>(0x480)[i] = (void *)w2d_release<0xe2d7>;
+                arena<void *>(0x300)[0] = arena<void>(0x400);
+                arena<void *>(0x340)[0] = arena<void>(0x480);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_b) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_b + 4) = r.range(0, 3) ? arena<void>(0x340) : nullptr;
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x36);
+                g_w2c_b = *(uint8_t *)(e->at + 0x25);
+                stubs_for_now({{0xbfc840, (void *)w2d_s_table<0xe2d8>}});
+            });
+    // Dtor::Owned: something owned or not; the tables each step sees
+    w2c_add(0x63ab90,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x400)[0] = (void *)w2c_s1<0xe2d5>;
+                arena<void *>(0x300)[0] = arena<void>(0x400);
+                arena<void *>(0x100)[0x44 / 4] = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *) { stubs_for_now({{0x6b0150, (void *)w2d_s_table<0xe2d6>}, {0x6a1df0, (void *)w2d_s_table<0xe2d7>}}); });
+    // Array::Remake: old elements or none; zero or some new ones, with and without memory
+    w2c_add(0x967360,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<uint32_t>(0x100)[0] = r.range(0, 2) ? r.next() | 1 : 0;
+                arena<uint32_t>(0x20)[0] = r.range(0, 3) ? r.range(1, 6) : 0;
+            },
+            w2c_self_arg,
+            [](const rewrite::Entry *) { stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbcdfd0, (void *)w2c_alloc}, {0x402b90, (void *)w2d_vector_make}}); });
+    // Release::Five: every held part, by the copy's own releasers
+    w2c_add(0x501e90, w2c_seed, w2c_self_call,
+            [](const rewrite::Entry *) { stubs_for_now({{0x6b0990, (void *)w2c_s0<0xe2d5>}, {0x6afc20, (void *)w2c_s0<0xe2d6>}}); });
+    // Dtor::TextAndPart: the text (at the copy's own place) kept or freed
+    w2c_add(0x45c1c0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_a) = arena<void>(0x700);
+                arena<uint32_t>(0x700)[0] = r.range(1, 4);
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = w2c_word(e->at, 0x22);
+                stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}, {w2c_target(e->at, 0x65), (void *)w2c_s0<0xe2d5>},
+                               {w2c_target(e->at, 0x74), (void *)w2c_s0<0xe2d6>}});
+            });
+    // Text::ItemOr: inside and past the copy's own count; the temporary kept alive or let go
+    w2c_add(0xc3c610,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(uint32_t *)(arena<uint8_t>(0x100) + g_w2c_a) = r.range(0, 5);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_b) = arena<void>(0x400);
+                for (int i = 0; i < 6; i++) {
+                    arena<void *>(0x400)[i] = arena<void>(0x500 + 0x10 * i);
+                    arena<uint32_t>(0x500 + 0x10 * i)[0] = r.range(1, 5);
+                }
+                arena<uint32_t>(0x20)[1] = r.range(0, 6);
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x800), arena<uint32_t>(0x20)[1])}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x23);
+                g_w2c_b = *(uint8_t *)(e->at + 0x29);
+                stubs_for_now({{0xbcdfc0, (void *)w2d_alloc_always}, {0xbcfb10, (void *)w2d_text_make}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Look::Pair: kind one and the other
+    w2c_add(0x4c5e10,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<uint32_t>(0x100)[0xc0 / 4] = r.range(0, 2) ? 1 : r.next();
+                arena<uint32_t>(0x600)[0x120 / 4] = r.next();
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; },
+            [](const rewrite::Entry *) { stubs_for_now({{0x4c5890, (void *)w2d_look}, {0xa87e00, (void *)w2d_look_make}}); });
+    // Dtor::OwnedPart: the part and the owned object each there or not, at the copy's own places
+    w2c_add(0x63a2a0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x400)[0] = (void *)w2c_s1<0xe2d5>;
+                arena<void *>(0x300)[0] = arena<void>(0x400);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_a) = r.range(0, 3) ? arena<void>(0x380) : nullptr;
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_b) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x3d);
+                g_w2c_b = *(uint8_t *)(e->at + 0x5c);
+                stubs_for_now({{0x6af760, (void *)w2c_s0<0xe2d8>}, {0xbce000, (void *)w2c_free<0xe2d9>}, {0x6b0150, (void *)w2d_s_table<0xe2d6>}, {0x6a1df0, (void *)w2d_s_table<0xe2d7>}});
+            });
+    // Grid::Mark: rectangles inside, clipped, inverted and empty; the copy's own flag and box
+    w2c_add(0x874d90,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<int32_t>(0x100)[0x48 / 4] = r.range(0, 7);
+                arena<int32_t>(0x100)[0x4c / 4] = r.range(0, 7);
+                arena<void *>(0x100)[0x50 / 4] = arena<void>(0x1000);
+                for (int i = 0; i < 4; i++) *(int32_t *)(arena<uint8_t>(0x100) + g_w2c_a + 4 * i) = r.range(-3, 10);
+                for (int i = 0; i < 4; i++) arena<int32_t>(0x20)[i] = r.range(-2, 9);
+            },
+            [](void *fn) {
+                int32_t *v = arena<int32_t>(0x20);
+                ((void(__thiscall *)(void *, int32_t, int32_t, int32_t, int32_t))fn)(arena<void>(0x100), v[0], v[1], v[2], v[3]);
+                return Result{};
+            },
+            [](const rewrite::Entry *e) { g_w2c_a = *(uint8_t *)(e->at + 0x78); });
+    // Stat::Get: every plain statistic, table entries in and out of use and range, and out of range both ways
+    w2c_add(0xbc5ab0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                for (int i = 0; i < 0x50; i++) arena<uint32_t>(0x100)[i] = r.next();
+                for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x400)[i] = r.next();
+                arena<uint32_t>(0x100)[0x18 / 4] = r.range(0, 3) ? 0x400000 | r.next() : r.next() & ~0x400000u;
+                arena<int32_t>(0x100)[0xe4 / 4] = r.range(0, 4);
+                arena<int32_t>(0x100)[0x11c / 4] = r.range(0, 25);
+                arena<void *>(0x100)[0x120 / 4] = arena<void>(0x400);
+                arena<int32_t>(0x20)[0] = r.range(-2, 0x1c);
+            },
+            w2c_self_arg, [](const rewrite::Entry *) {});
+    // Pool::Release: a free or used block on either side, or none; the spare list in the copy's own globals
+    w2c_add(0xbe9590,
+            [=](Rng &r) {
+                w2c_seed(r);
+                uint8_t *b[4] = {arena<uint8_t>(0x300), arena<uint8_t>(0x340), arena<uint8_t>(0x380), arena<uint8_t>(0x3c0)};
+                for (int i = 0; i < 4; i++) {
+                    *(uint32_t *)(b[i] + 8) = r.range(0, 2);
+                    *(int32_t *)(b[i] + 0x10) = r.range(1, 100);
+                    *(uint8_t **)(b[i] + 0x14) = i ? b[i - 1] : nullptr;
+                    *(uint8_t **)(b[i] + 0x18) = i < 3 ? b[i + 1] : nullptr;
+                }
+                if (r.range(0, 4) == 0) *(uint8_t **)(b[1] + 0x14) = nullptr;
+                if (r.range(0, 4) == 0) *(uint8_t **)(b[1] + 0x18) = nullptr;
+                if (r.range(0, 3) == 0) *(uint8_t **)(b[2] + 0x18) = nullptr;
+                arena<int32_t>(0x100)[0x1c / 4] = r.range(0, 250);
+            },
+            [](void *fn) {
+                uint32_t *spare = (uint32_t *)(uintptr_t)g_w2c_a, *count = (uint32_t *)(uintptr_t)g_w2c_b;
+                uint32_t keep[2] = {*spare, *count};
+                *spare = arena<uint32_t>(0x20)[2];
+                *count = arena<uint32_t>(0x20)[3];
+                ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x340));
+                arena<uint32_t>(0x60)[0] = *spare;
+                arena<uint32_t>(0x60)[1] = *count;
+                *spare = keep[0];
+                *count = keep[1];
+                return Result{};
+            },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = w2c_word(e->at, 0x3e);
+                g_w2c_b = w2c_word(e->at, 0x4b);
+            });
+    // a link properly in a ring (a broken one stops at a breakpoint in the original), its neighbours sometimes the same node
+    auto w2d_ring = [](Rng &r, uint8_t *link, uint32_t at_prev, uint32_t at_next) {
+        uint32_t *l = (uint32_t *)link, *p = arena<uint32_t>(at_prev), *n = arena<uint32_t>(at_next);
+        if (r.range(0, 4) == 0) n = p;
+        l[0] = (uint32_t)(uintptr_t)p;
+        l[1] = (uint32_t)(uintptr_t)n;
+        p[1] = (uint32_t)(uintptr_t)l;
+        n[0] = (uint32_t)(uintptr_t)l;
+    };
+    // Dtor::Linked: out of its ring, the shared block still used or empty, the text kept or freed
+    w2c_add(0xc18490,
+            [=](Rng &r) {
+                w2c_seed(r);
+                w2d_ring(r, arena<uint8_t>(0x100) + (g_w2c_a & 0xff), 0x300, 0x340);
+                *(void **)(arena<uint8_t>(0x100) + (g_w2c_a >> 8)) = arena<void>(0x700);
+                arena<uint32_t>(0x700)[0] = r.range(1, 4);
+                arena<void *>(0x380)[0] = arena<void>(0x3c0);
+                arena<uint32_t>(0x3c0)[0] = r.range(0, 2);
+            },
+            [](void *fn) {
+                void **shared = (void **)(uintptr_t)g_w2c_b, *keep = *shared;
+                *shared = arena<void>(0x380);
+                ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                arena<void *>(0x60)[0] = *shared;
+                *shared = keep;
+                return Result{};
+            },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x25) | *(uint8_t *)(e->at + 0x83) << 8;
+                g_w2c_b = w2c_word(e->at, 0x63);
+                stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Dtor::Bound: settling or not; a bound object or none, each taken out of its ring
+    w2c_add(0xbebf70,
+            [=](Rng &r) {
+                w2c_seed(r);
+                uint8_t *self = arena<uint8_t>(0x100);
+                *(uint32_t *)(self + (g_w2c_a & 0xff)) = r.range(0, 2);
+                *(void **)(self + (g_w2c_a >> 8 & 0xff)) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                arena<void *>(0x300)[1] = arena<void>(0x340);
+                arena<void *>(0x340)[0] = arena<void>(0x400);
+                arena<void *>(0x400)[0] = (void *)w2c_s1<0xe2d5>;
+                w2d_ring(r, arena<uint8_t>(0x350), 0x380, 0x3a0);
+                w2d_ring(r, self + (g_w2c_a >> 16), 0x3c0, 0x3e0);
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x26) | *(uint8_t *)(e->at + 0x3a) << 8 | *(uint8_t *)(e->at + 0x85) << 16;
+                stubs_for_now({{w2c_target(e->at, 0x34), (void *)w2d_s_table<0xe2d6>}});
+            });
+    // Text::Refresh: the text unchanged or new, the kept one let go or not, the asked one let go or not
+    w2c_add(0x64a320,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<uint32_t>(0x40)[0] = 0;
+                arena<int32_t>(0x340)[0] = r.range(1, 4);
+                arena<int32_t>(0x380)[0] = r.range(1, 4);
+                *(void **)(arena<uint8_t>(0x100) + (g_w2c_a & 0xff)) = arena<void>(0x340);
+                *(void **)(arena<uint8_t>(0x100) + (g_w2c_a >> 8)) = arena<void>(0x700);
+                arena<void *>(0x60)[0] = arena<void>(r.range(0, 3) ? 0x380 : 0x340);
+                arena<void *>(0x3c0)[0] = arena<void>(r.range(0, 2) ? 0x380 : 0x340);
+            },
+            w2c_void_arg,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x2b) | *(uint8_t *)(e->at + 0x1c) << 8;
+                stubs_for_now({{w2c_target(e->at, 0x23), (void *)w2d_find_text}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Dtor::Queues: each queue empty or holding some; the text kept or freed
+    w2c_add(0x4a71f0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<uint32_t>(0x40)[0] = arena<uint32_t>(0x40)[1] = 0;
+                arena<void *>(0x400)[0] = (void *)w2c_s1<0xe2d5>;
+                for (int i = 0; i < 4; i++) arena<void *>(0x300 + 0x40 * i)[0] = arena<void>(0x400);
+                arena<void *>(0x100)[0x18 / 4] = arena<void>(0x700);
+                arena<int32_t>(0x700)[0] = r.range(1, 4);
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{0xbe8400, (void *)w2d_queue_next}, {0xbe8230, (void *)w2c_s2<0xe2d6>}, {w2c_target(e->at, 0x7a), (void *)w2c_s0<0xe2da>},
+                               {0xbe88b0, (void *)w2d_s_table<0xe2db>}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Array::Resize: the same count; none; fewer and more than before, from an old block or none
+    w2c_add(0x430690,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x100)[0] = r.range(0, 4) ? arena<void>(0x300) : nullptr;
+                arena<int32_t>(0x100)[1] = r.range(0, 5);
+                arena<int32_t>(0x20)[0] = r.range(0, 4) ? r.range(0, 6) : arena<int32_t>(0x100)[1];
+            },
+            w2c_self_arg,
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbcdfd0, (void *)w2d_alloc_always}, {0x402b90, (void *)w2d_vector_make},
+                               {w2c_target(e->at, 0x9c), (void *)w2c_s1<0xe2d5>}});
+            });
