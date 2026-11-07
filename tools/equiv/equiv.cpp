@@ -379,6 +379,7 @@ static void *__thiscall stub_ride_entry(void *self, int32_t i, uint32_t a, uint3
 #include "wave3_stubs.inc"
 #include "wave4_stubs.inc"
 static void __thiscall stub_item_copy(uint32_t *to, uint32_t *from) { record(0x7e, to); record(0x7e, from); to[0] = from[0] ^ 0x77; }
+static void __fastcall stub_destroy_b(void *self) { record(0x7f, self); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4164,6 +4165,78 @@ static std::vector<Test> tests() {
     Test grid_grow_m4{0x850030, grid_grow_m8.setup, grid_grow_m8.call};
     grid_grow_m4.prepare = grid_grow_m8.prepare; grid_grow_m4.finish = grid_grow_m8.finish;
     quick(grid_grow_m4);
+    // solo destructors: members and bases are stand-ins; the shared blocks are counted down to none or not
+    Test solo_pair{0x53cbd0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       for (int k = 0; k < 2; k++) {
+                           int32_t *b = arena<int32_t>(0x500 + k * 0x20);
+                           b[0] = r.range(1, 2); b[3] = (int32_t)r.next();
+                       }
+                       for (uint32_t o : {0x4u, 0x8u, 0x34u, 0x38u}) *(void **)arena<uint8_t>(0x100 + o) = arena<void>(o == 0x4 || o == 0x34 ? 0x500 : 0x520);
+                   },
+                   [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(solo_pair);
+    static uint32_t g_scd_off;
+    Test solo_counted{0xc6c210,
+                      [=](Rng &r) {
+                          fresh(r);
+                          static void *vt[1] = {(void *)stub_deleting};
+                          arena<void *>(0x500)[0] = vt;
+                          arena<int32_t>(0x500)[1] = r.range(1, 2);
+                          *(void **)arena<uint8_t>(0x100 + g_scd_off) = arena<void>(0x500);
+                      },
+                      [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    solo_counted.prepare = [](const rewrite::Entry *e) {
+        g_scd_off = *(uint32_t *)(e->at + 0x1f);
+        stubs_for_now({{(uintptr_t)(e->at + 0x4f + 5 + *(int32_t *)(e->at + 0x50)), (void *)stub_plain_dtor}});
+    };
+    solo_counted.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(solo_counted);
+    Test solo_tables_member{0xac9810, fresh, [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    solo_tables_member.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x40f730, (void *)stub_plain_dtor}, {0xac7eb0, (void *)stub_plain_dtor}}); };
+    solo_tables_member.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(solo_tables_member);
+    Test solo_tables_owned{0x40dca0,
+                           [=](Rng &r) {
+                               fresh(r);
+                               static void *vt[1] = {(void *)stub_deleting};
+                               arena<void *>(0x500)[0] = vt;
+                               arena<void *>(0x100)[0xb] = r.range(0, 1) ? arena<void>(0x500) : nullptr;
+                           },
+                           [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    solo_tables_owned.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x40db80, (void *)stub_plain_dtor}}); };
+    solo_tables_owned.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(solo_tables_owned);
+    static uint32_t g_stb_off;
+    Test solo_table_block{0x86f7b0,
+                          [=](Rng &r) { fresh(r); *(void **)arena<uint8_t>(0x100 + g_stb_off) = r.range(0, 1) ? arena<void>(0x500) : nullptr; },
+                          [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    solo_table_block.prepare = [](const rewrite::Entry *e) { g_stb_off = *(uint8_t *)(e->at + 0x25); };
+    quick(solo_table_block);
+    Test solo_table_member{0x555d70, fresh, [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    solo_table_member.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0x2e + 5 + *(int32_t *)(e->at + 0x2f)), (void *)stub_plain_dtor}, {0x6a1df0, (void *)stub_destroy_b}});
+    };
+    solo_table_member.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(solo_table_member);
+    // Array::ResizeSized: from up to 4 items to 0-6; the constructor and the assign are stand-ins
+    Test solo_resize{0x46cfb0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         *arena<uint32_t>(ALLOC_NEXT) = 0;
+                         int n = r.range(0, 4);
+                         arena<void *>(0x100)[0] = n ? arena<void>(0x400) : nullptr;
+                         arena<int32_t>(0x100)[1] = n;
+                         arena<int32_t>(0x10)[0] = r.range(0, 3) ? r.range(0, 6) : n;
+                     },
+                     [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0])}; }};
+    solo_resize.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}, {0x402b90, (void *)stub_vector_construct4},
+                       {(uintptr_t)(e->at + 0x9c + 5 + *(int32_t *)(e->at + 0x9d)), (void *)stub_item_copy}});
+    };
+    solo_resize.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(solo_resize);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

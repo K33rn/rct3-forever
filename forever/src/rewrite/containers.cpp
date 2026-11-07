@@ -1459,3 +1459,118 @@ REWRITE("Pool::GrowCEF970", 0xcef970, pool_grow_late_original<0xea78db>, (&pool_
 REWRITE("Pool::GrowCEF970", 0xcefa90, pool_grow_late_original<0xea78fb>, (&pool_grow<8, 0xcef680, 0>), &g_pool_grows);
 REWRITE("Pool::Grow8FFA60", 0x8ffa60, pool_grow_original, (&pool_grow<0x60, 0x8fd120, 0x8fde70>), &g_pool_grows);
 REWRITE("Pool::Grow8FFA60", 0x94e380, pool_grow_original, (&pool_grow<0x60, 0x94c9e0, 0x94d9c0>), &g_pool_grows);
+
+// ---- Small destructors (their exception frames only clean up after C++ exceptions, so they are left out) -----------------
+static volatile long g_solo_dtors;
+// Lets go of a shared block {references, ..., +0xc data}: freed with its data at none.
+static void solo_block_release(int32_t *block) {
+    --*block;
+    if (*block || !block) return;
+    memory_free_aligned((void *)(uintptr_t)block[3]);
+    memory_free(block);
+}
+// Pair::Destroy: the shared blocks at +SECOND, then +FIRST.
+template <uint32_t FIRST, uint32_t SECOND> static void __fastcall solo_pair_destroy(uint8_t *self) {
+    g_solo_dtors++;
+    solo_block_release(*(int32_t **)(self + SECOND));
+    solo_block_release(*(int32_t **)(self + FIRST));
+}
+// Counted::Destroy: drops a counted member (+4 count; deleted at none), then the base destructor.
+template <uint32_t OFF, uint32_t BASE> static void __fastcall solo_counted_destroy(uint8_t *self) {
+    g_solo_dtors++;
+    uint8_t *member = *(uint8_t **)(self + OFF);
+    --*(int32_t *)(member + 4);
+    member = *(uint8_t **)(self + OFF);
+    if (!*(int32_t *)(member + 4) && member) ((void(__thiscall *)(void *, int32_t))(*(void ***)member)[0])(member, 1);
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+// Three tables, a member at +0x108 destroyed, then the base (0xAC7EB0).
+template <uint32_t T0, uint32_t T1, uint32_t T2> static void __fastcall solo_tables_member(uint32_t *self) {
+    g_solo_dtors++;
+    self[0] = T0;
+    self[1] = T1;
+    self[0xd4 / 4] = T2;
+    ((void(__fastcall *)(void *))0x40f730)((uint8_t *)self + 0x108);
+    ((void(__fastcall *)(void *))0xac7eb0)(self);
+}
+// Three tables (+0, +0x14, +0x18), the owned object at +0x2c deleted, then the base (0x40DB80).
+template <uint32_t T0, uint32_t T1, uint32_t T2> static void __fastcall solo_tables_owned(uint32_t *self) {
+    g_solo_dtors++;
+    self[0] = T0;
+    self[5] = T1;
+    self[6] = T2;
+    void *owned = (void *)(uintptr_t)self[0xb];
+    if (owned) ((void(__thiscall *)(void *, int32_t))(*(void ***)owned)[0])(owned, 1);
+    ((void(__fastcall *)(void *))0x40db80)(self);
+}
+// The table, the block at +OFF freed and cleared, then the base table (0xF2694C).
+template <uint32_t TABLE, uint32_t OFF> static void __fastcall solo_table_block(uint32_t *self) {
+    g_solo_dtors++;
+    self[0] = TABLE;
+    void *&block = *(void **)((uint8_t *)self + OFF);
+    if (block) {
+        memory_free_aligned(block);
+        block = nullptr;
+    }
+    self[0] = 0xf2694c;
+}
+// The table, the member at +0x1c destroyed (MEMBER), then the base (0x6A1DF0).
+template <uint32_t TABLE, uint32_t MEMBER> static void __fastcall solo_table_member(uint32_t *self) {
+    g_solo_dtors++;
+    self[0] = TABLE;
+    ((void(__fastcall *)(void *))MEMBER)((uint8_t *)self + 0x1c);
+    ((void(__fastcall *)(void *))0x6a1df0)(self);
+}
+
+// ---- Array::ResizeSized: as Array::Resize61C320 for items of SIZE bytes (not a power of two) --------------------------------
+static volatile long g_solo_resizes;
+template <uint32_t SIZE, uintptr_t CTOR, uintptr_t ASSIGN> static int32_t __thiscall solo_resize(uint8_t **self, int32_t count) {
+    g_solo_resizes++;
+    int32_t old_count = *(int32_t *)(self + 1);
+    if (count == old_count) return count;
+    uint8_t *data = nullptr;
+    if (count) {
+        data = (uint8_t *)memory_alloc_aligned((uint32_t)count * SIZE);
+        if (data) ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0x402b90)(data, SIZE, count, (void *)CTOR);
+        int32_t kept = count < old_count ? count : old_count;
+        for (int32_t i = 0; i < kept; i++)
+            ((void(__thiscall *)(uintptr_t, uintptr_t))ASSIGN)((uintptr_t)data + (uint32_t)i * SIZE, (uintptr_t)self[0] + (uint32_t)i * SIZE);
+    }
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    self[0] = data;
+    *(int32_t *)(self + 1) = count;
+    return count;
+}
+static const uint8_t solo_o_53cbd0[] = {0x6a, 0xff, 0x68, 0xeb, 0xbc, 0xe1, 0x00, 0x64};
+REWRITE("Pair::Destroy53CBD0", 0x53cbd0, solo_o_53cbd0, (&solo_pair_destroy<0x34, 0x38>), &g_solo_dtors);
+static const uint8_t solo_o_7b4e80[] = {0x6a, 0xff, 0x68, 0x2b, 0x6e, 0xe5, 0x00, 0x64};
+REWRITE("Pair::Destroy53CBD0", 0x7b4e80, solo_o_7b4e80, (&solo_pair_destroy<0x4, 0x8>), &g_solo_dtors);
+static const uint8_t solo_o_c6c210[] = {0x6a, 0xff, 0x68, 0xb8, 0x32, 0xea, 0x00, 0x64};
+REWRITE("Counted::DestroyC6C210", 0xc6c210, solo_o_c6c210, (&solo_counted_destroy<0xf4, 0xc69a30>), &g_solo_dtors);
+static const uint8_t solo_o_c6e9d0[] = {0x6a, 0xff, 0x68, 0x18, 0x3a, 0xea, 0x00, 0x64};
+REWRITE("Counted::DestroyC6C210", 0xc6e9d0, solo_o_c6e9d0, (&solo_counted_destroy<0x100, 0xc69a30>), &g_solo_dtors);
+static const uint8_t solo_o_c6ee50[] = {0x6a, 0xff, 0x68, 0x08, 0x3b, 0xea, 0x00, 0x64};
+REWRITE("Counted::DestroyC6C210", 0xc6ee50, solo_o_c6ee50, (&solo_counted_destroy<0xe8, 0xc67520>), &g_solo_dtors);
+static const uint8_t solo_o_ac9810[] = {0x6a, 0xff, 0x68, 0xf8, 0x92, 0xe8, 0x00, 0x64};
+REWRITE("Tables::DestroyAC9810", 0xac9810, solo_o_ac9810, (&solo_tables_member<0xf93b80, 0xf93b68, 0xf93b5c>), &g_solo_dtors);
+static const uint8_t solo_o_ac9cf0[] = {0x6a, 0xff, 0x68, 0xb8, 0x93, 0xe8, 0x00, 0x64};
+REWRITE("Tables::DestroyAC9810", 0xac9cf0, solo_o_ac9cf0, (&solo_tables_member<0xf93ca8, 0xf93c90, 0xf93c84>), &g_solo_dtors);
+static const uint8_t solo_o_40dca0[] = {0x6a, 0xff, 0x68, 0x58, 0x54, 0xe0, 0x00, 0x64};
+REWRITE("Tables::Destroy40DCA0", 0x40dca0, solo_o_40dca0, (&solo_tables_owned<0xf26988, 0xf26980, 0xf26978>), &g_solo_dtors);
+static const uint8_t solo_o_40ddf0[] = {0x6a, 0xff, 0x68, 0x98, 0x54, 0xe0, 0x00, 0x64};
+REWRITE("Tables::Destroy40DCA0", 0x40ddf0, solo_o_40ddf0, (&solo_tables_owned<0xf269ac, 0xf269a4, 0xf2699c>), &g_solo_dtors);
+static const uint8_t solo_o_86f7b0[] = {0x6a, 0xff, 0x68, 0xd8, 0x26, 0xe6, 0x00, 0x64};
+REWRITE("Block::Destroy86F7B0", 0x86f7b0, solo_o_86f7b0, (&solo_table_block<0xf7868c, 0x10>), &g_solo_dtors);
+static const uint8_t solo_o_8e31e0[] = {0x6a, 0xff, 0x68, 0x48, 0x84, 0xe6, 0x00, 0x64};
+REWRITE("Block::Destroy86F7B0", 0x8e31e0, solo_o_8e31e0, (&solo_table_block<0xf7c9dc, 0x14>), &g_solo_dtors);
+static const uint8_t solo_o_555d70[] = {0x6a, 0xff, 0x68, 0xb8, 0xe0, 0xe1, 0x00, 0x64};
+REWRITE("Member::Destroy555D70", 0x555d70, solo_o_555d70, (&solo_table_member<0xf3a090, 0x555dd0>), &g_solo_dtors);
+static const uint8_t solo_o_556180[] = {0x6a, 0xff, 0x68, 0x18, 0xe1, 0xe1, 0x00, 0x64};
+REWRITE("Member::Destroy555D70", 0x556180, solo_o_556180, (&solo_table_member<0xf3a1e4, 0x5561e0>), &g_solo_dtors);
+static const uint8_t solo_o_46cfb0[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff};
+REWRITE("Array::ResizeSized46CFB0", 0x46cfb0, solo_o_46cfb0, (&solo_resize<0x50, 0x46c470, 0x46c480>), &g_solo_resizes);
+static const uint8_t solo_o_939ac0[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff};
+REWRITE("Array::ResizeSized46CFB0", 0x939ac0, solo_o_939ac0, (&solo_resize<0x50, 0x939310, 0x939550>), &g_solo_resizes);
