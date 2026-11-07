@@ -165,3 +165,30 @@ static uint32_t __fastcall w4b_stub_path_a(void *self) { record(0x405d, self); r
 static uint32_t __fastcall w4b_stub_path_b(void *self) { record(0x405e, self); return 0xb2; }
 static void *__fastcall w4b_stub_view(void *self) { record(0x405f, self); return arena<void>(0x700); }
 static void *__fastcall w4b_stub_view_matrix(void *self) { record(0x4060, self); return arena<void>(0x600); }
+// ---- third batch ----
+static uint32_t w4c_target(const rewrite::Entry *e, uint32_t off) { uint32_t at = (uint32_t)(uintptr_t)e->at + off; return at + 4 + *(int32_t *)(uintptr_t)at; }
+// no memory when the word at 0x20 is odd
+static void *__cdecl w4c_stub_alloc(uint32_t size) { record(0x4c00, (void *)(uintptr_t)size); return *arena<uint32_t>(0x20) & 1 ? nullptr : arena<void>(0xc00); }
+static uint32_t __thiscall w4c_stub_ctor1(void *self, uint32_t a) { record(0x4c01, self); record(0x4c01, (void *)(uintptr_t)a); return (uint32_t)(uintptr_t)self + 3; }
+static uint32_t __fastcall w4c_stub_default(uint32_t cl) { record(0x4c02, (void *)(uintptr_t)(cl & 0xff)); return 0x1234; }
+// a key object on the stack: filled whole, its address not recorded
+static void *__thiscall w4c_stub_key(uint32_t *key, uint32_t a, uint32_t b) {
+    record(0x4c03, (void *)(uintptr_t)a); record(0x4c03, (void *)(uintptr_t)b);
+    for (int i = 0; i < 5; i++) key[i] = 0x5a5a0000 + i;
+    return arena<void>(0xc40);
+}
+static void __fastcall w4c_stub_key_gone(uint32_t *key) { record(0x4c04, (void *)(uintptr_t)key[0]); record(0x4c04, (void *)(uintptr_t)key[4]); }
+static uint32_t __fastcall w4c_stub_amount(void *self) { record(0x4c05, self); return (uint32_t)(uintptr_t)self & 0xfff; }
+static uint32_t __fastcall w4c_stub_amount2(void *self) { record(0x4c06, self); return ((uint32_t)(uintptr_t)self & 0xfff) * 3; }
+static void __thiscall w4c_stub_place(void *self, uint32_t a, const uint32_t *m) {
+    record(0x4c07, self); record(0x4c07, (void *)(uintptr_t)a);
+    for (int i = 0; i < 16; i++) record(0x4c07, (void *)(uintptr_t)m[i]);
+}
+static uint32_t __fastcall w4c_stub_then(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x4c08, self); record(0x4c08, (void *)(uintptr_t)a); record(0x4c08, (void *)(uintptr_t)b); record(0x4c08, (void *)(uintptr_t)c); return a ^ b ^ c; }
+static uint32_t __thiscall w4c_stub_job(uint32_t *job, void *self, uint32_t argument) {
+    record(0x4c09, self); record(0x4c09, (void *)(uintptr_t)argument);
+    for (int i : {0, 1, 3, 0x1010 / 4}) record(0x4c09, (void *)(uintptr_t)job[i]);
+    for (int i = 0x1114 / 4; i <= 0x1138 / 4; i++) record(0x4c09, (void *)(uintptr_t)job[i]);
+    return argument + 1;
+}
+struct W4cWords { uint32_t words[13]; };

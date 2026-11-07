@@ -1335,3 +1335,219 @@ static const uint8_t w4b_scanner_switch_a[] = {0xa1, 0xf8, 0x32, 0x3e, 0x01, 0x3
 static const uint8_t w4b_scanner_switch_b[] = {0xa1, 0x14, 0x70, 0x3f, 0x01, 0x3b, 0xc1};
 REWRITE("Scanner::SwitchC0AC90", 0xc0ac90, w4b_scanner_switch_a, (&w4b_scanner_switch<0x13e32f8, 0x13d32c0, 0x13e32fc, 0x13e32e8, 0x13e32e4, 0x13e3304, 0x13e32f0>), &g_w4b_switches);
 REWRITE("Scanner::SwitchC0AC90", 0xcbc740, w4b_scanner_switch_b, (&w4b_scanner_switch<0x13f7014, 0x13e6fe8, 0x13f7018, 0x13f7004, 0x13f6ffc, 0x13f7020, 0x13f700c>), &g_w4b_switches);
+
+// ======== third batch ========
+// Functions with an exception frame start the same way, apart from the handler they name.
+template <uint32_t HANDLER> static const uint8_t w4c_seh[] = {0x6a, 0xff, 0x68, (uint8_t)HANDLER, (uint8_t)(HANDLER >> 8), (uint8_t)(HANDLER >> 16), 0x00, 0x64, 0xa1, 0, 0, 0, 0};
+static inline void w4c_destroy_owned(void *owned) {
+    if (owned) ((void(__thiscall *)(void *, uint32_t))(*(void ***)owned)[0])(owned, 1);
+}
+
+// ---- Part::Destroy: destroys the part at +4, then falls back to the plain table --------------------------------------------------
+static volatile long g_w4c_part_destroys;
+template <uint32_t PART> static void __fastcall w4c_part_destroy(uint32_t *self) {
+    g_w4c_part_destroys++;
+    ((void(__fastcall *)(void *))PART)(self + 1);
+    self[0] = 0xf2694c;
+}
+REWRITE("Part::Destroy6A5A80", 0x6a5a80, (w4c_seh<0xe3d4e8>), (&w4c_part_destroy<0xcd2b50>), &g_w4c_part_destroys);
+REWRITE("Part::Destroy6A5A80", 0x79b440, (w4c_seh<0xe55398>), (&w4c_part_destroy<0x8fb110>), &g_w4c_part_destroys);
+REWRITE("Part::Destroy6A5A80", 0x9e4740, (w4c_seh<0xe76558>), (&w4c_part_destroy<0xcd2b50>), &g_w4c_part_destroys);
+REWRITE("Part::Destroy6A5A80", 0xb830f0, (w4c_seh<0xe98828>), (&w4c_part_destroy<0xbc2cb0>), &g_w4c_part_destroys);
+
+// ---- Handle::Named: fills a handle to a fresh 16-byte reference to a fixed name (none without memory) ---------------------------------
+static volatile long g_w4c_nameds;
+template <uint32_t NAME> static uint32_t *__thiscall w4c_handle_named(uint32_t *out) {
+    g_w4c_nameds++;
+    void *memory = memory_alloc(0x10);
+    out[0] = memory ? ((uint32_t(__thiscall *)(void *, uint32_t))0xbcf850)(memory, NAME) : 0;
+    return out;
+}
+REWRITE("Handle::Named453340", 0x453340, (w4c_seh<0xe0a71b>), (&w4c_handle_named<0xf28e94>), &g_w4c_nameds);
+REWRITE("Handle::Named453340", 0x49d370, (w4c_seh<0xe0fd3b>), (&w4c_handle_named<0xf3058c>), &g_w4c_nameds);
+REWRITE("Handle::Named453340", 0x6248d0, (w4c_seh<0xe2cfdb>), (&w4c_handle_named<0x10ec6b0>), &g_w4c_nameds);
+REWRITE("Handle::Named453340", 0xa52ac0, (w4c_seh<0xe813eb>), (&w4c_handle_named<0xf8ea44>), &g_w4c_nameds);
+
+// ---- Five-table destructor: sets its five tables, destroys what it owns at +0x154, then runs the base destructor ---------------
+static volatile long g_w4c_five_destroys;
+template <uint32_t T0, uint32_t T1, uint32_t T2, uint32_t T3, uint32_t T4> static void __fastcall w4c_five_destroy(uint8_t *self) {
+    g_w4c_five_destroys++;
+    *(uint32_t *)self = T0;
+    *(uint32_t *)(self + 4) = T1;
+    *(uint32_t *)(self + 0xd4) = T2;
+    *(uint32_t *)(self + 0xe8) = T3;
+    *(uint32_t *)(self + 0xf0) = T4;
+    w4c_destroy_owned(*(void **)(self + 0x154));
+    ((void(__fastcall *)(void *))0x63a030)(self);
+}
+REWRITE("Five::Destroy6CC840", 0x6cc840, (w4c_seh<0xe41d08>), (&w4c_five_destroy<0xf63348, 0xf63330, 0xf6332c, 0xf63318, 0xf632ec>), &g_w4c_five_destroys);
+REWRITE("Five::Destroy6CC840", 0x6e9270, (w4c_seh<0xe46468>), (&w4c_five_destroy<0xf661f8, 0xf661e0, 0xf661dc, 0xf661c8, 0xf6619c>), &g_w4c_five_destroys);
+REWRITE("Five::Destroy6CC840", 0x7eec40, (w4c_seh<0xe59f98>), (&w4c_five_destroy<0xf73ec8, 0xf73eb0, 0xf73eac, 0xf73e98, 0xf73e6c>), &g_w4c_five_destroys);
+REWRITE("Five::Destroy6CC840", 0x97c770, (w4c_seh<0xe6c958>), (&w4c_five_destroy<0xf7ee10, 0xf7edfc, 0xf7edf8, 0xf7ede4, 0xf7edb8>), &g_w4c_five_destroys);
+
+// ---- Three-table destructor: destroys what it owns at +OWNED, the member at +0xd4, then the base --------------------------------------------
+static volatile long g_w4c_three_destroys;
+template <uint32_t T0, uint32_t T1, uint32_t T2, uint32_t OWNED, uint32_t MEMBER> static void __fastcall w4c_three_destroy(uint8_t *self) {
+    g_w4c_three_destroys++;
+    *(uint32_t *)self = T0;
+    *(uint32_t *)(self + 4) = T1;
+    *(uint32_t *)(self + 0xd4) = T2;
+    w4c_destroy_owned(*(void **)(self + OWNED));
+    ((void(__fastcall *)(void *))MEMBER)(self + 0xd4);
+    ((void(__fastcall *)(void *))0x6b0ea0)(self);
+}
+REWRITE("Three::Destroy623BC0", 0x623bc0, (w4c_seh<0xe2cea1>), (&w4c_three_destroy<0xf44490, 0xf44478, 0xf44464, 0xf0, 0x6835a0>), &g_w4c_three_destroys);
+REWRITE("Three::Destroy623BC0", 0x6ea7b0, (w4c_seh<0xe46781>), (&w4c_three_destroy<0xf66728, 0xf66710, 0xf6670c, 0xe4, 0x440ed0>), &g_w4c_three_destroys);
+REWRITE("Three::Destroy623BC0", 0xa21410, (w4c_seh<0xe7ad11>), (&w4c_three_destroy<0xf885c0, 0xf885a8, 0xf8859c, 0xf4, 0x67d000>), &g_w4c_three_destroys);
+REWRITE("Three::Destroy623BC0", 0xa21ab0, (w4c_seh<0xe7ae01>), (&w4c_three_destroy<0xf887e8, 0xf887d0, 0xf887c4, 0xf4, 0x67d000>), &g_w4c_three_destroys);
+
+// ---- Four-table destructor: destroys the member at +MEMBER, then the base ------------------------------------------------------------
+static volatile long g_w4c_four_destroys;
+template <uint32_t T0, uint32_t T1, uint32_t T2, uint32_t T3, uint32_t MEMBER> static void __fastcall w4c_four_destroy(uint8_t *self) {
+    g_w4c_four_destroys++;
+    *(uint32_t *)self = T0;
+    *(uint32_t *)(self + 4) = T1;
+    *(uint32_t *)(self + 0xd4) = T2;
+    *(uint32_t *)(self + 0xdc) = T3;
+    ((void(__fastcall *)(void *))0x40f730)(self + MEMBER);
+    ((void(__fastcall *)(void *))0x67b9f0)(self);
+}
+REWRITE("Four::DestroyA80350", 0xa80350, (w4c_seh<0xe83ea8>), (&w4c_four_destroy<0xf900c8, 0xf900b4, 0xf900a0, 0xf9009c, 0x13c>), &g_w4c_four_destroys);
+REWRITE("Four::DestroyA80350", 0xa85640, (w4c_seh<0xe84888>), (&w4c_four_destroy<0xf910c0, 0xf910a8, 0xf91094, 0xf91090, 0x144>), &g_w4c_four_destroys);
+REWRITE("Four::DestroyA80350", 0xac5300, (w4c_seh<0xe88cb8>), (&w4c_four_destroy<0xf936b0, 0xf9369c, 0xf93688, 0xf93684, 0x140>), &g_w4c_four_destroys);
+REWRITE("Four::DestroyA80350", 0xb0f7d0, (w4c_seh<0xe90598>), (&w4c_four_destroy<0xf97cb0, 0xf97c98, 0xf97c84, 0xf97c80, 0x13c>), &g_w4c_four_destroys);
+
+// ---- Holder destructor: the sub-object at +SUB goes back to its base table, what it owned at the next word is destroyed and the base runs ---
+static volatile long g_w4c_holder_destroys;
+template <uint32_t T0, uint32_t T1, uint32_t T2, uint32_t SUB, uint32_t BASE> static void __fastcall w4c_holder_destroy(uint8_t *self) {
+    g_w4c_holder_destroys++;
+    *(uint32_t *)self = T0;
+    *(uint32_t *)(self + 4) = T1;
+    *(uint32_t *)(self + 0xd4) = T2;
+    *(uint32_t *)(self + SUB) = 0xf80c2c;
+    w4c_destroy_owned(*(void **)(self + SUB + 4));
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Holder::Destroy99B1F0", 0x99b1f0, (w4c_seh<0xe6f4f8>), (&w4c_holder_destroy<0xf80d88, 0xf80d74, 0xf80d68, 0x12c, 0x9c14e0>), &g_w4c_holder_destroys);
+REWRITE("Holder::Destroy99B1F0", 0x99b320, (w4c_seh<0xe6f518>), (&w4c_holder_destroy<0xf80ec0, 0xf80ea8, 0xf80e9c, 0x114, 0xad6a10>), &g_w4c_holder_destroys);
+REWRITE("Holder::Destroy99B1F0", 0x99b3d0, (w4c_seh<0xe6f538>), (&w4c_holder_destroy<0xf80ff8, 0xf80fe0, 0xf80fd4, 0x114, 0xaefe80>), &g_w4c_holder_destroys);
+REWRITE("Holder::Destroy99B1F0", 0x9a3bf0, (w4c_seh<0xe70598>), (&w4c_holder_destroy<0xf81c30, 0xf81c1c, 0xf81c10, 0x114, 0xaf2010>), &g_w4c_holder_destroys);
+
+// ---- Mode::Handle: in the one mode (+0x190 is MODE) gives a handle to the global name, or the default handle without one; otherwise asks FALLBACK --
+static volatile long g_w4c_mode_handles;
+template <uint32_t MODE, uint32_t FALLBACK, uint32_t NAME> static uint32_t *__thiscall w4c_mode_handle(uint8_t *self, uint32_t *out) {
+    g_w4c_mode_handles++;
+    if (*(uint32_t *)(self + 0x190) != MODE) {
+        ((void(__thiscall *)(void *, void *))FALLBACK)(self, out);
+        return out;
+    }
+    uint32_t name = *(uint32_t *)NAME;
+    if (!name) {
+        out[0] = ((uint32_t(__fastcall *)(uint8_t))0xbd0490)(1);
+        return out;
+    }
+    void *memory = memory_alloc(0x10);
+    out[0] = memory ? ((uint32_t(__thiscall *)(void *, uint32_t))0xbcf7d0)(memory, name) : 0;
+    return out;
+}
+REWRITE("Mode::Handle756B00", 0x756b00, (w4c_seh<0xe4ff5b>), (&w4c_mode_handle<0xd, 0x7c8b10, 0x12fb234>), &g_w4c_mode_handles);
+REWRITE("Mode::Handle756B00", 0x799ff0, (w4c_seh<0xe551ab>), (&w4c_mode_handle<0xd, 0x7c8b10, 0x12f8fc0>), &g_w4c_mode_handles);
+REWRITE("Mode::Handle756B00", 0x7e98a0, (w4c_seh<0xe5979b>), (&w4c_mode_handle<0xd, 0x7c8b10, 0x12f8fc0>), &g_w4c_mode_handles);
+REWRITE("Mode::Handle756B00", 0x7f8ef0, (w4c_seh<0xe5af2b>), (&w4c_mode_handle<0x16, 0x75cdf0, 0x12f98b8>), &g_w4c_mode_handles);
+
+// ---- Registered::Make: builds the object; with no owner given uses the shared one. An owner not yet ready registers a key made from the
+// offset of the part at +4; the shared owner is then marked ready ---------------------------------------------------------------------
+static volatile long g_w4c_registereds;
+template <uint32_t T0, uint32_t T1, uint32_t SHARED> static uint32_t *__thiscall w4c_registered_make(uint32_t *self, uint8_t *owner) {
+    g_w4c_registereds++;
+    self[0] = 0xf2694c;
+    ((void(__thiscall *)(void *, void *))0x967c10)(self + 1, self);
+    self[0] = T0;
+    self[1] = T1;
+    bool shared = !owner;
+    if (shared) owner = *(uint8_t **)SHARED;
+    if (!owner[4]) {
+        uint32_t key[5];
+        void *made = ((void *(__thiscall *)(void *, uint32_t, uint32_t))0xbeca40)(key, 0x133d070, 4);
+        ((void(__thiscall *)(void *, void *))0xbecc10)(owner, made);
+        ((void(__fastcall *)(void *))0xbec5e0)(key);
+    }
+    if (shared) (*(uint8_t **)SHARED)[4] = 1;
+    return self;
+}
+REWRITE("Registered::Make968000", 0x968000, (w4c_seh<0xe6b7eb>), (&w4c_registered_make<0xf7e6d0, 0xf7e6bc, 0x133d090>), &g_w4c_registereds);
+REWRITE("Registered::Make968000", 0x976ec0, (w4c_seh<0xe6c3db>), (&w4c_registered_make<0xf7eb00, 0xf7eaec, 0x133f6dc>), &g_w4c_registereds);
+REWRITE("Registered::Make968000", 0x977210, (w4c_seh<0xe6c46b>), (&w4c_registered_make<0xf7eb44, 0xf7eb30, 0x133f6e4>), &g_w4c_registereds);
+REWRITE("Registered::Make968000", 0x977e40, (w4c_seh<0xe6c56b>), (&w4c_registered_make<0xf7ebb0, 0xf7eb9c, 0x133f6f4>), &g_w4c_registereds);
+REWRITE("Registered::Make968000", 0x9782b0, (w4c_seh<0xe6c5db>), (&w4c_registered_make<0xf7ebe8, 0xf7ebd4, 0x133f6fc>), &g_w4c_registereds);
+REWRITE("Registered::Make968000", 0x97a430, (w4c_seh<0xe6c7cb>), (&w4c_registered_make<0xf7ecd8, 0xf7ecc4, 0x134014c>), &g_w4c_registereds);
+
+// ---- Refs::Total: adds up what one virtual of each live reference in the list at +0xcc (count +0xd0) says -----------------------------------
+static volatile long g_w4c_totals;
+template <uint32_t SLOT> static uint32_t __fastcall w4c_refs_total(uint8_t *self) {
+    g_w4c_totals++;
+    uint32_t total = 0;
+    for (int32_t i = 0; i < *(int32_t *)(self + 0xd0); i++) {
+        void *live = ref_interface<0x13cde74>(*(uint8_t **)(self + 0xcc) + i * 0x1c);
+        if (live) total += ((uint32_t(__fastcall *)(void *))(*(void ***)live)[SLOT])(live);
+    }
+    return total;
+}
+static const uint8_t w4c_refs_total_original[] = {0x83, 0xec, 0x08, 0x53, 0x55, 0x8b, 0xe9, 0x8b, 0x8d, 0xd0};
+REWRITE("Refs::TotalA898F0", 0xa898f0, w4c_refs_total_original, (&w4c_refs_total<0xe4 / 4>), &g_w4c_totals);
+REWRITE("Refs::TotalA898F0", 0xa899f0, w4c_refs_total_original, (&w4c_refs_total<0xe8 / 4>), &g_w4c_totals);
+
+// ---- Once::Make3: as Once::Make, with three values kept; the table's first three pairs are (0, 0), (SECOND, 0), (FIRST, 0), then all 0xff ------
+struct W4cUnusedWords {
+    uint32_t words[13];
+};
+static volatile long g_w4c_once_makes;
+template <uint32_t MADE, uint32_t TABLE, uint32_t FIRST, uint32_t SECOND>
+static void *__thiscall w4c_once_make(uint32_t *self, uint32_t *a, uint32_t *b, uint32_t *c, W4cUnusedWords) {
+    g_w4c_once_makes++;
+    self[1] = *a;
+    self[2] = *b;
+    self[3] = *c;
+    uint32_t &made = *(uint32_t *)MADE;
+    if (!(made & 1)) {
+        made |= 1;
+        const uint32_t ff = 0xffff;
+        ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t,
+                             uint32_t, uint32_t, uint32_t, uint32_t))0x416110)((void *)TABLE, 0, SECOND, FIRST, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff, ff);
+    }
+    self[0] = TABLE;
+    return self;
+}
+static const uint8_t w4c_once_make_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x54, 0x24, 0x08, 0x83, 0xec, 0x34, 0x56, 0x8b, 0xf1};
+REWRITE("Once::Make71F340", 0x71f340, w4c_once_make_original, (&w4c_once_make<0x130632c, 0x1306304, 4, 2>), &g_w4c_once_makes);
+REWRITE("Once::Make71F340", 0x9e6500, w4c_once_make_original, (&w4c_once_make<0x134192c, 0x1341904, 2, 6>), &g_w4c_once_makes);
+
+// ---- Place::At: places the object at a position (an identity matrix moved there), sets the two global sizes, then carries on with THEN ---------
+static volatile long g_w4c_places;
+template <uint32_t THEN> static uint32_t __fastcall w4c_place_at(void *self, const uint32_t *position, uint32_t a, uint32_t b, uint32_t c) {
+    g_w4c_places++;
+    const uint32_t one = 0x3f800000;   // 1.0f
+    alignas(16) uint32_t matrix[16] = {one, 0, 0, 0, 0, one, 0, 0, 0, 0, one, 0, position[0], position[1], position[2], one};
+    ((void(__thiscall *)(void *, uint32_t, void *))(*(void ***)self)[0xb8 / 4])(self, 0, matrix);
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))(*(void ***)self)[0xac / 4])(self, *(uint32_t *)0x13d28a0, *(uint32_t *)0x13d0e34);
+    return ((uint32_t(__fastcall *)(void *, uint32_t, uint32_t, uint32_t))THEN)(self, a, b, c);
+}
+static const uint8_t w4c_place_at_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x4c};
+REWRITE("Place::AtBF7130", 0xbf7130, w4c_place_at_original, (&w4c_place_at<0xbf6ff0>), &g_w4c_places);
+REWRITE("Place::AtBF7130", 0xbf8980, w4c_place_at_original, (&w4c_place_at<0xbf8850>), &g_w4c_places);
+
+// ---- Big::Run: runs WORK on a large cleared job held on the stack -------------------------------------------------------------------------------
+static volatile long g_w4c_big_runs;
+template <uint32_t WORK> static uint32_t __thiscall w4c_big_run(void *self, uint32_t argument) {
+    g_w4c_big_runs++;
+    uint32_t job[0x113c / 4];
+    job[0] = 0;
+    job[1] = 0;
+    job[3] = 0xf264ad;
+    job[0x1010 / 4] = 0;
+    for (uint32_t i = 0x1114 / 4; i <= 0x1138 / 4; i++) job[i] = 0;
+    return ((uint32_t(__thiscall *)(void *, void *, uint32_t))WORK)(job, self, argument);
+}
+static const uint8_t w4c_big_run_original[] = {0xb8, 0x40, 0x11, 0x00, 0x00, 0xe8};
+REWRITE("Big::RunC161E0", 0xc161e0, w4c_big_run_original, (&w4c_big_run<0xc160b0>), &g_w4c_big_runs);
+REWRITE("Big::RunC161E0", 0xc16280, w4c_big_run_original, (&w4c_big_run<0xc16180>), &g_w4c_big_runs);
