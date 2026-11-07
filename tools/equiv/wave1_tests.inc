@@ -1423,3 +1423,51 @@
     };
     w1d_title_test.finish = w1_unstub;
     quick(w1d_title_test);
+    Test w1e_holder_test{0x69f500,
+                         [=](Rng &r) { fresh(r); arena<int32_t>(0xe00)[0] = r.range(1, 2); arena<uint32_t>(0xe00)[3] = r.next(); },
+                         [](void *fn) {
+                             *(void **)arena<uint8_t>(0x800 + w1e_word) = arena<void>(0xe00);
+                             ((void(__fastcall *)(void *))fn)(arena<void>(0x800));
+                             return Result{(uint32_t)arena<int32_t>(0xe00)[0]};
+                         }};
+    w1e_holder_test.prepare = [](const rewrite::Entry *e) {
+        w1e_word = w1c_word(e, 0x20);
+        stubs_for_now({{0xbce010, (void *)w1_stub_crt_free}, {0xbce000, (void *)w1d_stub_free}, {w1c_at(e, 0x5a), (void *)w1e_stub_base}});
+    };
+    w1e_holder_test.finish = w1_unstub;
+    quick(w1e_holder_test);
+    Test w1e_ask_test{0xbe45e0,
+                      [=](Rng &r) { fresh(r); arena<uint32_t>(0x20)[0] = r.next(); arena<uint32_t>(0x20)[1] = r.next(); },
+                      [](void *fn) {
+                          *(void **)0x13e33ac = arena<void>(0x600);
+                          return Result{((uint8_t(__fastcall *)(void *))fn)(arena<void>(0x800))};
+                      }};
+    w1e_ask_test.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcde60, (void *)w1e_stub_key}, {0xbcdf40, (void *)w1e_stub_guard}, {w1c_at(e, 0x42), (void *)w1e_stub_ask}, {0xbcddf0, (void *)w1e_stub_unlock}});
+    };
+    w1e_ask_test.finish = w1_unstub;
+    quick(w1e_ask_test);
+    Test w1e_drain_test{0x4a4950,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 4; i++) arena<uint8_t>(0xa00 + 0x40 * i)[0x2c] = (uint8_t)(r.next() & 0xfe);
+                            arena<uint32_t>(0x30)[0] = r.range(1, 3);
+                            arena<uint32_t>(0x900)[0] = r.range(0, 2) ? 1 : 0;
+                            arena<uint32_t>(0x900)[2] = (uint32_t)(uintptr_t)arena<void>(0xa00);
+                            arena<uint32_t>(0x20)[0] = r.range(0, 1) ? r.next() : 0;
+                            arena<uint32_t>(0x20)[1] = r.range(0, 3);
+                        },
+                        [](void *fn) {
+                            *(void **)w1e_word = arena<void>(0x900);
+                            *(uint32_t *)w1e_word2 = arena<uint32_t>(0x20)[0];
+                            void *self = arena<uint32_t>(0x20)[1] ? arena<void>(0x800) : nullptr;
+                            uint32_t got = ((uint32_t(__fastcall *)(void *))fn)(self);
+                            return Result{got ^ arena<uint32_t>(0x900)[0]};
+                        }};
+    w1e_drain_test.prepare = [](const rewrite::Entry *e) {
+        w1e_word = w1c_word(e, 2);
+        w1e_word2 = w1c_word(e, 0x31);
+        stubs_for_now({{0x800860, (void *)w1e_stub_finish}, {0xbe83b0, (void *)w1e_stub_tell}});
+    };
+    w1e_drain_test.finish = w1_unstub;
+    quick(w1e_drain_test);

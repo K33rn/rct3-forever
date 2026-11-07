@@ -216,3 +216,20 @@ static void *__thiscall w1d_stub_temp_text(uint32_t *self, uint32_t name, uint32
 }
 static void __thiscall w1d_stub_use_text(void *self, uint32_t *text, uint32_t flag) { record(0x27c, self); record(0x27c, (void *)(uintptr_t)text[0]); record(0x27c, (void *)(uintptr_t)flag); }
 static void __fastcall w1d_stub_temp_end(uint32_t *self) { for (int i = 0; i < 7; i++) { record(0x27d, (void *)(uintptr_t)self[i]); self[i] = 0; } }
+// wave 1e
+static uint32_t w1e_word;   // a per-copy offset or global of the copy under test
+static uint32_t w1e_word2;
+struct w1e_key { uint32_t a, b; };
+static void __fastcall w1e_stub_base(void *self) { record(0x280, self); }
+static void __fastcall w1e_stub_key(uint32_t *key, uint32_t lock) { record(0x281, (void *)(uintptr_t)lock); key[0] = lock ^ 0x55; key[1] = arena<uint32_t>(0x20)[1]; }
+static void __thiscall w1e_stub_guard(uint32_t *guard, w1e_key key) { record(0x282, (void *)(uintptr_t)key.a); record(0x282, (void *)(uintptr_t)key.b); *guard = key.a; }
+static uint32_t __thiscall w1e_stub_ask(void *registry, void *self) { record(0x283, registry); record(0x283, self); return arena<uint32_t>(0x20)[0]; }
+static void __fastcall w1e_stub_unlock(void *lock) { record(0x284, lock); }
+static void __fastcall w1e_stub_finish(uint8_t *item) {
+    record(0x285, item);
+    item[0x2c] |= 1;
+    uint32_t *queue = arena<uint32_t>(0x900);
+    if (--arena<uint32_t>(0x30)[0] == 0) queue[0] = 0;
+    else queue[2] = (uint32_t)(uintptr_t)arena<uint8_t>(0xa00 + 0x40 * (arena<uint32_t>(0x30)[0] & 3));
+}
+static uint32_t __thiscall w1e_stub_tell(uintptr_t part, uintptr_t arg) { record(0x286, (void *)part); record(0x286, (void *)arg); return part ^ arg ^ 0x1234; }

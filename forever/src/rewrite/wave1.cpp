@@ -2045,3 +2045,52 @@ template <uint32_t SETTING> static void __fastcall w1d_title(void *self) {
 }
 REWRITE("Titled::SetTitle712040", 0x712040, w1c_seh_late, (&w1d_title<0x10edcb8>), &g_w1d_titles);
 REWRITE("Titled::SetTitle712040", 0xaa5f80, w1c_seh_late, (&w1d_title<0x10edcc8>), &g_w1d_titles);
+
+// ---- Holder::Destroy: our shared text (at OFF) let go of, freed with its buffer once nobody holds it, then the base ------
+static volatile long g_w1e_text_holders;
+template <uint32_t OFF, uint32_t BASE> static void __fastcall w1e_text_holder(uint8_t *self) {
+    g_w1e_text_holders++;
+    int32_t *text = *(int32_t **)(self + OFF);
+    --text[0];
+    text = *(int32_t **)(self + OFF);
+    if (text[0] == 0 && (uintptr_t)text != 0) {
+        memory_free_aligned((void *)(uintptr_t)text[3]);
+        memory_free(text);
+    }
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Holder::Destroy69F500", 0x69f500, (w1c_seh<0xe3c948>), (&w1e_text_holder<0x114, 0x45cc90>), &g_w1e_text_holders);
+REWRITE("Holder::Destroy69F500", 0xa4c650, (w1c_seh<0xe7ff48>), (&w1e_text_holder<0x31c, 0x619490>), &g_w1e_text_holders);
+
+// ---- Locked::Ask: with the shared lock taken, the registry is asked about us; the lock is let go and the answer kept ---
+static volatile long g_w1e_locked_asks;
+struct w1e_pair { uint32_t a, b; };
+template <uint32_t ASK> static uint8_t __fastcall w1e_locked_ask(void *self) {
+    g_w1e_locked_asks++;
+    uint32_t guard;
+    w1e_pair key;
+    ((void(__fastcall *)(void *, uint32_t))0xbcde60)(&key, 0x10f2ce0);
+    ((void(__thiscall *)(void *, w1e_pair))0xbcdf40)(&guard, key);
+    uint8_t answer = ((uint8_t(__thiscall *)(void *, void *))ASK)(*(void **)0x13e33ac, self);
+    ((void(__fastcall *)(void *))0xbcddf0)((void *)0x10f2ce0);
+    return answer;
+}
+REWRITE("Locked::AskBE45E0", 0xbe45e0, (w1c_seh<0xe9e078>), (&w1e_locked_ask<0xc17580>), &g_w1e_locked_asks);
+REWRITE("Locked::AskBE45E0", 0xbe4650, (w1c_seh<0xe9e098>), (&w1e_locked_ask<0xc17890>), &g_w1e_locked_asks);
+
+// ---- Queue::Drain: every queued item not already finished is finished until the queue is empty; then, unless the
+// global switch is on, our part at +0x1c is told about +8 (or nothing when we are absent) --------------------------------
+static volatile long g_w1e_drains;
+template <uint32_t QUEUE> static const uint8_t w1e_load_edx[] = {0x8b, 0x15, (uint8_t)QUEUE, (uint8_t)(QUEUE >> 8), (uint8_t)(QUEUE >> 16), (uint8_t)(QUEUE >> 24)};
+template <uint32_t QUEUE, uint32_t SWITCH> static uint32_t __fastcall w1e_drain(uint8_t *self) {
+    g_w1e_drains++;
+    while (**(uint32_t **)QUEUE) {
+        uint8_t *item = *(uint8_t **)(*(uint8_t **)QUEUE + 8);
+        if (!(item[0x2c] & 1)) ((void(__fastcall *)(void *))0x800860)(item);
+    }
+    if (uint32_t on = *(uint32_t *)SWITCH) return on;
+    uintptr_t at = (uintptr_t)self;
+    return ((uint32_t(__thiscall *)(uintptr_t, uintptr_t))0xbe83b0)(at + 0x1c, at ? at + 8 : 0);
+}
+REWRITE("Queue::Drain4A4950", 0x4a4950, (w1e_load_edx<0x10ee270>), (&w1e_drain<0x10ee270, 0x1103c68>), &g_w1e_drains);
+REWRITE("Queue::Drain4A4950", 0xb935a0, (w1e_load_edx<0x10f2968>), (&w1e_drain<0x10f2968, 0x1103c70>), &g_w1e_drains);
