@@ -766,3 +766,33 @@
     w1b_seven.prepare = [](const rewrite::Entry *) { g_iface_id = (uint32_t *)0x1342768; stubs_for_now({{0x784320, (void *)w1_stub_ask}}); };
     w1b_seven.finish = w1_unstub;
     quick(w1b_seven);
+    Test w1b_walk{0x59abe0,
+                  [=](Rng &r) {
+                      fresh(r); w1_fill(r, 0x800, 0x400);
+                      iface_handle(r);
+                      w1_ref_setup(r, arena<uint8_t>(0x86c));
+                      *(void **)arena<uint8_t>(0x364) = arena<void>(0x380);
+                      *(void **)arena<uint8_t>(0x36c) = nullptr;
+                      *(void **)arena<uint8_t>(0x904) = r.range(0, 1) ? arena<void>(0x380) : nullptr;
+                      *(void **)arena<uint8_t>(0x384) = nullptr;
+                      arena<uint32_t>(0x20)[0] = r.next();
+                  },
+                  [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[0]); return Result{}; }};
+    w1b_walk.prepare = [](const rewrite::Entry *) {
+        g_iface_id = (uint32_t *)0x12f5638;
+        stubs_for_now({{0x5d9cf0, (void *)w1_stub_one_b}, {0x5e40d0, (void *)w1_stub_one_b}, {0x5d9af0, (void *)w1_stub_one_b}, {0x5d49d0, (void *)w1_stub_next}, {0x5d4970, (void *)w1_stub_next}});
+    };
+    w1b_walk.finish = w1_unstub;
+    quick(w1b_walk);
+    Test w1b_take_test{0x4b7090,
+                       [=](Rng &r) { fresh(r); w1_fill(r, 0x800, 0x100); iface_handle(r); },
+                       [](void *fn) {
+                           void *object = *(void **)arena<uint8_t>(0x34c);
+                           return Result{(uint8_t)((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x80c), object)};
+                       }};
+    w1b_take_test.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = *(uint32_t **)(e->at + 0x1f);
+        stubs_for_now({{0x501f80, (void *)stub_thiscall1}, {0x4b6d10, (void *)w1_stub_one_b}, {0xa64760, (void *)w1_stub_one_b}});
+    };
+    w1b_take_test.finish = w1_unstub;
+    quick(w1b_take_test);

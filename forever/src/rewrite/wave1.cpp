@@ -1203,3 +1203,33 @@ template <uint32_t BIT> static uint32_t __fastcall w1b_seven_first(uint8_t *self
 static const uint8_t w1b_seven_first_original[] = {0x53, 0x55, 0x56, 0x8b, 0xe9, 0x57, 0x33, 0xff};
 REWRITE("Seven::First7854E0", 0x7854e0, w1b_seven_first_original, (&w1b_seven_first<7>), &g_w1b_seven_firsts);
 REWRITE("Seven::First7854E0", 0x785560, w1b_seven_first_original, (&w1b_seven_first<2>), &g_w1b_seven_firsts);
+
+// ---- Ref::Walk: a step given to the interface in a reference, then to each one after it --------------------------------------------------------
+static volatile long g_w1b_ref_walks;
+template <uint32_t STEP, uint32_t NEXT> static void __thiscall w1b_ref_walk(uint8_t *self, uint32_t value) {
+    g_w1b_ref_walks++;
+    for (void *item = ref_interface<0x12f5638>(self + 0x6c); item; item = ((void *(__fastcall *)(void *))NEXT)(item))
+        ((void(__thiscall *)(void *, uint32_t))STEP)(item, value);
+}
+static const uint8_t w1b_ref_walk_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8a, 0x87, 0x84, 0x00, 0x00, 0x00};
+REWRITE("Ref::Walk59ABE0", 0x59abe0, w1b_ref_walk_original, (&w1b_ref_walk<0x5d9cf0, 0x5d49d0>), &g_w1b_ref_walks);
+REWRITE("Ref::Walk59ABE0", 0x59b0f0, w1b_ref_walk_original, (&w1b_ref_walk<0x5e40d0, 0x5d49d0>), &g_w1b_ref_walks);
+REWRITE("Ref::Walk59ABE0", 0x59b950, w1b_ref_walk_original, (&w1b_ref_walk<0x5d9af0, 0x5d4970>), &g_w1b_ref_walks);
+
+// ---- Object::Take: the object recorded, and its interface (or null) given to the owner, 12 bytes before this part ---------------------------------
+static volatile long g_w1b_takes;
+template <uint32_t ID, uint32_t GIVE> static uint32_t __thiscall w1b_take(uint8_t *self, void *object) {
+    g_w1b_takes++;
+    ((void(__thiscall *)(void *, void *))0x501f80)(self, object);
+    void *part = nullptr;
+    if (object) {
+        ClassInterfaces *c = ((ClassInterfaces * (__fastcall *)(void *))(*(void ***)object)[1])(object);
+        int32_t id = *(const int32_t *)ID;
+        if (c && id < c->count && c->by_id[id]) part = (uint8_t *)object + c->by_id[id]->offset;
+    }
+    ((void(__thiscall *)(void *, void *))GIVE)(self - 0xc, part);
+    return 1;
+}
+static const uint8_t w1b_take_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x57, 0x56, 0x8b, 0xf9};
+REWRITE("Object::Take4B7090", 0x4b7090, w1b_take_original, (&w1b_take<0x12f5544, 0x4b6d10>), &g_w1b_takes);
+REWRITE("Object::Take4B7090", 0xa67c00, w1b_take_original, (&w1b_take<0x13429c8, 0xa64760>), &g_w1b_takes);
