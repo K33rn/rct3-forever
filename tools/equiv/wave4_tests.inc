@@ -1424,3 +1424,91 @@
     w4c_big.prepare = [](const rewrite::Entry *e) { stubs_for_now({{w4c_target(e, 0x82), (void *)w4c_stub_job}}); };
     w4c_big.finish = w4c_unstub;
     quick(w4c_big);
+    // ---- fourth batch ----
+    static uint32_t w4d_saved;
+    // Pack::Send: the copy's own word packed and sent with +0xdc to the renderer in the global
+    Test w4d_pack{0x949090, w4c_fill, [](void *fn) {
+                      static void *vt[0x40];
+                      vt[0xb0 / 4] = (void *)w4d_stub_render;
+                      arena<void *>(0x2100)[0] = vt;
+                      *(void **)0x13d0db8 = arena<void>(0x2100);
+                      return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))};
+                  }};
+    w4d_pack.prepare = [](const rewrite::Entry *) { w4d_saved = *(uint32_t *)0x13d0db8; stubs_for_now({{0x431070, (void *)w4d_stub_pack}}); };
+    w4d_pack.finish = [](const rewrite::Entry *) { *(uint32_t *)0x13d0db8 = w4d_saved; unstub_many(); };
+    quick(w4d_pack);
+    // Parts::FindKind: 0-4 parts whose interfaces (offset 0 or 8) carry kinds 8, 0xc or 5; every lookup succeeds (a failed one reads 0x190)
+    Test w4d_find{0x7743d0,
+                  [=](Rng &r) {
+                      w4c_fill(r);
+                      static void *vt[2] = {nullptr, (void *)w4d_stub_class};
+                      uint8_t *self = arena<uint8_t>(0x800);
+                      *(int32_t *)(self + 0x48) = r.range(0, 4);
+                      *(void **)(self + 0x60) = arena<void>(0x2200);
+                      uint8_t *cls = arena<uint8_t>(0x2000);
+                      *(void **)(cls + 0x14) = arena<void>(0x2040);
+                      *(int32_t *)(cls + 0x18) = 3;
+                      arena<void *>(0x2040)[1] = arena<void>(0x2080);
+                      *arena<int32_t>(0x2090) = r.range(0, 1) * 8;
+                      static const int32_t kinds[3] = {8, 0xc, 5};
+                      for (int k = 0; k < 4; k++) {
+                          *(void **)arena<uint8_t>(0x2200 + k * 0x14 + 4) = arena<void>(0x2300 + k * 0x10);
+                          *(void **)arena<uint8_t>(0x2300 + k * 0x10 + 0xc) = arena<void>(0x3000 + k * 0x400);
+                          arena<void *>(0x3000 + k * 0x400)[0] = vt;
+                          *arena<int32_t>(0x3000 + k * 0x400 + 0x190) = kinds[r.range(0, 2)];
+                          *arena<int32_t>(0x3000 + k * 0x400 + 0x198) = kinds[r.range(0, 2)];
+                      }
+                  },
+                  [](void *fn) {
+                      *(int32_t *)0x130654c = 1;
+                      return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x800))};
+                  }};
+    w4d_find.prepare = [](const rewrite::Entry *) { w4d_saved = *(uint32_t *)0x130654c; };
+    w4d_find.finish = [](const rewrite::Entry *) { *(uint32_t *)0x130654c = w4d_saved; };
+    quick(w4d_find);
+    // Slots::Match: sides 0-3, slots 0-1, ends and forced flags in words with junk above the byte; conversions fail now and then
+    Test w4d_match{0x71d330,
+                   [=](Rng &r) {
+                       w4c_fill(r);
+                       for (uint32_t at : {0x2000u, 0x2100u}) {
+                           arena<uint8_t>(at)[0x8d] = (uint8_t)r.range(0, 3);
+                           *arena<uint32_t>(at + 0xa4) = r.range(0, 1);
+                       }
+                       *arena<uint32_t>(0x10) = (r.next() & ~0xffu) | r.range(0, 3);
+                       *arena<uint32_t>(0x14) = (r.next() & ~0xffu) | (r.range(0, 2) ? 0 : r.range(1, 255));
+                   },
+                   [](void *fn) {
+                       return Result{((uint32_t(__stdcall *)(void *, void *, uint32_t, uint32_t))fn)(arena<void>(0x2000), arena<void>(0x2100), *arena<uint32_t>(0x10),
+                                                                                                   *arena<uint32_t>(0x14)) & 0xff};
+                   }};
+    w4d_match.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x71b0f0, (void *)w4d_stub_convert}}); };
+    w4d_match.finish = w4c_unstub;
+    quick(w4d_match);
+    // Batches::Add: four batches, one picked (or index 0); some fill up and are freed, blocks present or not
+    Test w4d_batch{0x8552b0,
+                   [=](Rng &r) {
+                       w4c_fill(r);
+                       *arena<void *>(0x800) = arena<void>(0x2000);
+                       for (int i = 0; i < 4; i++) {
+                           uint8_t *b = arena<uint8_t>(0x2000 + i * 0x14);
+                           int32_t per = r.range(1, 3), n = r.range(0, 3);
+                           *(int32_t *)b = per;
+                           *(void **)(b + 4) = arena<void>(0x2100 + i * 0x10);
+                           *(int32_t *)(b + 8) = n;
+                           *(void **)(b + 0xc) = arena<void>(0x2200 + i * 0x40);
+                           *(int32_t *)(b + 0x10) = per * n ? r.range(0, per * n - 1) : 0;
+                           for (int j = 0; j < 4; j++) {
+                               uint8_t *block = arena<uint8_t>(0x2400 + (i * 4 + j) * 0x20);
+                               *(uint32_t *)block = r.range(1, 9);
+                               arena<void *>(0x2100 + i * 0x10)[j] = r.range(0, 3) ? block + 4 : nullptr;
+                           }
+                       }
+                       *arena<uint32_t>(0x10) = r.range(0, 3);
+                   },
+                   [](void *fn) {
+                       ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10), *arena<uint32_t>(0x20));
+                       return Result{};
+                   }};
+    w4d_batch.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcf39, (void *)w4d_stub_vector_dtor}, {0xbce010, (void *)stub_free_aligned}}); };
+    w4d_batch.finish = w4c_unstub;
+    quick(w4d_batch);

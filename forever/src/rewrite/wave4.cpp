@@ -1551,3 +1551,89 @@ template <uint32_t WORK> static uint32_t __thiscall w4c_big_run(void *self, uint
 static const uint8_t w4c_big_run_original[] = {0xb8, 0x40, 0x11, 0x00, 0x00, 0xe8};
 REWRITE("Big::RunC161E0", 0xc161e0, w4c_big_run_original, (&w4c_big_run<0xc160b0>), &g_w4c_big_runs);
 REWRITE("Big::RunC161E0", 0xc16280, w4c_big_run_original, (&w4c_big_run<0xc16180>), &g_w4c_big_runs);
+
+// ======== fourth batch ========
+// ---- Pack::Send: packs the value at OFF (the packer's fifteen other outputs are not wanted) and hands it, with the word at +0xdc, to the renderer
+static volatile long g_w4d_sends;
+typedef uint8_t W4dB;
+template <uint32_t OFF> static uint32_t __fastcall w4d_pack_send(uint8_t *self) {
+    g_w4d_sends++;
+    uint32_t value = *(uint32_t *)(self + OFF);
+    uint32_t key = *(uint32_t *)(self + 0xdc);
+    void *renderer = *(void **)0x13d0db8;
+    void *slot = (*(void ***)renderer)[0xb0 / 4];
+    uint8_t unused;
+    uint32_t packed[3];
+    W4dB *u = &unused;
+    uint32_t made = ((uint32_t(__thiscall *)(void *, uint32_t *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *, W4dB *,
+                                             W4dB *))0x431070)(packed, &value, u, u, u, u, u, u, u, u, u, u, u, u, u, u, u);
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))slot)(renderer, key, made);
+}
+static const uint8_t w4d_pack_send_original[] = {0x83, 0xec, 0x20, 0x8b, 0x81};
+REWRITE("Pack::Send949090", 0x949090, w4d_pack_send_original, (&w4d_pack_send<0xe0>), &g_w4d_sends);
+REWRITE("Pack::Send949090", 0x949120, w4d_pack_send_original, (&w4d_pack_send<0xe4>), &g_w4d_sends);
+
+// ---- Parts::FindKind: the first part (list at +0x60, count +0x48, 20 bytes each) whose interface 0x130654c has kind KIND at +0x190 -----------
+// (a part with no such interface is read at address 0x190, as the original does)
+static volatile long g_w4d_finds;
+template <int32_t KIND> static uint8_t *__fastcall w4d_find_kind(uint8_t *self) {
+    g_w4d_finds++;
+    for (int32_t i = 0; i < *(int32_t *)(self + 0x48); i++) {
+        uint8_t *part = (uint8_t *)find_interface(*(uint8_t **)(*(uint8_t **)(self + 0x60) + i * 0x14 + 4), (const int32_t *)0x130654c);
+        if (*(int32_t *)(part + 0x190) == KIND) return part;
+    }
+    return nullptr;
+}
+static const uint8_t w4d_find_kind_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x48};
+REWRITE("Parts::FindKind7743D0", 0x7743d0, w4d_find_kind_original, (&w4d_find_kind<8>), &g_w4d_finds);
+REWRITE("Parts::FindKind7743D0", 0x774440, w4d_find_kind_original, (&w4d_find_kind<0xc>), &g_w4d_finds);
+
+// ---- Slots::Match: do two pieces' slots (+0xa4) meet? Same side and slot with the side bit 2 set agrees at once unless forced; otherwise both
+// slots are converted (the second from the other end) and must come out equal -------------------------------------------------------------------
+static volatile long g_w4d_matches;
+template <uint32_t MODE> static bool __stdcall w4d_slots_match(uint8_t *a, uint8_t *b, uint32_t end_word, uint32_t forced_word) {
+    uint8_t end = (uint8_t)end_word, forced = (uint8_t)forced_word;   // bytes passed in words
+    g_w4d_matches++;
+    typedef bool(__fastcall * Convert)(uint8_t, uint8_t, uint32_t *, uint32_t);
+    uint32_t slot_a = *(uint32_t *)(a + 0xa4), slot_b = *(uint32_t *)(b + 0xa4);
+    if (!forced && a[0x8d] == b[0x8d] && slot_a == slot_b && ((a[0x8d] ^ end) & 2)) return true;
+    if (!((Convert)0x71b0f0)(a[0x8d], end, &slot_a, MODE)) return false;
+    if (!((Convert)0x71b0f0)(b[0x8d], (uint8_t)(end ^ 1), &slot_b, MODE)) return false;
+    return slot_a == slot_b;
+}
+static const uint8_t w4d_slots_match_original[] = {0x8b, 0x4c, 0x24, 0x04, 0x8a, 0x44, 0x24, 0x10};
+REWRITE("Slots::Match71D330", 0x71d330, w4d_slots_match_original, (&w4d_slots_match<1>), &g_w4d_matches);
+REWRITE("Slots::Match71D330", 0x71d480, w4d_slots_match_original, (&w4d_slots_match<0xffffffff>), &g_w4d_matches);
+
+// ---- Batches::Add: queues a value in batch INDEX of the table; once the batch holds per * blocks values, its blocks (arrays of SIZE-byte
+// objects ended with DTOR) and both lists are freed and the batch starts empty. Index 0 is no batch. ----------------------------------------------
+struct W4dBatch {
+    int32_t per;
+    uint8_t **blocks;
+    int32_t blocks_n;
+    uint32_t *items;
+    int32_t count;
+};
+static volatile long g_w4d_adds;
+template <uint32_t SIZE, uint32_t DTOR> static void __thiscall w4d_batch_add(W4dBatch **self, uint32_t index, uint32_t value) {
+    g_w4d_adds++;
+    if (!index) return;
+    W4dBatch &b = (*self)[index];
+    b.items[b.count++] = value;
+    if (b.count < b.per * b.blocks_n) return;
+    for (int32_t i = 0; i < b.blocks_n; i++) {
+        uint8_t *block = b.blocks[i];
+        if (!block) continue;
+        ((void(__stdcall *)(void *, uint32_t, uint32_t, void *))0xddcf39)(block, SIZE, *(uint32_t *)(block - 4), (void *)DTOR);
+        memory_free_aligned(block - 4);
+    }
+    memory_free_aligned(b.blocks);
+    memory_free_aligned(b.items);
+    b.blocks = nullptr;
+    b.blocks_n = 0;
+    b.items = nullptr;
+    b.count = 0;
+}
+static const uint8_t w4d_batch_add_original[] = {0x8b, 0x44, 0x24, 0x04, 0x55, 0x33, 0xed, 0x3b, 0xc5};
+REWRITE("Batches::Add8552B0", 0x8552b0, w4d_batch_add_original, (&w4d_batch_add<0x30, 0x8535c0>), &g_w4d_adds);
+REWRITE("Batches::Add8552B0", 0x8ff9c0, w4d_batch_add_original, (&w4d_batch_add<0x5c, 0x90a150>), &g_w4d_adds);

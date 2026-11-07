@@ -192,3 +192,21 @@ static uint32_t __thiscall w4c_stub_job(uint32_t *job, void *self, uint32_t argu
     return argument + 1;
 }
 struct W4cWords { uint32_t words[13]; };
+// ---- fourth batch ----
+typedef uint8_t *W4dP;
+static uint32_t __thiscall w4d_stub_pack(uint32_t *packed, uint32_t *value, W4dP u1, W4dP u2, W4dP u3, W4dP u4, W4dP u5, W4dP u6, W4dP u7, W4dP u8, W4dP u9, W4dP u10,
+                                         W4dP u11, W4dP u12, W4dP u13, W4dP u14, W4dP u15) {
+    record(0x4d00, (void *)(uintptr_t)*value);
+    for (W4dP u : {u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, u11, u12, u13, u14, u15}) *u = 0x77;
+    for (int i = 0; i < 3; i++) packed[i] = *value ^ (0x1111 * i);
+    return *value * 3 + 1;
+}
+static uint32_t __thiscall w4d_stub_render(void *self, uint32_t key, uint32_t made) { record(0x4d01, self); record(0x4d01, (void *)(uintptr_t)key); record(0x4d01, (void *)(uintptr_t)made); return key ^ made; }
+static void *__fastcall w4d_stub_class(void *object) { record(0x4d02, object); return arena<void>(0x2000); }
+static uint32_t __fastcall w4d_stub_convert(uint32_t side, uint32_t end, uint32_t *slot, uint32_t mode) {
+    side &= 0xff; end &= 0xff;
+    record(0x4d03, (void *)(uintptr_t)side); record(0x4d03, (void *)(uintptr_t)end); record(0x4d03, (void *)(uintptr_t)*slot); record(0x4d03, (void *)(uintptr_t)mode);
+    *slot = (*slot + (side & 1) + (end & 1)) & 1;
+    return ((*arena<uint32_t>(0x20) >> ((side + end) & 7)) & 3) != 0;
+}
+static void __stdcall w4d_stub_vector_dtor(void *p, uint32_t size, uint32_t n, void *dtor) { record(0x4d04, p); record(0x4d04, (void *)(uintptr_t)size); record(0x4d04, (void *)(uintptr_t)n); record(0x4d04, dtor); }
