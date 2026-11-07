@@ -174,3 +174,8 @@ template <int N> static void __thiscall w1d_stub_slot(void *self, uint32_t a, ui
 static void *__fastcall w1d_stub_car_a(void *self) { record(0x25a, self); return arena<uint32_t>(0x20)[0] & 1 ? arena<void>(0xb00) : nullptr; }
 static void *__fastcall w1d_stub_car_b(void *self) { record(0x25b, self); return arena<uint32_t>(0x20)[0] & 2 ? arena<void>(0xb00) : nullptr; }
 static bool __thiscall w1d_stub_ask(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x25c, self); record(0x25c, (void *)(uintptr_t)(a + b * 3 + c * 7)); return (a ^ c) & 1; }
+template <int N> static void __fastcall w1d_stub_end_n(uint32_t *self) {
+    record(0x260 + N, self);
+    for (int i = 0; i < 2; i++) record(0x260 + N, (void *)(uintptr_t)arena<uint32_t>(0x800)[i]);
+    self[0] = 0x9000 + N;
+}

@@ -1762,3 +1762,55 @@ template <uint32_t REF> static uint32_t __fastcall w1d_owner(uint8_t *self) {
 static const uint8_t w1d_owner_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8a, 0x87};
 REWRITE("Placed::OwnerB87EB0", 0xb87eb0, w1d_owner_original, (&w1d_owner<0xa0>), &g_w1d_owners);
 REWRITE("Placed::OwnerB87EB0", 0xb87f70, w1d_owner_original, (&w1d_owner<0xbc>), &g_w1d_owners);
+
+// ---- Quad::Destroy: the four tables restored, the owned object deleted, then the members and bases in reverse ----------
+static volatile long g_w1d_quads;
+template <uint32_t T0, uint32_t T1, uint32_t T3, uint32_t T5> static void __fastcall w1d_quad(uint32_t *self) {
+    g_w1d_quads++;
+    self[0] = T0;
+    self[1] = T1;
+    self[3] = T3;
+    self[5] = T5;
+    if (self[9]) delete_object((void *)(uintptr_t)self[9]);
+    self[0x18] = 0xf284e0;
+    ((void(__fastcall *)(void *))0x40f730)(self + 0x10);
+    ((void(__fastcall *)(void *))0x4b48a0)(self + 3);
+    ((void(__fastcall *)(void *))0xcd2b50)(self + 1);
+    self[0] = 0xf2694c;
+}
+REWRITE("Quad::Destroy4DEF00", 0x4def00, (w1c_seh<0xe159fc>), (&w1d_quad<0xf348b0, 0xf348a8, 0xf34828, 0xf34820>), &g_w1d_quads);
+REWRITE("Quad::Destroy4DEF00", 0x7aefd0, (w1c_seh<0xe56adc>), (&w1d_quad<0xf71700, 0xf716f8, 0xf71678, 0xf71674>), &g_w1d_quads);
+REWRITE("Quad::Destroy4DEF00", 0x8b7640, (w1c_seh<0xe65b1c>), (&w1d_quad<0xf7a938, 0xf7a930, 0xf7a8b0, 0xf7a8ac>), &g_w1d_quads);
+
+// ---- Scene::Destroy: four tables restored, the owned object deleted, two members finished, then the base -------------
+static volatile long g_w1d_scenes;
+template <uint32_t T0, uint32_t T1, uint32_t T2, uint32_t T3> static void __fastcall w1d_scene(uint8_t *self) {
+    g_w1d_scenes++;
+    *(uint32_t *)self = T0;
+    *(uint32_t *)(self + 4) = T1;
+    *(uint32_t *)(self + 0xf8) = T2;
+    *(uint32_t *)(self + 0x118) = T3;
+    if (void *owned = *(void **)(self + 0x11c)) delete_object(owned);
+    ((void(__fastcall *)(void *))0x6af760)(self + 0x120);
+    ((void(__fastcall *)(void *))0x6b0150)(self + 0xf8);
+    ((void(__fastcall *)(void *))0x6d4520)(self);
+}
+REWRITE("Scene::Destroy6D85A0", 0x6d85a0, (w1c_seh<0xe4362f>), (&w1d_scene<0xf647f8, 0xf647e0, 0xf647b4, 0xf647a8>), &g_w1d_scenes);
+REWRITE("Scene::Destroy6D85A0", 0x6d8b60, (w1c_seh<0xe436ef>), (&w1d_scene<0xf64b50, 0xf64b38, 0xf64b0c, 0xf64b00>), &g_w1d_scenes);
+REWRITE("Scene::Destroy6D85A0", 0x6d9480, (w1c_seh<0xe437bf>), (&w1d_scene<0xf64fd0, 0xf64fb8, 0xf64f8c, 0xf64f80>), &g_w1d_scenes);
+
+// ---- Named::Destroy: the shared name let go (freed with its text at zero), two members finished, then the base -------
+static volatile long g_w1d_named;
+static void __fastcall w1d_named(uint8_t *self) {
+    g_w1d_named++;
+    int32_t *shared = *(int32_t **)(self + 0x398);
+    if (--shared[0] == 0 && shared) {
+        memory_free_aligned((void *)(uintptr_t)shared[3]);
+        memory_free(shared);
+    }
+    ((void(__fastcall *)(void *))0x6a69d0)(self + 0x300);
+    ((void(__fastcall *)(void *))0x8002c0)(self + 0x2e8);
+    ((void(__fastcall *)(void *))0x68a3d0)(self);
+}
+REWRITE("Named::DestroyAD1220", 0xad1220, (w1c_seh<0xe8a2ef>), (&w1d_named), &g_w1d_named);
+REWRITE("Named::DestroyAD1220", 0xaecaa0, (w1c_seh<0xe8d09f>), (&w1d_named), &g_w1d_named);

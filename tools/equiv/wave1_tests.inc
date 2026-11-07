@@ -1239,3 +1239,39 @@
     w1d_owner_test.prepare = [](const rewrite::Entry *) { g_iface_id = (uint32_t *)0x130bbec; };
     w1d_owner_test.finish = w1_unstub;
     quick(w1d_owner_test);
+    auto w1d_owned_object = [](Rng &r, uint32_t slot) {
+        static void *vt[1] = {(void *)w1d_stub_delete};
+        arena<void *>(0xc00)[0] = vt;
+        *(void **)arena<uint8_t>(0x800 + slot) = r.range(0, 2) ? arena<void>(0xc00) : nullptr;
+    };
+    Test w1d_quad_test{0x4def00,
+                       [=](Rng &r) { fresh(r); w1_fill(r, 0x800, 0x80); w1d_owned_object(r, 0x24); },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w1d_quad_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x40f730, (void *)w1d_stub_end_n<1>}, {0x4b48a0, (void *)w1d_stub_end_n<2>}, {0xcd2b50, (void *)w1d_stub_end_n<3>}});
+    };
+    w1d_quad_test.finish = w1_unstub;
+    quick(w1d_quad_test);
+    Test w1d_scene_test{0x6d85a0,
+                        [=](Rng &r) { fresh(r); w1_fill(r, 0x800, 0x140); w1d_owned_object(r, 0x11c); },
+                        [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w1d_scene_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x6af760, (void *)w1d_stub_end_n<4>}, {0x6b0150, (void *)w1d_stub_end_n<5>}, {0x6d4520, (void *)w1d_stub_end_n<6>}});
+    };
+    w1d_scene_test.finish = w1_unstub;
+    quick(w1d_scene_test);
+    Test w1d_named_test{0xad1220,
+                        [=](Rng &r) {
+                            fresh(r);
+                            w1_fill(r, 0x800, 0x3a0);
+                            w1_fill(r, 0xc00, 0x20);
+                            *(void **)arena<uint8_t>(0x800 + 0x398) = arena<void>(0xc00);
+                            arena<uint32_t>(0xc00)[0] = r.range(1, 2);
+                        },
+                        [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w1d_named_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbce010, (void *)w1_stub_crt_free}, {0xbce000, (void *)w1d_stub_free}, {0x6a69d0, (void *)w1d_stub_end_n<7>},
+                       {0x8002c0, (void *)w1d_stub_end_n<8>}, {0x68a3d0, (void *)w1d_stub_end_n<9>}});
+    };
+    w1d_named_test.finish = w1_unstub;
+    quick(w1d_named_test);
