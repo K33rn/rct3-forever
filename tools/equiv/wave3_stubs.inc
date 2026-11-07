@@ -89,3 +89,54 @@ static uint8_t __thiscall w3_stub_same(void *self, uint32_t key, uint32_t *item)
     record(0xbdbfd0, (void *)(uintptr_t)*item);
     return *item == key ? 3 : 0;
 }
+
+// ---- second pass ----
+static int32_t w3b_count_at;
+static void __fastcall w3b_stub_each(void *item) {
+    record(0x7b01, item);
+    if (arena<int32_t>(0x20)[0]-- == 0) *(int32_t *)(arena<uint8_t>(0x1000) + w3b_count_at) -= 1;
+}
+static void __thiscall w3b_stub_notice(void *self, uint32_t *notice) { record(0x7b02, self); record(0x7b02, (void *)(uintptr_t)notice[0]); record(0x7b02, (void *)(uintptr_t)notice[1]); }
+static void __thiscall w3b_stub_build2(uint8_t *message, uint32_t value, uint8_t *flag) {
+    record(0x7b03, (void *)(uintptr_t)value);
+    record(0x7b03, (void *)(uintptr_t)*flag);
+    for (int i = 0; i < 0x64; i++) message[i] = (uint8_t)(value * 7 + i * 13);
+}
+static void w3b_note_bytes(uint32_t id, void *self, const uint8_t *message, int size) {
+    uint32_t sum = 0;
+    for (int i = 0; i < size; i++) sum = sum * 31 + message[i];
+    record(id, self);
+    record(id, (void *)(uintptr_t)sum);
+}
+static void __thiscall w3b_stub_send64(void *self, uint8_t *message) { w3b_note_bytes(0x7b04, self, message, 0x64); }
+static void __thiscall w3b_stub_build3(uint8_t *message, uint32_t a, uint32_t b, uint32_t c) {
+    for (int i = 0; i < 0x1c; i++) message[i] = (uint8_t)(a * 3 + b * 5 + c * 11 + i * 13 + (a >> 8) + (b >> 16));
+}
+static void __thiscall w3b_stub_send1c(void *self, uint8_t *message) { w3b_note_bytes(0x7b05, self, message, 0x1c); }
+static void *__cdecl w3b_stub_registry() { return arena<void>(0x400); }
+static uint32_t __thiscall w3b_stub_handler(void *self, void *object, uint32_t flag) {
+    record(0x7b06, self); record(0x7b06, object); record(0x7b06, (void *)(uintptr_t)flag);
+    return arena<uint32_t>(0x24)[0];
+}
+static int32_t __stdcall w3b_stub_time(void *self, uint32_t *time) {
+    record(0x7b07, self);
+    time[0] = arena<uint32_t>(0x28)[0];
+    time[1] = arena<uint32_t>(0x2c)[0];
+    return arena<int32_t>(0x24)[0];
+}
+static int __cdecl w3b_stub_sprintf(char *out, const char *format, uint32_t value) {
+    record(0x7b08, (void *)format);
+    record(0x7b08, (void *)(uintptr_t)value);
+    int size = (int)(value % 30);
+    for (int i = 0; i < size; i++) out[i] = (char)('a' + (value + i) % 26);
+    out[size] = 0;
+    return size;
+}
+static char *__cdecl w3b_stub_strncpy(char *out, const char *text, uint32_t size) {
+    record(0x7b09, out);
+    record(0x7b09, (void *)(uintptr_t)size);
+    uint32_t i = 0;
+    for (; i < size && text[i]; i++) out[i] = text[i];
+    for (; i < size; i++) out[i] = 0;
+    return out;
+}

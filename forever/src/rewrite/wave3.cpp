@@ -1036,3 +1036,148 @@ template <int32_t MARGIN> static void __thiscall area_around(uint8_t *self, int3
 static const uint8_t area_original[] = {0x83, 0xec, 0x08, 0x56, 0x57, 0x8b, 0xf1};
 REWRITE("Area::Around8DCAA0", 0x8dcaa0, area_original, (&area_around<2>), &g_w3_area);
 REWRITE("Area::Around8DCAA0", 0x8dcb70, area_original, (&area_around<3>), &g_w3_area);
+
+// ---- Refs::FirstFree: the index of the first item whose target has nothing at +0xc, or -1 --------------------------
+static volatile long g_w3b_first_free;
+template <uint32_t COUNT, uint32_t ITEMS, uint32_t STRIDE> static int32_t __fastcall w3b_first_free(uint8_t *self) {
+    g_w3b_first_free++;
+    int32_t count = *(int32_t *)(self + COUNT);
+    uint8_t *item = *(uint8_t **)(self + ITEMS);
+    for (int32_t i = 0; i < count; i++, item += STRIDE)
+        if (!*(uint32_t *)(*(uint8_t **)(item + 4) + 0xc)) return i;
+    return -1;
+}
+static const uint8_t w3b_first_free_a[] = {0x8b, 0x91, 0x84, 0x00, 0x00}, w3b_first_free_b[] = {0x8b, 0x91, 0x5c, 0x01, 0x00};
+REWRITE("Refs::FirstFreeA97380", 0xa97380, w3b_first_free_a, (&w3b_first_free<0x84, 0x80, 0x1c>), &g_w3b_first_free);
+REWRITE("Refs::FirstFreeA97380", 0xaaea80, w3b_first_free_b, (&w3b_first_free<0x15c, 0x158, 0x18>), &g_w3b_first_free);
+
+// ---- Items::EachCall: one function on every item of a list; the function may shorten the list -----------------------
+static volatile long g_w3b_each;
+template <uint32_t COUNT, uint32_t ITEMS, uintptr_t CALL> static void __fastcall w3b_each(uint8_t *self) {
+    g_w3b_each++;
+    for (int32_t i = 0; i < *(int32_t *)(self + COUNT); i++)
+        ((void(__fastcall *)(void *))CALL)((*(void ***)(self + ITEMS))[i]);
+}
+static const uint8_t w3b_each_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x47};
+REWRITE("Items::EachCall83FCA0", 0x83fca0, w3b_each_original, (&w3b_each<0x58, 0x54, 0x829b10>), &g_w3b_each);
+REWRITE("Items::EachCall83FCA0", 0xce82d0, w3b_each_original, (&w3b_each<0x28, 0x20, 0xce7df0>), &g_w3b_each);
+
+// ---- Hook::Unhook: tells the owner this object is going, by a small {kind, object} notice, then clears the part at +4 ---
+static volatile long g_w3b_unhook;
+template <uint32_t KIND> static void __fastcall w3b_unhook(uint8_t *self) {
+    g_w3b_unhook++;
+    struct { uint32_t kind; void *object; } notice = {KIND, self};
+    ((void(__thiscall *)(void *, void *))0x6ae7c0)(self, &notice);
+    ((void(__fastcall *)(void *))0x6a1e20)(self + 4);
+}
+static const uint8_t w3b_unhook_original[] = {0x83, 0xec, 0x08, 0x56, 0x8d, 0x44, 0x24, 0x04};
+REWRITE("Hook::Unhook6AFD60", 0x6afd60, w3b_unhook_original, (&w3b_unhook<0xf606e8>), &g_w3b_unhook);
+REWRITE("Hook::Unhook6AFD60", 0x6afd90, w3b_unhook_original, (&w3b_unhook<0xf606f0>), &g_w3b_unhook);
+
+// ---- Value::InSet: whether a value from 0x11 up belongs to a fixed set ------------------------------------------------
+static const uint8_t w3b_set_a[] = {1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1};
+static const uint8_t w3b_set_b[] = {1,1,0,0,0,0,0,0,1,0,1,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1};
+static volatile long g_w3b_in_set;
+template <const uint8_t *SET, uint32_t COUNT> static bool __fastcall w3b_in_set(uint32_t value) {
+    g_w3b_in_set++;
+    return value - 0x11 < COUNT && SET[value - 0x11];
+}
+static const uint8_t w3b_in_set_a_original[] = {0x8d, 0x41, 0xef, 0x3d, 0xee}, w3b_in_set_b_original[] = {0x8d, 0x41, 0xef, 0x3d, 0xa4};
+REWRITE("Value::InSet49B190", 0x49b190, w3b_in_set_a_original, (&w3b_in_set<w3b_set_a, 0xef>), &g_w3b_in_set);
+REWRITE("Value::InSet49B190", 0x49b3c0, w3b_in_set_b_original, (&w3b_in_set<w3b_set_b, 0xa5>), &g_w3b_in_set);
+
+// ---- Child::Drop: forgets the count before the child, destroys and frees the child, then clears the part at -0x1c ------
+static volatile long g_w3b_drop;
+template <uint32_t CHILD> static void __thiscall w3b_drop(uint8_t *self, uint32_t) {
+    g_w3b_drop++;
+    *(uint32_t *)(self + CHILD - 4) = 0;
+    void *child = *(void **)(self + CHILD);
+    if (child) {
+        ((void(__fastcall *)(void *))0x6af760)(child);
+        memory_free(child);
+    }
+    *(void **)(self + CHILD) = nullptr;
+    ((void(__fastcall *)(void *))0x6a1e20)(self - 0x1c);
+}
+static const uint8_t w3b_drop_original[] = {0x56, 0x8b, 0xf1, 0x57, 0x8b, 0x7e};
+REWRITE("Child::Drop63B4E0", 0x63b4e0, w3b_drop_original, (&w3b_drop<0x28>), &g_w3b_drop);
+REWRITE("Child::Drop63B4E0", 0x6706d0, w3b_drop_original, (&w3b_drop<0x3c>), &g_w3b_drop);
+REWRITE("Child::Drop63B4E0", 0x86e810, w3b_drop_original, (&w3b_drop<0x28>), &g_w3b_drop);
+
+// ---- Message::Forward: builds a message from a value and sends it to the target, if there is one ----------------------
+static volatile long g_w3b_forward;
+template <uint32_t TARGET, uintptr_t BUILD, uintptr_t SEND> static void __thiscall w3b_forward(uint8_t *self, uint32_t value) {
+    g_w3b_forward++;
+    void *target = *(void **)(self + TARGET);
+    if (!target) return;
+    uint8_t flag = 0, message[0x64];
+    ((void(__thiscall *)(void *, uint32_t, uint8_t *))BUILD)(message, value, &flag);
+    ((void(__thiscall *)(void *, void *))SEND)(target, message);
+}
+static const uint8_t w3b_forward_original[] = {0x83, 0xec, 0x68, 0x56, 0x8b, 0x71};
+REWRITE("Message::ForwardA0EB00", 0xa0eb00, w3b_forward_original, (&w3b_forward<0x30, 0xa0bfd0, 0xa0e960>), &g_w3b_forward);
+REWRITE("Message::ForwardA0EB00", 0xb5f6f0, w3b_forward_original, (&w3b_forward<0x24, 0xb5b8d0, 0xb5f3b0>), &g_w3b_forward);
+
+// ---- Message::Post: builds a small message from three values and hands it to this object ---------------------------------
+static volatile long g_w3b_post;
+template <uintptr_t BUILD, uintptr_t SEND> static void __thiscall w3b_post(void *self, uint32_t a, uint32_t b, uint32_t c) {
+    g_w3b_post++;
+    uint8_t message[0x1c];
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))BUILD)(message, a, b, c);
+    ((void(__thiscall *)(void *, void *))SEND)(self, message);
+}
+static const uint8_t w3b_post_original[] = {0x8b, 0x44, 0x24, 0x0c, 0x8b, 0x54, 0x24, 0x04};
+REWRITE("Message::Post7B9D30", 0x7b9d30, w3b_post_original, (&w3b_post<0x7b2f30, 0x7b94e0>), &g_w3b_post);
+REWRITE("Message::Post7B9D30", 0xb5f370, w3b_post_original, (&w3b_post<0xb5b840, 0xb5ecb0>), &g_w3b_post);
+REWRITE("Message::Post7B9D30", 0xb75670, w3b_post_original, (&w3b_post<0xb6bc70, 0xb74fb0>), &g_w3b_post);
+
+// ---- Actor::Notify: passes a fixed note to the actor, and when the value is this object's own, signals event 10 -----------
+static volatile long g_w3b_notify;
+template <uint32_t ACTOR, uint32_t OWN, uint32_t LIST, uintptr_t SIGNAL> static void __thiscall w3b_notify(uint8_t *self, uint32_t value) {
+    g_w3b_notify++;
+    ((void(__thiscall *)(void *, uint32_t))0x4d7e70)(*(void **)(self + ACTOR), 0xf264ad);
+    if (value == *(uint32_t *)(self + OWN))
+        ((void(__thiscall *)(void *, uint32_t, void *))SIGNAL)(*(void **)(self + LIST), 10, self - 0xd8);
+}
+static const uint8_t w3b_notify_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e};
+REWRITE("Actor::Notify710020", 0x710020, w3b_notify_original, (&w3b_notify<0x44, 0x170, 0x20, 0x717840>), &g_w3b_notify);
+REWRITE("Actor::Notify710020", 0xaa6b10, w3b_notify_original, (&w3b_notify<0x64, 0x194, 0x30, 0xaa5400>), &g_w3b_notify);
+
+// ---- Registry::Forward: passes the whole object (this is a part OFFSET into it) to the registry's handler -------------------
+static volatile long g_w3b_registry;
+template <uint32_t OFFSET> static uint32_t __thiscall w3b_registry(uint8_t *self, uint32_t, uint32_t) {
+    g_w3b_registry++;
+    uint8_t *registry = ((uint8_t * (__cdecl *)())0x42df90)();
+    return ((uint32_t(__thiscall *)(void *, void *, uint32_t))0x5f3df0)(*(void **)(registry + 0x30), self - OFFSET, 1);
+}
+static const uint8_t w3b_registry_a[] = {0x56, 0x8b, 0xf1, 0xe8, 0x78}, w3b_registry_b[] = {0x56, 0x8b, 0xf1, 0xe8, 0x48};
+REWRITE("Registry::Forward4A0E10", 0x4a0e10, w3b_registry_a, (&w3b_registry<0xb0>), &g_w3b_registry);
+REWRITE("Registry::Forward4A0E10", 0x87ef40, w3b_registry_b, (&w3b_registry<0xb4>), &g_w3b_registry);
+
+// ---- Clock::StreamTime: the source clock's time less the start time; fails without a source ---------------------------------
+static volatile long g_w3b_stream_time;
+template <uint32_t SOURCE, uint32_t START> static int32_t __thiscall w3b_stream_time(uint8_t *self, int64_t *time) {
+    g_w3b_stream_time++;
+    void **source = *(void ***)(self + SOURCE);
+    if (!source) return (int32_t)0x80040213;
+    int32_t result = ((int32_t(__stdcall *)(void *, int64_t *))(*(void ***)source)[3])(source, time);
+    if (result < 0) return result;
+    *time -= *(int64_t *)(self + START);
+    return 0;
+}
+static const uint8_t w3b_stream_time_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x47};
+REWRITE("Clock::StreamTimeDF9030", 0xdf9030, w3b_stream_time_original, (&w3b_stream_time<0x14, 0x18>), &g_w3b_stream_time);
+REWRITE("Clock::StreamTimeDF9030", 0xdf9650, w3b_stream_time_original, (&w3b_stream_time<0x18, 0x20>), &g_w3b_stream_time);
+
+// ---- Text::Print: the number in the first byte of the value at +4, as text, cut to fit the buffer ----------------------------
+static volatile long g_w3b_print;
+static void __thiscall w3b_print(uint8_t *self, char *out, uint32_t size) {
+    g_w3b_print++;
+    char text[0x64];
+    ((int(__cdecl *)(char *, const char *, ...))0xddcdb5)(text, (const char *)0xf28e5c, (uint32_t)**(uint8_t **)(self + 4));
+    ((char *(__cdecl *)(char *, const char *, uint32_t))0xddef30)(out, text, size);
+    out[size - 1] = 0;
+}
+static const uint8_t w3b_print_original[] = {0x83, 0xec, 0x68, 0xa1, 0x34, 0xe6, 0x0f, 0x01};
+REWRITE("Text::PrintCA71D0", 0xca71d0, w3b_print_original, w3b_print, &g_w3b_print);
+REWRITE("Text::PrintCA71D0", 0xca7580, w3b_print_original, w3b_print, &g_w3b_print);

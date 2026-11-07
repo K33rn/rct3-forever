@@ -857,3 +857,150 @@
     w3_area.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x40a090, (void *)w3_stub_registry}, {0x800860, (void *)stub_plain_dtor}}); };
     w3_area.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3_area);
+
+    // Refs::FirstFree: 0-4 items (and a negative count), each with or without a value, with each copy's layout
+    static uint32_t w3b_ff_count, w3b_ff_items, w3b_ff_stride;
+    Test w3b_first_free_test{0xa97380,
+                             [=](Rng &r) {
+                                 fresh(r);
+                                 uint8_t *self = arena<uint8_t>(0x1000);
+                                 int n = r.range(0, 5) - 1;
+                                 *(int32_t *)(self + w3b_ff_count) = n;
+                                 *(void **)(self + w3b_ff_items) = arena<void>(0x800);
+                                 for (int i = 0; i < 4; i++) {
+                                     *(void **)(arena<uint8_t>(0x800) + i * w3b_ff_stride + 4) = arena<void>(0x400 + i * 0x10);
+                                     arena<uint32_t>(0x40c + i * 0x10)[0] = r.range(0, 2) ? r.next() | 1 : 0;
+                                 }
+                             },
+                             [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x1000))}; }};
+    w3b_first_free_test.prepare = [](const rewrite::Entry *e) {
+        w3b_ff_count = *(uint32_t *)(e->at + 2); w3b_ff_items = *(uint32_t *)(e->at + 0x10); w3b_ff_stride = *(uint8_t *)(e->at + 0x23);
+    };
+    quick(w3b_first_free_test);
+    // Items::EachCall: 0-4 items, the call sometimes shortening the list
+    static uint32_t w3b_each_items;
+    Test w3b_each_test{0x83fca0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           uint8_t *self = arena<uint8_t>(0x1000);
+                           *(int32_t *)(self + w3b_count_at) = r.range(0, 4);
+                           *(void **)(self + w3b_each_items) = arena<void>(0x800);
+                           for (int i = 0; i < 4; i++) arena<uint32_t>(0x800)[i] = r.next();
+                           arena<int32_t>(0x20)[0] = r.range(0, 5);
+                       },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x1000)); return Result{}; }};
+    w3b_each_test.prepare = [](const rewrite::Entry *e) {
+        w3b_count_at = *(uint8_t *)(e->at + 6); w3b_each_items = *(uint8_t *)(e->at + 0x12);
+        stubs_for_now({{(uintptr_t)(e->at + 0x16 + 5 + *(int32_t *)(e->at + 0x17)), (void *)w3b_stub_each}});
+    };
+    w3b_each_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_each_test);
+    // Hook::Unhook: the notice's contents and both calls
+    Test w3b_unhook_test{0x6afd60, [=](Rng &r) { fresh(r); },
+                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    w3b_unhook_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6ae7c0, (void *)w3b_stub_notice}, {0x6a1e20, (void *)stub_plain_dtor}}); };
+    w3b_unhook_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_unhook_test);
+    // Value::InSet: every value through and past both ranges, and a value below them that wraps
+    Test w3b_in_set_test{0x49b190, [=](Rng &r) { fresh(r); },
+                         [](void *fn) {
+                             uint32_t sum = 0;
+                             for (uint32_t v = 0; v < 0x130; v++) sum = sum * 3 + (uint8_t)((uint32_t(__fastcall *)(uint32_t))fn)(v);
+                             return Result{sum * 3 + (uint8_t)((uint32_t(__fastcall *)(uint32_t))fn)(0xffffffff)};
+                         }};
+    w3b_in_set_test.iterations = 3;
+    quick(w3b_in_set_test);
+    // Child::Drop: with and without a child, each copy's field
+    static uint32_t w3b_child_at;
+    Test w3b_drop_test{0x63b4e0,
+                       [=](Rng &r) { fresh(r); *(void **)(arena<uint8_t>(0x100) + w3b_child_at) = r.range(0, 1) ? arena<void>(0x800) : nullptr; },
+                       [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), 7); return Result{}; }};
+    w3b_drop_test.prepare = [](const rewrite::Entry *e) {
+        w3b_child_at = *(uint8_t *)(e->at + 6);
+        stubs_for_now({{0x6af760, (void *)stub_plain_dtor}, {0x6a1e20, (void *)stub_plain_dtor}});
+    };
+    w3b_drop_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_drop_test);
+    // Message::Forward: with and without a target; the message and the zeroed flag reach their calls
+    static uint32_t w3b_target_at;
+    Test w3b_forward_test{0xa0eb00,
+                          [=](Rng &r) {
+                              fresh(r);
+                              *(void **)(arena<uint8_t>(0x100) + w3b_target_at) = r.range(0, 2) ? arena<void>(0x300) : nullptr;
+                              arena<uint32_t>(0x24)[0] = r.next();
+                          },
+                          [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x24)[0]); return Result{}; }};
+    w3b_forward_test.prepare = [](const rewrite::Entry *e) {
+        w3b_target_at = *(uint8_t *)(e->at + 6);
+        stubs_for_now({{(uintptr_t)(e->at + 0x1e + 5 + *(int32_t *)(e->at + 0x1f)), (void *)w3b_stub_build2},
+                       {(uintptr_t)(e->at + 0x2a + 5 + *(int32_t *)(e->at + 0x2b)), (void *)w3b_stub_send64}});
+    };
+    w3b_forward_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_forward_test);
+    // Message::Post: three values in order, each copy's two calls
+    Test w3b_post_test{0x7b9d30,
+                       [=](Rng &r) { fresh(r); for (int i = 0; i < 3; i++) arena<uint32_t>(0x20)[i] = r.next(); },
+                       [](void *fn) {
+                           uint32_t *v = arena<uint32_t>(0x20);
+                           ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), v[0], v[1], v[2]);
+                           return Result{};
+                       }};
+    w3b_post_test.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0x19 + 5 + *(int32_t *)(e->at + 0x1a)), (void *)w3b_stub_build3},
+                       {(uintptr_t)(e->at + 0x25 + 5 + *(int32_t *)(e->at + 0x26)), (void *)w3b_stub_send1c}});
+    };
+    w3b_post_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_post_test);
+    // Actor::Notify: the value this object's own or not, each copy's fields and call
+    static uint32_t w3b_own_at;
+    Test w3b_notify_test{0x710020,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 0x80; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                             *(uint32_t *)(arena<uint8_t>(0x1000) + w3b_own_at) = (uint32_t)r.range(0, 1);
+                             arena<uint32_t>(0x24)[0] = (uint32_t)r.range(0, 1);
+                         },
+                         [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x24)[0]); return Result{}; }};
+    w3b_notify_test.prepare = [](const rewrite::Entry *e) {
+        w3b_own_at = *(uint32_t *)(e->at + 0x16);
+        stubs_for_now({{0x4d7e70, (void *)stub_thiscall1}, {(uintptr_t)(e->at + 0x28 + 5 + *(int32_t *)(e->at + 0x29)), (void *)stub_thiscall2}});
+    };
+    w3b_notify_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_notify_test);
+    // Registry::Forward: the handler's object and result
+    Test w3b_registry_test{0x4a0e10,
+                           [=](Rng &r) { fresh(r); arena<uint32_t>(0x430)[0] = r.next(); arena<uint32_t>(0x24)[0] = r.next(); },
+                           [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x1000), 1, 2)}; }};
+    w3b_registry_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x42df90, (void *)w3b_stub_registry}, {0x5f3df0, (void *)w3b_stub_handler}}); };
+    w3b_registry_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_registry_test);
+    // Clock::StreamTime: no source, and the source failing, succeeding and returning a positive code; borrows between halves
+    static uint32_t w3b_source_at;
+    Test w3b_time_test{0xdf9030,
+                       [=](Rng &r) {
+                           fresh(r);
+                           static void *vt[4] = {nullptr, nullptr, nullptr, (void *)w3b_stub_time};
+                           *(void **)arena<uint8_t>(0x300) = vt;
+                           *(void **)(arena<uint8_t>(0x100) + w3b_source_at) = r.range(0, 4) ? arena<void>(0x300) : nullptr;
+                           arena<int32_t>(0x24)[0] = r.range(0, 2) - 1;
+                           arena<uint32_t>(0x28)[0] = r.next();
+                           arena<uint32_t>(0x2c)[0] = r.next();
+                           arena<uint32_t>(0x800)[0] = r.next();
+                           arena<uint32_t>(0x800)[1] = r.next();
+                       },
+                       [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; }};
+    w3b_time_test.prepare = [](const rewrite::Entry *e) { w3b_source_at = *(uint8_t *)(e->at + 6); };
+    quick(w3b_time_test);
+    // Text::Print: texts of 0-29 letters into buffers of 0-39
+    Test w3b_print_test{0xca71d0,
+                        [=](Rng &r) {
+                            fresh(r);
+                            *(void **)(arena<uint8_t>(0x100) + 4) = arena<void>(0x300);
+                            arena<uint32_t>(0x300)[0] = r.next();
+                            arena<uint32_t>(0x24)[0] = (uint32_t)r.range(0, 39);
+                            for (int i = 0; i < 16; i++) arena<uint32_t>(0x7f0)[i] = r.next();
+                        },
+                        [](void *fn) { ((void(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x800), arena<uint32_t>(0x24)[0]); return Result{}; }};
+    w3b_print_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcdb5, (void *)w3b_stub_sprintf}, {0xddef30, (void *)w3b_stub_strncpy}}); };
+    w3b_print_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3b_print_test);
