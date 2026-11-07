@@ -1392,3 +1392,21 @@
     };
     w1d_named_make_test.finish = w1_unstub;
     quick(w1d_named_make_test);
+    auto w1d_attach_test = [=](uint32_t at, uint32_t find, uint32_t make, uint32_t build) {
+        Test t{at,
+               [=](Rng &r) { fresh(r); w1_fill(r, 0x800, 0x20); for (int i = 0; i < 2; i++) arena<uint32_t>(0x20)[i] = r.next(); },
+               [](void *fn) {
+                   *(void **)0x13e3318 = arena<void>(0x600);
+                   return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[1])};
+               }};
+        t.prepare = [=](const rewrite::Entry *e) {
+            stubs_for_now({{w1c_at(e, find), (void *)w1d_stub_find_named}, {w1c_at(e, make), (void *)w1d_stub_copy_named}, {0xc0a6e0, (void *)w1d_stub_set_value},
+                           {0xca1eb0, (void *)w1c_stub_pool}, {w1c_at(e, build), (void *)w1d_stub_build1}});
+        };
+        t.finish = w1_unstub;
+        return t;
+    };
+    Test w1d_attach850 = w1d_attach_test(0xc0f850, 0x21, 0x38, 0x7b);
+    quick(w1d_attach850);
+    Test w1d_attach940 = w1d_attach_test(0xc0f940, 0x21, 0x38, 0x7e);
+    quick(w1d_attach940);

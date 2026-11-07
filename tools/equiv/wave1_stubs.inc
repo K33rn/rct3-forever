@@ -205,3 +205,7 @@ static void __stdcall w1d_stub_build_texts(uint32_t *items, uint32_t size, uint3
 }
 static int32_t *__thiscall w1d_stub_make_text(int32_t *self, uint32_t name) { record(0x275, self); record(0x275, (void *)(uintptr_t)name); self[0] = arena<int32_t>(0x20)[1] & 1; self[3] = 0x4321; return self; }
 static void __thiscall w1d_stub_base_text(uint32_t *self, int32_t **text) { record(0x276, self); record(0x276, *text); (**text)++; self[0] = 0x5555; }
+static uint32_t __thiscall w1d_stub_find_named(void *self, uint32_t name) { record(0x277, self); record(0x277, (void *)(uintptr_t)name); return arena<uint32_t>(0x20)[0] & 1 ? (uint32_t)(uintptr_t)arena<void>(0xa00) : 0; }
+static void *__thiscall w1d_stub_copy_named(void *self, uint32_t flag) { record(0x278, self); record(0x278, (void *)(uintptr_t)flag); return arena<uint32_t>(0x20)[0] & 2 ? arena<void>(0xb00) : nullptr; }
+static void __thiscall w1d_stub_set_value(void *self, uint32_t value) { record(0x279, self); record(0x279, (void *)(uintptr_t)value); }
+static uint32_t __thiscall w1d_stub_build1(void *self, uint32_t value) { record(0x27a, self); record(0x27a, (void *)(uintptr_t)value); return value ^ 0x2222; }

@@ -2009,3 +2009,26 @@ template <uint32_t NAME, uint32_t MAKE_TEXT, uint32_t BASE, uint32_t TABLE> stat
 }
 REWRITE("Named::ConstructBE4940", 0xbe4940, (w1c_seh<0xe9e10b>), (&w1d_named_make<0xfa56a8, 0xbcfb10, 0xc183f0, 0xfa56a4>), &g_w1d_named_makes);
 REWRITE("Named::ConstructBE4940", 0xc38520, (w1c_seh<0xea0dcb>), (&w1d_named_make<0xfb0adc, 0xbcf850, 0xc43450, 0xfb0ad0>), &g_w1d_named_makes);
+
+// ---- Named::Attach: the entry of that name looked up and a copy made from it set to `value`; with no entry, a fresh
+// SIZE-byte one from the pool built on `value`. The result is kept at SLOT ------------------------------------------------
+static volatile long g_w1d_attaches;
+template <uint32_t FIND, uint32_t SLOT, uint32_t MAKE, uint32_t SIZE, uint32_t BUILD> static uint32_t __thiscall w1d_attach(uint32_t *self, uint32_t value) {
+    g_w1d_attaches++;
+    uint32_t *slot = (uint32_t *)((uint8_t *)self + SLOT);
+    *slot = ((uint32_t(__thiscall *)(void *, uint32_t))FIND)((void *)(uintptr_t)self[0], 0xfafb54);
+    if (*slot) {
+        uint8_t *made = ((uint8_t * (__thiscall *)(void *, uint32_t))MAKE)((void *)(uintptr_t)*slot, 0);
+        *slot = (uint32_t)(uintptr_t)made;
+        ((void(__thiscall *)(void *, uint32_t))0xc0a6e0)(made + 4, value);
+    }
+    if (!*slot) {
+        void *memory = ((void *(__thiscall *)(void *, uint32_t, uint32_t))0xca1eb0)(*(uint8_t **)0x13e3318 + 4, 4, SIZE);
+        *slot = memory ? ((uint32_t(__thiscall *)(void *, uint32_t))BUILD)(memory, value) : 0;
+    }
+    return *slot;
+}
+REWRITE("Named::AttachC0F850", 0xc0f850, w1c_seh_late, (&w1d_attach<0xc0ccf0, 0x1118, 0xc0e1b0, 0x58, 0xc0e0a0>), &g_w1d_attaches);
+REWRITE("Named::AttachC0F850", 0xc12400, w1c_seh_late, (&w1d_attach<0xc0ce70, 0x1128, 0xc110e0, 0x54, 0xc0f110>), &g_w1d_attaches);
+REWRITE("Named::AttachC0F940", 0xc0f940, w1c_seh_late, (&w1d_attach<0xc0cd50, 0x111c, 0xc0e4c0, 0x8c, 0xc0e3c0>), &g_w1d_attaches);
+REWRITE("Named::AttachC0F940", 0xc10e30, w1c_seh_late, (&w1d_attach<0xc0cdb0, 0x1120, 0xc10ca0, 0xc4, 0xc0edf0>), &g_w1d_attaches);
