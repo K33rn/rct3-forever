@@ -233,3 +233,8 @@ static void __fastcall w1e_stub_finish(uint8_t *item) {
     else queue[2] = (uint32_t)(uintptr_t)arena<uint8_t>(0xa00 + 0x40 * (arena<uint32_t>(0x30)[0] & 3));
 }
 static uint32_t __thiscall w1e_stub_tell(uintptr_t part, uintptr_t arg) { record(0x286, (void *)part); record(0x286, (void *)arg); return part ^ arg ^ 0x1234; }
+static void __thiscall w1e_stub_clear(void *self, uint32_t a, uint32_t b) { record(0x287, self); record(0x287, (void *)(uintptr_t)a); record(0x287, (void *)(uintptr_t)b); }
+static void __thiscall w1e_stub_hand(void *self, uint32_t limit, int32_t *text) {
+    record(0x288, self); record(0x288, (void *)(uintptr_t)limit); record(0x288, text);
+    if (text) { record(0x288, (void *)(uintptr_t)text[0]); record(0x288, (void *)(uintptr_t)text[3]); }
+}

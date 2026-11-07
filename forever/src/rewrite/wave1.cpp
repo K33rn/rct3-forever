@@ -2094,3 +2094,34 @@ template <uint32_t QUEUE, uint32_t SWITCH> static uint32_t __fastcall w1e_drain(
 }
 REWRITE("Queue::Drain4A4950", 0x4a4950, (w1e_load_edx<0x10ee270>), (&w1e_drain<0x10ee270, 0x1103c68>), &g_w1e_drains);
 REWRITE("Queue::Drain4A4950", 0xb935a0, (w1e_load_edx<0x10f2968>), (&w1e_drain<0x10f2968, 0x1103c70>), &g_w1e_drains);
+
+// ---- Part::Reset: our part (at PART) cleared, then handed a fresh text of its default name with LIMIT -------------
+static volatile long g_w1e_part_resets;
+template <uint32_t PART, uint32_t LIMIT> static void __fastcall w1e_part_reset(uint8_t *self) {
+    g_w1e_part_resets++;
+    void *part = self + PART;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))0x9812f0)(part, 0, 0);
+    void *memory = memory_alloc(0x10);
+    void *text = memory ? ((void *(__thiscall *)(void *, uint32_t))0xbcf850)(memory, 0xf264ad) : nullptr;
+    ((void(__thiscall *)(void *, uint32_t, void *))0x9828e0)(part, LIMIT, text);
+}
+REWRITE("Part::ResetA39F80", 0xa39f80, (w1c_seh<0xe7dfeb>), (&w1e_part_reset<0x44, 0xffffffff>), &g_w1e_part_resets);
+REWRITE("Part::ResetA39F80", 0xaf1eb0, (w1c_seh<0xe8d86b>), (&w1e_part_reset<0x40, 0xa>), &g_w1e_part_resets);
+
+// ---- Pairs::Destroy: tables restored, then COUNT pairs of owned objects deleted (the one BACK bytes before each slot,
+// then the slot itself, the slots STEP apart from FIRST), then the base ---------------------------------------------------
+static volatile long g_w1e_pairs;
+template <uint32_t T0, uint32_t T1, uint32_t FIRST, uint32_t COUNT, uint32_t BACK, uint32_t STEP>
+static void __fastcall w1e_pairs(uint32_t *self) {
+    g_w1e_pairs++;
+    self[0] = T0;
+    self[1] = T1;
+    for (uint32_t i = 0; i < COUNT; i++) {
+        uint8_t *slot = (uint8_t *)self + FIRST + i * STEP;
+        if (void *one = *(void **)(slot - BACK)) delete_object(one);
+        if (void *two = *(void **)slot) delete_object(two);
+    }
+    ((void(__fastcall *)(void *))0x6b0ea0)(self);
+}
+REWRITE("Pairs::DestroyA5DF20", 0xa5df20, (w1c_seh<0xe82b88>), (&w1e_pairs<0xf8f3a8, 0xf8f394, 0xf0, 7, 0x1c, 4>), &g_w1e_pairs);
+REWRITE("Pairs::DestroyA5DF20", 0xa5e740, (w1c_seh<0xe82c88>), (&w1e_pairs<0xf8f5d0, 0xf8f5bc, 0xd8, 0x1f, 4, 8>), &g_w1e_pairs);
