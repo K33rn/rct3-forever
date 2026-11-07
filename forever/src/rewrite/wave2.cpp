@@ -1843,3 +1843,105 @@ template <uint32_t ONE, uint32_t OTHER> static uint32_t *__thiscall w2d_look_pai
 static const uint8_t w2d_look_pair_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28};
 REWRITE("Look::Pair4C5E10", 0x4c5e10, w2d_look_pair_original, (&w2d_look_pair<9, 3>), &g_w2d_look_pair);
 REWRITE("Look::Pair4C5E10", 0x4c5ea0, w2d_look_pair_original, (&w2d_look_pair<8, 4>), &g_w2d_look_pair);
+
+// ---- Dtor::OwnedPart: three tables, deletes the part at PART and the object owned at OWNED (forgetting both), the parts at 0x20 and 4, then the shared base's table
+static volatile long g_w2d_owned_part;
+template <uint32_t T0, uint32_t T1, uint32_t T2, uint32_t PART, uint32_t OWNED> static void __fastcall w2d_owned_part(uint8_t *self) {
+    g_w2d_owned_part++;
+    w2c_u32(self, 0) = T0;
+    w2c_u32(self, 4) = T1;
+    w2c_u32(self, 0x20) = T2;
+    if (void *part = *(void **)(self + PART)) {
+        w2c_run<0x6af760>(part);
+        memory_free(part);
+    }
+    w2c_u32(self, PART) = 0;
+    if (void **owned = *(void ***)(self + OWNED)) ((void(__thiscall *)(void *, uint32_t))(*(void ***)owned)[0])(owned, 1);
+    w2c_u32(self, OWNED) = 0;
+    w2c_run<0x6b0150>(self + 0x20);
+    w2c_run<0x6a1df0>(self + 4);
+    w2c_u32(self, 0) = 0xf2694c;
+}
+REWRITE("Dtor::OwnedPart63A2A0", 0x63a2a0, w2c_seh<0xe30de6>, (&w2d_owned_part<0xf48e7c, 0xf48e68, 0xf48e3c, 0x40, 0x44>), &g_w2d_owned_part);
+REWRITE("Dtor::OwnedPart63A2A0", 0x7462b0, w2c_seh<0xe4e646>, (&w2d_owned_part<0xf6b230, 0xf6b21c, 0xf6b1f0, 0x44, 0x40>), &g_w2d_owned_part);
+
+// ---- Grid::Mark: sets the flag byte FLAG in every 0x34-byte cell of the clamped rectangle [x0,x1) x [y0,y1), and widens the box kept at BOX ----------------
+static volatile long g_w2d_grid_mark;
+static const uint8_t w2d_grid_mark_original[] = {0x55, 0x8b, 0x6c, 0x24, 0x08, 0x85, 0xed};
+template <uint32_t FLAG, uint32_t BOX> static void __thiscall w2d_grid_mark(uint8_t *self, int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
+    g_w2d_grid_mark++;
+    int32_t width = (int32_t)w2c_u32(self, 0x48);
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > width) x1 = width;
+    if (y1 > (int32_t)w2c_u32(self, 0x4c)) y1 = (int32_t)w2c_u32(self, 0x4c);
+    if (x0 >= x1 || y0 >= y1) return;
+    for (int32_t y = y0; y < y1; y++)
+        for (int32_t x = x0; x < x1; x++) {
+            uint8_t *cells = (uint8_t *)(uintptr_t)w2c_u32(self, 0x50);
+            cells[((int32_t)w2c_u32(self, 0x48) * y + x) * 0x34 + FLAG] = 1;
+        }
+    int32_t *box = (int32_t *)(self + BOX);
+    if (x0 < box[0]) box[0] = x0;
+    if (y0 < box[1]) box[1] = y0;
+    if (x1 > box[2]) box[2] = x1;
+    if (y1 > box[3]) box[3] = y1;
+}
+REWRITE("Grid::Mark874D90", 0x874d90, w2d_grid_mark_original, (&w2d_grid_mark<2, 0x64>), &g_w2d_grid_mark);
+REWRITE("Grid::Mark874D90", 0x874e40, w2d_grid_mark_original, (&w2d_grid_mark<1, 0x54>), &g_w2d_grid_mark);
+
+// ---- Stat::Get: statistic `which`: five plain fields (0 and 3 the same one), or entry `which - 6` of the table when it is in use and in range; else 0 -----
+static volatile long g_w2d_stat_get;
+static const uint8_t w2d_stat_get_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0x05, 0x77, 0x2b};
+template <uint32_t A, uint32_t B, uint32_t C, uint32_t D, uint32_t E, uint32_t ENTRY> static uint32_t __thiscall w2d_stat_get(uint8_t *self, int32_t which) {
+    g_w2d_stat_get++;
+    switch (which) {
+    case 0:
+    case 3: return w2c_u32(self, A);
+    case 1: return w2c_u32(self, B);
+    case 2: return w2c_u32(self, C);
+    case 4: return w2c_u32(self, D);
+    case 5: return w2c_u32(self, E);
+    }
+    if (which < 6 || which > 0x19) return 0;
+    int32_t index = which - 6;
+    int32_t used = (w2c_u32(self, 0x18) & 0x400000) && (int32_t)w2c_u32(self, 0xe4) >= 2 ? (int32_t)w2c_u32(self, 0x11c) : 0;
+    if (index >= used) return 0;
+    return w2c_u32((void *)(uintptr_t)w2c_u32(self, 0x120), index * 12 + ENTRY);
+}
+REWRITE("Stat::GetBC5AB0", 0xbc5ab0, w2d_stat_get_original, (&w2d_stat_get<0x20, 0x28, 0x30, 0xd8, 0x10c, 4>), &g_w2d_stat_get);
+REWRITE("Stat::GetBC5AB0", 0xbc5b40, w2d_stat_get_original, (&w2d_stat_get<0x24, 0x2c, 0x34, 0xdc, 0x110, 8>), &g_w2d_stat_get);
+
+// ---- Pool::Release: marks the block free and merges it with a free neighbour on each side; merged-away headers go on the spare list (FREE, COUNT) --------
+// Block: +0 spare link, +8 in use, +0x10 size, +0x14 previous, +0x18 next. The pool keeps its largest free size at +0x1c.
+static volatile long g_w2d_pool_release;
+static const uint8_t w2d_pool_release_original[] = {0x8b, 0x44, 0x24, 0x04, 0x56, 0x8b, 0x70, 0x14};
+template <uint32_t FREE, uint32_t COUNT> static void __thiscall w2d_pool_release(uint8_t *self, uint8_t *block) {
+    g_w2d_pool_release++;
+    auto field = [](uint8_t *b, uint32_t off) -> uint8_t *& { return *(uint8_t **)(b + off); };
+    auto spare = [](uint8_t *b) {
+        *(uint32_t *)b = *(uint32_t *)(uintptr_t)FREE;
+        *(uint8_t **)(uintptr_t)FREE = b;
+        ++*(uint32_t *)(uintptr_t)COUNT;
+    };
+    w2c_u32(block, 8) = 0;
+    uint8_t *kept = block;
+    uint8_t *before = field(block, 0x14);
+    if (before && !w2c_u32(before, 8)) {
+        w2c_u32(before, 0x10) += w2c_u32(block, 0x10);
+        field(before, 0x18) = field(block, 0x18);
+        if (uint8_t *after = field(block, 0x18)) field(after, 0x14) = before;
+        kept = before;
+        spare(block);
+    }
+    uint8_t *after = field(kept, 0x18);
+    if (after && !w2c_u32(after, 8)) {
+        w2c_u32(kept, 0x10) += w2c_u32(after, 0x10);
+        field(kept, 0x18) = field(after, 0x18);
+        spare(after);
+        if (uint8_t *next = field(kept, 0x18)) field(next, 0x14) = kept;
+    }
+    if ((int32_t)w2c_u32(kept, 0x10) > (int32_t)w2c_u32(self, 0x1c)) w2c_u32(self, 0x1c) = w2c_u32(kept, 0x10);
+}
+REWRITE("Pool::ReleaseBE9590", 0xbe9590, w2d_pool_release_original, (&w2d_pool_release<0x13d0f4c, 0x13d0f54>), &g_w2d_pool_release);
+REWRITE("Pool::ReleaseBE9590", 0xbfd270, w2d_pool_release_original, (&w2d_pool_release<0x13d2a0c, 0x13d2a14>), &g_w2d_pool_release);

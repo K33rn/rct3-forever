@@ -1330,3 +1330,79 @@
             },
             [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; },
             [](const rewrite::Entry *) { stubs_for_now({{0x4c5890, (void *)w2d_look}, {0xa87e00, (void *)w2d_look_make}}); });
+    // Dtor::OwnedPart: the part and the owned object each there or not, at the copy's own places
+    w2c_add(0x63a2a0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x400)[0] = (void *)w2c_s1<0xe2d5>;
+                arena<void *>(0x300)[0] = arena<void>(0x400);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_a) = r.range(0, 3) ? arena<void>(0x380) : nullptr;
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_b) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x3d);
+                g_w2c_b = *(uint8_t *)(e->at + 0x5c);
+                stubs_for_now({{0x6af760, (void *)w2c_s0<0xe2d8>}, {0xbce000, (void *)w2c_free<0xe2d9>}, {0x6b0150, (void *)w2d_s_table<0xe2d6>}, {0x6a1df0, (void *)w2d_s_table<0xe2d7>}});
+            });
+    // Grid::Mark: rectangles inside, clipped, inverted and empty; the copy's own flag and box
+    w2c_add(0x874d90,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<int32_t>(0x100)[0x48 / 4] = r.range(0, 7);
+                arena<int32_t>(0x100)[0x4c / 4] = r.range(0, 7);
+                arena<void *>(0x100)[0x50 / 4] = arena<void>(0x1000);
+                for (int i = 0; i < 4; i++) *(int32_t *)(arena<uint8_t>(0x100) + g_w2c_a + 4 * i) = r.range(-3, 10);
+                for (int i = 0; i < 4; i++) arena<int32_t>(0x20)[i] = r.range(-2, 9);
+            },
+            [](void *fn) {
+                int32_t *v = arena<int32_t>(0x20);
+                ((void(__thiscall *)(void *, int32_t, int32_t, int32_t, int32_t))fn)(arena<void>(0x100), v[0], v[1], v[2], v[3]);
+                return Result{};
+            },
+            [](const rewrite::Entry *e) { g_w2c_a = *(uint8_t *)(e->at + 0x78); });
+    // Stat::Get: every plain statistic, table entries in and out of use and range, and out of range both ways
+    w2c_add(0xbc5ab0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                for (int i = 0; i < 0x50; i++) arena<uint32_t>(0x100)[i] = r.next();
+                for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x400)[i] = r.next();
+                arena<uint32_t>(0x100)[0x18 / 4] = r.range(0, 3) ? 0x400000 | r.next() : r.next() & ~0x400000u;
+                arena<int32_t>(0x100)[0xe4 / 4] = r.range(0, 4);
+                arena<int32_t>(0x100)[0x11c / 4] = r.range(0, 25);
+                arena<void *>(0x100)[0x120 / 4] = arena<void>(0x400);
+                arena<int32_t>(0x20)[0] = r.range(-2, 0x1c);
+            },
+            w2c_self_arg, [](const rewrite::Entry *) {});
+    // Pool::Release: a free or used block on either side, or none; the spare list in the copy's own globals
+    w2c_add(0xbe9590,
+            [=](Rng &r) {
+                w2c_seed(r);
+                uint8_t *b[4] = {arena<uint8_t>(0x300), arena<uint8_t>(0x340), arena<uint8_t>(0x380), arena<uint8_t>(0x3c0)};
+                for (int i = 0; i < 4; i++) {
+                    *(uint32_t *)(b[i] + 8) = r.range(0, 2);
+                    *(int32_t *)(b[i] + 0x10) = r.range(1, 100);
+                    *(uint8_t **)(b[i] + 0x14) = i ? b[i - 1] : nullptr;
+                    *(uint8_t **)(b[i] + 0x18) = i < 3 ? b[i + 1] : nullptr;
+                }
+                if (r.range(0, 4) == 0) *(uint8_t **)(b[1] + 0x14) = nullptr;
+                if (r.range(0, 4) == 0) *(uint8_t **)(b[1] + 0x18) = nullptr;
+                if (r.range(0, 3) == 0) *(uint8_t **)(b[2] + 0x18) = nullptr;
+                arena<int32_t>(0x100)[0x1c / 4] = r.range(0, 250);
+            },
+            [](void *fn) {
+                uint32_t *spare = (uint32_t *)(uintptr_t)g_w2c_a, *count = (uint32_t *)(uintptr_t)g_w2c_b;
+                uint32_t keep[2] = {*spare, *count};
+                *spare = arena<uint32_t>(0x20)[2];
+                *count = arena<uint32_t>(0x20)[3];
+                ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x340));
+                arena<uint32_t>(0x60)[0] = *spare;
+                arena<uint32_t>(0x60)[1] = *count;
+                *spare = keep[0];
+                *count = keep[1];
+                return Result{};
+            },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = w2c_word(e->at, 0x3e);
+                g_w2c_b = w2c_word(e->at, 0x4b);
+            });
