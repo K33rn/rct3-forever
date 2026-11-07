@@ -331,3 +331,20 @@ static void __thiscall w3d_stub_single3(void *self, uint32_t a, uint32_t b, uint
     for (uint32_t v : {a, b, c}) record(0x7d07, (void *)(uintptr_t)v);
     if (arena<uint32_t>(0x24)[0] & 1) *w3d_single_global = self;
 }
+static void *__thiscall w3d_stub_ctor1(uint8_t *self, uint32_t a) {
+    record(0x7d08, self);
+    record(0x7d08, (void *)(uintptr_t)a);
+    return self + 3;
+}
+static void __stdcall w3d_stub_vector(void *first, uint32_t size, uint32_t count, void *ctor, void *dtor) {
+    for (void *v : {first, (void *)(uintptr_t)size, (void *)(uintptr_t)count, ctor, dtor}) record(0xddcf99, v);
+}
+static void *__thiscall w3d_stub_find(void *map, uint32_t key) {
+    record(0xbe82b0, map);
+    record(0xbe82b0, (void *)(uintptr_t)key);
+    return arena<uint32_t>(0x24)[0] & 1 ? arena<void>(0x900) : nullptr;
+}
+static void *__fastcall w3d_stub_empty(uint8_t flag) {
+    record(0xbd0490, (void *)(uintptr_t)flag);
+    return arena<void>(0x980);
+}

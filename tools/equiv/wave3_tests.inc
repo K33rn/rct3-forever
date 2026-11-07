@@ -1603,3 +1603,49 @@
     };
     w3d_single_test.finish = [](const rewrite::Entry *) { unstub_many(); *w3d_single_global = w3d_single_was; };
     quick(w3d_single_test);
+    // Holder::Init
+    Test w3d_holder_test{0x7577e0, w3c_maker, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    w3d_holder_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbd9c10, (void *)stub_thiscall1}, {0xbd1550, (void *)stub_plain_dtor}, {0xbd9a90, (void *)stub_thiscall1}}); };
+    w3d_holder_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_holder_test);
+    // Array::Make: 0-49 elements, memory there or not
+    Test w3d_array_test{0x823180, w3c_maker, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0] % 50)}; }};
+    w3d_array_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)w3_stub_alloc_maybe}, {0xddcf99, (void *)w3d_stub_vector}}); };
+    w3d_array_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_array_test);
+    // Map::Get: found, or made (memory there or not) and added
+    Test w3d_get_test{0x881ee0, w3c_maker, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    w3d_get_test.prepare = [=](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {0xbe82b0, (void *)w3d_stub_find}, {w3d_rel(e, 0x48), (void *)w3d_stub_ctor1}, {0xbe8230, (void *)w3d_stub_handler2}});
+    };
+    w3d_get_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_get_test);
+    // Text::From: no source; a source without text; a source with text (memory there or not)
+    static uint32_t w3d_t_source, w3d_t_field;
+    Test w3d_text_test{0xa2c8e0, w3c_maker,
+                       [](void *fn) {
+                           uint32_t *k = arena<uint32_t>(0x10);
+                           *(void **)(arena<uint8_t>(0x100) + w3d_t_source) = k[1] & 3 ? arena<void>(0x400) : nullptr;
+                           *(uint32_t *)(arena<uint8_t>(0x400) + w3d_t_field) = k[2] & 1 ? k[3] : 0;
+                           return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))};
+                       }};
+    w3d_text_test.prepare = [](const rewrite::Entry *e) {
+        w3d_t_source = *(uint8_t *)(e->at + 0x1f);
+        w3d_t_field = *(uint8_t *)(e->at + 0x27);
+        stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {0xbcf7d0, (void *)w3d_stub_ctor1}, {0xbcf850, (void *)w3d_stub_ctor1}, {0xbd0490, (void *)w3d_stub_empty}});
+    };
+    w3d_text_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_text_test);
+    // Shared::Own: used only here (or less), or elsewhere too (memory there or not)
+    Test w3d_own_test{0xbcffe0,
+                      [=](Rng &r) {
+                          w3c_maker(r);
+                          arena<void *>(0x100)[0] = arena<void>(0x400);
+                          arena<int32_t>(0x400)[0] = (int32_t)r.range(0, 4) - 1;
+                      },
+                      [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    w3d_own_test.prepare = [=](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)w3_stub_alloc_maybe}, {w3d_rel(e, 0x4c), (void *)w3d_stub_handler2}, {w3d_rel(e, 0x80), (void *)w3d_stub_ctor1}});
+    };
+    w3d_own_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_own_test);

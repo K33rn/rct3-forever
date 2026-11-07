@@ -1918,3 +1918,86 @@ template <uint32_t INSTANCE, uint32_t SIZE, uintptr_t CTOR> static void *__cdecl
 }
 REWRITE("Single::Get4779C0", 0x4779c0, w3c_start<0x6400e0d58b68ff6a>, (&w3d_single<0x12f523c, 0xf0, 0x54bc30>), &g_w3d_single);
 REWRITE("Single::Get4779C0", 0x7728d0, w3c_start<0x6400e5165b68ff6a>, (&w3d_single<0x1306568, 0xb8, 0x771670>), &g_w3d_single);
+
+// ---- Holder::Init: two vtables, the list member built from the argument, the second base built, then the list told its owner
+static volatile long g_w3d_holder;
+template <uint32_t VTABLE> static void *__thiscall w3d_holder(uint32_t *self, uint32_t argument) {
+    g_w3d_holder++;
+    self[1] = 0xf6c524;
+    self[0] = VTABLE;
+    ((void(__thiscall *)(void *, uint32_t))0xbd9c10)(self + 2, argument);
+    ((void(__thiscall *)(void *))0xbd1550)(self + 15);
+    self[15] = 0xf6c51c;
+    ((void(__thiscall *)(void *, void *))0xbd9a90)(self + 2, self);
+    return self;
+}
+REWRITE("Holder::Init7577E0", 0x7577e0, w3c_start<0x6400e5015e68ff6a>, (&w3d_holder<0xf6c504>), &g_w3d_holder);
+REWRITE("Holder::Init7577E0", 0x7fa670, w3c_start<0x6400e5b06e68ff6a>, (&w3d_holder<0xf7510c>), &g_w3d_holder);
+
+// ---- Array::Make: `count` 12-byte elements built in one block that starts with the count (null if out of memory) -------------
+static volatile long g_w3d_array;
+template <uintptr_t CTOR, uintptr_t DTOR> static void *__thiscall w3d_array(uint32_t *self, uint32_t count) {
+    g_w3d_array++;
+    self[1] = count;
+    uint32_t *block = (uint32_t *)memory_alloc_aligned(count * 12 + 4);
+    if (block) {
+        block[0] = count;
+        ((void(__stdcall *)(void *, uint32_t, uint32_t, void *, void *))0xddcf99)(block + 1, 12, count, (void *)CTOR, (void *)DTOR);
+        self[0] = (uint32_t)(uintptr_t)(block + 1);
+    } else
+        self[0] = 0;
+    return self;
+}
+REWRITE("Array::Make823180", 0x823180, w3c_start<0xff6a00000000a164>, (&w3d_array<0x822c70, 0x822bc0>), &g_w3d_array);
+REWRITE("Array::Make823180", 0xa320b0, w3c_start<0xff6a00000000a164>, (&w3d_array<0xa30810, 0xa30820>), &g_w3d_array);
+
+// ---- Map::Get: the item under the key, made and added (under its own key field at +8) when it is missing -------------------
+static volatile long g_w3d_get;
+template <uint32_t MAP, uintptr_t CTOR> static void *__thiscall w3d_get(uint8_t *self, uint32_t key) {
+    g_w3d_get++;
+    void *map = self + MAP;
+    if (void *found = ((void *(__thiscall *)(void *, uint32_t))0xbe82b0)(map, key)) return found;
+    void *made = memory_alloc(0x4c);
+    uint8_t *item = made ? ((uint8_t * (__thiscall *)(void *, uint32_t))CTOR)(made, key) : nullptr;
+    ((void(__thiscall *)(void *, uintptr_t, void *))0xbe8230)(map, (uintptr_t)item + 8, item);   // +8 even for null
+    return item;
+}
+REWRITE("Map::Get881EE0", 0x881ee0, w3c_start<0xff6a00000000a164>, (&w3d_get<0x34, 0x87f7b0>), &g_w3d_get);
+REWRITE("Map::Get881EE0", 0xb33760, w3c_start<0xff6a00000000a164>, (&w3d_get<0x14, 0xb32e20>), &g_w3d_get);
+
+// ---- Text::From: a new text copied from the source's text, or the shared empty one when the source has none, or the copy's
+// default text when there is no source; returned through `out` -------------------------------------------------------------------
+static volatile long g_w3d_text;
+template <uint32_t SOURCE, uint32_t FIELD, uint32_t TEXT> static void **__thiscall w3d_text(uint8_t *self, void **out) {
+    g_w3d_text++;
+    void *text;
+    if (uint8_t *source = *(uint8_t **)(self + SOURCE)) {
+        if (void *from = *(void **)(source + FIELD)) {
+            void *made = memory_alloc(0x10);
+            text = made ? ((void *(__thiscall *)(void *, void *))0xbcf7d0)(made, from) : nullptr;
+        } else
+            text = ((void *(__fastcall *)(uint8_t))0xbd0490)(1);
+    } else {
+        void *made = memory_alloc(0x10);
+        text = made ? ((void *(__thiscall *)(void *, uint32_t))0xbcf850)(made, TEXT) : nullptr;
+    }
+    *out = text;
+    return out;
+}
+REWRITE("Text::FromA2C8E0", 0xa2c8e0, w3c_start<0x6400e7c76668ff6a>, (&w3d_text<0x7c, 0xc, 0xf65930>), &g_w3d_text);
+REWRITE("Text::FromA2C8E0", 0xba52d0, w3c_start<0x6400e9aec668ff6a>, (&w3d_text<0x50, 0x4, 0xf9d13c>), &g_w3d_text);
+
+// ---- Shared::Own: before changing a shared buffer, a buffer still used elsewhere is let go of and copied (with the argument);
+// one used only here is changed in place --------------------------------------------------------------------------------------------
+static volatile long g_w3d_own;
+template <uintptr_t COPY, uintptr_t CHANGE> static uint32_t __thiscall w3d_own(int32_t **self, uint32_t argument) {
+    g_w3d_own++;
+    int32_t *shared = *self;
+    if (*shared <= 1) return ((uint32_t(__thiscall *)(void *, uint32_t))CHANGE)(shared, argument);
+    --*shared;
+    void *made = memory_alloc(0x10);
+    *self = made ? ((int32_t * (__thiscall *)(void *, void *, uint32_t))COPY)(made, shared, argument) : nullptr;
+    return (uint32_t)(uintptr_t)*self;
+}
+REWRITE("Shared::OwnBCFFE0", 0xbcffe0, w3c_start<0x6400e9d4cb68ff6a>, (&w3d_own<0xbcf8c0, 0xbcf980>), &g_w3d_own);
+REWRITE("Shared::OwnBCFFE0", 0xbd02b0, w3c_start<0x6400e9d54b68ff6a>, (&w3d_own<0xbcfb80, 0xbcfc30>), &g_w3d_own);
