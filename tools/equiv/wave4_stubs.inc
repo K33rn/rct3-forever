@@ -261,3 +261,19 @@ static int32_t __thiscall w4d_stub_compare(void *self, int32_t **other) {
     return (int32_t)(*arena<uint32_t>(0x24) & 1);
 }
 static void *__thiscall w4d_stub_text_counted(uint32_t *p, const void *characters) { record(0x4d19, (void *)characters); p[1] = 0x4d19; return p; }
+
+// ---- wave 4e ----
+static uint32_t __stdcall w4_e_stub_size(const void *block) {
+    record(0x7e00, (void *)(uintptr_t)((const uint8_t *)block - arena<uint8_t>(0)));
+    return *arena<uint32_t>(0x28);
+}
+static void __stdcall w4_e_stub_listener(void *listener, uint8_t *copy, uint32_t *word) {
+    record(0x7e01, (void *)(uintptr_t)(copy - arena<uint8_t>(0)));
+    record(0x7e01, (void *)(uintptr_t)(copy[0] | copy[1] << 8));
+    record(0x7e01, (void *)(uintptr_t)*word);
+    *word = 0x5a;
+}
+static void __fastcall w4_e_stub_grow(uint32_t *list, void *, uint32_t count) {
+    record(0x7e02, (void *)(uintptr_t)count);
+    list[1] = count;
+}

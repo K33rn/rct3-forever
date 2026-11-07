@@ -1738,3 +1738,46 @@
     };
     w4d_is.finish = w4c_unstub;
     quick(w4d_is);
+    // Text::PrintWord: the word at the value at +4, buffer sizes 0-39
+    Test w4_e_print_word{0xca7490,
+                         [=](Rng &r) {
+                             fresh(r);
+                             *(void **)(arena<uint8_t>(0x100) + 4) = arena<void>(0x300);
+                             arena<uint32_t>(0x300)[0] = r.next();
+                             arena<uint32_t>(0x24)[0] = (uint32_t)r.range(1, 39);
+                             for (int i = 0; i < 16; i++) arena<uint32_t>(0x7f0)[i] = r.next();
+                         },
+                         [](void *fn) { ((void(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x800), arena<uint32_t>(0x24)[0]); return Result{}; }};
+    w4_e_print_word.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xddcdb5, (void *)w3b_stub_sprintf}, {0xddef30, (void *)w3b_stub_strncpy}}); };
+    w4_e_print_word.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_e_print_word);
+    // Pool::Intern: 0-4 entries of two-letter blocks over {0,1}, sizes 0-2, the block found or not, a listener or not
+    static uint32_t w4_e_list, w4_e_slot;
+    Test w4_e_intern{0xcb2ec0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         uint8_t *self = arena<uint8_t>(0x100);
+                         uint32_t count = (uint32_t)r.range(0, 4);
+                         *(uint32_t *)(self + w4_e_list) = count;
+                         *(uint32_t *)(self + w4_e_list + 4) = count;
+                         *(void **)(self + w4_e_list + 0xc) = arena<void>(0x400);
+                         for (uint32_t i = 0; i < 8; i++) {
+                             arena<void *>(0x400)[i] = arena<void>(0x500 + i * 8);
+                             *(void **)arena<void>(0x500 + i * 8) = arena<void>(0x600 + i * 16);
+                             arena<uint32_t>(0x504 + i * 8)[0] = r.next();
+                             for (int k = 0; k < 4; k++) arena<uint8_t>(0x600 + i * 16)[k] = (uint8_t)r.range(0, 1);
+                         }
+                         for (int k = 0; k < 4; k++) arena<uint8_t>(0x700)[k] = (uint8_t)r.range(0, 1);
+                         *arena<uint32_t>(0x28) = (uint32_t)r.range(0, 2);
+                         *(void **)(self + 0x34) = r.range(0, 1) ? arena<void>(0x900) : nullptr;
+                         *(void **)arena<void>(0x900) = arena<void>(0xa00);
+                         *(void **)(arena<uint8_t>(0xa00) + w4_e_slot) = (void *)w4_e_stub_listener;
+                     },
+                     [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x700))}; }};
+    w4_e_intern.prepare = [](const rewrite::Entry *e) {
+        w4_e_list = *(uint8_t *)(e->at + 0x19);
+        w4_e_slot = *(uint32_t *)(e->at + 0xa4);
+        stubs_for_now({{0xcf6b63, (void *)w4_e_stub_size}, {0xbcdfc0, (void *)stub_alloc_next}, {0xbcdfd0, (void *)stub_alloc_aligned}, {w4c_target(e, 0xb3), (void *)w4_e_stub_grow}});
+    };
+    w4_e_intern.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_e_intern);
