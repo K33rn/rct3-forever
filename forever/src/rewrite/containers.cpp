@@ -1209,3 +1209,214 @@ REWRITE("Array::NextIndex", 0xa0eee0, next_index_original, (&array_next_index<0x
 REWRITE("Array::NextIndex", 0xa0ef30, next_index_original, (&array_next_index<0xa0edf0>), &g_next_indexes);
 REWRITE("Array::NextIndex", 0xb75db0, next_index_original, (&array_next_index<0xb75ba0>), &g_next_indexes);
 REWRITE("Array::NextIndex", 0xb76260, next_index_original, (&array_next_index<0xb76170>), &g_next_indexes);
+
+// The interface kept in a 28-byte reference, looked up the first time.
+template <uint32_t ID> static void *ref_interface(uint8_t *ref) {
+    if (!ref[0x18]) {
+        *(void **)(ref + 0x14) = find_interface(*(uint8_t **)(ref + 4), (const int32_t *)ID);
+        ref[0x18] = 1;
+    }
+    return *(void **)(ref + 0x14);
+}
+typedef void(__thiscall *Event2)(void *, uint32_t, uint32_t);
+
+// ---- TrackedRide::PassOn: a two-argument event to the base class, then to the interfaces of the three lists of 28-byte
+// references (+0xac, +0xb4, +0xbc; counts 4 further on) ------------------------------------------------------------------------
+static volatile long g_ride_events;
+template <uint32_t BASE, uint32_t EACH> static void __thiscall tracked_ride_pass(uint8_t *self, uint32_t a, uint32_t b) {
+    g_ride_events++;
+    ((Event2)BASE)(self, a, b);
+    for (uint32_t list = 0xac; list <= 0xbc; list += 8)
+        for (int32_t i = 0; i < *(int32_t *)(self + list + 4); i++) {
+            uint8_t *ref = *(uint8_t **)(self + list) + i * 0x1c;
+            ((Event2)EACH)(ref_interface<0x12f537c>(ref), a, b);
+        }
+}
+static const uint8_t ride_pass_original[] = {0x51, 0x8b, 0x44, 0x24, 0x0c, 0x53, 0x55, 0x56};
+REWRITE("TrackedRide::PassOn", 0x5d5cb0, ride_pass_original, (&tracked_ride_pass<0x8451d0, 0x5634c0>), &g_ride_events);
+REWRITE("TrackedRide::PassOn", 0x5d5e80, ride_pass_original, (&tracked_ride_pass<0x845240, 0x563560>), &g_ride_events);
+REWRITE("TrackedRide::PassOn", 0x5d6050, ride_pass_original, (&tracked_ride_pass<0x845240, 0x563600>), &g_ride_events);
+REWRITE("TrackedRide::PassOn", 0x5d6220, ride_pass_original, (&tracked_ride_pass<0x845320, 0x563420>), &g_ride_events);
+
+// ---- Ride::PassOn: the same kind of event for a ride: its listener (+0x418), a part (+0x404, when `a` is 0), each entry
+// (references at +0x310) whose interface isn't flagged at +0x1c1, and six more listeners -------------------------------------------
+static volatile long g_ride_passes;
+template <uint32_t LISTEN, uint32_t PART, uint32_t ENTRY> static void __thiscall ride_pass(uint8_t *self, uint32_t a, uint32_t b) {
+    g_ride_passes++;
+    void *listener = *(void **)(self + 0x418);
+    if (listener) ((Event2)LISTEN)(listener, a, b);
+    void *part = *(void **)(self + 0x404);
+    if (part && !a) ((void(__thiscall *)(void *, uint32_t))PART)(part, b);
+    for (int32_t i = 0; i < *(int32_t *)(self + 0x314); i++) {
+        uint8_t *ref = *(uint8_t **)(self + 0x310) + i * 0x1c;
+        uint8_t *interface = (uint8_t *)ref_interface<0x12f515c>(ref);
+        if (interface[0x1c1]) continue;
+        void *entry = ((void *(__thiscall *)(void *, int32_t, uint32_t, uint32_t))0x510d90)(self, i, a, b);
+        ((void(__fastcall *)(void *))ENTRY)(entry);
+    }
+    for (uint32_t k = 0; k < 4; k++) {
+        listener = *(void **)(self + 0x438 + k * 0x90);
+        if (listener) ((Event2)LISTEN)(listener, a, b);
+    }
+    for (uint32_t k = 0; k < 2; k++) {
+        listener = *(void **)(self + 0x674 + k * 0x50);
+        if (listener) ((Event2)LISTEN)(listener, a, b);
+    }
+}
+static const uint8_t ride_pass2_original[] = {0x51, 0x53, 0x55, 0x8b, 0xe9, 0x8b, 0x8d, 0x18};
+REWRITE("Ride::PassOn", 0x511950, ride_pass2_original, (&ride_pass<0x86cfb0, 0xb83320, 0x52b9e0>), &g_ride_passes);
+REWRITE("Ride::PassOn", 0x511aa0, ride_pass2_original, (&ride_pass<0x86d000, 0xb83330, 0x52b9f0>), &g_ride_passes);
+REWRITE("Ride::PassOn", 0x511bf0, ride_pass2_original, (&ride_pass<0x86d050, 0xb83340, 0x52ba00>), &g_ride_passes);
+REWRITE("Ride::PassOn", 0x511d40, ride_pass2_original, (&ride_pass<0x86d0a0, 0xb83350, 0x52ba10>), &g_ride_passes);
+
+// ---- List::RemoveValue: takes the first node holding `value` out of the list (an end node stops the search); the node, or null
+static volatile long g_list_removes;
+static Node *__thiscall list_remove_value(Node **list, void *value) {
+    g_list_removes++;
+    for (Node *n = *list; n->next; n = n->next)
+        if (n->value == value) {
+            unlink(n);
+            return n;
+        }
+    return nullptr;
+}
+static const uint32_t list_remove_copies[] = {0x435730, 0x475f10, 0x49ec50, 0xacd780};
+static const uint8_t list_remove_original[] = {0x8b, 0x01, 0x83, 0x38, 0x00, 0x74, 0x19, 0x85};
+REWRITE_COPIES("List::RemoveValue", list_remove_copies, list_remove_original, list_remove_value, &g_list_removes);
+
+// ---- Linked::DeleteAt: as Linked::Delete with the node at +OFF, and a broken list simply left -----------------------------------
+static volatile long g_linked_at;
+template <uint32_t OFF, uint32_t TABLE> static void *__thiscall linked_delete_at(uint32_t *self, uint32_t flags) {
+    g_linked_at++;
+    self[0] = TABLE;
+    Node *n = (Node *)((uint8_t *)self + OFF);
+    if (n->prev && n->next && n->next->prev == n && n->prev->next == n) {
+        n->next->prev = n->prev;
+        n->prev->next = n->next;
+        n->next = nullptr;
+        n->prev = nullptr;
+    }
+    if (flags & 1) memory_free(self);
+    return self;
+}
+template <uint32_t OFF> static const uint8_t linked_at_original[] = {0x56, 0x8b, 0xf1, 0x8d, 0x46, (uint8_t)OFF, 0x85, 0xc0};
+REWRITE("Linked::DeleteAt", 0x413810, linked_at_original<0x8>, (&linked_delete_at<0x8, 0xf26e00>), &g_linked_at);
+REWRITE("Linked::DeleteAt", 0x593fa0, linked_at_original<0x4>, (&linked_delete_at<0x4, 0xf3cf10>), &g_linked_at);
+REWRITE("Linked::DeleteAt", 0x7545f0, linked_at_original<0x70>, (&linked_delete_at<0x70, 0xf6c0bc>), &g_linked_at);
+REWRITE("Linked::DeleteAt", 0xc1b2d0, linked_at_original<0x4>, (&linked_delete_at<0x4, 0xfaff14>), &g_linked_at);
+
+// ---- List::DeleteValues: destroys and frees each node's value (nodes stay), stopping at the end or a broken link ------------------
+static volatile long g_list_deletes;
+template <uint32_t DESTROY> static void __fastcall list_delete_values(Node **list) {
+    g_list_deletes++;
+    Node *n = *list;
+    if (!n->next) n = nullptr;
+    while (n && n->prev && n->next && n->next->prev == n && n->prev->next == n) {
+        void *value = n->value;
+        Node *next = n->next;
+        n = next->next ? next : nullptr;
+        if (value) {
+            ((void(__fastcall *)(void *))DESTROY)(value);
+            memory_free(value);
+        }
+    }
+}
+static const uint8_t list_delete_original[] = {0x8b, 0x01, 0x56, 0x8b, 0x30, 0xf7, 0xde, 0x1b};
+REWRITE("List::DeleteValues", 0x49bc60, list_delete_original, (&list_delete_values<0x49b6e0>), &g_list_deletes);
+REWRITE("List::DeleteValues", 0x654280, list_delete_original, (&list_delete_values<0x64bf60>), &g_list_deletes);
+REWRITE("List::DeleteValues", 0x6695b0, list_delete_original, (&list_delete_values<0x49b6e0>), &g_list_deletes);
+REWRITE("List::DeleteValues", 0x7d4140, list_delete_original, (&list_delete_values<0x64bf60>), &g_list_deletes);
+
+// ---- Compare::MappedOne: the second object's value mapped (the other side) against the first's as it is -----------------------
+static volatile long g_mapped_ones;
+template <int32_t STEP> static uint8_t __stdcall mapped_one(uint8_t *a, uint8_t *b, uint8_t side) {
+    g_mapped_ones++;
+    int32_t value = *(int32_t *)(b + 0xa4);
+    if (!((uint8_t(__fastcall *)(uint8_t, uint8_t, int32_t *, int32_t))0x71b0f0)(b[0x8d], side ^ 1, &value, STEP)) return 0;
+    return *(int32_t *)(a + 0xa4) == value;
+}
+static const uint8_t mapped_one_original[] = {0x8b, 0x44, 0x24, 0x08, 0x8b, 0x88, 0xa4, 0x00};
+REWRITE("Compare::MappedOne", 0x71d0a0, mapped_one_original, (&mapped_one<2>), &g_mapped_ones);
+REWRITE("Compare::MappedOne", 0x71d0f0, mapped_one_original, (&mapped_one<-2>), &g_mapped_ones);
+REWRITE("Compare::MappedOne", 0x71d140, mapped_one_original, (&mapped_one<1>), &g_mapped_ones);
+REWRITE("Compare::MappedOne", 0x71d190, mapped_one_original, (&mapped_one<-1>), &g_mapped_ones);
+
+// ---- Refs::First: the interface of the first of an array of references, null when there are none ---------------------------------
+static volatile long g_ref_firsts;
+template <uint32_t ID> static void *__fastcall refs_first(uint8_t *self) {
+    g_ref_firsts++;
+    if (!*(uint32_t *)(self + 8)) return nullptr;
+    return find_interface(*(uint8_t **)(*(uint8_t **)self + 4), (const int32_t *)ID);
+}
+static const uint8_t refs_first_original[] = {0x8b, 0x41, 0x08, 0x85, 0xc0, 0x74, 0x38, 0x8b};
+REWRITE("Refs::First", 0x730b30, refs_first_original, (&refs_first<0x13063f0>), &g_ref_firsts);
+REWRITE("Refs::First", 0x7385d0, refs_first_original, (&refs_first<0x130646c>), &g_ref_firsts);
+REWRITE("Refs::First", 0xac2c50, refs_first_original, (&refs_first<0x13ce3f8>), &g_ref_firsts);
+REWRITE("Refs::First", 0xba4d80, refs_first_original, (&refs_first<0x13d05fc>), &g_ref_firsts);
+
+// ---- Bounds::Reset: two empty vectors and boxes: the box corners at +0x30 and +0x40 start at +-1e9 ---------------------------------
+static volatile long g_bounds;
+template <uint32_t TABLE> static uint32_t *__fastcall bounds_reset(uint32_t *self) {
+    g_bounds++;
+    self[5] = self[6] = self[7] = self[8] = 0;
+    self[0x14] = self[0x15] = self[0x16] = self[0x17] = 0;
+    self[0xc] = self[0xd] = self[0xe] = 0x4e6e6b28;
+    self[0x10] = self[0x11] = self[0x12] = 0xce6e6b28;
+    self[0] = TABLE;
+    return self;
+}
+static const uint8_t bounds_original[] = {0x8b, 0xc1, 0x33, 0xc9, 0x89, 0x48, 0x14, 0x89};
+REWRITE("Bounds::Reset", 0x891920, bounds_original, (&bounds_reset<0xf7a1f4>), &g_bounds);
+REWRITE("Bounds::Reset", 0x891960, bounds_original, (&bounds_reset<0xf7a1fc>), &g_bounds);
+REWRITE("Bounds::Reset", 0x8919a0, bounds_original, (&bounds_reset<0xf7a204>), &g_bounds);
+REWRITE("Bounds::Reset", 0x8919e0, bounds_original, (&bounds_reset<0xf7a20c>), &g_bounds);
+
+// ---- SharedSlots::~SharedSlots: lets go of each slot's value ----------------------------------------------------------------
+static volatile long g_slots_destroys;
+template <uint32_t TABLE, uint32_t COUNT> static void __fastcall shared_slots_destroy(uint32_t *self) {
+    g_slots_destroys++;
+    self[0] = TABLE;
+    for (uint32_t i = 0; i < COUNT; i++) shared_release((Shared *)(uintptr_t)self[2 + i]);
+}
+template <uint32_t TABLE> static const uint8_t slots_destroy_original[] = {
+    0x53, 0x56, 0x57, 0xc7, 0x01, (uint8_t)TABLE, (uint8_t)(TABLE >> 8), (uint8_t)(TABLE >> 16)};
+REWRITE("SharedSlots::Destroy", 0xc0d740, slots_destroy_original<0xfaf9b0>, (&shared_slots_destroy<0xfaf9b0, 11>), &g_slots_destroys);
+REWRITE("SharedSlots::Destroy", 0xc0d840, slots_destroy_original<0xfaf9b4>, (&shared_slots_destroy<0xfaf9b4, 24>), &g_slots_destroys);
+REWRITE("SharedSlots::Destroy", 0xc0d9d0, slots_destroy_original<0xfaf9b8>, (&shared_slots_destroy<0xfaf9b8, 29>), &g_slots_destroys);
+REWRITE("SharedSlots::Destroy", 0xc0dad0, slots_destroy_original<0xfaf9bc>, (&shared_slots_destroy<0xfaf9bc, 3>), &g_slots_destroys);
+REWRITE("Pool::TakeSized", 0x49ec10, pool_take_original, (&pool_take_sized<0x49e3b0, 0x30>), &g_pool_takes);
+REWRITE("Pool::TakeSized", 0x901d60, pool_take_original, (&pool_take_sized<0x8ffa60, 0x60>), &g_pool_takes);
+REWRITE("Pool::TakeSized", 0x9506b0, pool_take_original, (&pool_take_sized<0x94e380, 0x60>), &g_pool_takes);
+REWRITE("Pool::TakeSized", 0x9fe560, pool_take_original, (&pool_take_sized<0x9fe100, 0x30>), &g_pool_takes);
+
+// ---- Chain::Delete: a deleting destructor that also deletes the next object of its chain, held at +OFF ------------------------
+static volatile long g_chain_deletes;
+template <uint32_t OFF> static void *__thiscall chain_delete(uint8_t *self, uint32_t flags) {
+    g_chain_deletes++;
+    void *next = *(void **)(self + OFF);
+    if (next) chain_delete<OFF>((uint8_t *)next, 1);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+template <uint32_t OFF> static const uint8_t chain_delete_original[] = {
+    0x56, 0x8b, 0xf1, 0x8b, 0x8e, (uint8_t)OFF, (uint8_t)(OFF >> 8), (uint8_t)(OFF >> 16)};
+REWRITE("Chain::Delete", 0x42bd60, chain_delete_original<0x504>, (&chain_delete<0x504>), &g_chain_deletes);
+REWRITE("Chain::Delete", 0x42bd90, chain_delete_original<0x504>, (&chain_delete<0x504>), &g_chain_deletes);
+REWRITE("Chain::Delete", 0x42bdc0, chain_delete_original<0x1704>, (&chain_delete<0x1704>), &g_chain_deletes);
+REWRITE("Chain::Delete", 0x84db10, chain_delete_original<0xc04>, (&chain_delete<0xc04>), &g_chain_deletes);
+REWRITE("Chain::Delete", 0x84db40, chain_delete_original<0x1004>, (&chain_delete<0x1004>), &g_chain_deletes);
+
+// ---- Level::Value: as Level::Reached, giving the field itself ---------------------------------------------------------------
+template <uint32_t LEVEL, uint32_t OFF> static uint32_t __fastcall level_value(uint8_t *self) {
+    g_level_checks++;
+    void *a = ((void *(__fastcall *)(void *))0xbb4280)(self);
+    uint8_t *record = ((uint8_t * (__fastcall *)(void *))0xbb3e70)(a);
+    uint8_t level = record[1];
+    if (!level || level < LEVEL) return 0;
+    return *(uint32_t *)(self + OFF);
+}
+REWRITE("Level::Value", 0x4d4430, level_original<0x4d4430>, (&level_value<2, 0x158>), &g_level_checks);
+REWRITE("Level::Value", 0x5a12f0, level_original<0x5a12f0>, (&level_value<3, 0x1b8>), &g_level_checks);
+REWRITE("Level::Value", 0x5bd150, level_original<0x5bd150>, (&level_value<3, 0x19c>), &g_level_checks);
+REWRITE("Level::Value", 0x5d26a0, level_original<0x5d26a0>, (&level_value<2, 0x148>), &g_level_checks);
+REWRITE("Level::Value", 0x846740, level_original<0x846740>, (&level_value<2, 0x150>), &g_level_checks);

@@ -370,6 +370,10 @@ static uint8_t __fastcall stub_name_found(void *name, void *table, int32_t count
     *at = arena<int32_t>(0x20)[0];
     return (uint8_t)arena<int32_t>(0x20)[1] * 3;
 }
+static void *__thiscall stub_ride_entry(void *self, int32_t i, uint32_t a, uint32_t b) {
+    record(0x7d, self); record(0x7d, (void *)(uintptr_t)i); record(0x7d, (void *)(uintptr_t)a); record(0x7d, (void *)(uintptr_t)b);
+    return arena<void>(0xe00 + i * 0x10);
+}
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -3944,6 +3948,167 @@ static std::vector<Test> tests() {
                   [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x900), arena<void>(0x600))}; }};
     ref_copy.prepare = [](const rewrite::Entry *e) { g_rc_off = *(uint32_t *)(e->at + 0x10); };
     quick(ref_copy);
+    // TrackedRide::PassOn: 3 lists of up to 2 references, kept or found
+    Test ride_pass{0x5d5cb0,
+                   [=](Rng &r) {
+                       fresh(r); iface_handle(r);
+                       uint8_t *self = arena<uint8_t>(0x800);
+                       for (int l = 0; l < 3; l++) {
+                           *(void **)(self + 0xac + l * 8) = arena<void>(0x900 + l * 0x40);
+                           *(int32_t *)(self + 0xb0 + l * 8) = r.range(0, 2);
+                           for (int i = 0; i < 2; i++) {
+                               uint8_t *ref = arena<uint8_t>(0x900 + l * 0x40 + i * 0x1c);
+                               *(void **)(ref + 4) = arena<void>(0x340);
+                               bool kept = r.range(0, 1);
+                               ref[0x18] = kept;
+                               *(void **)(ref + 0x14) = kept ? arena<void>(0x3a0) : nullptr;
+                           }
+                       }
+                       arena<uint32_t>(0x10)[0] = r.next(); arena<uint32_t>(0x10)[1] = r.next();
+                   },
+                   [](void *fn) { ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1]); return Result{}; }};
+    ride_pass.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f537c;
+        stubs_for_now({{(uintptr_t)(e->at + 0x13 + 5 + *(int32_t *)(e->at + 0x14)), (void *)stub_thiscall2},
+                       {(uintptr_t)(e->at + 0x8b + 5 + *(int32_t *)(e->at + 0x8c)), (void *)stub_thiscall2}});
+    };
+    ride_pass.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(ride_pass);
+    // Ride::PassOn: each listener sometimes there; `a` sometimes 0; up to 3 entries, flagged or not
+    Test ride_pass2{0x511950,
+                    [=](Rng &r) {
+                        fresh(r);
+                        uint8_t *self = arena<uint8_t>(0x1000);
+                        auto maybe = [&](uint32_t off) { *(void **)(self + off) = r.range(0, 1) ? arena<void>(0x3e0) : nullptr; };
+                        maybe(0x418); maybe(0x404);
+                        for (int k = 0; k < 4; k++) maybe(0x438 + k * 0x90);
+                        for (int k = 0; k < 2; k++) maybe(0x674 + k * 0x50);
+                        *(void **)(self + 0x310) = arena<void>(0x900);
+                        *(int32_t *)(self + 0x314) = r.range(0, 3);
+                        for (int i = 0; i < 3; i++) {
+                            uint8_t *ref = arena<uint8_t>(0x900 + i * 0x1c);
+                            ref[0x18] = 1;
+                            *(void **)(ref + 0x14) = arena<void>(0x1800 + i * 0x200);
+                            arena<uint8_t>(0x1800 + i * 0x200)[0x1c1] = (uint8_t)r.range(0, 1);
+                        }
+                        arena<uint32_t>(0x10)[0] = r.range(0, 1) ? r.next() : 0;
+                        arena<uint32_t>(0x10)[1] = r.next();
+                    },
+                    [](void *fn) { ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1]); return Result{}; }};
+    ride_pass2.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0x1d + 5 + *(int32_t *)(e->at + 0x1e)), (void *)stub_thiscall2},
+                       {(uintptr_t)(e->at + 0x37 + 5 + *(int32_t *)(e->at + 0x38)), (void *)stub_thiscall1},
+                       {(uintptr_t)(e->at + 0xbf + 5 + *(int32_t *)(e->at + 0xc0)), (void *)stub_plain_dtor},
+                       {0x510d90, (void *)stub_ride_entry}});
+    };
+    ride_pass2.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(ride_pass2);
+    // a list from the head link at 0x3e0: up to 3 nodes at 0x420.. then the end node at 0x4e0; each value in the arena
+    auto value_list = [=](Rng &r, int n) {
+        void **prev = arena<void *>(0x3e0);
+        for (int i = 0; i < n; i++) {
+            void **node = arena<void *>(0x420 + i * 0x20);
+            prev[0] = node; node[1] = prev; prev = node;
+            node[2] = arena<void>(0x500 + i * 0x10);
+        }
+        void **end = arena<void *>(0x4e0);
+        prev[0] = end; end[0] = nullptr; end[1] = prev; end[2] = nullptr;
+    };
+    // List::RemoveValue: the value one of theirs or nobody's
+    Test list_remove{0x435730,
+                     [=](Rng &r) {
+                         fresh(r);
+                         value_list(r, r.range(0, 3));
+                         arena<void *>(0x100)[0] = arena<void *>(0x3e0)[0];
+                         arena<void *>(0x10)[0] = arena<void>(0x500 + r.range(0, 3) * 0x10);
+                     },
+                     [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void *>(0x10)[0])}; }};
+    quick(list_remove);
+    // Linked::DeleteAt: linked soundly or not, with and without the flag
+    static uint32_t g_lda_off;
+    Test linked_at{0x413810,
+                   [=](Rng &r) {
+                       fresh(r);
+                       void **n = (void **)arena<uint8_t>(0x100 + g_lda_off), **next = arena<void *>(0x320), **prev = arena<void *>(0x340);
+                       int broken = r.range(0, 5);
+                       n[0] = broken == 1 ? nullptr : (void *)next;
+                       n[1] = broken == 2 ? nullptr : (void *)prev;
+                       next[1] = broken == 3 ? (void *)prev : (void *)n;
+                       prev[0] = broken == 4 ? (void *)next : (void *)n;
+                       arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 3);
+                   },
+                   [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    linked_at.prepare = [](const rewrite::Entry *e) { g_lda_off = *(uint8_t *)(e->at + 5); };
+    quick(linked_at);
+    // List::DeleteValues: some values null, the list sometimes broken
+    Test list_delete{0x49bc60,
+                     [=](Rng &r) {
+                         fresh(r);
+                         int n = r.range(0, 3);
+                         value_list(r, n);
+                         arena<void *>(0x100)[0] = arena<void *>(0x3e0)[0];
+                         for (int i = 0; i < n; i++) if (!r.range(0, 3)) arena<void *>(0x420 + i * 0x20)[2] = nullptr;
+                         if (n && !r.range(0, 3)) arena<void *>(0x420 + r.range(0, n - 1) * 0x20)[1] = nullptr;
+                     },
+                     [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    list_delete.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x3b + 5 + *(int32_t *)(e->at + 0x3c)), (void *)stub_plain_dtor}}); };
+    list_delete.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(list_delete);
+    // Compare::MappedOne: as Compare::Mapped
+    Test mapped_one{0x71d0a0, mapped.setup, mapped.call};
+    mapped_one.prepare = mapped.prepare;
+    mapped_one.finish = mapped.finish;
+    quick(mapped_one);
+    // Refs::First: none or some, through the handle at 0x340
+    Test refs_first{0x730b30,
+                    [=](Rng &r) {
+                        fresh(r); iface_handle(r);
+                        arena<void *>(0x100)[0] = arena<void>(0x800);
+                        arena<int32_t>(0x100)[2] = r.range(0, 2);
+                        arena<void *>(0x800)[1] = arena<void>(0x340);
+                    },
+                    [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    refs_first.prepare = [](const rewrite::Entry *e) { g_iface_id = *(uint32_t **)(e->at + 0x21); };
+    quick(refs_first);
+    // Bounds::Reset: over noise
+    Test bounds{0x891920, fresh, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    quick(bounds);
+    // SharedSlots::Destroy: each slot a shared value or none
+    Test slots_destroy{0xc0d740,
+                       [=](Rng &r) {
+                           fresh(r);
+                           for (int i = 0; i < 3; i++) { arena<uint16_t>(0x5a0 + i * 0x10)[0] = (uint16_t)r.range(1, 6); }
+                           for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x100)[2 + i] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x5a0 + r.range(0, 2) * 0x10) : 0;
+                           *(uint32_t *)0x13e3318 = (uint32_t)(uintptr_t)arena<void>(0x5f0);
+                       },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    slots_destroy.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xc09bf0, (void *)stub_plain_dtor}, {0xca1f80, (void *)stub_shared_free}}); };
+    slots_destroy.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(slots_destroy);
+    // Chain::Delete: a next object at 0x3000 whose own next is sometimes another at 0x6000
+    static uint32_t g_cd_off;
+    Test chain_delete{0x42bd60,
+                      [=](Rng &r) {
+                          fresh(r);
+                          *(void **)arena<uint8_t>(0x1000 + g_cd_off) = r.range(0, 2) ? arena<void>(0x3000) : nullptr;
+                          *(void **)arena<uint8_t>(0x3000 + g_cd_off) = r.range(0, 1) ? arena<void>(0x6000) : nullptr;
+                          *(void **)arena<uint8_t>(0x6000 + g_cd_off) = nullptr;
+                          arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 3);
+                      },
+                      [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x10)[0])}; }};
+    chain_delete.prepare = [](const rewrite::Entry *e) { g_cd_off = *(uint32_t *)(e->at + 5); };
+    quick(chain_delete);
+    // Level::Value: as Level::Reached
+    Test level_value{0x4d4430,
+                     [=](Rng &r) {
+                         fresh(r);
+                         arena<uint8_t>(0x510)[1] = (uint8_t)r.range(0, 5);
+                         *(uint32_t *)arena<uint8_t>(0x800 + g_lr_off) = r.next();
+                     },
+                     [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    level_value.prepare = level_reached.prepare;
+    level_value.finish = level_reached.finish;
+    quick(level_value);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
