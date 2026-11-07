@@ -227,3 +227,6 @@ static void *__thiscall w4d_stub_make4(uint32_t *p, uint32_t w, uint32_t a, uint
 }
 static void __fastcall w4d_stub_member_gone(void *p) { record(0x4d08, p); }
 static void __fastcall w4d_stub_base_gone(uint32_t *p) { record(0x4d09, p); for (int i = 0; i < 12; i++) record(0x4d09, (void *)(uintptr_t)p[i]); }
+static void __fastcall w4d_stub_gone_a(void *p) { record(0x4d0a, p); }
+static void __fastcall w4d_stub_gone_b(void *p) { record(0x4d0b, p); }
+static void __thiscall w4d_stub_give_back(void *pool, int32_t item, uint32_t slot) { record(0x4d0c, pool); record(0x4d0c, (void *)(uintptr_t)item); record(0x4d0c, (void *)(uintptr_t)slot); }

@@ -1600,3 +1600,36 @@
     w4d_new.prepare = [](const rewrite::Entry *e) { stubs_for_now({{0xbcdfc0, (void *)w4c_stub_alloc}, {w4c_target(e, 0x43), (void *)w4d_stub_make4}}); };
     w4d_new.finish = w4c_unstub;
     quick(w4d_new);
+    // Boxed::Destroy: owning something or not, at the copy's own offset
+    Test w4d_boxed{0xbfca60, [=](Rng &r) { w4c_fill(r); *(void **)arena<uint8_t>(0x800 + w4c_off) = r.range(0, 2) ? arena<void>(0x900) : nullptr; }, w4c_self};
+    w4d_boxed.prepare = [](const rewrite::Entry *e) {
+        w4c_off = *(uint8_t *)(e->at + 0x26);
+        stubs_for_now({{w4c_target(e, 0x36), (void *)w4d_stub_gone_a}, {0xbce000, (void *)stub_free}, {w4c_target(e, 0x4e), (void *)w4d_stub_base_gone}});
+    };
+    w4d_boxed.finish = w4c_unstub;
+    quick(w4d_boxed);
+    // Shared::Release: the count reaching zero or not
+    Test w4d_shared{0xb367b0,
+                    [=](Rng &r) {
+                        w4c_fill(r);
+                        *arena<void *>(0x800) = arena<void>(0x900);
+                        *arena<int32_t>(0x900) = r.range(1, 2);
+                    },
+                    w4c_self};
+    w4d_shared.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{w4c_target(e, 0x29), (void *)w4d_stub_gone_a}, {0xbce010, (void *)stub_free_aligned}, {0xbce000, (void *)stub_free}});
+    };
+    w4d_shared.finish = w4c_unstub;
+    quick(w4d_shared);
+    // Twin::Destroy
+    Test w4d_twin{0xb15320, w4c_fill, w4c_self};
+    w4d_twin.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xb0e0d0, (void *)w4d_stub_gone_a}, {0x40f730, (void *)w4d_stub_gone_b}, {0xb7a4c0, (void *)w4d_stub_base_gone}});
+    };
+    w4d_twin.finish = w4c_unstub;
+    quick(w4d_twin);
+    // Pair::Release: each slot negative, zero or positive
+    Test w4d_pair{0x8535c0, [=](Rng &r) { w4c_fill(r); arena<int32_t>(0x800)[3] = r.range(0, 3) - 1; arena<int32_t>(0x800)[8] = r.range(0, 3) - 1; }, w4c_self};
+    w4d_pair.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x8501c0, (void *)w4d_stub_give_back}}); };
+    w4d_pair.finish = w4c_unstub;
+    quick(w4d_pair);

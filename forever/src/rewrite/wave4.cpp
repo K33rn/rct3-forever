@@ -1735,3 +1735,58 @@ template <uint32_t SIZE, uint32_t MAKE> static void *__stdcall w4d_thing_new(uin
 }
 REWRITE("Thing::New6C6150", 0x6c6150, (w4c_seh<0xe40dab>), (&w4d_thing_new<0x90, 0x6c3f30>), &g_w4d_news);
 REWRITE("Thing::New6C6150", 0xbaa270, (w4c_seh<0xe9bafb>), (&w4d_thing_new<0xd0, 0xba9840>), &g_w4d_news);
+
+// ---- Boxed::Destroy: destructor that destroys and frees the object it owns at OWNED (if any), then runs the base destructor ----------------------
+static volatile long g_w4d_boxed_destroys;
+template <uint32_t VTABLE, uint32_t OWNED, uint32_t OWNED_DTOR, uint32_t BASE> static void __fastcall w4d_boxed_destroy(uint32_t *self) {
+    g_w4d_boxed_destroys++;
+    self[0] = VTABLE;
+    void *owned = *(void **)((uint8_t *)self + OWNED);
+    if (owned) {
+        ((void(__fastcall *)(void *))OWNED_DTOR)(owned);
+        memory_free(owned);
+    }
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Boxed::DestroyBFCA60", 0xbfca60, (w4c_seh<0xe9e888>), (&w4d_boxed_destroy<0xfa5c28, 0x40, 0xbe69d0, 0xbfc920>), &g_w4d_boxed_destroys);
+REWRITE("Boxed::DestroyBFCA60", 0xc57be0, (w4c_seh<0xea23d8>), (&w4d_boxed_destroy<0xfb74f4, 0x3c, 0xc18640, 0xc16f60>), &g_w4d_boxed_destroys);
+
+// ---- Shared::Release: destroys the member at MEMBER, then drops one count of the shared block {count, .., .., data}, freeing it at zero ---------
+static volatile long g_w4d_releases;
+template <uint32_t MEMBER, uint32_t MEMBER_DTOR> static void __fastcall w4d_shared_release(uint8_t *self) {
+    g_w4d_releases++;
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self + MEMBER);
+    int32_t *shared = *(int32_t **)self;
+    --shared[0];
+    shared = *(int32_t **)self;
+    if (shared[0] == 0 && shared) {
+        memory_free_aligned((void *)(uintptr_t)shared[3]);
+        memory_free(shared);
+    }
+}
+REWRITE("Shared::ReleaseB367B0", 0xb367b0, (w4c_seh<0xe93448>), (&w4d_shared_release<8, 0x40f730>), &g_w4d_releases);
+REWRITE("Shared::ReleaseB367B0", 0xc36530, (w4c_seh<0xea0a98>), (&w4d_shared_release<4, 0xbd99e0>), &g_w4d_releases);
+
+// ---- Twin::Destroy: destructor of a two-vtable object: lets go of the thing at +0x90, destroys the member at MEMBER, then the base ------------
+static volatile long g_w4d_twin_destroys;
+template <uint32_t VTABLE, uint32_t VTABLE2, uint32_t MEMBER> static void __fastcall w4d_twin_destroy(uint32_t *self) {
+    g_w4d_twin_destroys++;
+    self[0] = VTABLE;
+    self[1] = VTABLE2;
+    ((void(__fastcall *)(void *))0xb0e0d0)(*(void **)((uint8_t *)self + 0x90));
+    ((void(__fastcall *)(void *))0x40f730)((uint8_t *)self + MEMBER);
+    ((void(__fastcall *)(void *))0xb7a4c0)(self);
+}
+REWRITE("Twin::DestroyB15320", 0xb15320, (w4c_seh<0xe90f96>), (&w4d_twin_destroy<0xf980b8, 0xf980b0, 0x98>), &g_w4d_twin_destroys);
+REWRITE("Twin::DestroyB15320", 0xb2d2d0, (w4c_seh<0xe92796>), (&w4d_twin_destroy<0xf98d18, 0xf98d14, 0x94>), &g_w4d_twin_destroys);
+
+// ---- Pair::Release: gives back the two pool slots it holds ({pool, item, slot} at +0x14 and at +0), each only when its slot is not negative -----
+static volatile long g_w4d_pair_releases;
+static void __fastcall w4d_pair_release(uint32_t *self) {
+    g_w4d_pair_releases++;
+    typedef void(__thiscall * GiveBack)(void *, int32_t, uint32_t);
+    if ((int32_t)self[8] >= 0) ((GiveBack)0x8501c0)((void *)(uintptr_t)self[5], (int32_t)self[8], self[7]);
+    if ((int32_t)self[3] >= 0) ((GiveBack)0x8501c0)((void *)(uintptr_t)self[0], (int32_t)self[3], self[2]);
+}
+REWRITE("Pair::Release8535C0", 0x8535c0, (w4c_seh<0xe61588>), (&w4d_pair_release), &g_w4d_pair_releases);
+REWRITE("Pair::Release8535C0", 0x9f9d10, (w4c_seh<0xe77fb8>), (&w4d_pair_release), &g_w4d_pair_releases);
