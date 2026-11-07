@@ -58,7 +58,7 @@ address,size,name,callers,status
 0x405510,649,,2,documented
 0x4057a0,5542,,0,documented
 0x406d70,368,,2,documented
-0x407350,25,,11,documented
+0x407350,25,Record::CopyFields,11,rewritten
 0x4073a0,3,,3,documented
 0x4073b0,3,,18,documented
 0x4073c0,4,,18,documented
@@ -128,7 +128,7 @@ address,size,name,callers,status
 0x40b550,628,IdMap::FindOrAdd,2,rewritten
 0x40b7d0,137,BSEARCH_MAP,1,rewritten
 0x40b860,133,COMPACT4,1,rewritten
-0x40ba70,151,,1,documented
+0x40ba70,151,Record::CopyFields,1,rewritten
 0x40bb10,27,,0,documented
 0x40bb90,102,,0,documented
 0x40bc00,414,,2,documented
@@ -1580,7 +1580,7 @@ address,size,name,callers,status
 0x47e380,50,ArrayHolder::Clear47E380,2,rewritten
 0x47e470,30,DeletingDestructor,1,rewritten
 0x47e4e0,183,,2,documented
-0x47e5a0,219,,2,documented
+0x47e5a0,219,Record::CopyFields,2,rewritten
 0x47e680,86,,3,documented
 0x47e6e0,30,DeletingDestructor,0,rewritten
 0x47e700,685,,1,documented
@@ -7802,7 +7802,7 @@ address,size,name,callers,status
 0x6f0ea0,31,Object::DelMemberField,3,rewritten
 0x6f0ec0,31,Object::DelMemberField,2,rewritten
 0x6f0ee0,120,,1,documented
-0x6f0f60,49,,2,documented
+0x6f0f60,49,Record::CopyFields,2,rewritten
 0x6f0fa0,1,,1,documented
 0x6f0fb0,88,,1,documented
 0x6f1010,52,,3,documented
@@ -10971,7 +10971,7 @@ address,size,name,callers,status
 0x828050,89,,1,documented
 0x828120,72,QueryInterface::OrReport,0,rewritten
 0x828380,26,OwnedPointer::Reset,2,rewritten
-0x8283b0,247,,1,documented
+0x8283b0,247,Record::CopyFields,1,rewritten
 0x828520,30,DeletingDestructor,1,rewritten
 0x828540,18,,1,documented
 0x828560,41,,12,documented
@@ -11392,11 +11392,11 @@ address,size,name,callers,status
 0x84d510,93,,8,documented
 0x84db10,42,Chain::Delete,3,rewritten
 0x84db40,42,Chain::Delete,3,rewritten
-0x84db70,115,,2,documented
+0x84db70,115,Record::CopyFields,2,rewritten
 0x84dbf0,121,Block76::Copy84DBF0,2,rewritten
 0x84dc70,121,Block76::Copy84DBF0,2,rewritten
-0x84dcf0,127,,2,documented
-0x84dd70,133,,2,documented
+0x84dcf0,127,Record::CopyFields,2,rewritten
+0x84dd70,133,Record::CopyFields,2,rewritten
 0x84de00,79,,2,documented
 0x84e190,26,OwnedPointer::Reset,1,rewritten
 0x84e1b0,164,Array<20>::SetCapacity,1,rewritten
@@ -11858,7 +11858,7 @@ address,size,name,callers,status
 0x87b480,147,,1,documented
 0x87b550,27,GlobalCleanup,1,rewritten
 0x87b650,32,TaggedValue::Set87B650,1,rewritten
-0x87b700,195,,1,documented
+0x87b700,195,Record::CopyFields,1,rewritten
 0x87b7d0,26,OwnedPointer::Reset,2,rewritten
 0x87b7f0,26,OwnedPointer::Reset,1,rewritten
 0x87b810,164,Array<20>::SetCapacity,1,rewritten
@@ -12572,7 +12572,7 @@ address,size,name,callers,status
 0x8e79f0,133,COMPACT4,1,rewritten
 0x8e7ad0,43,IdMap::Free,2,rewritten
 0x8e7b00,628,IdMap::FindOrAdd,1,rewritten
-0x8e7e60,553,,1,documented
+0x8e7e60,553,Record::CopyFields,1,rewritten
 0x8e80e0,30,DeletingDestructor,0,rewritten
 0x8e8100,56,,0,documented
 0x8e8140,159,,5,documented
@@ -12703,7 +12703,7 @@ address,size,name,callers,status
 0x8fda10,72,,2,documented
 0x8fdb30,127,,2,documented
 0x8fdc80,36,OwnedPair::Free,2,rewritten
-0x8fde70,121,,1,documented
+0x8fde70,121,Record::CopyFields,1,rewritten
 0x8fdef0,26,OwnedPointer::Reset,2,rewritten
 0x8fdf10,61,Array<8>::Allocate,0,rewritten
 0x8fdf50,26,OwnedPointer::Reset,0,rewritten
@@ -13148,7 +13148,7 @@ address,size,name,callers,status
 0x939410,26,OwnedPointer::Reset,2,rewritten
 0x939430,246,TRIVIAL_SETCAP,1,rewritten
 0x939530,26,OwnedPointer::Reset,2,rewritten
-0x939550,97,,1,documented
+0x939550,97,Record::CopyFields,1,rewritten
 0x939610,589,,1,documented
 0x939870,212,,1,documented
 0x939950,65,,2,documented
@@ -13300,14 +13300,14 @@ address,size,name,callers,status
 0x94c960,37,,0,documented
 0x94ca00,119,,0,documented
 0x94ca80,498,,0,documented
-0x94ccd0,175,,4,documented
+0x94ccd0,175,Record::CopyFields,4,rewritten
 0x94cd80,132,,2,documented
 0x94ce10,2189,,1,documented
 0x94d6d0,47,Buffers::Clear94D6D0,0,rewritten
 0x94d720,36,OwnedPair::Free,2,rewritten
 0x94d770,36,OwnedPair::Free,2,rewritten
-0x94d850,367,,1,documented
-0x94d9c0,109,,1,documented
+0x94d850,367,Record::CopyFields,1,rewritten
+0x94d9c0,109,Record::CopyFields,1,rewritten
 0x94da30,26,OwnedPointer::Reset,1,rewritten
 0x94dac0,48,,1,documented
 0x94dbc0,105,OwnedPair::FreeFields,1,rewritten
@@ -14510,7 +14510,7 @@ address,size,name,callers,status
 0x9c6030,39,Global::Delete,1,rewritten
 0x9c60a0,4,,6,documented
 0x9c60c0,165,,2,documented
-0x9c6170,151,,5,documented
+0x9c6170,151,Record::CopyFields,5,rewritten
 0x9c6210,185,,1,documented
 0x9c62d0,85,,3,documented
 0x9c6330,85,,3,documented
@@ -15046,7 +15046,7 @@ address,size,name,callers,status
 0x9f8770,239,,0,documented
 0x9f8870,36,OwnedPair::Free,2,rewritten
 0x9f88c0,36,OwnedPair::Free,2,rewritten
-0x9f89b0,187,,1,documented
+0x9f89b0,187,Record::CopyFields,1,rewritten
 0x9f8a70,26,OwnedPointer::Reset,2,rewritten
 0x9f8a90,130,Array<4>::SetCapacity,1,rewritten
 0x9f8b20,17,,1,documented
@@ -16225,7 +16225,7 @@ address,size,name,callers,status
 0xa7a3a0,643,,1,documented
 0xa7a630,332,,1,documented
 0xa7a780,30,DeletingDestructor,1,rewritten
-0xa7a7a0,67,,1,documented
+0xa7a7a0,67,Record::CopyFields,1,rewritten
 0xa7a910,136,,0,documented
 0xa7a9a0,83,,1,documented
 0xa7aa00,514,,1,documented
@@ -21943,7 +21943,7 @@ address,size,name,callers,status
 0xc6fdb0,1041,,1,documented
 0xc70230,872,,1,documented
 0xc70620,211,,1,documented
-0xc70770,391,,2,documented
+0xc70770,391,Record::CopyFields,2,rewritten
 0xc70da0,673,,1,documented
 0xc71070,1693,,1,documented
 0xc719f0,26,OwnedPointer::Reset,2,rewritten
@@ -21980,7 +21980,7 @@ address,size,name,callers,status
 0xc75310,1156,,1,documented
 0xc75800,1896,,1,documented
 0xc75fe0,155,,1,documented
-0xc760f0,119,,1,documented
+0xc760f0,119,Record::CopyFields,1,rewritten
 0xc765a0,673,,1,documented
 0xc76870,1693,,1,documented
 0xc76f70,820,,1,documented
@@ -23043,7 +23043,7 @@ address,size,name,callers,status
 0xce6570,333,,0,documented
 0xce6820,88,,2,documented
 0xce6880,1450,,1,documented
-0xce6f80,151,,1,documented
+0xce6f80,151,Record::CopyFields,1,rewritten
 0xce7020,26,OwnedPointer::Reset,1,rewritten
 0xce7040,164,Array<20>::SetCapacity,1,rewritten
 0xce70f0,26,OwnedPointer::Reset,1,rewritten
@@ -23107,7 +23107,7 @@ address,size,name,callers,status
 0xceaa40,133,COMPACT4,1,rewritten
 0xceab10,61,Six::Free85A5E0,1,rewritten
 0xceab50,912,,1,documented
-0xceb030,157,,1,documented
+0xceb030,157,Record::CopyFields,1,rewritten
 0xceb140,72,,2,documented
 0xceb190,556,,4,documented
 0xceb3c0,73,Weights::Ensure40C160,1,rewritten

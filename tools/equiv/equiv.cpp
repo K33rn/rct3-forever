@@ -4237,6 +4237,14 @@ static std::vector<Test> tests() {
     };
     solo_resize.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(solo_resize);
+    // Record::CopyFields: two records of random bytes; only the copied ranges may change
+    Test copy_fields{0x407350,
+                     [](Rng &r) {
+                         for (int i = 0; i < 0x200; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                         arena<uint32_t>(CALL_LOG)[0] = 0;
+                     },
+                     [](void *fn) { return Result{(uint32_t)((uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x2000), arena<void>(0x2400)) - (uintptr_t)arena<void>(0))}; }};
+    quick(copy_fields);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
