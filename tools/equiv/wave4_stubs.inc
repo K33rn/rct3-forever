@@ -80,3 +80,27 @@ static void __thiscall w4_stub_events_room(uint32_t *array, int32_t n) {
     array[0] = (uint32_t)(uintptr_t)arena<void>(0xa00);
     array[1] = n;
 }
+static uint32_t __thiscall w4_stub_ask(void *self, uint32_t arg) {
+    record(0x4030, self); record(0x4030, (void *)(uintptr_t)arg);
+    return arg ^ 0x111;
+}
+// mapping a key can replace the table at 0x800 + 0x34
+static uint32_t __thiscall w4_stub_map(void *self, uint32_t arg) {
+    record(0x4031, self); record(0x4031, (void *)(uintptr_t)arg);
+    if (*arena<uint8_t>(0x84)) *(void **)arena<uint8_t>(0x834) = arena<void>(0x380);
+    return arg + 1;
+}
+static void *__fastcall w4_stub_a(void *self) { record(0x4032, self); return arena<void>(0x500); }
+// a value at 0x500.. holds its node at +4, which it can cut off from the rest
+static void __fastcall w4_stub_value_v1(void **self) {
+    record(0x4033, self);
+    if (*arena<uint8_t>(0x84) == 1) ((void **)self[1])[0] = nullptr;
+}
+static void __stdcall w4_stub_release2(void *object) { record(0x4034, object); }
+// the first virtual of a part at 0x300 can flip the flags at 0x800 + 0x10
+static void __fastcall w4_stub_part_first(void *part) {
+    record(0x4035, part);
+    *arena<uint32_t>(0x810) ^= *arena<uint32_t>(0x84) & 2;
+}
+static uint32_t __fastcall w4_stub_check_flag(void *self) { record(0x4036, self); return *arena<uint32_t>(0x20); }
+static void *__fastcall w4_stub_default(void *self) { record(0x4037, self); return arena<void>(0x700); }

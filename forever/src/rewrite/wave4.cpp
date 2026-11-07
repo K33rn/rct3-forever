@@ -588,3 +588,286 @@ template <uint32_t EACH> static void __fastcall tree_update(uint8_t *self) {
 static const uint8_t tree_update_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0xb7, 0x30, 0x01, 0x00, 0x00};
 REWRITE("Tree::Update86ED80", 0x86ed80, tree_update_original, (&tree_update<0x836bd0>), &g_tree_updates);
 REWRITE("Tree::Update86ED80", 0x86ede0, tree_update_original, (&tree_update<0x836d00>), &g_tree_updates);
+
+// the first bytes of a function that starts by calling TO with its object: the call's offset depends on where the copy is
+template <uint32_t AT, uint32_t TO> static const uint8_t calls_first_original[] = {
+    0x56, 0x8b, 0xf1, 0xe8, (uint8_t)(TO - (AT + 8)), (uint8_t)((TO - (AT + 8)) >> 8), (uint8_t)((TO - (AT + 8)) >> 16), (uint8_t)((TO - (AT + 8)) >> 24)};
+
+// ---- Slot::Reset: no id (-1), everything else zero ----------------------------------------------------------------------------
+static volatile long g_slot_resets;
+static uint32_t *__fastcall slot_reset(uint32_t *self) {
+    g_slot_resets++;
+    self[0] = 0xffffffff;
+    for (int i = 1; i < 10; i++) self[i] = 0;
+    return self;
+}
+static const uint8_t slot_reset_original[] = {0x8b, 0xc1, 0x33, 0xc9, 0xc7, 0x00, 0xff, 0xff};
+REWRITE("Slot::ResetCDF3C0", 0xcdf3c0, slot_reset_original, (&slot_reset), &g_slot_resets);
+REWRITE("Slot::ResetCDF3C0", 0xcdf410, slot_reset_original, (&slot_reset), &g_slot_resets);
+
+// ---- Tree::Init: an empty tree: the first entry points at its own end at +0xc, and +0x10 back at the tree -------------------------
+static volatile long g_tree_inits;
+static uint32_t *__fastcall tree_init(uint32_t *self) {
+    g_tree_inits++;
+    self[0] = (uint32_t)(uintptr_t)(self + 3);
+    self[1] = self[2] = self[3] = self[5] = 0;
+    self[4] = (uint32_t)(uintptr_t)self;
+    return self;
+}
+static const uint8_t tree_init_original[] = {0x8b, 0xc1, 0x33, 0xd2, 0x8d, 0x48, 0x0c};
+REWRITE("Tree::InitADA8B0", 0xada8b0, tree_init_original, (&tree_init), &g_tree_inits);
+REWRITE("Tree::InitADA8B0", 0xaf7570, tree_init_original, (&tree_init), &g_tree_inits);
+REWRITE("Tree::InitADA8B0", 0xc77340, tree_init_original, (&tree_init), &g_tree_inits);
+
+// ---- Id::Release: gives an id back to the system in a global, and forgets it ------------------------------------------------------
+static volatile long g_id_releases;
+static void __fastcall id_release(uint32_t *self) {
+    g_id_releases++;
+    void *system = *(void **)0x13d0db8;
+    ((void(__thiscall *)(void *, uint32_t))(*(void ***)system)[0xc8 / 4])(system, *self);
+    *self = 0;
+}
+static const uint8_t id_release_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x0d, 0xb8, 0x0d, 0x3d, 0x01};
+REWRITE("Id::Release910380", 0x910380, id_release_original, (&id_release), &g_id_releases);
+REWRITE("Id::Release910380", 0x958940, id_release_original, (&id_release), &g_id_releases);
+
+// ---- Registration::Destroy: sets the table and takes +4 out of the registry at +8, when there is one -----------------------------
+static volatile long g_registration_destroys;
+static void __fastcall registration_destroy(uint32_t *self) {
+    g_registration_destroys++;
+    self[0] = 0xf76a98;
+    if (self[2]) ((void(__thiscall *)(uint32_t, uint32_t))0x45ee50)(self[2], self[1]);
+}
+static const uint8_t registration_destroy_original[] = {0x8b, 0xc1, 0x8b, 0x48, 0x08, 0x85, 0xc9, 0xc7, 0x00};
+REWRITE("Registration::Destroy8272E0", 0x8272e0, registration_destroy_original, (&registration_destroy), &g_registration_destroys);
+REWRITE("Registration::Destroy8272E0", 0x8286e0, registration_destroy_original, (&registration_destroy), &g_registration_destroys);
+
+// ---- Owned::Replace: deletes the object held at +OFF, and holds the new one -----------------------------------------------------
+static volatile long g_owned_replaces;
+template <uint32_t OFF> static void __thiscall owned_replace(uint8_t *self, void *object) {
+    g_owned_replaces++;
+    void *old = *(void **)(self + OFF);
+    if (old) ((void(__thiscall *)(void *, uint32_t))(*(void ***)old)[0])(old, 1);
+    *(void **)(self + OFF) = object;
+}
+static const uint8_t owned_replace_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x8e};
+REWRITE("Owned::Replace7975C0", 0x7975c0, owned_replace_original, (&owned_replace<0x51c>), &g_owned_replaces);
+REWRITE("Owned::Replace7975C0", 0xc09470, owned_replace_original, (&owned_replace<0xbc>), &g_owned_replaces);
+REWRITE("Owned::Replace7975C0", 0xc094a0, owned_replace_original, (&owned_replace<0xc0>), &g_owned_replaces);
+
+// ---- Members::Each: calls a function on each value of the list at +0x44, with one argument ----------------------------------------
+static volatile long g_members_each;
+template <uint32_t EACH> static void __thiscall members_each(uint8_t *self, uint32_t argument) {
+    g_members_each++;
+    for (Node *n = *(Node **)(self + 0x44); n->next; n = n->next) ((void(__thiscall *)(void *, uint32_t))EACH)(n->value, argument);
+}
+static const uint8_t members_each_original[] = {0x56, 0x8b, 0x71, 0x44, 0x83, 0x3e, 0x00};
+REWRITE("Members::Each737210", 0x737210, members_each_original, (&members_each<0x72df40>), &g_members_each);
+REWRITE("Members::Each737210", 0x737240, members_each_original, (&members_each<0x729040>), &g_members_each);
+
+// ---- Lookup::Through: asks the interface of the handle at +4 about the value at +FIELD, 0 when there is no interface -----------------
+static volatile long g_lookups_through;
+template <uint32_t FIELD, uint32_t ASK> static uint32_t __fastcall lookup_through(uint8_t *self) {
+    g_lookups_through++;
+    void *found = find_interface(*(uint8_t **)(self + 4), (const int32_t *)0x12f51b4);
+    if (!found) return 0;
+    return ((uint32_t(__thiscall *)(void *, uint32_t))ASK)(found, *(uint32_t *)(self + FIELD));
+}
+static const uint8_t lookup_through_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x04, 0x8b, 0x70, 0x0c};
+REWRITE("Lookup::Through7E5280", 0x7e5280, lookup_through_original, (&lookup_through<0x14, 0x531a80>), &g_lookups_through);
+REWRITE("Lookup::Through7E5280", 0x7e52d0, lookup_through_original, (&lookup_through<0x18, 0x531ba0>), &g_lookups_through);
+
+// ---- Pair::Release: gives both ids back to the system in a global and returns to the start (no ids, 4.0) ---------------------------
+static volatile long g_pair_releases;
+static void __fastcall pair_release(uint32_t *self) {
+    g_pair_releases++;
+    if (self[0] == 0xffffffff) return;
+    ((void(__thiscall *)(void *, uint32_t))0x94ef60)(*(void **)0x133a380, self[0]);
+    self[0] = 0xffffffff;
+    ((void(__thiscall *)(void *, uint32_t))0x94ef60)(*(void **)0x133a380, self[1]);
+    self[1] = 0xffffffff;
+    self[2] = 0x40800000;
+}
+static const uint8_t pair_release_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x83, 0xf8, 0xff};
+REWRITE("Pair::Release50C090", 0x50c090, pair_release_original, (&pair_release), &g_pair_releases);
+REWRITE("Pair::Release50C090", 0x50ee20, pair_release_original, (&pair_release), &g_pair_releases);
+
+// ---- Table::Find: what the table at +0x34 gives for a key after mapping it, -1 without a table ---------------------------------
+static volatile long g_table_finds;
+template <uint32_t FIND> static int32_t __thiscall table_find(uint8_t *self, uint32_t key) {
+    g_table_finds++;
+    if (!*(void **)(self + 0x34)) return -1;
+    uint32_t mapped = ((uint32_t(__thiscall *)(void *, uint32_t))0xcada50)(*(void **)(self + 0x34), key);
+    return ((int32_t(__thiscall *)(void *, uint32_t))FIND)(*(void **)(self + 0x34), mapped);
+}
+static const uint8_t table_find_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x34, 0x85, 0xc9};
+REWRITE("Table::FindCAFA00", 0xcafa00, table_find_original, (&table_find<0xcada70>), &g_table_finds);
+REWRITE("Table::FindCAFA00", 0xcafa30, table_find_original, (&table_find<0xcaf6e0>), &g_table_finds);
+REWRITE("Table::FindCAFA00", 0xcafa90, table_find_original, (&table_find<0xcadc50>), &g_table_finds);
+
+// ---- Level::ValueOrNone: as Level::Value, -1 below the level -----------------------------------------------------------------------
+static volatile long g_level_values;
+template <uint32_t LEVEL, uint32_t OFF> static int32_t __fastcall level_value_or_none(uint8_t *self) {
+    g_level_values++;
+    void *a = ((void *(__fastcall *)(void *))0xbb4280)(self);
+    uint8_t level = ((uint8_t * (__fastcall *)(void *))0xbb3e70)(a)[1];
+    if (!level || level < LEVEL) return -1;
+    return *(int32_t *)(self + OFF);
+}
+REWRITE("Level::ValueOrNone5A11D0", 0x5a11d0, (calls_first_original<0x5a11d0, 0xbb4280>), (&level_value_or_none<2, 0x17c>), &g_level_values);
+REWRITE("Level::ValueOrNone5A11D0", 0x5a1280, (calls_first_original<0x5a1280, 0xbb4280>), (&level_value_or_none<3, 0x1b0>), &g_level_values);
+REWRITE("Level::ValueOrNone5A11D0", 0x5d26e0, (calls_first_original<0x5d26e0, 0xbb4280>), (&level_value_or_none<2, 0x15c>), &g_level_values);
+
+// ---- Buffers::Clear: frees both aligned buffers and zeroes the bookkeeping ----------------------------------------------------------
+static volatile long g_buffer_clears;
+static void __fastcall buffers_clear(uint8_t *self) {
+    g_buffer_clears++;
+    uint32_t *words = (uint32_t *)self;
+    memory_free_aligned((void *)(uintptr_t)words[0]);
+    memory_free_aligned((void *)(uintptr_t)words[6]);
+    for (int i = 0; i < 5; i++) words[i] = 0;
+    self[0x14] = 0;
+    words[6] = 0;
+}
+static const uint8_t buffers_clear_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x50, 0xe8};
+REWRITE("Buffers::Clear94D6D0", 0x94d6d0, buffers_clear_original, (&buffers_clear), &g_buffer_clears);
+REWRITE("Buffers::Clear94D6D0", 0x94e060, buffers_clear_original, (&buffers_clear), &g_buffer_clears);
+
+// ---- Level::Allowed: from level 3 whether +OFF is set; below that, always ----------------------------------------------------------
+static volatile long g_level_allowed;
+template <uint32_t OFF> static uint8_t __fastcall level_allowed(uint8_t *self) {
+    g_level_allowed++;
+    uint8_t level = ((uint8_t * (__fastcall *)(void *))0xbb3e70)(self)[1];
+    if (level < 3) return 1;
+    return *(uint32_t *)(self + OFF) != 0;
+}
+REWRITE("Level::Allowed52FF60", 0x52ff60, (calls_first_original<0x52ff60, 0xbb3e70>), (&level_allowed<0x3c>), &g_level_allowed);
+REWRITE("Level::Allowed52FF60", 0x52ff90, (calls_first_original<0x52ff90, 0xbb3e70>), (&level_allowed<0x40>), &g_level_allowed);
+
+// ---- List::EachVirtual: calls virtual 1 of each value of the list at +OFF, the next node read first as a value may leave --------------
+static volatile long g_list_virtuals;
+template <uint32_t OFF> static void __fastcall list_each_virtual(uint8_t *self) {
+    g_list_virtuals++;
+    Node *n = *(Node **)(self + OFF);
+    if (!n->next) return;
+    while (n) {
+        Node *next = n->next;
+        Node *following = next->next ? next : nullptr;
+        void *value = n->value;
+        ((void(__fastcall *)(void *))(*(void ***)value)[1])(value);
+        n = following;
+    }
+}
+template <uint32_t OFF> static const uint8_t list_virtual_original[] = {0x8b, 0x41, (uint8_t)OFF, 0x83, 0x38, 0x00, 0x74, 0x23};
+REWRITE("List::EachVirtual9817B0", 0x9817b0, list_virtual_original<0x58>, (&list_each_virtual<0x58>), &g_list_virtuals);
+REWRITE("List::EachVirtual9817B0", 0xa03e40, list_virtual_original<0x10>, (&list_each_virtual<0x10>), &g_list_virtuals);
+
+// ---- Lookup::Forget: lets the table forget the entry at +0x1c, and releases the object held at +OFF ------------------------------------
+static volatile long g_lookup_forgets;
+template <uint32_t OFF> static void __fastcall lookup_forget(uint8_t *self) {
+    g_lookup_forgets++;
+    void *table = *(void **)(*(uint8_t **)(self + 0x14) + 0x470);
+    ((void(__thiscall *)(void *, uint32_t))0xc5cb30)(table, *(uint32_t *)(self + 0x1c));
+    *(uint32_t *)(self + 0x1c) = 0;
+    void *object = *(void **)(self + OFF);
+    if (!object) return;
+    ((void(__stdcall *)(void *))(*(void ***)object)[2])(object);
+    *(void **)(self + OFF) = nullptr;
+}
+static const uint8_t lookup_forget_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x1c, 0x8b, 0x4e};
+REWRITE("Lookup::ForgetBFC400", 0xbfc400, lookup_forget_original, (&lookup_forget<0x3c>), &g_lookup_forgets);
+REWRITE("Lookup::ForgetBFC400", 0xbfc5b0, lookup_forget_original, (&lookup_forget<0x40>), &g_lookup_forgets);
+
+// ---- Part::Cycle: runs a part's virtual 2; unless flag 2 is set, notes the reason at +0x14; then its virtual 1 ---------------------------
+static volatile long g_part_cycles;
+template <uint32_t REASON> static uint32_t __fastcall part_cycle(uint8_t *self) {
+    g_part_cycles++;
+    void *part = *(void **)(self + 0x28);
+    ((void(__fastcall *)(void *))(*(void ***)part)[2])(part);
+    if (!(*(uint32_t *)(self + 0x10) & 2)) *(uint32_t *)(self + 0x14) = REASON;
+    part = *(void **)(self + 0x28);
+    return ((uint32_t(__fastcall *)(void *))(*(void ***)part)[1])(part);
+}
+static const uint8_t part_cycle_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x28, 0x8b, 0x01};
+REWRITE("Part::CycleC501A0", 0xc501a0, part_cycle_original, (&part_cycle<1>), &g_part_cycles);
+REWRITE("Part::CycleC501A0", 0xc50220, part_cycle_original, (&part_cycle<0xa>), &g_part_cycles);
+
+// ---- Registry::Join: registers the object with a registry (its id kept at +FIELD), then the base step ----------------------------------
+static volatile long g_registry_joins;
+template <uint32_t REGISTRY, uint32_t FIELD> static uint32_t __fastcall registry_join(uint8_t *self) {
+    g_registry_joins++;
+    *(uint32_t *)(self + FIELD) = ((uint32_t(__thiscall *)(void *, void *))0xcdee80)((void *)REGISTRY, self);
+    return ((uint32_t(__fastcall *)(void *))0x833890)(self);
+}
+template <uint32_t REGISTRY> static const uint8_t registry_join_original[] = {
+    0x56, 0x8b, 0xf1, 0x56, 0xb9, (uint8_t)REGISTRY, (uint8_t)(REGISTRY >> 8), (uint8_t)(REGISTRY >> 16), (uint8_t)(REGISTRY >> 24)};
+REWRITE("Registry::Join786D20", 0x786d20, registry_join_original<0x1306978>, (&registry_join<0x1306978, 0x58>), &g_registry_joins);
+REWRITE("Registry::Join786D20", 0x819200, registry_join_original<0x130b420>, (&registry_join<0x130b420, 0x58>), &g_registry_joins);
+REWRITE("Registry::Join786D20", 0x8b49d0, registry_join_original<0x1311290>, (&registry_join<0x1311290, 0x60>), &g_registry_joins);
+
+// ---- Status::Busy: whether a check says so or the flag at +0x90 is set ----------------------------------------------------------------
+static volatile long g_status_checks;
+template <uint32_t CHECK> static uint32_t __fastcall status_busy(uint8_t *self) {
+    g_status_checks++;
+    return ((uint32_t(__fastcall *)(void *))CHECK)(self) || self[0x90];
+}
+REWRITE("Status::Busy559BC0", 0x559bc0, (calls_first_original<0x559bc0, 0x558f20>), (&status_busy<0x558f20>), &g_status_checks);
+REWRITE("Status::Busy559BC0", 0x559bf0, (calls_first_original<0x559bf0, 0x558fe0>), (&status_busy<0x558fe0>), &g_status_checks);
+
+// ---- Counter::Next: steps a global counter, wrapping to 0 at LIMIT (the value before wrapping is given) --------------------------------
+static volatile long g_counter_steps;
+template <uint32_t COUNTER, int32_t LIMIT> static int32_t __cdecl counter_next() {
+    g_counter_steps++;
+    int32_t value = ++*(int32_t *)COUNTER;
+    if (value == LIMIT) *(int32_t *)COUNTER = 0;
+    return value;
+}
+template <uint32_t COUNTER> static const uint8_t counter_next_original[] = {
+    0xa1, (uint8_t)COUNTER, (uint8_t)(COUNTER >> 8), (uint8_t)(COUNTER >> 16), (uint8_t)(COUNTER >> 24)};
+REWRITE("Counter::Next59A170", 0x59a170, counter_next_original<0x12f54c0>, (&counter_next<0x12f54c0, 0xb>), &g_counter_steps);
+REWRITE("Counter::Next59A170", 0x59a190, counter_next_original<0x12f54c8>, (&counter_next<0x12f54c8, 3>), &g_counter_steps);
+REWRITE("Counter::Next59A170", 0x59a1b0, counter_next_original<0x12f54c4>, (&counter_next<0x12f54c4, 0x1a>), &g_counter_steps);
+
+// ---- Step::Then: the base step, then the step of the part at +OFF when there is one -----------------------------------------------------
+static volatile long g_step_thens;
+template <uint32_t BASE, uint32_t OFF, uint32_t THEN> static void __fastcall step_then(uint8_t *self) {
+    g_step_thens++;
+    ((void(__fastcall *)(void *))BASE)(self);
+    void *part = *(void **)(self + OFF);
+    if (part) ((void(__fastcall *)(void *))THEN)(part);
+}
+REWRITE("Step::Then67AC00", 0x67ac00, (calls_first_original<0x67ac00, 0x6afd90>), (&step_then<0x6afd90, 0xf8, 0x6b0990>), &g_step_thens);
+REWRITE("Step::Then67AC00", 0x7975f0, (calls_first_original<0x7975f0, 0x7cd380>), (&step_then<0x7cd380, 0x51c, 0x752cc0>), &g_step_thens);
+REWRITE("Step::Then67AC00", 0x870a40, (calls_first_original<0x870a40, 0x6afd90>), (&step_then<0x6afd90, 0x12c, 0x6b0990>), &g_step_thens);
+
+// ---- Default::Copy: takes +0x48 of the current object in a global (or the default one) into +FIELD ----------------------------------------
+static volatile long g_default_copies;
+template <uint32_t FIELD> static void __fastcall default_copy(uint8_t *self) {
+    g_default_copies++;
+    uint8_t *source = *(uint8_t **)0x1106c54;
+    if (!source) source = ((uint8_t * (__fastcall *)(void *))0x444090)(self);
+    *(uint32_t *)(self + FIELD) = *(uint32_t *)(source + 0x48);
+}
+static const uint8_t default_copy_original[] = {0xa1, 0x54, 0x6c, 0x10, 0x01, 0x85, 0xc0, 0x56, 0x8b, 0xf1};
+REWRITE("Default::Copy4BF080", 0x4bf080, default_copy_original, (&default_copy<0x7c>), &g_default_copies);
+REWRITE("Default::Copy4BF080", 0x8b03b0, default_copy_original, (&default_copy<0x1c>), &g_default_copies);
+
+// ---- Rows::Ask: asks the object at +0x54 of a row (0x70 bytes each) ----------------------------------------------------------------------
+static volatile long g_rows_asked;
+template <uint32_t ASK> static uint32_t __thiscall rows_ask(uint8_t **self, int32_t row, uint32_t what) {
+    g_rows_asked++;
+    return ((uint32_t(__thiscall *)(void *, uint32_t))ASK)(*(void **)(*self + row * 0x70 + 0x54), what);
+}
+static const uint8_t rows_ask_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0x44, 0x24, 0x08, 0x6b, 0xd2, 0x70};
+REWRITE("Rows::Ask40BDA0", 0x40bda0, rows_ask_original, (&rows_ask<0xcd8160>), &g_rows_asked);
+REWRITE("Rows::Ask40BDA0", 0x40bdc0, rows_ask_original, (&rows_ask<0xcd8170>), &g_rows_asked);
+
+// ---- Entries::Ask: asks an entry (0x1c bytes each, from +0x10) ----------------------------------------------------------------------------
+static volatile long g_entries_asked;
+template <uint32_t ASK> static uint32_t __thiscall entries_ask(uint8_t *self, int32_t entry, uint32_t what) {
+    g_entries_asked++;
+    return ((uint32_t(__thiscall *)(void *, uint32_t))ASK)(self + entry * 0x1c + 0x10, what);
+}
+static const uint8_t entries_ask_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0x44, 0x24, 0x08, 0x6b, 0xd2, 0x1c};
+REWRITE("Entries::Ask8915D0", 0x8915d0, entries_ask_original, (&entries_ask<0x88f830>), &g_entries_asked);
+REWRITE("Entries::Ask8915D0", 0x89c760, entries_ask_original, (&entries_ask<0x891680>), &g_entries_asked);
