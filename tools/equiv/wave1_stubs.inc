@@ -36,3 +36,5 @@ static void __thiscall w1_stub_pop(void *object, uint32_t flag) {   // an object
     uint32_t *holder = arena<uint32_t>(w1_pop_holder);
     *holder = *(uint32_t *)(uintptr_t)*holder;
 }
+static void __cdecl w1_stub_crt_free(void *p) { record(0x200, p); }
+static void __thiscall w1_stub_grow(uint32_t *items, uint32_t n) { record(0x201, items); record(0x201, (void *)(uintptr_t)n); items[1] = n; }

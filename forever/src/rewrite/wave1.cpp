@@ -593,3 +593,142 @@ static const uint8_t com_release_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46};
 REWRITE("Com::ReleaseC5BE10", 0xc5be10, com_release_original, (&com_release<0x28>), &g_com_releases);
 REWRITE("Com::ReleaseC5BE10", 0xc5bea0, com_release_original, (&com_release<0x28>), &g_com_releases);
 REWRITE("Com::ReleaseC5BE10", 0xc5c040, com_release_original, (&com_release<0x24>), &g_com_releases);
+
+// ---- Part::Update: the base's update, then the context told about this object and its cached interface -----------------------
+static volatile long g_part_updates;
+template <uint32_t REF, uint32_t BASE> static void __thiscall part_update(uint8_t *self, void *context) {
+    g_part_updates++;
+    ((void(__thiscall *)(void *, void *))BASE)(self, context);
+    uint8_t *found = (uint8_t *)ref_interface<0x130bbec>(self + REF);
+    if (!found) return;
+    ((void(__thiscall *)(void *, void *, void *))(*(void ***)context)[0])(context, found + 0x40, self);
+}
+static const uint8_t part_update_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x57, 0x53, 0x8b, 0xf1, 0xe8};
+REWRITE("Part::Update4ABD00", 0x4abd00, part_update_original, (&part_update<0x36c, 0x534e60>), &g_part_updates);
+REWRITE("Part::Update4ABD00", 0x5863f0, part_update_original, (&part_update<0x194, 0x4bee90>), &g_part_updates);
+REWRITE("Part::Update4ABD00", 0x591af0, part_update_original, (&part_update<0x1ac, 0x4bee90>), &g_part_updates);
+REWRITE("Part::Update4ABD00", 0xa7c190, part_update_original, (&part_update<0x16c, 0x4bee90>), &g_part_updates);
+
+// ---- Enabled::Interface: the cached interface, once this is enabled ---------------------------------------------------------
+static volatile long g_enabled_interfaces;
+template <uint32_t REF> static void *__fastcall enabled_interface(uint8_t *self) {
+    g_enabled_interfaces++;
+    return self[0xc0] ? ref_interface<0x12f5608>(self + REF) : nullptr;
+}
+static const uint8_t enabled_interface_original[] = {0x57, 0x8b, 0xf9, 0x8a, 0x87, 0xc0, 0x00, 0x00, 0x00};
+REWRITE("Enabled::Interface512080", 0x512080, enabled_interface_original, (&enabled_interface<0x138>), &g_enabled_interfaces);
+REWRITE("Enabled::Interface512080", 0x5120f0, enabled_interface_original, (&enabled_interface<0x138>), &g_enabled_interfaces);
+REWRITE("Enabled::Interface512080", 0x512160, enabled_interface_original, (&enabled_interface<0x154>), &g_enabled_interfaces);
+
+// ---- Option::Toggle: in the states that allow it, an option flipped, its bit passed on, and the display refreshed -----------------
+static volatile long g_option_toggles;
+template <uint32_t OPTION, uint32_t BIT> static void __fastcall option_toggle(uint8_t *self) {
+    g_option_toggles++;
+    int32_t state = *(int32_t *)(self + 0x144);
+    if (state != 1 && state != 3 && state != 4) return;
+    *(uint32_t *)(self + OPTION) = !*(uint32_t *)(self + OPTION);
+    ((void(__thiscall *)(void *, uint32_t))0x4f1740)(self, BIT);
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))0x4f5530)(self, 0, 1, 0, 0);
+}
+static const uint8_t option_toggle_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0x44, 0x01, 0x00, 0x00};
+REWRITE("Option::Toggle4F6770", 0x4f6770, option_toggle_original, (&option_toggle<0x5f0, 0x08>), &g_option_toggles);
+REWRITE("Option::Toggle4F6770", 0x4f67c0, option_toggle_original, (&option_toggle<0x5f4, 0x10>), &g_option_toggles);
+REWRITE("Option::Toggle4F6770", 0x4f6810, option_toggle_original, (&option_toggle<0x5f8, 0x20>), &g_option_toggles);
+REWRITE("Option::Toggle4F6770", 0x4f6860, option_toggle_original, (&option_toggle<0x5fc, 0x40>), &g_option_toggles);
+
+// ---- Tables::Free: an array, a counted array of items that have destructors, and another array --------------------------------
+static volatile long g_tables_frees;
+static void __fastcall tables_free(uint8_t *self) {
+    g_tables_frees++;
+    memory_free_aligned(*(void **)(self + 0xc));
+    uint8_t *items = *(uint8_t **)(self + 0x10);
+    if (items) {
+        int32_t *count = (int32_t *)(items - 4);
+        ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(items, 4, *count, (void *)0x403de0);
+        memory_free_aligned(count);
+    }
+    memory_free_aligned(*(void **)(self + 0x14));
+}
+static const uint32_t tables_free_copies[] = {0xbe0690, 0xbe06e0};
+static const uint8_t tables_free_original[] = {0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x0c, 0x50, 0xe8};
+REWRITE_COPIES("Tables::FreeBE0690", tables_free_copies, tables_free_original, tables_free, &g_tables_frees);
+
+// ---- Pair::DeletingDestroy: Pair::Delete, then the object's own memory if asked ---------------------------------------------------
+static volatile long g_pair_destroys;
+static void *__thiscall pair_destroy(void **self, uint32_t flags) {
+    g_pair_destroys++;
+    if (self[1]) delete_object(self[1]);
+    if (self[0]) delete_object(self[0]);
+    if (flags & 1) memory_free(self);
+    return self;
+}
+static const uint32_t pair_destroy_copies[] = {0x86e610, 0xa1f9b0};
+static const uint8_t pair_destroy_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x04, 0x85, 0xc9};
+REWRITE_COPIES("Pair::Destroy86E610", pair_destroy_copies, pair_destroy_original, pair_destroy, &g_pair_destroys);
+
+// ---- Pairs::Add: an 8-byte item added to {count, ..., data at +0xc}, after making room -------------------------------------------
+static volatile long g_pair_adds;
+template <uint32_t RESERVE> static void __thiscall pairs_add(uint32_t *self, const uint32_t *item) {
+    g_pair_adds++;
+    ((void(__thiscall *)(void *, uint32_t))RESERVE)(self, self[0] + 1);
+    uint32_t *to = (uint32_t *)(uintptr_t)self[3] + self[0] * 2;
+    to[0] = item[0];
+    to[1] = item[1];
+    self[0]++;
+}
+static const uint8_t pairs_add_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x57, 0x40, 0x50, 0xe8};
+REWRITE("Pairs::AddCB2B40", 0xcb2b40, pairs_add_original, (&pairs_add<0xcb29a0>), &g_pair_adds);
+REWRITE("Pairs::AddCB2B40", 0xcbd4b0, pairs_add_original, (&pairs_add<0xcbcf50>), &g_pair_adds);
+
+// ---- Wrapped::Construct: the real constructor, called with one argument, returning the object --------------------------------------
+static volatile long g_wrapped_constructs;
+template <uint32_t CONSTRUCT> static void *__thiscall wrapped_construct(void *self, uint32_t value) {
+    g_wrapped_constructs++;
+    ((void(__thiscall *)(void *, uint32_t))CONSTRUCT)(self, value);
+    return self;
+}
+static const uint8_t wrapped_construct_original[] = {0x51, 0x8b, 0x44, 0x24, 0x08, 0x56, 0x50, 0x8b, 0xf1};
+REWRITE("Wrapped::Construct49D580", 0x49d580, wrapped_construct_original, (&wrapped_construct<0x49cd90>), &g_wrapped_constructs);
+REWRITE("Wrapped::Construct49D580", 0x49dd10, wrapped_construct_original, (&wrapped_construct<0x49d5a0>), &g_wrapped_constructs);
+
+// ---- Reference::ConstructWith: Reference::Construct's start, with one field set to this class's start value ------------------------
+static volatile long g_ref_constructs_with;
+template <uint32_t FIELD, uint32_t VALUE> static uint8_t *__fastcall reference_construct_with(uint8_t *self) {
+    g_ref_constructs_with++;
+    *(uint32_t *)self = 0xf26ae0;
+    *(uint8_t **)(self + 0x10) = self;
+    uint8_t *handle = ((uint8_t * (__cdecl *)())0x805750)();
+    *(uint8_t **)(self + 4) = handle;
+    link_after(*(Node **)(handle + 0x20), (Node *)(self + 8));
+    *(uint32_t *)(self + FIELD) = VALUE;
+    return self;
+}
+REWRITE("Reference::ConstructWith9D7050", 0x9d7050, ref_construct_original, (&reference_construct_with<0x24, 0>), &g_ref_constructs_with);
+REWRITE("Reference::ConstructWith9D7050", 0xaaf240, ref_construct_original, (&reference_construct_with<0x14, 0xbf800000>), &g_ref_constructs_with);
+
+// ---- Items::Add: a value added to {data, count} at DATA of this object, after it has grown ----------------------------------------
+static volatile long g_item_adds;
+template <uint32_t DATA, uint32_t GROW> static void __thiscall items_add(uint8_t *self, uint32_t value) {
+    g_item_adds++;
+    uint32_t *items = (uint32_t *)(self + DATA);
+    ((void(__thiscall *)(void *, uint32_t))GROW)(items, items[1] + 1);
+    ((uint32_t *)(uintptr_t)items[0])[items[1] - 1] = value;
+}
+static const uint8_t items_add_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86};
+REWRITE("Items::Add66A810", 0x66a810, items_add_original, (&items_add<0xdc, 0x66a4c0>), &g_item_adds);
+REWRITE("Items::Add66A810", 0x672130, items_add_original, (&items_add<0x148, 0x6719e0>), &g_item_adds);
+REWRITE("Items::Add66A810", 0x9d0a90, items_add_original, (&items_add<0x214, 0x9ce530>), &g_item_adds);
+
+// ---- Buffer::Free: a buffer freed with the C runtime, forgotten if it is the current one ---------------------------------------------
+static volatile long g_buffer_frees;
+template <uint32_t CURRENT> static void __fastcall buffer_free(uint8_t *self) {
+    g_buffer_frees++;
+    if (!self) return;
+    if (self == *(uint8_t **)CURRENT) *(uint8_t **)CURRENT = nullptr;
+    void(__cdecl *const crt_free)(void *) = (void(__cdecl *)(void *))0xdddc77;
+    if (*(uint32_t *)(self + 0x14)) crt_free(*(void **)(self + 4));
+    crt_free(self);
+}
+static const uint8_t buffer_free_original[] = {0x56, 0x8b, 0xf1, 0x85, 0xf6, 0x74, 0x2e};
+REWRITE("Buffer::FreeC0ACF0", 0xc0acf0, buffer_free_original, (&buffer_free<0x13e32f8>), &g_buffer_frees);
+REWRITE("Buffer::FreeC0ACF0", 0xcbc7a0, buffer_free_original, (&buffer_free<0x13f7014>), &g_buffer_frees);
