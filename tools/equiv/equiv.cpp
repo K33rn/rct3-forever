@@ -4254,6 +4254,17 @@ static std::vector<Test> tests() {
     quick(copy_ranges);
     Test set_ranges{0x8defc0, copy_fields.setup, set_fields.call};
     quick(set_ranges);
+    // Video::YuvTable: the four tables (0x13E37C0, 4 KB) made random, then all of them hashed after the fill
+    Test yuv_table{0xef42a0, [](Rng &r) { arena<uint32_t>(0x10)[0] = r.next(); },
+                   [](void *fn) {
+                       uint32_t seed = arena<uint32_t>(0x10)[0], *tables = (uint32_t *)0x13e37c0;
+                       for (int i = 0; i < 0x400; i++) tables[i] = seed = seed * 1103515245 + 12345;   // set here: globals aren't put back between runs
+                       ((void(__cdecl *)())fn)();
+                       uint32_t hash = 2166136261u;
+                       for (int i = 0; i < 0x400; i++) hash = (hash ^ tables[i]) * 16777619u;
+                       return Result{hash};
+                   }};
+    quick(yuv_table);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

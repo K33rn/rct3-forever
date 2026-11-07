@@ -70676,10 +70676,10 @@ address,size,name,callers,status
 0xef3410,32,ModuleGlobal,1,rewritten
 0xef3470,32,ModuleGlobal,1,rewritten
 0xef34b0,32,ModuleGlobal,1,rewritten
-0xef42a0,14689,,1,documented
-0xef7c10,15457,,1,documented
-0xefb880,15457,,1,documented
-0xeff4f0,15457,,1,documented
+0xef42a0,14689,Video::YuvTable,1,rewritten
+0xef7c10,15457,Video::YuvTable,1,rewritten
+0xefb880,15457,Video::YuvTable,1,rewritten
+0xeff4f0,15457,Video::YuvTable,1,rewritten
 0xf03160,32,ModuleGlobal,1,rewritten
 0xf032e0,32,ModuleGlobal,1,rewritten
 0xf03350,32,ModuleGlobal,1,rewritten
