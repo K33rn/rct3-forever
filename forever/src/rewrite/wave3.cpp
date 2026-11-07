@@ -2179,3 +2179,21 @@ template <uint32_t SHIFT, uintptr_t CTOR, uintptr_t ASSIGN> static int32_t __thi
 }
 REWRITE("Array::Resize61C320", 0x61c320, w3c_start<0xff6a00000000a164>, (&w3d_resize2<4, 0x4073a0, 0xbe7450>), &g_w3d_resize2);
 REWRITE("Array::Resize61C320", 0x693300, w3c_start<0xff6a00000000a164>, (&w3d_resize2<6, 0x691b00, 0x691b10>), &g_w3d_resize2);
+
+// ---- Notice::Post: the copy's fixed message (through the game's sprintf) as a text, posted with kind 3 to the target at the
+// copy's field, then let go of -------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_notice;
+template <uint32_t FORMAT, uint32_t TARGET> static void __fastcall w3d_notice(uint8_t *self) {
+    g_w3d_notice++;
+    char line[0x400];
+    ((int(__cdecl *)(char *, const char *))0xddcdb5)(line, (const char *)FORMAT);
+    void *made = memory_alloc(0x10);
+    int32_t *text = made ? ((int32_t * (__thiscall *)(void *, const char *))0xbcf850)(made, line) : nullptr;
+    ((void(__fastcall *)(void *, int32_t **, uint32_t))0xc211c0)(*(void **)(self + TARGET), &text, 3);
+    if (--*text == 0) {
+        memory_free_aligned((void *)(uintptr_t)text[3]);
+        memory_free(text);
+    }
+}
+REWRITE("Notice::Post4A4860", 0x4a4860, w3c_start<0x6400e109d968ff6a>, (&w3d_notice<0xf30868, 0x17c>), &g_w3d_notice);
+REWRITE("Notice::Post4A4860", 0x881db0, w3c_start<0x6400e63de968ff6a>, (&w3d_notice<0xf79334, 0x88>), &g_w3d_notice);

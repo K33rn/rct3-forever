@@ -405,3 +405,17 @@ static void __thiscall w3d_stub_registry(uint8_t *self, uint32_t a, uint32_t b, 
     self[0x2c] = (uint8_t)(arena<uint32_t>(0x24)[0] >> 1 & 1);
     *(void **)0x12f5798 = self;
 }
+// Notice::Post: sprintf records the format's address and writes a short line; the post records the text it was given
+static int __cdecl w3d_stub_sprintf(char *buffer, const char *format) {
+    record(0xddcdb5, (void *)format);
+    buffer[0] = (char)(0x41 + arena<uint32_t>(0x10)[3] % 26);
+    buffer[1] = arena<uint32_t>(0x10)[3] & 0x100 ? (char)0x7a : (char)0;
+    buffer[2] = 0;
+    return 2;
+}
+static void __fastcall w3d_stub_post(void *target, int32_t **text, uint32_t kind) {
+    record(0xc211c0, target);
+    record(0xc211c0, *text);
+    record(0xc211c0, (void *)(uintptr_t)kind);
+    if (arena<uint32_t>(0x24)[0] & 2) ++**text;
+}

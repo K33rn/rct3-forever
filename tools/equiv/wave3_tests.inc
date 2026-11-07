@@ -1791,3 +1791,15 @@
     };
     w3d_resize2_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3d_resize2_test);
+    // Notice::Post: the text let go of or still held after posting
+    Test w3d_notice_test{0x4a4860, w3c_maker,
+                         [](void *fn) {
+                             ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                             return Result{0};
+                         }};
+    w3d_notice_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xddcdb5, (void *)w3d_stub_sprintf}, {0xbcdfc0, (void *)stub_alloc_next}, {0xbcf850, (void *)w3d_stub_text},
+                       {0xc211c0, (void *)w3d_stub_post}, {0xbce000, (void *)stub_free}, {0xbce010, (void *)stub_free_aligned}});
+    };
+    w3d_notice_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_notice_test);
