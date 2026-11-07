@@ -2218,3 +2218,133 @@ template <uint32_t FIRST, uint32_t FOURTH> static void **__thiscall w3d_kind_nam
 }
 REWRITE("Kind::NameB16890", 0xb16890, w3c_start<0x6400e9118c68ff6a>, (&w3d_kind_name<0x130228c, 0x1303214>), &g_w3d_kind);
 REWRITE("Kind::NameB16890", 0xb2c490, w3c_start<0x6400e9264c68ff6a>, (&w3d_kind_name<0x12fefb0, 0x12ff774>), &g_w3d_kind);
+
+// ======== wave 3, batch e: the generated scanners' buffers ========
+// A scanner's buffer: +0 file, +4 storage, +8 position, +0xc size, +0x10 count, +0x14 owns its storage, +0x18 line start,
+// +0x1c fresh, +0x20 interactive, +0x24 state. Running out of memory is fatal, through the copy's error routine (message in eax).
+template <uint32_t FATAL> static void w3e_fatal(uint32_t message) {
+    __asm__ volatile("call *%0" : : "r"(FATAL), "a"(message) : "memory", "ecx", "edx");
+}
+static void *__cdecl w3e_malloc(uint32_t size) { return ((void *(__cdecl *)(uint32_t))0xdde1d8)(size); }
+
+// ---- Scanner::CreateBuffer: a new buffer reading from a file, with storage for size bytes and the two end markers; flushed so it
+// starts empty, and owning that storage -----------------------------------------------------------------------------------------------
+static volatile long g_w3e_create;
+template <uint32_t FATAL, uint32_t FLUSH> static uint32_t *__fastcall w3e_create(uint32_t file, uint32_t size) {
+    g_w3e_create++;
+    uint32_t *buffer = (uint32_t *)w3e_malloc(0x28);
+    if (!buffer) w3e_fatal<FATAL>(0xfafab0);
+    buffer[3] = size;
+    buffer[1] = (uint32_t)(uintptr_t)w3e_malloc(size + 2);
+    if (!buffer[1]) w3e_fatal<FATAL>(0xfafab0);
+    buffer[5] = 1;
+    ((void(__fastcall *)(uint32_t *))FLUSH)(buffer);
+    buffer[8] = 1;
+    buffer[0] = file;
+    buffer[6] = 0;
+    return buffer;
+}
+static const uint8_t w3e_create_start[] = {0x53, 0x56, 0x57, 0x6a, 0x28, 0x8b, 0xfa, 0x8b, 0xd9};
+REWRITE("Scanner::CreateBufferC0BE40", 0xc0be40, w3e_create_start, (&w3e_create<0xc097a0, 0xc09740>), &g_w3e_create);
+REWRITE("Scanner::CreateBufferC0BE40", 0xcbd050, w3e_create_start, (&w3e_create<0xcbbdd0, 0xcbbd70>), &g_w3e_create);
+
+// ---- Scanner::ScanBuffer: scan memory in place. It must end in two zero bytes (otherwise nothing, 0); the buffer made over it
+// does not own the storage, holds everything but the markers, and becomes the scanner's current one ------------------------------
+static volatile long g_w3e_scan;
+template <uint32_t FATAL, uint32_t SWITCH> static uint32_t *__fastcall w3e_scan(uint8_t *base, uint32_t size) {
+    g_w3e_scan++;
+    if (size < 2 || base[size - 2] || base[size - 1]) return nullptr;
+    uint32_t *buffer = (uint32_t *)w3e_malloc(0x28);
+    if (!buffer) w3e_fatal<FATAL>(0xfaf9c8);
+    uint32_t held = size - 2;
+    buffer[3] = held;
+    buffer[1] = buffer[2] = (uint32_t)(uintptr_t)base;
+    buffer[5] = 0;
+    buffer[0] = 0;
+    buffer[4] = held;
+    buffer[6] = 0;
+    buffer[7] = 1;
+    buffer[8] = buffer[9] = 0;
+    ((void(__fastcall *)(uint32_t *))SWITCH)(buffer);
+    return buffer;
+}
+static const uint8_t w3e_scan_start[] = {0x53, 0x55, 0x8b, 0xea, 0x83, 0xfd, 0x02};
+REWRITE("Scanner::ScanBufferC0AD50", 0xc0ad50, w3e_scan_start, (&w3e_scan<0xc097a0, 0xc0ac90>), &g_w3e_scan);
+REWRITE("Scanner::ScanBufferC0AD50", 0xcbc800, w3e_scan_start, (&w3e_scan<0xcbbdd0, 0xcbc740>), &g_w3e_scan);
+
+// ---- Scanner::Restart: start over on a file. Without a current buffer one is made first (from the scanner's file, 16 KB); the
+// current buffer is flushed, given the file, and its state becomes the scanner's (count, text, file, position and the held byte) --
+static volatile long g_w3e_restart;
+template <uint32_t CURRENT, uint32_t FILE_, uint32_t CREATE, uint32_t FLUSH, uint32_t COUNT, uint32_t TEXT, uint32_t POSITION, uint32_t HOLD>
+static void __fastcall w3e_restart(uint32_t file) {
+    g_w3e_restart++;
+    uint32_t *&current = *(uint32_t **)CURRENT;
+    if (!current) current = ((uint32_t * (__fastcall *)(uint32_t, uint32_t)) CREATE)(*(uint32_t *)FILE_, 0x4000);
+    uint32_t *buffer = current;
+    ((void(__fastcall *)(uint32_t *))FLUSH)(buffer);
+    buffer[0] = file;
+    buffer[8] = 1;
+    buffer[6] = 0;
+    *(uint32_t *)COUNT = buffer[4];
+    uint8_t *start = (uint8_t *)(uintptr_t)buffer[2];
+    *(uint8_t **)TEXT = start;
+    *(uint32_t *)FILE_ = buffer[0];
+    *(uint8_t **)POSITION = start;
+    *(uint8_t *)HOLD = *start;
+}
+static const uint8_t w3e_restart_a[] = {0x56, 0x8b, 0x35, 0xf8, 0x32, 0x3e, 0x01};
+static const uint8_t w3e_restart_b[] = {0x56, 0x8b, 0x35, 0x14, 0x70, 0x3f, 0x01};
+REWRITE("Scanner::RestartC0F7B0", 0xc0f7b0, w3e_restart_a, (&w3e_restart<0x13e32f8, 0x13e3304, 0xc0be40, 0xc09740, 0x13e32e8, 0x13e32e4, 0x13e32fc, 0x13d32c0>), &g_w3e_restart);
+REWRITE("Scanner::RestartC0F7B0", 0xcbda80, w3e_restart_b, (&w3e_restart<0x13f7014, 0x13f7020, 0xcbd050, 0xcbbd70, 0x13f7004, 0x13f6ffc, 0x13f7018, 0x13e6fe8>), &g_w3e_restart);
+
+// ---- Holder::Dtor: puts back its own vtables, deletes the two objects it owns (each through its deleting destructor) and clears
+// both slots, then runs the base destructor ---------------------------------------------------------------------------------------
+static volatile long g_w3e_holder;
+template <uint32_t VT0, uint32_t VT1, uint32_t FIRST, uint32_t SECOND> static void __fastcall w3e_holder(uint8_t *self) {
+    g_w3e_holder++;
+    ((uint32_t *)self)[0] = VT0;
+    ((uint32_t *)self)[1] = VT1;
+    const uint32_t slots[2] = {FIRST, SECOND};
+    for (uint32_t at : slots) {
+        void *owned = *(void **)(self + at);
+        if (owned) (*(void(__thiscall **)(void *, uint32_t)) * (void **)owned)(owned, 1);
+        *(void **)(self + at) = nullptr;
+    }
+    ((void(__fastcall *)(void *))0x6b0ea0)(self);
+}
+REWRITE("Holder::Dtor669E60", 0x669e60, w3c_start<0x6400e3755868ff6a>, (&w3e_holder<0xf4f070, 0xf4f058, 0xdc, 0xd8>), &g_w3e_holder);
+REWRITE("Holder::Dtor669E60", 0x69e8a0, w3c_start<0x6400e3c87868ff6a>, (&w3e_holder<0xf5e1e0, 0xf5e1c8, 0xe0, 0xe4>), &g_w3e_holder);
+
+// ---- Pair::Dtor: own vtables back (the object and its member at +0x18), the copy's member destroyed, then the +0x18 member, then
+// the shared base -----------------------------------------------------------------------------------------------------------------
+static volatile long g_w3e_pair;
+template <uint32_t VT0, uint32_t VT1, uint32_t MEMBER, uint32_t MEMBER_DTOR, uint32_t INNER_DTOR> static void __fastcall w3e_pair(uint8_t *self) {
+    g_w3e_pair++;
+    *(uint32_t *)self = VT0;
+    *(uint32_t *)(self + 0x18) = VT1;
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self + MEMBER);
+    ((void(__fastcall *)(void *))INNER_DTOR)(self + 0x18);
+    ((void(__fastcall *)(void *))0xc0e010)(self);
+}
+REWRITE("Pair::DtorC0E2D0", 0xc0e2d0, w3c_start<0x6400e9f19f68ff6a>, (&w3e_pair<0xfafaec, 0xfafae8, 0x4c, 0xc0e340, 0xc0d740>), &g_w3e_pair);
+REWRITE("Pair::DtorC0E2D0", 0xc0f6b0, w3c_start<0x6400e9f45f68ff6a>, (&w3e_pair<0xfafb4c, 0xfafb48, 0x34, 0xc0f720, 0xc0b820>), &g_w3e_pair);
+
+// ---- Viewer::Dtor: own three vtables back (two at the start, one on the member), the copy's cleanup on itself, its buffer freed
+// (aligned) and cleared, the member destroyed, then the base ---------------------------------------------------------------------
+static volatile long g_w3e_viewer;
+template <uint32_t VT0, uint32_t VT1, uint32_t VT2, uint32_t MEMBER, uint32_t CLEANUP, uint32_t BUFFER, uint32_t MEMBER_DTOR, uint32_t BASE>
+static void __fastcall w3e_viewer(uint8_t *self) {
+    g_w3e_viewer++;
+    ((uint32_t *)self)[0] = VT0;
+    ((uint32_t *)self)[1] = VT1;
+    *(uint32_t *)(self + MEMBER) = VT2;
+    ((void(__fastcall *)(void *))CLEANUP)(self);
+    if (void *buffer = *(void **)(self + BUFFER)) {
+        memory_free_aligned(buffer);
+        *(void **)(self + BUFFER) = nullptr;
+    }
+    ((void(__fastcall *)(void *))MEMBER_DTOR)(self + MEMBER);
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Viewer::Dtor4CA3A0", 0x4ca3a0, w3c_start<0x6400e139ff68ff6a>, (&w3e_viewer<0xf32cb0, 0xf32c98, 0xf32c90, 0x16c, 0x4c9e50, 0x174, 0xcd2b50, 0x6a3df0>), &g_w3e_viewer);
+REWRITE("Viewer::Dtor4CA3A0", 0xa4c590, w3c_start<0x6400e7ff2f68ff6a>, (&w3e_viewer<0xf8e5d0, 0xf8e5b8, 0xf8e5b0, 0xd4, 0xa49200, 0xe4, 0x4535f0, 0x6b0ea0>), &g_w3e_viewer);
