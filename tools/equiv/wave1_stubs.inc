@@ -209,3 +209,10 @@ static uint32_t __thiscall w1d_stub_find_named(void *self, uint32_t name) { reco
 static void *__thiscall w1d_stub_copy_named(void *self, uint32_t flag) { record(0x278, self); record(0x278, (void *)(uintptr_t)flag); return arena<uint32_t>(0x20)[0] & 2 ? arena<void>(0xb00) : nullptr; }
 static void __thiscall w1d_stub_set_value(void *self, uint32_t value) { record(0x279, self); record(0x279, (void *)(uintptr_t)value); }
 static uint32_t __thiscall w1d_stub_build1(void *self, uint32_t value) { record(0x27a, self); record(0x27a, (void *)(uintptr_t)value); return value ^ 0x2222; }
+static void *__thiscall w1d_stub_temp_text(uint32_t *self, uint32_t name, uint32_t table, uint32_t flag) {
+    record(0x27b, (void *)(uintptr_t)name); record(0x27b, (void *)(uintptr_t)table); record(0x27b, (void *)(uintptr_t)flag);
+    for (int i = 0; i < 7; i++) self[i] = name + i;
+    return self;
+}
+static void __thiscall w1d_stub_use_text(void *self, uint32_t *text, uint32_t flag) { record(0x27c, self); record(0x27c, (void *)(uintptr_t)text[0]); record(0x27c, (void *)(uintptr_t)flag); }
+static void __fastcall w1d_stub_temp_end(uint32_t *self) { for (int i = 0; i < 7; i++) { record(0x27d, (void *)(uintptr_t)self[i]); self[i] = 0; } }

@@ -1410,3 +1410,16 @@
     quick(w1d_attach850);
     Test w1d_attach940 = w1d_attach_test(0xc0f940, 0x21, 0x38, 0x7e);
     quick(w1d_attach940);
+    Test w1d_title_test{0x712040,
+                        [=](Rng &r) { fresh(r); arena<uint32_t>(0x20)[0] = r.range(0, 1) ? r.next() : 0; },
+                        [](void *fn) {
+                            *w1c_global = arena<uint32_t>(0x20)[0];
+                            ((void(__fastcall *)(void *))fn)(arena<void>(0x800));
+                            return Result{};
+                        }};
+    w1d_title_test.prepare = [](const rewrite::Entry *e) {
+        w1c_global = (uint32_t *)w1c_word(e, 0xf);
+        stubs_for_now({{0x41cb90, (void *)w1d_stub_temp_text}, {0x67b4b0, (void *)w1d_stub_use_text}, {0xbd1880, (void *)w1d_stub_temp_end}});
+    };
+    w1d_title_test.finish = w1_unstub;
+    quick(w1d_title_test);

@@ -2032,3 +2032,16 @@ REWRITE("Named::AttachC0F850", 0xc0f850, w1c_seh_late, (&w1d_attach<0xc0ccf0, 0x
 REWRITE("Named::AttachC0F850", 0xc12400, w1c_seh_late, (&w1d_attach<0xc0ce70, 0x1128, 0xc110e0, 0x54, 0xc0f110>), &g_w1d_attaches);
 REWRITE("Named::AttachC0F940", 0xc0f940, w1c_seh_late, (&w1d_attach<0xc0cd50, 0x111c, 0xc0e4c0, 0x8c, 0xc0e3c0>), &g_w1d_attaches);
 REWRITE("Named::AttachC0F940", 0xc10e30, w1c_seh_late, (&w1d_attach<0xc0cdb0, 0x1120, 0xc10ca0, 0xc4, 0xc0edf0>), &g_w1d_attaches);
+
+// ---- Titled::SetTitle: our title set from one of two names (chosen by a global setting), built as a temporary text -----
+static volatile long g_w1d_titles;
+template <uint32_t SETTING> static void __fastcall w1d_title(void *self) {
+    g_w1d_titles++;
+    uint8_t temporary[0x1c];
+    uint32_t name = *(uint32_t *)SETTING ? 0xf59b7c : 0xf36af4;
+    void *text = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x41cb90)(temporary, name, 0x1303cfc, 1);
+    ((void(__thiscall *)(void *, void *, uint32_t))0x67b4b0)(self, text, 0);
+    ((void(__fastcall *)(void *))0xbd1880)(temporary);
+}
+REWRITE("Titled::SetTitle712040", 0x712040, w1c_seh_late, (&w1d_title<0x10edcb8>), &g_w1d_titles);
+REWRITE("Titled::SetTitle712040", 0xaa5f80, w1c_seh_late, (&w1d_title<0x10edcc8>), &g_w1d_titles);
