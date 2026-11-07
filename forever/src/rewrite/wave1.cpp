@@ -1969,3 +1969,43 @@ template <uint32_t ITEM, uint32_t BUILD> static int32_t __thiscall w1d_plain_res
 REWRITE("Plain::Resize863A60", 0x863a60, w1c_seh_late, (&w1d_plain_resize<0x1c, 0x860f50>), &g_w1d_plain_resizes);
 REWRITE("Plain::Resize863A60", 0x91a0b0, w1c_seh_late, (&w1d_plain_resize<0x2c, 0x9176a0>), &g_w1d_plain_resizes);
 REWRITE("Plain::Resize863A60", 0x91c630, w1c_seh_late, (&w1d_plain_resize<0x1c, 0x91a270>), &g_w1d_plain_resizes);
+
+// ---- Panel::Destroy: tables restored, the shared frame counter caught up once, two owned parts deleted, a member
+// finished, then the base ------------------------------------------------------------------------------------------------------
+static volatile long g_w1d_panels;
+template <uint32_t T0, uint32_t T1, uint32_t T3, uint32_t T9, uint32_t FIRST, uint32_t SECOND, uint32_t MEMBER, uint32_t BASE>
+static void __fastcall w1d_panel(uint32_t *self) {
+    g_w1d_panels++;
+    self[0] = T0;
+    self[1] = T1;
+    self[3] = T3;
+    self[9] = T9;
+    uint8_t *synced = (uint8_t *)self + 0x30;
+    if (!*synced) {
+        *(uint32_t *)0x10eeaac = *(uint32_t *)0x10eeab0;
+        *synced = 1;
+    }
+    if (void *part = *(void **)((uint8_t *)self + FIRST)) delete_object(part);
+    if (void *part = *(void **)((uint8_t *)self + SECOND)) delete_object(part);
+    ((void(__fastcall *)(void *))0x63ab90)((uint8_t *)self + MEMBER);
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Panel::Destroy632DA0", 0x632da0, (w1c_seh<0xe2fa36>), (&w1d_panel<0xf47ccc, 0xf47cc8, 0xf47cc0, 0xf47cb8, 0x1e0, 0x1e4, 0x190, 0x631ad0>), &g_w1d_panels);
+REWRITE("Panel::Destroy632DA0", 0x632fc0, (w1c_seh<0xe2fa56>), (&w1d_panel<0xf47cec, 0xf47ce8, 0xf47ce0, 0xf47cd8, 0x2ec, 0x340, 0x2f0, 0x631ea0>), &g_w1d_panels);
+
+// ---- Named::Construct: the base built with a fresh text of our class name, that text let go, then our table ----------
+static volatile long g_w1d_named_makes;
+template <uint32_t NAME, uint32_t MAKE_TEXT, uint32_t BASE, uint32_t TABLE> static uint32_t *__fastcall w1d_named_make(uint32_t *self) {
+    g_w1d_named_makes++;
+    void *memory = memory_alloc(0x10);
+    int32_t *text = memory ? ((int32_t * (__thiscall *)(void *, uint32_t))MAKE_TEXT)(memory, NAME) : nullptr;
+    ((void(__thiscall *)(void *, int32_t **))BASE)(self, &text);
+    if (--text[0] == 0) {
+        memory_free_aligned((void *)(uintptr_t)text[3]);
+        memory_free(text);
+    }
+    self[0] = TABLE;
+    return self;
+}
+REWRITE("Named::ConstructBE4940", 0xbe4940, (w1c_seh<0xe9e10b>), (&w1d_named_make<0xfa56a8, 0xbcfb10, 0xc183f0, 0xfa56a4>), &g_w1d_named_makes);
+REWRITE("Named::ConstructBE4940", 0xc38520, (w1c_seh<0xea0dcb>), (&w1d_named_make<0xfb0adc, 0xbcf850, 0xc43450, 0xfb0ad0>), &g_w1d_named_makes);
