@@ -11,4 +11,5 @@ constexpr uintptr_t IMAGE_BASE = 0x400000;
 
 // import address table slots
 constexpr uintptr_t IAT_Direct3DCreate9 = 0xf26430;
+constexpr uintptr_t IAT_CreateWindowExA = 0xf26388;
 }

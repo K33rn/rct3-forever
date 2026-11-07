@@ -11,6 +11,14 @@ void peep_attach(HINSTANCE h);
 extern void *peep_real_create9;
 extern "C" void *__stdcall Proxy_Direct3DCreate9(unsigned sdk);
 
+// The game's main window is titled RCT3 Forever: top-level windows the game makes with a title get ours instead.
+static decltype(&CreateWindowExA) g_real_create_window;
+static HWND WINAPI titled_create_window(DWORD ex, LPCSTR cls, LPCSTR title, DWORD style, int x, int y, int w, int h, HWND parent,
+                                        HMENU menu, HINSTANCE inst, LPVOID param) {
+    if (!parent && title && *title && !(style & WS_CHILD)) title = "RCT3 Forever";
+    return g_real_create_window(ex, cls, title, style, x, y, w, h, parent, menu, inst, param);
+}
+
 static HMODULE g_self;
 static char g_log[MAX_PATH], g_ini[MAX_PATH];
 
@@ -81,6 +89,7 @@ BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
         flog("Park & Peep Editor off");
     }
 
+    g_real_create_window = (decltype(&CreateWindowExA))replace_import(exe::IAT_CreateWindowExA, (void *)titled_create_window);
     if (setting("Forever", "Rewrites", 1)) rewrite::install_all();
     else flog("rewritten functions off (Rewrites=0): the game's own code runs");
     if (setting("Forever", "GameFixes", 1)) install_fixes();
