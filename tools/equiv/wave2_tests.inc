@@ -1569,3 +1569,33 @@
                 g_w2c_a = (uint32_t)(e->at + 0xf);
                 stubs_for_now({{0x8749e0, (void *)w2c_s0<0xe2f6>}, {w2c_target(e->at, 0x2b), (void *)w2c_s2<0xe2f7>}, {0x6610f0, (void *)w2c_s3<0xe2f8>}});
             });
+    // Batch::Flush: 0-3 records x 0-3 keys, each interface kept or looked up (found or not)
+    w2c_add(0x5dee90,
+            [=](Rng &r) {
+                w2c_seed(r);
+                iface_handle(r);
+                *(uint32_t *)0x12f54e0 = (uint32_t)r.range(0, 3);
+                uint8_t *self = arena<uint8_t>(0x1000);
+                uint32_t arr = g_w2c_a - 4;
+                *(void **)(self + arr) = arena<void>(0x1400);
+                *(uint32_t *)(self + arr + 4) = r.range(0, 3);
+                *(uint32_t *)(self + 0xe8) = r.range(0, 3);
+                *(void **)(self + 0xe4) = arena<void>(0x1200);
+                for (int i = 0; i < 4; i++) arena<uint32_t>(0x1200)[i] = r.next();
+                *(void **)(self + 0x54) = arena<void>(0x340);
+                self[0x68] = r.range(0, 1);
+                *(uint32_t *)(self + 0x64) = r.next();
+                for (int i = 0; i < 4; i++) {
+                    uint8_t *rec = arena<uint8_t>(0x1400 + i * 0x1c);
+                    *(void **)(rec + 4) = arena<void>(0x340);
+                    rec[0x18] = r.range(0, 1);
+                    *(uint32_t *)(rec + 0x14) = r.next();
+                }
+            },
+            [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x1000)); return Result{}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint32_t *)(e->at + 0x8);
+                g_iface_id = (uint32_t *)0x12f537c;
+                stubs_for_now({{0x59acc0, (void *)w2c_s0<0xe2f9>}, {0x5a7300, (void *)w2c_s2<0xe2fa>}, {w2c_target(e->at, 0xe2), (void *)w2c_s0<0xe2fb>},
+                               {0x5aaa50, (void *)w2c_s0<0xe2fc>}, {0x5aec30, (void *)w2c_s1<0xe2fd>}});
+            });

@@ -2161,3 +2161,27 @@ static uint8_t *__thiscall w2e_ctor(uint8_t *self, uint32_t context, void *owner
 }
 REWRITE("Node::Ctor661AB0", 0x661ab0, w2e_ctor_original, (&w2e_ctor<0x12f80f8, 1, 0x1b0, 0x6616d0, 0xf4e3c0, 0xf4e3b8, 0xf4e3a8, 0xf4e3a0, 0xf4e398, 0xf4e390>), &g_w2e_ctor);
 REWRITE("Node::Ctor661AB0", 0x661b80, w2e_ctor_original, (&w2e_ctor<0x12f80f4, 0, 0x1c8, 0x6618c0, 0xf4e3fc, 0xf4e3f4, 0xf4e3e4, 0xf4e3dc, 0xf4e3d4, 0xf4e3cc>), &g_w2e_ctor);
+
+// ---- Batch::Flush5DEE90: for every record (0x1c bytes, array at self+ARR, count at self+ARR+4) and every key in
+// the list at 0xe4 (count 0xe8), asks the shared interface (ref at 0x50) for the entry of that key and the record's
+// target interface, and SENDs it; each record is then finished, and the array emptied at the end ------------------
+static volatile long g_w2e_flush;
+static const uint8_t w2e_flush_original[] = {0x83, 0xec, 0x08, 0x57, 0x8b, 0xf9, 0x8b, 0x8f};
+template <uint32_t ARR, uint32_t SEND> static void __fastcall w2e_flush(uint8_t *self) {
+    g_w2e_flush++;
+    for (int32_t i = 0; i < (int32_t)w2c_u32(self, ARR + 4); i++) {
+        for (int32_t k = 0; k < (int32_t)w2c_u32(self, 0xe8); k++) {
+            uint8_t *record = *(uint8_t **)(self + ARR) + i * 0x1c;
+            void *target = ref_interface<0x12f537c>(record);
+            void *shared = ref_interface<0x12f54e0>(self + 0x50);
+            void *list = ((void *(__fastcall *)(void *))0x59acc0)(shared);
+            uint32_t key = (*(uint32_t **)(self + 0xe4))[k];
+            void *entry = ((void *(__thiscall *)(void *, uint32_t, void *))0x5a7300)(list, key, target);
+            ((void(__thiscall *)(void *))SEND)(entry);
+        }
+        ((void(__thiscall *)(void *))0x5aaa50)(*(uint8_t **)(self + ARR) + i * 0x1c);
+    }
+    ((void(__thiscall *)(void *, uint32_t))0x5aec30)(self + ARR, 0);
+}
+REWRITE("Batch::Flush5DEE90", 0x5dee90, w2e_flush_original, (&w2e_flush<0xec, 0x56a1b0>), &g_w2e_flush);
+REWRITE("Batch::Flush5DEE90", 0x5df360, w2e_flush_original, (&w2e_flush<0xf4, 0x56a400>), &g_w2e_flush);
