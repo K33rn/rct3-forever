@@ -871,3 +871,71 @@ template <uint32_t ASK> static uint32_t __thiscall entries_ask(uint8_t *self, in
 static const uint8_t entries_ask_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0x44, 0x24, 0x08, 0x6b, 0xd2, 0x1c};
 REWRITE("Entries::Ask8915D0", 0x8915d0, entries_ask_original, (&entries_ask<0x88f830>), &g_entries_asked);
 REWRITE("Entries::Ask8915D0", 0x89c760, entries_ask_original, (&entries_ask<0x891680>), &g_entries_asked);
+
+// ---- Triple::Set: stores three values at +OFF and tells the object ---------------------------------------------------------------
+static volatile long g_triple_sets;
+template <uint32_t OFF, uint32_t CHANGED> static uint32_t __thiscall triple_set(uint8_t *self, uint32_t a, uint32_t b, uint32_t c) {
+    g_triple_sets++;
+    uint32_t *values = (uint32_t *)(self + OFF);
+    values[0] = a;
+    values[1] = b;
+    values[2] = c;
+    return ((uint32_t(__fastcall *)(void *))CHANGED)(self);
+}
+static const uint8_t triple_set_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x54, 0x24, 0x08, 0x89, 0x81};
+REWRITE("Triple::Set6A4B10", 0x6a4b10, triple_set_original, (&triple_set<0xe0, 0x6a4820>), &g_triple_sets);
+REWRITE("Triple::Set6A4B10", 0x6a82d0, triple_set_original, (&triple_set<0xf8, 0x6a8220>), &g_triple_sets);
+REWRITE("Triple::Set6A4B10", 0x6a8350, triple_set_original, (&triple_set<0xf8, 0x6a8220>), &g_triple_sets);
+REWRITE("Triple::Set6A4B10", 0x83dbc0, triple_set_original, (&triple_set<0xec, 0x83ce70>), &g_triple_sets);
+
+// ---- Counted::Assign: a counted pointer (count at +4) takes another's object; the old one is deleted at zero ----------------------
+static volatile long g_counted_assigns;
+static uint8_t ***__thiscall counted_assign(uint8_t ***self, uint8_t ***other) {
+    g_counted_assigns++;
+    uint8_t **old = *self;
+    if (!--*(int32_t *)(old + 1) && old) ((void(__thiscall *)(void *, uint32_t))(*(void ***)old)[0])(old, 1);
+    *self = *other;
+    ++*(int32_t *)(*self + 1);
+    return self;
+}
+static const uint8_t counted_assign_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0xff, 0x48, 0x04};
+REWRITE("Counted::AssignC425E0", 0xc425e0, counted_assign_original, (&counted_assign), &g_counted_assigns);
+REWRITE("Counted::AssignC425E0", 0xc5d070, counted_assign_original, (&counted_assign), &g_counted_assigns);
+
+// ---- Versioned::Field: the object's +OFF when the check passes and its version (top half of +8) is at least 1, else 0 ----------------
+static volatile long g_versioned_fields;
+template <uint32_t OFF> static uint32_t __fastcall versioned_field(uint8_t *self) {
+    g_versioned_fields++;
+    if (!((uint8_t(__thiscall *)(void *, uint32_t))0xbd1420)(self + 0x10, 0)) return 0;
+    uint8_t *object = *(uint8_t **)(self + 0x18);
+    if ((int32_t)(*(uint32_t *)(object + 8) & 0xffff0000) < 0x10000) return 0;
+    return *(uint32_t *)(object + OFF);
+}
+static const uint8_t versioned_field_original[] = {0x56, 0x8b, 0xf1, 0x6a, 0x00, 0x8d, 0x4e, 0x10};
+REWRITE("Versioned::Field87F330", 0x87f330, versioned_field_original, (&versioned_field<0xdc>), &g_versioned_fields);
+REWRITE("Versioned::Field87F330", 0x87f370, versioned_field_original, (&versioned_field<0xe0>), &g_versioned_fields);
+
+// ---- Map::Value: what a lookup in the map at +OFF points at, 0 when the key isn't there -----------------------------------------
+static volatile long g_map_values;
+template <uint32_t OFF, uint32_t FIND> static uint32_t __thiscall map_value(uint8_t *self, uint32_t key) {
+    g_map_values++;
+    uint32_t *found = ((uint32_t * (__thiscall *)(void *, uint32_t))FIND)(self + OFF, key);
+    return found ? *found : 0;
+}
+static const uint8_t map_value_original[] = {0x8b, 0x44, 0x24, 0x04, 0x50, 0x83, 0xc1};
+REWRITE("Map::ValueBDF160", 0xbdf160, map_value_original, (&map_value<0x28, 0xbdd210>), &g_map_values);
+REWRITE("Map::ValueBDF160", 0xbdf180, map_value_original, (&map_value<0x28, 0xbdd210>), &g_map_values);
+REWRITE("Map::ValueBDF160", 0xbdf1a0, map_value_original, (&map_value<0x40, 0xbdd290>), &g_map_values);
+
+// ---- Queue::DeleteAll: deletes the object at the front of a global queue until the queue is empty (each delete takes itself off) -----
+static volatile long g_queue_deletes;
+static void __cdecl queue_delete_all() {
+    g_queue_deletes++;
+    while (*(int32_t *)0x1306bcc != *(int32_t *)0x1306bd8) {
+        void *object = (*(void ***)0x1306bc8)[*(int32_t *)0x1306be0];
+        if (object) ((void(__thiscall *)(void *, uint32_t))(*(void ***)object)[0])(object, 1);
+    }
+}
+static const uint8_t queue_delete_original[] = {0xa1, 0xcc, 0x6b, 0x30, 0x01, 0x2b, 0x05, 0xd8, 0x6b, 0x30, 0x01};
+REWRITE("Queue::DeleteAll79BFD0", 0x79bfd0, queue_delete_original, (&queue_delete_all), &g_queue_deletes);
+REWRITE("Queue::DeleteAll79BFD0", 0x79c010, queue_delete_original, (&queue_delete_all), &g_queue_deletes);

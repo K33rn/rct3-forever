@@ -797,3 +797,75 @@
     w4_entriesask.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x10 + 5 + *(int32_t *)(e->at + 0x11)), (void *)w4_stub_ask}}); };
     w4_entriesask.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w4_entriesask);
+    // Triple::Set
+    Test w4_triple{0x6a4b10,
+                   [=](Rng &r) { w4_noise(r); for (int i = 0; i < 3; i++) arena<uint32_t>(0x10)[i] = r.next(); *arena<uint8_t>(0x20) = (uint8_t)r.next(); },
+                   [](void *fn) {
+                       uint32_t *v = arena<uint32_t>(0x10);
+                       return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x800), v[0], v[1], v[2])};
+                   }};
+    w4_triple.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1e + 5 + *(int32_t *)(e->at + 0x1f)), (void *)w4_stub_step}}); };
+    w4_triple.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_triple);
+    // Counted::Assign: objects at 0x300 and 0x340, the same one sometimes, the old one sometimes at its last count
+    Test w4_counted{0xc425e0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[1] = {(void *)stub_deleting};
+                        for (uint32_t at : {0x300u, 0x340u}) { arena<void *>(at)[0] = vt; arena<int32_t>(at)[1] = r.range(1, 3); }
+                        arena<void *>(0x100)[0] = arena<void>(0x300);
+                        arena<void *>(0x110)[0] = r.range(0, 3) ? arena<void>(0x340) : arena<void>(0x300);
+                    },
+                    [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x110))}; }};
+    quick(w4_counted);
+    // Versioned::Field: versions around 1, a negative one
+    Test w4_versioned{0x87f330,
+                      [=](Rng &r) {
+                          fresh(r);
+                          static const uint32_t versions[] = {0xffff, 0x10000, 0x80000000, 0x7fff1234, 0};
+                          *arena<uint8_t>(0x20) = (uint8_t)(r.range(0, 3) ? 0x10 : 0);
+                          *(void **)arena<uint8_t>(0x818) = arena<void>(0x300);
+                          arena<uint32_t>(0x300)[2] = versions[r.range(0, 4)];
+                          *(uint32_t *)arena<uint8_t>(0x300 + 0xdc) = r.next();
+                          *(uint32_t *)arena<uint8_t>(0x300 + 0xe0) = r.next();
+                      },
+                      [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4_versioned.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbd1420, (void *)w4_stub_flagged}}); };
+    w4_versioned.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_versioned);
+    // Map::Value
+    Test w4_map{0xbdf160,
+                [=](Rng &r) { fresh(r); *arena<uint32_t>(0x600) = r.next(); *arena<uint32_t>(0x10) = r.next(); },
+                [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10))}; }};
+    w4_map.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 8 + 5 + *(int32_t *)(e->at + 9)), (void *)w4_stub_find}}); };
+    w4_map.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_map);
+    // Queue::DeleteAll: 0-4 objects from a random front; the queue's globals are set in the call
+    static uint32_t w4_queue_saved[4];
+    Test w4_queue{0x79bfd0,
+                  [=](Rng &r) {
+                      fresh(r);
+                      static void *vt[1] = {(void *)w4_stub_dequeue};
+                      for (int i = 0; i < 8; i++) { arena<void *>(0x700)[i] = arena<void>(0x600 + i * 0x10); arena<void *>(0x600 + i * 0x10)[0] = vt; }
+                      arena<int32_t>(0x10)[0] = r.range(0, 4);
+                      arena<int32_t>(0x10)[1] = r.range(0, 3);
+                      arena<int32_t>(0x10)[2] = r.range(0, 9);
+                  },
+                  [](void *fn) {
+                      int32_t *q = arena<int32_t>(0x10);
+                      *(void **)0x1306bc8 = arena<void>(0x700);
+                      *(int32_t *)0x1306bd8 = q[2];
+                      *(int32_t *)0x1306bcc = q[2] + q[0];
+                      *(int32_t *)0x1306be0 = q[1];
+                      ((void(__cdecl *)())fn)();
+                      return Result{(uint32_t)(*(int32_t *)0x1306be0 * 0x100 + *(int32_t *)0x1306bcc)};
+                  }};
+    w4_queue.prepare = [](const rewrite::Entry *) {
+        w4_queue_saved[0] = *(uint32_t *)0x1306bc8; w4_queue_saved[1] = *(uint32_t *)0x1306bd8;
+        w4_queue_saved[2] = *(uint32_t *)0x1306bcc; w4_queue_saved[3] = *(uint32_t *)0x1306be0;
+    };
+    w4_queue.finish = [](const rewrite::Entry *) {
+        *(uint32_t *)0x1306bc8 = w4_queue_saved[0]; *(uint32_t *)0x1306bd8 = w4_queue_saved[1];
+        *(uint32_t *)0x1306bcc = w4_queue_saved[2]; *(uint32_t *)0x1306be0 = w4_queue_saved[3];
+    };
+    quick(w4_queue);

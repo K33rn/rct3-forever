@@ -104,3 +104,19 @@ static void __fastcall w4_stub_part_first(void *part) {
 }
 static uint32_t __fastcall w4_stub_check_flag(void *self) { record(0x4036, self); return *arena<uint32_t>(0x20); }
 static void *__fastcall w4_stub_default(void *self) { record(0x4037, self); return arena<void>(0x700); }
+static uint8_t __thiscall w4_stub_flagged(void *self, uint32_t arg) {
+    record(0x4040, self); record(0x4040, (void *)(uintptr_t)arg);
+    return *arena<uint8_t>(0x20);
+}
+// finds the key's value at 0x600 when the key is even
+static uint32_t *__thiscall w4_stub_find(void *self, uint32_t key) {
+    record(0x4041, self); record(0x4041, (void *)(uintptr_t)key);
+    return key & 1 ? nullptr : arena<uint32_t>(0x600);
+}
+// an object of the queue takes itself off the front
+static void *__thiscall w4_stub_dequeue(void *self, uint32_t flags) {
+    record(0x4042, self); record(0x4042, (void *)(uintptr_t)flags);
+    --*(int32_t *)0x1306bcc;
+    ++*(int32_t *)0x1306be0;
+    return self;
+}
