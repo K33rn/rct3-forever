@@ -120,3 +120,48 @@ static void *__thiscall w4_stub_dequeue(void *self, uint32_t flags) {
     ++*(int32_t *)0x1306be0;
     return self;
 }
+static void __fastcall w4b_stub_fill(void *out, uint32_t value) { record(0x4050, out); record(0x4050, (void *)(uintptr_t)value); }
+static uint8_t __thiscall w4b_stub_take(void *self, uint32_t amount) {
+    record(0x4051, self); record(0x4051, (void *)(uintptr_t)amount);
+    return *arena<uint8_t>(0x20);
+}
+// finds the reference kept at 0x10
+static void *__fastcall w4b_stub_get(uint32_t owner) { record(0x4052, (void *)(uintptr_t)owner); return arena<void>(0x10); }
+static void *__fastcall w4b_stub_owner(void *self) { record(0x4053, self); return arena<void>(0x300); }
+// a matrix from 0x600: written to the space given, or (odd 0x20) handed back from where it is
+static void *__thiscall w4b_stub_matrix(void *self, void *space, uint32_t value) {
+    record(0x4054, self); record(0x4054, (void *)(uintptr_t)value);
+    if (*arena<uint32_t>(0x20) & 1) return arena<void>(0x600);
+    memcpy(space, arena<void>(0x600), 0x40);
+    return space;
+}
+static void *__fastcall w4b_stub_of_iface(void *iface) { record(0x4055, iface); return arena<void>(0x480); }
+static void *__thiscall w4b_stub_item(void *self, uint32_t which) {
+    record(0x4056, self); record(0x4056, (void *)(uintptr_t)which);
+    return arena<void>(0x490);
+}
+// holds on the call the count at 0x20 runs out
+static uint8_t __thiscall w4b_stub_check(void *self, uint32_t a, uint32_t b) {
+    record(0x4057, self); record(0x4057, (void *)(uintptr_t)a); record(0x4057, (void *)(uintptr_t)b);
+    return --*arena<int32_t>(0x20) == 0;
+}
+// a link holds something when it says so at +0x10
+static void *__fastcall w4b_stub_held(uint8_t *link) { record(0x4058, link); return link[0x10] & 1 ? link + 0x20 : nullptr; }
+// a join can move the cell at 0x400 (odd 0x20), to show the position is read afresh
+static uint32_t __thiscall w4b_stub_join(void *self, void *cell, uint32_t neighbour, uint32_t side) {
+    record(0x4059, self); record(0x4059, cell); record(0x4059, (void *)(uintptr_t)neighbour); record(0x4059, (void *)(uintptr_t)side);
+    if (*arena<uint32_t>(0x20) & 1) { ((uint8_t *)cell)[0x88] ^= 1; ((uint8_t *)cell)[0x89] ^= 1; }
+    return neighbour ^ side;
+}
+static uint32_t __fastcall w4b_stub_then(void *iface) { record(0x405a, iface); return (uint32_t)(uintptr_t)iface + 3; }
+// only the low two bytes of each argument mean anything
+static void __thiscall w4b_stub_table(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t f, uint32_t g, uint32_t h,
+                                      uint32_t i, uint32_t j, uint32_t k, uint32_t l, uint32_t m, uint32_t n, uint32_t o, uint32_t p) {
+    record(0x405b, self);
+    for (uint32_t v : {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p}) record(0x405b, (void *)(uintptr_t)(v & 0xffff));
+}
+static void *__fastcall w4b_stub_live(void *self) { record(0x405c, self); return (void *)(uintptr_t)*arena<uint32_t>(0x20); }
+static uint32_t __fastcall w4b_stub_path_a(void *self) { record(0x405d, self); return 0xa1; }
+static uint32_t __fastcall w4b_stub_path_b(void *self) { record(0x405e, self); return 0xb2; }
+static void *__fastcall w4b_stub_view(void *self) { record(0x405f, self); return arena<void>(0x700); }
+static void *__fastcall w4b_stub_view_matrix(void *self) { record(0x4060, self); return arena<void>(0x600); }

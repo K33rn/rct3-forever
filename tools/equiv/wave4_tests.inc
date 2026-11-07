@@ -869,3 +869,404 @@
         *(uint32_t *)0x1306bcc = w4_queue_saved[2]; *(uint32_t *)0x1306be0 = w4_queue_saved[3];
     };
     quick(w4_queue);
+    // Global::Free: the copy's own global, empty or holding a block
+    static uint32_t w4b_global, w4b_global_saved;
+    Test w4b_gfree{0x9de660,
+                   [=](Rng &r) { fresh(r); *arena<uint32_t>(0x10) = r.range(0, 2) ? r.next() | 1 : 0; },
+                   [](void *fn) {
+                       *(uint32_t *)(uintptr_t)w4b_global = *arena<uint32_t>(0x10);
+                       ((void(__cdecl *)())fn)();
+                       return Result{*(uint32_t *)(uintptr_t)w4b_global};
+                   }};
+    w4b_gfree.prepare = [](const rewrite::Entry *e) { w4b_global = *(uint32_t *)(e->at + 1); w4b_global_saved = *(uint32_t *)(uintptr_t)w4b_global; };
+    w4b_gfree.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_global = w4b_global_saved; };
+    quick(w4b_gfree);
+    // Out::Fill
+    Test w4b_fill{0x9da5e0,
+                  [=](Rng &r) { fresh(r); for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x800)[i] = r.next(); },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x300))}; }};
+    w4b_fill.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x13 + 5 + *(int32_t *)(e->at + 0x14)), (void *)w4b_stub_fill}}); };
+    w4b_fill.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_fill);
+    // Block::Past: no block, a block saying it has no header (each copy's own word, and the other's), or any other
+    Test w4b_past{0x4a1880,
+                  [=](Rng &r) {
+                      fresh(r);
+                      static const int32_t words[] = {-1, 2, 0, 1, 0x1234};
+                      *arena<void *>(0x800 + 0x138) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                      *arena<void *>(0x800 + 0x170) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                      *arena<int32_t>(0x300) = words[r.range(0, 4)];
+                  },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    quick(w4b_past);
+    // Bar::Add: taken or refused; the bytes around the bar's are random
+    Test w4b_bar{0x724490,
+                 [=](Rng &r) {
+                     fresh(r);
+                     for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x800)[i] = r.next();
+                     *arena<uint32_t>(0x20) = r.range(0, 1);
+                     *arena<uint32_t>(0x10) = r.next();
+                 },
+                 [](void *fn) { return Result{((uint8_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10))}; }};
+    w4b_bar.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0xc + 5 + *(int32_t *)(e->at + 0xd)), (void *)w4b_stub_take}, {0x723e50, (void *)stub_plain_dtor}});
+    };
+    w4b_bar.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_bar);
+    // Owner::Delete: the object's table is overwritten, its member destroyed, and freed for odd flags
+    Test w4b_owner{0x73ee00,
+                   [=](Rng &r) { fresh(r); *arena<uint32_t>(0x800) = r.next(); *arena<uint32_t>(0x10) = r.range(0, 3); },
+                   [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10))}; }};
+    w4b_owner.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0xc + 5 + *(int32_t *)(e->at + 0xd)), (void *)stub_plain_dtor}}); };
+    w4b_owner.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_owner);
+    // Pair::Delete
+    Test w4b_pair{0xbdd150,
+                  [=](Rng &r) { fresh(r); for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x800)[i] = r.next(); *arena<uint32_t>(0x10) = r.range(0, 3); },
+                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10))}; }};
+    quick(w4b_pair);
+    // Vector::FreeBoth: each of the two may be missing; the count sits in the copy's own header
+    Test w4b_vec{0x735ae0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     for (int i = 0; i < 8; i++) arena<uint32_t>(0x300)[i] = r.next();
+                     arena<void *>(0x800)[0] = r.range(0, 3) ? arena<void>(0x310) : nullptr;
+                     arena<void *>(0x800)[1] = r.range(0, 3) ? (void *)(uintptr_t)(r.next() | 1) : nullptr;
+                 },
+                 [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    quick(w4b_vec);
+    // Table::Free: the array at the copy's field, or none
+    static uint32_t w4b_table_off;
+    Test w4b_table{0xb0e090,
+                   [=](Rng &r) {
+                       fresh(r);
+                       for (int i = 0; i < 8; i++) { arena<uint32_t>(0x300)[i] = r.next(); arena<uint32_t>(0x800)[i] = r.next(); }
+                       *arena<void *>(0x800 + w4b_table_off) = r.range(0, 3) ? arena<void>(0x310) : nullptr;
+                   },
+                   [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w4b_table.prepare = [](const rewrite::Entry *e) { w4b_table_off = *(uint8_t *)(e->at + 0xb); };
+    quick(w4b_table);
+    // Shared::AssignAt: the same object or another; the old count reaching zero or not
+    static uint32_t w4b_owner_off, w4b_slot_off;
+    auto w4b_shared_setup = [=](Rng &r, uint32_t **slot) {
+        for (int i = 0; i < 8; i++) { arena<uint32_t>(0x300)[i] = r.next(); arena<uint32_t>(0x340)[i] = r.next(); }
+        *arena<int32_t>(0x300) = r.range(1, 3);
+        *arena<int32_t>(0x340) = r.range(1, 3);
+        *slot = arena<uint32_t>(0x300);
+        *arena<void *>(0x10) = r.range(0, 3) ? arena<void>(0x340) : arena<void>(0x300);
+    };
+    Test w4b_assign{0x615d70,
+                    [=](Rng &r) {
+                        fresh(r);
+                        *arena<void *>(0x800 + w4b_owner_off) = arena<void>(0x400);
+                        w4b_shared_setup(r, arena<uint32_t *>(0x400 + w4b_slot_off));
+                    },
+                    [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x10))}; }};
+    w4b_assign.prepare = [](const rewrite::Entry *e) { w4b_owner_off = *(uint32_t *)(e->at + 8); w4b_slot_off = *(uint32_t *)(e->at + 0xe); };
+    quick(w4b_assign);
+    // Shared::Refresh: the object found is the slot's or another
+    Test w4b_refresh{0x4d6d80,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x800)[i] = r.next();
+                         w4b_shared_setup(r, arena<uint32_t *>(0x800 + w4b_slot_off));
+                     },
+                     [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), 7)}; }};
+    w4b_refresh.prepare = [](const rewrite::Entry *e) {
+        w4b_slot_off = *(uint8_t *)(e->at + 0x10);
+        stubs_for_now({{(uintptr_t)(e->at + 7 + 5 + *(int32_t *)(e->at + 8)), (void *)w4b_stub_get}});
+    };
+    w4b_refresh.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_refresh);
+    // Owned::FreeAll: none to several, some slots empty, a negative count too
+    Test w4b_owned{0x811820,
+                   [=](Rng &r) {
+                       fresh(r);
+                       arena<void *>(0x800)[0] = arena<void>(0x300);
+                       arena<int32_t>(0x800)[1] = r.range(0, 5) ? r.range(0, 6) : -1;
+                       for (int i = 0; i < 6; i++) arena<void *>(0x300)[i] = r.range(0, 2) ? arena<void>(0x400 + i * 0x10) : nullptr;
+                   },
+                   [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w4b_owned.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1b + 5 + *(int32_t *)(e->at + 0x1c)), (void *)stub_plain_dtor}}); };
+    w4b_owned.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_owned);
+    // Owned::DeleteAll: 0-4 objects, some slots empty; no array when the count is 0
+    static uint32_t w4b_items_off, w4b_count_off;
+    Test w4b_delall{0xa40680,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[1] = {(void *)stub_deleting};
+                        int32_t n = r.range(0, 4);
+                        *arena<int32_t>(0x800 + w4b_count_off) = n;
+                        *arena<void *>(0x800 + w4b_items_off) = n || r.range(0, 1) ? arena<void>(0x300) : nullptr;
+                        for (int i = 0; i < 4; i++) {
+                            arena<void *>(0x300)[i] = r.range(0, 3) ? arena<void>(0x400 + i * 0x10) : nullptr;
+                            *arena<void *>(0x400 + i * 0x10) = vt;
+                        }
+                    },
+                    [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w4b_delall.prepare = [](const rewrite::Entry *e) { w4b_count_off = *(uint32_t *)(e->at + 5); w4b_items_off = *(uint32_t *)(e->at + 0x12); };
+    quick(w4b_delall);
+    // Matrix::Of
+    Test w4b_matrix{0xb88270,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[3] = {nullptr, nullptr, (void *)w4b_stub_matrix};
+                        *arena<void *>(0x308) = vt;
+                        *arena<uint32_t>(0x20) = r.range(0, 1);
+                        for (int i = 0; i < 16; i++) arena<uint32_t>(0x600)[i] = r.next();
+                        for (int i = 0; i < 0x70; i++) arena<uint32_t>(0x800)[i] = r.next();
+                    },
+                    [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x700))}; }};
+    w4b_matrix.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb87f70, (void *)w4b_stub_owner}}); };
+    w4b_matrix.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_matrix);
+    // Listeners::Notify: an empty list or 1-4 listeners, kept or looked up, some matching one key or both
+    Test w4b_notify{0x54f880,
+                    [=](Rng &r) {
+                        fresh(r);
+                        iface_handle(r);
+                        for (uint32_t o : {0x3a4u, 0x3acu, 0x3d4u, 0x3dcu, 0x404u, 0x434u}) *arena<uint32_t>(o) = r.range(0, 1);
+                        int n = r.range(0, 4);
+                        for (int i = 0; i <= n; i++) {
+                            void **node = arena<void *>(0x900 + i * 0x10);
+                            node[0] = i < n ? arena<void>(0x900 + (i + 1) * 0x10) : nullptr;
+                            node[2] = arena<void>(0x680 + i * 0x1c);
+                            uint8_t *ref = arena<uint8_t>(0x680 + i * 0x1c);
+                            *(void **)(ref + 4) = arena<void>(0x340);
+                            ref[0x18] = (uint8_t)r.range(0, 1);
+                            *(void **)(ref + 0x14) = r.range(0, 3) ? arena<void>(0x3c0) : nullptr;
+                        }
+                        *arena<void *>(0x800 + 0x78) = arena<void>(0x900);
+                        arena<uint32_t>(0x10)[0] = r.range(0, 1);
+                        arena<uint32_t>(0x10)[1] = r.range(0, 1);
+                    },
+                    [](void *fn) {
+                        uint32_t *a = arena<uint32_t>(0x10);
+                        ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), a[0], a[1]);
+                        return Result{};
+                    }};
+    w4b_notify.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f52bc;
+        stubs_for_now({{(uintptr_t)(e->at + 0x6f + 5 + *(int32_t *)(e->at + 0x70)), (void *)stub_plain_dtor}});
+    };
+    w4b_notify.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_notify);
+    // Items::Any: none to four items; the check holds on some call or never
+    Test w4b_any{0x5d6ac0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     iface_handle(r);
+                     uint8_t *self = arena<uint8_t>(0x800);
+                     *(void **)(self + 0x54) = arena<void>(0x340);
+                     *(void **)(self + 0x64) = r.range(0, 3) ? arena<void>(0x3c0) : nullptr;
+                     self[0x68] = (uint8_t)r.range(0, 1);
+                     *(int32_t *)(self + 0xe8) = r.range(0, 4);
+                     *(void **)(self + 0xe4) = arena<void>(0x4a0);
+                     for (int i = 0; i < 4; i++) arena<uint32_t>(0x4a0)[i] = r.next();
+                     *arena<int32_t>(0x20) = r.range(0, 5);
+                     arena<uint32_t>(0x10)[0] = r.next();
+                     arena<uint32_t>(0x10)[1] = r.next();
+                 },
+                 [](void *fn) {
+                     uint32_t *a = arena<uint32_t>(0x10);
+                     return Result{((uint8_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), a[0], a[1])};
+                 }};
+    w4b_any.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f54e0;
+        stubs_for_now({{0x59acc0, (void *)w4b_stub_of_iface}, {0x5a7300, (void *)w4b_stub_item},
+                       {(uintptr_t)(e->at + 0x78 + 5 + *(int32_t *)(e->at + 0x79)), (void *)w4b_stub_check}});
+    };
+    w4b_any.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_any);
+    // Chain::Clear: links at 0x1000 each going on, back to the start or nowhere, kept or looked up; a looked-up link at 0x360/0x368 ends there
+    Test w4b_chain{0x5d55f0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       iface_handle(r);
+                       for (uint32_t o : {0x360u, 0x368u}) {
+                           *arena<void *>(o + 0x16c) = nullptr;
+                           *arena<uint8_t>(o + 0x170) = 1;
+                       }
+                       uint8_t *chain[4];
+                       for (int i = 0; i < 4; i++) chain[i] = arena<uint8_t>(0x1000 + i * 0x180);
+                       for (int i = 0; i < 4; i++) {
+                           uint8_t *link = chain[i];
+                           link[0x10] = (uint8_t)r.next();
+                           *(void **)(link + 0x15c) = arena<void>(0x340);
+                           int to = r.range(0, 5);
+                           *(void **)(link + 0x16c) = to == 0 ? nullptr : to == 1 || i == 3 ? chain[0] : chain[i + 1];
+                           link[0x170] = r.range(0, 4) != 0;
+                       }
+                       uint8_t *self = arena<uint8_t>(0x800);
+                       *(void **)(self + 8) = r.range(0, 7) ? chain[0] : nullptr;
+                       *(void **)(self + 0x14) = r.range(0, 1) ? chain[r.range(0, 3)] : nullptr;
+                       *arena<uint32_t>(0x10) = r.next();
+                   },
+                   [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10)); return Result{}; }};
+    w4b_chain.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x12f5608;
+        stubs_for_now({{0x5c00c0, (void *)w4b_stub_held}, {(uintptr_t)(e->at + 0x2a + 5 + *(int32_t *)(e->at + 0x2b)), (void *)stub_thiscall1}});
+    };
+    w4b_chain.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_chain);
+    // Members: the global list in the arena, set in the call; none yet, or 0-1 other members before this one
+    static uint32_t w4b_list, w4b_list_saved;
+    auto w4b_members = [=](Rng &r, bool self_in) {
+        void **list = arena<void *>(0x300), **other = arena<void *>(0x340), **self = arena<void *>(0x804);
+        void **end = list + 3, **last = list;
+        memset(list, 0, 0x18);
+        if (r.range(0, 1)) { other[1] = last; other[2] = (void *)(uintptr_t)r.next(); last[0] = other; last = other; }
+        if (self_in) { self[1] = last; last[0] = self; last = self; }
+        last[0] = end;
+        end[1] = last;
+    };
+    auto w4b_list_call = [](void *fn) {
+        *(uint32_t *)(uintptr_t)w4b_list = *arena<uint32_t>(0x10);
+        ((void(__fastcall *)(void *))fn)(arena<void>(0x800));
+        return Result{*(uint32_t *)(uintptr_t)w4b_list};
+    };
+    Test w4b_join{0x49cc80,
+                  [=](Rng &r) {
+                      fresh(r);
+                      for (int i = 0; i < 4; i++) arena<uint32_t>(0x800)[i] = r.next();
+                      w4b_members(r, false);
+                      *arena<void *>(0x10) = r.range(0, 1) ? arena<void>(0x300) : nullptr;
+                  },
+                  w4b_list_call};
+    w4b_join.prepare = [](const rewrite::Entry *e) {
+        w4b_list = *(uint32_t *)(e->at + 0xe); w4b_list_saved = *(uint32_t *)(uintptr_t)w4b_list;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}});
+    };
+    w4b_join.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_list = w4b_list_saved; unstub_many(); };
+    quick(w4b_join);
+    Test w4b_leave{0x49ccf0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       *arena<uint32_t>(0x800) = r.next();
+                       w4b_members(r, true);
+                       *arena<void *>(0x10) = arena<void>(0x300);
+                   },
+                   w4b_list_call};
+    w4b_leave.prepare = [](const rewrite::Entry *e) { w4b_list = *(uint32_t *)(e->at + 0x3e); w4b_list_saved = *(uint32_t *)(uintptr_t)w4b_list; };
+    w4b_leave.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_list = w4b_list_saved; };
+    quick(w4b_leave);
+    // Grid::Neighbours: cells at every edge of small grids
+    Test w4b_grid{0x7238a0,
+                  [=](Rng &r) {
+                      fresh(r);
+                      uint8_t *self = arena<uint8_t>(0x800), *cell = arena<uint8_t>(0x400);
+                      for (int i = 0; i < 0x28; i++) arena<uint32_t>(0x400)[i] = r.next();
+                      for (int i = 0; i < 48; i++) arena<uint32_t>(0x300 - 0x40)[i] = r.next();
+                      self[0x54] = (uint8_t)r.range(1, 5);
+                      self[0x5c] = (uint8_t)r.range(0, 3);
+                      self[0x5d] = (uint8_t)r.range(0, 3);
+                      *(void **)(self + 0x58) = arena<void>(0x300);
+                      cell[0x88] = (uint8_t)r.range(0, 4);
+                      cell[0x89] = (uint8_t)r.range(0, 4);
+                      *arena<uint32_t>(0x20) = r.range(0, 1);
+                  },
+                  [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x400)); return Result{}; }};
+    w4b_grid.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x46 + 5 + *(int32_t *)(e->at + 0x47)), (void *)w4b_stub_join}}); };
+    w4b_grid.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_grid);
+    // Kept::Then: kept, or looked up (found or not), in the copy's own reference
+    static uint32_t w4b_ref_off;
+    Test w4b_then{0x4c5890,
+                  [=](Rng &r) {
+                      fresh(r);
+                      iface_handle(r);
+                      uint8_t *ref = arena<uint8_t>(0x800 + w4b_ref_off);
+                      *(void **)(ref + 4) = arena<void>(0x340);
+                      ref[0x18] = (uint8_t)r.range(0, 1);
+                      *(void **)(ref + 0x14) = r.range(0, 1) ? arena<void>(0x380) : nullptr;
+                  },
+                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4b_then.prepare = [](const rewrite::Entry *e) {
+        w4b_ref_off = *(uint8_t *)(e->at + 0xc) - 4;
+        g_iface_id = *(uint32_t **)(e->at + 0x22);
+        stubs_for_now({{(uintptr_t)(e->at + 0x45 + 5 + *(int32_t *)(e->at + 0x46)), (void *)w4b_stub_then}});
+    };
+    w4b_then.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_then);
+    // Once::Make: made already or not, with the flag's other bits random
+    struct W4bWords { uint32_t words[14]; };
+    static uint32_t w4b_made, w4b_made_saved;
+    Test w4b_once{0x696000,
+                  [=](Rng &r) {
+                      fresh(r);
+                      for (int i = 0; i < 4; i++) arena<uint32_t>(0x800)[i] = r.next();
+                      arena<uint32_t>(0x10)[0] = r.next();
+                      arena<uint32_t>(0x10)[1] = r.next();
+                      arena<uint32_t>(0x10)[2] = r.next();
+                  },
+                  [](void *fn) {
+                      uint32_t *a = arena<uint32_t>(0x10);
+                      *(uint32_t *)(uintptr_t)w4b_made = a[2];
+                      W4bWords unused{};
+                      void *back = ((void *(__thiscall *)(void *, void *, void *, W4bWords))fn)(arena<void>(0x800), a, a + 1, unused);
+                      return Result{(uint32_t)(uintptr_t)back ^ *(uint32_t *)(uintptr_t)w4b_made};
+                  }};
+    w4b_once.prepare = [](const rewrite::Entry *e) {
+        w4b_made = *(uint32_t *)(e->at + 0x1a); w4b_made_saved = *(uint32_t *)(uintptr_t)w4b_made;
+        stubs_for_now({{0x416110, (void *)w4b_stub_table}});
+    };
+    w4b_once.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4b_made = w4b_made_saved; unstub_many(); };
+    quick(w4b_once);
+    // Matrix::Refresh: no object behind the handle, a source not live, or live with the bits of 0x408 either way
+    Test w4b_mrefresh{0x7a0fd0,
+                      [=](Rng &r) {
+                          fresh(r);
+                          iface_handle(r);
+                          static void *vt[6] = {(void *)stub_deleting, (void *)stub_class_of, nullptr, nullptr, nullptr, (void *)w4b_stub_live};
+                          static void *view_vt[8] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, (void *)w4b_stub_view_matrix};
+                          arena<void *>(0x360)[0] = vt;
+                          arena<void *>(0x368)[0] = vt;
+                          *arena<void *>(0x700) = view_vt;
+                          *arena<void *>(0x1f0) = arena<void>(0x200);
+                          *g_iface_id = (uint32_t)r.range(1, 2);
+                          uint8_t *self = arena<uint8_t>(0x800);
+                          for (int i = 0; i < 0x30; i++) arena<uint32_t>(0x800)[i] = r.next();
+                          for (int i = 0; i < 16; i++) arena<uint32_t>(0x600)[i] = r.next();
+                          *(void **)(self + 0x510) = arena<void>(0x340);
+                          self[0x408] = (uint8_t)r.range(0, 3);
+                          *arena<uint32_t>(0x20) = r.range(0, 2) ? r.next() | 1 : 0;
+                      },
+                      [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), 5)}; }};
+    w4b_mrefresh.prepare = [](const rewrite::Entry *) {
+        g_iface_id = (uint32_t *)0x12f4f44;
+        stubs_for_now({{0x7a0000, (void *)w4b_stub_path_a}, {0x7a0480, (void *)w4b_stub_path_b}, {0x79e260, (void *)w4b_stub_view}});
+    };
+    w4b_mrefresh.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4b_mrefresh);
+    // Scanner::Switch: no buffer yet, the same buffer, or another; the scanner's globals are the copy's own, set in the call
+    static uint32_t w4b_scan[7], w4b_scan_saved[7];   // current, hold, position, count, text, file, fresh
+    Test w4b_scanner{0xc0ac90,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 16; i++) { arena<uint32_t>(0x300)[i] = r.next(); arena<uint32_t>(0x340)[i] = r.next(); arena<uint32_t>(0x380)[i] = r.next(); }
+                         arena<void *>(0x340)[2] = arena<void>(0x3a0);
+                         uint32_t choice = r.range(0, 3);
+                         arena<void *>(0x10)[0] = choice == 0 ? nullptr : choice == 1 ? arena<void>(0x340) : arena<void>(0x300);
+                         for (int i = 1; i < 6; i++) arena<uint32_t>(0x10)[i] = r.next();
+                     },
+                     [](void *fn) {
+                         uint32_t *a = arena<uint32_t>(0x10);
+                         *(uint32_t *)(uintptr_t)w4b_scan[0] = a[0];
+                         *(uint8_t *)(uintptr_t)w4b_scan[1] = (uint8_t)a[1];
+                         *(void **)(uintptr_t)w4b_scan[2] = arena<void>(0x384);
+                         *(uint32_t *)(uintptr_t)w4b_scan[3] = a[2];
+                         *(uint32_t *)(uintptr_t)w4b_scan[4] = a[3];
+                         *(uint32_t *)(uintptr_t)w4b_scan[5] = a[4];
+                         *(uint32_t *)(uintptr_t)w4b_scan[6] = a[5];
+                         ((void(__fastcall *)(void *))fn)(arena<void>(0x340));
+                         uint32_t mix = *(uint8_t *)(uintptr_t)w4b_scan[1];
+                         for (int i : {0, 2, 3, 4, 5, 6}) mix = mix * 31 + *(uint32_t *)(uintptr_t)w4b_scan[i];
+                         return Result{mix};
+                     }};
+    w4b_scanner.prepare = [](const rewrite::Entry *e) {
+        static const uint8_t at[7] = {0x1, 0xf, 0x16, 0x1e, 0x35, 0x43, 0x56};
+        for (int i = 0; i < 7; i++) { w4b_scan[i] = *(uint32_t *)(e->at + at[i]); w4b_scan_saved[i] = *(uint32_t *)(uintptr_t)w4b_scan[i]; }
+    };
+    w4b_scanner.finish = [](const rewrite::Entry *) { for (int i = 0; i < 7; i++) *(uint32_t *)(uintptr_t)w4b_scan[i] = w4b_scan_saved[i]; };
+    quick(w4b_scanner);
