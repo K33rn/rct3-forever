@@ -912,3 +912,88 @@ template <uint32_t OFF> static const uint8_t flagged_copy_original[] = {
 REWRITE("Flagged::Copy581120", 0x581120, flagged_copy_original<0x100>, (&flagged_copy<0x100>), &g_w2_flag_copies);
 REWRITE("Flagged::Copy581120", 0x5bf340, flagged_copy_original<0x234>, (&flagged_copy<0x234>), &g_w2_flag_copies);
 REWRITE("Flagged::Copy581120", 0x5bf3c0, flagged_copy_original<0x240>, (&flagged_copy<0x240>), &g_w2_flag_copies);
+
+// ---- Slot::Reset: gives row `index` a unit pair and a zero at +OFF, when the index is one the owner's table has -----------------------
+static volatile long g_w2b_slot_resets;
+template <uint32_t OFF> static void __thiscall w2b_slot_reset(uint8_t *self, int32_t index) {
+    g_w2b_slot_resets++;
+    if (index < 0 || index >= *(int32_t *)(*(uint8_t **)(self + 0x9c) + 0x70)) return;
+    uint32_t *row = (uint32_t *)(*(uint8_t **)(self + 0x140) + index * 0x44 + OFF);
+    row[0] = 0x3f800000;   // 1.0f, as bits
+    row[1] = 0x3f800000;
+    row[2] = 0;
+}
+static const uint8_t w2b_slot_reset_original[] = {0x8b, 0x44, 0x24, 0x04, 0x85, 0xc0, 0x7c, 0x28};
+REWRITE("Slot::Reset8278B0", 0x8278b0, w2b_slot_reset_original, (&w2b_slot_reset<0x10>), &g_w2b_slot_resets);
+REWRITE("Slot::Reset8278B0", 0x8278f0, w2b_slot_reset_original, (&w2b_slot_reset<0x1c>), &g_w2b_slot_resets);
+
+// ---- Visitor::Run: builds a small visitor {vtable, value} on the stack and hands it to the walker -------------------------------------
+static volatile long g_w2b_visits;
+template <uint32_t VTABLE> static uint32_t __thiscall w2b_visit(void *self, uint32_t first, uint32_t value, uint32_t third, uint32_t fourth) {
+    g_w2b_visits++;
+    uint32_t visitor[2] = {VTABLE, value};
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *, uint32_t, uint32_t))0x76fb20)(self, first, visitor, third, fourth);
+}
+static const uint8_t w2b_visit_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x10, 0x8b};
+REWRITE("Visitor::Run76FF60", 0x76ff60, w2b_visit_original, (&w2b_visit<0xf6ce70>), &g_w2b_visits);
+REWRITE("Visitor::Run76FF60", 0x76ffa0, w2b_visit_original, (&w2b_visit<0xf6ce6c>), &g_w2b_visits);
+
+// ---- Trio::Update: updates the three members at +0x128, +0x12c and +0x130 in turn -------------------------------------------------------
+static volatile long g_w2b_trios;
+template <uint32_t UPDATE> static uint32_t __fastcall w2b_trio(uint8_t *self) {
+    g_w2b_trios++;
+    auto update = (uint32_t(__fastcall *)(void *))UPDATE;
+    update(*(void **)(self + 0x128));
+    update(*(void **)(self + 0x12c));
+    return update(*(void **)(self + 0x130));
+}
+static const uint8_t w2b_trio_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x8e, 0x28, 0x01, 0x00, 0x00};
+REWRITE("Trio::UpdateB010D0", 0xb010d0, w2b_trio_original, (&w2b_trio<0x6b0990>), &g_w2b_trios);
+REWRITE("Trio::UpdateB010D0", 0xb01100, w2b_trio_original, (&w2b_trio<0x6afc20>), &g_w2b_trios);
+
+// ---- Owner::Drop: stops the held object at +0x2c, deletes it if it is still there, and forgets it --------------------------------------
+static volatile long g_w2b_drops;
+template <uint32_t STOP> static void __thiscall w2b_drop(uint8_t *self) {
+    g_w2b_drops++;
+    ((void(__thiscall *)(void *, uint32_t))STOP)(*(void **)(self + 0x2c), 0);
+    void ***held = *(void ****)(self + 0x2c);   // stopping may have cleared it
+    if (held) ((void(__thiscall *)(void *, uint32_t))(*held)[0])(held, 1);
+    *(void **)(self + 0x2c) = nullptr;
+}
+static const uint8_t w2b_drop_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x2c, 0x6a, 0x00};
+REWRITE("Owner::Drop40DDC0", 0x40ddc0, w2b_drop_original, (&w2b_drop<0x771f90>), &g_w2b_drops);
+REWRITE("Owner::Drop40DDC0", 0x40df10, w2b_drop_original, (&w2b_drop<0x771e50>), &g_w2b_drops);
+
+// ---- Listener::Construct: sets the vtable and links the node at +4 in just after the head of the manager's list ------------------------
+static volatile long g_w2b_listeners;
+template <uint32_t VTABLE, uint32_t MANAGER, uint32_t LIST> static void *__thiscall w2b_listener(uint32_t *self) {
+    g_w2b_listeners++;
+    self[0] = VTABLE;
+    self[3] = (uint32_t)(uintptr_t)self;
+    uint32_t **head = *(uint32_t ***)(((uint8_t *(__cdecl *)())MANAGER)() + LIST);
+    uint32_t *node = self + 1;
+    node[0] = (uint32_t)(uintptr_t)*head;
+    (*head)[1] = (uint32_t)(uintptr_t)node;
+    node[1] = (uint32_t)(uintptr_t)head;
+    *head = node;
+    return self;
+}
+static const uint8_t w2b_listener_original[] = {0x56, 0x8b, 0xf1, 0x57, 0xc7, 0x06};
+REWRITE("Listener::Construct872940", 0x872940, w2b_listener_original, (&w2b_listener<0xf78b60, 0x8839b0, 0x2c>), &g_w2b_listeners);
+REWRITE("Listener::Construct872940", 0xa04c20, w2b_listener_original, (&w2b_listener<0xf86ea4, 0xa04bc0, 0x20>), &g_w2b_listeners);
+
+// ---- Owned::Clear: destroys and frees each element of {count, items}, then frees the table itself -------------------------------------
+static volatile long g_w2b_clears;
+template <uint32_t DESTROY> static void __thiscall w2b_clear(int32_t *self) {
+    g_w2b_clears++;
+    for (int32_t i = 0; i < self[0]; i++) {
+        void *item = (*(void ***)(self + 1))[i];
+        if (!item) continue;
+        ((void(__fastcall *)(void *))DESTROY)(item);
+        ((void(__cdecl *)(void *))0xbce000)(item);
+    }
+    ((void(__cdecl *)(void *))0xbce010)(*(void **)(self + 1));
+}
+static const uint8_t w2b_clear_original[] = {0x53, 0x8b, 0xd9, 0x8b, 0x03, 0x57, 0x33, 0xff, 0x85, 0xc0};
+REWRITE("Owned::ClearC2B760", 0xc2b760, w2b_clear_original, (&w2b_clear<0xc25690>), &g_w2b_clears);
+REWRITE("Owned::ClearC2B760", 0xc43910, w2b_clear_original, (&w2b_clear<0xc437f0>), &g_w2b_clears);

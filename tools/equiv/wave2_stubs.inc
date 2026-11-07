@@ -170,3 +170,25 @@ static uint32_t __fastcall w2_stub_timed_update(void *member) {
     record(0xe261, member);
     return arena<uint32_t>(0x20)[1];
 }
+static uint32_t __thiscall w2b_stub_walker(void *self, uint32_t first, uint32_t *visitor, uint32_t third, uint32_t fourth) {
+    record(0xe270, self);
+    record(0xe270, (void *)(uintptr_t)first);
+    record(0xe270, (void *)(uintptr_t)visitor[0]);
+    record(0xe270, (void *)(uintptr_t)visitor[1]);
+    record(0xe270, (void *)(uintptr_t)third);
+    record(0xe270, (void *)(uintptr_t)fourth);
+    return arena<uint32_t>(0x20)[0];
+}
+// stops the held object, and on odd seeds clears the owner's hold as it does so
+static void __thiscall w2b_stub_stop(void *held, uint32_t how) {
+    record(0xe271, held);
+    record(0xe271, (void *)(uintptr_t)how);
+    if (arena<uint32_t>(0x20)[1] & 1) *(void **)(arena<uint8_t>(0x100) + 0x2c) = nullptr;
+}
+static void *w2b_delete_table[1] = {(void *)stub_thiscall1};
+static void *__cdecl w2b_stub_manager() {
+    record(0xe272, nullptr);
+    return arena<void>(0x800);
+}
+static void __cdecl w2b_stub_free_item(void *item) { record(0xe273, item); }
+static void __cdecl w2b_stub_free_table(void *table) { record(0xe274, table); }
