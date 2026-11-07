@@ -179,3 +179,8 @@ template <int N> static void __fastcall w1d_stub_end_n(uint32_t *self) {
     for (int i = 0; i < 2; i++) record(0x260 + N, (void *)(uintptr_t)arena<uint32_t>(0x800)[i]);
     self[0] = 0x9000 + N;
 }
+static void __thiscall w1d_stub_label(void *self, uint32_t *out) {
+    record(0x270, self);
+    *out = (uint32_t)(uintptr_t)(arena<uint32_t>(0x20)[0] & 1 ? arena<void>(0xc00) : *(void **)arena<uint8_t>(0xb00 + 0x114));
+    ++*(int32_t *)(uintptr_t)*out;
+}

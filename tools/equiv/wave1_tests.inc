@@ -1275,3 +1275,34 @@
     };
     w1d_named_test.finish = w1_unstub;
     quick(w1d_named_test);
+    Test w1d_label_test{0x503930,
+                        [=](Rng &r) {
+                            fresh(r);
+                            w1_fill(r, 0x800, 0x40);
+                            w1_fill(r, 0xc00, 0x80);
+                            arena<uint32_t>(0x20)[0] = r.next();
+                            static void *vt[20] = {};
+                            vt[19] = (void *)w1d_stub_label;
+                            arena<void *>(0x800)[0] = vt;
+                            arena<void *>(0x800)[6] = r.range(0, 3) ? arena<void>(0xa00) : nullptr;
+                            *(void **)arena<uint8_t>(0xa00 + 0xe0) = arena<void>(0xb00);
+                            *(void **)arena<uint8_t>(0xb00 + 0x114) = arena<void>(0xc40);
+                            arena<int32_t>(0xc00)[0] = r.range(0, 1);
+                            arena<int32_t>(0xc40)[0] = r.range(1, 2);
+                        },
+                        [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w1d_label_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbce010, (void *)w1_stub_crt_free}, {0xbce000, (void *)w1d_stub_free}}); };
+    w1d_label_test.finish = w1_unstub;
+    quick(w1d_label_test);
+    Test w1d_record_resize_test{0x80c8b0,
+                                [=](Rng &r) {
+                                    fresh(r);
+                                    w1_fill(r, 0x900, 0x100);
+                                    arena<uint32_t>(0x20)[1] = r.range(0, 6);
+                                    arena<uint32_t>(0x800)[0] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x900) : 0;
+                                    arena<uint32_t>(0x800)[1] = arena<uint32_t>(0x800)[0] ? r.range(0, 6) : 0;
+                                },
+                                [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), arena<uint32_t>(0x20)[1])}; }};
+    w1d_record_resize_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)w1d_stub_alloc_always}, {0xbce010, (void *)w1_stub_crt_free}, {0x402b90, (void *)w1b_stub_vector_dtor}}); };
+    w1d_record_resize_test.finish = w1_unstub;
+    quick(w1d_record_resize_test);

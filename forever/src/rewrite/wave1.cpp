@@ -1814,3 +1814,56 @@ static void __fastcall w1d_named(uint8_t *self) {
 }
 REWRITE("Named::DestroyAD1220", 0xad1220, (w1c_seh<0xe8a2ef>), (&w1d_named), &g_w1d_named);
 REWRITE("Named::DestroyAD1220", 0xaecaa0, (w1c_seh<0xe8d09f>), (&w1d_named), &g_w1d_named);
+
+// ---- Labelled::Refresh: our current label fetched (virtual 19) and given to the scene object, which lets its old one go;
+// then our reference to the fetched label is dropped ----------------------------------------------------------------------
+static volatile long g_w1d_labels;
+static inline void w1d_release_text(int32_t *text) {
+    if (--text[0] == 0 && text) {
+        memory_free_aligned((void *)(uintptr_t)text[3]);
+        memory_free(text);
+    }
+}
+static void __fastcall w1d_label(uint32_t *self) {
+    g_w1d_labels++;
+    if (!self[6]) return;
+    int32_t *label;
+    ((void(__thiscall *)(void *, int32_t **))(*(void ***)self)[19])(self, &label);
+    uint8_t *scene = *(uint8_t **)((uint8_t *)(uintptr_t)self[6] + 0xe0);
+    int32_t **held = (int32_t **)(scene + 0x114);
+    if (label != *held) {
+        w1d_release_text(*held);
+        *held = label;
+        ++label[0];
+    }
+    if (--label[0] == 0) {
+        memory_free_aligned((void *)(uintptr_t)label[3]);
+        memory_free(label);
+    }
+}
+REWRITE("Labelled::Refresh503930", 0x503930, (w1c_seh<0xe19018>), (&w1d_label), &g_w1d_labels);
+REWRITE("Labelled::Refresh503930", 0x5039f0, (w1c_seh<0xe19038>), (&w1d_label), &g_w1d_labels);
+
+// ---- Records::Resize: `count` new 24-byte records built, as many old ones as fit copied over, the old storage freed ----
+static volatile long g_w1d_record_resizes;
+template <uint32_t BUILD> static int32_t __thiscall w1d_record_resize(uint32_t *self, int32_t count) {
+    g_w1d_record_resizes++;
+    if (count == (int32_t)self[1]) return count;
+    uint32_t *items = nullptr;
+    if (count) {
+        items = (uint32_t *)memory_alloc_aligned(count * 24);
+        if (items) ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0x402b90)(items, 0x18, count, BUILD);
+    }
+    int32_t keep = count < (int32_t)self[1] ? count : (int32_t)self[1];
+    uint32_t *old = (uint32_t *)(uintptr_t)self[0];
+    for (int32_t i = 0; i < keep * 6; i++) items[i] = old[i];
+    if (self[0]) {
+        memory_free_aligned(old);
+        self[0] = 0;
+    }
+    self[0] = (uint32_t)(uintptr_t)items;
+    self[1] = count;
+    return count;
+}
+REWRITE("Records::Resize80C8B0", 0x80c8b0, w1c_seh_late, (&w1d_record_resize<0x80c520>), &g_w1d_record_resizes);
+REWRITE("Records::Resize80C8B0", 0x96f7f0, w1c_seh_late, (&w1d_record_resize<0x96edf0>), &g_w1d_record_resizes);
