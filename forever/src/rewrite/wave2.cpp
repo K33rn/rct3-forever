@@ -1159,3 +1159,19 @@ template <uint32_t MASK, uint32_t CODE> static uint32_t __thiscall w2b_judge(uin
 }
 REWRITE("Judge::Act7A0F50", 0x7a0f50, w2b_call_first_original<0x79ff40u - 0x7a0f58u>, (&w2b_judge<2, 0x10>), &g_w2b_judgements);
 REWRITE("Judge::Act7A0F50", 0x7a0f90, w2b_call_first_original<0x79ff40u - 0x7a0f98u>, (&w2b_judge<1, 0x15>), &g_w2b_judgements);
+
+// ---- Cached::Pass: looks a value up once and keeps it at +SEEN-4, then passes it to the target's slot 0x48 ------------------------------
+static volatile long g_w2b_cached;
+template <uint32_t SEEN, uint32_t FETCH> static uint32_t __fastcall w2b_cached(uint8_t *self) {
+    g_w2b_cached++;
+    uint32_t *cache = (uint32_t *)(self + SEEN - 4);
+    if (!self[SEEN]) {
+        void *source = *(void **)(*(uint8_t **)(self + SEEN - 0x14) + 0xc);
+        *cache = source ? ((uint32_t(__fastcall *)(void *))FETCH)(source) : 0;
+        self[SEEN] = 1;
+    }
+    void ***target = *(void ****)(self + SEEN + 4);
+    return ((uint32_t(__thiscall *)(void *, uint32_t))(*target)[0x48])(target, *cache);
+}
+REWRITE("Cached::PassA80240", 0xa80240, w2b_setup_original<0x154>, (&w2b_cached<0x154, 0x4a8700>), &g_w2b_cached);
+REWRITE("Cached::PassA80240", 0xba8db0, w2b_setup_original<0x158>, (&w2b_cached<0x158, 0xb85520>), &g_w2b_cached);

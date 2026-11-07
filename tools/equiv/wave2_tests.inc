@@ -949,3 +949,25 @@
     };
     w2b_judge_test.finish = w2_unstub;
     quick(w2b_judge_test);
+    // Cached::Pass: already looked up; looked up with a source; looked up without one
+    static uint32_t g_w2b_seen;
+    static void *w2b_target_table[0x49];
+    Test w2b_cached_test{0xa80240,
+                         [=](Rng &r) {
+                             w2_values(r);
+                             w2b_target_table[0x48] = (void *)w2_stub_one;
+                             uint8_t *self = arena<uint8_t>(0x100);
+                             *(uint32_t *)(self + g_w2b_seen) = (uint32_t)r.range(0, 1);
+                             *(uint32_t *)(self + g_w2b_seen - 4) = r.next();
+                             *(void **)(self + g_w2b_seen - 0x14) = arena<void>(0x800);
+                             *(void **)(self + g_w2b_seen + 4) = arena<void>(0x900);
+                             arena<void *>(0x900)[0] = w2b_target_table;
+                             arena<void *>(0x800)[3] = r.range(0, 2) ? arena<void>(0x880) : nullptr;
+                         },
+                         [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2b_cached_test.prepare = [](const rewrite::Entry *e) {
+        g_w2b_seen = *(uint32_t *)(e->at + 5);
+        stubs_for_now({{0x4a8700, (void *)w2_stub_plain_update}, {0xb85520, (void *)w2_stub_plain_update}});
+    };
+    w2b_cached_test.finish = w2_unstub;
+    quick(w2b_cached_test);
