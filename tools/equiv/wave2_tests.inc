@@ -1287,3 +1287,46 @@
             },
             w2c_self_arg,
             [](const rewrite::Entry *) { stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbcdfd0, (void *)w2c_alloc}, {0x402b90, (void *)w2d_vector_make}}); });
+    // Release::Five: every held part, by the copy's own releasers
+    w2c_add(0x501e90, w2c_seed, w2c_self_call,
+            [](const rewrite::Entry *) { stubs_for_now({{0x6b0990, (void *)w2c_s0<0xe2d5>}, {0x6afc20, (void *)w2c_s0<0xe2d6>}}); });
+    // Dtor::TextAndPart: the text (at the copy's own place) kept or freed
+    w2c_add(0x45c1c0,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_a) = arena<void>(0x700);
+                arena<uint32_t>(0x700)[0] = r.range(1, 4);
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = w2c_word(e->at, 0x22);
+                stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}, {w2c_target(e->at, 0x65), (void *)w2c_s0<0xe2d5>},
+                               {w2c_target(e->at, 0x74), (void *)w2c_s0<0xe2d6>}});
+            });
+    // Text::ItemOr: inside and past the copy's own count; the temporary kept alive or let go
+    w2c_add(0xc3c610,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(uint32_t *)(arena<uint8_t>(0x100) + g_w2c_a) = r.range(0, 5);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_b) = arena<void>(0x400);
+                for (int i = 0; i < 6; i++) {
+                    arena<void *>(0x400)[i] = arena<void>(0x500 + 0x10 * i);
+                    arena<uint32_t>(0x500 + 0x10 * i)[0] = r.range(1, 5);
+                }
+                arena<uint32_t>(0x20)[1] = r.range(0, 6);
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x800), arena<uint32_t>(0x20)[1])}; },
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x23);
+                g_w2c_b = *(uint8_t *)(e->at + 0x29);
+                stubs_for_now({{0xbcdfc0, (void *)w2d_alloc_always}, {0xbcfb10, (void *)w2d_text_make}, {0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}});
+            });
+    // Look::Pair: kind one and the other
+    w2c_add(0x4c5e10,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<uint32_t>(0x100)[0xc0 / 4] = r.range(0, 2) ? 1 : r.next();
+                arena<uint32_t>(0x600)[0x120 / 4] = r.next();
+            },
+            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; },
+            [](const rewrite::Entry *) { stubs_for_now({{0x4c5890, (void *)w2d_look}, {0xa87e00, (void *)w2d_look_make}}); });

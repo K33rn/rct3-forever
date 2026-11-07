@@ -1771,3 +1771,75 @@ template <uint32_t SIZE, uint32_t MAKE> static uint32_t __thiscall w2d_remake(ui
 }
 REWRITE("Array::Remake967360", 0x967360, w2c_seh_late, (&w2d_remake<0x18, 0x966ea0>), &g_w2d_remake);
 REWRITE("Array::Remake967360", 0xafd320, w2c_seh_late, (&w2d_remake<0x30, 0xaf9f20>), &g_w2d_remake);
+
+// ---- Release::Five: lets go of the five parts held at O1, 0xf0, 0xf4, O4 and O5 (the first three by FA, the last two by FB) -----------------------
+static volatile long g_w2d_release_five;
+static const uint8_t w2d_release_five_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x8e};
+template <uint32_t O1, uint32_t O4, uint32_t O5, uint32_t FA, uint32_t FB> static void __fastcall w2d_release_five(uint8_t *self) {
+    g_w2d_release_five++;
+    w2c_run<FA>((void *)(uintptr_t)w2c_u32(self, O1));
+    w2c_run<FA>((void *)(uintptr_t)w2c_u32(self, 0xf0));
+    w2c_run<FA>((void *)(uintptr_t)w2c_u32(self, 0xf4));
+    w2c_run<FB>((void *)(uintptr_t)w2c_u32(self, O4));
+    w2c_run<FB>((void *)(uintptr_t)w2c_u32(self, O5));
+}
+REWRITE("Release::Five501E90", 0x501e90, w2d_release_five_original, (&w2d_release_five<0xe8, 0xfc, 0xf8, 0x6b0990, 0x6b0990>), &g_w2d_release_five);
+REWRITE("Release::Five501E90", 0x501ed0, w2d_release_five_original, (&w2d_release_five<0xe8, 0xfc, 0xf8, 0x6afc20, 0x6afc20>), &g_w2d_release_five);
+REWRITE("Release::Five501E90", 0x63a8a0, w2d_release_five_original, (&w2d_release_five<0xec, 0xe4, 0xe8, 0x6b0990, 0x6afc20>), &g_w2d_release_five);
+
+// ---- Dtor::TextAndPart: lets go of the counted text at TEXT, the part at PART (seen from a possibly-null object), then the base ------------------------
+static volatile long g_w2d_text_part;
+template <uint32_t TEXT, uint32_t PART, uint32_t FPART, uint32_t BASE> static void __fastcall w2d_text_part(uint8_t *self) {
+    g_w2d_text_part++;
+    int32_t *text = *(int32_t **)(self + TEXT);
+    --*text;
+    if (*text == 0 && text) {
+        memory_free_aligned(*(void **)(text + 3));
+        memory_free(text);
+    }
+    w2c_run<FPART>(self ? self + PART : nullptr);
+    w2c_run<BASE>(self);
+}
+REWRITE("Dtor::TextAndPart45C1C0", 0x45c1c0, w2c_seh<0xe0b4a1>, (&w2d_text_part<0x2f8, 0x2e8, 0x8002c0, 0x68a3d0>), &g_w2d_text_part);
+REWRITE("Dtor::TextAndPart45C1C0", 0x634f10, w2c_seh<0xe2feb1>, (&w2d_text_part<0x150, 0x13c, 0x4535f0, 0x67b9f0>), &g_w2d_text_part);
+
+// ---- Text::ItemOr: a new reference to item `index` of the list (count at COUNT, items at ITEMS); past the end, a copy of a fixed string ---------------
+static volatile long g_w2d_item_or;
+template <uint32_t COUNT, uint32_t ITEMS> static int32_t **__thiscall w2d_item_or(uint8_t *self, int32_t **out, uint32_t index) {
+    g_w2d_item_or++;
+    if (index < w2c_u32(self, COUNT)) {
+        int32_t *item = (*(int32_t ***)(self + ITEMS))[index];
+        *out = item;
+        ++*item;
+        return out;
+    }
+    int32_t *made = (int32_t *)(uintptr_t)w2d_text_from<0xbcfb10>(0xf264ad);
+    *out = made;
+    ++*made;
+    if (--*made == 0) {   // the temporary's reference
+        memory_free_aligned(*(void **)(made + 3));
+        memory_free(made);
+    }
+    return out;
+}
+REWRITE("Text::ItemOrC3C610", 0xc3c610, w2c_seh<0xea1234>, (&w2d_item_or<0x58, 0x5c>), &g_w2d_item_or);
+REWRITE("Text::ItemOrC3C610", 0xc3c6d0, w2c_seh<0xea1264>, (&w2d_item_or<0x50, 0x54>), &g_w2d_item_or);
+
+// ---- Look::Pair: the two bytes the look gives (0x120, 0x121) turned into three values, of kind ONE when +0xc0 is 1 and OTHER otherwise --------------
+static volatile long g_w2d_look_pair;
+template <uint32_t ONE, uint32_t OTHER> static uint32_t *__thiscall w2d_look_pair(uint8_t *self, uint32_t *out) {
+    g_w2d_look_pair++;
+    auto look = (uint8_t *(__fastcall *)(void *))0x4c5890;
+    uint32_t kind = w2c_u32(self, 0xc0) == 1 ? ONE : OTHER;
+    uint8_t second = look(self)[0x121];
+    uint8_t first = look(self)[0x120];
+    uint32_t made[4];
+    uint32_t *value = ((uint32_t * (__fastcall *)(void *, uint32_t, uint32_t, uint32_t))0xa87e00)(made, kind, first, second);
+    out[0] = value[0];
+    out[1] = value[1];
+    out[2] = value[2];
+    return out;
+}
+static const uint8_t w2d_look_pair_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28};
+REWRITE("Look::Pair4C5E10", 0x4c5e10, w2d_look_pair_original, (&w2d_look_pair<9, 3>), &g_w2d_look_pair);
+REWRITE("Look::Pair4C5E10", 0x4c5ea0, w2d_look_pair_original, (&w2d_look_pair<8, 4>), &g_w2d_look_pair);

@@ -341,3 +341,15 @@ static void __stdcall w2d_vector_make(void *at, uint32_t size, uint32_t n, uint3
     W2C_REC(0xe2d9, n);
     W2C_REC(0xe2d9, make);
 }
+static uint8_t *__fastcall w2d_look(void *self) {
+    record(0xe2da, self);
+    return arena<uint8_t>(0x600);
+}
+// fills the caller's 16-byte result from the kind and the two bytes, and gives it back
+static uint32_t *__fastcall w2d_look_make(uint32_t *made, uint32_t kind, uint32_t first, uint32_t second) {
+    W2C_REC(0xe2db, kind);
+    W2C_REC(0xe2db, first);
+    W2C_REC(0xe2db, second);
+    for (int i = 0; i < 4; i++) made[i] = kind * 0x1000 + first * 0x10 + second + i * W2C_RET;
+    return made;
+}
