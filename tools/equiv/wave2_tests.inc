@@ -1222,3 +1222,68 @@
     w2c_add(0x757aa0, w2c_seed,
             [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0]); return Result{}; },
             [](const rewrite::Entry *) { stubs_for_now({{0x7578e0, (void *)w2d_build}, {0xbd14e0, (void *)w2c_s1<0xe2d5>}, {0xbd1880, (void *)w2d_build_drop}}); });
+    // Dtor::TwoTexts: both texts, in order, then the copy's own base
+    w2c_add(0x6e8280, w2c_seed, w2c_self_call,
+            [](const rewrite::Entry *e) { stubs_for_now({{0x40f730, (void *)w2c_s0<0xe2d5>}, {w2c_target(e->at, 0x48), (void *)w2d_s_table<0xe2d6>}}); });
+    w2c_add(0x510710, w2c_seed, w2c_self_call,
+            [](const rewrite::Entry *e) { stubs_for_now({{w2c_target(e->at, 0x2c), (void *)w2c_s0<0xe2d5>}}); });
+    // Dtor::SharedText: the text (at the copy's own place) kept or freed
+    w2c_add(0x478630,
+            [=](Rng &r) {
+                w2c_seed(r);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_a) = arena<void>(0x300);
+                arena<uint32_t>(0x300)[0] = r.range(1, 4);
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x20);
+                stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbce000, (void *)w2c_free<0xe2d8>}, {w2c_target(e->at, 0x54), (void *)w2c_s0<0xe2d5>}});
+            });
+    // Dtor::ThreeFaces: the tables each step sees
+    w2c_add(0x8e5d50, w2c_seed, w2c_self_call,
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{w2c_target(e->at, 0x42), (void *)w2d_s_table<0xe2d5>}, {0x6835a0, (void *)w2d_s_table<0xe2d6>}, {0x5f7b70, (void *)w2d_s_table<0xe2d7>}});
+            });
+    // Dtor::Parts: an object and no object, with the copy's own parts
+    w2c_add(0x6b1eb0, w2c_seed,
+            [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<uint32_t>(0x20)[0] % 4 ? arena<void>(0x100) : nullptr); return Result{}; },
+            [](const rewrite::Entry *e) {
+                stubs_for_now({{w2c_target(e->at, 0x2e), (void *)w2c_s0<0xe2d5>}, {w2c_target(e->at, 0x43), (void *)w2c_s0<0xe2d6>}, {w2c_target(e->at, 0x52), (void *)w2c_s0<0xe2d7>}});
+            });
+    // Dtor::Handles: each handle there or not; the first called through the copy's own slot
+    w2c_add(0xbfc920,
+            [=](Rng &r) {
+                w2c_seed(r);
+                for (int i = 0; i < 24; i++) arena<void *>(0x400)[i] = (void *)w2c_s0<0xe2d5>;
+                arena<void *>(0x400)[g_w2c_a / 4] = (void *)w2c_s0<0xe2d6>;
+                for (int i = 0; i < 4; i++) arena<void *>(0x480)[i] = (void *)w2d_release<0xe2d7>;
+                arena<void *>(0x300)[0] = arena<void>(0x400);
+                arena<void *>(0x340)[0] = arena<void>(0x480);
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_b) = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+                *(void **)(arena<uint8_t>(0x100) + g_w2c_b + 4) = r.range(0, 3) ? arena<void>(0x340) : nullptr;
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *e) {
+                g_w2c_a = *(uint8_t *)(e->at + 0x36);
+                g_w2c_b = *(uint8_t *)(e->at + 0x25);
+                stubs_for_now({{0xbfc840, (void *)w2d_s_table<0xe2d8>}});
+            });
+    // Dtor::Owned: something owned or not; the tables each step sees
+    w2c_add(0x63ab90,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x400)[0] = (void *)w2c_s1<0xe2d5>;
+                arena<void *>(0x300)[0] = arena<void>(0x400);
+                arena<void *>(0x100)[0x44 / 4] = r.range(0, 3) ? arena<void>(0x300) : nullptr;
+            },
+            w2c_self_call,
+            [](const rewrite::Entry *) { stubs_for_now({{0x6b0150, (void *)w2d_s_table<0xe2d6>}, {0x6a1df0, (void *)w2d_s_table<0xe2d7>}}); });
+    // Array::Remake: old elements or none; zero or some new ones, with and without memory
+    w2c_add(0x967360,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<uint32_t>(0x100)[0] = r.range(0, 2) ? r.next() | 1 : 0;
+                arena<uint32_t>(0x20)[0] = r.range(0, 3) ? r.range(1, 6) : 0;
+            },
+            w2c_self_arg,
+            [](const rewrite::Entry *) { stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbcdfd0, (void *)w2c_alloc}, {0x402b90, (void *)w2d_vector_make}}); });

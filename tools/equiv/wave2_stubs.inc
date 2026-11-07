@@ -329,3 +329,15 @@ static uint32_t __thiscall w2d_build(uint32_t *self, uint32_t value, void *part,
 static void __fastcall w2d_build_drop(uint32_t *self) {
     for (int i = 0; i < 7; i++) W2C_REC(0xe2d3, self[i]);
 }
+// a teardown that also notes which table the object has at that moment
+template <uint32_t TAG> static void __fastcall w2d_s_table(uint32_t *self) {
+    record(TAG, self);
+    W2C_REC(TAG, *self);
+}
+template <uint32_t TAG> static void __stdcall w2d_release(void *p) { record(TAG, p); }
+static void __stdcall w2d_vector_make(void *at, uint32_t size, uint32_t n, uint32_t make) {
+    record(0xe2d9, at);
+    W2C_REC(0xe2d9, size);
+    W2C_REC(0xe2d9, n);
+    W2C_REC(0xe2d9, make);
+}
