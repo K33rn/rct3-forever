@@ -1633,3 +1633,35 @@
     w4d_pair.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x8501c0, (void *)w4d_stub_give_back}}); };
     w4d_pair.finish = w4c_unstub;
     quick(w4d_pair);
+    // Owners::Clear: 0-4 items, some empty; the list there or not
+    Test w4d_clear{0x7fbad0,
+                   [=](Rng &r) {
+                       w4c_fill(r);
+                       static void *vt[1] = {(void *)w4d_stub_delete};
+                       uint32_t *self = arena<uint32_t>(0x800);
+                       self[1] = r.range(0, 4) ? (uint32_t)(uintptr_t)arena<void>(0x2000) : 0;
+                       self[2] = (uint32_t)(r.range(0, 5) - 1);
+                       for (int i = 0; i < 4; i++) {
+                           arena<void *>(0x2100 + i * 0x10)[0] = vt;
+                           arena<void *>(0x2000)[i] = r.range(0, 3) ? arena<void>(0x2100 + i * 0x10) : nullptr;
+                       }
+                       if (!self[1] && (int32_t)self[2] > 0) self[2] = 0;
+                   },
+                   w4c_self};
+    w4d_clear.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbce010, (void *)stub_free_aligned}}); };
+    w4d_clear.finish = w4c_unstub;
+    quick(w4d_clear);
+    // Mark::New (out of memory would write through null in both, so memory is always there)
+    Test w4d_mark{0xb14b70, w4c_fill, [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4d_mark.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfc0, (void *)w4d_stub_alloc_ok}, {0xb60b60, (void *)w4d_stub_mark}}); };
+    w4d_mark.finish = w4c_unstub;
+    quick(w4d_mark);
+    // Boxed::Add: out of memory or not, through the copy's own adder
+    Test w4d_badd{0xc33cb0, w4c_fill, [](void *fn) {
+                      return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x804), *arena<uint32_t>(0x808))};
+                  }};
+    w4d_badd.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfc0, (void *)w4c_stub_alloc}, {0xca8610, (void *)w4d_stub_box}, {w4c_target(e, 0x54), (void *)w4d_stub_add}});
+    };
+    w4d_badd.finish = w4c_unstub;
+    quick(w4d_badd);

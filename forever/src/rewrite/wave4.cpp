@@ -1790,3 +1790,44 @@ static void __fastcall w4d_pair_release(uint32_t *self) {
 }
 REWRITE("Pair::Release8535C0", 0x8535c0, (w4c_seh<0xe61588>), (&w4d_pair_release), &g_w4d_pair_releases);
 REWRITE("Pair::Release8535C0", 0x9f9d10, (w4c_seh<0xe77fb8>), (&w4d_pair_release), &g_w4d_pair_releases);
+
+// ---- Owners::Clear: deletes every object in the pointer list {+4 items, +8 count} and frees the list (the count is left as it was) -----------
+static volatile long g_w4d_owner_clears;
+static void __fastcall w4d_owners_clear(uint32_t *self) {
+    g_w4d_owner_clears++;
+    for (int32_t i = 0; i < (int32_t)self[2]; i++) {
+        void *owned = ((void **)(uintptr_t)self[1])[i];
+        if (owned) ((void(__thiscall *)(void *, uint32_t))(*(void ***)owned)[0])(owned, 1);
+    }
+    if (self[1]) {
+        memory_free_aligned((void *)(uintptr_t)self[1]);
+        self[1] = 0;
+    }
+}
+REWRITE("Owners::Clear7FBAD0", 0x7fbad0, (w4c_seh<0xe5b1bb>), (&w4d_owners_clear), &g_w4d_owner_clears);
+REWRITE("Owners::Clear7FBAD0", 0x801860, (w4c_seh<0xe5bdfb>), (&w4d_owners_clear), &g_w4d_owner_clears);
+
+// ---- Mark::New: a new 0x78-byte mark built empty, given this one's three words at +0x98 (to +0x64) --------------------------------------------
+static volatile long g_w4d_mark_news;
+static uint8_t *__fastcall w4d_mark_new(uint8_t *self) {
+    g_w4d_mark_news++;
+    void *memory = memory_alloc(0x78);
+    uint8_t *made = memory ? ((uint8_t * (__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0xb60b60)(memory, 0, 0, 0) : nullptr;
+    *(uint32_t *)(made + 0x6c) = *(uint32_t *)(self + 0xa0);
+    *(uint32_t *)(made + 0x64) = *(uint32_t *)(self + 0x98);
+    *(uint32_t *)(made + 0x68) = *(uint32_t *)(self + 0x9c);
+    return made;
+}
+REWRITE("Mark::NewB14B70", 0xb14b70, (w4c_seh<0xe90eab>), (&w4d_mark_new), &g_w4d_mark_news);
+REWRITE("Mark::NewB14B70", 0xb7b3b0, (w4c_seh<0xe97bab>), (&w4d_mark_new), &g_w4d_mark_news);
+
+// ---- Boxed::Add: wraps the value in a new 8-byte box (null when out of memory) and adds it under the key through ADD -----------------------------
+static volatile long g_w4d_boxed_adds;
+template <uint32_t ADD> static uint32_t __thiscall w4d_boxed_add(void *self, uint32_t key, uint32_t value) {
+    g_w4d_boxed_adds++;
+    void *memory = memory_alloc(8);
+    void *box = memory ? ((void *(__thiscall *)(void *, uint32_t))0xca8610)(memory, value) : nullptr;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *))ADD)(self, key, box);
+}
+REWRITE("Boxed::AddC33CB0", 0xc33cb0, (w4c_seh<0xea045b>), (&w4d_boxed_add<0xc33c00>), &g_w4d_boxed_adds);
+REWRITE("Boxed::AddC33CB0", 0xc343f0, (w4c_seh<0xea059b>), (&w4d_boxed_add<0xc34340>), &g_w4d_boxed_adds);

@@ -230,3 +230,8 @@ static void __fastcall w4d_stub_base_gone(uint32_t *p) { record(0x4d09, p); for 
 static void __fastcall w4d_stub_gone_a(void *p) { record(0x4d0a, p); }
 static void __fastcall w4d_stub_gone_b(void *p) { record(0x4d0b, p); }
 static void __thiscall w4d_stub_give_back(void *pool, int32_t item, uint32_t slot) { record(0x4d0c, pool); record(0x4d0c, (void *)(uintptr_t)item); record(0x4d0c, (void *)(uintptr_t)slot); }
+static void __thiscall w4d_stub_delete(void *self, uint32_t flags) { record(0x4d0d, self); record(0x4d0d, (void *)(uintptr_t)flags); }
+static void *__cdecl w4d_stub_alloc_ok(uint32_t size) { record(0x4d0e, (void *)(uintptr_t)size); return arena<void>(0xc00); }
+static void *__thiscall w4d_stub_box(uint32_t *p, uint32_t value) { record(0x4d0f, p); record(0x4d0f, (void *)(uintptr_t)value); p[0] = value; p[1] = 0x4d0f; return p + 1; }
+static uint32_t __thiscall w4d_stub_add(void *self, uint32_t key, void *box) { record(0x4d10, self); record(0x4d10, (void *)(uintptr_t)key); record(0x4d10, box); return key + 7; }
+static void *__thiscall w4d_stub_mark(uint32_t *p, uint32_t a, uint32_t b, uint32_t c) { for (uint32_t v : {a, b, c}) record(0x4d11, (void *)(uintptr_t)v); for (int i = 0; i < 0x78 / 4; i++) p[i] = 0x4d110000 + i; return p; }
