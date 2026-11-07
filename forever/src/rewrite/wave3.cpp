@@ -1770,3 +1770,110 @@ template <uint32_t ELEMENT, uintptr_t CTOR> static uint32_t __thiscall w3c_sized
 REWRITE("Array::Size9D1120", 0x9d1120, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x44, 0x9ce670>), &g_w3c_sized);
 REWRITE("Array::Size9D1120", 0x9e1a20, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x44, 0x9e1330>), &g_w3c_sized);
 REWRITE("Array::Size9D1120", 0xaf9d40, w3c_start<0xff6a00000000a164>, (&w3c_sized<0x2c, 0xaf8cf0>), &g_w3c_sized);
+
+// ======== wave 3, part d ========================================================================================================
+
+// ---- Table::Call: checks the index against the count (the game's assert), then calls that entry's handler with the argument
+// and the copy's flag ----------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_table;
+template <uint32_t LINE, uint32_t FLAG, uintptr_t HANDLER> static uint32_t __thiscall w3d_table_call(uint8_t *self, int32_t index, uint32_t argument) {
+    g_w3d_table++;
+    if (index >= *(int32_t *)(self + 0x164) &&
+        ((uint8_t(__fastcall *)(uint32_t, uint32_t, uint32_t, uint32_t))0x68f640)(0xf52e20, LINE, 0xf52e08, 0xf52e60) == 1)
+        __builtin_debugtrap();
+    void *entry = *(void **)(*(uint8_t **)(self + 0x190) + index * 8);
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))HANDLER)(entry, argument, FLAG);
+}
+REWRITE("Table::Call68FCC0", 0x68fcc0, w3c_start<0x000164868bf18b56>, (&w3d_table_call<0x17b, 0, 0x67b4b0>), &g_w3d_table);
+REWRITE("Table::Call68FCC0", 0x68fd10, w3c_start<0x000164868bf18b56>, (&w3d_table_call<0x18c, 0, 0x67b3c0>), &g_w3d_table);
+REWRITE("Table::Call68FCC0", 0x68fdb0, w3c_start<0x000164868bf18b56>, (&w3d_table_call<0x1ac, 1, 0x67b800>), &g_w3d_table);
+
+// ---- Cached::Find: reports a flag byte; the first time, looks the value up (the owner's object asks its table for the
+// current slot's entry: an offset from the object) and keeps it ---------------------------------------------------------------
+static volatile long g_w3d_cached;
+template <uint32_t FLAG, uint32_t CACHED, uint32_t OWNER, uint32_t VALUE> static uint32_t __thiscall w3d_cached(uint8_t *self, uint8_t *flag) {
+    g_w3d_cached++;
+    if (flag) *flag = self[FLAG];
+    if (!self[CACHED]) {
+        uint8_t *object = *(uint8_t **)(*(uint8_t **)(self + OWNER) + 0xc);
+        uint32_t found = 0;
+        if (object) {
+            uint8_t *table = ((uint8_t * (__thiscall *)(void *))(*(void ***)object)[1])(object);
+            int32_t slot = *(int32_t *)0x12f5608;
+            if (table && slot < *(int32_t *)(table + 0x18))
+                if (uint8_t *entry = (*(uint8_t ***)(table + 0x14))[slot]) found = *(uint32_t *)(entry + 0x10) + (uint32_t)(uintptr_t)object;
+        }
+        *(uint32_t *)(self + VALUE) = found;
+        self[CACHED] = 1;
+    }
+    return *(uint32_t *)(self + VALUE);
+}
+REWRITE("Cached::Find559FB0", 0x559fb0, w3c_start<0x8b57c0850424448b>, (&w3d_cached<0xd4, 0xb4, 0xa0, 0xb0>), &g_w3d_cached);
+REWRITE("Cached::Find559FB0", 0x55a020, w3c_start<0x8b57c0850424448b>, (&w3d_cached<0xd5, 0xd0, 0xbc, 0xcc>), &g_w3d_cached);
+
+// ---- Slots::Detach: takes an item out of the list it is in, marks it out, and gives its packed (group, slot) back to the
+// owner if there is one ----------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_detach;
+template <uint32_t INDEX, uint32_t LIST, uint32_t OWNER, uintptr_t RELEASE_SLOT, uintptr_t RELEASE_GROUP>
+static void __thiscall w3d_detach(uint8_t *self, uint8_t *item) {
+    g_w3d_detach++;
+    int32_t index = *(int32_t *)(item + INDEX);
+    if (index < 0) return;
+    ((void(__thiscall *)(void *, int32_t))0xcdede0)(self + LIST, index);
+    *(int32_t *)(item + INDEX) = -1;
+    uint8_t *owner = *(uint8_t **)(self + OWNER);
+    if (!owner) return;
+    uint32_t packed = *(uint32_t *)(item + INDEX + 4), group = packed >> 16 & 0xffff;
+    ((void(__thiscall *)(void *, uint32_t))RELEASE_SLOT)(*(uint8_t **)(owner + 8) + group * 0x1c, packed & 0xffff);
+    ((void(__thiscall *)(void *, uint32_t))RELEASE_GROUP)(owner, group);
+}
+REWRITE("Slots::Detach7B4FA0", 0x7b4fa0, w3c_start<0x88838b08245c8b53>, (&w3d_detach<0x188, 0x1c, 0x4c, 0x7b2ac0, 0x7b2a40>), &g_w3d_detach);
+REWRITE("Slots::Detach7B4FA0", 0xa0d600, w3c_start<0xe4838b08245c8b53>, (&w3d_detach<0xe4, 0x10, 0x30, 0xa0bec0, 0xa0be40>), &g_w3d_detach);
+
+// ---- Piece::Place: an entry either lives here (low bit set) or in a part found from its packed fields; places it there ------
+static volatile long g_w3d_place;
+template <uintptr_t PLACE> static uint32_t __thiscall w3d_place(uint8_t *self, int32_t index, uint32_t a, uint32_t b) {
+    g_w3d_place++;
+    auto place = (uint32_t(__thiscall *)(void *, void *, uint32_t, uint32_t))PLACE;
+    uint32_t flags = (*(uint32_t **)(self + 0x3b0))[index];
+    if (flags & 1) return place(self, *(uint8_t **)(self + 0x3c4) + (*(uint32_t **)(self + 0x3b4))[index] * 0x150, a, b);
+    void *source = (*(void ***)(self + 0x390))[flags >> 25 & 0xf];
+    uint8_t *part = ((uint8_t * (__thiscall *)(void *, uint32_t, uint32_t, int32_t, void *))0x89caf0)(
+        source, flags >> 12 & 0xfff, flags >> 1 & 0x7ff, (int32_t)(flags >> 29 & 7) - 1, self);
+    return place(*(void **)(part + 0x10), *(uint8_t **)(part + 0x14) + (*(uint32_t **)(self + 0x3b4))[index] * 0x150, a, b);
+}
+REWRITE("Piece::Place89CF30", 0x89cf30, w3c_start<0x0003b0868bf18b56>, (&w3d_place<0x88d460>), &g_w3d_place);
+REWRITE("Piece::Place89CF30", 0x8a0660, w3c_start<0x0003b0868bf18b56>, (&w3d_place<0x89ed50>), &g_w3d_place);
+
+// ---- Keyed::Init: base set up with the copy's two keys, then the argument, the vtable and a cleared field ------------------
+static volatile long g_w3d_init;
+template <uint32_t K0, uint32_t K2, uint32_t K3, uint32_t ARG, uint32_t CLEAR, uint32_t VTABLE>
+static void *__thiscall w3d_init(uint8_t *self, uint32_t argument) {
+    g_w3d_init++;
+    uint32_t keys[4] = {K0, 0, K2, K3};
+    ((void(__thiscall *)(void *, uint32_t, void *, void *, void *))0x488290)(self, 1, self + 0x28, &keys[2], &keys[0]);
+    *(uint32_t *)(self + ARG) = argument;
+    *(uint32_t *)self = VTABLE;
+    *(uint32_t *)(self + CLEAR) = 0;
+    return self;
+}
+REWRITE("Keyed::Init506130", 0x506130, w3c_start<0x448df18b5610ec83>, (&w3d_init<0, 0x81fbc001, 0x4780d, 0x30, 0x2c, 0xf36bc0>), &g_w3d_init);
+REWRITE("Keyed::Init506130", 0x5bde60, w3c_start<0x448df18b5610ec83>, (&w3d_init<0x80000000, 0x8000000c, 0, 0x34, 0x30, 0xf3f078>), &g_w3d_init);
+
+// ---- Message::Send: if there is a target, builds a message from the arguments and hands it over; then lets go of what the
+// source holds -------------------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_send;
+template <uint32_t SIZE, uintptr_t BUILD, uintptr_t DELIVER> static void __thiscall w3d_send(void **self, uint32_t a, uint32_t b, uint8_t *source) {
+    g_w3d_send++;
+    void *target = *self;
+    if (!target) return;
+    alignas(4) uint8_t message[SIZE];
+    ((void(__thiscall *)(void *, uint32_t, uint32_t, void *))BUILD)(message, a, b, source);
+    ((void(__thiscall *)(void *, void *))DELIVER)(target, message);
+    if (uint32_t held = *(uint32_t *)(source + 0x18)) {
+        ((void(__thiscall *)(void *, uint32_t))(*(void ***)source)[1])(source, held);
+        *(uint32_t *)(source + 0x18) = 0;
+    }
+}
+REWRITE("Message::Send48C5D0", 0x48c5d0, w3c_start<0xff85398b571cec83>, (&w3d_send<0x1c, 0x4884b0, 0x48bb30>), &g_w3d_send);
+REWRITE("Message::Send48C5D0", 0x48c8e0, w3c_start<0xff85398b572cec83>, (&w3d_send<0x2c, 0x488660, 0x48bd10>), &g_w3d_send);

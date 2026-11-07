@@ -1450,3 +1450,125 @@
     w3c_sized_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)w3_stub_alloc_maybe}, {0xbce010, (void *)w3c_stub_free_aligned}, {0x402b90, (void *)w3c_stub_construct}}); };
     w3c_sized_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3c_sized_test);
+    // ---- wave 3, part d ----
+    auto w3d_rel = [](const rewrite::Entry *e, uint32_t at) { return e->at + at + 4 + *(int32_t *)(e->at + at); };
+    // Table::Call: index inside or past the count (the assert, which says carry on)
+    Test w3d_table_test{0x68fcc0,
+                        [=](Rng &r) {
+                            fresh(r);
+                            uint8_t *self = arena<uint8_t>(0x1000);
+                            *(int32_t *)(self + 0x164) = (int32_t)r.range(0, 8);
+                            *(void **)(self + 0x190) = arena<void>(0x1200);
+                            for (int i = 0; i < 16; i++) arena<uint32_t>(0x1200)[i] = r.next();
+                            arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 7);
+                        },
+                        [](void *fn) {
+                            return Result{((uint32_t(__thiscall *)(void *, int32_t, uint32_t))fn)(arena<void>(0x1000), (int32_t)arena<uint32_t>(0x10)[0], arena<uint32_t>(0x100)[0])};
+                        }};
+    w3d_table_test.prepare = [=](const rewrite::Entry *e) { stubs_for_now({{0x68f640, (void *)w3d_stub_assert}, {w3d_rel(e, 0x41), (void *)w3d_stub_handler2}}); };
+    w3d_table_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_table_test);
+    // Cached::Find: kept already or not; no object, no table, slot past the count, empty entry, found
+    static uint32_t w3d_c_cached, w3d_c_owner, w3d_slot_was;
+    Test w3d_cached_test{0x559fb0,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 4; i++) arena<uint32_t>(0x10)[i] = r.next();
+                             arena<uint32_t>(0x24)[0] = r.next();
+                             *(void **)arena<uint8_t>(0x500) = w3d_stub_vt;
+                             *(int32_t *)arena<uint8_t>(0x618) = (int32_t)r.range(0, 4);
+                             *(void **)arena<uint8_t>(0x614) = arena<void>(0x680);
+                             for (int i = 0; i < 4; i++) arena<void *>(0x680)[i] = r.range(0, 2) ? arena<void>(0x800 + 0x20 * i) : nullptr;
+                             for (int i = 0; i < 16; i++) arena<uint32_t>(0x800)[i] = r.next();
+                         },
+                         [](void *fn) {
+                             uint8_t *self = arena<uint8_t>(0x100);
+                             uint32_t *k = arena<uint32_t>(0x10);
+                             self[w3d_c_cached] = k[0] & 1;
+                             *(void **)(self + w3d_c_owner) = arena<void>(0x400);
+                             *(void **)arena<uint8_t>(0x40c) = k[1] & 3 ? arena<void>(0x500) : nullptr;
+                             *(int32_t *)0x12f5608 = (int32_t)(k[2] % 5);
+                             uint32_t value = ((uint32_t(__thiscall *)(void *, void *))fn)(self, k[3] & 1 ? arena<void>(0x40) : nullptr);
+                             return Result{value};
+                         }};
+    w3d_cached_test.prepare = [](const rewrite::Entry *e) {
+        w3d_c_cached = *(uint32_t *)(e->at + 0x15);
+        w3d_c_owner = *(uint32_t *)(e->at + 0x1f);
+        w3d_slot_was = *(uint32_t *)0x12f5608;
+    };
+    w3d_cached_test.finish = [](const rewrite::Entry *) { *(uint32_t *)0x12f5608 = w3d_slot_was; };
+    quick(w3d_cached_test);
+    // Slots::Detach: not in a list, in one without an owner, in one with an owner
+    static uint32_t w3d_d_index, w3d_d_owner;
+    Test w3d_detach_test{0x7b4fa0,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 4; i++) arena<uint32_t>(0x10)[i] = r.next();
+                             arena<uint32_t>(0x600)[2] = r.next();
+                         },
+                         [](void *fn) {
+                             uint8_t *item = arena<uint8_t>(0x1000);
+                             uint32_t *k = arena<uint32_t>(0x10);
+                             *(int32_t *)(item + w3d_d_index) = k[0] & 3 ? (int32_t)(k[1] & 0xff) : -(int32_t)(k[1] & 0xff) - 1;
+                             *(uint32_t *)(item + w3d_d_index + 4) = k[2];
+                             *(void **)(arena<uint8_t>(0x100) + w3d_d_owner) = k[3] & 1 ? arena<void>(0x600) : nullptr;
+                             ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), item);
+                             return Result{0};
+                         }};
+    w3d_detach_test.prepare = [=](const rewrite::Entry *e) {
+        w3d_d_index = *(uint32_t *)(e->at + 0x7);
+        w3d_d_owner = *(uint8_t *)(e->at + 0x28);
+        stubs_for_now({{0xcdede0, (void *)stub_thiscall1}, {w3d_rel(e, 0x4f), (void *)stub_thiscall1}, {w3d_rel(e, 0x57), (void *)stub_thiscall1}});
+    };
+    w3d_detach_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_detach_test);
+    // Piece::Place: entries here (low bit) and in parts
+    Test w3d_place_test{0x89cf30,
+                        [=](Rng &r) {
+                            fresh(r);
+                            uint8_t *self = arena<uint8_t>(0x1000);
+                            *(void **)(self + 0x3b0) = arena<void>(0x1400);
+                            *(void **)(self + 0x3b4) = arena<void>(0x1500);
+                            *(void **)(self + 0x390) = arena<void>(0x1600);
+                            *(uint32_t *)(self + 0x3c4) = r.next();
+                            for (int i = 0; i < 16; i++) {
+                                arena<uint32_t>(0x1400)[i] = r.next();
+                                arena<uint32_t>(0x1500)[i] = (uint32_t)r.range(0, 1000);
+                                arena<uint32_t>(0x1600)[i] = r.next();
+                            }
+                            arena<uint32_t>(0x700)[4] = r.next();
+                            arena<uint32_t>(0x700)[5] = r.next();
+                            arena<uint32_t>(0x10)[0] = (uint32_t)r.range(0, 15);
+                        },
+                        [](void *fn) {
+                            return Result{((uint32_t(__thiscall *)(void *, int32_t, uint32_t, uint32_t))fn)(arena<void>(0x1000), (int32_t)arena<uint32_t>(0x10)[0],
+                                                                                                         arena<uint32_t>(0x100)[0], arena<uint32_t>(0x100)[1])};
+                        }};
+    w3d_place_test.prepare = [=](const rewrite::Entry *e) { stubs_for_now({{0x89caf0, (void *)w3d_stub_part}, {w3d_rel(e, 0x38), (void *)w3d_stub_handler3}}); };
+    w3d_place_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_place_test);
+    // Keyed::Init
+    Test w3d_init_test{0x506130, [=](Rng &r) { fresh(r); },
+                       [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x1f0)[0])}; }};
+    w3d_init_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x488290, (void *)w3d_stub_base}}); };
+    w3d_init_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_init_test);
+    // Message::Send: no target; a target, with the source holding something or not
+    Test w3d_send_test{0x48c5d0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           static void *vt[3] = {nullptr, (void *)stub_thiscall1, nullptr};
+                           arena<void *>(0x100)[0] = r.range(0, 3) ? arena<void>(0x400) : nullptr;
+                           arena<void *>(0x300)[0] = vt;
+                           arena<uint32_t>(0x300)[6] = r.range(0, 1) ? r.next() | 1 : 0;
+                       },
+                       [](void *fn) {
+                           ((void(__thiscall *)(void *, uint32_t, uint32_t, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x1f0)[0], arena<uint32_t>(0x1f0)[1], arena<void>(0x300));
+                           return Result{0};
+                       }};
+    w3d_send_test.prepare = [=](const rewrite::Entry *e) {
+        w3d_message_size = *(uint8_t *)(e->at + 2);
+        stubs_for_now({{w3d_rel(e, 0x1f), (void *)w3d_stub_build}, {w3d_rel(e, 0x2b), (void *)w3d_stub_deliver}});
+    };
+    w3d_send_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_send_test);

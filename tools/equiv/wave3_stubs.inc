@@ -265,3 +265,56 @@ static void __stdcall w3c_stub_construct(void *first, uint32_t size, uint32_t co
     record(0x402b90, (void *)(uintptr_t)count);
     record(0x402b90, fn);
 }
+
+// ---- wave 3, part d ----
+static uint8_t __fastcall w3d_stub_assert(uint32_t file, uint32_t line, uint32_t a, uint32_t b) {
+    for (uint32_t v : {file, line, a, b}) record(0x68f640, (void *)(uintptr_t)v);
+    return 0;
+}
+static uint32_t __thiscall w3d_stub_handler2(void *self, uint32_t a, uint32_t b) {
+    record(0x7d01, self);
+    record(0x7d01, (void *)(uintptr_t)a);
+    record(0x7d01, (void *)(uintptr_t)b);
+    return (uint32_t)(uintptr_t)self ^ a ^ (b << 7);
+}
+static uint32_t __thiscall w3d_stub_handler3(void *self, void *p, uint32_t a, uint32_t b) {
+    record(0x7d02, self);
+    record(0x7d02, p);
+    record(0x7d02, (void *)(uintptr_t)a);
+    record(0x7d02, (void *)(uintptr_t)b);
+    return (uint32_t)(uintptr_t)p ^ a ^ (b << 5);
+}
+// Cached::Find: the object's table (or none)
+static void *__thiscall w3d_stub_table(void *self) {
+    record(0x7d03, self);
+    return arena<uint32_t>(0x24)[0] & 1 ? arena<void>(0x600) : nullptr;
+}
+static void *w3d_stub_vt[3] = {nullptr, (void *)w3d_stub_table, nullptr};
+// Piece::Place: the part found
+static void *__thiscall w3d_stub_part(void *self, uint32_t a, uint32_t b, int32_t c, void *d) {
+    record(0x89caf0, self);
+    for (uint32_t v : {a, b, (uint32_t)c}) record(0x89caf0, (void *)(uintptr_t)v);
+    record(0x89caf0, d);
+    return arena<void>(0x700);
+}
+// Keyed::Init: the base set up; records the keys' values (they live on the stack)
+static void __thiscall w3d_stub_base(uint8_t *self, uint32_t one, void *field, uint32_t *k2, uint32_t *k0) {
+    record(0x488290, self);
+    record(0x488290, (void *)(uintptr_t)one);
+    record(0x488290, field);
+    for (uint32_t v : {k2[0], k2[1], k0[0], k0[1]}) record(0x488290, (void *)(uintptr_t)v);
+    *(uint32_t *)(self + 4) = k2[0] ^ k0[0];
+}
+// Message::Send: builds the whole message; delivery records all of it
+static uint32_t w3d_message_size;
+static void *__thiscall w3d_stub_build(uint32_t *message, uint32_t a, uint32_t b, void *source) {
+    record(0x7d04, (void *)(uintptr_t)a);
+    record(0x7d04, (void *)(uintptr_t)b);
+    record(0x7d04, source);
+    for (uint32_t i = 0; i < w3d_message_size / 4; i++) message[i] = a * (i + 1) ^ b;
+    return message;
+}
+static void __thiscall w3d_stub_deliver(void *target, uint32_t *message) {
+    record(0x7d05, target);
+    for (uint32_t i = 0; i < w3d_message_size / 4; i++) record(0x7d05, (void *)(uintptr_t)message[i]);
+}
