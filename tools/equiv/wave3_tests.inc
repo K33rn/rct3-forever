@@ -1757,3 +1757,37 @@
     };
     w3d_update_test.finish = [](const rewrite::Entry *) { unstub_many(); *(uint32_t *)0x13ce3d8 = w3d_u_slot_was; };
     quick(w3d_update_test);
+    // Item::Enlist: a registry already or not (set up or not); the item set up or not
+    static void *w3d_registry_was;
+    Test w3d_enlist_test{0x6203a0,
+                         [=](Rng &r) {
+                             w3c_maker(r);
+                             arena<uint8_t>(0x700)[0x2c] = (uint8_t)r.range(0, 1);
+                         },
+                         [](void *fn) {
+                             *(void **)0x12f5798 = arena<uint32_t>(0x10)[0] & 1 ? arena<void>(0x700) : nullptr;
+                             return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))};
+                         }};
+    w3d_enlist_test.prepare = [=](const rewrite::Entry *e) {
+        w3d_registry_was = *(void **)0x12f5798;
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}, {w3d_rel(e, 0x3d), (void *)w3d_stub_item}, {0x800860, (void *)stub_plain_dtor},
+                       {0x61e450, (void *)w3d_stub_registry}, {0x61ffe0, (void *)w3d_stub_ctor1}});
+    };
+    w3d_enlist_test.finish = [](const rewrite::Entry *) { unstub_many(); *(void **)0x12f5798 = w3d_registry_was; };
+    quick(w3d_enlist_test);
+    // Array::Resize (plain elements): 0-4 old elements to 0-4 new ones
+    Test w3d_resize2_test{0x61c320,
+                          [=](Rng &r) {
+                              w3c_maker(r);
+                              int32_t old_count = (int32_t)r.range(0, 4);
+                              arena<void *>(0x100)[0] = old_count || r.range(0, 1) ? arena<void>(0x1000) : nullptr;
+                              arena<int32_t>(0x100)[1] = old_count;
+                              arena<int32_t>(0x10)[0] = (int32_t)r.range(0, 4);
+                          },
+                          [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0])}; }};
+    w3d_resize2_test.prepare = [=](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfd0, (void *)w3d_stub_alloc_2000}, {0x402b90, (void *)w3c_stub_construct}, {w3d_rel(e, 0x9c), (void *)stub_thiscall1},
+                       {0xbce010, (void *)stub_free_aligned}});
+    };
+    w3d_resize2_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3d_resize2_test);

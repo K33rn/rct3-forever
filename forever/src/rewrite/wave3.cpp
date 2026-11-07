@@ -2134,3 +2134,48 @@ template <uintptr_t UPDATE> static int32_t __fastcall w3d_update_all(uint8_t *se
 }
 REWRITE("Entries::UpdateAllA9F7E0", 0xa9f7e0, w3c_start<0x28458be98b555351>, (&w3d_update_all<0xabd040>), &g_w3d_update);
 REWRITE("Entries::UpdateAllA9F7E0", 0xaa0680, w3c_start<0x28458be98b555351>, (&w3d_update_all<0xabfe20>), &g_w3d_update);
+
+// ---- Item::Enlist: a new item for this owner (set up unless it already is), handed to the one registry (made, and set up,
+// when there is none yet) ----------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_enlist;
+template <uint32_t SIZE, uintptr_t CTOR> static uint32_t __fastcall w3d_enlist(void *owner) {
+    g_w3d_enlist++;
+    void *made = memory_alloc(SIZE);
+    uint8_t *item = made ? ((uint8_t * (__thiscall *)(void *, uint32_t, uint32_t, uint32_t, void *))CTOR)(made, 0, 0, 0, owner) : nullptr;
+    auto set_up = (void(__thiscall *)(void *))0x800860;
+    if (!(item[0x2c] & 1)) set_up(item);
+    uint8_t *&registry = *(uint8_t **)0x12f5798;
+    if (!registry)
+        if (void *made_registry = memory_alloc(0x58)) ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x61e450)(made_registry, 0, 0, 0);
+    if (!(registry[0x2c] & 1)) set_up(registry);
+    return ((uint32_t(__thiscall *)(void *, void *))0x61ffe0)(registry, item);
+}
+REWRITE("Item::Enlist6203A0", 0x6203a0, w3c_start<0x6400e2c68668ff6a>, (&w3d_enlist<0x70, 0x61c9b0>), &g_w3d_enlist);
+REWRITE("Item::Enlist6203A0", 0x9daf50, w3c_start<0x6400e757c668ff6a>, (&w3d_enlist<0x78, 0x9dad90>), &g_w3d_enlist);
+REWRITE("Item::Enlist6203A0", 0xa5b830, w3c_start<0x6400e8268668ff6a>, (&w3d_enlist<0x78, 0xa5b630>), &g_w3d_enlist);
+
+// ---- Array::Resize (plain elements): new elements built by the copy's constructor, the kept ones assigned over, the old array
+// freed ------------------------------------------------------------------------------------------------------------------------------
+static volatile long g_w3d_resize2;
+template <uint32_t SHIFT, uintptr_t CTOR, uintptr_t ASSIGN> static int32_t __thiscall w3d_resize2(uint8_t **self, int32_t count) {
+    g_w3d_resize2++;
+    int32_t old_count = *(int32_t *)(self + 1);
+    if (count == old_count) return count;
+    uint8_t *data = nullptr;
+    if (count) {
+        data = (uint8_t *)memory_alloc_aligned((uint32_t)count << SHIFT);
+        if (data) ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0x402b90)(data, 1u << SHIFT, count, (void *)CTOR);
+        int32_t kept = count < old_count ? count : old_count;
+        for (int32_t i = 0; i < kept; i++)
+            ((void(__thiscall *)(uintptr_t, uintptr_t))ASSIGN)((uintptr_t)data + (i << SHIFT), (uintptr_t)self[0] + (i << SHIFT));
+    }
+    if (self[0]) {
+        memory_free_aligned(self[0]);
+        self[0] = nullptr;
+    }
+    self[0] = data;
+    *(int32_t *)(self + 1) = count;
+    return count;
+}
+REWRITE("Array::Resize61C320", 0x61c320, w3c_start<0xff6a00000000a164>, (&w3d_resize2<4, 0x4073a0, 0xbe7450>), &g_w3d_resize2);
+REWRITE("Array::Resize61C320", 0x693300, w3c_start<0xff6a00000000a164>, (&w3d_resize2<6, 0x691b00, 0x691b10>), &g_w3d_resize2);

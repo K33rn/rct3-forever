@@ -391,3 +391,17 @@ static void __stdcall w3d_stub_build_elements(uint8_t *first, uint32_t size, int
         e[0] = arena<uint32_t>(0x24)[0] >> i & 1 ? w3d_vbtable : (uint32_t)(uintptr_t)arena<void>(0x740);
     }
 }
+// Item::Enlist: the item (set up already or not); the registry, which puts itself in the global
+static uint8_t *__thiscall w3d_stub_item(uint8_t *self, uint32_t a, uint32_t b, uint32_t c, void *owner) {
+    record(0x7d0c, self);
+    for (uint32_t v : {a, b, c}) record(0x7d0c, (void *)(uintptr_t)v);
+    record(0x7d0c, owner);
+    self[0x2c] = (uint8_t)(arena<uint32_t>(0x24)[0] & 1);
+    return self;
+}
+static void __thiscall w3d_stub_registry(uint8_t *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x61e450, self);
+    for (uint32_t v : {a, b, c}) record(0x61e450, (void *)(uintptr_t)v);
+    self[0x2c] = (uint8_t)(arena<uint32_t>(0x24)[0] >> 1 & 1);
+    *(void **)0x12f5798 = self;
+}
