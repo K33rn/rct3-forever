@@ -374,6 +374,10 @@ static void *__thiscall stub_ride_entry(void *self, int32_t i, uint32_t a, uint3
     record(0x7d, self); record(0x7d, (void *)(uintptr_t)i); record(0x7d, (void *)(uintptr_t)a); record(0x7d, (void *)(uintptr_t)b);
     return arena<void>(0xe00 + i * 0x10);
 }
+#include "wave1_stubs.inc"
+#include "wave2_stubs.inc"
+#include "wave3_stubs.inc"
+#include "wave4_stubs.inc"
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4109,6 +4113,10 @@ static std::vector<Test> tests() {
     level_value.prepare = level_reached.prepare;
     level_value.finish = level_reached.finish;
     quick(level_value);
+#include "wave1_tests.inc"
+#include "wave2_tests.inc"
+#include "wave3_tests.inc"
+#include "wave4_tests.inc"
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
