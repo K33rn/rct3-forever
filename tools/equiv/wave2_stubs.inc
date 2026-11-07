@@ -170,3 +170,69 @@ static uint32_t __fastcall w2_stub_timed_update(void *member) {
     record(0xe261, member);
     return arena<uint32_t>(0x20)[1];
 }
+static uint32_t __thiscall w2b_stub_walker(void *self, uint32_t first, uint32_t *visitor, uint32_t third, uint32_t fourth) {
+    record(0xe270, self);
+    record(0xe270, (void *)(uintptr_t)first);
+    record(0xe270, (void *)(uintptr_t)visitor[0]);
+    record(0xe270, (void *)(uintptr_t)visitor[1]);
+    record(0xe270, (void *)(uintptr_t)third);
+    record(0xe270, (void *)(uintptr_t)fourth);
+    return arena<uint32_t>(0x20)[0];
+}
+// stops the held object, and on odd seeds clears the owner's hold as it does so
+static void __thiscall w2b_stub_stop(void *held, uint32_t how) {
+    record(0xe271, held);
+    record(0xe271, (void *)(uintptr_t)how);
+    if (arena<uint32_t>(0x20)[1] & 1) *(void **)(arena<uint8_t>(0x100) + 0x2c) = nullptr;
+}
+static void *w2b_delete_table[1] = {(void *)stub_thiscall1};
+static void *__cdecl w2b_stub_manager() {
+    record(0xe272, nullptr);
+    return arena<void>(0x800);
+}
+static void __cdecl w2b_stub_free_item(void *item) { record(0xe273, item); }
+static void __cdecl w2b_stub_free_table(void *table) { record(0xe274, table); }
+static void *__fastcall w2b_stub_root(void *self) {
+    record(0xe275, self);
+    return arena<void>(0x800);
+}
+static void __thiscall w2b_stub_scene(void *scene, uint32_t kind, void *part) {
+    record(0xe276, scene);
+    record(0xe276, (void *)(uintptr_t)kind);
+    record(0xe276, part);
+}
+// the visitor is on the caller's stack, so its contents are recorded and not its place
+static void __thiscall w2b_stub_visit(void *self, uint32_t *visitor) {
+    record(0xe277, self);
+    record(0xe277, (void *)(uintptr_t)visitor[0]);
+    record(0xe277, (void *)(uintptr_t)visitor[1]);
+}
+static uint32_t __fastcall w2b_stub_check1(void *self) {
+    record(0xe278, self);
+    return arena<uint32_t>(0x20)[0];
+}
+static uint32_t __fastcall w2b_stub_check2(void *self) {
+    record(0xe279, self);
+    return arena<uint32_t>(0x20)[1];
+}
+// hands out arena memory, or fails, as the seed says
+static void *__cdecl w2b_stub_alloc(uint32_t size) {
+    record(0xe27a, (void *)(uintptr_t)size);
+    return arena<uint32_t>(0x20)[1] & 1 ? arena<void>(0x900) : nullptr;
+}
+static void __stdcall w2b_stub_build(void *rows, uint32_t size, uint32_t count, uint32_t init) {
+    record(0xe27b, rows);
+    record(0xe27b, (void *)(uintptr_t)size);
+    record(0xe27b, (void *)(uintptr_t)count);
+    record(0xe27b, (void *)(uintptr_t)init);
+}
+static uint32_t __thiscall w2b_stub_find(void *table, uint32_t key) {
+    record(0xe27c, table);
+    record(0xe27c, (void *)(uintptr_t)key);
+    return arena<uint32_t>(0x20)[0] & 3;
+}
+static uint32_t __thiscall w2b_stub_verdict(void *self, uint32_t subject) {
+    record(0xe27d, self);
+    record(0xe27d, (void *)(uintptr_t)subject);
+    return arena<uint32_t>(0x20)[1] & 3;
+}

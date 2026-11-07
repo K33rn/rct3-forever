@@ -720,3 +720,254 @@
     w2_flag_copy.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x423fb0, (void *)w2_stub_one}}); };
     w2_flag_copy.finish = w2_unstub;
     quick(w2_flag_copy);
+    // Slot::Reset: below, inside and past the owner's table
+    Test w2b_slot{0x8278b0,
+                  [=](Rng &r) {
+                      w2_values(r);
+                      *(void **)(arena<uint8_t>(0x100) + 0x9c) = arena<void>(0x800);
+                      *(void **)(arena<uint8_t>(0x100) + 0x140) = arena<void>(0x900);
+                      arena<int32_t>(0x800)[0x70 / 4] = r.range(0, 4);
+                      arena<int32_t>(0x20)[0] = r.range(-2, 5);
+                      for (int i = 0; i < 0x44; i++) arena<uint32_t>(0x900)[i] = r.next();
+                  },
+                  [](void *fn) { ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x20)[0]); return Result{0}; }};
+    quick(w2b_slot);
+    // Visitor::Run: the walker sees each argument and the visitor's contents, and its answer comes back
+    Test w2b_visitor{0x76ff60, [=](Rng &r) { w2_values(r); },
+                     [](void *fn) {
+                         uint32_t *v = arena<uint32_t>(0x20);
+                         return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), v[1], v[2], v[3], v[4])};
+                     }};
+    w2b_visitor.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x76fb20, (void *)w2b_stub_walker}}); };
+    w2b_visitor.finish = w2_unstub;
+    quick(w2b_visitor);
+    // Trio::Update: three members in order, the last one's answer back
+    Test w2b_trio_test{0xb010d0,
+                       [=](Rng &r) {
+                           w2_values(r);
+                           for (int off : {0x128, 0x12c, 0x130}) *(uint32_t *)(arena<uint8_t>(0x800) + off) = r.next();
+                       },
+                       [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w2b_trio_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6b0990, (void *)w2_stub_plain_update}, {0x6afc20, (void *)w2_stub_plain_update}}); };
+    w2b_trio_test.finish = w2_unstub;
+    quick(w2b_trio_test);
+    // Owner::Drop: nothing held; held and still there after stopping; held and gone after stopping
+    Test w2b_drop_test{0x40ddc0,
+                       [=](Rng &r) {
+                           w2_values(r);
+                           arena<void *>(0x800)[0] = w2b_delete_table;
+                           *(void **)(arena<uint8_t>(0x100) + 0x2c) = r.range(0, 3) ? arena<void>(0x800) : nullptr;
+                       },
+                       [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{0}; }};
+    w2b_drop_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x771f90, (void *)w2b_stub_stop}, {0x771e50, (void *)w2b_stub_stop}}); };
+    w2b_drop_test.finish = w2_unstub;
+    quick(w2b_drop_test);
+    // Listener::Construct: each copy's manager holds its own list, so the wrong list shows
+    Test w2b_listener_test{0x872940,
+                           [=](Rng &r) {
+                               w2_values(r);
+                               *(void **)(arena<uint8_t>(0x800) + 0x2c) = arena<void>(0x900);
+                               *(void **)(arena<uint8_t>(0x800) + 0x20) = arena<void>(0x940);
+                               arena<void *>(0x900)[0] = arena<void>(0x980);
+                               arena<void *>(0x940)[0] = arena<void>(0x9c0);
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2b_listener_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x8839b0, (void *)w2b_stub_manager}, {0xa04bc0, (void *)w2b_stub_manager}}); };
+    w2b_listener_test.finish = w2_unstub;
+    quick(w2b_listener_test);
+    // Owned::Clear: none, a negative count, gaps in the table
+    Test w2b_clear_test{0xc2b760,
+                        [=](Rng &r) {
+                            w2_values(r);
+                            arena<int32_t>(0x100)[0] = r.range(-1, 5);
+                            arena<void *>(0x100)[1] = arena<void>(0x800);
+                            for (int i = 0; i < 5; i++) arena<void *>(0x800)[i] = r.range(0, 2) ? arena<void>(0x900 + i * 0x10) : nullptr;
+                        },
+                        [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{0}; }};
+    w2b_clear_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xc25690, (void *)stub_plain_dtor}, {0xc437f0, (void *)stub_plain_dtor}, {0xbce000, (void *)w2b_stub_free_item}, {0xbce010, (void *)w2b_stub_free_table}});
+    };
+    w2b_clear_test.finish = w2_unstub;
+    quick(w2b_clear_test);
+    // Part::Attach: with a scene and without, each copy's place
+    Test w2b_attach_test{0x67abe0,
+                         [=](Rng &r) {
+                             w2_values(r);
+                             void *scene = r.range(0, 2) ? arena<void>(0x800) : nullptr;
+                             *(void **)(arena<uint8_t>(0x100) + 0xf8) = scene;
+                             *(void **)(arena<uint8_t>(0x100) + 0x12c) = scene;
+                         },
+                         [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{0}; }};
+    w2b_attach_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6afd60, (void *)stub_plain_dtor}, {0x6b1330, (void *)w2b_stub_scene}}); };
+    w2b_attach_test.finish = w2_unstub;
+    quick(w2b_attach_test);
+    // Stages::Run: a different stand-in at each step, so a change of order shows
+    Test w2b_stages_test{0x550af0, [=](Rng &r) { w2_values(r); },
+                         [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2b_stages_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x549aa0, (void *)stub_plain_dtor}, {0x5498c0, (void *)w2_stub_plain_update}, {0x54e360, (void *)w2_stub_timed_update}, {0x5499a0, (void *)w2b_stub_root},
+                       {0x8f6cb0, (void *)stub_plain_dtor}, {0x8f6920, (void *)w2_stub_plain_update}, {0x8f33f0, (void *)w2_stub_timed_update}, {0x8f3b90, (void *)w2b_stub_root}});
+    };
+    w2b_stages_test.finish = w2_unstub;
+    quick(w2b_stages_test);
+    // Group::Update: the fixed members, then a list of none, some, or a negative count
+    Test w2b_group_test{0x74d800,
+                        [=](Rng &r) {
+                            w2_values(r);
+                            uint8_t *self = arena<uint8_t>(0x100);
+                            *(uint32_t *)(self + 0x3c) = r.next();
+                            *(uint32_t *)(self + 0x40) = r.next();
+                            *(void **)(self + 0x44) = arena<void>(0x800);
+                            *(int32_t *)(self + 0x48) = r.range(-1, 5);
+                            for (int i = 0; i < 5; i++) arena<uint32_t>(0x800)[i] = r.next();
+                        },
+                        [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{0}; }};
+    w2b_group_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6b0990, (void *)stub_plain_dtor}, {0x6afc20, (void *)stub_plain_dtor}}); };
+    w2b_group_test.finish = w2_unstub;
+    quick(w2b_group_test);
+    // Node::Announce: no root, a root without the flag, a root with it
+    Test w2b_announce_test{0x6afdc0,
+                           [=](Rng &r) {
+                               w2_values(r);
+                               arena<uint32_t>(0x20)[1] = (uint32_t)r.range(0, 2);
+                               arena<uint32_t>(0x800)[0x94 / 4] = (r.next() & ~0x800000u) | (r.range(0, 1) ? 0x800000u : 0);
+                           },
+                           [](void *fn) {
+                               uint32_t root = *(uint32_t *)0x12f83f0, target = *(uint32_t *)0x1342708;
+                               *(void **)0x12f83f0 = arena<uint32_t>(0x20)[1] ? arena<void>(0x800) : nullptr;
+                               *(uint32_t *)0x1342708 = arena<uint32_t>(0x20)[2];
+                               ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                               *(uint32_t *)0x12f83f0 = root;
+                               *(uint32_t *)0x1342708 = target;
+                               return Result{0};
+                           }};
+    w2b_announce_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6ae7c0, (void *)w2b_stub_visit}, {0xa1f890, (void *)w2_stub_one}, {0xa1f8a0, (void *)w2_stub_one}}); };
+    w2b_announce_test.finish = w2_unstub;
+    quick(w2b_announce_test);
+    // Shared::Assign: the same block, a new one with the old still held, a new one with the old let go
+    Test w2b_assign_test{0x41bea0,
+                         [=](Rng &r) {
+                             w2_values(r);
+                             arena<int32_t>(0x800)[0] = r.range(1, 2);
+                             arena<uint32_t>(0x800)[3] = r.next();
+                             arena<int32_t>(0x840)[0] = r.range(1, 3);
+                             *(void **)(arena<uint8_t>(0x100) + 0x114) = arena<void>(0x800);
+                             *(void **)(arena<uint8_t>(0x100) + 0xb0) = arena<void>(0x800);
+                             arena<void *>(0x40)[0] = r.range(0, 3) ? arena<void>(0x840) : arena<void>(0x800);
+                         },
+                         [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    w2b_assign_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbce000, (void *)w2b_stub_free_item}, {0xbce010, (void *)w2b_stub_free_table}}); };
+    w2b_assign_test.finish = w2_unstub;
+    quick(w2b_assign_test);
+    // Quarter::Value: each index, and one past them that falls to the last
+    Test w2b_quarter_test{0xb35490,
+                          [=](Rng &r) {
+                              w2_values(r);
+                              *(int32_t *)(arena<uint8_t>(0x100) + 0xa4) = r.range(0, 4);
+                              *(void **)(arena<uint8_t>(0x800) + 0x54) = arena<void>(0x880);
+                              for (int i = 0; i < 4; i++) {
+                                  *(void **)(arena<uint8_t>(0x880) + 0x18 + i * 4) = arena<void>(0x900 + i * 0x40);
+                                  *(uint32_t *)(arena<uint8_t>(0x900 + i * 0x40) + 0x14) = r.next();
+                                  *(uint32_t *)(arena<uint8_t>(0x900 + i * 0x40) + 0x2c) = r.next();
+                              }
+                          },
+                          [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2b_quarter_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb44970, (void *)w2b_stub_root}}); };
+    w2b_quarter_test.finish = w2_unstub;
+    quick(w2b_quarter_test);
+    // Setup::Once: already run, and each answer of each check; only the low byte of an answer counts
+    Test w2b_setup_test{0xa12cb0,
+                        [=](Rng &r) {
+                            w2_values(r);
+                            uint8_t flag = (uint8_t)(r.range(0, 3) ? 0 : 2);
+                            arena<uint8_t>(0x100)[0x15c] = flag;
+                            arena<uint8_t>(0x100)[0x14c] = flag;
+                            arena<uint32_t>(0x20)[0] = (r.next() & ~0xffu) | (uint32_t)r.range(0, 1);
+                            arena<uint32_t>(0x20)[1] = (r.next() & ~0xffu) | (uint32_t)r.range(0, 1);
+                        },
+                        [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{0}; }};
+    w2b_setup_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xa113d0, (void *)w2b_stub_check1}, {0xa114a0, (void *)w2b_stub_check2}, {0xa11680, (void *)stub_plain_dtor}, {0xa11570, (void *)w2_stub_plain_update},
+                       {0xa14bf0, (void *)w2b_stub_check1}, {0xa14cc0, (void *)w2b_stub_check2}, {0xa14ef0, (void *)stub_plain_dtor}, {0xa14d90, (void *)w2_stub_plain_update}});
+    };
+    w2b_setup_test.finish = w2_unstub;
+    quick(w2b_setup_test);
+    // Rows::Resize: an old table or none; a zero count, a count that gets its memory, one that does not
+    Test w2b_resize_test{0x5d4350,
+                         [=](Rng &r) {
+                             w2_values(r);
+                             arena<void *>(0x100)[0] = r.range(0, 1) ? arena<void>(0xa00) : nullptr;
+                             arena<uint32_t>(0x20)[2] = (uint32_t)r.range(0, 3);
+                         },
+                         [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[2])}; }};
+    w2b_resize_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbce010, (void *)w2b_stub_free_table}, {0xbcdfd0, (void *)w2b_stub_alloc}, {0x5d3d00, (void *)w2b_stub_build}});
+    };
+    w2b_resize_test.finish = w2_unstub;
+    quick(w2b_resize_test);
+    // Weights::Ensure: a place already filled, an empty one that gets its weight, an empty one that does not
+    Test w2b_ensure_test{0x40c160,
+                         [=](Rng &r) {
+                             w2_values(r);
+                             *(void **)(arena<uint8_t>(0x100) + 0x14) = arena<void>(0x800);
+                             *(void **)(arena<uint8_t>(0x100) + 0x28) = arena<void>(0x800);
+                             for (int i = 0; i < 4; i++) arena<uint32_t>(0x800)[i] = r.range(0, 1) ? r.next() | 1 : 0;
+                             arena<uint32_t>(0x900)[0] = r.next();
+                         },
+                         [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[2])}; }};
+    w2b_ensure_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x40b550, (void *)w2b_stub_find}, {0xcea320, (void *)w2b_stub_find}, {0xbcdfc0, (void *)w2b_stub_alloc}});
+    };
+    w2b_ensure_test.finish = w2_unstub;
+    quick(w2b_ensure_test);
+    // Quarter::Has: each index, with something there and nothing there, in each copy's place
+    Test w2b_has_test{0xb356b0,
+                      [=](Rng &r) {
+                          w2_values(r);
+                          *(int32_t *)(arena<uint8_t>(0x100) + 0xa4) = r.range(0, 4);
+                          *(void **)(arena<uint8_t>(0x800) + 0x54) = arena<void>(0x880);
+                          for (int i = 0; i < 4; i++) {
+                              *(void **)(arena<uint8_t>(0x880) + 0x18 + i * 4) = arena<void>(0x900 + i * 0x40);
+                              *(uint32_t *)(arena<uint8_t>(0x900 + i * 0x40) + 0x44) = r.range(0, 1) ? r.next() | 0x100 : 0;
+                              *(uint32_t *)(arena<uint8_t>(0x900 + i * 0x40) + 0x48) = r.range(0, 1) ? r.next() | 0x100 : 0;
+                          }
+                      },
+                      [](void *fn) { return Result{((uint8_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2b_has_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb44970, (void *)w2b_stub_root}}); };
+    w2b_has_test.finish = w2_unstub;
+    quick(w2b_has_test);
+    // Judge::Act: not ready, not allowed, and each verdict
+    Test w2b_judge_test{0x7a0f50,
+                        [=](Rng &r) {
+                            w2_values(r);
+                            arena<uint32_t>(0x20)[0] = (r.next() & ~0xffu) | (uint32_t)(r.range(0, 3) ? 1 : 0);
+                            arena<uint8_t>(0x100)[0x408] = (uint8_t)r.range(0, 3);
+                        },
+                        [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[2])}; }};
+    w2b_judge_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x79ff40, (void *)w2b_stub_check1}, {0x7c4970, (void *)w2b_stub_verdict}, {0x7a0030, (void *)w2_stub_one}, {0x7a0000, (void *)w2_stub_timed_update}});
+    };
+    w2b_judge_test.finish = w2_unstub;
+    quick(w2b_judge_test);
+    // Cached::Pass: already looked up; looked up with a source; looked up without one
+    static uint32_t g_w2b_seen;
+    static void *w2b_target_table[0x49];
+    Test w2b_cached_test{0xa80240,
+                         [=](Rng &r) {
+                             w2_values(r);
+                             w2b_target_table[0x48] = (void *)w2_stub_one;
+                             uint8_t *self = arena<uint8_t>(0x100);
+                             *(uint32_t *)(self + g_w2b_seen) = (uint32_t)r.range(0, 1);
+                             *(uint32_t *)(self + g_w2b_seen - 4) = r.next();
+                             *(void **)(self + g_w2b_seen - 0x14) = arena<void>(0x800);
+                             *(void **)(self + g_w2b_seen + 4) = arena<void>(0x900);
+                             arena<void *>(0x900)[0] = w2b_target_table;
+                             arena<void *>(0x800)[3] = r.range(0, 2) ? arena<void>(0x880) : nullptr;
+                         },
+                         [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2b_cached_test.prepare = [](const rewrite::Entry *e) {
+        g_w2b_seen = *(uint32_t *)(e->at + 5);
+        stubs_for_now({{0x4a8700, (void *)w2_stub_plain_update}, {0xb85520, (void *)w2_stub_plain_update}});
+    };
+    w2b_cached_test.finish = w2_unstub;
+    quick(w2b_cached_test);
