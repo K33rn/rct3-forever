@@ -2067,3 +2067,121 @@ template <uint32_t SIZE, uint32_t MAKE, uint32_t COPY> static uint32_t __thiscal
 }
 REWRITE("Array::Resize430690", 0x430690, w2c_seh_late, (&w2d_resize<0x70, 0x42f2f0, 0x42f9b0>), &g_w2d_resize);
 REWRITE("Array::Resize430690", 0x9e1ab0, w2c_seh_late, (&w2d_resize<0x44, 0x9e1330, 0x9e1340>), &g_w2d_resize);
+
+// ======== fifth pass (w2e) ========
+#include <xmmintrin.h>
+
+// ---- Mesh::Transform: count vertices of 0x24 bytes moved through a 4x4 matrix: the position gets the
+// translation, the normal only the rotation; the colour is replaced and the last two words copied --------
+static volatile long g_w2e_transform;
+static const uint8_t w2e_transform_original[] = {0x55, 0x8b, 0xec, 0x56, 0x57, 0x8b, 0x45, 0x14};
+__attribute__((target("sse"))) static void __cdecl w2e_transform(uint8_t *dst, const uint8_t *src, int32_t count, const float *m, uint32_t colour) {
+    g_w2e_transform++;
+    do {
+        const float *p = (const float *)src;
+        float *o = (float *)dst;
+        for (int c = 0; c < 3; c++) {
+            __m128 pos = _mm_mul_ss(_mm_set_ss(p[0]), _mm_set_ss(m[c]));
+            __m128 nrm = _mm_mul_ss(_mm_set_ss(p[3]), _mm_set_ss(m[c]));
+            pos = _mm_add_ss(pos, _mm_mul_ss(_mm_set_ss(p[1]), _mm_set_ss(m[4 + c])));
+            nrm = _mm_add_ss(nrm, _mm_mul_ss(_mm_set_ss(p[4]), _mm_set_ss(m[4 + c])));
+            pos = _mm_add_ss(pos, _mm_mul_ss(_mm_set_ss(p[2]), _mm_set_ss(m[8 + c])));
+            nrm = _mm_add_ss(nrm, _mm_mul_ss(_mm_set_ss(p[5]), _mm_set_ss(m[8 + c])));
+            pos = _mm_add_ss(pos, _mm_set_ss(m[12 + c]));
+            _mm_store_ss(o + c, pos);
+            _mm_store_ss(o + 3 + c, nrm);
+        }
+        w2c_u32(dst, 0x18) = colour;
+        w2c_u32(dst, 0x1c) = *(const uint32_t *)(src + 0x1c);
+        w2c_u32(dst, 0x20) = *(const uint32_t *)(src + 0x20);
+        src += 0x24;
+        dst += 0x24;
+    } while (--count);
+}
+REWRITE("Mesh::Transform856830", 0x856830, w2e_transform_original, w2e_transform, &g_w2e_transform);
+REWRITE("Mesh::Transform856830", 0x97abd0, w2e_transform_original, w2e_transform, &g_w2e_transform);
+
+// ---- Gfx::CreateC03D20: asks the device (self+4) for a resource of the given size, with two levels when the
+// global switch is on; on success the made handle goes to desc+0x14, on "invalid call" that slot is cleared -------
+static volatile long g_w2e_create;
+static const uint8_t w2e_create_original[] = {0x8a, 0x15, 0x70, 0x31, 0x3d, 0x01, 0x53};
+template <uint32_t KIND> static int32_t __thiscall w2e_create(uint8_t *self, uint8_t *desc, uint32_t size) {
+    g_w2e_create++;
+    uint32_t levels = *(volatile uint8_t *)0x13d3170 ? 2 : 1;
+    void **device = *(void ***)(self + 4);
+    uint32_t made = (uint32_t)(uintptr_t)desc; // the argument slot doubles as the out value
+    uint32_t format = ((uint32_t(__fastcall *)(uint32_t))0xbd3c60)(w2c_u32(desc, 0xc));
+    typedef int32_t(__stdcall * Make)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t *);
+    int32_t hr = ((Make)(*(void ***)device)[11])(device, size, levels, format, KIND, 1, &made);
+    if (hr == (int32_t)0x8876086a) w2c_u32(desc, 0x14) = 0;
+    else if (hr == 0) w2c_u32(desc, 0x14) = made;
+    return hr;
+}
+REWRITE("Gfx::CreateC03D20", 0xc03d20, w2e_create_original, (&w2e_create<1>), &g_w2e_create);
+REWRITE("Gfx::CreateC03D20", 0xc03d90, w2e_create_original, (&w2e_create<0>), &g_w2e_create);
+
+// ---- View::ApplyTransform630250: inside a device begin/end pair, hands the device the matrix built from the
+// transform at self+OFF, then tells the camera singleton about that transform ---------------------------------
+static volatile long g_w2e_apply;
+static const uint8_t w2e_apply_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44};
+template <uint32_t OFF> static void __fastcall w2e_apply(uint8_t *self) {
+    g_w2e_apply++;
+    void **device = *(void ***)0x13d0db8;
+    typedef void(__thiscall * Bracket)(void *);
+    ((Bracket)(*(void ***)device)[14])(device);
+    uint8_t *transform = self + OFF;
+    alignas(16) uint8_t matrix[0x40];
+    void *built = ((void *(__thiscall *)(void *, void *))0xcd78a0)(transform, matrix);
+    ((void(__thiscall *)(void *, uint32_t, void *))(*(void ***)device)[46])(device, 1, built);
+    uint8_t *camera = *(uint8_t **)0x12f018c;
+    ((void(__thiscall *)(void *, void *, void *))0x480f80)(camera, transform, camera + 4);
+    ((Bracket)(*(void ***)device)[14])(device);
+}
+REWRITE("View::ApplyTransform630250", 0x630250, w2e_apply_original, (&w2e_apply<0x110>), &g_w2e_apply);
+REWRITE("View::ApplyTransform630250", 0x9f6b80, w2e_apply_original, (&w2e_apply<0xe0>), &g_w2e_apply);
+
+// ---- Node::Ctor661AB0: builds the base part with the given context (or the default one when none), the
+// owner and a slot PICKed from the owner for the shared table at OFF, then sets this class's six vtables ---------
+static volatile long g_w2e_ctor;
+static const uint8_t w2e_ctor_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x85, 0xdb, 0x56, 0x57};
+template <uint32_t DEFAULT, uint32_t FLAG, uint32_t OFF, uint32_t PICK, uint32_t V0, uint32_t V4, uint32_t V10, uint32_t V14, uint32_t V18, uint32_t VC8>
+static uint8_t *__thiscall w2e_ctor(uint8_t *self, uint32_t context, void *owner) {
+    g_w2e_ctor++;
+    if (!context) context = *(uint32_t *)DEFAULT;
+    uintptr_t table = ((uintptr_t(__fastcall *)(uint32_t, uint32_t))0x8749e0)(0, 0);
+    uint32_t slot = ((uint32_t(__thiscall *)(void *, uintptr_t, uint32_t))PICK)(owner, table + OFF, FLAG);
+    ((void(__thiscall *)(void *, uint32_t, void *, uint32_t))0x6610f0)(self, context, owner, slot);
+    w2c_u32(self, 0) = V0;
+    w2c_u32(self, 4) = V4;
+    w2c_u32(self, 0x10) = V10;
+    w2c_u32(self, 0x14) = V14;
+    w2c_u32(self, 0x18) = V18;
+    w2c_u32(self, 0xc8) = VC8;
+    return self;
+}
+REWRITE("Node::Ctor661AB0", 0x661ab0, w2e_ctor_original, (&w2e_ctor<0x12f80f8, 1, 0x1b0, 0x6616d0, 0xf4e3c0, 0xf4e3b8, 0xf4e3a8, 0xf4e3a0, 0xf4e398, 0xf4e390>), &g_w2e_ctor);
+REWRITE("Node::Ctor661AB0", 0x661b80, w2e_ctor_original, (&w2e_ctor<0x12f80f4, 0, 0x1c8, 0x6618c0, 0xf4e3fc, 0xf4e3f4, 0xf4e3e4, 0xf4e3dc, 0xf4e3d4, 0xf4e3cc>), &g_w2e_ctor);
+
+// ---- Batch::Flush5DEE90: for every record (0x1c bytes, array at self+ARR, count at self+ARR+4) and every key in
+// the list at 0xe4 (count 0xe8), asks the shared interface (ref at 0x50) for the entry of that key and the record's
+// target interface, and SENDs it; each record is then finished, and the array emptied at the end ------------------
+static volatile long g_w2e_flush;
+static const uint8_t w2e_flush_original[] = {0x83, 0xec, 0x08, 0x57, 0x8b, 0xf9, 0x8b, 0x8f};
+template <uint32_t ARR, uint32_t SEND> static void __fastcall w2e_flush(uint8_t *self) {
+    g_w2e_flush++;
+    for (int32_t i = 0; i < (int32_t)w2c_u32(self, ARR + 4); i++) {
+        for (int32_t k = 0; k < (int32_t)w2c_u32(self, 0xe8); k++) {
+            uint8_t *record = *(uint8_t **)(self + ARR) + i * 0x1c;
+            void *target = ref_interface<0x12f537c>(record);
+            void *shared = ref_interface<0x12f54e0>(self + 0x50);
+            void *list = ((void *(__fastcall *)(void *))0x59acc0)(shared);
+            uint32_t key = (*(uint32_t **)(self + 0xe4))[k];
+            void *entry = ((void *(__thiscall *)(void *, uint32_t, void *))0x5a7300)(list, key, target);
+            ((void(__thiscall *)(void *))SEND)(entry);
+        }
+        ((void(__thiscall *)(void *))0x5aaa50)(*(uint8_t **)(self + ARR) + i * 0x1c);
+    }
+    ((void(__thiscall *)(void *, uint32_t))0x5aec30)(self + ARR, 0);
+}
+REWRITE("Batch::Flush5DEE90", 0x5dee90, w2e_flush_original, (&w2e_flush<0xec, 0x56a1b0>), &g_w2e_flush);
+REWRITE("Batch::Flush5DEE90", 0x5df360, w2e_flush_original, (&w2e_flush<0xf4, 0x56a400>), &g_w2e_flush);
