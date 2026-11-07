@@ -176,3 +176,31 @@ static uint32_t __cdecl w3b_stub_use(uint8_t *text) {
     record(0x7b18, (void *)(uintptr_t)text[0]);
     return arena<uint32_t>(0x24)[0];
 }
+
+static uint32_t __fastcall w3b_stub_try(uint32_t kind, uint32_t which, uint32_t a, uint32_t b) {
+    record(0x7b20, (void *)(uintptr_t)kind); record(0x7b20, (void *)(uintptr_t)(which & 0xff));
+    record(0x7b20, (void *)(uintptr_t)a); record(0x7b20, (void *)(uintptr_t)b);
+    return arena<int32_t>(0x28)[0]-- == 0 ? arena<uint32_t>(0x24)[0] : 0;
+}
+static uint32_t __thiscall w3b_stub_run(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t f, uint32_t g, uint32_t h, uint32_t i) {
+    record(0x7b21, self);
+    for (uint32_t v : {a, b, c, d, e, f, g, h, i}) record(0x7b21, (void *)(uintptr_t)v);
+    return arena<uint32_t>(0x24)[0];
+}
+static void *__fastcall w3b_stub_message(uint32_t kind, uint32_t low) {
+    record(0x7b22, (void *)(uintptr_t)kind);
+    record(0x7b22, (void *)(uintptr_t)(low & 0xff));
+    return arena<void>(0x300);
+}
+static void *__fastcall w3b_stub_queue(void *self) { record(0x7b23, self); return arena<void>(0x340); }
+static void *__cdecl w3b_stub_models() { return arena<void>(0x700); }
+static void *__thiscall w3b_stub_model(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x7b24, self);
+    for (uint32_t v : {a, b, c, d}) record(0x7b24, (void *)(uintptr_t)v);
+    return arena<void>(0x720);
+}
+static void __thiscall w3b_stub_draw(void *self, void *item, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x7b25, self); record(0x7b25, item);
+    for (uint32_t v : {a, b, c, d}) record(0x7b25, (void *)(uintptr_t)v);
+}
+static void __thiscall w3b_stub_state(void *self, uint32_t a, uint32_t b) { record(0x7b26, self); record(0x7b26, (void *)(uintptr_t)a); record(0x7b26, (void *)(uintptr_t)b); }

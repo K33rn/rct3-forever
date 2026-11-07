@@ -1338,3 +1338,87 @@ template <uintptr_t USE> static uint32_t __thiscall w3b_text_use(void *, uint8_t
 static const uint8_t w3b_text_use_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x8b, 0x06};
 REWRITE("Text::UseC57A80", 0xc57a80, w3b_text_use_original, (&w3b_text_use<0xde0dfd>), &g_w3b_text_use);
 REWRITE("Text::UseC57A80", 0xc57ac0, w3b_text_use_original, (&w3b_text_use<0xe04588>), &g_w3b_text_use);
+
+// ---- Try::Both: tries one of two ways and, if it gives nothing, the other; kind says which goes first ---------------------
+static volatile long g_w3b_try_both;
+template <uintptr_t TRY> static uint32_t __fastcall w3b_try_both(uint32_t kind, uint32_t first, uint32_t second, uint32_t a, uint32_t b) {
+    g_w3b_try_both++;
+    auto attempt = (uint32_t(__fastcall *)(uint32_t, uint32_t, uint32_t, uint32_t))TRY;
+    if (kind > 1) return 0;
+    uint32_t found = kind ? attempt(1, (uint8_t)second, a, b) : attempt(0, (uint8_t)first, a, b);
+    if (found) return found;
+    return kind ? attempt(0, (uint8_t)first, a, b) : attempt(1, (uint8_t)second, a, b);
+}
+static const uint8_t w3b_try_both_original[] = {0x83, 0xe9, 0x00, 0x53, 0x56, 0x57, 0x8a, 0xda};
+REWRITE("Try::Both4CC090", 0x4cc090, w3b_try_both_original, (&w3b_try_both<0x4cbaa0>), &g_w3b_try_both);
+REWRITE("Try::Both4CC090", 0x78a210, w3b_try_both_original, (&w3b_try_both<0x7895a0>), &g_w3b_try_both);
+
+// ---- Object::Attach: registers an object, then points the owner at its interface (or at nothing) ----------------------------
+static volatile long g_w3b_attach;
+template <uintptr_t ID, uint32_t BACK, uintptr_t SET> static uint32_t __thiscall w3b_attach(uint8_t *self, void *object) {
+    g_w3b_attach++;
+    ((void(__thiscall *)(void *, void *))0x501f80)(self, object);
+    return ((uint32_t(__thiscall *)(void *, void *, uint32_t))SET)(self - BACK, w3_interface_of(object, (const int32_t *)ID), 0);
+}
+static const uint8_t w3b_attach_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x57, 0x56, 0x8b, 0xf9};
+REWRITE("Object::Attach8BA370", 0x8ba370, w3b_attach_original, (&w3b_attach<0x13112f0, 0xc, 0x8b9fe0>), &g_w3b_attach);
+REWRITE("Object::Attach8BA370", 0xb74130, w3b_attach_original, (&w3b_attach<0x13ce968, 0x18, 0xb72120>), &g_w3b_attach);
+
+// ---- Stored::Run: runs the worker with the six stored values, the one before them, and the two sides' kinds ------------------
+static volatile long g_w3b_run;
+template <uint32_t VALUES, uintptr_t RUN> static uint32_t __fastcall w3b_run(uint8_t *self) {
+    g_w3b_run++;
+    uint32_t *v = (uint32_t *)(self + VALUES);
+    uint32_t left = (*(uint8_t **)(self + 0x124))[0x13c], right = (*(uint8_t **)(self + 0x128))[0x13c];
+    return ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))RUN)(
+        *(void **)(self + 0x12c), v[0], v[1], v[2], v[3], v[4], v[5], v[-1], left, right);
+}
+static const uint8_t w3b_run_original[] = {0x8b, 0x81, 0x28, 0x01, 0x00, 0x00, 0x33, 0xd2};
+REWRITE("Stored::Run4B76F0", 0x4b76f0, w3b_run_original, (&w3b_run<0x140, 0x4ca6e0>), &g_w3b_run);
+REWRITE("Stored::Run4B76F0", 0x7705f0, w3b_run_original, (&w3b_run<0x138, 0x7888d0>), &g_w3b_run);
+
+// ---- Turn::Finish: marks the turn over and, if one was pending, ends it and queues a message; then sets the state -------------
+static volatile long g_w3b_finish;
+template <uint32_t PENDING, uint32_t KIND, uint32_t STATE> static void __thiscall w3b_finish(uint8_t *self, uint32_t) {
+    g_w3b_finish++;
+    self[0xe1] = 1;
+    if (self[PENDING]) {
+        ((void(__fastcall *)(void *))0xb1fb50)(self);
+        self[PENDING] = 0;
+        void *message = ((void *(__fastcall *)(uint32_t, uint32_t))0xb7e830)(KIND, 0);
+        ((void(__thiscall *)(void *, uint32_t))(*(void ***)message)[0x50 / 4])(message, 1);
+        void *queue = ((void *(__fastcall *)(void *))0xb7a5a0)(self);
+        ((void(__thiscall *)(void *, void *))0xb47380)(queue, message);
+    }
+    *(uint32_t *)(self + 0x78) = STATE;
+}
+static const uint8_t w3b_finish_original[] = {0x56, 0x8b, 0xf1, 0x8a, 0x86};
+REWRITE("Turn::FinishB1FD30", 0xb1fd30, w3b_finish_original, (&w3b_finish<0xec, 4, 0xd>), &g_w3b_finish);
+REWRITE("Turn::FinishB1FD30", 0xb1fe20, w3b_finish_original, (&w3b_finish<0xee, 8, 0xf>), &g_w3b_finish);
+
+// ---- Items::DrawAll: draws every item with its model and fade (a fade of 1.0 when it has none), in a device state for debugging ---
+static volatile long g_w3b_draw_all;
+static inline void w3b_debug_state(uint32_t value) {
+    uint8_t *settings = *(uint8_t **)(*(uint8_t **)0x12f018c + 0x24);
+    if (!settings[2]) return;
+    void **device = *(void ***)0x13d0db8;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))(*(void ***)device)[0xa4 / 4])(device, 5, value);
+}
+template <uint32_t TARGET> static void __thiscall w3b_draw_all(uint8_t *self, uint8_t **items, int32_t count) {
+    g_w3b_draw_all++;
+    w3b_debug_state(2);
+    for (int32_t i = 0; i < count; i++) {
+        uint8_t *item = items[i];
+        void *models = ((void *(__cdecl *)())0xcec500)();
+        void *model = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))0xcec090)(
+            models, *(uint32_t *)(item + 0x60), *(uint32_t *)(item + 0x64), 0, 0x10f2fa0);
+        uint32_t fades = item[0x89] ? 1 : 0;
+        uint32_t fade = fades ? *(uint32_t *)(item + 0x8c) : 0x3f800000;
+        ((void(__thiscall *)(void *, void *, uint32_t, uint32_t, uint32_t, uint32_t))0xcf0c00)(
+            model, item + 0x20, *(uint32_t *)(item + 0x68), *(uint32_t *)(self + TARGET), fades, fade);
+    }
+    w3b_debug_state(3);
+}
+static const uint8_t w3b_draw_all_original[] = {0xa1, 0x8c, 0x01, 0x2f, 0x01, 0x53, 0x8b, 0xd9};
+REWRITE("Items::DrawAll974900", 0x974900, w3b_draw_all_original, (&w3b_draw_all<0x54>), &g_w3b_draw_all);
+REWRITE("Items::DrawAll974900", 0x9797c0, w3b_draw_all_original, (&w3b_draw_all<0x18>), &g_w3b_draw_all);
