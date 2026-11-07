@@ -1501,3 +1501,55 @@
                 stubs_for_now({{0xbce010, (void *)w2c_free<0xe2d7>}, {0xbcdfd0, (void *)w2d_alloc_always}, {0x402b90, (void *)w2d_vector_make},
                                {w2c_target(e->at, 0x9c), (void *)w2c_s1<0xe2d5>}});
             });
+    // ======== fifth pass (w2e) ========
+    // Mesh::Transform: one to four vertices of finite floats through a finite matrix
+    w2c_add(0x856830,
+            [=](Rng &r) {
+                w2c_seed(r);
+                for (int i = 0; i < 16; i++) arena<uint32_t>(0x200)[i] = r.next() & 0xbfffffff;
+                for (int i = 0; i < 4 * 9; i++) arena<uint32_t>(0x300)[i] = r.next() & 0xbfffffff;
+            },
+            [](void *fn) {
+                ((void(__cdecl *)(void *, void *, int32_t, void *, uint32_t))fn)(arena<void>(0x500), arena<void>(0x300), 1 + arena<uint32_t>(0x20)[0] % 4,
+                                                                                 arena<void>(0x200), arena<uint32_t>(0x20)[1]);
+                return Result{};
+            },
+            [](const rewrite::Entry *) {});
+    // Gfx::Create: switch on or off; the device says ok, invalid call or another failure
+    w2c_add(0xc03d20,
+            [=](Rng &r) {
+                w2c_seed(r);
+                arena<void *>(0x100)[1] = arena<void>(0x300);
+                arena<void *>(0x300)[0] = arena<void>(0x400);
+                arena<void *>(0x400)[11] = (void *)w2e_dev_make;
+                for (int i = 0; i < 8; i++) arena<uint32_t>(0x200)[i] = r.next();
+            },
+            [](void *fn) {
+                volatile uint8_t *flag = (volatile uint8_t *)0x13d3170;
+                uint8_t was = *flag;
+                *flag = arena<uint32_t>(0x20)[2] & 1 ? (uint8_t)(arena<uint32_t>(0x20)[2] >> 8 | 1) : 0;
+                Result out{((uint32_t(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x200), arena<uint32_t>(0x20)[0])};
+                *flag = was;
+                return out;
+            },
+            [](const rewrite::Entry *) { stubs_for_now({{0xbd3c60, (void *)w2c_s0<0xe2f3>}}); });
+    // View::ApplyTransform: the matrix handed back is the caller's buffer or a kept one
+    w2c_add(0x630250,
+            [=](Rng &r) {
+                w2c_seed(r);
+                for (int i = 0; i < 0x58; i++) arena<uint32_t>(0x100)[i] = r.next();
+                for (int i = 0; i < 16; i++) arena<uint32_t>(0x600)[i] = r.next();
+                arena<void *>(0x300)[0] = arena<void>(0x400);
+                arena<void *>(0x400)[14] = (void *)w2c_s0<0xe2f4>;
+                arena<void *>(0x400)[46] = (void *)w2e_dev_matrix;
+            },
+            [](void *fn) {
+                void *was_dev = *(void **)0x13d0db8, *was_cam = *(void **)0x12f018c;
+                *(void **)0x13d0db8 = arena<void>(0x300);
+                *(void **)0x12f018c = arena<void>(0x700);
+                ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
+                *(void **)0x13d0db8 = was_dev;
+                *(void **)0x12f018c = was_cam;
+                return Result{};
+            },
+            [](const rewrite::Entry *) { stubs_for_now({{0xcd78a0, (void *)w2e_make_matrix}, {0x480f80, (void *)w2c_s2<0xe2f5>}}); });

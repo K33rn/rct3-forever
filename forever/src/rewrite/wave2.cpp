@@ -2067,3 +2067,75 @@ template <uint32_t SIZE, uint32_t MAKE, uint32_t COPY> static uint32_t __thiscal
 }
 REWRITE("Array::Resize430690", 0x430690, w2c_seh_late, (&w2d_resize<0x70, 0x42f2f0, 0x42f9b0>), &g_w2d_resize);
 REWRITE("Array::Resize430690", 0x9e1ab0, w2c_seh_late, (&w2d_resize<0x44, 0x9e1330, 0x9e1340>), &g_w2d_resize);
+
+// ======== fifth pass (w2e) ========
+#include <xmmintrin.h>
+
+// ---- Mesh::Transform: count vertices of 0x24 bytes moved through a 4x4 matrix: the position gets the
+// translation, the normal only the rotation; the colour is replaced and the last two words copied --------
+static volatile long g_w2e_transform;
+static const uint8_t w2e_transform_original[] = {0x55, 0x8b, 0xec, 0x56, 0x57, 0x8b, 0x45, 0x14};
+__attribute__((target("sse"))) static void __cdecl w2e_transform(uint8_t *dst, const uint8_t *src, int32_t count, const float *m, uint32_t colour) {
+    g_w2e_transform++;
+    do {
+        const float *p = (const float *)src;
+        float *o = (float *)dst;
+        for (int c = 0; c < 3; c++) {
+            __m128 pos = _mm_mul_ss(_mm_set_ss(p[0]), _mm_set_ss(m[c]));
+            __m128 nrm = _mm_mul_ss(_mm_set_ss(p[3]), _mm_set_ss(m[c]));
+            pos = _mm_add_ss(pos, _mm_mul_ss(_mm_set_ss(p[1]), _mm_set_ss(m[4 + c])));
+            nrm = _mm_add_ss(nrm, _mm_mul_ss(_mm_set_ss(p[4]), _mm_set_ss(m[4 + c])));
+            pos = _mm_add_ss(pos, _mm_mul_ss(_mm_set_ss(p[2]), _mm_set_ss(m[8 + c])));
+            nrm = _mm_add_ss(nrm, _mm_mul_ss(_mm_set_ss(p[5]), _mm_set_ss(m[8 + c])));
+            pos = _mm_add_ss(pos, _mm_set_ss(m[12 + c]));
+            _mm_store_ss(o + c, pos);
+            _mm_store_ss(o + 3 + c, nrm);
+        }
+        w2c_u32(dst, 0x18) = colour;
+        w2c_u32(dst, 0x1c) = *(const uint32_t *)(src + 0x1c);
+        w2c_u32(dst, 0x20) = *(const uint32_t *)(src + 0x20);
+        src += 0x24;
+        dst += 0x24;
+    } while (--count);
+}
+REWRITE("Mesh::Transform856830", 0x856830, w2e_transform_original, w2e_transform, &g_w2e_transform);
+REWRITE("Mesh::Transform856830", 0x97abd0, w2e_transform_original, w2e_transform, &g_w2e_transform);
+
+// ---- Gfx::CreateC03D20: asks the device (self+4) for a resource of the given size, with two levels when the
+// global switch is on; on success the made handle goes to desc+0x14, on "invalid call" that slot is cleared -------
+static volatile long g_w2e_create;
+static const uint8_t w2e_create_original[] = {0x8a, 0x15, 0x70, 0x31, 0x3d, 0x01, 0x53};
+template <uint32_t KIND> static int32_t __thiscall w2e_create(uint8_t *self, uint8_t *desc, uint32_t size) {
+    g_w2e_create++;
+    uint32_t levels = *(volatile uint8_t *)0x13d3170 ? 2 : 1;
+    void **device = *(void ***)(self + 4);
+    uint32_t made = (uint32_t)(uintptr_t)desc; // the argument slot doubles as the out value
+    uint32_t format = ((uint32_t(__fastcall *)(uint32_t))0xbd3c60)(w2c_u32(desc, 0xc));
+    typedef int32_t(__stdcall * Make)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t *);
+    int32_t hr = ((Make)(*(void ***)device)[11])(device, size, levels, format, KIND, 1, &made);
+    if (hr == (int32_t)0x8876086a) w2c_u32(desc, 0x14) = 0;
+    else if (hr == 0) w2c_u32(desc, 0x14) = made;
+    return hr;
+}
+REWRITE("Gfx::CreateC03D20", 0xc03d20, w2e_create_original, (&w2e_create<1>), &g_w2e_create);
+REWRITE("Gfx::CreateC03D20", 0xc03d90, w2e_create_original, (&w2e_create<0>), &g_w2e_create);
+
+// ---- View::ApplyTransform630250: inside a device begin/end pair, hands the device the matrix built from the
+// transform at self+OFF, then tells the camera singleton about that transform ---------------------------------
+static volatile long g_w2e_apply;
+static const uint8_t w2e_apply_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44};
+template <uint32_t OFF> static void __fastcall w2e_apply(uint8_t *self) {
+    g_w2e_apply++;
+    void **device = *(void ***)0x13d0db8;
+    typedef void(__thiscall * Bracket)(void *);
+    ((Bracket)(*(void ***)device)[14])(device);
+    uint8_t *transform = self + OFF;
+    alignas(16) uint8_t matrix[0x40];
+    void *built = ((void *(__thiscall *)(void *, void *))0xcd78a0)(transform, matrix);
+    ((void(__thiscall *)(void *, uint32_t, void *))(*(void ***)device)[46])(device, 1, built);
+    uint8_t *camera = *(uint8_t **)0x12f018c;
+    ((void(__thiscall *)(void *, void *, void *))0x480f80)(camera, transform, camera + 4);
+    ((Bracket)(*(void ***)device)[14])(device);
+}
+REWRITE("View::ApplyTransform630250", 0x630250, w2e_apply_original, (&w2e_apply<0x110>), &g_w2e_apply);
+REWRITE("View::ApplyTransform630250", 0x9f6b80, w2e_apply_original, (&w2e_apply<0xe0>), &g_w2e_apply);

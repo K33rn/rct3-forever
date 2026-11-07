@@ -367,3 +367,29 @@ static void *__fastcall w2d_queue_next(uint8_t *queue) {
     if (taken >= arena<uint32_t>(0x20)[which] % 4) return nullptr;
     return arena<uint8_t>(which ? 0x600 : 0x300) + 0x40 * taken++;
 }
+// ======== fifth pass (w2e) ========
+// device slot 11: records what it was asked and what the out slot held, makes a handle, answers ok / invalid call / other
+static int32_t __stdcall w2e_dev_make(void *dev, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t *out) {
+    record(0xe2f0, dev);
+    W2C_REC(0xe2f0, a);
+    W2C_REC(0xe2f0, b);
+    W2C_REC(0xe2f0, c);
+    W2C_REC(0xe2f0, d);
+    W2C_REC(0xe2f0, e);
+    W2C_REC(0xe2f0, *out);
+    *out = W2C_RET ^ 0x5a5a;
+    uint32_t pick = arena<uint32_t>(0x20)[4] % 3;
+    return pick == 0 ? 0 : pick == 1 ? (int32_t)0x8876086a : (int32_t)0x80004005;
+}
+// builds a matrix into the caller's buffer and hands back either it or one kept at 0x600
+static void *__thiscall w2e_make_matrix(uint32_t *transform, uint32_t *out) {
+    record(0xe2f1, transform);
+    for (int i = 0; i < 16; i++) out[i] = transform[i] + i * W2C_RET;
+    return arena<uint32_t>(0x20)[5] & 1 ? (void *)out : arena<void>(0x600);
+}
+// device slot 46: records the matrix contents, never the (stack) pointer
+static void __thiscall w2e_dev_matrix(void *dev, uint32_t kind, uint32_t *m) {
+    record(0xe2f2, dev);
+    W2C_REC(0xe2f2, kind);
+    for (int i = 0; i < 16; i++) W2C_REC(0xe2f2, m[i]);
+}
