@@ -4250,6 +4250,10 @@ static std::vector<Test> tests() {
     Test set_fields{0x41f910, copy_fields.setup,
                     [](void *fn) { return Result{(uint32_t)((uintptr_t)((void *(__thiscall *)(void *))fn)(arena<void>(0x2000)) - (uintptr_t)arena<void>(0))}; }};
     quick(set_fields);
+    Test copy_ranges{0x445440, copy_fields.setup, copy_fields.call};
+    quick(copy_ranges);
+    Test set_ranges{0x8defc0, copy_fields.setup, set_fields.call};
+    quick(set_ranges);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
