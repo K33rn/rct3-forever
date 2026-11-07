@@ -206,3 +206,62 @@ static void __thiscall w3b_stub_draw(void *self, void *item, uint32_t a, uint32_
 static void __thiscall w3b_stub_state(void *self, uint32_t a, uint32_t b) { record(0x7b26, self); record(0x7b26, (void *)(uintptr_t)a); record(0x7b26, (void *)(uintptr_t)b); }
 
 static uint32_t __fastcall w3b_stub_row(uint8_t *row) { record(0x7b30, row); return 0xabcd00 | row[0]; }
+
+static void __cdecl w3c_stub_free(void *block) { record(0xbce000, block); }
+static void __cdecl w3c_stub_free_aligned(void *block) { record(0xbce010, block); }
+static void __thiscall w3c_stub_delete0(void *self, uint32_t flag) { record(0x7c00, self); record(0x7c00, (void *)(uintptr_t)flag); }
+static void __thiscall w3c_stub_delete1(void *self, uint32_t flag) { record(0x7c01, self); record(0x7c01, (void *)(uintptr_t)flag); }
+static void *w3c_delete_table[2] = {(void *)w3c_stub_delete0, (void *)w3c_stub_delete1};
+static void __stdcall w3c_stub_each(void *first, uint32_t size, uint32_t count, void *fn) {
+    record(0x7c02, first);
+    record(0x7c02, (void *)(uintptr_t)size);
+    record(0x7c02, (void *)(uintptr_t)count);
+    record(0x7c02, fn);
+}
+static void __fastcall w3c_stub_base_a(void *self) { record(0x7c03, self); }
+static void __fastcall w3c_stub_base_b(void *self) { record(0x7c04, self); }
+static void __fastcall w3c_stub_base_c(void *self) { record(0x7c05, self); }
+// the base of Selected::Dtor shows what the global held by then
+static void __fastcall w3c_stub_base_selected(void *self) { record(0x7c06, self); record(0x7c06, *(void **)0x10eeab0); }
+// leaves the list as a real entry's object would
+static void __thiscall w3c_stub_entry_gone(void *self, uint32_t flag) {
+    record(0x7c07, self);
+    record(0x7c07, (void *)(uintptr_t)flag);
+    arena<uint32_t>(0x800)[2]--;
+}
+static void *w3c_gone_table[1] = {(void *)w3c_stub_entry_gone};
+static void __thiscall w3c_stub_bind(void *self, uint32_t *key, uint32_t **made) {
+    record(0x7fbf50, self);
+    record(0x7fbf50, (void *)(uintptr_t)*key);
+    record(0x7fbf50, *made);
+    record(0x7fbf50, (void *)(uintptr_t)(*made)[0]);
+    record(0x7fbf50, (void *)(uintptr_t)(*made)[1]);
+}
+static void *__thiscall w3c_stub_ctor2(uint8_t *self, uint32_t a, uint32_t b) {
+    record(0x7c09, self);
+    for (uint32_t v : {a, b}) record(0x7c09, (void *)(uintptr_t)v);
+    return self + 2;
+}
+static void *__thiscall w3c_stub_ctor3(uint8_t *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x7c0a, self);
+    for (uint32_t v : {a, b, c}) record(0x7c0a, (void *)(uintptr_t)v);
+    return self + 3;
+}
+static void *__thiscall w3c_stub_ctor4(uint8_t *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x7c0b, self);
+    for (uint32_t v : {a, b, c, d}) record(0x7c0b, (void *)(uintptr_t)v);
+    return self + 4;
+}
+// Single::Get: registers itself in the copy's global, or sometimes doesn't
+static void **w3c_single_global;
+static void __thiscall w3c_stub_single(void *self, uint32_t a) {
+    record(0x7c0c, self);
+    record(0x7c0c, (void *)(uintptr_t)a);
+    if (arena<uint32_t>(0x24)[0] & 1) *w3c_single_global = self;
+}
+static void __stdcall w3c_stub_construct(void *first, uint32_t size, uint32_t count, void *fn) {
+    record(0x402b90, first);
+    record(0x402b90, (void *)(uintptr_t)size);
+    record(0x402b90, (void *)(uintptr_t)count);
+    record(0x402b90, fn);
+}
