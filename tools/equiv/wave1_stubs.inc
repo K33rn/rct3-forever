@@ -160,3 +160,12 @@ static void *__thiscall w1d_stub_build_flags(uint8_t *self, uint32_t a, uint32_t
     return self;
 }
 static void __thiscall w1d_stub_delete(void *self, uint32_t flag) { record(0x250, self); record(0x250, (void *)(uintptr_t)flag); }
+static uint32_t w1d_modes[4];   // the copy's four modes
+static uint32_t __thiscall w1d_stub_owner(void *self, void *who) {
+    record(0x251, self); record(0x251, who);
+    uint32_t pick = arena<uint32_t>(0x20)[2] % 3;
+    return pick == 0 ? 0 : pick == 1 ? arena<uint32_t>(0x20)[1] : arena<uint32_t>(0x20)[3];
+}
+static void __thiscall w1d_stub_switch(void *self, uint32_t code) { record(0x252, self); record(0x252, (void *)(uintptr_t)code); }
+static void *__fastcall w1d_stub_part(void *self) { record(0x253, self); return arena<uint32_t>(0x20)[0] & 1 ? arena<void>(0xa00) : nullptr; }
+static void __thiscall w1d_stub_slow(void *self, uint32_t *out, uint32_t extra) { record(0x254, self); record(0x254, (void *)(uintptr_t)extra); out[3] = extra; }

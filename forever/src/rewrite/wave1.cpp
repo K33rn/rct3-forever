@@ -1656,3 +1656,61 @@ template <uint32_t FIRST> static void __thiscall w1d_parts(uint32_t *self, uint3
 static const uint8_t w1d_parts_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x1c, 0x8b, 0x88};
 REWRITE("Parts::Drop598620", 0x598620, w1d_parts_original, (&w1d_parts<0x198>), &g_w1d_parts);
 REWRITE("Parts::Drop598620", 0x630d80, w1d_parts_original, (&w1d_parts<0x190>), &g_w1d_parts);
+
+// ---- Pairs::Resize: the old storage dropped and `count` new 8-byte items built ---------------------------------------
+static volatile long g_w1d_pair_resizes;
+template <uint32_t BUILD> static uint32_t __thiscall w1d_pair_resize(uint32_t *self, uint32_t count) {
+    g_w1d_pair_resizes++;
+    if (self[0]) {
+        memory_free_aligned((void *)(uintptr_t)self[0]);
+        self[0] = 0;
+    }
+    if (count) {
+        void *items = memory_alloc_aligned(count * 8);
+        if (items) ((void(__stdcall *)(void *, uint32_t, uint32_t, uint32_t))0x402b90)(items, 8, count, BUILD);
+        self[0] = (uint32_t)(uintptr_t)items;
+    }
+    self[1] = count;
+    return count;
+}
+REWRITE("Pairs::Resize733560", 0x733560, w1c_seh_late, (&w1d_pair_resize<0x7332e0>), &g_w1d_pair_resizes);
+REWRITE("Pairs::Resize733560", 0x99bde0, w1c_seh_late, (&w1d_pair_resize<0x402ae0>), &g_w1d_pair_resizes);
+
+// ---- Mode::Allows: whether `value` is allowed (no owner, or it is the owner) and our mode is one of the four; two of
+// those modes first switch us on with CODE ----------------------------------------------------------------------------
+static volatile long g_w1d_allows;
+template <uint32_t ID, int32_t PLAIN1, int32_t PLAIN2, int32_t SWITCH1, int32_t SWITCH2, uint32_t CODE>
+static bool __thiscall w1d_allows(uint8_t *self, uint32_t value) {
+    g_w1d_allows++;
+    void *owner_of = ref_interface<ID>(self + 0xd8);
+    uint32_t owner = ((uint32_t(__thiscall *)(void *, void *))0x5d4e20)(owner_of, self);
+    if (owner && owner != value) return false;
+    int32_t mode = *(int32_t *)(self + 0x60);
+    if (mode == PLAIN1 || mode == PLAIN2) return true;
+    if (mode != SWITCH1 && mode != SWITCH2) return false;
+    ((void(__thiscall *)(void *, uint32_t))(*(void ***)self)[13])(self, CODE);
+    return true;
+}
+static const uint8_t w1d_allows_original[] = {0x56, 0x8b, 0xf1, 0x8a, 0x86, 0xf0, 0x00};
+REWRITE("Mode::Allows563920", 0x563920, w1d_allows_original, (&w1d_allows<0x12f5638, 0x40, 0x23, 0x21, 0x24, 0x22>), &g_w1d_allows);
+REWRITE("Mode::Allows563920", 0x563bb0, w1d_allows_original, (&w1d_allows<0x12f5638, 0x42, 0x3c, 0x3a, 0x3d, 0x3b>), &g_w1d_allows);
+
+// ---- Placed::Matrix: the 64-byte transform of our placed part (through its cached interface) copied out; without a
+// part, worked out the slow way --------------------------------------------------------------------------------------------
+static volatile long g_w1d_matrices;
+template <uint32_t PART> static uint32_t *__thiscall w1d_matrix(void *self, uint32_t *out, uint32_t extra) {
+    g_w1d_matrices++;
+    if (!((void *(__fastcall *)(void *))PART)(self)) {
+        ((void(__thiscall *)(void *, uint32_t *, uint32_t))0x557ee0)(self, out, extra);
+        return out;
+    }
+    uint8_t *part = (uint8_t *)((void *(__fastcall *)(void *))PART)(self);
+    uint32_t *matrix = (uint32_t *)((uint8_t *)ref_interface<0x130b5c8>(part + 0x94) + 0xf0);
+    for (int i = 0; i < 16; i++) out[i] = matrix[i];
+    return out;
+}
+template <uint32_t AT, uint32_t TARGET> static const uint8_t w1d_matrix_original[] = {
+    0x56, 0x57, 0x8b, 0xf1, 0xe8, (uint8_t)(TARGET - (AT + 9)), (uint8_t)((TARGET - (AT + 9)) >> 8),
+    (uint8_t)((TARGET - (AT + 9)) >> 16), (uint8_t)((TARGET - (AT + 9)) >> 24)};
+REWRITE("Placed::Matrix559C20", 0x559c20, (w1d_matrix_original<0x559c20, 0x558f20>), (&w1d_matrix<0x558f20>), &g_w1d_matrices);
+REWRITE("Placed::Matrix559C20", 0x559d10, (w1d_matrix_original<0x559d10, 0x558fe0>), (&w1d_matrix<0x558fe0>), &g_w1d_matrices);
