@@ -255,3 +255,9 @@ static void *__thiscall w4d_stub_lookup(uint32_t *temporary, uint32_t name, uint
     return arena<void>(0x2300);
 }
 static void __fastcall w4d_stub_temporary_gone(uint32_t *temporary) { for (int i = 0; i < 7; i++) record(0x4d17, (void *)(uintptr_t)temporary[i]); }
+// equal (0) when the word at 0x24 is even; records the other text, not where it is held
+static int32_t __thiscall w4d_stub_compare(void *self, int32_t **other) {
+    record(0x4d18, self); record(0x4d18, *other); record(0x4d18, (void *)(uintptr_t)(*other)[0]);
+    return (int32_t)(*arena<uint32_t>(0x24) & 1);
+}
+static void *__thiscall w4d_stub_text_counted(uint32_t *p, const void *characters) { record(0x4d19, (void *)characters); p[1] = 0x4d19; return p; }

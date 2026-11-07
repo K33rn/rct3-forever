@@ -1928,3 +1928,23 @@ template <uint32_t NAME> static int32_t **__fastcall w4d_text_from_name(int32_t 
 REWRITE("Text::FromName6E5860", 0x6e5860, (w4c_seh<0xe4579c>), (&w4d_text_from_name<0xf65b74>), &g_w4d_from_names);
 REWRITE("Text::FromName6E5860", 0x6e5e00, (w4c_seh<0xe458ec>), (&w4d_text_from_name<0xf65bd0>), &g_w4d_from_names);
 REWRITE("Text::FromName6E5860", 0x6e6e40, (w4c_seh<0xe45bec>), (&w4d_text_from_name<0xf65cd8>), &g_w4d_from_names);
+
+// ---- Text::Is: does this text equal the characters? They are made into a counted text first (by MAKE, or EMPTY for null), compared with COMPARE
+// (zero means equal), and let go ------------------------------------------------------------------------------------------------------------------
+static volatile long g_w4d_text_is;
+template <uint32_t MAKE, uint32_t EMPTY, uint32_t COMPARE> static bool __thiscall w4d_text_is(void *self, const void *characters) {
+    g_w4d_text_is++;
+    int32_t *other;
+    if (characters) {
+        void *memory = memory_alloc(0x10);
+        other = memory ? ((int32_t * (__thiscall *)(void *, const void *))MAKE)(memory, characters) : nullptr;
+    } else {
+        other = ((int32_t * (__fastcall *)(uint8_t))EMPTY)(1);
+    }
+    bool same = ((int32_t(__thiscall *)(void *, int32_t **))COMPARE)(self, &other) == 0;
+    w4d_release(&other);
+    return same;
+}
+REWRITE("Text::Is403C20", 0x403c20, (w4c_seh<0xe04a73>), (&w4d_text_is<0xbcf850, 0xbd0490, 0xbce970>), &g_w4d_text_is);
+REWRITE("Text::Is403C20", 0x41c660, (w4c_seh<0xe065b3>), (&w4d_text_is<0xbcfb10, 0xbd0520, 0xbcf040>), &g_w4d_text_is);
+REWRITE("Text::Is403C20", 0x6209c0, (w4c_seh<0xe2c7e3>), (&w4d_text_is<0xbcf7d0, 0xbd0490, 0xbce970>), &g_w4d_text_is);

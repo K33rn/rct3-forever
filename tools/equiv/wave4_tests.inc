@@ -1727,3 +1727,14 @@
     };
     w4d_from_name.finish = w4c_unstub;
     quick(w4d_from_name);
+    // Text::Is: from characters or null, equal or not, the made text dropped (and freed when its count was 1)
+    Test w4d_is{0x403c20, [=](Rng &r) { w4d_texts(r); arena<uint32_t>(0xc00)[0] = r.range(1, 2); arena<uint32_t>(0x2200)[0] = r.range(1, 2); }, [](void *fn) {
+                    void *characters = *arena<uint32_t>(0x24) % 3 ? arena<void>(0x2100) : nullptr;
+                    return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x800), characters) & 0xff};
+                }};
+    w4d_is.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbce010, (void *)stub_free_aligned}, {0xbce000, (void *)stub_free}, {0xbcdfc0, (void *)w4d_stub_alloc_ok}, {w4c_target(e, 0x41), (void *)w4d_stub_text_counted},
+                       {w4c_target(e, 0x4e), (void *)w4d_stub_empty}, {w4c_target(e, 0x66), (void *)w4d_stub_compare}});
+    };
+    w4d_is.finish = w4c_unstub;
+    quick(w4d_is);
