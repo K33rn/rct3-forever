@@ -1726,3 +1726,34 @@
     };
     w3d_resize_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3d_resize_test);
+    // Entries::UpdateAll: -1 to 4 entries, each kept already or not, with or without an object, table and entry
+    static uint32_t w3d_u_slot_was;
+    Test w3d_update_test{0xa9f7e0,
+                         [=](Rng &r) {
+                             w3c_maker(r);
+                             uint8_t *self = arena<uint8_t>(0x1000);
+                             *(void **)(self + 0x24) = arena<void>(0x1200);
+                             *(int32_t *)(self + 0x28) = (int32_t)r.range(0, 5) - 1;
+                             for (int i = 0; i < 4; i++) {
+                                 uint8_t *entry = arena<uint8_t>(0x1200 + 0x1c * i);
+                                 *(void **)(entry + 4) = arena<void>(0x400 + 0x10 * i);
+                                 *(void **)arena<uint8_t>(0x40c + 0x10 * i) = r.range(0, 3) ? arena<void>(0x500) : nullptr;
+                                 *(uint32_t *)(entry + 0x14) = r.range(0, 2) ? r.next() : 0;
+                                 entry[0x18] = (uint8_t)r.range(0, 1);
+                             }
+                             *(void **)arena<uint8_t>(0x500) = w3d_stub_vt;
+                             *(int32_t *)arena<uint8_t>(0x618) = (int32_t)r.range(0, 4);
+                             *(void **)arena<uint8_t>(0x614) = arena<void>(0x680);
+                             for (int i = 0; i < 4; i++) arena<void *>(0x680)[i] = r.range(0, 2) ? arena<void>(0x800 + 0x20 * i) : nullptr;
+                             for (int i = 0; i < 16; i++) arena<uint32_t>(0x800)[i] = r.next();
+                         },
+                         [](void *fn) {
+                             *(int32_t *)0x13ce3d8 = (int32_t)(arena<uint32_t>(0x10)[2] % 5);
+                             return Result{(uint32_t)((int32_t(__fastcall *)(void *))fn)(arena<void>(0x1000))};
+                         }};
+    w3d_update_test.prepare = [=](const rewrite::Entry *e) {
+        w3d_u_slot_was = *(uint32_t *)0x13ce3d8;
+        stubs_for_now({{w3d_rel(e, 0xb9), (void *)stub_plain_dtor}});
+    };
+    w3d_update_test.finish = [](const rewrite::Entry *) { unstub_many(); *(uint32_t *)0x13ce3d8 = w3d_u_slot_was; };
+    quick(w3d_update_test);

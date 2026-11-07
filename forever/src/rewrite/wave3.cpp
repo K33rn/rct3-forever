@@ -2103,3 +2103,34 @@ template <uintptr_t CTOR, uint32_t VBTABLE> static int32_t __thiscall w3d_resize
 REWRITE("Array::Resize5D73D0", 0x5d73d0, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4600, 0xf3f734>), &g_w3d_resize);
 REWRITE("Array::Resize5D73D0", 0x5d7530, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4620, 0xf3afc0>), &g_w3d_resize);
 REWRITE("Array::Resize5D73D0", 0x5d7630, w3c_start<0x458be98b550cec83>, (&w3d_resize<0x5d4640, 0xf3affc>), &g_w3d_resize);
+
+// ---- Entries::UpdateAll: every 28-byte entry whose (lazily looked up, as Cached::Find does) target is there gets updated -----
+static inline uint32_t w3d_entry_target(uint8_t *entry) {
+    if (!entry[0x18]) {
+        uint8_t *object = *(uint8_t **)(*(uint8_t **)(entry + 4) + 0xc);
+        uint32_t found = 0;
+        if (object) {
+            uint8_t *table = ((uint8_t * (__thiscall *)(void *))(*(void ***)object)[1])(object);
+            int32_t slot = *(int32_t *)0x13ce3d8;
+            if (table && slot < *(int32_t *)(table + 0x18))
+                if (uint8_t *found_entry = (*(uint8_t ***)(table + 0x14))[slot]) found = *(uint32_t *)(found_entry + 0x10) + (uint32_t)(uintptr_t)object;
+        }
+        *(uint32_t *)(entry + 0x14) = found;
+        entry[0x18] = 1;
+    }
+    return *(uint32_t *)(entry + 0x14);
+}
+static volatile long g_w3d_update;
+template <uintptr_t UPDATE> static int32_t __fastcall w3d_update_all(uint8_t *self) {
+    g_w3d_update++;
+    int32_t count = *(int32_t *)(self + 0x28);
+    if (count <= 0) return count;
+    int32_t i = 0;
+    do {
+        if (w3d_entry_target(*(uint8_t **)(self + 0x24) + i * 0x1c))
+            ((void(__thiscall *)(uint32_t))UPDATE)(w3d_entry_target(*(uint8_t **)(self + 0x24) + i * 0x1c));
+    } while (++i < *(int32_t *)(self + 0x28));
+    return i;
+}
+REWRITE("Entries::UpdateAllA9F7E0", 0xa9f7e0, w3c_start<0x28458be98b555351>, (&w3d_update_all<0xabd040>), &g_w3d_update);
+REWRITE("Entries::UpdateAllA9F7E0", 0xaa0680, w3c_start<0x28458be98b555351>, (&w3d_update_all<0xabfe20>), &g_w3d_update);
