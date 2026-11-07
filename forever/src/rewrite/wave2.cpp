@@ -1132,3 +1132,30 @@ template <uint32_t OFF, uint32_t FIND> static uint32_t __thiscall w2b_ensure(uin
 static const uint8_t w2b_ensure_original[] = {0x8b, 0x44, 0x24, 0x04, 0x56, 0x57, 0x8d, 0x71};
 REWRITE("Weights::Ensure40C160", 0x40c160, w2b_ensure_original, (&w2b_ensure<0x14, 0x40b550>), &g_w2b_ensures);
 REWRITE("Weights::Ensure40C160", 0xceb3c0, w2b_ensure_original, (&w2b_ensure<0x28, 0xcea320>), &g_w2b_ensures);
+
+// ---- Quarter::Has: whether the quarter that the index at +0xa4 picks has anything at +OFF -----------------------------------------------
+static volatile long g_w2b_quarter_checks;
+template <uint32_t OFF> static uint8_t __fastcall w2b_quarter_has(uint8_t *self) {
+    g_w2b_quarter_checks++;
+    int32_t which = *(int32_t *)(self + 0xa4);
+    uint8_t *source = ((uint8_t *(__fastcall *)(void *))0xb44970)(self);
+    uint8_t *table = *(uint8_t **)(source + 0x54);
+    int slot = which == 0 ? 0x18 : which == 1 ? 0x1c : which == 2 ? 0x20 : 0x24;
+    return *(uint32_t *)(*(uint8_t **)(table + slot) + OFF) != 0;
+}
+REWRITE("Quarter::HasB356B0", 0xb356b0, w2b_quarter_original, (&w2b_quarter_has<0x44>), &g_w2b_quarter_checks);
+REWRITE("Quarter::HasB356B0", 0xb35710, w2b_quarter_original, (&w2b_quarter_has<0x48>), &g_w2b_quarter_checks);
+
+// ---- Judge::Act: when ready and allowed by MASK, asks for a verdict: 2 acts with CODE, 1 falls to the plain way, any other does nothing ---
+static volatile long g_w2b_judgements;
+template <uint32_t MASK, uint32_t CODE> static uint32_t __thiscall w2b_judge(uint8_t *self, uint32_t subject) {
+    g_w2b_judgements++;
+    if (((uint8_t(__fastcall *)(void *))0x79ff40)(self) && (self[0x408] & MASK)) {
+        uint32_t verdict = ((uint32_t(__thiscall *)(void *, uint32_t))0x7c4970)(self, subject);
+        if (verdict == 2) return ((uint32_t(__thiscall *)(void *, uint32_t))0x7a0030)(self, CODE);
+        if (verdict != 1) return verdict - 2;
+    }
+    return ((uint32_t(__fastcall *)(void *))0x7a0000)(self);
+}
+REWRITE("Judge::Act7A0F50", 0x7a0f50, w2b_call_first_original<0x79ff40u - 0x7a0f58u>, (&w2b_judge<2, 0x10>), &g_w2b_judgements);
+REWRITE("Judge::Act7A0F50", 0x7a0f90, w2b_call_first_original<0x79ff40u - 0x7a0f98u>, (&w2b_judge<1, 0x15>), &g_w2b_judgements);

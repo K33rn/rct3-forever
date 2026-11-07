@@ -231,3 +231,8 @@ static uint32_t __thiscall w2b_stub_find(void *table, uint32_t key) {
     record(0xe27c, (void *)(uintptr_t)key);
     return arena<uint32_t>(0x20)[0] & 3;
 }
+static uint32_t __thiscall w2b_stub_verdict(void *self, uint32_t subject) {
+    record(0xe27d, self);
+    record(0xe27d, (void *)(uintptr_t)subject);
+    return arena<uint32_t>(0x20)[1] & 3;
+}

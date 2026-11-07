@@ -920,3 +920,32 @@
     };
     w2b_ensure_test.finish = w2_unstub;
     quick(w2b_ensure_test);
+    // Quarter::Has: each index, with something there and nothing there, in each copy's place
+    Test w2b_has_test{0xb356b0,
+                      [=](Rng &r) {
+                          w2_values(r);
+                          *(int32_t *)(arena<uint8_t>(0x100) + 0xa4) = r.range(0, 4);
+                          *(void **)(arena<uint8_t>(0x800) + 0x54) = arena<void>(0x880);
+                          for (int i = 0; i < 4; i++) {
+                              *(void **)(arena<uint8_t>(0x880) + 0x18 + i * 4) = arena<void>(0x900 + i * 0x40);
+                              *(uint32_t *)(arena<uint8_t>(0x900 + i * 0x40) + 0x44) = r.range(0, 1) ? r.next() | 0x100 : 0;
+                              *(uint32_t *)(arena<uint8_t>(0x900 + i * 0x40) + 0x48) = r.range(0, 1) ? r.next() | 0x100 : 0;
+                          }
+                      },
+                      [](void *fn) { return Result{((uint8_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w2b_has_test.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb44970, (void *)w2b_stub_root}}); };
+    w2b_has_test.finish = w2_unstub;
+    quick(w2b_has_test);
+    // Judge::Act: not ready, not allowed, and each verdict
+    Test w2b_judge_test{0x7a0f50,
+                        [=](Rng &r) {
+                            w2_values(r);
+                            arena<uint32_t>(0x20)[0] = (r.next() & ~0xffu) | (uint32_t)(r.range(0, 3) ? 1 : 0);
+                            arena<uint8_t>(0x100)[0x408] = (uint8_t)r.range(0, 3);
+                        },
+                        [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[2])}; }};
+    w2b_judge_test.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x79ff40, (void *)w2b_stub_check1}, {0x7c4970, (void *)w2b_stub_verdict}, {0x7a0030, (void *)w2_stub_one}, {0x7a0000, (void *)w2_stub_timed_update}});
+    };
+    w2b_judge_test.finish = w2_unstub;
+    quick(w2b_judge_test);
