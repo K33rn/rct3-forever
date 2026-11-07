@@ -602,7 +602,7 @@ address,size,name,callers,status
 0x42d350,167,,2,documented
 0x42d400,210,,4,documented
 0x42d4e0,532,,2,documented
-0x42d730,304,,2,documented
+0x42d730,304,Pool::Grow42D730,2,rewritten
 0x42d860,46,Global::CreateBlock4097E0,1,rewritten
 0x42d890,30,DeletingDestructor,0,rewritten
 0x42d8b0,47,,1,documented
@@ -627,7 +627,7 @@ address,size,name,callers,status
 0x42e680,57,,4,documented
 0x42e6e0,51,,1,documented
 0x42e720,38,,7,documented
-0x42e780,304,,2,documented
+0x42e780,304,Pool::Grow42D730,2,rewritten
 0x42e8b0,119,,22,documented
 0x42e930,23,,1,documented
 0x42e950,63,Pool::Take,0,rewritten
@@ -1945,7 +1945,7 @@ address,size,name,callers,status
 0x49a4b0,262,,1,documented
 0x49a5c0,369,,1,documented
 0x49a740,104,,1,documented
-0x49a7e0,304,,2,documented
+0x49a7e0,304,Pool::Grow42D730,2,rewritten
 0x49a910,99,Factory::Global,1,rewritten
 0x49a980,274,,2,documented
 0x49aaa0,62,,3,documented
@@ -10644,7 +10644,7 @@ address,size,name,callers,status
 0x80f710,180,Table20::Free,1,rewritten
 0x80f7d0,433,,1,documented
 0x80f990,126,BlockPool::Return,1,rewritten
-0x80fa40,304,,2,documented
+0x80fa40,304,Pool::Grow42D730,2,rewritten
 0x80fb70,238,,1,documented
 0x80fc60,88,,1,documented
 0x80fcc0,592,,3,documented
@@ -11463,7 +11463,7 @@ address,size,name,callers,status
 0x84fea0,180,Table20::Free,1,rewritten
 0x84ff60,16,Object::SetFields,1,rewritten
 0x84ff70,180,Table20::Free,1,rewritten
-0x850030,387,,10,documented
+0x850030,387,Grid::GrowM4,10,rewritten
 0x8501c0,126,Pool::Free,28,rewritten
 0x850240,391,Object::GridGrow,5,rewritten
 0x8503d0,126,Pool::Free,8,rewritten
@@ -11471,7 +11471,7 @@ address,size,name,callers,status
 0x8505e0,126,Pool::Free,8,rewritten
 0x850660,391,Object::GridGrow,5,rewritten
 0x8507f0,126,Pool::Free,8,rewritten
-0x850870,387,,5,documented
+0x850870,387,Grid::GrowM8,5,rewritten
 0x850a00,126,Pool::Free,8,rewritten
 0x850a80,391,Object::GridGrow,5,rewritten
 0x850c10,126,Pool::Free,8,rewritten
@@ -12734,7 +12734,7 @@ address,size,name,callers,status
 0x8ff6a0,225,,1,documented
 0x8ff790,550,,1,documented
 0x8ff9c0,154,Batches::Add8552B0,5,rewritten
-0x8ffa60,296,,3,documented
+0x8ffa60,296,Pool::Grow8FFA60,3,rewritten
 0x8ffb90,256,,2,documented
 0x8ffc90,830,,1,documented
 0x8fffe0,64,,6,documented
@@ -13330,7 +13330,7 @@ address,size,name,callers,status
 0x94e060,47,Buffers::Clear94D6D0,4,rewritten
 0x94e090,333,,2,documented
 0x94e250,302,,1,documented
-0x94e380,296,,2,documented
+0x94e380,296,Pool::Grow8FFA60,2,rewritten
 0x94e4b0,608,,1,documented
 0x94e790,1805,,1,documented
 0x94eeb0,173,,11,documented
@@ -13518,11 +13518,11 @@ address,size,name,callers,status
 0x9691f0,30,DeletingDestructor,1,rewritten
 0x969220,16,Object::SetFields,1,rewritten
 0x969230,180,Table20::Free,1,rewritten
-0x9692f0,387,,2,documented
+0x9692f0,387,Grid::GrowM4,2,rewritten
 0x969480,126,Pool::Free,3,rewritten
 0x969500,16,Object::SetFields,1,rewritten
 0x969510,180,Table20::Free,1,rewritten
-0x9695d0,387,,2,documented
+0x9695d0,387,Grid::GrowM8,2,rewritten
 0x969760,126,Pool::Free,3,rewritten
 0x9697e0,122,,2,documented
 0x969860,187,,0,documented
@@ -13538,7 +13538,7 @@ address,size,name,callers,status
 0x969dd0,51,,2,documented
 0x969e10,16,Object::SetFields,1,rewritten
 0x969e20,180,Table20::Free,1,rewritten
-0x969ee0,387,,2,documented
+0x969ee0,387,Grid::GrowM8,2,rewritten
 0x96a070,126,Pool::Free,3,rewritten
 0x96a0f0,16,Object::SetFields,1,rewritten
 0x96a100,180,Table20::Free,1,rewritten
@@ -23173,8 +23173,8 @@ address,size,name,callers,status
 0xcef7e0,222,,2,documented
 0xcef8d0,26,,6,documented
 0xcef8f0,29,,2,documented
-0xcef970,282,,2,documented
-0xcefa90,282,,2,documented
+0xcef970,282,Pool::GrowCEF970,2,rewritten
+0xcefa90,282,Pool::GrowCEF970,2,rewritten
 0xcefbb0,108,Factory::Lazy,22,rewritten
 0xcefc20,30,DeletingDestructor,0,rewritten
 0xcefc40,97,,9,documented

@@ -378,6 +378,7 @@ static void *__thiscall stub_ride_entry(void *self, int32_t i, uint32_t a, uint3
 #include "wave2_stubs.inc"
 #include "wave3_stubs.inc"
 #include "wave4_stubs.inc"
+static void __thiscall stub_item_copy(uint32_t *to, uint32_t *from) { record(0x7e, to); record(0x7e, from); to[0] = from[0] ^ 0x77; }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4117,6 +4118,52 @@ static std::vector<Test> tests() {
 #include "wave2_tests.inc"
 #include "wave3_tests.inc"
 #include "wave4_tests.inc"
+    // Pool::Grow: from up to 4 items (some free) to a size around that; the constructor and the copier are stand-ins
+    auto pool_grow_setup = [=](Rng &r) {
+        fresh(r);
+        *arena<uint32_t>(ALLOC_NEXT) = 0;
+        int cap = r.range(0, 4);
+        uint32_t *self = arena<uint32_t>(0x100);
+        self[0] = cap ? (uint32_t)(uintptr_t)arena<void>(0x400) : 0;
+        self[1] = cap ? (uint32_t)(uintptr_t)arena<void>(0x700) : 0;
+        self[2] = (uint32_t)r.range(0, cap);
+        self[3] = (uint32_t)cap;
+        for (int i = 0; i < 0xc0; i++) arena<uint32_t>(0x400)[i] = r.next();
+        for (int i = 0; i < 4; i++) arena<int32_t>(0x700)[i] = r.range(0, 3);
+        arena<int32_t>(0x10)[0] = cap + r.range(-1, 4);
+    };
+    auto pool_grow_call = [](void *fn) { ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0]); return Result{}; };
+    Test pool_grow16{0x42d730, pool_grow_setup, pool_grow_call};
+    pool_grow16.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}, {0x402b90, (void *)stub_vector_construct4}}); };
+    pool_grow16.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(pool_grow16);
+    Test pool_grow8{0xcef970, pool_grow_setup, pool_grow_call};
+    pool_grow8.prepare = pool_grow16.prepare; pool_grow8.finish = pool_grow16.finish;
+    quick(pool_grow8);
+    Test pool_grow_copy{0x8ffa60, pool_grow_setup, pool_grow_call};
+    pool_grow_copy.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}, {0x402b90, (void *)stub_vector_construct4},
+                       {(uintptr_t)(e->at + 0x9c + 5 + *(int32_t *)(e->at + 0x9d)), (void *)stub_item_copy}});
+    };
+    pool_grow_copy.finish = pool_grow16.finish;
+    quick(pool_grow_copy);
+    // Grid::GrowM8 and M4: as Object::GridGrow
+    static int32_t g_ggm_level;
+    Test grid_grow_m8{0x850870,
+                      [=](Rng &r) {
+                          fresh(r);
+                          *(void **)arena<uint8_t>(0x100) = arena<void>(0x400);
+                          *(int32_t *)arena<uint8_t>(0x104) = 0;   // as Object::GridGrow's test: levels start empty
+                          for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x400)[i] = 0;
+                          g_ggm_level = r.range(0, 6);
+                      },
+                      [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), g_ggm_level)}; }};
+    grid_grow_m8.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x27 + 5 + *(int32_t *)(e->at + 0x28)), (void *)stub_reserve}}); };
+    grid_grow_m8.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(grid_grow_m8);
+    Test grid_grow_m4{0x850030, grid_grow_m8.setup, grid_grow_m8.call};
+    grid_grow_m4.prepare = grid_grow_m8.prepare; grid_grow_m4.finish = grid_grow_m8.finish;
+    quick(grid_grow_m4);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

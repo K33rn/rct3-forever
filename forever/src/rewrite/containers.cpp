@@ -1420,3 +1420,42 @@ REWRITE("Level::Value", 0x5a12f0, level_original<0x5a12f0>, (&level_value<3, 0x1
 REWRITE("Level::Value", 0x5bd150, level_original<0x5bd150>, (&level_value<3, 0x19c>), &g_level_checks);
 REWRITE("Level::Value", 0x5d26a0, level_original<0x5d26a0>, (&level_value<2, 0x148>), &g_level_checks);
 REWRITE("Level::Value", 0x846740, level_original<0x846740>, (&level_value<2, 0x150>), &g_level_checks);
+
+// ---- Pool::Grow(n): {items, free list, used, capacity} grown to n: new items made (each constructed by CTOR), the old
+// ones copied over (as plain data, or through COPY(dst, src) when given), the free list kept with the new items added to its
+// end, the old blocks freed (COPY is __thiscall, the source on the stack). Nothing happens unless n is more than the capacity ------------------------------------------
+static volatile long g_pool_grows;
+template <uint32_t SIZE, uint32_t CTOR, uint32_t COPY> static void __thiscall pool_grow(uint8_t *self, int32_t n) {
+    g_pool_grows++;
+    int32_t *capacity = (int32_t *)(self + 0xc);
+    if (n <= *capacity) return;
+    uint8_t *old_items = *(uint8_t **)self;
+    int32_t *old_free = *(int32_t **)(self + 4);
+    uint8_t *items = (uint8_t *)memory_alloc_aligned((uint32_t)n * SIZE);
+    if (items) ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0x402b90)(items, SIZE, n, (void *)CTOR);
+    *(uint8_t **)self = items;
+    int32_t *free_list = (int32_t *)memory_alloc_aligned((uint32_t)n * 4);
+    *(int32_t **)(self + 4) = free_list;
+    for (int32_t i = 0; i < *capacity; i++) {
+        uint8_t *to = *(uint8_t **)self + (uint32_t)i * SIZE, *from = old_items + (uint32_t)i * SIZE;
+        if (COPY) ((void(__thiscall *)(void *, void *))COPY)(to, from);
+        else for (uint32_t k = 0; k < SIZE; k += 4) *(uint32_t *)(to + k) = *(uint32_t *)(from + k);
+    }
+    int32_t free_count = *capacity - *(int32_t *)(self + 8);
+    for (int32_t i = 0; i < free_count; i++) (*(int32_t **)(self + 4))[i] = old_free[i];
+    for (int32_t i = *capacity; i < n; i++) (*(int32_t **)(self + 4))[free_count - *capacity + i] = i;
+    if (old_items) memory_free_aligned(old_items);
+    if (old_free) memory_free_aligned(old_free);
+    *capacity = n;
+}
+static const uint8_t pool_grow_original[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff};
+template <uint32_t HANDLER> static const uint8_t pool_grow_late_original[] = {
+    0x6a, 0xff, 0x68, (uint8_t)HANDLER, (uint8_t)(HANDLER >> 8), (uint8_t)(HANDLER >> 16), (uint8_t)(HANDLER >> 24)};
+REWRITE("Pool::Grow42D730", 0x42d730, pool_grow_original, (&pool_grow<16, 0x42d190, 0>), &g_pool_grows);
+REWRITE("Pool::Grow42D730", 0x42e780, pool_grow_original, (&pool_grow<16, 0x42e420, 0>), &g_pool_grows);
+REWRITE("Pool::Grow42D730", 0x49a7e0, pool_grow_original, (&pool_grow<16, 0x49a010, 0>), &g_pool_grows);
+REWRITE("Pool::Grow42D730", 0x80fa40, pool_grow_original, (&pool_grow<16, 0x80dd90, 0>), &g_pool_grows);
+REWRITE("Pool::GrowCEF970", 0xcef970, pool_grow_late_original<0xea78db>, (&pool_grow<8, 0xcef670, 0>), &g_pool_grows);
+REWRITE("Pool::GrowCEF970", 0xcefa90, pool_grow_late_original<0xea78fb>, (&pool_grow<8, 0xcef680, 0>), &g_pool_grows);
+REWRITE("Pool::Grow8FFA60", 0x8ffa60, pool_grow_original, (&pool_grow<0x60, 0x8fd120, 0x8fde70>), &g_pool_grows);
+REWRITE("Pool::Grow8FFA60", 0x94e380, pool_grow_original, (&pool_grow<0x60, 0x94c9e0, 0x94d9c0>), &g_pool_grows);

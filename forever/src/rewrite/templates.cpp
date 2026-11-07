@@ -2555,3 +2555,11 @@ const uint32_t *start_constants(uintptr_t at) {
     return nullptr;
 }
 }
+
+// Grid levels whose blocks hold items of M bytes (8 or 4), the same as Object::GridGrow.
+static const uint8_t grid_grow_m_original[] = {0x83, 0xec, 0x08, 0x53, 0x55, 0x8b, 0x6c, 0x24};
+REWRITE("Grid::GrowM8", 0x850870, grid_grow_m_original, (&grid_grow<0x84e760, 8>), &g_grid_grows);
+REWRITE("Grid::GrowM8", 0x9695d0, grid_grow_m_original, (&grid_grow<0x969140, 8>), &g_grid_grows);
+REWRITE("Grid::GrowM8", 0x969ee0, grid_grow_m_original, (&grid_grow<0x969c20, 8>), &g_grid_grows);
+REWRITE("Grid::GrowM4", 0x850030, grid_grow_m_original, (&grid_grow<0x84e1b0, 4>), &g_grid_grows);
+REWRITE("Grid::GrowM4", 0x9692f0, grid_grow_m_original, (&grid_grow<0x969070, 4>), &g_grid_grows);
