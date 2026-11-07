@@ -639,3 +639,84 @@
     };
     w2_step.finish = w2_unstub;
     quick(w2_step);
+    // Kind::Lookup: every kind, and past the end
+    auto w2_kind_setup = [](Rng &r) { arena<uint32_t>(0x20)[0] = r.range(0, 3) ? (uint32_t)r.range(0, 6) : r.next(); };
+    auto w2_kind_call = [](void *fn) { return Result{((uint32_t(__fastcall *)(uint32_t))fn)(arena<uint32_t>(0x20)[0])}; };
+    Test w2_kind_a{0x59a2d0, w2_kind_setup, w2_kind_call};
+    quick(w2_kind_a);
+    Test w2_kind_b{0x5bd960, w2_kind_setup, w2_kind_call};
+    quick(w2_kind_b);
+    // Timer::Run: with a mode or without, the timer below 0 or not; the fields of both copies are filled
+    Test w2_timer{0x543b40,
+                  [=](Rng &r) {
+                      w2_values(r);
+                      uint8_t *s = arena<uint8_t>(0x800);
+                      for (int off : {0x17c, 0x190}) *(uint32_t *)(s + off) = (uint32_t)r.range(0, 1);
+                      for (int off : {0x188, 0x19c}) *(int32_t *)(s + off) = r.range(-2, 2);
+                      for (int off : {0x184, 0x198}) *(uint32_t *)(s + off) = r.next();
+                      *(void **)(s + 0xec) = arena<void>(0xc00);
+                  },
+                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w2_timer.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6b0990, (void *)w2_stub_plain_update}, {0x6afc20, (void *)w2_stub_timed_update}}); };
+    w2_timer.finish = w2_unstub;
+    quick(w2_timer);
+    // Scanner::Flush: no buffer, the current one or another; the globals are set in the call and folded into the result
+    static uint32_t g_w2_sc[6];
+    Test w2_flush{0xc09740,
+                  [=](Rng &r) {
+                      fresh(r);
+                      uint32_t *b = arena<uint32_t>(0x800);
+                      for (int i = 0; i < 0x10; i++) b[i] = r.next();
+                      b[1] = (uint32_t)(uintptr_t)arena<void>(0x900);
+                      arena<uint32_t>(0x900)[0] = r.next();
+                      arena<uint32_t>(0x20)[0] = (uint32_t)r.range(0, 4);
+                      arena<uint32_t>(0x20)[1] = r.next();
+                  },
+                  [](void *fn) {
+                      uint32_t kind = arena<uint32_t>(0x20)[0], seed = arena<uint32_t>(0x20)[1];
+                      *(void **)(uintptr_t)g_w2_sc[0] = kind & 1 ? nullptr : arena<void>(0x800);
+                      for (int i = 1; i < 5; i++) *(uint32_t *)(uintptr_t)g_w2_sc[i] = seed + i;
+                      *(uint8_t *)(uintptr_t)g_w2_sc[5] = (uint8_t)seed;
+                      ((void(__fastcall *)(void *))fn)(kind == 4 ? nullptr : arena<void>(0x800));
+                      uint32_t sum = *(uint8_t *)(uintptr_t)g_w2_sc[5];
+                      for (int i = 1; i < 5; i++) sum = sum * 31 + *(uint32_t *)(uintptr_t)g_w2_sc[i];
+                      return Result{sum};
+                  }};
+    w2_flush.prepare = [](const rewrite::Entry *e) {
+        static const int at[6] = {0x1b, 0x32, 0x3b, 0x43, 0x4b, 0x50};
+        for (int i = 0; i < 6; i++) g_w2_sc[i] = *(uint32_t *)(e->at + at[i]);
+    };
+    quick(w2_flush);
+    // Pooled::Set: nothing held, the last holder or not; a value or none
+    static uint32_t g_w2_ps_off;
+    Test w2_pooled{0xc0bc10,
+                   [=](Rng &r) {
+                       fresh(r);
+                       arena<int32_t>(0x800)[0] = r.range(1, 3);
+                       arena<int32_t>(0x810)[0] = r.range(1, 3);
+                       *(void **)arena<uint8_t>(0x100 + g_w2_ps_off) = r.range(0, 3) ? arena<void>(0x800) : nullptr;
+                       arena<uint32_t>(0x20)[0] = (uint32_t)r.range(0, 3);
+                       *(uint32_t *)0x13e3318 = (uint32_t)(uintptr_t)arena<void>(0x5f0);
+                   },
+                   [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x20)[0] ? arena<void>(0x810) : nullptr)}; }};
+    w2_pooled.prepare = [](const rewrite::Entry *e) {
+        g_w2_ps_off = *(uint8_t *)(e->at + 6);
+        stubs_for_now({{0xc0a750, (void *)stub_plain_dtor}, {0xca1f80, (void *)stub_thiscall1}});
+    };
+    w2_pooled.finish = w2_unstub;
+    quick(w2_pooled);
+    // Quad::Write: through the game's own writer, onto the stand-in slot it calls
+    Test w2_quad_write{0xc2f850,
+                       [=](Rng &r) {
+                           w2_values(r);
+                           arena<void *>(0x800)[0] = w2_put_table;
+                           arena<uint32_t>(0x800)[3] = r.next();
+                       },
+                       [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800))}; }};
+    quick(w2_quad_write);
+    // Flagged::Copy: each copy has its own place
+    Test w2_flag_copy{0x581120, [=](Rng &r) { w2_values(r); for (int off : {0x100, 0x234, 0x240}) *arena<uint8_t>(0x800 + off) = (uint8_t)r.next(); },
+                      [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0xc00))}; }};
+    w2_flag_copy.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x423fb0, (void *)w2_stub_one}}); };
+    w2_flag_copy.finish = w2_unstub;
+    quick(w2_flag_copy);

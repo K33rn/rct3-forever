@@ -162,3 +162,11 @@ static void *__thiscall w2_stub_member(void *member, void *data) {
 }
 static void *w2_state_table[0x16] = {};
 static void *w2_member_table[5] = {};
+static uint32_t __fastcall w2_stub_plain_update(void *member) {
+    record(0xe260, member);
+    return arena<uint32_t>(0x20)[0];
+}
+static uint32_t __fastcall w2_stub_timed_update(void *member) {
+    record(0xe261, member);
+    return arena<uint32_t>(0x20)[1];
+}

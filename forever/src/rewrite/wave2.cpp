@@ -808,3 +808,107 @@ static void __thiscall state_step(uint8_t *self, uint32_t value) {
 static const uint8_t state_step_original[] = {0x56, 0x57, 0x8b, 0xf1, 0xe8};
 REWRITE("State::Step4E5FB0", 0x4e5fb0, state_step_original, state_step, &g_w2_steps);
 REWRITE("State::Step4E5FB0", 0x5eb0e0, state_step_original, state_step, &g_w2_steps);
+
+// ---- Kind::Lookup: a value from a small table, 0 past its end -----------------------------------------------------------------------
+static volatile long g_w2_lookup_kinds;
+static const uint32_t kind_values_a[4] = {0, 1, 2, 3};
+static const uint32_t kind_values_b[4] = {0, 2, 5, 7};
+static const uint32_t kind_values_c[5] = {0, 1, 0xa, 6, 9};
+static const uint32_t kind_values_d[4] = {0xf37928, 0xf37920, 0xf37918, 0xf37910};
+template <const uint32_t *VALUES, uint32_t COUNT> static uint32_t __fastcall kind_lookup(uint32_t kind) {
+    g_w2_lookup_kinds++;
+    return kind < COUNT ? VALUES[kind] : 0;
+}
+static const uint8_t kind_lookup3_original[] = {0x83, 0xf9, 0x03, 0x77, 0x19, 0xff, 0x24, 0x8d};
+static const uint8_t kind_lookup3b_original[] = {0x83, 0xf9, 0x03, 0x77, 0x1f, 0xff, 0x24, 0x8d};
+static const uint8_t kind_lookup4_original[] = {0x83, 0xf9, 0x04, 0x77, 0x1f, 0xff, 0x24, 0x8d};
+REWRITE("Kind::Lookup59A2D0", 0x59a2d0, kind_lookup3_original, (&kind_lookup<kind_values_a, 4>), &g_w2_lookup_kinds);
+REWRITE("Kind::Lookup59A2D0", 0x5bd920, kind_lookup3_original, (&kind_lookup<kind_values_b, 4>), &g_w2_lookup_kinds);
+REWRITE("Kind::Lookup5BD960", 0x5bd960, kind_lookup4_original, (&kind_lookup<kind_values_c, 5>), &g_w2_lookup_kinds);
+REWRITE("Kind::Lookup5BD960", 0xbbf9f0, kind_lookup3b_original, (&kind_lookup<kind_values_d, 4>), &g_w2_lookup_kinds);
+
+// ---- Timer::Run: without a mode at +MODE runs the plain update of the member at +MEMBER; with one, first starts the timer at +TIMER at
+// 20 if it is below 0, copying it to +SHOWN of the object at +0xec, then runs the timed update --------------------------------------
+static volatile long g_w2_timers;
+template <uint32_t MODE, uint32_t TIMER, uint32_t SHOWN, uint32_t MEMBER> static uint32_t __fastcall timer_run(uint8_t *self) {
+    g_w2_timers++;
+    void *member = *(void **)(self + MEMBER);
+    if (!*(uint32_t *)(self + MODE)) return ((uint32_t(__fastcall *)(void *))0x6b0990)(member);
+    if (*(int32_t *)(self + TIMER) < 0) {
+        *(int32_t *)(self + TIMER) = 20;
+        *(int32_t *)(*(uint8_t **)(self + 0xec) + SHOWN) = 20;
+    }
+    return ((uint32_t(__fastcall *)(void *))0x6afc20)(member);
+}
+template <uint32_t MODE> static const uint8_t timer_run_original[] = {
+    0x8b, 0x81, (uint8_t)MODE, (uint8_t)(MODE >> 8), 0x00, 0x00, 0x85, 0xc0, 0x74, 0x2c};
+REWRITE("Timer::Run543B40", 0x543b40, timer_run_original<0x17c>, (&timer_run<0x17c, 0x188, 0x288, 0x184>), &g_w2_timers);
+REWRITE("Timer::Run543B40", 0x543b90, timer_run_original<0x190>, (&timer_run<0x190, 0x19c, 0x28c, 0x198>), &g_w2_timers);
+
+// ---- Scanner::Flush: empties a scanner buffer {+0 file, +4 start, +8 position, +0x10 count, +0x1c at line start, +0x24 status}; the current
+// buffer also reloads the scanner state from it -----------------------------------------------------------------------------------
+static volatile long g_w2_flushes;
+template <uint32_t CURRENT, uint32_t COUNT, uint32_t POSITION, uint32_t FILE_, uint32_t TEXT, uint32_t HELD>
+static void __fastcall scanner_flush(uint8_t *self) {
+    g_w2_flushes++;
+    if (!self) return;
+    uint8_t *start = *(uint8_t **)(self + 4);
+    *(uint32_t *)(self + 0x10) = 0;
+    start[0] = 0;
+    start[1] = 0;
+    *(uint32_t *)(self + 0x24) = 0;
+    *(uint8_t **)(self + 8) = start;
+    *(uint32_t *)(self + 0x1c) = 1;
+    if (self != *(uint8_t **)CURRENT) return;
+    uint8_t *position = *(uint8_t **)(self + 8);
+    *(uint32_t *)COUNT = *(uint32_t *)(self + 0x10);
+    *(uint8_t **)POSITION = position;
+    *(uint32_t *)FILE_ = *(uint32_t *)self;
+    *(uint8_t **)TEXT = position;
+    *(uint8_t *)HELD = *position;
+}
+static const uint8_t scanner_flush_original[] = {0x33, 0xc0, 0x3b, 0xc8, 0x74, 0x4e, 0x8b, 0x51};
+REWRITE("Scanner::FlushC09740", 0xc09740, scanner_flush_original, (&scanner_flush<0x13e32f8, 0x13e32e8, 0x13e32e4, 0x13e3304, 0x13e32fc, 0x13d32c0>), &g_w2_flushes);
+REWRITE("Scanner::FlushC09740", 0xcbbd70, scanner_flush_original, (&scanner_flush<0x13f7014, 0x13f7004, 0x13f6ffc, 0x13f7020, 0x13f7018, 0x13e6fe8>), &g_w2_flushes);
+
+// ---- Pooled::Set: replaces the counted object at +OFF; the last holder of the old one destroys it and gives it back to the pool --------
+static volatile long g_w2_pooled;
+template <uint32_t OFF> static int32_t *__thiscall pooled_set(uint8_t *self, int32_t *value) {
+    g_w2_pooled++;
+    int32_t *old = *(int32_t **)(self + OFF);
+    if (old && --*old == 0) {
+        ((void(__fastcall *)(void *))0xc0a750)(old);
+        ((void(__thiscall *)(void *, void *))0xca1f80)(*(uint8_t **)0x13e3318 + 4, old);
+    }
+    *(int32_t **)(self + OFF) = value;
+    if (value) ++*value;
+    return value;
+}
+template <uint8_t OFF> static const uint8_t pooled_set_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x77, OFF};
+REWRITE("Pooled::SetC0BC10", 0xc0bc10, pooled_set_original<0x78>, (&pooled_set<0x78>), &g_w2_pooled);
+REWRITE("Pooled::SetC0BC10", 0xc0bd40, pooled_set_original<0x24>, (&pooled_set<0x24>), &g_w2_pooled);
+
+// ---- Quad::Write: writes four words to a writer ------------------------------------------------------------------------------------
+static volatile long g_w2_quad_writes;
+static uint32_t __thiscall quad_write(uint32_t *self, void *writer) {
+    g_w2_quad_writes++;
+    uint32_t result = 0;
+    for (int i = 0; i < 4; i++) result = ((uint32_t(__thiscall *)(void *, uint32_t))0xca5610)(writer, self[i]);
+    return result;
+}
+static const uint8_t quad_write_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x57, 0x8b, 0x7c};
+REWRITE("Quad::WriteC2F850", 0xc2f850, quad_write_original, quad_write, &g_w2_quad_writes);
+REWRITE("Quad::WriteC2F850", 0xca3540, quad_write_original, quad_write, &g_w2_quad_writes);
+
+// ---- Flagged::Copy: a flag byte at +OFF and the record after it, into `out` {flag, record at +4} ---------------------------------------
+static volatile long g_w2_flag_copies;
+template <uint32_t OFF> static uint32_t __thiscall flagged_copy(uint8_t *self, uint8_t *out) {
+    g_w2_flag_copies++;
+    *out = self[OFF];
+    return ((uint32_t(__thiscall *)(void *, void *))0x423fb0)(out + 4, self + OFF + 4);
+}
+template <uint32_t OFF> static const uint8_t flagged_copy_original[] = {
+    0x8a, 0x91, (uint8_t)OFF, (uint8_t)(OFF >> 8), 0x00, 0x00, 0x8b, 0x44, 0x24, 0x04};
+REWRITE("Flagged::Copy581120", 0x581120, flagged_copy_original<0x100>, (&flagged_copy<0x100>), &g_w2_flag_copies);
+REWRITE("Flagged::Copy581120", 0x5bf340, flagged_copy_original<0x234>, (&flagged_copy<0x234>), &g_w2_flag_copies);
+REWRITE("Flagged::Copy581120", 0x5bf3c0, flagged_copy_original<0x240>, (&flagged_copy<0x240>), &g_w2_flag_copies);
