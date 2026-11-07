@@ -212,3 +212,18 @@ static uint32_t __fastcall w4d_stub_convert(uint32_t side, uint32_t end, uint32_
 static void __stdcall w4d_stub_vector_dtor(void *p, uint32_t size, uint32_t n, void *dtor) { record(0x4d04, p); record(0x4d04, (void *)(uintptr_t)size); record(0x4d04, (void *)(uintptr_t)n); record(0x4d04, dtor); }
 struct W4dWords14 { uint32_t words[14]; };
 static void __thiscall w4d_stub_grow(uint32_t *list, int32_t n) { record(0x4d05, (void *)(uintptr_t)n); record(0x4d05, (void *)(uintptr_t)list[2]); list[0] = (uint32_t)(uintptr_t)arena<void>(0x2400); list[1] = (uint32_t)n; }
+static uint32_t w4d_instance;   // the global a Single::Get copy keeps its instance in
+// registers itself in the instance global when the word at 0x24 is odd
+static void *__thiscall w4d_stub_make3(uint32_t *p, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x4d06, p); record(0x4d06, (void *)(uintptr_t)a); record(0x4d06, (void *)(uintptr_t)b); record(0x4d06, (void *)(uintptr_t)c);
+    p[0] = 0x4d060000;
+    if (*arena<uint32_t>(0x24) & 1) *(void **)(uintptr_t)w4d_instance = p;
+    return p;
+}
+static void *__thiscall w4d_stub_make4(uint32_t *p, uint32_t w, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x4d07, p); for (uint32_t v : {w, a, b, c}) record(0x4d07, (void *)(uintptr_t)v);
+    for (int i = 0; i < 4; i++) p[i] = 0x4d070000 + i;
+    return (uint8_t *)p + 4;
+}
+static void __fastcall w4d_stub_member_gone(void *p) { record(0x4d08, p); }
+static void __fastcall w4d_stub_base_gone(uint32_t *p) { record(0x4d09, p); for (int i = 0; i < 12; i++) record(0x4d09, (void *)(uintptr_t)p[i]); }

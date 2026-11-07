@@ -1689,3 +1689,49 @@ template <uint32_t LIST, uint32_t GROW, int32_t FIRST> static void __thiscall w4
 static const uint8_t w4d_words_push_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86};
 REWRITE("Words::Push427790", 0x427790, w4d_words_push_original, (&w4d_words_push<0x678, 0x426d40, 4>), &g_w4d_pushes);
 REWRITE("Words::Push427790", 0x80ee30, w4d_words_push_original, (&w4d_words_push<0x8c, 0x80ebb0, 0x20>), &g_w4d_pushes);
+
+// ---- Owned::Destroy: destructor that frees the aligned block at OWNED, passing through its own vtable and ending at the base's -------------------
+static volatile long g_w4d_owned_destroys;
+template <uint32_t VTABLE, uint32_t OWNED, uint32_t BASE_VTABLE> static void __fastcall w4d_owned_destroy(uint32_t *self) {
+    g_w4d_owned_destroys++;
+    self[0] = VTABLE;
+    memory_free_aligned(*(void **)((uint8_t *)self + OWNED));
+    self[0] = BASE_VTABLE;
+}
+REWRITE("Owned::DestroyC65790", 0xc65790, (w4c_seh<0xea2738>), (&w4d_owned_destroy<0xfb7614, 0xc, 0xfb0350>), &g_w4d_owned_destroys);
+REWRITE("Owned::DestroyC65790", 0xca57b0, (w4c_seh<0xea48b8>), (&w4d_owned_destroy<0xfbf5f0, 0x24, 0xfbf5b0>), &g_w4d_owned_destroys);
+
+// ---- Single::Get: the single instance in the global INSTANCE, made the first time (SIZE bytes, built by MAKE, which registers itself) ----------
+static volatile long g_w4d_singles;
+template <uint32_t INSTANCE, uint32_t SIZE, uint32_t MAKE> static void *__cdecl w4d_single_get() {
+    g_w4d_singles++;
+    if (!*(void **)INSTANCE) {
+        void *made = memory_alloc(SIZE);
+        if (made) ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))MAKE)(made, 0, 0, 0);
+    }
+    return *(void **)INSTANCE;
+}
+REWRITE("Single::Get436350", 0x436350, (w4c_seh<0xe0828b>), (&w4d_single_get<0x1306c68, 0x58, 0x7a70a0>), &g_w4d_singles);
+REWRITE("Single::Get436350", 0x7bbce0, (w4c_seh<0xe5728b>), (&w4d_single_get<0x13070c8, 0x68, 0x7bb7d0>), &g_w4d_singles);
+
+// ---- Holder::Destroy: destructor: the inner part's vtable at INNER is reset, the member at MEMBER is destroyed, then the base destructor ---------
+static volatile long g_w4d_holder_destroys;
+template <uint32_t INNER, uint32_t MEMBER, uint32_t BASE> static void __fastcall w4d_holder_destroy(uint8_t *self) {
+    g_w4d_holder_destroys++;
+    *(uint32_t *)(self + INNER) = 0xf2694c;
+    ((void(__fastcall *)(void *))0xcd2b50)(self ? self + MEMBER : nullptr);
+    ((void(__fastcall *)(void *))BASE)(self);
+}
+REWRITE("Holder::Destroy42BAE0", 0x42bae0, (w4c_seh<0xe07d98>), (&w4d_holder_destroy<0x18, 0x10, 0x440ed0>), &g_w4d_holder_destroys);
+REWRITE("Holder::Destroy42BAE0", 0x7726c0, (w4c_seh<0xe51618>), (&w4d_holder_destroy<0x20, 0x18, 0x772410>), &g_w4d_holder_destroys);
+
+// ---- Thing::New: allocates SIZE bytes and builds them with MAKE(0, a, b, -1); null when out of memory --------------------------------------------
+static volatile long g_w4d_news;
+template <uint32_t SIZE, uint32_t MAKE> static void *__stdcall w4d_thing_new(uint32_t a, uint32_t b) {
+    g_w4d_news++;
+    void *made = memory_alloc(SIZE);
+    if (!made) return nullptr;
+    return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, int32_t))MAKE)(made, 0, a, b, -1);
+}
+REWRITE("Thing::New6C6150", 0x6c6150, (w4c_seh<0xe40dab>), (&w4d_thing_new<0x90, 0x6c3f30>), &g_w4d_news);
+REWRITE("Thing::New6C6150", 0xbaa270, (w4c_seh<0xe9bafb>), (&w4d_thing_new<0xd0, 0xba9840>), &g_w4d_news);

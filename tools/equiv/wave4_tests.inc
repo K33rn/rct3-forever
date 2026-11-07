@@ -1572,3 +1572,31 @@
     w4d_push.prepare = [](const rewrite::Entry *e) { w4c_off = *(uint32_t *)(e->at + 5) - 8; stubs_for_now({{w4c_target(e, 0x25), (void *)w4d_stub_grow}}); };
     w4d_push.finish = w4c_unstub;
     quick(w4d_push);
+    // Owned::Destroy
+    Test w4d_owned{0xc65790, w4c_fill, w4c_self};
+    w4d_owned.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbce010, (void *)stub_free_aligned}}); };
+    w4d_owned.finish = w4c_unstub;
+    quick(w4d_owned);
+    // Single::Get: there already or not; out of memory or not; the maker registering itself or not
+    Test w4d_single{0x436350, w4c_fill, [](void *fn) {
+                        *(void **)(uintptr_t)w4d_instance = *arena<uint32_t>(0x20) & 2 ? arena<void>(0x900) : nullptr;
+                        return Result{(uint32_t)(uintptr_t)((void *(__cdecl *)())fn)()};
+                    }};
+    w4d_single.prepare = [](const rewrite::Entry *e) {
+        w4d_instance = *(uint32_t *)(e->at + 0x17); w4c_global_saved = *(uint32_t *)(uintptr_t)w4d_instance;
+        stubs_for_now({{0xbcdfc0, (void *)w4c_stub_alloc}, {w4c_target(e, 0x41), (void *)w4d_stub_make3}});
+    };
+    w4d_single.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)w4d_instance = w4c_global_saved; unstub_many(); };
+    quick(w4d_single);
+    // Holder::Destroy
+    Test w4d_holder{0x42bae0, w4c_fill, w4c_self};
+    w4d_holder.prepare = [](const rewrite::Entry *e) { stubs_for_now({{0xcd2b50, (void *)w4d_stub_member_gone}, {w4c_target(e, 0x4b), (void *)w4d_stub_base_gone}}); };
+    w4d_holder.finish = w4c_unstub;
+    quick(w4d_holder);
+    // Thing::New: out of memory or not
+    Test w4d_new{0x6c6150, w4c_fill, [](void *fn) {
+                     return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(uint32_t, uint32_t))fn)(*arena<uint32_t>(0x800), *arena<uint32_t>(0x804))};
+                 }};
+    w4d_new.prepare = [](const rewrite::Entry *e) { stubs_for_now({{0xbcdfc0, (void *)w4c_stub_alloc}, {w4c_target(e, 0x43), (void *)w4d_stub_make4}}); };
+    w4d_new.finish = w4c_unstub;
+    quick(w4d_new);
