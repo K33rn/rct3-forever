@@ -316,3 +316,238 @@
                   },
                   [](void *fn) { return Result{((uint8_t(__thiscall *)(void *, void *))fn)(arena<void>(0x800), arena<void>(0x10))}; }};
     quick(w4_query);
+    // Kept::Value: the reference at the copy's offset, kept or looked up, sometimes nothing
+    Test w4_kept{0x4abc40,
+                 [=](Rng &r) {
+                     fresh(r);
+                     iface_handle(r);
+                     uint8_t *ref = arena<uint8_t>(0x800 + w4_off);
+                     *(void **)(ref + 4) = arena<void>(0x340);
+                     ref[0x18] = (uint8_t)r.range(0, 1);
+                     *(void **)(ref + 0x14) = r.range(0, 1) ? arena<void>(0x380) : nullptr;
+                     *arena<uint8_t>(0x20) = (uint8_t)r.next();
+                 },
+                 [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4_kept.prepare = [](const rewrite::Entry *e) {
+        w4_off = *(uint32_t *)(e->at + 0x10) - 4;
+        g_iface_id = (uint32_t *)0x130bbec;
+        stubs_for_now({{0x846ae0, (void *)w4_stub_kept}});
+    };
+    w4_kept.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_kept);
+    // Refs::AnyHas: references at 0x900, the last index -1 to 3; the second id is the copy's own global
+    Test w4_anyhas{0xb453a0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       iface_handle(r);
+                       *(uint32_t *)w4_global = (uint32_t)r.range(0, 3);
+                       uint8_t *self = arena<uint8_t>(0x800);
+                       *(int32_t *)(self + 0x78) = r.range(-1, 3);
+                       *(void **)(self + 0x7c) = arena<void>(0x900);
+                       for (int i = 0; i < 4; i++) {
+                           uint8_t *ref = arena<uint8_t>(0x900 + i * 0x1c);
+                           *(void **)(ref + 4) = arena<void>(0x340);
+                           ref[0x18] = (uint8_t)r.range(0, 1);
+                           *(void **)(ref + 0x14) = r.range(0, 1) ? arena<void>(0x360) : nullptr;
+                       }
+                   },
+                   [](void *fn) { return Result{((uint8_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4_anyhas.prepare = [](const rewrite::Entry *e) {
+        g_iface_id = (uint32_t *)0x13d0058;
+        w4_global = *(uint32_t *)(e->at + 0x7b);
+        w4_saved[0] = *(uint32_t *)w4_global;
+    };
+    w4_anyhas.finish = [](const rewrite::Entry *) { *(uint32_t *)w4_global = w4_saved[0]; };
+    quick(w4_anyhas);
+    // Reference::Copy: the reference at 0x100 takes the one at 0x180, with its fields
+    Test w4_refcopy{0x82e860, handles,
+                    [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x180))}; }};
+    quick(w4_refcopy);
+    // Reference::AssignAt: the same, the reference at the copy's offset
+    Test w4_refassign{0x530f40, handles,
+                      [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<uint8_t>(0x100) - w4_off, arena<void>(0x180)); return Result{}; }};
+    w4_refassign.prepare = [](const rewrite::Entry *e) { w4_off = *(uint32_t *)(e->at + 4); };
+    quick(w4_refassign);
+    // ItemArray::Resize: bigger, smaller, the same, to nothing, from nothing, and memory that can't be had
+    Test w4_resize{0x5d42a0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       int count = r.range(0, 8);
+                       arena<void *>(0x100)[0] = count ? arena<void>(0x800) : nullptr;
+                       arena<int32_t>(0x100)[1] = count;
+                       *arena<int32_t>(0x10) = r.range(0, 8);
+                       *arena<uint32_t>(0x28) = r.next();
+                   },
+                   [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), *arena<int32_t>(0x10))}; }};
+    w4_resize.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbcdfd0, (void *)w4_stub_alloc_maybe}, {0x5d3d00, (void *)w4_stub_construct},
+                       {(uintptr_t)(e->at + 0x78 + 5 + *(int32_t *)(e->at + 0x79)), (void *)stub_thiscall1}});
+    };
+    w4_resize.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_resize);
+    // ItemArray::Reset
+    Test w4_reset{0x5d7370,
+                  [=](Rng &r) {
+                      fresh(r);
+                      arena<void *>(0x100)[0] = r.range(0, 2) ? arena<void>(0x800) : nullptr;
+                      arena<int32_t>(0x100)[1] = r.range(0, 8);
+                      *arena<int32_t>(0x10) = r.range(0, 8);
+                      *arena<uint32_t>(0x28) = r.next();
+                  },
+                  [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), *arena<int32_t>(0x10))}; }};
+    w4_reset.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)w4_stub_alloc_maybe}, {0x5d3d00, (void *)w4_stub_construct}}); };
+    w4_reset.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_reset);
+    // a list of 0-4 nodes at 0x420.. between a start node (0x3e0) and an end node (0x4e0, next null); gives the first node
+    auto w4_list = [](Rng &r, int n) {
+        void **start = arena<void *>(0x3e0), **prev = start;
+        start[1] = (void *)(uintptr_t)r.next();
+        for (int i = 0; i < n; i++) {
+            void **node = arena<void *>(0x420 + i * 0x20);
+            prev[0] = node; node[1] = prev; prev = node;
+        }
+        void **end = arena<void *>(0x4e0);
+        prev[0] = end; end[0] = nullptr; end[1] = prev;
+        return (void *)start[0];
+    };
+    // List::DeleteAll: some nodes empty
+    Test w4_deleteall{0x6af540,
+                      [=](Rng &r) {
+                          fresh(r);
+                          static void *vt[1] = {(void *)w4_stub_delete_value};
+                          int n = r.range(0, 4);
+                          *(void **)arena<uint8_t>(0x800 + w4_off) = w4_list(r, n);
+                          for (int i = 0; i < n; i++) {
+                              void **value = arena<void *>(0x500 + i * 0x20), **node = arena<void *>(0x420 + i * 0x20);
+                              value[0] = vt; value[1] = node;
+                              node[2] = r.range(0, 2) ? value : nullptr;
+                          }
+                      },
+                      [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w4_deleteall.prepare = [](const rewrite::Entry *e) { w4_off = *(uint8_t *)(e->at + 5); };
+    quick(w4_deleteall);
+    // Members::Notify: nodes empty, members without an owner, members with one
+    Test w4_members{0x6a20e0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        static void *vt[3] = {nullptr, nullptr, (void *)w4_stub_owner};
+                        arena<void *>(0x600)[0] = vt;
+                        int n = r.range(0, 4);
+                        *(void **)arena<uint8_t>(0x800 + 0xd4) = w4_list(r, n);
+                        for (int i = 0; i < n; i++) {
+                            uint8_t *member = arena<uint8_t>(0x1000 + i * 0x200);
+                            *(void **)(member + 0x13c) = r.range(0, 2) ? arena<void>(0x600) : nullptr;
+                            arena<void *>(0x420 + i * 0x20)[2] = r.range(0, 2) ? member : nullptr;
+                        }
+                    },
+                    [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), 5); return Result{}; }};
+    w4_members.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x69a980, (void *)stub_plain_dtor}}); };
+    w4_members.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_members);
+    // List::Visit
+    Test w4_visit{0x49bae0,
+                  [=](Rng &r) {
+                      fresh(r);
+                      static void *vt[1] = {(void *)w4_stub_visit};
+                      arena<void *>(0x600)[0] = vt;
+                      int n = r.range(0, 4);
+                      arena<void *>(0x100)[0] = w4_list(r, n);
+                      for (int i = 0; i < n; i++) {
+                          uint8_t *value = arena<uint8_t>(0x1000 + i * 0x40);
+                          *(uint32_t *)(value + 0x18) = r.next();
+                          arena<void *>(0x420 + i * 0x20)[2] = r.range(0, 2) ? value : nullptr;
+                      }
+                  },
+                  [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x600)); return Result{}; }};
+    quick(w4_visit);
+    // Target::Set: each state, the same target and a new one, the copy's own field
+    Test w4_target{0x4f65f0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       uint8_t *self = arena<uint8_t>(0x800);
+                       *(int32_t *)(self + 0x144) = r.range(0, 5);
+                       *(uint32_t *)(self + 0x5dc) = r.range(0, 2) == 0;
+                       int32_t target = r.range(0, 9);
+                       *(int32_t *)(self + w4_off) = r.range(0, 2) ? target : target + 1;
+                       *arena<int32_t>(0x10) = target;
+                   },
+                   [](void *fn) { ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x800), *arena<int32_t>(0x10)); return Result{}; }};
+    w4_target.prepare = [](const rewrite::Entry *e) {
+        w4_off = *(uint32_t *)(e->at + 0x28);
+        stubs_for_now({{0x4f5950, (void *)w4_stub_four}, {0x4f1740, (void *)stub_thiscall1}, {0x4f5060, (void *)stub_plain_dtor}, {0x4f41c0, (void *)stub_thiscall1}});
+    };
+    w4_target.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_target);
+    // SlotPool::Take: room left, full, empty; slots are small indices into the copy's own item size
+    Test w4_slot{0x735b20,
+                 [=](Rng &r) {
+                     fresh(r);
+                     int32_t *self = arena<int32_t>(0x100);
+                     self[0] = (int32_t)(uintptr_t)arena<void>(0x5000);
+                     self[1] = (int32_t)(uintptr_t)arena<void>(0x3000);
+                     self[3] = r.range(0, 6);
+                     self[2] = r.range(0, 1) ? self[3] : r.range(0, self[3]);
+                     for (int i = 0; i < 0x200; i++) arena<int32_t>(0x3000)[i] = r.range(0, 7);
+                 },
+                 [](void *fn) { return Result{(uint32_t)((int32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    w4_slot.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1b + 5 + *(int32_t *)(e->at + 0x1c)), (void *)w4_stub_grow}}); };
+    w4_slot.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_slot);
+    // Limit::Check: levels around 1; the object's limit at both fields
+    Test w4_limit{0x536b50,
+                  [=](Rng &r) {
+                      fresh(r);
+                      *(void **)arena<uint8_t>(0x800 + 0x294) = arena<void>(0x300);
+                      arena<uint32_t>(0x300)[10] = r.next();
+                      arena<uint32_t>(0x300)[11] = r.next();
+                      arena<uint8_t>(0x510)[1] = (uint8_t)r.range(0, 4);
+                  },
+                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x800))}; }};
+    w4_limit.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xbb3e70, (void *)w4_stub_record}, {0x532ea0, (void *)w4_stub_first},
+                       {(uintptr_t)(e->at + 0x34 + 5 + *(int32_t *)(e->at + 0x35)), (void *)w4_stub_second},
+                       {(uintptr_t)(e->at + 0x3d + 5 + *(int32_t *)(e->at + 0x3e)), (void *)w4_stub_check}});
+    };
+    w4_limit.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_limit);
+    // Events::Add: with room and without; only the argument's low byte counts
+    Test w4_events{0x475cb0,
+                   [=](Rng &r) {
+                       fresh(r);
+                       uint8_t *self = arena<uint8_t>(0x800);
+                       *(void **)(self + 0x7c) = arena<void>(0x900);
+                       int count = r.range(0, 6);
+                       *(int32_t *)(self + 0x84) = count;
+                       *(int32_t *)(self + 0x80) = count + r.range(-1, 2);
+                       *arena<uint32_t>(0x10) = (uint32_t)r.range(0, 3) << 7;
+                   },
+                   [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x10)); return Result{}; }};
+    w4_events.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x475a30, (void *)w4_stub_events_room}}); };
+    w4_events.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_events);
+    // Tree::Update: a root at 0x800 with up to 2 children (0x1400, 0x1700), each with its own parts and no children
+    Test w4_tree{0x86ed80,
+                 [=](Rng &r) {
+                     fresh(r);
+                     auto chain = [&](uint32_t at, int n, uint32_t holders) {
+                         for (int i = 0; i < n; i++) {
+                             void **node = arena<void *>(at + i * 0x10);
+                             node[0] = arena<void>(at + (i + 1) * 0x10);
+                             node[2] = holders ? arena<void>(holders + i * 0x10) : (void *)(uintptr_t)r.next();
+                         }
+                         arena<void *>(at + n * 0x10)[0] = nullptr;
+                         return arena<void>(at);
+                     };
+                     uint32_t objects[2] = {0x1400, 0x1700};
+                     for (int i = 0; i < 2; i++) {
+                         *(void **)arena<uint8_t>(objects[i] + 0x130) = chain(0x1a00 + i * 0x80, r.range(0, 3), 0);
+                         *(void **)arena<uint8_t>(objects[i] + 0x148) = chain(0x1b00 + i * 0x80, 0, 0);
+                         arena<void *>(0x1c00 + i * 0x10)[0] = arena<void>(objects[i]);
+                     }
+                     *(void **)arena<uint8_t>(0x800 + 0x130) = chain(0x1000, r.range(0, 3), 0);
+                     *(void **)arena<uint8_t>(0x800 + 0x148) = chain(0x1100, r.range(0, 2), 0x1c00);
+                 },
+                 [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x800)); return Result{}; }};
+    w4_tree.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x16 + 5 + *(int32_t *)(e->at + 0x17)), (void *)stub_plain_dtor}}); };
+    w4_tree.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_tree);

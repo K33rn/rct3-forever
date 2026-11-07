@@ -315,3 +315,276 @@ static uint8_t __thiscall query_ask(void **self, int32_t *value) {
 static const uint8_t query_ask_original[] = {0x83, 0xec, 0x10, 0x8b, 0x11, 0x56, 0x8b, 0x74, 0x24, 0x18};
 REWRITE("Query::Ask4A9210", 0x4a9210, query_ask_original, (&query_ask), &g_queries);
 REWRITE("Query::Ask4A9210", 0x5a2c20, query_ask_original, (&query_ask), &g_queries);
+
+// ---- Kept::Value: the value of the interface kept by a reference at +REF, 0 when there is none -----------------------------------
+static volatile long g_kept_values;
+template <uint32_t REF> static uint32_t __fastcall kept_value(uint8_t *self) {
+    g_kept_values++;
+    uint8_t *found = (uint8_t *)ref_interface<0x130bbec>(self + REF);
+    if (!found) return 0;
+    return ((uint32_t(__fastcall *)(void *))0x846ae0)(found + 0x40);
+}
+static const uint8_t kept_value_original[] = {0x56, 0x8b, 0xf1, 0x8a, 0x86};
+REWRITE("Kept::Value4ABC40", 0x4abc40, kept_value_original, (&kept_value<0x3ac>), &g_kept_values);
+REWRITE("Kept::Value4ABC40", 0x586330, kept_value_original, (&kept_value<0x1d4>), &g_kept_values);
+REWRITE("Kept::Value4ABC40", 0x591a30, kept_value_original, (&kept_value<0x1ec>), &g_kept_values);
+REWRITE("Kept::Value4ABC40", 0xa7bec0, kept_value_original, (&kept_value<0x1ac>), &g_kept_values);
+
+// ---- Refs::AnyHas: whether any reference (up to and including the last index, +0x78) has an object with the interface ID ----------
+static inline void *object_interface(void *object, const int32_t *id) {
+    if (!object) return nullptr;
+    ClassInterfaces *c = ((ClassInterfaces * (__fastcall *)(void *))(*(void ***)object)[1])(object);
+    if (!c || *id >= c->count || !c->by_id[*id]) return nullptr;
+    return (uint8_t *)object + c->by_id[*id]->offset;
+}
+static volatile long g_refs_any;
+template <uint32_t ID> static uint8_t __fastcall refs_any_has(uint8_t *self) {
+    g_refs_any++;
+    for (int32_t i = 0; i <= *(int32_t *)(self + 0x78); i++) {
+        void *object = ref_interface<0x13d0058>(*(uint8_t **)(self + 0x7c) + i * 0x1c);
+        if (object_interface(object, (const int32_t *)ID)) return 1;
+    }
+    return 0;
+}
+static const uint8_t refs_any_original[] = {0x51, 0x53, 0x55, 0x8b, 0xe9, 0x8b, 0x45, 0x78, 0x33, 0xdb};
+REWRITE("Refs::AnyHasB453A0", 0xb453a0, refs_any_original, (&refs_any_has<0x13ce864>), &g_refs_any);
+REWRITE("Refs::AnyHasB453A0", 0xb45460, refs_any_original, (&refs_any_has<0x13ce90c>), &g_refs_any);
+
+// ---- Reference::Assign: leaves the old handle and takes the other reference's, telling the reference (its first virtual) -----------
+static inline void reference_assign(uint8_t *ref, uint8_t *other) {
+    Node *node = (Node *)(ref + 8);
+    unlink(node);
+    ((void(__thiscall *)(void *, uint32_t))0x8055c0)(*(void **)(ref + 4), 0);
+    uint8_t *handle = *(uint8_t **)(other + 4);
+    ++*(int32_t *)(handle + 8);
+    *(uint8_t **)(ref + 4) = handle;
+    Node *head = *(Node **)(handle + 0x20);
+    node->next = head->next;
+    head->next->prev = node;
+    node->prev = head;
+    head->next = node;
+    ((void(__fastcall *)(void *))(*(void ***)ref)[0])(ref);
+}
+static volatile long g_reference_copies;
+static uint8_t *__thiscall reference_copy(uint8_t *self, uint8_t *other) {
+    g_reference_copies++;
+    reference_assign(self, other);
+    *(uint32_t *)(self + 0x14) = *(uint32_t *)(other + 0x14);
+    *(uint32_t *)(self + 0x18) = *(uint32_t *)(other + 0x18);
+    self[0x1c] = other[0x1c];
+    *(uint32_t *)(self + 0x20) = *(uint32_t *)(other + 0x20);
+    self[0x24] = other[0x24];
+    return self;
+}
+static const uint8_t reference_copy_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x57, 0x8d, 0x7e, 0x08};
+REWRITE("Reference::Copy82E860", 0x82e860, reference_copy_original, (&reference_copy), &g_reference_copies);
+REWRITE("Reference::Copy82E860", 0xb4b4b0, reference_copy_original, (&reference_copy), &g_reference_copies);
+
+// ---- Reference::AssignAt: assigns the reference held at +OFF ----------------------------------------------------------------
+static volatile long g_reference_assigns;
+template <uint32_t OFF> static void __thiscall reference_assign_at(uint8_t *self, uint8_t *other) {
+    g_reference_assigns++;
+    reference_assign(self + OFF, other);
+}
+template <uint32_t OFF> static const uint8_t reference_assign_original[] = {
+    0x56, 0x57, 0x8d, 0xb9, (uint8_t)OFF, (uint8_t)(OFF >> 8), (uint8_t)(OFF >> 16), (uint8_t)(OFF >> 24)};
+REWRITE("Reference::AssignAt530F40", 0x530f40, reference_assign_original<0x514>, (&reference_assign_at<0x514>), &g_reference_assigns);
+REWRITE("Reference::AssignAt530F40", 0x8268a0, reference_assign_original<0xbc>, (&reference_assign_at<0xbc>), &g_reference_assigns);
+
+// ---- ItemArray::Resize: new aligned items for {data, count}, as many of the old as fit assigned over ----------------------------
+static void(__stdcall *const construct_items)(void *, uint32_t, int32_t, uint32_t) = (void(__stdcall *)(void *, uint32_t, int32_t, uint32_t))0x5d3d00;
+static volatile long g_item_resizes;
+template <uint32_t CONSTRUCT, uint32_t ASSIGN> static int32_t __thiscall item_array_resize(uint32_t *self, int32_t count) {
+    g_item_resizes++;
+    int32_t old_count = (int32_t)self[1];
+    if (count == old_count) return count;
+    uint8_t *items = nullptr;
+    if (count) {
+        items = (uint8_t *)memory_alloc_aligned(count * 0x14);
+        if (items) construct_items(items, 0x14, count, CONSTRUCT);
+        int32_t keep = count < old_count ? count : old_count;
+        for (int32_t i = 0; i < keep; i++)
+            ((void(__thiscall *)(void *, void *))ASSIGN)(items + i * 0x14, (uint8_t *)(uintptr_t)self[0] + i * 0x14);
+    }
+    if (self[0]) {
+        memory_free_aligned((void *)(uintptr_t)self[0]);
+        self[0] = 0;
+    }
+    self[0] = (uint32_t)(uintptr_t)items;
+    self[1] = (uint32_t)count;
+    return count;
+}
+static const uint8_t item_resize_original[] = {0x83, 0xec, 0x08, 0x55, 0x8b, 0x6c, 0x24, 0x10};
+REWRITE("ItemArray::Resize5D42A0", 0x5d42a0, item_resize_original, (&item_array_resize<0x5d3ce0, 0x5d3d40>), &g_item_resizes);
+REWRITE("ItemArray::Resize5D42A0", 0x5d43c0, item_resize_original, (&item_array_resize<0x5d3da0, 0x5d3e60>), &g_item_resizes);
+REWRITE("ItemArray::Resize5D42A0", 0x5d44e0, item_resize_original, (&item_array_resize<0x5d3dc0, 0x5d3ec0>), &g_item_resizes);
+
+// ---- ItemArray::Reset: drops the items of {data, count} and makes `count` new ones of 32 bytes ----------------------------------
+static volatile long g_item_resets;
+template <uint32_t CONSTRUCT> static int32_t __thiscall item_array_reset(uint32_t *self, int32_t count) {
+    g_item_resets++;
+    if (self[0]) {
+        memory_free_aligned((void *)(uintptr_t)self[0]);
+        self[0] = 0;
+    }
+    if (count) {
+        void *items = memory_alloc_aligned((uint32_t)count << 5);
+        if (items) construct_items(items, 0x20, count, CONSTRUCT);
+        self[0] = (uint32_t)(uintptr_t)items;
+    }
+    self[1] = (uint32_t)count;
+    return count;
+}
+static const uint8_t item_reset_original[] = {0x53, 0x8b, 0xd9, 0x8b, 0x03, 0x85, 0xc0, 0x56};
+REWRITE("ItemArray::Reset5D7370", 0x5d7370, item_reset_original, (&item_array_reset<0x5d4600>), &g_item_resets);
+REWRITE("ItemArray::Reset5D7370", 0x5d74d0, item_reset_original, (&item_array_reset<0x5d4620>), &g_item_resets);
+
+// ---- A cursor node: a place in a list that survives what the walk does to the list ------------------------------------------
+static inline void cursor_before(Node *cursor, Node *n) {
+    cursor->next = n;
+    cursor->prev = n->prev;
+    cursor->value = nullptr;
+    n->prev->next = cursor;
+    n->prev = cursor;
+}
+static inline void cursor_past(Node *cursor, Node *n) {
+    unlink(cursor);
+    cursor->next = n->next;
+    n->next->prev = cursor;
+    cursor->prev = n;
+    n->next = cursor;
+}
+
+// ---- List::DeleteAll: deletes every value of the list at +OFF (each delete takes its node out), stepping over empty nodes ---------
+static volatile long g_list_delete_alls;
+template <uint32_t OFF> static void __fastcall list_delete_all(uint8_t *self) {
+    g_list_delete_alls++;
+    Node cursor;
+    cursor_before(&cursor, *(Node **)(self + OFF));
+    for (Node *n; (n = cursor.next)->next;) {
+        if (n->value) ((void(__thiscall *)(void *, uint32_t))(*(void ***)n->value)[0])(n->value, 1);
+        else cursor_past(&cursor, n);
+    }
+    unlink(&cursor);
+}
+template <uint32_t OFF> static const uint8_t list_delete_all_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x41, (uint8_t)OFF, 0x56, 0x33, 0xf6};
+REWRITE("List::DeleteAll6AF540", 0x6af540, list_delete_all_original<0x64>, (&list_delete_all<0x64>), &g_list_delete_alls);
+REWRITE("List::DeleteAll6AF540", 0x6af600, list_delete_all_original<0x4c>, (&list_delete_all<0x4c>), &g_list_delete_alls);
+
+// ---- Members::Notify: after the base step, tells each member's owner (+0x13c) about the member ---------------------------------
+static volatile long g_members_notified;
+static void __thiscall members_notify(uint8_t *self, uint32_t) {
+    g_members_notified++;
+    ((void(__fastcall *)(void *))0x69a980)(self);
+    Node cursor;
+    cursor_before(&cursor, *(Node **)(self + 0xd4));
+    for (Node *n; (n = cursor.next)->next;) {
+        cursor_past(&cursor, n);
+        uint8_t *member = (uint8_t *)n->value;
+        if (!member) continue;
+        void *owner = *(void **)(member + 0x13c);
+        if (owner) ((void(__thiscall *)(void *, void *))(*(void ***)owner)[2])(owner, member);
+    }
+    unlink(&cursor);
+}
+static const uint8_t members_notify_original[] = {0x83, 0xec, 0x0c, 0x56, 0x57, 0x8b, 0xf1, 0xe8};
+REWRITE("Members::Notify6A20E0", 0x6a20e0, members_notify_original, (&members_notify), &g_members_notified);
+REWRITE("Members::Notify6A20E0", 0x6a21c0, members_notify_original, (&members_notify), &g_members_notified);
+
+// ---- List::Visit: hands +0x18 of each value of the list to a visitor's first virtual, skipping empty nodes -----------------------
+static volatile long g_list_visits;
+static void __thiscall list_visit(Node **list, void *visitor) {
+    g_list_visits++;
+    Node cursor;
+    cursor_before(&cursor, *list);
+    for (;;) {
+        Node *n = cursor.next;
+        while (n->next && !n->value) n = n->next;
+        if (!n->next) break;
+        cursor_past(&cursor, n);
+        ((void(__thiscall *)(void *, uint32_t))(*(void ***)visitor)[0])(visitor, *(uint32_t *)((uint8_t *)n->value + 0x18));
+    }
+    unlink(&cursor);
+}
+static const uint8_t list_visit_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x01, 0x56, 0x33, 0xf6};
+REWRITE("List::Visit49BAE0", 0x49bae0, list_visit_original, (&list_visit), &g_list_visits);
+REWRITE("List::Visit49BAE0", 0x762860, list_visit_original, (&list_visit), &g_list_visits);
+
+// ---- Coaster::SetTarget: in states 1, 3 and 4, moves to a new target (+FIELD) or, when nothing changed, just carries on -------------
+static volatile long g_target_sets;
+template <uint32_t FIELD, uint32_t BIT> static void __thiscall target_set(uint8_t *self, int32_t target) {
+    g_target_sets++;
+    int32_t state = *(int32_t *)(self + 0x144);
+    if (state != 1 && state != 3 && state != 4) return;
+    if (!*(uint32_t *)(self + 0x5dc) && *(int32_t *)(self + FIELD) == target && state != 1) {
+        ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))0x4f5950)(self, 0, 0, 0, 0);
+        return;
+    }
+    *(int32_t *)(self + FIELD) = target;
+    *(uint32_t *)(self + 0x5dc) = 0;
+    ((void(__thiscall *)(void *, uint32_t))0x4f1740)(self, BIT);
+    ((void(__fastcall *)(void *))0x4f5060)(self);
+    ((void(__thiscall *)(void *, uint32_t))0x4f41c0)(self, 0);
+}
+static const uint8_t target_set_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0x44, 0x01, 0x00};
+REWRITE("Target::Set4F65F0", 0x4f65f0, target_set_original, (&target_set<0x5e4, 1>), &g_target_sets);
+REWRITE("Target::Set4F65F0", 0x4f6670, target_set_original, (&target_set<0x5e8, 2>), &g_target_sets);
+REWRITE("Target::Set4F65F0", 0x4f66f0, target_set_original, (&target_set<0x5ec, 4>), &g_target_sets);
+
+// ---- SlotPool::Take: the next free slot of {items, free indices, used, capacity}, marked in use; a full pool doubles ---------------
+static volatile long g_slot_takes;
+template <uint32_t GROW, uint32_t SIZE> static int32_t __fastcall slot_pool_take(int32_t *self) {
+    g_slot_takes++;
+    if (self[2] >= self[3]) ((void(__thiscall *)(void *, int32_t))GROW)(self, self[3] > 0 ? self[3] * 2 : 200);
+    int32_t slot = ((int32_t *)(uintptr_t)self[1])[self[3] - self[2] - 1];
+    ((uint8_t *)(uintptr_t)self[0])[slot * SIZE] = 1;
+    self[2]++;
+    return slot;
+}
+static const uint8_t slot_take_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x0c, 0x39, 0x46, 0x08};
+REWRITE("SlotPool::Take735B20", 0x735b20, slot_take_original, (&slot_pool_take<0x735850, 0x98>), &g_slot_takes);
+REWRITE("SlotPool::Take735B20", 0x8ea260, slot_take_original, (&slot_pool_take<0x8e9330, 0x130>), &g_slot_takes);
+REWRITE("SlotPool::Take735B20", 0x964d20, slot_take_original, (&slot_pool_take<0x964bc0, 0x1018>), &g_slot_takes);
+
+// ---- Limit::Check: the object at +0x294's limit (3 at low levels) against two counts of this object ---------------------------------
+static volatile long g_limit_checks;
+template <uint32_t FIELD, uint32_t COUNT, uint32_t CHECK> static uint32_t __fastcall limit_check(uint8_t *self) {
+    g_limit_checks++;
+    uint8_t *object = *(uint8_t **)(self + 0x294);
+    uint8_t *record = ((uint8_t * (__fastcall *)(void *))0xbb3e70)(object);
+    uint32_t limit = record[1] > 1 ? *(uint32_t *)(object + FIELD) : 3;
+    uint32_t first = ((uint32_t(__fastcall *)(void *))0x532ea0)(self);
+    uint32_t second = ((uint32_t(__fastcall *)(void *))COUNT)(self);
+    return ((uint32_t(__fastcall *)(uint32_t, uint32_t, uint32_t))CHECK)(limit, second, first);
+}
+static const uint8_t limit_check_original[] = {0x56, 0x8b, 0xf1, 0x57, 0x8b, 0xbe, 0x94, 0x02, 0x00, 0x00};
+REWRITE("Limit::Check536B50", 0x536b50, limit_check_original, (&limit_check<0x28, 0x533ff0, 0xbb3de0>), &g_limit_checks);
+REWRITE("Limit::Check536B50", 0x536ba0, limit_check_original, (&limit_check<0x2c, 0x5340e0, 0xbb3de0>), &g_limit_checks);
+REWRITE("Limit::Check536B50", 0x536bf0, limit_check_original, (&limit_check<0x28, 0x533ff0, 0xbb3e20>), &g_limit_checks);
+REWRITE("Limit::Check536B50", 0x536c40, limit_check_original, (&limit_check<0x2c, 0x5340e0, 0xbb3e20>), &g_limit_checks);
+
+// ---- Events::Add: adds {kind, flag} to the array at +0x7c, room made ten at a time ------------------------------------------------
+static volatile long g_events_added;
+template <uint32_t KIND> static void __thiscall events_add(uint8_t *self, uint32_t flag) {
+    g_events_added++;
+    int32_t &count = *(int32_t *)(self + 0x84);
+    if (*(int32_t *)(self + 0x80) <= count) ((void(__thiscall *)(void *, int32_t))0x475a30)(self + 0x7c, count + 10);
+    uint32_t *event = *(uint32_t **)(self + 0x7c) + count * 2;
+    event[0] = KIND;
+    event[1] = (uint8_t)flag != 0;
+    count++;
+}
+static const uint8_t events_add_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0x84, 0x00, 0x00};
+REWRITE("Events::Add475CB0", 0x475cb0, events_add_original, (&events_add<1>), &g_events_added);
+REWRITE("Events::Add475CB0", 0x475d00, events_add_original, (&events_add<3>), &g_events_added);
+
+// ---- Tree::Update: updates the object's parts (list at +0x130), then each child's the same way (list at +0x148) ----------------------
+static volatile long g_tree_updates;
+template <uint32_t EACH> static void __fastcall tree_update(uint8_t *self) {
+    g_tree_updates++;
+    for (Node *n = *(Node **)(self + 0x130); n->next; n = n->next) ((void(__fastcall *)(void *))EACH)(n->value);
+    for (Node *n = *(Node **)(self + 0x148); n->next; n = n->next) tree_update<EACH>(*(uint8_t **)n->value);
+}
+static const uint8_t tree_update_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0xb7, 0x30, 0x01, 0x00, 0x00};
+REWRITE("Tree::Update86ED80", 0x86ed80, tree_update_original, (&tree_update<0x836bd0>), &g_tree_updates);
+REWRITE("Tree::Update86ED80", 0x86ede0, tree_update_original, (&tree_update<0x836d00>), &g_tree_updates);
