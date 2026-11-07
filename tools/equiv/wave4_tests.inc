@@ -1781,3 +1781,50 @@
     };
     w4_e_intern.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w4_e_intern);
+    // Picker::TakeFirst: 0-3 objects, each with or without class (so interfaces there or not), busy or not, answers 0-3 from both offers
+    static uint32_t w4_e_busy_id;
+    Test w4_e_take_first{0x7ac350,
+                         [=](Rng &r) {
+                             fresh(r);
+                             static void *vt[0x50];
+                             vt[1] = (void *)w4_e_stub_class;
+                             vt[0x13c / 4] = (void *)w4_e_stub_busy;
+                             static void *link_vt[1] = {(void *)w4_e_stub_told};
+                             *(uint32_t *)(uintptr_t)w4_e_busy_id = (uint32_t)r.range(0, 4) ? 1 : (uint32_t)r.range(0, 3);
+                             *(uint32_t *)(uintptr_t)0x12f51b4 = (uint32_t)r.range(0, 4) ? 2 : (uint32_t)r.range(0, 3);
+                             *(void **)(uintptr_t)0x12f4e4c = arena<void>(0x400);
+                             for (int i = 0; i < 0x90 / 4; i++) arena<uint32_t>(0x400 + 0x80)[i] = r.next();
+                             *arena<uint32_t>(0x2c) = (uint32_t)r.range(0, 3);
+                             for (int i = 0; i < 16; i++) arena<uint8_t>(0x30)[i] = (uint8_t)r.range(0, 3);
+                             uint8_t *cls = arena<uint8_t>(0x600);
+                             *(void **)(cls + 0x14) = arena<void>(0x640);
+                             *(int32_t *)(cls + 0x18) = 3;
+                             arena<void *>(0x640)[0] = nullptr;
+                             arena<void *>(0x640)[1] = arena<void>(0x660);
+                             arena<void *>(0x640)[2] = arena<void>(0x680);
+                             *(int32_t *)arena<uint8_t>(0x660 + 0x10) = 0x20;
+                             *(int32_t *)arena<uint8_t>(0x680 + 0x10) = 0x40;
+                             for (int i = 0; i < 3; i++)
+                                 for (int part = 0; part < 0x60; part += 0x20) {
+                                     uint8_t *p = arena<uint8_t>(0x1000 + i * 0x100 + part);
+                                     *(void **)p = vt;
+                                     *(void **)(p + 4) = r.range(0, 5) ? cls : nullptr;
+                                     p[8] = (uint8_t)r.range(0, 2) == 0;
+                                 }
+                             uint8_t *link = arena<uint8_t>(0x100 + 0x1bc);
+                             *(void **)link = link_vt;
+                             *(void **)(link + 4) = arena<void>(0x780);
+                             void **node = (void **)(link + 8), **a = arena<void *>(0x700), **b = arena<void *>(0x720);
+                             a[0] = node; node[1] = a; node[0] = b; b[1] = node; b[0] = a; a[1] = b;
+                             *(void **)arena<uint8_t>(0x800 + 0x20) = arena<void>(0x880);
+                             void **h = arena<void *>(0x880), **t = arena<void *>(0x8a0);
+                             h[0] = t; t[1] = h; t[0] = h; h[1] = t;
+                         },
+                         [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100)) & 0xff}; }};
+    w4_e_take_first.prepare = [](const rewrite::Entry *e) {
+        w4_e_busy_id = *(uint32_t *)(e->at + 0x40);
+        stubs_for_now({{0x4cce80, (void *)w4_e_stub_next}, {0x7aad50, (void *)w4_e_stub_offer}, {0x7ab810, (void *)w4_e_stub_offer_owner}, {0x8055c0, (void *)w4_e_stub_release},
+                       {0x805700, (void *)w4_e_stub_handle}, {0x4bf1f0, (void *)w4_e_stub_spot}, {0x7cd220, (void *)w4_e_stub_mode}});
+    };
+    w4_e_take_first.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w4_e_take_first);

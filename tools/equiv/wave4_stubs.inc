@@ -277,3 +277,30 @@ static void __fastcall w4_e_stub_grow(uint32_t *list, void *, uint32_t count) {
     record(0x7e02, (void *)(uintptr_t)count);
     list[1] = count;
 }
+// Picker::TakeFirst: objects at 0x1000 + i*0x100 (count at 0x2c); answers per object at 0x30 (picker) and 0x38 (owner)
+static uint32_t w4_e_index(void *object) { return object ? (uint32_t)(((uint8_t *)object - arena<uint8_t>(0x1000)) / 0x100) : 0xff; }
+static void *__fastcall w4_e_stub_class(uint8_t *self) { return *(void **)(self + 4); }
+static uint32_t __fastcall w4_e_stub_busy(uint8_t *self) { return 0x12345600u | self[8]; }
+static void *__fastcall w4_e_stub_next(void *world, void *, void *prev) {
+    record(0x7e10, (void *)(uintptr_t)w4_e_index(prev));
+    uint32_t i = prev ? w4_e_index(prev) + 1 : 0;
+    return i < *arena<uint32_t>(0x2c) ? arena<void>(0x1000 + i * 0x100) : nullptr;
+}
+static uint32_t __fastcall w4_e_stub_offer(void *self, void *, void *object) {
+    record(0x7e11, (void *)(uintptr_t)w4_e_index(object));
+    return arena<uint8_t>(0x30)[w4_e_index(object) & 7];
+}
+static uint32_t __fastcall w4_e_stub_offer_owner(void *self, void *, uint8_t *owner) {
+    record(0x7e12, (void *)(uintptr_t)(owner ? owner - arena<uint8_t>(0) : 0));
+    return owner ? arena<uint8_t>(0x38)[w4_e_index(owner) & 7] : arena<uint8_t>(0x3f)[0];
+}
+static void __fastcall w4_e_stub_release(void *handle, void *, uint32_t flag) { record(0x7e13, (void *)(uintptr_t)((uint8_t *)handle - arena<uint8_t>(0))); record(0x7e13, (void *)(uintptr_t)flag); }
+static void *__fastcall w4_e_stub_handle(void *object) { record(0x7e14, (void *)(uintptr_t)w4_e_index(object)); return arena<void>(0x800); }
+static void __fastcall w4_e_stub_told(void *link) { record(0x7e15, (void *)(uintptr_t)((uint8_t *)link - arena<uint8_t>(0))); }
+static uint32_t __fastcall w4_e_stub_spot(void *object, void *, uint32_t *position, uint32_t flag) {
+    record(0x7e16, (void *)(uintptr_t)w4_e_index(object));
+    for (int i = 0; i < 3; i++) record(0x7e16, (void *)(uintptr_t)position[i]);
+    record(0x7e16, (void *)(uintptr_t)flag);
+    return position[0] ^ 0x77;
+}
+static void __fastcall w4_e_stub_mode(void *world, void *, uint32_t mode, uint32_t value) { record(0x7e17, (void *)(uintptr_t)mode); record(0x7e17, (void *)(uintptr_t)value); }
