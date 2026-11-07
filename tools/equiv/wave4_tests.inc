@@ -1665,3 +1665,29 @@
     };
     w4d_badd.finish = w4c_unstub;
     quick(w4d_badd);
+    // Watch::Add: the watcher had or not; both lists empty or holding one node
+    Test w4d_watch{0x784b20,
+                   [=](Rng &r) {
+                       w4c_fill(r);
+                       *arena<void *>(0x2620) = arena<void>(0x2700);
+                       *(void **)arena<uint8_t>(0x800 + w4c_off) = arena<void>(0x2800);
+                       for (uint32_t h : {0x2700u, 0x2800u}) {
+                           W4dNode *head = arena<W4dNode>(h), *other = arena<W4dNode>(h + 0x10);
+                           if (r.range(0, 1)) {
+                               head->next = head->prev = other;
+                               other->next = other->prev = head;
+                           } else {
+                               head->next = head->prev = head;
+                           }
+                       }
+                   },
+                   [](void *fn) {
+                       w4d_allocs = 0;
+                       return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x800), *arena<uint32_t>(0x804))};
+                   }};
+    w4d_watch.prepare = [](const rewrite::Entry *e) {
+        w4c_off = *(uint8_t *)(e->at + 0x91);
+        stubs_for_now({{0xbcdfc0, (void *)w4d_stub_alloc_two}, {0x805700, (void *)w4d_stub_target}});
+    };
+    w4d_watch.finish = w4c_unstub;
+    quick(w4d_watch);

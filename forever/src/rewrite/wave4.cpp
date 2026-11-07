@@ -1831,3 +1831,32 @@ template <uint32_t ADD> static uint32_t __thiscall w4d_boxed_add(void *self, uin
 }
 REWRITE("Boxed::AddC33CB0", 0xc33cb0, (w4c_seh<0xea045b>), (&w4d_boxed_add<0xc33c00>), &g_w4d_boxed_adds);
 REWRITE("Boxed::AddC33CB0", 0xc343f0, (w4c_seh<0xea059b>), (&w4d_boxed_add<0xc34340>), &g_w4d_boxed_adds);
+
+// ---- Watch::Add: a new list node holding a new watcher (vtable 0xf26ae0) of the key's target, linked into the target's watchers; the node goes
+// into the list whose head is at LIST. If the watcher cannot be had the node holds null. -------------------------------------------------------
+static volatile long g_w4d_watch_adds;
+static inline void w4d_link_after(Node *node, Node *head) {
+    node->next = head->next;
+    head->next->prev = node;
+    node->prev = head;
+    head->next = node;
+}
+template <uint32_t LIST> static Node *__thiscall w4d_watch_add(uint8_t *self, void *key) {
+    g_w4d_watch_adds++;
+    Node *node = (Node *)memory_alloc(sizeof(Node));
+    if (node) {
+        uint32_t *watcher = (uint32_t *)memory_alloc(0x14);
+        if (watcher) {
+            watcher[0] = 0xf26ae0;
+            watcher[4] = (uint32_t)(uintptr_t)watcher;
+            uint8_t *target = ((uint8_t * (__fastcall *)(void *))0x805700)(key);
+            watcher[1] = (uint32_t)(uintptr_t)target;
+            w4d_link_after((Node *)(watcher + 2), *(Node **)(target + 0x20));
+        }
+        node->value = watcher;
+    }
+    w4d_link_after(node, *(Node **)(self + LIST));
+    return node;
+}
+REWRITE("Watch::Add784B20", 0x784b20, (w4c_seh<0xe521b6>), (&w4d_watch_add<0x54>), &g_w4d_watch_adds);
+REWRITE("Watch::Add784B20", 0x871240, (w4c_seh<0xe629d6>), (&w4d_watch_add<0x48>), &g_w4d_watch_adds);

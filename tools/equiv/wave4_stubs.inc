@@ -235,3 +235,13 @@ static void *__cdecl w4d_stub_alloc_ok(uint32_t size) { record(0x4d0e, (void *)(
 static void *__thiscall w4d_stub_box(uint32_t *p, uint32_t value) { record(0x4d0f, p); record(0x4d0f, (void *)(uintptr_t)value); p[0] = value; p[1] = 0x4d0f; return p + 1; }
 static uint32_t __thiscall w4d_stub_add(void *self, uint32_t key, void *box) { record(0x4d10, self); record(0x4d10, (void *)(uintptr_t)key); record(0x4d10, box); return key + 7; }
 static void *__thiscall w4d_stub_mark(uint32_t *p, uint32_t a, uint32_t b, uint32_t c) { for (uint32_t v : {a, b, c}) record(0x4d11, (void *)(uintptr_t)v); for (int i = 0; i < 0x78 / 4; i++) p[i] = 0x4d110000 + i; return p; }
+// successive blocks; the second fails when the word at 0x20 is odd
+static int w4d_allocs;
+static void *__cdecl w4d_stub_alloc_two(uint32_t size) {
+    record(0x4d12, (void *)(uintptr_t)size);
+    int n = w4d_allocs++;
+    if (n == 1 && (*arena<uint32_t>(0x20) & 1)) return nullptr;
+    return arena<void>(0x2400 + n * 0x40);
+}
+static void *__fastcall w4d_stub_target(void *key) { record(0x4d13, key); return arena<void>(0x2600); }
+struct W4dNode { W4dNode *next, *prev; void *value; };
