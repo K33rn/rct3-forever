@@ -2125,3 +2125,45 @@ static void __fastcall w1e_pairs(uint32_t *self) {
 }
 REWRITE("Pairs::DestroyA5DF20", 0xa5df20, (w1c_seh<0xe82b88>), (&w1e_pairs<0xf8f3a8, 0xf8f394, 0xf0, 7, 0x1c, 4>), &g_w1e_pairs);
 REWRITE("Pairs::DestroyA5DF20", 0xa5e740, (w1c_seh<0xe82c88>), (&w1e_pairs<0xf8f5d0, 0xf8f5bc, 0xd8, 0x1f, 4, 8>), &g_w1e_pairs);
+
+// ---- Pooled::Destroy: our buffer freed, every node of our owner's chain handed back to the shared free list (counted),
+// then the final table set and our interface released -------------------------------------------------------------------
+static volatile long g_w1e_pooled;
+template <uint32_t T_FIRST, uint32_t T_LAST, uint32_t FREE, uint32_t FREED> static void __fastcall w1e_pooled(uint32_t *self) {
+    g_w1e_pooled++;
+    self[0] = T_FIRST;
+    memory_free_aligned((void *)(uintptr_t)self[11]);
+    uint32_t *node = *(uint32_t **)((uint8_t *)(uintptr_t)self[8] + 0x18);
+    while (node) {
+        uint32_t *next = (uint32_t *)(uintptr_t)node[6];
+        node[0] = *(uint32_t *)FREE;
+        *(uint32_t *)FREE = (uint32_t)(uintptr_t)node;
+        ++*(uint32_t *)FREED;
+        node = next;
+    }
+    self[0] = T_LAST;
+    void *face = (void *)(uintptr_t)self[1];
+    ((void(__stdcall *)(void *))(*(void ***)face)[2])(face);
+}
+REWRITE("Pooled::DestroyBE9480", 0xbe9480, (w1c_seh<0xe9e458>), (&w1e_pooled<0xfa5734, 0xfa5730, 0x13d0f4c, 0x13d0f54>), &g_w1e_pooled);
+REWRITE("Pooled::DestroyBE9480", 0xbfd170, (w1c_seh<0xe9e948>), (&w1e_pooled<0xfa5ca8, 0xfa5ca4, 0x13d2a0c, 0x13d2a14>), &g_w1e_pooled);
+
+// ---- Named::TextOf: a fresh text of our first (kind 0) or second (kind 1) name, the shared empty text when that name
+// is unset, and the default name for any other kind; written to *out ------------------------------------------------------
+static volatile long g_w1e_text_ofs;
+template <uint32_t FIRST, uint32_t SECOND> static void **__thiscall w1e_text_of(uint8_t *self, void **out, int32_t kind) {
+    g_w1e_text_ofs++;
+    uint32_t name = 0xf264ad;
+    if (kind == 0 || kind == 1) {
+        name = *(uint32_t *)(self + (kind ? SECOND : FIRST));
+        if (!name) {
+            *out = ((void *(__fastcall *)(uint8_t))0xbd0490)(1);
+            return out;
+        }
+    }
+    void *memory = memory_alloc(0x10);
+    *out = memory ? ((void *(__thiscall *)(void *, uint32_t))0xbcf850)(memory, name) : nullptr;
+    return out;
+}
+REWRITE("Named::TextOf75A5D0", 0x75a5d0, (w1c_seh<0xe50301>), (&w1e_text_of<0x84, 0x8c>), &g_w1e_text_ofs);
+REWRITE("Named::TextOf75A5D0", 0x75a6a0, (w1c_seh<0xe50331>), (&w1e_text_of<0x88, 0x90>), &g_w1e_text_ofs);

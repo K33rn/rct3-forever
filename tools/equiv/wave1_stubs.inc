@@ -238,3 +238,5 @@ static void __thiscall w1e_stub_hand(void *self, uint32_t limit, int32_t *text) 
     record(0x288, self); record(0x288, (void *)(uintptr_t)limit); record(0x288, text);
     if (text) { record(0x288, (void *)(uintptr_t)text[0]); record(0x288, (void *)(uintptr_t)text[3]); }
 }
+static void __stdcall w1e_stub_release(void *face) { record(0x289, face); }
+static void *__fastcall w1e_stub_empty_text(uint8_t flag) { record(0x28a, (void *)(uintptr_t)flag); return arena<void>(0x700); }
