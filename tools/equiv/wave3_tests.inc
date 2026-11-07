@@ -1827,3 +1827,78 @@
         for (int i = 0; i < 3; i++) *w3d_k_globals[i] = w3d_k_was[i];
     };
     quick(w3d_kind_test);
+    // ---- batch e: scanner buffers ----
+    auto w3e_hash = [](uint32_t *buffer, uint32_t words) {
+        if (!buffer) return 0u;
+        uint32_t mix = (uint32_t)(uintptr_t)buffer;
+        for (uint32_t i = 0; i < words; i++) mix = mix * 31 + buffer[i];
+        return mix;
+    };
+    // Scanner::CreateBuffer: any file and size; memory from the arena
+    Test w3e_create_test{0xc0be40,
+                         [=](Rng &r) {
+                             fresh(r);
+                             arena<uint32_t>(0x20)[0] = r.next();
+                             arena<uint32_t>(0x20)[1] = (uint32_t)r.range(0, 0x80);
+                         },
+                         [=](void *fn) {
+                             uint32_t *b = ((uint32_t * (__fastcall *)(uint32_t, uint32_t)) fn)(arena<uint32_t>(0x20)[0], arena<uint32_t>(0x20)[1]);
+                             return Result{w3e_hash(b, 10)};
+                         }};
+    w3e_create_test.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xdde1d8, (void *)stub_alloc_next}, {w3e_target(e, 0x4b), (void *)w3e_stub_flush}});
+    };
+    w3e_create_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3e_create_test);
+    // Scanner::ScanBuffer: sizes 0-31, with either end byte zero or not
+    Test w3e_scan_test{0xc0ad50,
+                       [=](Rng &r) {
+                           fresh(r);
+                           uint8_t *base = arena<uint8_t>(0x800);
+                           for (int i = 0; i < 0x40; i++) base[i] = (uint8_t)(r.next() | 1);
+                           uint32_t size = (uint32_t)r.range(0, 31), ends = (uint32_t)r.range(0, 4);
+                           if (size >= 2) {
+                               if (ends != 1) base[size - 2] = 0;
+                               if (ends != 2) base[size - 1] = 0;
+                           }
+                           arena<uint32_t>(0x20)[0] = size;
+                       },
+                       [=](void *fn) {
+                           uint32_t *b = ((uint32_t * (__fastcall *)(void *, uint32_t)) fn)(arena<void>(0x800), arena<uint32_t>(0x20)[0]);
+                           return Result{w3e_hash(b, 10)};
+                       }};
+    w3e_scan_test.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0xdde1d8, (void *)stub_alloc_next}, {w3e_target(e, 0x5d), (void *)w3e_stub_switch}});
+    };
+    w3e_scan_test.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(w3e_scan_test);
+    // Scanner::Restart: with or without a current buffer; the copy's globals are set in the call, folded in and put back after
+    static uint32_t w3e_g[7], w3e_g_was[7];   // current, file, count, text, position, hold
+    Test w3e_restart_test{0xc0f7b0,
+                          [=](Rng &r) {
+                              fresh(r);
+                              for (int i = 0; i < 16; i++) { arena<uint32_t>(0x900)[i] = r.next(); arena<uint32_t>(0xa00)[i] = r.next(); arena<uint32_t>(0xb00)[i] = r.next(); }
+                              arena<void *>(0x900)[2] = arena<void>(0xa04);
+                              arena<void *>(0xb00)[2] = arena<void>(0xa09);
+                              for (int i = 0; i < 6; i++) arena<uint32_t>(0x20)[i] = r.next();
+                          },
+                          [=](void *fn) {
+                              uint32_t *a = arena<uint32_t>(0x20);
+                              *(void **)(uintptr_t)w3e_g[0] = a[0] & 1 ? arena<void>(0x900) : nullptr;
+                              for (int i = 1; i < 5; i++) *(uint32_t *)(uintptr_t)w3e_g[i] = a[i];
+                              *(uint8_t *)(uintptr_t)w3e_g[5] = (uint8_t)a[5];
+                              ((void(__fastcall *)(uint32_t))fn)(a[5] ^ 0x1234567);
+                              uint32_t mix = *(uint8_t *)(uintptr_t)w3e_g[5];
+                              for (int i = 0; i < 5; i++) mix = mix * 31 + *(uint32_t *)(uintptr_t)w3e_g[i];
+                              return Result{mix};
+                          }};
+    w3e_restart_test.prepare = [](const rewrite::Entry *e) {
+        static const int at[6] = {0x3, 0x10, 0x41, 0x49, 0x59, 0x5f};
+        for (int i = 0; i < 6; i++) { w3e_g[i] = *(uint32_t *)(e->at + at[i]); w3e_g_was[i] = *(uint32_t *)(uintptr_t)w3e_g[i]; }
+        stubs_for_now({{w3e_target(e, 0x19), (void *)w3e_stub_create}, {w3e_target(e, 0x28), (void *)w3e_stub_flush}});
+    };
+    w3e_restart_test.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        for (int i = 0; i < 6; i++) *(uint32_t *)(uintptr_t)w3e_g[i] = w3e_g_was[i];
+    };
+    quick(w3e_restart_test);

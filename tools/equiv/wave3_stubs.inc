@@ -419,3 +419,15 @@ static void __fastcall w3d_stub_post(void *target, int32_t **text, uint32_t kind
     record(0xc211c0, (void *)(uintptr_t)kind);
     if (arena<uint32_t>(0x24)[0] & 2) ++**text;
 }
+// Scanner buffers (batch e): flush, switch and create record what they were given; flush and create leave a mark
+static uint32_t w3e_target(const rewrite::Entry *e, uint32_t call_at) { return (uint32_t)(uintptr_t)e->at + call_at + 5 + *(int32_t *)(e->at + call_at + 1); }
+static void __fastcall w3e_stub_flush(uint32_t *buffer) {
+    record(0xc09740, buffer);
+    buffer[9] = 0x5a5a0000u + buffer[3];
+}
+static void __fastcall w3e_stub_switch(uint32_t *buffer) { record(0xc0ac90, buffer); }
+static uint32_t *__fastcall w3e_stub_create(uint32_t file, uint32_t size) {
+    record(0xc0be40, (void *)(uintptr_t)file);
+    record(0xc0be40, (void *)(uintptr_t)size);
+    return arena<uint32_t>(0xb00);
+}
