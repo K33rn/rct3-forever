@@ -407,6 +407,9 @@ static void *__thiscall stub_item_make(void *memory, int32_t a, int32_t b, int32
 static void __thiscall stub_item_set_type(void *item, uint32_t type, int32_t zero) { record(0x6f, item); record(0x6f, (void *)(uintptr_t)type); record(0x6f, (void *)(intptr_t)zero); }
 static void *__thiscall stub_new_handle(void *item) { record(0x70, item); return arena<void>(0x700); }
 static void __thiscall stub_slot_told(void *slot) { record(0x71, slot); }
+static void __thiscall stub_tool_setup(void *global, int32_t zero, void **a, void **b, void **c) {
+    record(0x72, global); record(0x72, (void *)(intptr_t)zero); record(0x72, *a); record(0x72, *b); record(0x72, *c);
+}
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4820,6 +4823,14 @@ static std::vector<Test> tests() {
     };
     carried_get_or_make.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(carried_get_or_make);
+    // HandymanTools::Make: the three names, the setup and the exit registration are stand-ins
+    Test handyman_tool_make{0xed88b0, [=](Rng &r) { fresh(r); *arena<uint32_t>(ALLOC_NEXT) = 0; },
+                            [](void *fn) { ((void(__cdecl *)())fn)(); return Result{}; }};
+    handyman_tool_make.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0x753fe0, (void *)stub_tool_setup}});
+    };
+    handyman_tool_make.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(handyman_tool_make);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

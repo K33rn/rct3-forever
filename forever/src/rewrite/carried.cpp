@@ -58,3 +58,36 @@ REWRITE("CarriedItem::GetOrMake", 0xa2cb40, carried_get_or_make_original, (&carr
 REWRITE("CarriedItem::GetOrMake", 0xa2ccf0, carried_get_or_make_original, (&carried_get_or_make<0xc4, 0xf89368>), &g_carried_gets);
 REWRITE("CarriedItem::GetOrMake", 0xa2cea0, carried_get_or_make_original, (&carried_get_or_make<0xd8, 0xf89374>), &g_carried_gets);
 REWRITE("CarriedItem::GetOrMake", 0xa2d050, carried_get_or_make_original, (&carried_get_or_make<0xec, 0xf89380>), &g_carried_gets);
+
+// ---- HandymanTools::Make: at start-up, a handyman's tool (a brush, a sponge...) is set up on its global from three
+// names (the tool, `People\HandyMan\Tools`, the model), then its clean-up registered for the exit ----------------------------
+static volatile long g_tool_makes;
+static void *make_text(const char *text) {
+    void *made = memory_alloc(0x10);
+    return made ? ((void *(__thiscall *)(void *, const char *))0xbcf850)(made, text) : nullptr;
+}
+static void release_text(void *text) {
+    int32_t *block = (int32_t *)text;
+    if (--*block) return;
+    memory_free_aligned((void *)(uintptr_t)block[3]);
+    memory_free(block);
+}
+template <uintptr_t TOOL, uintptr_t MODEL, uintptr_t GLOBAL, uintptr_t CLEAN_UP> static void __cdecl handyman_tool_make() {
+    g_tool_makes++;
+    void *tool = make_text((const char *)TOOL), *folder = make_text((const char *)0xf6fa0c), *model = make_text((const char *)MODEL);
+    ((void(__thiscall *)(void *, int32_t, void **, void **, void **))0x753fe0)((void *)GLOBAL, 0, &model, &folder, &tool);
+    release_text(model);
+    release_text(folder);
+    release_text(tool);
+    ((int(__cdecl *)(void *))0xddc870)((void *)CLEAN_UP);
+}
+static const uint8_t handyman_tool_ed88b0_original[] = {0x6a, 0xff, 0x68, 0xe9, 0x4f, 0xe5, 0x00};
+REWRITE("HandymanTools::Make", 0xed88b0, handyman_tool_ed88b0_original, (&handyman_tool_make<0xf6f9ec, 0xf6f9ec, 0x1306b1c, 0xf20140>), &g_tool_makes);
+static const uint8_t handyman_tool_ed8a20_original[] = {0x6a, 0xff, 0x68, 0x39, 0x50, 0xe5, 0x00};
+REWRITE("HandymanTools::Make", 0xed8a20, handyman_tool_ed8a20_original, (&handyman_tool_make<0xf6f9f4, 0xf6f9f4, 0x1306b64, 0xf20150>), &g_tool_makes);
+static const uint8_t handyman_tool_ed8b90_original[] = {0x6a, 0xff, 0x68, 0x89, 0x50, 0xe5, 0x00};
+REWRITE("HandymanTools::Make", 0xed8b90, handyman_tool_ed8b90_original, (&handyman_tool_make<0xf6fa2c, 0xf6fa24, 0x1306b7c, 0xf20160>), &g_tool_makes);
+static const uint8_t handyman_tool_ed8d00_original[] = {0x6a, 0xff, 0x68, 0xd9, 0x50, 0xe5, 0x00};
+REWRITE("HandymanTools::Make", 0xed8d00, handyman_tool_ed8d00_original, (&handyman_tool_make<0xf6fa34, 0xf6fa00, 0x1306b4c, 0xf20170>), &g_tool_makes);
+static const uint8_t handyman_tool_ed8e70_original[] = {0x6a, 0xff, 0x68, 0x29, 0x51, 0xe5, 0x00};
+REWRITE("HandymanTools::Make", 0xed8e70, handyman_tool_ed8e70_original, (&handyman_tool_make<0xf6fa44, 0xf6fa40, 0x1306b00, 0xf20180>), &g_tool_makes);

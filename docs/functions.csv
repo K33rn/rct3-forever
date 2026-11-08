@@ -69590,11 +69590,11 @@ address,size,name,callers,status
 0xed87d0,91,Start::Name,1,rewritten
 0xed8830,91,Start::Name,1,rewritten
 0xed8890,32,ModuleGlobal,1,rewritten
-0xed88b0,354,,1,documented
-0xed8a20,354,,1,documented
-0xed8b90,354,,1,documented
-0xed8d00,354,,1,documented
-0xed8e70,354,,1,documented
+0xed88b0,354,HandymanTools::Make,1,rewritten
+0xed8a20,354,HandymanTools::Make,1,rewritten
+0xed8b90,354,HandymanTools::Make,1,rewritten
+0xed8d00,354,HandymanTools::Make,1,rewritten
+0xed8e70,354,HandymanTools::Make,1,rewritten
 0xed8fe0,32,ModuleGlobal,1,rewritten
 0xed9000,108,Start::ClassDescription,1,rewritten
 0xed9090,32,ModuleGlobal,1,rewritten
