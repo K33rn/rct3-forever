@@ -5052,6 +5052,31 @@ static std::vector<Test> tests() {
             if (code[k] == 0x83 && code[k + 1] == 0xc6 && code[k + 3] == 0x83 && code[k + 4] == 0xc7 && code[k + 5] == 0x18) g_skin_vertex_size = code[k + 2];
     };
     quick(skin_positions_normals);
+    // Skin::Full: vertices of 0x40 bytes (out 0x30) so every copy's fields fit; bone bytes 0-7 where any copy keeps its
+    // bones; alpha anywhere (NaN, negative, over 1, halfway between whole numbers); a uv scale and offset
+    Test skin_full{0xbf0e70,
+                   [=](Rng &r) {
+                       skin_positions.setup(r);
+                       uint16_t *layout = arena<uint16_t>(0x800);
+                       layout[0] = 0x40; layout[1] = 0x30; layout[2] = (uint16_t)r.next();
+                       uint8_t *v = arena<uint8_t>(0x2000);
+                       for (int i = 0; i < 40; i++) {
+                           uint8_t *at = v + i * 0x40;
+                           for (int c = 0; c < 16; c++) ((float *)at)[c] = r.range(0, 20) ? r.real(-50, 50) : r.any_float();
+                           for (int b = 0; b < 4; b++) at[0x18 + b] = at[0x28 + b] = (uint8_t)r.range(0, 7);
+                           for (int b = 0; b < 4; b++) at[0x2c + b] = (uint8_t)r.next();
+                           at[0x1f] = (uint8_t)r.next(); at[0x2f] = (uint8_t)r.next(); at[0x33] = (uint8_t)r.next();
+                       }
+                       int a = r.range(0, 5);
+                       arena<float>(0x10)[0] = a == 0 ? r.any_float() : a == 1 ? (r.range(0, 510) + 0.5f) / 255.0f * (r.range(0, 1) ? 1 : -1) : r.real(-0.5f, 1.5f);
+                       for (int c = 0; c < 4; c++) arena<float>(0x700)[c] = r.range(0, 9) ? r.real(-4, 4) : geo_pick(r);
+                   },
+                   [](void *fn) {
+                       ((void(__fastcall *)(void *, void *, float, void *, void *, void *, void *))fn)(arena<void>(0x1000), arena<void>(0x700), arena<float>(0x10)[0],
+                                                                                                       arena<void>(0x708), arena<void>(0x800), arena<void>(0x2000), arena<void>(0x6000));
+                       return Result{};
+                   }};
+    quick(skin_full);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

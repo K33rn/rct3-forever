@@ -127,3 +127,76 @@ REWRITE("Skin::Positions", 0xbef450, skin_positions_original, &skin_positions, &
 static const uint8_t skin_positions_normals_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x18, 0x53, 0x56};
 REWRITE("Skin::PositionsNormals", 0xbef8f0, skin_positions_normals_original, (&skin_positions_normals<0x1a, 0x1c>), &g_skins);
 REWRITE("Skin::PositionsNormals", 0xbefe00, skin_positions_normals_original, (&skin_positions_normals<0x1c, 0x20>), &g_skins);
+
+// ---- Skin::Full(bones, uv scale; alpha, uv offset, layout, vertices, out): as Skin::PositionsNormals with a tangent
+// (TANGENT: turned by the first bone like the normal), a word copied over (WORD_FROM to WORD_TO, after the tangent; -1:
+// none), a colour (COLOUR_IN: rgb kept, alpha its alpha byte + 1 times the alpha given, rounded by the FPU to a whole
+// number and kept to 0-255; -1: none) and texture coordinates (UV_IN, two floats, times the scale plus the offset, on the
+// FPU). Vertices and out move by the layout's two sizes; bones at +BONES, weights at +WEIGHTS ---------------------------------
+static int32_t fpu_round_low(long double value) {   // fistp to 64 bits, as the game rounds (the FPU's rounding mode)
+    int64_t whole;
+    __asm__("fistpll %0" : "=m"(whole) : "t"(value) : "st");
+    return (int32_t)whole;
+}
+template <bool TANGENT, uint32_t BONES, uint32_t WEIGHTS, int WORD_FROM, uint32_t WORD_TO, int COLOUR_IN, uint32_t COLOUR_OUT, uint32_t UV_IN, uint32_t UV_OUT>
+SSE static void __fastcall skin_full(const float *bones, const float *uv_scale, float alpha, const float *uv_offset, const uint16_t *layout, const uint8_t *vertex,
+                                     uint8_t *out) {
+    g_skins++;
+    int32_t alpha_whole = fpu_round_low((long double)alpha * 255.0f);
+    if (alpha_whole < 0) alpha_whole = 0;
+    if (alpha_whole > 0xff) alpha_whole = 0xff;
+    uint32_t size_in = layout[0], size_out = layout[1];
+    const uint16_t *run = layout + 3;
+    for (;;) {
+        uint32_t count = *run >> 2;
+        if (!count) {
+            uint32_t skip = run[1];
+            if (!skip) return;
+            vertex += skip * size_in;
+            out += skip * size_out;
+            run += 2;
+            continue;
+        }
+        uint32_t more = *run & 3;
+        for (; count; count--) {
+            const float *at = (const float *)vertex;
+            uint8_t bone = vertex[BONES];
+            __m128 v = bone_point(bones, bone, at), n = bone_normal(bones, bone, at + 3), t = TANGENT ? bone_normal(bones, bone, at + 6) : n;
+            if (more) {
+                v = _mm_mul_ps(v, _mm_set1_ps(bone_weight(vertex[WEIGHTS])));
+                for (uint32_t k = more; k; k--)
+                    v = _mm_add_ps(v, _mm_mul_ps(bone_point_more(bones, vertex[BONES + k], at), _mm_set1_ps(bone_weight(vertex[WEIGHTS + k]))));
+            }
+            store3((float *)out, v);
+            store3((float *)out + 3, n);
+            if (TANGENT) store3((float *)out + 6, t);
+            if (WORD_FROM >= 0) *(uint32_t *)(out + WORD_TO) = *(const uint32_t *)(vertex + WORD_FROM);
+            if (COLOUR_IN >= 0) {
+                uint32_t scaled = ((uint32_t)vertex[COLOUR_IN + 3] + 1) * (uint32_t)alpha_whole;
+                *(uint32_t *)(out + COLOUR_OUT) = (scaled << 16 & 0xff000000) | (*(const uint32_t *)(vertex + COLOUR_IN) & 0xffffff);
+            }
+            const float *uv = (const float *)(vertex + UV_IN);
+            ((float *)(out + UV_OUT))[0] = (float)((long double)uv[0] * uv_scale[0] + uv_offset[0]);
+            ((float *)(out + UV_OUT))[1] = (float)((long double)uv[1] * uv_scale[1] + uv_offset[1]);
+            vertex += size_in;
+            out += size_out;
+        }
+        run++;
+    }
+}
+static const uint8_t skin_full_bf0e70_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x18, 0xd9, 0x45};
+REWRITE("Skin::Full", 0xbf0e70, skin_full_bf0e70_original, (&skin_full<false, 0x18, 0x1a, -1, 0, -1, 0, 0x1c, 0x18>), &g_skins);
+static const uint8_t skin_full_bf1410_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x18, 0xd9, 0x45};
+REWRITE("Skin::Full", 0xbf1410, skin_full_bf1410_original, (&skin_full<false, 0x18, 0x1c, -1, 0, -1, 0, 0x20, 0x18>), &g_skins);
+static const uint8_t skin_full_bf1a10_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x18, 0xd9, 0x45};
+REWRITE("Skin::Full", 0xbf1a10, skin_full_bf1a10_original, (&skin_full<true, 0x28, 0x2a, 36, 0x20, -1, 0, 0x2c, 0x24>), &g_skins);
+static const uint8_t skin_full_bf2060_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x18, 0xd9, 0x45};
+REWRITE("Skin::Full", 0xbf2060, skin_full_bf2060_original, (&skin_full<true, 0x28, 0x2c, 36, 0x20, -1, 0, 0x30, 0x24>), &g_skins);
+static const uint8_t skin_full_bf2670_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x1c, 0xd9, 0x45};
+REWRITE("Skin::Full", 0xbf2670, skin_full_bf2670_original, (&skin_full<false, 0x18, 0x1a, -1, 0, 28, 0x18, 0x20, 0x1c>), &g_skins);
+static const uint8_t skin_full_bf2c60_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x1c, 0xd9, 0x45};
+REWRITE("Skin::Full", 0xbf2c60, skin_full_bf2c60_original, (&skin_full<false, 0x18, 0x1c, -1, 0, 32, 0x18, 0x24, 0x1c>), &g_skins);
+static const uint8_t skin_full_bf32b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x1c, 0xd9, 0x45};
+REWRITE("Skin::Full", 0xbf32b0, skin_full_bf32b0_original, (&skin_full<true, 0x28, 0x2a, 36, 0x20, 44, 0x24, 0x30, 0x28>), &g_skins);
+static const uint8_t skin_full_bf3950_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x1c, 0xd9, 0x45};
+REWRITE("Skin::Full", 0xbf3950, skin_full_bf3950_original, (&skin_full<true, 0x28, 0x2c, 36, 0x20, 48, 0x24, 0x34, 0x28>), &g_skins);
