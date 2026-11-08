@@ -4265,6 +4265,28 @@ static std::vector<Test> tests() {
                        return Result{hash};
                    }};
     quick(yuv_table);
+    // Planes::TestBox: six planes and a box near them; some normals 0, now and then any bit pattern
+    Test planes_test_box{0x42fb10,
+                         [](Rng &r) {
+                             float *f = arena<float>(0x100);
+                             for (int i = 0; i < 24; i++) f[i] = r.range(0, 5) ? r.real(-10, 10) : 0.0f;
+                             for (int i = 0; i < 12; i++) arena<float>(0x200)[i] = r.range(0, 30) ? r.real(-10, 10) : r.any_float();
+                             // most planes pass (almost) through a corner of the box, so rounding decides the answer
+                             const float *m = arena<float>(0x200), *lo = arena<float>(0x210), *sz = arena<float>(0x220);
+                             for (int k = 0; k < 6; k++) {
+                                 float *p = f + k * 4;
+                                 // the corner that decides "inside" (furthest against the normal) or "outside"
+                                 bool in = r.range(0, 5) != 0;
+                                 float hx = lo[0] + sz[0], hz = sz[1] + lo[1];
+                                 double x = (p[0] > 0) == in ? hx : lo[0], y = (p[1] > 0) == in ? m[2] : m[1], z = (p[2] > 0) == in ? hz : lo[1];
+                                 p[3] = (float)(-(p[0] * x + p[1] * y + p[2] * z) * (1 + (r.range(-2, 2)) * 3e-8));
+                             }
+                         },
+                         [](void *fn) {
+                             return Result{(uint32_t)((int32_t(__thiscall *)(void *, void *, void *, void *))fn)(arena<void>(0x100), arena<float>(0x200),
+                                                                                                         arena<float>(0x210), arena<float>(0x220))};
+                         }};
+    quick(planes_test_box);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
