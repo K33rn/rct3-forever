@@ -393,6 +393,20 @@ static void *__thiscall stub_object_info(uint8_t *object) { record(0x68, object)
 static uint32_t __thiscall stub_owner_of(uint32_t *owned) { record(0x69, owned); return *owned & 3; }
 static void __thiscall stub_flush_count(void *query, int32_t count) { record(0x6a, query); record(0x6a, (void *)(intptr_t)count); }
 static void __thiscall stub_draw(void *drawer, void *entry, void *normal, uint32_t extra) { record(0x6b, drawer); record(0x6b, entry); record(0x6b, normal); record(0x6b, (void *)(uintptr_t)extra); }
+static void *__cdecl stub_plain_alloc(uint32_t size) {
+    record(0xbcdfc0, (void *)(uintptr_t)size);
+    uint32_t &next = *arena<uint32_t>(ALLOC_NEXT);
+    if (next < ALLOC_START) next = ALLOC_START;
+    void *p = arena<void>(next);
+    next += (size + 15) & ~15u;
+    return p;
+}
+static void *__thiscall stub_name_text(uint32_t *self, const char *text) { record(0x6c, self); record(0x6c, (void *)text); self[0] = 1; self[3] = 0x1234; return self; }
+static void *__thiscall stub_type_by_name(void *self, void **name) { record(0x6d, self); record(0x6d, *name); return arena<uint32_t>(0x10)[2] & 1 ? arena<void>(0x600) : nullptr; }
+static void *__thiscall stub_item_make(void *memory, int32_t a, int32_t b, int32_t c) { record(0x6e, memory); record(0x6e, (void *)(intptr_t)(a + b + c)); return memory; }
+static void __thiscall stub_item_set_type(void *item, uint32_t type, int32_t zero) { record(0x6f, item); record(0x6f, (void *)(uintptr_t)type); record(0x6f, (void *)(intptr_t)zero); }
+static void *__thiscall stub_new_handle(void *item) { record(0x70, item); return arena<void>(0x700); }
+static void __thiscall stub_slot_told(void *slot) { record(0x71, slot); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4760,6 +4774,52 @@ static std::vector<Test> tests() {
     quad_walk_planes_drawn.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x430d00, (void *)stub_draw}, {(uintptr_t)0x432f50, (void *)stub_quad_take_all}}); };
     quad_walk_planes_drawn.finish = quad_take_all_drawn.finish;
     quick(quad_walk_planes_drawn);
+    // CarriedItem::GetOrMake: all five slots of a person filled (the copies use one each): a handle with an object or
+    // none, links in a list; the item is made through stand-ins; the object's interface through its slot 1
+    Test carried_get_or_make{0xa2c990,
+                             [=](Rng &r) {
+                                 fresh(r);
+                                 *arena<uint32_t>(ALLOC_NEXT) = 0;
+                                 static void *slot_table[1] = {(void *)stub_slot_told};
+                                 static void *object_table[2] = {nullptr, (void *)stub_object_info};
+                                 for (int k = 0; k < 5; k++) {
+                                     uint32_t *slot = arena<uint32_t>(0x100 + 0x98 + k * 0x14);
+                                     uint32_t *handle = arena<uint32_t>(0x900 + k * 0x20);
+                                     slot[0] = (uint32_t)(uintptr_t)slot_table;
+                                     slot[1] = (uint32_t)(uintptr_t)handle;
+                                     handle[3] = r.range(0, 1) ? (uint32_t)(uintptr_t)arena<void>(0x4000 + k * 0x100) : 0;
+                                     // the slot's link in a ring with one other node
+                                     uint32_t *other = arena<uint32_t>(0xa00 + k * 0x10);
+                                     slot[2] = slot[3] = (uint32_t)(uintptr_t)other;
+                                     other[0] = other[1] = (uint32_t)(uintptr_t)&slot[2];
+                                     uint8_t *object = arena<uint8_t>(0x4000 + k * 0x100);
+                                     *(void **)object = object_table;
+                                     *(uint32_t *)(object + 0x40) = r.next();
+                                 }
+                                 arena<uint32_t>(0x600)[0xbc / 4] = r.next();
+                                 uint32_t *new_handle = arena<uint32_t>(0x700);
+                                 new_handle[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(0x780);
+                                 arena<uint32_t>(0x780)[0] = (uint32_t)(uintptr_t)arena<void>(0x790);
+                                 arena<uint32_t>(0x790)[1] = (uint32_t)(uintptr_t)arena<void>(0x780);
+                                 uint32_t *info = arena<uint32_t>(0x8000);
+                                 info[0x14 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8100);
+                                 info[0x18 / 4] = r.range(0, 4);
+                                 for (int k = 0; k < 4; k++) arena<uint32_t>(0x8100)[k] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x8200 + k * 0x20) : 0;
+                                 for (int k = 0; k < 4; k++) arena<int32_t>(0x8200 + k * 0x20)[4] = r.range(0, 0x40);
+                                 arena<uint32_t>(0x10)[1] = r.range(0, 4);
+                                 arena<uint32_t>(0x10)[2] = r.next();
+                                 arena<uint32_t>(CALL_LOG)[0] = 0;
+                             },
+                             [](void *fn) {
+                                 *(int32_t *)0x1342768 = arena<int32_t>(0x10)[1];
+                                 return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *))fn)(arena<void>(0x100))};
+                             }};
+    carried_get_or_make.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0xa2c580, (void *)stub_type_by_name}, {0xa29230, (void *)stub_item_make},
+                       {0xa297d0, (void *)stub_item_set_type}, {0x805700, (void *)stub_new_handle}});
+    };
+    carried_get_or_make.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(carried_get_or_make);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

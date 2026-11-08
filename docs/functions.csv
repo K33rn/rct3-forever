@@ -15605,11 +15605,11 @@ address,size,name,callers,status
 0xa2c660,335,,2,documented
 0xa2c7b0,211,,1,documented
 0xa2c8e0,162,Text::FromA2C8E0,1,rewritten
-0xa2c990,421,,1,documented
-0xa2cb40,421,,2,documented
-0xa2ccf0,421,,1,documented
-0xa2cea0,421,,1,documented
-0xa2d050,421,,1,documented
+0xa2c990,421,CarriedItem::GetOrMake,1,rewritten
+0xa2cb40,421,CarriedItem::GetOrMake,2,rewritten
+0xa2ccf0,421,CarriedItem::GetOrMake,1,rewritten
+0xa2cea0,421,CarriedItem::GetOrMake,1,rewritten
+0xa2d050,421,CarriedItem::GetOrMake,1,rewritten
 0xa2d200,105,Factory::Create,1,rewritten
 0xa2d270,30,DeletingDestructor,3,rewritten
 0xa2d290,99,Factory::Global,1,rewritten
