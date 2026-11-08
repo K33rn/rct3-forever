@@ -4893,6 +4893,21 @@ static std::vector<Test> tests() {
     };
     quad_move.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(quad_move);
+    // QuadTree::QuadTree: a depth (0-3), two corners (any floats now and then); the allocation and the vector
+    // constructor are stand-ins; the node count is the game's own (0xCDB5E0)
+    Test quad_construct{0x4301e0,
+                        [=](Rng &r) {
+                            fresh(r);
+                            *arena<uint32_t>(ALLOC_NEXT) = 0;
+                            for (int i = 0; i < 4; i++) arena<float>(0x300)[i] = r.range(0, 5) ? r.real(-500, 500) : r.any_float();
+                            arena<uint32_t>(0x10)[0] = r.range(0, 3);
+                        },
+                        [](void *fn) {
+                            return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t, void *, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<void>(0x300), arena<void>(0x308))};
+                        }};
+    quad_construct.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}, {0xddcf99, (void *)stub_vector_construct}}); };
+    quad_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_construct);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

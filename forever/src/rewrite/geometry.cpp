@@ -1,6 +1,6 @@
 // Geometry: bounds and planes. The game's x87 code keeps some sums in a register (the precision the FPU is set to:
 // long double here) and rounds others to float as it stores them; the rewrites do the same in the same order.
-#include "rewrite.h"
+#include "wave.h"
 
 // ---- Planes::TestBox: a box against six planes {x, y, z, d} (the view's): 0 when it is wholly outside one of them,
 // 1 when one cuts it, 2 when it is inside all six. Of each plane, `near` takes the box corner furthest along the
@@ -617,3 +617,42 @@ REWRITE("QuadTree::Move", 0x7b5420, quad_move_original, (&quad_move<0x7b2a40, 0x
 REWRITE("QuadTree::Move", 0xa0d750, quad_move_original, (&quad_move<0xa0be40, 0xa0bec0, 0xa0c590>), &g_quad_moves);
 REWRITE("QuadTree::Move", 0xb5cc80, quad_move_original, (&quad_move<0xb5b5d0, 0xb5b650, 0xb5c170>), &g_quad_moves);
 REWRITE("QuadTree::Move", 0xb71020, quad_move_original, (&quad_move<0xb6b880, 0xb6b900, 0xb6d3a0>), &g_quad_moves);
+
+// ---- QuadTree::QuadTree(depth, low corner, high corner): the depth kept, the node array made for a full tree of that
+// depth (0xCDB5E0 counts its nodes; the count stored before the array; each node built by CTOR, DTOR to destroy), and
+// the root square set to twice the area (+0x14), centred on it (+0xC) ----------------------------------------------------------
+static volatile long g_quad_constructs;
+template <uintptr_t CTOR, uintptr_t DTOR> static void *__thiscall quad_construct(uint32_t *self, uint32_t depth, const float *low, const float *high) {
+    g_quad_constructs++;
+    self[0] = depth;
+    int32_t count = ((int32_t(__fastcall *)(uint32_t))0xcdb5e0)(depth);
+    self[1] = (uint32_t)count;
+    int32_t *memory = (int32_t *)memory_alloc_aligned((uint32_t)count * 0x1c + 4);
+    void *nodes = nullptr;
+    if (memory) {
+        memory[0] = count;
+        nodes = memory + 1;
+        ((void(__stdcall *)(void *, uint32_t, int32_t, void *, void *))0xddcf99)(nodes, 0x1c, count, (void *)CTOR, (void *)DTOR);
+    }
+    self[2] = (uint32_t)(uintptr_t)nodes;
+    long double width = (long double)high[0] - low[0], depth_z = (long double)high[1] - low[1];
+    long double half_width = width * 0.5f, half_depth = depth_z * 0.5f;
+    float *square = (float *)(self + 3);
+    square[0] = (float)((long double)low[0] - half_width);
+    square[1] = (float)((long double)low[1] - half_depth);
+    square[2] = (float)(width + width);
+    square[3] = (float)(depth_z + depth_z);
+    return self;
+}
+static const uint8_t quad_construct_4301e0_original[] = {0x6a, 0xff, 0x68, 0xbb, 0x7f, 0xe0, 0x00};
+REWRITE("QuadTree::QuadTree", 0x4301e0, quad_construct_4301e0_original, (&quad_construct<0x42f6b0, 0x42f6e0>), &g_quad_constructs);
+static const uint8_t quad_construct_488e50_original[] = {0x6a, 0xff, 0x68, 0xfb, 0xe6, 0xe0, 0x00};
+REWRITE("QuadTree::QuadTree", 0x488e50, quad_construct_488e50_original, (&quad_construct<0x488380, 0x4883b0>), &g_quad_constructs);
+static const uint8_t quad_construct_7b3e60_original[] = {0x6a, 0xff, 0x68, 0xcb, 0x6d, 0xe5, 0x00};
+REWRITE("QuadTree::QuadTree", 0x7b3e60, quad_construct_7b3e60_original, (&quad_construct<0x7b2a80, 0x7b2ab0>), &g_quad_constructs);
+static const uint8_t quad_construct_a0c410_original[] = {0x6a, 0xff, 0x68, 0xbb, 0x99, 0xe7, 0x00};
+REWRITE("QuadTree::QuadTree", 0xa0c410, quad_construct_a0c410_original, (&quad_construct<0xa0be80, 0xa0beb0>), &g_quad_constructs);
+static const uint8_t quad_construct_b5bf50_original[] = {0x6a, 0xff, 0x68, 0x8b, 0x68, 0xe9, 0x00};
+REWRITE("QuadTree::QuadTree", 0xb5bf50, quad_construct_b5bf50_original, (&quad_construct<0xb5b610, 0xb5b640>), &g_quad_constructs);
+static const uint8_t quad_construct_b6d090_original[] = {0x6a, 0xff, 0x68, 0xbb, 0x70, 0xe9, 0x00};
+REWRITE("QuadTree::QuadTree", 0xb6d090, quad_construct_b6d090_original, (&quad_construct<0xb6b8c0, 0xb6b8f0>), &g_quad_constructs);
