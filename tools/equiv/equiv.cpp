@@ -5077,6 +5077,40 @@ static std::vector<Test> tests() {
                        return Result{};
                    }};
     quick(skin_full);
+    // Skin::PositionsNormalsTangents: vertices {position, normal, tangent, word, bones, weights, extra}, packed per copy
+    static uint32_t g_skin_tangent_size;
+    Test skin_tangents{0xbf0340,
+                       [=](Rng &r) {
+                           skin_positions_normals.setup(r);
+                           for (int i = 0; i < 40; i++) {
+                               uint8_t *at = arena<uint8_t>(0x9000 + i * 0x40);
+                               for (int c = 0; c < 9; c++) ((float *)at)[c] = r.range(0, 20) ? r.real(-50, 50) : r.any_float();
+                               ((uint32_t *)at)[9] = r.next();
+                               for (int b = 0; b < 4; b++) { at[0x28 + b] = (uint8_t)r.range(0, 7); at[0x2c + b] = (uint8_t)r.next(); }
+                               for (int b = 0; b < 8; b++) at[0x30 + b] = (uint8_t)r.next();
+                           }
+                       },
+                       [=](void *fn) {
+                           uint32_t size = g_skin_tangent_size, bones = size == 0x2c ? 2 : 4, extra = arena<uint32_t>(0x10)[0];
+                           uint16_t *layout = arena<uint16_t>(0x800);
+                           layout[0] = (uint16_t)(size + extra);
+                           layout[1] = (uint16_t)(0x28 + extra + arena<uint32_t>(0x10)[1]);
+                           layout[2] = (uint16_t)extra;
+                           for (int i = 0; i < 40; i++) {
+                               const uint8_t *raw = arena<uint8_t>(0x9000 + i * 0x40);
+                               uint8_t *at = arena<uint8_t>(0x2000 + i * layout[0]);
+                               memcpy(at, raw, 0x28 + bones);
+                               memcpy(at + 0x28 + bones, raw + 0x2c, bones);
+                               memcpy(at + size, raw + 0x30, extra);
+                           }
+                           return skin_positions.call(fn);
+                       }};
+    skin_tangents.prepare = [](const rewrite::Entry *e) {
+        const uint8_t *code = (const uint8_t *)e->at;
+        for (int k = 0x100; k < 0x1d0; k++)   // add esi, SIZE; add edi, 0x28
+            if (code[k] == 0x83 && code[k + 1] == 0xc6 && code[k + 3] == 0x83 && code[k + 4] == 0xc7 && code[k + 5] == 0x28) g_skin_tangent_size = code[k + 2];
+    };
+    quick(skin_tangents);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

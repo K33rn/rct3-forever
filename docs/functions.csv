@@ -20325,9 +20325,9 @@ address,size,name,callers,status
 0xbefa90,865,,2,documented
 0xbefe00,403,Skin::PositionsNormals,2,rewritten
 0xbeffa0,923,,2,documented
-0xbf0340,465,,2,documented
+0xbf0340,465,Skin::PositionsNormalsTangents,2,rewritten
 0xbf0520,945,,2,documented
-0xbf08e0,465,,2,documented
+0xbf08e0,465,Skin::PositionsNormalsTangents,2,rewritten
 0xbf0ac0,937,,1,documented
 0xbf0e70,487,Skin::Full,1,rewritten
 0xbf1060,941,,1,documented

@@ -82,10 +82,11 @@ SSE static inline void store3(float *out, __m128 v) {
     out[2] = lanes[2];
 }
 
-// ---- Skin::PositionsNormals: as Skin::Positions for vertices {position, normal, bones at +0x18, weights at +WEIGHTS,
-// SIZE bytes in all, then layout[2] bytes copied as they are}: the normal turned by the first bone only; out {position, normal, the
+// ---- Skin::PositionsNormals: as Skin::Positions for vertices {position, normal, (TANGENT: a tangent and a word,)
+// bones at +BONES, weights at +WEIGHTS, SIZE bytes in all, then layout[2] bytes copied as they are}: the normal turned by the first bone only; out {position, normal, the
 // copied bytes}; vertices passed over move by layout[0] in and layout[1] out --------------------------------------------------
-template <uint32_t WEIGHTS, uint32_t SIZE> SSE static void __fastcall skin_positions_normals(const float *bones, const uint16_t *layout, const uint8_t *vertex, uint8_t *out) {
+template <uint32_t WEIGHTS, uint32_t SIZE, uint32_t BONES = 0x18, bool TANGENT = false, uint32_t OUT_SIZE = 0x18>
+SSE static void __fastcall skin_positions_normals(const float *bones, const uint16_t *layout, const uint8_t *vertex, uint8_t *out) {
     g_skins++;
     uint32_t size_in = layout[0], size_out = layout[1], extra = layout[2];
     const uint16_t *run = layout + 3;
@@ -102,16 +103,20 @@ template <uint32_t WEIGHTS, uint32_t SIZE> SSE static void __fastcall skin_posit
         uint32_t more = *run & 3;
         for (; count; count--) {
             const float *at = (const float *)vertex;
-            __m128 v = bone_point(bones, vertex[0x18], at), n = bone_normal(bones, vertex[0x18], at + 3);
+            __m128 v = bone_point(bones, vertex[BONES], at), n = bone_normal(bones, vertex[BONES], at + 3), t = TANGENT ? bone_normal(bones, vertex[BONES], at + 6) : n;
             if (more) {
                 v = _mm_mul_ps(v, _mm_set1_ps(bone_weight(vertex[WEIGHTS])));
                 for (uint32_t k = more; k; k--)
-                    v = _mm_add_ps(v, _mm_mul_ps(bone_point_more(bones, vertex[0x18 + k], at), _mm_set1_ps(bone_weight(vertex[WEIGHTS + k]))));
+                    v = _mm_add_ps(v, _mm_mul_ps(bone_point_more(bones, vertex[BONES + k], at), _mm_set1_ps(bone_weight(vertex[WEIGHTS + k]))));
             }
             store3((float *)out, v);
             store3((float *)out + 3, n);
+            if (TANGENT) {   // with a tangent, and the word after it copied
+                store3((float *)out + 6, t);
+                *(uint32_t *)(out + 0x24) = *(const uint32_t *)(vertex + 0x24);
+            }
             vertex += SIZE;
-            out += 0x18;
+            out += OUT_SIZE;
             for (uint32_t left = extra; left; left -= 4) {
                 *(uint32_t *)out = *(const uint32_t *)vertex;
                 vertex += 4;
@@ -200,3 +205,5 @@ static const uint8_t skin_full_bf32b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec
 REWRITE("Skin::Full", 0xbf32b0, skin_full_bf32b0_original, (&skin_full<true, 0x28, 0x2a, 36, 0x20, 44, 0x24, 0x30, 0x28>), &g_skins);
 static const uint8_t skin_full_bf3950_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x1c, 0xd9, 0x45};
 REWRITE("Skin::Full", 0xbf3950, skin_full_bf3950_original, (&skin_full<true, 0x28, 0x2c, 36, 0x20, 48, 0x24, 0x34, 0x28>), &g_skins);
+REWRITE("Skin::PositionsNormalsTangents", 0xbf0340, skin_positions_normals_original, (&skin_positions_normals<0x2a, 0x2c, 0x28, true, 0x28>), &g_skins);
+REWRITE("Skin::PositionsNormalsTangents", 0xbf08e0, skin_positions_normals_original, (&skin_positions_normals<0x2c, 0x30, 0x28, true, 0x28>), &g_skins);
