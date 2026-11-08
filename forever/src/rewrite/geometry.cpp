@@ -458,6 +458,40 @@ struct TakeMatching {
         }
     }
 };
+// Drawn when near and facing: the target {records of 48 bytes, drawer, on (byte +8)}; the item's +0x18 is its record's
+// index. Its distance from the camera (0x14002C0; or the fixed one at 0x14002F8 when the byte at 0x1400306 is set) must
+// be at most the record's draw distance (+0x20), and its normal (+0x10) must face the camera: below 0 against the way from
+// the camera to the record's point moved a fifth of the normal out (or against the fixed direction at 0x14002A0). Then
+// DRAW (on the drawer) gets the record, its normal and +0x24.
+template <uintptr_t DRAW> struct TakeDrawn {
+    static void take(void *const *slot, uint8_t *item) {
+        uint8_t *target = (uint8_t *)*slot;
+        if (!target[8]) return;
+        float *record = (float *)(*(uint8_t **)target + *(int32_t *)(item + 0x18) * 0x30);
+        const float *camera = (const float *)0x14002c0, *fixed_facing = (const float *)0x14002a0;
+        bool fixed = *(uint8_t *)0x1400306;
+        long double distance;
+        if (fixed) distance = *(float *)0x14002f8;
+        else {
+            long double dx = (long double)record[0] - camera[0], dy = (long double)record[1] - camera[1], dz = (long double)record[2] - camera[2];
+            distance = x87_sqrt((dx * dx + dz * dz) + dy * dy);
+        }
+        if (!(distance <= record[8])) return;
+        const float *normal = record + 4;
+        long double facing;
+        if (fixed) facing = ((long double)fixed_facing[1] * normal[1] + (long double)fixed_facing[2] * normal[2]) + (long double)fixed_facing[0] * normal[0];
+        else {
+            const float fifth = 0.2f;
+            volatile float out_z = (float)((long double)normal[2] * fifth);
+            volatile float point_x = (float)((long double)normal[0] * fifth + record[0]);
+            long double point_y = (long double)normal[1] * fifth + record[1], point_z = (long double)out_z + record[2];
+            volatile float way_x = (float)((long double)point_x - camera[0]), way_y = (float)(point_y - camera[1]);
+            facing = ((point_z - camera[2]) * normal[2] + (long double)way_y * normal[1]) + (long double)way_x * normal[0];
+        }
+        if (!(facing < 0.0L)) return;
+        ((void(__thiscall *)(void *, float *, const float *, uint32_t))DRAW)(*(void **)(target + 4), record, normal, *(uint32_t *)(record + 9));
+    }
+};
 
 // ---- QuadTree::WalkBox(query, n, low, size): as WalkPlanes for a query box {low xyz, high xyz, +0x18 where items go}:
 // the items overlapping it are taken (Take); the children are taken whole or walked again -----------------------------------
@@ -510,17 +544,17 @@ static const uint8_t quad_take_all_original[] = {0x53, 0x55, 0x56, 0x8b, 0x74, 0
 REWRITE("QuadTree::TakeAll", 0x7b85f0, quad_take_all_original, (&quad_take_all<0, false>), &g_quad_walks);
 REWRITE("QuadTree::TakeAll", 0xb5e950, quad_take_all_original, (&quad_take_all<0xb563b0, true>), &g_quad_walks);
 
-// ---- QuadTree::TakeAllBox(n, query): node n is wholly inside the query box: every item in use is taken (Take), and the
-// marked children the same way ------------------------------------------------------------------------------------------------
-template <class Take> static void __thiscall quad_take_all_box(QuadTreeBox *tree, int32_t n, const float *query) {
+// ---- QuadTree::TakeAllBox(n, query): node n is wholly inside the query: every item in use is taken (Take, its target at
+// query + SLOT), and the marked children the same way ------------------------------------------------------------------------------------------------
+template <class Take, uint32_t SLOT = 0x18> static void __thiscall quad_take_all_box(QuadTreeBox *tree, int32_t n, const float *query) {
     g_quad_walks++;
     QuadNode *node = &tree->nodes[n];
     if (node->other || node->item_count)
         for (int32_t i = 0; i < (int32_t)node->item_count; i++)
-            if (*(uint32_t *)(node->items + i * 0x20 + 0x1c)) Take::take((void *const *)(query + 6), node->items + i * 0x20);
+            if (*(uint32_t *)(node->items + i * 0x20 + 0x1c)) Take::take((void *const *)((const uint8_t *)query + SLOT), node->items + i * 0x20);
     if (!(node->flags & 0xf)) return;
     for (int32_t k = 0; k < 4; k++)
-        if (node->flags & (1u << k)) quad_take_all_box<Take>(tree, n * 4 + 1 + k, query);
+        if (node->flags & (1u << k)) quad_take_all_box<Take, SLOT>(tree, n * 4 + 1 + k, query);
 }
 static const uint8_t quad_take_all_rect_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 static const uint8_t quad_walk_box_rect_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
@@ -534,3 +568,7 @@ static const uint8_t quad_walk_box_matching_original[] = {0x83, 0xec, 0x20, 0x8b
 REWRITE("QuadTree::WalkBoxMatching", 0x48b0b0, quad_walk_box_matching_original, (&quad_walk_box<TakeMatching, 0x48a4e0>), &g_quad_walks);
 static const uint8_t quad_walk_planes_matching_original[] = {0x83, 0xec, 0x24, 0x8b, 0x51, 0x08, 0x53, 0x55};
 REWRITE("QuadTree::WalkPlanesMatching", 0x48bdc0, quad_walk_planes_matching_original, (&quad_walk_planes<0x52, 0x48b370, TakeMatching>), &g_quad_walks);
+static const uint8_t quad_walk_433600_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("QuadTree::WalkPlanesDrawn", 0x433600, quad_walk_433600_original, (&quad_walk_planes<0x52, 0x432f50, TakeDrawn<0x430d00>>), &g_quad_walks);
+static const uint8_t quad_take_all_drawn_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("QuadTree::TakeAllDrawn", 0x432f50, quad_take_all_drawn_original, (&quad_take_all_box<TakeDrawn<0x430d00>, 0x60>), &g_quad_walks);

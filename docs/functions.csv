@@ -685,10 +685,10 @@ address,size,name,callers,status
 0x431fd0,1046,,0,documented
 0x4323f0,2719,,1,documented
 0x432e90,184,,1,documented
-0x432f50,449,,3,documented
+0x432f50,449,QuadTree::TakeAllDrawn,3,rewritten
 0x433120,1214,,1,documented
 0x4335e0,30,DeletingDestructor,2,rewritten
-0x433600,1583,,2,documented
+0x433600,1583,QuadTree::WalkPlanesDrawn,2,rewritten
 0x433c30,356,QuadTree::CullPlanes,1,rewritten
 0x433dd0,196,,2,documented
 0x434020,26,OwnedPointer::Reset,0,rewritten

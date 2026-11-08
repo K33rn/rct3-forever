@@ -392,6 +392,7 @@ static void __thiscall stub_list_grow(uint32_t *list, int32_t capacity) { record
 static void *__thiscall stub_object_info(uint8_t *object) { record(0x68, object); return *(uint32_t *)(object + 0x40) & 1 ? arena<void>(0x8000) : nullptr; }
 static uint32_t __thiscall stub_owner_of(uint32_t *owned) { record(0x69, owned); return *owned & 3; }
 static void __thiscall stub_flush_count(void *query, int32_t count) { record(0x6a, query); record(0x6a, (void *)(intptr_t)count); }
+static void __thiscall stub_draw(void *drawer, void *entry, void *normal, uint32_t extra) { record(0x6b, drawer); record(0x6b, entry); record(0x6b, normal); record(0x6b, (void *)(uintptr_t)extra); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4708,6 +4709,57 @@ static std::vector<Test> tests() {
     quad_walk_planes_matching.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x48b370, (void *)stub_quad_take_all}}); };
     quad_walk_planes_matching.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(quad_walk_planes_matching);
+    // QuadTree::TakeAllDrawn and WalkPlanesDrawn: records of 48 bytes at varied distances and facings; the camera and
+    // the fixed view are game globals, set in the call (globals aren't put back between runs); the drawer is a stand-in
+    auto quad_drawn_setup = [=](Rng &r) {
+        quad_walk_planes.setup(r);
+        uint32_t *target = arena<uint32_t>(0x3400);
+        target[0] = (uint32_t)(uintptr_t)arena<void>(0x4000);
+        target[1] = r.next();
+        target[2] = r.range(0, 5) ? 1 : 0;
+        for (int i = 0; i < 21; i++)
+            for (int k = 0; k < 3; k++) arena<uint32_t>(0x2000 + i * 0x60 + k * 0x20)[6] = i * 3 + k;
+        float *globals = arena<float>(0x18);   // camera xyz, fixed distance, fixed facing xyz, fixed flag
+        for (int c = 0; c < 3; c++) globals[c] = r.real(-10, 10);
+        globals[3] = r.real(0, 40);
+        for (int c = 0; c < 3; c++) globals[4 + c] = r.real(-1, 1);
+        ((uint32_t *)globals)[7] = r.range(0, 3) ? 0 : 1;
+        for (int i = 0; i < 63; i++) {
+            float *record = arena<float>(0x4000 + i * 0x30);
+            for (int c = 0; c < 3; c++) record[c] = r.real(-20, 20);
+            for (int c = 0; c < 3; c++) record[4 + c] = r.range(0, 9) ? r.real(-1, 1) : geo_pick(r);
+            float dx = record[0] - globals[0], dy = record[1] - globals[1], dz = record[2] - globals[2];
+            if (r.range(0, 1)) {   // a normal that leaves the facing test at about 0, so its roundings decide
+                double v[3] = {dx, dy, dz}, vv = (double)dx * dx + (double)dy * dy + (double)dz * dz;
+                double u[3] = {r.real(-1, 1), r.real(-1, 1), r.real(-1, 1)}, uv = (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / vv;
+                for (int c = 0; c < 3; c++) u[c] -= uv * v[c];   // across the view
+                double a = sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]), disc = vv * vv - 0.16 * a * a * vv;
+                if (vv > 1 && a > 0 && disc > 0) {
+                    double b = (-vv + sqrt(disc)) / (0.4 * vv);   // n.v = -0.2 |n|^2 for n = u + b v
+                    for (int c = 0; c < 3; c++) record[4 + c] = (float)(u[c] + b * v[c]);
+                }
+            }
+            float distance = sqrtf(dx * dx + dy * dy + dz * dz);
+            record[8] = r.range(0, 3) ? distance + r.real(-3, 3) : (r.range(0, 1) ? distance : globals[3]);
+            ((uint32_t *)record)[9] = r.next();
+        }
+        arena<uint32_t>(0x300)[0x18] = (uint32_t)(uintptr_t)target;
+    };
+    auto quad_drawn_globals = []() {
+        const float *globals = arena<float>(0x18);
+        for (int c = 0; c < 3; c++) ((float *)0x14002c0)[c] = globals[c];
+        *(float *)0x14002f8 = globals[3];
+        for (int c = 0; c < 3; c++) ((float *)0x14002a0)[c] = globals[4 + c];
+        *(uint8_t *)0x1400306 = (uint8_t)((const uint32_t *)globals)[7];
+    };
+    Test quad_take_all_drawn{0x432f50, quad_drawn_setup, [=](void *fn) { quad_drawn_globals(); return quad_take_all.call(fn); }};
+    quad_take_all_drawn.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x430d00, (void *)stub_draw}}); };
+    quad_take_all_drawn.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_take_all_drawn);
+    Test quad_walk_planes_drawn{0x433600, quad_drawn_setup, [=](void *fn) { quad_drawn_globals(); return quad_walk_planes.call(fn); }};
+    quad_walk_planes_drawn.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x430d00, (void *)stub_draw}, {(uintptr_t)0x432f50, (void *)stub_quad_take_all}}); };
+    quad_walk_planes_drawn.finish = quad_take_all_drawn.finish;
+    quick(quad_walk_planes_drawn);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
