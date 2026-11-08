@@ -355,6 +355,32 @@ template <uintptr_t GROW> struct TakeInRect {
         ((void **)(uintptr_t)list[0])[list[2]++] = object;
     }
 };
+// Weighted towards a point {x, y, z at 0; sums at +0x10; weight sum at +0x44; bias at +0x40; centres {count +0x4C,
+// entries +0x50, capacity +0x54} of 16 bytes}: an item whose object isn't of kind 8 (+0x190) and whose level (+0x120)
+// is under 4 has the centre of its box weighed by 1 / (squared distance to the point) - bias; when that's above 0, the
+// weighted centre and the weight are added to the sums and the centre to the list (grown by 256 with GROW when full).
+template <uintptr_t GROW> struct TakeWeighted {
+    static void take(const float *query, uint8_t *item) {
+        float *point = *(float **)(query + 6);
+        uint8_t *object = *(uint8_t **)(item + 0x18);
+        if (*(int32_t *)(object + 0x190) == 8 || *(uint8_t *)(object + 0x120) >= 4) return;
+        const float *box = (const float *)item;
+        volatile float centre[3];
+        for (int k = 0; k < 3; k++) centre[k] = (float)(((long double)box[k + 3] + box[k]) * 0.5f);
+        long double dx = (long double)centre[0] - point[0], dy = (long double)centre[1] - point[1], dz = (long double)centre[2] - point[2];
+        long double weight = 1.0L / ((dx * dx + dz * dz) + dy * dy) - point[0x10];
+        if (!(weight > 0.0L)) return;
+        volatile float weighted_z = (float)(weight * centre[2]);
+        point[4] = (float)(centre[0] * weight + point[4]);
+        point[5] = (float)(weight * centre[1] + point[5]);
+        point[6] = (float)((long double)weighted_z + point[6]);
+        int32_t &count = *(int32_t *)(point + 0x13), &capacity = *(int32_t *)(point + 0x15);
+        point[0x11] = (float)(weight + point[0x11]);
+        if (count == capacity) ((void(__thiscall *)(void *, int32_t))GROW)(point + 0x14, capacity + 0x100);
+        uint32_t *entry = (uint32_t *)(*(uint8_t **)(point + 0x14) + count++ * 16);
+        __builtin_memcpy(entry, (const void *)centre, 12);
+    }
+};
 
 // ---- QuadTree::WalkBox(query, n, low, size): as WalkPlanes for a query box {low xyz, high xyz, +0x18 where items go}:
 // the items overlapping it are taken (Take); the children are taken whole or walked again -----------------------------------
@@ -423,3 +449,5 @@ static const uint8_t quad_take_all_rect_original[] = {0x55, 0x8b, 0xec, 0x83, 0x
 static const uint8_t quad_walk_box_rect_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("QuadTree::TakeAllRect", 0x7b6d80, quad_take_all_rect_original, (&quad_take_all_box<TakeInRect<0x72af00>>), &g_quad_walks);
 REWRITE("QuadTree::WalkBoxRect", 0x7b82d0, quad_walk_box_rect_original, (&quad_walk_box<TakeInRect<0x72af00>, 0x7b6d80>), &g_quad_walks);
+REWRITE("QuadTree::TakeAllWeighted", 0x7b6bd0, quad_take_all_rect_original, (&quad_take_all_box<TakeWeighted<0x417a20>>), &g_quad_walks);
+REWRITE("QuadTree::WalkBoxWeighted", 0x7b7f30, quad_walk_box_rect_original, (&quad_walk_box<TakeWeighted<0x417a20>, 0x7b6bd0>), &g_quad_walks);

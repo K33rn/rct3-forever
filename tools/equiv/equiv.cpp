@@ -4566,6 +4566,42 @@ static std::vector<Test> tests() {
     };
     quad_walk_box_rect.finish = quad_take_all_rect.finish;
     quick(quad_walk_box_rect);
+    // QuadTree::TakeAllWeighted and WalkBoxWeighted: objects of various kinds and levels, a point among the items, a
+    // small bias, a list of centres sometimes full (its grow is a stand-in)
+    auto quad_weighted_setup = [=](Rng &r) {
+        quad_rect_setup(r);
+        for (int i = 0; i < 63; i++) {
+            uint8_t *object = arena<uint8_t>(0x4000 + i * 0x100);
+            *(int32_t *)(object + 0x190) = r.range(0, 3) ? r.range(0, 7) : 8;
+            *(object + 0x120) = (uint8_t)r.range(0, 5);
+        }
+        float *point = arena<float>(0x3400);
+        for (int c = 0; c < 3; c++) point[c] = r.range(0, 9) ? r.real(-20, 20) : geo_pick(r);
+        for (int c = 4; c < 7; c++) point[c] = r.real(-5, 5);
+        point[0x10] = r.range(0, 3) ? r.real(0, 0.02f) : r.real(-1, 1);
+        point[0x11] = r.real(0, 3);
+        uint32_t *words = (uint32_t *)point;
+        words[0x14] = (uint32_t)(uintptr_t)arena<void>(0x3500);
+        words[0x15] = r.range(0, 16);
+        words[0x13] = r.range(0, 1) ? words[0x15] : r.range(0, (int32_t)words[0x15]);
+    };
+    auto quad_weighted_prepare = [](const rewrite::Entry *e) {
+        const uint8_t *code = (const uint8_t *)e->at;
+        for (int k = 0; k < 400; k++)   // lea ecx, [esi + 0x50]; call grow
+            if (code[k] == 0x8d && code[k + 1] == 0x4e && code[k + 2] == 0x50 && code[k + 3] == 0xe8)
+                stubs_for_now({{(uintptr_t)(e->at + k + 3 + 5 + *(int32_t *)(code + k + 4)), (void *)stub_list_grow}});
+    };
+    Test quad_take_all_weighted{0x7b6bd0, quad_weighted_setup, quad_take_all.call};
+    quad_take_all_weighted.prepare = quad_weighted_prepare;
+    quad_take_all_weighted.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_take_all_weighted);
+    Test quad_walk_box_weighted{0x7b7f30, quad_weighted_setup, quad_walk_planes.call};
+    quad_walk_box_weighted.prepare = [=](const rewrite::Entry *e) {
+        quad_weighted_prepare(e);
+        stubs_for_now({{(uintptr_t)0x7b6bd0, (void *)stub_quad_take_all}});
+    };
+    quad_walk_box_weighted.finish = quad_take_all_weighted.finish;
+    quick(quad_walk_box_weighted);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
