@@ -9715,7 +9715,7 @@ address,size,name,callers,status
 0x7b82d0,788,,2,documented
 0x7b85f0,139,,3,documented
 0x7b8680,661,,2,documented
-0x7b8920,681,,2,documented
+0x7b8920,681,QuadTree::WalkBox,2,rewritten
 0x7b8bd0,561,,2,documented
 0x7b8e10,543,,1,documented
 0x7b9070,41,Triple::Forward48BB00,0,rewritten
@@ -18393,7 +18393,7 @@ address,size,name,callers,status
 0xb5de60,657,,10,documented
 0xb5e100,179,,2,documented
 0xb5e1c0,661,,2,documented
-0xb5e460,681,,2,documented
+0xb5e460,681,QuadTree::WalkBox,2,rewritten
 0xb5e710,561,,2,documented
 0xb5e950,139,,3,documented
 0xb5e9e0,190,,1,documented
@@ -18581,7 +18581,7 @@ address,size,name,callers,status
 0xb74190,179,,2,documented
 0xb74250,136,Tree::WalkA0E240,3,rewritten
 0xb742e0,661,,2,documented
-0xb74580,681,,2,documented
+0xb74580,681,QuadTree::WalkBox,2,rewritten
 0xb74830,561,,2,documented
 0xb74a70,101,Factory::GlobalWith,1,rewritten
 0xb74ae0,689,,1,documented

@@ -137,15 +137,18 @@ REWRITE_COPIES("SphereQuery::Set", sphere_query_set_copies, sphere_query_set_ori
 // ---- Box::Overlap: a box (x from low[0] to low[0] + size[0], y from mid[1] to mid[2], z from low[1] to low[1] +
 // size[1]) against this one {low xyz, high xyz}: 0 when they are apart, 1 when they overlap, 2 when it is inside ------
 static volatile long g_box_overlaps;
-static int32_t box_overlaps(const float *box, const float *mid, const float *low, const float *size) {
-    volatile float high_x_stored = (float)((long double)low[0] + size[0]);   // volatile: rounded to float, as stored
-    volatile float high_z_stored = (float)((long double)size[1] + low[1]);
-    float high_x = high_x_stored, high_z = high_z_stored;
+static int32_t box_overlaps_bounds(const float *box, float low_x, float high_x, float low_y, float high_y, float low_z, float high_z) {
+    const float mid[3] = {0, low_y, high_y}, low[2] = {low_x, low_z};
     if (low[0] > box[3] || mid[1] > box[4] || low[1] > box[5]) return 0;
     if (high_x < box[0] || mid[2] < box[1] || high_z < box[2]) return 0;
     if (!(low[0] >= box[0]) || !(mid[1] >= box[1]) || !(low[1] >= box[2])) return 1;
     if (!(high_x <= box[3]) || !(mid[2] <= box[4]) || !(high_z <= box[5])) return 1;
     return 2;
+}
+static int32_t box_overlaps(const float *box, const float *mid, const float *low, const float *size) {
+    volatile float high_x_stored = (float)((long double)low[0] + size[0]);   // volatile: rounded to float, as stored
+    volatile float high_z_stored = (float)((long double)size[1] + low[1]);
+    return box_overlaps_bounds(box, low[0], high_x_stored, mid[1], mid[2], low[1], high_z_stored);
 }
 static int32_t __thiscall box_overlap(const float *box, const float *mid, const float *low, const float *size) {
     g_box_overlaps++;
@@ -273,6 +276,17 @@ REWRITE("QuadTree::CullBox", 0xb74e80, quad_cull_box_original, (&quad_cull<false
 // LAST: which of the x, y and z products is added last). Then each child it marks gets its box (a half-size quarter, at 0.25 or 0.75
 // of the parent's half) and is taken whole (TAKE_ALL) when inside or walked again when cut --------------------------------
 static volatile long g_quad_walks;
+// Child k's box in x and z: half the parent's size, at 0.25 or 0.75 of that half from the parent's low corner (bit 0:
+// x, bit 1: z); each value rounded to float as the game stores it.
+static void quad_child_box(const float *low, const float *size, int32_t k, volatile float *half, volatile float *child_low, volatile float *high_x, volatile float *high_z) {
+    half[0] = (float)((long double)size[0] * 0.5f);
+    half[1] = (float)((long double)size[1] * 0.5f);
+    long double along_z = k & 2 ? 0.75f : 0.25f, along_x = k & 1 ? 0.75f : 0.25f;
+    child_low[0] = (float)(along_x * half[0] + low[0]);
+    child_low[1] = (float)(along_z * half[1] + low[1]);
+    *high_x = (float)((long double)child_low[0] + half[0]);
+    *high_z = (float)((long double)child_low[1] + half[1]);
+}
 template <uint32_t LAST, uintptr_t TAKE_ALL, uintptr_t SHOW, bool SHOW_TAKES_ZERO> static void __thiscall quad_walk_planes(QuadTreeBox *tree, const float *planes, int32_t n, const float *low, const float *size) {
     g_quad_walks++;
     QuadNode *node = &tree->nodes[n];
@@ -300,10 +314,8 @@ template <uint32_t LAST, uintptr_t TAKE_ALL, uintptr_t SHOW, bool SHOW_TAKES_ZER
     int32_t first = n * 4 + 1;
     for (int32_t k = 0; k < 4; k++) {
         if (!(node->flags & (1u << k))) continue;
-        volatile float half[2] = {(float)((long double)size[0] * 0.5f), (float)((long double)size[1] * 0.5f)};
-        long double along_z = k & 2 ? 0.75f : 0.25f, along_x = k & 1 ? 0.75f : 0.25f;
-        volatile float child_low[2] = {(float)(along_x * half[0] + low[0]), (float)(along_z * half[1] + low[1])};
-        volatile float high_x = (float)((long double)child_low[0] + half[0]), high_z = (float)((long double)child_low[1] + half[1]);
+        volatile float half[2], child_low[2], high_x, high_z;
+        quad_child_box(low, size, k, half, child_low, &high_x, &high_z);
         QuadNode *child = &tree->nodes[first + k];
         int32_t seen = planes_box_bounds(planes, child_low[0], high_x, child->low, child->high, child_low[1], high_z);
         if (seen == 2) ((void(__thiscall *)(void *, int32_t, const float *))TAKE_ALL)(tree, first + k, planes);
@@ -315,3 +327,41 @@ REWRITE("QuadTree::WalkPlanes", 0x7b9590, quad_walk_planes_original, (&quad_walk
 REWRITE("QuadTree::WalkPlanes", 0xa0e450, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xa0e240, 0xa0a330, false>), &g_quad_walks);
 REWRITE("QuadTree::WalkPlanes", 0xb5ed60, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb5e950, 0xb563b0, true>), &g_quad_walks);
 REWRITE("QuadTree::WalkPlanes", 0xb75060, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb74250, 0xb44a30, false>), &g_quad_walks);
+
+// ---- QuadTree::WalkBox(query, n, low, size): as WalkPlanes for a query box {low xyz, high xyz, collector}: the
+// items overlapping it are added to the collector's list of 64 (at +4, count at +0x104), which is handed on whole to the
+// collector's virtual slot 0 (list, 64) when full; the children are taken whole or walked again ----------------------------
+template <uintptr_t TAKE_ALL> static void __thiscall quad_walk_box(QuadTreeBox *tree, const float *query, int32_t n, const float *low, const float *size) {
+    g_quad_walks++;
+    QuadNode *node = &tree->nodes[n];
+    if (node->other || node->item_count)
+        for (int32_t i = 0; i < (int32_t)node->item_count; i++) {
+            const float *box = (const float *)(node->items + i * 0x20);
+            if (!*(uint32_t *)(node->items + i * 0x20 + 0x1c)) continue;
+            if (!(box[0] <= query[3]) || !(box[3] >= query[0]) || !(box[1] <= query[4]) || !(box[4] >= query[1]) || !(box[2] <= query[5]) ||
+                !(box[5] >= query[2]))
+                continue;
+            uint8_t *collector = *(uint8_t **)(query + 6);
+            int32_t &count = *(int32_t *)(collector + 0x104);
+            ((uint32_t *)(collector + 4))[count] = *(uint32_t *)(node->items + i * 0x20 + 0x18);
+            if (++count == 0x40) {
+                ((void(__thiscall *)(void *, void *, int32_t))(*(void ***)collector)[0])(collector, collector + 4, 0x40);
+                count = 0;
+            }
+        }
+    if (!(node->flags & 0xf)) return;
+    int32_t first = n * 4 + 1;
+    for (int32_t k = 0; k < 4; k++) {
+        if (!(node->flags & (1u << k))) continue;
+        volatile float half[2], child_low[2], high_x, high_z;
+        quad_child_box(low, size, k, half, child_low, &high_x, &high_z);
+        QuadNode *child = &tree->nodes[first + k];
+        int32_t seen = box_overlaps_bounds(query, child_low[0], high_x, child->low, child->high, child_low[1], high_z);
+        if (seen == 2) ((void(__thiscall *)(void *, int32_t, const float *))TAKE_ALL)(tree, first + k, query);
+        else if (seen == 1) quad_walk_box<TAKE_ALL>(tree, query, first + k, (const float *)child_low, (const float *)half);
+    }
+}
+static const uint8_t quad_walk_box_original[] = {0x83, 0xec, 0x20, 0x8b, 0x54, 0x24, 0x28, 0x6b};
+REWRITE("QuadTree::WalkBox", 0x7b8920, quad_walk_box_original, (&quad_walk_box<0x7b7390>), &g_quad_walks);
+REWRITE("QuadTree::WalkBox", 0xb5e460, quad_walk_box_original, (&quad_walk_box<0xb5d780>), &g_quad_walks);
+REWRITE("QuadTree::WalkBox", 0xb74580, quad_walk_box_original, (&quad_walk_box<0xb732b0>), &g_quad_walks);

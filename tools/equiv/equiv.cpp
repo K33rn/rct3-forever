@@ -387,6 +387,7 @@ static void __thiscall stub_quad_walk(void *tree, void *query, int32_t n, void *
 }
 static void __thiscall stub_show(void *object) { record(0x64, object); }
 static void __thiscall stub_show_zero(void *object, int32_t zero) { record(0x65, object); record(0x65, (void *)(intptr_t)zero); }
+static void __thiscall stub_flush(void *collector, void *list, int32_t n) { record(0x66, collector); record(0x66, list); record(0x66, (void *)(intptr_t)n); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4486,6 +4487,31 @@ static std::vector<Test> tests() {
     };
     quad_walk_planes.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(quad_walk_planes);
+    // QuadTree::WalkBox: the same tree; a query box near the items, sometimes touching their sides, and a collector
+    // that is sometimes nearly full; the take-all walk and the collector's flush are stand-ins
+    Test quad_walk_box{0x7b8920,
+                       [=](Rng &r) {
+                           quad_walk_planes.setup(r);
+                           float *q = arena<float>(0x300);
+                           for (int c = 0; c < 3; c++) { q[c] = r.real(-20, 10); q[c + 3] = q[c] + r.real(0, 25); }
+                           if (r.range(0, 1)) {   // touching a random item's side
+                               int i = r.range(0, 20), k = r.range(0, 2), c = r.range(0, 2);
+                               const float *item = arena<float>(0x2000 + i * 0x60 + k * 0x20);
+                               if (r.range(0, 1)) q[c] = item[c + 3]; else q[c + 3] = item[c];
+                           }
+                           if (!r.range(0, 9)) q[r.range(0, 5)] = geo_pick(r);
+                           static void *vtable[1] = {(void *)stub_flush};
+                           uint32_t *collector = arena<uint32_t>(0x3200);
+                           collector[0] = (uint32_t)(uintptr_t)vtable;
+                           collector[0x104 / 4] = r.range(0, 1) ? r.range(60, 63) : r.range(0, 63);
+                           ((uint32_t *)q)[6] = (uint32_t)(uintptr_t)collector;
+                       },
+                       quad_walk_planes.call};
+    quad_walk_box.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{(uintptr_t)(e->at + 0x26f + 5 + *(int32_t *)(e->at + 0x270)), (void *)stub_quad_take_all}});
+    };
+    quad_walk_box.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_walk_box);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
