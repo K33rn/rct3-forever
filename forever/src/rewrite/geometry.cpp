@@ -381,6 +381,60 @@ template <uintptr_t GROW> struct TakeWeighted {
         __builtin_memcpy(entry, (const void *)centre, 12);
     }
 };
+// The x87 square root itself (a library sqrtl might not round the same way).
+static long double x87_sqrt(long double value) {
+    long double root;
+    __asm__("fsqrt" : "=t"(root) : "0"(value));
+    return root;
+}
+// The best aim among the items' objects, kept in {best object, its value, its rank; +0xC the one to leave out; +0x10
+// an owner to leave out; +0x14 the point aimed from; +0x18 the direction; +0x1C the furthest; +0x20 the least value}.
+// An object owned (through its virtual slot 1 and the shared index at 0x130654C) by the owner left out isn't taken. Its
+// position (+0x80) must be over 0.5 and at most the furthest away, and its value (the direction's dot product with the
+// way to it, over the distance) above the least. Rank by its kind (+0x120): 0-2 1 when +0x190 is 8, 3 3, 7 2, others 0;
+// a higher rank wins, then a lower value. Z_FIRST: the squared distance is summed z, y, x, with z squared from its value
+// before and after rounding to float (as one copy has it); else x, z, y from the rounded values.
+template <uintptr_t OWNER_OF, bool Z_FIRST> struct TakeAimed {
+    static void take(const float *query, uint8_t *item) {
+        uint32_t *best = *(uint32_t **)(query + 6);
+        uint8_t *object = *(uint8_t **)(item + 0x18);
+        if ((uintptr_t)object == best[3]) return;
+        if (best[4] && object) {
+            uint8_t *info = ((uint8_t * (__thiscall *)(void *))(*(void ***)object)[1])(object);
+            int32_t index = *(int32_t *)0x130654c;
+            if (info && index < *(int32_t *)(info + 0x18)) {
+                uint8_t *part = (*(uint8_t ***)(info + 0x14))[index];
+                if (part) {
+                    uint8_t *owned = object + *(int32_t *)(part + 0x10);
+                    if (owned && ((uint32_t(__thiscall *)(void *))OWNER_OF)(owned) == best[4]) return;
+                }
+            }
+        }
+        const float *from = *(const float **)(best + 5), *direction = *(const float **)(best + 6);
+        const float *position = (const float *)(object + 0x80);
+        volatile float way[3];
+        for (int k = 0; k < 2; k++) way[k] = (float)((long double)position[k] - from[k]);
+        long double z = (long double)position[2] - from[2];
+        way[2] = (float)z;
+        long double distance = Z_FIRST ? x87_sqrt((z * way[2] + (long double)way[1] * way[1]) + (long double)way[0] * way[0])
+                                       : x87_sqrt(((long double)way[0] * way[0] + (long double)way[2] * way[2]) + (long double)way[1] * way[1]);
+        volatile float distance_stored = (float)distance;
+        if (!(distance > 0.5L)) return;
+        if (!(distance_stored <= *(float *)(best + 7))) return;
+        long double value = (((long double)way[2] * direction[2] + (long double)way[1] * direction[1]) + (long double)way[0] * direction[0]) / distance_stored;
+        volatile float value_stored = (float)value;
+        if (!(value > *(float *)(best + 8))) return;
+        uint8_t kind = *(object + 0x120);
+        int32_t rank = kind <= 2 ? *(int32_t *)(object + 0x190) == 8 : kind == 3 ? 3 : kind == 7 ? 2 : 0;
+        if (best[0]) {
+            if (rank < (int32_t)best[2]) return;
+            if (rank == (int32_t)best[2] && !(value_stored < *(float *)(best + 1))) return;
+        }
+        best[0] = (uint32_t)(uintptr_t)object;
+        *(float *)(best + 1) = value_stored;
+        best[2] = (uint32_t)rank;
+    }
+};
 
 // ---- QuadTree::WalkBox(query, n, low, size): as WalkPlanes for a query box {low xyz, high xyz, +0x18 where items go}:
 // the items overlapping it are taken (Take); the children are taken whole or walked again -----------------------------------
@@ -451,3 +505,5 @@ REWRITE("QuadTree::TakeAllRect", 0x7b6d80, quad_take_all_rect_original, (&quad_t
 REWRITE("QuadTree::WalkBoxRect", 0x7b82d0, quad_walk_box_rect_original, (&quad_walk_box<TakeInRect<0x72af00>, 0x7b6d80>), &g_quad_walks);
 REWRITE("QuadTree::TakeAllWeighted", 0x7b6bd0, quad_take_all_rect_original, (&quad_take_all_box<TakeWeighted<0x417a20>>), &g_quad_walks);
 REWRITE("QuadTree::WalkBoxWeighted", 0x7b7f30, quad_walk_box_rect_original, (&quad_walk_box<TakeWeighted<0x417a20>, 0x7b6bd0>), &g_quad_walks);
+REWRITE("QuadTree::TakeAllAimed", 0x7b5540, quad_take_all_rect_original, (&quad_take_all_box<TakeAimed<0x758b10, false>>), &g_quad_walks);
+REWRITE("QuadTree::WalkBoxAimed", 0x7b6eb0, quad_walk_box_rect_original, (&quad_walk_box<TakeAimed<0x758b10, true>, 0x7b5540>), &g_quad_walks);

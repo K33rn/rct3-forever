@@ -389,6 +389,8 @@ static void __thiscall stub_show(void *object) { record(0x64, object); }
 static void __thiscall stub_show_zero(void *object, int32_t zero) { record(0x65, object); record(0x65, (void *)(intptr_t)zero); }
 static void __thiscall stub_flush(void *collector, void *list, int32_t n) { record(0x66, collector); record(0x66, list); record(0x66, (void *)(intptr_t)n); }
 static void __thiscall stub_list_grow(uint32_t *list, int32_t capacity) { record(0x67, list); record(0x67, (void *)(intptr_t)capacity); list[1] = capacity; }
+static void *__thiscall stub_object_info(uint8_t *object) { record(0x68, object); return *(uint32_t *)(object + 0x40) & 1 ? arena<void>(0x8000) : nullptr; }
+static uint32_t __thiscall stub_owner_of(uint32_t *owned) { record(0x69, owned); return *owned & 3; }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4602,6 +4604,74 @@ static std::vector<Test> tests() {
     };
     quad_walk_box_weighted.finish = quad_take_all_weighted.finish;
     quick(quad_walk_box_weighted);
+    // QuadTree::TakeAllAimed and WalkBoxAimed: objects of every kind with positions, owners through a stand-in, an aim
+    // point and direction among them; the shared index is set in the call (globals aren't put back between runs)
+    auto quad_aimed_setup = [=](Rng &r) {
+        quad_rect_setup(r);
+        static void *vtable[2] = {nullptr, (void *)stub_object_info};
+        for (int i = 0; i < 63; i++) {
+            uint8_t *object = arena<uint8_t>(0x4000 + i * 0x100);
+            *(void **)object = vtable;
+            for (int c = 0; c < 3; c++) *(float *)(object + 0x80 + c * 4) = r.range(0, 20) ? r.real(-15, 15) : geo_pick(r);
+            *(int32_t *)(object + 0x190) = r.range(0, 1) ? 8 : r.range(0, 9);
+            *(object + 0x120) = (uint8_t)r.range(0, 9);
+            *(uint32_t *)(object + 0x40) = r.next();
+            *(uint32_t *)(object + 0x20) = r.next();
+        }
+        uint32_t *info = arena<uint32_t>(0x8000);
+        info[0x14 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8100);
+        info[0x18 / 4] = r.range(0, 4);
+        for (int k = 0; k < 4; k++) arena<uint32_t>(0x8100)[k] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x8200 + k * 0x20) : 0;
+        for (int k = 0; k < 4; k++) arena<int32_t>(0x8200 + k * 0x20)[4] = r.range(0, 4) ? 0x20 : 0;
+        uint32_t *best = arena<uint32_t>(0x3400);
+        best[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)arena<void>(0x4000 + r.range(0, 62) * 0x100) : 0;
+        float value = r.real(-1, 1); memcpy(&best[1], &value, 4);
+        best[2] = r.range(0, 3);
+        best[3] = r.range(0, 3) ? 0 : (uint32_t)(uintptr_t)arena<void>(0x4000 + r.range(0, 62) * 0x100);
+        best[4] = r.range(0, 1) ? 0 : r.range(1, 3);
+        best[5] = (uint32_t)(uintptr_t)arena<void>(0x8300);
+        best[6] = (uint32_t)(uintptr_t)arena<void>(0x8310);
+        for (int c = 0; c < 3; c++) arena<float>(0x8300)[c] = r.real(-10, 10);
+        float dir[3] = {r.real(-1, 1), r.real(-1, 1), r.real(-1, 1)};
+        for (int c = 0; c < 3; c++) arena<float>(0x8310)[c] = r.range(0, 9) ? dir[c] : geo_pick(r);
+        float furthest = r.range(0, 5) ? r.real(5, 40) : geo_pick(r), least = r.real(-1, 0.8f);
+        memcpy(&best[7], &furthest, 4); memcpy(&best[8], &least, 4);
+        arena<int32_t>(0x14)[0] = r.range(0, 4);
+        // in the starting node: a twin of the first item's object (an exact tie), and an object just over 0.5 away
+        // whose distance rounds to 0.5 as a float
+        int start = arena<int32_t>(0x10)[0];
+        uint8_t *first = arena<uint8_t>(0x4000 + start * 3 * 0x100), *twin = first + 0x100, *close_by = first + 0x200;
+        if (r.range(0, 1)) {
+            memcpy(twin + 0x80, first + 0x80, 12);
+            *(twin + 0x120) = *(first + 0x120);
+            *(int32_t *)(twin + 0x190) = *(int32_t *)(first + 0x190);
+            *(uint32_t *)(twin + 0x40) = *(uint32_t *)(first + 0x40);
+            for (int k = 0; k < 2; k++) arena<uint32_t>(0x2000 + start * 0x60 + k * 0x20)[7] = 1;
+        }
+        if (r.range(0, 1)) {
+            const float *from = arena<float>(0x8300);
+            float *at = (float *)(close_by + 0x80);
+            at[0] = from[0] + 0.5f; at[1] = from[1] + 0.0001f; at[2] = from[2];
+            arena<uint32_t>(0x2000 + start * 0x60 + 0x40)[7] = 1;
+        }
+    };
+    auto quad_aimed_call = [=](void *fn, bool walk) {
+        *(int32_t *)0x130654c = arena<int32_t>(0x14)[0];
+        if (walk) return quad_walk_planes.call(fn);
+        return quad_take_all.call(fn);
+    };
+    auto quad_aimed_prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x758b10, (void *)stub_owner_of}}); };
+    Test quad_take_all_aimed{0x7b5540, quad_aimed_setup, [=](void *fn) { return quad_aimed_call(fn, false); }};
+    quad_take_all_aimed.prepare = quad_aimed_prepare;
+    quad_take_all_aimed.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_take_all_aimed);
+    Test quad_walk_box_aimed{0x7b6eb0, quad_aimed_setup, [=](void *fn) { return quad_aimed_call(fn, true); }};
+    quad_walk_box_aimed.prepare = [=](const rewrite::Entry *e) {
+        quad_aimed_prepare(e);
+        stubs_for_now({{(uintptr_t)0x7b5540, (void *)stub_quad_take_all}});
+    };
+    quad_walk_box_aimed.finish = quad_take_all_aimed.finish;
+    quick(quad_walk_box_aimed);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

@@ -9690,7 +9690,7 @@ address,size,name,callers,status
 0x7b5310,91,,4,documented
 0x7b53a0,126,QuadTree::Insert,3,rewritten
 0x7b5420,273,,1,documented
-0x7b5540,527,,3,documented
+0x7b5540,527,QuadTree::TakeAllAimed,3,rewritten
 0x7b5780,243,,3,documented
 0x7b5880,468,,0,documented
 0x7b5a60,321,,0,documented
@@ -9702,7 +9702,7 @@ address,size,name,callers,status
 0x7b6790,1081,,1,documented
 0x7b6bd0,422,QuadTree::TakeAllWeighted,3,rewritten
 0x7b6d80,289,QuadTree::TakeAllRect,3,rewritten
-0x7b6eb0,1004,,2,documented
+0x7b6eb0,1004,QuadTree::WalkBoxAimed,2,rewritten
 0x7b72c0,194,Object::QuadCollect,3,rewritten
 0x7b7390,194,Object::QuadCollect,3,rewritten
 0x7b7460,194,Object::QuadCollect,3,rewritten
