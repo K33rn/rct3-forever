@@ -46,3 +46,58 @@ static int32_t __thiscall planes_test_box(const float *planes, const float *mid,
 static const uint8_t planes_test_box_original[] = {0x83, 0xec, 0x08, 0x8b, 0x54, 0x24, 0x10, 0x8b};
 static const uint32_t planes_test_box_copies[] = {0x42fb10, 0x4493f0, 0xa0c0a0, 0xb5bbe0, 0xb6bd00};
 REWRITE_COPIES("Planes::TestBox", planes_test_box_copies, planes_test_box_original, &planes_test_box, &g_box_tests);
+
+// ---- QuadTree::UpdateBounds(n): node n (0x1C bytes: flags, low, high, +0xC, item count, +0x14, items) brought up to
+// date when marked changed (flag 0x10). Its children 4n+1 to 4n+4 (those that exist) are updated first, bits 0-3 note
+// which of them hold anything, and their ranges are taken in; then its own items' (0x20 bytes: low at +4, high at
+// +0x10, in use at +0x1C). The range starts empty (1e20 down to -1e20) ----------------------------------------------------
+struct QuadNode {
+    uint32_t flags;
+    float low, high;
+    uint32_t other, item_count, unused;
+    uint8_t *items;
+};
+struct QuadTree {
+    uint32_t unused;
+    int32_t count;
+    QuadNode *nodes;
+};
+static float float_from_bits(uint32_t bits) {
+    float f;
+    __builtin_memcpy(&f, &bits, 4);
+    return f;
+}
+static volatile long g_quad_updates;
+static void __thiscall quad_update_bounds(QuadTree *tree, int32_t n) {
+    g_quad_updates++;
+    QuadNode *node = &tree->nodes[n];
+    if (!(node->flags & 0x10)) return;
+    const float empty_low = float_from_bits(0x60ad78ec), empty_high = float_from_bits(0xe0ad78ec);   // 1e20, -1e20
+    float low = empty_low, high = empty_high;
+    int32_t first = n * 4 + 1;
+    if (first < tree->count) {
+        node->flags &= ~0xfu;
+        for (int32_t k = 0; k < 4; k++) {
+            QuadNode *child = &tree->nodes[first + k];
+            if (child->flags & 0x10) quad_update_bounds(tree, first + k);
+            if (child->other || child->item_count || (child->flags & 0xf)) node->flags |= 1u << k;
+            if (child->low < low) low = child->low;
+            if (child->high > high) high = child->high;
+        }
+    }
+    float items_low = empty_low, items_high = empty_high;
+    for (int32_t i = 0; i < (int32_t)node->item_count; i++) {
+        uint8_t *item = node->items + i * 0x20;
+        if (!*(uint32_t *)(item + 0x1c)) continue;
+        if (*(float *)(item + 4) < items_low) items_low = *(float *)(item + 4);
+        if (items_high < *(float *)(item + 0x10)) items_high = *(float *)(item + 0x10);
+    }
+    if (items_low < low) low = items_low;
+    if (items_high > high) high = items_high;
+    node->high = high;
+    node->low = low;
+    node->flags &= ~0x10u;
+}
+static const uint8_t quad_update_bounds_original[] = {0x83, 0xec, 0x0c, 0x53, 0x8b, 0xd1, 0x8b, 0x4c};
+static const uint32_t quad_update_bounds_copies[] = {0x430770, 0x4891a0, 0x7b41b0, 0xa0c730, 0xb5c2e0, 0xb6d510};
+REWRITE_COPIES("QuadTree::UpdateBounds", quad_update_bounds_copies, quad_update_bounds_original, &quad_update_bounds, &g_quad_updates);

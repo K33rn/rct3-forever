@@ -4287,6 +4287,38 @@ static std::vector<Test> tests() {
                                                                                                          arena<float>(0x210), arena<float>(0x220))};
                          }};
     quick(planes_test_box);
+    // QuadTree::UpdateBounds: 21 nodes (three levels), most marked changed, each with up to 3 items; ranges random,
+    // sometimes NaN; the count of nodes sometimes cuts the last level short
+    Test quad_update_bounds{0x430770,
+                            [](Rng &r) {
+                                uint32_t *tree = arena<uint32_t>(0x100);
+                                tree[0] = r.next();
+                                tree[1] = r.range(0, 3) ? 21 : r.range(0, 21);
+                                tree[2] = (uint32_t)(uintptr_t)arena<void>(0x1000);
+                                for (int i = 0; i < 21; i++) {
+                                    uint32_t *node = arena<uint32_t>(0x1000 + i * 0x1c);
+                                    node[0] = (r.range(0, 3) ? 0x10 : 0) | (r.next() & 0xffef);
+                                    auto pick = [&](float span) { int k = r.range(0, 9); return k == 0 ? r.any_float() : k == 1 ? 0.0f : k == 2 ? -0.0f : r.real(-span, span); };
+                                    float lo = pick(100), hi = pick(100);
+                                    memcpy(&node[1], &lo, 4);
+                                    memcpy(&node[2], &hi, 4);
+                                    node[3] = r.range(0, 3) ? 0 : r.next();
+                                    node[4] = r.range(0, 3);
+                                    node[5] = r.next();
+                                    node[6] = (uint32_t)(uintptr_t)arena<void>(0x2000 + i * 0x60);
+                                    for (int k = 0; k < 3; k++) {
+                                        uint32_t *item = arena<uint32_t>(0x2000 + i * 0x60 + k * 0x20);
+                                        for (int w = 0; w < 8; w++) item[w] = r.next();
+                                        float a = pick(200), b = pick(200);
+                                        memcpy(&item[1], &a, 4);
+                                        memcpy(&item[4], &b, 4);
+                                        item[7] = r.range(0, 3) ? 1 : 0;
+                                    }
+                                }
+                                arena<int32_t>(0x10)[0] = r.range(0, 4) ? 0 : r.range(0, 4);
+                            },
+                            [](void *fn) { ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0]); return Result{}; }};
+    quick(quad_update_bounds);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
