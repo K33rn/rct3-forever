@@ -4983,6 +4983,34 @@ static std::vector<Test> tests() {
                                     return Result{((uint32_t(__thiscall *)(void *, uint32_t, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<void>(0x9000))};
                                 }};
     quick(lights_set_directional);
+    // Skin::Positions: 8 bones (aligned 4x4 matrices), a layout of runs (1-3 vertices, 0-3 extra bones) and skips,
+    // vertices of 0x20 or 0x24 bytes with bone indices 0-7 and weights
+    Test skin_positions{0xbef020,
+                        [](Rng &r) {
+                            float *bones = arena<float>(0x1000);
+                            for (int i = 0; i < 8 * 16; i++) bones[i] = r.range(0, 30) ? r.real(-4, 4) : r.any_float();
+                            uint16_t *layout = arena<uint16_t>(0x800);
+                            uint32_t size = r.range(0, 1) ? 0x20 : 0x24, vertices = 0;
+                            layout[0] = (uint16_t)size; layout[1] = (uint16_t)r.next(); layout[2] = (uint16_t)r.next();
+                            int w = 3;
+                            for (int k = 0; k < 6; k++) {
+                                if (r.range(0, 3)) { int n = r.range(1, 3); layout[w++] = (uint16_t)(n << 2 | r.range(0, 3)); vertices += n; }
+                                else { int n = r.range(1, 2); layout[w++] = 0; layout[w++] = (uint16_t)n; vertices += n; }
+                            }
+                            layout[w++] = 0; layout[w++] = 0;
+                            uint8_t *v = arena<uint8_t>(0x2000);
+                            for (uint32_t i = 0; i < vertices * size; i++) v[i] = (uint8_t)r.next();
+                            for (uint32_t i = 0; i < vertices; i++) {
+                                float *at = (float *)(v + i * size);
+                                for (int c = 0; c < 3; c++) at[c] = r.range(0, 20) ? r.real(-50, 50) : r.any_float();
+                                for (int b = 0; b < 4; b++) v[i * size + 0x18 + b] = (uint8_t)r.range(0, 7);
+                            }
+                        },
+                        [](void *fn) {
+                            ((void(__fastcall *)(void *, void *, void *, void *))fn)(arena<void>(0x1000), arena<void>(0x800), arena<void>(0x2000), arena<void>(0x6000));
+                            return Result{};
+                        }};
+    quick(skin_positions);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

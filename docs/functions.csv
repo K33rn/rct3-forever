@@ -20317,9 +20317,9 @@ address,size,name,callers,status
 0xbee8c0,1000,,3,documented
 0xbeecb0,134,,2,documented
 0xbeed40,727,,0,documented
-0xbef020,322,,0,documented
+0xbef020,322,Skin::Positions,0,rewritten
 0xbef170,727,,0,documented
-0xbef450,322,,0,documented
+0xbef450,322,Skin::Positions,0,rewritten
 0xbef5a0,843,,2,documented
 0xbef8f0,403,,2,documented
 0xbefa90,865,,2,documented
