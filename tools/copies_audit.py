@@ -1,6 +1,7 @@
 # Checks hand-written rewrites: copies whose constants differ must not run the same code. usage: tools/copies_audit.py (from the repo root)
 import re, glob, csv, collections, pefile, capstone
-pe = pefile.PE('../rct3-decomp/RCT3plus.exe', fast_load=True); img = pe.get_memory_mapped_image(); B = 0x400000
+from gamepath import game_exe
+pe = pefile.PE(game_exe(), fast_load=True); img = pe.get_memory_mapped_image(); B = 0x400000
 md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32); md.detail = True
 sizes = {int(r['address'], 16): int(r['size']) for r in csv.DictReader(open('docs/functions.csv', encoding='utf-8'))}
 

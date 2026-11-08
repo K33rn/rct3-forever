@@ -10,6 +10,11 @@ has to behave exactly the same. This page is the checklist; [docs/rewriting.md](
   is a different program and isn't supported.
 - Windows, [uv](https://docs.astral.sh/uv/) and git. The build fetches the compiler (zig) and Dear ImGui by itself.
 - Build and test: `uv run --no-project --with ziglang --with pefile --with capstone python build.py test`
+- Read a game function: `uv run --no-project --with pefile --with capstone python tools/disasm.py 0x445440`. It finds
+  your RCT3plus.exe through `tools/gamepath.py` (the `RCT3_EXE` variable, the game folder in `out/RCT3Forever.ini`, or
+  the usual Steam folder). Tools that take `<exe>` want that path.
+- Using Claude Code? [CLAUDE.md](CLAUDE.md) gives it these rules and commands. Playing the scenario at the end is
+  still yours to do.
 
 ## The rules
 
