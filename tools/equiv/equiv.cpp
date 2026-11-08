@@ -5011,6 +5011,47 @@ static std::vector<Test> tests() {
                             return Result{};
                         }};
     quick(skin_positions);
+    // Skin::PositionsNormals: vertices {position, normal, bones, weights, extra bytes}, packed per copy (2 or 4 bones,
+    // read from its code) when called; out strides from the layout
+    static uint32_t g_skin_vertex_size;
+    Test skin_positions_normals{0xbef8f0,
+                                [=](Rng &r) {
+                                    skin_positions.setup(r);
+                                    for (int i = 0; i < 40 * 12; i++) arena<uint32_t>(0x9000)[i] = r.next();   // raw: 6 floats, 4 bones, 4 weights, 8 extra
+                                    for (int i = 0; i < 40; i++) {
+                                        uint8_t *at = arena<uint8_t>(0x9000 + i * 0x30);
+                                        for (int c = 0; c < 6; c++) ((float *)at)[c] = r.range(0, 20) ? r.real(-50, 50) : r.any_float();
+                                        for (int b = 0; b < 4; b++) at[0x18 + b] = (uint8_t)r.range(0, 7);
+                                    }
+                                    arena<uint32_t>(0x10)[0] = 4 * r.range(0, 2);
+                                    arena<uint32_t>(0x10)[1] = 4 * r.range(0, 1);
+                                    uint16_t *run = arena<uint16_t>(0x800) + 3;   // up to 1 extra bone
+                                    while (run[0] || run[1]) {
+                                        if (run[0]) { run[0] = (uint16_t)((run[0] & ~3) | (run[0] & 1)); run++; }
+                                        else run += 2;
+                                    }
+                                },
+                                [=](void *fn) {
+                                    uint32_t size = g_skin_vertex_size, bones = size == 0x1c ? 2 : 4, extra = arena<uint32_t>(0x10)[0];
+                                    uint16_t *layout = arena<uint16_t>(0x800);
+                                    layout[0] = (uint16_t)(size + extra);
+                                    layout[1] = (uint16_t)(0x18 + extra + arena<uint32_t>(0x10)[1]);
+                                    layout[2] = (uint16_t)extra;
+                                    for (int i = 0; i < 40; i++) {
+                                        const uint8_t *raw = arena<uint8_t>(0x9000 + i * 0x30);
+                                        uint8_t *at = arena<uint8_t>(0x2000 + i * layout[0]);
+                                        memcpy(at, raw, 0x18 + bones);
+                                        memcpy(at + 0x18 + bones, raw + 0x1c, bones);
+                                        memcpy(at + size, raw + 0x20, extra);
+                                    }
+                                    return skin_positions.call(fn);
+                                }};
+    skin_positions_normals.prepare = [](const rewrite::Entry *e) {
+        const uint8_t *code = (const uint8_t *)e->at;
+        for (int k = 0x100; k < 0x190; k++)   // add esi, SIZE; add edi, 0x18
+            if (code[k] == 0x83 && code[k + 1] == 0xc6 && code[k + 3] == 0x83 && code[k + 4] == 0xc7 && code[k + 5] == 0x18) g_skin_vertex_size = code[k + 2];
+    };
+    quick(skin_positions_normals);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

@@ -67,6 +67,63 @@ SSE static void __fastcall skin_positions(const float *bones, const uint16_t *la
         run++;
     }
 }
+// The normal turned by a bone (no move): x row0 + y row1 + z row2.
+SSE static inline __m128 bone_normal(const float *bones, uint8_t bone, const float *n) {
+    const __m128 *m = (const __m128 *)(bones + bone * 16);
+    __m128 v = _mm_mul_ps(_mm_set1_ps(n[0]), m[0]);
+    v = _mm_add_ps(v, _mm_mul_ps(_mm_set1_ps(n[1]), m[1]));
+    return _mm_add_ps(v, _mm_mul_ps(_mm_set1_ps(n[2]), m[2]));
+}
+SSE static inline void store3(float *out, __m128 v) {
+    float lanes[4];
+    _mm_storeu_ps(lanes, v);
+    out[0] = lanes[0];
+    out[1] = lanes[1];
+    out[2] = lanes[2];
+}
+
+// ---- Skin::PositionsNormals: as Skin::Positions for vertices {position, normal, bones at +0x18, weights at +WEIGHTS,
+// SIZE bytes in all, then layout[2] bytes copied as they are}: the normal turned by the first bone only; out {position, normal, the
+// copied bytes}; vertices passed over move by layout[0] in and layout[1] out --------------------------------------------------
+template <uint32_t WEIGHTS, uint32_t SIZE> SSE static void __fastcall skin_positions_normals(const float *bones, const uint16_t *layout, const uint8_t *vertex, uint8_t *out) {
+    g_skins++;
+    uint32_t size_in = layout[0], size_out = layout[1], extra = layout[2];
+    const uint16_t *run = layout + 3;
+    for (;;) {
+        uint32_t count = *run >> 2;
+        if (!count) {
+            uint32_t skip = run[1];
+            if (!skip) return;
+            vertex += skip * size_in;
+            out += skip * size_out;
+            run += 2;
+            continue;
+        }
+        uint32_t more = *run & 3;
+        for (; count; count--) {
+            const float *at = (const float *)vertex;
+            __m128 v = bone_point(bones, vertex[0x18], at), n = bone_normal(bones, vertex[0x18], at + 3);
+            if (more) {
+                v = _mm_mul_ps(v, _mm_set1_ps(bone_weight(vertex[WEIGHTS])));
+                for (uint32_t k = more; k; k--)
+                    v = _mm_add_ps(v, _mm_mul_ps(bone_point_more(bones, vertex[0x18 + k], at), _mm_set1_ps(bone_weight(vertex[WEIGHTS + k]))));
+            }
+            store3((float *)out, v);
+            store3((float *)out + 3, n);
+            vertex += SIZE;
+            out += 0x18;
+            for (uint32_t left = extra; left; left -= 4) {
+                *(uint32_t *)out = *(const uint32_t *)vertex;
+                vertex += 4;
+                out += 4;
+            }
+        }
+        run++;
+    }
+}
 static const uint8_t skin_positions_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x14, 0x53, 0x56};
 REWRITE("Skin::Positions", 0xbef020, skin_positions_original, &skin_positions, &g_skins);
 REWRITE("Skin::Positions", 0xbef450, skin_positions_original, &skin_positions, &g_skins);
+static const uint8_t skin_positions_normals_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x18, 0x53, 0x56};
+REWRITE("Skin::PositionsNormals", 0xbef8f0, skin_positions_normals_original, (&skin_positions_normals<0x1a, 0x1c>), &g_skins);
+REWRITE("Skin::PositionsNormals", 0xbefe00, skin_positions_normals_original, (&skin_positions_normals<0x1c, 0x20>), &g_skins);
