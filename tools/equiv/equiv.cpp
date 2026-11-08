@@ -168,6 +168,8 @@ static bool check_copy(const rewrite::Entry *e, const Test &t, int iterations, u
             memcpy(g_arena, g_arena0.data(), sizeof g_arena);
             g_testing_which = "rewrite";
             Result b = t.call(e->with);
+            static uint8_t g_arena_rewrite[sizeof g_arena];
+            memcpy(g_arena_rewrite, g_arena, sizeof g_arena);
             bool same = a == b && (!t.data || !memcmp(g_data1.data(), (void *)DATA, DATA_SIZE)) &&
                         !memcmp(g_arena1.data(), g_arena, sizeof g_arena);
             if (t.data) memcpy((void *)DATA, g_data0.data(), DATA_SIZE);
@@ -176,6 +178,12 @@ static bool check_copy(const rewrite::Entry *e, const Test &t, int iterations, u
                 // (the C runtime's printf has no 80-bit long double, so the float results are shown as doubles)
                 printf("  DIFFERENT %s at 0x%x, case %d, %s-bit FPU: original %08x / %.9g, rewrite %08x / %.9g%s\n",
                        e->name, (unsigned)e->at, it, p.name, a.i, (double)a.f, b.i, (double)b.f, a == b ? " (memory differs)" : "");
+                if (getenv("EQUIV_DIFF"))   // where the arena differs: offset, original, rewrite (dwords)
+                    for (uint32_t o = 0, shown = 0; o < sizeof g_arena && shown < 12; o += 4)
+                        if (memcmp(g_arena1.data() + o, g_arena_rewrite + o, 4)) {
+                            printf("    +0x%04x: %08x %08x\n", o, *(uint32_t *)(g_arena1.data() + o), *(uint32_t *)(g_arena_rewrite + o));
+                            shown++;
+                        }
                 set_fpu(0x200);
                 return false;
             }
@@ -423,6 +431,7 @@ static void __thiscall stub_ref_release(uint32_t *ref) {   // unlinks it, as the
     ((uint32_t *)(uintptr_t)ref[3])[0] = ref[2];
 }
 static void __thiscall stub_set_up(void *self) { record(0x75, self); }
+static void __thiscall stub_slot_free(void *node, uint32_t slot) { record(0x76, node); record(0x76, (void *)(uintptr_t)slot); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4861,6 +4870,29 @@ static std::vector<Test> tests() {
     };
     ref_pass_to.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(ref_pass_to);
+    // QuadTree::Move: the item's handle names a node and slot; FindNode (a stand-in) gives the same node or another;
+    // corners any floats (signalling NaNs too: the game copies x and y through the FPU)
+    Test quad_move{0x431240,
+                   [=](Rng &r) {
+                       fresh(r);
+                       for (int i = 0; i < 16; i++) arena<float>(0x300)[i] = r.range(0, 3) ? r.real(-50, 50) : r.any_float();
+                       if (!r.range(0, 3)) { uint32_t nan = 0x7f800001 | (r.next() & 0x3fffff); memcpy(arena<float>(0x300) + r.range(0, 1), &nan, 4); }
+                       arena<void *>(0x100)[2] = arena<void>(0x4000);
+                       for (int n = 0; n < 21; n++) *(void **)(arena<uint8_t>(0x4000 + n * 0x1c) + 0x18) = arena<void>(0x6000 + n * 0x100);
+                       int old = r.range(0, 20), slot = r.range(0, 7);
+                       arena<uint32_t>(0x360)[0] = (uint32_t)old << 16 | slot | (r.range(0, 9) ? 0 : 0xffff0000u & (r.next() << 21));
+                       *arena<int32_t>(0x20) = r.range(0, 1) && (arena<uint32_t>(0x360)[0] >> 16 & 0xffff) < 21 ? (int32_t)(arena<uint32_t>(0x360)[0] >> 16 & 0xffff) : r.range(0, 20);
+                   },
+                   [](void *fn) {
+                       ((void(__thiscall *)(void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x340), arena<void>(0x360), arena<void>(0x300), arena<void>(0x320));
+                       return Result{};
+                   }};
+    quad_move.prepare = [](const rewrite::Entry *e) {
+        auto target = [&](int o) { return (uintptr_t)(e->at + o + 5 + *(int32_t *)(e->at + o + 1)); };
+        stubs_for_now({{0xcdb600, (void *)stub_find_node}, {target(0xb1), (void *)stub_mark_changed}, {target(0xcb), (void *)stub_slot_free}, {target(0xed), (void *)stub_node_add}});
+    };
+    quad_move.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_move);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

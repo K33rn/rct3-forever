@@ -572,3 +572,48 @@ static const uint8_t quad_walk_433600_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4
 REWRITE("QuadTree::WalkPlanesDrawn", 0x433600, quad_walk_433600_original, (&quad_walk_planes<0x52, 0x432f50, TakeDrawn<0x430d00>>), &g_quad_walks);
 static const uint8_t quad_take_all_drawn_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("QuadTree::TakeAllDrawn", 0x432f50, quad_take_all_drawn_original, (&quad_take_all_box<TakeDrawn<0x430d00>, 0x60>), &g_quad_walks);
+
+// ---- QuadTree::Move(item, handle, corner A, corner B): an item's box has changed. The node that should hold it is found
+// as QuadTree::Insert finds it; when that is the node it is in (handle: node in the high 16 bits, slot in the low), the
+// box is rewritten there (x and y of each corner through the FPU, z as it is) and the node marked changed (MARK); else
+// its slot is freed (FREE) and that node marked, it is added to the new node (ADD) and the handle and the new node updated.
+static volatile long g_quad_moves;
+static void fpu_copy(void *to, const void *from) {   // through the FPU, as the game copies them (quieting a signalling NaN)
+    __asm__ volatile("flds (%1)\n\tfstps (%0)" : : "r"(to), "r"(from) : "memory");
+}
+template <uint32_t MARK, uint32_t FREE, uint32_t ADD>
+static void __thiscall quad_move(uint8_t *self, void *item, uint32_t *handle, const uint32_t *a, const uint32_t *b) {
+    g_quad_moves++;
+    volatile float size[2];
+    size[0] = ((const float *)b)[0] - ((const float *)a)[0];
+    // read as integers (volatile): the compiler would reuse its float load and quiet a signalling NaN
+    uint32_t corner[2] = {((const volatile uint32_t *)a)[0], ((const volatile uint32_t *)a)[2]};
+    size[1] = ((const float *)b)[2] - ((const float *)a)[2];
+    typedef int32_t(__fastcall * Find)(int32_t, uint32_t, void *, void *, const uint32_t *, volatile float *);
+    int32_t node = ((Find)0xcdb600)(0, *(uint32_t *)(self + 4), self + 0xc, self + 0x14, corner, size);
+    uint32_t old = (*handle >> 16) & 0xffff, slot = *handle & 0xffff;
+    uint8_t *nodes = *(uint8_t **)(self + 8);
+    if ((uint32_t)node == old) {
+        uint32_t *box = (uint32_t *)(*(uint8_t **)(nodes + node * 0x1c + 0x18) + slot * 0x20);
+        fpu_copy(&box[0], &a[0]);
+        fpu_copy(&box[1], &a[1]);
+        box[2] = ((const volatile uint32_t *)a)[2];
+        fpu_copy(&box[3], &b[0]);
+        fpu_copy(&box[4], &b[1]);
+        box[5] = ((const volatile uint32_t *)b)[2];
+        ((void(__thiscall *)(void *, int32_t))MARK)(self, node);
+        return;
+    }
+    ((void(__thiscall *)(void *, uint32_t))FREE)(nodes + old * 0x1c, slot);
+    ((void(__thiscall *)(void *, int32_t))MARK)(self, (int32_t)old);
+    uint32_t added = ((uint32_t(__thiscall *)(void *, void *, const uint32_t *, const uint32_t *))ADD)(*(uint8_t **)(self + 8) + node * 0x1c, item, a, b);
+    *handle = added | (uint32_t)node << 16;
+    ((void(__thiscall *)(void *, int32_t))MARK)(self, node);
+}
+static const uint8_t quad_move_original[] = {0x83, 0xec, 0x1c, 0x53, 0x55, 0x56, 0x57, 0x8b};
+REWRITE("QuadTree::Move", 0x431240, quad_move_original, (&quad_move<0x42f670, 0x42f6f0, 0x430520>), &g_quad_moves);
+REWRITE("QuadTree::Move", 0x489b30, quad_move_original, (&quad_move<0x488320, 0x4883c0, 0x489030>), &g_quad_moves);
+REWRITE("QuadTree::Move", 0x7b5420, quad_move_original, (&quad_move<0x7b2a40, 0x7b2ac0, 0x7b4040>), &g_quad_moves);
+REWRITE("QuadTree::Move", 0xa0d750, quad_move_original, (&quad_move<0xa0be40, 0xa0bec0, 0xa0c590>), &g_quad_moves);
+REWRITE("QuadTree::Move", 0xb5cc80, quad_move_original, (&quad_move<0xb5b5d0, 0xb5b650, 0xb5c170>), &g_quad_moves);
+REWRITE("QuadTree::Move", 0xb71020, quad_move_original, (&quad_move<0xb6b880, 0xb6b900, 0xb6d3a0>), &g_quad_moves);
