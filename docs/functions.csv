@@ -21944,7 +21944,7 @@ address,size,name,callers,status
 0xc70230,872,,1,documented
 0xc70620,211,,1,documented
 0xc70770,391,Record::CopyFields,2,rewritten
-0xc70da0,673,,1,documented
+0xc70da0,673,Lights::SetDirectional,1,rewritten
 0xc71070,1693,,1,documented
 0xc719f0,26,OwnedPointer::Reset,2,rewritten
 0xc71a10,130,Array<4>::SetCapacity,1,rewritten
@@ -21981,7 +21981,7 @@ address,size,name,callers,status
 0xc75800,1896,,1,documented
 0xc75fe0,155,,1,documented
 0xc760f0,119,Record::CopyFields,1,rewritten
-0xc765a0,673,,1,documented
+0xc765a0,673,Lights::SetDirectional,1,rewritten
 0xc76870,1693,,1,documented
 0xc76f70,820,,1,documented
 0xc77340,24,Tree::InitADA8B0,1,rewritten
@@ -22030,7 +22030,7 @@ address,size,name,callers,status
 0xc946d0,148,,2,documented
 0xc947f0,1803,Record::CopyRanges,2,rewritten
 0xc94f00,109,STRUCT_COPY44,1,rewritten
-0xc95510,673,,1,documented
+0xc95510,673,Lights::SetDirectional,1,rewritten
 0xc957e0,1693,,1,documented
 0xc95ee0,818,,1,documented
 0xc96350,26,OwnedPointer::Reset,2,rewritten

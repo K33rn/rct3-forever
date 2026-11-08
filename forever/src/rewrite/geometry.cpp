@@ -707,3 +707,31 @@ REWRITE("QuadTree::WalkBoxOverlap", 0xb5e710, quad_walk_box_overlap_original, (&
 REWRITE("QuadTree::WalkBoxOverlap", 0xb74830, quad_walk_box_overlap_original, (&quad_walk_box<TakeInto64, 0xb73380, 1>), &g_quad_walks);
 static const uint8_t quad_walk_near_matching_original[] = {0x83, 0xec, 0x18, 0x8b, 0x54, 0x24, 0x20, 0x6b};
 REWRITE("QuadTree::WalkNearMatching", 0x48b6f0, quad_walk_near_matching_original, (&quad_walk_box<TakeNearPoint<TakeMatching>, 0x48a6e0, 2, false>), &g_quad_walks);
+
+// ---- Lights::SetDirectional(index, description): light `index` (0x90 bytes from +BASE) becomes directional (3): its
+// direction from three signed bytes over 127, its three colours (bytes at +0xC/+0xE, +4/+6, +8/+0xA) times -1/255 when
+// byte 3 is set, else 1/255; then its bit is set in the mask at +MASK. Gives that bit --------------------------------------------
+static volatile long g_light_sets;
+template <uint32_t BASE, uint32_t MASK> static uint32_t __thiscall lights_set_directional(uint8_t *self, uint32_t index, const uint8_t *description) {
+    g_light_sets++;
+    uint8_t *light = self + BASE + index * 0x90;
+    *(uint32_t *)light = 3;
+    const float over_127 = float_from_bits(0x3c010204), by_255 = float_from_bits(*(const uint8_t *)(description + 3) ? 0xbb808081 : 0x3b808081);
+    float *direction = (float *)(light + 0x50);
+    for (int k = 0; k < 3; k++) direction[k] = (float)((long double)(int8_t)description[k] * over_127);
+    const uint32_t *words = (const uint32_t *)description;
+    auto colour = [&](float *to, uint32_t word, uint8_t top) {
+        to[0] = (float)((long double)top * by_255);
+        to[1] = (float)((long double)((int32_t)word >> 8 & 0xff) * by_255);
+        to[2] = (float)((long double)(word & 0xff) * by_255);
+    };
+    colour((float *)(light + 0x28), words[3], description[0xe]);
+    colour((float *)(light + 8), words[1], description[6]);
+    colour((float *)(light + 0x18), words[2], description[0xa]);
+    *(uint32_t *)(self + MASK) |= 1u << index;
+    return 1u << index;
+}
+static const uint8_t lights_set_directional_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Lights::SetDirectional", 0xc70da0, lights_set_directional_original, (&lights_set_directional<0x7a0, 0x678>), &g_light_sets);
+REWRITE("Lights::SetDirectional", 0xc765a0, lights_set_directional_original, (&lights_set_directional<0x17b0, 0x678>), &g_light_sets);
+REWRITE("Lights::SetDirectional", 0xc95510, lights_set_directional_original, (&lights_set_directional<0x1820, 0x1ca8>), &g_light_sets);

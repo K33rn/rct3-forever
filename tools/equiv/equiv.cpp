@@ -4972,6 +4972,17 @@ static std::vector<Test> tests() {
     quad_walk_near_matching.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x48a6e0, (void *)stub_quad_take_all}}); };
     quad_walk_near_matching.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(quad_walk_near_matching);
+    // Lights::SetDirectional: a light index 0-7 and a random description
+    Test lights_set_directional{0xc70da0,
+                                [](Rng &r) {
+                                    for (int i = 0; i < 4; i++) arena<uint32_t>(0x9000)[i] = r.next();
+                                    if (r.range(0, 1)) arena<uint8_t>(0x9000)[3] = 0;
+                                    arena<uint32_t>(0x10)[0] = r.range(0, 7);
+                                },
+                                [](void *fn) {
+                                    return Result{((uint32_t(__thiscall *)(void *, uint32_t, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<void>(0x9000))};
+                                }};
+    quick(lights_set_directional);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
