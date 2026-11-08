@@ -9724,7 +9724,7 @@ address,size,name,callers,status
 0x7b9300,169,,1,documented
 0x7b93b0,293,QuadTree::CullBox,1,rewritten
 0x7b94e0,169,,1,documented
-0x7b9590,1250,,2,documented
+0x7b9590,1250,QuadTree::WalkPlanes,2,rewritten
 0x7b9a80,30,DeletingDestructor,2,rewritten
 0x7b9aa0,258,,2,documented
 0x7b9bb0,128,,5,documented
@@ -15286,7 +15286,7 @@ address,size,name,callers,status
 0xa0e220,30,DeletingDestructor,0,rewritten
 0xa0e240,136,Tree::WalkA0E240,3,rewritten
 0xa0e2d0,379,,1,documented
-0xa0e450,1250,,2,documented
+0xa0e450,1250,QuadTree::WalkPlanes,2,rewritten
 0xa0e940,30,DeletingDestructor,1,rewritten
 0xa0e960,356,QuadTree::CullPlanes,1,rewritten
 0xa0eb00,54,Message::ForwardA0EB00,1,rewritten
@@ -18401,7 +18401,7 @@ address,size,name,callers,status
 0xb5ead0,169,,0,documented
 0xb5eb80,293,QuadTree::CullBox,0,rewritten
 0xb5ecb0,169,,1,documented
-0xb5ed60,1250,,2,documented
+0xb5ed60,1250,QuadTree::WalkPlanes,2,rewritten
 0xb5f250,30,DeletingDestructor,1,rewritten
 0xb5f270,128,,3,documented
 0xb5f370,49,Message::Post7B9D30,1,rewritten
@@ -18589,7 +18589,7 @@ address,size,name,callers,status
 0xb74dd0,169,,1,documented
 0xb74e80,293,QuadTree::CullBox,1,rewritten
 0xb74fb0,169,,1,documented
-0xb75060,1250,,2,documented
+0xb75060,1250,QuadTree::WalkPlanes,2,rewritten
 0xb75550,30,DeletingDestructor,2,rewritten
 0xb75570,128,,3,documented
 0xb75670,49,Message::Post7B9D30,1,rewritten

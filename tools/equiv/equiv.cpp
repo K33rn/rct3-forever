@@ -385,6 +385,8 @@ static void __thiscall stub_quad_take_all(void *tree, int32_t n, void *query) { 
 static void __thiscall stub_quad_walk(void *tree, void *query, int32_t n, void *low, void *size) {
     record(0x63, tree); record(0x63, query); record(0x63, (void *)(intptr_t)n); record(0x63, low); record(0x63, size);
 }
+static void __thiscall stub_show(void *object) { record(0x64, object); }
+static void __thiscall stub_show_zero(void *object, int32_t zero) { record(0x65, object); record(0x65, (void *)(intptr_t)zero); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4416,6 +4418,74 @@ static std::vector<Test> tests() {
     quad_cull_box.prepare = quad_cull_prepare(0x19, 0x102, 0x117);
     quad_cull_box.finish = quad_cull_planes.finish;
     quick(quad_cull_box);
+    // QuadTree::WalkPlanes: 21 nodes, items with boxes, and planes that often pass through an item's deciding corner,
+    // so the order the products are added in decides; the take-all walk and the items' show are stand-ins
+    Test quad_walk_planes{0x7b9590,
+                          [=](Rng &r) {
+                              uint32_t *tree = arena<uint32_t>(0x100);
+                              tree[0] = r.next(); tree[1] = 21; tree[2] = (uint32_t)(uintptr_t)arena<void>(0x1000);
+                              static void *vtable[9];
+                              for (int i = 0; i < 9; i++) vtable[i] = (void *)stub_show;
+                              arena<void *>(0x3000)[0] = vtable;
+                              for (int i = 0; i < 21; i++) {
+                                  uint32_t *node = arena<uint32_t>(0x1000 + i * 0x1c);
+                                  node[0] = r.next() & (i < 5 ? 0xffffffffu : 0xfffffff0u);
+                                  float lo = r.real(-20, 20), hi = lo + r.real(0, 20);
+                                  memcpy(&node[1], &lo, 4); memcpy(&node[2], &hi, 4);
+                                  node[3] = r.range(0, 3) ? 0 : 1;
+                                  node[4] = r.range(0, 3);
+                                  node[6] = (uint32_t)(uintptr_t)arena<void>(0x2000 + i * 0x60);
+                                  for (int k = 0; k < 3; k++) {
+                                      float *item = arena<float>(0x2000 + i * 0x60 + k * 0x20);
+                                      for (int c = 0; c < 3; c++) { item[c] = r.real(-20, 20); item[c + 3] = item[c] + r.real(0, 10); }
+                                      ((uint32_t *)item)[6] = (uint32_t)(uintptr_t)arena<void>(0x3000);
+                                      ((uint32_t *)item)[7] = r.range(0, 4) ? 1 : 0;
+                                  }
+                              }
+                              float *planes = arena<float>(0x300);
+                              for (int p = 0; p < 6; p++) {
+                                  float *pl = planes + p * 4;
+                                  for (int c = 0; c < 4; c++) pl[c] = r.range(0, 7) ? r.real(-1, 1) : geo_pick(r);
+                                  if (!r.range(0, 2)) {   // large values cancelling at a random item's corner: the order of adding decides
+                                      int i = r.range(0, 20), k = r.range(0, 2), big = r.range(0, 2);
+                                      float m = big == 0 ? 16777216.0f : big == 1 ? 9007199254740992.0f : 18446744073709551616.0f;
+                                      float *item = arena<float>(0x2000 + i * 0x60 + k * 0x20);
+                                      int order[3] = {0, 1, 2};
+                                      for (int c = 2; c > 0; c--) { int j = r.range(0, c); int t = order[c]; order[c] = order[j]; order[j] = t; }
+                                      float values[3] = {m, 1.0f, -m};
+                                      for (int c = 0; c < 3; c++) { pl[c] = 1.0f; item[order[c]] = values[c]; item[order[c] + 3] = values[c] + 1.0f; }
+                                      pl[3] = r.range(0, 1) ? 0.5f : -0.5f;
+                                      ((uint32_t *)item)[7] = 1;
+                                  } else if (r.range(0, 1)) {   // through the deciding corner of a random item
+                                      int i = r.range(0, 20), k = r.range(0, 2);
+                                      const float *item = arena<float>(0x2000 + i * 0x60 + k * 0x20);
+                                      double d = 0;
+                                      for (int c = 0; c < 3; c++) d += (double)pl[c] * (pl[c] > 0 ? item[c] : item[c + 3]);
+                                      pl[3] = (float)(-d * (1 + r.range(-2, 2) * 3e-8));
+                                  }
+                              }
+                              float *box = arena<float>(0x400);
+                              for (int c = 0; c < 2; c++) { box[c] = r.real(-20, 0); box[c + 2] = r.real(0, 40); }
+                              arena<int32_t>(0x10)[0] = r.range(0, 4);
+                              arena<uint32_t>(CALL_LOG)[0] = 0;
+                          },
+                          [](void *fn) {
+                              ((void(__thiscall *)(void *, void *, int32_t, void *, void *))fn)(arena<void>(0x100), arena<void>(0x300), arena<int32_t>(0x10)[0], arena<float>(0x400), arena<float>(0x408));
+                              return Result{};
+                          }};
+    quad_walk_planes.prepare = [](const rewrite::Entry *e) {
+        const uint8_t *code = (const uint8_t *)e->at;
+        std::vector<std::pair<uintptr_t, void *>> stubs;
+        for (int k = 0; k < 1240; k++) {
+            auto target = [&](int o) { return (uintptr_t)(e->at + o + 5 + *(int32_t *)(code + o + 1)); };
+            if (code[k] == 0x57 && code[k + 1] == 0x52 && code[k + 2] == 0xe8) stubs.push_back({target(k + 2), (void *)stub_quad_take_all});
+            if (code[k] == 0x8b && code[k + 1] == 0x49 && code[k + 2] == 0x18 && code[k + 3] == 0xe8) stubs.push_back({target(k + 3), (void *)stub_show});
+            if (code[k] == 0x8b && code[k + 1] == 0x49 && code[k + 2] == 0x18 && code[k + 3] == 0x6a && code[k + 4] == 0 && code[k + 5] == 0xe8) stubs.push_back({target(k + 5), (void *)stub_show_zero});
+        }
+        stubs_for_now(stubs);
+    };
+    quad_walk_planes.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_walk_planes);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

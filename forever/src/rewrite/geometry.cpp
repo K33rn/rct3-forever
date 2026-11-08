@@ -7,10 +7,8 @@
 // normal and `far` the nearest. The box: x from low[0] to low[0] + size[0], y from mid[1] to mid[2], z from low[1] to
 // low[1] + size[1] ----------------------------------------------------------------------------------------------------
 static volatile long g_box_tests;
-static int32_t planes_box(const float *planes, const float *mid, const float *low, const float *size) {
-    volatile float high_x_stored = (float)((long double)low[0] + size[0]);   // volatile: the compiler would keep them unrounded
-    volatile float high_z_stored = (float)((long double)size[1] + low[1]);
-    float high_x = high_x_stored, high_z = high_z_stored;
+static int32_t planes_box_bounds(const float *planes, float low_x, float high_x, float low_y, float high_y, float low_z, float high_z) {
+    const float mid[3] = {0, low_y, high_y}, low[2] = {low_x, low_z};
     int32_t result = 2;
     for (int plane = 0; plane < 6; plane++) {
         const float *p = planes + plane * 4;
@@ -41,6 +39,11 @@ static int32_t planes_box(const float *planes, const float *mid, const float *lo
         if (inside > 0.0f) result = 1;
     }
     return result;
+}
+static int32_t planes_box(const float *planes, const float *mid, const float *low, const float *size) {
+    volatile float high_x_stored = (float)((long double)low[0] + size[0]);   // volatile: the compiler would keep them unrounded
+    volatile float high_z_stored = (float)((long double)size[1] + low[1]);
+    return planes_box_bounds(planes, low[0], high_x_stored, mid[1], mid[2], low[1], high_z_stored);
 }
 static int32_t __thiscall planes_test_box(const float *planes, const float *mid, const float *low, const float *size) {
     g_box_tests++;
@@ -262,3 +265,53 @@ REWRITE("QuadTree::CullBox", 0x7b91d0, quad_cull_box_original, (&quad_cull<false
 REWRITE("QuadTree::CullBox", 0x7b93b0, quad_cull_box_original, (&quad_cull<false, 0x7b41b0, 0x7b7390, 0x7b8920>), &g_quad_culls);
 REWRITE("QuadTree::CullBox", 0xb5eb80, quad_cull_box_original, (&quad_cull<false, 0xb5c2e0, 0xb5d780, 0xb5e460>), &g_quad_culls);
 REWRITE("QuadTree::CullBox", 0xb74e80, quad_cull_box_original, (&quad_cull<false, 0xb6d510, 0xb732b0, 0xb74580>), &g_quad_culls);
+
+// ---- QuadTree::WalkPlanes(planes, n, low, size): node n is cut by the view. Each of its items in use (box low xyz,
+// high xyz) that no plane has wholly outside is shown (SHOW, with a 0 when SHOW_TAKES_ZERO, or virtual slot 8, of the
+// item's object at +0x18); the plane's
+// distance is summed from the box corner nearest against the normal, in an order that differs per copy (bits 2p of
+// LAST: which of the x, y and z products is added last). Then each child it marks gets its box (a half-size quarter, at 0.25 or 0.75
+// of the parent's half) and is taken whole (TAKE_ALL) when inside or walked again when cut --------------------------------
+static volatile long g_quad_walks;
+template <uint32_t LAST, uintptr_t TAKE_ALL, uintptr_t SHOW, bool SHOW_TAKES_ZERO> static void __thiscall quad_walk_planes(QuadTreeBox *tree, const float *planes, int32_t n, const float *low, const float *size) {
+    g_quad_walks++;
+    QuadNode *node = &tree->nodes[n];
+    if (node->other || node->item_count)
+        for (int32_t i = 0; i < (int32_t)node->item_count; i++) {
+            const float *box = (const float *)(node->items + i * 0x20);
+            if (!*(uint32_t *)(node->items + i * 0x20 + 0x1c)) continue;
+            bool shown = true;
+            for (int p = 0; p < 6 && shown; p++) {
+                const float *plane = planes + p * 4;
+                long double x = plane[0] > 0.0f ? box[0] : box[3], y = plane[1] > 0.0f ? box[1] : box[4], z = plane[2] > 0.0f ? box[2] : box[5];
+                long double along[3] = {x * plane[0], y * plane[1], z * plane[2]};
+                int last = LAST >> p * 2 & 3;   // the product added last; the other two first
+                long double distance = (along[last == 0 ? 1 : 0] + along[last == 2 ? 1 : 2]) + along[last];
+                distance = distance + plane[3];
+                if (!(distance <= 0.0L)) shown = false;
+            }
+            if (shown) {
+                void *object = *(void **)(node->items + i * 0x20 + 0x18);
+                if (SHOW_TAKES_ZERO) ((void(__thiscall *)(void *, int32_t))SHOW)(object, 0);
+                else ((void(__thiscall *)(void *))(SHOW ? (void *)SHOW : (*(void ***)object)[8]))(object);
+            }
+        }
+    if (!(node->flags & 0xf)) return;
+    int32_t first = n * 4 + 1;
+    for (int32_t k = 0; k < 4; k++) {
+        if (!(node->flags & (1u << k))) continue;
+        volatile float half[2] = {(float)((long double)size[0] * 0.5f), (float)((long double)size[1] * 0.5f)};
+        long double along_z = k & 2 ? 0.75f : 0.25f, along_x = k & 1 ? 0.75f : 0.25f;
+        volatile float child_low[2] = {(float)(along_x * half[0] + low[0]), (float)(along_z * half[1] + low[1])};
+        volatile float high_x = (float)((long double)child_low[0] + half[0]), high_z = (float)((long double)child_low[1] + half[1]);
+        QuadNode *child = &tree->nodes[first + k];
+        int32_t seen = planes_box_bounds(planes, child_low[0], high_x, child->low, child->high, child_low[1], high_z);
+        if (seen == 2) ((void(__thiscall *)(void *, int32_t, const float *))TAKE_ALL)(tree, first + k, planes);
+        else if (seen == 1) quad_walk_planes<LAST, TAKE_ALL, SHOW, SHOW_TAKES_ZERO>(tree, planes, first + k, (const float *)child_low, (const float *)half);
+    }
+}
+static const uint8_t quad_walk_planes_original[] = {0x83, 0xec, 0x24, 0x8b, 0x51, 0x08, 0x53, 0x55};
+REWRITE("QuadTree::WalkPlanes", 0x7b9590, quad_walk_planes_original, (&quad_walk_planes<0x454, 0x7b85f0, 0x0, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkPlanes", 0xa0e450, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xa0e240, 0xa0a330, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkPlanes", 0xb5ed60, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb5e950, 0xb563b0, true>), &g_quad_walks);
+REWRITE("QuadTree::WalkPlanes", 0xb75060, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb74250, 0xb44a30, false>), &g_quad_walks);
