@@ -1711,7 +1711,7 @@ address,size,name,callers,status
 0x48ad50,30,DeletingDestructor,0,rewritten
 0x48ad70,636,,10,documented
 0x48aff0,179,,2,documented
-0x48b0b0,698,,2,documented
+0x48b0b0,698,QuadTree::WalkBoxMatching,2,rewritten
 0x48b370,210,Grid::Collect,3,rewritten
 0x48b450,660,,2,documented
 0x48b6f0,669,,2,documented

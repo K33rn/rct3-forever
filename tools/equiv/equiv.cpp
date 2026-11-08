@@ -391,6 +391,7 @@ static void __thiscall stub_flush(void *collector, void *list, int32_t n) { reco
 static void __thiscall stub_list_grow(uint32_t *list, int32_t capacity) { record(0x67, list); record(0x67, (void *)(intptr_t)capacity); list[1] = capacity; }
 static void *__thiscall stub_object_info(uint8_t *object) { record(0x68, object); return *(uint32_t *)(object + 0x40) & 1 ? arena<void>(0x8000) : nullptr; }
 static uint32_t __thiscall stub_owner_of(uint32_t *owned) { record(0x69, owned); return *owned & 3; }
+static void __thiscall stub_flush_count(void *query, int32_t count) { record(0x6a, query); record(0x6a, (void *)(intptr_t)count); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4672,6 +4673,26 @@ static std::vector<Test> tests() {
     };
     quad_walk_box_aimed.finish = quad_take_all_aimed.finish;
     quick(quad_walk_box_aimed);
+    // QuadTree::WalkBoxMatching: objects with bits matched under masks, a buffer sometimes nearly full
+    Test quad_walk_box_matching{0x48b0b0,
+                                [=](Rng &r) {
+                                    quad_rect_setup(r);
+                                    for (int i = 0; i < 63; i++) {
+                                        uint32_t *object = arena<uint32_t>(0x4000 + i * 0x100);
+                                        object[2] = r.next(); object[6] = r.range(0, 3); object[7] = r.range(0, 3);
+                                    }
+                                    static void *vtable[2] = {nullptr, (void *)stub_flush_count};
+                                    uint32_t *q = arena<uint32_t>(0x3400);
+                                    q[0] = (uint32_t)(uintptr_t)vtable;
+                                    q[2] = r.range(0, 3); q[3] = r.range(0, 3); q[4] = r.range(0, 3); q[5] = r.range(0, 3);
+                                    q[7] = r.range(1, 8);
+                                    q[6] = r.range(0, 1) ? q[7] - 1 : r.range(0, (int32_t)q[7] - 1);
+                                    q[8] = (uint32_t)(uintptr_t)arena<void>(0x3500);
+                                },
+                                quad_walk_planes.call};
+    quad_walk_box_matching.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x48a4e0, (void *)stub_quad_take_all}}); };
+    quad_walk_box_matching.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_walk_box_matching);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

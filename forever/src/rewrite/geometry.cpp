@@ -435,6 +435,21 @@ template <uintptr_t OWNER_OF, bool Z_FIRST> struct TakeAimed {
         best[2] = (uint32_t)rank;
     }
 };
+// Objects whose bits (+0x18, +0x1C) match a query's {table, ?, masks, bits, count, capacity, buffer} under its masks: the
+// object's id (+8) goes into the buffer, handed on whole to the query's virtual slot 1 (count) when full (as Grid::Collect).
+struct TakeMatching {
+    static void take(const float *query, uint8_t *item) {
+        uint8_t *object = *(uint8_t **)(item + 0x18);
+        uint32_t *q = *(uint32_t **)(query + 6);
+        if (((*(uint32_t *)(object + 0x18) ^ q[4]) & q[2]) | ((*(uint32_t *)(object + 0x1c) ^ q[5]) & q[3])) return;
+        ((uint32_t *)(uintptr_t)q[8])[q[6]] = *(uint32_t *)(object + 8);
+        int32_t count = (int32_t)++q[6];
+        if (count >= (int32_t)q[7] && count) {
+            ((void(__thiscall *)(void *, int32_t))(*(void ***)q)[1])(q, count);
+            q[6] = 0;
+        }
+    }
+};
 
 // ---- QuadTree::WalkBox(query, n, low, size): as WalkPlanes for a query box {low xyz, high xyz, +0x18 where items go}:
 // the items overlapping it are taken (Take); the children are taken whole or walked again -----------------------------------
@@ -507,3 +522,5 @@ REWRITE("QuadTree::TakeAllWeighted", 0x7b6bd0, quad_take_all_rect_original, (&qu
 REWRITE("QuadTree::WalkBoxWeighted", 0x7b7f30, quad_walk_box_rect_original, (&quad_walk_box<TakeWeighted<0x417a20>, 0x7b6bd0>), &g_quad_walks);
 REWRITE("QuadTree::TakeAllAimed", 0x7b5540, quad_take_all_rect_original, (&quad_take_all_box<TakeAimed<0x758b10, false>>), &g_quad_walks);
 REWRITE("QuadTree::WalkBoxAimed", 0x7b6eb0, quad_walk_box_rect_original, (&quad_walk_box<TakeAimed<0x758b10, true>, 0x7b5540>), &g_quad_walks);
+static const uint8_t quad_walk_box_matching_original[] = {0x83, 0xec, 0x20, 0x8b, 0x54, 0x24, 0x28, 0x6b};
+REWRITE("QuadTree::WalkBoxMatching", 0x48b0b0, quad_walk_box_matching_original, (&quad_walk_box<TakeMatching, 0x48a4e0>), &g_quad_walks);
