@@ -493,17 +493,46 @@ template <uintptr_t DRAW> struct TakeDrawn {
     }
 };
 
+// Near a point: the query has the point at +0x18, the radius squared at +0x24 and its collector of 64 at +0x28 (the slot is
+// the point's place). An item is collected when its box comes nearer the point than the radius: per axis, how far the
+// point is outside the box (x as stored to float, y and z as worked out), squared and summed.
+struct TakeNearPoint {
+    static void take(void *const *slot, uint8_t *item) {
+        const float *point = (const float *)slot, *box = (const float *)item;
+        long double sum = 0.0L;
+        volatile float outside_x;
+        long double d = (long double)box[0] - point[0];
+        outside_x = (float)d;
+        if (d > 0.0L) sum = (long double)outside_x * outside_x;
+        else {
+            d = (long double)point[0] - box[3];
+            outside_x = (float)d;
+            if (d > 0.0L) sum = (long double)outside_x * outside_x;
+        }
+        for (int k = 1; k < 3; k++) {
+            d = (long double)box[k] - point[k];
+            if (d > 0.0L) sum = sum + d * d;
+            else {
+                d = (long double)point[k] - box[k + 3];
+                if (d > 0.0L) sum = sum + d * d;
+            }
+        }
+        if (!(sum < point[3])) return;
+        TakeInto64::take((void *const *)(point + 4), item);
+    }
+};
+
 // ---- QuadTree::WalkBox(query, n, low, size): as WalkPlanes for a query box {low xyz, high xyz, +0x18 where items go}:
 // the items overlapping it are taken (Take); the children are taken whole or walked again -----------------------------------
-template <class Take, uintptr_t TAKE_ALL> static void __thiscall quad_walk_box(QuadTreeBox *tree, const float *query, int32_t n, const float *low, const float *size) {
+template <class Take, uintptr_t TAKE_ALL, int OVERLAP_ONLY = 0, bool ITEM_BOX_TEST = true> static void __thiscall quad_walk_box(QuadTreeBox *tree, const float *query, int32_t n, const float *low, const float *size) {
     g_quad_walks++;
     QuadNode *node = &tree->nodes[n];
     if (node->other || node->item_count)
         for (int32_t i = 0; i < (int32_t)node->item_count; i++) {
             const float *box = (const float *)(node->items + i * 0x20);
             if (!*(uint32_t *)(node->items + i * 0x20 + 0x1c)) continue;
-            if (!(box[0] <= query[3]) || !(box[3] >= query[0]) || !(box[1] <= query[4]) || !(box[4] >= query[1]) || !(box[2] <= query[5]) ||
-                !(box[5] >= query[2]))
+            if (ITEM_BOX_TEST && (!(box[0] <= query[3]) || !(box[3] >= query[0]) || !(box[1] <= query[4]) || !(box[4] >= query[1]) ||
+                                  !(box[2] <= query[5]) || !(box[5] >= query[2])))
                 continue;
             Take::take((void *const *)(query + 6), node->items + i * 0x20);
         }
@@ -514,9 +543,21 @@ template <class Take, uintptr_t TAKE_ALL> static void __thiscall quad_walk_box(Q
         volatile float half[2], child_low[2], high_x, high_z;
         quad_child_box(low, size, k, half, child_low, &high_x, &high_z);
         QuadNode *child = &tree->nodes[first + k];
-        int32_t seen = box_overlaps_bounds(query, child_low[0], high_x, child->low, child->high, child_low[1], high_z);
+        int32_t seen;
+        if (OVERLAP_ONLY) {   // only whether they overlap, the far sides unrounded: never taken whole. 1: a side
+            // that isn't comparable (NaN) counts as overlapping, 2: as not
+            long double far_x = (long double)half[0] + child_low[0], far_z = (long double)child_low[1] + half[1];
+            if (OVERLAP_ONLY == 1)
+                seen = !(child_low[0] > query[3] || child->low > query[4] || child_low[1] > query[5] || far_x < query[0] || child->high < query[1] ||
+                         far_z < query[2]);
+            else
+                seen = child_low[0] <= query[3] && child->low <= query[4] && child_low[1] <= query[5] && far_x >= query[0] && child->high >= query[1] &&
+                       far_z >= query[2];
+        } else {
+            seen = box_overlaps_bounds(query, child_low[0], high_x, child->low, child->high, child_low[1], high_z);
+        }
         if (seen == 2) ((void(__thiscall *)(void *, int32_t, const float *))TAKE_ALL)(tree, first + k, query);
-        else if (seen == 1) quad_walk_box<Take, TAKE_ALL>(tree, query, first + k, (const float *)child_low, (const float *)half);
+        else if (seen == 1) quad_walk_box<Take, TAKE_ALL, OVERLAP_ONLY, ITEM_BOX_TEST>(tree, query, first + k, (const float *)child_low, (const float *)half);
     }
 }
 static const uint8_t quad_walk_box_original[] = {0x83, 0xec, 0x20, 0x8b, 0x54, 0x24, 0x28, 0x6b};
@@ -656,3 +697,11 @@ static const uint8_t quad_construct_b5bf50_original[] = {0x6a, 0xff, 0x68, 0x8b,
 REWRITE("QuadTree::QuadTree", 0xb5bf50, quad_construct_b5bf50_original, (&quad_construct<0xb5b610, 0xb5b640>), &g_quad_constructs);
 static const uint8_t quad_construct_b6d090_original[] = {0x6a, 0xff, 0x68, 0xbb, 0x70, 0xe9, 0x00};
 REWRITE("QuadTree::QuadTree", 0xb6d090, quad_construct_b6d090_original, (&quad_construct<0xb6b8c0, 0xb6b8f0>), &g_quad_constructs);
+static const uint8_t quad_walk_near_original[] = {0x83, 0xec, 0x14, 0x8b, 0x51, 0x08, 0x53, 0x55};
+static const uint8_t quad_walk_box_overlap_original[] = {0x83, 0xec, 0x14, 0x8b, 0x51, 0x08, 0x53, 0x55};
+REWRITE("QuadTree::WalkNearPoint", 0x7b8680, quad_walk_near_original, (&quad_walk_box<TakeNearPoint, 0x7b72c0, 2, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkNearPoint", 0xb5e1c0, quad_walk_near_original, (&quad_walk_box<TakeNearPoint, 0xb5d6b0, 2, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkNearPoint", 0xb742e0, quad_walk_near_original, (&quad_walk_box<TakeNearPoint, 0xb731e0, 2, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkBoxOverlap", 0x7b8bd0, quad_walk_box_overlap_original, (&quad_walk_box<TakeInto64, 0x7b7460, 1>), &g_quad_walks);
+REWRITE("QuadTree::WalkBoxOverlap", 0xb5e710, quad_walk_box_overlap_original, (&quad_walk_box<TakeInto64, 0xb5d850, 1>), &g_quad_walks);
+REWRITE("QuadTree::WalkBoxOverlap", 0xb74830, quad_walk_box_overlap_original, (&quad_walk_box<TakeInto64, 0xb73380, 1>), &g_quad_walks);

@@ -4908,6 +4908,49 @@ static std::vector<Test> tests() {
     quad_construct.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}, {0xddcf99, (void *)stub_vector_construct}}); };
     quad_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(quad_construct);
+    // QuadTree::WalkBoxOverlap and WalkNearPoint: WalkBox's tree and query; for the near-point walk a point among the
+    // items (sometimes on a box's side), a radius squared and the collector after it
+    auto quad_near_setup = [=](Rng &r) {
+        quad_walk_box.setup(r);
+        float *q = arena<float>(0x300);
+        for (int c = 0; c < 3; c++) q[6 + c] = r.range(0, 9) ? r.real(-15, 15) : geo_pick(r);
+        if (r.range(0, 1)) {   // on the side of an item of the starting node
+            const float *item = arena<float>(0x2000 + arena<int32_t>(0x10)[0] * 0x60 + r.range(0, 2) * 0x20);
+            int c = r.range(0, 2);
+            q[6 + c] = item[c + 3 * r.range(0, 1)];
+        }
+        q[9] = r.range(0, 5) ? r.real(0, 200) : geo_pick(r);
+        float *box = arena<float>(0x2000 + arena<int32_t>(0x10)[0] * 0x60);   // the starting node's first item
+        ((uint32_t *)box)[7] = 1;
+        int kind = r.range(0, 3);
+        if (kind == 0) {   // whole numbers: the point outside by (1, 2, 2), the radius squared exactly 9 or not
+            for (int c = 0; c < 3; c++) { box[c] = (float)r.range(-10, 10); box[c + 3] = box[c] + (float)r.range(0, 5); }
+            q[6] = box[3] + 1; q[7] = box[1] - 2; q[8] = box[5] + 2;
+            q[9] = (float)r.range(8, 10);
+        } else if (kind == 1) {   // the radius squared at about the distance squared, so roundings decide
+            double sum = 0;
+            for (int c = 0; c < 3; c++) {
+                double d = (double)box[c] - q[6 + c] > 0 ? (double)box[c] - q[6 + c] : (double)q[6 + c] - box[c + 3] > 0 ? (double)q[6 + c] - box[c + 3] : 0;
+                sum += d * d;
+            }
+            q[9] = (float)(sum * (1 + r.range(-2, 2) * 3e-8));
+        }
+        ((uint32_t *)q)[10] = (uint32_t)(uintptr_t)arena<void>(0x3200);
+    };
+    Test quad_walk_near{0x7b8680, quad_near_setup, quad_walk_planes.call};
+    quad_walk_near.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x25f + 5 + *(int32_t *)(e->at + 0x260)), (void *)stub_quad_take_all}}); };
+    quad_walk_near.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_walk_near);
+    Test quad_walk_box_overlap{0x7b8bd0,
+                               [=](Rng &r) {
+                                   quad_walk_box.setup(r);
+                                   for (int i = 1; i < 21; i++)   // some children's height not comparable
+                                       if (!r.range(0, 5)) arena<uint32_t>(0x1000 + i * 0x1c)[1 + r.range(0, 1)] = 0x7fc00000;
+                               },
+                               quad_walk_planes.call};
+    quad_walk_box_overlap.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1fb + 5 + *(int32_t *)(e->at + 0x1fc)), (void *)stub_quad_take_all}}); };
+    quad_walk_box_overlap.finish = quad_walk_near.finish;
+    quick(quad_walk_box_overlap);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
