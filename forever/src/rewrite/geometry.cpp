@@ -493,10 +493,10 @@ template <uintptr_t DRAW> struct TakeDrawn {
     }
 };
 
-// Near a point: the query has the point at +0x18, the radius squared at +0x24 and its collector of 64 at +0x28 (the slot is
-// the point's place). An item is collected when its box comes nearer the point than the radius: per axis, how far the
+// Near a point: the query has the point at +0x18, the radius squared at +0x24 and where items go at +0x28 (the slot is
+// the point's place). An item is taken (Then) when its box comes nearer the point than the radius: per axis, how far the
 // point is outside the box (x as stored to float, y and z as worked out), squared and summed.
-struct TakeNearPoint {
+template <class Then> struct TakeNearPoint {
     static void take(void *const *slot, uint8_t *item) {
         const float *point = (const float *)slot, *box = (const float *)item;
         long double sum = 0.0L;
@@ -518,7 +518,7 @@ struct TakeNearPoint {
             }
         }
         if (!(sum < point[3])) return;
-        TakeInto64::take((void *const *)(point + 4), item);
+        Then::take((void *const *)(point + 4), item);
     }
 };
 
@@ -699,9 +699,11 @@ static const uint8_t quad_construct_b6d090_original[] = {0x6a, 0xff, 0x68, 0xbb,
 REWRITE("QuadTree::QuadTree", 0xb6d090, quad_construct_b6d090_original, (&quad_construct<0xb6b8c0, 0xb6b8f0>), &g_quad_constructs);
 static const uint8_t quad_walk_near_original[] = {0x83, 0xec, 0x14, 0x8b, 0x51, 0x08, 0x53, 0x55};
 static const uint8_t quad_walk_box_overlap_original[] = {0x83, 0xec, 0x14, 0x8b, 0x51, 0x08, 0x53, 0x55};
-REWRITE("QuadTree::WalkNearPoint", 0x7b8680, quad_walk_near_original, (&quad_walk_box<TakeNearPoint, 0x7b72c0, 2, false>), &g_quad_walks);
-REWRITE("QuadTree::WalkNearPoint", 0xb5e1c0, quad_walk_near_original, (&quad_walk_box<TakeNearPoint, 0xb5d6b0, 2, false>), &g_quad_walks);
-REWRITE("QuadTree::WalkNearPoint", 0xb742e0, quad_walk_near_original, (&quad_walk_box<TakeNearPoint, 0xb731e0, 2, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkNearPoint", 0x7b8680, quad_walk_near_original, (&quad_walk_box<TakeNearPoint<TakeInto64>, 0x7b72c0, 2, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkNearPoint", 0xb5e1c0, quad_walk_near_original, (&quad_walk_box<TakeNearPoint<TakeInto64>, 0xb5d6b0, 2, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkNearPoint", 0xb742e0, quad_walk_near_original, (&quad_walk_box<TakeNearPoint<TakeInto64>, 0xb731e0, 2, false>), &g_quad_walks);
 REWRITE("QuadTree::WalkBoxOverlap", 0x7b8bd0, quad_walk_box_overlap_original, (&quad_walk_box<TakeInto64, 0x7b7460, 1>), &g_quad_walks);
 REWRITE("QuadTree::WalkBoxOverlap", 0xb5e710, quad_walk_box_overlap_original, (&quad_walk_box<TakeInto64, 0xb5d850, 1>), &g_quad_walks);
 REWRITE("QuadTree::WalkBoxOverlap", 0xb74830, quad_walk_box_overlap_original, (&quad_walk_box<TakeInto64, 0xb73380, 1>), &g_quad_walks);
+static const uint8_t quad_walk_near_matching_original[] = {0x83, 0xec, 0x18, 0x8b, 0x54, 0x24, 0x20, 0x6b};
+REWRITE("QuadTree::WalkNearMatching", 0x48b6f0, quad_walk_near_matching_original, (&quad_walk_box<TakeNearPoint<TakeMatching>, 0x48a6e0, 2, false>), &g_quad_walks);

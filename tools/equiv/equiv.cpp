@@ -4951,6 +4951,27 @@ static std::vector<Test> tests() {
     quad_walk_box_overlap.prepare = [](const rewrite::Entry *e) { stubs_for_now({{(uintptr_t)(e->at + 0x1fb + 5 + *(int32_t *)(e->at + 0x1fc)), (void *)stub_quad_take_all}}); };
     quad_walk_box_overlap.finish = quad_walk_near.finish;
     quick(quad_walk_box_overlap);
+    // QuadTree::WalkNearMatching: the near-point walk's query, with WalkBoxMatching's objects and query where items go
+    Test quad_walk_near_matching{0x48b6f0,
+                                 [=](Rng &r) {
+                                     quad_near_setup(r);
+                                     for (int i = 0; i < 63; i++) {
+                                         uint32_t *object = arena<uint32_t>(0x4000 + i * 0x100);
+                                         object[2] = r.next(); object[6] = r.range(0, 3); object[7] = r.range(0, 3);
+                                     }
+                                     static void *vtable[2] = {nullptr, (void *)stub_flush_count};
+                                     uint32_t *q = arena<uint32_t>(0x3400);
+                                     q[0] = (uint32_t)(uintptr_t)vtable;
+                                     q[2] = r.range(0, 3); q[3] = r.range(0, 3); q[4] = r.range(0, 3); q[5] = r.range(0, 3);
+                                     q[7] = r.range(1, 8);
+                                     q[6] = r.range(0, 1) ? q[7] - 1 : r.range(0, (int32_t)q[7] - 1);
+                                     q[8] = (uint32_t)(uintptr_t)arena<void>(0x3500);
+                                     arena<uint32_t>(0x300)[10] = (uint32_t)(uintptr_t)q;
+                                 },
+                                 quad_walk_planes.call};
+    quad_walk_near_matching.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x48a6e0, (void *)stub_quad_take_all}}); };
+    quad_walk_near_matching.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_walk_near_matching);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

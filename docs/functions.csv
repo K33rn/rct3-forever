@@ -1714,7 +1714,7 @@ address,size,name,callers,status
 0x48b0b0,698,QuadTree::WalkBoxMatching,2,rewritten
 0x48b370,210,Grid::Collect,3,rewritten
 0x48b450,660,,2,documented
-0x48b6f0,669,,2,documented
+0x48b6f0,669,QuadTree::WalkNearMatching,2,rewritten
 0x48b990,357,,2,documented
 0x48bb00,41,Triple::Forward48BB00,0,rewritten
 0x48bb30,293,QuadTree::CullBox,1,rewritten
