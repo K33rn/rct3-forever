@@ -2911,7 +2911,7 @@ address,size,name,callers,status
 0x4efb90,199,,2,documented
 0x4efd20,18,,1,documented
 0x4efd40,32,,7,documented
-0x4efdf0,479,,1,documented
+0x4efdf0,479,Window::Construct,1,rewritten
 0x4efff0,30,DeletingDestructor,2,rewritten
 0x4f0020,90,CachedInterface,1,rewritten
 0x4f0080,547,,1,documented
@@ -5419,7 +5419,7 @@ address,size,name,callers,status
 0x617eb0,104,,20,documented
 0x617f20,30,DeletingDestructor,0,rewritten
 0x617f40,365,,7,documented
-0x6180b0,489,,0,documented
+0x6180b0,489,Window::Construct,0,rewritten
 0x6182b0,65,,1,documented
 0x618310,30,DeletingDestructor,2,rewritten
 0x618340,2346,,1,documented
@@ -6586,7 +6586,7 @@ address,size,name,callers,status
 0x687100,555,,1,documented
 0x687350,120,,1,documented
 0x6873d0,175,,3,documented
-0x687480,479,,1,documented
+0x687480,479,Window::Construct,1,rewritten
 0x6876a0,30,DeletingDestructor,2,rewritten
 0x6876c0,18,Destructor::TablesThenBase,1,rewritten
 0x6876f0,47,,10,documented
@@ -7104,7 +7104,7 @@ address,size,name,callers,status
 0x6b4270,30,DeletingDestructor,2,rewritten
 0x6b42a0,1615,,1,documented
 0x6b48f0,161,GameText::Copy,1,rewritten
-0x6b49a0,489,,0,documented
+0x6b49a0,489,Window::Construct,0,rewritten
 0x6b4bb0,30,DeletingDestructor,2,rewritten
 0x6b4be0,23,,1,documented
 0x6b4c00,2925,,1,documented

@@ -18,9 +18,9 @@ struct WindowOp {
 // ---- Window::Construct(parent, text, value): when there is a text, it becomes the title's name (made from the title
 // object's +8, or the empty string), WideString::AssignC'd from the separator 0xF2738C and AssignWide'd with the text,
 // let go as the game does; with none, a copy of the title. The base window (0x6AF7E0) is built with the parent (or the
-// title object) and that text; then the class's own ops; with no parent, the title object is marked used (+4) -----------
+// title object) and that text; then the class's own ops; with no parent, the title object is marked used (+4; MARK) ----
 static volatile long g_window_constructs;
-template <uintptr_t TITLE, const WindowOp *OPS, uint32_t COUNT>
+template <uintptr_t TITLE, const WindowOp *OPS, uint32_t COUNT, bool MARK = true>
 static void *window_construct_body(uint8_t *self, void *parent, void **text, uint32_t value) {
     g_window_constructs++;
     uint8_t *title = *(uint8_t **)TITLE;
@@ -67,16 +67,17 @@ static void *window_construct_body(uint8_t *self, void *parent, void **text, uin
         else if (op.kind == 2) *(uint32_t *)(self + op.off) = value;
         else ((void(__thiscall *)(void *))(uintptr_t)op.value)(self + op.off);
     }
-    if (!parent) (*(uint8_t **)TITLE)[4] = 1;
+    if (MARK && !parent) (*(uint8_t **)TITLE)[4] = 1;
     return self;
 }
 // The classes' constructors take (parent, text, value) or just (parent, text).
-template <uintptr_t TITLE, const WindowOp *OPS, uint32_t COUNT>
+template <uintptr_t TITLE, const WindowOp *OPS, uint32_t COUNT, bool MARK = true>
 static void *__thiscall window_construct(uint8_t *self, void *parent, void **text, uint32_t value) {
-    return window_construct_body<TITLE, OPS, COUNT>(self, parent, text, value);
+    return window_construct_body<TITLE, OPS, COUNT, MARK>(self, parent, text, value);
 }
-template <uintptr_t TITLE, const WindowOp *OPS, uint32_t COUNT> static void *__thiscall window_construct2(uint8_t *self, void *parent, void **text) {
-    return window_construct_body<TITLE, OPS, COUNT>(self, parent, text, 0);
+template <uintptr_t TITLE, const WindowOp *OPS, uint32_t COUNT, bool MARK = true>
+static void *__thiscall window_construct2(uint8_t *self, void *parent, void **text) {
+    return window_construct_body<TITLE, OPS, COUNT, MARK>(self, parent, text, 0);
 }
 static const WindowOp window_467a80_ops[] = {{3, 0xd4, 0x441030}, {0, 0x0, 0xf2a9d8}, {0, 0x4, 0xf2a9c4}, {0, 0xd4, 0xf2a9c0}, {0, 0xe4, 0x0}};
 static const uint8_t window_467a80_original[] = {0x6a, 0xff, 0x68, 0xb4, 0xc2, 0xe0, 0x00};
@@ -102,3 +103,49 @@ REWRITE("Window::Construct", 0x9ab3d0, window_9ab3d0_original, (&window_construc
 static const WindowOp window_b01e70_ops[] = {{0, 0x0, 0xf970c0}, {0, 0x4, 0xf970ac}, {1, 0xdc, 0x0}};
 static const uint8_t window_b01e70_original[] = {0x6a, 0xff, 0x68, 0x14, 0xeb, 0xe8, 0x00};
 REWRITE("Window::Construct", 0xb01e70, window_b01e70_original, (&window_construct2<0x13ce690, window_b01e70_ops, 3>), &g_window_constructs);
+
+static const WindowOp window_4efdf0_ops[] = {{0, 0x0, 0xf35a00}, {0, 0x4, 0xf359ec}};
+static const uint8_t window_4efdf0_original[] = {0x6a, 0xff, 0x68, 0xf4, 0x6f, 0xe1, 0x00};
+REWRITE("Window::Construct", 0x4efdf0, window_4efdf0_original, (&window_construct2<0x12f8144, window_4efdf0_ops, 2, false>), &g_window_constructs);
+static const WindowOp window_6180b0_ops[] = {{0, 0x0, 0xf430c8}, {0, 0x4, 0xf430b0}, {2, 0xd4, 0x0}};
+static const uint8_t window_6180b0_original[] = {0x6a, 0xff, 0x68, 0x14, 0xb4, 0xe2, 0x00};
+REWRITE("Window::Construct", 0x6180b0, window_6180b0_original, (&window_construct<0x12f5778, window_6180b0_ops, 3, false>), &g_window_constructs);
+static const WindowOp window_687480_ops[] = {{0, 0x0, 0xf51f78}, {0, 0x4, 0xf51f60}};
+static const uint8_t window_687480_original[] = {0x6a, 0xff, 0x68, 0x54, 0xa6, 0xe3, 0x00};
+REWRITE("Window::Construct", 0x687480, window_687480_original, (&window_construct2<0x12f845c, window_687480_ops, 2, false>), &g_window_constructs);
+static const WindowOp window_6b49a0_ops[] = {{0, 0x0, 0xf61138}, {0, 0x4, 0xf61120}, {2, 0xd4, 0x0}};
+static const uint8_t window_6b49a0_original[] = {0x6a, 0xff, 0x68, 0x64, 0xec, 0xe3, 0x00};
+REWRITE("Window::Construct", 0x6b49a0, window_6b49a0_original, (&window_construct<0x1305d78, window_6b49a0_ops, 3, false>), &g_window_constructs);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5153,8 +5153,12 @@ static std::vector<Test> tests() {
                           }};
     window_construct.prepare = [](const rewrite::Entry *e) {
         const uint8_t *code = (const uint8_t *)e->at;
-        for (int k = 0x100; k < 0x400; k++)   // its ret: mov fs:[0], ecx; add esp, 0x24; ret N
-            if (code[k] == 0x83 && code[k + 1] == 0xc4 && code[k + 2] == 0x24 && code[k + 3] == 0xc2) { g_window_args = code[k + 4] / 4; break; }
+        for (int k = 0x100; k < 0x400; k++)   // its ret N, soon after the exception frame is put back (mov fs:[0], ecx)
+            if (code[k] == 0x64 && code[k + 1] == 0x89 && code[k + 2] == 0x0d && !*(const uint32_t *)(code + k + 3)) {
+                for (int m = k + 7; m < k + 24; m++)
+                    if (code[m] == 0xc2 && code[m + 2] == 0) { g_window_args = code[m + 1] / 4; break; }
+                break;
+            }
         for (int k = 0; k < 0x40; k++)
             if (code[k] == 0xa1 && code[k - 1] != 0x64 && *(const uint32_t *)(code + k + 1) >= 0x1000000) { g_window_title = *(const uint32_t *)(code + k + 1); break; }   // mov eax, [title]
         stubs_for_now({{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0xbd0490, (void *)stub_wide_empty_shared},
