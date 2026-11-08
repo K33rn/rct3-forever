@@ -432,6 +432,21 @@ static void __thiscall stub_ref_release(uint32_t *ref) {   // unlinks it, as the
 }
 static void __thiscall stub_set_up(void *self) { record(0x75, self); }
 static void __thiscall stub_slot_free(void *node, uint32_t slot) { record(0x76, node); record(0x76, (void *)(uintptr_t)slot); }
+// wide strings for the window constructors: blocks {references, ?, ?, data} made in the arena
+static void *new_wide_block() {
+    uint32_t *block = (uint32_t *)stub_plain_alloc(0x10);
+    block[0] = 1;
+    block[3] = 0x5678;
+    return block;
+}
+static void *__fastcall stub_wide_empty_shared(uint32_t flag) { record(0x77, (void *)(uintptr_t)(flag & 0xff)); return arena<void>(0x8800); }
+static void *__thiscall stub_wide_assign_c(void *self, void **out, const char *text) { record(0x78, (void *)text); *out = new_wide_block(); return out; }
+static void *__thiscall stub_wide_assign(void *self, void **out, void **text) { record(0x79, *text); *out = new_wide_block(); return out; }
+static void *__thiscall stub_wide_copy(void **out, void *title) { record(0x7a, title); *out = new_wide_block(); return out; }
+static void __thiscall stub_window_base(void *self, void *parent, void **text) { record(0x7b, self); record(0x7b, parent); record(0x7b, *text); }
+static void __thiscall stub_member_built(void *self) { record(0x7c, self); }
+static uintptr_t g_window_title;
+static uint32_t g_window_args;   // 2 or 3, from the copy's ret
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -1492,7 +1507,7 @@ static std::vector<Test> tests() {
                         }};
     game_text_copy.prepare = [](const rewrite::Entry *) {
         stubs_for_now({{0x4040f0, (void *)stub_named_text_ref}, {0xbcdfc0, (void *)stub_alloc},
-                       {0xbcf7d0, (void *)stub_text_from_wide}, {0xbd0490, (void *)stub_wide_empty},
+                       {0xbcf7d0, (void *)stub_text_from_wide}, {0xbd0490, (void *)stub_wide_empty_shared},
                        {0xbd1880, (void *)stub_text_ref_free}});
     };
     game_text_copy.finish = [](const rewrite::Entry *) { unstub_many(); };
@@ -5111,6 +5126,43 @@ static std::vector<Test> tests() {
             if (code[k] == 0x83 && code[k + 1] == 0xc6 && code[k + 3] == 0x83 && code[k + 4] == 0xc7 && code[k + 5] == 0x28) g_skin_tangent_size = code[k + 2];
     };
     quick(skin_tangents);
+    // Window::Construct: a title object (its name or none), a parent or none, a text (a block with references) or none;
+    // the wide-string functions, the base window and the members' constructors are stand-ins
+    Test window_construct{0x643800,
+                          [=](Rng &r) {
+                              fresh(r);
+                              *arena<uint32_t>(ALLOC_NEXT) = 0;
+                              uint32_t *title = arena<uint32_t>(0x8000);
+                              title[1] = 0;
+                              title[2] = r.range(0, 2) ? (uint32_t)(uintptr_t)"Title" : 0;
+                              arena<uint32_t>(0x8800)[0] = 100;
+                              uint32_t *text = (uint32_t *)new_wide_block();
+                              text[0] = r.range(1, 2);
+                              arena<uint32_t>(0x30)[0] = (uint32_t)(uintptr_t)text;
+                              arena<uint32_t>(0x10)[0] = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x8100) : 0;
+                              arena<uint32_t>(0x10)[1] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x30) : 0;
+                              arena<uint32_t>(0x10)[2] = r.next();
+                              arena<uint32_t>(CALL_LOG)[0] = 0;
+                          },
+                          [](void *fn) {
+                              *(void **)g_window_title = arena<void>(0x8000);
+                              uint32_t *a = arena<uint32_t>(0x10);
+                              void *made = g_window_args == 3 ? ((void *(__thiscall *)(void *, void *, void *, uint32_t))fn)(arena<void>(0x100), (void *)(uintptr_t)a[0], (void *)(uintptr_t)a[1], a[2])
+                                                               : ((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), (void *)(uintptr_t)a[0], (void *)(uintptr_t)a[1]);
+                              return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
+                          }};
+    window_construct.prepare = [](const rewrite::Entry *e) {
+        const uint8_t *code = (const uint8_t *)e->at;
+        for (int k = 0x100; k < 0x400; k++)   // its ret: mov fs:[0], ecx; add esp, 0x24; ret N
+            if (code[k] == 0x83 && code[k + 1] == 0xc4 && code[k + 2] == 0x24 && code[k + 3] == 0xc2) { g_window_args = code[k + 4] / 4; break; }
+        for (int k = 0; k < 0x40; k++)
+            if (code[k] == 0xa1 && code[k - 1] != 0x64 && *(const uint32_t *)(code + k + 1) >= 0x1000000) { g_window_title = *(const uint32_t *)(code + k + 1); break; }   // mov eax, [title]
+        stubs_for_now({{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0xbd0490, (void *)stub_wide_empty_shared},
+                       {0x403be0, (void *)stub_wide_assign_c}, {0x403bb0, (void *)stub_wide_assign}, {0x41c740, (void *)stub_wide_copy},
+                       {0x6af7e0, (void *)stub_window_base}, {0x441030, (void *)stub_member_built}});
+    };
+    window_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(window_construct);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
