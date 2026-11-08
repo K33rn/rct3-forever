@@ -4354,6 +4354,36 @@ static std::vector<Test> tests() {
                          return Result{(uint32_t)((int32_t(__thiscall *)(void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x210), arena<void>(0x220))};
                      }};
     quick(box_overlap);
+    // Heap::SiftDown, Build and Sort: up to 40 entries with keys often equal, signed zeros and NaNs
+    auto heap_setup = [=](Rng &r) {
+        uint32_t *heap = arena<uint32_t>(0x100);
+        heap[0] = (uint32_t)(uintptr_t)arena<void>(0x1000);
+        heap[1] = r.next();
+        heap[2] = r.range(0, 4) ? r.range(0, 40) : r.range(0, 3);
+        for (int i = 0; i < 40; i++) {
+            uint32_t *e = arena<uint32_t>(0x1000 + i * 24);
+            for (int w = 1; w < 6; w++) e[w] = r.next();
+            float k = r.range(0, 9) ? (float)r.range(-5, 5) : geo_pick(r);
+            memcpy(e, &k, 4);
+        }
+        int32_t *args = arena<int32_t>(0x10);
+        args[1] = r.range(0, (int32_t)heap[2]);
+        args[0] = args[1] ? r.range(0, args[1] - 1) : 0;
+    };
+    Test heap_sift{0x80c530, heap_setup,
+                   [](void *fn) { ((void(__thiscall *)(void *, int32_t, int32_t, uint32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<int32_t>(0x10)[1], 7); return Result{}; }};
+    quick(heap_sift);
+    Test heap_build{0x80c9c0, heap_setup, [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), 7); return Result{}; }};
+    quick(heap_build);
+    Test heap_sort{0x80cba0, heap_setup, heap_build.call};
+    quick(heap_sort);
+    Test corner_offsets{0x80c340,
+                        [=](Rng &r) {
+                            for (int i = 0; i < 2; i++) arena<uint32_t>(0x100)[i] = r.next();
+                            for (int i = 0; i < 3; i++) arena<float>(0x200)[i] = geo_pick(r);
+                        },
+                        [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
+    quick(corner_offsets);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

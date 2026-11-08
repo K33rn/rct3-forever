@@ -145,3 +145,79 @@ static int32_t __thiscall box_overlap(const float *box, const float *mid, const 
 static const uint8_t box_overlap_original[] = {0x83, 0xec, 0x08, 0x8b, 0x54, 0x24, 0x10, 0x8b};
 static const uint32_t box_overlap_copies[] = {0x488710, 0x7b2fc0, 0x7b32c0};
 REWRITE_COPIES("Box::Overlap", box_overlap_copies, box_overlap_original, &box_overlap, &g_box_overlaps);
+
+// ---- A heap of 24-byte entries keyed by the float at their start (largest first): {entries, ?, count} -----------------
+struct HeapEntry {
+    float key;
+    uint32_t rest[5];
+};
+struct Heap {
+    HeapEntry *entries;
+    uint32_t unused;
+    int32_t count;
+};
+// The entry at i moved down to its place among the first n: the larger child (the right one when they're equal or not
+// comparable) moves up while its key is greater.
+static void heap_sift_down(Heap *heap, int32_t i, int32_t n) {
+    HeapEntry moving = heap->entries[i];
+    int32_t left = i * 2 + 1;
+    for (; left + 1 < n; left = i * 2 + 1) {
+        int32_t larger = heap->entries[left].key > heap->entries[left + 1].key ? left : left + 1;
+        if (!(heap->entries[larger].key > moving.key)) {
+            heap->entries[i] = moving;
+            return;
+        }
+        heap->entries[i] = heap->entries[larger];
+        i = larger;
+    }
+    if (left < n && heap->entries[left].key > moving.key) {
+        heap->entries[i] = heap->entries[left];
+        i = left;
+    }
+    heap->entries[i] = moving;
+}
+static volatile long g_heap_calls;
+// Heap::SiftDown(i, n, unused)
+static void __thiscall heap_sift_down_call(Heap *heap, int32_t i, int32_t n, uint32_t) {
+    g_heap_calls++;
+    heap_sift_down(heap, i, n);
+}
+// Heap::Build(unused): every entry sifted down, from the last to the first
+static void __thiscall heap_build(Heap *heap, uint32_t) {
+    g_heap_calls++;
+    for (int32_t i = heap->count - 1; i >= 0; i--) heap_sift_down(heap, i, heap->count);
+}
+// Heap::Sort(unused): the largest swapped to the end, the rest made a heap again, until one is left (smallest first)
+static void __thiscall heap_sort(Heap *heap, uint32_t) {
+    g_heap_calls++;
+    for (int32_t end = heap->count - 1; end > 0; end--) {
+        HeapEntry largest = heap->entries[0];
+        heap->entries[0] = heap->entries[end];
+        heap->entries[end] = largest;
+        heap_sift_down(heap, 0, end);
+    }
+}
+static const uint8_t heap_sift_down_original[] = {0x83, 0xec, 0x1c, 0x8b, 0x11, 0x53, 0x8b, 0x5c};
+static const uint8_t heap_build_original[] = {0x83, 0xec, 0x2c, 0x57, 0x8b, 0x79, 0x08, 0x4f};
+static const uint8_t heap_sort_original[] = {0x83, 0xec, 0x3c, 0x53, 0x8b, 0x59, 0x08, 0x4b};
+REWRITE("Heap::SiftDown", 0x80c530, heap_sift_down_original, &heap_sift_down_call, &g_heap_calls);
+REWRITE("Heap::SiftDown", 0x96ee00, heap_sift_down_original, &heap_sift_down_call, &g_heap_calls);
+REWRITE("Heap::Build", 0x80c9c0, heap_build_original, &heap_build, &g_heap_calls);
+REWRITE("Heap::Build", 0x96f900, heap_build_original, &heap_build, &g_heap_calls);
+REWRITE("Heap::Sort", 0x80cba0, heap_sort_original, &heap_sort, &g_heap_calls);
+REWRITE("Heap::Sort", 0x96fae0, heap_sort_original, &heap_sort, &g_heap_calls);
+
+// ---- Box::CornerOffsets(direction): for each axis, the byte offsets of the near and far corner coordinates in a box
+// {low xyz, high xyz}: the low one is near when the direction is positive on that axis --------------------------------
+static volatile long g_corner_offsets;
+static void __thiscall box_corner_offsets(uint8_t *offsets, const float *direction) {
+    g_corner_offsets++;
+    for (int axis = 0; axis < 3; axis++) {
+        bool positive = direction[axis] > 0.0f;
+        offsets[axis] = (uint8_t)(axis * 4 + (positive ? 0 : 0x10));
+        offsets[axis + 3] = (uint8_t)(axis * 4 + (positive ? 0x10 : 0));
+    }
+}
+static const uint8_t box_corner_offsets_original[] = {0x8b, 0x54, 0x24, 0x04, 0xd9, 0x02, 0xd8, 0x1d};
+REWRITE("Box::CornerOffsets", 0x80c340, box_corner_offsets_original, &box_corner_offsets, &g_corner_offsets);
+REWRITE("Box::CornerOffsets", 0x96ea70, box_corner_offsets_original, &box_corner_offsets, &g_corner_offsets);
