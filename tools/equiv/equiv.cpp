@@ -380,6 +380,11 @@ static void *__thiscall stub_ride_entry(void *self, int32_t i, uint32_t a, uint3
 #include "wave4_stubs.inc"
 static void __thiscall stub_item_copy(uint32_t *to, uint32_t *from) { record(0x7e, to); record(0x7e, from); to[0] = from[0] ^ 0x77; }
 static void __fastcall stub_destroy_b(void *self) { record(0x7f, self); }
+static void __thiscall stub_quad_update(void *tree, int32_t n) { record(0x61, tree); record(0x61, (void *)(intptr_t)n); }
+static void __thiscall stub_quad_take_all(void *tree, int32_t n, void *query) { record(0x62, tree); record(0x62, (void *)(intptr_t)n); record(0x62, query); }
+static void __thiscall stub_quad_walk(void *tree, void *query, int32_t n, void *low, void *size) {
+    record(0x63, tree); record(0x63, query); record(0x63, (void *)(intptr_t)n); record(0x63, low); record(0x63, size);
+}
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4384,6 +4389,33 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
     quick(corner_offsets);
+    // QuadTree::CullPlanes and CullBox: the three walks are stand-ins; the tree's box against planes or a box
+    auto quad_cull_setup = [=](Rng &r) {
+        uint32_t *tree = arena<uint32_t>(0x100);
+        tree[0] = r.next(); tree[1] = 21; tree[2] = (uint32_t)(uintptr_t)arena<void>(0x1000);
+        for (int i = 3; i < 7; i++) { float f = r.range(0, 5) ? r.real(-20, 20) : geo_pick(r); memcpy(&tree[i], &f, 4); }
+        uint32_t *root = arena<uint32_t>(0x1000);
+        root[0] = r.range(0, 2) ? 0x10 : r.next() & ~0x10u;
+        for (int i = 1; i < 3; i++) { float f = r.range(0, 5) ? r.real(-20, 20) : geo_pick(r); memcpy(&root[i], &f, 4); }
+        float *q = arena<float>(0x300);
+        for (int i = 0; i < 24; i++) q[i] = r.range(0, 5) ? r.real(-20, 20) : geo_pick(r);
+        arena<uint32_t>(CALL_LOG)[0] = 0;
+    };
+    auto quad_cull_call = [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x300)); return Result{}; };
+    auto quad_cull_prepare = [](uint32_t update, uint32_t take_all, uint32_t walk) {
+        return [=](const rewrite::Entry *e) {
+            auto target = [&](uint32_t o) { return (uintptr_t)(e->at + o + 5 + *(int32_t *)(e->at + o + 1)); };
+            stubs_for_now({{target(update), (void *)stub_quad_update}, {target(take_all), (void *)stub_quad_take_all}, {target(walk), (void *)stub_quad_walk}});
+        };
+    };
+    Test quad_cull_planes{0x433c30, quad_cull_setup, quad_cull_call};
+    quad_cull_planes.prepare = quad_cull_prepare(0x1a, 0x137, 0x155);
+    quad_cull_planes.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_cull_planes);
+    Test quad_cull_box{0x48bb30, quad_cull_setup, quad_cull_call};
+    quad_cull_box.prepare = quad_cull_prepare(0x19, 0x102, 0x117);
+    quad_cull_box.finish = quad_cull_planes.finish;
+    quick(quad_cull_box);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

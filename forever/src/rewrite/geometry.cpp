@@ -7,8 +7,7 @@
 // normal and `far` the nearest. The box: x from low[0] to low[0] + size[0], y from mid[1] to mid[2], z from low[1] to
 // low[1] + size[1] ----------------------------------------------------------------------------------------------------
 static volatile long g_box_tests;
-static int32_t __thiscall planes_test_box(const float *planes, const float *mid, const float *low, const float *size) {
-    g_box_tests++;
+static int32_t planes_box(const float *planes, const float *mid, const float *low, const float *size) {
     volatile float high_x_stored = (float)((long double)low[0] + size[0]);   // volatile: the compiler would keep them unrounded
     volatile float high_z_stored = (float)((long double)size[1] + low[1]);
     float high_x = high_x_stored, high_z = high_z_stored;
@@ -42,6 +41,10 @@ static int32_t __thiscall planes_test_box(const float *planes, const float *mid,
         if (inside > 0.0f) result = 1;
     }
     return result;
+}
+static int32_t __thiscall planes_test_box(const float *planes, const float *mid, const float *low, const float *size) {
+    g_box_tests++;
+    return planes_box(planes, mid, low, size);
 }
 static const uint8_t planes_test_box_original[] = {0x83, 0xec, 0x08, 0x8b, 0x54, 0x24, 0x10, 0x8b};
 static const uint32_t planes_test_box_copies[] = {0x42fb10, 0x4493f0, 0xa0c0a0, 0xb5bbe0, 0xb6bd00};
@@ -131,8 +134,7 @@ REWRITE_COPIES("SphereQuery::Set", sphere_query_set_copies, sphere_query_set_ori
 // ---- Box::Overlap: a box (x from low[0] to low[0] + size[0], y from mid[1] to mid[2], z from low[1] to low[1] +
 // size[1]) against this one {low xyz, high xyz}: 0 when they are apart, 1 when they overlap, 2 when it is inside ------
 static volatile long g_box_overlaps;
-static int32_t __thiscall box_overlap(const float *box, const float *mid, const float *low, const float *size) {
-    g_box_overlaps++;
+static int32_t box_overlaps(const float *box, const float *mid, const float *low, const float *size) {
     volatile float high_x_stored = (float)((long double)low[0] + size[0]);   // volatile: rounded to float, as stored
     volatile float high_z_stored = (float)((long double)size[1] + low[1]);
     float high_x = high_x_stored, high_z = high_z_stored;
@@ -141,6 +143,10 @@ static int32_t __thiscall box_overlap(const float *box, const float *mid, const 
     if (!(low[0] >= box[0]) || !(mid[1] >= box[1]) || !(low[1] >= box[2])) return 1;
     if (!(high_x <= box[3]) || !(mid[2] <= box[4]) || !(high_z <= box[5])) return 1;
     return 2;
+}
+static int32_t __thiscall box_overlap(const float *box, const float *mid, const float *low, const float *size) {
+    g_box_overlaps++;
+    return box_overlaps(box, mid, low, size);
 }
 static const uint8_t box_overlap_original[] = {0x83, 0xec, 0x08, 0x8b, 0x54, 0x24, 0x10, 0x8b};
 static const uint32_t box_overlap_copies[] = {0x488710, 0x7b2fc0, 0x7b32c0};
@@ -221,3 +227,38 @@ static void __thiscall box_corner_offsets(uint8_t *offsets, const float *directi
 static const uint8_t box_corner_offsets_original[] = {0x8b, 0x54, 0x24, 0x04, 0xd9, 0x02, 0xd8, 0x1d};
 REWRITE("Box::CornerOffsets", 0x80c340, box_corner_offsets_original, &box_corner_offsets, &g_corner_offsets);
 REWRITE("Box::CornerOffsets", 0x96ea70, box_corner_offsets_original, &box_corner_offsets, &g_corner_offsets);
+
+// ---- QuadTree::Cull(query): the tree's bounds brought up to date (UPDATE) when the root is marked changed, then its
+// box (x and z from the tree, y from the root node) tested against the query: six planes (Planes::TestBox) or a box
+// (Box::Overlap). Cut: the partial walk WALK(query, 0, low, size); inside: the take-all walk TAKE_ALL(0, query) ----------
+struct QuadTreeBox {
+    uint32_t unused;
+    int32_t count;
+    QuadNode *nodes;
+    float low[2], size[2];
+};
+static volatile long g_quad_culls;
+template <bool BY_PLANES, uintptr_t UPDATE, uintptr_t TAKE_ALL, uintptr_t WALK> static void __thiscall quad_cull(QuadTreeBox *tree, const float *query) {
+    g_quad_culls++;
+    if (tree->nodes[0].flags & 0x10) ((void(__thiscall *)(void *, int32_t))UPDATE)(tree, 0);
+    const float *root = (const float *)tree->nodes;
+    int32_t seen = BY_PLANES ? planes_box(query, root, tree->low, tree->size) : box_overlaps(query, root, tree->low, tree->size);
+    if (seen == 2) ((void(__thiscall *)(void *, int32_t, const float *))TAKE_ALL)(tree, 0, query);
+    else if (seen == 1) ((void(__thiscall *)(void *, const float *, int32_t, float *, float *))WALK)(tree, query, 0, tree->low, tree->size);
+}
+static const uint8_t quad_cull_planes_original[] = {0x83, 0xec, 0x10, 0x53, 0x55, 0x56, 0x8b, 0xf1};
+static const uint8_t quad_cull_box_original[] = {0x83, 0xec, 0x08, 0x53, 0x56, 0x8b, 0xf1, 0x8b};
+REWRITE("QuadTree::CullPlanes", 0x433c30, quad_cull_planes_original, (&quad_cull<true, 0x430770, 0x432f50, 0x433600>), &g_quad_culls);
+REWRITE("QuadTree::CullPlanes", 0x44c450, quad_cull_planes_original, (&quad_cull<true, 0x430770, 0x44ba10, 0x44bd20>), &g_quad_culls);
+REWRITE("QuadTree::CullPlanes", 0x48c460, quad_cull_planes_original, (&quad_cull<true, 0x4891a0, 0x48b370, 0x48bdc0>), &g_quad_culls);
+REWRITE("QuadTree::CullPlanes", 0x7b9d70, quad_cull_planes_original, (&quad_cull<true, 0x7b41b0, 0x7b85f0, 0x7b9590>), &g_quad_culls);
+REWRITE("QuadTree::CullPlanes", 0xa0e960, quad_cull_planes_original, (&quad_cull<true, 0xa0c730, 0xa0e240, 0xa0e450>), &g_quad_culls);
+REWRITE("QuadTree::CullPlanes", 0xb5f3b0, quad_cull_planes_original, (&quad_cull<true, 0xb5c2e0, 0xb5e950, 0xb5ed60>), &g_quad_culls);
+REWRITE("QuadTree::CullPlanes", 0xb756b0, quad_cull_planes_original, (&quad_cull<true, 0xb6d510, 0xb74250, 0xb75060>), &g_quad_culls);
+REWRITE("QuadTree::CullBox", 0x48bb30, quad_cull_box_original, (&quad_cull<false, 0x4891a0, 0x48a4e0, 0x48b0b0>), &g_quad_culls);
+REWRITE("QuadTree::CullBox", 0x7b7d40, quad_cull_box_original, (&quad_cull<false, 0x7b41b0, 0x7b5540, 0x7b6eb0>), &g_quad_culls);
+REWRITE("QuadTree::CullBox", 0x7b90a0, quad_cull_box_original, (&quad_cull<false, 0x7b41b0, 0x7b6bd0, 0x7b7f30>), &g_quad_culls);
+REWRITE("QuadTree::CullBox", 0x7b91d0, quad_cull_box_original, (&quad_cull<false, 0x7b41b0, 0x7b6d80, 0x7b82d0>), &g_quad_culls);
+REWRITE("QuadTree::CullBox", 0x7b93b0, quad_cull_box_original, (&quad_cull<false, 0x7b41b0, 0x7b7390, 0x7b8920>), &g_quad_culls);
+REWRITE("QuadTree::CullBox", 0xb5eb80, quad_cull_box_original, (&quad_cull<false, 0xb5c2e0, 0xb5d780, 0xb5e460>), &g_quad_culls);
+REWRITE("QuadTree::CullBox", 0xb74e80, quad_cull_box_original, (&quad_cull<false, 0xb6d510, 0xb732b0, 0xb74580>), &g_quad_culls);
