@@ -149,3 +149,36 @@ REWRITE("Window::Construct", 0x6b49a0, window_6b49a0_original, (&window_construc
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

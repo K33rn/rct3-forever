@@ -413,8 +413,9 @@ template <uintptr_t OWNER_OF, bool Z_FIRST> struct TakeAimed {
             if (info && index < *(int32_t *)(info + 0x18)) {
                 uint8_t *part = (*(uint8_t ***)(info + 0x14))[index];
                 if (part) {
-                    uint8_t *owned = object + *(int32_t *)(part + 0x10);
-                    if (owned && ((uint32_t(__thiscall *)(void *))OWNER_OF)(owned) == best[4]) return;
+                    uintptr_t owned_at = (uintptr_t)object + *(int32_t *)(part + 0x10);   // integers: keeps the null check
+                    uint8_t *owned = (uint8_t *)owned_at;
+                    if (owned_at && ((uint32_t(__thiscall *)(void *))OWNER_OF)(owned) == best[4]) return;
                 }
             }
         }

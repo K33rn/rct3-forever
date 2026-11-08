@@ -447,6 +447,20 @@ static void __thiscall stub_window_base(void *self, void *parent, void **text) {
 static void __thiscall stub_member_built(void *self) { record(0x7c, self); }
 static uintptr_t g_window_title;
 static uint32_t g_window_args;   // 2 or 3, from the copy's ret
+// saved classes' constructors: the base, members' and fields' constructors (by how many values they take), the field
+// list's add, the description's name step and the object info
+static void __thiscall stub_class_base(void *self, void *description, uint32_t a, uint32_t b) { record(0x80, self); record(0x80, description); record(0x80, (void *)(uintptr_t)a); record(0x80, (void *)(uintptr_t)b); }
+static void *__thiscall stub_built0(void *self) { record(0x81, self); return self; }
+static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, (void *)(uintptr_t)a); return self; }
+static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, (void *)(uintptr_t)a); record(0x81, (void *)(uintptr_t)b); return self; }
+static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, (void *)(uintptr_t)a); record(0x81, (void *)(uintptr_t)b); record(0x81, (void *)(uintptr_t)c); return self; }
+static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x81, self); record(0x81, (void *)(uintptr_t)a); record(0x81, (void *)(uintptr_t)b); record(0x81, (void *)(uintptr_t)c); record(0x81, (void *)(uintptr_t)d); return self;
+}
+static void __thiscall stub_field_add(void *list, void *field) { record(0x82, list); record(0x82, field); }
+static void *__thiscall stub_name_make(uint32_t *text, uintptr_t name, uint32_t zero) { record(0x83, (void *)name); record(0x83, (void *)(uintptr_t)zero); text[0] = 0x4e414d45; return text; }
+static void __thiscall stub_name_give(void *description, uint32_t *text) { record(0x84, description); record(0x84, (void *)(uintptr_t)text[0]); }
+static void __thiscall stub_name_free(uint32_t *text) { record(0x85, (void *)(uintptr_t)text[0]); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4845,7 +4859,7 @@ static std::vector<Test> tests() {
                                  info[0x14 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8100);
                                  info[0x18 / 4] = r.range(0, 4);
                                  for (int k = 0; k < 4; k++) arena<uint32_t>(0x8100)[k] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x8200 + k * 0x20) : 0;
-                                 for (int k = 0; k < 4; k++) arena<int32_t>(0x8200 + k * 0x20)[4] = r.range(0, 0x40);
+                                 for (int k = 0; k < 4; k++) arena<int32_t>(0x8200 + k * 0x20)[4] = r.range(0, 3) ? r.range(0, 0x40) : -(int32_t)(uintptr_t)arena<void>(0x4000);
                                  arena<uint32_t>(0x10)[1] = r.range(0, 4);
                                  arena<uint32_t>(0x10)[2] = r.next();
                                  arena<uint32_t>(CALL_LOG)[0] = 0;
@@ -5167,6 +5181,47 @@ static std::vector<Test> tests() {
     };
     window_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(window_construct);
+    // Class::Construct: a description (given or the class's default, a game global set in the call) registered or not,
+    // its object info through slot 1 (as the aimed walk's); every function called is a stand-in
+    Test class_construct{0x549780,
+                         [=](Rng &r) {
+                             fresh(r);
+                             *arena<uint32_t>(ALLOC_NEXT) = 0;
+                             static void *vtable[2] = {nullptr, (void *)stub_object_info};
+                             uint8_t *description = arena<uint8_t>(0x4000);
+                             *(void **)description = vtable;
+                             description[4] = (uint8_t)(r.range(0, 2) ? 0 : 1);
+                             *(uint32_t *)(description + 0x40) = r.range(0, 3) ? 1 : 0;
+                             uint32_t *info = arena<uint32_t>(0x8000);
+                             info[0x14 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8100);
+                             info[0x18 / 4] = r.range(0, 4);
+                             for (int k = 0; k < 4; k++) arena<uint32_t>(0x8100)[k] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x8200 + k * 0x20) : 0;
+                             for (int k = 0; k < 4; k++) arena<int32_t>(0x8200 + k * 0x20)[4] = r.range(0, 3) ? 0x20 : -(int32_t)(uintptr_t)description;
+                             uint32_t *handle = arena<uint32_t>(0x700);   // the empty handle, with a list
+                             handle[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(0x780);
+                             arena<uint32_t>(0x780)[0] = (uint32_t)(uintptr_t)arena<void>(0x790);
+                             arena<uint32_t>(0x790)[1] = (uint32_t)(uintptr_t)arena<void>(0x780);
+                             arena<uint32_t>(0x8800)[0] = 100;
+                             arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)description : 0;
+                             arena<uint32_t>(0x10)[1] = r.next();
+                             arena<uint32_t>(0x10)[2] = r.next();
+                             arena<uint32_t>(0x10)[3] = r.range(0, 4);
+                             arena<uint32_t>(CALL_LOG)[0] = 0;
+                         },
+                         [](void *fn) {
+                             for (uintptr_t d : {(uintptr_t)0x12f5240, (uintptr_t)0x12f524c, (uintptr_t)0x12f5298, (uintptr_t)0x12f5668, (uintptr_t)0x130b5d4, (uintptr_t)0x1341808, (uintptr_t)0x13427b8, (uintptr_t)0x13cee54}) *(void **)d = arena<void>(0x4000);
+                             *(int32_t *)0x130ac18 = arena<int32_t>(0x10)[3];
+                             g_null_handle = arena<void>(0x700);
+                             uint32_t *a = arena<uint32_t>(0x10);
+                             void *made = ((void *(__thiscall *)(void *, void *, uint32_t, uint32_t))fn)(arena<void>(0x100), (void *)(uintptr_t)a[0], a[1], a[2]);
+                             return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
+                         }};
+    class_construct.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0x800a80, (void *)stub_class_base}, {0x8087e0, (void *)stub_field_add}, {0xbcdfc0, (void *)stub_plain_alloc}, {0xbd0490, (void *)stub_wide_empty_shared},
+                       {0xbeca40, (void *)stub_name_make}, {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}, {0x8088c0, (void *)stub_built4}});
+    };
+    class_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(class_construct);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
