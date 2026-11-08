@@ -4495,8 +4495,10 @@ static std::vector<Test> tests() {
                            float *q = arena<float>(0x300);
                            for (int c = 0; c < 3; c++) { q[c] = r.real(-20, 10); q[c + 3] = q[c] + r.real(0, 25); }
                            if (r.range(0, 1)) {   // touching a random item's side
-                               int i = r.range(0, 20), k = r.range(0, 2), c = r.range(0, 2);
-                               const float *item = arena<float>(0x2000 + i * 0x60 + k * 0x20);
+                               int start = arena<int32_t>(0x10)[0];   // mostly an item of the node the walk starts at
+                               int i = r.range(0, 2) ? start : r.range(0, 20), k = r.range(0, 2), c = r.range(0, 2);
+                               float *item = arena<float>(0x2000 + i * 0x60 + k * 0x20);
+                               ((uint32_t *)item)[7] = 1;
                                if (r.range(0, 1)) q[c] = item[c + 3]; else q[c + 3] = item[c];
                            }
                            if (!r.range(0, 9)) q[r.range(0, 5)] = geo_pick(r);
