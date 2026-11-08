@@ -4693,6 +4693,21 @@ static std::vector<Test> tests() {
     quad_walk_box_matching.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x48a4e0, (void *)stub_quad_take_all}}); };
     quad_walk_box_matching.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(quad_walk_box_matching);
+    // QuadTree::WalkPlanesMatching: the plane walk's tree and planes, with WalkBoxMatching's objects and query after them
+    Test quad_walk_planes_matching{0x48bdc0,
+                                   [=](Rng &r) {
+                                       quad_walk_box_matching.setup(r);
+                                       float saved[24];
+                                       memcpy(saved, arena<float>(0x300), sizeof saved);
+                                       quad_walk_planes.setup(r);   // planes, items near them, start node
+                                       for (int i = 0; i < 21; i++)
+                                           for (int k = 0; k < 3; k++) *(void **)(arena<uint8_t>(0x2000 + i * 0x60 + k * 0x20) + 0x18) = arena<void>(0x4000 + (i * 3 + k) * 0x100);
+                                       arena<uint32_t>(0x300)[0x18] = (uint32_t)(uintptr_t)arena<void>(0x3400);
+                                   },
+                                   quad_walk_planes.call};
+    quad_walk_planes_matching.prepare = [](const rewrite::Entry *) { stubs_for_now({{(uintptr_t)0x48b370, (void *)stub_quad_take_all}}); };
+    quad_walk_planes_matching.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_walk_planes_matching);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

@@ -1720,7 +1720,7 @@ address,size,name,callers,status
 0x48bb30,293,QuadTree::CullBox,1,rewritten
 0x48bc60,169,,1,documented
 0x48bd10,169,,1,documented
-0x48bdc0,1331,,2,documented
+0x48bdc0,1331,QuadTree::WalkPlanesMatching,2,rewritten
 0x48c300,158,,24,documented
 0x48c460,356,QuadTree::CullPlanes,1,rewritten
 0x48c5d0,77,Message::Send48C5D0,26,rewritten

@@ -270,12 +270,24 @@ REWRITE("QuadTree::CullBox", 0xb5eb80, quad_cull_box_original, (&quad_cull<false
 REWRITE("QuadTree::CullBox", 0xb74e80, quad_cull_box_original, (&quad_cull<false, 0xb6d510, 0xb732b0, 0xb74580>), &g_quad_culls);
 
 // ---- QuadTree::WalkPlanes(planes, n, low, size): node n is cut by the view. Each of its items in use (box low xyz,
-// high xyz) that no plane has wholly outside is shown (SHOW, with a 0 when SHOW_TAKES_ZERO, or virtual slot 8, of the
-// item's object at +0x18); the plane's
+// high xyz) that no plane has wholly outside is taken (Take, with what the planes point to at +0x60); the plane's
 // distance is summed from the box corner nearest against the normal, in an order that differs per copy (bits 2p of
 // LAST: which of the x, y and z products is added last). Then each child it marks gets its box (a half-size quarter, at 0.25 or 0.75
 // of the parent's half) and is taken whole (TAKE_ALL) when inside or walked again when cut --------------------------------
 static volatile long g_quad_walks;
+// Show an item's object (+0x18): its virtual slot 8, or a fixed function (given a 0 when it takes one).
+struct ShowVirtual {
+    static void take(void *const *, uint8_t *item) {
+        void *object = *(void **)(item + 0x18);
+        ((void(__thiscall *)(void *))(*(void ***)object)[8])(object);
+    }
+};
+template <uintptr_t SHOW> struct ShowCall {
+    static void take(void *const *, uint8_t *item) { ((void(__thiscall *)(void *))SHOW)(*(void **)(item + 0x18)); }
+};
+template <uintptr_t SHOW> struct ShowCallZero {
+    static void take(void *const *, uint8_t *item) { ((void(__thiscall *)(void *, int32_t))SHOW)(*(void **)(item + 0x18), 0); }
+};
 // Child k's box in x and z: half the parent's size, at 0.25 or 0.75 of that half from the parent's low corner (bit 0:
 // x, bit 1: z); each value rounded to float as the game stores it.
 static void quad_child_box(const float *low, const float *size, int32_t k, volatile float *half, volatile float *child_low, volatile float *high_x, volatile float *high_z) {
@@ -287,7 +299,7 @@ static void quad_child_box(const float *low, const float *size, int32_t k, volat
     *high_x = (float)((long double)child_low[0] + half[0]);
     *high_z = (float)((long double)child_low[1] + half[1]);
 }
-template <uint32_t LAST, uintptr_t TAKE_ALL, uintptr_t SHOW, bool SHOW_TAKES_ZERO> static void __thiscall quad_walk_planes(QuadTreeBox *tree, const float *planes, int32_t n, const float *low, const float *size) {
+template <uint32_t LAST, uintptr_t TAKE_ALL, class Take> static void __thiscall quad_walk_planes(QuadTreeBox *tree, const float *planes, int32_t n, const float *low, const float *size) {
     g_quad_walks++;
     QuadNode *node = &tree->nodes[n];
     if (node->other || node->item_count)
@@ -304,11 +316,7 @@ template <uint32_t LAST, uintptr_t TAKE_ALL, uintptr_t SHOW, bool SHOW_TAKES_ZER
                 distance = distance + plane[3];
                 if (!(distance <= 0.0L)) shown = false;
             }
-            if (shown) {
-                void *object = *(void **)(node->items + i * 0x20 + 0x18);
-                if (SHOW_TAKES_ZERO) ((void(__thiscall *)(void *, int32_t))SHOW)(object, 0);
-                else ((void(__thiscall *)(void *))(SHOW ? (void *)SHOW : (*(void ***)object)[8]))(object);
-            }
+            if (shown) Take::take((void *const *)(planes + 0x18), node->items + i * 0x20);
         }
     if (!(node->flags & 0xf)) return;
     int32_t first = n * 4 + 1;
@@ -319,21 +327,21 @@ template <uint32_t LAST, uintptr_t TAKE_ALL, uintptr_t SHOW, bool SHOW_TAKES_ZER
         QuadNode *child = &tree->nodes[first + k];
         int32_t seen = planes_box_bounds(planes, child_low[0], high_x, child->low, child->high, child_low[1], high_z);
         if (seen == 2) ((void(__thiscall *)(void *, int32_t, const float *))TAKE_ALL)(tree, first + k, planes);
-        else if (seen == 1) quad_walk_planes<LAST, TAKE_ALL, SHOW, SHOW_TAKES_ZERO>(tree, planes, first + k, (const float *)child_low, (const float *)half);
+        else if (seen == 1) quad_walk_planes<LAST, TAKE_ALL, Take>(tree, planes, first + k, (const float *)child_low, (const float *)half);
     }
 }
 static const uint8_t quad_walk_planes_original[] = {0x83, 0xec, 0x24, 0x8b, 0x51, 0x08, 0x53, 0x55};
-REWRITE("QuadTree::WalkPlanes", 0x7b9590, quad_walk_planes_original, (&quad_walk_planes<0x454, 0x7b85f0, 0x0, false>), &g_quad_walks);
-REWRITE("QuadTree::WalkPlanes", 0xa0e450, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xa0e240, 0xa0a330, false>), &g_quad_walks);
-REWRITE("QuadTree::WalkPlanes", 0xb5ed60, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb5e950, 0xb563b0, true>), &g_quad_walks);
-REWRITE("QuadTree::WalkPlanes", 0xb75060, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb74250, 0xb44a30, false>), &g_quad_walks);
+REWRITE("QuadTree::WalkPlanes", 0x7b9590, quad_walk_planes_original, (&quad_walk_planes<0x454, 0x7b85f0, ShowVirtual>), &g_quad_walks);
+REWRITE("QuadTree::WalkPlanes", 0xa0e450, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xa0e240, ShowCall<0xa0a330>>), &g_quad_walks);
+REWRITE("QuadTree::WalkPlanes", 0xb5ed60, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb5e950, ShowCallZero<0xb563b0>>), &g_quad_walks);
+REWRITE("QuadTree::WalkPlanes", 0xb75060, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb74250, ShowCall<0xb44a30>>), &g_quad_walks);
 
 // ---- What the box walks do with an item they take; query+0x18 is where it goes ---------------------------------------------
 // Into a collector's list of 64 (at +4, count at +0x104), handed on whole to the collector's virtual slot 0 (list, 64)
 // when full.
 struct TakeInto64 {
-    static void take(const float *query, uint8_t *item) {
-        uint8_t *collector = *(uint8_t **)(query + 6);
+    static void take(void *const *slot, uint8_t *item) {
+        uint8_t *collector = (uint8_t *)*slot;
         int32_t &count = *(int32_t *)(collector + 0x104);
         ((uint32_t *)(collector + 4))[count] = *(uint32_t *)(item + 0x18);
         if (++count == 0x40) {
@@ -345,9 +353,9 @@ struct TakeInto64 {
 // When the item's object stands (x at +0x80, z at +0x88) within a rectangle {low x, low z, high x, high z}, onto the list
 // after it {objects, capacity, count}, grown by GROW(capacity + 16) when full.
 template <uintptr_t GROW> struct TakeInRect {
-    static void take(const float *query, uint8_t *item) {
+    static void take(void *const *slot, uint8_t *item) {
         uint8_t *object = *(uint8_t **)(item + 0x18);
-        float *rect = *(float **)(query + 6);
+        float *rect = (float *)*slot;
         float x = *(float *)(object + 0x80), z = *(float *)(object + 0x88);
         if (!(x >= rect[0]) || !(x <= rect[2]) || !(z >= rect[1]) || !(z <= rect[3])) return;
         uint32_t *list = (uint32_t *)(rect + 4);
@@ -360,8 +368,8 @@ template <uintptr_t GROW> struct TakeInRect {
 // is under 4 has the centre of its box weighed by 1 / (squared distance to the point) - bias; when that's above 0, the
 // weighted centre and the weight are added to the sums and the centre to the list (grown by 256 with GROW when full).
 template <uintptr_t GROW> struct TakeWeighted {
-    static void take(const float *query, uint8_t *item) {
-        float *point = *(float **)(query + 6);
+    static void take(void *const *slot, uint8_t *item) {
+        float *point = (float *)*slot;
         uint8_t *object = *(uint8_t **)(item + 0x18);
         if (*(int32_t *)(object + 0x190) == 8 || *(uint8_t *)(object + 0x120) >= 4) return;
         const float *box = (const float *)item;
@@ -395,8 +403,8 @@ static long double x87_sqrt(long double value) {
 // a higher rank wins, then a lower value. Z_FIRST: the squared distance is summed z, y, x, with z squared from its value
 // before and after rounding to float (as one copy has it); else x, z, y from the rounded values.
 template <uintptr_t OWNER_OF, bool Z_FIRST> struct TakeAimed {
-    static void take(const float *query, uint8_t *item) {
-        uint32_t *best = *(uint32_t **)(query + 6);
+    static void take(void *const *slot, uint8_t *item) {
+        uint32_t *best = (uint32_t *)*slot;
         uint8_t *object = *(uint8_t **)(item + 0x18);
         if ((uintptr_t)object == best[3]) return;
         if (best[4] && object) {
@@ -438,9 +446,9 @@ template <uintptr_t OWNER_OF, bool Z_FIRST> struct TakeAimed {
 // Objects whose bits (+0x18, +0x1C) match a query's {table, ?, masks, bits, count, capacity, buffer} under its masks: the
 // object's id (+8) goes into the buffer, handed on whole to the query's virtual slot 1 (count) when full (as Grid::Collect).
 struct TakeMatching {
-    static void take(const float *query, uint8_t *item) {
+    static void take(void *const *slot, uint8_t *item) {
         uint8_t *object = *(uint8_t **)(item + 0x18);
-        uint32_t *q = *(uint32_t **)(query + 6);
+        uint32_t *q = (uint32_t *)*slot;
         if (((*(uint32_t *)(object + 0x18) ^ q[4]) & q[2]) | ((*(uint32_t *)(object + 0x1c) ^ q[5]) & q[3])) return;
         ((uint32_t *)(uintptr_t)q[8])[q[6]] = *(uint32_t *)(object + 8);
         int32_t count = (int32_t)++q[6];
@@ -463,7 +471,7 @@ template <class Take, uintptr_t TAKE_ALL> static void __thiscall quad_walk_box(Q
             if (!(box[0] <= query[3]) || !(box[3] >= query[0]) || !(box[1] <= query[4]) || !(box[4] >= query[1]) || !(box[2] <= query[5]) ||
                 !(box[5] >= query[2]))
                 continue;
-            Take::take(query, node->items + i * 0x20);
+            Take::take((void *const *)(query + 6), node->items + i * 0x20);
         }
     if (!(node->flags & 0xf)) return;
     int32_t first = n * 4 + 1;
@@ -509,7 +517,7 @@ template <class Take> static void __thiscall quad_take_all_box(QuadTreeBox *tree
     QuadNode *node = &tree->nodes[n];
     if (node->other || node->item_count)
         for (int32_t i = 0; i < (int32_t)node->item_count; i++)
-            if (*(uint32_t *)(node->items + i * 0x20 + 0x1c)) Take::take(query, node->items + i * 0x20);
+            if (*(uint32_t *)(node->items + i * 0x20 + 0x1c)) Take::take((void *const *)(query + 6), node->items + i * 0x20);
     if (!(node->flags & 0xf)) return;
     for (int32_t k = 0; k < 4; k++)
         if (node->flags & (1u << k)) quad_take_all_box<Take>(tree, n * 4 + 1 + k, query);
@@ -524,3 +532,5 @@ REWRITE("QuadTree::TakeAllAimed", 0x7b5540, quad_take_all_rect_original, (&quad_
 REWRITE("QuadTree::WalkBoxAimed", 0x7b6eb0, quad_walk_box_rect_original, (&quad_walk_box<TakeAimed<0x758b10, true>, 0x7b5540>), &g_quad_walks);
 static const uint8_t quad_walk_box_matching_original[] = {0x83, 0xec, 0x20, 0x8b, 0x54, 0x24, 0x28, 0x6b};
 REWRITE("QuadTree::WalkBoxMatching", 0x48b0b0, quad_walk_box_matching_original, (&quad_walk_box<TakeMatching, 0x48a4e0>), &g_quad_walks);
+static const uint8_t quad_walk_planes_matching_original[] = {0x83, 0xec, 0x24, 0x8b, 0x51, 0x08, 0x53, 0x55};
+REWRITE("QuadTree::WalkPlanesMatching", 0x48bdc0, quad_walk_planes_matching_original, (&quad_walk_planes<0x52, 0x48b370, TakeMatching>), &g_quad_walks);
