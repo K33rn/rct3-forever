@@ -3595,7 +3595,7 @@ address,size,name,callers,status
 0x549090,47,Pair::Touch548CA0,0,rewritten
 0x5490c0,28,State::Reset548CD0,0,rewritten
 0x5490e0,25,Object::DelMemberField,0,rewritten
-0x549780,307,,2,documented
+0x549780,307,Class::Construct,2,rewritten
 0x5498c0,211,,2,documented
 0x5499a0,118,,2,documented
 0x549a20,114,,1,documented
@@ -3621,10 +3621,10 @@ address,size,name,callers,status
 0x54b0b0,133,Refs::TellFlagged54B020,1,rewritten
 0x54b330,102,Factory::Create,1,rewritten
 0x54b3a0,119,,2,documented
-0x54b420,646,,2,documented
+0x54b420,646,Class::Construct,2,rewritten
 0x54b6d0,112,,1,documented
 0x54b740,79,Map::Refresh54B740,1,rewritten
-0x54b790,646,,2,documented
+0x54b790,646,Class::Construct,2,rewritten
 0x54ba40,112,,1,documented
 0x54bab0,79,Map::Refresh54B740,1,rewritten
 0x54bbb0,119,,0,documented
@@ -5190,7 +5190,7 @@ address,size,name,callers,status
 0x5eeee0,121,,1,documented
 0x5eef60,2593,,1,documented
 0x5ef9b0,89,Dtor::TablesMember456980,4,rewritten
-0x5efb20,374,,2,documented
+0x5efb20,374,Class::Construct,2,rewritten
 0x5efca0,30,DeletingDestructor,2,rewritten
 0x5efcc0,159,ObjectRef::CallWith,2,rewritten
 0x5efd60,93,Kept::Then4C5890,5,rewritten
@@ -11074,7 +11074,7 @@ address,size,name,callers,status
 0x8338b0,5,,27,documented
 0x8338f0,30,DeletingDestructor,0,rewritten
 0x833960,19,,2,documented
-0x833a40,364,,17,documented
+0x833a40,364,Class::Construct,17,rewritten
 0x833bd0,117,Text::Create,2,rewritten
 0x833c50,112,,49,documented
 0x833cc0,110,ObjectRef::SetMemberNear,15,rewritten
@@ -14739,7 +14739,7 @@ address,size,name,callers,status
 0x9d9bc0,54,Reference::Interface,2,rewritten
 0x9d9c00,47,,1,documented
 0x9d9c40,123,,2,documented
-0x9d9cc0,623,,2,documented
+0x9d9cc0,623,Class::Construct,2,rewritten
 0x9d9f50,553,,1,documented
 0x9da180,209,,1,documented
 0x9da260,305,,3,documented
@@ -15655,7 +15655,7 @@ address,size,name,callers,status
 0xa30900,126,ObjectRef::Assign,1,rewritten
 0xa30980,344,,8,documented
 0xa30ae0,1640,,1,documented
-0xa31150,460,,2,documented
+0xa31150,460,Class::Construct,2,rewritten
 0xa31340,133,,1,documented
 0xa313d0,89,Dtor::TablesMember456980,1,rewritten
 0xa31430,1947,,0,documented
@@ -18411,7 +18411,7 @@ address,size,name,callers,status
 0xb5f760,18,Destructor::TablesThenBase,12,rewritten
 0xb5f790,1,,6,documented
 0xb5f7a0,10,,5,documented
-0xb5fbe0,691,,7,documented
+0xb5fbe0,691,Class::Construct,7,rewritten
 0xb5fea0,30,DeletingDestructor,2,rewritten
 0xb5fec0,2072,,1,documented
 0xb606e0,620,,3,documented
