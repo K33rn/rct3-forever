@@ -365,3 +365,23 @@ static const uint8_t quad_walk_box_original[] = {0x83, 0xec, 0x20, 0x8b, 0x54, 0
 REWRITE("QuadTree::WalkBox", 0x7b8920, quad_walk_box_original, (&quad_walk_box<0x7b7390>), &g_quad_walks);
 REWRITE("QuadTree::WalkBox", 0xb5e460, quad_walk_box_original, (&quad_walk_box<0xb5d780>), &g_quad_walks);
 REWRITE("QuadTree::WalkBox", 0xb74580, quad_walk_box_original, (&quad_walk_box<0xb732b0>), &g_quad_walks);
+
+// ---- QuadTree::TakeAll(n, query): node n is wholly inside the view: every item in use is shown (SHOW, with a 0 when
+// SHOW_TAKES_ZERO, or virtual slot 8 of its object) and the children it marks are taken the same way -----------------------
+template <uintptr_t SHOW, bool SHOW_TAKES_ZERO> static void __thiscall quad_take_all(QuadTreeBox *tree, int32_t n, const float *query) {
+    g_quad_walks++;
+    QuadNode *node = &tree->nodes[n];
+    if (node->other || node->item_count)
+        for (int32_t i = 0; i < (int32_t)node->item_count; i++) {
+            if (!*(uint32_t *)(node->items + i * 0x20 + 0x1c)) continue;
+            void *object = *(void **)(node->items + i * 0x20 + 0x18);
+            if (SHOW_TAKES_ZERO) ((void(__thiscall *)(void *, int32_t))SHOW)(object, 0);
+            else ((void(__thiscall *)(void *))(*(void ***)object)[8])(object);
+        }
+    if (!(node->flags & 0xf)) return;
+    for (int32_t k = 0; k < 4; k++)
+        if (node->flags & (1u << k)) quad_take_all<SHOW, SHOW_TAKES_ZERO>(tree, n * 4 + 1 + k, query);
+}
+static const uint8_t quad_take_all_original[] = {0x53, 0x55, 0x56, 0x8b, 0x74, 0x24, 0x10, 0x6b};
+REWRITE("QuadTree::TakeAll", 0x7b85f0, quad_take_all_original, (&quad_take_all<0, false>), &g_quad_walks);
+REWRITE("QuadTree::TakeAll", 0xb5e950, quad_take_all_original, (&quad_take_all<0xb563b0, true>), &g_quad_walks);

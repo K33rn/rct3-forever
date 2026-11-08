@@ -4514,6 +4514,16 @@ static std::vector<Test> tests() {
     };
     quad_walk_box.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(quad_walk_box);
+    // QuadTree::TakeAll: the same tree; the items' show is a stand-in
+    Test quad_take_all{0x7b85f0, quad_walk_planes.setup,
+                       [](void *fn) { ((void(__thiscall *)(void *, int32_t, void *))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<void>(0x300)); return Result{}; }};
+    quad_take_all.prepare = [](const rewrite::Entry *e) {
+        const uint8_t *code = (const uint8_t *)e->at;
+        for (int k = 0; k < 130; k++)
+            if (code[k] == 0x6a && code[k + 1] == 0 && code[k + 2] == 0xe8) stubs_for_now({{(uintptr_t)(e->at + k + 2 + 5 + *(int32_t *)(code + k + 3)), (void *)stub_show_zero}});
+    };
+    quad_take_all.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_take_all);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

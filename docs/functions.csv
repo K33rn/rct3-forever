@@ -9713,7 +9713,7 @@ address,size,name,callers,status
 0x7b7e70,179,,2,documented
 0x7b7f30,916,,2,documented
 0x7b82d0,788,,2,documented
-0x7b85f0,139,,3,documented
+0x7b85f0,139,QuadTree::TakeAll,3,rewritten
 0x7b8680,661,,2,documented
 0x7b8920,681,QuadTree::WalkBox,2,rewritten
 0x7b8bd0,561,,2,documented
@@ -18395,7 +18395,7 @@ address,size,name,callers,status
 0xb5e1c0,661,,2,documented
 0xb5e460,681,QuadTree::WalkBox,2,rewritten
 0xb5e710,561,,2,documented
-0xb5e950,139,,3,documented
+0xb5e950,139,QuadTree::TakeAll,3,rewritten
 0xb5e9e0,190,,1,documented
 0xb5eaa0,41,Triple::Forward48BB00,0,rewritten
 0xb5ead0,169,,0,documented
