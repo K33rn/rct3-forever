@@ -91,3 +91,40 @@ static const uint8_t handyman_tool_ed8d00_original[] = {0x6a, 0xff, 0x68, 0xd9, 
 REWRITE("HandymanTools::Make", 0xed8d00, handyman_tool_ed8d00_original, (&handyman_tool_make<0xf6fa34, 0xf6fa00, 0x1306b4c, 0xf20170>), &g_tool_makes);
 static const uint8_t handyman_tool_ed8e70_original[] = {0x6a, 0xff, 0x68, 0x29, 0x51, 0xe5, 0x00};
 REWRITE("HandymanTools::Make", 0xed8e70, handyman_tool_ed8e70_original, (&handyman_tool_make<0xf6fa44, 0xf6fa40, 0x1306b00, 0xf20180>), &g_tool_makes);
+
+// ---- Ref::PassTo(object): a reference to the object (a handle linked into its list, table REF_TABLE, flag 1) is made on
+// the stack and given to the member at +MEMBER (ADD); then the reference is let go (0x40F730) and the object set up
+// (0x800860) unless it already is (bit 0 of +0x2C) ------------------------------------------------------------------------------
+struct StackRef {
+    uint32_t table;
+    uint8_t *handle;
+    uint32_t link[2];
+    void *self;   // the reference itself
+    void *object;
+    uint8_t flag;
+};
+static volatile long g_ref_passes;
+template <uintptr_t REF_TABLE, uint32_t MEMBER, uintptr_t ADD> static void __thiscall ref_pass_to(uint8_t *self, void *object) {
+    g_ref_passes++;
+    StackRef ref;
+    ref.table = 0xf26ae0;
+    ref.self = &ref;
+    ref.handle = ((uint8_t * (__thiscall *)(void *))0x805700)(object);
+    uint32_t *head = *(uint32_t **)(ref.handle + 0x20);
+    ref.link[0] = head[0];
+    ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)ref.link;
+    ref.link[1] = (uint32_t)(uintptr_t)head;
+    head[0] = (uint32_t)(uintptr_t)ref.link;
+    ref.table = REF_TABLE;
+    ref.object = object;
+    ref.flag = 1;
+    ((void(__thiscall *)(void *, StackRef *))ADD)(self + MEMBER, &ref);
+    ((void(__thiscall *)(StackRef *))0x40f730)(&ref);
+    if (!(self[0x2c] & 1)) ((void(__thiscall *)(void *))0x800860)(self);
+}
+static const uint8_t ref_pass_5d7b10_original[] = {0x6a, 0xff, 0x68, 0xc8, 0x57, 0xe2, 0x00};
+REWRITE("Ref::PassTo", 0x5d7b10, ref_pass_5d7b10_original, (&ref_pass_to<0xf3e11c, 0x50, 0x5a3a30>), &g_ref_passes);
+static const uint8_t ref_pass_7f76b0_original[] = {0x6a, 0xff, 0x68, 0xe8, 0xad, 0xe5, 0x00};
+REWRITE("Ref::PassTo", 0x7f76b0, ref_pass_7f76b0_original, (&ref_pass_to<0xf6c748, 0x44, 0x75cd70>), &g_ref_passes);
+static const uint8_t ref_pass_b59810_original[] = {0x6a, 0xff, 0x68, 0xe8, 0x65, 0xe9, 0x00};
+REWRITE("Ref::PassTo", 0xb59810, ref_pass_b59810_original, (&ref_pass_to<0xf97c7c, 0x68, 0xb573d0>), &g_ref_passes);

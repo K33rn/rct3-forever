@@ -410,6 +410,19 @@ static void __thiscall stub_slot_told(void *slot) { record(0x71, slot); }
 static void __thiscall stub_tool_setup(void *global, int32_t zero, void **a, void **b, void **c) {
     record(0x72, global); record(0x72, (void *)(intptr_t)zero); record(0x72, *a); record(0x72, *b); record(0x72, *c);
 }
+// a reference made on the stack: its contents are recorded, not where it is
+static void record_ref(uint32_t tag, const uint32_t *ref) {
+    record(tag, (void *)(uintptr_t)ref[0]); record(tag, (void *)(uintptr_t)ref[1]); record(tag, (void *)(uintptr_t)(ref[4] == (uintptr_t)ref)); record(tag, (void *)(uintptr_t)ref[5]); record(tag, (void *)(uintptr_t)(ref[6] & 0xff));
+    const uint32_t *head = (const uint32_t *)(uintptr_t)ref[3];
+    record(tag, (void *)(uintptr_t)(head && head[0] == (uintptr_t)&ref[2]));
+}
+static void __thiscall stub_ref_add(void *member, const uint32_t *ref) { record(0x73, member); record_ref(0x73, ref); }
+static void __thiscall stub_ref_release(uint32_t *ref) {   // unlinks it, as the real release does
+    record_ref(0x74, ref);
+    ((uint32_t *)(uintptr_t)ref[2])[1] = ref[3];
+    ((uint32_t *)(uintptr_t)ref[3])[0] = ref[2];
+}
+static void __thiscall stub_set_up(void *self) { record(0x75, self); }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4831,6 +4844,23 @@ static std::vector<Test> tests() {
     };
     handyman_tool_make.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(handyman_tool_make);
+    // Ref::PassTo: the handle, the member's add, the release and the set-up are stand-ins
+    Test ref_pass_to{0x5d7b10,
+                     [=](Rng &r) {
+                         fresh(r);
+                         uint32_t *handle = arena<uint32_t>(0x700);
+                         handle[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(0x780);
+                         arena<uint32_t>(0x780)[0] = (uint32_t)(uintptr_t)arena<void>(0x790);
+                         arena<uint32_t>(0x790)[1] = (uint32_t)(uintptr_t)arena<void>(0x780);
+                         arena<uint32_t>(CALL_LOG)[0] = 0;
+                     },
+                     [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x500)); return Result{}; }};
+    ref_pass_to.prepare = [](const rewrite::Entry *e) {
+        stubs_for_now({{0x805700, (void *)stub_new_handle}, {(uintptr_t)(e->at + 0x76 + 5 + *(int32_t *)(e->at + 0x77)), (void *)stub_ref_add},
+                       {0x40f730, (void *)stub_ref_release}, {0x800860, (void *)stub_set_up}});
+    };
+    ref_pass_to.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(ref_pass_to);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

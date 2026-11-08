@@ -5031,7 +5031,7 @@ address,size,name,callers,status
 0x5d77a0,248,,2,documented
 0x5d78d0,162,ObjectRef::CallWith,2,rewritten
 0x5d7980,162,ObjectRef::CallWith,2,rewritten
-0x5d7b10,172,,1,documented
+0x5d7b10,172,Ref::PassTo,1,rewritten
 0x5d7bc0,162,ObjectRef::CallWith,4,rewritten
 0x5d7c70,162,ObjectRef::CallWith,4,rewritten
 0x5d7d20,75,,2,documented
@@ -10241,7 +10241,7 @@ address,size,name,callers,status
 0x7f7340,656,,2,documented
 0x7f7600,30,DeletingDestructor,3,rewritten
 0x7f7620,136,,1,documented
-0x7f76b0,172,,1,documented
+0x7f76b0,172,Ref::PassTo,1,rewritten
 0x7f7760,426,,1,documented
 0x7f81b0,105,Factory::Create,1,rewritten
 0x7f82c0,87,,1,documented
@@ -18342,7 +18342,7 @@ address,size,name,callers,status
 0xb58f40,568,,1,documented
 0xb59180,1634,,2,documented
 0xb597f0,30,DeletingDestructor,5,rewritten
-0xb59810,172,,1,documented
+0xb59810,172,Ref::PassTo,1,rewritten
 0xb59c20,160,,1,documented
 0xb59cc0,105,Factory::Create,1,rewritten
 0xb59d50,57,Reference::Interface,7,rewritten
