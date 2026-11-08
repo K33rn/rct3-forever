@@ -1683,8 +1683,8 @@ address,size,name,callers,status
 0x4884b0,107,Vectors::SetTwoAndValue,1,rewritten
 0x488520,198,Frustum::FromCamera,1,rewritten
 0x4885f0,107,Vectors::SetTwoAndValue,1,rewritten
-0x488660,134,,1,documented
-0x488710,239,,0,documented
+0x488660,134,SphereQuery::Set,1,rewritten
+0x488710,239,Box::Overlap,0,rewritten
 0x488a00,104,,0,documented
 0x488b10,190,,0,documented
 0x488d90,32,,2,documented
@@ -9649,11 +9649,11 @@ address,size,name,callers,status
 0x7b2c80,107,Vectors::SetTwoAndValue,1,rewritten
 0x7b2cf0,198,Frustum::FromCamera,1,rewritten
 0x7b2dc0,107,Vectors::SetTwoAndValue,1,rewritten
-0x7b2e30,134,,1,documented
+0x7b2e30,134,SphereQuery::Set,1,rewritten
 0x7b2ec0,107,Vectors::SetTwoAndValue,1,rewritten
 0x7b2f30,107,Vectors::SetTwoAndValue,1,rewritten
-0x7b2fc0,239,,0,documented
-0x7b32c0,239,,0,documented
+0x7b2fc0,239,Box::Overlap,0,rewritten
+0x7b32c0,239,Box::Overlap,0,rewritten
 0x7b3580,104,,0,documented
 0x7b3690,468,,0,documented
 0x7b3890,174,,0,documented
@@ -18365,7 +18365,7 @@ address,size,name,callers,status
 0xb5b4c0,34,COND_VREL,0,rewritten
 0xb5b5d0,53,Grid::MarkUp,5,rewritten
 0xb5b650,79,Slots::Free,2,rewritten
-0xb5b740,134,,0,documented
+0xb5b740,134,SphereQuery::Set,0,rewritten
 0xb5b7d0,107,Vectors::SetTwoAndValue,0,rewritten
 0xb5b840,107,Vectors::SetTwoAndValue,1,rewritten
 0xb5b8d0,198,Frustum::FromCamera,1,rewritten
@@ -18496,7 +18496,7 @@ address,size,name,callers,status
 0xb6b9f0,26,OwnedPointer::Reset,2,rewritten
 0xb6ba10,130,Array<4>::SetCapacity,1,rewritten
 0xb6baa0,198,Frustum::FromCamera,1,rewritten
-0xb6bb70,134,,1,documented
+0xb6bb70,134,SphereQuery::Set,1,rewritten
 0xb6bc00,107,Vectors::SetTwoAndValue,1,rewritten
 0xb6bc70,107,Vectors::SetTwoAndValue,1,rewritten
 0xb6bd00,282,Planes::TestBox,0,rewritten

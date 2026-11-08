@@ -4319,6 +4319,41 @@ static std::vector<Test> tests() {
                             },
                             [](void *fn) { ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0]); return Result{}; }};
     quick(quad_update_bounds);
+    // SphereQuery::Set and Box::Overlap: floats near each other, sometimes equal, signed zeros, NaNs
+    auto geo_pick = [](Rng &r) { int k = r.range(0, 11); return k == 0 ? r.any_float() : k == 1 ? 0.0f : k == 2 ? -0.0f : k == 3 ? 1.0f : r.real(-20, 20); };
+    Test sphere_query_set{0x488660,
+                          [=](Rng &r) {
+                              for (int i = 0; i < 16; i++) arena<uint32_t>(0x100)[i] = r.next();
+                              for (int i = 0; i < 3; i++) arena<float>(0x200)[i] = geo_pick(r);
+                              arena<float>(0x10)[0] = geo_pick(r);
+                              arena<uint32_t>(0x10)[1] = r.next();
+                          },
+                          [](void *fn) {
+                              ((void(__thiscall *)(void *, void *, float, uint32_t))fn)(arena<void>(0x100), arena<void>(0x200), arena<float>(0x10)[0], arena<uint32_t>(0x10)[1]);
+                              return Result{};
+                          }};
+    quick(sphere_query_set);
+    Test box_overlap{0x488710,
+                     [=](Rng &r) {
+                         float *box = arena<float>(0x100);
+                         for (int i = 0; i < 3; i++) {
+                             box[i] = geo_pick(r);
+                             box[i + 3] = r.range(0, 7) ? box[i] + r.real(0, 20) : geo_pick(r);
+                         }
+                         float *mid = arena<float>(0x200), *low = arena<float>(0x210), *size = arena<float>(0x220);
+                         // corners on or near the box's sides now and then
+                         low[0] = r.range(0, 2) ? geo_pick(r) : box[r.range(0, 1) * 3];
+                         low[1] = r.range(0, 2) ? geo_pick(r) : box[2 + r.range(0, 1) * 3];
+                         size[0] = r.range(0, 2) ? r.real(0, 20) : box[3] - low[0];
+                         size[1] = r.range(0, 2) ? r.real(0, 20) : box[5] - low[1];
+                         mid[0] = r.next();
+                         mid[1] = r.range(0, 2) ? geo_pick(r) : box[1];
+                         mid[2] = r.range(0, 2) ? mid[1] + r.real(0, 20) : box[4];
+                     },
+                     [](void *fn) {
+                         return Result{(uint32_t)((int32_t(__thiscall *)(void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x210), arena<void>(0x220))};
+                     }};
+    quick(box_overlap);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

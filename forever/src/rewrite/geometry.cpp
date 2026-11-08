@@ -101,3 +101,47 @@ static void __thiscall quad_update_bounds(QuadTree *tree, int32_t n) {
 static const uint8_t quad_update_bounds_original[] = {0x83, 0xec, 0x0c, 0x53, 0x8b, 0xd1, 0x8b, 0x4c};
 static const uint32_t quad_update_bounds_copies[] = {0x430770, 0x4891a0, 0x7b41b0, 0xa0c730, 0xb5c2e0, 0xb6d510};
 REWRITE_COPIES("QuadTree::UpdateBounds", quad_update_bounds_copies, quad_update_bounds_original, &quad_update_bounds, &g_quad_updates);
+
+// ---- SphereQuery::Set(centre, radius, tag): the box around the sphere (centre - radius to centre + radius), the
+// centre, the radius squared and the tag ---------------------------------------------------------------------------------
+struct SphereQuery {
+    float low[3], high[3], centre[3], radius_squared;
+    uint32_t tag;
+};
+static volatile long g_sphere_sets;
+static void __thiscall sphere_query_set(SphereQuery *query, const float *centre, float radius, uint32_t tag) {
+    g_sphere_sets++;
+    query->radius_squared = radius * radius;
+    uint32_t copy[3];
+    __builtin_memcpy(copy, centre, 12);
+    __builtin_memcpy(query->centre, copy, 12);
+    query->tag = tag;
+    float x = centre[0], y = centre[1], z = centre[2];
+    query->low[0] = x - radius;
+    query->low[1] = y - radius;
+    query->low[2] = z - radius;
+    query->high[0] = radius + centre[0];
+    query->high[1] = centre[1] + radius;
+    query->high[2] = centre[2] + radius;
+}
+static const uint8_t sphere_query_set_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x44, 0x24, 0x14, 0x8b};
+static const uint32_t sphere_query_set_copies[] = {0x488660, 0x7b2e30, 0xb5b740, 0xb6bb70};
+REWRITE_COPIES("SphereQuery::Set", sphere_query_set_copies, sphere_query_set_original, &sphere_query_set, &g_sphere_sets);
+
+// ---- Box::Overlap: a box (x from low[0] to low[0] + size[0], y from mid[1] to mid[2], z from low[1] to low[1] +
+// size[1]) against this one {low xyz, high xyz}: 0 when they are apart, 1 when they overlap, 2 when it is inside ------
+static volatile long g_box_overlaps;
+static int32_t __thiscall box_overlap(const float *box, const float *mid, const float *low, const float *size) {
+    g_box_overlaps++;
+    volatile float high_x_stored = (float)((long double)low[0] + size[0]);   // volatile: rounded to float, as stored
+    volatile float high_z_stored = (float)((long double)size[1] + low[1]);
+    float high_x = high_x_stored, high_z = high_z_stored;
+    if (low[0] > box[3] || mid[1] > box[4] || low[1] > box[5]) return 0;
+    if (high_x < box[0] || mid[2] < box[1] || high_z < box[2]) return 0;
+    if (!(low[0] >= box[0]) || !(mid[1] >= box[1]) || !(low[1] >= box[2])) return 1;
+    if (!(high_x <= box[3]) || !(mid[2] <= box[4]) || !(high_z <= box[5])) return 1;
+    return 2;
+}
+static const uint8_t box_overlap_original[] = {0x83, 0xec, 0x08, 0x8b, 0x54, 0x24, 0x10, 0x8b};
+static const uint32_t box_overlap_copies[] = {0x488710, 0x7b2fc0, 0x7b32c0};
+REWRITE_COPIES("Box::Overlap", box_overlap_copies, box_overlap_original, &box_overlap, &g_box_overlaps);
