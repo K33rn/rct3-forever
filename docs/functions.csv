@@ -9701,7 +9701,7 @@ address,size,name,callers,status
 0x7b6760,36,Part::Offset7B6760,1,rewritten
 0x7b6790,1081,,1,documented
 0x7b6bd0,422,,3,documented
-0x7b6d80,289,,3,documented
+0x7b6d80,289,QuadTree::TakeAllRect,3,rewritten
 0x7b6eb0,1004,,2,documented
 0x7b72c0,194,Object::QuadCollect,3,rewritten
 0x7b7390,194,Object::QuadCollect,3,rewritten
@@ -9712,7 +9712,7 @@ address,size,name,callers,status
 0x7b7d40,293,QuadTree::CullBox,1,rewritten
 0x7b7e70,179,,2,documented
 0x7b7f30,916,,2,documented
-0x7b82d0,788,,2,documented
+0x7b82d0,788,QuadTree::WalkBoxRect,2,rewritten
 0x7b85f0,139,QuadTree::TakeAll,3,rewritten
 0x7b8680,661,,2,documented
 0x7b8920,681,QuadTree::WalkBox,2,rewritten

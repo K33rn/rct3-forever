@@ -388,6 +388,7 @@ static void __thiscall stub_quad_walk(void *tree, void *query, int32_t n, void *
 static void __thiscall stub_show(void *object) { record(0x64, object); }
 static void __thiscall stub_show_zero(void *object, int32_t zero) { record(0x65, object); record(0x65, (void *)(intptr_t)zero); }
 static void __thiscall stub_flush(void *collector, void *list, int32_t n) { record(0x66, collector); record(0x66, list); record(0x66, (void *)(intptr_t)n); }
+static void __thiscall stub_list_grow(uint32_t *list, int32_t capacity) { record(0x67, list); record(0x67, (void *)(intptr_t)capacity); list[1] = capacity; }
 static void __thiscall stub_reserve(void *self, uint32_t n) { record(0x30, self); record(0x30, (void *)(uintptr_t)n); }   // a plain destructor, no flag argument
 static void *__fastcall stub_class_of(void *self) {
     record(0x11, self);
@@ -4524,6 +4525,47 @@ static std::vector<Test> tests() {
     };
     quad_take_all.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(quad_take_all);
+    // QuadTree::TakeAllRect and WalkBoxRect: each item's object stands somewhere; a rectangle, sometimes on an object's
+    // position, and a list that is sometimes full (its grow is a stand-in)
+    auto quad_rect_setup = [=](Rng &r) {
+        quad_walk_box.setup(r);
+        for (int i = 0; i < 21; i++)
+            for (int k = 0; k < 3; k++) {
+                uint8_t *object = arena<uint8_t>(0x4000 + (i * 3 + k) * 0x100);
+                *(float *)(object + 0x80) = r.real(-20, 20);
+                *(float *)(object + 0x88) = r.range(0, 30) ? r.real(-20, 20) : geo_pick(r);
+                *(void **)(arena<uint8_t>(0x2000 + i * 0x60 + k * 0x20) + 0x18) = object;
+            }
+        float *rect = arena<float>(0x3400);
+        rect[0] = r.real(-20, 5); rect[1] = r.real(-20, 5); rect[2] = rect[0] + r.real(0, 30); rect[3] = rect[1] + r.real(0, 30);
+        if (r.range(0, 1)) {   // on the position of an object of the starting node
+            const uint8_t *object = arena<uint8_t>(0x4000 + (arena<int32_t>(0x10)[0] * 3 + r.range(0, 2)) * 0x100);
+            rect[r.range(0, 1) * 2] = *(const float *)(object + 0x80);
+            rect[1 + r.range(0, 1) * 2] = *(const float *)(object + 0x88);
+        }
+        uint32_t *list = (uint32_t *)(rect + 4);
+        list[0] = (uint32_t)(uintptr_t)arena<void>(0x3500);
+        list[1] = r.range(0, 8);
+        list[2] = r.range(0, 1) ? list[1] : r.range(0, (int32_t)list[1]);
+        ((uint32_t *)arena<float>(0x300))[6] = (uint32_t)(uintptr_t)rect;
+    };
+    auto quad_rect_prepare = [](const rewrite::Entry *e) {
+        const uint8_t *code = (const uint8_t *)e->at;
+        for (int k = 0; k < 200; k++)   // lea ecx, [esi/edi + 0x10]; call grow
+            if (code[k] == 0x8d && (code[k + 1] == 0x4e || code[k + 1] == 0x4f) && code[k + 2] == 0x10 && code[k + 3] == 0xe8)
+                stubs_for_now({{(uintptr_t)(e->at + k + 3 + 5 + *(int32_t *)(code + k + 4)), (void *)stub_list_grow}});
+    };
+    Test quad_take_all_rect{0x7b6d80, quad_rect_setup, quad_take_all.call};
+    quad_take_all_rect.prepare = quad_rect_prepare;
+    quad_take_all_rect.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(quad_take_all_rect);
+    Test quad_walk_box_rect{0x7b82d0, quad_rect_setup, quad_walk_planes.call};
+    quad_walk_box_rect.prepare = [=](const rewrite::Entry *e) {
+        quad_rect_prepare(e);
+        stubs_for_now({{(uintptr_t)0x7b6d80, (void *)stub_quad_take_all}});
+    };
+    quad_walk_box_rect.finish = quad_take_all_rect.finish;
+    quick(quad_walk_box_rect);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});

@@ -328,10 +328,37 @@ REWRITE("QuadTree::WalkPlanes", 0xa0e450, quad_walk_planes_original, (&quad_walk
 REWRITE("QuadTree::WalkPlanes", 0xb5ed60, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb5e950, 0xb563b0, true>), &g_quad_walks);
 REWRITE("QuadTree::WalkPlanes", 0xb75060, quad_walk_planes_original, (&quad_walk_planes<0x52, 0xb74250, 0xb44a30, false>), &g_quad_walks);
 
-// ---- QuadTree::WalkBox(query, n, low, size): as WalkPlanes for a query box {low xyz, high xyz, collector}: the
-// items overlapping it are added to the collector's list of 64 (at +4, count at +0x104), which is handed on whole to the
-// collector's virtual slot 0 (list, 64) when full; the children are taken whole or walked again ----------------------------
-template <uintptr_t TAKE_ALL> static void __thiscall quad_walk_box(QuadTreeBox *tree, const float *query, int32_t n, const float *low, const float *size) {
+// ---- What the box walks do with an item they take; query+0x18 is where it goes ---------------------------------------------
+// Into a collector's list of 64 (at +4, count at +0x104), handed on whole to the collector's virtual slot 0 (list, 64)
+// when full.
+struct TakeInto64 {
+    static void take(const float *query, uint8_t *item) {
+        uint8_t *collector = *(uint8_t **)(query + 6);
+        int32_t &count = *(int32_t *)(collector + 0x104);
+        ((uint32_t *)(collector + 4))[count] = *(uint32_t *)(item + 0x18);
+        if (++count == 0x40) {
+            ((void(__thiscall *)(void *, void *, int32_t))(*(void ***)collector)[0])(collector, collector + 4, 0x40);
+            count = 0;
+        }
+    }
+};
+// When the item's object stands (x at +0x80, z at +0x88) within a rectangle {low x, low z, high x, high z}, onto the list
+// after it {objects, capacity, count}, grown by GROW(capacity + 16) when full.
+template <uintptr_t GROW> struct TakeInRect {
+    static void take(const float *query, uint8_t *item) {
+        uint8_t *object = *(uint8_t **)(item + 0x18);
+        float *rect = *(float **)(query + 6);
+        float x = *(float *)(object + 0x80), z = *(float *)(object + 0x88);
+        if (!(x >= rect[0]) || !(x <= rect[2]) || !(z >= rect[1]) || !(z <= rect[3])) return;
+        uint32_t *list = (uint32_t *)(rect + 4);
+        if ((int32_t)list[2] >= (int32_t)list[1]) ((void(__thiscall *)(void *, int32_t))GROW)(list, (int32_t)list[1] + 0x10);
+        ((void **)(uintptr_t)list[0])[list[2]++] = object;
+    }
+};
+
+// ---- QuadTree::WalkBox(query, n, low, size): as WalkPlanes for a query box {low xyz, high xyz, +0x18 where items go}:
+// the items overlapping it are taken (Take); the children are taken whole or walked again -----------------------------------
+template <class Take, uintptr_t TAKE_ALL> static void __thiscall quad_walk_box(QuadTreeBox *tree, const float *query, int32_t n, const float *low, const float *size) {
     g_quad_walks++;
     QuadNode *node = &tree->nodes[n];
     if (node->other || node->item_count)
@@ -341,13 +368,7 @@ template <uintptr_t TAKE_ALL> static void __thiscall quad_walk_box(QuadTreeBox *
             if (!(box[0] <= query[3]) || !(box[3] >= query[0]) || !(box[1] <= query[4]) || !(box[4] >= query[1]) || !(box[2] <= query[5]) ||
                 !(box[5] >= query[2]))
                 continue;
-            uint8_t *collector = *(uint8_t **)(query + 6);
-            int32_t &count = *(int32_t *)(collector + 0x104);
-            ((uint32_t *)(collector + 4))[count] = *(uint32_t *)(node->items + i * 0x20 + 0x18);
-            if (++count == 0x40) {
-                ((void(__thiscall *)(void *, void *, int32_t))(*(void ***)collector)[0])(collector, collector + 4, 0x40);
-                count = 0;
-            }
+            Take::take(query, node->items + i * 0x20);
         }
     if (!(node->flags & 0xf)) return;
     int32_t first = n * 4 + 1;
@@ -358,13 +379,13 @@ template <uintptr_t TAKE_ALL> static void __thiscall quad_walk_box(QuadTreeBox *
         QuadNode *child = &tree->nodes[first + k];
         int32_t seen = box_overlaps_bounds(query, child_low[0], high_x, child->low, child->high, child_low[1], high_z);
         if (seen == 2) ((void(__thiscall *)(void *, int32_t, const float *))TAKE_ALL)(tree, first + k, query);
-        else if (seen == 1) quad_walk_box<TAKE_ALL>(tree, query, first + k, (const float *)child_low, (const float *)half);
+        else if (seen == 1) quad_walk_box<Take, TAKE_ALL>(tree, query, first + k, (const float *)child_low, (const float *)half);
     }
 }
 static const uint8_t quad_walk_box_original[] = {0x83, 0xec, 0x20, 0x8b, 0x54, 0x24, 0x28, 0x6b};
-REWRITE("QuadTree::WalkBox", 0x7b8920, quad_walk_box_original, (&quad_walk_box<0x7b7390>), &g_quad_walks);
-REWRITE("QuadTree::WalkBox", 0xb5e460, quad_walk_box_original, (&quad_walk_box<0xb5d780>), &g_quad_walks);
-REWRITE("QuadTree::WalkBox", 0xb74580, quad_walk_box_original, (&quad_walk_box<0xb732b0>), &g_quad_walks);
+REWRITE("QuadTree::WalkBox", 0x7b8920, quad_walk_box_original, (&quad_walk_box<TakeInto64, 0x7b7390>), &g_quad_walks);
+REWRITE("QuadTree::WalkBox", 0xb5e460, quad_walk_box_original, (&quad_walk_box<TakeInto64, 0xb5d780>), &g_quad_walks);
+REWRITE("QuadTree::WalkBox", 0xb74580, quad_walk_box_original, (&quad_walk_box<TakeInto64, 0xb732b0>), &g_quad_walks);
 
 // ---- QuadTree::TakeAll(n, query): node n is wholly inside the view: every item in use is shown (SHOW, with a 0 when
 // SHOW_TAKES_ZERO, or virtual slot 8 of its object) and the children it marks are taken the same way -----------------------
@@ -385,3 +406,20 @@ template <uintptr_t SHOW, bool SHOW_TAKES_ZERO> static void __thiscall quad_take
 static const uint8_t quad_take_all_original[] = {0x53, 0x55, 0x56, 0x8b, 0x74, 0x24, 0x10, 0x6b};
 REWRITE("QuadTree::TakeAll", 0x7b85f0, quad_take_all_original, (&quad_take_all<0, false>), &g_quad_walks);
 REWRITE("QuadTree::TakeAll", 0xb5e950, quad_take_all_original, (&quad_take_all<0xb563b0, true>), &g_quad_walks);
+
+// ---- QuadTree::TakeAllBox(n, query): node n is wholly inside the query box: every item in use is taken (Take), and the
+// marked children the same way ------------------------------------------------------------------------------------------------
+template <class Take> static void __thiscall quad_take_all_box(QuadTreeBox *tree, int32_t n, const float *query) {
+    g_quad_walks++;
+    QuadNode *node = &tree->nodes[n];
+    if (node->other || node->item_count)
+        for (int32_t i = 0; i < (int32_t)node->item_count; i++)
+            if (*(uint32_t *)(node->items + i * 0x20 + 0x1c)) Take::take(query, node->items + i * 0x20);
+    if (!(node->flags & 0xf)) return;
+    for (int32_t k = 0; k < 4; k++)
+        if (node->flags & (1u << k)) quad_take_all_box<Take>(tree, n * 4 + 1 + k, query);
+}
+static const uint8_t quad_take_all_rect_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+static const uint8_t quad_walk_box_rect_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("QuadTree::TakeAllRect", 0x7b6d80, quad_take_all_rect_original, (&quad_take_all_box<TakeInRect<0x72af00>>), &g_quad_walks);
+REWRITE("QuadTree::WalkBoxRect", 0x7b82d0, quad_walk_box_rect_original, (&quad_walk_box<TakeInRect<0x72af00>, 0x7b6d80>), &g_quad_walks);
