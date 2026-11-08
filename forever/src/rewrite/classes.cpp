@@ -7,9 +7,9 @@
 // A member set-up step: kind 0 stores value at +off, 1 stores a byte, 2 stores a pointer to +value of the object itself,
 // 3 calls fn on the member at +off (thiscall) with up to four values, 5 stores the global at value as it is now, 6 gives
 // the reference member at +off the empty handle (0x805750) and links it (+8) into that handle's list, 7 stores the shared
-// empty wide string (0xBD0490).
+// empty wide string (0xBD0490), 8 stores the constructor's argument number value (1-4).
 struct ClassOp {
-    uint32_t kind, off, value, fn, count, args[4];
+    uint32_t kind, off, value, fn, count, args[4], globals;   // bit i of globals: args[i] is a global, read as the call is made
 };
 // A saved field: a record of `size` bytes made by `ctor` with up to four values (name, type, flags, offset...), then
 // given its kind's `table`.
@@ -28,9 +28,10 @@ static void *call_with(uintptr_t fn, void *self, uint32_t count, const uint32_t 
 
 // ---- Class::Construct(description, a, b) ------------------------------------------------------------------------------------
 static volatile long g_class_constructs;
-template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT, uintptr_t NAME = 0>
-static void *__thiscall class_construct(uint8_t *self, uint8_t *description, uint32_t a, uint32_t b) {
+template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT, uintptr_t NAME>
+static void *class_construct_body(uint8_t *self, uint8_t *description, uint32_t a, uint32_t b, uint32_t c) {
     g_class_constructs++;
+    const uint32_t given[5] = {0, (uint32_t)(uintptr_t)description, a, b, c};
     ((void(__thiscall *)(void *, void *, uint32_t, uint32_t))0x800a80)(self, description ? description : *(uint8_t **)DESCRIPTION, a, b);
     for (uint32_t k = 0; k < OP_COUNT; k++) {
         const ClassOp &op = OPS[k];
@@ -47,7 +48,12 @@ static void *__thiscall class_construct(uint8_t *self, uint8_t *description, uin
             link[1] = (uint32_t)(uintptr_t)head;
             head[0] = (uint32_t)(uintptr_t)link;
         } else if (op.kind == 7) *(void **)(self + op.off) = ((void *(__fastcall *)(uint32_t))0xbd0490)(1);
-        else call_with(op.fn, self + op.off, op.count, op.args);
+        else if (op.kind == 8) *(uint32_t *)(self + op.off) = given[op.value];
+        else {
+            uint32_t args[4];
+            for (uint32_t i = 0; i < 4; i++) args[i] = op.globals >> i & 1 ? *(uint32_t *)(uintptr_t)op.args[i] : op.args[i];
+            call_with(op.fn, self + op.off, op.count, args);
+        }
     }
     uint8_t *used = description ? description : *(uint8_t **)DESCRIPTION;
     if (!used[4]) {
@@ -80,5 +86,14 @@ static void *__thiscall class_construct(uint8_t *self, uint8_t *description, uin
     }
     if (!description) (*(uint8_t **)DESCRIPTION)[4] = 1;
     return self;
+}
+// The constructors take (description, a, b) or (description, a, b, c).
+template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT, uintptr_t NAME = 0>
+static void *__thiscall class_construct(uint8_t *self, uint8_t *description, uint32_t a, uint32_t b) {
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAME>(self, description, a, b, 0);
+}
+template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT, uintptr_t NAME = 0>
+static void *__thiscall class_construct4(uint8_t *self, uint8_t *description, uint32_t a, uint32_t b, uint32_t c) {
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAME>(self, description, a, b, c);
 }
 #include "class_list.inc"

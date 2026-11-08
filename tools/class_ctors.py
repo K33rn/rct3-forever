@@ -17,6 +17,9 @@ taken = set()
 for f in os.listdir(os.path.join(HERE, 'forever', 'src', 'rewrite')):
     if f != 'class_list.inc':
         taken |= {int(x, 16) for x in re.findall(r'(?:REWRITE\("[^"]+",|^[A-Z_0-9]+\()\s*(0x[0-9a-fA-F]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', f), encoding='utf-8').read(), re.M)}
+mine = set()   # the constructors taken before (functions.csv already calls them rewritten)
+if os.path.exists(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc')):
+    mine = {int(x, 16) for x in re.findall(r'^REWRITE\("[^"]+", (0x[0-9a-f]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc')).read(), re.M)}
 REG = r'(e[a-d]x|e[sd]i|ebp|ebx)'
 num = lambda s: int(s, 0)
 
@@ -35,8 +38,9 @@ class Reject(Exception):
 
 def parse(a, n):
     ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
-    if not ins or ins[-1].address + ins[-1].size != a + n or ins[-1].mnemonic != 'ret' or ins[-1].op_str != '0xc':
-        raise Reject('not ret 0xc')
+    if not ins or ins[-1].address + ins[-1].size != a + n or ins[-1].mnemonic != 'ret' or ins[-1].op_str not in ('0xc', '0x10'):
+        raise Reject('not ret 0xc or 0x10')
+    nargs = num(ins[-1].op_str) // 4
     t = [x.mnemonic + ' ' + x.op_str for x in ins]
     kb = [k for k, x in enumerate(t) if x == 'call 0x800a80']
     if len(kb) != 1:
@@ -88,6 +92,7 @@ def parse(a, n):
     # the members: up to the description's first-use check
     for r in ('eax', 'ecx', 'edx'):
         regs.pop(r, None)
+    depth -= 4 * len(pushed[-3:])
     pushed = []
     ops = []
     k = kb + 1
@@ -95,15 +100,12 @@ def parse(a, n):
         s = t[k]
         if re.fullmatch(r'(mov al, byte ptr|cmp byte ptr) \[' + REG + r' \+ 4\].*', s):
             break
-        if s == 'mov cl, 1' and t[k + 1] == 'call 0xbd0490':
-            m = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', t[k + 2])
-            if not m or not regs.get(m.group(1)) or regs[m.group(1)][0] != 'this':
-                raise Reject('empty string member')
-            ops.append((7, regs[m.group(1)][1] + num(m.group(2) or '0'), 0, 0, []))
-            for r in ('eax', 'ecx', 'edx'):
+        if s == 'mov cl, 1':
+            regs['ecx'] = ('cl1',)
+        elif s == 'call 0xbd0490' and regs.get('ecx') == ('cl1',):
+            for r in ('ecx', 'edx'):
                 regs.pop(r, None)
-            k += 3
-            continue
+            regs['eax'] = ('empty',)
         elif s == 'call 0x805750':
             # the reference member's empty handle, linked in: mov [M + 4], eax; mov eax, [eax + 0x20]; then the link at M + 8
             m = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', t[k + 1])
@@ -133,6 +135,10 @@ def parse(a, n):
                 ops.append((1, off, regs['e' + v[0] + 'x'][1] & 0xff, 0, []))
             elif v in regs and regs[v] and regs[v][0] == 'this' and m.group(1) == 'dword':
                 ops.append((2, off, regs[v][1], 0, []))
+            elif v in regs and regs[v] and regs[v][0] == 'arg' and m.group(1) == 'dword':
+                ops.append((8, off, regs[v][1], 0, []))
+            elif v == 'eax' and regs.get('eax') == ('empty',) and m.group(1) == 'dword':
+                ops.append((7, off, 0, 0, []))
             elif v in regs and regs[v] and regs[v][0] == 'global' and m.group(1) == 'dword':
                 ops.append((5, off, regs[v][1], 0, []))
             else:
@@ -149,10 +155,17 @@ def parse(a, n):
             regs[m.group(1)] = ('const', 0)
         elif (m := re.fullmatch(r'mov ' + REG + r', (0x[0-9a-f]+|\d+)', s)):
             regs[m.group(1)] = ('const', num(m.group(2)))
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
+            slot = num(m.group(2)) - depth - 4 * len(pushed)
+            if slot < 8 or slot % 4 or slot // 4 > nargs:
+                raise Reject('member load ' + s)
+            regs[m.group(1)] = ('arg', slot // 4)
         elif (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
-            pushed.append(num(m.group(1)))
+            pushed.append(('imm', num(m.group(1))))
         elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'const':
-            pushed.append(regs[m.group(1)][1])
+            pushed.append(('imm', regs[m.group(1)][1]))
+        elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'global':
+            pushed.append(('glob', regs[m.group(1)][1]))
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)):
             fn = num(m.group(1))
             this = regs.get('ecx')
@@ -231,7 +244,7 @@ def parse(a, n):
         if re.fullmatch(r'mov byte ptr \[e[a-d]x \+ 4\], 1', s) or re.fullmatch(r'mov eax, ' + REG, s):
             continue
         raise Reject('end: ' + s)
-    return desc, index, ops, fields, name
+    return desc, index, ops, fields, name, nargs
 
 
 out = ['// Saved classes\' constructors taken over by class_construct (classes.cpp); written by tools/class_ctors.py.']
@@ -239,21 +252,21 @@ done = total = 0
 reasons = {}
 for a, r in sorted(rows.items()):
     n = int(r['size'])
-    if r['status'] != 'documented' or a in taken or n < 150 or n > 4000:
+    if (r['status'] != 'documented' and a not in mine) or a in taken or n < 150 or n > 4000:
         continue
     if b'\xe8' not in bytes(img[a - BASE:a - BASE + n]) or 'call 0x800a80' not in [x.mnemonic + ' ' + x.op_str for x in md.disasm(bytes(img[a - BASE:a - BASE + n]), a)]:
         continue
     try:
-        desc, index, ops, fields, name = parse(a, n)
+        desc, index, ops, fields, name, nargs = parse(a, n)
     except (Reject, StopIteration, AttributeError, ValueError) as e:
         key = str(e)[:70]
         if os.environ.get('WHY') and key.startswith(os.environ['WHY']): print(hex(a), e)
         reasons[key] = reasons.get(key, 0) + 1
         continue
-    out.append(f'static const ClassOp class_{a:x}_ops[] = {{' + ', '.join(f'{{{k}, {o:#x}, {v:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(x) for x in args) or "0"}}}}}' for k, o, v, fn, args in ops) + '};' if ops else f'static const ClassOp class_{a:x}_ops[] = {{{{0, 0, 0, 0, 0, {{0}}}}}};')
+    out.append(f'static const ClassOp class_{a:x}_ops[] = {{' + ', '.join(f'{{{k}, {o:#x}, {v:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(x[1]) for x in args) or "0"}}}, {sum(1 << q for q, x in enumerate(args) if x[0] == "glob"):#x}}}' for k, o, v, fn, args in ops) + '};' if ops else f'static const ClassOp class_{a:x}_ops[] = {{{{0, 0, 0, 0, 0, {{0}}, 0}}}};')
     out.append(f'static const ClassField class_{a:x}_fields[] = {{' + ', '.join(f'{{{s:#x}, {c:#x}, {tb:#x}, {len(args)}, {{{", ".join(hex(x) for x in args) or "0"}}}}}' for s, c, tb, args in fields) + '};')
     out.append(f'static const uint8_t class_{a:x}_original[] = {{' + ', '.join(f'0x{b:02x}' for b in img[a - BASE:a - BASE + 7]) + '};')
-    out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{f', {name:#x}' if name else ''}>), &g_class_constructs);')
+    out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{'4' if nargs == 4 else ''}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{f', {name:#x}' if name else ''}>), &g_class_constructs);')
     done += 1
     total += n
 open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
