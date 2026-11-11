@@ -32,14 +32,226 @@ def ret_args(fn):
     return None
 
 
+def written(r, lines):
+    """Whether any of these instructions may change register r (a call changes eax, ecx and edx)."""
+    low = {'eax': 'al', 'ebx': 'bl', 'ecx': 'cl', 'edx': 'dl'}.get(r)
+    for x in lines:
+        if x.startswith('call') and r in ('eax', 'ecx', 'edx'):
+            return True
+        if re.match(r'(mov|lea|xor|or|and|add|sub|inc|dec|neg|not|shl|shr|sar|imul|movzx|movsx|setne|sete|xchg) (' + r + (('|' + low) if low else '') + r')', x) or x == 'pop ' + r:
+            return True
+    return False
+
+
+def walk_fields(ins, t, k0, regs0):
+    """The field registration, from the cast to the last field added or closed, followed value by value. Each field: a
+    record allocated (0xBCDFC0), constructed with plain values, given its table, then added (0x8087E0) to the class's
+    field list (L, the class's part + 0x1C) or to the list of a struct field made before (its +4, or L when that one is
+    null); a struct field may then be closed (its slot 0). Returns the entries in order -- (size, ctor, table, args,
+    parent) for a field, parent -1 for L or the entry index of the struct, and (0, 0, 0, [], entry) for a close -- and
+    the index of the last instruction taken."""
+    regs = dict(regs0)
+    stack, pushed, depth = {}, [], 0
+    entries, field_entry = [], {}   # field number -> its entry index once added
+    made = []                       # field number -> [size, ctor, args, table]
+    nulls = []                      # (null path address, field number) of records being made
+    tested, strict = None, False
+    adds = [q for q in range(k0, len(t)) if t[q] == 'call 0x8087e0']
+    if not adds:
+        raise Reject('fields')
+    last = adds[-1]
+    q = last + 1
+    while q < len(t) and re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]|mov ecx, ' + REG + r'|mov ecx, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]|call dword ptr \[e[a-d]x\]', t[q]):
+        if t[q].startswith('call'):
+            last = q
+        q += 1
+
+    def val(x):
+        if re.fullmatch(r'0x[0-9a-f]+|\d+', x):
+            return ('const', num(x))
+        return regs.get(x)
+
+    def plain(v):
+        if v and v[0] in ('const', 'imm'):
+            return v[1]
+        raise Reject('field argument %s' % (v,))
+
+    def forget(x):   # an instruction we don't follow: forget the register it writes
+        m = re.match(r'[a-z]+ (e[a-d]x|e[sd]i|ebp|[a-d]l)\b', x)
+        if m:
+            r = m.group(1)
+            regs.pop('e' + r[0] + 'x' if r.endswith('l') else r, None)
+
+    seen_cast = False
+    k = k0
+    while k <= last:
+        s = t[k]
+        if nulls and ins[k].address == nulls[-1][0]:
+            # the null path joins the made path here (je into it, past the constructor and table): keep what both agree on
+            _, i, regs_then, stack_then, depth_then = nulls.pop()
+            if depth != depth_then or made[i][1] is None or made[i][3] is None:
+                raise Reject('field merge')
+            # (null on the null path and the record on the made path is the record, which is null when not made)
+            agree = lambda v, then: then == v or (v == ('new', i) and then == ('const', 0))
+            regs = {r: v for r, v in regs.items() if agree(v, regs_then.get(r))}
+            stack = {o: v for o, v in stack.items() if agree(v, stack_then.get(o))}
+        if re.fullmatch(r'call dword ptr \[e[a-d]x \+ 4\]', s):
+            seen_cast = True
+        if s == 'call 0xbcdfc0' and seen_cast:
+            strict = True
+        if (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
+            pushed.append(('imm', num(m.group(1))))
+            depth += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)):
+            pushed.append(regs.get(m.group(1)))
+            depth += 4
+        elif (m := re.fullmatch(r'pop ' + REG, s)):
+            if not pushed:
+                raise Reject('field pop')
+            pushed.pop()
+            depth -= 4
+            regs.pop(m.group(1), None)
+        elif (m := re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', s)):
+            n = num(m.group(1))
+            depth -= n
+            del pushed[len(pushed) - n // 4:]
+        elif s == 'call 0xbcdfc0' and strict:
+            if not pushed or not pushed[-1] or pushed[-1][0] != 'imm' or len(field_entry) != len(made):
+                raise Reject('field allocation')
+            made.append([pushed[-1][1], None, None, None])
+            for r in ('ecx', 'edx'):
+                regs.pop(r, None)
+            regs['eax'] = ('new', len(made) - 1)
+        elif s == 'call 0x8087e0' and strict:
+            f = pushed.pop() if pushed else None
+            depth -= 4
+            lst = regs.get('ecx')
+            if not f or f[0] != 'new' or f[1] != len(made) - 1 or f[1] in field_entry or made[f[1]][3] is None or nulls:
+                raise Reject('field add')
+            if lst == ('L', 0x1c):
+                parent = -1
+            elif lst and lst[0] == 'list' and lst[1] in field_entry:
+                parent = field_entry[lst[1]]
+            else:
+                raise Reject('field list %s' % (lst,))
+            size, ctor, args, table = made[f[1]]
+            field_entry[f[1]] = len(entries)
+            entries.append((size, ctor, table, args, parent))
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+        elif (m := re.fullmatch(r'call dword ptr \[(e[a-d]x)\]', s)) and strict:
+            v, this = regs.get(m.group(1)), regs.get('ecx')
+            if not v or v[0] != 'vt' or this != ('new', v[1]) or v[1] not in field_entry:
+                raise Reject('field close')
+            entries.append((0, 0, 0, [], field_entry[v[1]]))
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)):
+            n = ret_args(num(m.group(1)))
+            if n is None or len(pushed) < n:
+                raise Reject('field call arguments: ' + s)
+            if strict:
+                this = regs.get('ecx')
+                if not this or this[0] != 'new' or this[1] != len(made) - 1 or made[-1][1] is not None or n > 4:
+                    raise Reject('field constructor: ' + s)
+                made[-1][1] = num(m.group(1))
+                made[-1][2] = [plain(x) for x in pushed[len(pushed) - n:]][::-1]
+            del pushed[len(pushed) - n:]
+            depth -= 4 * n
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+        elif s.startswith('call'):
+            if strict:
+                raise Reject('field call: ' + s)
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'\], (0x[0-9a-f]+)', s)) and strict:
+            v = regs.get(m.group(1))
+            if not v or v[0] != 'new' or v[1] != len(made) - 1 or made[-1][1] is None or made[-1][3] is not None:
+                raise Reject('field table: ' + s)
+            made[-1][3] = num(m.group(2))
+        elif (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (.+)', s)):
+            stack[num(m.group(1)) - depth] = val(m.group(2))
+        elif re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', s):
+            pass   # the exception state
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
+            regs[m.group(1)] = stack.get(num(m.group(2)) - depth)
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'new':
+            regs[m.group(1)] = ('vt', regs[m.group(2)][1])
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ 0x10\]', s)) and not strict:
+            regs[m.group(1)] = ('part10',)
+        elif (m := re.fullmatch(r'mov ' + REG + ', ' + REG, s)):
+            regs[m.group(1)] = regs.get(m.group(2))
+        elif (m := re.fullmatch(r'xor ' + REG + ', ' + REG, s)) and m.group(1) == m.group(2) and not (strict and nulls):
+            regs[m.group(1)] = ('const', 0)
+        elif (m := re.fullmatch(r'mov ' + REG + r', (0x[0-9a-f]+|\d+)', s)):
+            regs[m.group(1)] = ('const', num(m.group(2)))
+        elif (m := re.fullmatch(r'add ' + REG + ', ' + REG, s)) and not strict and ('part10',) in (regs.get(m.group(1)), regs.get(m.group(2))):
+            regs[m.group(1)] = ('L', 0)   # the class's part of the description: the description + its offset
+        elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ ' + REG + r'\]', s)) and not strict and ('part10',) in (regs.get(m.group(2)), regs.get(m.group(3))):
+            regs[m.group(1)] = ('L', 0)
+        elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'L':
+            regs[m.group(1)] = ('L', regs[m.group(1)][1] + num(m.group(2)))
+        elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] in ('L', 'new'):
+            base, off = regs[m.group(2)], num(m.group(3) or '0')
+            if base[0] == 'L':
+                regs[m.group(1)] = ('L', base[1] + off)
+            elif off == 4:
+                regs[m.group(1)] = ('list', base[1])
+            else:
+                raise Reject('field lea: ' + s)
+        elif (m := re.fullmatch(r'(?:test|cmp) ' + REG + ', ' + REG, s)):
+            tested = regs.get(m.group(1)) if (m.group(1) == m.group(2) or regs.get(m.group(2)) == ('const', 0)) else None
+        elif (m := re.fullmatch(r'je (0x[0-9a-f]+)', s)) and strict:
+            # the record not made: its null path (checked at the jmp that ends the made path)
+            if not tested or tested[0] != 'new' or tested[1] != len(made) - 1 or nulls:
+                raise Reject('field je')
+            nulls.append((num(m.group(1)), tested[1], dict(regs), dict(stack), depth))
+        elif (m := re.fullmatch(r'jmp (0x[0-9a-f]+)', s)) and strict:
+            # the null path sets the same places to null that the made path set to the record, then joins
+            if not nulls or ins[k + 1].address != nulls[-1][0]:
+                raise Reject('field jmp')
+            join, i = num(m.group(1)), nulls.pop()[1]
+            j = k + 1
+            while ins[j].address != join:
+                x = t[j]
+                if (mm := re.fullmatch(r'xor ' + REG + ', ' + REG, x)) and mm.group(1) == mm.group(2) and regs.get(mm.group(1)) == ('new', i):
+                    pass
+                elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, x)) and regs.get(mm.group(2)) == ('const', 0) and stack.get(num(mm.group(1)) - depth) == ('new', i):
+                    pass
+                else:
+                    raise Reject('field null path: ' + x)
+                j += 1
+            k = j
+            continue
+        elif (m := re.fullmatch(r'jne (0x[0-9a-f]+)', s)) and strict:
+            # a struct's list, or L when the struct is null: lea ecx, [S + 4]; jne; mov ecx, [L kept]
+            lst = regs.get('ecx')
+            mm = re.fullmatch(r'mov ecx, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 1])
+            mr = re.fullmatch(r'mov ecx, ' + REG, t[k + 1])
+            fallback = stack.get(num(mm.group(1)) - depth) if mm else regs.get(mr.group(1)) if mr else None
+            if not lst or lst[0] != 'list' or tested != ('new', lst[1]) or fallback != ('L', 0x1c) or ins[k + 2].address != num(m.group(1)):
+                raise Reject('field fallback')
+            k += 2
+            continue
+        elif strict:
+            raise Reject('field step: ' + s)
+        elif not s.startswith(('j', 'cmp', 'test')):
+            forget(s)
+        k += 1
+    if not entries or len(field_entry) != len(made) or nulls:
+        raise Reject('fields')
+    return entries, last
+
+
 class Reject(Exception):
     pass
 
 
 def parse(a, n):
     ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
-    if not ins or ins[-1].address + ins[-1].size != a + n or ins[-1].mnemonic != 'ret' or ins[-1].op_str not in ('0xc', '0x10'):
-        raise Reject('not ret 0xc or 0x10')
+    if not ins or ins[-1].address + ins[-1].size != a + n or ins[-1].mnemonic != 'ret' or ins[-1].op_str not in ('8', '0xc', '0x10', '0x14', '0x18', '0x1c'):
+        raise Reject('not 2 to 7 arguments')
     nargs = num(ins[-1].op_str) // 4
     t = [x.mnemonic + ' ' + x.op_str for x in ins]
     kb = [k for k, x in enumerate(t) if x == 'call 0x800a80']
@@ -69,6 +281,8 @@ def parse(a, n):
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - depth
             regs[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 else None
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (4))?\]', s)) and regs.get(m.group(2)) == ('arg', 2):
+            regs[m.group(1)] = ('arg2at', num(m.group(3) or '0'))   # the base's two values given through a pointer
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x[0-9a-f]{7})\]', s)) and after_jne:
             if regs.get(m.group(1)) != ('arg', 1):
                 raise Reject('desc')
@@ -85,8 +299,10 @@ def parse(a, n):
         else:
             raise Reject('start: ' + s)
         after_jne = ins[k].mnemonic == 'jne'
-    if desc is None or len(pushed) < 3 or [p for p in pushed[-3:]][::-1] != [('desc',), ('arg', 2), ('arg', 3)]:
+    base = [p for p in pushed[-3:]][::-1]
+    if desc is None or len(pushed) < 3 or base not in ([('desc',), ('arg', 2), ('arg', 3)], [('desc',), ('arg2at', 0), ('arg2at', 4)]):
         raise Reject('base arguments %s' % pushed[-3:])
+    pair = base[1][0] == 'arg2at'
     if regs.get('ecx') != ('this', 0):
         raise Reject('base this')
     # the members: up to the description's first-use check
@@ -95,6 +311,7 @@ def parse(a, n):
     depth -= 4 * len(pushed[-3:])
     pushed = []
     ops = []
+    pending = None   # a member made with new, until it is stored
     k = kb + 1
     while k < len(t):
         s = t[k]
@@ -106,8 +323,10 @@ def parse(a, n):
             for r in ('ecx', 'edx'):
                 regs.pop(r, None)
             regs['eax'] = ('empty',)
-        elif s == 'call 0x805750':
-            # the reference member's empty handle, linked in: mov [M + 4], eax; mov eax, [eax + 0x20]; then the link at M + 8
+        elif s == 'call 0x805750' or (s == 'call 0x805700' and regs.get('ecx') and regs['ecx'][0] == 'const'):
+            # the reference member's handle, linked in: mov [M + 4], eax; mov eax, [eax + 0x20]; then the link at M + 8.
+            # 0x805750 gives the empty handle, 0x805700 (Handle::For) the handle of the object in ecx (a plain value)
+            target = None if s == 'call 0x805750' else regs['ecx'][1]
             m = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', t[k + 1])
             if not m or not regs.get(m.group(1)) or regs[m.group(1)][0] != 'this' or num(m.group(2) or '0') != 4:
                 raise Reject('reference member')
@@ -119,7 +338,7 @@ def parse(a, n):
             link = re.fullmatch(r'mov dword ptr \[' + REG + r'\], ' + REG, t[k + 4]).group(1)
             if regs.get(link) != ('this', member + 8):
                 raise Reject('reference link register')
-            ops.append((6, member, 0, 0, []))
+            ops.append((6, member, 0, 0, []) if target is None else (9, member, target, 0, []))
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
             k += 9
@@ -131,7 +350,7 @@ def parse(a, n):
                 ops.append((0 if m.group(1) == 'dword' else 1, off, num(v), 0, []))
             elif v in regs and regs[v] and regs[v][0] == 'const' and m.group(1) == 'dword':
                 ops.append((0, off, regs[v][1], 0, []))
-            elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'const' and m.group(1) == 'byte':
+            elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] in ('const', 'const8') and m.group(1) == 'byte':
                 ops.append((1, off, regs['e' + v[0] + 'x'][1] & 0xff, 0, []))
             elif v in regs and regs[v] and regs[v][0] == 'this' and m.group(1) == 'dword':
                 ops.append((2, off, regs[v][1], 0, []))
@@ -139,6 +358,10 @@ def parse(a, n):
                 ops.append((8, off, regs[v][1], 0, []))
             elif v == 'eax' and regs.get('eax') == ('empty',) and m.group(1) == 'dword':
                 ops.append((7, off, 0, 0, []))
+            elif v == 'eax' and regs.get('eax') == ('made',) and m.group(1) == 'dword' and pending and pending[3] == len(ops):
+                ops.append((10, off, pending[0], pending[1], pending[2]))   # nothing else happened since the new: same order
+                pending = None
+                regs.pop('eax', None)
             elif v in regs and regs[v] and regs[v][0] == 'global' and m.group(1) == 'dword':
                 ops.append((5, off, regs[v][1], 0, []))
             else:
@@ -155,9 +378,28 @@ def parse(a, n):
             regs[m.group(1)] = ('const', 0)
         elif (m := re.fullmatch(r'mov ' + REG + r', (0x[0-9a-f]+|\d+)', s)):
             regs[m.group(1)] = ('const', num(m.group(2)))
+        elif (m := re.fullmatch(r'or ' + REG + r', 0xffffffff', s)):
+            regs[m.group(1)] = ('const', 0xffffffff)
+        elif (m := re.fullmatch(r'(?:mov ([a-d])l, (?:(0x[0-9a-f]+|\d+)|([a-d])l)|xor ([a-d])l, \4l)', s)):
+            # a low byte written: the whole register stays known when it was, else only its low byte is (const8)
+            r = m.group(1) or m.group(4)
+            if m.group(4):
+                byte = 0
+            elif m.group(2):
+                byte = num(m.group(2)) & 0xff
+            else:
+                src = regs.get('e' + m.group(3) + 'x')
+                byte = src[1] & 0xff if src and src[0] in ('const', 'const8') else None
+            full = regs.get('e' + r + 'x')
+            if byte is None:
+                regs.pop('e' + r + 'x', None)
+            elif full and full[0] == 'const':
+                regs['e' + r + 'x'] = ('const', full[1] & ~0xff | byte)
+            else:
+                regs['e' + r + 'x'] = ('const8', byte)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - depth - 4 * len(pushed)
-            if slot < 8 or slot % 4 or slot // 4 > nargs:
+            if slot < 4 or slot % 4 or slot // 4 > nargs:   # slot 4: the description as given (registration reloads it)
                 raise Reject('member load ' + s)
             regs[m.group(1)] = ('arg', slot // 4)
         elif (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
@@ -166,6 +408,46 @@ def parse(a, n):
             pushed.append(('imm', regs[m.group(1)][1]))
         elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'global':
             pushed.append(('glob', regs[m.group(1)][1]))
+        elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'this':
+            pushed.append(('self', regs[m.group(1)][1]))   # a pointer into the object itself
+        elif s == 'call 0xbcdfc0':
+            # a member made with new: size bytes (0xBCDFC0), the class's constructor run on them with plain values (or
+            # null when there was no memory); the result is stored into the member later (kind 10, see the store)
+            if len(pushed) != 1 or pushed[0][0] != 'imm' or pending or t[k + 1] != 'add esp, 4':
+                raise Reject('member new')
+            size, pushed, j = pushed[0][1], [], k + 2
+            while not t[j].startswith('je '):
+                ok = re.fullmatch(r'mov (dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax|byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+))', t[j]) or t[j] == 'test eax, eax' or (
+                    (m := re.fullmatch(r'cmp eax, ' + REG, t[j])) and regs.get(m.group(1)) == ('const', 0))
+                if not ok:
+                    raise Reject('member new check: ' + t[j])
+                j += 1
+            null_at = num(t[j][3:])
+            args = []
+            j += 1
+            while t[j] != 'mov ecx, eax':
+                if (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', t[j])):
+                    args.append(('imm', num(m.group(1))))
+                elif (m := re.fullmatch(r'push ' + REG, t[j])) and regs.get(m.group(1)) and regs[m.group(1)][0] in ('const', 'global'):
+                    args.append(('imm' if regs[m.group(1)][0] == 'const' else 'glob', regs[m.group(1)][1]))
+                else:
+                    raise Reject('member new argument: ' + t[j])
+                j += 1
+            cm = re.fullmatch(r'call (0x[0-9a-f]+)', t[j + 1])
+            if not cm or len(args) > 4 or ret_args(num(cm.group(1))) != len(args) or not t[j + 2].startswith('jmp ') or ins[j + 3].address != null_at or t[j + 3] != 'xor eax, eax' or ins[j + 4].address != num(t[j + 2][4:]):
+                raise Reject('member new shape')
+            pending = (size, num(cm.group(1)), args[::-1], len(ops))
+            for r in ('ecx', 'edx'):
+                regs.pop(r, None)
+            regs['eax'] = ('made',)
+            k = j + 4
+            continue
+        elif s == 'call 0xddcf99' and len(pushed) == 5:
+            # the compiler's array constructor (eh_vector_constructor_iterator, stdcall): array, size, count, ctor, dtor
+            ops.append((11, 0, 0, 0xddcf99, pushed[::-1]))
+            pushed = []
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)):
             fn = num(m.group(1))
             this = regs.get('ecx')
@@ -175,7 +457,7 @@ def parse(a, n):
             pushed = []
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
-        elif re.fullmatch(r'(test|cmp) (e[sd]i|ebp|ebx), (e[sd]i|ebp|ebx)', s) or s in ('xor bl, bl', 'mov bl, 1') or ins[k].mnemonic == 'jne':
+        elif re.fullmatch(r'(test|cmp) (e[sd]i|ebp|ebx), (e[sd]i|ebp|ebx)', s) or ins[k].mnemonic == 'jne':
             pass
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x[0-9a-f]{7})\]', s)) and num(m.group(2)) == desc:
             regs[m.group(1)] = ('desc',)
@@ -188,63 +470,62 @@ def parse(a, n):
         k += 1
     if pushed:
         raise Reject('left pushed')
+    if pending:
+        raise Reject('member new not stored')
     # the registration: the standard cast, then field blocks
     rest = t[k:]
-    name = 0
-    if 'call 0xbeca40' in rest:
-        q = rest.index('call 0xbeca40')
+    # the name steps: a text made from a name and a value (0xBECA40), given to the description (0xBECC10), let go
+    # (0xBEC5E0). The value is a constant, or a member's offset (sub R, esi with R pointing into the object).
+    names = []
+    steps = [q for q, x in enumerate(rest) if x == 'call 0xbeca40']
+    if len(steps) > 2:
+        raise Reject('name steps')
+    for q in steps:
         if rest[q + 1:q + 2] != ['push eax'] or not any(x == 'call 0xbecc10' for x in rest[q:q + 5]) or not any(x == 'call 0xbec5e0' for x in rest[q:q + 9]):
             raise Reject('name step')
-        name = num(re.fullmatch(r'push (0x[0-9a-f]+)', rest[q - 2]).group(1))
+        if not re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', rest[q - 1]):
+            raise Reject('name text')
+        nm = re.fullmatch(r'push (0x[0-9a-f]+)', rest[q - 2])
+        if not nm:
+            raise Reject('name')
+        if (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', rest[q - 3])):
+            value = num(m.group(1))
+        elif (m := re.fullmatch(r'push ' + REG, rest[q - 3])) and re.fullmatch(r'sub ' + m.group(1) + r', ' + REG, rest[q - 4]):
+            r, base = m.group(1), rest[q - 4].split(', ')[1]
+            # the register must still hold what the member set-up left in it: nothing in between writes it
+            if regs.get(base) != ('this', 0) or not regs.get(r) or regs[r][0] != 'this' or written(r, rest[:q - 4]) or written(base, rest[:q - 4]):
+                raise Reject('name offset')
+            value = regs[r][1]
+        elif (m := re.fullmatch(r'push ' + REG, rest[q - 3])) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'const' and not written(m.group(1), rest[:q - 3]):
+            value = regs[m.group(1)][1]
+        else:
+            raise Reject('name value: ' + rest[q - 3])
+        names.append((num(nm.group(1)), value))
+    if steps:
+        q = steps[0]
         rest = rest[:q] + [x for x in rest[q:] if x not in ('call 0xbeca40', 'call 0xbecc10', 'call 0xbec5e0')]
     calls = [s for s in rest if s.startswith('call')]
-    if calls[:1] != ['call dword ptr [eax + 4]']:
+    if not calls or not re.fullmatch(r'call dword ptr \[e[a-d]x \+ 4\]', calls[0]):   # the description's slot 1, through any register
         raise Reject('cast: %s' % calls[:1])
     index = next((num(m.group(1)) for s in rest for m in [re.fullmatch(r'mov e[a-d]x, dword ptr \[(0x[0-9a-f]{7})\]', s)] if m and num(m.group(1)) != desc), None)
     if index is None:
         raise Reject('index')
-    fields = []
-    j = 0
-    other = [s for s in calls[1:] if s not in ('call 0xbcdfc0', 'call 0x8087e0')]
-    if len(other) != calls.count('call 0xbcdfc0'):
-        raise Reject('registration calls: %s' % other[:3])
-    for m_ in re.finditer('', ''):
-        pass
-    k2 = 0
-    while k2 < len(rest):
-        if rest[k2] == 'call 0xbcdfc0':
-            size = num(re.fullmatch(r'push (0x[0-9a-f]+|\d+)', rest[k2 - 1]).group(1))
-            c = next(q for q in range(k2 + 1, len(rest)) if rest[q].startswith('call ') and rest[q] != 'call 0x8087e0')
-            args = []
-            q = c - 1
-            while q > k2 and not rest[q].startswith('mov ecx'):
-                q -= 1
-            for p in rest[k2 + 1:c]:
-                if (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', p)):
-                    args.append(num(m.group(1)))
-                elif (m := re.fullmatch(r'push ' + REG, p)):
-                    if not regs.get(m.group(1)) or regs[m.group(1)][0] != 'const':
-                        raise Reject('field argument ' + p)
-                    args.append(regs[m.group(1)][1])
-            table = re.fullmatch(r'mov dword ptr \[' + REG + r'\], (0x[0-9a-f]+)', rest[c + 1])
-            if not table or len(args) > 4 or ret_args(num(rest[c][5:])) != len(args):
-                raise Reject('field shape')
-            fields.append((size, num(rest[c][5:]), num(table.group(2)), args[::-1]))
-            k2 = c
-        k2 += 1
-    if calls.count('call 0x8087e0') != len(fields) or not fields:
-        raise Reject('fields')
+    fields, last = walk_fields(ins, t, k, regs)
     # the end: the mark, then giving back
-    tail = rest[max(i for i, s in enumerate(rest) if s == 'call 0x8087e0') + 1:]
+    tail = t[last + 1:]
+    instance = 0   # a global given the object at the end (the class's instance; the test checks what it holds)
     for s in tail:
+        if (m := re.fullmatch(r'mov dword ptr \[(0x[0-9a-f]{7})\], (e[sd]i|ebp|ebx)', s)) and not instance:
+            instance = num(m.group(1))
+            continue
         if re.fullmatch(r'(pop|push) ' + REG, s) or s.startswith(('mov ecx, dword ptr [esp', 'mov dword ptr fs:[0]', 'add esp', 'ret', 'je', 'jne', 'test', 'cmp byte ptr [esp', 'mov al, byte ptr [esp')):
             continue
         if re.fullmatch(r'mov (e[a-d]x), dword ptr \[(0x[0-9a-f]{7})\]', s) and num(s.split('[')[1][:-1]) == desc:
             continue
-        if re.fullmatch(r'mov byte ptr \[e[a-d]x \+ 4\], 1', s) or re.fullmatch(r'mov eax, ' + REG, s):
+        if re.fullmatch(r'mov byte ptr \[e[a-d]x \+ 4\], 1', s) or re.fullmatch(r'mov eax, ' + REG, s) or re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s):   # this reloaded to return it (the test checks the result)
             continue
         raise Reject('end: ' + s)
-    return desc, index, ops, fields, name, nargs
+    return desc, index, ops, fields, names, nargs, pair, instance
 
 
 out = ['// Saved classes\' constructors taken over by class_construct (classes.cpp); written by tools/class_ctors.py.']
@@ -257,16 +538,23 @@ for a, r in sorted(rows.items()):
     if b'\xe8' not in bytes(img[a - BASE:a - BASE + n]) or 'call 0x800a80' not in [x.mnemonic + ' ' + x.op_str for x in md.disasm(bytes(img[a - BASE:a - BASE + n]), a)]:
         continue
     try:
-        desc, index, ops, fields, name, nargs = parse(a, n)
+        desc, index, ops, fields, names, nargs, pair, instance = parse(a, n)
     except (Reject, StopIteration, AttributeError, ValueError) as e:
         key = str(e)[:70]
-        if os.environ.get('WHY') and key.startswith(os.environ['WHY']): print(hex(a), e)
+        if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e)
         reasons[key] = reasons.get(key, 0) + 1
         continue
-    out.append(f'static const ClassOp class_{a:x}_ops[] = {{' + ', '.join(f'{{{k}, {o:#x}, {v:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(x[1]) for x in args) or "0"}}}, {sum(1 << q for q, x in enumerate(args) if x[0] == "glob"):#x}}}' for k, o, v, fn, args in ops) + '};' if ops else f'static const ClassOp class_{a:x}_ops[] = {{{{0, 0, 0, 0, 0, {{0}}, 0}}}};')
-    out.append(f'static const ClassField class_{a:x}_fields[] = {{' + ', '.join(f'{{{s:#x}, {c:#x}, {tb:#x}, {len(args)}, {{{", ".join(hex(x) for x in args) or "0"}}}}}' for s, c, tb, args in fields) + '};')
+    out.append(f'static const ClassOp class_{a:x}_ops[] = {{' + ', '.join(f'{{{k}, {o:#x}, {v:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(x[1]) for x in args) or "0"}}}, {sum(1 << q for q, x in enumerate(args) if x[0] == "glob"):#x}, {sum(1 << q for q, x in enumerate(args) if x[0] == "self"):#x}}}' for k, o, v, fn, args in ops) + '};' if ops else f'static const ClassOp class_{a:x}_ops[] = {{{{0, 0, 0, 0, 0, {{0}}, 0, 0}}}};')
+    out.append(f'static const ClassField class_{a:x}_fields[] = {{' + ', '.join(f'{{{s:#x}, {c:#x}, {tb:#x}, {len(args)}, {{{", ".join(hex(x) for x in args) or "0"}}}, {par}}}' for s, c, tb, args, par in fields) + '};')
     out.append(f'static const uint8_t class_{a:x}_original[] = {{' + ', '.join(f'0x{b:02x}' for b in img[a - BASE:a - BASE + 7]) + '};')
-    out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{'4' if nargs == 4 else ''}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{f', {name:#x}' if name else ''}>), &g_class_constructs);')
+    if names:
+        out.append(f'static const ClassName class_{a:x}_names[] = {{' + ', '.join(f'{{{nm:#x}, {v:#x}}}' for nm, v in names) + '};')
+    tail = f', class_{a:x}_names, {len(names)}' if names else ''
+    if pair or instance:
+        tail = (tail or ', nullptr, 0') + (', true' if pair else ', false')
+    if instance:
+        tail += f', {instance:#x}'
+    out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{nargs if nargs != 3 else ""}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{tail}>), &g_class_constructs);')
     done += 1
     total += n
 open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')

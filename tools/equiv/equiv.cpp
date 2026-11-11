@@ -458,6 +458,8 @@ static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, (void *)(uintptr_t)a); record(0x81, (void *)(uintptr_t)b); record(0x81, (void *)(uintptr_t)c); record(0x81, (void *)(uintptr_t)d); return self;
 }
 static void __thiscall stub_field_add(void *list, void *field) { record(0x82, list); record(0x82, field); }
+static void __thiscall stub_struct_total(void *field) { record(0x86, field); }   // a struct field closed (slot 0, 0x808D90)
+static void *__thiscall stub_list_member(void *self, void *list) { record(0x87, self); record(0x87, list); return self; }   // ListMember::ListMember (0xCD2B30)
 static void *__thiscall stub_name_make(uint32_t *text, uintptr_t name, uint32_t zero) { record(0x83, (void *)name); record(0x83, (void *)(uintptr_t)zero); text[0] = 0x4e414d45; return text; }
 static void __thiscall stub_name_give(void *description, uint32_t *text) { record(0x84, description); record(0x84, (void *)(uintptr_t)text[0]); }
 static void __thiscall stub_name_free(uint32_t *text) { record(0x85, (void *)(uintptr_t)text[0]); }
@@ -489,6 +491,13 @@ static void *__fastcall stub_handle_of(void *object) {
     record(0x805700, object);
     return arena<void>(0x380);
 }
+static void *__fastcall stub_member_handle_of(void *object) {   // Class::Construct's: a handle with a list at 0x600
+    record(0x805700, object);
+    return arena<void>(0x600);
+}
+static uintptr_t g_class_description;   // the default description global of the Class::Construct copy being checked
+static uint32_t g_class_args;           // and how many arguments it takes (2 to 7)
+static uintptr_t g_class_instance;      // and the global it gives the object at the end, if any
 static uintptr_t g_query_id;   // the global holding the id the copy being checked asks for
 
 // start-up globals: the module list's start-up (fills {table, error} from the arena), the global's constructor
@@ -5182,7 +5191,8 @@ static std::vector<Test> tests() {
     window_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(window_construct);
     // Class::Construct: a description (given or the class's default, a game global set in the call) registered or not,
-    // its object info through slot 1 (as the aimed walk's); every function called is a stand-in
+    // its object info through slot 1 (as the aimed walk's); every function called is a stand-in. Handle::For (0x805700)
+    // gives a handle of its own (0x600, with a list), so reference members to an object are told from empty ones.
     Test class_construct{0x549780,
                          [=](Rng &r) {
                              fresh(r);
@@ -5201,24 +5211,71 @@ static std::vector<Test> tests() {
                              handle[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(0x780);
                              arena<uint32_t>(0x780)[0] = (uint32_t)(uintptr_t)arena<void>(0x790);
                              arena<uint32_t>(0x790)[1] = (uint32_t)(uintptr_t)arena<void>(0x780);
+                             uint32_t *object_handle = arena<uint32_t>(0x600);   // the handle Handle::For gives, with a list
+                             object_handle[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(0x680);
+                             arena<uint32_t>(0x680)[0] = (uint32_t)(uintptr_t)arena<void>(0x690);
+                             arena<uint32_t>(0x690)[1] = (uint32_t)(uintptr_t)arena<void>(0x680);
                              arena<uint32_t>(0x8800)[0] = 100;
                              arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)description : 0;
                              arena<uint32_t>(0x10)[1] = r.next();
                              arena<uint32_t>(0x10)[2] = r.next();
                              arena<uint32_t>(0x10)[3] = r.range(0, 4);
+                             for (int k = 0; k < 4; k++) arena<uint32_t>(0x40)[k] = r.next();   // arguments 5 to 7
+                             arena<uint32_t>(0x60)[0] = r.next();   // the pair a two-argument constructor's second argument points to
+                             arena<uint32_t>(0x60)[1] = r.next();
                              arena<uint32_t>(CALL_LOG)[0] = 0;
                          },
                          [](void *fn) {
-                             for (uintptr_t d : {(uintptr_t)0x12f5240, (uintptr_t)0x12f524c, (uintptr_t)0x12f5298, (uintptr_t)0x12f5668, (uintptr_t)0x130b5d4, (uintptr_t)0x1341808, (uintptr_t)0x13427b8, (uintptr_t)0x13cee54}) *(void **)d = arena<void>(0x4000);
+                             *(void **)g_class_description = arena<void>(0x4000);
+                             if (g_class_instance) *(uint32_t *)g_class_instance = 0;
                              *(int32_t *)0x130ac18 = arena<int32_t>(0x10)[3];
                              g_null_handle = arena<void>(0x700);
                              uint32_t *a = arena<uint32_t>(0x10);
-                             void *made = ((void *(__thiscall *)(void *, void *, uint32_t, uint32_t))fn)(arena<void>(0x100), (void *)(uintptr_t)a[0], a[1], a[2]);
+                             uint32_t *x = arena<uint32_t>(0x40);
+                             void *self = arena<void>(0x100), *d = (void *)(uintptr_t)a[0], *made = nullptr;
+                             typedef uint32_t U;
+                             switch (g_class_args) {
+                             case 2: made = ((void *(__thiscall *)(void *, void *, void *))fn)(self, d, arena<void>(0x60)); break;
+                             case 3: made = ((void *(__thiscall *)(void *, void *, U, U))fn)(self, d, a[1], a[2]); break;
+                             case 4: made = ((void *(__thiscall *)(void *, void *, U, U, U))fn)(self, d, a[1], a[2], a[3]); break;
+                             case 5: made = ((void *(__thiscall *)(void *, void *, U, U, U, U))fn)(self, d, a[1], a[2], a[3], x[0]); break;
+                             case 6: made = ((void *(__thiscall *)(void *, void *, U, U, U, U, U))fn)(self, d, a[1], a[2], a[3], x[0], x[1]); break;
+                             default: made = ((void *(__thiscall *)(void *, void *, U, U, U, U, U, U))fn)(self, d, a[1], a[2], a[3], x[0], x[1], x[2]); break;
+                             }
+                             if (g_class_instance)   // what the instance global was given, as an arena offset, so the memory check sees it
+                                 arena<uint32_t>(0x70)[0] = *(uint32_t *)g_class_instance - (uint32_t)(uintptr_t)arena<void>(0);
                              return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
                          }};
-    class_construct.prepare = [](const rewrite::Entry *) {
+    class_construct.prepare = [](const rewrite::Entry *e) {
+        // The copy's default description: the game global it loads before building the base (mov r32, [global]); and
+        // how many arguments it takes, from its ret N after the exception frame is put back (mov fs:[0], ecx).
+        const uint8_t *code = (const uint8_t *)e->at;
+        g_class_description = 0;
+        for (int k = 0; k < 0x80 && !(code[k] == 0xe8 && (uintptr_t)(code + k + 5) + *(const int32_t *)(code + k + 1) == 0x800a80); k++) {
+            uint32_t at = code[k] == 0xa1 ? *(const uint32_t *)(code + k + 1) : code[k] == 0x8b && (code[k + 1] & 0xc7) == 0x05 ? *(const uint32_t *)(code + k + 2) : 0;
+            if (at >= 0x1000000 && at < 0x1400000 && code[k - 1] != 0x64) g_class_description = at;
+        }
+        g_class_args = 3;
+        g_class_instance = 0;
+        for (int k = 0x80; k < 0x1000; k++)
+            if (code[k] == 0x64 && code[k + 1] == 0x89 && code[k + 2] == 0x0d && !*(const uint32_t *)(code + k + 3)) {
+                for (int m = k + 7; m < k + 24; m++)
+                    if (code[m] == 0xc2 && code[m + 2] == 0) {
+                        g_class_args = code[m + 1] / 4;
+                        // the instance global: a store of a register to a game global (mov [g], esi/edi/ebp/ebx) just before
+                        for (int q = k - 0x20; q < m; q++)
+                            if (code[q] == 0x89 && (code[q + 1] & 0xc7) == 0x05 && (code[q + 1] >> 3 & 7) >= 3 && *(const uint32_t *)(code + q + 2) >= 0x1000000 &&
+                                *(const uint32_t *)(code + q + 2) < 0x1400000)
+                                g_class_instance = *(const uint32_t *)(code + q + 2);
+                        break;
+                    }
+                break;
+            }
+        if (!g_class_description) g_class_description = (uintptr_t)arena<void>(0x3ff0);   // not found: the test then fails
         stubs_for_now({{0x800a80, (void *)stub_class_base}, {0x8087e0, (void *)stub_field_add}, {0xbcdfc0, (void *)stub_plain_alloc}, {0xbd0490, (void *)stub_wide_empty_shared},
-                       {0xbeca40, (void *)stub_name_make}, {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}, {0x8088c0, (void *)stub_built4}});
+                       {0xbeca40, (void *)stub_name_make}, {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}, {0x8088c0, (void *)stub_built4},
+                       {0x805700, (void *)stub_member_handle_of}, {0x808d90, (void *)stub_struct_total},
+                       {0xcd2b30, (void *)stub_list_member}, {0x441030, (void *)stub_member_built}});
     };
     class_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(class_construct);
