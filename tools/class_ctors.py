@@ -526,7 +526,29 @@ def parse(a, n):
     # what it does with the object then: gives it to a global (instance), links a member into a game list (the list a
     # global points to, or one inside what it points to), or counts it in a global; followed value by value
     instance, count, link, step = 0, 0, None, 0
+
+    def byte_of(r):   # the known low byte of a register, if any
+        v = regs.get('e' + r[0] + 'x')
+        return v[1] & 0xff if v and v[0] in ('const', 'const8') else None
+
     for s in tail:
+        # a plain value stored into the object after the registration: nothing between touches the object, so it joins
+        # the member steps' end
+        if (m := re.fullmatch(r'mov (dword|byte) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
+            off, v = regs[m.group(2)][1] + num(m.group(3) or '0'), m.group(4)
+            if re.fullmatch(r'0x[0-9a-f]+|\d+', v):
+                value = num(v)
+            elif m.group(1) == 'byte' and len(v) == 2 and byte_of(v) is not None:
+                value = byte_of(v)
+            elif m.group(1) == 'dword' and regs.get(v) and regs[v][0] == 'const':
+                value = regs[v][1]
+            else:
+                value = None
+            if value is not None:
+                ops.append((0 if m.group(1) == 'dword' else 1, off, value, 0, []))
+                continue
+        if (m := re.fullmatch(r'mov byte ptr \[e[a-d]x \+ 4\], ([a-d]l)', s)) and byte_of(m.group(1)) == 1:
+            continue   # the mark, from a register holding 1
         if (m := re.fullmatch(r'mov dword ptr \[(0x[0-9a-f]{7})\], (e[sd]i|ebp|ebx)', s)) and not instance and regs.get(m.group(2)) == ('this', 0):
             instance = num(m.group(1))
             continue

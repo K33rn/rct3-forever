@@ -11379,7 +11379,7 @@ address,size,name,callers,status
 0x84bf60,512,,1,documented
 0x84c160,443,,2,documented
 0x84c320,128,,6,documented
-0x84cae0,1247,,19,documented
+0x84cae0,1247,Class::Construct,19,rewritten
 0x84cff0,124,,1,documented
 0x84d070,105,Factory::Create,1,rewritten
 0x84d0e0,30,DeletingDestructor,1,rewritten
@@ -13810,7 +13810,7 @@ address,size,name,callers,status
 0x981dd0,267,,2,documented
 0x981ee0,221,,10,documented
 0x981fd0,290,,31,documented
-0x982100,670,,2,documented
+0x982100,670,Class::Construct,2,rewritten
 0x9823e0,377,,1,documented
 0x9825c0,154,,1,documented
 0x982660,190,,1,documented
@@ -16426,7 +16426,7 @@ address,size,name,callers,status
 0xa8ae20,77,,1,documented
 0xa8ae70,48,ObjectArray::Free,2,rewritten
 0xa8aea0,258,ObjectArray::SetCapacity,1,rewritten
-0xa8afb0,1154,,2,documented
+0xa8afb0,1154,Class::Construct,2,rewritten
 0xa8b4b0,286,,1,documented
 0xa8b5d0,180,,1,documented
 0xa8b690,536,,5,documented
@@ -18788,7 +18788,7 @@ address,size,name,callers,status
 0xb84390,1121,,4,documented
 0xb84800,229,,16,documented
 0xb848f0,188,,5,documented
-0xb849b0,800,,3,documented
+0xb849b0,800,Class::Construct,3,rewritten
 0xb84d00,105,Factory::Create,1,rewritten
 0xb84d70,30,DeletingDestructor,1,rewritten
 0xb84d90,30,DeletingDestructor,3,rewritten

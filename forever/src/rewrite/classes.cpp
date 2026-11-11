@@ -128,7 +128,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         }
     }
     if (!description) (*(uint8_t **)DESCRIPTION)[4] = 1;
-    if (TAIL) {
+    if constexpr (TAIL != nullptr) {
         if (TAIL->link) {
             uint8_t *list = *(uint8_t **)TAIL->link;
             link_before((uint32_t *)(self + TAIL->member), TAIL->link_at < 0 ? (uint32_t *)list : *(uint32_t **)(list + TAIL->link_at));

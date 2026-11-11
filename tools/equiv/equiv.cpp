@@ -460,6 +460,7 @@ static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t
 static void __thiscall stub_field_add(void *list, void *field) { record(0x82, list); record(0x82, field); }
 static void __thiscall stub_struct_total(void *field) { record(0x86, field); }   // a struct field closed (slot 0, 0x808D90)
 static void *__thiscall stub_list_member(void *self, void *list) { record(0x87, self); record(0x87, list); return self; }   // ListMember::ListMember (0xCD2B30)
+static void *__thiscall stub_member_built1(void *self, void *a) { record(0x88, self); record(0x88, a); return self; }   // a member constructor given one value (0x981EE0: the object it belongs to)
 static void *__thiscall stub_name_make(uint32_t *text, uintptr_t name, uint32_t zero) { record(0x83, (void *)name); record(0x83, (void *)(uintptr_t)zero); text[0] = 0x4e414d45; return text; }
 static void __thiscall stub_name_give(void *description, uint32_t *text) { record(0x84, description); record(0x84, (void *)(uintptr_t)text[0]); }
 static void __thiscall stub_name_free(uint32_t *text) { record(0x85, (void *)(uintptr_t)text[0]); }
@@ -5294,7 +5295,8 @@ static std::vector<Test> tests() {
         stubs_for_now({{0x800a80, (void *)stub_class_base}, {0x8087e0, (void *)stub_field_add}, {0xbcdfc0, (void *)stub_plain_alloc}, {0xbd0490, (void *)stub_wide_empty_shared},
                        {0xbeca40, (void *)stub_name_make}, {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}, {0x8088c0, (void *)stub_built4},
                        {0x805700, (void *)stub_member_handle_of}, {0x808d90, (void *)stub_struct_total},
-                       {0xcd2b30, (void *)stub_list_member}, {0x441030, (void *)stub_member_built}});
+                       {0xcd2b30, (void *)stub_list_member}, {0x441030, (void *)stub_member_built}, {0x981ee0, (void *)stub_member_built1},
+                       {0x84ae30, (void *)stub_member_built}});
     };
     class_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(class_construct);
