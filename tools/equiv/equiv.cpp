@@ -498,6 +498,7 @@ static void *__fastcall stub_member_handle_of(void *object) {   // Class::Constr
 static uintptr_t g_class_description;   // the default description global of the Class::Construct copy being checked
 static uint32_t g_class_args;           // and how many arguments it takes (2 to 7)
 static uintptr_t g_class_instance;      // and the global it gives the object at the end, if any
+static uintptr_t g_class_tail_globals[4];   // and the globals it reads at the end (a game list, a count), if any
 static uintptr_t g_query_id;   // the global holding the id the copy being checked asks for
 
 // start-up globals: the module list's start-up (fills {table, error} from the arena), the global's constructor
@@ -5228,6 +5229,13 @@ static std::vector<Test> tests() {
                          [](void *fn) {
                              *(void **)g_class_description = arena<void>(0x4000);
                              if (g_class_instance) *(uint32_t *)g_class_instance = 0;
+                             // a game list for the end's globals: what they point to (0x7C0) is a list head, and at +0x14 holds another (0x7E0)
+                             uint32_t *list = arena<uint32_t>(0x7c0), *inner = arena<uint32_t>(0x7e0);
+                             list[0] = (uint32_t)(uintptr_t)arena<void>(0x7b0), arena<uint32_t>(0x7b0)[1] = (uint32_t)(uintptr_t)list;
+                             list[5] = (uint32_t)(uintptr_t)inner;
+                             inner[0] = (uint32_t)(uintptr_t)arena<void>(0x7f0), arena<uint32_t>(0x7f0)[1] = (uint32_t)(uintptr_t)inner;
+                             for (uintptr_t g : g_class_tail_globals)
+                                 if (g) *(void **)g = list;
                              *(int32_t *)0x130ac18 = arena<int32_t>(0x10)[3];
                              g_null_handle = arena<void>(0x700);
                              uint32_t *a = arena<uint32_t>(0x10);
@@ -5244,6 +5252,8 @@ static std::vector<Test> tests() {
                              }
                              if (g_class_instance)   // what the instance global was given, as an arena offset, so the memory check sees it
                                  arena<uint32_t>(0x70)[0] = *(uint32_t *)g_class_instance - (uint32_t)(uintptr_t)arena<void>(0);
+                             for (int i = 0; i < 4; i++)   // what the end left in them (a count goes up by one)
+                                 if (g_class_tail_globals[i]) arena<uint32_t>(0x74)[i] = *(uint32_t *)g_class_tail_globals[i] - (uint32_t)(uintptr_t)arena<void>(0);
                              return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
                          }};
     class_construct.prepare = [](const rewrite::Entry *e) {
@@ -5257,6 +5267,7 @@ static std::vector<Test> tests() {
         }
         g_class_args = 3;
         g_class_instance = 0;
+        memset(g_class_tail_globals, 0, sizeof g_class_tail_globals);
         for (int k = 0x80; k < 0x1000; k++)
             if (code[k] == 0x64 && code[k + 1] == 0x89 && code[k + 2] == 0x0d && !*(const uint32_t *)(code + k + 3)) {
                 for (int m = k + 7; m < k + 24; m++)
@@ -5267,6 +5278,14 @@ static std::vector<Test> tests() {
                             if (code[q] == 0x89 && (code[q + 1] & 0xc7) == 0x05 && (code[q + 1] >> 3 & 7) >= 3 && *(const uint32_t *)(code + q + 2) >= 0x1000000 &&
                                 *(const uint32_t *)(code + q + 2) < 0x1400000)
                                 g_class_instance = *(const uint32_t *)(code + q + 2);
+                        // the globals the end reads after the last field is added (mov eax, [g] / mov r32, [g]), the default description aside
+                        int last = 0, used = 0;
+                        for (int q = 0; q < k; q++)
+                            if (code[q] == 0xe8 && (uintptr_t)(code + q + 5) + *(const int32_t *)(code + q + 1) == 0x8087e0) last = q;
+                        for (int q = last; q < k && used < 4; q++) {
+                            uint32_t g = code[q] == 0xa1 ? *(const uint32_t *)(code + q + 1) : code[q] == 0x8b && (code[q + 1] & 0xc7) == 0x05 ? *(const uint32_t *)(code + q + 2) : 0;
+                            if (g >= 0x1000000 && g < 0x1400000 && g != g_class_description && g != g_class_instance) g_class_tail_globals[used++] = g;
+                        }
                         break;
                     }
                 break;

@@ -27,6 +27,21 @@ struct ClassField {
 struct ClassName {
     uint32_t name, value;
 };
+// What a constructor does with the object at the end: links its member at +member into a game list (the list the global
+// link points to, or the list at +link_at of what it points to), counts it in the global count, gives it to instance.
+struct ClassTail {
+    uintptr_t instance, link;
+    int32_t link_at;
+    uint32_t member;
+    uintptr_t count;
+};
+// Links node (next, previous) into a circular list just after its head.
+static void link_before(uint32_t *node, uint32_t *head) {
+    node[0] = head[0];
+    ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)node;
+    node[1] = (uint32_t)(uintptr_t)head;
+    head[0] = (uint32_t)(uintptr_t)node;
+}
 static void *call_with(uintptr_t fn, void *self, uint32_t count, const uint32_t *args) {
     switch (count) {
     case 0: return ((void *(__thiscall *)(void *))fn)(self);
@@ -40,8 +55,8 @@ static void *call_with(uintptr_t fn, void *self, uint32_t count, const uint32_t 
 // ---- Class::Construct(description, a, b) ------------------------------------------------------------------------------------
 static volatile long g_class_constructs;
 // given[1..7]: the constructor's arguments, the description first. The base gets the next two, or (PAIR) the two values
-// the second one points to. INSTANCE: a global given the object at the end.
-template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT, const ClassName *NAMES, uint32_t NAME_COUNT, bool PAIR, uintptr_t INSTANCE>
+// the second one points to. TAIL: what it does with the object at the end, if anything.
+template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT, const ClassName *NAMES, uint32_t NAME_COUNT, bool PAIR, const ClassTail *TAIL>
 static void *class_construct_body(uint8_t *self, const uint32_t *given) {
     g_class_constructs++;
     uint8_t *description = (uint8_t *)(uintptr_t)given[1];
@@ -56,13 +71,10 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 6 || op.kind == 9) {
             uint8_t *handle = op.kind == 6 ? ((uint8_t * (__cdecl *)())0x805750)() : ((uint8_t * (__fastcall *)(uintptr_t))0x805700)(op.value);
             *(uint8_t **)(self + op.off + 4) = handle;
-            uint32_t *link = (uint32_t *)(self + op.off + 8), *head = *(uint32_t **)(handle + 0x20);
-            link[0] = head[0];
-            ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)link;
-            link[1] = (uint32_t)(uintptr_t)head;
-            head[0] = (uint32_t)(uintptr_t)link;
+            link_before((uint32_t *)(self + op.off + 8), *(uint32_t **)(handle + 0x20));
         } else if (op.kind == 7) *(void **)(self + op.off) = ((void *(__fastcall *)(uint32_t))0xbd0490)(1);
         else if (op.kind == 8) *(uint32_t *)(self + op.off) = given[op.value];
+        else if (op.kind == 12) self[op.off] = (uint8_t)given[op.value];   // an argument's low byte
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)
@@ -116,44 +128,51 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         }
     }
     if (!description) (*(uint8_t **)DESCRIPTION)[4] = 1;
-    if (INSTANCE) *(uint8_t **)INSTANCE = self;   // the class's instance
+    if (TAIL) {
+        if (TAIL->link) {
+            uint8_t *list = *(uint8_t **)TAIL->link;
+            link_before((uint32_t *)(self + TAIL->member), TAIL->link_at < 0 ? (uint32_t *)list : *(uint32_t **)(list + TAIL->link_at));
+        }
+        if (TAIL->count) ++*(uint32_t *)TAIL->count;
+        if (TAIL->instance) *(uint8_t **)TAIL->instance = self;
+    }
     return self;
 }
 // The constructors take the description and one to six more arguments (thiscall: the callee pops them).
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, uintptr_t INSTANCE = 0>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr>
 static void *__thiscall class_construct2(uint8_t *self, uint32_t d, uint32_t a) {
     const uint32_t given[8] = {0, d, a};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, INSTANCE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, uintptr_t INSTANCE = 0>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr>
 static void *__thiscall class_construct(uint8_t *self, uint32_t d, uint32_t a, uint32_t b) {
     const uint32_t given[8] = {0, d, a, b};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, INSTANCE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, uintptr_t INSTANCE = 0>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr>
 static void *__thiscall class_construct4(uint8_t *self, uint32_t d, uint32_t a, uint32_t b, uint32_t c) {
     const uint32_t given[8] = {0, d, a, b, c};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, INSTANCE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, uintptr_t INSTANCE = 0>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr>
 static void *__thiscall class_construct5(uint8_t *self, uint32_t d, uint32_t a, uint32_t b, uint32_t c, uint32_t e) {
     const uint32_t given[8] = {0, d, a, b, c, e};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, INSTANCE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, uintptr_t INSTANCE = 0>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr>
 static void *__thiscall class_construct6(uint8_t *self, uint32_t d, uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f) {
     const uint32_t given[8] = {0, d, a, b, c, e, f};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, INSTANCE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, uintptr_t INSTANCE = 0>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr>
 static void *__thiscall class_construct7(uint8_t *self, uint32_t d, uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f, uint32_t g) {
     const uint32_t given[8] = {0, d, a, b, c, e, f, g};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, INSTANCE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL>(self, given);
 }
 #include "class_list.inc"

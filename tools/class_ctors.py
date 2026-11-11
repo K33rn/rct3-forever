@@ -241,7 +241,7 @@ def walk_fields(ins, t, k0, regs0):
         k += 1
     if not entries or len(field_entry) != len(made) or nulls:
         raise Reject('fields')
-    return entries, last
+    return entries, last, regs
 
 
 class Reject(Exception):
@@ -312,6 +312,7 @@ def parse(a, n):
     pushed = []
     ops = []
     pending = None   # a member made with new, until it is stored
+    dirty = set()    # argument slots the constructor wrote over (its locals reuse them): no longer the argument
     k = kb + 1
     while k < len(t):
         s = t[k]
@@ -356,6 +357,8 @@ def parse(a, n):
                 ops.append((2, off, regs[v][1], 0, []))
             elif v in regs and regs[v] and regs[v][0] == 'arg' and m.group(1) == 'dword':
                 ops.append((8, off, regs[v][1], 0, []))
+            elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'arg8' and m.group(1) == 'byte':
+                ops.append((12, off, regs['e' + v[0] + 'x'][1], 0, []))   # an argument's low byte (a bool)
             elif v == 'eax' and regs.get('eax') == ('empty',) and m.group(1) == 'dword':
                 ops.append((7, off, 0, 0, []))
             elif v == 'eax' and regs.get('eax') == ('made',) and m.group(1) == 'dword' and pending and pending[3] == len(ops):
@@ -366,8 +369,10 @@ def parse(a, n):
                 ops.append((5, off, regs[v][1], 0, []))
             else:
                 raise Reject('member store: ' + s)
-        elif re.fullmatch(r'mov (dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], .*', s):
-            pass
+        elif (m := re.fullmatch(r'mov (dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], .*', s)):
+            slot = num(m.group(2)) - depth - 4 * len(pushed)
+            if slot >= 4:
+                dirty.add(slot // 4)
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
             regs[m.group(1)] = ('this', regs[m.group(2)][1] + num(m.group(3)))
         elif (m := re.fullmatch(r'lea ecx, \[(e[a-d]x|e[sd]i|ebp|ebx)\]', s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'this':
@@ -399,9 +404,14 @@ def parse(a, n):
                 regs['e' + r + 'x'] = ('const8', byte)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - depth - 4 * len(pushed)
-            if slot < 4 or slot % 4 or slot // 4 > nargs:   # slot 4: the description as given (registration reloads it)
+            if slot < 4 or slot % 4 or slot // 4 > nargs or slot // 4 in dirty:   # slot 4: the description as given (registration reloads it)
                 raise Reject('member load ' + s)
             regs[m.group(1)] = ('arg', slot // 4)
+        elif (m := re.fullmatch(r'mov ([a-d])l, byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
+            slot = num(m.group(2)) - depth - 4 * len(pushed)
+            if slot < 8 or slot % 4 or slot // 4 > nargs or slot // 4 in dirty:
+                raise Reject('member byte load ' + s)
+            regs['e' + m.group(1) + 'x'] = ('arg8', slot // 4)   # only the low byte is the argument's
         elif (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
             pushed.append(('imm', num(m.group(1))))
         elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'const':
@@ -510,22 +520,67 @@ def parse(a, n):
     index = next((num(m.group(1)) for s in rest for m in [re.fullmatch(r'mov e[a-d]x, dword ptr \[(0x[0-9a-f]{7})\]', s)] if m and num(m.group(1)) != desc), None)
     if index is None:
         raise Reject('index')
-    fields, last = walk_fields(ins, t, k, regs)
+    fields, last, regs = walk_fields(ins, t, k, regs)
     # the end: the mark, then giving back
     tail = t[last + 1:]
-    instance = 0   # a global given the object at the end (the class's instance; the test checks what it holds)
+    # what it does with the object then: gives it to a global (instance), links a member into a game list (the list a
+    # global points to, or one inside what it points to), or counts it in a global; followed value by value
+    instance, count, link, step = 0, 0, None, 0
     for s in tail:
-        if (m := re.fullmatch(r'mov dword ptr \[(0x[0-9a-f]{7})\], (e[sd]i|ebp|ebx)', s)) and not instance:
+        if (m := re.fullmatch(r'mov dword ptr \[(0x[0-9a-f]{7})\], (e[sd]i|ebp|ebx)', s)) and not instance and regs.get(m.group(2)) == ('this', 0):
             instance = num(m.group(1))
             continue
-        if re.fullmatch(r'(pop|push) ' + REG, s) or s.startswith(('mov ecx, dword ptr [esp', 'mov dword ptr fs:[0]', 'add esp', 'ret', 'je', 'jne', 'test', 'cmp byte ptr [esp', 'mov al, byte ptr [esp')):
+        if (m := re.fullmatch(r'mov (e[a-d]x), dword ptr \[(0x[0-9a-f]{7})\]', s)):
+            regs[m.group(1)] = None if num(m.group(2)) == desc else ('gv', num(m.group(2)), -1)
             continue
-        if re.fullmatch(r'mov (e[a-d]x), dword ptr \[(0x[0-9a-f]{7})\]', s) and num(s.split('[')[1][:-1]) == desc:
+        if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'gv':
+            g = regs[m.group(2)]
+            if m.group(3) and g[2] < 0:
+                regs[m.group(1)] = ('gv', g[1], num(m.group(3)))   # the list inside what the global points to
+            elif not m.group(3):
+                regs[m.group(1)] = ('first', g)                    # the list's first node
+            else:
+                raise Reject('end load: ' + s)
             continue
-        if re.fullmatch(r'mov byte ptr \[e[a-d]x \+ 4\], 1', s) or re.fullmatch(r'mov eax, ' + REG, s) or re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s):   # this reloaded to return it (the test checks the result)
+        if (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
+            regs[m.group(1)] = ('this', regs[m.group(2)][1] + num(m.group(3)))
+            continue
+        if (m := re.fullmatch(r'mov dword ptr \[' + REG + r'( \+ 4)?\], ' + REG, s)):
+            at, plus4, v = regs.get(m.group(1)), bool(m.group(2)), regs.get(m.group(3))
+            # the link, in its order: node[0] = first; first[1] = node; node[1] = head; head[0] = node
+            if step == 0 and not plus4 and at and at[0] == 'this' and v and v[0] == 'first':
+                link, step = [v[1][1], v[1][2], at[1]], 1
+            elif step == 1 and plus4 and v == ('this', link[2]) and at == ('first', ('gv', link[0], link[1])):
+                step = 2
+            elif step == 2 and plus4 and at == ('this', link[2]) and v == ('gv', link[0], link[1]):
+                step = 3
+            elif step == 3 and not plus4 and at == ('gv', link[0], link[1]) and v == ('this', link[2]):
+                step = 4
+            else:
+                raise Reject('end store: ' + s)
+            continue
+        if (m := re.fullmatch(r'inc ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'gv' and regs[m.group(1)][2] < 0:
+            regs[m.group(1)] = ('counted', regs[m.group(1)][1])
+            continue
+        if (m := re.fullmatch(r'mov dword ptr \[(0x[0-9a-f]{7})\], ' + REG, s)) and regs.get(m.group(2)) == ('counted', num(m.group(1))) and not count:
+            count = num(m.group(1))
+            continue
+        if (m := re.fullmatch(r'pop ' + REG, s)):
+            regs.pop(m.group(1), None)
+            continue
+        if re.fullmatch(r'push ' + REG, s) or s.startswith(('mov dword ptr fs:[0]', 'add esp', 'ret', 'je', 'jne', 'test', 'cmp byte ptr [esp')):
+            continue
+        if re.fullmatch(r'mov byte ptr \[e[a-d]x \+ 4\], 1', s):
+            continue
+        if (m := re.fullmatch(r'mov (e[a-d]x|[a-d]l|e[sd]i|ebp|ebx), (?:byte ptr \[esp \+ (?:0x[0-9a-f]+|\d+)\]|' + REG + r'|dword ptr \[esp \+ (?:0x[0-9a-f]+|\d+)\])', s)):
+            r = m.group(1)
+            regs.pop(r if len(r) == 3 else 'e' + r[0] + 'x', None)   # the flag, or this reloaded to return it (the test checks the result)
             continue
         raise Reject('end: ' + s)
-    return desc, index, ops, fields, names, nargs, pair, instance
+    if step not in (0, 4):
+        raise Reject('end link')
+    tail_of = (instance, link, count) if (instance or link or count) else None
+    return desc, index, ops, fields, names, nargs, pair, tail_of
 
 
 out = ['// Saved classes\' constructors taken over by class_construct (classes.cpp); written by tools/class_ctors.py.']
@@ -538,7 +593,7 @@ for a, r in sorted(rows.items()):
     if b'\xe8' not in bytes(img[a - BASE:a - BASE + n]) or 'call 0x800a80' not in [x.mnemonic + ' ' + x.op_str for x in md.disasm(bytes(img[a - BASE:a - BASE + n]), a)]:
         continue
     try:
-        desc, index, ops, fields, names, nargs, pair, instance = parse(a, n)
+        desc, index, ops, fields, names, nargs, pair, tail_of = parse(a, n)
     except (Reject, StopIteration, AttributeError, ValueError) as e:
         key = str(e)[:70]
         if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e)
@@ -550,10 +605,13 @@ for a, r in sorted(rows.items()):
     if names:
         out.append(f'static const ClassName class_{a:x}_names[] = {{' + ', '.join(f'{{{nm:#x}, {v:#x}}}' for nm, v in names) + '};')
     tail = f', class_{a:x}_names, {len(names)}' if names else ''
-    if pair or instance:
+    if pair or tail_of:
         tail = (tail or ', nullptr, 0') + (', true' if pair else ', false')
-    if instance:
-        tail += f', {instance:#x}'
+    if tail_of:
+        instance, link, count = tail_of
+        link = link or [0, -1, 0]
+        out.append(f'static const ClassTail class_{a:x}_tail = {{{instance:#x}, {link[0]:#x}, {link[1]}, {link[2]:#x}, {count:#x}}};')
+        tail += f', &class_{a:x}_tail'
     out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{nargs if nargs != 3 else ""}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{tail}>), &g_class_constructs);')
     done += 1
     total += n

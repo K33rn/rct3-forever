@@ -8493,7 +8493,7 @@ address,size,name,callers,status
 0x736010,69,Interface::Member736010,4,rewritten
 0x736060,69,Interface::Member736010,1,rewritten
 0x736190,92,,1,documented
-0x7362f0,503,,3,documented
+0x7362f0,503,Class::Construct,3,rewritten
 0x736510,141,,7,documented
 0x736630,148,,3,documented
 0x7366d0,345,,2,documented
@@ -8619,7 +8619,7 @@ address,size,name,callers,status
 0x742280,56,,1,documented
 0x7422c0,54,,1,documented
 0x742360,25,Object::GetRef,7,rewritten
-0x742380,569,,2,documented
+0x742380,569,Class::Construct,2,rewritten
 0x7425e0,186,,1,documented
 0x7426a0,110,ObjectRef::SetMemberNear,1,rewritten
 0x742710,103,Reference::ResetAt742710,1,rewritten
@@ -10710,7 +10710,7 @@ address,size,name,callers,status
 0x815cd0,212,ReferenceField::Load,1,rewritten
 0x815db0,212,ReferenceField::Load,1,rewritten
 0x815ef0,70,,4,documented
-0x815f40,411,,6,documented
+0x815f40,411,Class::Construct,6,rewritten
 0x8160e0,30,DeletingDestructor,2,rewritten
 0x816100,159,ObjectRef::CallWith,6,rewritten
 0x8161a0,337,,2,documented
@@ -14579,7 +14579,7 @@ address,size,name,callers,status
 0x9cca70,36,,1,documented
 0x9ccaa0,36,,1,documented
 0x9ccad0,78,,1,documented
-0x9ccb20,1881,,3,documented
+0x9ccb20,1881,Class::Construct,3,rewritten
 0x9cd2a0,126,,1,documented
 0x9cd320,280,,1,documented
 0x9cd440,571,,1,documented
@@ -17617,7 +17617,7 @@ address,size,name,callers,status
 0xb10dc0,438,NamedTextRef::NamedTextRef,1,rewritten
 0xb10f80,26,Object::GetRef,4,rewritten
 0xb10fa0,272,,2,documented
-0xb110b0,402,,2,documented
+0xb110b0,402,Class::Construct,2,rewritten
 0xb11270,162,,0,documented
 0xb11320,284,,2,documented
 0xb115d0,48,ObjectArray::Free,2,rewritten
@@ -19170,7 +19170,7 @@ address,size,name,callers,status
 0xba4e40,99,,1,documented
 0xba4f10,180,NamedTextRef::NamedTextRef(text),1,rewritten
 0xba4fd0,30,DeletingDestructor,0,rewritten
-0xba5000,457,,2,documented
+0xba5000,457,Class::Construct,2,rewritten
 0xba5230,160,,1,documented
 0xba52d0,162,Text::FromA2C8E0,2,rewritten
 0xba5380,236,RefArray::Remove,1,rewritten
