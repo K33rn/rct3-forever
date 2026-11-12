@@ -257,3 +257,82 @@ static float *__fastcall vector4_transform(float *v, const float *m) {
 }
 static const uint8_t vector4_transform_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0xd9, 0x42, 0x20};
 REWRITE("Vector4::Transform", 0x505e90, vector4_transform_original, &vector4_transform, &g_vector_rotations);
+
+// ---- Skeleton::PartMatrix(): a bone's matrices from its part's matrix P (at the part +0x54 points to, +0xC0):
+// W (this +0xC0) = this +0x10's 4x4 times P, each value's three products in its order plus P's last row (times the
+// constant at 0xF264E0, 0 in the game, for the first three rows; rounded first for two of them); then the matrix this
+// +0x64 points to = this +0x80's 4x4 times W (rounded), each in its order. Returns the last value written. ----
+// How one copy orders its sums: step 1's three products per value, which of the first three rows' last products are
+// rounded first, and step 2's.
+struct PartOrders {
+    uint8_t first[16][3];
+    uint8_t last_rounded[12];
+    SumOrder second;
+};
+static float *skeleton_part(uint8_t *bone, const PartOrders &orders) {
+    const float *a = (const float *)(bone + 0x10), *p = (const float *)(*(uint8_t **)(bone + 0x54) + 0xc0);
+    const x87 zero = *(const float *)0xf264e0;
+    float w[16];
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++) {
+            const uint8_t *o = orders.first[4 * i + j];
+            x87 sum = (x87)a[4 * i + o[0]] * p[4 * o[0] + j];
+            sum = sum + (x87)a[4 * i + o[1]] * p[4 * o[1] + j];
+            sum = sum + (x87)a[4 * i + o[2]] * p[4 * o[2] + j];
+            if (i < 3) sum = sum + (orders.last_rounded[4 * i + j] ? (x87)rounded((x87)p[12 + j] * zero) : (x87)p[12 + j] * zero);
+            else sum = sum + p[12 + j];
+            w[4 * i + j] = rounded(sum);
+        }
+    for (int i = 0; i < 16; i++) ((volatile float *)(bone + 0xc0))[i] = w[i];
+    float *out = *(float **)(bone + 0x64);
+    multiply_ordered(out, (const float *)(bone + 0x80), w, orders.second);
+    return out;
+}
+static const PartOrders skeleton_part_orders = {
+    {{1, 0, 2}, {2, 1, 0}, {1, 0, 2}, {1, 0, 2}, {1, 2, 0}, {1, 0, 2}, {2, 0, 1}, {1, 2, 0}, {1, 0, 2}, {1, 0, 2}, {2, 0, 1}, {1, 2, 0}, {1, 0, 2}, {1, 0, 2}, {2, 0, 1}, {1, 2, 0}},
+    {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0},
+    {{3, 0, 2, 1}, {2, 1, 0, 3}, {1, 0, 3, 2}, {1, 3, 0, 2}, {0, 1, 3, 2}, {3, 2, 1, 0}, {3, 2, 0, 1}, {0, 3, 2, 1},
+     {0, 1, 3, 2}, {3, 2, 1, 0}, {3, 2, 0, 1}, {0, 3, 2, 1}, {0, 1, 3, 2}, {3, 2, 1, 0}, {3, 0, 2, 1}, {0, 3, 2, 1}}};
+static volatile long g_skeleton_parts;
+static uint32_t __thiscall skeleton_part_matrix(uint8_t *self) {
+    g_skeleton_parts++;
+    return ((volatile uint32_t *)skeleton_part(self, skeleton_part_orders))[15];
+}
+static const uint8_t skeleton_part_matrix_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x81, 0xec, 0x90, 0x00, 0x00, 0x00, 0x8b, 0x41, 0x10};
+REWRITE("Skeleton::PartMatrix", 0xc22d30, skeleton_part_matrix_original, &skeleton_part_matrix, &g_skeleton_parts);
+
+// ---- Skeleton::UpdateParts(): every bone on the skeleton's list (the object this +0x10 points to points to; the
+// first at its +0x58, each next at the bone's +0x58) given its matrices as Skeleton::PartMatrix does, in this copy's
+// orders; returns 0 (the list's end) ----
+static const PartOrders skeleton_update_parts_orders = {
+    {{1, 2, 0}, {2, 0, 1}, {2, 1, 0}, {1, 2, 0}, {2, 0, 1}, {0, 2, 1}, {1, 0, 2}, {2, 0, 1}, {2, 0, 1}, {0, 2, 1}, {1, 0, 2}, {2, 0, 1}, {2, 0, 1}, {0, 2, 1}, {1, 0, 2}, {2, 0, 1}},
+    {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0},
+    {{3, 2, 1, 0}, {0, 2, 1, 3}, {3, 1, 0, 2}, {2, 3, 1, 0}, {1, 3, 0, 2}, {0, 3, 2, 1}, {1, 0, 3, 2}, {1, 0, 3, 2},
+     {1, 3, 0, 2}, {0, 3, 2, 1}, {1, 3, 2, 0}, {1, 0, 3, 2}, {1, 3, 0, 2}, {0, 3, 2, 1}, {1, 2, 3, 0}, {0, 1, 3, 2}}};
+static uint32_t __thiscall skeleton_update_parts(uint8_t *self) {
+    g_skeleton_parts++;
+    for (uint8_t *bone = *(uint8_t **)(**(uint8_t ***)(self + 0x10) + 0x58); bone; bone = *(uint8_t **)(bone + 0x58))
+        skeleton_part(bone, skeleton_update_parts_orders);
+    return 0;
+}
+static const uint8_t skeleton_update_parts_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x81, 0xec, 0xd0, 0x00, 0x00, 0x00, 0x8b, 0x41, 0x10, 0x8b, 0x08, 0x8b};
+REWRITE("Skeleton::UpdateParts", 0xc286d0, skeleton_update_parts_original, &skeleton_update_parts, &g_skeleton_parts);
+
+// ---- Vector::TransformTwice(out, second, first): the point at this through the first 4x4 (with its translation),
+// then the result through the second, into out; the first result's z rounded where x and y use it but kept in the
+// FPU's precision for z; returns out ----
+static float *__thiscall vector_transform_twice(const float *v, float *out, const float *m2, const float *m1) {
+    g_vector_rotations++;
+    const float x = v[0], y = v[1], z = v[2];
+    const float tx = (float)((((x87)z * m1[8] + (x87)y * m1[4]) + (x87)x * m1[0]) + m1[12]);
+    const float ty = (float)((((x87)x * m1[1] + (x87)z * m1[9]) + (x87)y * m1[5]) + m1[13]);
+    const x87 tz = (((x87)x * m1[2] + (x87)z * m1[10]) + (x87)y * m1[6]) + m1[14];
+    const float tzr = rounded(tz);
+    volatile float *o = out;
+    o[0] = (float)((((x87)tzr * m2[8] + (x87)ty * m2[4]) + (x87)tx * m2[0]) + m2[12]);
+    o[1] = (float)((((x87)tzr * m2[9] + (x87)ty * m2[5]) + (x87)tx * m2[1]) + m2[13]);
+    o[2] = (float)(((tz * m2[10] + (x87)ty * m2[6]) + (x87)tx * m2[2]) + m2[14]);
+    return out;
+}
+static const uint8_t vector_transform_twice_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0x8b, 0x45, 0x10, 0xd9, 0x01, 0xd9};
+REWRITE("Vector::TransformTwice", 0xcb5690, vector_transform_twice_original, &vector_transform_twice, &g_vector_rotations);

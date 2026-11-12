@@ -21032,7 +21032,7 @@ address,size,name,callers,status
 0xc220e0,2469,,3,documented
 0xc22ad0,37,Block::Delete72F200,0,rewritten
 0xc22b60,115,,2,documented
-0xc22d30,1855,,0,documented
+0xc22d30,1855,Skeleton::PartMatrix,0,rewritten
 0xc23470,253,,5,documented
 0xc23570,78,,0,documented
 0xc235c0,134,,0,documented
@@ -21052,7 +21052,7 @@ address,size,name,callers,status
 0xc26020,3770,,2,documented
 0xc26ef0,3711,,3,documented
 0xc27d80,2384,,0,documented
-0xc286d0,1981,,0,documented
+0xc286d0,1981,Skeleton::UpdateParts,0,rewritten
 0xc28e90,130,,0,documented
 0xc28f20,582,,1,documented
 0xc291d0,291,,0,documented
@@ -22395,7 +22395,7 @@ address,size,name,callers,status
 0xcb3320,6673,,1,documented
 0xcb4f20,39,Vector::FreeField,2,rewritten
 0xcb5660,26,,0,documented
-0xcb5690,190,,0,documented
+0xcb5690,190,Vector::TransformTwice,0,rewritten
 0xcb5780,80,MEMBER_DTOR,1,rewritten
 0xcb5810,30,,2,documented
 0xcb58e0,22,,2,documented

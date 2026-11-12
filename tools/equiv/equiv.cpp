@@ -5637,6 +5637,45 @@ static std::vector<Test> tests() {
     quick(vector_rotate_in_place);
     Test vector4_transform{0x505e90, floats_setup, [=](void *fn) { return rel(((void *(__fastcall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x300))); }};
     quick(vector4_transform);
+    auto twice_setup = [=](Rng &r) {
+        floats_setup(r);
+        for (int i = 0; i < 16; i++) arena<float>(0x380)[i] = r.any_float();
+    };
+    Test vector_transform_twice{0xcb5690, twice_setup, [=](void *fn) { return rel(((void *(__thiscall *)(void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x400), arena<void>(0x380), arena<void>(0x300))); }};
+    quick(vector_transform_twice);
+    // Skeleton::PartMatrix: a bone (0x100: its matrices any floats), its part (0x800, matrix at +0xC0), out (0x400)
+    Test skeleton_part_matrix{0xc22d30,
+                              [=](Rng &r) {
+                                  fresh(r);
+                                  for (int i = 0; i < 0x40; i++) arena<float>(0x100)[i] = r.any_float();
+                                  for (int i = 0; i < 16; i++) arena<float>(0x8c0)[i] = r.any_float();
+                                  *(void **)arena<uint8_t>(0x100 + 0x54) = arena<void>(0x800);
+                                  *(void **)arena<uint8_t>(0x100 + 0x64) = arena<void>(0x400);
+                              },
+                              [](void *fn) { return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
+    quick(skeleton_part_matrix);
+    // Skeleton::UpdateParts: a skeleton (0x100) -> 0x180 -> object 0x200 whose +0x58 starts a list of up to three bones
+    // (0x400, 0x600, 0x800; each one's part the one before, the first's the object), outs at 0xA00 on
+    Test skeleton_update_parts{0xc286d0,
+                               [=](Rng &r) {
+                                   fresh(r);
+                                   *(void **)arena<uint8_t>(0x110) = arena<void>(0x180);
+                                   *(void **)arena<uint8_t>(0x180) = arena<void>(0x200);
+                                   for (int i = 0; i < 16; i++) arena<float>(0x2c0)[i] = r.any_float();
+                                   const int bones = r.range(0, 3);
+                                   uint32_t prev = 0x200;
+                                   for (int k = 0; k < bones; k++) {
+                                       const uint32_t at = 0x400 + 0x200 * k;
+                                       for (int i = 4; i < 0x40; i++) arena<float>(at)[i] = r.any_float();
+                                       *(void **)arena<uint8_t>(prev + 0x58) = arena<void>(at);
+                                       *(void **)arena<uint8_t>(at + 0x54) = arena<void>(prev);
+                                       *(void **)arena<uint8_t>(at + 0x64) = arena<void>(0xa00 + 0x40 * k);
+                                       prev = at;
+                                   }
+                                   *(void **)arena<uint8_t>(prev + 0x58) = nullptr;
+                               },
+                               [](void *fn) { return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
+    quick(skeleton_update_parts);
     // Effect::SetMatrix: an effect (0x100, its matrices any floats) and a matrix of any floats; which 0-5 (4, 5: none)
     Test effect_set_matrix{0xc957e0,
                            [=](Rng &r) {
