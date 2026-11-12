@@ -48,6 +48,14 @@ static inline void put_point(float *to, const x87 *from) {
     for (int i = 0; i < 3; i++) ((volatile float *)to)[i] = (float)from[i];
 }
 
+// A float negated as the FPU does it (fld then fchs: a signalling NaN comes out quiet, its sign flipped), kept from
+// being folded into the products it is used in.
+static inline x87 negated(float f) {
+    volatile x87 v = f;
+    volatile x87 m = -v;
+    return m;
+}
+
 static volatile long g_water_edges;
 
 // ---- Water::EdgeCut(vertices, indices, count, height, a, b, c, sum, lowest): the triangle a, a-b cut, a-c cut written at
@@ -161,3 +169,30 @@ static float *__fastcall water_edge_cut_five(float **vertices, uint32_t **indice
 }
 static const uint8_t water_edge_cut_five_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0xd9, 0x45, 0x0c, 0x8b, 0x45, 0x1c};
 REWRITE("Water::EdgeCutFive", 0x95e640, water_edge_cut_five_original, &water_edge_cut_five, &g_water_edges);
+
+// ---- Water::BoxPlanes(box, extra, planes, distances): a box's six planes from the three axes at this +0xE0 (0x10
+// apart): each axis (copied exactly) and its negative (through the FPU) as planes (0x10 apart); their distances the
+// axis against the box's centre plus, for the first, extra and for the others the length of the box's half-extent row
+// (+0x10, +0x20); the negatives' without. Returns box. ----
+static const float *__thiscall water_box_planes(const uint8_t *self, const float *box, float extra, float *planes, float *distances) {
+    g_water_edges++;
+    const float *axes = (const float *)(self + 0xe0);
+    for (int k = 0; k < 3; k++) {
+        const float *n = axes + 4 * k;
+        float *plane = planes + 8 * k;
+        copy_point(plane, n);
+        x87 add = extra;
+        if (k) {
+            const float *e = box + 4 * k;
+            add = __builtin_sqrtl(((x87)e[0] * e[0] + (x87)e[1] * e[1]) + (x87)e[2] * e[2]);
+        }
+        ((volatile float *)distances)[2 * k] = (float)(((((x87)n[2] * box[2] + (x87)n[1] * box[1]) + (x87)box[0] * n[0])) + add);
+        const x87 m0 = negated(n[0]), m1 = negated(n[1]), m2 = negated(n[2]);
+        volatile float *neg = plane + 4;
+        neg[2] = (float)m2, neg[0] = (float)m0, neg[1] = (float)m1;
+        ((volatile float *)distances)[2 * k + 1] = (float)((m1 * box[1] + m0 * box[0]) + m2 * box[2]);
+    }
+    return box;
+}
+static const uint8_t water_box_planes_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x18, 0x8b, 0x81, 0xe0};
+REWRITE("Water::BoxPlanes", 0x8e6e10, water_box_planes_original, &water_box_planes, &g_water_edges);

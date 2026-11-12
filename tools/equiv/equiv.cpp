@@ -5643,6 +5643,54 @@ static std::vector<Test> tests() {
     };
     Test vector_transform_twice{0xcb5690, twice_setup, [=](void *fn) { return rel(((void *(__thiscall *)(void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x400), arena<void>(0x380), arena<void>(0x300))); }};
     quick(vector_transform_twice);
+    // Matrix::Rotate3 (registers: eax points at 0x100, ecx a matrix at 0x300): the result is edx, its top bit flipped
+    // if eax or ecx didn't come back the same
+    Test matrix_rotate3{0x5bd3d0, floats_setup, [](void *fn) {
+        uint32_t eax = (uint32_t)(uintptr_t)arena<void>(0x100), ecx = (uint32_t)(uintptr_t)arena<void>(0x300), edx = 0;
+        __asm__ volatile("call *%[f]" : "+a"(eax), "+c"(ecx), "+d"(edx) : [f] "b"(fn) : "memory", "cc");
+        bool kept = eax == (uint32_t)(uintptr_t)arena<void>(0x100) && ecx == (uint32_t)(uintptr_t)arena<void>(0x300);
+        return Result{edx ^ (kept ? 0 : 0x80000000u)};
+    }};
+    quick(matrix_rotate3);
+    Test matrix_inverse_transform{0xc21610, twice_setup, [](void *fn) {
+        return Result{((uint32_t(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x380), arena<void>(0x300))};
+    }};
+    quick(matrix_inverse_transform);
+    // Water::BoxPlanes: an object (0x100, axes at +0xE0), a box (0x300), planes out (0x400), distances out (0x500)
+    Test water_box_planes{0x8e6e10,
+                          [=](Rng &r) {
+                              fresh(r);
+                              for (int i = 0; i < 0x50; i++) arena<float>(0x100)[i] = r.any_float();
+                              for (int i = 0x38; i < 0x44; i++)   // signalling NaNs now and then (the copies keep them)
+                                  if (r.next() % 8 == 0) arena<uint32_t>(0x100)[i] = 0x7f800001u | (r.next() & 0x803ffffeu);
+                              for (int i = 0; i < 16; i++) arena<float>(0x300)[i] = r.any_float();
+                              arena<float>(0x10)[0] = r.any_float();
+                          },
+                          [](void *fn) {
+                              void *got = ((void *(__thiscall *)(void *, void *, float, void *, void *))fn)(arena<void>(0x100), arena<void>(0x300), arena<float>(0x10)[0], arena<void>(0x400), arena<void>(0x500));
+                              return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
+                          }};
+    quick(water_box_planes);
+    // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
+    // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
+    // matrix's own rows (0x10 holds which)
+    Test look_along{0xbed970,
+                    [=](Rng &r) {
+                        fresh(r);
+                        for (int i = 0; i < 16; i++) arena<float>(0x100)[i] = r.any_float();
+                        for (int i = 0; i < 4; i++) arena<float>(0x300)[i] = r.any_float(), arena<float>(0x380)[i] = r.any_float();
+                        const int mode = r.range(0, 7);
+                        if (mode == 1) for (int i = 0; i < 3; i++) arena<float>(0x300)[i] = r.next() % 2 ? 0.0f : r.real(-1e-30f, 1e-30f);
+                        if (mode == 2) { const float k = r.real(-4, 4); for (int i = 0; i < 3; i++) arena<float>(0x380)[i] = arena<float>(0x300)[i] * k; }
+                        arena<uint32_t>(0x10)[0] = mode == 3 ? 0x100 + 0x10 * r.range(0, 2) : 0x300;
+                    },
+                    [](void *fn) {
+                        return Result{((uint32_t(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(arena<uint32_t>(0x10)[0]), arena<void>(0x380))};
+                    }};
+    for (uint32_t at : {0xbed970u, 0xbed820u, 0xbed590u, 0xbed440u, 0xbedac0u, 0xbed6e0u}) {
+        look_along.at = at;
+        quick(look_along);
+    }
     // Skeleton::PartMatrix: a bone (0x100: its matrices any floats), its part (0x800, matrix at +0xC0), out (0x400)
     Test skeleton_part_matrix{0xc22d30,
                               [=](Rng &r) {

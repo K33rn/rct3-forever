@@ -4696,7 +4696,7 @@ address,size,name,callers,status
 0x5bd150,42,Level::Value,0,rewritten
 0x5bd2c0,48,QueryInterface,0,rewritten
 0x5bd2f0,105,Factory::Lazy,7,rewritten
-0x5bd3d0,463,,0,documented
+0x5bd3d0,463,Matrix::Rotate3,0,rewritten
 0x5bd5a0,59,,2,documented
 0x5bd5e0,30,DeletingDestructor,0,rewritten
 0x5bd600,30,DeletingDestructor,0,rewritten
@@ -12563,7 +12563,7 @@ address,size,name,callers,status
 0x8e6980,651,,6,documented
 0x8e6c10,270,,4,documented
 0x8e6d20,227,,6,documented
-0x8e6e10,539,,1,documented
+0x8e6e10,539,Water::BoxPlanes,1,rewritten
 0x8e7130,134,,4,documented
 0x8e7200,35,Arrays::Free8E7200,0,rewritten
 0x8e7260,1078,,0,documented
@@ -20294,12 +20294,12 @@ address,size,name,callers,status
 0xbecfa0,382,,0,documented
 0xbed120,395,,1,documented
 0xbed2b0,389,,0,documented
-0xbed440,321,,3,documented
-0xbed590,321,,3,documented
-0xbed6e0,318,,39,documented
-0xbed820,323,,7,documented
-0xbed970,323,,15,documented
-0xbedac0,318,,222,documented
+0xbed440,321,Matrix::LookAlongXUp,3,rewritten
+0xbed590,321,Matrix::LookAlongX,3,rewritten
+0xbed6e0,318,Matrix::LookAlongYSide,39,rewritten
+0xbed820,323,Matrix::LookAlongY,7,rewritten
+0xbed970,323,Matrix::LookAlongZ,15,rewritten
+0xbedac0,318,Matrix::LookAlongZSide,222,rewritten
 0xbedc00,302,,0,documented
 0xbedd30,138,,29,documented
 0xbeddc0,131,,27,documented
@@ -21022,7 +21022,7 @@ address,size,name,callers,status
 0xc21380,40,,24,documented
 0xc213b0,325,,5,documented
 0xc21520,205,,9,documented
-0xc21610,349,,0,documented
+0xc21610,349,Matrix::InverseTransform,0,rewritten
 0xc21770,525,Matrix::TransformRows,0,rewritten
 0xc219d0,152,,0,documented
 0xc21a70,95,,0,documented

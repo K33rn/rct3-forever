@@ -336,3 +336,102 @@ static float *__thiscall vector_transform_twice(const float *v, float *out, cons
 }
 static const uint8_t vector_transform_twice_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0x8b, 0x45, 0x10, 0xd9, 0x01, 0xd9};
 REWRITE("Vector::TransformTwice", 0xcb5690, vector_transform_twice_original, &vector_transform_twice, &g_vector_rotations);
+
+// ---- Matrix::Rotate3(points in eax, m in ecx): the three points at +0, +0x10, +0x20 turned by m's 3x3 in place,
+// each value's products added in this copy's order; eax and ecx kept, edx left holding m[10]'s bits ----
+static const uint8_t rotate3_order[3][3][3] = {{{0, 2, 1}, {1, 0, 2}, {1, 0, 2}}, {{1, 2, 0}, {1, 2, 0}, {2, 1, 0}}, {{2, 0, 1}, {2, 0, 1}, {2, 1, 0}}};
+extern "C" void __fastcall forever_matrix_rotate3(const float *m, float *points) {
+    g_rotate_rows++;
+    for (int row = 0; row < 3; row++) {
+        float *p = points + 4 * row;
+        const float v[3] = {p[0], p[1], p[2]};
+        float r[3];
+        for (int j = 0; j < 3; j++) {
+            const uint8_t *o = rotate3_order[row][j];
+            r[j] = (float)(((x87)v[o[0]] * m[4 * o[0] + j] + (x87)v[o[1]] * m[4 * o[1] + j]) + (x87)v[o[2]] * m[4 * o[2] + j]);
+        }
+        for (int j = 0; j < 3; j++) ((volatile float *)p)[j] = r[j];
+    }
+}
+extern "C" __attribute__((naked)) void forever_matrix_rotate3_regs() {
+    __asm__("pushl %eax\n\tpushl %ecx\n\tmovl %eax, %edx\n\tcall @forever_matrix_rotate3@8\n\tpopl %ecx\n\tpopl %eax\n\tmovl 0x28(%ecx), %edx\n\tret");
+}
+static const uint8_t matrix_rotate3_original[] = {0x83, 0xec, 0x74, 0x8b, 0x10, 0xd9, 0x00, 0x89, 0x54, 0x24, 0x0c, 0xd9};
+REWRITE("Matrix::Rotate3", 0x5bd3d0, matrix_rotate3_original, (void *)&forever_matrix_rotate3_regs, &g_rotate_rows);
+
+// ---- Matrix::InverseTransform(offset, m): the three points at this +0, +0x10, +0x20 moved back by offset and turned
+// by m (3x3); the y and z steps rounded (the first point's z also where x uses it, the others' not); each point's
+// z written first; returns the last z's bits ----
+static uint32_t __thiscall matrix_inverse_transform(float *self, const float *offset, const float *m) {
+    g_rotate_rows++;
+    for (int row = 0; row < 3; row++) {
+        float *p = self + 4 * row;
+        const x87 dx = (x87)p[0] - offset[0], dz = (x87)p[2] - offset[2];
+        const float dy = rounded((x87)p[1] - offset[1]), dzr = rounded(dz);
+        const x87 dzx = row ? dz : (x87)dzr;
+        volatile float *o = p;
+        const float z = (float)(((x87)dzr * m[10] + (x87)dy * m[9]) + dx * m[8]);
+        const float x = (float)((dzx * m[2] + (x87)dy * m[1]) + dx * m[0]);
+        const float y = (float)(((x87)dzr * m[6] + (x87)dy * m[5]) + dx * m[4]);
+        o[2] = z, o[0] = x, o[1] = y;
+    }
+    return *(volatile uint32_t *)(self + 10);
+}
+static const uint8_t matrix_inverse_transform_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x1c, 0x8b, 0x55, 0x08};
+REWRITE("Matrix::InverseTransform", 0xc21610, matrix_inverse_transform_original, &matrix_inverse_transform, &g_rotate_rows);
+
+// ---- Matrix::LookAlong*(direction, up): a matrix's rotation rows (0x10 apart) from a direction and an up hint.
+// Row D: the direction over its length (its z rounded at once, x and y kept in the FPU's precision for the next
+// step; when the length is exactly 0, z is 1 and x, y stay). Row C: the cross product direction x up (or up x
+// direction when UP_FIRST), then over its own length as stored (z set to 1 when that is 0). Row T: rows A x B as
+// stored, z written first. Returns T's z bits. Six copies with their rows in different places. ----
+static const uint8_t look_along_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x20, 0x8b, 0x45, 0x08, 0xd9, 0x00, 0xd9, 0x40};
+static volatile long g_look_alongs;
+template <int D, int C, bool UP_FIRST, int T, int A, int B>
+static uint32_t __thiscall matrix_look_along(float *m, const float *dir, const float *up) {
+    g_look_alongs++;
+    const x87 zero = *(const float *)0xf264e0, one = *(const float *)0xf264dc;
+    const float x = dir[0], y = dir[1], z = dir[2];
+    const x87 length = __builtin_sqrtl(((x87)z * z + (x87)y * y) + (x87)x * x);
+    x87 dx = x, dy = y;
+    float dz = 1.0f;
+    if (!(length == zero)) {
+        const x87 r = one / length;
+        dx = (x87)x * r, dy = (x87)y * r;
+        dz = rounded((x87)z * r);
+    }
+    const float u0 = up[0], u1 = up[1], u2 = up[2];
+    float c[3];
+    if (UP_FIRST) {
+        c[0] = rounded((x87)dz * u1 - dy * u2), c[1] = rounded(dx * u2 - (x87)dz * u0), c[2] = rounded(dy * u0 - dx * u1);
+    } else {
+        c[0] = rounded(dy * u2 - (x87)dz * u1), c[1] = rounded((x87)dz * u0 - dx * u2), c[2] = rounded(dx * u1 - dy * u0);
+    }
+    volatile float *row_c = m + 4 * C, *row_d = m + 4 * D;
+    row_c[2] = c[2], row_c[0] = c[0], row_c[1] = c[1];
+    ((volatile uint32_t *)row_d)[2] = *(volatile uint32_t *)&dz;   // copied as the game does (never through the FPU)
+    row_d[0] = (float)dx, row_d[1] = (float)dy;
+    const float s0 = row_c[0], s1 = row_c[1], s2 = row_c[2];
+    const x87 length_c = __builtin_sqrtl(((x87)s0 * s0 + (x87)s1 * s1) + (x87)s2 * s2);
+    if (length_c == zero) {
+        ((volatile uint32_t *)row_c)[2] = 0x3f800000u;
+    } else {
+        const x87 r = one / length_c;
+        row_c[0] = (float)(r * row_c[0]);
+        row_c[1] = (float)(r * row_c[1]);
+        row_c[2] = (float)(r * row_c[2]);
+    }
+    const volatile float *a = m + 4 * A, *b = m + 4 * B;
+    const float t2 = (float)((x87)a[0] * b[1] - (x87)a[1] * b[0]);
+    const float t0 = (float)((x87)a[1] * b[2] - (x87)a[2] * b[1]);
+    const float t1 = (float)((x87)a[2] * b[0] - (x87)a[0] * b[2]);
+    volatile float *row_t = m + 4 * T;
+    row_t[2] = t2, row_t[0] = t0, row_t[1] = t1;
+    return *(volatile uint32_t *)&row_t[2];
+}
+REWRITE("Matrix::LookAlongZ", 0xbed970, look_along_original, (&matrix_look_along<2, 1, false, 0, 1, 2>), &g_look_alongs);
+REWRITE("Matrix::LookAlongY", 0xbed820, look_along_original, (&matrix_look_along<1, 2, true, 0, 1, 2>), &g_look_alongs);
+REWRITE("Matrix::LookAlongX", 0xbed590, look_along_original, (&matrix_look_along<0, 1, true, 2, 0, 1>), &g_look_alongs);
+REWRITE("Matrix::LookAlongXUp", 0xbed440, look_along_original, (&matrix_look_along<0, 2, false, 1, 2, 0>), &g_look_alongs);
+REWRITE("Matrix::LookAlongZSide", 0xbedac0, look_along_original, (&matrix_look_along<2, 0, true, 1, 2, 0>), &g_look_alongs);
+REWRITE("Matrix::LookAlongYSide", 0xbed6e0, look_along_original, (&matrix_look_along<1, 0, false, 2, 0, 1>), &g_look_alongs);
