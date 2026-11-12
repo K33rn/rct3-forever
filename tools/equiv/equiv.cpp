@@ -5741,6 +5741,48 @@ static std::vector<Test> tests() {
                             return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
                         }};
     quick(matrix_turn_by);
+    // Triangle::RayHit (registers: edi, esi, edx corners at 0x100, 0x110, 0x120; ecx a direction at 0x130; origin at
+    // 0x140, t out at 0x150): rays aimed at a point inside (or near) the triangle, sometimes away, parallel or any
+    // floats; the result is al, its next bit set if ecx, edx, esi or edi didn't come back the same
+    Test triangle_ray_hit{0xceeb80,
+                          [=](Rng &r) {
+                              fresh(r);
+                              float *f = arena<float>(0x100);
+                              for (int i = 0; i < 0x14; i++) f[i] = r.real(-10, 10);
+                              const int mode = r.range(0, 10);
+                              float u = r.real(-0.2f, 1.1f), v = r.real(-0.2f, 1.1f);
+                              const float s = r.real(-3, 3);
+                              if (mode >= 2 && mode <= 4) {   // on an edge: u = 0, v = 0 or u + v = 1 (where rounding decides)
+                                  const int edge = r.range(0, 2);
+                                  if (edge == 0) u = 0;
+                                  if (edge == 1) v = 0;
+                                  if (edge == 2) v = 1 - u;
+                              }
+                              if (mode >= 7) {   // small whole-number corners: exact edges
+                                  for (int i = 0; i < 0x14; i++) f[i] = (float)r.range(-4, 4);
+                                  u = r.range(0, 2) * 0.5f, v = r.range(0, 2) * 0.5f;
+                              }
+                              for (int i = 0; i < 3; i++) {
+                                  const float p = f[8 + i] + u * (f[i] - f[8 + i]) + v * (f[4 + i] - f[8 + i]);
+                                  if (mode < 5) f[16 + i] = p - s * f[12 + i];
+                              }
+                              if (mode == 5) for (int i = 0; i < 0x14; i++) if (r.range(0, 3) == 0) f[i] = r.any_float();
+                              if (mode == 6) for (int i = 0; i < 3; i++) f[12 + i] = f[4 + i] - f[i];   // along an edge
+                          },
+                          [](void *fn) {
+                              uint32_t eax, ecx = (uint32_t)(uintptr_t)arena<void>(0x130), edx = (uint32_t)(uintptr_t)arena<void>(0x120),
+                                            esi = (uint32_t)(uintptr_t)arena<void>(0x110), edi = (uint32_t)(uintptr_t)arena<void>(0x100);
+                              void *o = arena<void>(0x140), *t = arena<void>(0x150);
+                              __asm__ volatile("pushl %[t]\n\tpushl %[o]\n\tcall *%[f]"
+                                               : "=a"(eax), "+c"(ecx), "+d"(edx), "+S"(esi), "+D"(edi)
+                                               : [f] "b"(fn), [o] "m"(o), [t] "m"(t)
+                                               : "memory", "cc");
+                              bool kept = ecx == (uint32_t)(uintptr_t)arena<void>(0x130) && edx == (uint32_t)(uintptr_t)arena<void>(0x120) &&
+                                          esi == (uint32_t)(uintptr_t)arena<void>(0x110) && edi == (uint32_t)(uintptr_t)arena<void>(0x100);
+                              return Result{(eax & 0xff) | (kept ? 0 : 0x100u)};
+                          }};
+    triangle_ray_hit.iterations = 3000;
+    quick(triangle_ray_hit);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)

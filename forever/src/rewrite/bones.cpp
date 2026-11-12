@@ -603,3 +603,55 @@ static const SkinOrders skin_full_x87_bf1c40_orders = {{{0, 2, 1}, {0, 2, 1}, {0
 static const uint8_t skin_full_x87_tangent_original[] = {0x83, 0xec, 0x24, 0xd9, 0x44, 0x24, 0x28, 0x53};
 REWRITE("Skin::FullX87", 0xbf1600, skin_full_x87_tangent_original, (&skin_full_x87<0x2a, skin_full_x87_bf1600_orders, 0x2c, 0x24, true>), &g_skins_x87);
 REWRITE("Skin::FullX87", 0xbf1c40, skin_full_x87_tangent_original, (&skin_full_x87<0x2c, skin_full_x87_bf1c40_orders, 0x30, 0x24, true>), &g_skins_x87);
+
+// ---- Triangle::RayHit (registers: corners a in edi, b in esi, c in edx, direction in ecx; then origin, t out): whether
+// the ray from origin along direction meets the triangle, and where (t, written when the ray isn't parallel or behind).
+// e1 = a - origin and e2 = b - origin (rounded; e2's z kept in the FPU's precision for the normal's x), n = their cross
+// product, d = (origin - c) . n rounded; no hit when d times n . direction is 0 or less. Then t = d / (n . direction),
+// the point's offset from c (q), and its barycentric u, v from e1 and e2, the game's roundings kept; a hit when u and v
+// are 0 or more and add to 1 or less. Returns 1 or 0: on one "no" path the game clears only al, leaving the rest of eax
+// as the origin pointer's high half and the FPU's status, which callers don't read (both test al). ecx, edx, esi, edi
+// are kept. Two copies. ----
+static volatile long g_ray_hits;
+extern "C" uint32_t __stdcall forever_triangle_ray_hit(const float *a, const float *b, const float *c, const float *dir, const float *o, float *t_out) {
+    g_ray_hits++;
+    const x87 zero = *(const float *)0xf264e0, one = *(const float *)0xf264dc;
+    float e1[3], e2[3];
+    for (int i = 0; i < 3; i++) e1[i] = rounded((x87)a[i] - o[i]);
+    e2[0] = rounded((x87)b[0] - o[0]), e2[1] = rounded((x87)b[1] - o[1]);
+    const x87 e2z = (x87)b[2] - o[2];
+    e2[2] = rounded(e2z);
+    const x87 n0 = e2z * e1[1] - (x87)e2[1] * e1[2];
+    const x87 n1 = (x87)e1[2] * e2[0] - (x87)e2[2] * e1[0];
+    const x87 n2 = (x87)e2[1] * e1[0] - (x87)e2[0] * e1[1];
+    const float e3x = rounded((x87)o[0] - c[0]), e3y = rounded((x87)o[1] - c[1]);
+    const x87 e3z_kept = (x87)o[2] - c[2];
+    const float e3z = rounded(e3z_kept);
+    const float d = rounded((e3z_kept * n2 + (x87)e3y * n1) + (x87)e3x * n0);
+    const x87 den = (n2 * dir[2] + n1 * dir[1]) + n0 * dir[0];
+    if ((x87)d * den <= zero) return 0;
+    const x87 t = (x87)d / den;
+    *(volatile float *)t_out = (float)t;
+    const float td1 = rounded(t * dir[1]), td2 = rounded(t * dir[2]);
+    const x87 q0 = (x87)e3x - t * dir[0], q1 = (x87)e3y - td1, q2 = (x87)e3z - td2;
+    const float s1 = rounded(((x87)e1[2] * q2 + q0 * e1[0]) + q1 * e1[1]);
+    const x87 s2 = (q2 * e2[2] + q1 * e2[1]) + q0 * e2[0];
+    const x87 aa = ((x87)e1[2] * e1[2] + (x87)e1[0] * e1[0]) + (x87)e1[1] * e1[1];
+    const x87 ab = ((x87)e2[2] * e1[2] + (x87)e2[0] * e1[0]) + (x87)e2[1] * e1[1];
+    const x87 bb = ((x87)e2[2] * e2[2] + (x87)e2[1] * e2[1]) + (x87)e2[0] * e2[0];
+    const float inv = rounded(one / (bb * aa - ab * ab));
+    const float u = rounded((ab * s2 - bb * s1) * inv);
+    const float v = rounded((ab * s1 - aa * s2) * inv);
+    if (!((x87)u >= zero) || !((x87)v >= zero)) return 0;
+    return (x87)v + u <= one ? 1 : 0;
+}
+extern "C" __attribute__((naked)) void forever_triangle_ray_hit_regs() {
+    __asm__("pushl %ecx\n\tpushl %edx\n\t"
+            "pushl 16(%esp)\n\tpushl 16(%esp)\n\t"   // t out, origin
+            "pushl %ecx\n\tpushl %edx\n\tpushl %esi\n\tpushl %edi\n\t"
+            "call _forever_triangle_ray_hit@24\n\t"
+            "popl %edx\n\tpopl %ecx\n\tret $8");
+}
+static const uint8_t triangle_ray_hit_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x50, 0x8b, 0x45, 0x08, 0xd9, 0x07};
+REWRITE("Triangle::RayHit", 0xceeb80, triangle_ray_hit_original, (void *)&forever_triangle_ray_hit_regs, &g_ray_hits);
+REWRITE("Triangle::RayHit", 0xcd0270, triangle_ray_hit_original, (void *)&forever_triangle_ray_hit_regs, &g_ray_hits);

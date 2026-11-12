@@ -22794,7 +22794,7 @@ address,size,name,callers,status
 0xccf9f0,132,,1,documented
 0xccfab0,1370,,1,documented
 0xcd0240,42,Vectors::ClearCCF0D0,1,rewritten
-0xcd0270,530,,1,documented
+0xcd0270,530,Triangle::RayHit,1,rewritten
 0xcd0490,51,,2,documented
 0xcd04d0,49,,1,documented
 0xcd0510,336,,2,documented
@@ -23157,7 +23157,7 @@ address,size,name,callers,status
 0xcee400,351,ResourceType::ResourceType,1,rewritten
 0xcee560,30,DeletingDestructor,1,rewritten
 0xcee580,1504,,1,documented
-0xceeb80,530,,1,documented
+0xceeb80,530,Triangle::RayHit,1,rewritten
 0xceedc0,89,Words::Append,0,rewritten
 0xceee80,299,,2,documented
 0xceefb0,197,,1,documented
