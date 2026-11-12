@@ -476,7 +476,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
-extern const uint32_t titled_info[], titled_callees[];
+extern const uint32_t titled_info[], titled_callees[], value_info[];
 // Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
 // text gets a wide string of its own
 static void *__thiscall stub_text_for_child(void **self, void **name, void *window, uint32_t value) {
@@ -5455,6 +5455,56 @@ static std::vector<Test> tests() {
                                 return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
                             }};
     quick(matrix_multiply_by);
+    // Matrix::Invert4: a matrix of any floats, or (half the cases) of ordinary values in -4..4 so the results are
+    // finite and the rounding of each step shows
+    Test matrix_invert4{0xc1fc30,
+                        [=](Rng &r) {
+                            fresh(r);
+                            bool plain = r.range(0, 1);
+                            for (int i = 0; i < 16; i++) arena<float>(0x100)[i] = plain ? (float)((int32_t)(r.next() % 80000) - 40000) / 10000.0f : r.any_float();
+                        },
+                        [](void *fn) {
+                            void *made = ((void *(__thiscall *)(void *))fn)(arena<void>(0x100));
+                            return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
+                        }};
+    quick(matrix_invert4);
+    // Values::Map: the argument at each range's start, one either side, or any value; other registers random
+    static uint32_t value_where;
+    static const uint32_t *value_starts;
+    static uint32_t value_count;
+    Test value_map{0x5d1530,
+                   [=](Rng &r) {
+                       uint32_t pick = value_starts[r.range(0, value_count - 1)] + (uint32_t)r.range(-1, 1);
+                       arena<uint32_t>(0x10)[0] = r.range(0, 4) ? pick : r.next();
+                       arena<uint32_t>(0x10)[1] = r.next();
+                   },
+                   [](void *fn) {
+                       uint32_t x = arena<uint32_t>(0x10)[0], other = arena<uint32_t>(0x10)[1];
+                       switch (value_where) {
+                       case 0: return Result{((uint32_t(__fastcall *)(uint32_t, uint32_t))fn)(x, other)};
+                       case 1: return Result{((uint32_t(__fastcall *)(uint32_t, uint32_t))fn)(other, x)};
+                       case 2: return Result{((uint32_t(__cdecl *)(uint32_t))fn)(x)};
+                       default: return Result{((uint32_t(__stdcall *)(uint32_t))fn)(x)};
+                       }
+                   }};
+    value_map.data = false;
+    value_map.prepare = [](const rewrite::Entry *e) {
+        for (const uint32_t *v = value_info; *v; v += 3 + v[2])
+            if (v[0] == e->at) value_where = v[1], value_count = v[2], value_starts = v + 3;
+    };
+    t.push_back(value_map);
+    // Kinds::Code: small values (0-16) and any values for each argument
+    t.push_back({0xbca360,
+                 [=](Rng &r) {
+                     static const int limit[3] = {15, 4, 7};   // a little past what each argument tells apart
+                     for (int k = 0; k < 3; k++) arena<uint32_t>(0x10)[k] = r.range(0, 7) ? r.range(0, limit[k]) : r.next();
+                 },
+                 [](void *fn) {
+                     uint32_t *a = arena<uint32_t>(0x10);
+                     return Result{((uint32_t(__fastcall *)(uint32_t, uint32_t, uint32_t))fn)(a[0], a[1], a[2])};
+                 }});
+    t.back().data = false;
+    t.back().iterations = 3000;
     // Effect::SetMatrix: an effect (0x100, its matrices any floats) and a matrix of any floats; which 0-5 (4, 5: none)
     Test effect_set_matrix{0xc957e0,
                            [=](Rng &r) {

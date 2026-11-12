@@ -77,3 +77,39 @@ static float *__thiscall matrix_multiply_by(float *self, const float *b) {
 }
 static const uint8_t matrix_multiply_by_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b};
 REWRITE("Matrix::MultiplyBy", 0x505c00, matrix_multiply_by_original, &matrix_multiply_by, &g_matrix_multiplies);
+
+// ---- Matrix::Invert4(): this 4x4 matrix inverted in place, from its cofactors. Each cofactor (out element by out
+// element: the adjugate) is ((a*b - c*d) * e - (f*g - h*i) * j) + (k*l - m*n) * o of the matrix's elements numbered
+// below, negated where marked, in the FPU's precision and rounded to a float; the determinant is the first row times
+// the cofactors of out elements 0, 4, 8, 12 added in that order; each element is its cofactor times (the constant at
+// 0xF264DC, 1) over the determinant. Returns this. ----
+struct Cofactor {
+    uint8_t negate, e[15];
+};
+static const Cofactor invert4_cofactors[16] = {
+    {0, {15, 10, 14, 11, 5, 15, 6, 14, 7, 9, 11, 6, 10, 7, 13}}, {1, {15, 10, 14, 11, 1, 15, 2, 14, 3, 9, 11, 2, 10, 3, 13}},
+    {0, {15, 6, 14, 7, 1, 15, 2, 14, 3, 5, 7, 2, 6, 3, 13}},     {1, {11, 6, 10, 7, 1, 11, 2, 10, 3, 5, 7, 2, 6, 3, 9}},
+    {1, {15, 10, 14, 11, 4, 15, 6, 14, 7, 8, 11, 6, 10, 7, 12}}, {0, {15, 10, 14, 11, 0, 15, 2, 14, 3, 8, 11, 2, 10, 3, 12}},
+    {1, {15, 6, 14, 7, 0, 15, 2, 14, 3, 4, 7, 2, 6, 3, 12}},     {0, {11, 6, 10, 7, 0, 11, 2, 10, 3, 4, 7, 2, 6, 3, 8}},
+    {0, {15, 9, 13, 11, 4, 15, 5, 13, 7, 8, 11, 5, 9, 7, 12}},   {1, {15, 9, 13, 11, 0, 15, 1, 13, 3, 8, 11, 1, 9, 3, 12}},
+    {0, {15, 5, 13, 7, 0, 15, 1, 13, 3, 4, 7, 1, 5, 3, 12}},     {1, {11, 5, 9, 7, 0, 11, 1, 9, 3, 4, 7, 1, 5, 3, 8}},
+    {1, {14, 9, 13, 10, 4, 14, 5, 13, 6, 8, 10, 5, 9, 6, 12}},   {0, {14, 9, 13, 10, 0, 14, 1, 13, 2, 8, 10, 1, 9, 2, 12}},
+    {1, {14, 5, 13, 6, 0, 14, 1, 13, 2, 4, 6, 1, 5, 2, 12}},     {0, {5, 10, 6, 9, 0, 1, 10, 2, 9, 4, 1, 6, 2, 5, 8}}};
+static volatile long g_matrix_inverts;
+static float *__thiscall matrix_invert4(float *m) {
+    g_matrix_inverts++;
+    volatile float c[16];   // the cofactors, rounded as the game keeps them
+    for (int k = 0; k < 16; k++) {
+        const uint8_t *i = invert4_cofactors[k].e;
+        x87 v = (((x87)m[i[0]] * m[i[1]] - (x87)m[i[2]] * m[i[3]]) * m[i[4]] - ((x87)m[i[5]] * m[i[6]] - (x87)m[i[7]] * m[i[8]]) * m[i[9]]) +
+                ((x87)m[i[10]] * m[i[11]] - (x87)m[i[12]] * m[i[13]]) * m[i[14]];
+        if (invert4_cofactors[k].negate) v = -v;
+        c[k] = (float)v;
+    }
+    const x87 det = (((x87)c[0] * m[0] + (x87)c[4] * m[1]) + (x87)c[8] * m[2]) + (x87)c[12] * m[3];
+    const x87 inverse = (x87) * (const float *)0xf264dc / det;
+    for (int k = 0; k < 16; k++) ((volatile float *)m)[k] = (float)((x87)c[k] * inverse);
+    return m;
+}
+static const uint8_t matrix_invert4_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x81, 0xec, 0xb0, 0x01, 0x00, 0x00};
+REWRITE("Matrix::Invert4", 0xc1fc30, matrix_invert4_original, &matrix_invert4, &g_matrix_inverts);
