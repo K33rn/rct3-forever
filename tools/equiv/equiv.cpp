@@ -5783,6 +5783,38 @@ static std::vector<Test> tests() {
                           }};
     triangle_ray_hit.iterations = 3000;
     quick(triangle_ray_hit);
+    // Grid::Sample / SampleIn: a 256 x 256 grid of cells (its own 1 MB, filled once; read only) with its scale and
+    // offset; points that land anywhere on it (wrapping), on whole numbers and halves, or any floats
+    static uint8_t *g_grid = nullptr;
+    auto grid_setup = [](Rng &r) {
+        if (!g_grid) {
+            g_grid = (uint8_t *)VirtualAlloc(nullptr, 0x100020, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            Rng fill{12345};
+            for (int i = 0; i < 0x40000; i++) ((float *)g_grid)[i] = fill.range(0, 50) ? fill.real(-100, 100) : fill.any_float();
+        }
+        float *g = (float *)(g_grid + 0x100000);
+        g[0] = r.real(-2, 2), g[1] = r.real(-2, 2), g[2] = r.real(0.001f, 0.2f), g[3] = r.real(0.001f, 0.2f);
+        const int mode = r.range(0, 5);
+        float x = r.real(-200, 200), z = r.real(-200, 200);
+        if (mode == 1) x = ((float)r.range(-1000, 1000) * 0.5f / 256.0f - g[0]) / g[2], z = ((float)r.range(-1000, 1000) * 0.5f / 256.0f - g[1]) / g[3];
+        if (mode == 2) x = r.any_float(), z = r.any_float();
+        arena<float>(0x10)[0] = x, arena<float>(0x10)[1] = z;
+        float *box = arena<float>(0x100);   // SampleIn: the box and the point
+        box[3] = r.real(-50, 0), box[4] = r.real(-50, 0), box[5] = r.real(1, 50), box[6] = r.real(1, 50);
+        if (mode == 3) box[5] = box[3];
+        *(void **)(arena<uint8_t>(0x100) + 0x1c) = g_grid;
+        float *pt = arena<float>(0x200);
+        pt[0] = mode == 2 ? r.any_float() : r.real(-60, 60), pt[1] = r.any_float(), pt[2] = r.real(-60, 60);
+    };
+    auto rel_result = [](void *got) { return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))}; };
+    Test grid_sample{0x4a0090, grid_setup, [=](void *fn) {
+        return rel_result(((void *(__thiscall *)(void *, void *, float, float))fn)(g_grid, arena<void>(0x400), arena<float>(0x10)[0], arena<float>(0x10)[1]));
+    }};
+    quick(grid_sample);
+    Test grid_sample_in{0x4a0280, grid_setup, [=](void *fn) {
+        return rel_result(((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x400), arena<void>(0x200)));
+    }};
+    quick(grid_sample_in);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)

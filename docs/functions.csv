@@ -2036,9 +2036,9 @@ address,size,name,callers,status
 0x49f5f0,424,,1,documented
 0x49f7b0,96,,1,documented
 0x49f810,2154,,1,documented
-0x4a0090,455,,0,documented
+0x4a0090,455,Grid::Sample,0,rewritten
 0x4a0260,30,DeletingDestructor,1,rewritten
-0x4a0280,483,,2,documented
+0x4a0280,483,Grid::SampleIn,2,rewritten
 0x4a0470,553,,1,documented
 0x4a0850,40,Text::Widen,0,rewritten
 0x4a09c0,7,SetTable,19,rewritten

@@ -655,3 +655,63 @@ extern "C" __attribute__((naked)) void forever_triangle_ray_hit_regs() {
 static const uint8_t triangle_ray_hit_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x50, 0x8b, 0x45, 0x08, 0xd9, 0x07};
 REWRITE("Triangle::RayHit", 0xceeb80, triangle_ray_hit_original, (void *)&forever_triangle_ray_hit_regs, &g_ray_hits);
 REWRITE("Triangle::RayHit", 0xcd0270, triangle_ray_hit_original, (void *)&forever_triangle_ray_hit_regs, &g_ray_hits);
+
+// ---- Grid::Sample: a value from a 256 x 256 grid of 16-byte cells (wrapping), mixed from the four cells around a
+// point. fx, fz are the grid coordinates; the cells at whole numbers ix = fx - 1/2 and iz = fz - 1/2 rounded by the FPU
+// (fistp, its rounding mode), each & 255; u = fx - ix (rounded where it scales) and v = fz - iz (kept in the FPU's
+// precision). Each cell's xyz is scaled by 1 - u or u, the near row's and far row's pairs added, scaled by 1 - v and v,
+// and the two added; the game's roundings (the products, sums and scalings it keeps in floats) kept. Returns out. ----
+static int32_t fistp_low(x87 value) {   // fistp to 64 bits as the game does (the FPU's rounding mode), the low half kept
+    int64_t whole;
+    __asm__("fistpll %0" : "=m"(whole) : "t"(value) : "st");
+    return (int32_t)whole;
+}
+static volatile long g_grid_samples;
+static float *grid_sample(const uint8_t *grid, x87 fx, x87 fz, float *out) {
+    g_grid_samples++;
+    const x87 half = *(const float *)0xf2651c, one = *(const float *)0xf264dc;
+    const int32_t ix = fistp_low(fx - half), iz = fistp_low(fz - half);
+    const float *c00 = (const float *)(grid + (((iz & 0xff) << 8) + (ix & 0xff)) * 16);
+    const float *c10 = (const float *)(grid + (((iz & 0xff) << 8) + ((ix + 1) & 0xff)) * 16);
+    const float *c01 = (const float *)(grid + ((((iz + 1) & 0xff) << 8) + (ix & 0xff)) * 16);
+    const float *c11 = (const float *)(grid + ((((iz + 1) & 0xff) << 8) + ((ix + 1) & 0xff)) * 16);
+    const float u = rounded(fx - (x87)ix);
+    const x87 v = fz - (x87)iz, nu = one - u;
+    const float a0 = rounded(nu * c00[0]), a1 = rounded(nu * c00[1]);
+    const x87 a2 = nu * c00[2];
+    const x87 b0 = (x87)u * c10[0], b1 = (x87)u * c10[1];
+    const float b2 = rounded((x87)u * c10[2]);
+    const x87 c0 = nu * c01[0];
+    const float c1 = rounded(nu * c01[1]), c2 = rounded(nu * c01[2]);
+    const float d0 = rounded((x87)u * c11[0]), d1 = rounded((x87)u * c11[1]), d2 = rounded((x87)u * c11[2]);
+    const float r0 = rounded((x87)d0 + c0);
+    const x87 r1 = (x87)d1 + c1, r2 = (x87)d2 + c2;
+    const float p0 = rounded((x87)r0 * v), p1 = rounded(r1 * v), p2 = rounded(r2 * v);
+    const float q0 = rounded(b0 + a0), q1 = rounded(b1 + a1);
+    const x87 q2 = a2 + b2, nv = one - v;
+    const float t0 = rounded((x87)q0 * nv), t1 = rounded((x87)q1 * nv), t2 = rounded(q2 * nv);
+    volatile float *o = out;
+    o[0] = (float)((x87)t0 + p0), o[1] = (float)((x87)t1 + p1), o[2] = (float)((x87)t2 + p2);
+    return out;
+}
+// Grid::Sample(out, x, z): this is the grid; fx = (x * scale + offset) * 256, with scale x at +0x100008, offset x at
+// +0x100000 (z: +0x10000C, +0x100004).
+static float *__thiscall grid_sample_at(const uint8_t *grid, float *out, float x, float z) {
+    const x87 k = *(const float *)0xf30610;
+    const float *g = (const float *)(grid + 0x100000);
+    return grid_sample(grid, ((x87)x * g[2] + g[0]) * k, ((x87)z * g[3] + g[1]) * k, out);
+}
+// Grid::SampleIn(out, point): the grid at this +0x1C; the point's x and z first as fractions of this's box (x from
+// +0xC to +0x14, z from +0x10 to +0x18).
+static float *__thiscall grid_sample_in(const uint8_t *self, float *out, const float *point) {
+    const uint8_t *grid = *(uint8_t *const *)(self + 0x1c);
+    const float *box = (const float *)self, *g = (const float *)(grid + 0x100000);
+    const x87 k = *(const float *)0xf30610;
+    const x87 fx = (((x87)point[0] - box[3]) / ((x87)box[5] - box[3]) * g[2] + g[0]) * k;
+    const x87 fz = (((x87)point[2] - box[4]) / ((x87)box[6] - box[4]) * g[3] + g[1]) * k;
+    return grid_sample(grid, fx, fz, out);
+}
+static const uint8_t grid_sample_at_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x54, 0xd9, 0x45, 0x0c};
+REWRITE("Grid::Sample", 0x4a0090, grid_sample_at_original, &grid_sample_at, &g_grid_samples);
+static const uint8_t grid_sample_in_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x54, 0x8b, 0x55, 0x0c};
+REWRITE("Grid::SampleIn", 0x4a0280, grid_sample_in_original, &grid_sample_in, &g_grid_samples);
