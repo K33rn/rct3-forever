@@ -634,7 +634,7 @@ address,size,name,callers,status
 0x42e990,430,,5,documented
 0x42eb40,33,,6,documented
 0x42ed20,4,,1,documented
-0x42ee50,606,,0,documented
+0x42ee50,606,Matrix::Multiply,0,rewritten
 0x42f0b0,305,,0,documented
 0x42f270,21,,0,documented
 0x42f320,353,,10,documented
@@ -3040,7 +3040,7 @@ address,size,name,callers,status
 0x503d10,498,Window::Construct,1,rewritten
 0x503f30,30,DeletingDestructor,2,rewritten
 0x503f60,7245,,13,documented
-0x505c00,653,,0,documented
+0x505c00,653,Matrix::MultiplyBy,0,rewritten
 0x505e90,159,,0,documented
 0x505f40,31,,1,documented
 0x506010,40,,1,documented
@@ -9786,8 +9786,8 @@ address,size,name,callers,status
 0x7bed40,62,,1,documented
 0x7bed80,39,,2,documented
 0x7bedb0,48,,5,documented
-0x7bee20,665,,0,documented
-0x7bf0c0,669,,0,documented
+0x7bee20,665,Model::BonePose,0,rewritten
+0x7bf0c0,669,Model::BonePose,0,rewritten
 0x7bf360,482,,1,documented
 0x7bf550,2707,,2,documented
 0x7bfff0,579,,1,documented
@@ -18749,7 +18749,7 @@ address,size,name,callers,status
 0xb81da0,176,,2,documented
 0xb81e50,208,,1,documented
 0xb81f20,330,,4,documented
-0xb82090,667,,2,documented
+0xb82090,667,Model::BonePoseOf,2,rewritten
 0xb82330,120,,2,documented
 0xb82470,26,OwnedPointer::Reset,2,rewritten
 0xb82520,258,TRIVIAL_SETCAP,2,rewritten
@@ -21945,7 +21945,7 @@ address,size,name,callers,status
 0xc70620,211,,1,documented
 0xc70770,391,Record::CopyFields,2,rewritten
 0xc70da0,673,Lights::SetDirectional,1,rewritten
-0xc71070,1693,,1,documented
+0xc71070,1693,Effect::SetMatrix,1,rewritten
 0xc719f0,26,OwnedPointer::Reset,2,rewritten
 0xc71a10,130,Array<4>::SetCapacity,1,rewritten
 0xc71aa0,93,,6,documented
@@ -21982,7 +21982,7 @@ address,size,name,callers,status
 0xc75fe0,155,,1,documented
 0xc760f0,119,Record::CopyFields,1,rewritten
 0xc765a0,673,Lights::SetDirectional,1,rewritten
-0xc76870,1693,,1,documented
+0xc76870,1693,Effect::SetMatrix,1,rewritten
 0xc76f70,820,,1,documented
 0xc77340,24,Tree::InitADA8B0,1,rewritten
 0xc77360,16,Object::SetFields,1,rewritten
@@ -22031,7 +22031,7 @@ address,size,name,callers,status
 0xc947f0,1803,Record::CopyRanges,2,rewritten
 0xc94f00,109,STRUCT_COPY44,1,rewritten
 0xc95510,673,Lights::SetDirectional,1,rewritten
-0xc957e0,1693,,1,documented
+0xc957e0,1693,Effect::SetMatrix,1,rewritten
 0xc95ee0,818,,1,documented
 0xc96350,26,OwnedPointer::Reset,2,rewritten
 0xc96370,130,Array<4>::SetCapacity,1,rewritten
@@ -70110,8 +70110,8 @@ address,size,name,callers,status
 0xee6480,91,Start::Name,1,rewritten
 0xee64e0,32,ModuleGlobal,1,rewritten
 0xee6520,108,Start::ClassDescription,1,rewritten
-0xee6800,847,,1,documented
-0xee6c70,564,,1,documented
+0xee6800,847,Globals::SetFixed,1,rewritten
+0xee6c70,564,Globals::SetFixed,1,rewritten
 0xee6eb0,32,ModuleGlobal,1,rewritten
 0xee6ed0,91,Start::Name,1,rewritten
 0xee6f30,32,ModuleGlobal,1,rewritten

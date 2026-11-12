@@ -5395,6 +5395,79 @@ static std::vector<Test> tests() {
     };
     class_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(class_construct);
+    // Globals::SetFixed: functions that set game globals to fixed values; the globals are compared (data), set to
+    // something else first
+    t.push_back({0xee6800,
+                 [=](Rng &r) { fresh(r); },
+                 [](void *fn) {
+                     for (uint32_t k = 0; k < 0x240; k++) ((volatile uint8_t *)0x1341a00)[k] = (uint8_t)(k * 7 + 1);
+                     return Result{((uint32_t(__cdecl *)())fn)()};
+                 }});
+    // Model::BonePose / BonePoseOf: an object (0x100) with its matrices of any floats, four bone matrices of any floats
+    // (0x2000), the bone number 0-3 (through +0x84, or given); the result written at 0x3000
+    auto bone_setup = [=](Rng &r) {
+        fresh(r);
+        for (int i = 0; i < 0x20; i++) arena<float>(0x100)[i] = r.any_float();
+        for (int i = 0; i < 64; i++) arena<float>(0x2000)[i] = r.any_float();
+        *(void **)arena<uint8_t>(0x100 + 0x84) = arena<void>(0x600);
+        *(void **)arena<uint8_t>(0x100 + 0xb0) = arena<void>(0x700);
+        *arena<uint32_t>(0x600) = r.range(0, 3);
+        *(void **)arena<uint8_t>(0x700 + 0x18) = arena<void>(0x2000);
+        *(void **)arena<uint8_t>(0x700 + 0x20) = arena<void>(0x2000);
+        *arena<uint32_t>(0x10) = r.range(0, 3);
+    };
+    Test bone_pose{0x7bf0c0, bone_setup, [](void *fn) {
+        void *made = ((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x3000), arena<void>(0x700));
+        return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
+    }};
+    quick(bone_pose);
+    Test bone_pose_of{0xb82090, bone_setup, [](void *fn) {
+        void *made = ((void *(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x3000), *arena<uint32_t>(0x10));
+        return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
+    }};
+    quick(bone_pose_of);
+    // Matrix::Multiply / MultiplyBy: matrices of any floats (0x100, 0x200), the result at 0x300 (or in place); also
+    // with the result being one of the inputs
+    Test matrix_multiply{0x42ee50,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 32; i++) arena<float>(0x100)[i] = r.any_float();
+                             for (int i = 0; i < 16; i++) arena<float>(0x200)[i] = r.any_float();
+                             *arena<uint32_t>(0x10) = r.range(0, 2);
+                         },
+                         [](void *fn) {
+                             uint32_t w = *arena<uint32_t>(0x10);
+                             void *out = w == 0 ? arena<void>(0x300) : w == 1 ? arena<void>(0x100) : arena<void>(0x200);
+                             void *made = ((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), out, arena<void>(0x200));
+                             return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
+                         }};
+    quick(matrix_multiply);
+    Test matrix_multiply_by{0x505c00,
+                            [=](Rng &r) {
+                                fresh(r);
+                                for (int i = 0; i < 16; i++) arena<float>(0x100)[i] = r.any_float();
+                                for (int i = 0; i < 16; i++) arena<float>(0x200)[i] = r.any_float();
+                                *arena<uint32_t>(0x10) = r.range(0, 1);
+                            },
+                            [](void *fn) {
+                                void *b = *arena<uint32_t>(0x10) ? arena<void>(0x100) : arena<void>(0x200);
+                                void *made = ((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), b);
+                                return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
+                            }};
+    quick(matrix_multiply_by);
+    // Effect::SetMatrix: an effect (0x100, its matrices any floats) and a matrix of any floats; which 0-5 (4, 5: none)
+    Test effect_set_matrix{0xc957e0,
+                           [=](Rng &r) {
+                               fresh(r);
+                               for (uint32_t s : {0x670u, 0x2090u, 0x9f0u})
+                                   for (int i = 0; i < 16; i++) *(float *)arena<uint8_t>(0x100 + s + 4 * i) = r.any_float();
+                               for (int i = 0; i < 16; i++) arena<float>(0x4000)[i] = r.any_float();
+                               *arena<uint32_t>(0x10) = r.range(0, 5);
+                           },
+                           [](void *fn) {
+                               return Result{((uint32_t(__thiscall *)(void *, uint32_t, const void *))fn)(arena<void>(0x100), *arena<uint32_t>(0x10), arena<void>(0x4000))};
+                           }};
+    quick(effect_set_matrix);
     // Attraction value at +0x70
     t.push_back({0xa88450, [=](Rng &r) { *(int32_t *)arena<uint8_t>(0x170) = (int32_t)u32(r); },
                  [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }});
