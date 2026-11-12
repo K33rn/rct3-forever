@@ -1592,8 +1592,8 @@ address,size,name,callers,status
 0x480f80,76,,3,documented
 0x480fe0,142,,1,documented
 0x481190,30,DeletingDestructor,0,rewritten
-0x481220,153,,0,documented
-0x4812c0,156,,0,documented
+0x481220,153,Matrix::RotateVector,0,rewritten
+0x4812c0,156,Vector::Rotate,0,rewritten
 0x481360,175,,0,documented
 0x481450,76,,0,documented
 0x481560,68,,202,documented
@@ -3041,7 +3041,7 @@ address,size,name,callers,status
 0x503f30,30,DeletingDestructor,2,rewritten
 0x503f60,7245,,13,documented
 0x505c00,653,Matrix::MultiplyBy,0,rewritten
-0x505e90,159,,0,documented
+0x505e90,159,Vector4::Transform,0,rewritten
 0x505f40,31,,1,documented
 0x506010,40,,1,documented
 0x506040,48,QueryInterface,12,rewritten
@@ -4127,7 +4127,7 @@ address,size,name,callers,status
 0x58a3d0,43,,1,documented
 0x58a400,255,,1,documented
 0x58a5b0,30,DeletingDestructor,2,rewritten
-0x58a620,155,,0,documented
+0x58a620,155,Vector::RotateInPlace,0,rewritten
 0x58a6c0,124,,2,documented
 0x58a7a0,137,,9,documented
 0x58a830,80,Record::Fields,2,rewritten
@@ -9002,7 +9002,7 @@ address,size,name,callers,status
 0x770740,30,DeletingDestructor,2,rewritten
 0x770820,2042,,2,documented
 0x7710a0,28,,1,documented
-0x7713c0,202,,2,documented
+0x7713c0,202,Guest::Shares,2,rewritten
 0x7714b0,30,DeletingDestructor,2,rewritten
 0x7714d0,82,,1,documented
 0x771530,52,,12,documented
@@ -21023,10 +21023,10 @@ address,size,name,callers,status
 0xc213b0,325,,5,documented
 0xc21520,205,,9,documented
 0xc21610,349,,0,documented
-0xc21770,525,,0,documented
+0xc21770,525,Matrix::TransformRows,0,rewritten
 0xc219d0,152,,0,documented
 0xc21a70,95,,0,documented
-0xc21b40,261,,0,documented
+0xc21b40,261,Matrix::RotateOut,0,rewritten
 0xc21d60,133,,1,documented
 0xc21df0,746,,2,documented
 0xc220e0,2469,,3,documented
@@ -22122,7 +22122,7 @@ address,size,name,callers,status
 0xca34e0,96,Shared::Dtor6F21F0,1,rewritten
 0xca3540,56,Quad::WriteC2F850,4,rewritten
 0xca3580,7,SetTable,2,rewritten
-0xca35d0,153,,0,documented
+0xca35d0,153,Matrix::RotateVector,0,rewritten
 0xca3680,112,,0,documented
 0xca36f0,87,,1,documented
 0xca3750,179,,3,documented
@@ -22708,7 +22708,7 @@ address,size,name,callers,status
 0xcc5830,48,,2,documented
 0xcc5860,53,Ref::CopyCC2010,0,rewritten
 0xcc58a0,63,Ref::AssignCC2050,0,rewritten
-0xcc5900,296,,0,documented
+0xcc5900,296,Matrix::RotateRows,0,rewritten
 0xcc5a90,56,,3,documented
 0xcc5c80,929,,5,documented
 0xcc6060,311,,1,documented

@@ -5594,6 +5594,49 @@ static std::vector<Test> tests() {
     Test water_edge_cut_five = water_edge_cut_quad2;
     water_edge_cut_five.at = 0x95e640;
     quick(water_edge_cut_five);
+    // Matrix::TransformRows: three points (0x100), an offset (0x200) and a matrix (0x300): any floats
+    Test matrix_transform_rows{0xc21770,
+                               [=](Rng &r) {
+                                   fresh(r);
+                                   for (int i = 0; i < 12; i++) arena<float>(0x100)[i] = r.any_float();
+                                   for (int i = 0; i < 4; i++) arena<float>(0x200)[i] = r.any_float();
+                                   for (int i = 0; i < 16; i++) arena<float>(0x300)[i] = r.any_float();
+                               },
+                               [](void *fn) {
+                                   return Result{((uint32_t(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x300))};
+                               }};
+    quick(matrix_transform_rows);
+    // Matrix::RotateRows / RotateOut, Guest::Shares: any floats (an object at 0x100, a matrix at 0x300, out at 0x400)
+    auto floats_setup = [=](Rng &r) {
+        fresh(r);
+        for (int i = 0; i < 0x40; i++) arena<float>(0x100)[i] = r.any_float();
+        for (int i = 0; i < 16; i++) arena<float>(0x300)[i] = r.any_float();
+    };
+    Test matrix_rotate_rows{0xcc5900, floats_setup, [](void *fn) {
+        void *got = ((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x300));
+        return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
+    }};
+    quick(matrix_rotate_rows);
+    Test matrix_rotate_out{0xc21b40, floats_setup, [](void *fn) {
+        void *got = ((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x400), arena<void>(0x300));
+        return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
+    }};
+    quick(matrix_rotate_out);
+    Test guest_shares{0x7713c0, floats_setup, [](void *fn) {
+        ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+        return Result{};
+    }};
+    quick(guest_shares);
+    // vector rotations: a vector (0x100), a matrix (0x300), out (0x400): any floats
+    auto rel = [](void *p) { return Result{(uint32_t)((uintptr_t)p - (uintptr_t)arena<void>(0))}; };
+    Test vector_rotate{0x4812c0, floats_setup, [=](void *fn) { return rel(((void *(__fastcall *)(void *, void *, void *))fn)(arena<void>(0x400), arena<void>(0x100), arena<void>(0x300))); }};
+    quick(vector_rotate);
+    Test matrix_rotate_vector{0x481220, floats_setup, [=](void *fn) { return rel(((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x300), arena<void>(0x400), arena<void>(0x100))); }};
+    quick(matrix_rotate_vector);
+    Test vector_rotate_in_place{0x58a620, floats_setup, [=](void *fn) { return rel(((void *(__fastcall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x300))); }};
+    quick(vector_rotate_in_place);
+    Test vector4_transform{0x505e90, floats_setup, [=](void *fn) { return rel(((void *(__fastcall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x300))); }};
+    quick(vector4_transform);
     // Effect::SetMatrix: an effect (0x100, its matrices any floats) and a matrix of any floats; which 0-5 (4, 5: none)
     Test effect_set_matrix{0xc957e0,
                            [=](Rng &r) {

@@ -113,3 +113,147 @@ static float *__thiscall matrix_invert4(float *m) {
 }
 static const uint8_t matrix_invert4_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x81, 0xec, 0xb0, 0x01, 0x00, 0x00};
 REWRITE("Matrix::Invert4", 0xc1fc30, matrix_invert4_original, &matrix_invert4, &g_matrix_inverts);
+
+// ---- Matrix::TransformRows(offset, m): the three points at this +0, +0x10, +0x20 turned by m's rotation (rows 0-2 of a
+// 4x4) and moved by offset, in place. Each new z and y: the three products rounded, added in turn (rounded), then the
+// offset (rounded); each new x: the first product rounded, the others added in the FPU's precision. Returns the last
+// point's new z (as the game leaves it in eax). ----
+static volatile long g_transform_rows;
+static uint32_t __thiscall matrix_transform_rows(float *self, const float *offset, const float *m) {
+    g_transform_rows++;
+    for (int row = 0; row < 3; row++) {
+        float *p = self + 4 * row;
+        const float x = p[0], y = p[1], z = p[2];
+        volatile float z0 = (float)((x87)x * m[2]), z1 = (float)((x87)y * m[6]), z2 = (float)((x87)z * m[10]);
+        volatile float zs = (float)((x87)z0 + z1);
+        volatile float zt = (float)((x87)zs + z2);
+        volatile float x0 = (float)((x87)x * m[0]);
+        volatile float y0 = (float)((x87)x * m[1]), y1 = (float)((x87)y * m[5]), y2 = (float)((x87)z * m[9]);
+        volatile float ys = (float)((x87)y0 + y1);
+        volatile float yt = (float)((x87)ys + y2);
+        ((volatile float *)p)[2] = (float)((x87)zt + offset[2]);
+        ((volatile float *)p)[0] = (float)((((x87)x0 + (x87)y * m[4]) + (x87)z * m[8]) + offset[0]);
+        ((volatile float *)p)[1] = (float)((x87)yt + offset[1]);
+    }
+    return *(volatile uint32_t *)(self + 10);
+}
+static const uint8_t matrix_transform_rows_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x4c, 0x8b, 0x45, 0x0c};
+REWRITE("Matrix::TransformRows", 0xc21770, matrix_transform_rows_original, &matrix_transform_rows, &g_transform_rows);
+
+// A 3-term dot product as the game adds it: (first + second) + third, each a product of two floats, in the FPU's
+// precision; rounded where it's stored.
+static inline float dot3(float a0, float b0, float a1, float b1, float a2, float b2) {
+    return (float)(((x87)a0 * b0 + (x87)a1 * b1) + (x87)a2 * b2);
+}
+
+// ---- Matrix::RotateRows(m): the three points at this +0, +0x10, +0x20 turned by m (3x3 of a 4x4) in place, each
+// value's three products added in the game's order (the first point's in its own); returns this ----
+static volatile long g_rotate_rows;
+static float *__thiscall matrix_rotate_rows(float *self, const float *m) {
+    g_rotate_rows++;
+    for (int row = 0; row < 3; row++) {
+        float *p = self + 4 * row;
+        const float x = p[0], y = p[1], z = p[2];
+        volatile float *out = p;
+        if (row == 0) {
+            out[0] = dot3(m[4], y, m[0], x, m[8], z);
+            out[2] = dot3(m[6], y, m[10], z, m[2], x);
+            out[1] = dot3(m[9], z, m[1], x, y, m[5]);
+        } else {
+            out[0] = dot3(z, m[8], m[0], x, y, m[4]);
+            out[1] = dot3(y, m[5], m[1], x, m[9], z);
+            out[2] = dot3(m[2], x, z, m[10], y, m[6]);
+        }
+    }
+    return self;
+}
+static const uint8_t matrix_rotate_rows_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8b, 0xc1, 0x8b};
+REWRITE("Matrix::RotateRows", 0xcc5900, matrix_rotate_rows_original, &matrix_rotate_rows, &g_rotate_rows);
+
+// ---- Matrix::RotateOut(out, m): out (3x3, rows 0x10 apart) = m's rows against this matrix's rows: out[i][j] =
+// m[i] . this[j], each in the game's order; every value read before out is written; returns out ----
+static float *__thiscall matrix_rotate_out(const float *t, float *out, const float *m) {
+    g_rotate_rows++;
+    float r[9];
+    r[0] = dot3(t[1], m[1], m[2], t[2], m[0], t[0]);
+    r[1] = dot3(t[6], m[2], t[5], m[1], m[0], t[4]);
+    r[2] = dot3(t[10], m[2], t[9], m[1], m[0], t[8]);
+    r[3] = dot3(m[6], t[2], m[4], t[0], m[5], t[1]);
+    r[4] = dot3(t[6], m[6], t[5], m[5], t[4], m[4]);
+    r[5] = dot3(t[10], m[6], t[9], m[5], t[8], m[4]);
+    r[6] = dot3(m[10], t[2], t[1], m[9], t[0], m[8]);
+    r[7] = dot3(t[6], m[10], t[5], m[9], t[4], m[8]);
+    r[8] = dot3(t[10], m[10], t[9], m[9], t[8], m[8]);
+    volatile float *o = out;
+    o[0] = r[0], o[1] = r[1], o[2] = r[2], o[4] = r[3], o[5] = r[4], o[6] = r[5], o[10] = r[8], o[8] = r[6], o[9] = r[7];
+    return out;
+}
+static const uint8_t matrix_rotate_out_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x20, 0x8b, 0x45, 0x0c};
+REWRITE("Matrix::RotateOut", 0xc21b40, matrix_rotate_out_original, &matrix_rotate_out, &g_rotate_rows);
+
+// Rounded on the way, as the game keeps them in floats between steps.
+static inline float rounded(x87 v) {
+    volatile float f = (float)v;
+    return f;
+}
+// The rotation of a point by m (3x3 of a 4x4, rows 0x10 apart) as the game's vector rotations work it out: x from
+// y's product and x's rounded one, then z's; y and z from their three products rounded and added in turn (z's last
+// product kept in the FPU's precision when LAST_KEPT).
+template <bool LAST_KEPT>
+static inline void rotate_point(volatile float *out, const float *v, const float *m, int order) {
+    const float x = v[0], y = v[1], z = v[2];
+    const float rx = (float)(((x87)y * m[4] + (x87)rounded((x87)x * m[0])) + (LAST_KEPT ? (x87)rounded((x87)z * m[8]) : (x87)z * m[8]));
+    const float ry = (float)((x87)rounded((x87)rounded((x87)x * m[1]) + rounded((x87)y * m[5])) + rounded((x87)z * m[9]));
+    const float rz = (float)((x87)rounded((x87)rounded((x87)x * m[2]) + rounded((x87)y * m[6])) + (LAST_KEPT ? (x87)z * m[10] : (x87)rounded((x87)z * m[10])));
+    if (order) {
+        out[2] = rz, out[0] = rx, out[1] = ry;
+    } else {
+        out[0] = rx, out[1] = ry, out[2] = rz;
+    }
+}
+static volatile long g_vector_rotations;
+
+// ---- Vector::Rotate(out, v, m) (fastcall): out = v turned by m; returns out ----
+static float *__fastcall vector_rotate(float *out, const float *v, const float *m) {
+    g_vector_rotations++;
+    rotate_point<false>(out, v, m, 0);
+    return out;
+}
+static const uint8_t vector_rotate_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x4c, 0xd9, 0x42, 0x08};
+REWRITE("Vector::Rotate", 0x4812c0, vector_rotate_original, &vector_rotate, &g_vector_rotations);
+
+// ---- Matrix::RotateVector(out, v): out = v turned by this matrix; returns out (two copies) ----
+static float *__thiscall matrix_rotate_vector(const float *m, float *out, const float *v) {
+    g_vector_rotations++;
+    rotate_point<false>(out, v, m, 0);
+    return out;
+}
+static const uint8_t matrix_rotate_vector_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0x45, 0x0c};
+REWRITE("Matrix::RotateVector", 0x481220, matrix_rotate_vector_original, &matrix_rotate_vector, &g_vector_rotations);
+REWRITE("Matrix::RotateVector", 0xca35d0, matrix_rotate_vector_original, &matrix_rotate_vector, &g_vector_rotations);
+
+// ---- Vector::RotateInPlace(v, m) (fastcall): v turned by m in place (z's last product kept, x's last rounded);
+// returns v ----
+static float *__fastcall vector_rotate_in_place(float *v, const float *m) {
+    g_vector_rotations++;
+    rotate_point<true>(v, v, m, 1);
+    return v;
+}
+static const uint8_t vector_rotate_in_place_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0xc1, 0xd9};
+REWRITE("Vector::RotateInPlace", 0x58a620, vector_rotate_in_place_original, &vector_rotate_in_place, &g_vector_rotations);
+
+// ---- Vector4::Transform(v, m) (fastcall): the four values of v times m in place, each sum in the game's order;
+// returns v ----
+static float *__fastcall vector4_transform(float *v, const float *m) {
+    g_vector_rotations++;
+    const float x = v[0], y = v[1], z = v[2], w = v[3];
+    const float rz = (float)((((x87)m[10] * z + (x87)m[6] * y) + (x87)m[2] * x) + (x87)m[14] * w);
+    const float rw = (float)((((x87)m[11] * z + (x87)m[7] * y) + (x87)m[3] * x) + (x87)m[15] * w);
+    const float rx = (float)((((x87)m[8] * z + (x87)m[4] * y) + (x87)m[12] * w) + (x87)x * m[0]);
+    const float ry = (float)((((x87)m[9] * z + (x87)m[5] * y) + (x87)m[1] * x) + (x87)m[13] * w);
+    volatile float *o = v;
+    o[2] = rz, o[3] = rw, o[0] = rx, o[1] = ry;
+    return v;
+}
+static const uint8_t vector4_transform_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0xd9, 0x42, 0x20};
+REWRITE("Vector4::Transform", 0x505e90, vector4_transform_original, &vector4_transform, &g_vector_rotations);
