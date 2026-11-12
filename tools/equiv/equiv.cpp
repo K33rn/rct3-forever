@@ -5090,6 +5090,52 @@ static std::vector<Test> tests() {
                             return Result{};
                         }};
     quick(skin_positions);
+    // Skin::PositionsX87 (two copies): the same vertices; the result is where they end
+    Test skin_positions_x87{0xbeed40, skin_positions.setup, [](void *fn) {
+        void *end = ((void *(__fastcall *)(void *, void *, void *, void *))fn)(arena<void>(0x1000), arena<void>(0x800), arena<void>(0x2000), arena<void>(0x6000));
+        return Result{(uint32_t)((uintptr_t)end - (uintptr_t)arena<void>(0))};
+    }};
+    quick(skin_positions_x87);
+    // Skin::PositionsNormalsX87 / ...TangentsX87 (four copies): each copy's vertex layout (bones, weights, size, out
+    // size) from a table; runs of 1-3 vertices with 0-3 extra bones, skips, 0-8 extra bytes copied; bone bytes 0-7
+    // (also where a copy's weights share them)
+    struct SkinCopy { uint32_t at, bones, weights, size, out; };
+    static const SkinCopy skin_copies[] = {{0xbef5a0, 0x18, 0x1a, 0x1c, 0x18}, {0xbefa90, 0x18, 0x1c, 0x20, 0x18}, {0xbeffa0, 0x28, 0x2a, 0x2c, 0x28}, {0xbf0520, 0x28, 0x2c, 0x30, 0x28}};
+    static const SkinCopy *g_skin_copy = &skin_copies[0];
+    Test skin_x87{0xbef5a0,
+                  [](Rng &r) {
+                      const SkinCopy &c = *g_skin_copy;
+                      float *bones = arena<float>(0x1000);
+                      for (int i = 0; i < 8 * 16; i++) bones[i] = r.range(0, 30) ? r.real(-4, 4) : r.any_float();
+                      const uint32_t extra = 4 * r.range(0, 2);
+                      uint16_t *layout = arena<uint16_t>(0x800);
+                      layout[0] = (uint16_t)(c.size + extra + 4 * r.range(0, 1) * r.range(0, 1));
+                      layout[1] = (uint16_t)(c.out + extra + 4 * r.range(0, 1));
+                      layout[2] = (uint16_t)extra;
+                      int w = 3, vertices = 0;
+                      for (int k = 0; k < 6; k++) {
+                          if (r.range(0, 3)) { int n = r.range(1, 3); layout[w++] = (uint16_t)(n << 2 | r.range(0, 3)); vertices += n; }
+                          else { int n = r.range(1, 2); layout[w++] = 0; layout[w++] = (uint16_t)n; vertices += n; }
+                      }
+                      layout[w++] = 0; layout[w++] = 0;
+                      uint8_t *v = arena<uint8_t>(0x2000);
+                      for (int i = 0; i < vertices * layout[0] + 0x40; i++) v[i] = (uint8_t)r.next();
+                      for (int i = 0; i < vertices; i++) {
+                          uint8_t *at = v + i * layout[0];
+                          for (int k = 0; k < 9; k++) ((float *)at)[k] = r.range(0, 20) ? r.real(-50, 50) : r.any_float();
+                          for (uint32_t b = c.bones; b < c.weights + 4; b++)
+                              if (b < c.bones + 4) at[b] = (uint8_t)r.range(0, 7);
+                      }
+                  },
+                  [](void *fn) {
+                      void *end = ((void *(__fastcall *)(void *, void *, void *, void *))fn)(arena<void>(0x1000), arena<void>(0x800), arena<void>(0x2000), arena<void>(0x6000));
+                      return Result{(uint32_t)((uintptr_t)end - (uintptr_t)arena<void>(0))};
+                  }};
+    for (const SkinCopy &c : skin_copies) {
+        skin_x87.at = c.at;
+        skin_x87.prepare = [&c](const rewrite::Entry *) { g_skin_copy = &c; };
+        quick(skin_x87);
+    }
     // Skin::PositionsNormals: vertices {position, normal, bones, weights, extra bytes}, packed per copy (2 or 4 bones,
     // read from its code) when called; out strides from the layout
     static uint32_t g_skin_vertex_size;
@@ -5671,6 +5717,22 @@ static std::vector<Test> tests() {
                               return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
                           }};
     quick(water_box_planes);
+    // Matrix::TurnBy: a matrix (0x100), a turn (0x300): any floats, sometimes small (turns under 1e-20 or near it)
+    Test matrix_turn_by{0xc209e0,
+                        [=](Rng &r) {
+                            floats_setup(r);
+                            const int mode = r.range(0, 5);
+                            for (int i = 0; i < 3; i++) {
+                                float &t = arena<float>(0x300)[i];
+                                if (mode == 1) t = r.real(-1e-20f, 1e-20f);
+                                if (mode == 2) t = r.real(-8, 8);
+                            }
+                        },
+                        [](void *fn) {
+                            void *got = ((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x300));
+                            return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
+                        }};
+    quick(matrix_turn_by);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)

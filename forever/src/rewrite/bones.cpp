@@ -435,3 +435,133 @@ REWRITE("Matrix::LookAlongX", 0xbed590, look_along_original, (&matrix_look_along
 REWRITE("Matrix::LookAlongXUp", 0xbed440, look_along_original, (&matrix_look_along<0, 2, false, 1, 2, 0>), &g_look_alongs);
 REWRITE("Matrix::LookAlongZSide", 0xbedac0, look_along_original, (&matrix_look_along<2, 0, true, 1, 2, 0>), &g_look_alongs);
 REWRITE("Matrix::LookAlongYSide", 0xbed6e0, look_along_original, (&matrix_look_along<1, 0, false, 2, 0, 1>), &g_look_alongs);
+
+// ---- The x87 skinning (the game's choice without SSE; see skinning.cpp for the SSE versions), with the same layout of
+// runs and skips. A vertex with one bone gets that bone's point. Otherwise each bone's point is scaled by its weight
+// byte times the constant at 0xF270F0 (1/255) and they're added up; the bones are taken in the order BONES, +2, +3, +1
+// (as many as the vertex has), each with its weight at WEIGHTS + the same step. The first and last weights are
+// rounded to floats, the middle ones aren't. x and y are summed in the FPU's precision, z is rounded at each step.
+// Each copy adds each value's three products in its own order: the first bone's, the others', the normal's and the
+// tangent's (normal and tangent turned by the first bone only, no move). PARTS 1: positions only, out 12 bytes apart,
+// vertices layout[0] apart. PARTS 2: position and normal; 3: and a tangent and the word after it. With 2 or 3, out
+// is OUT_SIZE bytes a vertex, then layout[2] bytes copied a word at a time; vertices passed over move by layout[0]
+// in and layout[1] out. Returns where the vertices end. ----
+struct SkinOrders {
+    uint8_t first[3][3], other[3][3], normal[3][3], tangent[3][3];
+};
+static inline void skin_dot(x87 out[3], const float *m, const float *v, const uint8_t (*order)[3], bool move) {
+    for (int j = 0; j < 3; j++) {
+        const uint8_t *o = order[j];
+        x87 s = (x87)v[o[0]] * m[4 * o[0] + j] + (x87)v[o[1]] * m[4 * o[1] + j];
+        s = s + (x87)v[o[2]] * m[4 * o[2] + j];
+        out[j] = move ? s + m[12 + j] : s;
+    }
+}
+static volatile long g_skins_x87;
+template <uint32_t BONES, uint32_t WEIGHTS, uint32_t SIZE, int PARTS, uint32_t OUT_SIZE, const SkinOrders &O>
+static const uint8_t *__fastcall skin_x87(const float *bones, const uint16_t *layout, const uint8_t *vertex, uint8_t *out) {
+    g_skins_x87++;
+    const x87 scale = *(const float *)0xf270f0;
+    const uint32_t size = layout[0], out_skip = PARTS == 1 ? 12 : layout[1], extra = layout[2];
+    for (const uint16_t *run = layout + 3;;) {
+        const uint32_t word = *run;
+        if (!word) {
+            const uint32_t skip = run[1];
+            if (!skip) return vertex;
+            vertex += skip * size;
+            out += skip * out_skip;
+            run += 2;
+            continue;
+        }
+        run++;
+        const uint32_t more = word & 3;
+        for (const uint8_t *end = vertex + (word >> 2) * size; vertex < end;) {
+            const float *at = (const float *)vertex;
+            const float *first = bones + 16 * vertex[BONES];
+            x87 p[3];
+            skin_dot(p, first, at, O.first, true);
+            volatile float *o = (float *)out;
+            if (!more) {
+                o[0] = (float)p[0], o[1] = (float)p[1], o[2] = (float)p[2];
+            } else {
+                const float w0 = rounded((x87)vertex[WEIGHTS] * scale);
+                x87 x = p[0] * w0, y = p[1] * w0;
+                float z = rounded(p[2] * w0);
+                for (uint32_t k = 2; k <= more; k++) {   // the middle bones
+                    const x87 w = (x87)vertex[WEIGHTS + k] * scale;
+                    skin_dot(p, bones + 16 * vertex[BONES + k], at, O.other, true);
+                    x = x + p[0] * w, y = y + p[1] * w;
+                    z = rounded(p[2] * w + z);
+                }
+                const float wl = rounded((x87)vertex[WEIGHTS + 1] * scale);   // the last bone
+                skin_dot(p, bones + 16 * vertex[BONES + 1], at, O.other, true);
+                o[0] = (float)(p[0] * wl + x);
+                o[1] = (float)(p[1] * wl + y);
+                o[2] = (float)(p[2] * wl + z);
+            }
+            if (PARTS == 1) {
+                vertex += size;
+                out += 12;
+                continue;
+            }
+            skin_dot(p, first, at + 3, O.normal, false);
+            o[3] = (float)p[0], o[4] = (float)p[1], o[5] = (float)p[2];
+            if (PARTS == 3) {
+                skin_dot(p, first, at + 6, O.tangent, false);
+                o[6] = (float)p[0], o[7] = (float)p[1], o[8] = (float)p[2];
+                *(volatile uint32_t *)(out + 0x24) = *(const uint32_t *)(vertex + 0x24);
+            }
+            vertex += SIZE;
+            out += OUT_SIZE;
+            for (const uint8_t *copy_end = vertex + extra; vertex < copy_end; vertex += 4, out += 4) *(volatile uint32_t *)out = *(const uint32_t *)vertex;
+        }
+    }
+}
+static const SkinOrders skin_positions_x87_orders = {{{1, 2, 0}, {1, 0, 2}, {1, 0, 2}}, {{1, 2, 0}, {1, 0, 2}, {1, 0, 2}}, {}, {}};
+static const SkinOrders skin_normals_x87_orders = {{{0, 1, 2}, {1, 0, 2}, {1, 0, 2}}, {{2, 1, 0}, {2, 0, 1}, {2, 0, 1}},
+                                                   {{1, 0, 2}, {0, 2, 1}, {0, 2, 1}}, {{1, 0, 2}, {2, 1, 0}, {2, 1, 0}}};
+static const uint8_t skin_positions_x87_original[] = {0x83, 0xec, 0x10, 0x0f, 0xb7, 0x02, 0x53, 0x8b, 0x5c, 0x24, 0x1c, 0x55, 0x56, 0x89, 0x44, 0x24};
+REWRITE("Skin::PositionsX87", 0xbeed40, skin_positions_x87_original, (&skin_x87<0x18, 0x1c, 0, 1, 12, skin_positions_x87_orders>), &g_skins_x87);
+REWRITE("Skin::PositionsX87", 0xbef170, skin_positions_x87_original, (&skin_x87<0x18, 0x1c, 0, 1, 12, skin_positions_x87_orders>), &g_skins_x87);
+static const uint8_t skin_normals_x87_original[] = {0x83, 0xec, 0x1c, 0x0f, 0xb7, 0x42, 0x02, 0x53};
+REWRITE("Skin::PositionsNormalsX87", 0xbef5a0, skin_normals_x87_original, (&skin_x87<0x18, 0x1a, 0x1c, 2, 0x18, skin_normals_x87_orders>), &g_skins_x87);
+REWRITE("Skin::PositionsNormalsX87", 0xbefa90, skin_normals_x87_original, (&skin_x87<0x18, 0x1c, 0x20, 2, 0x18, skin_normals_x87_orders>), &g_skins_x87);
+REWRITE("Skin::PositionsNormalsTangentsX87", 0xbeffa0, skin_normals_x87_original, (&skin_x87<0x28, 0x2a, 0x2c, 3, 0x28, skin_normals_x87_orders>), &g_skins_x87);
+REWRITE("Skin::PositionsNormalsTangentsX87", 0xbf0520, skin_normals_x87_original, (&skin_x87<0x28, 0x2c, 0x30, 3, 0x28, skin_normals_x87_orders>), &g_skins_x87);
+
+// ---- Matrix::TurnBy(turn): the rotation rows of this matrix turned about the turn vector's direction by its length
+// (left alone when the length is under the constant at 0xF27C70, 1e-20). Each row r goes to P + V cos + (n x V) sin,
+// where n is the direction (1 over the length rounded to a float, times the turn), P = (n . r) n is the row's part
+// along it and V = r - P. P, V, n x V, the third row's n . r, the cosine and the sine are each rounded to floats, as
+// the game keeps them. The cosine and sine come from the FPU's fsincos on the float length. Returns this. ----
+static float *__thiscall matrix_turn_by(float *m, const float *turn) {
+    g_rotate_rows++;
+    const float t0 = turn[0], t1 = turn[1], t2 = turn[2];
+    const x87 length = __builtin_sqrtl(((x87)t0 * t0 + (x87)t1 * t1) + (x87)t2 * t2);
+    const float lf = rounded(length);
+    if (length < (x87) * (const float *)0xf27c70) return m;
+    const x87 inv = (x87) * (const float *)0xf264dc / lf;
+    const x87 n0 = inv * turn[0], n1 = inv * turn[1], n2 = inv * turn[2];
+    const x87 p0 = ((n2 * m[2] + n0 * m[0]) + n1 * m[1]);
+    const x87 p1 = ((n0 * m[4] + n1 * m[5]) + n2 * m[6]);
+    const float p2 = rounded((n1 * m[9] + n2 * m[10]) + n0 * m[8]);
+    float p[3][3], v[3][3], w[3][3];
+    const x87 along[3] = {p0, p1, p2};
+    for (int r = 0; r < 3; r++) {
+        p[r][0] = rounded(n0 * along[r]), p[r][1] = rounded(n1 * along[r]), p[r][2] = rounded(n2 * along[r]);
+        for (int j = 0; j < 3; j++) v[r][j] = rounded((x87)m[4 * r + j] - p[r][j]);
+        w[r][0] = rounded((x87)v[r][2] * n1 - (x87)v[r][1] * n2);
+        w[r][1] = rounded((x87)v[r][0] * n2 - (x87)v[r][2] * n0);
+        w[r][2] = rounded((x87)v[r][1] * n0 - (x87)v[r][0] * n1);
+    }
+    float c, s;   // fld; fsincos; fstp; fstp, as the game does it (past 2^63 the length stays and the second store finds no value)
+    __asm__ volatile("flds %2\n\tfsincos\n\tfstps %0\n\tfstps %1"
+                     : "=m"(c), "=m"(s)
+                     : "m"(lf)
+                     : "st", "st(1)", "st(2)", "st(3)", "st(4)", "st(5)", "st(6)", "st(7)");
+    for (int r = 0; r < 3; r++)
+        for (int j = 0; j < 3; j++) ((volatile float *)m)[4 * r + j] = (float)(((x87)w[r][j] * s + (x87)v[r][j] * c) + p[r][j]);
+    return m;
+}
+static const uint8_t matrix_turn_by_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x81, 0xec, 0xa0, 0x00, 0x00, 0x00, 0x8b, 0x55, 0x08};
+REWRITE("Matrix::TurnBy", 0xc209e0, matrix_turn_by_original, &matrix_turn_by, &g_rotate_rows);
