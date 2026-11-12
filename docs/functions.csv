@@ -20328,13 +20328,13 @@ address,size,name,callers,status
 0xbf0340,465,Skin::PositionsNormalsTangents,2,rewritten
 0xbf0520,945,Skin::PositionsNormalsTangentsX87,2,rewritten
 0xbf08e0,465,Skin::PositionsNormalsTangents,2,rewritten
-0xbf0ac0,937,,1,documented
+0xbf0ac0,937,Skin::FullX87,1,rewritten
 0xbf0e70,487,Skin::Full,1,rewritten
-0xbf1060,941,,1,documented
+0xbf1060,941,Skin::FullX87,1,rewritten
 0xbf1410,487,Skin::Full,1,rewritten
-0xbf1600,1037,,1,documented
+0xbf1600,1037,Skin::FullX87,1,rewritten
 0xbf1a10,549,Skin::Full,1,rewritten
-0xbf1c40,1041,,1,documented
+0xbf1c40,1041,Skin::FullX87,1,rewritten
 0xbf2060,549,Skin::Full,1,rewritten
 0xbf2290,977,,1,documented
 0xbf2670,523,Skin::Full,1,rewritten

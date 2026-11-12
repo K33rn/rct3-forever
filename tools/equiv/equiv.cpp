@@ -5202,6 +5202,13 @@ static std::vector<Test> tests() {
                        return Result{};
                    }};
     quick(skin_full);
+    // Skin::FullX87 (two copies): the same vertices; the result is where they end
+    Test skin_full_x87{0xbf0ac0, skin_full.setup, [](void *fn) {
+        void *end = ((void *(__fastcall *)(void *, void *, float, void *, void *, void *, void *))fn)(arena<void>(0x1000), arena<void>(0x700), arena<float>(0x10)[0],
+                                                                                                      arena<void>(0x708), arena<void>(0x800), arena<void>(0x2000), arena<void>(0x6000));
+        return Result{(uint32_t)((uintptr_t)end - (uintptr_t)arena<void>(0))};
+    }};
+    quick(skin_full_x87);
     // Skin::PositionsNormalsTangents: vertices {position, normal, tangent, word, bones, weights, extra}, packed per copy
     static uint32_t g_skin_tangent_size;
     Test skin_tangents{0xbf0340,

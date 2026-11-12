@@ -458,8 +458,9 @@ static inline void skin_dot(x87 out[3], const float *m, const float *v, const ui
     }
 }
 static volatile long g_skins_x87;
-template <uint32_t BONES, uint32_t WEIGHTS, uint32_t SIZE, int PARTS, uint32_t OUT_SIZE, const SkinOrders &O>
-static const uint8_t *__fastcall skin_x87(const float *bones, const uint16_t *layout, const uint8_t *vertex, uint8_t *out) {
+template <uint32_t BONES, uint32_t WEIGHTS, uint32_t SIZE, int PARTS, uint32_t OUT_SIZE, const SkinOrders &O, uint32_t UV_IN = 0, uint32_t UV_OUT = 0>
+static inline const uint8_t *skin_x87_core(const float *bones, const uint16_t *layout, const uint8_t *vertex, uint8_t *out, const float *uv_scale,
+                                           const float *uv_offset) {
     g_skins_x87++;
     const x87 scale = *(const float *)0xf270f0;
     const uint32_t size = layout[0], out_skip = PARTS == 1 ? 12 : layout[1], extra = layout[2];
@@ -506,6 +507,20 @@ static const uint8_t *__fastcall skin_x87(const float *bones, const uint16_t *la
             }
             skin_dot(p, first, at + 3, O.normal, false);
             o[3] = (float)p[0], o[4] = (float)p[1], o[5] = (float)p[2];
+            if (PARTS >= 4) {   // (5: a tangent, then the word at +0x24 over its z) and texture coordinates: times the scale plus the offset
+                if (PARTS == 5) {
+                    skin_dot(p, first, at + 6, O.tangent, false);
+                    o[6] = (float)p[0], o[7] = (float)p[1], o[8] = (float)p[2];
+                    *(volatile uint32_t *)(out + 0x20) = *(const uint32_t *)(vertex + 0x24);
+                }
+                const float *uv = (const float *)(vertex + UV_IN);
+                volatile float *ou = (float *)(out + UV_OUT);
+                ou[0] = (float)((x87)uv_scale[0] * uv[0] + uv_offset[0]);
+                ou[1] = (float)((x87)uv_scale[1] * uv[1] + uv_offset[1]);
+                vertex += size;
+                out += out_skip;
+                continue;
+            }
             if (PARTS == 3) {
                 skin_dot(p, first, at + 6, O.tangent, false);
                 o[6] = (float)p[0], o[7] = (float)p[1], o[8] = (float)p[2];
@@ -516,6 +531,19 @@ static const uint8_t *__fastcall skin_x87(const float *bones, const uint16_t *la
             for (const uint8_t *copy_end = vertex + extra; vertex < copy_end; vertex += 4, out += 4) *(volatile uint32_t *)out = *(const uint32_t *)vertex;
         }
     }
+}
+template <uint32_t BONES, uint32_t WEIGHTS, uint32_t SIZE, int PARTS, uint32_t OUT_SIZE, const SkinOrders &O>
+static const uint8_t *__fastcall skin_x87(const float *bones, const uint16_t *layout, const uint8_t *vertex, uint8_t *out) {
+    return skin_x87_core<BONES, WEIGHTS, SIZE, PARTS, OUT_SIZE, O>(bones, layout, vertex, out, nullptr, nullptr);
+}
+// Skin::FullX87(bones, uv scale; alpha, uv offset, layout, vertices, out): positions, normals and texture coordinates
+// (UV_IN to UV_OUT), vertices and out moving by the layout's two sizes. These copies work out the alpha's whole number
+// (as Skin::Full does) but never use it. Returns where the vertices end (0 for the copies with a tangent).
+template <uint32_t WEIGHTS, const SkinOrders &O, uint32_t UV_IN, uint32_t UV_OUT, bool TANGENT = false>
+static const uint8_t *__fastcall skin_full_x87(const float *bones, const float *uv_scale, float, const float *uv_offset, const uint16_t *layout,
+                                               const uint8_t *vertex, uint8_t *out) {
+    const uint8_t *end = skin_x87_core<TANGENT ? 0x28 : 0x18, WEIGHTS, 0, TANGENT ? 5 : 4, 0, O, UV_IN, UV_OUT>(bones, layout, vertex, out, uv_scale, uv_offset);
+    return TANGENT ? nullptr : end;   // the copies with a tangent end with eax holding the layout's final 0
 }
 static const SkinOrders skin_positions_x87_orders = {{{1, 2, 0}, {1, 0, 2}, {1, 0, 2}}, {{1, 2, 0}, {1, 0, 2}, {1, 0, 2}}, {}, {}};
 static const SkinOrders skin_normals_x87_orders = {{{0, 1, 2}, {1, 0, 2}, {1, 0, 2}}, {{2, 1, 0}, {2, 0, 1}, {2, 0, 1}},
@@ -565,3 +593,13 @@ static float *__thiscall matrix_turn_by(float *m, const float *turn) {
 }
 static const uint8_t matrix_turn_by_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x81, 0xec, 0xa0, 0x00, 0x00, 0x00, 0x8b, 0x55, 0x08};
 REWRITE("Matrix::TurnBy", 0xc209e0, matrix_turn_by_original, &matrix_turn_by, &g_rotate_rows);
+static const SkinOrders skin_full_x87_bf0ac0_orders = {{{0, 1, 2}, {1, 0, 2}, {1, 0, 2}}, {{2, 1, 0}, {2, 0, 1}, {2, 0, 1}}, {{2, 0, 1}, {2, 1, 0}, {2, 1, 0}}, {}};
+static const SkinOrders skin_full_x87_bf1060_orders = {{{0, 1, 2}, {1, 0, 2}, {1, 0, 2}}, {{2, 1, 0}, {2, 0, 1}, {2, 0, 1}}, {{2, 1, 0}, {1, 2, 0}, {1, 2, 0}}, {}};
+static const uint8_t skin_full_x87_original[] = {0x83, 0xec, 0x20, 0xd9, 0x44, 0x24, 0x24, 0x53};
+REWRITE("Skin::FullX87", 0xbf0ac0, skin_full_x87_original, (&skin_full_x87<0x1a, skin_full_x87_bf0ac0_orders, 0x1c, 0x18>), &g_skins_x87);
+REWRITE("Skin::FullX87", 0xbf1060, skin_full_x87_original, (&skin_full_x87<0x1c, skin_full_x87_bf1060_orders, 0x20, 0x18>), &g_skins_x87);
+static const SkinOrders skin_full_x87_bf1600_orders = {{{0, 1, 2}, {2, 1, 0}, {2, 1, 0}}, {{2, 1, 0}, {0, 2, 1}, {0, 2, 1}}, {{2, 0, 1}, {2, 0, 1}, {2, 0, 1}}, {{1, 2, 0}, {2, 1, 0}, {2, 1, 0}}};
+static const SkinOrders skin_full_x87_bf1c40_orders = {{{0, 2, 1}, {0, 2, 1}, {0, 2, 1}}, {{2, 1, 0}, {2, 1, 0}, {2, 1, 0}}, {{2, 1, 0}, {1, 0, 2}, {1, 0, 2}}, {{2, 0, 1}, {0, 2, 1}, {0, 2, 1}}};
+static const uint8_t skin_full_x87_tangent_original[] = {0x83, 0xec, 0x24, 0xd9, 0x44, 0x24, 0x28, 0x53};
+REWRITE("Skin::FullX87", 0xbf1600, skin_full_x87_tangent_original, (&skin_full_x87<0x2a, skin_full_x87_bf1600_orders, 0x2c, 0x24, true>), &g_skins_x87);
+REWRITE("Skin::FullX87", 0xbf1c40, skin_full_x87_tangent_original, (&skin_full_x87<0x2c, skin_full_x87_bf1c40_orders, 0x30, 0x24, true>), &g_skins_x87);
