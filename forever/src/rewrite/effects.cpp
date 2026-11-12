@@ -73,3 +73,40 @@ static const uint8_t effect_set_matrix_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe
 REWRITE("Effect::SetMatrix", 0xc957e0, effect_set_matrix_original, (&effect_set_matrix<0x670, 0x750, 0x1ca4>), &g_effect_set_matrix);
 REWRITE("Effect::SetMatrix", 0xc76870, effect_set_matrix_original, (&effect_set_matrix<0x2090, 0x6e0, 0x674>), &g_effect_set_matrix);
 REWRITE("Effect::SetMatrix", 0xc71070, effect_set_matrix_original, (&effect_set_matrix<0x9f0, 0x6d0, 0x674>), &g_effect_set_matrix);
+
+// ---- Effect::SetMatrices(source, n, numbers): count = min(n, the effect's limit); with numbers, matrix i (64 bytes)
+// becomes source's matrix numbers[i], for i below count (a count past 2^31 copies none, as the game's signed loops);
+// without, the first n (ALL_N) or count matrices come from source as they are (as the game copies them: rep movsd,
+// then bytes).
+// The count is kept and flag 8 set; returns the flags. The limit is a member (LIMIT_AT) or a fixed number. ----
+static volatile long g_effect_set_matrices;
+template <uint32_t LIMIT_AT, uint32_t LIMIT, uint32_t DST, uint32_t COUNT_AT, uint32_t FLAGS_AT, bool ALL_N>
+static uint32_t __thiscall effect_set_matrices(uint8_t *self, const uint8_t *source, uint32_t n, const uint8_t *numbers) {
+    g_effect_set_matrices++;
+    uint32_t limit = LIMIT_AT ? *(uint32_t *)(self + LIMIT_AT) : LIMIT;
+    uint32_t count = limit > n ? n : limit;
+    if (numbers) {
+        for (int32_t i = 0; i < (int32_t)count; i++) {
+            const volatile uint32_t *from = (const volatile uint32_t *)(source + numbers[i] * 0x40);
+            volatile uint32_t *to = (volatile uint32_t *)(self + DST + i * 0x40);
+            for (int k = 0; k < 16; k++) to[k] = from[k];
+        }
+    } else {
+        uint32_t bytes = (ALL_N ? n : count) << 6;
+        void *to = self + DST;
+        const void *from = source;
+        uint32_t dwords = bytes >> 2, rest = bytes & 3;
+        __asm__ volatile("cld\n\trep movsl\n\tmovl %[rest], %%ecx\n\trep movsb"
+                         : "+D"(to), "+S"(from), "+c"(dwords)
+                         : [rest] "r"(rest)
+                         : "memory");
+    }
+    uint32_t flags = *(uint32_t *)(self + FLAGS_AT) | 8;
+    *(uint32_t *)(self + COUNT_AT) = count;
+    *(uint32_t *)(self + FLAGS_AT) = flags;
+    return flags;
+}
+static const uint8_t effect_set_matrices_c76f70[] = {0x83, 0xec, 0x0c, 0x53, 0x55, 0x8b, 0xe9, 0x8b};
+static const uint8_t effect_set_matrices_c95ee0[] = {0x83, 0xec, 0x0c, 0x53, 0x55, 0x56, 0x8b, 0xe9};
+REWRITE("Effect::SetMatrices", 0xc76f70, effect_set_matrices_c76f70, (&effect_set_matrices<0x498, 0, 0x7a0, 0x20d0, 0x674, true>), &g_effect_set_matrices);
+REWRITE("Effect::SetMatrices", 0xc95ee0, effect_set_matrices_c95ee0, (&effect_set_matrices<0, 0x40, 0x810, 0x6f4, 0x1ca4, false>), &g_effect_set_matrices);

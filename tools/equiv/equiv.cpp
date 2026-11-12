@@ -476,7 +476,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
-extern const uint32_t titled_info[], titled_callees[], value_info[];
+extern const uint32_t titled_info[], titled_callees[], value_info[], record_info[];
 // Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
 // text gets a wide string of its own
 static void *__thiscall stub_text_for_child(void **self, void **name, void *window, uint32_t value) {
@@ -5493,6 +5493,23 @@ static std::vector<Test> tests() {
             if (v[0] == e->at) value_where = v[1], value_count = v[2], value_starts = v + 3;
     };
     t.push_back(value_map);
+    // Record::Fields: its record (0x1000) and the one given (0x3000), random bytes
+    static uint32_t record_count;
+    Test record_set_fields{0x84f2f0,
+                           [=](Rng &r) {
+                               fresh(r);
+                               for (int i = 0; i < 0x1000; i++) arena<uint32_t>(0x1000)[i] = r.next();   // both records
+                           },
+                           [](void *fn) {
+                               uint32_t got = record_count == 2 ? ((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x1000), arena<void>(0x3000))
+                                                                : ((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x1000));
+                               return Result{got};
+                           }};
+    record_set_fields.prepare = [](const rewrite::Entry *e) {
+        for (const uint32_t *v = record_info; *v; v += 2)
+            if (v[0] == e->at) record_count = v[1];
+    };
+    quick(record_set_fields);
     // Kinds::Code: small values (0-16) and any values for each argument
     t.push_back({0xbca360,
                  [=](Rng &r) {
@@ -5505,6 +5522,24 @@ static std::vector<Test> tests() {
                  }});
     t.back().data = false;
     t.back().iterations = 3000;
+    // Effect::SetMatrices: an effect (0x100; its limit 0-70 or past 2^31), 256 source matrices (0x4000), numbers (0x9000,
+    // any bytes) or none; n 0-70, or past 2^31 when there are numbers
+    Test effect_set_matrices{0xc76f70,
+                             [=](Rng &r) {
+                                 fresh(r);
+                                 for (int i = 0; i < 0x1000; i++) arena<uint32_t>(0x4000)[i] = r.next();
+                                 for (int i = 0; i < 0x100; i++) arena<uint8_t>(0x9000)[i] = (uint8_t)r.next();
+                                 *(uint32_t *)arena<uint8_t>(0x100 + 0x498) = r.range(0, 5) ? r.range(0, 70) : 0x80000000u + r.range(0, 9);
+                                 bool numbers = r.range(0, 3) != 0;
+                                 arena<uint32_t>(0x10)[0] = numbers;
+                                 arena<uint32_t>(0x10)[1] = numbers && !r.range(0, 5) ? 0x80000000u + r.range(0, 9) : r.range(0, 70);
+                             },
+                             [](void *fn) {
+                                 uint32_t *a = arena<uint32_t>(0x10);
+                                 return Result{((uint32_t(__thiscall *)(void *, void *, uint32_t, void *))fn)(arena<void>(0x100), arena<void>(0x4000), a[1],
+                                                                                                             a[0] ? arena<void>(0x9000) : nullptr)};
+                             }};
+    quick(effect_set_matrices);
     // Effect::SetMatrix: an effect (0x100, its matrices any floats) and a matrix of any floats; which 0-5 (4, 5: none)
     Test effect_set_matrix{0xc957e0,
                            [=](Rng &r) {

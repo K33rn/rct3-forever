@@ -582,7 +582,7 @@ address,size,name,callers,status
 0x42c210,35,Chain::Free42C1E0,1,rewritten
 0x42c240,35,Chain::Free42C1E0,1,rewritten
 0x42c270,55,,2,documented
-0x42c2b0,49,,2,documented
+0x42c2b0,49,Record::Fields,2,rewritten
 0x42c2f0,70,Record::SetFields,1,rewritten
 0x42c340,265,,3,documented
 0x42c490,187,Order::MoveBefore42C490,3,rewritten
@@ -1073,7 +1073,7 @@ address,size,name,callers,status
 0x457550,249,,2,documented
 0x457650,19,,1,documented
 0x4576b0,136,Text::Assign40A6E0,5,rewritten
-0x457740,315,,1,documented
+0x457740,315,Record::Fields,1,rewritten
 0x457880,782,,0,documented
 0x457c00,318,,1,documented
 0x457da0,98,,1,documented
@@ -3046,7 +3046,7 @@ address,size,name,callers,status
 0x506010,40,,1,documented
 0x506040,48,QueryInterface,12,rewritten
 0x506130,90,Keyed::Init506130,1,rewritten
-0x5061b0,84,,0,documented
+0x5061b0,84,Record::Fields,0,rewritten
 0x506300,30,DeletingDestructor,0,rewritten
 0x506320,25,,3,documented
 0x506360,46,,2,documented
@@ -3089,7 +3089,7 @@ address,size,name,callers,status
 0x50aba0,48,QueryInterface,0,rewritten
 0x50ade0,48,QueryInterface,7,rewritten
 0x50aeb0,48,QueryInterface,0,rewritten
-0x50af10,77,,0,documented
+0x50af10,77,Record::Fields,0,rewritten
 0x50b010,48,QueryInterface,0,rewritten
 0x50b040,48,QueryInterface,1,rewritten
 0x50b130,152,,0,documented
@@ -7014,7 +7014,7 @@ address,size,name,callers,status
 0x6af460,219,,11,documented
 0x6af540,184,List::DeleteAll6AF540,10,rewritten
 0x6af600,184,List::DeleteAll6AF540,0,rewritten
-0x6af6c0,56,,55,documented
+0x6af6c0,56,Record::Fields,55,rewritten
 0x6af710,67,,116,documented
 0x6af760,113,,284,documented
 0x6af7e0,764,,277,documented
@@ -11434,7 +11434,7 @@ address,size,name,callers,status
 0x84f1a0,83,,6,documented
 0x84f220,96,Buffers::Free84F220,2,rewritten
 0x84f280,99,,2,documented
-0x84f2f0,596,,1,documented
+0x84f2f0,596,Record::Fields,1,rewritten
 0x84f550,16,Object::SetFields,2,rewritten
 0x84f560,180,Table20::Free,2,rewritten
 0x84f620,35,Chain::Free42C1E0,1,rewritten
@@ -11487,7 +11487,7 @@ address,size,name,callers,status
 0x8516a0,126,Pool::Free,7,rewritten
 0x851720,391,Object::GridGrow,4,rewritten
 0x8518b0,126,Pool::Free,7,rewritten
-0x851930,51,,2,documented
+0x851930,51,Record::Fields,2,rewritten
 0x851970,213,,1,documented
 0x851a50,262,,2,documented
 0x851b60,30,DeletingDestructor,0,rewritten
@@ -15789,7 +15789,7 @@ address,size,name,callers,status
 0xa3fb60,148,,1,documented
 0xa3fc20,937,,2,documented
 0xa40080,547,,0,documented
-0xa402b0,79,,2,documented
+0xa402b0,79,Record::Fields,2,rewritten
 0xa40300,15,Object::SetFieldTail,2,rewritten
 0xa40340,40,Text::Widen,0,rewritten
 0xa40450,371,,3,documented
@@ -16787,7 +16787,7 @@ address,size,name,callers,status
 0xaadee0,99,,7,documented
 0xaadf70,20,,1,documented
 0xaadf90,35,,2,documented
-0xaadfc0,190,,2,documented
+0xaadfc0,190,Record::Fields,2,rewritten
 0xaae080,39,,2,documented
 0xaae180,39,Part::PassAAE180,1,rewritten
 0xaae1b0,39,Part::PassAAE180,1,rewritten
@@ -17044,7 +17044,7 @@ address,size,name,callers,status
 0xac75f0,104,Factory::CreateAround,1,rewritten
 0xac7660,117,,1,documented
 0xac76e0,102,Factory::Create,1,rewritten
-0xac77d0,53,,0,documented
+0xac77d0,53,Record::Fields,0,rewritten
 0xac7840,238,,3,documented
 0xac79e0,26,OwnedPointer::Reset,2,rewritten
 0xac7a00,61,Array<4>::Allocate,0,rewritten
@@ -17720,7 +17720,7 @@ address,size,name,callers,status
 0xb189c0,105,Factory::Create,1,rewritten
 0xb18a70,30,DeletingDestructor,2,rewritten
 0xb18aa0,830,,2,documented
-0xb18de0,78,,2,documented
+0xb18de0,78,Record::Fields,2,rewritten
 0xb18e70,206,,0,documented
 0xb18f40,436,,2,documented
 0xb19110,92,Paired::Destroy8CDCD0,1,rewritten
@@ -18627,7 +18627,7 @@ address,size,name,callers,status
 0xb78d20,29,Object::CondCallSet,0,rewritten
 0xb78ea0,309,,0,documented
 0xb78fe0,90,,1,documented
-0xb79040,43,,1,documented
+0xb79040,43,Record::Fields,1,rewritten
 0xb790d0,56,Table::FreeB0E090,1,rewritten
 0xb79110,99,Factory::Global,24,rewritten
 0xb79180,30,DeletingDestructor,0,rewritten
@@ -20467,7 +20467,7 @@ address,size,name,callers,status
 0xbfc5b0,50,Lookup::ForgetBFC400,1,rewritten
 0xbfc5f0,40,Lookup::RefreshBFBE30,1,rewritten
 0xbfc620,40,,0,documented
-0xbfc710,49,,1,documented
+0xbfc710,49,Record::Fields,1,rewritten
 0xbfc750,34,OwnedList::ClearBF53E0,2,rewritten
 0xbfc780,37,MemberList::Each440E40,1,rewritten
 0xbfc7b0,37,MemberList::Each440E40,1,rewritten
@@ -20566,7 +20566,7 @@ address,size,name,callers,status
 0xc01b60,30,DeletingDestructor,1,rewritten
 0xc01b80,17,,1,documented
 0xc01ba0,971,,1,documented
-0xc02060,287,,1,documented
+0xc02060,287,Record::Fields,1,rewritten
 0xc02180,572,,1,documented
 0xc023c0,139,,1,documented
 0xc02480,46,,1,documented
@@ -20642,7 +20642,7 @@ address,size,name,callers,status
 0xc05d20,86,,4,documented
 0xc05e00,249,,4,documented
 0xc06050,51,ListNode::Unlink,1,rewritten
-0xc060f0,212,,1,documented
+0xc060f0,212,Record::Fields,1,rewritten
 0xc061d0,550,,3,documented
 0xc064a0,86,,2,documented
 0xc06500,248,,2,documented
@@ -21983,7 +21983,7 @@ address,size,name,callers,status
 0xc760f0,119,Record::CopyFields,1,rewritten
 0xc765a0,673,Lights::SetDirectional,1,rewritten
 0xc76870,1693,Effect::SetMatrix,1,rewritten
-0xc76f70,820,,1,documented
+0xc76f70,820,Effect::SetMatrices,1,rewritten
 0xc77340,24,Tree::InitADA8B0,1,rewritten
 0xc77360,16,Object::SetFields,1,rewritten
 0xc77390,26,Object::Forward2,1,rewritten
@@ -22032,7 +22032,7 @@ address,size,name,callers,status
 0xc94f00,109,STRUCT_COPY44,1,rewritten
 0xc95510,673,Lights::SetDirectional,1,rewritten
 0xc957e0,1693,Effect::SetMatrix,1,rewritten
-0xc95ee0,818,,1,documented
+0xc95ee0,818,Effect::SetMatrices,1,rewritten
 0xc96350,26,OwnedPointer::Reset,2,rewritten
 0xc96370,130,Array<4>::SetCapacity,1,rewritten
 0xc96400,40,OBJ_COPY,1,rewritten
@@ -22053,7 +22053,7 @@ address,size,name,callers,status
 0xc9bab0,8,,3,documented
 0xc9bcb0,11,,2,documented
 0xc9bcc0,150,PointerArray::Resize,1,rewritten
-0xc9bd60,61,,1,documented
+0xc9bd60,61,Record::Fields,1,rewritten
 0xc9bda0,86,FreeList::Take,1,rewritten
 0xc9be00,45,Recycled::Delete,0,rewritten
 0xc9be80,51,ListNode::Unlink,1,rewritten
