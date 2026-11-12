@@ -13399,10 +13399,10 @@ address,size,name,callers,status
 0x95dc70,115,,1,documented
 0x95dd10,232,,5,documented
 0x95de00,314,,1,documented
-0x95df40,543,,9,documented
-0x95e160,612,,9,documented
-0x95e3d0,615,,3,documented
-0x95e640,694,,2,documented
+0x95df40,543,Water::EdgeCut,9,rewritten
+0x95e160,612,Water::EdgeCutQuad,9,rewritten
+0x95e3d0,615,Water::EdgeCutQuad2,3,rewritten
+0x95e640,694,Water::EdgeCutFive,2,rewritten
 0x95e900,803,,3,documented
 0x95ec30,1435,,3,documented
 0x95f1e0,495,,1,documented

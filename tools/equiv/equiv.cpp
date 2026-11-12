@@ -5556,6 +5556,44 @@ static std::vector<Test> tests() {
                                                                                                              a[0] ? arena<void>(0x9000) : nullptr)};
                              }};
     quick(effect_set_matrices);
+    // Water::EdgeCut: three points, a height, a sum and a lowest value: any floats, or (half the cases) ordinary values
+    // around the height so the fractions fall inside and outside 0-1 and the lowest changes or not
+    Test water_edge_cut{0x95df40,
+                        [=](Rng &r) {
+                            fresh(r);
+                            bool plain = r.range(0, 1);
+                            auto value = [&]() { return plain ? (float)((int32_t)(r.next() % 2000) - 1000) / 100.0f : r.any_float(); };
+                            for (int i = 0; i < 12; i++) arena<float>(0x100)[i] = value();
+                            for (int i = 0; i < 4; i++) arena<float>(0x130)[i] = value();   // a fourth point
+                            *arena<float>(0x140) = value();
+                            *arena<float>(0x144) = value();
+                            *arena<float>(0x148) = value();
+                            *(void **)arena<uint8_t>(0x10) = arena<void>(0x200);
+                            *(void **)arena<uint8_t>(0x14) = arena<void>(0x300);
+                            *arena<uint32_t>(0x18) = r.next() % 1000;
+                        },
+                        [](void *fn) {
+                            void *got = ((void *(__fastcall *)(void *, void *, void *, float, void *, void *, void *, void *, void *))fn)(
+                                arena<void>(0x10), arena<void>(0x14), arena<void>(0x18), *arena<float>(0x148), arena<void>(0x100), arena<void>(0x110),
+                                arena<void>(0x120), arena<void>(0x140), arena<void>(0x144));
+                            return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
+                        }};
+    quick(water_edge_cut);
+    Test water_edge_cut_quad = water_edge_cut;
+    water_edge_cut_quad.at = 0x95e160;
+    quick(water_edge_cut_quad);
+    Test water_edge_cut_quad2 = water_edge_cut;
+    water_edge_cut_quad2.at = 0x95e3d0;
+    water_edge_cut_quad2.call = [](void *fn) {
+        void *got = ((void *(__fastcall *)(void *, void *, void *, float, void *, void *, void *, void *, void *, void *))fn)(
+            arena<void>(0x10), arena<void>(0x14), arena<void>(0x18), *arena<float>(0x148), arena<void>(0x100), arena<void>(0x110), arena<void>(0x120),
+            arena<void>(0x130), arena<void>(0x140), arena<void>(0x144));
+        return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
+    };
+    quick(water_edge_cut_quad2);
+    Test water_edge_cut_five = water_edge_cut_quad2;
+    water_edge_cut_five.at = 0x95e640;
+    quick(water_edge_cut_five);
     // Effect::SetMatrix: an effect (0x100, its matrices any floats) and a matrix of any floats; which 0-5 (4, 5: none)
     Test effect_set_matrix{0xc957e0,
                            [=](Rng &r) {
