@@ -4902,6 +4902,7 @@ static std::vector<Test> tests() {
                                  }
                                  arena<uint32_t>(0x600)[0xbc / 4] = r.next();
                                  uint32_t *new_handle = arena<uint32_t>(0x700);
+                                 memset(new_handle, 0, 0x80);   // the new handle's other fields: not what earlier tests left there
                                  new_handle[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(0x780);
                                  arena<uint32_t>(0x780)[0] = (uint32_t)(uintptr_t)arena<void>(0x790);
                                  arena<uint32_t>(0x790)[1] = (uint32_t)(uintptr_t)arena<void>(0x780);
