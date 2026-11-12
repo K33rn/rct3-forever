@@ -14,10 +14,17 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 // A member step: 0 dword store, 1 byte store, 4 word store, 2 store the constructor's argument number value, 3 call fn
 // on the member at +off (thiscall) with count values, 5 store the global at value as it is then, 6 store a pointer to
 // +value of the object, 7 store the shared empty wide string, 10 store at +off a new object (value bytes made by fn with
-// count values, or null when there was no memory), 12 the mark (no parent: the title object's +4 = 1).
+// count values, or null when there was no memory; 11 the same storing the memory rather than what fn returns), 12 the mark (no parent: the title object's +4 = 1).
+// 8 makes the member at +off a reference to the empty handle (0x805750) linked (+8) first in that handle's list, 9 the
+// same with the handle of no object (0x805700 given null).
 struct TitledOp {
     uint32_t kind, off, value, fn, count, args[5], globals;   // bit i of globals: args[i] is a global, read when used
+    uint32_t given;                                           // bit i: args[i] is the constructor's argument number args[i]
+    uint32_t selfs;                                           // bit i: args[i] is an offset into the object (a pointer to it)
+    uint32_t temps;                                           // bit i: args[i] is the temporary (what its maker returned)
+    uint32_t temp_fn, temp_count, temp_args[3];               // 10/11: a temporary made first (thiscall, constant values)
 };
+// 15 destroys the temporary (fn, thiscall) when it was made.
 // A value the base takes after (parent or title, text): a constant, or the constructor's argument number value.
 struct TitledExtra {
     uint32_t is_arg, value;
@@ -81,10 +88,17 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     for (uint32_t i = 0; i < EXTRA_COUNT; i++) base_args[2 + i] = EXTRAS[i].is_arg ? given[EXTRAS[i].value] : EXTRAS[i].value;
     titled_call(BASE, self, 2 + EXTRA_COUNT, base_args);
     if (copied) titled_release(made);
+    alignas(16) uint8_t temp[0x40];   // a temporary on the stack (a text made for a new object's constructor)
+    void *temp_made = nullptr;
+    bool temp_built = false;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
         uint32_t args[5];
-        for (uint32_t i = 0; i < 5; i++) args[i] = op.globals >> i & 1 ? *(uint32_t *)(uintptr_t)op.args[i] : op.args[i];
+        for (uint32_t i = 0; i < 5; i++)
+            args[i] = op.globals >> i & 1 ? *(uint32_t *)(uintptr_t)op.args[i]
+                      : op.given >> i & 1 ? given[op.args[i]]
+                      : op.selfs >> i & 1 ? (uint32_t)(uintptr_t)(self + op.args[i])
+                                          : op.args[i];
         switch (op.kind) {
         case 0: *(uint32_t *)(self + op.off) = op.value; break;
         case 1: self[op.off] = (uint8_t)op.value; break;
@@ -94,12 +108,36 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 5: *(uint32_t *)(self + op.off) = *(uint32_t *)(uintptr_t)op.value; break;
         case 6: *(uint8_t **)(self + op.off) = self + op.value; break;
         case 7: *(void **)(self + op.off) = ((void *(__fastcall *)(uint32_t))0xbd0490)(1); break;
-        case 10: {
+        case 10:
+        case 11: {   // 10 stores what the constructor returns, 11 the memory it was given
             void *memory = memory_alloc(op.value), *object = nullptr;
-            if (memory) object = titled_call(op.fn, memory, op.count, args);
-            *(void **)(self + op.off) = object;
+            if (memory) {
+                if (op.temp_fn) {
+                    temp_made = titled_call(op.temp_fn, temp, op.temp_count, op.temp_args);
+                    temp_built = true;
+                    for (uint32_t i = 0; i < 5; i++)
+                        if (op.temps >> i & 1) args[i] = (uint32_t)(uintptr_t)temp_made;
+                }
+                object = titled_call(op.fn, memory, op.count, args);
+            }
+            *(void **)(self + op.off) = op.kind == 10 ? object : memory;
             break;
         }
+        case 8:
+        case 9: {
+            uint8_t *handle = op.kind == 8 ? ((uint8_t * (__cdecl *)())0x805750)() : ((uint8_t * (__thiscall *)(void *))0x805700)(nullptr);
+            *(uint8_t **)(self + op.off + 4) = handle;
+            uint32_t *link = (uint32_t *)(self + op.off + 8), *head = *(uint32_t **)(handle + 0x20);
+            link[0] = head[0];
+            ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)link;
+            link[1] = (uint32_t)(uintptr_t)head;
+            head[0] = (uint32_t)(uintptr_t)link;
+            break;
+        }
+        case 15:
+            if (temp_built) ((void(__thiscall *)(void *))(uintptr_t)op.fn)(temp);
+            temp_built = false;
+            break;
         case 12:
             if (!parent) (*(uint8_t **)TITLE)[4] = 1;
             break;

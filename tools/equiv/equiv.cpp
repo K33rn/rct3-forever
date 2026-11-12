@@ -209,6 +209,15 @@ static void record(uint32_t fn, void *arg) {
         log[0]++;
     }
 }
+static void *g_text_ref;
+// a value given to a stand-in: a temporary on the stack is told by what it is (the text made last: 0x7e57; other:
+// its first dword), never by where it is, which differs between the original's run and the rewrite's
+static void *arg_value(uint32_t v) {
+    uintptr_t here = (uintptr_t)&v;
+    if (v == (uint32_t)(uintptr_t)g_text_ref) return (void *)0x7e57;
+    if (v > here && v - here < 0x4000) return (void *)(uintptr_t)(0x57ac0000u ^ *(uint32_t *)(uintptr_t)v);
+    return (void *)(uintptr_t)v;
+}
 static void __cdecl stub_free(void *p) { record(0xbce000, p); }
 static void __cdecl stub_free_aligned(void *p) { record(0xbce010, p); }
 
@@ -462,8 +471,8 @@ static void *__thiscall stub_titled_base6(void *self, void *p, void **t, uint32_
     return self;
 }
 static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
-    record(0x81, self); record(0x81, (void *)(uintptr_t)a); record(0x81, (void *)(uintptr_t)b); record(0x81, (void *)(uintptr_t)c); record(0x81, (void *)(uintptr_t)d);
-    record(0x81, (void *)(uintptr_t)e); return self;
+    record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
+    record(0x81, arg_value(e)); return self;
 }
 extern const uint32_t titled_info[], titled_callees[];
 static uintptr_t g_titled_title;
@@ -473,11 +482,11 @@ static uint32_t g_window_args;   // 2 or 3, from the copy's ret
 // list's add, the description's name step and the object info
 static void __thiscall stub_class_base(void *self, void *description, uint32_t a, uint32_t b) { record(0x80, self); record(0x80, description); record(0x80, (void *)(uintptr_t)a); record(0x80, (void *)(uintptr_t)b); }
 static void *__thiscall stub_built0(void *self) { record(0x81, self); return self; }
-static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, (void *)(uintptr_t)a); return self; }
-static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, (void *)(uintptr_t)a); record(0x81, (void *)(uintptr_t)b); return self; }
-static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, (void *)(uintptr_t)a); record(0x81, (void *)(uintptr_t)b); record(0x81, (void *)(uintptr_t)c); return self; }
+static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, arg_value(a)); return self; }
+static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return self; }
+static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); return self; }
 static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
-    record(0x81, self); record(0x81, (void *)(uintptr_t)a); record(0x81, (void *)(uintptr_t)b); record(0x81, (void *)(uintptr_t)c); record(0x81, (void *)(uintptr_t)d); return self;
+    record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d)); return self;
 }
 static void __thiscall stub_field_add(void *list, void *field) { record(0x82, list); record(0x82, field); }
 static void __thiscall stub_struct_total(void *field) { record(0x86, field); }   // a struct field closed (slot 0, 0x808D90)
@@ -638,7 +647,6 @@ static void __fastcall stub_text_ref(void *self, void *, int32_t **name, void *t
 }
 // GameText::Copy: the named reference is on the stack (recorded as 1, as the String above); its text (+8) is a
 // wide C text at 0x300 or none (arena 0x3c)
-static void *g_text_ref;
 static void *__fastcall stub_named_text_ref(uint8_t *self, void *, const char *name, void *texts, uint32_t suffix) {
     g_text_ref = self;
     memset(self, 0xa5, 0x1c);   // all of it, as the real one: a rewrite with too small a space for it overruns its stack
@@ -5229,10 +5237,16 @@ static std::vector<Test> tests() {
                               arena<uint32_t>(0x10)[0] = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x8100) : 0;
                               arena<uint32_t>(0x10)[1] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x30) : 0;
                               for (int k = 2; k < 6; k++) arena<uint32_t>(0x10)[k] = r.next();
+                              for (uint32_t h : {0x700u, 0x600u}) {   // the empty handle and the one of no object, each with a list
+                                  arena<uint32_t>(h)[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(h + 0x80);
+                                  arena<uint32_t>(h + 0x80)[0] = (uint32_t)(uintptr_t)arena<void>(h + 0x90);
+                                  arena<uint32_t>(h + 0x90)[1] = (uint32_t)(uintptr_t)arena<void>(h + 0x80);
+                              }
                               arena<uint32_t>(CALL_LOG)[0] = 0;
                           },
                           [](void *fn) {
                               *(void **)g_titled_title = arena<void>(0x8000);
+                              g_null_handle = arena<void>(0x700);
                               uint32_t *a = arena<uint32_t>(0x10);
                               void *self = arena<void>(0x100), *made;
                               switch (g_titled_args) {
@@ -5252,7 +5266,8 @@ static std::vector<Test> tests() {
             if (titled_info[k] == e->at) g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4];
         std::vector<std::pair<uint32_t, void *>> list = {{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0xbd0490, (void *)stub_wide_empty_shared},
                                                          {0x403be0, (void *)stub_wide_assign_c}, {0x403bb0, (void *)stub_wide_assign}, {0x41c740, (void *)stub_wide_copy},
-                                                         {base, bases[base_args]}};
+                                                         {0x805750, (void *)stub_null_handle}, {0x805700, (void *)stub_member_handle_of}, {base, bases[base_args]},
+                                                         {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}};
         for (int k = 0; titled_callees[k]; k += 2) list.push_back({titled_callees[k], built[titled_callees[k + 1]]});
         stubs_for_now(list);
     };
