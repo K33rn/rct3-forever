@@ -21,7 +21,7 @@ address,size,name,callers,status
 0x402bf0,77,,58,documented
 0x402c40,92,,105,documented
 0x402cb0,17,,2,documented
-0x402dc0,59,,0,documented
+0x402dc0,59,Record::Fields,0,rewritten
 0x402f70,83,Single::Get402F70,89,rewritten
 0x402ff0,30,DeletingDestructor,0,rewritten
 0x403020,177,,2,documented
@@ -590,7 +590,7 @@ address,size,name,callers,status
 0x42c610,215,,2,documented
 0x42c7d0,147,Chunks::Take42C7D0,1,rewritten
 0x42c870,147,Chunks::Take42C7D0,1,rewritten
-0x42c910,135,,2,documented
+0x42c910,135,Record::Fields,2,rewritten
 0x42c9a0,8,,1,documented
 0x42c9b0,8,,2,documented
 0x42c9c0,146,,1,documented
@@ -1843,7 +1843,7 @@ address,size,name,callers,status
 0x494fe0,137,,4,documented
 0x4950f0,11,,1,documented
 0x495110,100,,1,documented
-0x495180,41,,3,documented
+0x495180,41,Record::Fields,3,rewritten
 0x4951b0,82,,8,documented
 0x495220,173,,2,documented
 0x4952e0,129,,1,documented
@@ -2657,7 +2657,7 @@ address,size,name,callers,status
 0x4d4070,30,DeletingDestructor,2,rewritten
 0x4d4090,798,,1,documented
 0x4d4430,42,Level::Value,0,rewritten
-0x4d4460,101,,1,documented
+0x4d4460,101,Record::Fields,1,rewritten
 0x4d44f0,39,,1,documented
 0x4d4520,150,,2,documented
 0x4d45c0,141,,8,documented
@@ -3046,7 +3046,7 @@ address,size,name,callers,status
 0x506010,40,,1,documented
 0x506040,48,QueryInterface,12,rewritten
 0x506130,90,Keyed::Init506130,1,rewritten
-0x5061b0,84,Record::Fields,0,rewritten
+0x5061b0,84,Record::Fields,0,documented
 0x506300,30,DeletingDestructor,0,rewritten
 0x506320,25,,3,documented
 0x506360,46,,2,documented
@@ -3076,7 +3076,7 @@ address,size,name,callers,status
 0x509c50,1963,,5,documented
 0x50a450,40,Text::Widen,0,rewritten
 0x50a500,31,Object::Fwd2Clear,1,rewritten
-0x50a550,103,,1,documented
+0x50a550,103,Record::Fields,1,rewritten
 0x50a6a0,45,,0,documented
 0x50a6d0,45,,0,documented
 0x50a7f0,19,,1,documented
@@ -3089,7 +3089,7 @@ address,size,name,callers,status
 0x50aba0,48,QueryInterface,0,rewritten
 0x50ade0,48,QueryInterface,7,rewritten
 0x50aeb0,48,QueryInterface,0,rewritten
-0x50af10,77,Record::Fields,0,rewritten
+0x50af10,77,Record::Fields,0,documented
 0x50b010,48,QueryInterface,0,rewritten
 0x50b040,48,QueryInterface,1,rewritten
 0x50b130,152,,0,documented
@@ -3989,7 +3989,7 @@ address,size,name,callers,status
 0x576bf0,323,,1,documented
 0x576d40,2966,,1,documented
 0x577900,48,QueryInterface,0,rewritten
-0x577940,110,,1,documented
+0x577940,110,Record::Fields,1,rewritten
 0x5779b0,53,,1,documented
 0x5779f0,115,,2,documented
 0x577a70,79,,2,documented
@@ -4130,7 +4130,7 @@ address,size,name,callers,status
 0x58a620,155,,0,documented
 0x58a6c0,124,,2,documented
 0x58a7a0,137,,9,documented
-0x58a830,80,,2,documented
+0x58a830,80,Record::Fields,2,rewritten
 0x58a880,30,DeletingDestructor,1,rewritten
 0x58a8a0,7,SetTable,1,rewritten
 0x58a8b0,372,,1,documented
@@ -4855,7 +4855,7 @@ address,size,name,callers,status
 0x5cf7b0,68,,2,documented
 0x5cf820,337,,0,documented
 0x5cf980,164,,5,documented
-0x5cfaf0,30,,2,documented
+0x5cfaf0,30,Record::Fields,2,rewritten
 0x5cfb10,15,,6,documented
 0x5cfb20,21,,4,documented
 0x5cfb70,34,Record::CopyRanges,1,rewritten
@@ -5145,7 +5145,7 @@ address,size,name,callers,status
 0x5eb020,48,QueryInterface,0,rewritten
 0x5eb0e0,117,State::Step4E5FB0,1,rewritten
 0x5eb160,32,Found::Set4E5F00,2,rewritten
-0x5eb1b0,138,,1,documented
+0x5eb1b0,138,Record::Fields,1,rewritten
 0x5eb7f0,30,DeletingDestructor,1,rewritten
 0x5eb810,7,BaseClass::SetClass,1,rewritten
 0x5eb820,30,DeletingDestructor,1,rewritten
@@ -5624,7 +5624,7 @@ address,size,name,callers,status
 0x62f160,4112,,1,documented
 0x6301b0,136,,6,documented
 0x630250,88,View::ApplyTransform630250,3,rewritten
-0x630360,33,,4,documented
+0x630360,33,Record::Fields,4,rewritten
 0x630390,13,,4,documented
 0x6304a0,667,,1,documented
 0x630760,30,DeletingDestructor,2,rewritten
@@ -5792,7 +5792,7 @@ address,size,name,callers,status
 0x63d3f0,185,,2,documented
 0x63d4b0,44,,3,documented
 0x63d4e0,1314,,1,documented
-0x63da80,54,,2,documented
+0x63da80,54,Record::Fields,2,rewritten
 0x63dad0,30,DeletingDestructor,1,rewritten
 0x63db00,957,,3,documented
 0x63def0,40,Text::Widen,0,rewritten
@@ -9378,7 +9378,7 @@ address,size,name,callers,status
 0x7995a0,105,Factory::Create,1,rewritten
 0x799610,30,DeletingDestructor,3,rewritten
 0x799750,45,Mode::Step799750,1,rewritten
-0x799780,114,,2,documented
+0x799780,114,Record::Fields,2,rewritten
 0x799910,297,,1,documented
 0x799a40,227,,1,documented
 0x799b30,40,,0,documented
@@ -9814,7 +9814,7 @@ address,size,name,callers,status
 0x7c1ed0,7,SetTable,1,rewritten
 0x7c1f10,7,SetTable,3,rewritten
 0x7c1f60,7,SetTable,2,rewritten
-0x7c1f70,50,,1,documented
+0x7c1f70,50,Record::Fields,1,rewritten
 0x7c1fb0,7,SetTable,2,rewritten
 0x7c2000,7,SetTable,2,rewritten
 0x7c2050,7,SetTable,3,rewritten
@@ -11138,7 +11138,7 @@ address,size,name,callers,status
 0x838960,29,,1,documented
 0x838980,38,,2,documented
 0x8389b0,71,,1,documented
-0x838a00,35,,1,documented
+0x838a00,35,Record::Fields,1,rewritten
 0x838a30,97,,0,documented
 0x838ac0,150,Span::Start838AC0,9,rewritten
 0x838b60,150,Span::Start838AC0,9,rewritten
@@ -12368,7 +12368,7 @@ address,size,name,callers,status
 0x8d3140,633,,2,documented
 0x8d33d0,59,,2,documented
 0x8d3410,158,,2,documented
-0x8d34b0,32,,6,documented
+0x8d34b0,32,Record::Fields,6,rewritten
 0x8d34d0,45,,2,documented
 0x8d3500,3061,,1,documented
 0x8d3590,111,,1,documented
@@ -12718,7 +12718,7 @@ address,size,name,callers,status
 0x8fe220,23,,1,documented
 0x8fe240,91,,1,documented
 0x8fe2a0,30,,2,documented
-0x8fe300,38,,1,documented
+0x8fe300,38,Record::Fields,1,rewritten
 0x8fe330,411,,1,documented
 0x8fe4e0,1536,,1,documented
 0x8feae0,441,,1,documented
@@ -13180,7 +13180,7 @@ address,size,name,callers,status
 0x93cd30,112,,12,documented
 0x93cdf0,33,,0,documented
 0x93ce50,20,,0,documented
-0x93d080,35,,1,documented
+0x93d080,35,Record::Fields,1,rewritten
 0x93d140,437,,2,documented
 0x93d340,287,,1,documented
 0x93d580,196,,1,documented
@@ -13437,7 +13437,7 @@ address,size,name,callers,status
 0x964e40,98,,4,documented
 0x964eb0,96,Factory::Global,1,rewritten
 0x964f10,7,SetTable,25,rewritten
-0x964f30,35,,12,documented
+0x964f30,35,Record::Fields,12,rewritten
 0x964fe0,246,,2,documented
 0x9650e0,210,,1,documented
 0x9651d0,212,,1,documented
@@ -15561,7 +15561,7 @@ address,size,name,callers,status
 0xa28ce0,20,,2,documented
 0xa28d00,30,DeletingDestructor,2,rewritten
 0xa28d50,40,Text::Widen,0,rewritten
-0xa28df0,36,,1,documented
+0xa28df0,36,Record::Fields,1,rewritten
 0xa28e20,54,Reference::Interface,1,rewritten
 0xa28f50,280,,1,documented
 0xa290d0,344,,4,documented
@@ -16150,7 +16150,7 @@ address,size,name,callers,status
 0xa67ee0,101,,0,documented
 0xa68080,12132,,1,documented
 0xa6b030,48,,1,documented
-0xa6b140,74,,30,documented
+0xa6b140,74,Record::Fields,30,rewritten
 0xa6b190,163,,0,documented
 0xa6b240,94,,0,documented
 0xa6b2a0,104,,2,documented
@@ -17539,7 +17539,7 @@ address,size,name,callers,status
 0xb06f20,30,DeletingDestructor,1,rewritten
 0xb06f40,92,Owner::SetObject4E0F20,1,rewritten
 0xb06fe0,48,QueryInterface,1,rewritten
-0xb07010,150,,2,documented
+0xb07010,150,Record::Fields,2,rewritten
 0xb070d0,87,,1,documented
 0xb071b0,30,DeletingDestructor,2,rewritten
 0xb071f0,179,MEMBER_DTOR,1,documented
@@ -17788,7 +17788,7 @@ address,size,name,callers,status
 0xb1f4d0,263,,1,documented
 0xb1f5e0,105,Factory::Create,1,rewritten
 0xb1f6b0,48,QueryInterface,0,rewritten
-0xb1f6e0,40,,2,documented
+0xb1f6e0,40,Record::Fields,2,rewritten
 0xb1f710,48,QueryInterface,0,rewritten
 0xb1f750,129,,1,documented
 0xb1f7e0,314,,2,documented
@@ -20951,7 +20951,7 @@ address,size,name,callers,status
 0xc1aba0,68,,1,documented
 0xc1ad00,11,,1,documented
 0xc1ad10,150,PointerArray::Resize,1,rewritten
-0xc1adb0,50,,1,documented
+0xc1adb0,50,Record::Fields,1,rewritten
 0xc1adf0,23,,2,documented
 0xc1ae10,131,,3,documented
 0xc1aea0,127,,1,documented
@@ -22581,7 +22581,7 @@ address,size,name,callers,status
 0xcc1d70,36,Debug::Forward,1,rewritten
 0xcc1da0,42,CObArray::operator[],1,library
 0xcc1dd0,75,,3,documented
-0xcc1e20,32,,3,documented
+0xcc1e20,32,Record::Fields,3,rewritten
 0xcc1e40,27,FID_conflict:~CRectTracker,10,library
 0xcc1e60,22,,0,documented
 0xcc1e80,61,FID_conflict:`scalar_deleting_destructor',1,library
@@ -22679,7 +22679,7 @@ address,size,name,callers,status
 0xcc4c50,204,,0,documented
 0xcc4d20,43,,6,documented
 0xcc4d50,10,,8,documented
-0xcc4d60,56,,3008,documented
+0xcc4d60,56,Record::Fields,3008,rewritten
 0xcc4da0,193,,1,documented
 0xcc4e70,38,Handle::ForwardCC2090,3,rewritten
 0xcc4ea0,44,,1,documented

@@ -5493,23 +5493,39 @@ static std::vector<Test> tests() {
             if (v[0] == e->at) value_where = v[1], value_count = v[2], value_starts = v + 3;
     };
     t.push_back(value_map);
-    // Record::Fields: its record (0x1000) and the one given (0x3000), random bytes
-    static uint32_t record_count;
-    Test record_set_fields{0x84f2f0,
-                           [=](Rng &r) {
-                               fresh(r);
-                               for (int i = 0; i < 0x1000; i++) arena<uint32_t>(0x1000)[i] = r.next();   // both records
-                           },
-                           [](void *fn) {
-                               uint32_t got = record_count == 2 ? ((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x1000), arena<void>(0x3000))
-                                                                : ((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x1000));
-                               return Result{got};
-                           }};
-    record_set_fields.prepare = [](const rewrite::Entry *e) {
-        for (const uint32_t *v = record_info; *v; v += 2)
-            if (v[0] == e->at) record_count = v[1];
+    // Record::Fields: its record (0x1000), a second record (0x5000) or values as its arguments; random bytes
+    static uint32_t record_layout, record_args;
+    Test record_fields{0x84f2f0,
+                       [=](Rng &r) {
+                           fresh(r);
+                           uint32_t mode = r.range(0, 4);   // random bytes, half zeros, small values, 0 or 1, small dwords
+                           auto byte = [&]() { return mode == 0 ? r.next() : mode == 1 ? (r.next() & 1 ? r.next() : 0) : mode == 2 ? r.next() & 3 : r.next() & 1; };
+                           for (int i = 0; i < 0x8000; i++) arena<uint8_t>(0x1000)[i] = mode == 4 ? (i % 4 ? 0 : r.next() & 3) : (uint8_t)byte();
+                           for (int i = 0; i < 3; i++) arena<uint32_t>(0x10)[i] = byte() | (mode == 0 || mode == 1 && arena<uint32_t>(0x10)[i] ? r.next() & ~0xffu : 0);
+                       },
+                       [](void *fn) {
+                           uint8_t *self = arena<uint8_t>(0x1000), *other = arena<uint8_t>(0x5000);
+                           uint32_t *v = arena<uint32_t>(0x10), got = 0;
+                           uint32_t first = record_layout == 1 ? (uint32_t)(uintptr_t)other : v[0];
+                           switch (record_layout * 4 + record_args) {
+                           case 0: got = ((uint32_t(__thiscall *)(void *))fn)(self); break;
+                           case 1: case 5: got = ((uint32_t(__thiscall *)(void *, uint32_t))fn)(self, first); break;
+                           case 2: case 6: got = ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(self, first, v[1]); break;
+                           case 3: case 7: got = ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(self, first, v[1], v[2]); break;
+                           case 9: got = ((uint32_t(__stdcall *)(void *))fn)(self); break;
+                           case 10: got = ((uint32_t(__stdcall *)(void *, uint32_t))fn)(self, v[1]); break;
+                           case 11: got = ((uint32_t(__stdcall *)(void *, uint32_t, uint32_t))fn)(self, v[1], v[2]); break;
+                           case 13: got = ((uint32_t(__cdecl *)(void *))fn)(self); break;
+                           case 14: got = ((uint32_t(__cdecl *)(void *, uint32_t))fn)(self, v[1]); break;
+                           default: got = ((uint32_t(__cdecl *)(void *, uint32_t, uint32_t))fn)(self, v[1], v[2]); break;
+                           }
+                           return Result{got};
+                       }};
+    record_fields.prepare = [](const rewrite::Entry *e) {
+        for (const uint32_t *v = record_info; *v; v += 3)
+            if (v[0] == e->at) record_layout = v[1], record_args = v[2];
     };
-    quick(record_set_fields);
+    quick(record_fields);
     // Kinds::Code: small values (0-16) and any values for each argument
     t.push_back({0xbca360,
                  [=](Rng &r) {

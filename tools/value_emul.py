@@ -36,9 +36,13 @@ def on_read(uc, access, addr, size, value, data):
         bad[0] = True
 
 
+dirty = [False]
+
+
 def on_write(uc, access, addr, size, value, data):
     if not (STACK + 0x7000 <= addr < STACK + 0x8000):
         bad[0] = True
+        dirty[0] = True   # it wrote where it shouldn't (the exe's image, the return page): put them back after the run
 
 
 emu.hook_add(UC_HOOK_MEM_READ, on_read)
@@ -57,10 +61,15 @@ def run(a, where, x, pops, small=None):
     emu.reg_write(UC_X86_REG_EDX, x if where == 'edx' else other())
     emu.reg_write(UC_X86_REG_ESP, esp)
     bad[0] = False
+    dirty[0] = False
     try:
         emu.emu_start(a, DONE, count=20000)
     except UcError:
         return None
+    finally:
+        if dirty[0]:
+            emu.mem_write(BASE, bytes(img))
+            emu.mem_write(DONE, bytes([0xcc]) * 16)
     if bad[0] or emu.reg_read(UC_X86_REG_ESP) != esp + 4 + pops:
         return None
     return emu.reg_read(UC_X86_REG_EAX)
@@ -100,8 +109,7 @@ def model(a, n, ins):
             ok = True
             for k, p in enumerate(bounds):
                 hi = bounds[k + 1] if k + 1 < len(bounds) else 0x100000000
-                for _ in range(6 if hi - p > 1 else 0):
-                    x = rnd.randrange(p, hi)
+                for x in (range(p + 1, hi) if hi - p <= 0x1000 else [rnd.randrange(p, hi) for _ in range(64)]):   # every value of a small range
                     if run(a, where, x, pops) != values[k]:
                         ok = False
                         break
@@ -128,8 +136,12 @@ for f in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')):
     if not f.endswith('values_emul.cpp'):
         TAKEN |= {int(x, 16) for x in re.findall(r'REWRITE\("[^"]+", (0x[0-9a-fA-F]+)', open(f, encoding='utf-8').read())}
 found = []
+OUTPUT = os.path.join(HERE, 'forever', 'src', 'rewrite', 'values_emul.cpp')
+mine = set()   # its own earlier finds (functions.csv already calls them rewritten)
+if os.path.exists(OUTPUT):
+    mine = {int(x, 16) for x in re.findall(r'^REWRITE\("[^"]+", (0x[0-9a-f]+)', open(OUTPUT).read(), re.M)}
 for r in rows:
-    if r['status'] != 'documented':
+    if r['status'] != 'documented' and int(r['address'], 16) not in mine and r['name'] != 'Values::Map':
         continue
     a, n = int(r['address'], 16), int(r['size'])
     if n < 24:
