@@ -194,11 +194,7 @@ FLAGS = ('add', 'sub', 'and', 'or', 'xor', 'inc', 'dec', 'cmp', 'test', 'call', 
 
 
 def tail(p):
-    """The member steps after the base and the copy's release, as ops (kind, off, value, fn, args):
-    0 dword store, 1 byte store, 2 store argument value, 3 call fn on the member at +off (thiscall) with constant args,
-    5 store the global at value as it is then, 6 store a pointer to +value of the object, 7 store the shared empty wide
-    string, 10 store at +off a new object: value bytes made by fn with constant args (null when there was no memory),
-    12 the mark (with no parent, the title object's +4 = 1)."""
+    """The member steps after the base and the copy's release, as ops (kind, off, value, fn, args); see titled.cpp."""
     ins, t, depth_at, at, nargs = p['ins'], p['t'], p['depth_at'], p['at'], p['nargs']
     kb = p['kb']
     # the copy's release: test byte ptr [esp + N], 1; ...; je END
@@ -245,33 +241,55 @@ def tail(p):
     R = {r: known(r, start) for r in ('eax', 'ebx', 'ecx', 'edx', 'esi', 'edi', 'ebp')}
     if ('this',) not in R.values():
         raise Reject('tail this')
-    ops, pushed, nulls, serial, temp = [], [], [], 0, None
-    flag = None   # what the flags were last set from: ('test', value)
+    ops, pushed, nulls, serial, S = [], [], [], 0, {}
+    cur = None          # the new object being made: its serial
+    temps = {}          # stack slot -> temporary number
+    built = set()       # temporaries and names made and not yet let go: ('temp', k) / ('name', k)
+    nnames = 0
+    flag = None         # what the flags were last set from
     k = start
     d = depth_at[start]
+
+    def value_of(v):    # a value given to a call: (kind, value) as the template reads it
+        if isinstance(v, int):
+            return (0, v)
+        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5}[v[0]], v[1]
+
     while True:
         s, x = t[k], ins[k]
         val = lambda r: R.get(r)
-        if x.mnemonic == 'pop' or s.startswith('mov dword ptr fs:[0]'):
-            # the epilogue: registers given back, the exception frame, eax = the object, ret
-            for q in range(k, len(t)):
-                u = t[q]
-                if (z := re.fullmatch(r'mov eax, ' + REG, u)):
-                    R['eax'] = val(z.group(1))
-                elif not (re.fullmatch(r'pop ' + REG, u) or re.fullmatch(r'mov ecx, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)
-                          or u.startswith(('mov dword ptr fs:[0], ecx', 'add esp, ', 'ret '))):
-                    raise Reject('epilogue: ' + u)
+        if x.mnemonic == 'ret':
             if R.get('eax') != ('this',):
                 raise Reject('returns')
             break
-        if (m := re.fullmatch(r'mov (dword|byte|word) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(2)) == ('this',) or \
-                (m and val(m.group(2)) and val(m.group(2))[0] == 'member'):
+        if (m := re.fullmatch(r'pop ' + REG, s)) and not pushed:
+            R[m.group(1)] = ('restored',); d -= 4; k += 1
+            continue
+        if s == 'mov dword ptr fs:[0], ecx' or (s.startswith('add esp, ') and not pushed and ins[k + 1].mnemonic == 'ret'):
+            k += 1
+            continue
+        # a member's value read earlier is only good until something else happens
+        if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and val(m.group(2))[0] in ('this', 'member') \
+                and m.group(1) != m.group(2):
+            R[m.group(1)] = ('field', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3) or '0'), len(ops))
+            k += 1
+            continue
+        if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'arg':
+            R[m.group(1)] = ('argderef', val(m.group(2))[1], len(ops))   # what an argument points to
+            k += 1
+            continue
+        if (m := re.fullmatch(r'(and|or) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(2)) and val(m.group(2))[0] == 'field':
+            R[m.group(2)] = ('field' + m.group(1), val(m.group(2))[1], num(m.group(3)), val(m.group(2))[2])
+            flag = None; k += 1
+            continue
+        if (m := re.fullmatch(r'mov (dword|byte|word) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] in ('this', 'member'):
             base_off = 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]
             off, v, size = base_off + num(m.group(3) or '0'), m.group(4), m.group(1)
+            w = val(v) if v in R else None
             if re.fullmatch(r'0x[0-9a-f]+|\d+', v):
                 ops.append(({'dword': 0, 'byte': 1, 'word': 4}[size], off, num(v), 0, []))
-            elif size == 'dword' and v in R and val(v):
-                w = val(v)
+            elif size == 'dword' and w:
                 if w[0] == 'const':
                     ops.append((0, off, w[1], 0, []))
                 elif w[0] == 'arg':
@@ -284,8 +302,14 @@ def tail(p):
                     ops.append((6, off, w[1], 0, []))
                 elif w[0] == 'empty':
                     ops.append((7, off, 0, 0, []))
-                elif w[0] == 'made':
-                    ops.append((10 if w[4] == 'returned' else 11, off, w[1], w[2], w[3], w[6]))
+                elif w[0] == 'obj' and w[1] == cur:
+                    ops.append((22, off, 0 if w[2] == 'returned' else 1, 0, []))
+                elif w[0] == 'argderef' and w[2] == len(ops):
+                    ops.append((29, off, w[1], 0, []))
+                elif w[0] == 'field' and w[2] == len(ops):
+                    ops.append((30, off, w[1], 0, []))
+                elif w[0] in ('fieldand', 'fieldor') and w[1] == off and w[3] == len(ops):
+                    ops.append((26 if w[0] == 'fieldand' else 27, off, w[2], 0, []))
                 else:
                     raise Reject('tail store ' + s)
             elif size == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] in ('const', 'byte'):
@@ -293,10 +317,12 @@ def tail(p):
             else:
                 raise Reject('tail store ' + s)
         elif re.fullmatch(r'mov (dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', s):
-            pass   # locals and the exception frame's state
+            z = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, s)
+            if z:   # locals (the exception frame's state is a byte or a constant)
+                S[num(z.group(1)) - d] = val(z.group(2))
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - d
-            R[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs else stored(slot, k)
+            R[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs else S.get(slot, stored(slot, k))
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', s)):
             R[m.group(1)] = ('global', num(m.group(2)))
         elif (m := re.fullmatch(r'mov ' + REG + ', ' + REG, s)):
@@ -309,76 +335,21 @@ def tail(p):
             R[m.group(1)] = ('const', num(m.group(2)))
         elif (m := re.fullmatch(r'mov ([abcd])l, (0x[0-9a-f]+|\d+)', s)):
             R['e' + m.group(1) + 'x'] = ('byte', num(m.group(2)) & 0xff)
+        elif (m := re.fullmatch(r'xor ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
+            R['e' + m.group(1) + 'x'] = ('byte', 0); flag = None
+        elif (m := re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
+            R['ecx'] = ('stack', num(m.group(1)) - d)
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] in ('this', 'member'):
             R[m.group(1)] = ('member', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3)))
         elif (m := re.fullmatch(r'(test ' + REG + ', ' + REG + '|cmp ' + REG + ', ' + REG + ')', s)):
             a_, b_ = (m.group(2), m.group(3)) if m.group(2) else (m.group(4), m.group(5))
             flag = ('test', val(a_)) if (a_ == b_ or val(b_) == ('const', 0)) else None
-        elif (m := re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
-            R['ecx'] = ('stack', num(m.group(1)) - d)
-        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack' and not (
-                t[k - 1].startswith('lea ecx') and ins[k - 2].mnemonic == 'je' and flag is None):
-            # a temporary on the stack, made with constant values (only while making a new object, which it's for)
-            fn, slot = num(m.group(1)), val('ecx')[1]
-            n_ = ret_args(fn)
-            if not nulls or n_ is None or n_ > 3 or n_ > len(pushed) or temp is not None:
-                raise Reject('stack temporary %s %s %s %s' % (bool(nulls), n_, len(pushed), temp is not None))
-            targs = [pushed.pop() for _ in range(n_)]
-            if any(not isinstance(v, int) for v in targs):
-                raise Reject('stack temporary values')
-            d -= 4 * n_
-            temp = (slot, fn, targs, nulls[-1][1][2])
-            R['eax'] = ('temp', slot); R['ecx'] = None; R['edx'] = None
-            flag = None
         elif (m := re.fullmatch(r'(or|and) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and (val(m.group(2)) is None or val(m.group(2))[0] in ('const', 'byte', 'eh')):
-            R[m.group(2)] = ('eh',); flag = None   # the exception bookkeeping bits (what's been built)
-        elif (m := re.fullmatch(r'test ([abcd])l, (0x[0-9a-f]+|\d+)', s)) and val('e' + m.group(1) + 'x') in (('eh',),):
+            R[m.group(2)] = ('eh',); flag = None   # the exception bookkeeping bits (what's been made)
+        elif (m := re.fullmatch(r'test ([abcd])l, (0x[0-9a-f]+|\d+)', s)) and val('e' + m.group(1) + 'x') == ('eh',):
             flag = ('ehbit', num(m.group(2)))
-        elif x.mnemonic == 'je' and flag and flag[0] == 'ehbit':
-            # the temporary destroyed when it was built: lea ecx, [esp + N]; call D; then the jump's target
-            z = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 1])
-            z2 = re.fullmatch(r'call (0x[0-9a-f]+)', t[k + 2])
-            if not z or not z2 or at.get(int(x.op_str, 0)) != k + 3 or temp is None or num(z.group(1)) - d != temp[0] or ret_args(num(z2.group(1))) != 0:
-                raise Reject('temporary destroyed')
-            ops.append((15, 0, 0, num(z2.group(1)), []))
-            temp = None
-            for r in ('eax', 'ecx', 'edx'):
-                R[r] = None
-            k += 3
-            flag = None
-            continue
-        elif (m := re.fullmatch(r'xor ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
-            R['e' + m.group(1) + 'x'] = ('byte', 0); flag = None
-        elif s == 'call 0xbd0490' and val('ecx') in (('byte', 1), ('const', 1)) and not pushed:
-            R['eax'] = ('empty',); R['ecx'] = None; R['edx'] = None
-            flag = None
-        elif (s == 'call 0x805750' or s == 'call 0x805700' and val('ecx') == ('const', 0)) and not pushed:
-            # a reference member at M: its handle (the empty one, or the one of no object) at M + 4, and the link at
-            # M + 8 put first in the handle's list
-            z = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', t[k + 1])
-            if not z or not val(z.group(1)) or val(z.group(1))[0] not in ('this', 'member'):
-                raise Reject('reference member')
-            member = (0 if val(z.group(1)) == ('this',) else val(z.group(1))[1]) + num(z.group(2) or '0') - 4
-            body = [re.sub(REG, 'R', u) for u in t[k + 2:k + 9]]
-            if body != ['mov R, dword ptr [R + 0x20]', 'mov R, dword ptr [R]', 'mov dword ptr [R], R', 'mov R, dword ptr [R]', 'mov dword ptr [R + 4], R',
-                        'mov dword ptr [R + 4], R', 'mov dword ptr [R], R']:
-                raise Reject('reference link')
-            link = re.fullmatch(r'mov dword ptr \[' + REG + r'\], ' + REG, t[k + 4]).group(1)
-            if val(link) != ('member', member + 8):
-                raise Reject('reference link register')
-            ops.append((8 if s == 'call 0x805750' else 9, member, 0, 0, []))
-            for r in ('eax', 'ecx', 'edx'):
-                R[r] = None
-            for u in t[k + 2:k + 9]:   # registers written by the link
-                if (z := re.fullmatch(r'mov ' + REG + ', .*', u)):
-                    R[z.group(1)] = None
-            flag = None
-            k += 9
-            continue
         elif (m := re.fullmatch(r'test ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
             flag = ('noparent?', 'e' + m.group(1) + 'x')   # a byte flag: set when there was no parent (the tester checks)
-        elif (m := re.fullmatch(r'mov ([abcd])l, byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
-            R['e' + m.group(1) + 'x'] = ('stackbyte', num(m.group(2)) - d)
         elif (m := re.fullmatch(r'cmp byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0|[abcd]l)', s)) and (m.group(2) == '0' or val('e' + m.group(2)[0] + 'x') in (('const', 0), ('byte', 0))):
             flag = ('noparent?', 'stack')
         elif x.mnemonic == 'je' and flag and flag[0] == 'noparent?':
@@ -391,7 +362,6 @@ def tail(p):
             flag = None
             continue
         elif x.mnemonic == 'jne' and flag and flag[1] == ('arg', 1):
-            # the mark: mov R, [title]; mov byte ptr [R + 4], 1; then the jump's target
             m1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[k + 1])
             if not m1 or num(m1.group(2)) != p['title'] or t[k + 2] != f'mov byte ptr [{m1.group(1)} + 4], 1' or at.get(int(x.op_str, 0)) != k + 3:
                 raise Reject('tail mark ' + t[k + 1] + ' | ' + t[k + 2])
@@ -399,69 +369,194 @@ def tail(p):
             R[m1.group(1)] = None
             k += 3
             continue
+        elif x.mnemonic == 'je' and flag and flag[0] == 'ehbit':
+            # what the bookkeeping bit guards: a temporary's destructor (lea ecx, [esp + N]; call D) or a wide string let go
+            # (the one a temporary holds, or a name)
+            end_ = at.get(int(x.op_str, 0))
+            if end_ is None:
+                raise Reject('guarded')
+            body = [u for u in t[k + 1:end_] if not re.fullmatch(r'and ' + REG + r', 0x[0-9a-f]+|mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, u)]
+            z = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', body[0]) if body else None
+            z2 = re.fullmatch(r'call (0x[0-9a-f]+)', body[1]) if len(body) == 2 else None
+            if z and z2:
+                slot = num(z.group(1)) - d
+                if slot not in temps or ('temp', temps[slot]) not in built or ret_args(num(z2.group(1))) != 0:
+                    raise Reject('temporary destroyed')
+                ops.append((15, temps[slot], 0, num(z2.group(1)), []))
+                built.discard(('temp', temps[slot]))
+            else:
+                norm = [re.sub(r'\[esp \+ (0x[0-9a-f]+|\d+)\]', '[esp+X]', re.sub(r'\b(e[a-d]x|e[sd]i|ebp)\b', 'R', u)) for u in body]
+                heads = [['mov R, dword ptr [esp+X]', 'mov R, dword ptr [R]', 'dec R', 'mov dword ptr [R], R', 'mov R, dword ptr [esp+X]', 'cmp dword ptr [R], 0', 'jne ' + x.op_str],
+                         ['mov R, dword ptr [esp+X]', 'dec dword ptr [R]', 'mov R, dword ptr [esp+X]', 'cmp dword ptr [R], 0', 'jne ' + x.op_str]]
+                frees = [['mov R, R', 'mov R, dword ptr [R + 0xc]', 'push R', 'call 0xbce010', 'push R', 'call 0xbce000', 'add esp, 8'],
+                         ['mov R, dword ptr [R + 0xc]', 'push R', 'mov R, R', 'call 0xbce010', 'push R', 'call 0xbce000', 'add esp, 8']]
+                reads = {u.split('[')[1] for u in body if re.fullmatch(r'mov e[a-d]x, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)}
+                if not any(norm == h_ + f_ for h_ in heads for f_ in frees) or len(reads) != 1:
+                    raise Reject('guarded release @%#x' % x.address)
+                slot = num(re.fullmatch(r'mov e[a-d]x, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', body[0]).group(1)) - d
+                if slot in temps and ('temp', temps[slot]) in built:
+                    ops.append((16, temps[slot], 0, 0, []))
+                    built.discard(('temp', temps[slot]))
+                elif S.get(slot) and S[slot][0] == 'name' and ('name', S[slot][1]) in built:
+                    ops.append((17, S[slot][1], 0, 0, []))
+                    built.discard(('name', S[slot][1]))
+                else:
+                    raise Reject('release of what')
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            k = end_
+            flag = None
+            continue
         elif (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
             pushed.append(num(m.group(1))); d += 4
+        elif s == 'push ecx' and val('ecx') and val('ecx')[0] == 'stack':
+            w = S.get(val('ecx')[1])
+            if not w or w[0] != 'name':
+                raise Reject('local address')
+            pushed.append(('nameaddr', w[1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'field' and val(m.group(1))[2] == len(ops):
+            pushed.append(('field', val(m.group(1))[1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] in ('const', 'global', 'arg', 'this', 'member', 'temp'):
             v = val(m.group(1))
             pushed.append(v[1] if v[0] == 'const' else ('self', 0) if v[0] == 'this' else ('self', v[1]) if v[0] == 'member' else
-                          ('temp', 0) if v[0] == 'temp' else ('glob' if v[0] == 'global' else 'given', v[1])); d += 4
-        elif s == 'call 0xbcdfc0' and pushed and isinstance(pushed[-1], int):
-            # a new object: followed as it runs when there is memory (the null branch checked at the jmp past it)
-            serial += 1
-            R['eax'] = ('alloc', pushed[-1], serial)
-            R['ecx'] = None; R['edx'] = None
-            flag = None
+                          ('temp', v[1]) if v[0] == 'temp' else ('glob' if v[0] == 'global' else 'given', v[1])); d += 4
         elif (m := re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', s)) and num(m.group(1)) // 4 <= len(pushed):
             for _ in range(num(m.group(1)) // 4):
                 pushed.pop()
             d -= num(m.group(1))
-        elif x.mnemonic == 'je' and flag and flag[1] and flag[1][0] == 'alloc':
+        elif s == 'call 0xbcdfc0' and pushed and isinstance(pushed[-1], int):
+            serial += 1
+            if cur is None or nulls == []:
+                # a new object (the one before must be done with)
+                if nulls:
+                    raise Reject('new inside new')
+                ops.append((18, 0, pushed[-1], 0, []))
+                cur = serial
+                R['eax'] = ('alloc', serial)
+            else:
+                if pushed[-1] != 0x10:
+                    raise Reject('inner new')
+                R['eax'] = ('namealloc', serial)
+            R['ecx'] = None; R['edx'] = None
+            flag = None
+        elif x.mnemonic == 'je' and flag and flag[1] and flag[1][0] in ('alloc', 'namealloc'):
             nulls.append((int(x.op_str, 0), flag[1]))
+            flag = None
         elif x.mnemonic == 'jmp' and nulls and ins[k + 1].address == nulls[-1][0]:
-            # past the null branch: it must only set the register the object is in to null, then join here
+            # past the null branch: it must only set the register the result is in to null, then join here
             target, token = nulls.pop()
             z = re.fullmatch(r'xor ' + REG + ', ' + REG, t[k + 1])
-            if not z or z.group(1) != z.group(2) or ins[k + 2].address != int(x.op_str, 0) or not val(z.group(1)) or \
-                    val(z.group(1))[0] != 'made' or val(z.group(1))[5] != token[2]:
-                raise Reject('new object null')
+            ok_ = z and z.group(1) == z.group(2) and ins[k + 2].address == int(x.op_str, 0) and val(z.group(1))
+            if ok_ and token[0] == 'alloc':
+                ok_ = val(z.group(1))[0] == 'obj' and val(z.group(1))[1] == token[1]
+            elif ok_:
+                ok_ = val(z.group(1))[0] == 'name' and val(z.group(1))[2] == token[1]
+            if not ok_:
+                raise Reject('null branch')
             k += 2
             flag = None
             continue
-        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'alloc':
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'namealloc':
+            if num(m.group(1)) != 0xbcf850 or not pushed or not isinstance(pushed[-1], int):
+                raise Reject('name made with')
+            lit = pushed.pop(); d -= 4
+            token = val('ecx')
+            ops.append((21, nnames, lit, 0, []))
+            built.add(('name', nnames))
+            for r in list(R):
+                if R[r] == token:
+                    R[r] = ('name', nnames, token[1])
+            R['eax'] = ('name', nnames, token[1]); R['ecx'] = None; R['edx'] = None
+            nnames += 1
+            flag = None
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack':
+            # a temporary on the stack, made while making the new object (so only when there was memory)
+            fn, slot = num(m.group(1)), val('ecx')[1]
+            n_ = ret_args(fn)
+            if cur is None or not nulls or n_ is None or n_ > 4 or n_ > len(pushed):
+                raise Reject('stack temporary')
+            targs = [pushed.pop() for _ in range(n_)]
+            d -= 4 * n_
+            if any(not (isinstance(v, int) or v[0] in ('nameaddr', 'self', 'glob', 'given', 'temp')) for v in targs):
+                raise Reject('stack temporary values')
+            kk = len([o for o in ops if o[0] == 20])
+            if kk >= 3 or slot in temps and ('temp', temps[slot]) in built:
+                raise Reject('temporaries')
+            temps[slot] = kk
+            ops.append((20, kk, 0, fn, targs))
+            built.add(('temp', kk))
+            R['eax'] = ('temp', kk); R['ecx'] = None; R['edx'] = None
+            flag = None
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'alloc' and val('ecx')[1] == cur:
             fn, token = num(m.group(1)), val('ecx')
             n_ = ret_args(fn)
             if n_ is None or n_ > len(pushed) or n_ > 5:
                 raise Reject('new object constructor')
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            tinfo = (temp[1], temp[2]) if temp and temp[3] == token[2] else None
-            if any(isinstance(v, tuple) and v[0] == 'temp' for v in args) and not tinfo:
-                raise Reject('temporary of another object')
+            ops.append((10, 0, 0, fn, args))
             for r in list(R):
                 if R[r] == token:
-                    R[r] = ('made', token[1], fn, args, 'memory', token[2], tinfo)
-            R['eax'] = ('made', token[1], fn, args, 'returned', token[2], tinfo)
-            R['ecx'] = None; R['edx'] = None
+                    R[r] = ('obj', cur, 'memory')
+            R['eax'] = ('obj', cur, 'returned'); R['ecx'] = None; R['edx'] = None
+            flag = None
+        elif s == 'call 0xbd0490' and val('ecx') in (('byte', 1), ('const', 1)) and not pushed:
+            R['eax'] = ('empty',); R['ecx'] = None; R['edx'] = None
+            flag = None
+        elif (s == 'call 0x805750' or s == 'call 0x805700' and val('ecx') and (val('ecx') == ('const', 0) or val('ecx')[0] == 'arg')) and not pushed:
+            # a reference member at M: its handle at M + 4, and the link at M + 8 put first in the handle's list
+            z = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', t[k + 1])
+            if not z or not val(z.group(1)) or val(z.group(1))[0] not in ('this', 'member'):
+                raise Reject('reference member')
+            member = (0 if val(z.group(1)) == ('this',) else val(z.group(1))[1]) + num(z.group(2) or '0') - 4
+            body = [re.sub(REG, 'R', u) for u in t[k + 2:k + 9]]
+            if body != ['mov R, dword ptr [R + 0x20]', 'mov R, dword ptr [R]', 'mov dword ptr [R], R', 'mov R, dword ptr [R]', 'mov dword ptr [R + 4], R',
+                        'mov dword ptr [R + 4], R', 'mov dword ptr [R], R']:
+                raise Reject('reference link')
+            link = re.fullmatch(r'mov dword ptr \[' + REG + r'\], ' + REG, t[k + 4]).group(1)
+            if val(link) != ('member', member + 8):
+                raise Reject('reference link register')
+            ops.append((8, member, 0, 0, []) if s == 'call 0x805750' else (9, member, val('ecx')[1] if val('ecx')[0] == 'arg' else 0, 0, []))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            for u in t[k + 2:k + 9]:
+                if (z := re.fullmatch(r'mov ' + REG + ', .*', u)):
+                    R[z.group(1)] = None
+            flag = None
+            k += 9
+            continue
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'field' and val('ecx')[2] == len(ops):
+            fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
+            if n_ is None or n_ > len(pushed) or n_ > 5:
+                raise Reject('field call ' + s)
+            args = [pushed.pop() for _ in range(n_)]
+            d -= 4 * n_
+            if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr') for v in args):
+                raise Reject('field call with a temporary')
+            ops.append((24, val('ecx')[1], 0, fn, args))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)):
             fn, this = num(m.group(1)), val('ecx')
-            if not this or this[0] not in ('this', 'member') or ret_args(fn) != len(pushed) or len(pushed) > 5:
+            if not this or this[0] not in ('this', 'member') or ret_args(fn) is None or ret_args(fn) > len(pushed) or ret_args(fn) > 5:
                 raise Reject('tail call ' + s)
-            ops.append((3, 0 if this == ('this',) else this[1], 0, fn, pushed[::-1]))
-            d -= 4 * len(pushed); pushed = []
+            n_ = ret_args(fn)
+            args = [pushed.pop() for _ in range(n_)]
+            d -= 4 * n_
+            if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr') for v in args):
+                raise Reject('member call with a temporary')
+            ops.append((3, 0 if this == ('this',) else this[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             flag = None
         else:
-            raise Reject('tail: ' + s)
+            raise Reject('tail: ' + s + ' @%#x' % x.address)
         if x.mnemonic in FLAGS and not s.startswith(('test', 'cmp')):
             flag = None
         k += 1
-    if pushed or nulls or temp is not None:
-        raise Reject('tail pushed')
-    made_with_temp = [o for o in ops if o[0] in (10, 11) and len(o) > 5 and o[5]]
-    if len(made_with_temp) != sum(1 for o in ops if o[0] == 15):
-        raise Reject('temporaries not destroyed')
+    if pushed or nulls or built:
+        raise Reject('tail left %s %s %s' % (len(pushed), len(nulls), sorted(built)))
     if ops.count((12, 0, 0, 0, [])) > 1:
         raise Reject('two marks')
     return ops
@@ -497,7 +592,7 @@ if __name__ == '__main__':
             if p['nargs'] < 2 or p['nargs'] > 6:
                 raise Reject('arguments %d' % p['nargs'])
         except (Reject, StopIteration, ValueError, IndexError, KeyError) as e:
-            key = (type(e).__name__ + ' ' + str(e))[:60]
+            key = re.sub(r' @0x[0-9a-f]+', '', type(e).__name__ + ' ' + str(e))[:60]
             reasons[key] += 1; rb[key] += n
             if why and key.startswith(why):
                 print(hex(a), e)
@@ -506,27 +601,24 @@ if __name__ == '__main__':
         ex = p['extras']
         out.append(f'static const TitledExtra titled_{a:x}_extras[] = {{' + (', '.join(f'{{{int(e[0] == "arg")}, {e[1]:#x}}}' for e in ex) or '{0, 0}') + '};')
         def op_text(o):
-            kind, off, value, fn, args = o[:5]
-            tinfo = o[5] if len(o) > 5 else None
-            vals = [x[1] if isinstance(x, tuple) else x for x in args]
-            glob = sum(1 << q for q, x in enumerate(args) if isinstance(x, tuple) and x[0] == 'glob')
-            given = sum(1 << q for q, x in enumerate(args) if isinstance(x, tuple) and x[0] == 'given')
-            selfs = sum(1 << q for q, x in enumerate(args) if isinstance(x, tuple) and x[0] == 'self')
-            temps = sum(1 << q for q, x in enumerate(args) if isinstance(x, tuple) and x[0] == 'temp')
-            tfn, targs = tinfo if tinfo else (0, [])
-            return (f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for v in vals) or "0"}}}, {glob:#x}, {given:#x}, {selfs:#x}, '
-                    f'{temps:#x}, {tfn:#x}, {len(targs)}, {{{", ".join(hex(v) for v in targs) or "0"}}}}}')
-        out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0, 0, 0, 0, 0, 0, {0}}') + '};')
+            kind, off, value, fn, args = o
+            codes = []
+            for v in args:
+                if isinstance(v, int):
+                    codes.append((0, v))
+                else:
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6}[v[0]], v[1]))
+            kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
+            return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
+        out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')
         out.append(f'static const uint8_t titled_{a:x}_original[] = {{' + ', '.join(f'0x{b:02x}' for b in img[a - BASE:a - BASE + 7]) + '};')
         out.append(f'REWRITE("Window::Titled", {a:#x}, titled_{a:x}_original, (&titled_construct{p["nargs"]}<{p["title"]:#x}, {p["base"]:#x}, titled_{a:x}_extras, {len(ex)}, '
                    f'titled_{a:x}_ops, {len(p["ops"])}>), &g_titled_constructs);')
         info.append((a, p['title'], p['nargs'], p['base'], 2 + len(ex)))
         for o in p['ops']:
-            if o[0] in (3, 10, 11):
+            if o[0] in (3, 10, 24):
                 callees[o[3]] = len(o[4])
-            if len(o) > 5 and o[5]:
-                temps_used.add(o[5][0])
-            if o[0] == 15:
+            if o[0] in (15, 20):
                 temps_used.add(o[3])
     out.append('// each constructor: its address, title global, how many values it takes, its base and how many values that takes')
     out.append('extern const uint32_t titled_info[];')
@@ -534,8 +626,9 @@ if __name__ == '__main__':
     out.append('// the functions the members are made with or called, and how many values each takes (the tester stands in for them)')
     out.append('extern const uint32_t titled_callees[];')
     out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c}, ' for fn, c in sorted(callees.items())) + '0};')
-    if temps_used - {0x4040f0, 0xbd1880}:
-        print('temporaries the tester has no stand-in for:', [hex(x) for x in temps_used - {0x4040f0, 0xbd1880}])
+    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740}
+    if unknown_temps:
+        print('temporaries the tester has no stand-in for:', [hex(x) for x in sorted(unknown_temps)])
     open(OUT, 'w', newline='\n').write('\n'.join(out) + '\n')
     print(ok, 'constructors,', okb, 'bytes')
     for k, v in rb.most_common(15):

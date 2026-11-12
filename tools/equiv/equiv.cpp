@@ -212,6 +212,8 @@ static void record(uint32_t fn, void *arg) {
 static void *g_text_ref;
 // a value given to a stand-in: a temporary on the stack is told by what it is (the text made last: 0x7e57; other:
 // its first dword), never by where it is, which differs between the original's run and the rewrite's
+static bool g_built_other;   // the member stand-ins return a pointer of their own (so what a constructor returns is told from its memory)
+static void *built_result(void *self) { return g_built_other ? (uint8_t *)self + 8 : self; }
 static void *arg_value(uint32_t v) {
     uintptr_t here = (uintptr_t)&v;
     if (v == (uint32_t)(uintptr_t)g_text_ref) return (void *)0x7e57;
@@ -472,21 +474,28 @@ static void *__thiscall stub_titled_base6(void *self, void *p, void **t, uint32_
 }
 static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
-    record(0x81, arg_value(e)); return self;
+    record(0x81, arg_value(e)); return built_result(self);
 }
 extern const uint32_t titled_info[], titled_callees[];
+// Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
+// text gets a wide string of its own
+static void *__thiscall stub_text_for_child(void **self, void **name, void *window, uint32_t value) {
+    record(0x86, name ? *name : nullptr); record(0x86, window); record(0x86, (void *)(uintptr_t)value);
+    *self = new_wide_block();
+    return self;
+}
 static uintptr_t g_titled_title;
 static uint32_t g_titled_args;
 static uint32_t g_window_args;   // 2 or 3, from the copy's ret
 // saved classes' constructors: the base, members' and fields' constructors (by how many values they take), the field
 // list's add, the description's name step and the object info
 static void __thiscall stub_class_base(void *self, void *description, uint32_t a, uint32_t b) { record(0x80, self); record(0x80, description); record(0x80, (void *)(uintptr_t)a); record(0x80, (void *)(uintptr_t)b); }
-static void *__thiscall stub_built0(void *self) { record(0x81, self); return self; }
-static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, arg_value(a)); return self; }
-static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return self; }
-static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); return self; }
+static void *__thiscall stub_built0(void *self) { record(0x81, self); return built_result(self); }
+static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, arg_value(a)); return built_result(self); }
+static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return built_result(self); }
+static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); return built_result(self); }
 static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
-    record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d)); return self;
+    record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d)); return built_result(self);
 }
 static void __thiscall stub_field_add(void *list, void *field) { record(0x82, list); record(0x82, field); }
 static void __thiscall stub_struct_total(void *field) { record(0x86, field); }   // a struct field closed (slot 0, 0x808D90)
@@ -5236,7 +5245,10 @@ static std::vector<Test> tests() {
                               arena<uint32_t>(0x30)[0] = (uint32_t)(uintptr_t)text;
                               arena<uint32_t>(0x10)[0] = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x8100) : 0;
                               arena<uint32_t>(0x10)[1] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x30) : 0;
-                              for (int k = 2; k < 6; k++) arena<uint32_t>(0x10)[k] = r.next();
+                              for (int k = 2; k < 6; k++) {   // the other arguments: pointers to filled memory (read through, or kept as values)
+                                  arena<uint32_t>(0x10)[k] = (uint32_t)(uintptr_t)arena<void>(0x9000 + k * 0x40);
+                                  for (int q = 0; q < 16; q++) arena<uint32_t>(0x9000 + k * 0x40)[q] = r.next();
+                              }
                               for (uint32_t h : {0x700u, 0x600u}) {   // the empty handle and the one of no object, each with a list
                                   arena<uint32_t>(h)[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(h + 0x80);
                                   arena<uint32_t>(h + 0x80)[0] = (uint32_t)(uintptr_t)arena<void>(h + 0x90);
@@ -5267,11 +5279,13 @@ static std::vector<Test> tests() {
         std::vector<std::pair<uint32_t, void *>> list = {{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0xbd0490, (void *)stub_wide_empty_shared},
                                                          {0x403be0, (void *)stub_wide_assign_c}, {0x403bb0, (void *)stub_wide_assign}, {0x41c740, (void *)stub_wide_copy},
                                                          {0x805750, (void *)stub_null_handle}, {0x805700, (void *)stub_member_handle_of}, {base, bases[base_args]},
-                                                         {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}};
-        for (int k = 0; titled_callees[k]; k += 2) list.push_back({titled_callees[k], built[titled_callees[k + 1]]});
+                                                         {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}, {0x6a39d0, (void *)stub_text_for_child}};
+        for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
+            if (titled_callees[k] != e->at) list.push_back({titled_callees[k], built[titled_callees[k + 1]]});
         stubs_for_now(list);
+        g_built_other = true;
     };
-    titled_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    titled_construct.finish = [](const rewrite::Entry *) { unstub_many(); g_built_other = false; };
     quick(titled_construct);
     // Class::Construct: a description (given or the class's default, a game global set in the call) registered or not,
     // its object info through slot 1 (as the aimed walk's); every function called is a stand-in. Handle::For (0x805700)
