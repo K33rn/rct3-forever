@@ -67,7 +67,10 @@ def parse(a, n):
     k41 = next((k for k, c in calls if c == '0x41c740'), None)
     if k41 is None:
         raise Reject('no copy')
-    kb = next(k for k, c in calls if k > k41)
+    sel0 = next((k for k in range(k41, len(t)) if re.fullmatch(r'mov ecx, dword ptr \[(0x1[0-9a-f]{6})\]', t[k]) and ins[k - 1].mnemonic == 'jne'), None)
+    if sel0 is None:
+        raise Reject('parent or title')
+    kb = next(k for k, c in calls if k > sel0)
     base = t[kb][5:]
     if not re.fullmatch(r'0x[0-9a-f]+', base):
         raise Reject('base call ' + base)
@@ -228,7 +231,7 @@ def tail(p):
             if re.match(r'(mov|lea|add|sub|or|and|xor|inc|dec|shl|shr|sar|imul|neg|not|movzx|movsx) ' + reg + r'\b', s) or \
                     re.match(r'mov ' + reg[1] + '[lh],', s) or (s.startswith('call') and reg in ('eax', 'ecx', 'edx')):
                 return None
-        return None
+        return ('this',) if reg == 'ecx' else None   # nothing wrote it and nothing was called: ecx is still the object
 
     def stored(slot, before):   # a stack local's last value
         for q in range(before - 1, -1, -1):
@@ -282,7 +285,22 @@ def tail(p):
             R[m.group(2)] = ('field' + m.group(1), val(m.group(2))[1], num(m.group(3)), val(m.group(2))[2])
             flag = None; k += 1
             continue
-        if (m := re.fullmatch(r'mov (dword|byte|word) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(2)) and \
+        if (m := re.fullmatch(r'mov (dword|byte) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] == 'obj' and val(m.group(2))[1] == cur and val(m.group(2))[2] == 'memory' and nulls:
+            # a store into the new object (its own class's constructor, inlined), only when there was memory
+            off, v = num(m.group(3) or '0'), m.group(4)
+            w = val(v) if v in R else None
+            if re.fullmatch(r'0x[0-9a-f]+|\d+', v):
+                ops.append((31 if m.group(1) == 'dword' else 33, off, num(v), 0, []))
+            elif m.group(1) == 'dword' and w and w[0] == 'const':
+                ops.append((31, off, w[1], 0, []))
+            elif m.group(1) == 'dword' and w and w[0] == 'global':
+                ops.append((32, off, w[1], 0, []))
+            elif m.group(1) == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] in ('const', 'byte'):
+                ops.append((33, off, val('e' + v[0] + 'x')[1] & 0xff, 0, []))
+            else:
+                raise Reject('new object store ' + s)
+        elif (m := re.fullmatch(r'mov (dword|byte|word) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(2)) and \
                 val(m.group(2))[0] in ('this', 'member'):
             base_off = 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]
             off, v, size = base_off + num(m.group(3) or '0'), m.group(4), m.group(1)
@@ -474,7 +492,7 @@ def tail(p):
             fn, slot = num(m.group(1)), val('ecx')[1]
             n_ = ret_args(fn)
             if cur is None or not nulls or n_ is None or n_ > 4 or n_ > len(pushed):
-                raise Reject('stack temporary')
+                raise Reject('stack temporary cur=%s nulls=%s n=%s pushed=%s @%#x' % (cur, len(nulls), n_, len(pushed), x.address))
             targs = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
             if any(not (isinstance(v, int) or v[0] in ('nameaddr', 'self', 'glob', 'given', 'temp')) for v in targs):

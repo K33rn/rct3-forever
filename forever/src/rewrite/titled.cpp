@@ -23,7 +23,8 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   a new object: 18 value bytes of memory (0xBCDFC0), then only when there was memory: 21 name number off made from
 //   the C text at value (0x10 bytes of memory, WideString::Create; null without memory), 20 temporary number off made
 //   on the stack by fn, 10 the object built by fn; 22 stores at +off what fn returned (value 0) or the memory (1), null
-//   when there was no memory;
+//   when there was no memory; 31 / 32 / 33 store a dword / the global at value / a byte into the new object (when
+//   there was memory: its own constructor inlined);
 //   15 destroy temporary number off with fn, 16 let go of the wide string it holds, 17 let go of name number off: each
 //   only when it was made.
 // The values given to fn are by kind (4 bits each in kinds): 0 the value, 1 the global there, 2 the constructor's
@@ -165,6 +166,9 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             if (memory) object = titled_call(op.fn, memory, op.count, args);
             break;
         case 22: *(void **)(self + op.off) = op.value ? (void *)memory : object; break;
+        case 31: if (memory) *(uint32_t *)(memory + op.off) = op.value; break;
+        case 32: if (memory) *(uint32_t *)(memory + op.off) = *(uint32_t *)(uintptr_t)op.value; break;
+        case 33: if (memory) memory[op.off] = (uint8_t)op.value; break;
         case 15:
             if (temp_built[op.off]) ((void(__thiscall *)(void *))(uintptr_t)op.fn)(temps[op.off]);
             temp_built[op.off] = false;
