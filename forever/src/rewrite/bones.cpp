@@ -715,3 +715,72 @@ static const uint8_t grid_sample_at_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 
 REWRITE("Grid::Sample", 0x4a0090, grid_sample_at_original, &grid_sample_at, &g_grid_samples);
 static const uint8_t grid_sample_in_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x54, 0x8b, 0x55, 0x0c};
 REWRITE("Grid::SampleIn", 0x4a0280, grid_sample_in_original, &grid_sample_in, &g_grid_samples);
+
+// ---- SceneryRenderer::QuadVertices(out, centre, up, side, rect, colour) (stdcall): four vertices of 0x18 bytes
+// {position, colour, u, v} for a camera-facing quad: centre + side - up, centre - side - up, centre + side + up,
+// centre - side + up, with the texture rectangle's corners (u from rect[2] or rect[0], v from rect[1] or rect[3]) and
+// the colour copied. x adds in the FPU's precision, y and z round centre +/- side first. Returns out + 0x60. ----
+static volatile long g_quad_vertices;
+static inline void quad_corner(uint8_t *at, const float *c, const float *up, const float *side, float s, float t, uint32_t colour, uint32_t u, uint32_t v) {
+    volatile float *p = (float *)at;
+    const x87 x = s > 0 ? (x87)c[0] + side[0] : (x87)c[0] - side[0];
+    const float y = rounded(s > 0 ? (x87)c[1] + side[1] : (x87)c[1] - side[1]);
+    const float z = rounded(s > 0 ? (x87)c[2] + side[2] : (x87)c[2] - side[2]);
+    p[2] = (float)(t > 0 ? (x87)z + up[2] : (x87)z - up[2]);
+    p[0] = (float)(t > 0 ? x + up[0] : x - up[0]);
+    p[1] = (float)(t > 0 ? (x87)y + up[1] : (x87)y - up[1]);
+    volatile uint32_t *w = (uint32_t *)at;
+    w[3] = colour, w[4] = u, w[5] = v;
+}
+static uint8_t *__stdcall quad_vertices(uint8_t *out, const float *centre, const float *up, const float *side, const uint32_t *rect, const uint32_t *colour) {
+    g_quad_vertices++;
+    quad_corner(out, centre, up, side, 1, -1, *colour, rect[2], rect[1]);
+    quad_corner(out + 0x18, centre, up, side, -1, -1, *colour, rect[0], rect[1]);
+    quad_corner(out + 0x30, centre, up, side, 1, 1, *colour, rect[2], rect[3]);
+    quad_corner(out + 0x48, centre, up, side, -1, 1, *colour, rect[0], rect[3]);
+    return out + 0x60;
+}
+static const uint8_t quad_vertices_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x14, 0x8b, 0x4d, 0x0c};
+REWRITE("SceneryRenderer::QuadVertices", 0x42f320, quad_vertices_original, &quad_vertices, &g_quad_vertices);
+
+// ---- Firework::Quad(out, view; point, size, colour, rect) (fastcall): four vertices of 0x18 bytes {position, colour,
+// u, v} for a camera-facing quad at the point. The colour: alpha, red, green, blue (colour +0xC, +0, +4, +8) each
+// times 255 rounded by the FPU (fistp) and packed 8 bits apart (joined with or, as the game does). The size is scaled
+// by the point's depth along the view's row at +0x10, unless that is under 1. The side is the size times the view's
+// row at +0x20, the up times its row at +0x30. The corners are point - side - up... in the game's order: (-side,
+// +up), (+side, +up), (-side, -up), (+side, -up). Each corner's x keeps point +/- side in the FPU's precision, y and
+// z round it first. The texture corners come from rect. Returns out + 0x48. ----
+static volatile long g_firework_quads;
+static uint8_t *__fastcall firework_quad(uint8_t *out, const float *view, const float *p, float size, const float *colour, const uint32_t *rect) {
+    g_firework_quads++;
+    const x87 k = *(const float *)0xf264c0, one = *(const float *)0xf264dc;
+    uint32_t packed = (uint32_t)fistp_low((x87)colour[3] * k) << 8;
+    packed = (packed | (uint32_t)fistp_low((x87)colour[0] * k)) << 8;
+    packed = (packed | (uint32_t)fistp_low((x87)colour[1] * k)) << 8;
+    packed |= (uint32_t)fistp_low((x87)colour[2] * k);
+    x87 depth = (((x87)p[2] - view[2]) * view[6] + ((x87)p[1] - view[1]) * view[5]) + ((x87)p[0] - view[0]) * view[4];
+    if (depth < one) depth = one;
+    const x87 sz = depth * size;
+    const float side[3] = {rounded(sz * view[8]), rounded(sz * view[9]), rounded(sz * view[10])};
+    const float up0 = rounded(sz * view[12]), up1 = rounded(sz * view[13]);
+    const x87 up2 = sz * view[14];
+    const int signs[4][2] = {{-1, 1}, {1, 1}, {-1, -1}, {1, -1}};
+    const int uvs[4][2] = {{0, 3}, {2, 3}, {0, 1}, {2, 1}};
+    for (int c = 0; c < 4; c++) {
+        const int a = signs[c][0], b = signs[c][1];
+        const x87 qx = a > 0 ? (x87)side[0] + p[0] : (x87)p[0] - side[0];
+        const float qy = rounded(a > 0 ? (x87)side[1] + p[1] : (x87)p[1] - side[1]);
+        const float qz = rounded(a > 0 ? (x87)side[2] + p[2] : (x87)p[2] - side[2]);
+        uint8_t *v = out + 0x18 * c;
+        volatile float *f = (float *)v;
+        volatile uint32_t *w = (uint32_t *)v;
+        w[3] = packed;
+        f[2] = (float)(b > 0 ? (x87)qz + up2 : (x87)qz - up2);
+        f[0] = (float)(b > 0 ? qx + up0 : qx - up0);
+        f[1] = (float)(b > 0 ? (x87)qy + up1 : (x87)qy - up1);
+        w[4] = rect[uvs[c][0]], w[5] = rect[uvs[c][1]];
+    }
+    return out + 0x48;
+}
+static const uint8_t firework_quad_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x38, 0x8b, 0x45, 0x10};
+REWRITE("Firework::Quad", 0x9f75f0, firework_quad_original, &firework_quad, &g_firework_quads);

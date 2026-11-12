@@ -637,7 +637,7 @@ address,size,name,callers,status
 0x42ee50,606,Matrix::Multiply,0,rewritten
 0x42f0b0,305,,0,documented
 0x42f270,21,,0,documented
-0x42f320,353,,10,documented
+0x42f320,353,SceneryRenderer::QuadVertices,10,rewritten
 0x42f4e0,12,,2,documented
 0x42f500,36,OwnedPair::Free,2,rewritten
 0x42f670,53,Grid::MarkUp,6,rewritten
@@ -15025,7 +15025,7 @@ address,size,name,callers,status
 0x9f7180,30,DeletingDestructor,1,rewritten
 0x9f7240,202,,1,documented
 0x9f7370,621,,2,documented
-0x9f75f0,541,,2,documented
+0x9f75f0,541,Firework::Quad,2,rewritten
 0x9f7820,36,OwnedPair::Free,1,rewritten
 0x9f78d0,122,,1,documented
 0x9f7970,37,,1,documented

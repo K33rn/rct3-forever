@@ -5815,6 +5815,29 @@ static std::vector<Test> tests() {
         return rel_result(((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x400), arena<void>(0x200)));
     }};
     quick(grid_sample_in);
+    // SceneryRenderer::QuadVertices: out (0x400), centre, up, side (0x100, 0x110, 0x120), a rectangle (0x130) and a
+    // colour (0x140), any floats
+    Test quad_vertices{0x42f320, floats_setup, [=](void *fn) {
+        return rel_result(((void *(__stdcall *)(void *, void *, void *, void *, void *, void *))fn)(arena<void>(0x400), arena<void>(0x100), arena<void>(0x110),
+                                                                                                   arena<void>(0x120), arena<void>(0x130), arena<void>(0x140)));
+    }};
+    quick(quad_vertices);
+    // Firework::Quad: out (0x400), a view (0x300, its rows), a point, a size, a colour (0 to 1 mostly, sometimes any) and
+    // a rectangle (0x100 on); the point sometimes near the view so its depth is under 1
+    Test firework_quad{0x9f75f0,
+                       [=](Rng &r) {
+                           floats_setup(r);
+                           float *c = arena<float>(0x110);
+                           for (int i = 0; i < 4; i++) c[i] = r.range(0, 9) ? r.real(-0.1f, 1.1f) : r.any_float();
+                           if (r.range(0, 2) == 0)   // near, along a unit-sized depth row: depths around 0 to 1
+                               for (int i = 0; i < 3; i++) arena<float>(0x100)[i] = arena<float>(0x300)[i] + r.real(-1.5f, 1.5f), arena<float>(0x300)[4 + i] = r.real(-1, 1);
+                           arena<float>(0x10)[0] = r.range(0, 5) ? r.real(-5, 5) : r.any_float();
+                       },
+                       [=](void *fn) {
+                           return rel_result(((void *(__fastcall *)(void *, void *, void *, float, void *, void *))fn)(arena<void>(0x400), arena<void>(0x300), arena<void>(0x100),
+                                                                                                                       arena<float>(0x10)[0], arena<void>(0x110), arena<void>(0x120)));
+                       }};
+    quick(firework_quad);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)
