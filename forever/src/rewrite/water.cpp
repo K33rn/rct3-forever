@@ -196,3 +196,57 @@ static const float *__thiscall water_box_planes(const uint8_t *self, const float
 }
 static const uint8_t water_box_planes_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x18, 0x8b, 0x81, 0xe0};
 REWRITE("Water::BoxPlanes", 0x8e6e10, water_box_planes_original, &water_box_planes, &g_water_edges);
+
+// ---- Water::BoxSpan(lo, hi, out, grow): a box (corners lo, hi) seen along the three axes at this +0xE0 (0x10 apart):
+// for each axis the top and bottom of its range, each a sum from 0 over x, y, z of the axis value times hi or lo, as
+// the game's fcomi / fcmov pick them. The top takes hi when the value is above 0, else lo. The bottom takes lo when it
+// is 0 or more, else hi. A value that isn't a number gives lo to the top and hi to the bottom. With grow, axis 1's and
+// 2's ranges widen by the constant at 0xF7CCB8 (0.2; axis 1's top kept in the FPU's precision). Out: the corner
+// bottom0 axis0 + bottom1 axis1 + bottom2 axis2, then the edges (top1 - bottom1) axis1 and (top2 - bottom2) axis2, 0x10
+// apart, with the game's roundings kept. Returns out. ----
+static inline float rounded(x87 v) {   // rounded to a float, as the game keeps it
+    volatile float f = (float)v;
+    return f;
+}
+static inline void box_range(const float *axis, const float *lo, const float *hi, float *top, float *bottom) {
+    x87 t = 0.0L, b = 0.0L;
+    for (int j = 0; j < 3; j++) {
+        const float m = axis[j];
+        const x87 by_hi = (x87)m * hi[j], by_lo = (x87)m * lo[j];
+        t = t + ((m > 0.0f) ? by_hi : by_lo);
+        b = b + ((m >= 0.0f) ? by_lo : by_hi);
+    }
+    *top = rounded(t), *bottom = rounded(b);
+}
+static float *__thiscall water_box_span(const uint8_t *self, const float *lo, const float *hi, float *out, uint8_t grow) {
+    g_water_edges++;
+    const float *r0 = (const float *)(self + 0xe0), *r1 = r0 + 4, *r2 = r0 + 8;
+    float top1, bottom1, top2, bottom2, top0, bottom0;
+    box_range(r1, lo, hi, &top1, &bottom1);
+    box_range(r2, lo, hi, &top2, &bottom2);
+    box_range(r0, lo, hi, &top0, &bottom0);   // (its top isn't used)
+    x87 t1 = top1;
+    if (grow) {
+        const x87 e = *(const float *)0xf7ccb8;
+        bottom1 = rounded(bottom1 - e);
+        t1 = (x87)top1 + e;
+        bottom2 = rounded(bottom2 - e);
+        top2 = rounded(top2 + e);
+    }
+    const x87 c0x = (x87)bottom0 * r0[0];
+    const float c0y = rounded((x87)bottom0 * r0[1]), c0z = rounded((x87)bottom0 * r0[2]);
+    const x87 c2x = (x87)bottom2 * r2[0], c2y = (x87)bottom2 * r2[1];
+    const float c2z = rounded((x87)bottom2 * r2[2]);
+    const x87 c1x = (x87)bottom1 * r1[0];
+    const float c1y = rounded((x87)bottom1 * r1[1]), c1z = rounded((x87)bottom1 * r1[2]);
+    const float s0 = rounded(c1x + c2x), s1 = rounded((x87)c1y + c2y), s2 = rounded((x87)c1z + c2z);
+    volatile float *o = out;
+    o[0] = (float)(c0x + s0), o[1] = (float)((x87)s1 + c0y), o[2] = (float)((x87)s2 + c0z);
+    const x87 d1 = t1 - bottom1;
+    o[6] = (float)(d1 * r1[2]), o[4] = (float)(d1 * r1[0]), o[5] = (float)(d1 * r1[1]);
+    const x87 d2 = (x87)top2 - bottom2;
+    o[10] = (float)(d2 * r2[2]), o[8] = (float)(d2 * r2[0]), o[9] = (float)(d2 * r2[1]);
+    return out;
+}
+static const uint8_t water_box_span_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x64, 0x53, 0x8b, 0xd1};
+REWRITE("Water::BoxSpan", 0x8e6980, water_box_span_original, &water_box_span, &g_water_edges);

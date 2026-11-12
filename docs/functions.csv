@@ -12560,7 +12560,7 @@ address,size,name,callers,status
 0x8e6330,1319,,2,documented
 0x8e6860,25,,2,documented
 0x8e6880,254,,1,documented
-0x8e6980,651,,6,documented
+0x8e6980,651,Water::BoxSpan,6,rewritten
 0x8e6c10,270,,4,documented
 0x8e6d20,227,,6,documented
 0x8e6e10,539,Water::BoxPlanes,1,rewritten

@@ -5725,6 +5725,30 @@ static std::vector<Test> tests() {
                               return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
                           }};
     quick(water_box_planes);
+    // Water::BoxSpan: an object (0x100, axes at +0xE0: sometimes with zeros, negative zeros or NaNs), a box (0x300,
+    // 0x310), out (0x400), the inset flag
+    Test water_box_span{0x8e6980,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 0x50; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-2, 2) : r.any_float();
+                            for (int i = 0x38; i < 0x44; i++) {
+                                const int k = r.range(0, 9);
+                                if (k == 0) arena<float>(0x100)[i] = 0.0f;
+                                if (k == 1) arena<uint32_t>(0x100)[i] = 0x80000000u;
+                            }
+                            if (r.range(0, 3) == 0)   // a whole axis of zeros (each +0 or -0)
+                                for (int i = 0; i < 3; i++) arena<uint32_t>(0x100)[0x38 + 4 * r.range(0, 2) + i] = r.range(0, 1) ? 0x80000000u : 0;
+                            for (int i = 0; i < 8; i++) {
+                                const int k = r.range(0, 11);
+                                arena<float>(0x300)[i] = k == 0 ? r.any_float() : k == 1 ? (r.range(0, 1) ? INFINITY : -INFINITY) : k == 2 ? -0.0f : r.real(-50, 50);
+                            }
+                            arena<uint32_t>(0x10)[0] = r.range(0, 1);
+                        },
+                        [](void *fn) {
+                            void *got = ((void *(__thiscall *)(void *, void *, void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x300), arena<void>(0x310), arena<void>(0x400), arena<uint32_t>(0x10)[0]);
+                            return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
+                        }};
+    quick(water_box_span);
     // Matrix::TurnBy: a matrix (0x100), a turn (0x300): any floats, sometimes small (turns under 1e-20 or near it)
     Test matrix_turn_by{0xc209e0,
                         [=](Rng &r) {
