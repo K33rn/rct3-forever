@@ -47,7 +47,7 @@ def load():
 
 def rewritten():
     found = {}
-    for p in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')) + glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc')):
+    for p in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')) + glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*_list.inc')):
         src = open(p, encoding='utf-8').read()
         for m in re.finditer(r'REWRITE\("([^"]+)",\s*(0x[0-9a-fA-F]+)', src):
             found[int(m.group(2), 16)] = m.group(1)
