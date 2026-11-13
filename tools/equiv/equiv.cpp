@@ -5883,6 +5883,18 @@ static std::vector<Test> tests() {
                             return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
                         }};
     quick(matrices_times);
+    // Record::CopyWithEntries: a record of 0x1018 bytes (random) at 0x3000 copied to 0x5000, or to one that overlaps it
+    // a little above or below
+    Test record_copy_with_entries{0x9648f0,
+                                  [=](Rng &r) {
+                                      for (int i = 0; i < 0x4000 / 4; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                                      const int mode = r.range(0, 3);
+                                      arena<uint32_t>(0x10)[0] = mode == 0 ? 0x3000 + 4 * r.range(1, 0x80) : mode == 1 ? 0x3000 - 4 * r.range(1, 0x80) : 0x5000;
+                                  },
+                                  [=](void *fn) {
+                                      return rel_result(((void *(__thiscall *)(void *, void *))fn)(arena<void>(arena<uint32_t>(0x10)[0]), arena<void>(0x3000)));
+                                  }};
+    quick(record_copy_with_entries);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)

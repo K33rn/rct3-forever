@@ -13428,7 +13428,7 @@ address,size,name,callers,status
 0x963fa0,332,,4,documented
 0x9640f0,1237,,2,documented
 0x9645d0,728,,1,documented
-0x9648f0,609,,1,documented
+0x9648f0,609,Record::CopyWithEntries,1,rewritten
 0x964b60,30,DeletingDestructor,0,rewritten
 0x964b80,51,,4,documented
 0x964bc0,302,,3,documented

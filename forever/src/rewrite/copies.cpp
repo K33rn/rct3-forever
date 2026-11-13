@@ -252,3 +252,19 @@ REWRITE("Record::SetFields", 0xcebf80, copy_cebf80_original, (&set_fields<copy_c
 static const CopyOp copy_e019c0[] = {{0x0, 4, 1, 0x0}, {0x4, 4, 1, 0x0}, {0x8, 4, 1, 0x0}, {0xc, 4, 1, 0xa}, {0x10, 4, 1, 0x0}, {0x14, 4, 1, 0x0}};
 static const uint8_t copy_e019c0_original[] = {0x8b, 0xc1, 0x33, 0xc9, 0x89, 0x08, 0x89, 0x48};
 REWRITE("Record::CopyAndSet", 0xe019c0, copy_e019c0_original, (&copy_and_set<copy_e019c0, 6, 0, 0x0>), &g_field_copies);
+
+// ---- Record::CopyWithEntries(from): a record copied from another: its first byte, the five values at +4 to +0x14,
+// then its 16 entries of 0x100 bytes from +0x18, a value at a time going up (so records that overlap copy as the
+// game's do). Bytes 1 to 3 are left as they are. Returns this. ----
+static volatile long g_entry_copies;
+static uint8_t *__thiscall record_copy_with_entries(uint8_t *self, const uint8_t *from) {
+    g_entry_copies++;
+    *(volatile uint8_t *)self = *from;
+    volatile uint32_t *to = (volatile uint32_t *)self;
+    const volatile uint32_t *src = (const volatile uint32_t *)from;
+    for (int i = 1; i < 6; i++) to[i] = src[i];
+    for (int i = 6; i < 6 + 16 * 0x40; i++) to[i] = src[i];
+    return self;
+}
+static const uint8_t record_copy_with_entries_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x8a, 0x11, 0x88, 0x10, 0x8b, 0x51};
+REWRITE("Record::CopyWithEntries", 0x9648f0, record_copy_with_entries_original, &record_copy_with_entries, &g_entry_copies);
