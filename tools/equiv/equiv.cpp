@@ -5924,6 +5924,28 @@ static std::vector<Test> tests() {
     };
     table_make.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)table_make_global = table_make_saved; unstub_many(); };
     quick(table_make);
+    // Array::ResizeRecords (tools/array_resizes.py): an array (0x100) of 0-8 records at 0x1000 (random; sometimes no
+    // items at a count of 0), resized to 0-9 (sometimes the same count); the allocator, the free and ArrayConstruct are
+    // stand-ins that record their arguments, the new records coming from 0x2000 on (random before)
+    Test array_resize{0x417a20,
+                      [=](Rng &r) {
+                          fresh(r);
+                          for (int i = 0; i < 0x400; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                          for (int i = 0; i < 0x400; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                          const int32_t count = r.range(0, 8);
+                          uint32_t *self = arena<uint32_t>(0x100);
+                          self[0] = count || r.range(0, 1) ? (uint32_t)(uintptr_t)arena<void>(0x1000) : 0;
+                          self[1] = (uint32_t)count;
+                          arena<int32_t>(0x10)[0] = r.range(0, 3) ? r.range(0, 9) : count;
+                          *arena<uint32_t>(ALLOC_NEXT) = 0;
+                          arena<uint32_t>(CALL_LOG)[0] = 0;
+                      },
+                      [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0])}; }};
+    array_resize.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfd0, (void *)stub_alloc_next}, {0x402b90, (void *)stub_vector_construct4}, {0xbce010, (void *)stub_free_aligned}});
+    };
+    array_resize.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(array_resize);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)
