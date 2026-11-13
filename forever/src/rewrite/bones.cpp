@@ -784,3 +784,36 @@ static uint8_t *__fastcall firework_quad(uint8_t *out, const float *view, const 
 }
 static const uint8_t firework_quad_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x38, 0x8b, 0x45, 0x10};
 REWRITE("Firework::Quad", 0x9f75f0, firework_quad_original, &firework_quad, &g_firework_quads);
+
+// ---- Matrices::Times(out, in; count, m) (fastcall): count 4x4 matrices (64 bytes apart) each times m into out. With
+// SSE on (the flag at 0x13D2888) each out row is in's x m row0 + y m row1 + z m row2 + w m row3 in single precision, as
+// the SSE instructions add them (m and out must be 16-byte aligned; the loop runs at least once, so a count of 0 goes
+// round 2^32 times, as in the game); returns m. Without it, each matrix as Matrix::Multiply does it, in this copy's
+// orders (in and out may be the same); returns in + 64 count + 8 (in when count is 0). ----
+#include <xmmintrin.h>
+static const SumOrder matrices_times_orders = {{2, 0, 1, 3}, {0, 1, 2, 3}, {2, 3, 0, 1}, {3, 1, 2, 0}, {0, 2, 1, 3}, {0, 1, 3, 2}, {3, 2, 0, 1}, {3, 2, 1, 0},
+                                               {0, 2, 1, 3}, {0, 1, 3, 2}, {3, 2, 0, 1}, {3, 2, 1, 0}, {0, 2, 1, 3}, {0, 1, 3, 2}, {3, 2, 0, 1}, {3, 2, 1, 0}};
+static volatile long g_matrices_times;
+__attribute__((target("sse"))) static const void *__fastcall matrices_times(float *out, const float *in, uint32_t count, const float *m) {
+    g_matrices_times++;
+    if (*(volatile uint32_t *)0x13d2888) {
+        const __m128 *rows = (const __m128 *)m;
+        uint32_t n = count;
+        do {
+            for (int i = 0; i < 4; i++) {
+                __m128 v = _mm_mul_ps(_mm_set1_ps(in[4 * i]), rows[0]);
+                v = _mm_add_ps(v, _mm_mul_ps(_mm_set1_ps(in[4 * i + 1]), rows[1]));
+                v = _mm_add_ps(v, _mm_mul_ps(_mm_set1_ps(in[4 * i + 2]), rows[2]));
+                v = _mm_add_ps(v, _mm_mul_ps(_mm_set1_ps(in[4 * i + 3]), rows[3]));
+                _mm_store_ps(out + 4 * i, v);
+            }
+            in += 16, out += 16;
+        } while (--n);
+        return m;
+    }
+    if (!count) return in;
+    for (uint32_t k = 0; k < count; k++) multiply_ordered(out + 16 * k, in + 16 * k, m, matrices_times_orders);
+    return (const uint8_t *)(in + 16 * count) + 8;
+}
+static const uint8_t matrices_times_original[] = {0x53, 0x8b, 0xdc, 0x83, 0xec, 0x08, 0x83, 0xe4, 0xf0, 0x83, 0xc4, 0x04};
+REWRITE("Matrices::Times", 0xbee8c0, matrices_times_original, &matrices_times, &g_matrices_times);

@@ -20314,7 +20314,7 @@ address,size,name,callers,status
 0xbee460,323,,19,documented
 0xbee5b0,167,,14,documented
 0xbee890,33,,5,documented
-0xbee8c0,1000,,3,documented
+0xbee8c0,1000,Matrices::Times,3,rewritten
 0xbeecb0,134,,2,documented
 0xbeed40,727,Skin::PositionsX87,0,rewritten
 0xbef020,322,Skin::Positions,0,rewritten

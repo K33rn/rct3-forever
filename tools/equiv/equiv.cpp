@@ -5862,6 +5862,26 @@ static std::vector<Test> tests() {
                                                                                                                        arena<float>(0x10)[0], arena<void>(0x110), arena<void>(0x120)));
                        }};
     quick(firework_quad);
+    // Matrices::Times: 1-4 matrices at 0x1000 (any floats) times one at 0x300 into 0x2000, or in place; the SSE flag
+    // (0x13D2888) on or off for the call and put back after it (0 matrices only without SSE)
+    Test matrices_times{0xbee8c0,
+                        [=](Rng &r) {
+                            floats_setup(r);
+                            for (int i = 0; i < 64; i++) arena<float>(0x1000)[i] = r.range(0, 9) ? r.real(-100, 100) : r.any_float();
+                            const uint32_t sse = r.range(0, 1);
+                            arena<uint32_t>(0x10)[0] = sse;
+                            arena<uint32_t>(0x10)[1] = r.range(sse ? 1 : 0, 4);
+                            arena<uint32_t>(0x10)[2] = r.range(0, 3) ? 0x2000 : 0x1000;
+                        },
+                        [=](void *fn) {
+                            const uint32_t saved = *(volatile uint32_t *)0x13d2888;
+                            *(volatile uint32_t *)0x13d2888 = arena<uint32_t>(0x10)[0];
+                            const void *got = ((const void *(__fastcall *)(void *, void *, uint32_t, void *))fn)(arena<void>(arena<uint32_t>(0x10)[2]), arena<void>(0x1000),
+                                                                                                                 arena<uint32_t>(0x10)[1], arena<void>(0x300));
+                            *(volatile uint32_t *)0x13d2888 = saved;
+                            return Result{(uint32_t)((uintptr_t)got - (uintptr_t)arena<void>(0))};
+                        }};
+    quick(matrices_times);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)
