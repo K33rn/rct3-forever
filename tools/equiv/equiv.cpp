@@ -477,6 +477,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, arg_value(e)); return built_result(self);
 }
 extern const uint32_t titled_info[], titled_callees[], value_info[], record_info[];
+extern const uint32_t table_make_info[];
 // Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
 // text gets a wide string of its own
 static void *__thiscall stub_text_for_child(void **self, void **name, void *window, uint32_t value) {
@@ -5895,6 +5896,34 @@ static std::vector<Test> tests() {
                                       return rel_result(((void *(__thiscall *)(void *, void *))fn)(arena<void>(arena<uint32_t>(0x10)[0]), arena<void>(0x3000)));
                                   }};
     quick(record_copy_with_entries);
+    // Table::Make (29 copies, tools/table_makes.py): an object (0x800), sixteen arguments each pointing at its own 0x40
+    // bytes (0x3000 on), the copy's global with bit 0 either way and its other bits random; Table::Fill16 is a
+    // stand-in that records the table and the sixteen values
+    struct TableMakeArgs { void *a[16]; };
+    static uint32_t table_make_global, table_make_saved;
+    Test table_make{0x4164c0,
+                    [=](Rng &r) {
+                        fresh(r);
+                        for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x800)[i] = r.next();
+                        for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x3000)[i] = r.next();
+                        arena<uint32_t>(0x10)[2] = r.next();
+                        arena<uint32_t>(CALL_LOG)[0] = 0;
+                    },
+                    [](void *fn) {
+                        *(uint32_t *)(uintptr_t)table_make_global = arena<uint32_t>(0x10)[2];
+                        TableMakeArgs args;
+                        for (int i = 0; i < 16; i++) args.a[i] = arena<void>(0x3000 + 0x40 * i);
+                        void *back = ((void *(__thiscall *)(void *, TableMakeArgs))fn)(arena<void>(0x800), args);
+                        return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *(uint32_t *)(uintptr_t)table_make_global};
+                    }};
+    table_make.prepare = [](const rewrite::Entry *e) {
+        for (const uint32_t *v = table_make_info; *v; v += 2)
+            if (v[0] == (uint32_t)(uintptr_t)e->at) table_make_global = v[1];
+        table_make_saved = *(uint32_t *)(uintptr_t)table_make_global;
+        stubs_for_now({{0x416110, (void *)w4b_stub_table}});
+    };
+    table_make.finish = [](const rewrite::Entry *) { *(uint32_t *)(uintptr_t)table_make_global = table_make_saved; unstub_many(); };
+    quick(table_make);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)
