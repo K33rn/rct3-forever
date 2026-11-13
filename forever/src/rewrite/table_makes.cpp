@@ -1,7 +1,7 @@
 // "Make with a shared table" constructors: each keeps some values from its arguments in the object, then, the first
 // time (bit 0 of a global says whether it's been done), fills a shared table through Table::Fill16 with sixteen two-byte
 // values, and points the object at the table. They differ only in what is kept and where, the global, the table and the
-// sixteen values: those are read from the game by tools/table_makes.py into table_makes.inc.
+// sixteen values: those are read from the game by tools/table_makes.py into table_makes_list.inc.
 #include "rewrite.h"
 
 struct TableKeep {
@@ -28,17 +28,4 @@ static void *__thiscall table_make(uint8_t *self, TableArgs args) {
     *(volatile uint32_t *)self = TABLE;
     return self;
 }
-#define ARG(...) __VA_ARGS__
-#define TABLE_MAKE(at, first, made, table, words, n, keeps)                                 \
-    static const uint8_t table_make_original_##at[] = {first};                             \
-    static const uint16_t table_make_words_##at[16] = {words};                             \
-    static const TableKeep table_make_keeps_##at[] = {keeps};                              \
-    REWRITE("Table::Make", at, table_make_original_##at, (&table_make<made, table, table_make_words_##at, table_make_keeps_##at, n>), &g_table_makes);
-#include "table_makes.inc"
-#undef TABLE_MAKE
-// for the tester: each one's address and its global
-#define TABLE_MAKE(at, first, made, table, words, n, keeps) at, made,
-extern const uint32_t table_make_info[];
-const uint32_t table_make_info[] = {
-#include "table_makes.inc"
-    0};
+#include "table_makes_list.inc"

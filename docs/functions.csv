@@ -314,7 +314,7 @@ address,size,name,callers,status
 0x4161f0,364,,1,documented
 0x416360,30,DeletingDestructor,1,rewritten
 0x416380,298,,1,documented
-0x4164c0,285,,3,documented
+0x4164c0,285,Table::Make,3,rewritten
 0x4165e0,102,,0,documented
 0x416650,506,,1,documented
 0x4168b0,487,,0,documented
@@ -672,7 +672,7 @@ address,size,name,callers,status
 0x430ee0,137,,1,documented
 0x430f70,163,,2,documented
 0x431020,65,,0,documented
-0x431070,285,,31,documented
+0x431070,285,Table::Make,31,rewritten
 0x4311c0,126,QuadTree::Insert,6,rewritten
 0x431240,273,QuadTree::Move,2,rewritten
 0x431360,230,,32,documented
@@ -902,7 +902,7 @@ address,size,name,callers,status
 0x447380,50,,1,documented
 0x4473c0,349,,5,documented
 0x447530,216,,6,documented
-0x447610,294,,5,documented
+0x447610,294,Table::Make,5,rewritten
 0x447740,2568,,5,documented
 0x448170,16,Object::AllocStore,20,rewritten
 0x448180,48,QueryInterface,1,rewritten
@@ -1920,7 +1920,7 @@ address,size,name,callers,status
 0x4988c0,1413,,1,documented
 0x498e50,99,,1,documented
 0x498ec0,670,,1,documented
-0x499160,306,,11,documented
+0x499160,306,Table::Make,11,rewritten
 0x4992d0,975,,0,documented
 0x4996a0,28,,3,documented
 0x499720,430,,2,documented
@@ -11529,7 +11529,7 @@ address,size,name,callers,status
 0x8532a0,20,Object::CondForward,1,rewritten
 0x8532c0,226,,1,documented
 0x8533b0,237,,1,documented
-0x8534a0,285,,24,documented
+0x8534a0,285,Table::Make,24,rewritten
 0x8535c0,100,Pair::Release8535C0,3,rewritten
 0x853630,99,Factory::Global,1,rewritten
 0x8536a0,30,DeletingDestructor,0,rewritten
@@ -11879,7 +11879,7 @@ address,size,name,callers,status
 0x87c460,171,,15,documented
 0x87c510,347,,1,documented
 0x87c670,63,Pool::Take,0,rewritten
-0x87c6b0,334,,3,documented
+0x87c6b0,334,Table::Make,3,rewritten
 0x87c800,295,Once::Make285B290,2,rewritten
 0x87c930,107,Factory::LazyWith,39,rewritten
 0x87c9a0,237,,1,documented
@@ -12653,7 +12653,7 @@ address,size,name,callers,status
 0x8f6cb0,2127,,2,documented
 0x8f7500,546,,1,documented
 0x8f7730,30,Stages::Run550AF0,1,rewritten
-0x8f7750,285,,3,documented
+0x8f7750,285,Table::Make,3,rewritten
 0x8f7870,895,,10,documented
 0x8f7c00,2612,,1,documented
 0x8f8660,144,,1,documented
@@ -12748,8 +12748,8 @@ address,size,name,callers,status
 0x901be0,50,,0,documented
 0x901c20,311,,2,documented
 0x901d60,64,Pool::TakeSized,0,rewritten
-0x901da0,343,,1,documented
-0x901f00,334,,1,documented
+0x901da0,343,Table::Make,1,rewritten
+0x901f00,334,Table::Make,1,rewritten
 0x902050,575,,2,documented
 0x902290,538,,1,documented
 0x9024b0,54,,4,documented
@@ -12862,7 +12862,7 @@ address,size,name,callers,status
 0x911bf0,141,,3,documented
 0x911c80,163,,1,documented
 0x911d30,732,,2,documented
-0x912010,314,,1,documented
+0x912010,314,Table::Make,1,rewritten
 0x912150,321,,1,documented
 0x9122a0,145,Tint::Apply9122A0,2,rewritten
 0x912340,145,Tint::Apply9122A0,2,rewritten
@@ -12894,7 +12894,7 @@ address,size,name,callers,status
 0x9140a0,535,,1,documented
 0x9142c0,193,,2,documented
 0x914390,48,,0,documented
-0x9143c0,322,,2,documented
+0x9143c0,322,Table::Make,2,rewritten
 0x914510,51,ObjectArray::Free,4,rewritten
 0x914550,270,ObjectArray::SetCapacity,4,rewritten
 0x914660,350,,1,documented
@@ -13054,8 +13054,8 @@ address,size,name,callers,status
 0x92be40,116,,1,documented
 0x92bec0,128,,1,documented
 0x92bf40,133,,1,documented
-0x92bfd0,338,,3,documented
-0x92c130,328,,3,documented
+0x92bfd0,338,Table::Make,3,rewritten
+0x92c130,328,Table::Make,3,rewritten
 0x92c280,105,Factory::Create,1,rewritten
 0x92c2f0,30,DeletingDestructor,0,rewritten
 0x92c310,508,,1,documented
@@ -13097,8 +13097,8 @@ address,size,name,callers,status
 0x92f800,1113,,11,documented
 0x92fc60,75,,1,documented
 0x92fcb0,3589,,1,documented
-0x930ac0,351,,1,documented
-0x930c20,341,,7,documented
+0x930ac0,351,Table::Make,1,rewritten
+0x930c20,341,Table::Make,7,rewritten
 0x930de0,184,,1,documented
 0x930ea0,105,Factory::Create,1,rewritten
 0x930f10,30,DeletingDestructor,0,rewritten
@@ -13266,7 +13266,7 @@ address,size,name,callers,status
 0x946f50,37,Listed::Construct4535C0,3,rewritten
 0x946f80,60,Listener::~Listener,9,rewritten
 0x946fc0,983,,1,documented
-0x9473a0,360,,1,documented
+0x9473a0,360,Table::Make,1,rewritten
 0x947540,296,,1,documented
 0x947670,13,,1,documented
 0x947680,100,,6,documented
@@ -13338,7 +13338,7 @@ address,size,name,callers,status
 0x94f060,482,,0,documented
 0x94f250,5118,,1,documented
 0x9506b0,64,Pool::TakeSized,0,rewritten
-0x9506f0,313,,2,documented
+0x9506f0,313,Table::Make,2,rewritten
 0x950830,708,,1,documented
 0x950b00,329,,1,documented
 0x950c50,445,,3,documented
@@ -13360,9 +13360,9 @@ address,size,name,callers,status
 0x958c50,55,,1,documented
 0x958c90,290,,1,documented
 0x958dc0,251,,2,documented
-0x958ec0,344,,1,documented
-0x959020,305,,1,documented
-0x959160,364,,1,documented
+0x958ec0,344,Table::Make,1,rewritten
+0x959020,305,Table::Make,1,rewritten
+0x959160,364,Table::Make,1,rewritten
 0x9592d0,2052,,2,documented
 0x959ae0,1087,,2,documented
 0x959f30,128,,1,documented
@@ -14863,8 +14863,8 @@ address,size,name,callers,status
 0x9e51d0,3563,,7,documented
 0x9e5fc0,30,DeletingDestructor,2,rewritten
 0x9e5fe0,675,,1,documented
-0x9e6290,304,,1,documented
-0x9e63c0,314,,1,documented
+0x9e6290,304,Table::Make,1,rewritten
+0x9e63c0,314,Table::Make,1,rewritten
 0x9e6500,305,Once::Make71F340,1,rewritten
 0x9e6640,105,Factory::Create,1,rewritten
 0x9e66b0,1705,,2,documented
@@ -19969,7 +19969,7 @@ address,size,name,callers,status
 0xbd8040,30,DeletingDestructor,0,rewritten
 0xbd8060,32,Object::ArrayPush,0,rewritten
 0xbd8080,32,Object::ArrayPush,0,rewritten
-0xbd80a0,285,,2,documented
+0xbd80a0,285,Table::Make,2,rewritten
 0xbd81c0,223,,1,documented
 0xbd82a0,1848,,5,documented
 0xbd89e0,1764,,0,documented
@@ -20072,7 +20072,7 @@ address,size,name,callers,status
 0xbdf830,218,,3,documented
 0xbdf910,30,DeletingDestructor,0,rewritten
 0xbdf930,30,DeletingDestructor,0,rewritten
-0xbdf950,274,,1,documented
+0xbdf950,274,Table::Make,1,rewritten
 0xbdfa70,32,,0,documented
 0xbdfae0,194,Hash::InitBDFAE0,2,rewritten
 0xbdfbb0,194,Hash::InitBDFAE0,2,rewritten
@@ -20589,7 +20589,7 @@ address,size,name,callers,status
 0xc02e70,89,,0,documented
 0xc02ed0,270,,1,documented
 0xc02fe0,93,,0,documented
-0xc03040,304,,1,documented
+0xc03040,304,Table::Make,1,rewritten
 0xc03170,2091,,1,documented
 0xc03a50,17,Object::InitEdx,2,rewritten
 0xc03a70,10,,3,documented
@@ -20980,10 +20980,10 @@ address,size,name,callers,status
 0xc1c4b0,1097,,1,documented
 0xc1c900,30,DeletingDestructor,1,rewritten
 0xc1c920,105,,1,documented
-0xc1c990,335,,1,documented
-0xc1cae0,314,,1,documented
+0xc1c990,335,Table::Make,1,rewritten
+0xc1cae0,314,Table::Make,1,rewritten
 0xc1cc20,295,Once::Make285B290,2,rewritten
-0xc1cd50,333,,2,documented
+0xc1cd50,333,Table::Make,2,rewritten
 0xc1cea0,1452,,2,documented
 0xc1d460,889,,1,documented
 0xc1d7e0,2579,,1,documented
@@ -22065,7 +22065,7 @@ address,size,name,callers,status
 0xc9c410,126,,0,documented
 0xc9c490,3127,,0,documented
 0xc9d0d0,32,Object::ArrayPush,0,rewritten
-0xc9d0f0,338,,1,documented
+0xc9d0f0,338,Table::Make,1,rewritten
 0xc9d250,40,,0,documented
 0xc9d280,671,,3,documented
 0xc9d530,3628,,0,documented

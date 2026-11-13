@@ -1,5 +1,5 @@
 """Read the "make with a shared table" constructors from the game's code and write them as rows of a table,
-forever/src/rewrite/table_makes.inc. These functions all have one shape (the game's compiler wrote the same thing out
+forever/src/rewrite/table_makes_list.inc. These functions all have one shape (the game's compiler wrote the same thing out
 each time): keep some values from the arguments in the object, then, the first time (a bit in a global says whether
 it's been done), fill a shared table through Table::Fill16 (0x416110) with sixteen two-byte values, and point the
 object at the table. What differs is which values are kept and where, the global, the table and the sixteen values.
@@ -197,7 +197,7 @@ rows = list(csv.DictReader(open(os.path.join(HERE, 'docs', 'functions.csv'), enc
 TAKEN = set()
 for f in glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp')):
     TAKEN |= {int(v, 16) for v in re.findall(r'REWRITE\("[^"]+", (0x[0-9a-fA-F]+)', open(f, encoding='utf-8').read())}
-OUT = os.path.join(HERE, 'forever', 'src', 'rewrite', 'table_makes.inc')
+OUT = os.path.join(HERE, 'forever', 'src', 'rewrite', 'table_makes_list.inc')
 found, why = [], []
 for r in rows:
     a, n = int(r['address'], 16), int(r['size'])
@@ -219,12 +219,18 @@ for r in rows:
         found.append((a, n, keeps, made, table, words))
     except Unknown as e:
         why.append((a, n, str(e)))
-lines = ['// The "make with a shared table" constructors, read from the game by tools/table_makes.py: do not edit by hand.',
-         '// TABLE_MAKE(address, first bytes, flag, table, the sixteen values, how many values kept, {to, argument, from}...)']
+lines = ['// The "make with a shared table" constructors taken over by table_make (table_makes.cpp); written by tools/table_makes.py.',
+         '// Each: its first bytes, the sixteen values for the table, the values kept {to, argument, from}, then the rewrite']
 for a, n, keeps, made, table, words in found:
     first = ', '.join(f'0x{b:02x}' for b in img[a - BASE:a - BASE + 14])
     ks = ', '.join(f'{{{to:#x}, {arg}, {frm:#x}}}' for to, arg, frm in keeps)
-    lines.append(f'TABLE_MAKE({a:#x}, ARG({first}), {made:#x}, {table:#x}, ARG({", ".join(f"{w:#x}" for w in words)}), {len(keeps)}, ARG({ks}))')
+    lines.append(f'static const uint8_t table_make_{a:x}_original[] = {{{first}}};')
+    lines.append(f'static const uint16_t table_make_{a:x}_words[16] = {{{", ".join(f"{w:#x}" for w in words)}}};')
+    lines.append(f'static const TableKeep table_make_{a:x}_keeps[] = {{{ks}}};')
+    lines.append(f'REWRITE("Table::Make", {a:#x}, table_make_{a:x}_original, (&table_make<{made:#x}, {table:#x}, table_make_{a:x}_words, table_make_{a:x}_keeps, {len(keeps)}>), &g_table_makes);')
+lines.append('// for the tester: each address and its global')
+lines.append('extern const uint32_t table_make_info[];')
+lines.append('const uint32_t table_make_info[] = {' + ''.join(f'{a:#x}, {made:#x}, ' for a, n, keeps, made, table, words in found) + '0};')
 open(OUT, 'w', newline='\n').write('\n'.join(lines) + '\n')
 print(len(found), 'functions,', sum(f[1] for f in found), 'bytes;', len(why), 'left out')
 if '--why' in sys.argv:
