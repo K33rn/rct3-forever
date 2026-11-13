@@ -5546,6 +5546,7 @@ static std::vector<Test> tests() {
         for (const uint32_t *v = value_info; *v; v += 3 + v[2])
             if (v[0] == e->at) value_where = v[1], value_count = v[2], value_starts = v + 3;
     };
+    value_map.iterations = 6000;   // enough to reach every entry of the largest tables (130 values)
     t.push_back(value_map);
     // Record::Fields: its record (0x1000), a second record (0x5000) or values as its arguments; random bytes
     static uint32_t record_layout, record_args;

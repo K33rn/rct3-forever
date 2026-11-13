@@ -94,6 +94,9 @@ def model(a, n, ins):
         for c in consts:
             for d in (-2, -1, 0, 1, 2):
                 points.add((c + d) & 0xffffffff)
+        for x in ins:   # a switch over a small range (cmp with its last case): every case is a point of its own
+            if x.mnemonic == 'cmp' and x.operands[1].type == x86.X86_OP_IMM and 0 < x.operands[1].imm <= 0x400:
+                points |= set(range(0, x.operands[1].imm + 8))
         points |= {0x7fffffff, 0x80000000, 0xffffffff}
         bounds = sorted(points)
         values = []
@@ -147,7 +150,17 @@ for r in rows:
     if n < 24:
         continue
     ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
-    if not ins or ins[-1].mnemonic != 'ret' or ins[-1].address + ins[-1].size != a + n:
+    # a switch's tables at the function's end (jump targets, case numbers) aren't code: the code ends where they start
+    tables = [op.mem.disp & 0xffffffff for x in ins for op in x.operands
+              if op.type == x86.X86_OP_MEM and a < (op.mem.disp & 0xffffffff) < a + n and (op.mem.index or op.mem.base)]
+    if tables:
+        ins = list(md.disasm(bytes(img[a - BASE:min(tables) - BASE]), a))
+        while ins and (ins[-1].mnemonic in ('nop', 'int3') or ins[-1].mnemonic == 'lea' and ins[-1].operands[1].mem.disp == 0
+                       or ins[-1].mnemonic == 'mov' and ins[-1].op_str in ('edi, edi', 'eax, eax')):
+            ins.pop()   # padding before the tables
+        if not ins or ins[-1].mnemonic != 'ret':
+            continue
+    elif not ins or ins[-1].mnemonic != 'ret' or ins[-1].address + ins[-1].size != a + n:
         continue
     if any(x.mnemonic == 'call' or 'fs:' in x.op_str or x.mnemonic.startswith(('f', 'rep')) or x.mnemonic in ('int', 'int3', 'in', 'out', 'cpuid', 'rdtsc') for x in ins):
         continue
