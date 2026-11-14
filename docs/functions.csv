@@ -21994,7 +21994,7 @@ address,size,name,callers,status
 0xc775d0,30,DeletingDestructor,1,rewritten
 0xc77600,40,,0,documented
 0xc776d0,251,,1,documented
-0xc77890,78620,,1,documented
+0xc77890,78620,GE_Device::GE_Device,1,rewritten
 0xc8abc0,2660,,1,documented
 0xc8b660,44,,1,documented
 0xc8b760,142,Linked::DestroyC72810,1,rewritten

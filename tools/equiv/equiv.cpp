@@ -643,6 +643,68 @@ static void __stdcall dtor_vec_dtor(void *items, uint32_t size, int32_t count, v
 static const uint32_t *g_dtor_info;   // the copy under test: {address, steps, then five values a step}
 static std::vector<std::pair<uint32_t, uint32_t>> g_dtor_globals;   // the globals it writes or reads, and what they held
 
+// GE_Device::GE_Device: its stand-ins fold what they are given into a running sum at arena 0x20 (there are far more
+// calls than the call log holds). The assembler's answers come from a seed (0x28) and a count of calls (0x24): the
+// result (sometimes a failure), whether it gives code, and how many bytes the code is.
+static void dev_note(uint32_t tag, uint32_t value) {
+    uint32_t &sum = *arena<uint32_t>(0x20);
+    sum = (sum ^ tag) * 0x01000193u;
+    sum = (sum ^ value) * 0x01000193u;
+}
+static uint32_t dev_next() {
+    uint32_t &count = *arena<uint32_t>(0x24);
+    uint32_t x = *arena<uint32_t>(0x28) + 0x9e3779b9u * ++count;
+    x ^= x >> 15; x *= 0x2c1b3c6du; x ^= x >> 12; x *= 0x297a2d39u; x ^= x >> 15;
+    return x;
+}
+static void *__thiscall dev_base(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    dev_note(1, (uint32_t)(uintptr_t)self); dev_note(1, a); dev_note(1, b); dev_note(1, c); dev_note(1, d);
+    return self;
+}
+static void __stdcall dev_array(void *items, uint32_t size, int32_t count, void *ctor) {
+    dev_note(2, (uint32_t)(uintptr_t)items); dev_note(2, size); dev_note(2, (uint32_t)count); dev_note(2, (uint32_t)(uintptr_t)ctor);
+}
+static void *__thiscall dev_forward(void *self, uint32_t a, uint32_t b) { dev_note(3, (uint32_t)(uintptr_t)self); dev_note(3, a); dev_note(3, b); return self; }
+static uint32_t __thiscall dev_text_init(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    dev_note(4, (uint32_t)(uintptr_t)self); dev_note(4, a); dev_note(4, b); dev_note(4, c); dev_note(4, d);
+    return 1;
+}
+static uint32_t __thiscall dev_name(void *self, uint32_t name) { dev_note(5, (uint32_t)(uintptr_t)self); dev_note(5, name); return name * 3 + 1; }
+static void *dev_take(uint32_t size) {   // memory from the arena's 0x2000 on (a size that makes no sense takes 0x100)
+    uint32_t &next = *arena<uint32_t>(0x2c);
+    if (next < 0x2000) next = 0x2000;
+    void *p = arena<void>(next);
+    next += size > 0x100 ? 0x100 : (size + 15) & ~15u;
+    return p;
+}
+static void *__cdecl dev_alloc(uint32_t size) {   // sometimes there is no memory
+    dev_note(6, size);
+    return dev_next() % 16 == 0 ? nullptr : dev_take(size);
+}
+static void *__cdecl dev_alloc_aligned(uint32_t size) { dev_note(7, size); return dev_take(size); }
+static uint32_t __stdcall dev_buffer_release(void *self) { dev_note(8, (uint32_t)(uintptr_t)self); return 0; }
+static uint8_t *__stdcall dev_buffer_pointer(void *self) { dev_note(9, (uint32_t)(uintptr_t)self); return arena<uint8_t>(0x7000 + (*arena<uint32_t>(0x34) & 0xfc)); }
+static uint32_t __stdcall dev_buffer_size(void *self) { dev_note(10, (uint32_t)(uintptr_t)self); return *arena<uint32_t>(0x30); }
+static void *g_dev_buffer_table[5] = {nullptr, nullptr, (void *)dev_buffer_release, (void *)dev_buffer_pointer, (void *)dev_buffer_size};
+static void **g_dev_buffer = g_dev_buffer_table;
+static int32_t __stdcall dev_assemble(const char *text, uint32_t length, void *a, void *b, uint32_t flags, void ***code, void *errors) {
+    dev_note(11, (uint32_t)(uintptr_t)text); dev_note(11, length); dev_note(11, (uint32_t)(uintptr_t)a); dev_note(11, (uint32_t)(uintptr_t)b);
+    dev_note(11, flags); dev_note(11, (uint32_t)(uintptr_t)errors);
+    const uint32_t x = dev_next();
+    const uint32_t kind = (x >> 8) % 10;
+    *arena<uint32_t>(0x30) = kind == 0 ? 0 : kind == 1 ? 4 : kind == 2 ? 7 : 8 + (x >> 16) % 41;   // bytes: also none, too few, not whole values
+    *arena<uint32_t>(0x34) = x >> 3;
+    *code = x % 5 == 0 ? nullptr : (void **)&g_dev_buffer;
+    return x % 7 == 0 ? (int32_t)0x80004005 : 0;
+}
+static const char *__stdcall dev_error_text(int32_t result) { dev_note(12, (uint32_t)result); return (const char *)0xfba084; }
+static void __cdecl dev_report(const char *format, const char *file, int32_t line, const char *what) {
+    dev_note(13, (uint32_t)(uintptr_t)format); dev_note(13, (uint32_t)(uintptr_t)file); dev_note(13, (uint32_t)line); dev_note(13, (uint32_t)(uintptr_t)what);
+}
+static void *__thiscall dev_state(void *self, void *device) { dev_note(14, (uint32_t)(uintptr_t)self); dev_note(14, (uint32_t)(uintptr_t)device); return self; }
+static void __thiscall dev_pass_shaders(void *self) { dev_note(15, (uint32_t)(uintptr_t)self); }
+static void __thiscall dev_clear(void *self, uint32_t a) { dev_note(16, (uint32_t)(uintptr_t)self); dev_note(16, a); }
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6122,6 +6184,34 @@ static std::vector<Test> tests() {
         unstub_many();
     };
     quick(dtor_steps_test);
+    // GE_Device::GE_Device: the device at 0x9000 (0x24A0 bytes, random before), four values given. The base, the array
+    // constructors, the texts' setup, the debug names, both allocators (the plain one sometimes out of memory), the
+    // assembler and its code buffers, the error report, the state record and the two last calls are stand-ins that
+    // fold everything they are given into a sum; the small value helpers run as they are. The result is the device
+    // given back and that sum.
+    Test device_construct{0xc77890,
+                          [=](Rng &r) {
+                              fresh(r);
+                              for (int i = 0; i < 0x928; i++) arena<uint32_t>(0x9000)[i] = r.next();
+                              for (int i = 0; i < 0x80; i++) arena<uint32_t>(0x7000)[i] = r.next();
+                              for (int i = 0; i < 0x1400; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                              for (int i = 0; i < 4; i++) arena<uint32_t>(0x10)[i] = r.next();
+                              arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                          },
+                          [](void *fn) {
+                              const uint32_t *a = arena<uint32_t>(0x10);
+                              void *back = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x9000), a[0], a[1], a[2], a[3]);
+                              return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                          }};
+    device_construct.iterations = 100;
+    device_construct.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xc07350, (void *)dev_base}, {0x402b90, (void *)dev_array}, {0xc77390, (void *)dev_forward}, {0xc09090, (void *)dev_text_init},
+                       {0xc73c20, (void *)dev_name}, {0xbcdfc0, (void *)dev_alloc}, {0xbcdfd0, (void *)dev_alloc_aligned}, {0xcf6275, (void *)dev_assemble},
+                       {0xdd696e, (void *)dev_error_text}, {0xc34850, (void *)dev_report}, {0xbe2030, (void *)dev_state}, {0xc061d0, (void *)dev_pass_shaders},
+                       {0xc75290, (void *)dev_clear}});
+    };
+    device_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(device_construct);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)
