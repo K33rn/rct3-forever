@@ -1093,6 +1093,23 @@ __attribute__((naked)) static void *call_with_esi(void *fn, void *out, int32_t n
     __asm__("pushl %esi\n\tmovl 12(%esp), %esi\n\tpushl 16(%esp)\n\tcalll *12(%esp)\n\tpopl %esi\n\tret");
 }
 
+// Text::DecimalWithUnit: its stand-ins (the copy's own unit function among them)
+static const uint32_t dt_rows[][2] = {
+#define DECIMAL_TEXTS(at, unit, ...) {at, unit},
+#include "../../forever/src/rewrite/decimal_texts.inc"
+#undef DECIMAL_TEXTS
+};
+static void __thiscall dt_point(char *written) {   // the language's decimal point: noted, and the point made a comma
+    dev_note(110, text_hash(written));
+    for (char *c = written; *c; c++)
+        if (*c == '.') *c = ',';
+}
+static void *__fastcall dt_from_c_and(uint32_t **into, const char *text, uint32_t **then) {
+    dev_note(111, text_hash(text)); dev_note(111, (*then)[1]);
+    uint32_t *t = desk_text(); t[1] = text_hash(text) ^ (*then)[1]; *into = t;
+    return into;
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6939,6 +6956,30 @@ static std::vector<Test> tests() {
     animal_point.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6afaf0, (void *)ap_rect}}); };
     animal_point.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(animal_point);
+    // Text::DecimalWithUnit (four copies): where the text goes (arena 0x8000) and a float (ordinary, or any bit pattern)
+    Test decimal_text{0x49d650,
+                      [=](Rng &r) {
+                          fresh(r);
+                          for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                          arena<uint32_t>(0x8000)[0] = r.next();
+                          arena<float>(0x40)[0] = r.range(0, 4) ? r.real(-5000, 5000) : r.any_float();
+                          arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                      },
+                      [](void *fn) {
+                          void *back = ((void *(__thiscall *)(void *, float))fn)(arena<void>(0x8000), arena<float>(0x40)[0]);
+                          return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                      }};
+    decimal_text.iterations = 300;
+    decimal_text.prepare = [](const rewrite::Entry *e) {
+        uint32_t unit = 0;
+        for (auto &row : dt_rows)
+            if (row[0] == e->at) unit = row[1];
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)msg_text_c},
+                       {0xddcdb5, (void *)msg_sprintf}, {0x49d480, (void *)dt_point}, {unit, (void *)ot_label}, {0x403ce0, (void *)dt_from_c_and},
+                       {0x403bb0, (void *)mf_join}});
+    };
+    decimal_text.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(decimal_text);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;

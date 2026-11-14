@@ -2004,10 +2004,10 @@ address,size,name,callers,status
 0x49d480,250,,17,documented
 0x49d580,29,Wrapped::Construct49D580,5,rewritten
 0x49d5a0,175,,2,documented
-0x49d650,370,,2,documented
-0x49d7d0,370,,4,documented
-0x49d950,370,,4,documented
-0x49dad0,370,,2,documented
+0x49d650,370,Text::DecimalWithUnit,2,rewritten
+0x49d7d0,370,Text::DecimalWithUnit,4,rewritten
+0x49d950,370,Text::DecimalWithUnit,4,rewritten
+0x49dad0,370,Text::DecimalWithUnit,2,rewritten
 0x49dc50,154,,5,documented
 0x49dd10,29,Wrapped::Construct49D580,1,rewritten
 0x49dd30,125,,8,documented
