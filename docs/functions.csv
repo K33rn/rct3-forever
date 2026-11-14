@@ -17173,7 +17173,7 @@ address,size,name,callers,status
 0xad7110,420,,2,documented
 0xad72c0,317,,2,documented
 0xad7400,67,Reference::Reference(object),0,rewritten
-0xad7460,754,,2,documented
+0xad7460,754,Designer::BuildIdentBar,2,rewritten
 0xad7760,30,DeletingDestructor,3,rewritten
 0xad7780,162,ObjectRef::CallWith,2,rewritten
 0xad78f0,67,,8,documented
@@ -17354,7 +17354,7 @@ address,size,name,callers,status
 0xaf0150,420,,2,documented
 0xaf0300,317,,2,documented
 0xaf0440,67,Reference::Reference(object),0,rewritten
-0xaf04a0,754,,2,documented
+0xaf04a0,754,Designer::BuildIdentBar,2,rewritten
 0xaf07a0,30,DeletingDestructor,3,rewritten
 0xaf07c0,162,ObjectRef::CallWith,2,rewritten
 0xaf08b0,8,,1,documented
