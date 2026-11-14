@@ -24,6 +24,11 @@ REG = r'(e[a-d]x|e[sd]i|ebp|ebx)'
 # Constructors whose last lines are written by hand in classes.cpp (a function run after everything else): the
 # instruction those lines start with, and the function. Everything before it is still read and checked here.
 HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after')}
+# Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
+# end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
+# it writes are forgotten.
+HAND_STEPS = {0x56bf80: [('lea ecx, [esp + 0x2c]', 'call 0xbd99e0', 'ride_train_status_text')]}
+HANDS = []   # the hand-written stretches' functions, in the order class_hand numbers them
 num = lambda s: int(s, 0)
 
 
@@ -326,6 +331,22 @@ def parse(a, n):
         s = t[k]
         if re.fullmatch(r'(mov al, byte ptr|cmp byte ptr) \[' + REG + r' \+ 4\].*', s):
             break
+        hand = next((h for h in HAND_STEPS.get(a, []) if h[0] == s), None)
+        if hand:
+            # a stretch written by hand (kind 17): skipped here, the registers it writes forgotten
+            if pushed or pending:
+                raise Reject('hand stretch with values pushed')
+            j = next((q for q in range(k, len(t)) if t[q] == hand[1]), None)
+            if j is None:
+                raise Reject('hand stretch end not found')
+            for r in ('eax', 'ebx', 'ecx', 'edx', 'esi', 'edi', 'ebp'):
+                if written(r, t[k:j + 1]):
+                    regs.pop(r, None)
+            if hand[2] not in HANDS:
+                HANDS.append(hand[2])
+            ops.append((17, 0, HANDS.index(hand[2]), 0, []))
+            k = j + 1
+            continue
         if s == 'mov cl, 1':
             regs['ecx'] = ('cl1',)
         elif s == 'call 0xbd0490' and regs.get('ecx') == ('cl1',):
@@ -725,6 +746,13 @@ for a, r in sorted(rows.items()):
     for kind, o, v, fn, args in ops:
         if kind in (3, 10, 15):
             member_fns[fn] = len(args) - (kind == 15)
+out.append('// the stretches written by hand (step kind 17), by number')
+out.append('static void class_hand(uint32_t number, uint8_t *self, const uint32_t *given) {')
+out.append('    switch (number) {')
+out += [f'    case {q}: {name}(self, given); break;' for q, name in enumerate(HANDS)]
+out.append('    default: (void)self, (void)given; break;')
+out.append('    }')
+out.append('}')
 out.append('// the functions the steps call on members and new objects, each with how many values it takes (the test stands in for them)')
 out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x}, {c}' for fn, c in sorted(member_fns.items())) + ', 0};')
 open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')

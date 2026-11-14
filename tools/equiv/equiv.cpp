@@ -566,6 +566,15 @@ static uint32_t __thiscall stub_class_find5(void *self, uint32_t a, uint32_t b, 
     return *arena<uint32_t>(0x8b00) + a * 7 + b * 5 + c * 3 + d;
 }
 static void __thiscall stub_class_info_text(uint8_t *self) { record(0x98, self); record(0x98, (void *)(uintptr_t)self[0x2b0]); }
+// a resource reference made on the stack (its place differs between the two runs: what is noted is what it holds), a
+// named text made from one, the reference let go
+static void *__thiscall stub_class_reference(uint32_t *self) { record(0x99, nullptr); self[0] = 0xfa5388, self[1] = *arena<uint32_t>(0x8b04); return self; }
+static void *__thiscall stub_class_named_text(void *self, uint32_t name, const uint32_t *reference, uint32_t flag) {
+    record(0x9a, self); record(0x9a, (void *)(uintptr_t)name); record(0x9a, (void *)(uintptr_t)reference[1]); record(0x9a, (void *)(uintptr_t)flag);
+    record(0x9a, (void *)(uintptr_t)arena<uint32_t>(0x100)[0x290 / 4]);   // the store before it done
+    return self;
+}
+static void __thiscall stub_class_unreference(uint32_t *self) { record(0x9b, (void *)(uintptr_t)self[1]); }
 static uintptr_t g_class_description;   // the default description global of the Class::Construct copy being checked
 static uint32_t g_class_args;           // and how many arguments it takes (2 to 7)
 static uintptr_t g_class_instance;      // and the global it gives the object at the end, if any
@@ -1263,6 +1272,7 @@ static std::vector<Test> tests() {
                 *(int32_t *)(e + 0x10) = r.range(-64, 4096);
                 slots[i] = r.next() % 4 ? e : nullptr;
             }
+            for (int i = -4; i < 0; i++) slots[i] = r.next() % 4 ? arena<uint8_t>(0x500 + (i + 4) * 0x20) : nullptr;   // a negative id reads below
             s_info = r.next() % 8 ? info : nullptr;
             at<int32_t>(id_global) = r.range(-3, 14);
             *arena<uint32_t>(0) = r.next() % 10 ? 0x100 : 0;   // which object: the test one, or null
@@ -5583,6 +5593,8 @@ static std::vector<Test> tests() {
                              for (int k = 0; k < 0x40; k++) arena<uint32_t>(0x8900)[k] = r.next() | 1;   // the array members' items: an end marked shows
                              arena<uint32_t>(0x8a00)[0x78 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8b00);
                              arena<uint32_t>(0x8b00)[0] = r.next();
+                             arena<uint32_t>(0x8b00)[1] = r.next();
+                             for (int k = 0; k < 0x100; k++) arena<uint32_t>(0x200)[k] = r.next();   // the rest of a big object (to 0x600)
                              arena<uint32_t>(0x8800)[0] = 100;
                              arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)description : 0;
                              arena<uint32_t>(0x10)[1] = r.next();
@@ -5665,7 +5677,8 @@ static std::vector<Test> tests() {
             {0x805700, (void *)stub_member_handle_of}, {0x808d90, (void *)stub_struct_total},
             {0xcd2b30, (void *)stub_list_member}, {0x441030, (void *)stub_member_built}, {0x981ee0, (void *)stub_member_built1},
             {0x84ae30, (void *)stub_member_built}, {0x611a80, (void *)stub_class_array},
-            {0x425920, (void *)stub_class_lighting}, {0x9f9da0, (void *)stub_class_find5}, {0x7c8870, (void *)stub_class_info_text}};
+            {0x425920, (void *)stub_class_lighting}, {0x9f9da0, (void *)stub_class_find5}, {0x7c8870, (void *)stub_class_info_text},
+            {0xbd9ad0, (void *)stub_class_reference}, {0x560d20, (void *)stub_class_named_text}, {0xbd99e0, (void *)stub_class_unreference}};
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;

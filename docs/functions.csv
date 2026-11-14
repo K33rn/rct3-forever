@@ -3948,7 +3948,7 @@ address,size,name,callers,status
 0x56bd20,395,,1,documented
 0x56beb0,48,ObjectArray::Free,2,rewritten
 0x56bee0,153,ObjectArray::Resize,1,rewritten
-0x56bf80,7391,,7,documented
+0x56bf80,7391,Class::Construct,7,rewritten
 0x56dc80,4193,,6,documented
 0x56ecf0,896,,4,documented
 0x56f080,899,,1,documented

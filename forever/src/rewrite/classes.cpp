@@ -14,7 +14,8 @@
 // 13 marks the end of the member array at +off ({items, count}: items[count] = 0), 14 is where the registration and the
 // mark happen (the steps after it run after them; without one, they come after every step), 15 is kind 10 for an
 // object then given a table of its own (the last value): the member gets the memory, not what the constructor gave back,
-// 16 is kind 9 for the object the constructor's argument number value gives.
+// 16 is kind 9 for the object the constructor's argument number value gives, 17 runs the stretch written by hand number
+// value (below).
 struct ClassOp {
     uint32_t kind, off, value, fn, count, args[5], globals;   // bit i of globals: args[i] is a global, read as the call is made
     uint32_t selfs;                                           // bit i: args[i] is an offset into the object (a pointer to that member)
@@ -48,6 +49,7 @@ static void link_before(uint32_t *node, uint32_t *head) {
     node[1] = (uint32_t)(uintptr_t)head;
     head[0] = (uint32_t)(uintptr_t)node;
 }
+static void class_hand(uint32_t number, uint8_t *self, const uint32_t *given);   // class_list.inc
 static void *call_with(uintptr_t fn, void *self, uint32_t count, const uint32_t *args) {
     switch (count) {
     case 0: return ((void *(__thiscall *)(void *))fn)(self);
@@ -85,6 +87,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 8) *(uint32_t *)(self + op.off) = given[op.value];
         else if (op.kind == 12) self[op.off] = (uint8_t)given[op.value];   // an argument's low byte
         else if (op.kind == 13) (*(uint32_t **)(self + op.off))[*(uint32_t *)(self + op.off + 4)] = 0;
+        else if (op.kind == 17) class_hand(op.value, self, given);
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)
@@ -213,6 +216,22 @@ static void person_after(uint8_t *self) {
     self[0xc3] = 0xff;
     self[0xc4] = 0xff;
     for (uint32_t k = 0; k < 12; k++) *(volatile uint32_t *)(self + 0x240 + 4 * k) = 1;
+}
+
+// RideTrainInstance::RideTrainInstance (0x56BF80), in its member set-up: its status members cleared, and its status text
+// (+0x294) made from the empty name and an empty resource reference made for it on the stack (then let go).
+static void ride_train_status_text(uint8_t *self, const uint32_t *) {
+    for (uint32_t at = 0x258; at <= 0x274; at += 4) *(volatile uint32_t *)(self + at) = 0;
+    self[0x278] = 0;
+    *(volatile uint32_t *)(self + 0x280) = 0xffffffff;
+    self[0x284] = 0;
+    *(volatile uint32_t *)(self + 0x288) = 0;
+    *(volatile uint32_t *)(self + 0x28c) = 0;
+    *(volatile uint32_t *)(self + 0x290) = 0;
+    alignas(16) uint8_t reference[0x40];
+    void *made = ((void *(__thiscall *)(void *))0xbd9ad0)(reference);
+    ((void *(__thiscall *)(void *, uintptr_t, void *, uint32_t))0x560d20)(self + 0x294, 0xf264ad, made, 1);
+    ((void(__thiscall *)(void *))0xbd99e0)(reference);
 }
 
 #include "class_list.inc"
