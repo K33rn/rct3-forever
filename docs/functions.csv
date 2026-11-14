@@ -5573,7 +5573,7 @@ address,size,name,callers,status
 0x6248d0,113,Handle::Named453340,2,rewritten
 0x624990,64,,0,documented
 0x6249d0,5906,,1,documented
-0x626130,2652,,1,documented
+0x626130,2652,Destructor::Steps,1,rewritten
 0x626b90,2887,,3,documented
 0x6276e0,459,,4,documented
 0x6278e0,201,,1,documented

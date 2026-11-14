@@ -6041,17 +6041,25 @@ static std::vector<Test> tests() {
     };
     array_resize.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(array_resize);
-    // Destructor::Steps: the object at 0x1000 (0x1000 bytes, random). Each member its steps use gets memory of its own
-    // from 0x3000 on: one that is taken (IF) is there three times in four, with a recording table for the arguments
+    // Destructor::Steps: the object at 0x1000 (random; 0x2000 bytes or as far as its steps reach). Each member its steps use
+    // gets memory of its own after it: one that is taken (IF) is there three times in four, with a recording table for the arguments
     // its call takes and a small count; a shared text has a count of 1 or 2 and a buffer; one stored through is big
     // enough. The globals of a GCOPY are set (the source sometimes -1) for the call and put back after the test;
     // what they hold after is the result. Every direct call is a numbered stand-in.
     Test dtor_steps_test{0x4482a0,
                          [=](Rng &r) {
                              fresh(r);
-                             for (int i = 0; i < 0x400; i++) arena<uint32_t>(0x1000)[i] = r.next();
                              const uint32_t *st = g_dtor_info + 2;
                              const uint32_t n = g_dtor_info[1];
+                             uint32_t top = 0;   // the furthest field the steps use: the object reaches past it, the members' memory comes after
+                             for (uint32_t i = 0; i < n; i++) {
+                                 const uint32_t *s = st + 5 * i, k = s[0];
+                                 uint32_t reach = k == 0 || k == 1 || k == 8 || k == 9 || k == 15 || k == 19 || k == 22 ? s[3] : k == 4 || k == 20 ? s[4] : k == 6 ? s[2]
+                                                : k == 13 ? (s[3] > s[4] ? s[3] : s[4]) : k == 17 && s[1] ? s[3] : 0;
+                                 if (reach > top) top = reach;
+                             }
+                             const uint32_t object_end = 0x1000 + ((top + 0x140) & ~0xffu) < 0x3000 ? 0x3000 : 0x1000 + ((top + 0x140) & ~0xffu);
+                             for (uint32_t i = 0; i < (object_end - 0x1000) / 4; i++) arena<uint32_t>(0x1000)[i] = r.next();
                              // what each member needs, over all the steps: a call or count belongs to the member taken last
                              struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken, array; uint32_t items_count_at; bool looped; };
                              std::vector<Need> needs;
@@ -6077,7 +6085,7 @@ static std::vector<Test> tests() {
                                  if (s[0] == 10) { Need &x = need(current); if (x.size < ((s[3] + 0x43) & ~0x3fu)) x.size = (s[3] + 0x43) & ~0x3fu; }
                                  if (s[0] == 6) { Need &x = need(s[2]); if (x.size < ((s[3] + 0x43) & ~0x3fu)) x.size = (s[3] + 0x43) & ~0x3fu; }
                              }
-                             uint32_t next = 0x3000;
+                             uint32_t next = object_end;
                              for (const Need &x : needs) {
                                  if (x.looped) {   // an array of 0-3 pointers (the count sometimes below 0), each to an item or null
                                      const int32_t count = r.range(0, 5) ? r.range(0, 3) : -r.range(1, 3);

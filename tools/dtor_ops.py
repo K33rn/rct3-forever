@@ -548,8 +548,8 @@ def read(a, n):
     for k, c, small, x, y in ops:   # what the tester's stand-ins hold: table entries under 16, offsets inside its objects
         if k in (VCALL,) and not 0 <= small < 0x40 or k == REL and not (0 <= x < 0x40 and 0 <= small < 0x3c):
             raise Unknown('a table entry past the 16th or a far count')
-        if k in (MCALL,) and not 0 <= y < 0xff0 or k == IFNEG1 and not 0 <= x < 0xff0 or k == UNLINK and not 0 <= x < 0xff0 or k == IFB and not 0 <= x < 0xff0 or k == ARG and c == 1 and not 0 <= x < 0xff0 or k == LOOP and not (0 <= x < 0xff0 and 0 <= y < 0xff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
-            raise Unknown('a field past 0xFF0')
+        if k in (MCALL,) and not 0 <= y < 0x7ff0 or k == IFNEG1 and not 0 <= x < 0x7ff0 or k == UNLINK and not 0 <= x < 0x7ff0 or k == IFB and not 0 <= x < 0x7ff0 or k == ARG and c == 1 and not 0 <= x < 0x7ff0 or k == LOOP and not (0 <= x < 0x7ff0 and 0 <= y < 0x7ff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0x7ff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0x7ff0) or k == CALL and not 0 <= y < 0x8000:
+            raise Unknown('a field past 0x7FF0')
     return ops
 
 
