@@ -338,5 +338,43 @@ static void water_manager_after(uint8_t *self) {
     ((void(__thiscall *)(void *))0xbd1880)(second);
     ((void(__thiscall *)(void *))0xbd1880)(first);
 }
+// 0xB4B7A0, its end: its list member (+0x148) linked in last in the game's list the global 0x10F28E8 points to (just
+// before the list's head).
+static void link_last_b4b7a0(uint8_t *self) {
+    uint32_t *head = *(uint32_t *volatile *)0x10f28e8, *node = (uint32_t *)(self + 0x148);
+    uint32_t last = head[1];
+    node[1] = last;
+    *(uint32_t **)(uintptr_t)head[1] = node;
+    node[0] = (uint32_t)(uintptr_t)head;
+    head[1] = (uint32_t)(uintptr_t)node;
+}
+// 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
+// rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
+static void scaled_value_6404d0(uint8_t *self) {
+    long double product = (long double)*(volatile float *)0x10eead0 * (long double)*(volatile float *)0x10eeacc;
+    int64_t whole;
+    __asm__("fistpll %0" : "=m"(whole) : "t"(product) : "st");
+    ((void(__thiscall *)(void *, uint32_t))0x63e1c0)(self + 0x5c, (uint32_t)whole);
+}
+// 0x9D91F0, its end: the member at +0x50 given (0x98A770) a reference made on the stack to nothing: its table, the
+// handle of no object (0x805700 with 0), linked (+8) into that handle's list, no owner and its flag set; then that
+// reference let go (0x40F730, which unlinks it).
+static void empty_reference_9d91f0(uint8_t *self) {
+    uint32_t reference[8];
+    reference[4] = (uint32_t)(uintptr_t)reference;
+    reference[0] = 0xf26ae0;
+    uint8_t *handle = ((uint8_t * (__fastcall *)(uintptr_t))0x805700)(0);
+    reference[1] = (uint32_t)(uintptr_t)handle;
+    uint32_t *list = *(uint32_t **)(handle + 0x20);
+    reference[2] = list[0];
+    ((uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)&reference[2];
+    reference[3] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)&reference[2];
+    reference[0] = 0xf7ff1c;
+    reference[5] = 0;
+    *(uint8_t *)&reference[6] = 1;
+    ((void(__thiscall *)(void *, void *))0x98a770)(self + 0x50, reference);
+    ((void(__thiscall *)(void *))0x40f730)(reference);
+}
 
 #include "class_list.inc"

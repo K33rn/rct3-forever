@@ -5494,7 +5494,7 @@ address,size,name,callers,status
 0x61e380,30,DeletingDestructor,2,rewritten
 0x61e3a0,140,Destructor::Steps,7,rewritten
 0x61e430,30,DeletingDestructor,2,rewritten
-0x61e450,469,,21,documented
+0x61e450,469,Class::Construct,21,rewritten
 0x61e650,199,,1,documented
 0x61e720,102,Factory::Create,1,rewritten
 0x61e790,30,DeletingDestructor,2,rewritten
@@ -5837,7 +5837,7 @@ address,size,name,callers,status
 0x6402f0,48,ObjectArray::Free,4,rewritten
 0x640320,153,ObjectArray::Resize,2,rewritten
 0x6403c0,258,ObjectArray::SetCapacity,2,rewritten
-0x6404d0,1424,,4,documented
+0x6404d0,1424,Class::Construct,4,rewritten
 0x640a90,134,,1,documented
 0x640b20,675,,3,documented
 0x640dd0,226,,1,documented
@@ -8364,7 +8364,7 @@ address,size,name,callers,status
 0x72b030,231,,2,documented
 0x72b140,118,,1,documented
 0x72b1c0,362,,2,documented
-0x72b390,950,,4,documented
+0x72b390,950,Class::Construct,4,rewritten
 0x72b7b0,702,,6,documented
 0x72ba70,2050,,3,documented
 0x72c280,635,,2,documented
@@ -9199,7 +9199,7 @@ address,size,name,callers,status
 0x7858c0,109,,0,documented
 0x785930,25,,1,documented
 0x785950,90,CachedInterface,3,rewritten
-0x7859b0,1437,,2,documented
+0x7859b0,1437,Class::Construct,2,rewritten
 0x785f70,607,,1,documented
 0x7861d0,358,,8,documented
 0x786340,1202,,3,documented
@@ -14730,7 +14730,7 @@ address,size,name,callers,status
 0x9d8f00,230,StructArrayLoad,1,rewritten
 0x9d8ff0,230,StructArrayLoad,1,rewritten
 0x9d90e0,258,ObjectArray::SetCapacity,1,rewritten
-0x9d91f0,2144,,2,documented
+0x9d91f0,2144,Class::Construct,2,rewritten
 0x9d9a50,30,DeletingDestructor,2,rewritten
 0x9d9a70,105,Factory::Create,1,rewritten
 0x9d9b10,40,Text::Widen,0,rewritten
@@ -18209,7 +18209,7 @@ address,size,name,callers,status
 0xb4b540,19,,1,documented
 0xb4b5c0,48,ObjectArray::Free,2,rewritten
 0xb4b690,265,ObjectArray::SetCapacity,1,rewritten
-0xb4b7a0,1204,,2,documented
+0xb4b7a0,1204,Class::Construct,2,rewritten
 0xb4bca0,507,,1,documented
 0xb4bea0,276,,2,documented
 0xb4bfc0,1543,,1,documented

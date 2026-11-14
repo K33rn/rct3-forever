@@ -617,7 +617,21 @@ static void __thiscall stub_class_water_list(uint32_t *list, uint32_t n) {   // 
     list[0] = (uint32_t)(uintptr_t)arena<void>(0x9000 + 0x400 * (made++ % 3));
     list[1] = (n + made * 3) % 7;
 }
-static uint32_t g_resource_manager, g_water_manager;   // the game's resource manager and water manager globals, put back after the test
+// a member given a value; a member given a reference made on the stack (what it holds is noted: its table, handle,
+// owner set to itself, flag), and that reference let go (unlinked from the handle's list, as the game's does)
+static void __thiscall stub_class_given(void *self, uint32_t value) { record(0xaa, self); record(0xaa, (void *)(uintptr_t)value); }
+static void __thiscall stub_class_given_reference(void *self, const uint32_t *reference) {
+    record(0xab, self); record(0xab, (void *)(uintptr_t)reference[0]); record(0xab, (void *)(uintptr_t)reference[1]);
+    record(0xab, (void *)(uintptr_t)(reference[4] == (uint32_t)(uintptr_t)reference)); record(0xab, (void *)(uintptr_t)reference[5]);
+    record(0xab, (void *)(uintptr_t)*(const uint8_t *)&reference[6]);
+}
+static void __thiscall stub_class_reference_gone(uint32_t *reference) {
+    record(0xac, (void *)(uintptr_t)reference[1]);
+    uint32_t *next = (uint32_t *)(uintptr_t)reference[2], *previous = (uint32_t *)(uintptr_t)reference[3];
+    previous[0] = (uint32_t)(uintptr_t)next;
+    next[1] = (uint32_t)(uintptr_t)previous;
+}
+static uint32_t g_resource_manager, g_water_manager, g_scale_values[2];   // the game's resource manager and water manager globals, put back after the test
 static uint32_t g_water_table;   // the game's water texts table global (0x133A274), put back after the test
 // a text made from C text (count 1; the name noted), and the resource manager's two lookups (the text noted, an answer
 // of their own, and sometimes another holder of the text, so letting it go is seen)
@@ -5661,6 +5675,8 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x8b20)[2] = 0;                              // the tries to make it
                              arena<uint32_t>(0x8b30)[0] = r.next();                       // the lookups' answers
                              arena<uint32_t>(0x8b34)[0] = 0;                              // the water lists made so far
+                             arena<float>(0x8b38)[0] = r.range(-4000, 4000) / 7.0f;       // two game values multiplied and rounded (0x10EEACC, 0x10EEAD0)
+                             arena<float>(0x8b38)[1] = r.range(-4000, 4000) / 3.0f;
                              for (int k = 0; k < 0x100; k++) arena<uint32_t>(0x200)[k] = r.next();   // the rest of a big object (to 0x600)
                              arena<uint32_t>(0x8800)[0] = 100;
                              arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)description : 0;
@@ -5677,13 +5693,16 @@ static std::vector<Test> tests() {
                              for (int k = 0; k < 4; k++) ((uint32_t *)0x10f1cf8)[k] = arena<uint32_t>(0x8b10)[k];
                              *(uint32_t *)0x133a274 = arena<uint32_t>(0x8b20)[0];
                              *(uint32_t *)0x133a270 = 0;   // the water manager's global (set by its constructor)
+                             ((uint32_t *)0x10eeacc)[0] = arena<uint32_t>(0x8b38)[0], ((uint32_t *)0x10eeacc)[1] = arena<uint32_t>(0x8b38)[1];
                              if (g_class_instance) *(uint32_t *)g_class_instance = 0;
                              // a game list for the end's globals: what they point to (0x7C0) is a list head, and at +0x14 holds another (0x7E0)
                              uint32_t *list = arena<uint32_t>(0x7c0), *inner = arena<uint32_t>(0x7e0);
                              list[0] = (uint32_t)(uintptr_t)arena<void>(0x7b0), arena<uint32_t>(0x7b0)[1] = (uint32_t)(uintptr_t)list;
+                             list[1] = (uint32_t)(uintptr_t)arena<void>(0x7b0), arena<uint32_t>(0x7b0)[0] = (uint32_t)(uintptr_t)list;   // (circular both ways)
                              list[5] = (uint32_t)(uintptr_t)inner;
                              list[4] = (uint32_t)(uintptr_t)inner;   // (some classes keep theirs at +0x10)
                              inner[0] = (uint32_t)(uintptr_t)arena<void>(0x7f0), arena<uint32_t>(0x7f0)[1] = (uint32_t)(uintptr_t)inner;
+                             inner[1] = (uint32_t)(uintptr_t)arena<void>(0x7f0), arena<uint32_t>(0x7f0)[0] = (uint32_t)(uintptr_t)inner;
                              for (uintptr_t g : g_class_tail_globals)
                                  if (g) *(void **)g = list;
                              *(int32_t *)0x130ac18 = arena<int32_t>(0x10)[3];
@@ -5714,6 +5733,7 @@ static std::vector<Test> tests() {
         g_water_table = *(uint32_t *)0x133a274;
         g_resource_manager = *(uint32_t *)0x13d0e04;
         g_water_manager = *(uint32_t *)0x133a270;
+        memcpy(g_scale_values, (void *)0x10eeacc, sizeof g_scale_values);
         g_class_description = 0;
         for (int k = 0; k < 0x80 && !(code[k] == 0xe8 && (uintptr_t)(code + k + 5) + *(const int32_t *)(code + k + 1) == 0x800a80); k++) {
             uint32_t at = code[k] == 0xa1 ? *(const uint32_t *)(code + k + 1) : code[k] == 0x8b && (code[k + 1] & 0xc7) == 0x05 ? *(const uint32_t *)(code + k + 2) : 0;
@@ -5758,7 +5778,8 @@ static std::vector<Test> tests() {
             {0x707530, (void *)stub_class_after_figures}, {0x6a3b60, (void *)stub_class_record_pairs}, {0x940ea0, (void *)stub_class_water_table},
             {0x403f30, (void *)stub_class_named_in}, {0xbcfb10, (void *)stub_class_text_c}, {0xbdf160, (void *)stub_class_lookup},
             {0xbdf1a0, (void *)stub_class_lookup2}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
-            {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list}};   // (0x704A50, which only works on the object, runs as it is)
+            {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list},
+            {0x63e1c0, (void *)stub_class_given}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;
@@ -5773,6 +5794,7 @@ static std::vector<Test> tests() {
         *(uint32_t *)0x133a274 = g_water_table;
         *(uint32_t *)0x13d0e04 = g_resource_manager;
         *(uint32_t *)0x133a270 = g_water_manager;
+        memcpy((void *)0x10eeacc, g_scale_values, sizeof g_scale_values);
     };
     quick(class_construct);
     // Globals::SetFixed: functions that set game globals to fixed values; the globals are compared (data), set to
