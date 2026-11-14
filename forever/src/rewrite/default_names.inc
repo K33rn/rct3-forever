@@ -1,0 +1,7 @@
+// default_names: one function written out 2 times (checked by tools/family.py: the same instructions, jumps by
+// where they go, the exception handler set aside). Its parameters, by the instructions they appear in:
+//   p0: +0x22 mov eax, dword ptr [ecx + 0x54], +0x26 lea esi, [ecx + 0x54]
+//   p1: +0x335 push 0xf95324
+// Do not edit by hand.
+DEFAULT_NAMES(0xad7e10, 0x54, 0xf95324, 0x6a, 0xff, 0x68, 0xf4, 0xb1, 0xe8, 0x00)
+DEFAULT_NAMES(0xaf4150, 0x44, 0xf96910, 0x6a, 0xff, 0x68, 0xf4, 0xdd, 0xe8, 0x00)

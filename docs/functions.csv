@@ -17180,7 +17180,7 @@ address,size,name,callers,status
 0xad7b50,30,DeletingDestructor,1,rewritten
 0xad7b70,7,BaseClass::SetClass,1,rewritten
 0xad7b80,633,,8,documented
-0xad7e10,1378,,2,documented
+0xad7e10,1378,Designer::DefaultName,2,rewritten
 0xad8380,126,ObjectRef::Assign,2,rewritten
 0xad8400,622,,3,documented
 0xad86a0,357,,3,documented
@@ -17396,7 +17396,7 @@ address,size,name,callers,status
 0xaf3be0,80,,2,documented
 0xaf3d80,351,,1,documented
 0xaf3f10,513,,3,documented
-0xaf4150,1378,,2,documented
+0xaf4150,1378,Designer::DefaultName,2,rewritten
 0xaf46c0,345,,3,documented
 0xaf4820,200,,1,documented
 0xaf48f0,206,,1,documented

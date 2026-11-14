@@ -1178,6 +1178,80 @@ static void *__thiscall fp_documents(uint32_t **into) { dev_note(122, 0); uint32
 static void *__thiscall fp_fallback(uint32_t **into) { dev_note(123, 0); uint32_t *t = desk_text(); t[1] = 0xfa11; *into = t; return into; }
 static uint8_t __thiscall fp_there(uint32_t **path) { dev_note(124, (*path)[1]); return (uint8_t)(((*path)[1] ^ *arena<uint32_t>(0x44)) & 1); }
 
+// Designer::DefaultName: texts as the game keeps them, {count, length, room, characters (two bytes each)}, all in the
+// arena (from the device test's memory), with stand-ins that work on them for real: made from C text, from n
+// characters, a part, a copy, compared, given room (made their own first when shared), looked up by name (found or not
+// by what they say), and the by-value check (0x401310, which lets its text go).
+struct DnText {
+    int32_t count;
+    uint32_t length, room;
+    uint16_t *characters;
+};
+static DnText *dn_make(DnText *t, const uint16_t *from, uint32_t length) {
+    t->count = 1, t->length = length, t->room = (length + 16) & ~15u;
+    t->characters = (uint16_t *)dev_take(2 * t->room);
+    for (uint32_t k = 0; k < length; k++) t->characters[k] = from[k];
+    t->characters[length] = 0;
+    return t;
+}
+static uint32_t dn_hash(const DnText *t) {
+    uint32_t h = 5381;
+    for (uint32_t k = 0; k < t->length; k++) h = h * 33 + t->characters[k];
+    return h;
+}
+static void *__thiscall dn_text_c(DnText *self, const char *text) {
+    uint16_t wide[64];
+    uint32_t n = 0;
+    while (text[n] && n < 63) wide[n] = (uint8_t)text[n], n++;
+    dev_note(130, n);
+    return dn_make(self, wide, n);
+}
+static void *__thiscall dn_from_n(DnText *self, const uint16_t *from, uint32_t length) { dev_note(131, length); return dn_make(self, from, length); }
+static void *__thiscall dn_part(DnText **self, DnText **into, uint32_t from, uint32_t length) {
+    dev_note(132, from); dev_note(132, length);
+    const DnText *t = *self;
+    if (from > t->length) from = t->length;
+    if (length > t->length - from) length = t->length - from;
+    *into = dn_make((DnText *)dev_take(0x10), t->characters + from, length);
+    return into;
+}
+static int32_t __thiscall dn_compare(DnText **self, DnText **other) {
+    const DnText *a = *self, *b = *other;
+    dev_note(133, dn_hash(a)); dev_note(133, dn_hash(b));
+    for (uint32_t k = 0; k < a->length && k < b->length; k++)
+        if (a->characters[k] != b->characters[k]) return (int32_t)a->characters[k] - b->characters[k];
+    return (int32_t)a->length - (int32_t)b->length;
+}
+static void *__thiscall dn_copy(DnText **into, DnText **from) { dev_note(134, dn_hash(*from)); *into = dn_make((DnText *)dev_take(0x10), (*from)->characters, (*from)->length); return into; }
+static void __thiscall dn_room(DnText **self, uint32_t need) {
+    dev_note(135, need);
+    DnText *t = *self;
+    if (t->count > 1 || t->room <= need) {
+        DnText *made = dn_make((DnText *)dev_take(0x10), t->characters, t->length);
+        if (made->room <= need) {
+            uint16_t *more = (uint16_t *)dev_take(2 * (need + 16));
+            for (uint32_t k = 0; k <= made->length; k++) more[k] = made->characters[k];
+            made->characters = more, made->room = need + 16;
+        }
+        --t->count;
+        *self = made;
+    }
+}
+static void *__thiscall dn_lookup(uint32_t *self, DnText **key, uint32_t table, uint32_t flag) {
+    const uint32_t h = dn_hash(*key);
+    dev_note(136, h); dev_note(136, table); dev_note(136, flag);
+    self[1] = (h ^ *arena<uint32_t>(0x44)) & 1, self[2] = h % 3 ? (uint32_t)(uintptr_t)arena<void>(0x7700) : 0;
+    return self;
+}
+static uint8_t __thiscall dn_found(uint32_t *self, uint32_t a) { dev_note(137, a); return (uint8_t)self[1]; }
+static void __thiscall dn_lookup_gone(uint32_t *self) { dev_note(138, self[1]); }
+static void *__thiscall dn_wide(DnText *self, const uint16_t *characters) { dev_note(139, (uint32_t)(uintptr_t)characters); return dn_make(self, characters, 3); }
+static uint8_t __stdcall dn_check(DnText *given) {   // (takes its text by value: lets it go)
+    dev_note(140, dn_hash(given));
+    --given->count;
+    return (uint8_t)((given->length ^ *arena<uint32_t>(0x48)) % 7 == 0);
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -7182,6 +7256,39 @@ static std::vector<Test> tests() {
     };
     folder_path.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(folder_path);
+    // Designer::DefaultName (two copies): the design at arena 0x8000 (its name at +0x54 and +0x44: one of a few kinds,
+    // sometimes shared), where the name goes (0x8100)
+    Test default_name{0xad7e10,
+                      [=](Rng &r) {
+                          fresh(r);
+                          for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                          for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();   // (the texts' memory: what is past their ends shows)
+                          arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                          static const char *const names[] = {"%%LaserShow", "##Fountain", "%%", "##", "My Laser's Show", "a b", "%x", "", "Water 'Jet' 2", "%%A"};
+                          const char *pick = names[r.range(0, 9)];
+                          uint16_t wide[64];
+                          uint32_t n = 0;
+                          while (pick[n]) wide[n] = (uint8_t)pick[n], n++;
+                          DnText *name = dn_make((DnText *)dev_take(0x10), wide, n);
+                          name->count = r.range(1, 3);
+                          arena<uint32_t>(0x8000)[0x54 / 4] = (uint32_t)(uintptr_t)name;
+                          arena<uint32_t>(0x8000)[0x44 / 4] = (uint32_t)(uintptr_t)name;
+                          arena<uint32_t>(0x8100)[0] = r.next();
+                          arena<uint32_t>(0x44)[0] = r.next(), arena<uint32_t>(0x48)[0] = r.next();
+                      },
+                      [](void *fn) {
+                          void *back = ((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x8000), arena<void>(0x8100));
+                          return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                      }};
+    default_name.iterations = 400;
+    default_name.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)dn_text_c},
+                       {0xbcf710, (void *)dn_from_n}, {0xbd0810, (void *)dn_part}, {0xbce970, (void *)dn_compare}, {0xbd01c0, (void *)dn_copy},
+                       {0xbcffe0, (void *)dn_room}, {0x410c90, (void *)dn_lookup}, {0xbd1420, (void *)dn_found}, {0xbd1880, (void *)dn_lookup_gone},
+                       {0xbcf7d0, (void *)dn_wide}, {0xbd0490, (void *)desk_empty}, {0x401310, (void *)dn_check}});
+    };
+    default_name.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(default_name);
     // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
     // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
     // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.
