@@ -1110,6 +1110,25 @@ static void *__fastcall dt_from_c_and(uint32_t **into, const char *text, uint32_
     return into;
 }
 
+// Effect::WithinBox: its stand-ins (the copy's own three functions), and its rows
+static const uint32_t eb_rows[][4] = {
+#define BOUNDS_A(at, update, other, grow, ...) {at, update, other, grow},
+#define BOUNDS_B(at, update, other, grow, ...) {at, update, other, grow},
+#include "../../forever/src/rewrite/bounds_a.inc"
+#include "../../forever/src/rewrite/bounds_b.inc"
+#undef BOUNDS_A
+#undef BOUNDS_B
+};
+static void __thiscall eb_update(uint8_t *self, uint32_t a) {   // brought up to date: noted, and its place moved a little
+    record(0xb0, self); record(0xb0, (void *)(uintptr_t)a);
+    *(float *)(self + 0xc) += 1.0f;
+}
+static int32_t __thiscall eb_other(void *self, uint32_t a, void *box) { record(0xb1, self); record(0xb1, box); return 7; }
+static int32_t __thiscall eb_grow(void *self, void *box, uint32_t a, void *place, void *size) {
+    record(0xb2, self); record(0xb2, box); record(0xb2, (void *)(uintptr_t)a); record(0xb2, place); record(0xb2, size);
+    return (int32_t)(*arena<uint32_t>(0x44) & 0xff);
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6980,6 +6999,46 @@ static std::vector<Test> tests() {
     };
     decimal_text.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(decimal_text);
+    // Effect::WithinBox (eight copies): the effect at arena 0x8000 (its part at 0x8100, flagged or not), the box at 0x8200;
+    // values near each other so both answers come up, and sometimes any bit pattern (NaNs among them)
+    Test within_box{0x48bd10,
+                    [=](Rng &r) {
+                        fresh(r);
+                        auto value = [&]() -> float {   // halves (ties), fine values (sums that round), NaNs and infinities, any bits
+                            switch (r.range(0, 9)) {
+                            case 0: return std::numeric_limits<float>::quiet_NaN();
+                            case 1: return r.range(0, 1) ? std::numeric_limits<float>::infinity() : -std::numeric_limits<float>::infinity();
+                            case 2: return r.any_float();
+                            case 3: case 4: case 5: return r.real(-3, 3) * (1.0f + 1.0f / 3.0f);
+                            default: return (float)r.range(-6, 6) * 0.5f;
+                            }
+                        };
+                        uint32_t *self = arena<uint32_t>(0x8000);
+                        self[2] = (uint32_t)(uintptr_t)arena<void>(0x8100);
+                        for (int k = 3; k < 7; k++) arena<float>(0x8000)[k] = value();
+                        arena<uint32_t>(0x8100)[0] = r.next();
+                        arena<float>(0x8100)[1] = value(), arena<float>(0x8100)[2] = value();
+                        for (int k = 0; k < 3; k++) arena<float>(0x8200)[k] = value() - 2.0f;
+                        for (int k = 3; k < 6; k++) arena<float>(0x8200)[k] = value() + 2.0f;
+                        arena<uint32_t>(0x44)[0] = r.next();
+                        if (r.range(0, 3) == 0) {   // the box's low edges just at the far ends rounded to floats (rounding them first would differ)
+                            const float *e = arena<float>(0x8000);
+                            arena<float>(0x8200)[0] = (float)((double)e[3] + e[5]);
+                            arena<float>(0x8200)[2] = (float)((double)e[6] + e[4]);
+                        }
+                        arena<uint32_t>(CALL_LOG)[0] = 0;
+                    },
+                    [](void *fn) {
+                        int32_t got = ((int32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x8000), arena<void>(0x8200));
+                        return Result{(uint32_t)got};
+                    }};
+    within_box.iterations = 3000;
+    within_box.prepare = [](const rewrite::Entry *e) {
+        for (auto &row : eb_rows)
+            if (row[0] == e->at) stubs_for_now({{row[1], (void *)eb_update}, {row[2], (void *)eb_other}, {row[3], (void *)eb_grow}});
+    };
+    within_box.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(within_box);
     // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
     // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
     // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.
