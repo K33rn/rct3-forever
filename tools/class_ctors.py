@@ -25,7 +25,7 @@ REG = r'(e[a-d]x|e[sd]i|ebp|ebx)'
 # instruction those lines start with, and the function. Everything before it is still read and checked here.
 HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 0x133a2bc', 'water_manager_after'),
               0xb4b7a0: ('mov eax, dword ptr [0x10f28e8]', 'link_last_b4b7a0'), 0x6404d0: ('fld dword ptr [0x10eead0]', 'scaled_value_6404d0'),
-              0x9d91f0: ('lea ecx, [esp + 0x10]', 'empty_reference_9d91f0')}
+              0x9d91f0: ('lea ecx, [esp + 0x10]', 'empty_reference_9d91f0'), 0xa5d6f0: ('push 6', 'slots_a5d6f0')}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.
@@ -848,6 +848,9 @@ def parse(a, n):
             continue
         if (m := re.fullmatch(r'xor ' + REG + ', ' + REG, s)) and m.group(1) == m.group(2):
             regs[m.group(1)] = ('const', 0)
+            continue
+        if (m := re.fullmatch(r'mov ' + REG + ', ' + REG, s)):
+            regs[m.group(1)] = regs.get(m.group(2))
             continue
         if (m := re.fullmatch(r'mov byte ptr \[e[a-d]x \+ 4\], ([a-d]l)', s)) and byte_of(m.group(1)) == 1:
             continue   # the mark, from a register holding 1

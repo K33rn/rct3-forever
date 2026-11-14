@@ -7253,7 +7253,7 @@ address,size,name,callers,status
 0x6c3d20,46,,0,documented
 0x6c3d50,213,,2,documented
 0x6c3e40,35,,11,documented
-0x6c3f30,1753,,1,documented
+0x6c3f30,1753,Class::Construct,1,rewritten
 0x6c4820,363,,1,documented
 0x6c4990,374,,1,documented
 0x6c4b10,26,Object::GetRef,1,rewritten
@@ -16030,7 +16030,7 @@ address,size,name,callers,status
 0xa5d510,48,ObjectArray::Free,2,rewritten
 0xa5d540,152,ObjectArray::Resize,1,rewritten
 0xa5d5e0,262,Slots::Resize424540,2,rewritten
-0xa5d6f0,1092,,2,documented
+0xa5d6f0,1092,Class::Construct,2,rewritten
 0xa5db60,194,,1,documented
 0xa5dc30,164,,1,documented
 0xa5dce0,237,StructArrayLoad,1,rewritten

@@ -619,6 +619,12 @@ static void __thiscall stub_class_water_list(uint32_t *list, uint32_t n) {   // 
 }
 // a member given a value; a member given a reference made on the stack (what it holds is noted: its table, handle,
 // owner set to itself, flag), and that reference let go (unlinked from the handle's list, as the game's does)
+// slots made for a count (their own place in the arena, each slot's block set or not)
+static void __thiscall stub_class_slots(uint32_t *self, uint32_t count) {
+    record(0xad, self); record(0xad, (void *)(uintptr_t)count);
+    self[0] = (uint32_t)(uintptr_t)arena<void>(0x9c00);
+    for (uint32_t k = 0; k < 2 * count; k++) arena<uint32_t>(0x9c00)[k] = (k & 1) || (k * 7 + count) % 3 ? 0x9c80 + k : 0;
+}
 static void __thiscall stub_class_given(void *self, uint32_t value) { record(0xaa, self); record(0xaa, (void *)(uintptr_t)value); }
 static void __thiscall stub_class_given_reference(void *self, const uint32_t *reference) {
     record(0xab, self); record(0xab, (void *)(uintptr_t)reference[0]); record(0xab, (void *)(uintptr_t)reference[1]);
@@ -5779,7 +5785,7 @@ static std::vector<Test> tests() {
             {0x403f30, (void *)stub_class_named_in}, {0xbcfb10, (void *)stub_class_text_c}, {0xbdf160, (void *)stub_class_lookup},
             {0xbdf1a0, (void *)stub_class_lookup2}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
             {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list},
-            {0x63e1c0, (void *)stub_class_given}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
+            {0x63e1c0, (void *)stub_class_given}, {0xa5d540, (void *)stub_class_slots}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;

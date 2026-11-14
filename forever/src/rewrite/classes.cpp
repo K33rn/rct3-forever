@@ -376,5 +376,28 @@ static void empty_reference_9d91f0(uint8_t *self) {
     ((void(__thiscall *)(void *, void *))0x98a770)(self + 0x50, reference);
     ((void(__thiscall *)(void *))0x40f730)(reference);
 }
+// 0xA5D6F0, its end: the object kept in its global (0x134297C); its six slots (+0x60, 0xA5D540 with 6) emptied (each
+// slot's aligned block freed and cleared, its second word cleared); its table of 31 words (+0x6C) freed if it has one,
+// then made again (aligned, 0x7C bytes, count +0x70 = 31) and cleared.
+static void slots_a5d6f0(uint8_t *self) {
+    typedef void(__cdecl * Free)(void *);
+    *(uint8_t *volatile *)0x134297c = self;
+    ((void(__thiscall *)(void *, uint32_t))0xa5d540)(self + 0x60, 6);
+    for (uint32_t at = 0; at < 0x30; at += 8) {
+        uint32_t *slot = (uint32_t *)(*(uint8_t *volatile *)(self + 0x60) + at);
+        if (slot[0]) {
+            ((Free)0xbce010)((void *)(uintptr_t)slot[0]);
+            slot[0] = 0;
+        }
+        slot[1] = 0;
+    }
+    if (uint32_t old = *(volatile uint32_t *)(self + 0x6c)) {
+        ((Free)0xbce010)((void *)(uintptr_t)old);
+        *(volatile uint32_t *)(self + 0x6c) = 0;
+    }
+    *(void *volatile *)(self + 0x6c) = memory_alloc_aligned(0x7c);
+    *(volatile uint32_t *)(self + 0x70) = 0x1f;
+    for (uint32_t at = 0; at < 0x7c; at += 4) *(volatile uint32_t *)(*(uint8_t *volatile *)(self + 0x6c) + at) = 0;
+}
 
 #include "class_list.inc"
