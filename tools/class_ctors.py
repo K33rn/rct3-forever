@@ -21,6 +21,9 @@ mine = set()   # the constructors taken before (functions.csv already calls them
 if os.path.exists(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc')):
     mine = {int(x, 16) for x in re.findall(r'^REWRITE\("[^"]+", (0x[0-9a-f]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc')).read(), re.M)}
 REG = r'(e[a-d]x|e[sd]i|ebp|ebx)'
+# Constructors whose last lines are written by hand in classes.cpp (a function run after everything else): the
+# instruction those lines start with, and the function. Everything before it is still read and checked here.
+HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after')}
 num = lambda s: int(s, 0)
 
 
@@ -578,7 +581,11 @@ def parse(a, n):
             for j in range(3):
                 kept.pop(num(m.group(1) or '0') - depth - 4 * j, None)
     tail_depth, tail_pushed, marked = depth, [], False
+    after = None
     for s in tail:
+        if a in HAND_AFTER and s == HAND_AFTER[a][0] and not tail_pushed:
+            after = HAND_AFTER[a][1]   # the rest is the hand-written function's
+            break
         if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and num(m.group(2)) - tail_depth - 4 * len(tail_pushed) in kept:
             regs[m.group(1)] = kept[num(m.group(2)) - tail_depth - 4 * len(tail_pushed)]
             continue
@@ -674,7 +681,9 @@ def parse(a, n):
         raise Reject('end: ' + s)
     if step not in (0, 4):
         raise Reject('end link')
-    tail_of = (instance, link, count) if (instance or link or count) else None
+    if a in HAND_AFTER and not after:
+        raise Reject('hand-written end not found')
+    tail_of = (instance, link, count, after) if (instance or link or count or after) else None
     return desc, index, ops, fields, names, nargs, pair, tail_of
 
 
@@ -706,9 +715,9 @@ for a, r in sorted(rows.items()):
     if pair or tail_of:
         tail = (tail or ', nullptr, 0') + (', true' if pair else ', false')
     if tail_of:
-        instance, link, count = tail_of
+        instance, link, count, after = tail_of
         link = link or [0, -1, 0]
-        out.append(f'static const ClassTail class_{a:x}_tail = {{{instance:#x}, {link[0]:#x}, {link[1]}, {link[2]:#x}, {count:#x}}};')
+        out.append(f'static const ClassTail class_{a:x}_tail = {{{instance:#x}, {link[0]:#x}, {link[1]}, {link[2]:#x}, {count:#x}' + (f', {after}' if after else '') + '};')
         tail += f', &class_{a:x}_tail'
     out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{nargs if nargs != 3 else ""}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{tail}>), &g_class_constructs);')
     done += 1

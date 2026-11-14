@@ -32,12 +32,14 @@ struct ClassName {
     uint32_t name, value;
 };
 // What a constructor does with the object at the end: links its member at +member into a game list (the list the global
-// link points to, or the list at +link_at of what it points to), counts it in the global count, gives it to instance.
+// link points to, or the list at +link_at of what it points to), counts it in the global count, gives it to instance,
+// then runs after (a few last lines written by hand, below), if any.
 struct ClassTail {
     uintptr_t instance, link;
     int32_t link_at;
     uint32_t member;
     uintptr_t count;
+    void (*after)(uint8_t *self);
 };
 // Links node (next, previous) into a circular list just after its head.
 static void link_before(uint32_t *node, uint32_t *head) {
@@ -153,6 +155,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         }
         if (TAIL->count) ++*(uint32_t *)TAIL->count;
         if (TAIL->instance) *(uint8_t **)TAIL->instance = self;
+        if (TAIL->after) TAIL->after(self);
     }
     return self;
 }
@@ -193,4 +196,23 @@ static void *__thiscall class_construct7(uint8_t *self, uint32_t d, uint32_t a, 
     const uint32_t given[8] = {0, d, a, b, c, e, f, g};
     return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL>(self, given);
 }
+// ---- the last lines of a few constructors, by hand ---------------------------------------------------------------------
+// Person::Person (0x7DF320): the person's firework entry found in the shared lighting object's list (0x425920 makes the
+// object on first use), a flag set, its info text made, its state bits put to their start (bits cleared, others set),
+// two values cleared, two bytes put to 0xFF and twelve counters to 1.
+static void person_after(uint8_t *self) {
+    uint8_t *lighting = ((uint8_t * (__cdecl *)())0x425920)();
+    void *list = *(void **)(lighting + 0x78);
+    uint32_t found = ((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))0x9f9da0)(list, 0, 4, 3, 1, 0);
+    *(volatile uint32_t *)(self + 0xc8) = found;
+    self[0x2b0] = 1;
+    ((void(__thiscall *)(void *))0x7c8870)(self);
+    *(volatile uint32_t *)(self + 0x378) = (*(volatile uint32_t *)(self + 0x378) & 0xfffec688) | 0x2c688;
+    *(volatile uint32_t *)(self + 0x3c8) = 0;
+    *(volatile uint32_t *)(self + 0x3cc) = 0;
+    self[0xc3] = 0xff;
+    self[0xc4] = 0xff;
+    for (uint32_t k = 0; k < 12; k++) *(volatile uint32_t *)(self + 0x240 + 4 * k) = 1;
+}
+
 #include "class_list.inc"

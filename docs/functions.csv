@@ -10005,7 +10005,7 @@ address,size,name,callers,status
 0x7df090,343,,11,documented
 0x7df1f0,57,,2,documented
 0x7df230,230,StructArrayLoad,0,rewritten
-0x7df320,8524,,3,documented
+0x7df320,8524,Class::Construct,3,rewritten
 0x7e1470,30,DeletingDestructor,3,rewritten
 0x7e1490,2425,,3,documented
 0x7e1580,105,Factory::Create,1,rewritten
