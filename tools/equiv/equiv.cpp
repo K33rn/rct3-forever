@@ -1142,6 +1142,25 @@ static uint8_t __fastcall ef_slabs(void *origin, void *direction, const uint32_t
     return (uint8_t)((low[0] ^ high[2] ^ *arena<uint32_t>(0x44)) & 1);
 }
 
+// Window::TitledFromDescription: its stand-ins (the desktop test's texts, a named text reference, the base window)
+static const uint32_t tw_rows[][4] = {
+#define TITLED_WINDOWS(at, description, table, second_table, ...) {at, description, table, second_table},
+#include "../../forever/src/rewrite/titled_windows.inc"
+#undef TITLED_WINDOWS
+};
+static uint32_t g_tw_global, g_tw_saved;
+static void *__thiscall tw_reference(uint32_t *self, uint32_t name, uint32_t table, uint32_t flag) {
+    dev_note(115, name); dev_note(115, table); dev_note(115, flag);
+    self[1] = name ^ 0x55;
+    return dev_next() % 3 ? self : (void *)arena<void>(0x7180);
+}
+static void *__thiscall tw_base(uint32_t *self, void *description, uint32_t **title, uint32_t *reference, uint32_t a) {
+    dev_note(116, (uint32_t)(uintptr_t)self); dev_note(116, (uint32_t)(uintptr_t)description); dev_note(116, (uint32_t)(uintptr_t)*title);
+    dev_note(116, reference[1]); dev_note(116, a); dev_note(116, self[0]);
+    return self;
+}
+static void __thiscall tw_reference_gone(uint32_t *self) { dev_note(117, self[1]); }
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -7082,6 +7101,43 @@ static std::vector<Test> tests() {
     };
     ray_hit.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(ray_hit);
+    // Window::TitledFromDescription (three copies): the window at arena 0x8000; its default description (the copy's global)
+    // at 0x7000 (its own name: none or a C text), a description or none (0x7300), a title or none (0x7100 holding 0x7200)
+    Test titled_window{0x4f0390,
+                       [=](Rng &r) {
+                           fresh(r);
+                           for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                           for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x7000)[i] = r.next();
+                           for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                           arena<uint32_t>(0x7000)[2] = r.range(0, 2) ? 0xf2738c : 0;
+                           arena<uint32_t>(0x7100)[0] = (uint32_t)(uintptr_t)arena<void>(0x7200);
+                           arena<uint32_t>(0x7200)[0] = r.range(1, 3);
+                           arena<uint32_t>(0x7180)[0] = (uint32_t)(uintptr_t)arena<void>(0x7280);
+                           arena<uint32_t>(0x7280)[0] = r.range(1, 3);
+                           arena<uint32_t>(0x40)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)arena<void>(0x7300) : 0;
+                           arena<uint32_t>(0x40)[1] = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x7100) : 0;
+                           arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                           arena<uint32_t>(0x30)[0] = 0;
+                       },
+                       [](void *fn) {
+                           *(uint32_t *)(uintptr_t)g_tw_global = (uint32_t)(uintptr_t)arena<void>(0x7000);
+                           const uint32_t *a = arena<uint32_t>(0x40);
+                           void *back = ((void *(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x8000), a[0], a[1]);
+                           return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                       }};
+    titled_window.iterations = 300;
+    titled_window.prepare = [](const rewrite::Entry *e) {
+        for (auto &row : tw_rows)
+            if (row[0] == e->at) g_tw_global = row[1], g_tw_saved = *(uint32_t *)(uintptr_t)row[1];
+        stubs_for_now({{0xbcdfc0, (void *)desk_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)cheat_text},
+                       {0xbd0490, (void *)desk_empty}, {0x403be0, (void *)cheat_join}, {0x403bb0, (void *)desk_join_wide}, {0x41c740, (void *)desk_copy},
+                       {0x41cb90, (void *)tw_reference}, {0x69a280, (void *)tw_base}, {0xbd1880, (void *)tw_reference_gone}});
+    };
+    titled_window.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        *(uint32_t *)(uintptr_t)g_tw_global = g_tw_saved;
+    };
+    quick(titled_window);
     // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
     // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
     // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.
