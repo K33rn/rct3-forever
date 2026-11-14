@@ -7370,6 +7370,28 @@ static std::vector<Test> tests() {
     };
     designer_save.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(designer_save);
+    // Designer::FileButtonTip (three copies): the designer at arena 0x8000 (its state 0 or not), where the text goes (0x8100)
+    Test file_button_tip{0x9bdd70,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                             for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                             arena<uint32_t>(0x8000)[0x2fc / 4] = r.range(0, 1) ? 0 : r.next();
+                             arena<uint32_t>(0x8100)[0] = r.next();
+                             arena<uint32_t>(0x58)[0] = r.next();
+                             arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                         },
+                         [](void *fn) {
+                             void *back = ((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x8000), arena<void>(0x8100));
+                             return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                         }};
+    file_button_tip.iterations = 200;
+    file_button_tip.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0x4040f0, (void *)ds_named}, {0xbcf7d0, (void *)dn_wide}, {0xbd0490, (void *)ds_empty},
+                       {0xbd1880, (void *)dn_lookup_gone}});
+    };
+    file_button_tip.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(file_button_tip);
     // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
     // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
     // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.

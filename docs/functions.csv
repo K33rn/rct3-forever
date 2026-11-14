@@ -14417,7 +14417,7 @@ address,size,name,callers,status
 0x9bd9f0,693,,3,documented
 0x9bdcf0,30,DeletingDestructor,2,rewritten
 0x9bdd10,81,Destructor::MemberThenBaseNullSafe,1,rewritten
-0x9bdd70,256,,1,documented
+0x9bdd70,256,Designer::FileButtonTip,1,rewritten
 0x9bde70,194,,1,documented
 0x9bdf40,67,Reference::Reference(object),0,rewritten
 0x9bdfa0,67,Reference::Reference(object),0,rewritten
@@ -17124,7 +17124,7 @@ address,size,name,callers,status
 0xacd140,161,GameText::Copy,1,rewritten
 0xacd1f0,161,GameText::Copy,1,rewritten
 0xacd2a0,161,GameText::Copy,1,rewritten
-0xacd350,256,,1,documented
+0xacd350,256,Designer::FileButtonTip,1,rewritten
 0xacd450,204,Destructor::Steps,1,rewritten
 0xacd5a0,100,,1,documented
 0xacd610,161,GameText::Copy,1,rewritten
@@ -17311,7 +17311,7 @@ address,size,name,callers,status
 0xae9120,161,GameText::Copy,1,rewritten
 0xae91d0,161,GameText::Copy,1,rewritten
 0xae9280,161,GameText::Copy,1,rewritten
-0xae9330,256,,1,documented
+0xae9330,256,Designer::FileButtonTip,1,rewritten
 0xae9430,204,Destructor::Steps,1,rewritten
 0xae9580,100,,1,documented
 0xae95f0,161,GameText::Copy,1,rewritten
