@@ -1252,6 +1252,52 @@ static uint8_t __stdcall dn_check(DnText *given) {   // (takes its text by value
     return (uint8_t)((given->length ^ *arena<uint32_t>(0x48)) % 7 == 0);
 }
 
+// Designer::Save: its stand-ins (on the Designer::DefaultName test's texts), and its rows
+static const uint32_t ds_rows[][3] = {
+#define DESIGNER_SAVES(at, ending, write, ...) {at, ending, write},
+#include "../../forever/src/rewrite/designer_saves.inc"
+#undef DESIGNER_SAVES
+};
+static DnText *ds_c(const char *text) {
+    uint16_t wide[64];
+    uint32_t n = 0;
+    while (text[n] && n < 63) wide[n] = (uint8_t)text[n], n++;
+    return dn_make((DnText *)dev_take(0x10), wide, n);
+}
+static DnText *ds_join_texts(const DnText *a, const DnText *b) {
+    uint16_t wide[128];
+    uint32_t n = 0;
+    for (uint32_t k = 0; k < a->length && n < 127; k++) wide[n++] = a->characters[k];
+    for (uint32_t k = 0; k < b->length && n < 127; k++) wide[n++] = b->characters[k];
+    return dn_make((DnText *)dev_take(0x10), wide, n);
+}
+static void *__fastcall ds_empty(uint32_t c) { dev_note(141, c & 0xff); return ds_c(""); }
+static void *__thiscall ds_join(DnText **self, DnText **out, DnText **other) { dev_note(142, dn_hash(*self)); dev_note(142, dn_hash(*other)); *out = ds_join_texts(*self, *other); return out; }
+static uint8_t __thiscall ds_has_ending(DnText **path, DnText *ending) {   // (takes the ending by value: lets it go)
+    dev_note(143, dn_hash(*path)); dev_note(143, dn_hash(ending));
+    --ending->count;
+    return (uint8_t)(((*path)->length ^ *arena<uint32_t>(0x50)) & 1);
+}
+static uint8_t __thiscall ds_there(DnText **path) { dev_note(144, dn_hash(*path)); return (uint8_t)((dn_hash(*path) ^ *arena<uint32_t>(0x54)) & 1); }
+static void *__thiscall ds_named(uint32_t *self, uint32_t name, uint32_t table, uint32_t flag) {
+    dev_note(145, name); dev_note(145, table); dev_note(145, flag);
+    self[1] = name;   // (what letting it go notes)
+    self[2] = (name ^ *arena<uint32_t>(0x58)) % 3 ? (uint32_t)(uintptr_t)arena<void>(0x7700) : 0;
+    return self;
+}
+static void __fastcall ds_replace(DnText **text, DnText **mark, DnText **with) {
+    dev_note(146, dn_hash(*text)); dev_note(146, dn_hash(*mark)); dev_note(146, dn_hash(*with));
+    *text = ds_join_texts(*text, *with);
+}
+static void *__thiscall ds_window(void *self, uint32_t a, uint32_t b, uint32_t c) { dev_note(147, a); dev_note(147, b); dev_note(147, c); return (uint8_t *)self + 4; }
+static void __thiscall ds_buttons(void *self, DnText *a, DnText *b, uint32_t c, uint32_t d, DnText *e, uint32_t f) {
+    dev_note(148, (uint32_t)(uintptr_t)self); dev_note(148, dn_hash(a)); dev_note(148, dn_hash(b)); dev_note(148, c); dev_note(148, d);
+    dev_note(148, dn_hash(e)); dev_note(148, f);
+    dev_note(148, (uint32_t)a->count), dev_note(148, (uint32_t)b->count);
+    dev_note(148, (uint32_t)(uintptr_t)a), dev_note(148, (uint32_t)(uintptr_t)b), dev_note(148, (uint32_t)(uintptr_t)e);   // (made in the arena: which is which)
+}
+static void __thiscall ds_given(void *self, DnText *text) { dev_note(149, (uint32_t)(uintptr_t)self); dev_note(149, dn_hash(text)); dev_note(149, (uint32_t)text->count); }
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -7289,6 +7335,41 @@ static std::vector<Test> tests() {
     };
     default_name.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(default_name);
+    // Designer::Save (two copies): the designer at arena 0x8000 (its state 0, 1 or another; its path a text; its
+    // file writer +0x2F8), a folder and a name (each a holder of a text: names of every kind)
+    Test designer_save{0xad0980,
+                       [=](Rng &r) {
+                           fresh(r);
+                           for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                           for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                           arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                           arena<uint32_t>(0x8000)[0x2fc / 4] = r.range(0, 5) ? 1 : r.range(0, 3);
+                           arena<uint32_t>(0x8000)[0x2f8 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8800);
+                           static const char *const names[] = {"", ".hidden", " spaced", "Show", "Show.las", "Fountain.wjt", "x"};
+                           DnText *path = ds_c("Old\\Path");
+                           path->count = r.range(1, 2);
+                           arena<uint32_t>(0x8000)[0x398 / 4] = (uint32_t)(uintptr_t)path;
+                           arena<uint32_t>(0x40)[0] = (uint32_t)(uintptr_t)ds_c("Designs\\");
+                           arena<uint32_t>(0x40)[1] = (uint32_t)(uintptr_t)ds_c(names[r.range(0, 6)]);
+                           arena<uint32_t>(0x50)[0] = r.next(), arena<uint32_t>(0x54)[0] = r.next(), arena<uint32_t>(0x58)[0] = r.next();
+                       },
+                       [](void *fn) {
+                           ((void(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x8000), arena<void>(0x40), arena<void>(0x44));   // (holders: the folder's, the name's)
+                           return Result{*arena<uint32_t>(0x20)};
+                       }};
+    designer_save.iterations = 400;
+    designer_save.prepare = [](const rewrite::Entry *e) {
+        uint32_t write = 0;
+        for (auto &row : ds_rows)
+            if (row[0] == e->at) write = row[2];
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)dn_text_c},
+                       {0xbd0490, (void *)ds_empty}, {0x403bb0, (void *)ds_join}, {0x402550, (void *)ds_has_ending}, {0xbcffe0, (void *)dn_room},
+                       {0xbd01c0, (void *)dn_copy}, {0xbe45e0, (void *)ds_there}, {0x4040f0, (void *)ds_named}, {0xbcf7d0, (void *)dn_wide},
+                       {0xbd1880, (void *)dn_lookup_gone}, {0xcd23a0, (void *)ds_replace}, {0x6a5e20, (void *)ds_window}, {0x6a6ac0, (void *)ds_buttons},
+                       {0x800460, (void *)ds_given}, {write, (void *)ds_given}});
+    };
+    designer_save.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(designer_save);
     // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
     // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
     // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.

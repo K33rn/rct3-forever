@@ -17153,7 +17153,7 @@ address,size,name,callers,status
 0xad0710,323,,1,documented
 0xad0860,30,DeletingDestructor,3,rewritten
 0xad0880,241,,1,documented
-0xad0980,2073,,1,documented
+0xad0980,2073,Designer::Save,1,rewritten
 0xad11a0,90,,2,documented
 0xad1200,30,DeletingDestructor,2,rewritten
 0xad1220,153,Named::DestroyAD1220,1,rewritten
@@ -17335,7 +17335,7 @@ address,size,name,callers,status
 0xaebf50,424,,1,documented
 0xaec100,30,DeletingDestructor,3,rewritten
 0xaec120,215,,1,documented
-0xaec200,2073,,1,documented
+0xaec200,2073,Designer::Save,1,rewritten
 0xaeca80,30,DeletingDestructor,2,rewritten
 0xaecaa0,153,Named::DestroyAD1220,1,rewritten
 0xaecb40,30,DeletingDestructor,3,rewritten
