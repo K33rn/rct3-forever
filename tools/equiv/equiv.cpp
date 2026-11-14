@@ -477,6 +477,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, arg_value(e)); return built_result(self);
 }
 extern const uint32_t titled_info[], titled_callees[], value_info[], record_info[];
+extern const uint32_t dtor_steps_info[];
 extern const uint32_t table_make_info[];
 // Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
 // text gets a wide string of its own
@@ -609,6 +610,28 @@ static void __fastcall stub_section(void *self, void *, int32_t **name, uint32_t
     (*name)[0] += *arena<int32_t>(0x38);
     if (*arena<uint32_t>(0x3c) % 4 == 0) *name = arena<int32_t>(0x2c0);
 }
+
+// Destructor::Steps (tools/dtor_ops.py): stand-ins that record which they are. A member's table has 16 entries taking
+// 0, 1 or 2 arguments; the direct calls (members' and bases' destructors on the object, and frees of a pointer) each
+// get their own numbered stand-in.
+template <int SLOT> static void __thiscall dtor_virtual0(void *self) { record(0x7000 + SLOT, self); }
+template <int SLOT> static void __thiscall dtor_virtual1(void *self, uint32_t a) { record(0x7100 + SLOT, self); record(0x7100 + SLOT, (void *)(uintptr_t)a); }
+template <int SLOT> static void __thiscall dtor_virtual2(void *self, uint32_t a, uint32_t b) {
+    record(0x7200 + SLOT, self); record(0x7200 + SLOT, (void *)(uintptr_t)a); record(0x7200 + SLOT, (void *)(uintptr_t)b);
+}
+template <int K> static void __thiscall dtor_direct(void *self) { record(0x7400 + K, self); }
+template <int K> static void __cdecl dtor_freed(void *p) { record(0x7600 + K, p); }
+#define DTOR16(f) (void *)&f<0>, (void *)&f<1>, (void *)&f<2>, (void *)&f<3>, (void *)&f<4>, (void *)&f<5>, (void *)&f<6>, (void *)&f<7>, \
+                  (void *)&f<8>, (void *)&f<9>, (void *)&f<10>, (void *)&f<11>, (void *)&f<12>, (void *)&f<13>, (void *)&f<14>, (void *)&f<15>
+#define DTOR48(f) DTOR16(f), (void *)&f<16>, (void *)&f<17>, (void *)&f<18>, (void *)&f<19>, (void *)&f<20>, (void *)&f<21>, (void *)&f<22>, (void *)&f<23>, \
+                  (void *)&f<24>, (void *)&f<25>, (void *)&f<26>, (void *)&f<27>, (void *)&f<28>, (void *)&f<29>, (void *)&f<30>, (void *)&f<31>, \
+                  (void *)&f<32>, (void *)&f<33>, (void *)&f<34>, (void *)&f<35>, (void *)&f<36>, (void *)&f<37>, (void *)&f<38>, (void *)&f<39>, \
+                  (void *)&f<40>, (void *)&f<41>, (void *)&f<42>, (void *)&f<43>, (void *)&f<44>, (void *)&f<45>, (void *)&f<46>, (void *)&f<47>
+static void *g_dtor_tables[3][16] = {{DTOR16(dtor_virtual0)}, {DTOR16(dtor_virtual1)}, {DTOR16(dtor_virtual2)}};
+static void *g_dtor_direct[48] = {DTOR48(dtor_direct)};
+static void *g_dtor_freed[48] = {DTOR48(dtor_freed)};
+static const uint32_t *g_dtor_info;   // the copy under test: {address, steps, then five values a step}
+static std::vector<std::pair<uint32_t, uint32_t>> g_dtor_globals;   // the globals it writes or reads, and what they held
 
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
@@ -5946,6 +5969,89 @@ static std::vector<Test> tests() {
     };
     array_resize.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(array_resize);
+    // Destructor::Steps: the object at 0x1000 (0x1000 bytes, random). Each member its steps use gets memory of its own
+    // from 0x3000 on: one that is taken (IF) is there three times in four, with a recording table for the arguments
+    // its call takes and a small count; a shared text has a count of 1 or 2 and a buffer; one stored through is big
+    // enough. The globals of a GCOPY are set (the source sometimes -1) for the call and put back after the test;
+    // what they hold after is the result. Every direct call is a numbered stand-in.
+    Test dtor_steps_test{0x4482a0,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 0x400; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                             const uint32_t *st = g_dtor_info + 2;
+                             const uint32_t n = g_dtor_info[1];
+                             // what each member needs, over all the steps: a call or count belongs to the member taken last
+                             struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken; };
+                             std::vector<Need> needs;
+                             auto need = [&](uint32_t field) -> Need & {
+                                 for (Need &x : needs) if (x.field == field) return x;
+                                 needs.push_back({field, 0x40, 0, 0, false, false});
+                                 return needs.back();
+                             };
+                             uint32_t current = 0;
+                             for (uint32_t i = 0; i < n; i++) {
+                                 const uint32_t *s = st + 5 * i;
+                                 if (s[0] == 1) current = s[3], need(current).taken = true;
+                                 if (s[0] == 2) need(current).arity = (int)s[1];
+                                 if (s[0] == 7) need(current).arity = (int)s[1], need(current).count_at = s[2];
+                                 if (s[0] == 9) need(s[3]).text = true;
+                                 if (s[0] == 6) { Need &x = need(s[2]); if (x.size < ((s[3] + 0x43) & ~0x3fu)) x.size = (s[3] + 0x43) & ~0x3fu; }
+                             }
+                             uint32_t next = 0x3000;
+                             for (const Need &x : needs) {
+                                 const bool stored_through = x.size > 0x40;
+                                 if (x.taken && !x.text && !stored_through && r.range(0, 3) == 0) {   // a member that isn't there
+                                     *arena<uint32_t>(0x1000 + x.field) = 0;
+                                     continue;
+                                 }
+                                 uint32_t *block = arena<uint32_t>(next);
+                                 for (uint32_t i = 0; i < x.size / 4; i++) block[i] = r.next();
+                                 block[0] = x.text ? (uint32_t)r.range(1, 2) : (uint32_t)(uintptr_t)g_dtor_tables[x.arity];
+                                 if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
+                                 *arena<uint32_t>(0x1000 + x.field) = (uint32_t)(uintptr_t)block;
+                                 next += (x.size + 15) & ~15u;
+                             }
+                             for (size_t i = 0; i < g_dtor_globals.size(); i++) arena<uint32_t>(0x40)[i] = r.range(0, 2) ? r.next() : 0xffffffffu;
+                             arena<uint32_t>(CALL_LOG)[0] = 0;
+                         },
+                         [](void *fn) {
+                             for (size_t i = 0; i < g_dtor_globals.size(); i++) *(uint32_t *)(uintptr_t)g_dtor_globals[i].first = arena<uint32_t>(0x40)[i];
+                             ((void(__thiscall *)(void *))fn)(arena<void>(0x1000));
+                             uint32_t after = 0;
+                             for (size_t i = 0; i < g_dtor_globals.size(); i++) after = after * 31 + *(uint32_t *)(uintptr_t)g_dtor_globals[i].first;
+                             return Result{after};
+                         }};
+    dtor_steps_test.prepare = [](const rewrite::Entry *e) {
+        g_dtor_info = nullptr;
+        for (const uint32_t *v = dtor_steps_info; *v; v += 2 + 5 * v[1])
+            if (v[0] == (uint32_t)(uintptr_t)e->at) g_dtor_info = v;
+        std::vector<std::pair<uint32_t, void *>> stubs;
+        g_dtor_globals.clear();
+        auto add = [&](uint32_t target, void **from) {
+            for (auto &s : stubs) if (s.first == target) return;
+            if (stubs.size() < 48) stubs.push_back({target, from[stubs.size()]});
+        };
+        const uint32_t *st = g_dtor_info + 2;
+        for (uint32_t i = 0; i < g_dtor_info[1]; i++) {
+            const uint32_t *s = st + 5 * i;
+            if (s[0] == 4) add(s[3], g_dtor_direct);
+            if (s[0] == 3) add(s[3], g_dtor_freed);
+            if (s[0] == 8) add(s[4], g_dtor_freed);
+            if (s[0] == 9) add(0xbce010, g_dtor_freed), add(0xbce000, g_dtor_freed);
+            if (s[0] == 5)
+                for (uint32_t g : {s[3], s[4]}) {
+                    bool have = false;
+                    for (auto &x : g_dtor_globals) have |= x.first == g;
+                    if (!have) g_dtor_globals.push_back({g, *(uint32_t *)(uintptr_t)g});
+                }
+        }
+        stubs_for_now(stubs);
+    };
+    dtor_steps_test.finish = [](const rewrite::Entry *) {
+        for (auto &g : g_dtor_globals) *(uint32_t *)(uintptr_t)g.first = g.second;
+        unstub_many();
+    };
+    quick(dtor_steps_test);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)

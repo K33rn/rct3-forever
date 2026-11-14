@@ -81,7 +81,7 @@ address,size,name,callers,status
 0x408a90,2262,,2,documented
 0x409370,85,,2,documented
 0x4093d0,77,,2,documented
-0x409450,152,,3,documented
+0x409450,152,Destructor::Steps,3,rewritten
 0x4094f0,122,,1,documented
 0x409590,30,DeletingDestructor,0,rewritten
 0x4095b0,101,Singleton::Keep4095B0,1,rewritten
@@ -173,7 +173,7 @@ address,size,name,callers,status
 0x40da20,48,QueryInterface,8,rewritten
 0x40da80,88,Singleton::Get40DA80,28,rewritten
 0x40db10,35,,0,documented
-0x40db80,104,,7,documented
+0x40db80,104,Destructor::Steps,7,rewritten
 0x40dca0,101,Tables::Destroy40DCA0,1,rewritten
 0x40dd10,169,,1,documented
 0x40ddc0,35,Owner::Drop40DDC0,1,rewritten
@@ -261,7 +261,7 @@ address,size,name,callers,status
 0x40fb00,48,,1,documented
 0x40fb30,60,,2,documented
 0x40fb70,341,,3,documented
-0x40fd00,208,,1,documented
+0x40fd00,208,Destructor::Steps,1,rewritten
 0x40fdd0,458,,0,documented
 0x4100f0,5,,16,documented
 0x410100,126,ObjectRef::Assign,5,rewritten
@@ -356,7 +356,7 @@ address,size,name,callers,status
 0x419070,138,,4,documented
 0x419100,775,,6,documented
 0x419410,114,,2,documented
-0x419490,127,,2,documented
+0x419490,127,Destructor::Steps,2,rewritten
 0x419510,996,,1,documented
 0x419900,30,DeletingDestructor,0,rewritten
 0x419920,644,,2,documented
@@ -553,8 +553,8 @@ address,size,name,callers,status
 0x42a4d0,26,OwnedPointer::Reset,1,rewritten
 0x42a4f0,130,Array<4>::SetCapacity,1,rewritten
 0x42a580,55,,0,documented
-0x42a5c0,110,,1,documented
-0x42a650,173,,1,documented
+0x42a5c0,110,Destructor::Steps,1,rewritten
+0x42a650,173,Destructor::Steps,1,rewritten
 0x42a770,660,,1,documented
 0x42aa10,30,DeletingDestructor,2,rewritten
 0x42aa30,387,,2,documented
@@ -880,7 +880,7 @@ address,size,name,callers,status
 0x445eb0,5,,3,documented
 0x445fb0,11,,3,documented
 0x445ff0,27,GlobalCleanup,1,rewritten
-0x446020,14,,1,documented
+0x446020,14,Destructor::Steps,1,rewritten
 0x446080,729,,1,documented
 0x446360,166,,1,documented
 0x446420,30,DeletingDestructor,1,rewritten
@@ -907,7 +907,7 @@ address,size,name,callers,status
 0x448170,16,Object::AllocStore,20,rewritten
 0x448180,48,QueryInterface,1,rewritten
 0x448200,48,QueryInterface,29,rewritten
-0x4482a0,183,,1,documented
+0x4482a0,183,Destructor::Steps,1,rewritten
 0x448380,67,,1,documented
 0x448410,87,,4,documented
 0x448470,45,,1,documented
@@ -1118,7 +1118,7 @@ address,size,name,callers,status
 0x45c520,453,,1,documented
 0x45c760,30,DeletingDestructor,2,rewritten
 0x45c780,1296,,1,documented
-0x45cc90,173,,103,documented
+0x45cc90,173,Destructor::Steps,103,rewritten
 0x45cdc0,5,,15,documented
 0x45cdd0,502,,0,documented
 0x45d060,30,DeletingDestructor,2,rewritten
@@ -1241,7 +1241,7 @@ address,size,name,callers,status
 0x466a60,103,,1,documented
 0x466ad0,94,,0,documented
 0x466b30,2923,,12,documented
-0x4676d0,135,,10,documented
+0x4676d0,135,Destructor::Steps,10,rewritten
 0x467780,42,,5,documented
 0x4677b0,46,,5,documented
 0x467840,30,DeletingDestructor,2,rewritten
@@ -1379,7 +1379,7 @@ address,size,name,callers,status
 0x471ca0,30,DeletingDestructor,1,rewritten
 0x471cc0,7,BaseClass::SetClass,1,rewritten
 0x471d10,107,Factory::LazyWith,4,rewritten
-0x471d80,103,,2,documented
+0x471d80,103,Destructor::Steps,2,rewritten
 0x471df0,82,,5,documented
 0x471e70,117,Text::Create,0,rewritten
 0x471ef0,18,Constructor::BaseAndTable,0,rewritten
@@ -1399,7 +1399,7 @@ address,size,name,callers,status
 0x473320,1156,,1,documented
 0x4737b0,852,,1,documented
 0x473b10,30,DeletingDestructor,2,rewritten
-0x473b30,172,,1,documented
+0x473b30,172,Destructor::Steps,1,rewritten
 0x473be0,30,DeletingDestructor,0,rewritten
 0x473c00,18,Constructor::BaseAndTable,0,rewritten
 0x473c30,553,,0,documented
@@ -1498,7 +1498,7 @@ address,size,name,callers,status
 0x477f40,61,Array<4>::Allocate,0,rewritten
 0x4780a0,224,,1,documented
 0x4781a0,30,DeletingDestructor,1,rewritten
-0x4781c0,123,,1,documented
+0x4781c0,123,Destructor::Steps,1,rewritten
 0x4782d0,105,OwnedPair::FreeFields,2,rewritten
 0x478340,30,DeletingDestructor,0,rewritten
 0x478360,105,OwnedPair::FreeFields,37,rewritten
@@ -1536,7 +1536,7 @@ address,size,name,callers,status
 0x47bd90,130,,2,documented
 0x47be20,8,,8,documented
 0x47be30,61,,1,documented
-0x47be70,110,,1,documented
+0x47be70,110,Destructor::Steps,1,rewritten
 0x47c200,62,,1,documented
 0x47c240,428,,1,documented
 0x47c3f0,124,,1,documented
@@ -1659,7 +1659,7 @@ address,size,name,callers,status
 0x4855f0,30,DeletingDestructor,0,rewritten
 0x485690,129,,2,documented
 0x485750,945,,2,documented
-0x485b40,206,,4,documented
+0x485b40,206,Destructor::Steps,4,rewritten
 0x485c10,617,,3,documented
 0x485e80,297,,2,documented
 0x485fb0,2631,,2,documented
@@ -2032,7 +2032,7 @@ address,size,name,callers,status
 0x49ed70,99,,4,documented
 0x49ede0,30,DeletingDestructor,1,rewritten
 0x49ee80,1669,,0,documented
-0x49f570,102,,1,documented
+0x49f570,102,Destructor::Steps,1,rewritten
 0x49f5f0,424,,1,documented
 0x49f7b0,96,,1,documented
 0x49f810,2154,,1,documented
@@ -2607,7 +2607,7 @@ address,size,name,callers,status
 0x4d0fa0,29,,2,documented
 0x4d0fe0,23,,2,documented
 0x4d1050,43,,0,documented
-0x4d1100,112,,1,documented
+0x4d1100,112,Destructor::Steps,1,rewritten
 0x4d1190,719,,1,documented
 0x4d14b0,647,,9,documented
 0x4d1770,30,DeletingDestructor,2,rewritten
@@ -2692,7 +2692,7 @@ address,size,name,callers,status
 0x4d7230,586,,1,documented
 0x4d7480,1254,,1,documented
 0x4d7b50,30,DeletingDestructor,2,rewritten
-0x4d7b70,209,,1,documented
+0x4d7b70,209,Destructor::Steps,1,rewritten
 0x4d7c50,535,,1,documented
 0x4d7e70,299,,69,documented
 0x4d7fc0,792,,1,documented
@@ -2770,7 +2770,7 @@ address,size,name,callers,status
 0x4e1ca0,2415,,3,documented
 0x4e2610,30,DeletingDestructor,3,rewritten
 0x4e2630,374,,4,documented
-0x4e27c0,125,,1,documented
+0x4e27c0,125,Destructor::Steps,1,rewritten
 0x4e2850,64,,1,documented
 0x4e28b0,30,DeletingDestructor,3,rewritten
 0x4e28f0,52,Level::Reached,0,rewritten
@@ -2853,7 +2853,7 @@ address,size,name,callers,status
 0x4ec490,30,DeletingDestructor,3,rewritten
 0x4ec4b0,101,,1,documented
 0x4ec590,67,Shared::Refresh4D6D80,1,rewritten
-0x4ec5e0,288,,1,documented
+0x4ec5e0,288,Destructor::Steps,1,rewritten
 0x4ec760,446,,1,documented
 0x4ec920,125,,1,documented
 0x4ec9a0,2172,,1,documented
@@ -3526,7 +3526,7 @@ address,size,name,callers,status
 0x53cb80,26,Object::GetRef,7,rewritten
 0x53cba0,26,Object::GetRef,2,rewritten
 0x53cbd0,133,Pair::Destroy53CBD0,2,rewritten
-0x53cc60,131,,4,documented
+0x53cc60,131,Destructor::Steps,4,rewritten
 0x53ccf0,62,,1,documented
 0x53cd30,2533,,1,documented
 0x53d720,456,,4,documented
@@ -3718,7 +3718,7 @@ address,size,name,callers,status
 0x553760,229,Values::Map,1,rewritten
 0x5538e0,433,,0,documented
 0x553ad0,40,Text::Widen,0,rewritten
-0x553ba0,145,,1,documented
+0x553ba0,145,Destructor::Steps,1,rewritten
 0x553c50,140,,1,documented
 0x554110,30,DeletingDestructor,3,rewritten
 0x554130,2015,,2,documented
@@ -4183,7 +4183,7 @@ address,size,name,callers,status
 0x58e880,175,,0,documented
 0x58e930,24,Record::SetFields,1,rewritten
 0x58e950,89,,2,documented
-0x58ea10,95,,4,documented
+0x58ea10,95,Destructor::Steps,4,rewritten
 0x58ea70,118,,25,documented
 0x58eaf0,48,ObjectArray::Free,2,rewritten
 0x58eb20,373,,3,documented
@@ -5289,13 +5289,13 @@ address,size,name,callers,status
 0x5f8400,91,,1,documented
 0x5f84c0,75,,1,documented
 0x5f8510,30,DeletingDestructor,2,rewritten
-0x5f8530,160,,1,documented
+0x5f8530,160,Destructor::Steps,1,rewritten
 0x5f85f0,3118,,1,documented
 0x5f9220,491,,1,documented
 0x5f9660,162,,9,documented
 0x5f9740,30,DeletingDestructor,2,rewritten
 0x5f97a0,68,,0,documented
-0x5f99b0,130,,1,documented
+0x5f99b0,130,Destructor::Steps,1,rewritten
 0x5fa1b0,75,,1,documented
 0x5fa250,2452,,1,documented
 0x5facd0,30,DeletingDestructor,2,rewritten
@@ -5332,7 +5332,7 @@ address,size,name,callers,status
 0x5fcb10,89,,1,documented
 0x5fcb70,30,DeletingDestructor,2,rewritten
 0x5fcb90,97,Owner::Dtor5F0520,1,rewritten
-0x5fcc30,120,,1,documented
+0x5fcc30,120,Destructor::Steps,1,rewritten
 0x5fcce0,1377,,1,documented
 0x5fd440,112,Named::Send5FD440,1,rewritten
 0x5fd4b0,268,,2,documented
@@ -5431,7 +5431,7 @@ address,size,name,callers,status
 0x619470,30,DeletingDestructor,2,rewritten
 0x619490,113,,4,documented
 0x619510,161,GameText::Copy,2,rewritten
-0x619630,455,,1,documented
+0x619630,455,Destructor::Steps,1,rewritten
 0x619800,6,,2,documented
 0x619890,111,,4,documented
 0x619960,93,Factory::CreateWith2,0,rewritten
@@ -5460,7 +5460,7 @@ address,size,name,callers,status
 0x61baa0,48,QueryInterface,1,rewritten
 0x61bb30,10,,10,documented
 0x61bc50,8,,3,documented
-0x61bc60,204,,1,documented
+0x61bc60,204,Destructor::Steps,1,rewritten
 0x61bd50,231,,1,documented
 0x61bed0,120,MEMBER_DTOR,21,rewritten
 0x61bfa0,26,OwnedPointer::Reset,1,rewritten
@@ -5492,7 +5492,7 @@ address,size,name,callers,status
 0x61df90,162,,1,documented
 0x61e040,822,,1,documented
 0x61e380,30,DeletingDestructor,2,rewritten
-0x61e3a0,140,,7,documented
+0x61e3a0,140,Destructor::Steps,7,rewritten
 0x61e430,30,DeletingDestructor,2,rewritten
 0x61e450,469,,21,documented
 0x61e650,199,,1,documented
@@ -5533,7 +5533,7 @@ address,size,name,callers,status
 0x621100,454,,1,documented
 0x621300,40,Text::Widen,0,rewritten
 0x621370,94,,1,documented
-0x6213f0,130,,1,documented
+0x6213f0,130,Destructor::Steps,1,rewritten
 0x621520,113,Destructor::DeleteTwoMembers,1,rewritten
 0x6215e0,175,MEMBER_DTOR,1,rewritten
 0x6216d0,26,OwnedPointer::Reset,4,rewritten
@@ -5591,7 +5591,7 @@ address,size,name,callers,status
 0x62b620,681,,1,documented
 0x62b910,161,GameText::Copy,1,rewritten
 0x62b9c0,30,DeletingDestructor,2,rewritten
-0x62b9e0,127,,1,documented
+0x62b9e0,127,Destructor::Steps,1,rewritten
 0x62ba60,2731,,1,documented
 0x62c5b0,272,,1,documented
 0x62c6d0,125,,1,documented
@@ -5622,7 +5622,7 @@ address,size,name,callers,status
 0x62e810,43,Panel::Sync62E790,1,rewritten
 0x62e840,30,DeletingDestructor,2,rewritten
 0x62f160,4112,,1,documented
-0x6301b0,136,,6,documented
+0x6301b0,136,Destructor::Steps,6,rewritten
 0x630250,88,View::ApplyTransform630250,3,rewritten
 0x630360,33,Record::Fields,4,rewritten
 0x630390,13,,4,documented
@@ -5703,7 +5703,7 @@ address,size,name,callers,status
 0x633c40,66,Linked::Destroy633860,1,rewritten
 0x633c90,618,,1,documented
 0x633f30,30,DeletingDestructor,2,rewritten
-0x633f50,118,,1,documented
+0x633f50,118,Destructor::Steps,1,rewritten
 0x633ff0,324,,2,documented
 0x634140,527,Window::Titled,1,rewritten
 0x634360,129,,1,documented
@@ -6102,7 +6102,7 @@ address,size,name,callers,status
 0x65d1d0,331,,1,documented
 0x65d320,30,DeletingDestructor,2,rewritten
 0x65d340,244,,1,documented
-0x65d440,265,,1,documented
+0x65d440,265,Destructor::Steps,1,rewritten
 0x65d6d0,161,GameText::Copy,1,rewritten
 0x65d780,516,Window::Titled,0,rewritten
 0x65d9b0,386,,1,documented
@@ -6150,7 +6150,7 @@ address,size,name,callers,status
 0x661010,30,DeletingDestructor,2,rewritten
 0x661030,153,,1,documented
 0x6610f0,416,,2,documented
-0x6612a0,190,,5,documented
+0x6612a0,190,Destructor::Steps,5,rewritten
 0x661580,30,DeletingDestructor,3,rewritten
 0x6615d0,131,PAIR_RELEASE,17,rewritten
 0x661660,108,Lookup::ByPair661660,11,rewritten
@@ -6203,7 +6203,7 @@ address,size,name,callers,status
 0x665e90,386,,5,documented
 0x666020,934,,1,documented
 0x6663d0,263,,1,documented
-0x6664e0,140,,1,documented
+0x6664e0,140,Destructor::Steps,1,rewritten
 0x666570,763,,2,documented
 0x666870,614,,19,documented
 0x666ae0,687,,3,documented
@@ -6249,7 +6249,7 @@ address,size,name,callers,status
 0x669e10,48,QueryInterface,0,rewritten
 0x669e60,133,Holder::Dtor669E60,1,rewritten
 0x669f00,154,,1,documented
-0x66a020,529,,1,documented
+0x66a020,529,Destructor::Steps,1,rewritten
 0x66a350,26,Object::Forward2,1,rewritten
 0x66a460,26,OwnedPointer::Reset,2,rewritten
 0x66a480,61,Array<4>::Allocate,0,rewritten
@@ -6275,7 +6275,7 @@ address,size,name,callers,status
 0x66bbb0,116,,1,documented
 0x66bc30,1566,,1,documented
 0x66c250,888,,0,documented
-0x66c5d0,173,,3,documented
+0x66c5d0,173,Destructor::Steps,3,rewritten
 0x66c6c0,42,,1,documented
 0x66c6f0,38,SharedBlock::Release,1,rewritten
 0x66c7a0,30,DeletingDestructor,2,rewritten
@@ -6582,9 +6582,9 @@ address,size,name,callers,status
 0x686c20,30,DeletingDestructor,2,rewritten
 0x686c40,18,Destructor::TablesThenBase,1,rewritten
 0x686c70,855,,1,documented
-0x686fd0,257,,1,documented
+0x686fd0,257,Destructor::Steps,1,rewritten
 0x687100,555,,1,documented
-0x687350,120,,1,documented
+0x687350,120,Destructor::Steps,1,rewritten
 0x6873d0,175,,3,documented
 0x687480,479,Window::Construct,1,rewritten
 0x6876a0,30,DeletingDestructor,2,rewritten
@@ -6624,7 +6624,7 @@ address,size,name,callers,status
 0x68c930,977,,13,documented
 0x68cd80,540,Window::Titled,37,rewritten
 0x68cfc0,30,DeletingDestructor,2,rewritten
-0x68d010,100,,1,documented
+0x68d010,100,Destructor::Steps,1,rewritten
 0x68d090,261,,1,documented
 0x68d1b0,30,DeletingDestructor,2,rewritten
 0x68d1d0,216,,1,documented
@@ -6790,7 +6790,7 @@ address,size,name,callers,status
 0x69f420,220,,6,documented
 0x69f500,111,Holder::Destroy69F500,4,rewritten
 0x69f570,135,,4,documented
-0x69f600,204,,17,documented
+0x69f600,204,Destructor::Steps,17,rewritten
 0x69f710,1261,,66,documented
 0x69fc00,30,DeletingDestructor,2,rewritten
 0x69fc20,518,Window::Titled,1,rewritten
@@ -6837,7 +6837,7 @@ address,size,name,callers,status
 0x6a2930,192,,2,documented
 0x6a29f0,95,,18,documented
 0x6a2a50,30,DeletingDestructor,2,rewritten
-0x6a2ab0,126,,5,documented
+0x6a2ab0,126,Destructor::Steps,5,rewritten
 0x6a2b80,40,,65,documented
 0x6a2bb0,40,,7,documented
 0x6a2be0,46,,4,documented
@@ -7079,7 +7079,7 @@ address,size,name,callers,status
 0x6b2d00,87,,1,documented
 0x6b2d70,23,,4,documented
 0x6b2d90,27,GlobalCleanup,1,rewritten
-0x6b2db0,127,,19,documented
+0x6b2db0,127,Destructor::Steps,19,rewritten
 0x6b2fc0,45,,4,documented
 0x6b2ff0,348,,9,documented
 0x6b3190,342,,151,documented
@@ -7112,7 +7112,7 @@ address,size,name,callers,status
 0x6b5800,178,,1,documented
 0x6b58c0,29,,3,documented
 0x6b5920,48,QueryInterface,3,rewritten
-0x6b5a60,146,,1,documented
+0x6b5a60,146,Destructor::Steps,1,rewritten
 0x6b5b90,375,,2,documented
 0x6b5d10,425,,2,documented
 0x6b5f40,66,,0,documented
@@ -7268,7 +7268,7 @@ address,size,name,callers,status
 0x6c6150,107,Thing::New6C6150,1,rewritten
 0x6c61c0,30,DeletingDestructor,2,rewritten
 0x6c61e0,1043,,1,documented
-0x6c6650,279,MEMBER_DTOR,1,documented
+0x6c6650,279,Destructor::Steps,1,rewritten
 0x6c6770,6,,2,documented
 0x6c67c0,148,,1,documented
 0x6c6860,6,,2,documented
@@ -7905,7 +7905,7 @@ address,size,name,callers,status
 0x6ff1c0,30,DeletingDestructor,2,rewritten
 0x6ff1e0,158,,1,documented
 0x6ff280,30,DeletingDestructor,2,rewritten
-0x6ff2a0,124,,1,documented
+0x6ff2a0,124,Destructor::Steps,1,rewritten
 0x6ff360,529,,0,documented
 0x6ff580,161,GameText::Copy,1,rewritten
 0x6ff630,557,,1,documented
@@ -8133,7 +8133,7 @@ address,size,name,callers,status
 0x718370,917,,1,documented
 0x718760,64,,1,documented
 0x7187a0,1108,,1,documented
-0x718c60,291,,1,documented
+0x718c60,291,Destructor::Steps,1,rewritten
 0x718d90,75,,3,documented
 0x718f10,30,DeletingDestructor,2,rewritten
 0x719080,977,,1,documented
@@ -8152,7 +8152,7 @@ address,size,name,callers,status
 0x71a270,108,,7,documented
 0x71a2e0,718,,1,documented
 0x71a5b0,591,,2,documented
-0x71a830,96,,1,documented
+0x71a830,96,Destructor::Steps,1,rewritten
 0x71a890,30,DeletingDestructor,2,rewritten
 0x71a8d0,48,QueryInterface,3,rewritten
 0x71a900,48,QueryInterface,4,rewritten
@@ -8767,7 +8767,7 @@ address,size,name,callers,status
 0x7533d0,76,Destructor::MemberThenBase,2,rewritten
 0x753420,30,DeletingDestructor,0,rewritten
 0x753440,73,,0,documented
-0x753490,104,,2,documented
+0x753490,104,Destructor::Steps,2,rewritten
 0x7535a0,64,,2,documented
 0x7535e0,65,,1,documented
 0x753630,309,,2,documented
@@ -9255,7 +9255,7 @@ address,size,name,callers,status
 0x7894e0,182,,2,documented
 0x7895a0,572,,4,documented
 0x7897e0,799,,2,documented
-0x789b00,179,,1,documented
+0x789b00,179,Destructor::Steps,1,rewritten
 0x789be0,182,,0,documented
 0x789ca0,379,,3,documented
 0x789e20,963,,1,documented
@@ -9275,7 +9275,7 @@ address,size,name,callers,status
 0x78b640,257,,1,documented
 0x78b750,6,,2,documented
 0x78b760,342,,12,documented
-0x78b8d0,143,,1,documented
+0x78b8d0,143,Destructor::Steps,1,rewritten
 0x78b970,157,,1,documented
 0x78ba20,179,,1,documented
 0x78baf0,28,Destructor::TablesThenBase,1,rewritten
@@ -9288,7 +9288,7 @@ address,size,name,callers,status
 0x78c170,30,DeletingDestructor,2,rewritten
 0x78c190,30,DeletingDestructor,2,rewritten
 0x78c1b0,30,DeletingDestructor,2,rewritten
-0x78c360,242,,22,documented
+0x78c360,242,Destructor::Steps,22,rewritten
 0x78c4c0,206,,1,documented
 0x78c5f0,206,,1,documented
 0x78c720,206,,1,documented
@@ -9401,7 +9401,7 @@ address,size,name,callers,status
 0x79adf0,49,,1,documented
 0x79ae90,129,,1,documented
 0x79af30,30,DeletingDestructor,2,rewritten
-0x79af50,127,,1,documented
+0x79af50,127,Destructor::Steps,1,rewritten
 0x79b090,26,Object::Forward2,1,rewritten
 0x79b310,30,DeletingDestructor,1,rewritten
 0x79b330,7,BaseClass::SetClass,1,rewritten
@@ -9590,7 +9590,7 @@ address,size,name,callers,status
 0x7ae680,107,,12,documented
 0x7ae6f0,358,,1,documented
 0x7ae890,89,,1,documented
-0x7ae900,117,,1,documented
+0x7ae900,117,Destructor::Steps,1,rewritten
 0x7ae980,27,,0,documented
 0x7ae9b0,30,DeletingDestructor,2,rewritten
 0x7ae9d0,41,,1,documented
@@ -10119,7 +10119,7 @@ address,size,name,callers,status
 0x7e9dd0,251,,2,documented
 0x7e9ee0,34,,9,documented
 0x7e9f10,243,,1,documented
-0x7ea0f0,34,,2,documented
+0x7ea0f0,34,Destructor::Steps,2,rewritten
 0x7ea150,30,DeletingDestructor,0,rewritten
 0x7ea170,30,DeletingDestructor,0,rewritten
 0x7ea190,43,,1,documented
@@ -10207,7 +10207,7 @@ address,size,name,callers,status
 0x7f2ed0,30,DeletingDestructor,2,rewritten
 0x7f2f00,849,,1,documented
 0x7f3260,4497,,1,documented
-0x7f4420,118,,1,documented
+0x7f4420,118,Destructor::Steps,1,rewritten
 0x7f4520,30,DeletingDestructor,2,rewritten
 0x7f4540,629,,1,documented
 0x7f4810,214,,1,documented
@@ -10678,7 +10678,7 @@ address,size,name,callers,status
 0x813e00,401,,1,documented
 0x813fc0,501,Window::Titled,9,rewritten
 0x8141f0,30,DeletingDestructor,2,rewritten
-0x814240,166,,1,documented
+0x814240,166,Destructor::Steps,1,rewritten
 0x814420,35,,1,documented
 0x814460,30,DeletingDestructor,2,rewritten
 0x814480,725,,1,documented
@@ -10917,7 +10917,7 @@ address,size,name,callers,status
 0x8252d0,582,,1,documented
 0x825530,173,,1,documented
 0x8255e0,30,DeletingDestructor,2,rewritten
-0x825600,147,,1,documented
+0x825600,147,Destructor::Steps,1,rewritten
 0x8256b0,30,DeletingDestructor,2,rewritten
 0x8256d0,167,,1,documented
 0x825780,597,,1,documented
@@ -11737,7 +11737,7 @@ address,size,name,callers,status
 0x86eee0,121,,1,documented
 0x86ef60,239,,2,documented
 0x86f050,651,,4,documented
-0x86f310,106,,7,documented
+0x86f310,106,Destructor::Steps,7,rewritten
 0x86f380,95,Factory::CreateWith,1,rewritten
 0x86f3e0,417,,1,documented
 0x86f590,30,DeletingDestructor,2,rewritten
@@ -11751,7 +11751,7 @@ address,size,name,callers,status
 0x86fc10,38,,1,documented
 0x86fc40,51,,2,documented
 0x86fc80,30,DeletingDestructor,1,rewritten
-0x86fcc0,118,,1,documented
+0x86fcc0,118,Destructor::Steps,1,rewritten
 0x86fd70,115,,1,documented
 0x86fdf0,101,,1,documented
 0x86fe60,86,,0,documented
@@ -11775,7 +11775,7 @@ address,size,name,callers,status
 0x871940,304,,2,documented
 0x871a70,30,DeletingDestructor,0,rewritten
 0x871a90,108,,1,documented
-0x871b00,124,,1,documented
+0x871b00,124,Destructor::Steps,1,rewritten
 0x871b80,30,DeletingDestructor,2,rewritten
 0x871cb0,522,,1,documented
 0x871f20,223,,1,documented
@@ -11794,7 +11794,7 @@ address,size,name,callers,status
 0x874a50,30,DeletingDestructor,3,rewritten
 0x874aa0,40,Text::Widen,0,rewritten
 0x874c30,27,GlobalCleanup,1,rewritten
-0x874c60,128,,1,documented
+0x874c60,128,Destructor::Steps,1,rewritten
 0x874cf0,155,,8,documented
 0x874d90,161,Grid::Mark874D90,1,rewritten
 0x874e40,161,Grid::Mark874D90,2,rewritten
@@ -11945,12 +11945,12 @@ address,size,name,callers,status
 0x884680,82,,9,documented
 0x8847a0,233,,2,documented
 0x884890,120,,2,documented
-0x884910,141,,1,documented
+0x884910,141,Destructor::Steps,1,rewritten
 0x8849b0,284,,5,documented
 0x884ae0,86,,1,documented
 0x884b50,65,,2,documented
 0x884d20,565,,2,documented
-0x885050,141,,1,documented
+0x885050,141,Destructor::Steps,1,rewritten
 0x8850f0,233,,4,documented
 0x8851e0,202,,1,documented
 0x8852d0,65,,2,documented
@@ -11959,7 +11959,7 @@ address,size,name,callers,status
 0x885a40,73,,1,documented
 0x885ad0,429,,2,documented
 0x885c80,229,,2,documented
-0x885ec0,179,,1,documented
+0x885ec0,179,Destructor::Steps,1,rewritten
 0x886090,30,DeletingDestructor,2,rewritten
 0x8860b0,30,DeletingDestructor,2,rewritten
 0x8860d0,30,DeletingDestructor,2,rewritten
@@ -12090,7 +12090,7 @@ address,size,name,callers,status
 0x8ae3c0,26,OwnedPointer::Reset,0,rewritten
 0x8ae3e0,139,Array<8>::SetCapacity,1,rewritten
 0x8ae4b0,28,Object::FreeField,2,rewritten
-0x8ae4d0,119,,1,documented
+0x8ae4d0,119,Destructor::Steps,1,rewritten
 0x8ae570,684,,1,documented
 0x8ae830,1308,,5,documented
 0x8aed60,151,,2,documented
@@ -12179,7 +12179,7 @@ address,size,name,callers,status
 0x8b56f0,26,OwnedPointer::Reset,1,rewritten
 0x8b5760,139,,0,documented
 0x8b57f0,31,,0,documented
-0x8b5810,82,,3,documented
+0x8b5810,82,Destructor::Steps,3,rewritten
 0x8b5880,568,,1,documented
 0x8b5ac0,270,,0,documented
 0x8b5bd0,240,,0,documented
@@ -12420,7 +12420,7 @@ address,size,name,callers,status
 0x8da8d0,172,,1,documented
 0x8da980,707,,1,documented
 0x8dac50,59,,2,documented
-0x8db030,22,,2,documented
+0x8db030,22,Destructor::Steps,2,rewritten
 0x8db050,1083,,1,documented
 0x8db530,403,,6,documented
 0x8db6d0,7,SetTable,1,rewritten
@@ -12917,7 +12917,7 @@ address,size,name,callers,status
 0x916520,82,,1,documented
 0x916580,156,,1,documented
 0x916620,938,,1,documented
-0x916a30,108,,1,documented
+0x916a30,108,Destructor::Steps,1,rewritten
 0x916b20,30,DeletingDestructor,2,rewritten
 0x916b40,1715,,1,documented
 0x917210,527,,1,documented
@@ -13424,7 +13424,7 @@ address,size,name,callers,status
 0x963910,1200,,0,documented
 0x963e20,28,,1,documented
 0x963e50,36,OwnedPair::Free,2,rewritten
-0x963f10,132,,1,documented
+0x963f10,132,Destructor::Steps,1,rewritten
 0x963fa0,332,,4,documented
 0x9640f0,1237,,2,documented
 0x9645d0,728,,1,documented
@@ -13466,7 +13466,7 @@ address,size,name,callers,status
 0x966450,9,Object::SetFields,2,rewritten
 0x966460,7,SetTable,6,rewritten
 0x9664b0,88,,1,documented
-0x966510,177,,1,documented
+0x966510,177,Destructor::Steps,1,rewritten
 0x966830,99,,0,documented
 0x9668d0,41,,0,documented
 0x966920,433,,0,documented
@@ -13491,7 +13491,7 @@ address,size,name,callers,status
 0x968000,181,Registered::Make968000,0,rewritten
 0x9680c0,30,DeletingDestructor,2,rewritten
 0x9680e0,119,,2,documented
-0x968160,111,,1,documented
+0x968160,111,Destructor::Steps,1,rewritten
 0x9681d0,187,,0,documented
 0x968290,214,,1,documented
 0x968370,472,,1,documented
@@ -13709,7 +13709,7 @@ address,size,name,callers,status
 0x9782b0,181,Registered::Make968000,0,rewritten
 0x978370,403,,1,documented
 0x978510,534,,1,documented
-0x978740,120,,1,documented
+0x978740,120,Destructor::Steps,1,rewritten
 0x978810,136,,2,documented
 0x9788a0,197,,2,documented
 0x978970,1005,,2,documented
@@ -13917,7 +13917,7 @@ address,size,name,callers,status
 0x9888f0,17,,7,documented
 0x988910,158,,1,documented
 0x988a40,17,,1,documented
-0x988a60,118,,1,documented
+0x988a60,118,Destructor::Steps,1,rewritten
 0x988f60,93,,2,documented
 0x989020,30,DeletingDestructor,2,rewritten
 0x989040,7,SetTable,1,rewritten
@@ -14084,12 +14084,12 @@ address,size,name,callers,status
 0x9965e0,116,,3,documented
 0x996680,74,,0,documented
 0x9966f0,30,DeletingDestructor,3,rewritten
-0x996710,118,,1,documented
+0x996710,118,Destructor::Steps,1,rewritten
 0x996790,3080,,1,documented
 0x9973d0,71,,0,documented
 0x997450,47,,2,documented
 0x997690,287,,1,documented
-0x997800,118,,1,documented
+0x997800,118,Destructor::Steps,1,rewritten
 0x9978a0,170,,2,documented
 0x997a30,797,,1,documented
 0x997d60,30,DeletingDestructor,4,rewritten
@@ -14104,7 +14104,7 @@ address,size,name,callers,status
 0x999310,1860,,1,documented
 0x999a60,90,CachedInterface,1,rewritten
 0x999ac0,1148,,1,documented
-0x999f90,225,,1,documented
+0x999f90,225,Destructor::Steps,1,rewritten
 0x99a080,456,,3,documented
 0x99a250,22,,5,documented
 0x99a270,1200,,1,documented
@@ -14180,10 +14180,10 @@ address,size,name,callers,status
 0x99fff0,162,ObjectRef::CallWith,5,rewritten
 0x9a00a0,224,,1,documented
 0x9a0220,30,DeletingDestructor,3,rewritten
-0x9a0240,167,,1,documented
+0x9a0240,167,Destructor::Steps,1,rewritten
 0x9a02f0,224,,1,documented
 0x9a0470,30,DeletingDestructor,3,rewritten
-0x9a0490,167,,1,documented
+0x9a0490,167,Destructor::Steps,1,rewritten
 0x9a0540,110,,1,documented
 0x9a05b0,39,,1,documented
 0x9a05e0,1226,,1,documented
@@ -14243,7 +14243,7 @@ address,size,name,callers,status
 0x9a6ff0,46,,1,documented
 0x9a7020,61,Reference::Reference,0,rewritten
 0x9a7060,30,DeletingDestructor,2,rewritten
-0x9a7080,127,,1,documented
+0x9a7080,127,Destructor::Steps,1,rewritten
 0x9a7100,1818,,1,documented
 0x9a7820,30,DeletingDestructor,2,rewritten
 0x9a7840,722,,1,documented
@@ -14278,7 +14278,7 @@ address,size,name,callers,status
 0x9aabb0,196,,1,documented
 0x9aac90,43,,1,documented
 0x9aacf0,30,DeletingDestructor,2,rewritten
-0x9aad10,181,,1,documented
+0x9aad10,181,Destructor::Steps,1,rewritten
 0x9aadd0,1265,,3,documented
 0x9ab320,30,DeletingDestructor,2,rewritten
 0x9ab340,113,Destructor::DeleteTwoMembers,1,rewritten
@@ -14633,7 +14633,7 @@ address,size,name,callers,status
 0x9d11b0,263,,2,documented
 0x9d12c0,103,,1,documented
 0x9d1340,36,SharedBuffer::Release,1,rewritten
-0x9d1370,117,,2,documented
+0x9d1370,117,Destructor::Steps,2,rewritten
 0x9d13f0,169,,1,documented
 0x9d1570,16,Object::AllocStore,0,rewritten
 0x9d1580,4269,,2,documented
@@ -14923,7 +14923,7 @@ address,size,name,callers,status
 0x9ec740,114,,1,documented
 0x9ec7f0,7,SetTable,2,rewritten
 0x9ec800,30,DeletingDestructor,1,rewritten
-0x9ec820,95,,1,documented
+0x9ec820,95,Destructor::Steps,1,rewritten
 0x9ec890,30,DeletingDestructor,1,rewritten
 0x9ec8b0,637,,3,documented
 0x9ecb30,274,,1,documented
@@ -15011,7 +15011,7 @@ address,size,name,callers,status
 0x9f6760,30,DeletingDestructor,2,rewritten
 0x9f6780,38,Destructor::TablesThenBase,1,rewritten
 0x9f67c0,195,,1,documented
-0x9f6890,132,,1,documented
+0x9f6890,132,Destructor::Steps,1,rewritten
 0x9f6920,487,,4,documented
 0x9f6b10,30,DeletingDestructor,2,rewritten
 0x9f6b50,28,Destructor::TablesThenBase,1,rewritten
@@ -15027,7 +15027,7 @@ address,size,name,callers,status
 0x9f7370,621,,2,documented
 0x9f75f0,541,Firework::Quad,2,rewritten
 0x9f7820,36,OwnedPair::Free,1,rewritten
-0x9f78d0,122,,1,documented
+0x9f78d0,122,Destructor::Steps,1,rewritten
 0x9f7970,37,,1,documented
 0x9f79a0,21,,1,documented
 0x9f79c0,43,,1,documented
@@ -15177,7 +15177,7 @@ address,size,name,callers,status
 0xa04da0,520,Window::Titled,2,rewritten
 0xa04fd0,30,DeletingDestructor,2,rewritten
 0xa050b0,30,DeletingDestructor,2,rewritten
-0xa050f0,100,,1,documented
+0xa050f0,100,Destructor::Steps,1,rewritten
 0xa051a0,30,DeletingDestructor,2,rewritten
 0xa051c0,253,,1,documented
 0xa052e0,463,,1,documented
@@ -15220,7 +15220,7 @@ address,size,name,callers,status
 0xa08a70,218,,1,documented
 0xa08ba0,30,DeletingDestructor,2,rewritten
 0xa08bc0,929,,1,documented
-0xa08fa0,107,,1,documented
+0xa08fa0,107,Destructor::Steps,1,rewritten
 0xa090b0,30,DeletingDestructor,2,rewritten
 0xa090f0,367,,1,documented
 0xa09260,30,DeletingDestructor,2,rewritten
@@ -15244,7 +15244,7 @@ address,size,name,callers,status
 0xa0acb0,361,,1,documented
 0xa0ae40,30,DeletingDestructor,0,rewritten
 0xa0ae70,88,,0,documented
-0xa0aee0,83,,1,documented
+0xa0aee0,83,Destructor::Steps,1,rewritten
 0xa0af40,438,NamedTextRef::NamedTextRef,15,rewritten
 0xa0b100,30,DeletingDestructor,0,rewritten
 0xa0b120,123,,1,documented
@@ -15483,7 +15483,7 @@ address,size,name,callers,status
 0xa1fa60,40,Text::Widen,0,rewritten
 0xa1faf0,67,,1,documented
 0xa1fb70,67,,1,documented
-0xa1fbc0,439,,1,documented
+0xa1fbc0,439,Destructor::Steps,1,rewritten
 0xa1fd80,6,,2,documented
 0xa1fdb0,2875,,1,documented
 0xa20930,30,,1,documented
@@ -15499,7 +15499,7 @@ address,size,name,callers,status
 0xa213a0,71,,0,documented
 0xa21410,125,Three::Destroy623BC0,1,rewritten
 0xa21490,506,,2,documented
-0xa21690,225,,1,documented
+0xa21690,225,Destructor::Steps,1,rewritten
 0xa217a0,617,Window::Titled,1,rewritten
 0xa21a40,71,,0,documented
 0xa21ab0,125,Three::Destroy623BC0,1,rewritten
@@ -15532,7 +15532,7 @@ address,size,name,callers,status
 0xa26270,182,,1,documented
 0xa26330,677,,1,documented
 0xa26780,201,,2,documented
-0xa26850,219,,1,documented
+0xa26850,219,Destructor::Steps,1,rewritten
 0xa26970,1068,,1,documented
 0xa26da0,801,,1,documented
 0xa270d0,30,DeletingDestructor,2,rewritten
@@ -15572,7 +15572,7 @@ address,size,name,callers,status
 0xa29e10,105,Factory::Create,1,rewritten
 0xa29e80,616,,1,documented
 0xa2a190,27,GlobalCleanup,1,rewritten
-0xa2a1b0,79,,1,documented
+0xa2a1b0,79,Destructor::Steps,1,rewritten
 0xa2a200,92,,3,documented
 0xa2a2a0,30,DeletingDestructor,0,rewritten
 0xa2a2d0,104,,1,documented
@@ -15955,7 +15955,7 @@ address,size,name,callers,status
 0xa56380,547,,1,documented
 0xa565d0,802,,3,documented
 0xa56900,234,,2,documented
-0xa56a00,252,,1,documented
+0xa56a00,252,Destructor::Steps,1,rewritten
 0xa56b30,82,,1,documented
 0xa56bd0,114,WideText::CopyOf,1,rewritten
 0xa56ca0,30,DeletingDestructor,1,rewritten
@@ -16588,7 +16588,7 @@ address,size,name,callers,status
 0xa9ac20,964,,1,documented
 0xa9b800,334,,4,documented
 0xa9b950,1444,,5,documented
-0xa9bf00,243,,1,documented
+0xa9bf00,243,Destructor::Steps,1,rewritten
 0xa9c040,2238,,1,documented
 0xa9c910,127,,2,documented
 0xa9c990,30,DeletingDestructor,2,rewritten
@@ -16772,7 +16772,7 @@ address,size,name,callers,status
 0xaabdf0,784,,2,documented
 0xaac130,533,,1,documented
 0xaac350,574,,1,documented
-0xaac5c0,175,,1,documented
+0xaac5c0,175,Destructor::Steps,1,rewritten
 0xaac670,1307,,2,documented
 0xaacbd0,30,DeletingDestructor,2,rewritten
 0xaacec0,93,,3,documented
@@ -17052,12 +17052,12 @@ address,size,name,callers,status
 0xac7b20,192,,2,documented
 0xac7c00,75,,2,documented
 0xac7d90,88,Owned::DeleteAllA40680,2,rewritten
-0xac7eb0,158,,7,documented
+0xac7eb0,158,Destructor::Steps,7,rewritten
 0xac7fb0,71,,0,documented
 0xac8020,30,DeletingDestructor,3,rewritten
 0xac8060,663,,2,documented
 0xac8300,761,,8,documented
-0xac8620,180,,4,documented
+0xac8620,180,Destructor::Steps,4,rewritten
 0xac86e0,544,,2,documented
 0xac8900,294,,11,documented
 0xac8a30,612,,1,documented
@@ -17341,7 +17341,7 @@ address,size,name,callers,status
 0xaecb40,30,DeletingDestructor,3,rewritten
 0xaecb60,78,,2,documented
 0xaecbb0,57,Children::EachAD1350,2,rewritten
-0xaed6a0,302,,1,documented
+0xaed6a0,302,Destructor::Steps,1,rewritten
 0xaed820,5931,,2,documented
 0xaef020,1999,,2,documented
 0xaef7f0,30,DeletingDestructor,3,rewritten
@@ -17542,11 +17542,11 @@ address,size,name,callers,status
 0xb07010,150,Record::Fields,2,rewritten
 0xb070d0,87,,1,documented
 0xb071b0,30,DeletingDestructor,2,rewritten
-0xb071f0,179,MEMBER_DTOR,1,documented
+0xb071f0,179,Destructor::Steps,1,rewritten
 0xb07390,30,DeletingDestructor,2,rewritten
 0xb073b0,114,Text::FromField6AADE0,1,rewritten
 0xb07430,30,DeletingDestructor,3,rewritten
-0xb07460,241,,1,documented
+0xb07460,241,Destructor::Steps,1,rewritten
 0xb07610,67,Reference::Reference(object),0,rewritten
 0xb07670,3595,,1,documented
 0xb08480,30,DeletingDestructor,2,rewritten
@@ -17951,7 +17951,7 @@ address,size,name,callers,status
 0xb30a40,1262,,1,documented
 0xb30f30,1112,,4,documented
 0xb313b0,30,DeletingDestructor,2,rewritten
-0xb313d0,111,,1,documented
+0xb313d0,111,Destructor::Steps,1,rewritten
 0xb31440,1506,,1,documented
 0xb31a40,105,Factory::Create,1,rewritten
 0xb31ab0,105,Factory::Create,1,rewritten
@@ -18225,7 +18225,7 @@ address,size,name,callers,status
 0xb4cf30,30,DeletingDestructor,2,rewritten
 0xb4cf50,30,DeletingDestructor,2,rewritten
 0xb4cf70,30,DeletingDestructor,2,rewritten
-0xb4cfe0,323,MEMBER_DTOR,1,documented
+0xb4cfe0,323,Destructor::Steps,1,rewritten
 0xb4d1c0,107,Factory::CreateFromFields,0,rewritten
 0xb4d270,107,Factory::CreateFromFields,0,rewritten
 0xb4d3d0,30,DeletingDestructor,2,rewritten
@@ -18255,7 +18255,7 @@ address,size,name,callers,status
 0xb51ad0,1708,,3,documented
 0xb52180,164,,1,documented
 0xb522e0,786,,1,documented
-0xb52630,113,,1,documented
+0xb52630,113,Destructor::Steps,1,rewritten
 0xb526b0,755,,1,documented
 0xb529b0,447,,2,documented
 0xb52b70,377,,1,documented
@@ -18349,7 +18349,7 @@ address,size,name,callers,status
 0xb59d90,70,,1,documented
 0xb59de0,980,,1,documented
 0xb5a1e0,1367,,3,documented
-0xb5a760,141,,1,documented
+0xb5a760,141,Destructor::Steps,1,rewritten
 0xb5a840,367,,2,documented
 0xb5a9b0,545,,2,documented
 0xb5aca0,727,,3,documented
@@ -18489,7 +18489,7 @@ address,size,name,callers,status
 0xb6b650,31,,4,documented
 0xb6b670,44,,2,documented
 0xb6b6e0,39,,1,documented
-0xb6b710,118,,1,documented
+0xb6b710,118,Destructor::Steps,1,rewritten
 0xb6b7b0,36,OwnedPair::Free,2,rewritten
 0xb6b880,53,Grid::MarkUp,5,rewritten
 0xb6b900,79,Slots::Free,2,rewritten
@@ -18795,7 +18795,7 @@ address,size,name,callers,status
 0xb84db0,78,Destructor::MemberThenBaseNullSafe,1,rewritten
 0xb84e00,396,,1,documented
 0xb84f90,431,,0,documented
-0xb85140,67,,3,documented
+0xb85140,67,Destructor::Steps,3,rewritten
 0xb85190,30,DeletingDestructor,1,rewritten
 0xb851b0,393,,1,documented
 0xb85370,48,QueryInterface,0,rewritten
@@ -18933,7 +18933,7 @@ address,size,name,callers,status
 0xb8f8d0,30,DeletingDestructor,2,rewritten
 0xb8f8f0,30,DeletingDestructor,3,rewritten
 0xb90900,190,,1,documented
-0xb909e0,145,,1,documented
+0xb909e0,145,Destructor::Steps,1,rewritten
 0xb90ab0,145,,1,documented
 0xb90b50,237,,2,documented
 0xb90c40,34,,1,documented
@@ -18941,7 +18941,7 @@ address,size,name,callers,status
 0xb90d10,30,DeletingDestructor,2,rewritten
 0xb90d30,558,,1,documented
 0xb90f70,27,GlobalCleanup,1,rewritten
-0xb90f90,104,,1,documented
+0xb90f90,104,Destructor::Steps,1,rewritten
 0xb91060,30,DeletingDestructor,1,rewritten
 0xb91120,237,,1,documented
 0xb91210,48,OwnedList::Delete4CCDB0,2,rewritten
@@ -19011,7 +19011,7 @@ address,size,name,callers,status
 0xb963f0,952,,1,documented
 0xb967c0,30,DeletingDestructor,2,rewritten
 0xb967e0,44,,1,documented
-0xb96810,14,,1,documented
+0xb96810,14,Destructor::Steps,1,rewritten
 0xb96820,1484,,1,documented
 0xb96e10,174,,1,documented
 0xb96ed0,30,DeletingDestructor,1,rewritten
@@ -19212,7 +19212,7 @@ address,size,name,callers,status
 0xba8db0,71,Cached::PassA80240,1,rewritten
 0xba8e00,159,,1,documented
 0xba90e0,30,DeletingDestructor,2,rewritten
-0xba9100,170,,1,documented
+0xba9100,170,Destructor::Steps,1,rewritten
 0xba91b0,30,DeletingDestructor,2,rewritten
 0xba9290,25,,1,documented
 0xba92f0,87,,1,documented
@@ -19453,7 +19453,7 @@ address,size,name,callers,status
 0xbbcfa0,121,,1,documented
 0xbbd020,63,,1,documented
 0xbbd090,109,,1,documented
-0xbbd100,58,,2,documented
+0xbbd100,58,Destructor::Steps,2,rewritten
 0xbbd140,159,,1,documented
 0xbbd200,12,,2,documented
 0xbbd210,123,,1,documented
@@ -19503,7 +19503,7 @@ address,size,name,callers,status
 0xbbf690,7,SetTable,1,rewritten
 0xbbf6a0,351,ResourceType::ResourceType,1,rewritten
 0xbbf800,30,DeletingDestructor,1,rewritten
-0xbbf840,14,,2,documented
+0xbbf840,14,Destructor::Steps,2,rewritten
 0xbbf8a0,145,Values::Map,1,rewritten
 0xbbf9b0,52,,1,documented
 0xbbf9f0,39,Kind::Lookup5BD960,1,rewritten
@@ -21152,7 +21152,7 @@ address,size,name,callers,status
 0xc32b10,30,DeletingDestructor,1,rewritten
 0xc32b40,81,,1,documented
 0xc32ba0,66,,1,documented
-0xc32c00,79,,1,documented
+0xc32c00,79,Destructor::Steps,1,rewritten
 0xc32c60,121,,1,documented
 0xc32e80,82,,6,documented
 0xc32ee0,30,Object::CountList,2,rewritten
@@ -21488,7 +21488,7 @@ address,size,name,callers,status
 0xc4f0e0,405,,2,documented
 0xc4f280,766,,1,documented
 0xc4f590,621,,1,documented
-0xc4f800,298,,1,documented
+0xc4f800,298,Destructor::Steps,1,rewritten
 0xc4f930,30,DeletingDestructor,1,rewritten
 0xc4f9f0,40,,0,documented
 0xc4fad0,35,,0,documented
@@ -21608,8 +21608,8 @@ address,size,name,callers,status
 0xc57e00,11,,1,documented
 0xc57e10,38,,1,documented
 0xc57e40,147,,1,documented
-0xc57f20,95,,1,documented
-0xc57ff0,106,,1,documented
+0xc57f20,95,Destructor::Steps,1,rewritten
+0xc57ff0,106,Destructor::Steps,1,rewritten
 0xc58060,68,,11,documented
 0xc580b0,361,,2,documented
 0xc58220,155,,2,documented
@@ -21631,7 +21631,7 @@ address,size,name,callers,status
 0xc59620,117,Built::MakeC595A0,1,rewritten
 0xc59ab0,890,,1,documented
 0xc59e30,30,DeletingDestructor,1,rewritten
-0xc59e50,176,,1,documented
+0xc59e50,176,Destructor::Steps,1,rewritten
 0xc59f00,114,Maker::MakeC59F00,1,rewritten
 0xc5a0e0,259,,0,documented
 0xc5a1f0,929,,10,documented
@@ -21802,13 +21802,13 @@ address,size,name,callers,status
 0xc66380,55,,3,documented
 0xc66410,183,,1,documented
 0xc664d0,55,,1,documented
-0xc66560,89,,4,documented
+0xc66560,89,Destructor::Steps,4,rewritten
 0xc66730,387,,2,documented
 0xc668c0,224,,1,documented
 0xc669a0,48,,2,documented
 0xc669e0,135,,3,documented
 0xc66a70,269,,0,documented
-0xc66b90,160,,1,documented
+0xc66b90,160,Destructor::Steps,1,rewritten
 0xc66c30,153,,0,documented
 0xc66cd0,81,,43,documented
 0xc66d30,96,,19,documented
@@ -21828,11 +21828,11 @@ address,size,name,callers,status
 0xc67cf0,388,,1,documented
 0xc67e80,57,,1,documented
 0xc686c0,262,,13,documented
-0xc687e0,141,,1,documented
+0xc687e0,141,Destructor::Steps,1,rewritten
 0xc68870,1283,,1,documented
 0xc68d80,440,,1,documented
 0xc68fd0,133,,1,documented
-0xc690b0,93,,4,documented
+0xc690b0,93,Destructor::Steps,4,rewritten
 0xc69190,561,,0,documented
 0xc693d0,120,,3,documented
 0xc69450,92,,1,documented
@@ -22096,7 +22096,7 @@ address,size,name,callers,status
 0xca22a0,98,,1,documented
 0xca2400,27,,1,documented
 0xca24b0,30,DeletingDestructor,1,rewritten
-0xca24d0,20,,1,documented
+0xca24d0,20,Destructor::Steps,1,rewritten
 0xca24f0,56,,9,documented
 0xca2530,30,DeletingDestructor,1,rewritten
 0xca2550,181,,4,documented
@@ -22165,7 +22165,7 @@ address,size,name,callers,status
 0xca4350,28,DeletingDestructor(memberfree),1,rewritten
 0xca4370,40,Chained::Destroy,1,rewritten
 0xca43a0,23,Object::SetFields,3,rewritten
-0xca43c0,81,,12,documented
+0xca43c0,81,Destructor::Steps,12,rewritten
 0xca4420,59,,3,documented
 0xca4460,30,DeletingDestructor,0,rewritten
 0xca4480,100,,1,documented
@@ -22381,7 +22381,7 @@ address,size,name,callers,status
 0xcb29a0,91,Array::Reserve,3,rewritten
 0xcb2a00,81,,2,documented
 0xcb2a60,16,Object::AllocStore,1,rewritten
-0xcb2a70,101,,1,documented
+0xcb2a70,101,Destructor::Steps,1,rewritten
 0xcb2b00,32,Object::ArrayPush,0,rewritten
 0xcb2b20,32,Object::ArrayPush,0,rewritten
 0xcb2b40,44,Pairs::AddCB2B40,0,rewritten
@@ -22870,7 +22870,7 @@ address,size,name,callers,status
 0xcd8170,13,,1,documented
 0xcd81f0,86,,1,documented
 0xcd8260,57,,3,documented
-0xcd83b0,209,,3,documented
+0xcd83b0,209,Destructor::Steps,3,rewritten
 0xcd84c0,89,,2,documented
 0xcd8520,428,,5,documented
 0xcd87a0,308,,3,documented
