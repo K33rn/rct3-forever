@@ -705,6 +705,34 @@ static void *__thiscall dev_state(void *self, void *device) { dev_note(14, (uint
 static void __thiscall dev_pass_shaders(void *self) { dev_note(15, (uint32_t)(uintptr_t)self); }
 static void __thiscall dev_clear(void *self, uint32_t a) { dev_note(16, (uint32_t)(uintptr_t)self); dev_note(16, a); }
 
+// Cheats::Init: its stand-ins (using the device test's running sum, call count and memory). The texts are {count, ...,
+// buffer}: the first comes back with a count of 1; the join gives a new text with a count of 1 and sometimes leaves
+// another holder on the first; the entry's constructor takes its name by value and usually lets it go again.
+static void *__cdecl cheat_alloc(uint32_t size) {   // an entry (0x54 bytes) sometimes can't be had
+    dev_note(30, size);
+    return size == 0x54 && dev_next() % 6 == 0 ? nullptr : dev_take(size);
+}
+static void __cdecl cheat_free_aligned(void *p) { dev_note(31, (uint32_t)(uintptr_t)p); }
+static void __cdecl cheat_free(void *p) { dev_note(32, (uint32_t)(uintptr_t)p); }
+static void *__thiscall cheat_text(uint32_t *self, const char *from) {
+    dev_note(33, (uint32_t)(uintptr_t)self); dev_note(33, (uint32_t)(uintptr_t)from);
+    self[0] = 1, self[3] = 0xb0000000u | (uint32_t)(uintptr_t)self;
+    return self;
+}
+static void *__thiscall cheat_join(uint32_t **first, uint32_t **out, const char *ending) {
+    dev_note(34, (uint32_t)(uintptr_t)*first); dev_note(34, (uint32_t)(uintptr_t)ending);
+    if (dev_next() % 4 == 0) ++**first;
+    uint32_t *made = (uint32_t *)dev_take(0x10);
+    made[0] = 1, made[3] = 0xc0000000u | (uint32_t)(uintptr_t)made;
+    *out = made;
+    return out;
+}
+static void *__thiscall cheat_entry(void *self, uint32_t zero, uint32_t *name, uint32_t number) {
+    dev_note(35, (uint32_t)(uintptr_t)self); dev_note(35, zero); dev_note(35, (uint32_t)(uintptr_t)name); dev_note(35, number);
+    if (dev_next() % 3) --*name;
+    return dev_next() % 5 ? self : (uint8_t *)self + 4;
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6220,6 +6248,26 @@ static std::vector<Test> tests() {
     };
     device_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(device_construct);
+    // Cheats::Init: the table object at 0x9000; the allocators, the frees, the text made from C text, the text join and
+    // the entry's constructor are stand-ins (see above); the result is the object given back and the running sum
+    Test cheats_init{0x410ed0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 8; i++) arena<uint32_t>(0x9000)[i] = r.next();
+                         for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                         arena<uint32_t>(0x10)[0] = r.next();
+                         arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                     },
+                     [](void *fn) {
+                         void *back = ((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x9000), arena<uint32_t>(0x10)[0]);
+                         return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                     }};
+    cheats_init.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)cheat_alloc}, {0xbcdfd0, (void *)dev_alloc_aligned}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free},
+                       {0xbcf850, (void *)cheat_text}, {0x403be0, (void *)cheat_join}, {0x410d50, (void *)cheat_entry}});
+    };
+    cheats_init.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(cheats_init);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;

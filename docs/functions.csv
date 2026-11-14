@@ -280,7 +280,7 @@ address,size,name,callers,status
 0x410ac0,213,,1,documented
 0x410c90,180,NamedTextRef::NamedTextRef(text),152,rewritten
 0x410d50,244,,32,documented
-0x410ed0,8107,,1,documented
+0x410ed0,8107,Cheats::Init,1,rewritten
 0x412e80,30,DeletingDestructor,1,rewritten
 0x412ea0,76,,1,documented
 0x412ef0,1747,,2,documented
