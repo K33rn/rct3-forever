@@ -135,6 +135,6 @@ for off, n in tables:
     out.append(f'// (the jump table at +{off:#x}: its {n} entries checked to go to the same instructions in every copy)')
 out.append('// Do not edit by hand.')
 for a, r in zip(copies, rows):
-    out.append(f'{name.upper()}({a:#x}, ' + ', '.join(f'{r[g[0]]:#x}' for g in groups) + ', ' + ', '.join(f'0x{b:02x}' for b in r[len(params):]) + ')')
+    out.append(f'{name.upper()}(' + ', '.join([f'{a:#x}'] + [f'{r[g[0]]:#x}' for g in groups] + [f'0x{b:02x}' for b in r[len(params):]]) + ')')
 open(os.path.join(HERE, 'forever', 'src', 'rewrite', f'{name}.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
 print('\n'.join(out))

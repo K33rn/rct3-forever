@@ -1080,6 +1080,19 @@ static void *__fastcall ot_money(uint32_t **into, int32_t value, uint32_t flag) 
 }
 static void *__thiscall ot_label(uint32_t **into) { dev_note(102, 0); uint32_t *t = desk_text(); t[1] = 0x1abe1; *into = t; return into; }
 
+// Text::NumberedName, Report::MissingResourceSymbol, Animal::Point: their stand-ins
+static void *__fastcall ms_box(uint32_t **text, uint32_t **title) { dev_note(105, (*text)[1]); dev_note(105, (*title)[1]); return nullptr; }
+static uint8_t __thiscall ms_flag(uint32_t *self, uint32_t a) { dev_note(106, a); return (uint8_t)(self[1] & 1); }
+static void *__thiscall ms_name(uint32_t **self, const uint8_t *from) { dev_note(107, (uint32_t)(uintptr_t)from); uint32_t *t = desk_text(); t[1] = 0x4e414d45; *self = t; return self; }
+static void __thiscall ap_rect(void *window, const uint32_t *rect) {
+    dev_note(108, (uint32_t)(uintptr_t)window);
+    for (int k = 0; k < 4; k++) dev_note(108, rect[k]);
+}
+// the numbered names' register wrappers are called with esi set (where the text goes) and the number on the stack
+__attribute__((naked)) static void *call_with_esi(void *fn, void *out, int32_t number) {
+    __asm__("pushl %esi\n\tmovl 12(%esp), %esi\n\tpushl 16(%esp)\n\tcalll *12(%esp)\n\tpopl %esi\n\tret");
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6866,6 +6879,66 @@ static std::vector<Test> tests() {
     };
     labelled_number.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(labelled_number);
+    // Text::NumberedName (eight copies): where the text goes (arena 0x8000, in esi) and a number
+    Test numbered_name{0x46d730,
+                       [=](Rng &r) {
+                           fresh(r);
+                           for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                           arena<uint32_t>(0x8000)[0] = r.next();
+                           arena<int32_t>(0x40)[0] = r.range(0, 3) ? r.range(-2, 120) : (int32_t)r.next();
+                           arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                       },
+                       [](void *fn) {
+                           void *back = call_with_esi(fn, arena<void>(0x8000), arena<int32_t>(0x40)[0]);
+                           return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                       }};
+    numbered_name.iterations = 300;
+    numbered_name.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbcf850, (void *)msg_text_c}, {0xddcdb5, (void *)msg_sprintf}});
+    };
+    numbered_name.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(numbered_name);
+    // Report::MissingResourceSymbol (four copies): the reference at arena 0x8000 points at a resource (0x8100) whose flag
+    // is set or not
+    Test missing_symbol{0x431360,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                            arena<uint32_t>(0x8000)[0] = (uint32_t)(uintptr_t)arena<void>(0x8100);
+                            arena<uint32_t>(0x8100)[1] = r.next();
+                            arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                        },
+                        [](void *fn) {
+                            ((void(__thiscall *)(void *))fn)(arena<void>(0x8000));
+                            return Result{*arena<uint32_t>(0x20)};
+                        }};
+    missing_symbol.iterations = 200;
+    missing_symbol.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)msg_text_c},
+                       {0xbd1420, (void *)ms_flag}, {0xbcfef0, (void *)ms_name}, {0x468450, (void *)ms_box}});
+    };
+    missing_symbol.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(missing_symbol);
+    // Animal::Point (four copies): the animal at arena 0x8000 (its span's ends at +0x7C and +0x84: any floats), its two
+    // windows; the rectangles given are noted bit for bit
+    Test animal_point{0xace100,
+                      [=](Rng &r) {
+                          fresh(r);
+                          for (int i = 0; i < 0x50; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                          arena<float>(0x8000)[0x7c / 4] = r.range(0, 4) ? r.real(-500, 500) : r.any_float();
+                          arena<float>(0x8000)[0x84 / 4] = r.range(0, 4) ? r.real(-500, 500) : r.any_float();
+                          arena<uint32_t>(0x8000)[0x114 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8200);
+                          arena<uint32_t>(0x8000)[0x118 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8300);
+                          arena<uint32_t>(0x20)[0] = 0;
+                      },
+                      [](void *fn) {
+                          ((void(__thiscall *)(void *))fn)(arena<void>(0x8000));
+                          return Result{*arena<uint32_t>(0x20)};
+                      }};
+    animal_point.iterations = 1000;
+    animal_point.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6afaf0, (void *)ap_rect}}); };
+    animal_point.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(animal_point);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;
