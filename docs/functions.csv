@@ -22284,11 +22284,11 @@ address,size,name,callers,status
 0xcab4c0,30,DeletingDestructor,1,rewritten
 0xcab640,891,,2,documented
 0xcab9c0,576,,0,documented
-0xcabc00,1170,,1,documented
+0xcabc00,1170,DebugEditor::Number,1,rewritten
 0xcac0a0,30,DeletingDestructor,1,rewritten
-0xcac0d0,1170,,1,documented
+0xcac0d0,1170,DebugEditor::Number,1,rewritten
 0xcac570,30,DeletingDestructor,1,rewritten
-0xcac5a0,1170,,1,documented
+0xcac5a0,1170,DebugEditor::Number,1,rewritten
 0xcaca40,30,DeletingDestructor,1,rewritten
 0xcaca70,849,,0,documented
 0xcacdd0,30,DeletingDestructor,1,rewritten

@@ -1,5 +1,5 @@
-// The debug console's number editors: DebugEditor::Int, Int32, UInt32, Float, Int16, UInt16, Int8, UInt8. One constructor
-// in the game written out eight times (tools/debug_editors.py checks they differ only in their name, class table, range
+// The debug console's number editors: DebugEditor::Int, Int32, UInt32, Float, Int16, UInt16, Int8, UInt8, and three
+// with no name (their base window given an empty text). One constructor in the game written out eleven times (tools/debug_editors.py checks they differ only in their name, class table, range
 // record table and value size, and writes those to debug_editors.inc). It takes a label (C text, or none), a width, the
 // value's place, its lowest and highest values and step, and whether to show a slider:
 //   - the editor's base window (0xC69EB0) is made with a text made from its name, then that text is let go, and its
@@ -66,9 +66,14 @@ volatile long g_editors;
 uint8_t *editor(uint8_t *self, const EditorKind &kind, const char *label, uint32_t width, uint32_t target, uint32_t low, uint32_t high, uint32_t step,
                 uint8_t slider) {
     g_editors++;
-    // the base window, named
-    void *memory = alloc(0x10);
-    int32_t *volatile name = memory ? (int32_t *)text_from((const char *)(uintptr_t)kind.name, memory) : nullptr;
+    // the base window, named (or given an empty text, for the three editors with no name)
+    int32_t *volatile name;
+    if (kind.name) {
+        void *memory = alloc(0x10);
+        name = memory ? (int32_t *)text_from((const char *)(uintptr_t)kind.name, memory) : nullptr;
+    } else {
+        empty_text(&name);
+    }
     ((void *(__thiscall *)(void *, void *, uint32_t, uint32_t, uint32_t))0xc69eb0)(self, (void *)&name, 4, 0x3f800000, 0);
     let_go(&name);
     *(volatile uint32_t *)self = kind.table;
@@ -149,6 +154,7 @@ static_assert(editor_kinds[4].at == 0xca97a0, "debug_editors.inc changed");
 static_assert(editor_kinds[5].at == 0xca9ca0, "debug_editors.inc changed");
 static_assert(editor_kinds[6].at == 0xcaa1a0, "debug_editors.inc changed");
 static_assert(editor_kinds[7].at == 0xcaa690, "debug_editors.inc changed");
+static_assert(editor_kinds[8].at == 0xcabc00 && editor_kinds[9].at == 0xcac0d0 && editor_kinds[10].at == 0xcac5a0, "debug_editors.inc changed");
 REWRITE("DebugEditor::Number", 0xca88d0, editor_first[0], (&debug_editor<0>), &g_editors);
 REWRITE("DebugEditor::Number", 0xca8dc0, editor_first[1], (&debug_editor<1>), &g_editors);
 REWRITE("DebugEditor::Number", 0xca92b0, editor_first[2], (&debug_editor<2>), &g_editors);
@@ -157,3 +163,6 @@ REWRITE("DebugEditor::Number", 0xca97a0, editor_first[4], (&debug_editor<4>), &g
 REWRITE("DebugEditor::Number", 0xca9ca0, editor_first[5], (&debug_editor<5>), &g_editors);
 REWRITE("DebugEditor::Number", 0xcaa1a0, editor_first[6], (&debug_editor<6>), &g_editors);
 REWRITE("DebugEditor::Number", 0xcaa690, editor_first[7], (&debug_editor<7>), &g_editors);
+REWRITE("DebugEditor::Number", 0xcabc00, editor_first[8], (&debug_editor<8>), &g_editors);
+REWRITE("DebugEditor::Number", 0xcac0d0, editor_first[9], (&debug_editor<9>), &g_editors);
+REWRITE("DebugEditor::Number", 0xcac5a0, editor_first[10], (&debug_editor<10>), &g_editors);
