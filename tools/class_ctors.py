@@ -264,6 +264,7 @@ def parse(a, n):
     pushed = []
     desc = None
     after_jne = False
+    kept = {}   # stack locals (by their place below the return address) holding a known value: this, kept and read back
     for k in range(kb):
         s = t[k]
         if s.startswith(('push -1', 'push 0xe')) and k < 3 or 'fs:[0]' in s:
@@ -280,7 +281,7 @@ def parse(a, n):
             depth += num(m.group(1))
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - depth
-            regs[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 else None
+            regs[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 else kept.get(slot)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (4))?\]', s)) and regs.get(m.group(2)) == ('arg', 2):
             regs[m.group(1)] = ('arg2at', num(m.group(3) or '0'))   # the base's two values given through a pointer
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x[0-9a-f]{7})\]', s)) and after_jne:
@@ -294,8 +295,12 @@ def parse(a, n):
             regs[m.group(1)] = ('const', 0)
         elif re.fullmatch(r'(test|cmp) ' + REG + ', ' + REG, s) or ins[k].mnemonic in ('jne', 'je'):
             pass
-        elif re.fullmatch(r'mov (dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], .*', s):
-            pass   # locals and the exception frame's state
+        elif (m := re.fullmatch(r'mov (dword|byte) ptr \[esp(?: \+ (0x[0-9a-f]+|\d+))?\], (.*)', s)):
+            # locals and the exception frame's state; this kept in a local is remembered
+            slot = num(m.group(2) or '0') - depth
+            kept.pop(slot, None)
+            if m.group(1) == 'dword' and slot < 0 and regs.get(m.group(3)) == ('this', 0):
+                kept[slot] = ('this', 0)
         else:
             raise Reject('start: ' + s)
         after_jne = ins[k].mnemonic == 'jne'
@@ -362,17 +367,34 @@ def parse(a, n):
             elif v == 'eax' and regs.get('eax') == ('empty',) and m.group(1) == 'dword':
                 ops.append((7, off, 0, 0, []))
             elif v == 'eax' and regs.get('eax') == ('made',) and m.group(1) == 'dword' and pending and pending[3] == len(ops):
-                ops.append((10, off, pending[0], pending[1], pending[2]))   # nothing else happened since the new: same order
+                if pending[4] is None:
+                    ops.append((10, off, pending[0], pending[1], pending[2]))   # nothing else happened since the new: same order
+                else:
+                    ops.append((15, off, pending[0], pending[1], pending[2] + [('imm', pending[4])]))
                 pending = None
                 regs.pop('eax', None)
             elif v in regs and regs[v] and regs[v][0] == 'global' and m.group(1) == 'dword':
                 ops.append((5, off, regs[v][1], 0, []))
             else:
                 raise Reject('member store: ' + s)
-        elif (m := re.fullmatch(r'mov (dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], .*', s)):
-            slot = num(m.group(2)) - depth - 4 * len(pushed)
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
+            regs[m.group(1)] = ('field', regs[m.group(2)][1] + num(m.group(3) or '0'), len(ops))   # a member's value, as it is now
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r' \+ ' + REG + r'\*4\], 0', s)):
+            array, count = regs.get(m.group(1)), regs.get(m.group(2))
+            if not array or not count or array[0] != 'field' or count[0] != 'field' or count[1] != array[1] + 4 or array[2] != len(ops) or count[2] != len(ops):
+                raise Reject('member array end')
+            ops.append((13, array[1], 0, 0, []))
+        elif (m := re.fullmatch(r'jmp (0x[0-9a-f]+)', s)) and 0 < num(m.group(1)) - ins[k].address < 16:
+            pass   # the description chosen for the registration (the one given, or the class's own)
+        elif (m := re.fullmatch(r'mov (dword|byte) ptr \[esp(?: \+ (0x[0-9a-f]+|\d+))?\], (.*)', s)):
+            slot = num(m.group(2) or '0') - depth - 4 * len(pushed)
             if slot >= 4:
                 dirty.add(slot // 4)
+            kept.pop(slot, None)
+            if m.group(1) == 'dword' and slot < 0 and regs.get(m.group(3)) and regs[m.group(3)][0] == 'this':
+                kept[slot] = regs[m.group(3)]   # a pointer into the object kept in a local
+        elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'this':
+            regs[m.group(1)] = ('this', regs[m.group(1)][1] + num(m.group(2)))   # a pointer into the object moved on
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
             regs[m.group(1)] = ('this', regs[m.group(2)][1] + num(m.group(3)))
         elif (m := re.fullmatch(r'lea ecx, \[(e[a-d]x|e[sd]i|ebp|ebx)\]', s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'this':
@@ -404,9 +426,12 @@ def parse(a, n):
                 regs['e' + r + 'x'] = ('const8', byte)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - depth - 4 * len(pushed)
-            if slot < 4 or slot % 4 or slot // 4 > nargs or slot // 4 in dirty:   # slot 4: the description as given (registration reloads it)
+            if slot in kept:
+                regs[m.group(1)] = kept[slot]   # a pointer into the object read back from its local
+            elif slot < 4 or slot % 4 or slot // 4 > nargs or slot // 4 in dirty:   # slot 4: the description as given (registration reloads it)
                 raise Reject('member load ' + s)
-            regs[m.group(1)] = ('arg', slot // 4)
+            else:
+                regs[m.group(1)] = ('arg', slot // 4)
         elif (m := re.fullmatch(r'mov ([a-d])l, byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - depth - 4 * len(pushed)
             if slot < 8 or slot % 4 or slot // 4 > nargs or slot // 4 in dirty:
@@ -426,7 +451,10 @@ def parse(a, n):
             if len(pushed) != 1 or pushed[0][0] != 'imm' or pending or t[k + 1] != 'add esp, 4':
                 raise Reject('member new')
             size, pushed, j = pushed[0][1], [], k + 2
+            saved_at = None   # the local the new memory is kept in
             while not t[j].startswith('je '):
+                if (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax', t[j])):
+                    saved_at = num(m.group(1))
                 ok = re.fullmatch(r'mov (dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax|byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+))', t[j]) or t[j] == 'test eax, eax' or (
                     (m := re.fullmatch(r'cmp eax, ' + REG, t[j])) and regs.get(m.group(1)) == ('const', 0))
                 if not ok:
@@ -444,9 +472,16 @@ def parse(a, n):
                     raise Reject('member new argument: ' + t[j])
                 j += 1
             cm = re.fullmatch(r'call (0x[0-9a-f]+)', t[j + 1])
+            table = None
+            # then given a table of its own: the memory read back from its local, its first word set (the member then
+            # gets the memory, not what the constructor gave back)
+            if (cm and saved_at is not None and t[j + 2] == 'mov eax, dword ptr [esp + %#x]' % saved_at
+                    and (m := re.fullmatch(r'mov dword ptr \[eax\], (0x[0-9a-f]+)', t[j + 3]))):
+                table = num(m.group(1))
+                del t[j + 2:j + 4], ins[j + 2:j + 4]
             if not cm or len(args) > 4 or ret_args(num(cm.group(1))) != len(args) or not t[j + 2].startswith('jmp ') or ins[j + 3].address != null_at or t[j + 3] != 'xor eax, eax' or ins[j + 4].address != num(t[j + 2][4:]):
                 raise Reject('member new shape')
-            pending = (size, num(cm.group(1)), args[::-1], len(ops))
+            pending = (size, num(cm.group(1)), args[::-1], len(ops), table)
             for r in ('ecx', 'edx'):
                 regs.pop(r, None)
             regs['eax'] = ('made',)
@@ -467,7 +502,7 @@ def parse(a, n):
             pushed = []
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
-        elif re.fullmatch(r'(test|cmp) (e[sd]i|ebp|ebx), (e[sd]i|ebp|ebx)', s) or ins[k].mnemonic == 'jne':
+        elif re.fullmatch(r'(test|cmp) ' + REG + ', ' + REG, s) or ins[k].mnemonic == 'jne':
             pass
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x[0-9a-f]{7})\]', s)) and num(m.group(2)) == desc:
             regs[m.group(1)] = ('desc',)
@@ -531,7 +566,35 @@ def parse(a, n):
         v = regs.get('e' + r[0] + 'x')
         return v[1] & 0xff if v and v[0] in ('const', 'const8') else None
 
+    for q in range(k, last + 1):   # a local holding this must not be written by the registration
+        if (m := re.fullmatch(r'mov dword ptr \[esp(?: \+ (0x[0-9a-f]+|\d+))?\], .*', t[q])):
+            for j in range(3):
+                kept.pop(num(m.group(1) or '0') - depth - 4 * j, None)
+    tail_depth, tail_pushed, marked = depth, [], False
     for s in tail:
+        if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and num(m.group(2)) - tail_depth - 4 * len(tail_pushed) in kept:
+            regs[m.group(1)] = kept[num(m.group(2)) - tail_depth - 4 * len(tail_pushed)]
+            continue
+        if (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
+            tail_pushed.append(('imm', num(m.group(1))))
+            continue
+        if (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)):
+            # a call on a member after the registration and the mark: the steps after the marker (kind 14)
+            fn, this = num(m.group(1)), regs.get('ecx')
+            if not this or this[0] != 'this' or ret_args(fn) != len(tail_pushed) or len(tail_pushed) > 4:
+                raise Reject('end call: ' + s)
+            if not marked:
+                ops.append((14, 0, 0, 0, []))
+                marked = True
+            ops.append((3, this[1], 0, fn, tail_pushed[::-1]))
+            tail_pushed = []
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+            continue
+        if tail_pushed and not s.startswith('lea '):
+            raise Reject('end pushed: ' + s)
+        if s.startswith('pop '):
+            tail_depth -= 4
         # a plain value stored into the object after the registration: nothing between touches the object, so it joins
         # the member steps' end
         if (m := re.fullmatch(r'mov (dword|byte) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
@@ -606,11 +669,13 @@ def parse(a, n):
 
 
 out = ['// Saved classes\' constructors taken over by class_construct (classes.cpp); written by tools/class_ctors.py.']
+member_fns = {}   # the functions the steps call on members and new objects, with how many values each takes (for the test's stand-ins)
 done = total = 0
 reasons = {}
+reason_bytes = {}
 for a, r in sorted(rows.items()):
     n = int(r['size'])
-    if (r['status'] != 'documented' and a not in mine) or a in taken or n < 150 or n > 4000:
+    if (r['status'] != 'documented' and a not in mine) or a in taken or n < 150 or n > 20000:
         continue
     if b'\xe8' not in bytes(img[a - BASE:a - BASE + n]) or 'call 0x800a80' not in [x.mnemonic + ' ' + x.op_str for x in md.disasm(bytes(img[a - BASE:a - BASE + n]), a)]:
         continue
@@ -620,6 +685,7 @@ for a, r in sorted(rows.items()):
         key = str(e)[:70]
         if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e)
         reasons[key] = reasons.get(key, 0) + 1
+        reason_bytes[key] = reason_bytes.get(key, 0) + n
         continue
     out.append(f'static const ClassOp class_{a:x}_ops[] = {{' + ', '.join(f'{{{k}, {o:#x}, {v:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(x[1]) for x in args) or "0"}}}, {sum(1 << q for q, x in enumerate(args) if x[0] == "glob"):#x}, {sum(1 << q for q, x in enumerate(args) if x[0] == "self"):#x}}}' for k, o, v, fn, args in ops) + '};' if ops else f'static const ClassOp class_{a:x}_ops[] = {{{{0, 0, 0, 0, 0, {{0}}, 0, 0}}}};')
     out.append(f'static const ClassField class_{a:x}_fields[] = {{' + ', '.join(f'{{{s:#x}, {c:#x}, {tb:#x}, {len(args)}, {{{", ".join(hex(x) for x in args) or "0"}}}, {par}}}' for s, c, tb, args, par in fields) + '};')
@@ -637,5 +703,12 @@ for a, r in sorted(rows.items()):
     out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{nargs if nargs != 3 else ""}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{tail}>), &g_class_constructs);')
     done += 1
     total += n
+    for kind, o, v, fn, args in ops:
+        if kind in (3, 10, 15):
+            member_fns[fn] = len(args) - (kind == 15)
+out.append('// the functions the steps call on members and new objects, each with how many values it takes (the test stands in for them)')
+out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x}, {c}' for fn, c in sorted(member_fns.items())) + ', 0};')
 open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
-print(done, 'constructors,', total, 'bytes; not taken:', sorted(reasons.items(), key=lambda kv: -kv[1])[:12])
+print(done, 'constructors,', total, 'bytes; not taken:', sum(reasons.values()), 'constructors,', sum(reason_bytes.values()), 'bytes')
+for key, size in sorted(reason_bytes.items(), key=lambda kv: -kv[1])[:int(os.environ.get('TOP', '14'))]:
+    print(f'  {size:7d} {reasons[key]:3d} {key}')

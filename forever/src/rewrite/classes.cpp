@@ -10,7 +10,10 @@
 // empty wide string (0xBD0490), 8 stores the constructor's argument number value (1-4), 9 is kind 6 with the handle
 // Handle::For (0x805700) gives for the object value (0 for none) instead of the empty handle, 10 stores at +off a new
 // object: value bytes from 0xBCDFC0 constructed by fn (thiscall) with up to four values, or null when there was no memory,
-// 11 calls fn (stdcall) with five values: the compiler's array constructor (0xDDCF99: array, size, count, ctor, dtor).
+// 11 calls fn (stdcall) with five values: the compiler's array constructor (0xDDCF99: array, size, count, ctor, dtor),
+// 13 marks the end of the member array at +off ({items, count}: items[count] = 0), 14 is where the registration and the
+// mark happen (the steps after it run after them; without one, they come after every step), 15 is kind 10 for an
+// object then given a table of its own (the last value): the member gets the memory, not what the constructor gave back.
 struct ClassOp {
     uint32_t kind, off, value, fn, count, args[5], globals;   // bit i of globals: args[i] is a global, read as the call is made
     uint32_t selfs;                                           // bit i: args[i] is an offset into the object (a pointer to that member)
@@ -62,8 +65,11 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
     uint8_t *description = (uint8_t *)(uintptr_t)given[1];
     uint32_t a = PAIR ? ((const uint32_t *)(uintptr_t)given[2])[0] : given[2], b = PAIR ? ((const uint32_t *)(uintptr_t)given[2])[1] : given[3];
     ((void(__thiscall *)(void *, void *, uint32_t, uint32_t))0x800a80)(self, description ? description : *(uint8_t **)DESCRIPTION, a, b);
-    for (uint32_t k = 0; k < OP_COUNT; k++) {
+    uint32_t k = 0;
+    for (int pass = 0; pass < 2; pass++) {
+    for (; k < OP_COUNT; k++) {
         const ClassOp &op = OPS[k];
+        if (op.kind == 14) break;
         if (op.kind == 0) *(uint32_t *)(self + op.off) = op.value;
         else if (op.kind == 1) self[op.off] = (uint8_t)op.value;
         else if (op.kind == 2) *(uint8_t **)(self + op.off) = self + op.value;
@@ -75,6 +81,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         } else if (op.kind == 7) *(void **)(self + op.off) = ((void *(__fastcall *)(uint32_t))0xbd0490)(1);
         else if (op.kind == 8) *(uint32_t *)(self + op.off) = given[op.value];
         else if (op.kind == 12) self[op.off] = (uint8_t)given[op.value];   // an argument's low byte
+        else if (op.kind == 13) (*(uint32_t **)(self + op.off))[*(uint32_t *)(self + op.off + 4)] = 0;
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)
@@ -84,10 +91,19 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
             else if (op.kind == 10) {   // new: value bytes, fn constructs them (nothing when there was no memory)
                 void *memory = memory_alloc(op.value);
                 *(void **)(self + op.off) = memory ? call_with(op.fn, memory, op.count, args) : nullptr;
+            } else if (op.kind == 15) {   // new, constructed, then given its own table
+                void *memory = memory_alloc(op.value);
+                if (memory) {
+                    call_with(op.fn, memory, op.count - 1, args);
+                    *(uint32_t *)memory = op.args[op.count - 1];
+                }
+                *(void **)(self + op.off) = memory;
             } else
                 call_with(op.fn, self + op.off, op.count, args);
         }
     }
+    if (pass) break;
+    k++;   // past the marker, if there is one
     uint8_t *used = description ? description : *(uint8_t **)DESCRIPTION;
     if (!used[4]) {
         for (uint32_t k = 0; k < NAME_COUNT; k++) {   // the description named (a text made from a name and a value, given with 0xBECC10, let go)
@@ -128,6 +144,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         }
     }
     if (!description) (*(uint8_t **)DESCRIPTION)[4] = 1;
+    }
     if constexpr (TAIL != nullptr) {
         if (TAIL->link) {
             uint8_t *list = *(uint8_t **)TAIL->link;

@@ -7210,7 +7210,7 @@ address,size,name,callers,status
 0x6bfb50,67,,1,documented
 0x6bfba0,48,ObjectArray::Free,2,rewritten
 0x6bfbd0,258,ObjectArray::SetCapacity,3,rewritten
-0x6bfce0,7608,,2,documented
+0x6bfce0,7608,Class::Construct,2,rewritten
 0x6c1ac0,371,Destructor::Steps,1,rewritten
 0x6c1c40,230,StructArrayLoad,1,rewritten
 0x6c1d30,105,Factory::Create,1,rewritten
@@ -9149,7 +9149,7 @@ address,size,name,callers,status
 0x77dec0,761,,1,documented
 0x77e1c0,524,,1,documented
 0x77e3d0,691,,1,documented
-0x77e690,4210,,2,documented
+0x77e690,4210,Class::Construct,2,rewritten
 0x77f760,497,,1,documented
 0x77f960,175,,15,documented
 0x77fa10,218,,1,documented

@@ -538,6 +538,25 @@ static void *__fastcall stub_member_handle_of(void *object) {   // Class::Constr
     record(0x805700, object);
     return arena<void>(0x600);
 }
+// Class::Construct: stand-ins for the functions its steps call on members and on new objects (class_member_fns: each
+// with how many values it takes). They record what they were given and give back something other than the object, so a
+// member that should get the memory is told from one that should get the result. The array member's constructor
+// (0x611A80) also fills in {items, count}, which the constructors that mark the array's end read back.
+extern const uint32_t class_member_fns[];
+static void *__thiscall stub_class_member0(void *self) { record(0x90, self); return (uint8_t *)self + 8; }
+static void *__thiscall stub_class_member1(void *self, void *a) { record(0x91, self); record(0x91, a); return (uint8_t *)self + 8; }
+static void *__thiscall stub_class_member2(void *self, void *a, void *b) { record(0x92, self); record(0x92, a); record(0x92, b); return (uint8_t *)self + 8; }
+static void *__thiscall stub_class_member3(void *self, void *a, void *b, void *c) { record(0x93, self); record(0x93, a); record(0x93, b); record(0x93, c); return (uint8_t *)self + 8; }
+static void *__thiscall stub_class_member4(void *self, void *a, void *b, void *c, void *d) {
+    record(0x94, self); record(0x94, a); record(0x94, b); record(0x94, c); record(0x94, d);
+    return (uint8_t *)self + 8;
+}
+static void *__thiscall stub_class_array(uint32_t *self, void *a, void *b) {
+    record(0x95, self); record(0x95, a); record(0x95, b);
+    self[0] = (uint32_t)(uintptr_t)arena<void>(0x8900);
+    self[1] = (uint32_t)((uintptr_t)self >> 2) % 61;   // a count of its own for each member
+    return self;
+}
 static uintptr_t g_class_description;   // the default description global of the Class::Construct copy being checked
 static uint32_t g_class_args;           // and how many arguments it takes (2 to 7)
 static uintptr_t g_class_instance;      // and the global it gives the object at the end, if any
@@ -5490,6 +5509,7 @@ static std::vector<Test> tests() {
                              object_handle[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(0x680);
                              arena<uint32_t>(0x680)[0] = (uint32_t)(uintptr_t)arena<void>(0x690);
                              arena<uint32_t>(0x690)[1] = (uint32_t)(uintptr_t)arena<void>(0x680);
+                             for (int k = 0; k < 0x40; k++) arena<uint32_t>(0x8900)[k] = r.next() | 1;   // the array members' items: an end marked shows
                              arena<uint32_t>(0x8800)[0] = 100;
                              arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)description : 0;
                              arena<uint32_t>(0x10)[1] = r.next();
@@ -5565,11 +5585,19 @@ static std::vector<Test> tests() {
                 break;
             }
         if (!g_class_description) g_class_description = (uintptr_t)arena<void>(0x3ff0);   // not found: the test then fails
-        stubs_for_now({{0x800a80, (void *)stub_class_base}, {0x8087e0, (void *)stub_field_add}, {0xbcdfc0, (void *)stub_plain_alloc}, {0xbd0490, (void *)stub_wide_empty_shared},
-                       {0xbeca40, (void *)stub_name_make}, {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}, {0x8088c0, (void *)stub_built4},
-                       {0x805700, (void *)stub_member_handle_of}, {0x808d90, (void *)stub_struct_total},
-                       {0xcd2b30, (void *)stub_list_member}, {0x441030, (void *)stub_member_built}, {0x981ee0, (void *)stub_member_built1},
-                       {0x84ae30, (void *)stub_member_built}});
+        std::vector<std::pair<uintptr_t, void *>> list = {
+            {0x800a80, (void *)stub_class_base}, {0x8087e0, (void *)stub_field_add}, {0xbcdfc0, (void *)stub_plain_alloc}, {0xbd0490, (void *)stub_wide_empty_shared},
+            {0xbeca40, (void *)stub_name_make}, {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}, {0x8088c0, (void *)stub_built4},
+            {0x805700, (void *)stub_member_handle_of}, {0x808d90, (void *)stub_struct_total},
+            {0xcd2b30, (void *)stub_list_member}, {0x441030, (void *)stub_member_built}, {0x981ee0, (void *)stub_member_built1},
+            {0x84ae30, (void *)stub_member_built}, {0x611a80, (void *)stub_class_array}};
+        static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
+        for (const uint32_t *f = class_member_fns; *f; f += 2) {
+            bool have = false;
+            for (auto &x : list) have |= x.first == f[0];
+            if (!have) list.push_back({f[0], by_count[f[1]]});
+        }
+        stubs_for_now(list);
     };
     class_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(class_construct);
