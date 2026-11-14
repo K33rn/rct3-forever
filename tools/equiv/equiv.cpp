@@ -752,6 +752,68 @@ static void *__thiscall cheat_entry(void *self, uint32_t zero, uint32_t *name, u
     return dev_next() % 5 ? self : (uint8_t *)self + 4;
 }
 
+// RCTDesktop::CreateWindows: its stand-ins (with the device test's running sum, call count and memory, and the cheats
+// test's text helpers). The desktop is at arena 0x8000; some stand-ins also note a field of it the rewrite must have set
+// (or not yet set) by then. The first allocation (the game's own name) always succeeds, later ones sometimes fail.
+static uint32_t *desk_self() { return arena<uint32_t>(0x8000); }
+static void *__cdecl desk_alloc(uint32_t size) {
+    dev_note(40, size);
+    bool first = ++*arena<uint32_t>(0x30) == 1;
+    return !first && dev_next() % 5 == 0 ? nullptr : dev_take(size);
+}
+static uint32_t *desk_text() {
+    uint32_t *made = (uint32_t *)dev_take(0x10);
+    made[0] = 1, made[3] = 0xd0000000u | (uint32_t)(uintptr_t)made;
+    return made;
+}
+static void *__fastcall desk_empty(uint32_t c) { dev_note(41, c & 0xff); return desk_text(); }
+static void *__thiscall desk_join_wide(uint32_t **first, uint32_t **out, uint32_t **other) {   // sometimes the title's own text, or another holder
+    dev_note(42, (uint32_t)(uintptr_t)*first); dev_note(42, (uint32_t)(uintptr_t)*other);
+    if (dev_next() % 3 == 0) *out = *other, ++**out;
+    else *out = desk_text();
+    return dev_next() % 4 == 0 ? arena<void>(0x7180) : out;   // sometimes another holder (0x7180)
+}
+static void *__thiscall desk_copy(uint32_t **self, void *from) {   // gives back the copy, or sometimes another holder
+    dev_note(43, (uint32_t)(uintptr_t)from);
+    *self = desk_text();
+    return dev_next() % 4 == 0 ? arena<void>(0x7180) : self;
+}
+static void *__thiscall desk_base(uint32_t *self, void *description, uint32_t **title) {
+    dev_note(44, (uint32_t)(uintptr_t)self); dev_note(44, (uint32_t)(uintptr_t)description); dev_note(44, (uint32_t)(uintptr_t)*title);
+    dev_note(44, self[0]);   // not yet the desktop's table
+    return self;
+}
+static void __thiscall desk_init(void *self) { dev_note(45, (uint32_t)(uintptr_t)self); dev_note(45, desk_self()[0]); dev_note(45, desk_self()[0xd4 / 4]); }
+static void *__thiscall desk_list(void *self, uint32_t file, uint32_t line, uint32_t zero, void *desktop, uint32_t global) {
+    dev_note(46, (uint32_t)(uintptr_t)self); dev_note(46, file); dev_note(46, line); dev_note(46, zero); dev_note(46, (uint32_t)(uintptr_t)desktop); dev_note(46, global);
+    dev_note(46, desk_self()[0x414 / 4]); dev_note(46, desk_self()[0x6578 / 4]);
+    return dev_next() % 2 ? self : nullptr;
+}
+static void *__thiscall desk_list_value(void *self, uint32_t zero, void *desktop, uint32_t value) {
+    dev_note(47, (uint32_t)(uintptr_t)self); dev_note(47, zero); dev_note(47, (uint32_t)(uintptr_t)desktop); dev_note(47, value);
+    return self;
+}
+static void __thiscall desk_key(uint32_t *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    dev_note(48, a); dev_note(48, b); dev_note(48, c); dev_note(48, d);
+    self[0] = a, self[1] = b, self[2] = c, self[3] = d, self[4] = (a != 0) + (b != 0) + (c != 0) + (d != 0);
+}
+static void *__thiscall desk_list_key(void *self, uint32_t file, uint32_t line, uint32_t zero, void *desktop, const uint32_t *key) {
+    dev_note(49, (uint32_t)(uintptr_t)self); dev_note(49, file); dev_note(49, line); dev_note(49, zero); dev_note(49, (uint32_t)(uintptr_t)desktop);
+    for (int k = 0; k < 5; k++) dev_note(49, key[k]);
+    return self;
+}
+static void *__thiscall desk_window(void *self, uint32_t a, uint32_t b) {
+    dev_note(50, (uint32_t)(uintptr_t)self); dev_note(50, a); dev_note(50, b); dev_note(50, desk_self()[0x6550 / 4]);
+    return dev_next() % 3 ? self : (uint8_t *)self + 8;
+}
+static void *__thiscall desk_message(void *self, void *desktop) {
+    dev_note(51, (uint32_t)(uintptr_t)self); dev_note(51, (uint32_t)(uintptr_t)desktop); dev_note(51, desk_self()[0x6560 / 4]); dev_note(51, desk_self()[0x6558 / 4]);
+    return dev_next() % 3 ? self : (uint8_t *)self + 8;
+}
+static void __thiscall desk_show(void *self, uint32_t a) {
+    dev_note(52, (uint32_t)(uintptr_t)self); dev_note(52, a); dev_note(52, desk_self()[0x94 / 4]); dev_note(52, arena<uint8_t>(0x7000)[4]);
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6297,6 +6359,41 @@ static std::vector<Test> tests() {
     };
     cheats_init.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(cheats_init);
+    // RCTDesktop::CreateWindows: the desktop at arena 0x8000, the default description (the global 0x12F7190) at 0x7000
+    // (its own name: none, or a C text of the game), a title or none (a holder at 0x7100 of a text at 0x7200), a
+    // description or none (0x7300); every function called is a stand-in (see above)
+    Test desktop_create{0x6249d0,
+                        [=](Rng &r) {
+                            fresh(r);
+                            for (int i = 0; i < 0x19c0; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                            for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x7000)[i] = r.next();
+                            for (int i = 0; i < 0x400; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                            arena<uint32_t>(0x7000)[2] = r.range(0, 2) ? 0xf2738c : 0;
+                            arena<uint32_t>(0x7100)[0] = (uint32_t)(uintptr_t)arena<void>(0x7200);
+                            arena<uint32_t>(0x7200)[0] = r.range(1, 3);
+                            arena<uint32_t>(0x7180)[0] = (uint32_t)(uintptr_t)arena<void>(0x7280);
+                            arena<uint32_t>(0x7280)[0] = r.range(1, 3);
+                            arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)arena<void>(0x7300) : 0;
+                            arena<uint32_t>(0x10)[1] = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x7100) : 0;
+                            arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                            arena<uint32_t>(0x30)[0] = 0;
+                        },
+                        [](void *fn) {
+                            *(void **)0x12f7190 = arena<void>(0x7000);
+                            const uint32_t *a = arena<uint32_t>(0x10);
+                            void *back = ((void *(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x8000), a[0], a[1]);
+                            return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                        }};
+    desktop_create.iterations = 200;
+    desktop_create.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)desk_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)cheat_text},
+                       {0xbd0490, (void *)desk_empty}, {0x403be0, (void *)cheat_join}, {0x403bb0, (void *)desk_join_wide}, {0x41c740, (void *)desk_copy},
+                       {0x681360, (void *)desk_base}, {0xbd37a0, (void *)desk_init}, {0x6b3190, (void *)desk_list}, {0x6b3390, (void *)desk_list_value},
+                       {0xbd1940, (void *)desk_key}, {0x6b3570, (void *)desk_list_key}, {0x42abc0, (void *)desk_window}, {0x4840b0, (void *)desk_message},
+                       {0xbd31f0, (void *)desk_show}});
+    };
+    desktop_create.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(desktop_create);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;
