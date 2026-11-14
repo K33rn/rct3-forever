@@ -9,6 +9,7 @@
 // test runs with the FPU at 24-, 53- and 64-bit precision. No game code is part of this program; it reads it from
 // your copy each time.
 #include "../../forever/src/rewrite/rewrite.h"
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -578,6 +579,57 @@ static void *__thiscall stub_class_named_text(void *self, uint32_t name, const u
 static void __thiscall stub_class_unreference(uint32_t *self) { record(0x9b, (void *)(uintptr_t)self[1]); }
 // set going with a value (noting a value set just before), and a member made for the object with a pair on the stack
 static void __thiscall stub_class_start(uint8_t *self, uint32_t a) { record(0x9c, self); record(0x9c, (void *)(uintptr_t)a); record(0x9c, (void *)(uintptr_t)*(uint32_t *)(self + 0x6c)); }
+// a window record made from two pairs (passed by place: what they hold is noted) and a value; the water's texts table
+// made (setting the global it is kept in); a named text found in a table
+static void *__thiscall stub_class_record_pairs(void *self, const uint32_t *a, const uint32_t *b, int32_t c) {
+    record(0x9f, self); record(0x9f, (void *)(uintptr_t)a[0]); record(0x9f, (void *)(uintptr_t)a[1]); record(0x9f, (void *)(uintptr_t)b[0]);
+    record(0x9f, (void *)(uintptr_t)b[1]); record(0x9f, (void *)(intptr_t)c);
+    return (uint8_t *)self + 4;
+}
+static void __cdecl stub_class_water_table() {   // (sometimes it can't be made: the global stays null)
+    record(0xa0, nullptr);
+    uint32_t &tries = arena<uint32_t>(0x8b20)[2];
+    if (++tries + arena<uint32_t>(0x8b20)[1] % 3 > 2) *(uint32_t *)0x133a274 = arena<uint32_t>(0x8b20)[1];
+}
+// (the name is noted by what it says: it may be made in a buffer on the stack, at a different place in each run; the text
+// made holds that and the table, which its use and its letting go note)
+static uint32_t text_hash(const char *s) { uint32_t h = 5381; while (*s) h = h * 33 + (uint8_t)*s++; return h; }
+static void *__thiscall stub_class_named_in(uint32_t *self, const char *name, uint32_t table, uint32_t flag) {
+    record(0xa1, (void *)(uintptr_t)text_hash(name)); record(0xa1, (void *)(uintptr_t)table); record(0xa1, (void *)(uintptr_t)flag);
+    if ((uintptr_t)self - (uintptr_t)arena<void>(0) < sizeof g_arena) record(0xa1, self);   // a member (not on the stack)
+    self[1] = text_hash(name) ^ table;
+    return self;
+}
+static void __thiscall stub_class_text_assign(void *self, const uint32_t *from) { record(0xa5, self); record(0xa5, (void *)(uintptr_t)from[1]); }
+static void __thiscall stub_class_text_release(const uint32_t *self) { record(0xa6, (void *)(uintptr_t)self[1]); }
+static int __cdecl stub_class_sprintf(char *out, const char *format, ...) {
+    va_list list;
+    va_start(list, format);
+    int n = vsnprintf(out, 0x80, format, list);
+    va_end(list);
+    record(0xa7, (void *)(uintptr_t)text_hash(out));
+    return n;
+}
+static void __thiscall stub_class_water_step(void *self) { record(0xa8, self); record(0xa8, (void *)(uintptr_t)*(uint32_t *)0x133a270); }
+static void __thiscall stub_class_water_list(uint32_t *list, uint32_t n) {   // made to hold n entries (each list its own place; a count of its own)
+    record(0xa9, list); record(0xa9, (void *)(uintptr_t)n);
+    uint32_t &made = *arena<uint32_t>(0x8b34);
+    list[0] = (uint32_t)(uintptr_t)arena<void>(0x9000 + 0x400 * (made++ % 3));
+    list[1] = (n + made * 3) % 7;
+}
+static uint32_t g_resource_manager, g_water_manager;   // the game's resource manager and water manager globals, put back after the test
+static uint32_t g_water_table;   // the game's water texts table global (0x133A274), put back after the test
+// a text made from C text (count 1; the name noted), and the resource manager's two lookups (the text noted, an answer
+// of their own, and sometimes another holder of the text, so letting it go is seen)
+static void *__thiscall stub_class_text_c(int32_t *self, uint32_t name) { record(0xa2, (void *)(uintptr_t)name); self[0] = 1, self[3] = 0x5000 + name % 0x100; return self; }
+static uint32_t class_lookup(uint32_t tag, void *manager, int32_t **text) {
+    record(tag, manager); record(tag, *text);
+    if (*arena<uint32_t>(0x8b30) & 1) ++**text;
+    *arena<uint32_t>(0x8b30) = *arena<uint32_t>(0x8b30) * 0x9e3779b9u + 7;
+    return (uint32_t)(uintptr_t)*text ^ tag;
+}
+static uint32_t __thiscall stub_class_lookup(void *manager, int32_t **text) { return class_lookup(0xa3, manager, text); }
+static uint32_t __thiscall stub_class_lookup2(void *manager, int32_t **text) { return class_lookup(0xa4, manager, text); }
 static void __thiscall stub_class_after_figures(uint8_t *self) { record(0x9e, self); record(0x9e, (void *)(uintptr_t)*(uint32_t *)(self + 0x1bc)); }
 static void *__thiscall stub_class_from_pair(void *self, void *object, const uint32_t *pair) {
     record(0x9d, self); record(0x9d, object); record(0x9d, (void *)(uintptr_t)pair[0]); record(0x9d, (void *)(uintptr_t)pair[1]);
@@ -5604,6 +5656,11 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x8b00)[0] = r.next();
                              arena<uint32_t>(0x8b00)[1] = r.next();
                              for (int k = 0; k < 4; k++) arena<uint32_t>(0x8b10)[k] = r.next() & 0x3fffffff;   // the weather defaults, for this case
+                             arena<uint32_t>(0x8b20)[0] = r.range(0, 1) ? r.next() : 0;   // the water texts table: there, or not yet
+                             arena<uint32_t>(0x8b20)[1] = r.next();                       // and what making it gives
+                             arena<uint32_t>(0x8b20)[2] = 0;                              // the tries to make it
+                             arena<uint32_t>(0x8b30)[0] = r.next();                       // the lookups' answers
+                             arena<uint32_t>(0x8b34)[0] = 0;                              // the water lists made so far
                              for (int k = 0; k < 0x100; k++) arena<uint32_t>(0x200)[k] = r.next();   // the rest of a big object (to 0x600)
                              arena<uint32_t>(0x8800)[0] = 100;
                              arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)description : 0;
@@ -5618,6 +5675,8 @@ static std::vector<Test> tests() {
                          [](void *fn) {
                              *(void **)g_class_description = arena<void>(0x4000);
                              for (int k = 0; k < 4; k++) ((uint32_t *)0x10f1cf8)[k] = arena<uint32_t>(0x8b10)[k];
+                             *(uint32_t *)0x133a274 = arena<uint32_t>(0x8b20)[0];
+                             *(uint32_t *)0x133a270 = 0;   // the water manager's global (set by its constructor)
                              if (g_class_instance) *(uint32_t *)g_class_instance = 0;
                              // a game list for the end's globals: what they point to (0x7C0) is a list head, and at +0x14 holds another (0x7E0)
                              uint32_t *list = arena<uint32_t>(0x7c0), *inner = arena<uint32_t>(0x7e0);
@@ -5652,6 +5711,9 @@ static std::vector<Test> tests() {
         // how many arguments it takes, from its ret N after the exception frame is put back (mov fs:[0], ecx).
         const uint8_t *code = (const uint8_t *)e->at;
         memcpy(g_weather_defaults, (void *)0x10f1cf8, sizeof g_weather_defaults);
+        g_water_table = *(uint32_t *)0x133a274;
+        g_resource_manager = *(uint32_t *)0x13d0e04;
+        g_water_manager = *(uint32_t *)0x133a270;
         g_class_description = 0;
         for (int k = 0; k < 0x80 && !(code[k] == 0xe8 && (uintptr_t)(code + k + 5) + *(const int32_t *)(code + k + 1) == 0x800a80); k++) {
             uint32_t at = code[k] == 0xa1 ? *(const uint32_t *)(code + k + 1) : code[k] == 0x8b && (code[k + 1] & 0xc7) == 0x05 ? *(const uint32_t *)(code + k + 2) : 0;
@@ -5676,7 +5738,8 @@ static std::vector<Test> tests() {
                             if (code[q] == 0xe8 && (uintptr_t)(code + q + 5) + *(const int32_t *)(code + q + 1) == 0x8087e0) last = q;
                         for (int q = last; q < k && used < 4; q++) {
                             uint32_t g = code[q] == 0xa1 ? *(const uint32_t *)(code + q + 1) : code[q] == 0x8b && (code[q + 1] & 0xc7) == 0x05 ? *(const uint32_t *)(code + q + 2) : 0;
-                            if (g >= 0x1000000 && g < 0x1400000 && g != g_class_description && g != g_class_instance) g_class_tail_globals[used++] = g;
+                            if (g >= 0x1000000 && g < 0x1400000 && g != g_class_description && g != g_class_instance && g != 0x133a274 && g != 0x13d0e04)   // (not the
+                                g_class_tail_globals[used++] = g;   // water texts table or the resource manager: set up above)
                         }
                         break;
                     }
@@ -5692,7 +5755,10 @@ static std::vector<Test> tests() {
             {0x425920, (void *)stub_class_lighting}, {0x9f9da0, (void *)stub_class_find5}, {0x7c8870, (void *)stub_class_info_text},
             {0xbd9ad0, (void *)stub_class_reference}, {0x560d20, (void *)stub_class_named_text}, {0xbd99e0, (void *)stub_class_unreference},
             {0x9e87e0, (void *)stub_class_start}, {0x48c9c0, (void *)stub_class_from_pair}, {0xbd0520, (void *)stub_wide_empty_other},
-            {0x707530, (void *)stub_class_after_figures}};   // (0x704A50, which only works on the object, runs as it is)
+            {0x707530, (void *)stub_class_after_figures}, {0x6a3b60, (void *)stub_class_record_pairs}, {0x940ea0, (void *)stub_class_water_table},
+            {0x403f30, (void *)stub_class_named_in}, {0xbcfb10, (void *)stub_class_text_c}, {0xbdf160, (void *)stub_class_lookup},
+            {0xbdf1a0, (void *)stub_class_lookup2}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
+            {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;
@@ -5701,7 +5767,13 @@ static std::vector<Test> tests() {
         }
         stubs_for_now(list);
     };
-    class_construct.finish = [](const rewrite::Entry *) { unstub_many(); memcpy((void *)0x10f1cf8, g_weather_defaults, sizeof g_weather_defaults); };
+    class_construct.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        memcpy((void *)0x10f1cf8, g_weather_defaults, sizeof g_weather_defaults);
+        *(uint32_t *)0x133a274 = g_water_table;
+        *(uint32_t *)0x13d0e04 = g_resource_manager;
+        *(uint32_t *)0x133a270 = g_water_manager;
+    };
     quick(class_construct);
     // Globals::SetFixed: functions that set game globals to fixed values; the globals are compared (data), set to
     // something else first

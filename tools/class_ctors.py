@@ -23,14 +23,16 @@ if os.path.exists(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.in
 REG = r'(e[a-d]x|e[sd]i|ebp|ebx)'
 # Constructors whose last lines are written by hand in classes.cpp (a function run after everything else): the
 # instruction those lines start with, and the function. Everything before it is still read and checked here.
-HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after')}
+HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 0x133a2bc', 'water_manager_after')}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.
 HAND_STEPS = {0x56bf80: [('lea ecx, [esp + 0x2c]', 'call 0xbd99e0', 'ride_train_status_text')],
               0x9e8ff0: [('fld dword ptr [0x10f1cf8]', 'call 0x9e87e0', 'weather_start')],
               0x830740: [('lea eax, [esp + 0x44]', 'call 0x48c9c0', 'member_from_pair_830740')],
-              0x707680: [('call 0x704a50', 'call 0x707530', 'park_figures')]}
+              0x707680: [('call 0x704a50', 'call 0x707530', 'park_figures')],
+              0x9e51d0: [('mov eax, 0x3f800000', 'mov dword ptr [esi + 0x3e0], eax', 'sky_colours')],
+              0x947720: [('cmp dword ptr [0x133a274], edi', 'call 0x403f30', 'water_manager_name')]}
 HANDS = []   # the hand-written stretches' functions, in the order class_hand numbers them
 num = lambda s: int(s, 0)
 
@@ -97,6 +99,7 @@ def walk_fields(ins, t, k0, regs0):
     k = k0
     while k <= last:
         s = t[k]
+        AT[0] = ins[k].address
         if nulls and ins[k].address == nulls[-1][0]:
             # the null path joins the made path here (je into it, past the constructor and table): keep what both agree on
             _, i, regs_then, stack_then, depth_then = nulls.pop()
@@ -320,6 +323,76 @@ class Reject(Exception):
     pass
 
 
+STATE = r'mov byte ptr \[esp \+ (?:0x[0-9a-f]+|\d+)\], (?:0x[0-9a-f]+|\d+|[a-d]l)'   # the exception frame's state
+
+
+def resource_step(t, ins, k, regs, pushed_already=False):
+    """A member looked up by name in the game's resources, from t[k]: a text made from the name (0xBCFB10 on 16 new
+    bytes, or none without memory), the resource manager (the global 0x13D0E04) asked for it (0xBDF160 or 0xBDF1A0, given
+    the text's place), the answer stored in the member, the text let go. Returns (the index after it, the name, the
+    lookup, the member's offset, the register it leaves changed), or None. The exception frame's state stores between
+    are passed over. With pushed_already, t[k] is the allocation (the member stage has taken the push of 0x10, and
+    whatever came between). The 29 instructions:
+       0 push 0x10; 1 call alloc; 2 add esp, 4; 3 mov [esp + A], eax; 4 test/cmp eax, 0; 5 je NULL; 6 push NAME;
+       7 mov ecx, eax; 8 call 0xBCFB10; 9 jmp J; 10 NULL: xor eax, eax; 11 J: mov [esp + T], eax;
+       12-14 mov ecx, [0x13D0E04] / lea R, [esp + T] / push R (lea before push; ecx set after its use as R);
+       15 call lookup; 16 mov [this + OFF], eax; 17 mov eax, [esp + T]; 18 dec [eax]; 19 mov eax, [esp + T];
+       20 cmp [eax], 0; 21 jne END; 22 mov X, eax; 23 mov eax, [eax + 0xC]; 24 push eax; 25 call 0xBCE010; 26 push X;
+       27 call 0xBCE000; 28 add esp, 8; END."""
+    seq, at = (['push 0x10'], [k]) if pushed_already else ([], [])
+    q = k
+    while q < len(t) and len(seq) < 29:
+        if not re.fullmatch(STATE, t[q]):
+            seq.append(t[q])
+            at.append(q)
+        q += 1
+    if len(seq) < 29 or seq[:3] != ['push 0x10', 'call 0xbcdfc0', 'add esp, 4']:
+        return None
+    zero = lambda r: regs.get(r) == ('const', 0)
+    mz = re.fullmatch(r'cmp eax, ' + REG, seq[4])
+    if (not re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax', seq[3]) or not (seq[4] == 'test eax, eax' or (mz and zero(mz.group(1))))
+            or not seq[5].startswith('je ')):
+        return None
+    mn = re.fullmatch(r'push (0x[0-9a-f]+)', seq[6])
+    if not mn or seq[7:9] != ['mov ecx, eax', 'call 0xbcfb10'] or not seq[9].startswith('jmp ') or seq[10] != 'xor eax, eax':
+        return None
+    mt = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax', seq[11])
+    if ins[at[10]].address != num(seq[5][3:]) or not mt or ins[at[11]].address != num(seq[9][4:]):
+        return None
+    slot = mt.group(1)
+    three = seq[12:15]
+    lea = next((x for x in three if re.fullmatch(r'lea ' + REG + r', \[esp \+ ' + slot + r'\]', x)), None)
+    if not lea:
+        return None
+    r = lea.split()[1].rstrip(',')
+    manager = 'mov ecx, dword ptr [0x13d0e04]'
+    if sorted(three) != sorted([manager, lea, 'push ' + r]) or three.index(lea) > three.index('push ' + r):
+        return None
+    if r == 'ecx' and three.index(manager) < three.index('push ecx'):
+        return None
+    mf = re.fullmatch(r'call (0xbdf160|0xbdf1a0)', seq[15])
+    ms = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', seq[16])
+    if not mf or not ms or not regs.get(ms.group(1)) or regs[ms.group(1)][0] != 'this':
+        return None
+    load = 'mov eax, dword ptr [esp + %s]' % slot
+    mc = re.fullmatch(r'cmp dword ptr \[eax\], (0|' + REG + r')', seq[20])
+    mx = re.fullmatch(r'mov ' + REG + ', eax', seq[22])
+    if seq[17:20] != [load, 'dec dword ptr [eax]', load] or not mc or not (mc.group(1) == '0' or zero(mc.group(1))):
+        return None
+    if not seq[21].startswith('jne ') or not mx or mx.group(1) in ('eax', 'ecx', 'edx'):
+        return None
+    x = mx.group(1)
+    if seq[23:29] != ['mov eax, dword ptr [eax + 0xc]', 'push eax', 'call 0xbce010', 'push ' + x, 'call 0xbce000', 'add esp, 8']:
+        return None
+    end = at[28] + 1
+    if end >= len(t) or ins[end].address != num(seq[21][4:]):
+        return None
+    return end, num(mn.group(1)), num(mf.group(1)), regs[ms.group(1)][1] + num(ms.group(2) or '0'), x
+
+
+AT = [0]   # the address of the instruction being read, for the WHY listing
+
+
 def parse(a, n):
     ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
     if not ins or ins[-1].address + ins[-1].size != a + n or ins[-1].mnemonic != 'ret' or ins[-1].op_str not in ('8', '0xc', '0x10', '0x14', '0x18', '0x1c'):
@@ -339,6 +412,9 @@ def parse(a, n):
     kept = {}   # stack locals (by their place below the return address) holding a known value: this, kept and read back
     for k in range(kb):
         s = t[k]
+        if s == 'mov eax, dword ptr [0x10fe634]':
+            regs['eax'] = ('cookie',)   # the compiler's stack check: kept in a local, checked at the end (0xDDCDA7)
+            continue
         if s.startswith(('push -1', 'push 0xe')) and k < 3 or 'fs:[0]' in s:
             if s.startswith('push'):
                 depth += 4
@@ -393,8 +469,16 @@ def parse(a, n):
     k = kb + 1
     while k < len(t):
         s = t[k]
+        AT[0] = ins[k].address
         if re.fullmatch(r'(mov al, byte ptr|cmp byte ptr) \[' + REG + r' \+ 4\].*', s):
             break
+        if s == 'call 0xbcdfc0' and pushed == [('imm', 0x10)] and not pending and (rs := resource_step(t, ins, k, regs, True)):
+            ops.append((20, rs[3], rs[1], rs[2], []))   # a member looked up by name in the game's resources
+            for r in ('eax', 'ecx', 'edx', rs[4]):
+                regs.pop(r, None)
+            pushed = []
+            k = rs[0]
+            continue
         hand = next((h for h in HAND_STEPS.get(a, []) if h[0] == s), None)
         if hand:
             # a stretch written by hand (kind 17): skipped here, the registers it writes forgotten
@@ -409,6 +493,8 @@ def parse(a, n):
             for x in t[k:j + 1]:
                 if x.startswith('push '):
                     d += 4
+                elif (mm := re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', x)):
+                    d -= num(mm.group(1))
                 elif (mm := re.fullmatch(r'call (0x[0-9a-f]+)', x)):
                     d -= 4 * ret_args(num(mm.group(1)))
                     for r in ('eax', 'ecx', 'edx'):
@@ -695,7 +781,22 @@ def parse(a, n):
                 kept.pop(num(m.group(1) or '0') - depth - 4 * j, None)
     tail_depth, tail_pushed, marked = depth, [], False
     after = None
-    for s in tail:
+    skip_to = 0
+    for ti, s in enumerate(tail):
+        if ti < skip_to:
+            continue
+        if s == 'push 0x10' and not tail_pushed and (rs := resource_step(t, ins, last + 1 + ti, regs)):
+            if not marked:
+                ops.append((14, 0, 0, 0, []))
+                marked = True
+            ops.append((20, rs[3], rs[1], rs[2], []))
+            for r in ('eax', 'ecx', 'edx', rs[4]):
+                regs.pop(r, None)
+            skip_to = rs[0] - (last + 1)
+            continue
+        if s == 'call 0xddcda7':
+            regs.pop('ecx', None)
+            continue
         if a in HAND_AFTER and s == HAND_AFTER[a][0] and not tail_pushed:
             after = HAND_AFTER[a][1]   # the rest is the hand-written function's
             break
@@ -818,7 +919,7 @@ for a, r in sorted(rows.items()):
         desc, index, ops, fields, names, nargs, pair, tail_of = parse(a, n)
     except (Reject, StopIteration, AttributeError, ValueError) as e:
         key = str(e)[:70]
-        if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e)
+        if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e, '(near %#x)' % AT[0])
         reasons[key] = reasons.get(key, 0) + 1
         reason_bytes[key] = reason_bytes.get(key, 0) + n
         continue

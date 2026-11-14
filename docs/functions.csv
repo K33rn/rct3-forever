@@ -13270,7 +13270,7 @@ address,size,name,callers,status
 0x947540,296,,1,documented
 0x947670,13,,1,documented
 0x947680,100,,6,documented
-0x947720,2776,,62,documented
+0x947720,2776,Class::Construct,62,rewritten
 0x948200,30,DeletingDestructor,3,rewritten
 0x948220,920,,4,documented
 0x9485c0,988,,2,documented

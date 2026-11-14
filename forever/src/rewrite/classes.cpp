@@ -15,8 +15,10 @@
 // mark happen (the steps after it run after them; without one, they come after every step), 15 is kind 10 for an
 // object then given a table of its own (the last value): the member gets the memory, not what the constructor gave back,
 // 16 is kind 9 for the object the constructor's argument number value gives, 17 runs the stretch written by hand number
-// value (below), 18 copies the member at +value to +off, 19 is kind 9 for the object itself (+value). Kind 7 calls fn
-// instead of 0xBD0490 when fn is set (0xBD0520, the other shared empty string).
+// value (below), 18 copies the member at +value to +off, 19 is kind 9 for the object itself (+value), 20 stores at +off
+// the resource the game's resource manager (0x13D0E04) gives for the name at value (fn: 0xBDF160 or 0xBDF1A0, given the
+// place of a text made from the name, then let go). Kind 7 calls fn instead of 0xBD0490 when fn is set (0xBD0520, the
+// other shared empty string).
 struct ClassOp {
     uint32_t kind, off, value, fn, count, args[5], globals;   // bit i of globals: args[i] is a global, read as the call is made
     uint32_t selfs;                                           // bit i: args[i] is an offset into the object (a pointer to that member)
@@ -51,6 +53,19 @@ static void link_before(uint32_t *node, uint32_t *head) {
     head[0] = (uint32_t)(uintptr_t)node;
 }
 static void class_hand(uint32_t number, uint8_t *self, const uint32_t *given);   // class_list.inc
+// The resource the game's resource manager (0x13D0E04) gives for a name, stored into a member: a text made from the name
+// (on 16 new bytes, or none without memory) is given by its place to lookup (0xBDF160 or 0xBDF1A0), and let go after.
+static void class_resource(uint8_t *into, uintptr_t name, uintptr_t lookup) {
+    void *memory = memory_alloc(0x10);
+    int32_t *volatile text = memory ? ((int32_t * (__thiscall *)(void *, uintptr_t))0xbcfb10)(memory, name) : nullptr;
+    *(volatile uint32_t *)into = ((uint32_t(__thiscall *)(void *, void *))lookup)(*(void *volatile *)0x13d0e04, (void *)&text);
+    --*text;
+    int32_t *again = text;   // read again, as the game does
+    if (*(volatile int32_t *)again == 0) {
+        ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)(uint32_t)again[3]);
+        ((void(__cdecl *)(void *))0xbce000)(again);
+    }
+}
 static void *call_with(uintptr_t fn, void *self, uint32_t count, const uint32_t *args) {
     switch (count) {
     case 0: return ((void *(__thiscall *)(void *))fn)(self);
@@ -91,6 +106,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 13) (*(uint32_t **)(self + op.off))[*(uint32_t *)(self + op.off + 4)] = op.value;
         else if (op.kind == 18) *(uint32_t *)(self + op.off) = *(uint32_t *)(self + op.value);
         else if (op.kind == 17) class_hand(op.value, self, given);
+        else if (op.kind == 20) class_resource(self + op.off, op.value, op.fn);
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)
@@ -261,6 +277,66 @@ static void member_from_pair_830740(uint8_t *self, const uint32_t *) {
 static void park_figures(uint8_t *self, const uint32_t *) {
     ((void(__thiscall *)(void *))0x704a50)(self);
     ((void(__thiscall *)(void *))0x707530)(self);
+}
+// Sky::Sky (0x9E51D0), in its member set-up: its colour values (twelve cleared, four set to 1.0), then its colour
+// window record made with new (0x24 bytes, by 0x6A3B60 from a pair of zeros, a pair of 1.0s, both on the stack, and -1),
+// or none without memory.
+static void sky_colours(uint8_t *self, const uint32_t *) {
+    static const uint16_t cleared[] = {0x3d8, 0x3d4, 0x3d0, 0x3cc, 0x3c4, 0x3c0, 0x3bc, 0x3b8, 0x3b0, 0x3ac, 0x3a8, 0x3a4};
+    for (uint16_t at : cleared) *(volatile uint32_t *)(self + at) = 0;
+    static const uint16_t ones[] = {0x3dc, 0x3c8, 0x3b4, 0x3a0};
+    for (uint16_t at : ones) *(volatile uint32_t *)(self + at) = 0x3f800000;   // 1.0f
+    void *memory = memory_alloc(0x24);
+    void *made = nullptr;
+    if (memory) {
+        uint32_t zeros[2] = {0, 0}, ones[2] = {0x3f800000, 0x3f800000};
+        made = ((void *(__thiscall *)(void *, const uint32_t *, const uint32_t *, int32_t))0x6a3b60)(memory, zeros, ones, -1);
+    }
+    *(void *volatile *)(self + 0x3e0) = made;
+}
+// WaterManager::WaterManager (0x947720), in its member set-up: the water's texts table made if there is none yet
+// (0x940EA0), then the manager's name (+0x84) found in it.
+static void water_manager_name(uint8_t *self, const uint32_t *) {
+    if (!*(volatile uint32_t *)0x133a274) ((void(__cdecl *)())0x940ea0)();
+    ((void *(__thiscall *)(void *, uintptr_t, uint32_t, uint32_t))0x403f30)(self + 0x84, 0xf7e3b8, *(volatile uint32_t *)0x133a274, 1);
+}
+// WaterManager::WaterManager (0x947720), its end: the water's shared step (0x9402F0 on 0x133A2BC); the manager kept in
+// its global (0x133A270); its three tables of named textures filled (each made to hold a number of entries by 0x942510,
+// then entry i given the text found for the name made from a format and i: "...0%d" for the first ten, "...%d" after),
+// four resources looked up by name, and two more named texts.
+static uint32_t water_table() {
+    if (!*(volatile uint32_t *)0x133a274) ((void(__cdecl *)())0x940ea0)();
+    return *(volatile uint32_t *)0x133a274;
+}
+static void water_entry(uint8_t *list, uint32_t i, uint32_t at, uintptr_t format, uintptr_t format_low) {
+    char name[0x80];
+    ((int(__cdecl *)(char *, const char *, ...))0xddcdb5)(name, (const char *)(at > 0xfc ? format : format_low), i);
+    uint32_t table = water_table();
+    alignas(16) uint8_t text[0x40];
+    ((void *(__thiscall *)(void *, const char *, uint32_t, uint32_t))0x403f30)(text, name, table, 1);
+    ((void(__thiscall *)(void *, void *))0xbd14e0)(*(uint8_t *volatile *)list + at, text);
+    ((void(__thiscall *)(void *))0xbd1880)(text);
+}
+static void water_manager_after(uint8_t *self) {
+    ((void(__thiscall *)(void *))0x9402f0)((void *)0x133a2bc);
+    *(uint8_t *volatile *)0x133a270 = self;
+    ((void(__thiscall *)(void *, uint32_t))0x942510)(self + 0xc8, 0x20);
+    for (uint32_t i = 0, at = 0; at < 0x380; i++, at += 0x1c) water_entry(self + 0xc8, i, at, 0xf7e340, 0xf7e330);   // SimpleWater
+    class_resource(self + 0xd8, 0xf7e31c, 0xbdf1a0);
+    ((void(__thiscall *)(void *, uint32_t))0x942510)(self + 0xf4, 0x20);
+    for (int32_t i = 0, at = 0; i < *(volatile int32_t *)(self + 0xf8); i++, at += 0x1c) water_entry(self + 0xf4, i, at, 0xf7e310, 0xf7e304);   // Caustics
+    class_resource(self + 0x104, 0xf7e2f0, 0xbdf1a0);
+    class_resource(self + 0x108, 0xf7e2e0, 0xbdf1a0);
+    class_resource(self + 0x10c, 0xf7e2d0, 0xbdf1a0);
+    alignas(16) uint8_t first[0x40], second[0x40];
+    ((void *(__thiscall *)(void *, uintptr_t, uint32_t, uint32_t))0x403f30)(first, 0xf7aa64, water_table(), 1);
+    ((void(__thiscall *)(void *, void *))0xbd14e0)(self + 0x118, first);
+    ((void *(__thiscall *)(void *, uintptr_t, uint32_t, uint32_t))0x403f30)(second, 0xf7ded0, water_table(), 1);
+    ((void(__thiscall *)(void *, void *))0xbd14e0)(self + 0x134, second);
+    ((void(__thiscall *)(void *, uint32_t))0x942510)(self + 0x110, 8);
+    for (int32_t i = 0, at = 0; i < *(volatile int32_t *)(self + 0x114); i++, at += 0x1c) water_entry(self + 0x110, i, at, 0xf7e2c0, 0xf7e2b0);   // WaterNormal
+    ((void(__thiscall *)(void *))0xbd1880)(second);
+    ((void(__thiscall *)(void *))0xbd1880)(first);
 }
 
 #include "class_list.inc"
