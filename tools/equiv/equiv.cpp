@@ -630,6 +630,9 @@ template <int K> static void __cdecl dtor_freed(void *p) { record(0x7600 + K, p)
 static void *g_dtor_tables[3][16] = {{DTOR16(dtor_virtual0)}, {DTOR16(dtor_virtual1)}, {DTOR16(dtor_virtual2)}};
 static void *g_dtor_direct[48] = {DTOR48(dtor_direct)};
 static void *g_dtor_freed[48] = {DTOR48(dtor_freed)};
+static void __stdcall dtor_vec_dtor(void *items, uint32_t size, int32_t count, void *dtor) {
+    record(0x7800, items); record(0x7800, (void *)(uintptr_t)size); record(0x7800, (void *)(intptr_t)count); record(0x7800, dtor);
+}
 static const uint32_t *g_dtor_info;   // the copy under test: {address, steps, then five values a step}
 static std::vector<std::pair<uint32_t, uint32_t>> g_dtor_globals;   // the globals it writes or reads, and what they held
 
@@ -5981,24 +5984,51 @@ static std::vector<Test> tests() {
                              const uint32_t *st = g_dtor_info + 2;
                              const uint32_t n = g_dtor_info[1];
                              // what each member needs, over all the steps: a call or count belongs to the member taken last
-                             struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken; };
+                             struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken, array; uint32_t items_count_at; bool looped; };
                              std::vector<Need> needs;
                              auto need = [&](uint32_t field) -> Need & {
                                  for (Need &x : needs) if (x.field == field) return x;
-                                 needs.push_back({field, 0x40, 0, 0, false, false});
+                                 needs.push_back({field, 0x40, 0, 0, false, false, false, 0, false});
                                  return needs.back();
                              };
                              uint32_t current = 0;
                              for (uint32_t i = 0; i < n; i++) {
                                  const uint32_t *s = st + 5 * i;
                                  if (s[0] == 1) current = s[3], need(current).taken = true;
+                                 if (s[0] == 13) {   // a loop: what the steps need is each item's; kept under a made-up field past the object
+                                     current = 0x10000 + s[3];
+                                     Need &x = need(current);
+                                     x.looped = true, x.items_count_at = s[4];
+                                 }
                                  if (s[0] == 2) need(current).arity = (int)s[1];
                                  if (s[0] == 7) need(current).arity = (int)s[1], need(current).count_at = s[2];
                                  if (s[0] == 9) need(s[3]).text = true;
+                                 if (s[0] == 12) need(current).array = true;
+                                 if (s[0] == 10) { Need &x = need(current); if (x.size < ((s[3] + 0x43) & ~0x3fu)) x.size = (s[3] + 0x43) & ~0x3fu; }
                                  if (s[0] == 6) { Need &x = need(s[2]); if (x.size < ((s[3] + 0x43) & ~0x3fu)) x.size = (s[3] + 0x43) & ~0x3fu; }
                              }
                              uint32_t next = 0x3000;
                              for (const Need &x : needs) {
+                                 if (x.looped) {   // an array of 0-3 pointers (the count sometimes below 0), each to an item or null
+                                     const int32_t count = r.range(0, 5) ? r.range(0, 3) : -r.range(1, 3);
+                                     *arena<int32_t>(0x1000 + x.items_count_at) = count;
+                                     uint32_t *list = arena<uint32_t>(next);
+                                     next += 0x10;
+                                     *arena<uint32_t>(0x1000 + (x.field - 0x10000)) = (uint32_t)(uintptr_t)list;
+                                     for (int k = 0; k < 4; k++) {
+                                         if (r.range(0, 3) == 0) { list[k] = 0; continue; }
+                                         uint32_t *block = arena<uint32_t>(next);
+                                         for (uint32_t i = 0; i < x.size / 4; i++) block[i] = r.next();
+                                         block[0] = (uint32_t)(uintptr_t)g_dtor_tables[x.arity];
+                                         if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
+                                         list[k] = (uint32_t)(uintptr_t)block;
+                                         next += (x.size + 15) & ~15u;
+                                     }
+                                     continue;
+                                 }
+                                 bool is_list = false;   // the array a loop goes over, also taken (to be freed): it stays the array
+                                 for (const Need &y : needs) is_list |= y.looped && y.field == x.field + 0x10000;
+                                 if (is_list) continue;
                                  const bool stored_through = x.size > 0x40;
                                  if (x.taken && !x.text && !stored_through && r.range(0, 3) == 0) {   // a member that isn't there
                                      *arena<uint32_t>(0x1000 + x.field) = 0;
@@ -6009,6 +6039,10 @@ static std::vector<Test> tests() {
                                  block[0] = x.text ? (uint32_t)r.range(1, 2) : (uint32_t)(uintptr_t)g_dtor_tables[x.arity];
                                  if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
                                  *arena<uint32_t>(0x1000 + x.field) = (uint32_t)(uintptr_t)block;
+                                 if (x.array) {   // an array of records: its count just before the items
+                                     block[3] = (uint32_t)r.range(0, 5);
+                                     *arena<uint32_t>(0x1000 + x.field) = (uint32_t)(uintptr_t)(block + 4);
+                                 }
                                  next += (x.size + 15) & ~15u;
                              }
                              for (size_t i = 0; i < g_dtor_globals.size(); i++) arena<uint32_t>(0x40)[i] = r.range(0, 2) ? r.next() : 0xffffffffu;
@@ -6034,12 +6068,13 @@ static std::vector<Test> tests() {
         const uint32_t *st = g_dtor_info + 2;
         for (uint32_t i = 0; i < g_dtor_info[1]; i++) {
             const uint32_t *s = st + 5 * i;
-            if (s[0] == 4) add(s[3], g_dtor_direct);
+            if (s[0] == 4 || s[0] == 11) add(s[3], g_dtor_direct);
+            if (s[0] == 12) { add(0xbce010, g_dtor_freed); bool have = false; for (auto &x : stubs) have |= x.first == 0xddcf39; if (!have) stubs.push_back({0xddcf39, (void *)dtor_vec_dtor}); }
             if (s[0] == 3) add(s[3], g_dtor_freed);
             if (s[0] == 8) add(s[4], g_dtor_freed);
             if (s[0] == 9) add(0xbce010, g_dtor_freed), add(0xbce000, g_dtor_freed);
-            if (s[0] == 5)
-                for (uint32_t g : {s[3], s[4]}) {
+            if (s[0] == 5 || s[0] == 14)
+                for (uint32_t g : {s[3], s[0] == 5 ? s[4] : s[3]}) {
                     bool have = false;
                     for (auto &x : g_dtor_globals) have |= x.first == g;
                     if (!have) g_dtor_globals.push_back({g, *(uint32_t *)(uintptr_t)g});

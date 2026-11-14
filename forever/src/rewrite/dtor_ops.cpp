@@ -12,6 +12,14 @@
 //              when count is 1)
 //   8 FREEM    the function b called with the member at a, whatever it is
 //   9 TEXTREL  the shared text at a let go: its count (its first value) taken down; at 0 its buffer (+0xC) freed, then it
+//  10 SETP     the value b put in the taken member at + a
+//  11 CALLP    the function a called on the taken member (its destructor, called directly)
+//  12 VECDEL   the taken member is an array of records of a bytes, its count kept just before it: each record's
+//              destructor b run (VecDtor), then the block (from the count on) freed
+//  13 LOOP     for each pointer in the array the member at a points to, while the index is under the count at b (read
+//              again each time round; nothing when it starts at 0 or less): one that is there is taken and the next
+//              `small` steps run on it
+//  14 GSET     the global a set to b (count: its size in bytes)
 // The exception frame the game keeps while it does this isn't rebuilt (as in the other rewrites of destructors).
 #include "rewrite.h"
 
@@ -21,10 +29,9 @@ struct DtorStep {
     uint32_t a, b;
 };
 static volatile long g_dtor_steps;
-template <const DtorStep *STEPS, uint32_t N> static void __thiscall dtor_steps(uint8_t *self) {
-    g_dtor_steps++;
-    uint8_t *member = nullptr;
-    for (uint32_t i = 0; i < N; i++) {
+// the steps from `from` up to `to`, with `member` the one taken so far
+__attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorStep *STEPS, uint32_t from, uint32_t to, uint8_t *member) {
+    for (uint32_t i = from; i < to; i++) {
         const DtorStep &s = STEPS[i];
         switch (s.kind) {
         case 0:
@@ -65,6 +72,32 @@ template <const DtorStep *STEPS, uint32_t N> static void __thiscall dtor_steps(u
         case 8:
             ((void(__cdecl *)(void *))s.b)(*(void *volatile *)(self + s.a));
             break;
+        case 10:
+            *(volatile uint32_t *)(member + s.a) = s.b;
+            break;
+        case 11:
+            ((void(__thiscall *)(void *))s.a)(member);
+            break;
+        case 12:
+            ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(member, s.a, *(volatile int32_t *)(member - 4), (void *)s.b);
+            ((void(__cdecl *)(void *))0xbce010)(member - 4);
+            break;
+        case 13:
+            if (*(volatile int32_t *)(self + s.b) > 0) {
+                int32_t index = 0;
+                do {
+                    uint8_t *item = (*(uint8_t **volatile *)(self + s.a))[index];
+                    if (item) dtor_run_range(self, STEPS, i + 1, i + 1 + s.small, item);
+                    index++;
+                } while (index < *(volatile int32_t *)(self + s.b));
+            }
+            i += s.small;
+            break;
+        case 14:
+            if (s.count == 4) *(volatile uint32_t *)s.a = s.b;
+            else if (s.count == 2) *(volatile uint16_t *)s.a = (uint16_t)s.b;
+            else *(volatile uint8_t *)s.a = (uint8_t)s.b;
+            break;
         case 9: {
             --**(volatile int32_t *volatile *)(self + s.a);
             int32_t *text = *(int32_t *volatile *)(self + s.a);   // read again, as the game does
@@ -77,4 +110,10 @@ template <const DtorStep *STEPS, uint32_t N> static void __thiscall dtor_steps(u
         }
     }
 }
+__attribute__((noinline)) static void dtor_run(uint8_t *self, const DtorStep *STEPS, uint32_t N) {
+    g_dtor_steps++;
+    dtor_run_range(self, STEPS, 0, N, nullptr);
+}
+// one small entry for each destructor: the steps are run by the one function above
+template <const DtorStep *STEPS, uint32_t N> static void __thiscall dtor_steps(uint8_t *self) { dtor_run(self, STEPS, N); }
 #include "dtor_ops_list.inc"

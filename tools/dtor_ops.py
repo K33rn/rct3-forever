@@ -15,8 +15,8 @@ pe = pefile.PE(sys.argv[1], fast_load=True); img = pe.get_memory_mapped_image();
 md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
 md.detail = True
 SAVED = ('ebx', 'esi', 'edi', 'ebp')
-SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL = range(10)   # the step kinds (dtor_ops.cpp)
-FREE_ALIGNED, FREE = 0xbce010, 0xbce000
+SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET = range(15)   # the step kinds (dtor_ops.cpp)
+FREE_ALIGNED, FREE, VEC_DTOR = 0xbce010, 0xbce000, 0xddcf39
 
 
 class Unknown(Exception):
@@ -28,8 +28,14 @@ def is_mem(op, base=None):
 
 
 def read(a, n):
-    ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
-    if not ins or ins[-1].mnemonic != 'ret' or ins[-1].op_str or ins[-1].address + ins[-1].size != a + n:
+    # the recorded size of some stops a few bytes short of the end (inside the frame being put back): read on to the ret
+    ins = []
+    for x in md.disasm(bytes(img[a - BASE:a - BASE + n + 24]), a):
+        ins.append(x)
+        if x.address + x.size >= a + n:
+            if x.mnemonic == 'ret' or x.address >= a + n + 16:
+                break
+    if not ins or ins[-1].mnemonic != 'ret' or ins[-1].op_str:
         raise Unknown('does not end in a plain ret')
     at = {x.address: k for k, x in enumerate(ins)}
     regs = {'ecx': ('this', 0)}        # register -> ('this', offset) | ('member', offset of the field it was read from) | ('global', address)
@@ -90,8 +96,52 @@ def read(a, n):
                     i = j + 1
                     continue
                 raise Unknown('a call through a member\'s table with other arguments')
-            # free its memory: push member; call fn; add esp, 4
+            # a value put in the member: mov [member + d], constant
+            if x.mnemonic == 'mov' and is_mem(o[0]) and o[1].type == x86.X86_OP_IMM and o[0].size == 4 and not o[0].mem.index \
+                    and o[0].mem.base and ins[0].reg_name(o[0].mem.base) == member and 0 <= o[0].mem.disp < 0x400:
+                out.append((SETP, 0, 0, o[0].mem.disp, o[1].imm & 0xffffffff))
+                i += 1
+                continue
+            # its destructor called directly: (mov ecx, member;) call fn
+            j = i + 1 if x.mnemonic == 'mov' and x.op_str == f'ecx, {member}' else i
+            if (j > i or member == 'ecx') and ins[j].mnemonic == 'call' and ins[j].operands[0].type == x86.X86_OP_IMM:
+                out.append((CALLP, 0, 0, ins[j].operands[0].imm, 0))
+                for r in ('eax', 'ecx', 'edx'):
+                    regs[r] = None
+                if member in ('eax', 'ecx', 'edx'):
+                    member = None
+                i = j + 1
+                continue
+            # an array of records deleted: mov r, [member - 4]; lea r2, [member - 4]; push dtor; push r; push size; push member;
+            # call VecDtor; push r2; call FreeAligned; add esp, 4
+            if x.mnemonic == 'mov' and o[0].type == x86.X86_OP_REG and is_mem(o[1]) and not o[1].mem.index and o[1].mem.disp == -4 \
+                    and o[1].mem.base and ins[0].reg_name(o[1].mem.base) == member:
+                q = ins[i + 1:i + 10]
+                r1 = reg(o[0])
+                if (q[0].mnemonic == 'lea' and is_mem(q[0].operands[1]) and q[0].operands[1].mem.disp == -4 and ins[0].reg_name(q[0].operands[1].mem.base) == member
+                        and q[1].mnemonic == 'push' and q[1].operands[0].type == x86.X86_OP_IMM
+                        and q[2].mnemonic == 'push' and q[2].op_str == r1
+                        and q[3].mnemonic == 'push' and q[3].operands[0].type == x86.X86_OP_IMM
+                        and q[4].mnemonic == 'push' and q[4].op_str == member
+                        and q[5].mnemonic == 'call' and q[5].operands[0].type == x86.X86_OP_IMM and q[5].operands[0].imm == VEC_DTOR
+                        and q[6].mnemonic == 'push' and q[6].op_str == reg(q[0].operands[0])
+                        and q[7].mnemonic == 'call' and q[7].operands[0].type == x86.X86_OP_IMM and q[7].operands[0].imm == FREE_ALIGNED
+                        and q[8].mnemonic == 'add' and q[8].op_str == 'esp, 4'):
+                    out.append((VECDEL, 0, 0, q[3].operands[0].imm, q[1].operands[0].imm))
+                    for r in ('eax', 'ecx', 'edx'):
+                        regs[r] = None
+                    member = None
+                    i += 10
+                    continue
+                raise Unknown('an array delete of another shape')
+            # free its memory: push member; (a value put in it); call fn; add esp, 4
             if x.mnemonic == 'push' and o[0].type == x86.X86_OP_REG and reg(o[0]) == member:
+                w = ins[i + 1]
+                if w.mnemonic == 'mov' and is_mem(w.operands[0]) and w.operands[1].type == x86.X86_OP_IMM and w.operands[0].size == 4 \
+                        and not w.operands[0].mem.index and w.operands[0].mem.base and ins[0].reg_name(w.operands[0].mem.base) == member \
+                        and 0 <= w.operands[0].mem.disp < 0x400:
+                    out.append((SETP, 0, 0, w.operands[0].mem.disp, w.operands[1].imm & 0xffffffff))
+                    i += 1
                 c, d = ins[i + 1], ins[i + 2]
                 if c.mnemonic == 'call' and c.operands[0].type == x86.X86_OP_IMM and d.mnemonic == 'add' and d.op_str == 'esp, 4':
                     out.append((CDECL, 0, 0, c.operands[0].imm, 0))
@@ -172,6 +222,54 @@ def read(a, n):
                 regs[c] = None
         return j + 6, [(TEXTREL, 0, 0, off, 0)]
 
+    def is_null_check(x, r):
+        zero = x.mnemonic == 'cmp' and x.operands[0].type == x86.X86_OP_REG and reg(x.operands[0]) == r \
+            and x.operands[1].type == x86.X86_OP_REG and regs.get(reg(x.operands[1])) == ('zero', 0)
+        return x.mnemonic == 'test' and x.op_str == f'{r}, {r}' or zero
+
+    def loop(j, end, count_off):
+        """for each pointer in a member array (while the index is under the count at count_off): the steps on each one that is there.
+        (push saved;) top: mov a, [this + array]; mov p, [a + index*4]; null check; je next; steps; next: mov c, [this + count]; inc index;
+        cmp index, c; jl top; (pop saved;) end:"""
+        if ins[j].mnemonic == 'push' and ins[j].operands[0].type == x86.X86_OP_REG and reg(ins[j].operands[0]) in SAVED:
+            j += 1
+        top = ins[j].address
+        x, y = ins[j], ins[j + 1]
+        if not (x.mnemonic == 'mov' and x.operands[0].type == x86.X86_OP_REG and is_mem(x.operands[1]) and this_off(x.operands[1]) is not None):
+            raise Unknown('a loop of another shape')
+        array_off, areg = this_off(x.operands[1]), reg(x.operands[0])
+        m = y.operands[1].mem if y.mnemonic == 'mov' and len(y.operands) == 2 and is_mem(y.operands[1]) else None
+        if not (m is not None and y.operands[0].type == x86.X86_OP_REG and m.base and ins[0].reg_name(m.base) == areg and m.index and m.scale == 4 and m.disp == 0):
+            raise Unknown('a loop of another shape')
+        index, p = ins[0].reg_name(m.index), reg(y.operands[0])
+        if regs.get(index) != ('zero', 0) or index == p or index not in SAVED:
+            raise Unknown('a loop whose index is not a kept zero register')
+        k = j + 2
+        if not is_null_check(ins[k], p) or ins[k + 1].mnemonic != 'je':
+            raise Unknown('a loop of another shape')
+        nxt = ins[k + 1].operands[0].imm
+        regs[index] = ('index', 0)
+        regs[areg] = None
+        inner = block(k + 2, nxt, p)
+        t = at[nxt]
+        q = ins[t:t + 4]
+        if not (q[0].mnemonic == 'mov' and q[0].operands[0].type == x86.X86_OP_REG and is_mem(q[0].operands[1]) and this_off(q[0].operands[1]) == count_off
+                and q[1].mnemonic == 'inc' and q[1].op_str == index
+                and q[2].mnemonic == 'cmp' and q[2].op_str == f'{index}, {reg(q[0].operands[0])}'
+                and q[3].mnemonic == 'jl' and q[3].operands[0].imm == top):
+            raise Unknown('a loop that ends another way')
+        t += 4
+        while ins[t].address < end:
+            if ins[t].mnemonic != 'pop':
+                raise Unknown('a loop that ends another way')
+            regs[reg(ins[t].operands[0])] = None
+            t += 1
+        if ins[t].address != end or any(k_[0] == LOOP for k_ in inner) or len(inner) > 40:
+            raise Unknown('a loop that ends another way')
+        for r in ('eax', 'ecx', 'edx', index, p):
+            regs[r] = None
+        return t, [(LOOP, 0, len(inner), array_off, count_off)] + inner
+
     def step(i):
         """one step at ins[i] outside any null check -> (next index, steps) or None"""
         x, o = ins[i], ins[i].operands
@@ -191,6 +289,8 @@ def read(a, n):
                 off = this_off(o[0])
                 if off is not None:
                     return i + 1, [(SET, o[0].size, 0, off, o[1].imm & 0xffffffff)]
+                if not o[0].mem.base and not o[0].mem.index and not o[0].mem.segment and (o[0].mem.disp & 0xffffffff) >= 0x1000000:
+                    return i + 1, [(GSET, o[0].size, 0, o[0].mem.disp & 0xffffffff, o[1].imm & 0xffffffff)]   # a global
                 b = regs.get(ins[0].reg_name(o[0].mem.base)) if o[0].mem.base else None
                 if b and b[0] == 'member' and not o[0].mem.index and o[0].size == 4 and 0 <= b[1] < 0x10000:
                     return i + 1, [(SETM, 4, b[1], o[0].mem.disp, o[1].imm & 0xffffffff)]   # through a member's pointer
@@ -205,7 +305,11 @@ def read(a, n):
                     regs[r] = ('member', off)
                     # a null check of it: test r, r; (fields set, frame noise); je end
                     j = i + 1
-                    t = text_release(i, r, off)
+                    while ins[j].mnemonic == 'xor' and ins[j].operands[0].type == x86.X86_OP_REG and ins[j].operands[1].type == x86.X86_OP_REG \
+                            and ins[j].operands[0].reg == ins[j].operands[1].reg and reg(ins[j].operands[0]) != r and ins[j].operands[0].size == 4:
+                        regs[reg(ins[j].operands[0])] = ('zero', 0)   # a zero register made in between
+                        j += 1
+                    t = text_release(i, r, off) if j == i + 1 else None
                     if t:
                         return t
                     # free its memory whatever it is: push r; (noise); call fn (the stack put right later)
@@ -222,6 +326,11 @@ def read(a, n):
                         and ins[j].operands[1].type == x86.X86_OP_REG and regs.get(reg(ins[j].operands[1])) == ('zero', 0)
                     if ins[j].mnemonic == 'test' and ins[j].op_str == f'{r}, {r}' or zero:
                         j += 1
+                        k = j
+                        while noise(ins[k]):
+                            k += 1
+                        if ins[k].mnemonic == 'jle' and ins[k].operands[0].imm > ins[k].address:   # a count: a loop over a member array
+                            return loop(k + 1, ins[k].operands[0].imm, off)
                         before = []
                         while ins[j].mnemonic == 'mov':
                             if noise(ins[j]):
@@ -292,7 +401,7 @@ def read(a, n):
     for k, c, small, x, y in ops:   # what the tester's stand-ins hold: table entries under 16, offsets inside its objects
         if k in (VCALL,) and not 0 <= small < 0x40 or k == REL and not (0 <= x < 0x40 and 0 <= small < 0x3c):
             raise Unknown('a table entry past the 16th or a far count')
-        if k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
+        if k == LOOP and not (0 <= x < 0xff0 and 0 <= y < 0xff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
             raise Unknown('a field past 0xFF0')
     return ops
 
