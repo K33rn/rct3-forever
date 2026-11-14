@@ -8442,7 +8442,7 @@ address,size,name,callers,status
 0x731970,1035,,1,documented
 0x731d80,105,Factory::Create,1,rewritten
 0x731df0,26,,1,documented
-0x731e10,929,,2,documented
+0x731e10,929,Folder::LoadFiles,2,rewritten
 0x7321c0,13,,8,documented
 0x7321d0,147,Entries::Dtor7321D0,2,rewritten
 0x732270,145,RefArray::Push,1,rewritten
@@ -8550,7 +8550,7 @@ address,size,name,callers,status
 0x73a4d0,195,,1,documented
 0x73a5a0,57,,0,documented
 0x73a5e0,124,,3,documented
-0x73a660,929,,2,documented
+0x73a660,929,Folder::LoadFiles,2,rewritten
 0x73aa10,105,Factory::Create,1,rewritten
 0x73aa80,200,QueueSurface::Activate,1,rewritten
 0x73ab50,40,,2,documented
@@ -16978,7 +16978,7 @@ address,size,name,callers,status
 0xac3510,236,RefArray::Remove,1,rewritten
 0xac3600,1035,,1,documented
 0xac3a10,105,Factory::Create,1,rewritten
-0xac3a80,929,,2,documented
+0xac3a80,929,Folder::LoadFiles,2,rewritten
 0xac3e30,13,,6,documented
 0xac3e40,147,Entries::Dtor7321D0,2,rewritten
 0xac3ee0,145,RefArray::Push,1,rewritten
@@ -19177,7 +19177,7 @@ address,size,name,callers,status
 0xba5470,931,,1,documented
 0xba5820,466,,1,documented
 0xba5a00,105,Factory::Create,1,rewritten
-0xba5a90,929,,2,documented
+0xba5a90,929,Folder::LoadFiles,2,rewritten
 0xba5e40,13,,5,documented
 0xba5e50,147,Entries::Dtor7321D0,2,rewritten
 0xba5ef0,145,RefArray::Push,1,rewritten

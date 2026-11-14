@@ -962,6 +962,41 @@ static void *__thiscall ed_record(uint8_t *self, uint32_t **text, uint32_t a, vo
     return dev_next() % 2 ? self : self + 0x10;
 }
 
+// Folder::LoadFiles: its stand-ins. The object is at arena 0x8000; the folder walker's walk is at 0x9000 {its table, the
+// entry it is on, how many entries there are, a seed}. Texts made from C text keep that text's address at +4 (so
+// String::Compare can compare them); an entry's name is ".", "..", or a name of its own.
+static const uint32_t lf_rows[][4] = {
+#define LOAD_FOLDERS(at, clear, folder, load, ...) {at, clear, folder, load},
+#include "../../forever/src/rewrite/load_folders.inc"
+#undef LOAD_FOLDERS
+};
+static void *__cdecl lf_alloc(uint32_t size) { dev_note(70, size); return dev_take(size); }
+static void *__thiscall lf_text_c(uint32_t *self, uint32_t text) { dev_note(71, text); self[0] = 1, self[1] = text, self[3] = 0x7000; return self; }
+static void __thiscall lf_clear(void *self) { dev_note(72, (uint32_t)(uintptr_t)self); }
+static void __thiscall lf_load(void *self, uint32_t **name) { dev_note(73, (uint32_t)(uintptr_t)self); dev_note(73, (*name)[1]); }
+static uint32_t *lf_walk() { return arena<uint32_t>(0x9000); }
+static uint8_t __thiscall lf_valid(void *) { dev_note(74, lf_walk()[1]); return lf_walk()[1] < lf_walk()[2]; }
+static uint8_t __thiscall lf_is_file(void *) { dev_note(75, lf_walk()[1]); return (lf_walk()[1] * 7 + lf_walk()[3]) % 4 != 0; }
+static void __thiscall lf_next(void *) { dev_note(76, lf_walk()[1]); lf_walk()[1]++; }
+static void *lf_table[5] = {nullptr, (void *)lf_valid, (void *)lf_next, nullptr, (void *)lf_is_file};
+static void *__thiscall lf_walker(uint32_t *self, uint32_t **folder, uint32_t **pattern) {
+    dev_note(77, (*folder)[1]); dev_note(77, (*pattern)[1]);
+    lf_walk()[0] = (uint32_t)(uintptr_t)lf_table;
+    self[0] = 0x5151, self[1] = (uint32_t)(uintptr_t)lf_walk();
+    return self;
+}
+static uint32_t **__thiscall lf_entry_name(uint32_t *self, uint32_t **into) {   // ".", "..", or a name of its own
+    dev_note(78, self[0]);
+    uint32_t *name = desk_text();
+    uint32_t pick = (lf_walk()[1] + lf_walk()[3] / 3) % 5;
+    name[1] = pick == 0 ? 0xf27994 : pick == 1 ? 0xf27840 : 0x100 + lf_walk()[1];
+    *into = name;
+    return into;
+}
+static int32_t __thiscall lf_compare(uint32_t **self, uint32_t **other) { dev_note(79, (*self)[1]); dev_note(79, (*other)[1]); return (int32_t)((*self)[1] - (*other)[1]); }
+static void *__thiscall lf_copy(uint32_t **self, uint32_t **from) { dev_note(80, (*from)[1]); uint32_t *made = desk_text(); made[1] = (*from)[1] ^ 0x1000; *self = made; return self; }
+static void __thiscall lf_walker_gone(uint32_t *self) { dev_note(81, self[0]); }
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6610,6 +6645,31 @@ static std::vector<Test> tests() {
     };
     debug_editor.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(debug_editor);
+    // Folder::LoadFiles (four copies): the object at arena 0x8000, a walk of 0 to 7 entries; the stand-ins above, with the
+    // copy's own clear and load functions
+    Test load_files{0x731e10,
+                    [=](Rng &r) {
+                        fresh(r);
+                        for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                        for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                        arena<uint32_t>(0x9000)[1] = 0, arena<uint32_t>(0x9000)[2] = r.range(0, 7), arena<uint32_t>(0x9000)[3] = r.next();
+                        arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                    },
+                    [](void *fn) {
+                        ((void(__thiscall *)(void *))fn)(arena<void>(0x8000));
+                        return Result{*arena<uint32_t>(0x20)};
+                    }};
+    load_files.iterations = 300;
+    load_files.prepare = [](const rewrite::Entry *e) {
+        uint32_t clear = 0, load = 0;
+        for (auto &row : lf_rows)
+            if (row[0] == e->at) clear = row[1], load = row[3];
+        stubs_for_now({{0xbcdfc0, (void *)lf_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcfb10, (void *)lf_text_c},
+                       {clear, (void *)lf_clear}, {load, (void *)lf_load}, {0xbe5570, (void *)lf_walker}, {0x4042d0, (void *)lf_entry_name},
+                       {0xbcf040, (void *)lf_compare}, {0xbcfef0, (void *)lf_copy}, {0xbe47b0, (void *)lf_walker_gone}});
+    };
+    load_files.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(load_files);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;
