@@ -1129,6 +1129,19 @@ static int32_t __thiscall eb_grow(void *self, void *box, uint32_t a, void *place
     return (int32_t)(*arena<uint32_t>(0x44) & 0xff);
 }
 
+// Effect::RayHit: its stand-ins (the copy's own three functions, and the ray-box test noting the box bit for bit)
+static const uint32_t ef_rows[][4] = {
+#define EFFECT_FLAGS(at, update, other, hit, ...) {at, update, other, hit},
+#include "../../forever/src/rewrite/effect_flags.inc"
+#undef EFFECT_FLAGS
+};
+static uint8_t __fastcall ef_slabs(void *origin, void *direction, const uint32_t *low, const uint32_t *high, uint32_t *out) {
+    record(0xb3, origin); record(0xb3, direction);
+    for (int k = 0; k < 3; k++) record(0xb3, (void *)(uintptr_t)low[k]), record(0xb3, (void *)(uintptr_t)high[k]);
+    *out = 0x5a5a;
+    return (uint8_t)((low[0] ^ high[2] ^ *arena<uint32_t>(0x44)) & 1);
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -7039,6 +7052,36 @@ static std::vector<Test> tests() {
     };
     within_box.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(within_box);
+    // Effect::RayHit (four copies): the effect at arena 0x8000 (its part at 0x8100, flagged or not; its place and size any
+    // floats, signalling NaNs among them), the ray {0x8300, 0x8310} at 0x8200
+    Test ray_hit{0x48aff0,
+                 [=](Rng &r) {
+                     fresh(r);
+                     uint32_t *self = arena<uint32_t>(0x8000);
+                     self[2] = (uint32_t)(uintptr_t)arena<void>(0x8100);
+                     for (int k = 3; k < 7; k++) {
+                         float f = r.real(-100, 100);
+                         uint32_t bits;
+                         memcpy(&bits, &f, 4);
+                         arena<uint32_t>(0x8000)[k] = r.range(0, 5) ? bits : (r.range(0, 1) ? 0x7fa00001u : r.next());   // (0x7FA00001: a signalling NaN)
+                     }
+                     arena<uint32_t>(0x8100)[0] = r.next(), arena<uint32_t>(0x8100)[1] = r.next(), arena<uint32_t>(0x8100)[2] = r.next();
+                     arena<uint32_t>(0x8200)[0] = (uint32_t)(uintptr_t)arena<void>(0x8300), arena<uint32_t>(0x8200)[1] = (uint32_t)(uintptr_t)arena<void>(0x8310);
+                     arena<uint32_t>(0x44)[0] = r.next();
+                     arena<uint32_t>(CALL_LOG)[0] = 0;
+                 },
+                 [](void *fn) {
+                     int32_t got = ((int32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x8000), arena<void>(0x8200));
+                     return Result{(uint32_t)got};
+                 }};
+    ray_hit.iterations = 2000;
+    ray_hit.prepare = [](const rewrite::Entry *e) {
+        for (auto &row : ef_rows)
+            if (row[0] == e->at)
+                stubs_for_now({{row[1], (void *)eb_update}, {row[2], (void *)eb_other}, {row[3], (void *)eb_grow}, {0xcda7f0, (void *)ef_slabs}});
+    };
+    ray_hit.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(ray_hit);
     // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
     // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
     // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.

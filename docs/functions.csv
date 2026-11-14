@@ -1710,7 +1710,7 @@ address,size,name,callers,status
 0x48a7c0,604,,2,documented
 0x48ad50,30,DeletingDestructor,0,rewritten
 0x48ad70,636,,10,documented
-0x48aff0,179,,2,documented
+0x48aff0,179,Effect::RayHit,2,rewritten
 0x48b0b0,698,QuadTree::WalkBoxMatching,2,rewritten
 0x48b370,210,Grid::Collect,3,rewritten
 0x48b450,660,,2,documented
@@ -9710,7 +9710,7 @@ address,size,name,callers,status
 0x7b7a60,30,DeletingDestructor,0,rewritten
 0x7b7a80,703,,10,documented
 0x7b7d40,293,QuadTree::CullBox,1,rewritten
-0x7b7e70,179,,2,documented
+0x7b7e70,179,Effect::RayHit,2,rewritten
 0x7b7f30,916,QuadTree::WalkBoxWeighted,2,rewritten
 0x7b82d0,788,QuadTree::WalkBoxRect,2,rewritten
 0x7b85f0,139,QuadTree::TakeAll,3,rewritten
@@ -18391,7 +18391,7 @@ address,size,name,callers,status
 0xb5d920,564,,2,documented
 0xb5de40,30,DeletingDestructor,0,rewritten
 0xb5de60,657,,10,documented
-0xb5e100,179,,2,documented
+0xb5e100,179,Effect::RayHit,2,rewritten
 0xb5e1c0,661,QuadTree::WalkNearPoint,2,rewritten
 0xb5e460,681,QuadTree::WalkBox,2,rewritten
 0xb5e710,561,QuadTree::WalkBoxOverlap,2,rewritten
@@ -18578,7 +18578,7 @@ address,size,name,callers,status
 0xb73cf0,392,,1,documented
 0xb73e80,681,,10,documented
 0xb74130,88,Object::Attach8BA370,1,rewritten
-0xb74190,179,,2,documented
+0xb74190,179,Effect::RayHit,2,rewritten
 0xb74250,136,Tree::WalkA0E240,3,rewritten
 0xb742e0,661,QuadTree::WalkNearPoint,2,rewritten
 0xb74580,681,QuadTree::WalkBox,2,rewritten
