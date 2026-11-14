@@ -997,6 +997,34 @@ static int32_t __thiscall lf_compare(uint32_t **self, uint32_t **other) { dev_no
 static void *__thiscall lf_copy(uint32_t **self, uint32_t **from) { dev_note(80, (*from)[1]); uint32_t *made = desk_text(); made[1] = (*from)[1] ^ 0x1000; *self = made; return self; }
 static void __thiscall lf_walker_gone(uint32_t *self) { dev_note(81, self[0]); }
 
+// Window::MessageNumbered: its stand-ins. The six globals of the copy being checked are set for each case (none, or a
+// wide text in the arena) and put back after; texts keep what they were made from at +4.
+static const uint32_t msg_rows[][7] = {
+#define MESSAGES(at, p0, p1, p2, p3, p4, p5, ...) {at, p0, p1, p2, p3, p4, p5},
+#include "../../forever/src/rewrite/messages.inc"
+#undef MESSAGES
+};
+static uint32_t g_msg_globals[6], g_msg_saved[6];
+static void *__cdecl msg_alloc(uint32_t size) { dev_note(85, size); return dev_take(size); }
+static void *__thiscall msg_wide(uint32_t *self, const void *characters) {
+    dev_note(86, (uint32_t)(uintptr_t)characters);
+    self[0] = 1, self[1] = (uint32_t)(uintptr_t)characters, self[3] = 0x7100;
+    return dev_next() % 4 ? self : self;   // (the text made in place)
+}
+static void *__thiscall msg_text_c(uint32_t *self, const char *text) { dev_note(87, text_hash(text)); self[0] = 1, self[1] = text_hash(text), self[3] = 0x7200; return self; }
+static int __cdecl msg_sprintf(char *out, const char *format, ...) {
+    va_list list;
+    va_start(list, format);
+    int n = vsnprintf(out, 0x20, format, list);
+    va_end(list);
+    dev_note(88, (uint32_t)(uintptr_t)format); dev_note(88, text_hash(out));
+    return n;
+}
+static void __fastcall msg_replace(uint32_t **text, uint32_t **mark, uint32_t **with) {   // every mark replaced: noted, the text changed in place
+    dev_note(89, (*text)[1]); dev_note(89, (*mark)[1]); dev_note(89, (*with)[1]);
+    (*text)[1] = (*text)[1] * 31 + (*with)[1];
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6670,6 +6698,35 @@ static std::vector<Test> tests() {
     };
     load_files.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(load_files);
+    // Window::MessageNumbered (five copies): where the result goes (arena 0x8000) and a number (mostly 0 to 5, sometimes
+    // anything); the copy's six globals set for the case
+    Test numbered_message{0x442c60,
+                          [=](Rng &r) {
+                              fresh(r);
+                              for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                              arena<uint32_t>(0x8000)[0] = r.next();
+                              arena<uint32_t>(0x40)[0] = r.range(0, 3) ? r.range(0, 5) : r.next();
+                              for (int k = 0; k < 6; k++) arena<uint32_t>(0x50)[k] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x7400 + 0x20 * k) : 0;
+                              arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                          },
+                          [](void *fn) {
+                              for (int k = 0; k < 6; k++) *(uint32_t *)(uintptr_t)g_msg_globals[k] = arena<uint32_t>(0x50)[k];
+                              void *back = ((void *(__fastcall *)(void *, uint32_t))fn)(arena<void>(0x8000), arena<uint32_t>(0x40)[0]);
+                              return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                          }};
+    numbered_message.iterations = 300;
+    numbered_message.prepare = [](const rewrite::Entry *e) {
+        for (auto &row : msg_rows)
+            if (row[0] == e->at)
+                for (int k = 0; k < 6; k++) g_msg_globals[k] = row[1 + k], g_msg_saved[k] = *(uint32_t *)(uintptr_t)row[1 + k];
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbd0490, (void *)desk_empty},
+                       {0xbcf7d0, (void *)msg_wide}, {0xbcf850, (void *)msg_text_c}, {0xddcdb5, (void *)msg_sprintf}, {0xcd23a0, (void *)msg_replace}});
+    };
+    numbered_message.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        for (int k = 0; k < 6; k++) *(uint32_t *)(uintptr_t)g_msg_globals[k] = g_msg_saved[k];
+    };
+    quick(numbered_message);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;

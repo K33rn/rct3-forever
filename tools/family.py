@@ -1,7 +1,9 @@
 """Check that a family of functions is one function written out several times, and write what differs between them.
 The copies must be the same instructions with the same operands, except: jumps are compared by the instruction they
 go to; the exception handler a frame pushes (the push after push -1) is set aside; and some operands differ (constants,
-addresses, calls). Those are the family's parameters, written in the order they appear, one row per copy:
+addresses, calls). A jump table (jmp dword ptr [R*4 + table]) may be at a different place in each copy: its entries
+must send each index to the same instruction in every copy, and it is then not a parameter. The other differing
+operands are the family's parameters, written in the order they appear, one row per copy:
     NAME(address, parameter, ..., then the copy's first 7 bytes)
 to forever/src/rewrite/<name>.inc, with the operands' places in a comment, so the rewrite can say what each one is. The
 rewrite is written by hand once and takes its parameters from the rows. A family that needs a parameter to be the
@@ -19,6 +21,26 @@ for line in open(os.path.join(HERE, 'docs', 'functions.csv'), encoding='utf-8'):
     parts = line.split(',')
     if parts[0].startswith('0x'):
         sizes[int(parts[0], 16)] = int(parts[1])
+
+
+def full_size(at):
+    """The function's length read to its ret (past the recorded size)."""
+    end = at
+    for x in md.disasm(bytes(img[at - BASE:at - BASE + sizes[at] + 16]), at):
+        end = x.address + x.size
+        if end >= at + sizes[at] and x.mnemonic == 'ret':
+            break
+    return end - at
+
+
+def table_targets(at, table, ins_index):
+    """A jump table's entries, as instruction numbers, up to the first that leaves the function."""
+    out = []
+    while True:
+        v = int.from_bytes(img[table - BASE + 4 * len(out):table - BASE + 4 * len(out) + 4], 'little')
+        if v not in ins_index:
+            return out
+        out.append(ins_index[v])
 
 
 def read(at):
@@ -64,12 +86,27 @@ for a in copies[1:]:
             if v0 == v1 or h0:
                 continue
             same_kind = (isinstance(v0, int) and isinstance(v1, int)) or (
-                isinstance(v0, tuple) and isinstance(v1, tuple) and v0[0] == v1[0] == 'mem' and v0[1:4] == v1[1:4] and v0[1] == 0 and v0[2] == 0)
+                isinstance(v0, tuple) and isinstance(v1, tuple) and v0[0] == v1[0] == 'mem' and v0[1:4] == v1[1:4])   # (only the displacement differs)
             if not same_kind:
                 raise SystemExit(f'{a:#x}: instruction {k} differs in more than a constant: {t0} / {t1}')
             if (k, j) not in params:
                 params.append((k, j))
 params.sort()
+# a jump table's place: checked by what it holds, then not a parameter
+tables = []
+for k, j in list(params):
+    m, o, h, t, off = first[k]
+    v = o[j]
+    if m == 'jmp' and isinstance(v, tuple) and v[0] == 'mem' and v[1] == 0 and v[2] != 0 and v[3] == 4:
+        targets = []
+        for a in copies:
+            ins = list(md.disasm(bytes(img[a - BASE:a - BASE + full_size(a)]), a))
+            index = {x.address: n for n, x in enumerate(ins)}
+            targets.append(table_targets(a, reads[a][k][1][j][4], index))
+        if not targets[0] or any(t != targets[0] for t in targets):
+            raise SystemExit(f'the jump table at +{off:#x} sends its indexes to different places: {targets}')
+        params.remove((k, j))
+        tables.append((off, len(targets[0])))
 
 
 def value(read_, k, j):
@@ -94,6 +131,8 @@ out = [f'// {name}: one function written out {len(copies)} times (checked by too
 for n, g in enumerate(groups):
     places = ', '.join(f'+{first[params[i][0]][4]:#x} {first[params[i][0]][3]}' for i in g)
     out.append(f'//   p{n}: {places}')
+for off, n in tables:
+    out.append(f'// (the jump table at +{off:#x}: its {n} entries checked to go to the same instructions in every copy)')
 out.append('// Do not edit by hand.')
 for a, r in zip(copies, rows):
     out.append(f'{name.upper()}({a:#x}, ' + ', '.join(f'{r[g[0]]:#x}' for g in groups) + ', ' + ', '.join(f'0x{b:02x}' for b in r[len(params):]) + ')')
