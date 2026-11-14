@@ -9342,7 +9342,7 @@ address,size,name,callers,status
 0x791590,107,Factory::CreateFromFields,0,rewritten
 0x791600,107,Factory::CreateFromFields,0,rewritten
 0x791670,2748,,5,documented
-0x792130,1201,,1,documented
+0x792130,1201,Window::Titled,1,rewritten
 0x7925f0,1619,,1,documented
 0x792c50,1276,,1,documented
 0x793150,586,,1,documented

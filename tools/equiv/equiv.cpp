@@ -214,7 +214,24 @@ static void *g_text_ref;
 // a value given to a stand-in: a temporary on the stack is told by what it is (the text made last: 0x7e57; other:
 // its first dword), never by where it is, which differs between the original's run and the rewrite's
 static bool g_built_other;   // the member stand-ins return a pointer of their own (so what a constructor returns is told from its memory)
-static void *built_result(void *self) { return g_built_other ? (uint8_t *)self + 8 : self; }
+// (an object built for the titled windows' test gets a table whose slot 0x20 gives its size: two floats from the
+// arena at 0x8f00, picked by the object's address so different children differ, NaN and infinity among them)
+static void *__thiscall titled_child_size(void *self, void *scratch) {
+    record(0x6b1641, self);
+    return arena<uint8_t>(0x8f00) + ((uintptr_t)self >> 2 & 7) * 8;
+}
+static void *titled_child_table[9] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, (void *)titled_child_size};
+static void *built_result(void *self) {
+    if (!g_built_other) return self;
+    *(void **)self = titled_child_table;
+    *(void **)((uint8_t *)self + 8) = titled_child_table;
+    for (int k = 1; k < 0x28; k++) ((uint32_t *)self)[2 + k] = (uint32_t)(uintptr_t)self * 0x9e3779b1u + k;   // (its members told apart)
+    return (uint8_t *)self + 8;
+}
+static void __thiscall titled_layout(void *self, uint32_t relation, void *to, const uint32_t *rect) {
+    record(0x6b1640, self); record(0x6b1640, (void *)(uintptr_t)relation); record(0x6b1640, to);
+    for (int k = 0; k < 4; k++) record(0x6b1640, (void *)(uintptr_t)rect[k]);
+}
 static void *arg_value(uint32_t v) {
     uintptr_t here = (uintptr_t)&v;
     if (v == (uint32_t)(uintptr_t)g_text_ref) return (void *)0x7e57;
@@ -6030,6 +6047,12 @@ static std::vector<Test> tests() {
                                   arena<uint32_t>(h + 0x80)[0] = (uint32_t)(uintptr_t)arena<void>(h + 0x90);
                                   arena<uint32_t>(h + 0x90)[1] = (uint32_t)(uintptr_t)arena<void>(h + 0x80);
                               }
+                              for (int k = 0; k < 16; k++) {   // the children's sizes
+                                  const uint32_t odd[] = {0x7fc00000, 0x7f800000, 0xff800000, 0x7fa00001, 0};
+                                  arena<uint32_t>(0x8f00)[k] = r.range(0, 5) ? r.next() >> 3 | (r.range(0, 1) ? 0 : 0x80000000u) : odd[r.range(0, 4)];
+                                  if (r.range(0, 1)) arena<float>(0x8f00)[k] = (float)r.range(0, 900) + 0.5f * (float)r.range(0, 1);
+                              }
+                              arena<uint32_t>(0x100)[0xe0 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8c00);   // (the parent the base keeps)
                               arena<uint32_t>(CALL_LOG)[0] = 0;
                           },
                           [](void *fn) {
@@ -6055,7 +6078,8 @@ static std::vector<Test> tests() {
         std::vector<std::pair<uint32_t, void *>> list = {{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0xbd0490, (void *)stub_wide_empty_shared},
                                                          {0x403be0, (void *)stub_wide_assign_c}, {0x403bb0, (void *)stub_wide_assign}, {0x41c740, (void *)stub_wide_copy},
                                                          {0x805750, (void *)stub_null_handle}, {0x805700, (void *)stub_member_handle_of}, {base, bases[base_args]},
-                                                         {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}, {0x6a39d0, (void *)stub_text_for_child}};
+                                                         {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}, {0x6a39d0, (void *)stub_text_for_child},
+                                                         {0x6b1640, (void *)titled_layout}};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at) list.push_back({titled_callees[k], built[titled_callees[k + 1]]});
         stubs_for_now(list);

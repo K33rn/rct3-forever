@@ -27,6 +27,10 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   there was memory: its own constructor inlined);
 //   15 destroy temporary number off with fn, 16 let go of the wide string it holds, 17 let go of name number off: each
 //   only when it was made.
+//   40 a child laid out: the member at +off asked its size (its slot 0x20), then 0x6B1640 on it with the relation
+//   (args[4] >> 8), the member at +value and the rectangle {args[0], args[1] (bits), size w +/- the float at args[2],
+//   size h +/- the float at args[3]} (bit 0 / bit 1 of args[4]: subtracted), the sums on the FPU stored as floats.
+//   41 the dword at +args[1] of the member at +args[0] copied to +value of the member at +off.
 // The values given to fn are by kind (4 bits each in kinds): 0 the value, 1 the global there, 2 the constructor's
 // argument number value, 3 a pointer to +value of the object, 4 what temporary number value's maker returned, 5 where
 // name number value is kept, 6 the member at +value.
@@ -126,6 +130,21 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 7: *(void **)(self + op.off) = ((void *(__fastcall *)(uint32_t))0xbd0490)(1); break;
         case 29: *(uint32_t *)(self + op.off) = *(uint32_t *)(uintptr_t)given[op.value]; break;
         case 30: *(uint32_t *)(self + op.off) = *(uint32_t *)(self + op.value); break;
+        case 41: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.value) = *(uint32_t *)(*(uint8_t **)(self + op.args[0]) + op.args[1]); break;
+        case 40: {
+            uint8_t *child = *(uint8_t **)(self + op.off);
+            uint8_t scratch[0x10];
+            const float *size = (const float *)((void *(__thiscall *)(void *, void *))(*(void ***)child)[0x20 / 4])(child, scratch);
+            volatile uint32_t rect[4];
+            const long double w = (long double)size[0], kw = *(const float *)(uintptr_t)op.args[2];
+            volatile float width = op.args[4] & 1 ? w - kw : w + kw;
+            const long double h = (long double)size[1], kh = *(const float *)(uintptr_t)op.args[3];
+            volatile float height = op.args[4] & 2 ? h - kh : h + kh;
+            rect[0] = op.args[0], rect[1] = op.args[1];
+            rect[2] = *(volatile uint32_t *)&width, rect[3] = *(volatile uint32_t *)&height;
+            ((void(__thiscall *)(void *, uint32_t, void *, volatile uint32_t *))0x6b1640)(child, op.args[4] >> 8, *(void **)(self + op.value), rect);
+            break;
+        }
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;
         case 27: *(uint32_t *)(self + op.off) |= op.value; break;
         case 3: titled_call(op.fn, self + op.off, op.count, args); break;

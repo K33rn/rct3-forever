@@ -196,6 +196,97 @@ def parse(a, n):
 FLAGS = ('add', 'sub', 'and', 'or', 'xor', 'inc', 'dec', 'cmp', 'test', 'call', 'neg', 'shl', 'shr', 'sar', 'imul')
 
 
+def layout_step(t, k, R):
+    """A child laid out, from t[k] (mov ecx, [this + C]): its size from its slot 0x20 (given a place on the stack), a
+    rectangle on the stack {x, y: constants; size w and h each plus or minus a game float constant, worked out on the
+    FPU and stored as floats}, and 0x6B1640 (SetRelationAndLayout) on the child with the relation, a member and the
+    rectangle. Followed value by value; the stack must end where it began and no saved register may change. Returns
+    (the index after it, the op) or None."""
+    m = re.fullmatch(r'mov ecx, dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', t[k])
+    if not m or R.get(m.group(1)) != ('this',):
+        return None
+    me, child = m.group(1), num(m.group(2))
+    sim = {'ecx': ('child', child)}
+    pushes, local, fpu, dd = [], {}, [], 0
+    for q in range(k + 1, min(len(t), k + 48)):
+        s = t[q]
+        if re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', s):
+            continue   # the exception frame's state
+        if (mm := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', s)) and sim.get(mm.group(2)) == ('child', child):
+            sim[mm.group(1)] = ('table', child)
+        elif (mm := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + me + r' \+ (0x[0-9a-f]+|\d+)\]', s)):
+            v = num(mm.group(2))
+            sim[mm.group(1)] = ('child', v) if v == child else ('member', v)
+        elif (mm := re.fullmatch(r'lea ' + REG + r', \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
+            sim[mm.group(1)] = ('local', num(mm.group(2)) - dd)
+        elif (mm := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
+            pushes.append(('imm', num(mm.group(1)))); dd += 4
+        elif (mm := re.fullmatch(r'push ' + REG, s)):
+            reg = mm.group(1)
+            if reg in sim:
+                pushes.append(sim[reg])
+            else:   # a register the tail holds a constant in
+                pushes.append(('imm', R[reg][1]) if R.get(reg) and R[reg][0] == 'const' else None)
+            dd += 4
+        elif (mm := re.fullmatch(r'call dword ptr \[' + REG + r' \+ 0x20\]', s)):
+            if sim.get(mm.group(1)) != ('table', child) or sim.get('ecx') != ('child', child) or not pushes or not pushes[-1] or pushes[-1][0] != 'local':
+                return None
+            pushes.pop(); dd -= 4
+            for r in ('eax', 'ecx', 'edx'):
+                sim.pop(r, None)
+            sim['eax'] = ('size',)
+        elif (mm := re.fullmatch(r'fld dword ptr \[eax(?: \+ 4)?\]', s)) and sim.get('eax') == ('size',):
+            fpu.append(('s', 1 if '+ 4' in s else 0))
+        elif (mm := re.fullmatch(r'f(add|sub) dword ptr \[(0x[0-9a-f]+)\]', s)) and fpu and fpu[-1][0] == 's':
+            fpu[-1] = ('op', fpu[-1][1], mm.group(1), num(mm.group(2)))
+        elif (mm := re.fullmatch(r'fstp dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and fpu:
+            local[num(mm.group(1)) - dd] = fpu.pop()
+        elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)):
+            local[num(mm.group(1)) - dd] = ('imm', num(mm.group(2)))
+        elif s == 'call 0x6b1640':
+            if sim.get('ecx') != ('child', child) or len(pushes) != 3 or fpu:
+                return None
+            rect, parent, relation = pushes
+            if not rect or rect[0] != 'local' or not parent or parent[0] not in ('member', 'child') or not relation or relation[0] != 'imm':
+                return None
+            r0, r1, r2, r3 = (local.get(rect[1] + 4 * i) for i in range(4))
+            if not (r0 and r0[0] == 'imm' and r1 and r1[0] == 'imm' and r2 and r2[:2] == ('op', 0) and r3 and r3[:2] == ('op', 1)):
+                return None
+            flags = (r2[2] == 'sub') | (r3[2] == 'sub') << 1 | relation[1] << 8
+            return q + 1, (40, child, parent[1], 0x6b1640, [r0[1], r1[1], r2[3], r3[3], flags])
+        else:
+            return None
+        if any(r in sim for r in ('ebx', 'esi', 'edi', 'ebp')):
+            return None   # (a saved register written: not this shape)
+    return None
+
+
+def copy_step(t, k, R):
+    """One member's dword at +X copied into another member's +Y (both members pointers the object keeps): only plain
+    loads and the one store, from t[k]. Returns (the index after it, the op) or None."""
+    sim = {}
+    for q in range(k, min(len(t), k + 6)):
+        s = t[q]
+        if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)):
+            src = sim.get(m.group(2)) or (('this',) if R.get(m.group(2)) == ('this',) and m.group(2) not in sim else None)
+            if src == ('this',):
+                sim[m.group(1)] = ('member', num(m.group(3)))
+            elif src and src[0] == 'member':
+                sim[m.group(1)] = ('through', src[1], num(m.group(3)))
+            else:
+                return None
+            if R.get(m.group(1)) == ('this',):
+                return None   # (the object's own register overwritten)
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\], ' + REG, s)):
+            to, v = sim.get(m.group(1)), sim.get(m.group(3))
+            if not to or to[0] != 'member' or not v or v[0] != 'through':
+                return None
+            return q + 1, (41, to[1], num(m.group(2)), 0, [v[1], v[2]])
+        else:
+            return None
+    return None
+
+
 def tail(p):
     """The member steps after the base and the copy's release, as ops (kind, off, value, fn, args); see titled.cpp."""
     ins, t, depth_at, at, nargs = p['ins'], p['t'], p['depth_at'], p['at'], p['nargs']
@@ -261,6 +352,12 @@ def tail(p):
     while True:
         s, x = t[k], ins[k]
         val = lambda r: R.get(r)
+        if not pushed and ((ls := layout_step(t, k, R)) or (ls := copy_step(t, k, R))):
+            ops.append(ls[1])   # a child laid out (kind 40) / a member's value copied into another's (41)
+            for r in ('eax', 'ecx', 'edx'):
+                R.pop(r, None)
+            k = ls[0]
+            continue
         if x.mnemonic == 'ret':
             if R.get('eax') != ('this',):
                 raise Reject('returns')
