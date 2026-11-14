@@ -1025,6 +1025,30 @@ static void __fastcall msg_replace(uint32_t **text, uint32_t **mark, uint32_t **
     (*text)[1] = (*text)[1] * 31 + (*with)[1];
 }
 
+// Money::FormatNamed: its stand-ins. The copy's table of ten named texts and its fallback (game globals) are set for each
+// case to named texts in the arena (0x7600 on: {.., .., their characters or none}) and put back after.
+static const uint32_t mf_rows[][4] = {
+#define MONEY_FORMATS(at, table, letter, fallback, ...) {at, table, letter, fallback},
+#include "../../forever/src/rewrite/money_formats.inc"
+#undef MONEY_FORMATS
+};
+static uint32_t g_mf_table, g_mf_fallback, g_mf_saved[11];
+static void *__thiscall mf_language(uint32_t **self) { dev_note(90, 0); uint32_t *t = desk_text(); t[1] = 0x4c414e47; *self = t; return self; }
+static void *__thiscall mf_join(uint32_t **self, uint32_t **out, uint32_t **other) {
+    dev_note(91, (*self)[1]); dev_note(91, (*other)[1]);
+    uint32_t *t = desk_text(); t[1] = (*self)[1] * 33 + (*other)[1]; *out = t;
+    return out;
+}
+static void *__thiscall mf_copy(uint32_t **self, uint32_t **from) { dev_note(92, (*from)[1]); uint32_t *t = desk_text(); t[1] = (*from)[1]; *self = t; return self; }
+static void *__thiscall mf_named(uint32_t *self, uint32_t **name, uint32_t table, uint32_t flag) {   // found (bit 0 of +4) or not, by the name
+    dev_note(93, (*name)[1]); dev_note(93, table); dev_note(93, flag);
+    uint32_t pick = ((*name)[1] ^ *arena<uint32_t>(0x44)) % 3;
+    self[1] = pick != 0, self[2] = pick == 2 ? (uint32_t)(uintptr_t)arena<void>(0x7700) : 0;
+    return self;
+}
+static uint8_t __thiscall mf_bit0(uint32_t *self, uint32_t a) { dev_note(94, a); return (uint8_t)(self[1] & 1); }
+static void __thiscall mf_named_gone(uint32_t *self) { dev_note(95, self[1]); }
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6727,6 +6751,42 @@ static std::vector<Test> tests() {
         for (int k = 0; k < 6; k++) *(uint32_t *)(uintptr_t)g_msg_globals[k] = g_msg_saved[k];
     };
     quick(numbered_message);
+    // Money::FormatNamed (three copies): where the text goes (arena 0x8000) and a number (below 10, or above)
+    Test money_named{0x6bd4c0,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                         arena<uint32_t>(0x8000)[0] = r.next();
+                         // (not negative: the game takes it signed and reads before its table, as the rewrite does)
+                         arena<int32_t>(0x40)[0] = r.range(0, 2) ? r.range(0, 25) : (int32_t)(r.next() & 0x7fffffff);
+                         arena<uint32_t>(0x44)[0] = r.next();
+                         for (int k = 0; k < 11; k++) {   // the named texts: their characters at +8, or none
+                             arena<uint32_t>(0x7600 + 0x10 * k)[2] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x7800 + 0x10 * k) : 0;
+                         }
+                         arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                     },
+                     [](void *fn) {
+                         for (int k = 0; k < 10; k++) ((uint32_t *)(uintptr_t)g_mf_table)[k] = (uint32_t)(uintptr_t)arena<void>(0x7600 + 0x10 * k);
+                         *(uint32_t *)(uintptr_t)g_mf_fallback = (uint32_t)(uintptr_t)arena<void>(0x7600 + 0xa0);
+                         void *back = ((void *(__fastcall *)(void *, int32_t))fn)(arena<void>(0x8000), arena<int32_t>(0x40)[0]);
+                         return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                     }};
+    money_named.iterations = 300;
+    money_named.prepare = [](const rewrite::Entry *e) {
+        for (auto &row : mf_rows)
+            if (row[0] == e->at) g_mf_table = row[1], g_mf_fallback = row[3];
+        memcpy(g_mf_saved, (void *)(uintptr_t)g_mf_table, 40);
+        g_mf_saved[10] = *(uint32_t *)(uintptr_t)g_mf_fallback;
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbd0490, (void *)desk_empty},
+                       {0xbcf7d0, (void *)msg_wide}, {0xbcf850, (void *)msg_text_c}, {0x453630, (void *)mf_language}, {0x403bb0, (void *)mf_join},
+                       {0xbd01c0, (void *)mf_copy}, {0x410c90, (void *)mf_named}, {0xbd1420, (void *)mf_bit0}, {0xbd1880, (void *)mf_named_gone}});
+    };
+    money_named.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        memcpy((void *)(uintptr_t)g_mf_table, g_mf_saved, 40);
+        *(uint32_t *)(uintptr_t)g_mf_fallback = g_mf_saved[10];
+    };
+    quick(money_named);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;
