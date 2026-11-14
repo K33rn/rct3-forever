@@ -5527,6 +5527,7 @@ static std::vector<Test> tests() {
                              uint32_t *list = arena<uint32_t>(0x7c0), *inner = arena<uint32_t>(0x7e0);
                              list[0] = (uint32_t)(uintptr_t)arena<void>(0x7b0), arena<uint32_t>(0x7b0)[1] = (uint32_t)(uintptr_t)list;
                              list[5] = (uint32_t)(uintptr_t)inner;
+                             list[4] = (uint32_t)(uintptr_t)inner;   // (some classes keep theirs at +0x10)
                              inner[0] = (uint32_t)(uintptr_t)arena<void>(0x7f0), arena<uint32_t>(0x7f0)[1] = (uint32_t)(uintptr_t)inner;
                              for (uintptr_t g : g_class_tail_globals)
                                  if (g) *(void **)g = list;

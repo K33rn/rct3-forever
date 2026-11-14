@@ -13,7 +13,8 @@
 // 11 calls fn (stdcall) with five values: the compiler's array constructor (0xDDCF99: array, size, count, ctor, dtor),
 // 13 marks the end of the member array at +off ({items, count}: items[count] = 0), 14 is where the registration and the
 // mark happen (the steps after it run after them; without one, they come after every step), 15 is kind 10 for an
-// object then given a table of its own (the last value): the member gets the memory, not what the constructor gave back.
+// object then given a table of its own (the last value): the member gets the memory, not what the constructor gave back,
+// 16 is kind 9 for the object the constructor's argument number value gives.
 struct ClassOp {
     uint32_t kind, off, value, fn, count, args[5], globals;   // bit i of globals: args[i] is a global, read as the call is made
     uint32_t selfs;                                           // bit i: args[i] is an offset into the object (a pointer to that member)
@@ -74,8 +75,8 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 1) self[op.off] = (uint8_t)op.value;
         else if (op.kind == 2) *(uint8_t **)(self + op.off) = self + op.value;
         else if (op.kind == 5) *(uint32_t *)(self + op.off) = *(uint32_t *)(uintptr_t)op.value;
-        else if (op.kind == 6 || op.kind == 9) {
-            uint8_t *handle = op.kind == 6 ? ((uint8_t * (__cdecl *)())0x805750)() : ((uint8_t * (__fastcall *)(uintptr_t))0x805700)(op.value);
+        else if (op.kind == 6 || op.kind == 9 || op.kind == 16) {
+            uint8_t *handle = op.kind == 6 ? ((uint8_t * (__cdecl *)())0x805750)() : ((uint8_t * (__fastcall *)(uintptr_t))0x805700)(op.kind == 16 ? given[op.value] : op.value);
             *(uint8_t **)(self + op.off + 4) = handle;
             link_before((uint32_t *)(self + op.off + 8), *(uint32_t **)(handle + 0x20));
         } else if (op.kind == 7) *(void **)(self + op.off) = ((void *(__fastcall *)(uint32_t))0xbd0490)(1);

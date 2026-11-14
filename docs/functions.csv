@@ -14552,7 +14552,7 @@ address,size,name,callers,status
 0x9c8ff0,127,SIZE_SUM,1,rewritten
 0x9c90e0,233,StructArrayLoad,0,rewritten
 0x9c91d0,77,,0,documented
-0x9c9220,3401,,4,documented
+0x9c9220,3401,Class::Construct,4,rewritten
 0x9c9fa0,464,,4,documented
 0x9ca180,329,,1,documented
 0x9ca2d0,296,,1,documented
@@ -14676,7 +14676,7 @@ address,size,name,callers,status
 0x9d5000,57,,1,documented
 0x9d5040,106,,9,documented
 0x9d50b0,16,,4,documented
-0x9d50c0,1037,,4,documented
+0x9d50c0,1037,Class::Construct,4,rewritten
 0x9d5510,427,,5,documented
 0x9d56c0,105,Factory::Create,1,rewritten
 0x9d5730,245,,1,documented
@@ -16971,7 +16971,7 @@ address,size,name,callers,status
 0xac2d10,102,Refs::DeleteUnused730BF0,1,rewritten
 0xac2de0,180,NamedTextRef::NamedTextRef(text),1,rewritten
 0xac2ea0,30,DeletingDestructor,0,rewritten
-0xac2ed0,783,,2,documented
+0xac2ed0,783,Class::Construct,2,rewritten
 0xac3270,172,,1,documented
 0xac3320,165,,1,documented
 0xac3420,228,,1,documented
@@ -17381,7 +17381,7 @@ address,size,name,callers,status
 0xaf2560,359,,2,documented
 0xaf26d0,30,DeletingDestructor,3,rewritten
 0xaf26f0,327,,2,documented
-0xaf2840,1482,,2,documented
+0xaf2840,1482,Class::Construct,2,rewritten
 0xaf2e40,447,,1,documented
 0xaf3000,1318,,1,documented
 0xaf3530,74,,2,documented
@@ -17403,7 +17403,7 @@ address,size,name,callers,status
 0xaf49c0,215,,6,documented
 0xaf4aa0,226,,1,documented
 0xaf4b90,18,Destructor::TablesThenBase,1,rewritten
-0xaf4be0,1168,,4,documented
+0xaf4be0,1168,Class::Construct,4,rewritten
 0xaf5070,30,DeletingDestructor,2,rewritten
 0xaf5160,162,ObjectRef::CallWith,3,rewritten
 0xaf5210,324,,3,documented
@@ -19149,7 +19149,7 @@ address,size,name,callers,status
 0xba32c0,316,,1,documented
 0xba3400,51,ObjectArray::Free,2,rewritten
 0xba3440,350,,2,documented
-0xba35a0,1930,,2,documented
+0xba35a0,1930,Class::Construct,2,rewritten
 0xba3d70,418,,1,documented
 0xba3f20,266,,2,documented
 0xba4030,559,,2,documented

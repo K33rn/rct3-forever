@@ -329,14 +329,15 @@ def parse(a, n):
             for r in ('ecx', 'edx'):
                 regs.pop(r, None)
             regs['eax'] = ('empty',)
-        elif s == 'call 0x805750' or (s == 'call 0x805700' and regs.get('ecx') and regs['ecx'][0] == 'const'):
+        elif s == 'call 0x805750' or (s == 'call 0x805700' and regs.get('ecx') and regs['ecx'][0] in ('const', 'arg')):
             # the reference member's handle, linked in: mov [M + 4], eax; mov eax, [eax + 0x20]; then the link at M + 8.
             # 0x805750 gives the empty handle, 0x805700 (Handle::For) the handle of the object in ecx (a plain value)
             target = None if s == 'call 0x805750' else regs['ecx'][1]
+            of_arg = s == 'call 0x805700' and regs['ecx'][0] == 'arg'   # the handle of the object an argument gives
             m = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', t[k + 1])
-            if not m or not regs.get(m.group(1)) or regs[m.group(1)][0] != 'this' or num(m.group(2) or '0') != 4:
+            if not m or not regs.get(m.group(1)) or regs[m.group(1)][0] != 'this':
                 raise Reject('reference member')
-            member = regs[m.group(1)][1]
+            member = regs[m.group(1)][1] + num(m.group(2) or '0') - 4   # (stored through the member's pointer or through this)
             body = [re.sub(REG, 'R', x) for x in t[k + 2:k + 9]]
             if body != ['mov R, dword ptr [R + 0x20]', 'mov R, dword ptr [R]', 'mov dword ptr [R], R', 'mov R, dword ptr [R]', 'mov dword ptr [R + 4], R',
                         'mov dword ptr [R + 4], R', 'mov dword ptr [R], R']:
@@ -344,7 +345,7 @@ def parse(a, n):
             link = re.fullmatch(r'mov dword ptr \[' + REG + r'\], ' + REG, t[k + 4]).group(1)
             if regs.get(link) != ('this', member + 8):
                 raise Reject('reference link register')
-            ops.append((6, member, 0, 0, []) if target is None else (9, member, target, 0, []))
+            ops.append((6, member, 0, 0, []) if target is None else (16 if of_arg else 9, member, target, 0, []))
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
             k += 9
@@ -504,6 +505,8 @@ def parse(a, n):
                 regs.pop(r, None)
         elif re.fullmatch(r'(test|cmp) ' + REG + ', ' + REG, s) or ins[k].mnemonic == 'jne':
             pass
+        elif (m := re.fullmatch(r'cmp dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, s)) and num(m.group(1)) - depth - 4 * len(pushed) == 4 and regs.get(m.group(2)) == ('const', 0):
+            pass   # was a description given? (the registration's choice, made early)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x[0-9a-f]{7})\]', s)) and num(m.group(2)) == desc:
             regs[m.group(1)] = ('desc',)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x[0-9a-f]{7})\]', s)):
@@ -523,7 +526,7 @@ def parse(a, n):
     # (0xBEC5E0). The value is a constant, or a member's offset (sub R, esi with R pointing into the object).
     names = []
     steps = [q for q, x in enumerate(rest) if x == 'call 0xbeca40']
-    if len(steps) > 2:
+    if len(steps) > 12:
         raise Reject('name steps')
     for q in steps:
         if rest[q + 1:q + 2] != ['push eax'] or not any(x == 'call 0xbecc10' for x in rest[q:q + 5]) or not any(x == 'call 0xbec5e0' for x in rest[q:q + 9]):
@@ -537,6 +540,10 @@ def parse(a, n):
             value = num(m.group(1))
         elif (m := re.fullmatch(r'push ' + REG, rest[q - 3])) and re.fullmatch(r'sub ' + m.group(1) + r', ' + REG, rest[q - 4]):
             r, base = m.group(1), rest[q - 4].split(', ')[1]
+            # the pointer into the object may be read back from the local it was kept in
+            if (mm := re.fullmatch(r'mov ' + r + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', rest[q - 5])) and num(mm.group(1)) - depth in kept and regs.get(base) == ('this', 0) and not written(base, rest[:q - 4]):
+                names.append((num(nm.group(1)), kept[num(mm.group(1)) - depth][1]))
+                continue
             # the register must still hold what the member set-up left in it: nothing in between writes it
             if regs.get(base) != ('this', 0) or not regs.get(r) or regs[r][0] != 'this' or written(r, rest[:q - 4]) or written(base, rest[:q - 4]):
                 raise Reject('name offset')
@@ -605,6 +612,9 @@ def parse(a, n):
                 value = byte_of(v)
             elif m.group(1) == 'dword' and regs.get(v) and regs[v][0] == 'const':
                 value = regs[v][1]
+            elif m.group(1) == 'dword' and regs.get(v) and regs[v][0] == 'this':
+                ops.append((2, off, regs[v][1], 0, []))   # a pointer into the object itself
+                continue
             else:
                 value = None
             if value is not None:
