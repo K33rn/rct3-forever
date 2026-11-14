@@ -1082,9 +1082,9 @@ address,size,name,callers,status
 0x458010,276,,5,documented
 0x458130,27,Sized::Construct458130,40,rewritten
 0x458150,25,,63,documented
-0x458170,551,,6,documented
-0x4583a0,551,,4,documented
-0x4585d0,551,,3,documented
+0x458170,551,Folder::SpecialOrDocuments,6,rewritten
+0x4583a0,551,Folder::SpecialOrDocuments,4,rewritten
+0x4585d0,551,Folder::SpecialOrDocuments,3,rewritten
 0x458820,27,Sized::Construct458130,5,rewritten
 0x458840,457,,2,documented
 0x458a10,9032,,1,documented

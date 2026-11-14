@@ -1161,6 +1161,23 @@ static void *__thiscall tw_base(uint32_t *self, void *description, uint32_t **ti
 }
 static void __thiscall tw_reference_gone(uint32_t *self) { dev_note(117, self[1]); }
 
+// Folder::SpecialOrDocuments: its stand-ins. Texts keep what they hold at +4 (the empty text: the hash of ""). The
+// special folder's path is sometimes empty; whether a path is there comes from the arena (0x44).
+static const uint32_t fp_rows[][4] = {
+#define FOLDER_PATHS(at, folder, under_documents, fallback, ...) {at, folder, under_documents, fallback},
+#include "../../forever/src/rewrite/folder_paths.inc"
+#undef FOLDER_PATHS
+};
+static void *__fastcall fp_special(uint32_t **into, uint32_t folder) {
+    dev_note(120, folder);
+    uint32_t *t = desk_text(); t[1] = dev_next() % 2 ? 5381 : folder * 77; *into = t;
+    return into;
+}
+static int32_t __thiscall fp_compare(uint32_t **self, uint32_t **other) { dev_note(121, (*self)[1]); dev_note(121, (*other)[1]); return (int32_t)((*self)[1] - (*other)[1]); }
+static void *__thiscall fp_documents(uint32_t **into) { dev_note(122, 0); uint32_t *t = desk_text(); t[1] = 0xd0c5; *into = t; return into; }
+static void *__thiscall fp_fallback(uint32_t **into) { dev_note(123, 0); uint32_t *t = desk_text(); t[1] = 0xfa11; *into = t; return into; }
+static uint8_t __thiscall fp_there(uint32_t **path) { dev_note(124, (*path)[1]); return (uint8_t)(((*path)[1] ^ *arena<uint32_t>(0x44)) & 1); }
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -7138,6 +7155,33 @@ static std::vector<Test> tests() {
         *(uint32_t *)(uintptr_t)g_tw_global = g_tw_saved;
     };
     quick(titled_window);
+    // Folder::SpecialOrDocuments (three copies): where the path goes (arena 0x8000)
+    Test folder_path{0x458170,
+                     [=](Rng &r) {
+                         fresh(r);
+                         for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                         arena<uint32_t>(0x8000)[0] = r.next();
+                         arena<uint32_t>(0x44)[0] = r.next();
+                         arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                     },
+                     [](void *fn) {
+                         void *back = ((void *(__thiscall *)(void *))fn)(arena<void>(0x8000));
+                         return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                     }};
+    folder_path.iterations = 300;
+    folder_path.prepare = [](const rewrite::Entry *e) {
+        uint32_t fallback = 0;
+        for (auto &row : fp_rows)
+            if (row[0] == e->at) fallback = row[3];
+        std::vector<std::pair<uint32_t, void *>> list = {{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free},
+                                                         {0xbcf850, (void *)msg_text_c}, {0x458010, (void *)fp_special}, {0xbce970, (void *)fp_compare},
+                                                         {0x458130, (void *)fp_documents}, {0x403be0, (void *)cheat_join}, {0xbd01c0, (void *)mf_copy},
+                                                         {0xbe45e0, (void *)fp_there}};
+        if (fallback != 0x458130) list.push_back({fallback, (void *)fp_fallback});
+        stubs_for_now(list);
+    };
+    folder_path.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(folder_path);
     // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
     // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
     // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.
