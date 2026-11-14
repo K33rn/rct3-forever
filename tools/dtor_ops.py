@@ -15,7 +15,7 @@ pe = pefile.PE(sys.argv[1], fast_load=True); img = pe.get_memory_mapped_image();
 md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
 md.detail = True
 SAVED = ('ebx', 'esi', 'edi', 'ebp')
-SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET, IFB, GMOVE, ARG, GCALL, UNLINK = range(20)   # the step kinds (dtor_ops.cpp)
+SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET, IFB, GMOVE, ARG, GCALL, UNLINK, MCALL, GIF, IFNEG1 = range(23)   # the step kinds (dtor_ops.cpp)
 FREE_ALIGNED, FREE, VEC_DTOR = 0xbce010, 0xbce000, 0xddcf39
 
 
@@ -326,9 +326,18 @@ def read(a, n):
                     regs[r] = ('member', off)
                     # a null check of it: test r, r; (fields set, frame noise); je end
                     j = i + 1
-                    while ins[j].mnemonic == 'xor' and ins[j].operands[0].type == x86.X86_OP_REG and ins[j].operands[1].type == x86.X86_OP_REG \
-                            and ins[j].operands[0].reg == ins[j].operands[1].reg and reg(ins[j].operands[0]) != r and ins[j].operands[0].size == 4:
-                        regs[reg(ins[j].operands[0])] = ('zero', 0)   # a zero register made in between
+                    while True:
+                        y = ins[j]
+                        if y.mnemonic == 'xor' and y.operands[0].type == x86.X86_OP_REG and y.operands[1].type == x86.X86_OP_REG \
+                                and y.operands[0].reg == y.operands[1].reg and reg(y.operands[0]) != r and y.operands[0].size == 4:
+                            regs[reg(y.operands[0])] = ('zero', 0)   # a zero register made in between
+                        elif y.mnemonic == 'push' and y.operands[0].type == x86.X86_OP_REG and reg(y.operands[0]) in SAVED and reg(y.operands[0]) != r \
+                                and regs.get(reg(y.operands[0])) is None and not pending:
+                            pass                                     # a register saved in between
+                        elif y.mnemonic == 'add' and y.op_str.startswith('esp,') and noise(y):
+                            pass                                     # the stack put right in between
+                        else:
+                            break
                         j += 1
                     t = text_release(i, r, off) if j == i + 1 else None
                     if t:
@@ -369,6 +378,15 @@ def read(a, n):
                             regs[r] = None
                             return at[end], before + [(IF, 0, 0, off, len(inner))] + inner
                         raise Unknown('a member tested for something else')
+                    if ins[j].mnemonic == 'cmp' and ins[j].op_str == f'{r}, -1':
+                        k = j + 1
+                        while noise(ins[k]):
+                            k += 1
+                        if ins[k].mnemonic == 'je' and ins[k].operands[0].imm > ins[k].address:   # steps unless the field is -1
+                            end = ins[k].operands[0].imm
+                            inner = block(k + 1, end, None)
+                            return at[end], [(IFNEG1, 0, 0, off, len(inner))] + inner
+                        raise Unknown('a field compared with -1 for something else')
                     return i + 1, []
                 if off is not None and o[0].size == 1:
                     # a flag: mov r8, [this + off]; test r8, r8; (noise); jne / je end; steps; end:
@@ -398,6 +416,25 @@ def read(a, n):
                             return j + 2, [(GCOPY, 0, 0, w.operands[0].mem.disp & 0xffffffff, g1)]
                         return None
                     if g1 >= 0x1000000:
+                        if is_null_check(ins[j], r):
+                            k = j + 1
+                            before = []
+                            while ins[k].mnemonic == 'mov':
+                                if noise(ins[k]):
+                                    k += 1
+                                    continue
+                                st = step(k)
+                                if not st or any(q[0] not in (SET, GSET) for q in st[1]):
+                                    break
+                                before += st[1]
+                                k = st[0]
+                            if ins[k].mnemonic == 'je' and ins[k].operands[0].imm > ins[k].address:
+                                end = ins[k].operands[0].imm
+                                regs[r] = ('gmember', g1)
+                                inner = block(k + 1, end, r)
+                                regs[r] = None
+                                return at[end], before + [(GIF, 0, 0, g1, len(inner))] + inner
+                            raise Unknown('a global tested for something else')
                         regs[r] = ('gvalue', g1)              # a global's value: an object to call, or to copy on
                         return i + 1, []
                     return None
@@ -471,6 +508,12 @@ def read(a, n):
                 if c[0] == 'this':
                     return i + 1, args + [(CALL, len(args), 0, o[0].imm, c[1])]   # a member's or the base's destructor
                 return i + 1, args + [(GCALL, len(args), 0, o[0].imm, c[1])]      # on a global object
+            if c and c[0] == 'member' and len(pending) <= 3:
+                args = [(ARG, 1 if k == 'f' else 0, 0, v, 0) for k, v in reversed(pending)]
+                del pending[:]
+                for r in ('eax', 'ecx', 'edx'):
+                    regs[r] = None
+                return i + 1, args + [(MCALL, len(args), 0, o[0].imm, c[1])]      # on the object a member points to, whatever it is
             return None
         return None
 
@@ -480,7 +523,8 @@ def read(a, n):
         if noise(x):
             i += 1
             continue
-        if x.mnemonic == 'push' and not started and not pending and (x.operands[0].type == x86.X86_OP_REG or i < 3):
+        if x.mnemonic == 'push' and not started and not pending and (
+                x.operands[0].type == x86.X86_OP_REG and (regs.get(reg(x.operands[0])) or ('this',))[0] == 'this' or x.operands[0].type != x86.X86_OP_REG and i < 3):
             i += 1                                            # the frame (its two constants come first) and the saved registers
             continue
         s = step(i)
@@ -499,12 +543,12 @@ def read(a, n):
     last_call = max((x.address for x in ins if x.mnemonic == 'call'), default=0)
     if any(ad < last_call for ad in odd_adds):
         raise Unknown('the stack put right by another amount')
-    if len({x for k, c, sm, x, y in ops if k in (CALL, CDECL, CALLP, GCALL)} | {y for k, c, sm, x, y in ops if k == FREEM}) > 40:
+    if len({x for k, c, sm, x, y in ops if k in (CALL, CDECL, CALLP, GCALL, MCALL)} | {y for k, c, sm, x, y in ops if k == FREEM}) > 40:
         raise Unknown('more than 40 functions called')
     for k, c, small, x, y in ops:   # what the tester's stand-ins hold: table entries under 16, offsets inside its objects
         if k in (VCALL,) and not 0 <= small < 0x40 or k == REL and not (0 <= x < 0x40 and 0 <= small < 0x3c):
             raise Unknown('a table entry past the 16th or a far count')
-        if k == UNLINK and not 0 <= x < 0xff0 or k == IFB and not 0 <= x < 0xff0 or k == ARG and c == 1 and not 0 <= x < 0xff0 or k == LOOP and not (0 <= x < 0xff0 and 0 <= y < 0xff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
+        if k in (MCALL,) and not 0 <= y < 0xff0 or k == IFNEG1 and not 0 <= x < 0xff0 or k == UNLINK and not 0 <= x < 0xff0 or k == IFB and not 0 <= x < 0xff0 or k == ARG and c == 1 and not 0 <= x < 0xff0 or k == LOOP and not (0 <= x < 0xff0 and 0 <= y < 0xff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
             raise Unknown('a field past 0xFF0')
     return ops
 

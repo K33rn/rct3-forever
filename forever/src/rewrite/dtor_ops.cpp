@@ -29,6 +29,9 @@
 //  19 UNLINK   the list node {next, previous} in the object at a taken out of its list: when both neighbours are there
 //              and point back at it, next's previous becomes previous, previous's next becomes next, and the node's two
 //              links are cleared; otherwise a breakpoint (int3), as the game has there
+//  20 MCALL    the function a called on the object the member at b points to, whatever it is (count arguments, as CALL)
+//  21 GIF      the object the global a points to taken if there is one, else the next b steps are passed over
+//  22 IFNEG1   when the object's value at a is -1 the next b steps are passed over
 // The exception frame the game keeps while it does this isn't rebuilt (as in the other rewrites of destructors).
 #include "rewrite.h"
 
@@ -63,9 +66,17 @@ __attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorSt
         case 3:
             ((void(__cdecl *)(void *))s.a)(member);
             break;
+        case 21:
+            member = *(uint8_t *volatile *)s.a;
+            if (!member) i += s.b;
+            break;
+        case 22:
+            if (*(volatile int32_t *)(self + s.a) == -1) i += s.b;
+            break;
         case 4:
-        case 18: {
-            void *on = s.kind == 4 ? (void *)(self + s.b) : *(void *volatile *)s.b;
+        case 18:
+        case 20: {
+            void *on = s.kind == 4 ? (void *)(self + s.b) : s.kind == 18 ? *(void *volatile *)s.b : *(void *volatile *)(self + s.b);
             if (nargs == 0) ((void(__thiscall *)(void *))s.a)(on);
             else if (nargs == 1) ((void(__thiscall *)(void *, uint32_t))s.a)(on, args[0]);
             else if (nargs == 2) ((void(__thiscall *)(void *, uint32_t, uint32_t))s.a)(on, args[0], args[1]);

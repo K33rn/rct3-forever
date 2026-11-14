@@ -6002,6 +6002,7 @@ static std::vector<Test> tests() {
                              for (uint32_t i = 0; i < n; i++) {
                                  const uint32_t *s = st + 5 * i;
                                  if (s[0] == 1) current = s[3], need(current).taken = true;
+                                 if (s[0] == 21) current = 0x80000000u | s[3], need(current).taken = true;   // a global's object: kept under its address
                                  if (s[0] == 13) {   // a loop: what the steps need is each item's; kept under a made-up field past the object
                                      current = 0x10000 + s[3];
                                      Need &x = need(current);
@@ -6033,6 +6034,7 @@ static std::vector<Test> tests() {
                                      }
                                      continue;
                                  }
+                                 if (x.field & 0x80000000u) continue;   // a global's object: placed below
                                  bool is_list = false;   // the array a loop goes over, also taken (to be freed): it stays the array
                                  for (const Need &y : needs) is_list |= y.looped && y.field == x.field + 0x10000;
                                  if (is_list) continue;
@@ -6060,9 +6062,24 @@ static std::vector<Test> tests() {
                                      a[1] = b[0] = (uint32_t)(uintptr_t)node;
                                      next += 0x20;
                                  }
+                             for (uint32_t i = 0; i < n; i++)   // a field checked against -1: -1 or 0 now and then
+                                 if (st[5 * i] == 22 && r.range(0, 2) == 0) *arena<uint32_t>(0x1000 + st[5 * i + 3]) = r.range(0, 1) ? 0xffffffffu : 0;
                              for (uint32_t i = 0; i < n; i++)   // a flag byte: clear, set, or anything
                                  if (st[5 * i] == 15) *arena<uint8_t>(0x1000 + st[5 * i + 3]) = (uint8_t)(r.range(0, 2) ? r.range(0, 1) : r.next());
                              for (size_t i = 0; i < g_dtor_globals.size(); i++) arena<uint32_t>(0x40)[i] = r.range(0, 2) ? r.next() : 0xffffffffu;
+                             for (const Need &x : needs)   // an object a global points to: there three times in four
+                                 if (x.field & 0x80000000u)
+                                     for (size_t i = 0; i < g_dtor_globals.size(); i++)
+                                         if (g_dtor_globals[i].first == (x.field & 0x7fffffffu)) {
+                                             if (r.range(0, 3) == 0) { arena<uint32_t>(0x40)[i] = 0; continue; }
+                                             uint32_t *block = arena<uint32_t>(next);
+                                             for (uint32_t k = 0; k < x.size / 4; k++) block[k] = r.next();
+                                             block[0] = (uint32_t)(uintptr_t)g_dtor_tables[x.arity];
+                                             if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
+                                             if (x.array) block[3] = (uint32_t)r.range(0, 5);
+                                             arena<uint32_t>(0x40)[i] = (uint32_t)(uintptr_t)(x.array ? block + 4 : block);
+                                             next += (x.size + 15) & ~15u;
+                                         }
                              arena<uint32_t>(CALL_LOG)[0] = 0;
                          },
                          [](void *fn) {
@@ -6085,13 +6102,13 @@ static std::vector<Test> tests() {
         const uint32_t *st = g_dtor_info + 2;
         for (uint32_t i = 0; i < g_dtor_info[1]; i++) {
             const uint32_t *s = st + 5 * i;
-            if (s[0] == 4 || s[0] == 18) add(s[3], g_dtor_direct[s[1]]);
+            if (s[0] == 4 || s[0] == 18 || s[0] == 20) add(s[3], g_dtor_direct[s[1]]);
             if (s[0] == 11) add(s[3], g_dtor_direct[0]);
             if (s[0] == 12) { add(0xbce010, g_dtor_freed); bool have = false; for (auto &x : stubs) have |= x.first == 0xddcf39; if (!have) stubs.push_back({0xddcf39, (void *)dtor_vec_dtor}); }
             if (s[0] == 3) add(s[3], g_dtor_freed);
             if (s[0] == 8) add(s[4], g_dtor_freed);
             if (s[0] == 9) add(0xbce010, g_dtor_freed), add(0xbce000, g_dtor_freed);
-            if (s[0] == 5 || s[0] == 14 || s[0] == 16 || s[0] == 18)
+            if (s[0] == 5 || s[0] == 14 || s[0] == 16 || s[0] == 18 || s[0] == 21)
                 for (uint32_t g : {s[0] == 18 ? s[4] : s[3], s[0] == 5 || s[0] == 16 ? s[4] : s[0] == 18 ? s[4] : s[3]}) {
                     bool have = false;
                     for (auto &x : g_dtor_globals) have |= x.first == g;
