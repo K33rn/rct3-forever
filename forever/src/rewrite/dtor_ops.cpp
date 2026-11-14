@@ -5,7 +5,8 @@
 //   2 VCALL    the taken member's table entry at `small` called (count constant arguments: a, b): usually its
 //              deleting destructor, entry 0 with 1
 //   3 CDECL    the function a called with the taken member (its memory freed)
-//   4 CALL     the function a called on the object + b: a member's or the base's destructor
+//   4 CALL     the function a called on the object + b: a member's or the base's destructor (count arguments, from
+//              the ARG steps just before it)
 //   5 GCOPY    the global b copied to the global a unless it is -1
 //   6 SETM     through the member at `small`: the value b put at its + a
 //   7 REL      the taken member's count (a word at its + `small`) taken down; at 0 its table entry at a called (with 1
@@ -20,6 +21,11 @@
 //              again each time round; nothing when it starts at 0 or less): one that is there is taken and the next
 //              `small` steps run on it
 //  14 GSET     the global a set to b (count: its size in bytes)
+//  15 IFB      the flag (a byte) at a looked at: when it is set (count 1) or clear (count 0) the next b steps are
+//              passed over
+//  16 GMOVE    the global b copied to the global a
+//  17 ARG      an argument for the next call: the constant a (count 0) or the object's value at a (count 1)
+//  18 GCALL    the function a called on the object the global b points to (count arguments, as CALL)
 // The exception frame the game keeps while it does this isn't rebuilt (as in the other rewrites of destructors).
 #include "rewrite.h"
 
@@ -31,6 +37,7 @@ struct DtorStep {
 static volatile long g_dtor_steps;
 // the steps from `from` up to `to`, with `member` the one taken so far
 __attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorStep *STEPS, uint32_t from, uint32_t to, uint8_t *member) {
+    uint32_t args[3], nargs = 0;
     for (uint32_t i = from; i < to; i++) {
         const DtorStep &s = STEPS[i];
         switch (s.kind) {
@@ -54,7 +61,23 @@ __attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorSt
             ((void(__cdecl *)(void *))s.a)(member);
             break;
         case 4:
-            ((void(__thiscall *)(void *))s.a)(self + s.b);
+        case 18: {
+            void *on = s.kind == 4 ? (void *)(self + s.b) : *(void *volatile *)s.b;
+            if (nargs == 0) ((void(__thiscall *)(void *))s.a)(on);
+            else if (nargs == 1) ((void(__thiscall *)(void *, uint32_t))s.a)(on, args[0]);
+            else if (nargs == 2) ((void(__thiscall *)(void *, uint32_t, uint32_t))s.a)(on, args[0], args[1]);
+            else ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))s.a)(on, args[0], args[1], args[2]);
+            nargs = 0;
+            break;
+        }
+        case 15:
+            if ((*(volatile uint8_t *)(self + s.a) != 0) == (s.count == 1)) i += s.b;
+            break;
+        case 16:
+            *(volatile uint32_t *)s.a = *(volatile uint32_t *)s.b;
+            break;
+        case 17:
+            args[nargs++] = s.count ? *(volatile uint32_t *)(self + s.a) : s.a;
             break;
         case 5:
             if (*(volatile int32_t *)s.b != -1) *(volatile int32_t *)s.a = *(volatile int32_t *)s.b;

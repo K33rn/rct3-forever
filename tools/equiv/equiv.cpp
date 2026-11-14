@@ -620,6 +620,13 @@ template <int SLOT> static void __thiscall dtor_virtual2(void *self, uint32_t a,
     record(0x7200 + SLOT, self); record(0x7200 + SLOT, (void *)(uintptr_t)a); record(0x7200 + SLOT, (void *)(uintptr_t)b);
 }
 template <int K> static void __thiscall dtor_direct(void *self) { record(0x7400 + K, self); }
+template <int K> static void __thiscall dtor_direct1(void *self, uint32_t a) { record(0x7900 + K, self); record(0x7900 + K, (void *)(uintptr_t)a); }
+template <int K> static void __thiscall dtor_direct2(void *self, uint32_t a, uint32_t b) {
+    record(0x7a00 + K, self); record(0x7a00 + K, (void *)(uintptr_t)a); record(0x7a00 + K, (void *)(uintptr_t)b);
+}
+template <int K> static void __thiscall dtor_direct3(void *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x7b00 + K, self); record(0x7b00 + K, (void *)(uintptr_t)a); record(0x7b00 + K, (void *)(uintptr_t)b); record(0x7b00 + K, (void *)(uintptr_t)c);
+}
 template <int K> static void __cdecl dtor_freed(void *p) { record(0x7600 + K, p); }
 #define DTOR16(f) (void *)&f<0>, (void *)&f<1>, (void *)&f<2>, (void *)&f<3>, (void *)&f<4>, (void *)&f<5>, (void *)&f<6>, (void *)&f<7>, \
                   (void *)&f<8>, (void *)&f<9>, (void *)&f<10>, (void *)&f<11>, (void *)&f<12>, (void *)&f<13>, (void *)&f<14>, (void *)&f<15>
@@ -628,7 +635,7 @@ template <int K> static void __cdecl dtor_freed(void *p) { record(0x7600 + K, p)
                   (void *)&f<32>, (void *)&f<33>, (void *)&f<34>, (void *)&f<35>, (void *)&f<36>, (void *)&f<37>, (void *)&f<38>, (void *)&f<39>, \
                   (void *)&f<40>, (void *)&f<41>, (void *)&f<42>, (void *)&f<43>, (void *)&f<44>, (void *)&f<45>, (void *)&f<46>, (void *)&f<47>
 static void *g_dtor_tables[3][16] = {{DTOR16(dtor_virtual0)}, {DTOR16(dtor_virtual1)}, {DTOR16(dtor_virtual2)}};
-static void *g_dtor_direct[48] = {DTOR48(dtor_direct)};
+static void *g_dtor_direct[4][48] = {{DTOR48(dtor_direct)}, {DTOR48(dtor_direct1)}, {DTOR48(dtor_direct2)}, {DTOR48(dtor_direct3)}};
 static void *g_dtor_freed[48] = {DTOR48(dtor_freed)};
 static void __stdcall dtor_vec_dtor(void *items, uint32_t size, int32_t count, void *dtor) {
     record(0x7800, items); record(0x7800, (void *)(uintptr_t)size); record(0x7800, (void *)(intptr_t)count); record(0x7800, dtor);
@@ -6045,6 +6052,8 @@ static std::vector<Test> tests() {
                                  }
                                  next += (x.size + 15) & ~15u;
                              }
+                             for (uint32_t i = 0; i < n; i++)   // a flag byte: clear, set, or anything
+                                 if (st[5 * i] == 15) *arena<uint8_t>(0x1000 + st[5 * i + 3]) = (uint8_t)(r.range(0, 2) ? r.range(0, 1) : r.next());
                              for (size_t i = 0; i < g_dtor_globals.size(); i++) arena<uint32_t>(0x40)[i] = r.range(0, 2) ? r.next() : 0xffffffffu;
                              arena<uint32_t>(CALL_LOG)[0] = 0;
                          },
@@ -6068,13 +6077,14 @@ static std::vector<Test> tests() {
         const uint32_t *st = g_dtor_info + 2;
         for (uint32_t i = 0; i < g_dtor_info[1]; i++) {
             const uint32_t *s = st + 5 * i;
-            if (s[0] == 4 || s[0] == 11) add(s[3], g_dtor_direct);
+            if (s[0] == 4 || s[0] == 18) add(s[3], g_dtor_direct[s[1]]);
+            if (s[0] == 11) add(s[3], g_dtor_direct[0]);
             if (s[0] == 12) { add(0xbce010, g_dtor_freed); bool have = false; for (auto &x : stubs) have |= x.first == 0xddcf39; if (!have) stubs.push_back({0xddcf39, (void *)dtor_vec_dtor}); }
             if (s[0] == 3) add(s[3], g_dtor_freed);
             if (s[0] == 8) add(s[4], g_dtor_freed);
             if (s[0] == 9) add(0xbce010, g_dtor_freed), add(0xbce000, g_dtor_freed);
-            if (s[0] == 5 || s[0] == 14)
-                for (uint32_t g : {s[3], s[0] == 5 ? s[4] : s[3]}) {
+            if (s[0] == 5 || s[0] == 14 || s[0] == 16 || s[0] == 18)
+                for (uint32_t g : {s[0] == 18 ? s[4] : s[3], s[0] == 5 || s[0] == 16 ? s[4] : s[0] == 18 ? s[4] : s[3]}) {
                     bool have = false;
                     for (auto &x : g_dtor_globals) have |= x.first == g;
                     if (!have) g_dtor_globals.push_back({g, *(uint32_t *)(uintptr_t)g});

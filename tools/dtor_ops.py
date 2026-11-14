@@ -15,7 +15,7 @@ pe = pefile.PE(sys.argv[1], fast_load=True); img = pe.get_memory_mapped_image();
 md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
 md.detail = True
 SAVED = ('ebx', 'esi', 'edi', 'ebp')
-SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET = range(15)   # the step kinds (dtor_ops.cpp)
+SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET, IFB, GMOVE, ARG, GCALL = range(19)   # the step kinds (dtor_ops.cpp)
 FREE_ALIGNED, FREE, VEC_DTOR = 0xbce010, 0xbce000, 0xddcf39
 
 
@@ -41,6 +41,9 @@ def read(a, n):
     regs = {'ecx': ('this', 0)}        # register -> ('this', offset) | ('member', offset of the field it was read from) | ('global', address)
     ops = []
     started = False
+    pending = []                       # arguments pushed for the next call: ('c', constant) or ('f', field offset)
+    frees = [0]                        # frees whose argument is still on the stack
+    odd_adds = []                      # stack adjustments that aren't those: fine only as the frame's release at the end
 
     def reg(op):
         return ins[0].reg_name(op.reg)
@@ -63,7 +66,13 @@ def read(a, n):
             if o[0].type == x86.X86_OP_REG and is_mem(o[1]) and o[1].mem.base == x86.X86_REG_ESP:
                 regs[reg(o[0])] = None                        # the saved frame link (or this back from the stack: then later uses fail)
                 return True
-        if x.mnemonic in ('sub', 'add') and x.op_str.startswith('esp,'):
+        if x.mnemonic == 'sub' and x.op_str.startswith('esp,'):
+            return True
+        if x.mnemonic == 'add' and x.op_str.startswith('esp,'):
+            if o[1].imm == 4 * frees[0] and frees[0]:
+                frees[0] = 0
+            else:
+                odd_adds.append(x.address)
             return True
         if x.mnemonic == 'pop':
             regs[reg(o[0])] = None
@@ -116,8 +125,11 @@ def read(a, n):
             # call VecDtor; push r2; call FreeAligned; add esp, 4
             if x.mnemonic == 'mov' and o[0].type == x86.X86_OP_REG and is_mem(o[1]) and not o[1].mem.index and o[1].mem.disp == -4 \
                     and o[1].mem.base and ins[0].reg_name(o[1].mem.base) == member:
-                q = ins[i + 1:i + 10]
+                q = ins[i + 1:i + 11]
                 r1 = reg(o[0])
+                extra = 0
+                if q[0].mnemonic == 'push' and q[0].operands[0].type == x86.X86_OP_REG and reg(q[0].operands[0]) in SAVED and reg(q[0].operands[0]) != member:
+                    q, extra = q[1:], 1                       # a register saved for the block's address
                 if (q[0].mnemonic == 'lea' and is_mem(q[0].operands[1]) and q[0].operands[1].mem.disp == -4 and ins[0].reg_name(q[0].operands[1].mem.base) == member
                         and q[1].mnemonic == 'push' and q[1].operands[0].type == x86.X86_OP_IMM
                         and q[2].mnemonic == 'push' and q[2].op_str == r1
@@ -131,7 +143,7 @@ def read(a, n):
                     for r in ('eax', 'ecx', 'edx'):
                         regs[r] = None
                     member = None
-                    i += 10
+                    i += 10 + extra
                     continue
                 raise Unknown('an array delete of another shape')
             # free its memory: push member; (a value put in it); call fn; add esp, 4
@@ -278,6 +290,10 @@ def read(a, n):
             regs[reg(o[0])] = ('zero', 0)
             return i + 1, []
         if m == 'mov' and len(o) == 2:
+            # a global copied to another: mov [g0], r with r holding a global's value
+            if is_mem(o[0]) and o[1].type == x86.X86_OP_REG and o[1].size == 4 and not o[0].mem.base and not o[0].mem.index and not o[0].mem.segment \
+                    and (regs.get(reg(o[1])) or ('', 0))[0] == 'gvalue' and (o[0].mem.disp & 0xffffffff) >= 0x1000000:
+                return i + 1, [(GMOVE, 0, 0, o[0].mem.disp & 0xffffffff, regs[reg(o[1])][1])]
             # clear a field from a zeroed register
             if is_mem(o[0]) and o[1].type == x86.X86_OP_REG and o[1].size == 4 and regs.get(reg(o[1])) == ('zero', 0):
                 off = this_off(o[0])
@@ -320,6 +336,7 @@ def read(a, n):
                         if ins[k].mnemonic == 'call' and ins[k].operands[0].type == x86.X86_OP_IMM:
                             for c in ('eax', 'ecx', 'edx'):
                                 regs[c] = None
+                            frees[0] += 1
                             return k + 1, [(FREEM, 0, 0, off, ins[k].operands[0].imm)]
                         raise Unknown('a member pushed for a call with more arguments')
                     zero = ins[j].mnemonic == 'cmp' and ins[j].operands[0].type == x86.X86_OP_REG and reg(ins[j].operands[0]) == r \
@@ -348,6 +365,19 @@ def read(a, n):
                             return at[end], before + [(IF, 0, 0, off, len(inner))] + inner
                         raise Unknown('a member tested for something else')
                     return i + 1, []
+                if off is not None and o[0].size == 1:
+                    # a flag: mov r8, [this + off]; test r8, r8; (noise); jne / je end; steps; end:
+                    j = i + 1
+                    if ins[j].mnemonic == 'test' and ins[j].op_str == f'{r}, {r}':
+                        j += 1
+                        while noise(ins[j]):
+                            j += 1
+                        if ins[j].mnemonic in ('jne', 'je') and ins[j].operands[0].imm > ins[j].address:
+                            end = ins[j].operands[0].imm
+                            regs[{'al': 'eax', 'bl': 'ebx', 'cl': 'ecx', 'dl': 'edx'}.get(r, r)] = None
+                            inner = block(j + 1, end, None)
+                            return at[end], [(IFB, 1 if ins[j].mnemonic == 'jne' else 0, 0, off, len(inner))] + inner
+                    return None
                 if not o[1].mem.base and not o[1].mem.index and o[0].size == 4:
                     # a global kept unless it is -1: mov r, [g1]; cmp r, -1; (noise); je end; mov [g0], r
                     g1 = o[1].mem.disp & 0xffffffff
@@ -361,6 +391,10 @@ def read(a, n):
                                 and w.operands[1].type == x86.X86_OP_REG and reg(w.operands[1]) == r and ins[j].operands[0].imm == ins[j + 2].address:
                             regs[r] = None
                             return j + 2, [(GCOPY, 0, 0, w.operands[0].mem.disp & 0xffffffff, g1)]
+                        return None
+                    if g1 >= 0x1000000:
+                        regs[r] = ('gvalue', g1)              # a global's value: an object to call, or to copy on
+                        return i + 1, []
                     return None
                 return None
         if m == 'lea' and not o[1].mem.index and o[1].mem.base:
@@ -369,12 +403,30 @@ def read(a, n):
                 regs[reg(o[0])] = ('this', b[1] + o[1].mem.disp)
                 return i + 1, []
             return None
+        if m == 'push':
+            if o[0].type == x86.X86_OP_IMM:
+                pending.append(('c', o[0].imm & 0xffffffff))
+                return i + 1, []
+            v = regs.get(reg(o[0]))
+            if v and v[0] == 'member':
+                pending.append(('f', v[1]))                   # a field's value
+                return i + 1, []
+            if v == ('zero', 0):
+                pending.append(('c', 0))
+                return i + 1, []
+            if v is None and reg(o[0]) in SAVED:
+                return i + 1, []                              # a register saved part way through
+            return None
         if m == 'call' and o[0].type == x86.X86_OP_IMM:
             c = regs.get('ecx')
-            if c and c[0] == 'this':
+            if c and c[0] in ('this', 'gvalue') and len(pending) <= 3:
+                args = [(ARG, 1 if k == 'f' else 0, 0, v, 0) for k, v in reversed(pending)]
+                del pending[:]
                 for r in ('eax', 'ecx', 'edx'):
                     regs[r] = None
-                return i + 1, [(CALL, 0, 0, o[0].imm, c[1])]   # a member's or the base's destructor
+                if c[0] == 'this':
+                    return i + 1, args + [(CALL, len(args), 0, o[0].imm, c[1])]   # a member's or the base's destructor
+                return i + 1, args + [(GCALL, len(args), 0, o[0].imm, c[1])]      # on a global object
             return None
         return None
 
@@ -384,7 +436,7 @@ def read(a, n):
         if noise(x):
             i += 1
             continue
-        if x.mnemonic == 'push' and not started and (x.operands[0].type == x86.X86_OP_REG or i < 3):
+        if x.mnemonic == 'push' and not started and not pending and (x.operands[0].type == x86.X86_OP_REG or i < 3):
             i += 1                                            # the frame (its two constants come first) and the saved registers
             continue
         s = step(i)
@@ -396,12 +448,19 @@ def read(a, n):
         i = s[0]
     if not ops:
         raise Unknown('nothing in it')
-    if len(ops) > 60:
-        raise Unknown('more than 60 steps')
+    if len(ops) > 200:
+        raise Unknown('more than 200 steps')
+    if pending or frees[0]:
+        raise Unknown('arguments left on the stack')
+    last_call = max((x.address for x in ins if x.mnemonic == 'call'), default=0)
+    if any(ad < last_call for ad in odd_adds):
+        raise Unknown('the stack put right by another amount')
+    if len({x for k, c, sm, x, y in ops if k in (CALL, CDECL, CALLP, GCALL)} | {y for k, c, sm, x, y in ops if k == FREEM}) > 40:
+        raise Unknown('more than 40 functions called')
     for k, c, small, x, y in ops:   # what the tester's stand-ins hold: table entries under 16, offsets inside its objects
         if k in (VCALL,) and not 0 <= small < 0x40 or k == REL and not (0 <= x < 0x40 and 0 <= small < 0x3c):
             raise Unknown('a table entry past the 16th or a far count')
-        if k == LOOP and not (0 <= x < 0xff0 and 0 <= y < 0xff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
+        if k == IFB and not 0 <= x < 0xff0 or k == ARG and c == 1 and not 0 <= x < 0xff0 or k == LOOP and not (0 <= x < 0xff0 and 0 <= y < 0xff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
             raise Unknown('a field past 0xFF0')
     return ops
 
