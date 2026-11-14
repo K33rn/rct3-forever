@@ -6980,6 +6980,33 @@ static std::vector<Test> tests() {
     };
     decimal_text.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(decimal_text);
+    // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
+    // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
+    // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.
+    t.push_back({0x85a620,
+                 [=](Rng &r) {
+                     fresh(r);
+                     uint32_t *self = arena<uint32_t>(0x8000);
+                     for (int k = 0; k < 6; k++) self[k] = (uint32_t)(uintptr_t)arena<void>(0x8100 + 0x100 * k);
+                     int32_t count = r.range(0, 40);
+                     self[6] = (uint32_t)count, self[7] = (uint32_t)(count + (r.range(0, 2) ? r.range(1, 4) : 0));
+                     int32_t a = 0, b = 0;
+                     for (int i = 0; i < 64; i++) {
+                         if (r.range(0, 3)) b += r.range(0, 2);
+                         else a += 1, b = r.range(0, 5);
+                         arena<int32_t>(0x8100)[i] = r.next(), arena<int32_t>(0x8200)[i] = r.range(0, 5), arena<int32_t>(0x8400)[i] = r.range(0, 5);
+                         arena<int32_t>(0x8300)[i] = r.range(0, 9) ? a : r.range(0, 9);   // (sorted a, mostly in order)
+                         arena<int32_t>(0x8500)[i] = b;
+                         arena<int32_t>(0x8600)[i] = r.range(0, 60);
+                     }
+                     arena<int32_t>(0x40)[0] = r.range(-1, a + 1), arena<int32_t>(0x40)[1] = r.range(-1, 6);
+                     *arena<uint32_t>(ALLOC_NEXT) = 0;
+                 },
+                 [](void *fn) {
+                     int32_t got = ((int32_t(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x8000), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1]);
+                     return Result{(uint32_t)got};
+                 },
+                 3000});
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;

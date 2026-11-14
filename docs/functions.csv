@@ -11593,7 +11593,7 @@ address,size,name,callers,status
 0x85a550,3,,1,documented
 0x85a560,84,,1,documented
 0x85a5e0,61,Six::Free85A5E0,2,rewritten
-0x85a620,912,,1,documented
+0x85a620,912,Pairs::Insert,1,rewritten
 0x85a9c0,265,,1,documented
 0x85aad0,155,,1,documented
 0x85abc0,30,DeletingDestructor,2,rewritten
@@ -23106,7 +23106,7 @@ address,size,name,callers,status
 0xcea9b0,137,BSEARCH_MAP,1,rewritten
 0xceaa40,133,COMPACT4,1,rewritten
 0xceab10,61,Six::Free85A5E0,1,rewritten
-0xceab50,912,,1,documented
+0xceab50,912,Pairs::Insert,1,rewritten
 0xceb030,157,Record::CopyFields,1,rewritten
 0xceb140,72,,2,documented
 0xceb190,556,,4,documented
