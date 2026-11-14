@@ -92,9 +92,15 @@ def test(game):
     exe = os.path.join(OUT, 'equiv.exe')
     src = [os.path.join(HERE, 'tools', 'equiv', 'equiv.cpp')]
     src += glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp'))
+    # the tests kept in files of their own (tools/equiv/tests/*.inc), listed for equiv.cpp to include
+    tests = sorted(glob.glob(os.path.join(HERE, 'tools', 'equiv', 'tests', '*.inc')))
+    listing = ''.join('#include "%s"\n' % t.replace('\\', '/') for t in tests)
+    inc = os.path.join(OUT, 'equiv_tests.inc')
+    if not os.path.exists(inc) or open(inc).read() != listing:
+        open(inc, 'w').write(listing)
     # its own fixed base far from 0x400000, where the game is loaded, and no ASLR to move it there
     # and a 1 MB stack (Zig's default 16 MB lands right on 0x400000)
-    subprocess.check_call(ZIG + ['-o', exe, *src, '-Wl,--image-base,0x30000000', '-Wl,--stack,0x100000'])
+    subprocess.check_call(ZIG + ['-I', OUT, '-o', exe, *src, '-Wl,--image-base,0x30000000', '-Wl,--stack,0x100000'])
     import pefile
     pe = pefile.PE(exe)
     pe.OPTIONAL_HEADER.DllCharacteristics &= ~0x40   # IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE

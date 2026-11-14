@@ -26,9 +26,13 @@ rewriting anything.
 
 ## How a rewrite is done
 
-1. Pick a `documented` function or family (CONTRIBUTING.md); the user claims it on GitHub.
+1. Pick a `documented` function or family (CONTRIBUTING.md) and **claim it** before starting:
+   `uv run --no-project python tools/claim.py take <name> <address>... --note "..."` (a `tools/` generator: claim its
+   path before extending it). If `take` refuses, someone else has it: pick something else. Renew a claim you are
+   still on (`claim.py renew <name>`); release it if you give up.
 2. Write it in its own `forever/src/rewrite/<topic>.cpp` with a `REWRITE(...)` line per copy (see docs/rewriting.md).
-3. Add a test to `tools/equiv/equiv.cpp` and run it until **0 different** for every copy. Stand-ins (`stubs_for_now`)
+3. Add its test in its own `tools/equiv/tests/<topic>.inc` (see tools/equiv/tests/README.md; not in equiv.cpp) and
+   run it until **0 different** for every copy. Stand-ins (`stubs_for_now`)
    must match the real callee's convention and `ret N`; game globals are not put back between the original's run and
    the rewrite's, so set them in the call lambda.
 4. **Plant a bug** (wrong offset or constant), check the test fails, undo it. A crashing planted bug stops the tester,
@@ -46,3 +50,12 @@ Only with the user's go-ahead: it takes over their mouse and keyboard. Back up t
 ## Git
 
 Commit only when the user asks. Never commit `out/`, `dist/`, `third_party/` or anything from the game.
+
+Other people and agents may be working at the same time:
+- Work in a checkout of your own (`git worktree add`), with a claims name of your own (`RCT3_WHO`).
+- Commit and push with `tools/land.py`, never a plain `git push`:
+  `uv run --no-project --with ziglang --with pefile --with capstone python tools/land.py -m "message (@P@)" <files>`.
+  It rebases, makes the generated files again and runs the full test.
+- Never edit or hand-merge `docs/functions.csv`, `docs/progress.md`, `docs/notes/rewritten.md` or the README/ROADMAP
+  progress lines.
+- If it stops on a real conflict, rebase by hand, then run it again with no files.

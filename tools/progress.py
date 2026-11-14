@@ -203,6 +203,15 @@ def main():
     block = '<!-- progress -->\n' + '\n'.join(summary) + '\n\nDetails: [docs/progress.md](docs/progress.md).\n<!-- /progress -->'
     text = re.sub(r'<!-- progress -->.*?<!-- /progress -->', lambda m: block, text, flags=re.S)
     open(readme, 'w', encoding='utf-8', newline='\n').write(text)
+
+    # the two progress lines in ROADMAP.md
+    roadmap = os.path.join(HERE, 'ROADMAP.md')
+    if os.path.exists(roadmap):
+        rp = pct(size['rewritten'], total_b)
+        text = open(roadmap, encoding='utf-8').read()
+        text = re.sub(r'[0-9,]+ functions, [0-9.]+% of the game', f"{count['rewritten']} functions, {rp} of the game", text)
+        text = re.sub(r'\([0-9.]+% of it also rewritten', f'({rp} of it also rewritten', text)
+        open(roadmap, 'w', encoding='utf-8', newline='\n').write(text)
     print(f'{total_n} game functions: ' + ', '.join(f'{count[s]} {s}' for s in ORDER))
 
 

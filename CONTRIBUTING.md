@@ -29,17 +29,40 @@ has to behave exactly the same. This page is the checklist; [docs/rewriting.md](
 
 - Look at [docs/progress.md](docs/progress.md) and the `documented` rows of [docs/functions.csv](docs/functions.csv).
 - Families (functions the compiler copied many times) give the most per rewrite: `tools/cleanfam.py` lists them.
-- Check the open issues, and comment on one (or open one) to claim it, so two people don't do the same function.
+- **Claim it first** with `tools/claim.py` (see [claims/README.md](claims/README.md)), so two people don't do the same
+  function: `uv run --no-project python tools/claim.py take <name> <address>...`. Claim a generator in `tools/` the
+  same way (its path) before extending it.
+
+## Working at the same time as others
+
+Several people and agents can work at once without stepping on each other:
+
+- **Claims** (above) keep two people off the same functions and generators.
+- **One file per topic**: your rewrite in `forever/src/rewrite/<topic>.cpp`, its test in
+  `tools/equiv/tests/<topic>.inc` ([how](tools/equiv/tests/README.md)). Nobody else edits those lines.
+- **Generated files are never merged by hand.** `docs/functions.csv`, `docs/progress.md`, `docs/notes/rewritten.md`
+  and the progress lines of README.md and ROADMAP.md are made by `tools/rewritten_notes.py` and `tools/progress.py`.
+  `tools/land.py` makes them again after rebasing, so they can't conflict.
+- **Land with `tools/land.py`**:
+  `uv run --no-project --with ziglang --with pefile --with capstone python tools/land.py -m "Rewrite X (@P@)" <your files>`.
+  It refuses rewrites claimed by someone else and rebases onto the latest `main`. It settles generated-file
+  conflicts itself and runs the full test, then pushes. If someone pushed first, it does it all again on top of
+  their work. A real conflict in your own files stops it cleanly, with nothing pushed. (`@P@` becomes the
+  rewritten percentage.)
+- **One checkout per agent.** Several agents on one machine each get a worktree of their own:
+  `git worktree add ../rct3-forever-2` (point it at the game with `RCT3_EXE` if it isn't in the usual Steam folder),
+  and a name of their own for claims: `RCT3_WHO="you/agent-2"`.
 
 ## Before you open a pull request
 
 - [ ] Put your rewrites in their own file, `forever/src/rewrite/<topic>.cpp`, so pull requests rarely conflict.
-- [ ] Add a test to `tools/equiv/equiv.cpp` and get **0 different** from `build.py test`, for every copy.
+- [ ] Add a test in `tools/equiv/tests/<topic>.inc` and get **0 different** from `build.py test`, for every copy.
 - [ ] **Plant a bug** in your rewrite (a wrong offset or constant), run the test again and see it fail, then undo it.
       A test that can't catch a planted bug isn't testing anything.
 - [ ] Run the game with your build (`out/RCT3Forever.exe`), play a scenario for a few minutes and check
       `out/RCT3Forever.log`: "rewritten functions in use: N of N", your function's call count, and "game closed".
-- [ ] Run `tools/progress.py` so the progress numbers include your work.
+- [ ] Leave the generated files (progress numbers, functions.csv, notes/rewritten.md) out of your changes:
+      `tools/land.py` makes them for you after rebasing.
 
 In the pull request, paste the tester's summary line, say which bug you planted, and paste those log lines.
 
