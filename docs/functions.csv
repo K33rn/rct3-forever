@@ -21634,7 +21634,7 @@ address,size,name,callers,status
 0xc59e50,176,Destructor::Steps,1,rewritten
 0xc59f00,114,Maker::MakeC59F00,1,rewritten
 0xc5a0e0,259,,0,documented
-0xc5a1f0,929,,10,documented
+0xc5a1f0,929,Quaternion::Slerp,10,rewritten
 0xc5a5a0,660,,0,documented
 0xc5a860,88,,0,documented
 0xc5a8f0,19,,2,documented
@@ -22710,7 +22710,7 @@ address,size,name,callers,status
 0xcc58a0,63,Ref::AssignCC2050,0,rewritten
 0xcc5900,296,Matrix::RotateRows,0,rewritten
 0xcc5a90,56,,3,documented
-0xcc5c80,929,,5,documented
+0xcc5c80,929,Quaternion::Slerp,5,rewritten
 0xcc6060,311,,1,documented
 0xcc61a0,84,,3,documented
 0xcc6200,104,,4,documented
