@@ -17,7 +17,8 @@
 // 16 is kind 9 for the object the constructor's argument number value gives, 17 runs the stretch written by hand number
 // value (below), 18 copies the member at +value to +off, 19 is kind 9 for the object itself (+value), 20 stores at +off
 // the resource the game's resource manager (0x13D0E04) gives for the name at value (fn: 0xBDF160 or 0xBDF1A0, given the
-// place of a text made from the name, then let go). Kind 7 calls fn instead of 0xBD0490 when fn is set (0xBD0520, the
+// place of a text made from the name, then let go), 21 sets the member's wide text at +off from the named text value
+// of the texts table fn (see class_named_text). Kind 7 calls fn instead of 0xBD0490 when fn is set (0xBD0520, the
 // other shared empty string).
 struct ClassOp {
     uint32_t kind, off, value, fn, count, args[5], globals;   // bit i of globals: args[i] is a global, read as the call is made
@@ -66,6 +67,32 @@ static void class_resource(uint8_t *into, uintptr_t name, uintptr_t lookup) {
         ((void(__cdecl *)(void *))0xbce000)(again);
     }
 }
+// A member's wide text set from a named text: the named text made in a temporary (0x4040F0: the name, the texts table,
+// 1); the member's old text let go (its count taken down; at 0, and when there is one, its buffer freed, then it); the
+// member given a new wide text copied from the named text's characters (+8; 0xBCF7D0 on 16 new bytes, none without
+// memory), or the shared empty one (0xBD0490) when it has none; the temporary let go (0xBD1880).
+static void class_named_text(uint8_t *self, uint32_t off, uintptr_t name, uintptr_t table) {
+    typedef void(__cdecl * Free)(void *);
+    alignas(16) uint8_t temporary[0x40];
+    uint8_t *made = (uint8_t *)((void *(__thiscall *)(void *, uintptr_t, uintptr_t, uint32_t))0x4040f0)(temporary, name, table, 1);
+    const void *characters = *(const void *volatile *)(made + 8);
+    int32_t *volatile *member = (int32_t *volatile *)(self + off);
+    --**member;
+    uintptr_t old = (uintptr_t)*member;
+    if (*(volatile int32_t *)old == 0 && old) {
+        ((Free)0xbce010)((void *)(uintptr_t)(uint32_t)((int32_t *)old)[3]);
+        ((Free)0xbce000)((void *)old);
+    }
+    void *text;
+    if (characters) {
+        void *memory = memory_alloc(0x10);
+        text = memory ? ((void *(__thiscall *)(void *, const void *))0xbcf7d0)(memory, characters) : nullptr;
+    } else {
+        text = ((void *(__fastcall *)(uint32_t))0xbd0490)(1);
+    }
+    *(void *volatile *)member = text;
+    ((void(__thiscall *)(void *))0xbd1880)(temporary);
+}
 static void *call_with(uintptr_t fn, void *self, uint32_t count, const uint32_t *args) {
     switch (count) {
     case 0: return ((void *(__thiscall *)(void *))fn)(self);
@@ -107,6 +134,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 18) *(uint32_t *)(self + op.off) = *(uint32_t *)(self + op.value);
         else if (op.kind == 17) class_hand(op.value, self, given);
         else if (op.kind == 20) class_resource(self + op.off, op.value, op.fn);
+        else if (op.kind == 21) class_named_text(self, op.off, op.value, op.fn);
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)

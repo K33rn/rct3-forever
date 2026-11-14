@@ -328,6 +328,64 @@ class Reject(Exception):
 STATE = r'mov byte ptr \[esp \+ (?:0x[0-9a-f]+|\d+)\], (?:0x[0-9a-f]+|\d+|[a-d]l)'   # the exception frame's state
 
 
+def named_text_step(t, ins, k, regs):
+    """A member's wide text set from a named text, from t[k] (lea ecx, [esp + X], the member stage having taken the pushes
+    of 1, the table and the name): the named text made in a temporary on the stack (0x4040F0); the member's old text let
+    go; the member given a new wide text copied from the named one's characters (0xBCF7D0 on 16 new bytes, or none
+    without memory), or the shared empty one when it has none (0xBD0490); the temporary let go (0xBD1880). Returns (the
+    index after it, the member's offset, the registers it leaves changed, the plain stores into the object between the
+    lea and the call, which the call can't see: done first), or None. The exception frame's state stores are passed over."""
+    seq, at, stores = [], [], []
+    q = k
+    while q < len(t) and len(seq) < 35:
+        m = re.fullmatch(r'mov (dword|byte) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', t[q])
+        if len(seq) == 1 and m and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
+            stores.append((0 if m.group(1) == 'dword' else 1, regs[m.group(2)][1] + num(m.group(3) or '0'), num(m.group(4)), 0, []))
+        elif not re.fullmatch(STATE, t[q]):
+            seq.append(t[q])
+            at.append(q)
+        q += 1
+    if len(seq) < 35:
+        return None
+    zero = lambda x: x == '0' or regs.get(x) == ('const', 0)
+    is_zero_test = lambda line, r: line == 'test %s, %s' % (r, r) or ((m := re.fullmatch(r'cmp ' + r + ', (0|' + REG + ')', line)) and zero(m.group(1)))
+    mx = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', seq[0])
+    if not mx or seq[1] != 'call 0x4040f0':
+        return None
+    m1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[eax \+ 8\]', seq[2])
+    m3 = re.fullmatch(r'mov eax, dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', seq[3])
+    if not m1 or not m3 or not regs.get(m3.group(1)) or regs[m3.group(1)][0] != 'this' or m1.group(1) in ('eax', 'ecx', 'edx'):
+        return None
+    r1, member = m1.group(1), seq[3].split(', ', 1)[1]
+    m5 = re.fullmatch(r'mov ' + REG + ', ' + re.escape(member), seq[5])
+    if seq[4] != 'dec dword ptr [eax]' or not m5:
+        return None
+    r2 = m5.group(1)
+    m6 = re.fullmatch(r'cmp dword ptr \[' + r2 + r'\], (0|' + REG + ')', seq[6])
+    if not m6 or not zero(m6.group(1)) or not seq[7].startswith('jne ') or not is_zero_test(seq[8], r2) or not seq[9].startswith('je '):
+        return None
+    if seq[10:16] != ['mov eax, dword ptr [%s + 0xc]' % r2, 'push eax', 'call 0xbce010', 'push ' + r2, 'call 0xbce000', 'add esp, 8']:
+        return None
+    if num(seq[7][4:]) != ins[at[16]].address or num(seq[9][3:]) != ins[at[16]].address:
+        return None
+    if not is_zero_test(seq[16], r1) or not seq[17].startswith('je ') or seq[18:21] != ['push 0x10', 'call 0xbcdfc0', 'add esp, 4']:
+        return None
+    if not re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax', seq[21]) or not is_zero_test(seq[22], 'eax') or not seq[23].startswith('je '):
+        return None
+    if seq[24:27] != ['push ' + r1, 'mov ecx, eax', 'call 0xbcf7d0'] or not seq[27].startswith('jmp ') or seq[28] != 'xor eax, eax' or not seq[29].startswith('jmp '):
+        return None
+    if num(seq[23][3:]) != ins[at[28]].address or seq[30:32] != ['mov cl, 1', 'call 0xbd0490'] or num(seq[17][3:]) != ins[at[30]].address:
+        return None
+    if num(seq[27][4:]) != ins[at[32]].address or num(seq[29][4:]) != ins[at[32]].address:
+        return None
+    store = 'mov %s, eax' % member
+    lea = 'lea ecx, [esp + %#x]' % (num(mx.group(1)) - 12)   # the temporary again, the three pushes gone
+    if sorted(seq[32:34]) != sorted([lea, store]) or seq[34] != 'call 0xbd1880':
+        return None
+    off = regs[m3.group(1)][1] + num(re.search(r'\+ (0x[0-9a-f]+|\d+)\]', member).group(1))
+    return at[34] + 1, off, (r1, r2), stores
+
+
 def resource_step(t, ins, k, regs, pushed_already=False):
     """A member looked up by name in the game's resources, from t[k]: a text made from the name (0xBCFB10 on 16 new
     bytes, or none without memory), the resource manager (the global 0x13D0E04) asked for it (0xBDF160 or 0xBDF1A0, given
@@ -495,6 +553,15 @@ def parse(a, n):
                 continue
         if re.fullmatch(r'(mov al, byte ptr|cmp byte ptr) \[' + REG + r' \+ 4\].*', s):
             break
+        if (len(pushed) == 3 and pushed[0] == ('imm', 1) and pushed[1][0] == 'imm' and pushed[2][0] == 'imm' and not pending
+                and re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', s) and (nt := named_text_step(t, ins, k, regs))):
+            ops.extend(nt[3])
+            ops.append((21, nt[1], pushed[2][1], pushed[1][1], []))   # a member's wide text set from a named text
+            for r in ('eax', 'ecx', 'edx') + nt[2]:
+                regs.pop(r, None)
+            pushed = []
+            k = nt[0]
+            continue
         if s == 'call 0xbcdfc0' and pushed == [('imm', 0x10)] and not pending and (rs := resource_step(t, ins, k, regs, True)):
             ops.append((20, rs[3], rs[1], rs[2], []))   # a member looked up by name in the game's resources
             for r in ('eax', 'ecx', 'edx', rs[4]):

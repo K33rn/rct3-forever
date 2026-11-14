@@ -17191,7 +17191,7 @@ address,size,name,callers,status
 0xad8b80,18,Destructor::TablesThenBase,1,rewritten
 0xad8bd0,67,Reference::Reference(object),0,rewritten
 0xad8c30,212,ReferenceField::Load,1,rewritten
-0xad8d10,1684,,2,documented
+0xad8d10,1684,Class::Construct,2,rewritten
 0xad93b0,30,DeletingDestructor,2,rewritten
 0xad93d0,194,Registered::Construct4D3CB0,2,rewritten
 0xad94a0,30,DeletingDestructor,2,rewritten
@@ -17409,7 +17409,7 @@ address,size,name,callers,status
 0xaf5210,324,,3,documented
 0xaf5360,569,,2,documented
 0xaf55a0,758,,2,documented
-0xaf58a0,1164,,2,documented
+0xaf58a0,1164,Class::Construct,2,rewritten
 0xaf5d30,30,DeletingDestructor,2,rewritten
 0xaf5d50,194,Registered::Construct4D3CB0,2,rewritten
 0xaf5e20,30,DeletingDestructor,2,rewritten
