@@ -926,6 +926,42 @@ static void __thiscall desk_show(void *self, uint32_t a) {
     dev_note(52, (uint32_t)(uintptr_t)self); dev_note(52, a); dev_note(52, desk_self()[0x94 / 4]); dev_note(52, arena<uint8_t>(0x7000)[4]);
 }
 
+// DebugEditor::Number: its stand-ins (the desktop test's allocation, texts and running sum). The editor is at arena
+// 0x8000. Texts given by their place are noted by what they hold; window parts give back themselves or another place.
+static void __thiscall ed_empty_text(uint32_t **into, uint32_t a) { dev_note(60, a); *into = desk_text(); }
+static void *__cdecl ed_alloc(uint32_t size) {   // (texts, 16 bytes, always: the game lets a missing one go and crashes)
+    dev_note(67, size);
+    return size != 0x10 && dev_next() % 5 == 0 ? nullptr : dev_take(size);
+}
+static void *__thiscall ed_base(uint32_t *self, uint32_t **name, uint32_t a, uint32_t b, uint32_t c) {
+    dev_note(61, (uint32_t)(uintptr_t)self); dev_note(61, (uint32_t)(uintptr_t)*name); dev_note(61, a); dev_note(61, b); dev_note(61, c);
+    dev_note(61, self[0]);   // not yet the editor's table
+    return self;
+}
+static void *__thiscall ed_add(uint32_t *self, void *child) {
+    dev_note(62, (uint32_t)(uintptr_t)self); dev_note(62, (uint32_t)(uintptr_t)child); dev_note(62, self[0]);
+    return self;
+}
+static void *__thiscall ed_font(uint8_t *self, uint32_t **text, uint32_t size, uint32_t flags) {
+    dev_note(63, (uint32_t)(uintptr_t)self); dev_note(63, (uint32_t)(uintptr_t)*text); dev_note(63, size); dev_note(63, flags);
+    return dev_next() % 3 ? self : self + 4;
+}
+static void *__thiscall ed_part(uint8_t *self, uint32_t **text, void *inner, const uint32_t *size, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
+    dev_note(64, (uint32_t)(uintptr_t)self); dev_note(64, (uint32_t)(uintptr_t)*text); dev_note(64, (uint32_t)(uintptr_t)inner);
+    dev_note(64, size[0]); dev_note(64, size[1]); dev_note(64, a); dev_note(64, b); dev_note(64, c); dev_note(64, d); dev_note(64, e);
+    return dev_next() % 3 ? self : self + 8;
+}
+static void *__thiscall ed_slider(uint8_t *self, uint32_t **text, void *range, const uint32_t *size, uint32_t a, uint32_t b) {
+    dev_note(65, (uint32_t)(uintptr_t)self); dev_note(65, (uint32_t)(uintptr_t)*text); dev_note(65, (uint32_t)(uintptr_t)range);
+    dev_note(65, size[0]); dev_note(65, size[1]); dev_note(65, a); dev_note(65, b);
+    return self;
+}
+static void *__thiscall ed_record(uint8_t *self, uint32_t **text, uint32_t a, void *range, uint32_t colour, uint32_t b) {
+    dev_note(66, (uint32_t)(uintptr_t)self); dev_note(66, (uint32_t)(uintptr_t)*text); dev_note(66, a); dev_note(66, (uint32_t)(uintptr_t)range);
+    dev_note(66, colour); dev_note(66, b);
+    return dev_next() % 2 ? self : self + 0x10;
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6546,6 +6582,34 @@ static std::vector<Test> tests() {
     };
     desktop_create.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(desktop_create);
+    // DebugEditor::Number (eight copies): the editor at arena 0x8000; a label (C text) or none, a width, the value's place,
+    // lowest, highest, step, and whether to show a slider (a byte; the rest of its word set too); the stand-ins above
+    Test debug_editor{0xca88d0,
+                      [=](Rng &r) {
+                          fresh(r);
+                          for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                          for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                          uint32_t *a = arena<uint32_t>(0x40);
+                          a[0] = r.range(0, 2) ? 0xf2738c : 0;
+                          for (int i = 1; i < 6; i++) a[i] = r.next() ^ (uint32_t)r.range(0, 0xffff) * 0x10001u;   // (low bytes and words of their own)
+                          a[6] = (r.next() & ~0xffu) | (r.range(0, 1) ? r.range(1, 255) : 0);
+                          arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                          arena<uint32_t>(0x30)[0] = 0;
+                      },
+                      [](void *fn) {
+                          const uint32_t *a = arena<uint32_t>(0x40);
+                          typedef void *(__thiscall * Editor)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+                          void *back = ((Editor)fn)(arena<void>(0x8000), a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
+                          return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                      }};
+    debug_editor.iterations = 300;
+    debug_editor.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)ed_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)cheat_text},
+                       {0xbd0490, (void *)desk_empty}, {0xbd05b0, (void *)ed_empty_text}, {0xc69eb0, (void *)ed_base}, {0xc69f00, (void *)ed_add},
+                       {0xc661d0, (void *)ed_font}, {0xc699c0, (void *)ed_part}, {0xc6b400, (void *)ed_slider}, {0xc686c0, (void *)ed_record}});
+    };
+    debug_editor.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(debug_editor);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;
