@@ -451,6 +451,7 @@ static void *new_wide_block() {
     return block;
 }
 static void *__fastcall stub_wide_empty_shared(uint32_t flag) { record(0x77, (void *)(uintptr_t)(flag & 0xff)); return arena<void>(0x8800); }
+static void *__fastcall stub_wide_empty_other(uint32_t flag) { record(0x76, (void *)(uintptr_t)(flag & 0xff)); return arena<void>(0x8810); }   // 0xBD0520
 static void *__thiscall stub_wide_assign_c(void *self, void **out, const char *text) { record(0x78, (void *)text); *out = new_wide_block(); return out; }
 static void *__thiscall stub_wide_assign(void *self, void **out, void **text) { record(0x79, *text); *out = new_wide_block(); return out; }
 static void *__thiscall stub_wide_copy(void **out, void *title) { record(0x7a, title); *out = new_wide_block(); return out; }
@@ -575,6 +576,14 @@ static void *__thiscall stub_class_named_text(void *self, uint32_t name, const u
     return self;
 }
 static void __thiscall stub_class_unreference(uint32_t *self) { record(0x9b, (void *)(uintptr_t)self[1]); }
+// set going with a value (noting a value set just before), and a member made for the object with a pair on the stack
+static void __thiscall stub_class_start(uint8_t *self, uint32_t a) { record(0x9c, self); record(0x9c, (void *)(uintptr_t)a); record(0x9c, (void *)(uintptr_t)*(uint32_t *)(self + 0x6c)); }
+static void __thiscall stub_class_after_figures(uint8_t *self) { record(0x9e, self); record(0x9e, (void *)(uintptr_t)*(uint32_t *)(self + 0x1bc)); }
+static void *__thiscall stub_class_from_pair(void *self, void *object, const uint32_t *pair) {
+    record(0x9d, self); record(0x9d, object); record(0x9d, (void *)(uintptr_t)pair[0]); record(0x9d, (void *)(uintptr_t)pair[1]);
+    return self;
+}
+static uint32_t g_weather_defaults[4];   // the game's weather defaults (0x10F1CF8..0x10F1D04), put back after the test
 static uintptr_t g_class_description;   // the default description global of the Class::Construct copy being checked
 static uint32_t g_class_args;           // and how many arguments it takes (2 to 7)
 static uintptr_t g_class_instance;      // and the global it gives the object at the end, if any
@@ -5594,6 +5603,7 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x8a00)[0x78 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8b00);
                              arena<uint32_t>(0x8b00)[0] = r.next();
                              arena<uint32_t>(0x8b00)[1] = r.next();
+                             for (int k = 0; k < 4; k++) arena<uint32_t>(0x8b10)[k] = r.next() & 0x3fffffff;   // the weather defaults, for this case
                              for (int k = 0; k < 0x100; k++) arena<uint32_t>(0x200)[k] = r.next();   // the rest of a big object (to 0x600)
                              arena<uint32_t>(0x8800)[0] = 100;
                              arena<uint32_t>(0x10)[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)description : 0;
@@ -5607,6 +5617,7 @@ static std::vector<Test> tests() {
                          },
                          [](void *fn) {
                              *(void **)g_class_description = arena<void>(0x4000);
+                             for (int k = 0; k < 4; k++) ((uint32_t *)0x10f1cf8)[k] = arena<uint32_t>(0x8b10)[k];
                              if (g_class_instance) *(uint32_t *)g_class_instance = 0;
                              // a game list for the end's globals: what they point to (0x7C0) is a list head, and at +0x14 holds another (0x7E0)
                              uint32_t *list = arena<uint32_t>(0x7c0), *inner = arena<uint32_t>(0x7e0);
@@ -5640,6 +5651,7 @@ static std::vector<Test> tests() {
         // The copy's default description: the game global it loads before building the base (mov r32, [global]); and
         // how many arguments it takes, from its ret N after the exception frame is put back (mov fs:[0], ecx).
         const uint8_t *code = (const uint8_t *)e->at;
+        memcpy(g_weather_defaults, (void *)0x10f1cf8, sizeof g_weather_defaults);
         g_class_description = 0;
         for (int k = 0; k < 0x80 && !(code[k] == 0xe8 && (uintptr_t)(code + k + 5) + *(const int32_t *)(code + k + 1) == 0x800a80); k++) {
             uint32_t at = code[k] == 0xa1 ? *(const uint32_t *)(code + k + 1) : code[k] == 0x8b && (code[k + 1] & 0xc7) == 0x05 ? *(const uint32_t *)(code + k + 2) : 0;
@@ -5678,7 +5690,9 @@ static std::vector<Test> tests() {
             {0xcd2b30, (void *)stub_list_member}, {0x441030, (void *)stub_member_built}, {0x981ee0, (void *)stub_member_built1},
             {0x84ae30, (void *)stub_member_built}, {0x611a80, (void *)stub_class_array},
             {0x425920, (void *)stub_class_lighting}, {0x9f9da0, (void *)stub_class_find5}, {0x7c8870, (void *)stub_class_info_text},
-            {0xbd9ad0, (void *)stub_class_reference}, {0x560d20, (void *)stub_class_named_text}, {0xbd99e0, (void *)stub_class_unreference}};
+            {0xbd9ad0, (void *)stub_class_reference}, {0x560d20, (void *)stub_class_named_text}, {0xbd99e0, (void *)stub_class_unreference},
+            {0x9e87e0, (void *)stub_class_start}, {0x48c9c0, (void *)stub_class_from_pair}, {0xbd0520, (void *)stub_wide_empty_other},
+            {0x707530, (void *)stub_class_after_figures}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;
@@ -5687,7 +5701,7 @@ static std::vector<Test> tests() {
         }
         stubs_for_now(list);
     };
-    class_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
+    class_construct.finish = [](const rewrite::Entry *) { unstub_many(); memcpy((void *)0x10f1cf8, g_weather_defaults, sizeof g_weather_defaults); };
     quick(class_construct);
     // Globals::SetFixed: functions that set game globals to fixed values; the globals are compared (data), set to
     // something else first

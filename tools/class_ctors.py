@@ -27,7 +27,10 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after')}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.
-HAND_STEPS = {0x56bf80: [('lea ecx, [esp + 0x2c]', 'call 0xbd99e0', 'ride_train_status_text')]}
+HAND_STEPS = {0x56bf80: [('lea ecx, [esp + 0x2c]', 'call 0xbd99e0', 'ride_train_status_text')],
+              0x9e8ff0: [('fld dword ptr [0x10f1cf8]', 'call 0x9e87e0', 'weather_start')],
+              0x830740: [('lea eax, [esp + 0x44]', 'call 0x48c9c0', 'member_from_pair_830740')],
+              0x707680: [('call 0x704a50', 'call 0x707530', 'park_figures')]}
 HANDS = []   # the hand-written stretches' functions, in the order class_hand numbers them
 num = lambda s: int(s, 0)
 
@@ -69,7 +72,7 @@ def walk_fields(ins, t, k0, regs0):
         raise Reject('fields')
     last = adds[-1]
     q = last + 1
-    while q < len(t) and re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]|mov ecx, ' + REG + r'|mov ecx, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]|call dword ptr \[e[a-d]x\]', t[q]):
+    while q < len(t) and re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]|mov ecx, ' + REG + r'|mov ecx, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]|mov (?:e[sd]i|ebp|ebx), dword ptr \[esp \+ (?:0x[0-9a-f]+|\d+)\]|call dword ptr \[e[a-d]x\]', t[q]):
         if t[q].startswith('call'):
             last = q
         q += 1
@@ -210,6 +213,65 @@ def walk_fields(ins, t, k0, regs0):
                 raise Reject('field lea: ' + s)
         elif (m := re.fullmatch(r'(?:test|cmp) ' + REG + ', ' + REG, s)):
             tested = regs.get(m.group(1)) if (m.group(1) == m.group(2) or regs.get(m.group(2)) == ('const', 0)) else None
+        elif (m := re.fullmatch(r'je (0x[0-9a-f]+)', s)) and strict and tested and tested[0] == 'new' and tested[1] in field_entry and k + 8 < len(t):
+            # the record added to a struct's list, or to the class's list when the struct is null, as two calls:
+            #   je ELSE; lea ecx, [S + 4]; call add; mov X, [L kept]; jmp JOIN; ELSE: mov X, [L kept]; mov ecx, X; call add; JOIN:
+            f = pushed[-1] if pushed else None
+            # (or the list chosen first: je ELSE; mov ecx, S; add ecx, 4; jmp JOIN; ELSE: mov ecx, L; JOIN: call add)
+            mr = re.fullmatch(r'mov ecx, ' + REG, t[k + 1])
+            ml = re.fullmatch(r'mov ecx, ' + REG, t[k + 4])
+            if (mr and regs.get(mr.group(1)) == tested and t[k + 2] == 'add ecx, 4' and t[k + 3].startswith('jmp ') and ml
+                    and ins[k + 4].address == num(m.group(1)) and regs.get(ml.group(1)) == ('L', 0x1c) and ins[k + 5].address == num(t[k + 3][4:])
+                    and t[k + 5] == 'call 0x8087e0' and f and f[0] == 'new' and f[1] == len(made) - 1 and f[1] not in field_entry and made[f[1]][3] is not None and not nulls):
+                pushed.pop()
+                depth -= 4
+                size, ctor, args, table = made[f[1]]
+                field_entry[f[1]] = len(entries)
+                entries.append((size, ctor, table, args, field_entry[tested[1]]))
+                for r in ('eax', 'ecx', 'edx'):
+                    regs.pop(r, None)
+                k += 6
+                continue
+            # (or: je ELSE; mov X, S; lea ecx, [X + 4]; call add; jmp JOIN; ELSE: mov ecx, L; call add; mov X, [S kept]; JOIN:)
+            mx = re.fullmatch(r'mov ' + REG + ', ' + REG, t[k + 1])
+            ml = re.fullmatch(r'mov ecx, ' + REG, t[k + 5])
+            mk = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 7]) if k + 8 < len(t) else None
+            if (mx and regs.get(mx.group(2)) == tested and t[k + 2] == 'lea ecx, [%s + 4]' % mx.group(1) and t[k + 3] == 'call 0x8087e0'
+                    and t[k + 4].startswith('jmp ') and ins[k + 5].address == num(m.group(1)) and ml and regs.get(ml.group(1)) == ('L', 0x1c)
+                    and t[k + 6] == 'call 0x8087e0' and mk and mk.group(1) == mx.group(1) and ins[k + 8].address == num(t[k + 4][4:])
+                    and f and f[0] == 'new' and f[1] == len(made) - 1 and f[1] not in field_entry and made[f[1]][3] is not None and not nulls):
+                pushed.pop()
+                depth -= 4
+                if stack.get(num(mk.group(2)) - depth) != tested:
+                    raise Reject('field two adds kept')
+                size, ctor, args, table = made[f[1]]
+                field_entry[f[1]] = len(entries)
+                entries.append((size, ctor, table, args, field_entry[tested[1]]))
+                for r in ('eax', 'ecx', 'edx'):
+                    regs.pop(r, None)
+                regs[mx.group(1)] = tested
+                k += 8
+                continue
+            ma = re.fullmatch(r'lea ecx, \[' + REG + r' \+ 4\]', t[k + 1])
+            mb = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 3])
+            mc = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 5])
+            if (not f or f[0] != 'new' or f[1] != len(made) - 1 or f[1] in field_entry or made[f[1]][3] is None or nulls
+                    or not ma or regs.get(ma.group(1)) != tested or t[k + 2] != 'call 0x8087e0' or not mb or not mc
+                    or mb.group(1) != mc.group(1) or not t[k + 4].startswith('jmp ') or ins[k + 5].address != num(m.group(1))
+                    or t[k + 6] != 'mov ecx, ' + mb.group(1) or t[k + 7] != 'call 0x8087e0' or ins[k + 8].address != num(t[k + 4][4:])):
+                raise Reject('field two adds')
+            pushed.pop()
+            depth -= 4
+            if stack.get(num(mb.group(2)) - depth) != ('L', 0x1c) or stack.get(num(mc.group(2)) - depth - 4) != ('L', 0x1c):   # (on the null path the record is still pushed)
+                raise Reject('field two adds list')
+            size, ctor, args, table = made[f[1]]
+            field_entry[f[1]] = len(entries)
+            entries.append((size, ctor, table, args, field_entry[tested[1]]))
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+            regs[mb.group(1)] = ('L', 0x1c)
+            k += 8
+            continue
         elif (m := re.fullmatch(r'je (0x[0-9a-f]+)', s)) and strict:
             # the record not made: its null path (checked at the jmp that ends the made path)
             if not tested or tested[0] != 'new' or tested[1] != len(made) - 1 or nulls:
@@ -226,6 +288,8 @@ def walk_fields(ins, t, k0, regs0):
                 if (mm := re.fullmatch(r'xor ' + REG + ', ' + REG, x)) and mm.group(1) == mm.group(2) and regs.get(mm.group(1)) == ('new', i):
                     pass
                 elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, x)) and regs.get(mm.group(2)) == ('const', 0) and stack.get(num(mm.group(1)) - depth) == ('new', i):
+                    pass
+                elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], 0', x)) and stack.get(num(mm.group(1)) - depth) == ('new', i):
                     pass
                 else:
                     raise Reject('field null path: ' + x)
@@ -339,9 +403,33 @@ def parse(a, n):
             j = next((q for q in range(k, len(t)) if t[q] == hand[1]), None)
             if j is None:
                 raise Reject('hand stretch end not found')
-            for r in ('eax', 'ebx', 'ecx', 'edx', 'esi', 'edi', 'ebp'):
-                if written(r, t[k:j + 1]):
-                    regs.pop(r, None)
+            # followed for the stack (it must end where it began) and for pointers into the object it leaves in
+            # registers and locals; any other register it writes is forgotten
+            d = 0
+            for x in t[k:j + 1]:
+                if x.startswith('push '):
+                    d += 4
+                elif (mm := re.fullmatch(r'call (0x[0-9a-f]+)', x)):
+                    d -= 4 * ret_args(num(mm.group(1)))
+                    for r in ('eax', 'ecx', 'edx'):
+                        regs.pop(r, None)
+                elif (mm := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', x)) and regs.get(mm.group(2)) and regs[mm.group(2)][0] == 'this':
+                    regs[mm.group(1)] = ('this', regs[mm.group(2)][1] + num(mm.group(3)))
+                elif (mm := re.fullmatch(r'mov dword ptr \[esp(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', x)):
+                    slot = num(mm.group(1) or '0') - depth - d
+                    kept.pop(slot, None)
+                    if slot >= 4:
+                        dirty.add(slot // 4)
+                    if regs.get(mm.group(2)) and regs[mm.group(2)][0] == 'this':
+                        kept[slot] = regs[mm.group(2)]
+                elif x.startswith(('mov byte ptr [esp', 'mov dword ptr [e', 'mov byte ptr [e', 'fstp ', 'fld ', 'fadd ', 'cmp ', 'test ')):
+                    pass
+                else:
+                    for r in ('eax', 'ebx', 'ecx', 'edx', 'esi', 'edi', 'ebp'):
+                        if written(r, [x]):
+                            regs.pop(r, None)
+            if d:
+                raise Reject('hand stretch moves the stack')
             if hand[2] not in HANDS:
                 HANDS.append(hand[2])
             ops.append((17, 0, HANDS.index(hand[2]), 0, []))
@@ -349,15 +437,16 @@ def parse(a, n):
             continue
         if s == 'mov cl, 1':
             regs['ecx'] = ('cl1',)
-        elif s == 'call 0xbd0490' and regs.get('ecx') == ('cl1',):
+        elif s in ('call 0xbd0490', 'call 0xbd0520') and regs.get('ecx') == ('cl1',):
             for r in ('ecx', 'edx'):
                 regs.pop(r, None)
-            regs['eax'] = ('empty',)
-        elif s == 'call 0x805750' or (s == 'call 0x805700' and regs.get('ecx') and regs['ecx'][0] in ('const', 'arg')):
+            regs['eax'] = ('empty', 0 if s == 'call 0xbd0490' else 0xbd0520)
+        elif s == 'call 0x805750' or (s == 'call 0x805700' and regs.get('ecx') and regs['ecx'][0] in ('const', 'arg', 'this')):
             # the reference member's handle, linked in: mov [M + 4], eax; mov eax, [eax + 0x20]; then the link at M + 8.
             # 0x805750 gives the empty handle, 0x805700 (Handle::For) the handle of the object in ecx (a plain value)
             target = None if s == 'call 0x805750' else regs['ecx'][1]
             of_arg = s == 'call 0x805700' and regs['ecx'][0] == 'arg'   # the handle of the object an argument gives
+            of_self = s == 'call 0x805700' and regs['ecx'][0] == 'this'   # the handle of the object itself (or a member)
             m = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', t[k + 1])
             if not m or not regs.get(m.group(1)) or regs[m.group(1)][0] != 'this':
                 raise Reject('reference member')
@@ -369,7 +458,7 @@ def parse(a, n):
             link = re.fullmatch(r'mov dword ptr \[' + REG + r'\], ' + REG, t[k + 4]).group(1)
             if regs.get(link) != ('this', member + 8):
                 raise Reject('reference link register')
-            ops.append((6, member, 0, 0, []) if target is None else (16 if of_arg else 9, member, target, 0, []))
+            ops.append((6, member, 0, 0, []) if target is None else (16 if of_arg else 19 if of_self else 9, member, target, 0, []))
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
             k += 9
@@ -389,8 +478,8 @@ def parse(a, n):
                 ops.append((8, off, regs[v][1], 0, []))
             elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'arg8' and m.group(1) == 'byte':
                 ops.append((12, off, regs['e' + v[0] + 'x'][1], 0, []))   # an argument's low byte (a bool)
-            elif v == 'eax' and regs.get('eax') == ('empty',) and m.group(1) == 'dword':
-                ops.append((7, off, 0, 0, []))
+            elif v == 'eax' and regs.get('eax') and regs['eax'][0] == 'empty' and m.group(1) == 'dword':
+                ops.append((7, off, 0, regs['eax'][1], []))
             elif v == 'eax' and regs.get('eax') == ('made',) and m.group(1) == 'dword' and pending and pending[3] == len(ops):
                 if pending[4] is None:
                     ops.append((10, off, pending[0], pending[1], pending[2]))   # nothing else happened since the new: same order
@@ -400,15 +489,18 @@ def parse(a, n):
                 regs.pop('eax', None)
             elif v in regs and regs[v] and regs[v][0] == 'global' and m.group(1) == 'dword':
                 ops.append((5, off, regs[v][1], 0, []))
+            elif v in regs and regs[v] and regs[v][0] == 'field' and m.group(1) == 'dword' and all(
+                    o[0] in (0, 1, 2, 5, 8, 12, 18) and (o[1] + (1 if o[0] in (1, 12) else 4) <= regs[v][1] or o[1] >= regs[v][1] + 4) for o in ops[regs[v][2]:]):
+                ops.append((18, off, regs[v][1], 0, []))   # a member's value (unchanged since it was read) copied
             else:
                 raise Reject('member store: ' + s)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
             regs[m.group(1)] = ('field', regs[m.group(2)][1] + num(m.group(3) or '0'), len(ops))   # a member's value, as it is now
-        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r' \+ ' + REG + r'\*4\], 0', s)):
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r' \+ ' + REG + r'\*4\], (0x[0-9a-f]+|\d+)', s)):
             array, count = regs.get(m.group(1)), regs.get(m.group(2))
             if not array or not count or array[0] != 'field' or count[0] != 'field' or count[1] != array[1] + 4 or array[2] != len(ops) or count[2] != len(ops):
                 raise Reject('member array end')
-            ops.append((13, array[1], 0, 0, []))
+            ops.append((13, array[1], num(m.group(3)), 0, []))
         elif (m := re.fullmatch(r'jmp (0x[0-9a-f]+)', s)) and 0 < num(m.group(1)) - ins[k].address < 16:
             pass   # the description chosen for the registration (the one given, or the class's own)
         elif (m := re.fullmatch(r'mov (dword|byte) ptr \[esp(?: \+ (0x[0-9a-f]+|\d+))?\], (.*)', s)):
@@ -648,6 +740,9 @@ def parse(a, n):
             if value is not None:
                 ops.append((0 if m.group(1) == 'dword' else 1, off, value, 0, []))
                 continue
+        if (m := re.fullmatch(r'mov ' + REG + r', (0x[0-9a-f]+|\d+)', s)):
+            regs[m.group(1)] = ('const', num(m.group(2)))
+            continue
         if (m := re.fullmatch(r'mov byte ptr \[e[a-d]x \+ 4\], ([a-d]l)', s)) and byte_of(m.group(1)) == 1:
             continue   # the mark, from a register holding 1
         if (m := re.fullmatch(r'mov dword ptr \[(0x[0-9a-f]{7})\], (e[sd]i|ebp|ebx)', s)) and not instance and regs.get(m.group(2)) == ('this', 0):
