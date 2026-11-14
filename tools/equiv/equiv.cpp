@@ -1298,6 +1298,29 @@ static void __thiscall ds_buttons(void *self, DnText *a, DnText *b, uint32_t c, 
 }
 static void __thiscall ds_given(void *self, DnText *text) { dev_note(149, (uint32_t)(uintptr_t)self); dev_note(149, dn_hash(text)); dev_note(149, (uint32_t)text->count); }
 
+// Designer::OpenFiles: its stand-ins (texts keep what they hold at +4, as the folder test's), the window's table (slot
+// 8 gives its size, from the arena) and the designer's (slot 0xE4/4 notes the window kept)
+static const uint32_t of_rows[][7] = {
+#define OPEN_FILES(at, folder_at, folder, size, make, give, build, ...) {at, folder_at, folder, size, make, give, build},
+#include "../../forever/src/rewrite/open_files.inc"
+#undef OPEN_FILES
+};
+static void *__thiscall of_size(void *self, uint32_t *scratch) { dev_note(150, (uint32_t)(uintptr_t)self); return arena<void>(0x8300); }
+static void *of_window_table[9] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, (void *)of_size};
+static void *__thiscall of_make(uint32_t *self, uint32_t a, uint32_t b, void *c) {
+    dev_note(151, a); dev_note(151, b); dev_note(151, (uint32_t)(uintptr_t)c);
+    self[0] = (uint32_t)(uintptr_t)of_window_table;
+    return self;
+}
+static void __thiscall of_layout(void *self, uint32_t relation, void *to, const uint32_t *rect) {
+    dev_note(152, (uint32_t)(uintptr_t)self); dev_note(152, relation); dev_note(152, (uint32_t)(uintptr_t)to);
+    for (int k = 0; k < 4; k++) dev_note(152, rect[k]);
+}
+static void __thiscall of_give(void *self, uint32_t value) { dev_note(153, (uint32_t)(uintptr_t)self); dev_note(153, value); }
+static void __thiscall of_build(void *self) { dev_note(154, (uint32_t)(uintptr_t)self); }
+static void __thiscall of_told(uint32_t *self) { dev_note(155, self[0xe0 / 4]); dev_note(155, self[0xe4 / 4]); }
+static void *of_designer_table[0xe4 / 4 + 1];
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -7392,6 +7415,36 @@ static std::vector<Test> tests() {
     };
     file_button_tip.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(file_button_tip);
+    // Designer::OpenFiles (two copies): the designer at arena 0x8000 (its folder's name empty or not), a value
+    Test open_files{0xad6460,
+                    [=](Rng &r) {
+                        fresh(r);
+                        for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                        for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                        of_designer_table[0xe4 / 4] = (void *)of_told;
+                        arena<uint32_t>(0x8000)[0] = (uint32_t)(uintptr_t)of_designer_table;
+                        uint32_t *folder = (uint32_t *)dev_take(0x10);
+                        folder[0] = r.range(1, 2), folder[1] = r.range(0, 1) ? 5381 : r.next(), folder[3] = 0x7300;   // (5381: the empty text's hash)
+                        arena<uint32_t>(0x8000)[0xec / 4] = (uint32_t)(uintptr_t)folder;
+                        arena<uint32_t>(0x8000)[0xe8 / 4] = (uint32_t)(uintptr_t)folder;
+                        arena<uint32_t>(0x8300)[0] = r.next(), arena<uint32_t>(0x8300)[1] = r.next();
+                        arena<uint32_t>(0x40)[0] = r.next();
+                        arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0x2400;
+                    },
+                    [](void *fn) {
+                        ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x8000), arena<uint32_t>(0x40)[0]);
+                        return Result{*arena<uint32_t>(0x20)};
+                    }};
+    open_files.iterations = 200;
+    open_files.prepare = [](const rewrite::Entry *e) {
+        for (auto &row : of_rows)
+            if (row[0] == e->at)
+                stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)msg_text_c},
+                               {0xbce970, (void *)fp_compare}, {row[4], (void *)of_make}, {0x6b1640, (void *)of_layout}, {row[5], (void *)of_give},
+                               {row[6], (void *)of_build}});
+    };
+    open_files.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(open_files);
     // Pairs::Insert (two copies): the index at arena 0x8000 (six arrays at 0x8100 on, 64 entries each), 0 to 40 pairs,
     // room for them or a few more (no room: the arrays are made again from the aligned allocation stand-in), pairs of
     // small numbers so finding one is common; the sorted arrays mostly in order. The result and the arena are compared.
