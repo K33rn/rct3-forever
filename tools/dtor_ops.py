@@ -15,7 +15,7 @@ pe = pefile.PE(sys.argv[1], fast_load=True); img = pe.get_memory_mapped_image();
 md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
 md.detail = True
 SAVED = ('ebx', 'esi', 'edi', 'ebp')
-SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET, IFB, GMOVE, ARG, GCALL = range(19)   # the step kinds (dtor_ops.cpp)
+SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET, IFB, GMOVE, ARG, GCALL, UNLINK = range(20)   # the step kinds (dtor_ops.cpp)
 FREE_ALIGNED, FREE, VEC_DTOR = 0xbce010, 0xbce000, 0xddcf39
 
 
@@ -245,6 +245,11 @@ def read(a, n):
         cmp index, c; jl top; (pop saved;) end:"""
         if ins[j].mnemonic == 'push' and ins[j].operands[0].type == x86.X86_OP_REG and reg(ins[j].operands[0]) in SAVED:
             j += 1
+        def padding(x):   # what the compiler puts before a loop's top to line it up
+            o = x.operands
+            return x.mnemonic == 'nop' or x.mnemonic == 'mov' and len(o) == 2 and o[0].type == x86.X86_OP_REG and o[1].type == x86.X86_OP_REG and o[0].reg == o[1].reg                 or x.mnemonic == 'lea' and not o[1].mem.index and o[1].mem.disp == 0 and o[1].mem.base == o[0].reg
+        while padding(ins[j]):
+            j += 1
         top = ins[j].address
         x, y = ins[j], ins[j + 1]
         if not (x.mnemonic == 'mov' and x.operands[0].type == x86.X86_OP_REG and is_mem(x.operands[1]) and this_off(x.operands[1]) is not None):
@@ -403,6 +408,45 @@ def read(a, n):
                 regs[reg(o[0])] = ('this', b[1] + o[1].mem.disp)
                 return i + 1, []
             return None
+        if m == 'test' and o[0].type == x86.X86_OP_REG and o[1].type == x86.X86_OP_REG and o[0].reg == o[1].reg \
+                and (regs.get(reg(o[0])) or ('', 0))[0] == 'this':
+            # a list node in the object taken out of its list: the node {next, previous} at this + off, checked against its
+            # neighbours; a node that isn't linked both ways runs into a breakpoint (int3), as in the game
+            n, off = reg(o[0]), regs[reg(o[0])][1]
+            # a base's part of the object: test this, this; (noise); je zero; lea r, [this + off]; jmp on; zero: xor r, r; on:
+            # (the compiler's "this + off, or null for a null this"; this is never null in a destructor, so it is this + off)
+            j = i + 1
+            while noise(ins[j]):
+                j += 1
+            q = ins[j:j + 4]
+            if len(q) == 4 and q[0].mnemonic == 'je' and q[1].mnemonic == 'lea' and q[2].mnemonic == 'jmp' and q[3].mnemonic == 'xor'                     and not q[1].operands[1].mem.index and ins[0].reg_name(q[1].operands[1].mem.base) == n                     and q[0].operands[0].imm == q[3].address and q[2].operands[0].imm == q[3].address + q[3].size                     and q[3].operands[0].reg == q[3].operands[1].reg == q[1].operands[0].reg:
+                regs[reg(q[1].operands[0])] = ('this', off + q[1].operands[1].mem.disp)
+                return j + 4, []
+            j, before = i + 1, []
+            while ins[j].mnemonic == 'mov':
+                if noise(ins[j]):
+                    j += 1
+                    continue
+                st = step(j)
+                if not st or any(k[0] != SET for k in st[1]):
+                    break
+                before += st[1]
+                j = st[0]
+            q = ins[j:j + 19]
+            if len(q) == 19 and q[0].mnemonic == 'je' and q[1].mnemonic == 'mov' and q[1].operands[0].type == x86.X86_OP_REG \
+                    and q[4].mnemonic == 'mov' and q[4].operands[0].type == x86.X86_OP_REG:
+                end, b, a = q[0].operands[0].imm, reg(q[1].operands[0]), reg(q[4].operands[0])
+                want = [('je', None), ('mov', f'{b}, dword ptr [{n} + 4]'), ('test', f'{b}, {b}'), ('je', None), ('mov', f'{a}, dword ptr [{n}]'),
+                        ('test', f'{a}, {a}'), ('je', None), ('cmp', f'dword ptr [{a} + 4], {n}'), ('jne', None), ('cmp', f'dword ptr [{b}], {n}'), ('jne', None),
+                        ('mov', f'dword ptr [{a} + 4], {b}'), ('mov', f'{a}, dword ptr [{n} + 4]'), ('mov', f'{b}, dword ptr [{n}]'), ('mov', f'dword ptr [{a}], {b}'),
+                        ('mov', f'dword ptr [{n}], 0'), ('mov', f'dword ptr [{n} + 4], 0'), ('jmp', None), ('int3', '')]
+                ok = all(x.mnemonic == m_ and (t is None and x.operands[0].imm == (end if m_ != 'jmp' else q[18].address + 1) or t is not None and x.op_str == t)
+                         for x, (m_, t) in zip(q, want))
+                if ok and q[18].address == end and len({a, b, n}) == 3:
+                    for r in (a, b, n):
+                        regs[r] = None
+                    return at[end + 1], before + [(UNLINK, 0, 0, off, 0)]
+            raise Unknown('a list node taken out another way')
         if m == 'push':
             if o[0].type == x86.X86_OP_IMM:
                 pending.append(('c', o[0].imm & 0xffffffff))
@@ -460,7 +504,7 @@ def read(a, n):
     for k, c, small, x, y in ops:   # what the tester's stand-ins hold: table entries under 16, offsets inside its objects
         if k in (VCALL,) and not 0 <= small < 0x40 or k == REL and not (0 <= x < 0x40 and 0 <= small < 0x3c):
             raise Unknown('a table entry past the 16th or a far count')
-        if k == IFB and not 0 <= x < 0xff0 or k == ARG and c == 1 and not 0 <= x < 0xff0 or k == LOOP and not (0 <= x < 0xff0 and 0 <= y < 0xff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
+        if k == UNLINK and not 0 <= x < 0xff0 or k == IFB and not 0 <= x < 0xff0 or k == ARG and c == 1 and not 0 <= x < 0xff0 or k == LOOP and not (0 <= x < 0xff0 and 0 <= y < 0xff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0xff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0xff0) or k == CALL and not 0 <= y < 0x1000:
             raise Unknown('a field past 0xFF0')
     return ops
 

@@ -26,6 +26,9 @@
 //  16 GMOVE    the global b copied to the global a
 //  17 ARG      an argument for the next call: the constant a (count 0) or the object's value at a (count 1)
 //  18 GCALL    the function a called on the object the global b points to (count arguments, as CALL)
+//  19 UNLINK   the list node {next, previous} in the object at a taken out of its list: when both neighbours are there
+//              and point back at it, next's previous becomes previous, previous's next becomes next, and the node's two
+//              links are cleared; otherwise a breakpoint (int3), as the game has there
 // The exception frame the game keeps while it does this isn't rebuilt (as in the other rewrites of destructors).
 #include "rewrite.h"
 
@@ -68,6 +71,19 @@ __attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorSt
             else if (nargs == 2) ((void(__thiscall *)(void *, uint32_t, uint32_t))s.a)(on, args[0], args[1]);
             else ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))s.a)(on, args[0], args[1], args[2]);
             nargs = 0;
+            break;
+        }
+        case 19: {
+            volatile uint32_t *node = (volatile uint32_t *)(self + s.a);
+            volatile uint32_t *previous = (volatile uint32_t *)(uintptr_t)node[1], *next = previous ? (volatile uint32_t *)(uintptr_t)node[0] : nullptr;
+            if (previous && next && next[1] == (uint32_t)(uintptr_t)node && previous[0] == (uint32_t)(uintptr_t)node) {
+                next[1] = (uint32_t)(uintptr_t)previous;
+                *(volatile uint32_t *)(uintptr_t)node[1] = node[0];
+                node[0] = 0;
+                node[1] = 0;
+            } else {
+                __asm__ volatile("int3");
+            }
             break;
         }
         case 15:

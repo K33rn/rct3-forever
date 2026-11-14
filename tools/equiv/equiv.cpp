@@ -6052,6 +6052,14 @@ static std::vector<Test> tests() {
                                  }
                                  next += (x.size + 15) & ~15u;
                              }
+                             for (uint32_t i = 0; i < n; i++)   // a list node in the object: a neighbour either side, each pointing back at it
+                                 if (st[5 * i] == 19) {
+                                     uint32_t *node = arena<uint32_t>(0x1000 + st[5 * i + 3]), *a = arena<uint32_t>(next), *b = arena<uint32_t>(next + 0x10);
+                                     for (int k = 0; k < 8; k++) a[k] = r.next();
+                                     node[0] = (uint32_t)(uintptr_t)a, node[1] = (uint32_t)(uintptr_t)b;
+                                     a[1] = b[0] = (uint32_t)(uintptr_t)node;
+                                     next += 0x20;
+                                 }
                              for (uint32_t i = 0; i < n; i++)   // a flag byte: clear, set, or anything
                                  if (st[5 * i] == 15) *arena<uint8_t>(0x1000 + st[5 * i + 3]) = (uint8_t)(r.range(0, 2) ? r.range(0, 1) : r.next());
                              for (size_t i = 0; i < g_dtor_globals.size(); i++) arena<uint32_t>(0x40)[i] = r.range(0, 2) ? r.next() : 0xffffffffu;
