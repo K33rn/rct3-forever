@@ -6212,6 +6212,25 @@ static std::vector<Test> tests() {
     };
     device_construct.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(device_construct);
+    // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
+    // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
+    static std::vector<uint32_t> colours_saved;
+    auto colours_call = [](void *fn) {
+        uint32_t *table = (uint32_t *)0x13f7188;
+        uint32_t x = *arena<uint32_t>(0x10);
+        for (int i = 0; i < 2976; i++) table[i] = x = x * 1103515245u + 12345u;
+        uint32_t back = (uint32_t)(uintptr_t)((void *(__cdecl *)())fn)();
+        uint32_t sum = back;
+        for (int i = 0; i < 2976; i++) sum = (sum ^ table[i]) * 0x01000193u;
+        return Result{sum};
+    };
+    Test colours_fill{0xf05ca0, [=](Rng &r) { *arena<uint32_t>(0x10) = r.next(); }, colours_call};
+    colours_fill.iterations = 20;
+    colours_fill.prepare = [](const rewrite::Entry *) { colours_saved.assign((uint32_t *)0x13f7188, (uint32_t *)0x13f7188 + 2976); };
+    colours_fill.finish = [](const rewrite::Entry *) { memcpy((void *)0x13f7188, colours_saved.data(), 2976 * 4); };
+    quick(colours_fill);
+    colours_fill.at = 0xf047d0;
+    quick(colours_fill);
     // Matrix::LookAlong* (six copies): a matrix (0x100), a direction (0x300) and up (0x380), any floats; sometimes
     // the direction is zero (or tiny), up a multiple of it (the cross product zero), or the direction one of the
     // matrix's own rows (0x10 holds which)
