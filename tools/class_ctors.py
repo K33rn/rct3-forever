@@ -469,9 +469,30 @@ def parse(a, n):
     pending = None   # a member made with new, until it is stored
     dirty = set()    # argument slots the constructor wrote over (its locals reuse them): no longer the argument
     k = kb + 1
+    filled = set()   # stores that fill a value passed by value on the stack (taken with its push)
     while k < len(t):
         s = t[k]
         AT[0] = ins[k].address
+        if k in filled:
+            k += 1
+            continue
+        # a 4-byte value passed by value: push R (room for it); mov X, esp; ... mov dword ptr [X], value; before the call
+        if (m := re.fullmatch(r'push ' + REG, s)) and not (regs.get(m.group(1)) and regs[m.group(1)][0] in ('const', 'global', 'this')) \
+                and (mx := re.fullmatch(r'mov ' + REG + ', esp', t[k + 1])):
+            x, j = mx.group(1), k + 2
+            while j < len(t) and not t[j].startswith(('call', 'push', 'j')):
+                if (mv := re.fullmatch(r'mov dword ptr \[' + x + r'\], (0x[0-9a-f]+|\d+)', t[j])):
+                    break
+                if written(x, [t[j]]):
+                    j = len(t)
+                    break
+                j += 1
+            if j < len(t) and mv:
+                pushed.append(('imm', num(mv.group(1))))
+                filled.add(j)
+                regs.pop(x, None)
+                k += 2
+                continue
         if re.fullmatch(r'(mov al, byte ptr|cmp byte ptr) \[' + REG + r' \+ 4\].*', s):
             break
         if s == 'call 0xbcdfc0' and pushed == [('imm', 0x10)] and not pending and (rs := resource_step(t, ins, k, regs, True)):

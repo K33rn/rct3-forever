@@ -12985,7 +12985,7 @@ address,size,name,callers,status
 0x91e650,265,ObjectArray::SetCapacity,1,rewritten
 0x91e760,48,ObjectArray::Free,2,rewritten
 0x91e790,258,ObjectArray::SetCapacity,1,rewritten
-0x91e8a0,3385,,2,documented
+0x91e8a0,3385,Class::Construct,2,rewritten
 0x91f600,923,,1,documented
 0x91f9a0,207,,1,documented
 0x91fa80,3553,,1,documented
