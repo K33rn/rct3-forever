@@ -1063,6 +1063,23 @@ static void *__thiscall ct_timing(void *self, uint32_t **out, int32_t part) {
     return out;
 }
 
+// Objectives::LabelledNumber: its stand-ins (the copy's own label function among them). Texts keep what they hold at +4.
+static const uint32_t ot_rows[][2] = {
+#define NUMBER_TEXTS(at, label, ...) {at, label},
+#define MONEY_TEXTS(at, label, ...) {at, label},
+#include "../../forever/src/rewrite/number_texts.inc"
+#include "../../forever/src/rewrite/money_texts.inc"
+#undef NUMBER_TEXTS
+#undef MONEY_TEXTS
+};
+static void *__fastcall ot_decimal(uint32_t **into, int32_t value) { dev_note(100, (uint32_t)value); uint32_t *t = desk_text(); t[1] = (uint32_t)value; *into = t; return into; }
+static void *__fastcall ot_money(uint32_t **into, int32_t value, uint32_t flag) {
+    dev_note(101, (uint32_t)value); dev_note(101, flag);
+    uint32_t *t = desk_text(); t[1] = (uint32_t)value * 3 + 1; *into = t;
+    return into;
+}
+static void *__thiscall ot_label(uint32_t **into) { dev_note(102, 0); uint32_t *t = desk_text(); t[1] = 0x1abe1; *into = t; return into; }
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6826,6 +6843,29 @@ static std::vector<Test> tests() {
     };
     current_text.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(current_text);
+    // Objectives::LabelledNumber (six copies): the objective at arena 0x8000 (its number at +0x70), where the text goes
+    Test labelled_number{0x6e4580,
+                         [=](Rng &r) {
+                             fresh(r);
+                             for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                             for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x8000)[i] = r.next();
+                             arena<uint32_t>(0x8100)[0] = r.next();
+                             arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                         },
+                         [](void *fn) {
+                             void *back = ((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x8000), arena<void>(0x8100));
+                             return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                         }};
+    labelled_number.iterations = 300;
+    labelled_number.prepare = [](const rewrite::Entry *e) {
+        uint32_t label = 0;
+        for (auto &row : ot_rows)
+            if (row[0] == e->at) label = row[1];
+        stubs_for_now({{0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xcd23d0, (void *)ot_decimal}, {0x6be770, (void *)ot_money},
+                       {label, (void *)ot_label}, {0x403be0, (void *)cheat_join}, {0x403bb0, (void *)mf_join}});
+    };
+    labelled_number.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(labelled_number);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;

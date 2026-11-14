@@ -7583,10 +7583,10 @@ address,size,name,callers,status
 0x6dca90,508,,1,documented
 0x6dcdf0,151,WideText::CopyOf(this),2,rewritten
 0x6dce90,368,ObjectiveCondition::Name,1,rewritten
-0x6dd000,305,,1,documented
+0x6dd000,305,Objectives::LabelledNumber,1,rewritten
 0x6dd2a0,151,WideText::CopyOf(this),2,rewritten
 0x6dd340,368,ObjectiveCondition::Name,1,rewritten
-0x6dd4b0,305,,1,documented
+0x6dd4b0,305,Objectives::LabelledNumber,1,rewritten
 0x6dd5f0,151,WideText::CopyOf(this),2,rewritten
 0x6dd690,368,ObjectiveCondition::Name,1,rewritten
 0x6dd800,280,,1,documented
@@ -7637,7 +7637,7 @@ address,size,name,callers,status
 0x6e28c0,800,,1,documented
 0x6e2da0,151,WideText::CopyOf(this),2,rewritten
 0x6e2e40,368,ObjectiveCondition::Name,1,rewritten
-0x6e2fb0,305,,1,documented
+0x6e2fb0,305,Objectives::LabelledNumber,1,rewritten
 0x6e30f0,105,Factory::Create,1,rewritten
 0x6e3160,151,WideText::CopyOf(this),2,rewritten
 0x6e3380,121,,2,documented
@@ -7652,13 +7652,13 @@ address,size,name,callers,status
 0x6e3ec0,911,,1,documented
 0x6e4370,151,WideText::CopyOf(this),2,rewritten
 0x6e4410,368,ObjectiveCondition::Name,1,rewritten
-0x6e4580,303,,1,documented
+0x6e4580,303,Objectives::LabelledNumber,1,rewritten
 0x6e46b0,527,Condition::CurrentText,1,rewritten
 0x6e48c0,105,Factory::Create,1,rewritten
 0x6e4930,151,WideText::CopyOf(this),2,rewritten
 0x6e49d0,95,Factory::CreateWith,1,rewritten
 0x6e4a30,368,ObjectiveCondition::Name,1,rewritten
-0x6e4ba0,303,,1,documented
+0x6e4ba0,303,Objectives::LabelledNumber,1,rewritten
 0x6e4cd0,610,,1,documented
 0x6e4f40,151,WideText::CopyOf(this),2,rewritten
 0x6e4fe0,638,,1,documented
@@ -7684,7 +7684,7 @@ address,size,name,callers,status
 0x6e6c30,527,Condition::CurrentText,1,rewritten
 0x6e6e40,163,Text::FromName6E5860,2,rewritten
 0x6e6ef0,368,ObjectiveCondition::Name,1,rewritten
-0x6e7060,303,,1,documented
+0x6e7060,303,Objectives::LabelledNumber,1,rewritten
 0x6e7190,475,,1,documented
 0x6e7370,293,StructArrayField<24>::Save,1,rewritten
 0x6e74a0,124,StructArrayField<24>::Size,1,rewritten
