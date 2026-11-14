@@ -1049,6 +1049,20 @@ static void *__thiscall mf_named(uint32_t *self, uint32_t **name, uint32_t table
 static uint8_t __thiscall mf_bit0(uint32_t *self, uint32_t a) { dev_note(94, a); return (uint8_t)(self[1] & 1); }
 static void __thiscall mf_named_gone(uint32_t *self) { dev_note(95, self[1]); }
 
+// Condition::CurrentText: its stand-ins. The condition at arena 0x8000 has a table whose slot 0x68 gives its value (from
+// arena 0x48, as a float); texts keep what they hold at +4.
+static void __fastcall ct_put_together(uint32_t **into, const void *characters, uint32_t **with) {
+    dev_note(96, (uint32_t)(uintptr_t)*into); dev_note(96, (uint32_t)(uintptr_t)characters); dev_note(96, (*with)[1]);
+    uint32_t *t = desk_text(); t[1] = (uint32_t)(uintptr_t)characters * 7 + (*with)[1]; *into = t;
+}
+static long double __thiscall ct_value(void *self) { dev_note(97, (uint32_t)(uintptr_t)self); return *arena<float>(0x48); }
+static void *ct_table[27];
+static void *__thiscall ct_timing(void *self, uint32_t **out, int32_t part) {
+    dev_note(98, (uint32_t)(uintptr_t)self); dev_note(98, (uint32_t)part);
+    uint32_t *t = desk_text(); t[1] = (uint32_t)part; *out = t;
+    return out;
+}
+
 // stand-ins for one copy's test, several at a time
 static std::vector<std::pair<uintptr_t, uint64_t>> g_saved_many;
 template <class Range> static void stubs_for_now_range(const Range &list) {
@@ -6787,6 +6801,31 @@ static std::vector<Test> tests() {
         *(uint32_t *)(uintptr_t)g_mf_fallback = g_mf_saved[10];
     };
     quick(money_named);
+    // Condition::CurrentText (four copies): the condition at arena 0x8000, where the text goes (0x8100), a part (mostly 0)
+    // and the condition's value (any float, rounded by the FPU's mode)
+    Test current_text{0x6df560,
+                      [=](Rng &r) {
+                          fresh(r);
+                          for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
+                          ct_table[0x68 / 4] = (void *)ct_value;
+                          arena<uint32_t>(0x8000)[0] = (uint32_t)(uintptr_t)ct_table;
+                          arena<uint32_t>(0x8100)[0] = r.next();
+                          arena<int32_t>(0x40)[0] = r.range(0, 3) ? 0 : r.range(1, 5);
+                          arena<float>(0x48)[0] = r.range(0, 4) ? r.real(-100000, 100000) : r.any_float();
+                          arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;
+                      },
+                      [](void *fn) {
+                          void *back = ((void *(__thiscall *)(void *, void *, int32_t))fn)(arena<void>(0x8000), arena<void>(0x8100), arena<int32_t>(0x40)[0]);
+                          return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
+                      }};
+    current_text.iterations = 300;
+    current_text.prepare = [](const rewrite::Entry *) {
+        stubs_for_now({{0xbcdfc0, (void *)msg_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)msg_text_c},
+                       {0x4040f0, (void *)stub_class_named_make}, {0x442120, (void *)ct_put_together}, {0xbd1880, (void *)mf_named_gone},
+                       {0xddcdb5, (void *)msg_sprintf}, {0xcd23a0, (void *)msg_replace}, {0x6d6ca0, (void *)ct_timing}});
+    };
+    current_text.finish = [](const rewrite::Entry *) { unstub_many(); };
+    quick(current_text);
     // Colours::Fill / Fill256: both tables (0x13F7188, 2,976 entries in all) filled from a seed before the call; the
     // result is what the call gives back and a sum over the tables after it. The tables are put back after the test.
     static std::vector<uint32_t> colours_saved;
