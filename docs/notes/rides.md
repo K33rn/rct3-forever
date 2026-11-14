@@ -295,7 +295,7 @@ Tracked rides, flat rides and their cars and trains.
 | `0x592240` | Ride::Case592240 | In outline: acts by a case (1, ...) |
 | `0x4ef6c0` | Ride::Hit4EF6C0 | In outline: a ride part hit test (`0x5DA220` within 0.5) when close enough |
 | `0x5ebf30` | AttractionPerson::Check5EBF30 | In outline: an attraction person check when not flagged (+0x118) for the selected one |
-| `0x4e84c0` | AttractionPerson::Check4E84C0 | In outline: the same attraction person check (another copy) |
+| `0x4e84c0` | AttractionPerson::Check4E84C0 | Is point q, placed by the person's placed interface's matrix, farther from the person's point (+0xA0) than p? (interfaces looked up once and kept; rewritten as AttractionPerson::FartherPoint) |
 | `0x552dd0` | Ride::Kind552DD0 | In outline: acts by a ride part's kind (+0xB4: 1, ...) |
 | `0x4c8740` | Shop::Mode4C8740 | In outline: a shop step by its mode (+0xC4 = 2) and a value's sign |
 | `0x4c5620` | AttractionPerson::Face4C5620 | In outline: points a person on an attraction (Matrix::LookAlongXUp on its +0x30) and turns it (Matrix::TurnAboutY by +0x8C) |

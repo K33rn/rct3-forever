@@ -2823,7 +2823,7 @@ address,size,name,callers,status
 0x4e7380,507,,1,documented
 0x4e7590,2154,,3,documented
 0x4e7e00,1713,,1,documented
-0x4e84c0,624,,6,documented
+0x4e84c0,624,AttractionPerson::FartherPoint,6,rewritten
 0x4e8730,2348,,1,documented
 0x4e9060,3560,,4,documented
 0x4e9e50,1228,,2,documented
@@ -5156,7 +5156,7 @@ address,size,name,callers,status
 0x5eb9b0,126,ObjectRef::Assign,6,rewritten
 0x5eba30,1143,,2,documented
 0x5ebeb0,126,,6,documented
-0x5ebf30,624,,1,documented
+0x5ebf30,624,AttractionPerson::FartherPoint,1,rewritten
 0x5ec200,90,CachedInterface,2,rewritten
 0x5ec260,94,Cached::Forward,27,rewritten
 0x5ec2c0,94,Cached::Forward,8,rewritten

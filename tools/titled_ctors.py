@@ -51,11 +51,13 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 def parse(a, n):
     ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
-    if ins and ins[-1].mnemonic != 'ret' and ins[-1].address + ins[-1].size == a + n:
-        # the listed size can stop before the epilogue (the compiler put it just after): read on to its ret
-        for x in md.disasm(bytes(img[a - BASE + n:a - BASE + n + 0x80]), a + n):
+    if ins and ins[-1].mnemonic != 'ret':
+        # the listed size can stop before the epilogue (the compiler put it just after), even inside an instruction:
+        # read on from the last whole one to its ret
+        n = ins[-1].address + ins[-1].size - a
+        for x in md.disasm(bytes(img[a - BASE + n:a - BASE + n + 0x200]), a + n):
             ins.append(x)
-            if x.mnemonic in ('ret', 'jmp', 'call') or x.mnemonic.startswith('j'):
+            if x.mnemonic in ('ret', 'int3'):
                 break
         n = ins[-1].address + ins[-1].size - a
     if not ins or ins[-1].address + ins[-1].size != a + n or ins[-1].mnemonic != 'ret' or not ins[-1].op_str:
