@@ -20,6 +20,11 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   8 the member at +off a reference to the empty handle (0x805750) linked (+8) first in that handle's list, 9 the same
 //   with the handle Handle::For (0x805700) gives for the constructor's argument number value (0: none);
 //   12 the mark (no parent: the title object's +4 = 1);
+//   54 a scratch value (off) worked out: fn 0, the value given (args[0]) plus value, or 0 for 0; fn 1, its interface for the
+//      class numbered by the global value, or 0; 55 a scratch value (value) stored at off;
+//   (20 with value 1: a temporary made whether or not a new object was; values given: kind 7 a scratch value, kind 8 a
+//      dword a temporary holds, v & 0xff the temporary and v >> 8 where;)
+//   (24: value, the place that far into what the member points to);
 //   52 the description (given, or the title object) named on its first use (+4 clear): Name::Assign (a name global, the
 //      member's place), NameTable::Set, the name let go; fn 1: a later name of the same run, under the first's decision;
 //   a new object: 18 value bytes of memory (0xBCDFC0), then only when there was memory: 21 name number off made from
@@ -121,6 +126,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     bool temp_built[16] = {}, name_built[16] = {};
     uint8_t *memory = nullptr;
     bool naming = false;
+    uint32_t scratch[8] = {};
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
@@ -134,6 +140,8 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             case 3: args[i] = (uint32_t)(uintptr_t)(self + v); break;
             case 4: args[i] = (uint32_t)(uintptr_t)temp_made[v]; break;
             case 5: args[i] = (uint32_t)(uintptr_t)&names[v]; break;
+            case 7: args[i] = scratch[v]; break;
+            case 8: args[i] = *(uint32_t *)((uint8_t *)temp_made[v & 0xff] + (v >> 8)); break;
             default: args[i] = *(uint32_t *)(self + v); break;
             }
         }
@@ -188,7 +196,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;
         case 27: *(uint32_t *)(self + op.off) |= op.value; break;
         case 3: titled_call(op.fn, self + op.off, op.count, args); break;
-        case 24: titled_call(op.fn, *(void **)(self + op.off), op.count, args); break;
+        case 24: titled_call(op.fn, *(uint8_t **)(self + op.off) + op.value, op.count, args); break;
         case 8:
         case 9: {
             uint8_t *handle = op.kind == 8 ? ((uint8_t * (__cdecl *)())0x805750)()
@@ -204,6 +212,25 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 12:
             if (!parent) (*(uint8_t **)TITLE)[4] = 1;
             break;
+        case 54: {   // a value worked out: fn 0, the base plus value (none for none); fn 1, the base's interface for the class
+                     // whose number is in the global value (none for none, for no class info, a number past its count or no entry)
+            uint8_t *base = (uint8_t *)(uintptr_t)args[0];
+            uint32_t got = 0;
+            if (base && !op.fn) got = args[0] + op.value;
+            else if (base) {
+                uint8_t *info = ((uint8_t * (__thiscall *)(void *))(*(void ***)base)[1])(base);
+                if (info) {
+                    const int32_t number = *(volatile int32_t *)(uintptr_t)op.value;
+                    if (number < *(int32_t *)(info + 0x18)) {
+                        uint8_t *entry = (*(uint8_t ***)(info + 0x14))[number];
+                        if (entry) got = args[0] + *(uint32_t *)(entry + 0x10);
+                    }
+                }
+            }
+            scratch[op.off] = got;
+            break;
+        }
+        case 55: *(uint32_t *)(self + op.off) = scratch[op.value]; break;
         case 52: {   // the description (given, or the default) named on its first use: a name (Name::Assign with the global and the
                      // member's place) set in its table (NameTable::Set), then let go; the first of a run decides for all
             uint8_t *described = parent ? (uint8_t *)parent : *(uint8_t **)TITLE;
@@ -228,7 +255,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             }
             break;
         case 20:
-            if (memory) {
+            if (memory || op.value) {
                 temp_made[op.off] = titled_call(op.fn, temps[op.off], op.count, args);
                 temp_built[op.off] = true;
             }

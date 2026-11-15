@@ -394,11 +394,82 @@ def tail(p):
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
         if isinstance(v, int):
             return (0, v)
-        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5}[v[0]], v[1]
+        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8}[v[0]], v[1]
 
     nb_used = set()
     nb_eax = ['keep']
     clobbered = set()   # argument slots the tail wrote (a later read of one is not the argument)
+
+    nscratch = [0]
+    always_temps = set()   # temporaries made whatever happened (not only with a new object's memory)
+    tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
+
+    def base_code(v):   # a value as a call is given it (the push forms), or None
+        if not v:
+            return None
+        if v[0] == 'const': return v[1]
+        if v[0] == 'global': return ('glob', v[1])
+        if v[0] == 'arg': return ('given', v[1])
+        if v == ('this',): return ('self', 0)
+        if v[0] == 'member': return ('self', v[1])
+        if still(v): return ('field', v[1])
+        return None
+
+    def value_block(k0):
+        # at je L1 after test V, V / cmp V, Z (Z holding 0), one of:
+        #   V ? V + c : 0       lea D, [V + c] / add V, c; jmp L2; L1: xor D, D; L2
+        #   V's interface       mov X, [V]; mov ecx, V; call [X + 4]; test eax / cmp eax, Z; je L1; mov C, [G];
+        #   (the class G)       cmp C, [eax + 0x18]; jge L1; mov D, [eax + 0x14]; mov eax, [D + C*4]; test / cmp; je L1;
+        #                       mov eax, [eax + 0x10]; add eax, V; jmp L2; L1: xor eax, eax; L2
+        # (the exception state's byte stores passed over). Gives (L2, the register, 0 or 1, the base, c or G).
+        q = k0 - 1
+        while q >= 0 and re.fullmatch(r'mov (byte|dword) ptr \[(?:esp|' + REG + r')(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+|[a-d]l|' + REG + ')', t[q]):
+            q -= 1
+        z = re.fullmatch(r'(?:test ' + REG + ', ' + REG + '|cmp ' + REG + ', ' + REG + ')', t[q])
+        if not z:
+            return None
+        v_ = z.group(1) or z.group(3)
+        if z.group(1) and z.group(1) != z.group(2) or z.group(3) and R.get(z.group(4)) not in (('const', 0), ('byte', 0)):
+            return None
+        base = base_code(R.get(v_))
+        if base is None:
+            return None
+        l1 = at.get(int(ins[k0].op_str, 0))
+        zero = lambda u, r: u == f'test {r}, {r}' or (zz := re.fullmatch(r'cmp ' + r + ', ' + REG, u)) and R.get(zz.group(1)) in (('const', 0), ('byte', 0))
+        L = []
+        q = k0 + 1
+        while len(L) < 20 and q < len(t):
+            if not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', t[q]):
+                L.append((q, t[q]))
+            q += 1
+        b = [u for _, u in L]
+        def ends(i, dest):   # jmp L2; L1: xor dest, dest; L2
+            zj = re.fullmatch(r'jmp (0x[0-9a-f]+)', b[i]) if i < len(b) else None
+            if not zj or l1 != L[i + 1][0] or b[i + 1] != f'xor {dest}, {dest}':
+                return None
+            l2 = at.get(num(zj.group(1)))
+            return l2 if l2 == L[i + 1][0] + 1 else None
+        if (z1 := re.fullmatch(r'lea ' + REG + r', \[' + v_ + r' \+ (0x[0-9a-f]+|\d+)\]', b[0])) and (l2 := ends(1, z1.group(1))):
+            return l2, z1.group(1), 0, base, num(z1.group(2)), {z1.group(1)}
+        if (z1 := re.fullmatch(r'add ' + v_ + r', (0x[0-9a-f]+|\d+)', b[0])) and (l2 := ends(1, v_)):
+            return l2, v_, 0, base, num(z1.group(1)), {v_}
+        z1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + v_ + r'\]', b[0])
+        if not z1 or b[1] != 'mov ecx, ' + v_ or b[2] != f'call dword ptr [{z1.group(1)} + 4]' or not zero(b[3], 'eax'):
+            return None
+        zj = [re.fullmatch(r'(je|jge) (0x[0-9a-f]+)', b[i]) for i in (4, 7, 11)]
+        if not all(zj) or any(at.get(num(z_.group(2))) != l1 for z_ in zj) or [z_.group(1) for z_ in zj] != ['je', 'jge', 'je']:
+            return None
+        zc = re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', b[5])
+        if not zc or b[6] != f'cmp {zc.group(1)}, dword ptr [eax + 0x18]':
+            return None
+        zd = re.fullmatch(r'mov ' + REG + r', dword ptr \[eax \+ 0x14\]', b[8])
+        if not zd or b[9] != f'mov eax, dword ptr [{zd.group(1)} + {zc.group(1)}*4]' or not zero(b[10], 'eax'):
+            return None
+        if b[12] != 'mov eax, dword ptr [eax + 0x10]' or b[13] != 'add eax, ' + v_ or not (l2 := ends(14, 'eax')):
+            return None
+        if v_ in ('ecx', 'edx', 'eax') or zc.group(1) == v_ or zd.group(1) == v_:
+            return None
+        return l2, 'eax', 1, base, num(zc.group(2)), {'eax', 'ecx', 'edx', z1.group(1), zc.group(1), zd.group(1)}
 
     def name_block(k0):
         # jne SKIP (the description given); mov X, [title]; then the flag set (mov bl, 1 / mov byte ptr [esp + N], 1), X
@@ -696,6 +767,8 @@ def tail(p):
                     ops.append((26 if w[0] == 'fieldand' else 27, off, w[2], 0, []))
                 elif w[0] == 'aligned' and w[1] == naligned:
                     ops.append((43, off, 0, 0, []))
+                elif w[0] == 'scratch':
+                    ops.append((55, off, w[1], 0, []))
                 else:
                     raise Reject('tail store ' + s)
             elif size == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] in ('const', 'byte'):
@@ -710,6 +783,10 @@ def tail(p):
                 S[num(z.group(1)) - d] = val(z.group(2))
             elif (z := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)):
                 S[num(z.group(1)) - d] = ('const', num(z.group(2)))
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'temp' and \
+                ('temp', val(m.group(2))[1]) in built and num(m.group(3)) < 0x40:
+            R[m.group(1)] = ('tempat', val(m.group(2))[1], num(m.group(3)))   # (what a temporary holds: read when given)
+            tempat_ops[val(m.group(2))[1]] = len(ops)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - d
             if slot in clobbered:
@@ -788,6 +865,18 @@ def tail(p):
             R[m1.group(1)] = None
             k += 3
             continue
+        elif x.mnemonic == 'je' and not pushed and flag and flag[0] == 'test' and (vb := value_block(k)):
+            # V + c or nothing / V's interface or nothing, into a scratch value (kind 54)
+            k, dest_, how_, base_, extra_, wrote_ = vb
+            ops.append((54, nscratch[0], extra_, how_, [base_]))
+            for r in wrote_:
+                R[r] = None
+            R[dest_] = ('scratch', nscratch[0])
+            nscratch[0] += 1
+            if nscratch[0] > 8:
+                raise Reject('scratch values')
+            flag = None
+            continue
         elif x.mnemonic == 'je' and flag and flag[0] == 'ehbit' or x.mnemonic == 'jns' and flag == ('ehsign',):
             # what the bookkeeping bit guards: a temporary's destructor (lea ecx, [esp + N]; call D) or a wide string let go
             # (the one a temporary holds, or a name)
@@ -858,6 +947,11 @@ def tail(p):
             pushed.append(('rect', val(m.group(1))[1])); d += 4   # a local's address: only a layout's rectangle is understood
         elif (m := re.fullmatch(r'push ' + REG, s)) and still(val(m.group(1))):
             pushed.append(('field', val(m.group(1))[1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'scratch':
+            pushed.append(('scratch', val(m.group(1))[1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'tempat' and ('temp', val(m.group(1))[1]) in built and \
+                all(o[0] not in (15, 16) for o in ops[tempat_ops[val(m.group(1))[1]]:]):
+            pushed.append(('tempat', val(m.group(1))[1] | val(m.group(1))[2] << 8)); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] in ('const', 'global', 'arg', 'this', 'member', 'temp'):
             v = val(m.group(1))
             pushed.append(v[1] if v[0] == 'const' else ('self', 0) if v[0] == 'this' else ('self', v[1]) if v[0] == 'member' else
@@ -918,6 +1012,33 @@ def tail(p):
                     R[r] = ('name', nnames, token[1])
             R['eax'] = ('name', nnames, token[1]); R['ecx'] = None; R['edx'] = None
             nnames += 1
+            flag = None
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack' and val('ecx')[1] in temps and \
+                ('temp', temps[val('ecx')[1]]) in built and not nulls and ret_args(num(m.group(1))) == 0:
+            # a temporary made outside a new object's making, destroyed (kind 15)
+            ops.append((15, temps[val('ecx')[1]], 0, num(m.group(1)), []))
+            built.discard(('temp', temps[val('ecx')[1]]))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            flag = None
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack' and not nulls and \
+                ret_args(num(m.group(1))) is not None and 0 < ret_args(num(m.group(1))) <= min(4, len(pushed)) and \
+                num(m.group(1)) in (0x41cb90, 0x4040f0):
+            # a text reference made on the stack outside a new object's making: always (kind 20, value 1)
+            fn, slot = num(m.group(1)), val('ecx')[1]
+            n_ = ret_args(fn)
+            targs = [pushed.pop() for _ in range(n_)]
+            d -= 4 * n_
+            if any(not isinstance(v, int) for v in targs):
+                raise Reject('text reference values')
+            kk = len([o for o in ops if o[0] == 20])
+            if kk >= 16 or slot in temps and ('temp', temps[slot]) in built:
+                raise Reject('temporaries')
+            temps[slot] = kk
+            ops.append((20, kk, 1, fn, targs))
+            built.add(('temp', kk))
+            always_temps.add(kk)
+            R['eax'] = ('temp', kk); R['ecx'] = None; R['edx'] = None
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack':
             # a temporary on the stack, made while making the new object (so only when there was memory)
@@ -997,13 +1118,28 @@ def tail(p):
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             flag = None
+        elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and still(val(m.group(1))) and num(m.group(2)) < 0x10000:
+            R[m.group(1)] = ('fieldplus', val(m.group(1))[1], val(m.group(1))[2], num(m.group(2)))   # (a place inside what a member points to)
+            flag = None
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'fieldplus' and still(('field',) + val('ecx')[1:3]):
+            fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
+            if n_ is None or n_ > len(pushed) or n_ > 5:
+                raise Reject('field call ' + s)
+            args = [pushed.pop() for _ in range(n_)]
+            d -= 4 * n_
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built)) for v in args):
+                raise Reject('field call with a temporary')
+            ops.append((24, val('ecx')[1], val('ecx')[3], fn, args))   # (on the place that far into what the member points to)
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and still(val('ecx')):
             fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
             if n_ is None or n_ > len(pushed) or n_ > 5:
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr') for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built)) for v in args):
                 raise Reject('field call with a temporary')
             ops.append((24, val('ecx')[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
@@ -1030,7 +1166,7 @@ def tail(p):
             n_ = ret_args(fn)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr') for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built)) for v in args):
                 raise Reject('member call with a temporary')
             ops.append((3, 0 if this == ('this',) else this[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
@@ -1067,7 +1203,7 @@ if __name__ == '__main__':
     why = sys.argv[sys.argv.index('--why') + 1] if '--why' in sys.argv else None
     reasons = collections.Counter(); rb = collections.Counter(); ok = 0; okb = 0
     out = ["// Window classes' constructors taken over by titled_construct (titled.cpp); written by tools/titled_ctors.py."]
-    info, callees, temps_used = [], {}, set()
+    info, callees, temps_used, nullable = [], {}, set(), []
     for a, r in sorted(rows.items()):
         n = int(r['size'])
         if (r['status'] != 'documented' and a not in mine) or n > 4000:
@@ -1095,7 +1231,7 @@ if __name__ == '__main__':
                 if isinstance(v, int):
                     codes.append((0, v))
                 else:
-                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6}[v[0]], v[1]))
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8}[v[0]], v[1]))
             kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')
@@ -1103,12 +1239,21 @@ if __name__ == '__main__':
         out.append(f'REWRITE("Window::Titled", {a:#x}, titled_{a:x}_original, (&titled_construct{p["nargs"]}<{p["title"]:#x}, {p["base"]:#x}, titled_{a:x}_extras, {len(ex)}, '
                    f'titled_{a:x}_ops, {len(p["ops"])}>), &g_titled_constructs);')
         info.append((a, p['title'], p['nargs'], p['base'], 2 + len(ex)))
+        # the arguments only a cast reads (V ? V + c : 0): the tester gives them 0 at times (none reads through them)
+        cast_args = {o[4][0][1] for o in p['ops'] if o[0] == 54 and o[3] == 0 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'}
+        deref_args = {o[2] for o in p['ops'] if o[0] in (29, 50)} | {1}
+        mask = sum(1 << n_ for n_ in cast_args - deref_args)
+        if mask:
+            nullable.append((a, mask))
         for o in p['ops']:
             if o[0] in (3, 10, 24):
                 callees[o[3]] = len(o[4])
             if o[0] in (15, 20):
                 temps_used.add(o[3])
     out.append('// each constructor: its address, title global, how many values it takes, its base and how many values that takes')
+    out.append('// constructors with arguments only a cast reads (bit n: argument n), which the tester gives 0 at times')
+    out.append('extern const uint32_t titled_nullable[];')
+    out.append('const uint32_t titled_nullable[] = {' + ''.join(f'{a:#x}, {m:#x}, ' for a, m in nullable) + '0};')
     out.append('extern const uint32_t titled_info[];')
     out.append('const uint32_t titled_info[] = {' + ''.join(f'{a:#x}, {tl:#x}, {na}, {b:#x}, {bn}, ' for a, tl, na, b, bn in info) + '0};')
     out.append('// the functions the members are made with or called, and how many values each takes (the tester stands in for them)')

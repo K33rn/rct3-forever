@@ -235,7 +235,7 @@ static void __thiscall titled_layout(void *self, uint32_t relation, void *to, co
 }
 static void *arg_value(uint32_t v) {
     uintptr_t here = (uintptr_t)&v;
-    if (v == (uint32_t)(uintptr_t)g_text_ref) return (void *)0x7e57;
+    if (g_text_ref && v == (uint32_t)(uintptr_t)g_text_ref) return (void *)0x7e57;   // (none made: a 0 is a 0)
     if (v > here && v - here < 0x4000) return (void *)(uintptr_t)(0x57ac0000u ^ *(uint32_t *)(uintptr_t)v);
     return (void *)(uintptr_t)v;
 }
@@ -496,7 +496,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
-extern const uint32_t titled_info[], titled_callees[], value_info[], record_info[];
+extern const uint32_t titled_info[], titled_callees[], titled_nullable[], value_info[], record_info[];
 extern const uint32_t dtor_steps_info[];
 extern const uint32_t table_make_info[];
 // Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
@@ -507,7 +507,7 @@ static void *__thiscall stub_text_for_child(void **self, void **name, void *wind
     return self;
 }
 static uintptr_t g_titled_title;
-static uint32_t g_titled_args;
+static uint32_t g_titled_args, g_titled_nullable;
 static uint32_t g_window_args;   // 2 or 3, from the copy's ret
 // saved classes' constructors: the base, members' and fields' constructors (by how many values they take), the field
 // list's add, the description's name step and the object info
@@ -6064,12 +6064,16 @@ static std::vector<Test> tests() {
                                   ((volatile uint32_t *)arena<uint32_t>(0x8f00))[k] = bits;   // (as bits: through the FPU a signalling NaN would come out quiet)
                               }
                               arena<uint32_t>(0x100)[0xe0 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8c00);   // (the parent the base keeps)
+                              arena<uint32_t>(0x4c)[0] = r.next();   // (which of the arguments only a cast reads are 0 this time)
                               arena<uint32_t>(CALL_LOG)[0] = 0;
                           },
                           [](void *fn) {
+                              g_text_ref = nullptr;   // (each run from none: the other run's temporary is not this one's)
                               *(void **)g_titled_title = arena<void>(0x8000);
                               g_null_handle = arena<void>(0x700);
                               uint32_t *a = arena<uint32_t>(0x10);
+                              for (int k = 2; k < 7; k++)
+                                  if (g_titled_nullable >> k & 1 && (arena<uint32_t>(0x4c)[0] >> (3 * k)) % 3 == 0) a[k - 1] = 0;
                               void *self = arena<void>(0x100), *made;
                               switch (g_titled_args) {
                               case 2: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t))fn)(self, a[0], a[1]); break;
@@ -6091,12 +6095,16 @@ static std::vector<Test> tests() {
         uint32_t base = 0, base_args = 2;
         for (int k = 0; titled_info[k]; k += 5)
             if (titled_info[k] == e->at) g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4];
+        g_titled_nullable = 0;
+        for (int k = 0; titled_nullable[k]; k += 2)
+            if (titled_nullable[k] == e->at) g_titled_nullable = titled_nullable[k + 1];
         std::vector<std::pair<uint32_t, void *>> list = {{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0xbd0490, (void *)stub_wide_empty_shared},
                                                          {0x403be0, (void *)stub_wide_assign_c}, {0x403bb0, (void *)stub_wide_assign}, {0x41c740, (void *)stub_wide_copy},
                                                          {0x805750, (void *)stub_null_handle}, {0x805700, (void *)stub_member_handle_of}, {base, bases[base_args]},
                                                          {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}, {0x6a39d0, (void *)stub_text_for_child},
                                                          {0x6b1640, (void *)titled_layout}, {0xbeca40, (void *)stub_name_make},
-                                                         {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}};
+                                                         {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free},
+                                                         {0x41cb90, (void *)stub_named_text_ref}};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at) list.push_back({titled_callees[k], built[titled_callees[k + 1]]});
         stubs_for_now(list);
