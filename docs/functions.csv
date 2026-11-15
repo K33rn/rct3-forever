@@ -7641,7 +7641,7 @@ address,size,name,callers,status
 0x6e30f0,105,Factory::Create,1,rewritten
 0x6e3160,151,WideText::CopyOf(this),2,rewritten
 0x6e3380,121,,2,documented
-0x6e3400,1159,,1,documented
+0x6e3400,1159,SpeciesCondition::Build,1,rewritten
 0x6e3890,95,Factory::CreateWith,1,rewritten
 0x6e38f0,368,ObjectiveCondition::Name,1,rewritten
 0x6e3a60,30,DeletingDestructor,2,rewritten
@@ -7672,7 +7672,7 @@ address,size,name,callers,status
 0x6e5bf0,524,,1,documented
 0x6e5e00,163,Text::FromName6E5860,2,rewritten
 0x6e5eb0,124,,2,documented
-0x6e5f30,1159,,1,documented
+0x6e5f30,1159,SpeciesCondition::Build,1,rewritten
 0x6e63c0,368,ObjectiveCondition::Name,1,rewritten
 0x6e6530,445,,2,documented
 0x6e6740,34,,1,documented
