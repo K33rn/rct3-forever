@@ -4791,7 +4791,7 @@ address,size,name,callers,status
 0x5c26f0,280,ListField::Save,1,rewritten
 0x5c2900,212,ReferenceField::Load,1,rewritten
 0x5c2b50,212,ReferenceField::Load,1,rewritten
-0x5c2c30,4049,,5,documented
+0x5c2c30,4049,Class::Construct,5,rewritten
 0x5c3ca0,284,,1,documented
 0x5c3dc0,1258,,1,documented
 0x5c42b0,802,,1,documented

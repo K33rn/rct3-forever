@@ -303,7 +303,7 @@ def walk_fields(ins, t, k0, regs0):
             if (mx and regs.get(mx.group(2)) == tested and t[k + 2] == 'lea ecx, [%s + 4]' % mx.group(1) and t[k + 3] == 'call 0x8087e0'
                     and t[k + 4].startswith('jmp ') and ins[k + 5].address == num(m.group(1)) and ml and regs.get(ml.group(1)) == ('L', 0x1c)
                     and t[k + 6] == 'call 0x8087e0' and mk and mk.group(1) == mx.group(1) and ins[k + 8].address == num(t[k + 4][4:])
-                    and f and f[0] == 'new' and f[1] == len(made) - 1 and f[1] not in field_entry and made[f[1]][3] is not None and not nulls):
+                    and f and f[0] == 'new' and f[1] == len(made) - 1 and f[1] not in field_entry and (made[f[1]][3] is not None or made[f[1]][1] not in (None, 0x8088c0)) and not nulls):
                 pushed.pop()
                 depth -= 4
                 if stack.get(num(mk.group(2)) - depth) != tested:
@@ -319,7 +319,7 @@ def walk_fields(ins, t, k0, regs0):
             ma = re.fullmatch(r'lea ecx, \[' + REG + r' \+ 4\]', t[k + 1])
             mb = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 3])
             mc = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 5])
-            if (not f or f[0] != 'new' or f[1] != len(made) - 1 or f[1] in field_entry or made[f[1]][3] is None or nulls
+            if (not f or f[0] != 'new' or f[1] != len(made) - 1 or f[1] in field_entry or made[f[1]][3] is None and made[f[1]][1] in (None, 0x8088c0) or nulls
                     or not ma or regs.get(ma.group(1)) != tested or t[k + 2] != 'call 0x8087e0' or not mb or not mc
                     or mb.group(1) != mc.group(1) or not t[k + 4].startswith('jmp ') or ins[k + 5].address != num(m.group(1))
                     or t[k + 6] != 'mov ecx, ' + mb.group(1) or t[k + 7] != 'call 0x8087e0' or ins[k + 8].address != num(t[k + 4][4:])):
@@ -352,6 +352,8 @@ def walk_fields(ins, t, k0, regs0):
                 # (judged by the registers and the stack as they were at the je: the null path's own)
                 if (mm := re.fullmatch(r'xor ' + REG + ', ' + REG, x)) and mm.group(1) == mm.group(2) and (regs.get(mm.group(1)) == ('new', i) or regs0.get(mm.group(1)) == ('new', i)):
                     regs0 = dict(regs0); regs0[mm.group(1)] = ('const', 0)   # (followed on the null path)
+                elif (mm := re.fullmatch(r'mov ' + REG + ', ' + REG, x)) and regs0.get(mm.group(2)) == ('const', 0) and regs.get(mm.group(1)) == ('new', i):
+                    regs0 = dict(regs0); regs0[mm.group(1)] = ('const', 0)   # (the register the made path holds the record in, null here)
                 elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, x)) and regs0.get(mm.group(2)) == ('const', 0) and \
                         (stack.get(num(mm.group(1)) - depth) == ('new', i) or stack0.get(num(mm.group(1)) - depth0) == ('new', i)):
                     pass
