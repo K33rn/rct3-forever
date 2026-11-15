@@ -22756,7 +22756,7 @@ address,size,name,callers,status
 0xccb480,7,SetTable,1,rewritten
 0xccb490,351,ResourceType::ResourceType,1,rewritten
 0xccb5f0,30,DeletingDestructor,1,rewritten
-0xccb610,1504,,1,documented
+0xccb610,1504,ShapeMaterial::FromName,1,rewritten
 0xccbbf0,412,,7,documented
 0xccbda0,1194,,0,documented
 0xccc250,412,,4,documented
@@ -23156,7 +23156,7 @@ address,size,name,callers,status
 0xcee3f0,7,SetTable,1,rewritten
 0xcee400,351,ResourceType::ResourceType,1,rewritten
 0xcee560,30,DeletingDestructor,1,rewritten
-0xcee580,1504,,1,documented
+0xcee580,1504,ShapeMaterial::FromName,1,rewritten
 0xceeb80,530,Triangle::RayHit,1,rewritten
 0xceedc0,89,Words::Append,0,rewritten
 0xceee80,299,,2,documented
