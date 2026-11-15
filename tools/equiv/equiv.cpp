@@ -523,7 +523,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
-extern const uint32_t class_bases[], class_value_calls[];
+extern const uint32_t class_bases[], class_value_calls[], class_ref_setters[];
 extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], value_info[], record_info[];
 static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
@@ -6387,6 +6387,8 @@ static std::vector<Test> tests() {
             if (!have) list.push_back({f[0], by_count[f[1]]});
         }
         for (int k = 0; class_value_calls[k]; k++) list.push_back({class_value_calls[k], (void *)stub_class_value});   // (the functions taking nothing)
+        for (int k = 0; class_ref_setters[k]; k++)   // (the member functions given a stack reference: as 0x560D20)
+            if (class_ref_setters[k] != 0x560d20) list.push_back({class_ref_setters[k], (void *)stub_class_named_text});
         stubs_for_now(list);
     };
     class_construct.finish = [](const rewrite::Entry *) {

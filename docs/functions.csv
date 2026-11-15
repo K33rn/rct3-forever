@@ -17970,7 +17970,7 @@ address,size,name,callers,status
 0xb32d90,131,PAIR_RELEASE,7,rewritten
 0xb32e20,267,,1,documented
 0xb32f30,132,Shared::Destroy87F8C0,1,rewritten
-0xb32fc0,627,,2,documented
+0xb32fc0,627,Class::Construct,2,rewritten
 0xb33290,256,,1,documented
 0xb33390,61,,3,documented
 0xb333d0,3,,1,documented

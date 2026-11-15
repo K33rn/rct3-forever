@@ -47,6 +47,7 @@ def ret_args(fn):
     return None
 
 
+ref_setters = set()   # the member functions given a stack reference (kind 25): the tester stands in for them as for 0x560D20
 value_calls = set()   # the functions taking nothing whose value a member gets (kind 23): the tester stands in for them
 
 
@@ -317,9 +318,9 @@ def walk_fields(ins, t, k0, regs0):
                 x = t[j]
                 # (judged by the registers and the stack as they were at the je: the null path's own)
                 if (mm := re.fullmatch(r'xor ' + REG + ', ' + REG, x)) and mm.group(1) == mm.group(2) and (regs.get(mm.group(1)) == ('new', i) or regs0.get(mm.group(1)) == ('new', i)):
-                    pass
-                elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, x)) and (regs.get(mm.group(2)) == ('const', 0) or regs0.get(mm.group(2)) == ('const', 0)) and \
-                        (stack.get(num(mm.group(1)) - depth) == ('new', i) or stack0.get(num(mm.group(1)) - depth0) == ('new', i)) and regs0.get(mm.group(2)) == ('const', 0):
+                    regs0 = dict(regs0); regs0[mm.group(1)] = ('const', 0)   # (followed on the null path)
+                elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, x)) and regs0.get(mm.group(2)) == ('const', 0) and \
+                        (stack.get(num(mm.group(1)) - depth) == ('new', i) or stack0.get(num(mm.group(1)) - depth0) == ('new', i)):
                     pass
                 elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], 0', x)) and stack.get(num(mm.group(1)) - depth) == ('new', i):
                     pass
@@ -564,6 +565,50 @@ def parse(a, n):
     ops = []
     pending = None   # a member made with new, until it is stored
     left_on_stack = [0]   # cdecl pushes not yet taken off
+    def reference_setter(k0):
+        # lea ecx, [esp + X]; call 0xBD9AD0 (a reference made there; constant stores into the object may come between);
+        # push F; push eax; push NAME; lea ecx, [this + off]; call FN (three values); lea ecx, [esp + X]; call 0xBD99E0
+        # (the exception state's stores passed over). Gives (index after, the stores, off, NAME, F, FN) or None.
+        z = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k0])
+        if not z:
+            return None
+        slot = num(z.group(1)) - depth
+        eh = lambda u: re.fullmatch(r'mov (byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', u)
+        q, stores = k0 + 1, []
+        while q < len(t) and t[q] != 'call 0xbd9ad0':
+            u = t[q]
+            if eh(u):
+                q += 1; continue
+            mm = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (' + REG + r'|0x[0-9a-f]+|\d+)', u)
+            if not mm or not regs.get(mm.group(1)) or regs[mm.group(1)][0] != 'this' or mm.group(1) == 'ecx':
+                return None
+            v = mm.group(3)
+            if re.fullmatch(r'0x[0-9a-f]+|\d+', v): val_ = num(v)
+            elif regs.get(v) and regs[v][0] == 'const': val_ = regs[v][1]
+            else: return None
+            stores.append((0, regs[mm.group(1)][1] + num(mm.group(2) or '0'), val_, 0, []))
+            q += 1
+        if q >= len(t):
+            return None
+        seq = []
+        q += 1
+        while q < len(t) and len(seq) < 8:
+            if not eh(t[q]):
+                seq.append((q, t[q]))
+            q += 1
+        b = [u for _, u in seq]
+        zf = re.fullmatch(r'push (0x[0-9a-f]+|\d+)', b[0])
+        zn = re.fullmatch(r'push (0x[0-9a-f]+)', b[2])
+        zm = re.fullmatch(r'lea ecx, \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', b[3])
+        zc = re.fullmatch(r'call (0x[0-9a-f]+)', b[4])
+        zl = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', b[5])
+        if not (zf and b[1] == 'push eax' and zn and zm and zc and zl and b[6] == 'call 0xbd99e0'):
+            return None
+        if not regs.get(zm.group(1)) or regs[zm.group(1)][0] != 'this' or ret_args(num(zc.group(1))) != 3:
+            return None
+        if num(zl.group(1)) - depth != slot:
+            return None
+        return seq[6][0] + 1, stores, regs[zm.group(1)][1] + num(zm.group(2)), num(zn.group(1)), num(zf.group(1)), num(zc.group(1))
     def result_store(k0):
         # the next store of eax into the object (mov dword ptr [this + off], eax), with nothing before it touching eax or
         # calling: (its index, the offset)
@@ -602,6 +647,15 @@ def parse(a, n):
                 continue
         if re.fullmatch(r'(mov al, byte ptr|cmp byte ptr) \[' + REG + r' \+ 4\].*', s):
             break
+        if not pushed and not pending and (rs := reference_setter(k)):
+            # a reference made on the stack, given with a name and a value to a member's function, let go (kind 25)
+            k, stores, off_, name_, flag_, fn_ = rs
+            ops.extend(stores)
+            ops.append((25, off_, name_, fn_, [('imm', flag_)]))
+            ref_setters.add(fn_)
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+            continue
         if (len(pushed) == 3 and pushed[0] == ('imm', 1) and pushed[1][0] == 'imm' and pushed[2][0] == 'imm' and not pending
                 and re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', s) and (nt := named_text_step(t, ins, k, regs))):
             ops.extend(nt[3])
@@ -1144,6 +1198,9 @@ out.append('    }')
 out.append('}')
 out.append('// the functions the steps call on members and new objects, each with how many values it takes (the test stands in for them)')
 out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x}, {c}' for fn, c in sorted(member_fns.items())) + ', 0};')
+out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
+out.append('extern const uint32_t class_ref_setters[];')
+out.append('const uint32_t class_ref_setters[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters)) + '0};')
 out.append('// the functions taking nothing whose value a member gets (kind 23): the tester stands in for each')
 out.append('extern const uint32_t class_value_calls[];')
 out.append('const uint32_t class_value_calls[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(value_calls)) + '0};')
