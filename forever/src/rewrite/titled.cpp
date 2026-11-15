@@ -354,9 +354,11 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         }
         case 61: last = titled_call(op.fn, (void *)(uintptr_t)given[op.off], op.count, args); break;              // on an argument
         case 62: last = titled_call(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args); break;   // on a global's object
-        case 63:   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1)
-            if ((args[0] == 0) != (op.fn == 1)) k += op.off;
+        case 63: {   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1); fn 2: when its low byte is 0
+            const bool zero = op.fn == 2 ? (args[0] & 0xff) == 0 : args[0] == 0;
+            if (zero != (op.fn == 1)) k += op.off;
             break;
+        }
         case 68: {   // a text copied from the wide text given (0xBCF7D0; none without memory), or the empty text when there is none: name off
             void *from = (void *)(uintptr_t)args[0];
             if (from) {

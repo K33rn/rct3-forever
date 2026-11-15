@@ -540,7 +540,8 @@ static void *__thiscall stub_text_for_child(void **self, void **name, void *wind
     return self;
 }
 static uintptr_t g_titled_title;
-static uint32_t g_titled_args, g_titled_nullable, g_titled_parent = 1, g_titled_text = 2;
+static uint32_t g_titled_args, g_titled_nullable, g_titled_byte_flags, g_titled_parent = 1, g_titled_text = 2;
+extern const uint32_t titled_byte_flags[];
 static uint32_t g_window_args;   // 2 or 3, from the copy's ret
 // saved classes' constructors: the base, members' and fields' constructors (by how many values they take), the field
 // list's add, the description's name step and the object info
@@ -6196,6 +6197,9 @@ static std::vector<Test> tests() {
                                   for (uint32_t k = 1, b = 0; k <= 7; k++)
                                       a[k - 1] = k == g_titled_parent ? parent : k == g_titled_text ? text : blocks[b++ % 5];
                               }
+                              for (int k = 2; k <= 7; k++)   // (the flag arguments a byte test reads: 0, 1 or 2)
+                                  if (g_titled_byte_flags >> k & 1)   // (the upper bytes whatever the caller left: only the low one is the flag)
+                                      a[k - 1] = (arena<uint32_t>(0x4c)[0] >> (2 * k)) % 3 | ((arena<uint32_t>(0x4c)[0] * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu) & 0xffffff00u);
                               for (int k = 2; k < 7; k++)
                                   if (g_titled_nullable >> k & 1 && (arena<uint32_t>(0x4c)[0] >> (3 * k)) % 3 == 0) a[k - 1] = 0;
                               void *self = arena<void>(0x100), *made;
@@ -6240,7 +6244,9 @@ static std::vector<Test> tests() {
             if (titled_info[k] == e->at)
                 g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4],
                 g_titled_parent = titled_info[k + 5], g_titled_text = titled_info[k + 6];
-        g_titled_nullable = 0;
+        g_titled_nullable = 0, g_titled_byte_flags = 0;
+        for (int k = 0; titled_byte_flags[k]; k += 2)
+            if (titled_byte_flags[k] == e->at) g_titled_byte_flags = titled_byte_flags[k + 1];
         for (int k = 0; titled_nullable[k]; k += 2)
             if (titled_nullable[k] == e->at) g_titled_nullable = titled_nullable[k + 1];
         std::vector<std::pair<uint32_t, void *>> list = {{0xbcdfc0, (void *)stub_plain_alloc}, {0xbcf850, (void *)stub_name_text}, {0xbd0490, (void *)stub_wide_empty_shared},

@@ -1172,6 +1172,11 @@ def tail(p):
                 raise Reject('by-value store ' + s)
         elif (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], esp', s)) and (R.get('eax') or ('',))[0] == 'spslot':
             S.pop(num(m.group(1)) - d, None)   # (the exception frame keeps where that struct is)
+        elif (m := re.fullmatch(r'(or|and) dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and val(m.group(2)) and                 val(m.group(2))[0] in ('this', 'member'):
+            # a dword of the window's own or-ed or and-ed with a constant (kind 27 / 26)
+            off_ = (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3) or '0')
+            ops.append((27 if m.group(1) == 'or' else 26, off_, num(m.group(4)), 0, []))
+            flag = None
         elif (m := re.fullmatch(r'(or|and) dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and still(val(m.group(2))):
             ops.append((47 if m.group(1) == 'or' else 48, val(m.group(2))[1], num(m.group(4)), 0, [num(m.group(3) or '0')]))
             flag = None
@@ -1317,7 +1322,16 @@ def tail(p):
         elif x.mnemonic == 'je' and flag and flag[0] == 'noparent?':
             m1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[k + 1])
             if not m1 or num(m1.group(2)) != p['title'] or t[k + 2] != f'mov byte ptr [{m1.group(1)} + 4], 1' or at.get(int(x.op_str, 0)) != k + 3:
-                raise Reject('tail flag mark')
+                # not the mark: a block skipped when an argument's low byte (the one tested) is 0 (kind 63, fn 2: the byte)
+                tgt = at.get(int(x.op_str, 0))
+                fv = R.get(flag[1]) if flag[1] in R else None
+                if pushed or nulls or tgt is None or tgt <= k + 1 or conds and tgt > conds[-1][0] or not fv or fv[0] != 'argbyte':
+                    raise Reject('tail flag mark')
+                ops.append((63, 0, 0, 2, [('given', fv[1])]))
+                conds.append((tgt, len(ops) - 1, dict(R), dict(S), d, set(built)))
+                flag = None
+                k += 1
+                continue
             ops.append((12, 0, 0, 0, []))
             R[m1.group(1)] = None
             k += 3
@@ -1773,6 +1787,7 @@ if __name__ == '__main__':
     reasons = collections.Counter(); rb = collections.Counter(); ok = 0; okb = 0
     out = ["// Window classes' constructors taken over by titled_construct (titled.cpp); written by tools/titled_ctors.py."]
     info, callees, temps_used, nullable = [], {}, set(), []
+    byte_flags = []   # the constructors with arguments only a byte test reads (bit n: argument n)
     refs = []   # the text references made before a base: (key, table, flag)
     all_ops = {}
     edx_uses, plain_uses = set(), set()
@@ -1827,6 +1842,13 @@ if __name__ == '__main__':
         mask = sum(1 << n_ for n_ in cast_args - deref_args)
         if mask:
             nullable.append((a, mask))
+        # the arguments only a block's byte test reads (flags): the tester gives them small values (0, 1 or 2)
+        byte_args = {o[4][0][1] for o in p['ops'] if o[0] == 63 and o[3] == 2 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'}
+        other_uses = {v[1] for o in p['ops'] if not (o[0] == 63 and o[3] == 2) for v in o[4] if isinstance(v, tuple) and v[0] == 'given'} | \
+                     {o[2] for o in p['ops'] if o[0] in (2, 29, 50)} | {e[1] for e in p['extras'] if e[0] == 'arg'}
+        bmask = sum(1 << n_ for n_ in byte_args - other_uses - deref_args)
+        if bmask:
+            byte_flags.append((a, bmask))
         for o in p['ops']:
             if o[0] in (3, 10, 24, 59, 61, 62) and o[3] != 0x6b1640:   # (0x6B1640: the tester's own stand-in, which notes the rectangle)
                 callees[o[3]] = len(o[4])
@@ -1835,6 +1857,9 @@ if __name__ == '__main__':
             if o[0] in (15, 20):
                 temps_used.add(o[3])
     out.append('// each constructor: its address, title global, how many values it takes, its base and how many values that takes')
+    out.append('// constructors with arguments only a block\'s byte test reads (bit n: argument n): the tester gives them 0, 1 or 2')
+    out.append('extern const uint32_t titled_byte_flags[];')
+    out.append('const uint32_t titled_byte_flags[] = {' + ''.join(f'{a_:#x}, {m_:#x}, ' for a_, m_ in byte_flags) + '0};')
     out.append('// constructors with arguments only a cast reads (bit n: argument n), which the tester gives 0 at times')
     out.append('extern const uint32_t titled_nullable[];')
     out.append('const uint32_t titled_nullable[] = {' + ''.join(f'{a:#x}, {m:#x}, ' for a, m in nullable) + '0};')
