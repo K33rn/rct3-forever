@@ -217,9 +217,10 @@ static uint8_t g_titled_flags[2];   // (two game flags the titled test puts back
 static bool g_built_other;   // the member stand-ins return a pointer of their own (so what a constructor returns is told from its memory)
 // (an object built for the titled windows' test gets a table whose slot 0x20 gives its size: two floats from the
 // arena at 0x8f00, picked by the object's address so different children differ, NaN and infinity among them)
-static void *__thiscall titled_child_size(void *self, void *scratch) {
+static void *__thiscall titled_child_size(void *self, void *scratch) {   // (the size put where asked, and that place given back)
     record(0x6b1641, self);
-    return arena<uint8_t>(0x8f00) + ((uintptr_t)self >> 2 & 7) * 8;
+    memcpy(scratch, arena<uint8_t>(0x8f00) + ((uintptr_t)self >> 2 & 7) * 8, 8);
+    return scratch;
 }
 // the other slots a titled constructor calls: a stand-in per slot (noting the slot, the object and what it is given; giving
 // a place in the arena), its count from titled_vslots, filled in when the test is prepared

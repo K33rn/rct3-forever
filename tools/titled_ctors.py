@@ -494,6 +494,7 @@ def tail(p):
     clobbered = set()   # argument slots the tail wrote (a later read of one is not the argument)
 
     nscratch = [0]
+    run_locals = set()   # locals earlier x87 runs wrote (the rewrite's buffer keeps them), until the steps write the slot
     always_temps = set()
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
@@ -797,7 +798,7 @@ def tail(p):
     edx_live = [False]          # edx written since the last call and not used since (a call may read it)
     edx_call = [None]           # a call made with edx live: the step count before it (its step must take edx = this)
 
-    def fpu_step(k0):
+    def fpu_step(k0, size_query=False):
         # a run of x87 work building values on the stack, then a direct call given them: from k0 (an x87 instruction) to
         # the call. Its steps: fld / fild / fst / fstp / fadd .. fdivr with a dword operand (a game global, the window's,
         # what a member points to, a stack local of the run or the constructor's argument), fld st(i), fxch st(i),
@@ -807,6 +808,7 @@ def tail(p):
         # FPU must end empty; nothing else may be written. Gives (index after the call, the op) or None.
         nonlocal d
         prog, depth, fpu = [], d, 0
+        size_seen = []
         regs = {}       # registers set in the run: ('bits', operand) / ('local', slot) / ('ecx', value)
         written = set() # locals the run writes (entry-relative slots)
         known_locals = {}
@@ -822,7 +824,7 @@ def tail(p):
                         return None
                     return (5, slot // 4)
                 if slot < 0 and -slot <= 0x100 and slot % 4 == 0:
-                    if slot not in written and not store:
+                    if slot not in written and not store and slot not in run_locals:
                         v = S.get(slot)
                         if not v or v[0] != 'const':
                             return None
@@ -830,6 +832,8 @@ def tail(p):
                     return (4, (slot + 0x100) // 4)
                 return None
             mm = re.fullmatch(r'dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', text)
+            if mm and regs.get(mm.group(1)) == ('size',) and not store:
+                return (6, num(mm.group(2) or '0'))   # what the size query gave
             if mm:
                 off = num(mm.group(2) or '0')
                 v = regs.get(mm.group(1), ('r', R.get(mm.group(1))))
@@ -838,10 +842,34 @@ def tail(p):
                 if v and v[0] == 'member': return (2, v[1] + off)
                 if v and still(v) and v[1] < 0x10000 and off < 0x10000: return (3, v[1] | off << 16)
             return None
-        args_pushed = list(pushed)
+        args_pushed = [('local', v[1]) if isinstance(v, tuple) and v[0] == 'rect' else v for v in pushed]
         q = k0
         while q < len(t):
             u, xq = t[q], ins[q]
+            if (zq := re.fullmatch(r'call dword ptr \[' + REG + r' \+ 0x20\]', u)) and (regs.get(zq.group(1), ('r', R.get(zq.group(1))))[1] or ('',))[0] == 'vtable' \
+                    and args_pushed and isinstance(args_pushed[-1], tuple) and args_pushed[-1][0] == 'local' and not size_seen:
+                # a child's size asked for (its slot 0x20, a local to fill): a step, what it gives read through eax after
+                obj = regs.get(zq.group(1), ('r', R.get(zq.group(1))))[1][1]
+                ecx_now = regs.get('ecx', ('r', R.get('ecx')))[1]
+                if ecx_now != obj:
+                    return None
+                if obj == ('this',): okind, oval = 0, 0
+                elif obj[0] == 'member': okind, oval = 0, obj[1]
+                elif still(obj): okind, oval = 1, obj[1]
+                else:
+                    return None
+                sl = args_pushed.pop()[1]
+                depth -= 4
+                if not (sl < 0 and -sl <= 0x100):
+                    return None
+                written.update(sl + 4 * i for i in range(4))   # (the size filled in: two floats, and room)
+                prog.append((25, okind, oval, (sl + 0x100) // 4))
+                regs['eax'] = ('size',)
+                for r_ in ('ecx', 'edx'):
+                    regs[r_] = ('r', None)
+                size_seen.append(1)
+                q += 1
+                continue
             if xq.mnemonic == 'call':
                 break
             if re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', u):
@@ -883,6 +911,11 @@ def tail(p):
                     regs['ecx'] = ('ecx', ('field', num(z.group(2)), len(ops)))   # a member's object: the callee, or read from
                 else:
                     regs[mm.group(1)] = ('bits', operand(mm.group(2), q))
+            elif (mm := re.fullmatch(r'mov ' + REG + r', dword ptr \[ecx\]', u)) and mm.group(1) != 'ecx':
+                ev = regs.get('ecx', ('r', R.get('ecx')))[1]
+                if not ev:
+                    return None
+                regs[mm.group(1)] = ('r', ('vtable', ev))
             elif (mm := re.fullmatch(r'mov ecx, ' + REG, u)):
                 v = regs.get(mm.group(1), ('r', R.get(mm.group(1))))
                 if v[0] not in ('r', 'ecx') or not v[1]:
@@ -966,6 +999,7 @@ def tail(p):
         for sl, val_ in sorted(known_locals.items()):
             if sl not in written:
                 prog.insert(0, (20, 0, val_, (sl + 0x100) // 4))
+        run_locals.update(written)   # (what this run wrote stays in the locals for later runs, until written otherwise)
         start = 4 * len(FPU_PROGRAM)   # (where its count is in the flat table: four dwords a step)
         FPU_PROGRAM.append((len(prog), 0, 0, 0))
         FPU_PROGRAM.extend(tuple(x) + (0,) * (4 - len(x)) for x in prog)
@@ -1178,8 +1212,10 @@ def tail(p):
             z = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, s)
             if z:   # locals (the exception frame's state is a byte or a constant)
                 S[num(z.group(1)) - d] = val(z.group(2))
+                run_locals.discard(num(z.group(1)) - d)
             elif (z := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)):
                 S[num(z.group(1)) - d] = ('const', num(z.group(2)))
+                run_locals.discard(num(z.group(1)) - d)
         elif (m := re.fullmatch(r'mov (e[a-d]x|e[sd]i|ebp), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and not pushed and \
                 (S.get(num(m.group(2)) - d) or ('',))[0] == 'name' and ('name', S[num(m.group(2)) - d][1]) in built and \
                 (rel := plain_release(k, m.group(1), num(m.group(2)))):
@@ -1564,6 +1600,15 @@ def tail(p):
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[ecx\]', s)) and val('ecx') and (val('ecx') == ('this',) or val('ecx')[0] == 'member' or still(val('ecx'))) \
                 and m.group(1) != 'ecx':
             R[m.group(1)] = ('vtable', val('ecx'))   # (the object's table: a call through it follows)
+        elif (m := re.fullmatch(r'call dword ptr \[' + REG + r' \+ 0x20\]', s)) and pushed and isinstance(pushed[-1], tuple) and pushed[-1][0] == 'rect' and \
+                (fs := fpu_step(k, size_query=True)):
+            edx_live[0] = False
+            ops.append(fs[1])   # a size asked for, then an x87 run with what it gave, and the call given what it built (kind 59)
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            k = fs[0]
+            flag = None
+            continue
         elif (m := re.fullmatch(r'call dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(1)) and val(m.group(1))[0] == 'vtable' and \
                 val(m.group(1))[1] == val('ecx') and (val('ecx') == ('this',) or val('ecx')[0] == 'member' or still(val('ecx'))) and \
                 num(m.group(2)) % 4 == 0 and num(m.group(2)) < 0x200 and len(pushed) <= 4 and None not in pushed:

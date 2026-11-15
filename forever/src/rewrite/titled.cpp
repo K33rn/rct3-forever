@@ -106,13 +106,20 @@ extern const uint32_t titled_fpu[];
 #define X87(text) __asm__ volatile(".intel_syntax noprefix\n\t" text "\n\t.att_syntax prefix" : : "a"(p) : "memory")
 #define X87I(text) __asm__ volatile(".intel_syntax noprefix\n\t" text "\n\t.att_syntax prefix" : : : "memory")
 __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t count, uint8_t *self, const uint32_t *given, uint32_t *loc) {
+    uint8_t *size = nullptr;   // what a size query (code 25) gave: operand kind 6 reads through it
     for (uint32_t k = 0; k < count; k++, step += 4) {
         const uint32_t code = step[0], kind = step[1], v = step[2];
+        if (code == 25) {   // a child's size asked for: its table's slot 0x20 (the window + v, or what that member points to), a local to fill
+            uint8_t *child = kind ? *(uint8_t **)(self + v) : self + v;
+            size = ((uint8_t * (__thiscall *)(void *, void *))(*(void ***)child)[0x20 / 4])(child, &loc[step[3]]);
+            continue;
+        }
         uint32_t *p = kind == 1 ? (uint32_t *)(uintptr_t)v
                       : kind == 2 ? (uint32_t *)(self + v)
                       : kind == 3 ? (uint32_t *)(*(uint8_t **)(self + (v & 0xffff)) + (v >> 16))
                       : kind == 4 ? &loc[v]
-                      : kind == 5 ? (uint32_t *)&given[v] : nullptr;
+                      : kind == 5 ? (uint32_t *)&given[v]
+                      : kind == 6 ? (uint32_t *)(size + v) : nullptr;
         switch (code) {
         case 1: X87("fld dword ptr [eax]"); break;
         case 21: X87("fild dword ptr [eax]"); break;

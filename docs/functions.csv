@@ -6236,7 +6236,7 @@ address,size,name,callers,status
 0x668620,107,Selected::Dtor5A0A30,1,rewritten
 0x6686c0,30,DeletingDestructor,2,rewritten
 0x6686e0,30,DeletingDestructor,2,rewritten
-0x668700,689,,1,documented
+0x668700,689,Window::Titled,1,rewritten
 0x6689c0,760,,1,documented
 0x668cc0,140,,1,documented
 0x668de0,1834,,6,documented
