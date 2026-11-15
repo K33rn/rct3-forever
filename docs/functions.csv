@@ -14627,7 +14627,7 @@ address,size,name,callers,status
 0x9d0c60,127,,1,documented
 0x9d0ce0,168,,2,documented
 0x9d0d90,58,Vector::FreePair,4,rewritten
-0x9d0f40,427,,2,documented
+0x9d0f40,427,ObjectArray::Grow,2,rewritten
 0x9d10f0,30,DeletingDestructor,1,rewritten
 0x9d1120,132,Array::Size9D1120,1,rewritten
 0x9d11b0,263,,2,documented
