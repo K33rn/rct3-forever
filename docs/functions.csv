@@ -10642,7 +10642,7 @@ address,size,name,callers,status
 0x80f690,97,,2,documented
 0x80f700,16,Object::SetFields,1,rewritten
 0x80f710,180,Table20::Free,1,rewritten
-0x80f7d0,433,,1,documented
+0x80f7d0,433,SizePools::Take,1,rewritten
 0x80f990,126,BlockPool::Return,1,rewritten
 0x80fa40,304,Pool::Grow42D730,2,rewritten
 0x80fb70,238,,1,documented
@@ -12800,7 +12800,7 @@ address,size,name,callers,status
 0x909dc0,126,BlockPool::Return,15,rewritten
 0x909e40,16,Object::SetFields,1,rewritten
 0x909e50,180,Table20::Free,1,rewritten
-0x909f10,433,,1,documented
+0x909f10,433,SizePools::Take,1,rewritten
 0x90a0d0,126,BlockPool::Return,3,rewritten
 0x90a150,319,,3,documented
 0x90a290,2963,,1,documented

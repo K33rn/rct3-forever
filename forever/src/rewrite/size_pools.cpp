@@ -9,6 +9,8 @@
 //     copied, the old list freed), the free list freed and made again for every block's items; the new block (items
 //     a block * n dwords) allocated and its items put on the free list from the last to the first.
 //   - The last free item taken.
+// List::FindCE76B0, Find909F10 and Find80F7D0 are the same with items of n 16-, 0x24- or 0xC-byte units (rows written
+// here; the unit enters the items a block holds, the block's size and each item's place).
 #include "rewrite.h"
 
 namespace {
@@ -83,9 +85,15 @@ template <int K> uint8_t *__thiscall take_copy(uint32_t *self, int32_t n) { retu
 constexpr SizePools pools_16 = {0xce76b0, 0xce7040, 16};   // List::FindCE76B0: items of n 16-byte units (row written here)
 const uint8_t pools_16_first[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0x5c, 0x24};
 uint8_t *__thiscall take_16(uint32_t *self, int32_t n) { return take(self, n, pools_16); }
+constexpr SizePools pools_36 = {0x909f10, 0x906000, 0x24};   // List::Find909F10: units of 0x24 bytes
+constexpr SizePools pools_12 = {0x80f7d0, 0x80ea30, 0xc};    // List::Find80F7D0: units of 0xC bytes
+uint8_t *__thiscall take_36(uint32_t *self, int32_t n) { return take(self, n, pools_36); }
+uint8_t *__thiscall take_12(uint32_t *self, int32_t n) { return take(self, n, pools_12); }
 }   // namespace
 // (the addresses again, as numbers, checked against the table)
 static_assert(size_pools[0].at == 0x87bcb0 && size_pools[1].at == 0x909c10, "size_pools.inc changed");
 REWRITE("SizePools::Take", 0x87bcb0, size_pools_first[0], (&take_copy<0>), &g_size_pools);
 REWRITE("SizePools::Take", 0x909c10, size_pools_first[1], (&take_copy<1>), &g_size_pools);
 REWRITE("SizePools::Take", 0xce76b0, pools_16_first, &take_16, &g_size_pools);
+REWRITE("SizePools::Take", 0x909f10, pools_16_first, &take_36, &g_size_pools);
+REWRITE("SizePools::Take", 0x80f7d0, pools_16_first, &take_12, &g_size_pools);
