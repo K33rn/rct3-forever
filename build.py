@@ -22,8 +22,10 @@ IMGUI = os.path.join(HERE, 'third_party', 'imgui')
 OUT = os.path.join(HERE, 'out')
 DIST = os.path.join(HERE, 'dist')
 # -march=i686 (no SSE): float maths on the x87 FPU like the game (Visual C++ 2003), so rewrites round as it does
+# -fno-strict-aliasing: rewrites read and write the game's memory through casts of every type, as the game's own code
+# does; with strict aliasing the compiler may keep a value it read past a write of another type (a loop that never ends)
 ZIG = [sys.executable, '-m', 'ziglang', 'c++', '-target', 'x86-windows-gnu', '-O2', '-std=c++17', '-fno-exceptions',
-       '-fno-rtti', '-march=i686', '-DNDEBUG', '-DWIN32_LEAN_AND_MEAN', '-Wno-nullability-completeness', '-s']
+       '-fno-rtti', '-fno-strict-aliasing', '-march=i686', '-DNDEBUG', '-DWIN32_LEAN_AND_MEAN', '-Wno-nullability-completeness', '-s']
 
 
 def fetch_imgui():
