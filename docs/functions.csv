@@ -7614,13 +7614,13 @@ address,size,name,callers,status
 0x6df390,95,Factory::CreateWith,1,rewritten
 0x6df3f0,368,ObjectiveCondition::Name,1,rewritten
 0x6df560,527,Condition::CurrentText,1,rewritten
-0x6df770,454,,4,documented
+0x6df770,454,Condition::KindName,4,rewritten
 0x6df940,151,WideText::CopyOf(this),2,rewritten
 0x6df9e0,110,ObjectRef::SetMemberNear,1,rewritten
 0x6dfa50,113,ObjectRef::SetMember,1,rewritten
 0x6dfad0,60,ObjectRef::CopyTo,1,rewritten
 0x6dfb10,60,ObjectRef::CopyTo,1,rewritten
-0x6dfb50,454,,1,documented
+0x6dfb50,454,Condition::KindName,1,rewritten
 0x6dfd20,368,ObjectiveCondition::Name,1,rewritten
 0x6dfe90,612,Class::Construct,2,rewritten
 0x6e0140,1827,,1,documented
