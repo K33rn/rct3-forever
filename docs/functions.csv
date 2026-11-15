@@ -17226,7 +17226,7 @@ address,size,name,callers,status
 0xadf4e0,1482,,4,documented
 0xadfab0,30,DeletingDestructor,2,rewritten
 0xadfba0,162,ObjectRef::CallWith,3,rewritten
-0xadfc50,324,,3,documented
+0xadfc50,324,Animal::Link,3,rewritten
 0xadfda0,105,Factory::Create,1,rewritten
 0xadfe10,177,,2,documented
 0xadfed0,139,,2,documented
@@ -17406,7 +17406,7 @@ address,size,name,callers,status
 0xaf4be0,1168,Class::Construct,4,rewritten
 0xaf5070,30,DeletingDestructor,2,rewritten
 0xaf5160,162,ObjectRef::CallWith,3,rewritten
-0xaf5210,324,,3,documented
+0xaf5210,324,Animal::Link,3,rewritten
 0xaf5360,569,,2,documented
 0xaf55a0,758,,2,documented
 0xaf58a0,1164,Class::Construct,2,rewritten
