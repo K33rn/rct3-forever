@@ -150,8 +150,9 @@ def parse(a, n):
         s = t[k][5:]
         if re.fullmatch(r'0x[0-9a-f]+|\d+', s):
             return ('const', num(s))
-        # the register's value as of instruction k: look back for its last write
-        for q in range(k - 1, k41, -1):
+        # the register's value as of instruction k: look back for its last write (past the copy call for the registers
+        # a call keeps)
+        for q in range(k - 1, -1 if s in ('ebx', 'esi', 'edi', 'ebp') else k41, -1):
             if (m := re.fullmatch(r'mov ' + s + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q])):
                 d = depth_at[q]
                 slot = num(m.group(1)) - d
@@ -163,7 +164,7 @@ def parse(a, n):
             if (m := re.fullmatch(r'mov ' + s + ', ' + REG, t[q])):
                 s = m.group(1)
                 continue
-            if re.match(r'\w+ ' + s + r'\b', t[q]):
+            if re.match(r'\w+ ' + s + r'\b', t[q]) and not t[q].startswith(('push ', 'cmp ', 'test ')):   # (those only read it)
                 return ('?', t[q])
         return ('?', s)
     depth_at = []

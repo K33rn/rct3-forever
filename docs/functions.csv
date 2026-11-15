@@ -5139,7 +5139,7 @@ address,size,name,callers,status
 0x5ea970,281,,1,documented
 0x5eaa90,51,,1,documented
 0x5eaad0,253,,1,documented
-0x5eabd0,521,,1,documented
+0x5eabd0,521,Window::Titled,1,rewritten
 0x5eade0,505,,1,documented
 0x5eafe0,48,QueryInterface,0,rewritten
 0x5eb020,48,QueryInterface,0,rewritten
@@ -6644,7 +6644,7 @@ address,size,name,callers,status
 0x68e3c0,1251,,1,documented
 0x68e8b0,16,Object::AllocStore,2,rewritten
 0x68e8c0,36,SharedBuffer::Release,6,rewritten
-0x68e950,628,,1,documented
+0x68e950,628,Window::Titled,1,rewritten
 0x68ec00,322,,1,documented
 0x68ed50,78,,1,documented
 0x68eda0,27,,3,documented
@@ -6689,7 +6689,7 @@ address,size,name,callers,status
 0x690b00,52,,1,documented
 0x690b50,30,DeletingDestructor,2,rewritten
 0x690b70,273,,8,documented
-0x690c90,539,,1,documented
+0x690c90,539,Window::Titled,1,rewritten
 0x690ee0,26,,4,documented
 0x690f00,234,,0,documented
 0x691110,372,,3,documented
@@ -7944,7 +7944,7 @@ address,size,name,callers,status
 0x702310,130,,1,documented
 0x7023e0,30,DeletingDestructor,2,rewritten
 0x702400,1929,,2,documented
-0x702ca0,536,,1,documented
+0x702ca0,536,Window::Titled,1,rewritten
 0x702f80,27,GlobalCleanup,1,rewritten
 0x702fa0,424,,1,documented
 0x703170,101,,0,documented
@@ -12676,7 +12676,7 @@ address,size,name,callers,status
 0x8f96b0,23,,1,documented
 0x8f96d0,157,,1,documented
 0x8f9b50,30,DeletingDestructor,2,rewritten
-0x8f9b70,570,,1,documented
+0x8f9b70,570,Window::Titled,1,rewritten
 0x8f9db0,765,,1,documented
 0x8fa0b0,3689,,1,documented
 0x8fafa0,355,,1,documented
@@ -12920,7 +12920,7 @@ address,size,name,callers,status
 0x916a30,108,Destructor::Steps,1,rewritten
 0x916b20,30,DeletingDestructor,2,rewritten
 0x916b40,1715,,1,documented
-0x917210,527,,1,documented
+0x917210,527,Window::Titled,1,rewritten
 0x9174a0,78,,1,documented
 0x917540,71,,0,documented
 0x9177b0,3071,,3,documented
@@ -14952,7 +14952,7 @@ address,size,name,callers,status
 0x9ef270,248,,1,documented
 0x9ef370,262,,1,documented
 0x9ef480,876,,1,documented
-0x9ef7f0,647,,1,documented
+0x9ef7f0,647,Window::Titled,1,rewritten
 0x9efac0,114,Dtor::ThreeFaces8E5D50,1,rewritten
 0x9efb40,30,DeletingDestructor,2,rewritten
 0x9efbe0,583,,1,documented
@@ -18939,7 +18939,7 @@ address,size,name,callers,status
 0xb90c40,34,,1,documented
 0xb90c70,53,,1,documented
 0xb90d10,30,DeletingDestructor,2,rewritten
-0xb90d30,558,,1,documented
+0xb90d30,558,Window::Titled,1,rewritten
 0xb90f70,27,GlobalCleanup,1,rewritten
 0xb90f90,104,Destructor::Steps,1,rewritten
 0xb91060,30,DeletingDestructor,1,rewritten
