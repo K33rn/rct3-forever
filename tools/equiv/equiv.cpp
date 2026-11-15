@@ -6033,6 +6033,8 @@ static std::vector<Test> tests() {
                                   arena<uint32_t>(0x100 + k)[0] = (uint32_t)(uintptr_t)arena<void>(0xc000 + k / 4 % 16 * 0x40);
                               uint32_t *title = arena<uint32_t>(0x8000);
                               title[1] = 0;
+                              *(uint8_t *)&title[1] = (uint8_t)(r.range(0, 2) == 0);   // (+4: the default named already, or not)
+                              arena<uint8_t>(0x8104)[0] = (uint8_t)(r.range(0, 2) == 0);   // (and the description given)
                               title[2] = r.range(0, 2) ? (uint32_t)(uintptr_t)"Title" : 0;
                               arena<uint32_t>(0x8800)[0] = 100;
                               uint32_t *text = (uint32_t *)new_wide_block();
@@ -6093,7 +6095,8 @@ static std::vector<Test> tests() {
                                                          {0x403be0, (void *)stub_wide_assign_c}, {0x403bb0, (void *)stub_wide_assign}, {0x41c740, (void *)stub_wide_copy},
                                                          {0x805750, (void *)stub_null_handle}, {0x805700, (void *)stub_member_handle_of}, {base, bases[base_args]},
                                                          {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}, {0x6a39d0, (void *)stub_text_for_child},
-                                                         {0x6b1640, (void *)titled_layout}};
+                                                         {0x6b1640, (void *)titled_layout}, {0xbeca40, (void *)stub_name_make},
+                                                         {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at) list.push_back({titled_callees[k], built[titled_callees[k + 1]]});
         stubs_for_now(list);

@@ -396,6 +396,180 @@ def tail(p):
             return (0, v)
         return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5}[v[0]], v[1]
 
+    nb_used = set()
+    nb_eax = ['keep']
+    clobbered = set()   # argument slots the tail wrote (a later read of one is not the argument)
+
+    def name_block(k0):
+        # jne SKIP (the description given); mov X, [title]; then the flag set (mov bl, 1 / mov byte ptr [esp + N], 1), X
+        # kept (mov dword ptr [esp + N], X / mov Y, X). SKIP: the check (mov al, byte ptr [U + 4]; test al, al / cmp byte
+        # ptr [U + 4], bl with bl 0; U perhaps read back from where X was kept); jne END; then one or more names: the
+        # member's place (push 0 / push R holding a constant / sub M, T; push M / lea A, [T + off]; sub A, T; push A /
+        # mov A, M or the member kept on the stack; sub A, T; push A), push NAME, lea ecx, [esp + N], call 0xbeca40,
+        # push eax and mov ecx, U (either order), call 0xbecc10, lea ecx, [esp + N], call 0xbec5e0. END: the flag
+        # tested (test bl, bl / mov al, byte ptr [esp + N]; test al, al / cmp byte ptr [esp + N], bl), perhaps mov eax,
+        # R (the value given back), je DONE; mov Z, [title]; mov byte ptr [Z + 4], 1. DONE. (The exception state's byte
+        # stores are passed over.) Gives (DONE, [(member place, name global)...]).
+        skip = at.get(int(ins[k0].op_str, 0))
+        m1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[k0 + 1])
+        if skip is None or not m1 or num(m1.group(2)) != p['title']:
+            return None
+        used = {m1.group(1)} | {r for r in R if R[r] == ('arg', 1)}
+        used_slots = set()
+        dd = depth_at[k0]
+        zero = lambda r: R.get(r) in (('const', 0), ('byte', 0))
+        flag_at = None
+        for q in range(k0 + 2, skip):
+            u = t[q]
+            if u == 'mov bl, 1':
+                if not zero('ebx'):
+                    return None
+                flag_at = 'bl'
+            elif (z := re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], 1', u)):
+                slot = num(z.group(1)) - dd
+                before = None   # the byte was cleared before (0, or a register holding 0)
+                for q2 in range(k0 - 1, start - 1, -1):
+                    z2 = re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0|[abcd]l)', t[q2])
+                    if z2 and num(z2.group(1)) - depth_at[q2] == slot:
+                        before = (z2.group(2), q2)
+                        break
+                if before is None:
+                    return None
+                if before[0] != '0' and known('e' + before[0][0] + 'x', before[1]) not in (('const', 0), ('byte', 0)):
+                    return None
+                flag_at = ('stack', slot)
+                if slot >= 4: clobbered.add(slot)
+            elif (z := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, u)) and z.group(2) in used:
+                slot = num(z.group(1)) - dd
+                used_slots.add(slot)
+                if slot >= 4: clobbered.add(slot)
+            elif (z := re.fullmatch(r'mov ' + REG + ', ' + REG, u)) and z.group(2) in used:
+                used.add(z.group(1))
+            else:
+                return None
+        if flag_at is None:
+            return None
+        if flag_at == 'bl' and 'ebx' in used:
+            return None
+        L = []   # (index, text) without the exception state's byte stores
+        q = skip
+        while len(L) < 120 and q < len(t):
+            if not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', t[q]):
+                L.append((q, t[q]))
+            q += 1
+        c = [0]
+        def peek(o=0):
+            return L[c[0] + o][1] if c[0] + o < len(L) else ''
+        def take(pt):
+            z = re.fullmatch(pt, peek())
+            if z: c[0] += 1
+            return z
+        local = {}   # registers loaded inside the block
+        def holder(r):   # does r hold the description being named?
+            return r in used or local.get(r) == 'used'
+        def load_used():   # mov R, dword ptr [esp + N] from where X was kept
+            z = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', peek())
+            if z and num(z.group(2)) - depth_at[L[c[0]][0]] in used_slots:
+                local[z.group(1)] = 'used'; c[0] += 1
+                return True
+            return False
+        load_used()
+        if (z := take(r'mov ([ac])l, byte ptr \[' + REG + r' \+ 4\]')):
+            if not holder(z.group(2)) or not take(f'test {z.group(1)}l, {z.group(1)}l'):
+                return None
+        elif (z := take(r'cmp byte ptr \[' + REG + r' \+ 4\], bl')):
+            if not holder(z.group(1)) or not zero('ebx') or flag_at == 'bl':
+                return None
+        else:
+            return None
+        zj = take(r'jne (0x[0-9a-f]+)')
+        if not zj:
+            return None
+        end = at.get(num(zj.group(1)))
+        names = []
+        while True:
+            if end is not None and L[c[0]][0] >= end:
+                break
+            # the member's place
+            if (z := take(r'push (0x[0-9a-f]+|\d+)')):
+                off_ = num(z.group(1))
+            elif (z := take(r'push ' + REG)) and R.get(z.group(1)) and R[z.group(1)][0] in ('const', 'byte') and z.group(1) not in local:
+                off_ = R[z.group(1)][1]
+            else:
+                a_ = None
+                if (z := take(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]')) and R.get(z.group(2)) == ('this',):
+                    a_, v_ = z.group(1), ('member', num(z.group(3)))
+                elif (z := take(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]')):
+                    slot = num(z.group(2)) - depth_at[L[c[0] - 1][0]]
+                    a_, v_ = z.group(1), S.get(slot, stored(slot, L[c[0] - 1][0]))
+                elif (z := take(r'mov ' + REG + ', ' + REG)) and z.group(2) not in local:
+                    a_, v_ = z.group(1), R.get(z.group(2))
+                z = take(r'sub ' + REG + ', ' + REG)
+                if not z or R.get(z.group(2)) != ('this',) or z.group(2) in local:
+                    return None
+                if a_ is None:
+                    if z.group(1) in local:
+                        return None
+                    a_, v_ = z.group(1), R.get(z.group(1))
+                if z.group(1) != a_ or not v_ or v_[0] != 'member' or not take('push ' + a_):
+                    return None
+                off_ = v_[1]
+                local[a_] = 'place'
+            zn = take(r'push (0x[0-9a-f]+)')
+            if not zn or not take(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]') or not take('call 0xbeca40'):
+                return None
+            if take('push eax'):
+                load_used()
+                z = take(r'mov ecx, ' + REG)
+                if not z or not holder(z.group(1)):
+                    return None
+            else:
+                if not load_used() or not re.fullmatch(r'mov ecx, ', peek()[:9]) and False:
+                    return None
+                # (mov ecx, dword ptr [esp + N] read the description back: load_used took it into ecx)
+                if local.get('ecx') != 'used' or not take('push eax'):
+                    return None
+            if not take('call 0xbecc10') or not take(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]') or not take('call 0xbec5e0'):
+                return None
+            local.pop('ecx', None); local.pop('eax', None); local.pop('edx', None)
+            names.append((off_, num(zn.group(1))))
+            if len(names) > 8:
+                return None
+        if not names or end is None or L[c[0]][0] != max(end, L[c[0]][0]) or any(
+                not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', t[q]) for q in range(end, L[c[0]][0])):
+            return None
+        if L[c[0] - 1][0] >= end:
+            return None
+        # the mark
+        if flag_at == 'bl':
+            if not take('test bl, bl'):
+                return None
+        else:
+            if (z := take(r'mov al, byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\]')):
+                if num(z.group(1)) - depth_at[L[c[0] - 1][0]] != flag_at[1] or not take('test al, al'):
+                    return None
+            elif (z := take(r'cmp byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], bl')):
+                if num(z.group(1)) - depth_at[L[c[0] - 1][0]] != flag_at[1] or not zero('ebx') or 'ebx' in used:
+                    return None
+            else:
+                return None
+        eax_ = 'keep'
+        if (z := take(r'mov eax, ' + REG)):
+            if z.group(1) in used or z.group(1) in local or z.group(1) in ('ecx', 'edx', 'eax', 'ebx'):
+                return None
+            eax_ = R.get(z.group(1))
+        zj = take(r'je (0x[0-9a-f]+)')
+        zm = take(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]')
+        if not zj or not zm or num(zm.group(2)) != p['title'] or not take(f'mov byte ptr \\[{zm.group(1)} \\+ 4\\], 1'):
+            return None
+        done = at.get(num(zj.group(1)))
+        last = L[c[0] - 1][0]
+        if done is None or done <= last or any(not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', t[q]) for q in range(last + 1, done)):
+            return None
+        nb_eax[0] = eax_
+        nb_used.clear(); nb_used.update(used | set(local) | {zm.group(1)} | ({'ebx'} if flag_at == 'bl' else set()))
+        return done, names
+
     while True:
         s, x = t[k], ins[k]
         val = lambda r: R.get(r)
@@ -538,6 +712,8 @@ def tail(p):
                 S[num(z.group(1)) - d] = ('const', num(z.group(2)))
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - d
+            if slot in clobbered:
+                raise Reject('argument slot reused')
             R[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs else S.get(slot, stored(slot, k))
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6}|0x[ef][0-9a-f]{5})\]', s)):
             R[m.group(1)] = ('global', num(m.group(2)))   # (a game global, or a constant the game keeps: read when used)
@@ -587,6 +763,21 @@ def tail(p):
             ops.append((12, 0, 0, 0, []))
             R[m1.group(1)] = None
             k += 3
+            flag = None
+            continue
+        elif x.mnemonic == 'jne' and flag and flag[1] == ('arg', 1) and (nb := name_block(k)):
+            # the description (given, or the default) named on its first use, then the default marked (kind 52, then 12)
+            k, names_ = nb
+            for q_, (off_, name_) in enumerate(names_):
+                ops.append((52, off_, name_, int(q_ > 0), []))   # (the first decides, by the description's +4, for all)
+            ops.append((12, 0, 0, 0, []))
+            for r in list(R):
+                if R[r] == ('arg', 1) or r in ('eax', 'ecx', 'edx') or R[r] == ('global', p['title']):
+                    R[r] = None
+            for r in nb_used:
+                R[r] = None
+            if nb_eax[0] != 'keep':
+                R['eax'] = nb_eax[0]
             flag = None
             continue
         elif x.mnemonic == 'jne' and flag and flag[1] == ('arg', 1):

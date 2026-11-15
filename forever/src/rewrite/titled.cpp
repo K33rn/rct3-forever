@@ -20,6 +20,8 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   8 the member at +off a reference to the empty handle (0x805750) linked (+8) first in that handle's list, 9 the same
 //   with the handle Handle::For (0x805700) gives for the constructor's argument number value (0: none);
 //   12 the mark (no parent: the title object's +4 = 1);
+//   52 the description (given, or the title object) named on its first use (+4 clear): Name::Assign (a name global, the
+//      member's place), NameTable::Set, the name let go; fn 1: a later name of the same run, under the first's decision;
 //   a new object: 18 value bytes of memory (0xBCDFC0), then only when there was memory: 21 name number off made from
 //   the C text at value (0x10 bytes of memory, WideString::Create; null without memory), 20 temporary number off made
 //   on the stack by fn, 10 the object built by fn; 22 stores at +off what fn returned (value 0) or the memory (1), null
@@ -118,6 +120,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     void *temp_made[16] = {}, *names[16] = {};
     bool temp_built[16] = {}, name_built[16] = {};
     uint8_t *memory = nullptr;
+    bool naming = false;
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
@@ -201,6 +204,18 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 12:
             if (!parent) (*(uint8_t **)TITLE)[4] = 1;
             break;
+        case 52: {   // the description (given, or the default) named on its first use: a name (Name::Assign with the global and the
+                     // member's place) set in its table (NameTable::Set), then let go; the first of a run decides for all
+            uint8_t *described = parent ? (uint8_t *)parent : *(uint8_t **)TITLE;
+            if (!op.fn) naming = !described[4];
+            if (naming) {
+                alignas(16) uint8_t name[0x40];
+                void *made = ((void *(__thiscall *)(void *, uintptr_t, uint32_t))0xbeca40)(name, op.value, op.off);
+                ((void(__thiscall *)(void *, void *))0xbecc10)(described, made);
+                ((void(__thiscall *)(void *))0xbec5e0)(name);
+            }
+            break;
+        }
         case 18:
             memory = (uint8_t *)memory_alloc(op.value);
             object = nullptr;
