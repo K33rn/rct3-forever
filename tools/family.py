@@ -49,7 +49,7 @@ def read(at):
     ins = []
     for x in md.disasm(bytes(img[at - BASE:at - BASE + sizes[at] + 16]), at):
         ins.append(x)
-        if x.address + x.size >= at + sizes[at] and x.mnemonic == 'ret':
+        if x.address + x.size >= at + sizes[at] and x.mnemonic in ('ret', 'jmp'):   # (a function can end by jumping on)
             break
     index = {x.address: k for k, x in enumerate(ins)}
     out = []
@@ -60,6 +60,8 @@ def read(at):
                 v = o.imm & 0xffffffff
                 if x.group(capstone.CS_GRP_JUMP) and v in index:
                     v = ('to', index[v])
+                elif x.group(capstone.CS_GRP_JUMP) and x.mnemonic == 'jmp' and k == len(ins) - 1:
+                    v = ('out', v)   # its last instruction jumping on (to the stack cookie check, say): the same place in every copy
                 elif x.group(capstone.CS_GRP_JUMP):
                     raise SystemExit(f'{at:#x}: a jump out of the function at {x.address:#x}')
                 ops.append(v)
