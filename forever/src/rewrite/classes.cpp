@@ -138,6 +138,15 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 17) class_hand(op.value, self, given);
         else if (op.kind == 20) class_resource(self + op.off, op.value, op.fn);
         else if (op.kind == 21) class_named_text(self, op.off, op.value, op.fn);
+        else if (op.kind == 22) {   // Random::Ran0's value (left on the FPU), times the game constant at value (if any), stored at off
+            uintptr_t fn = op.fn;
+            float *to = (float *)(self + op.off);
+            const float *by = (const float *)(uintptr_t)op.value;
+            if (by)
+                __asm__ volatile("call *%%eax\n\tfmuls (%%ebx)\n\tfstps (%%esi)" : "+a"(fn) : "b"(by), "S"(to) : "ecx", "edx", "memory", "st", "st(1)", "st(2)", "st(3)", "st(4)", "st(5)", "st(6)", "st(7)");
+            else
+                __asm__ volatile("call *%%eax\n\tfstps (%%esi)" : "+a"(fn) : "S"(to) : "ecx", "edx", "memory", "st", "st(1)", "st(2)", "st(3)", "st(4)", "st(5)", "st(6)", "st(7)");
+        }
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)

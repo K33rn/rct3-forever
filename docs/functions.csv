@@ -10893,7 +10893,7 @@ address,size,name,callers,status
 0x823fa0,105,Factory::Create,1,rewritten
 0x824010,113,BEHAVIOUR_CREATE,1,rewritten
 0x824090,30,DeletingDestructor,2,rewritten
-0x8240b0,290,,2,documented
+0x8240b0,290,Class::Construct,2,rewritten
 0x824220,280,,1,documented
 0x824370,102,Factory::Create,1,rewritten
 0x8243e0,110,BEHAVIOUR_CREATE,1,rewritten
@@ -18906,7 +18906,7 @@ address,size,name,callers,status
 0xb8cd40,120,OBJECT_CONSTRUCT,1,rewritten
 0xb8cdc0,48,ObjectArray::Free,2,rewritten
 0xb8cdf0,258,ObjectArray::SetCapacity,2,rewritten
-0xb8cf00,2569,,2,documented
+0xb8cf00,2569,Class::Construct,2,rewritten
 0xb8d930,57,,1,documented
 0xb8d9c0,520,,1,documented
 0xb8dbd0,613,,4,documented

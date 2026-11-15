@@ -791,6 +791,26 @@ def parse(a, n):
             regs['eax'] = ('made',)
             k = j + 4
             continue
+        elif s == 'call 0x475180' and not pushed:
+            # Random::Ran0's value (on the FPU), perhaps times a game constant, stored in a member as a float (kind 22): the
+            # fmul and the fstp taken out of the steps (nothing between them uses the FPU or calls)
+            j = k + 1
+            by = 0
+            if (m := re.fullmatch(r'fmul dword ptr \[(0x[0-9a-f]+)\]', t[j])):
+                by = num(m.group(1))
+                del t[j], ins[j]
+            q = j
+            while q < len(t) and not t[q].startswith('fstp'):
+                if t[q].startswith(('f', 'call')) or ins[q].mnemonic.startswith('j'):
+                    raise Reject('random value used otherwise')
+                q += 1
+            m = re.fullmatch(r'fstp dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', t[q]) if q < len(t) else None
+            if not m or not regs.get(m.group(1)) or regs[m.group(1)][0] != 'this' or written(m.group(1), t[j:q]):
+                raise Reject('random value stored where')
+            ops.append((22, regs[m.group(1)][1] + num(m.group(2) or '0'), by, 0x475180, []))
+            del t[q], ins[q]
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
         elif s == 'call 0xddcf99' and len(pushed) == 5:
             # the compiler's array constructor (eh_vector_constructor_iterator, stdcall): array, size, count, ctor, dtor
             ops.append((11, 0, 0, 0xddcf99, pushed[::-1]))
