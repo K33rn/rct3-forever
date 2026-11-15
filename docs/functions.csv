@@ -17230,7 +17230,7 @@ address,size,name,callers,status
 0xadfda0,105,Factory::Create,1,rewritten
 0xadfe10,177,,2,documented
 0xadfed0,139,,2,documented
-0xadff60,432,,2,documented
+0xadff60,432,Name::MakeObject,2,rewritten
 0xae0130,48,QueryInterface,0,rewritten
 0xae0480,1004,,3,documented
 0xae0890,235,,1,documented
@@ -17422,7 +17422,7 @@ address,size,name,callers,status
 0xaf6480,864,,3,documented
 0xaf67e0,1403,,1,documented
 0xaf6d60,1596,,2,documented
-0xaf73a0,432,,2,documented
+0xaf73a0,432,Name::MakeObject,2,rewritten
 0xaf7570,24,Tree::InitADA8B0,1,rewritten
 0xaf75d0,86,,0,documented
 0xaf7690,26,OwnedPointer::Reset,4,rewritten
