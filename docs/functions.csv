@@ -14307,9 +14307,9 @@ address,size,name,callers,status
 0x9ae410,1305,,4,documented
 0x9ae960,748,,5,documented
 0x9aec50,630,,1,documented
-0x9aeed0,367,,1,documented
-0x9af040,367,,1,documented
-0x9af1b0,367,,4,documented
+0x9aeed0,367,Object9AF::Refer,1,rewritten
+0x9af040,367,Object9AF::Refer,1,rewritten
+0x9af1b0,367,Object9AF::Refer,4,rewritten
 0x9af320,451,,1,documented
 0x9af4f0,4872,,1,documented
 0x9b0800,141,,2,documented
