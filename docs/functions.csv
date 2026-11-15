@@ -22744,7 +22744,7 @@ address,size,name,callers,status
 0xcc9050,70,,1,documented
 0xcc90f0,174,,1,documented
 0xcc91a0,239,,2,documented
-0xcc9290,586,,1,documented
+0xcc9290,586,Name::FindSorted,1,rewritten
 0xcc94e0,343,,1,documented
 0xcc9640,16,Object::AllocStore,2,rewritten
 0xcc96b0,6770,,2,documented
@@ -23164,7 +23164,7 @@ address,size,name,callers,status
 0xcef080,29,,2,documented
 0xcef0a0,27,,2,documented
 0xcef120,239,,2,documented
-0xcef210,586,,5,documented
+0xcef210,586,Name::FindSorted,5,rewritten
 0xcef460,426,,1,documented
 0xcef610,34,,2,documented
 0xcef6a0,36,OwnedPair::Free,4,rewritten
