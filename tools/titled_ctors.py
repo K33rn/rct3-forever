@@ -559,6 +559,8 @@ def tail(p):
             flag = ('ehbit', num(m.group(3)) << (8 if m.group(2) == 'h' else 0))
         elif (m := re.fullmatch(r'test ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) == ('eh',):
             flag = ('ehbit', num(m.group(2)))
+        elif (m := re.fullmatch(r'test byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)) and S.get(num(m.group(1)) - d) == ('eh',):
+            flag = ('ehbit', num(m.group(2)))   # (the bits as kept on the stack)
         elif (m := re.fullmatch(r'test ([abcd])([lh]), ([abcd])([lh])', s)) and m.group(1, 2) == m.group(3, 4) and val('e' + m.group(1) + 'x') == ('eh',):
             flag = ('ehsign',)   # the bookkeeping bit 0x80 or 0x8000, read through the sign (jns)
         elif (m := re.fullmatch(r'test ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):

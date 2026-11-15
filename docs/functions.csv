@@ -6280,7 +6280,7 @@ address,size,name,callers,status
 0x66c6f0,38,SharedBlock::Release,1,rewritten
 0x66c7a0,30,DeletingDestructor,2,rewritten
 0x66c7d0,605,Dialog::Label,16,rewritten
-0x66ca30,655,,1,documented
+0x66ca30,655,Window::Titled,1,rewritten
 0x66ccc0,30,DeletingDestructor,2,rewritten
 0x66cce0,280,,4,documented
 0x66ce00,613,,4,documented

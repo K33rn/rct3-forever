@@ -6026,6 +6026,7 @@ static std::vector<Test> tests() {
     Test titled_construct{0x41ce20,
                           [=](Rng &r) {
                               fresh(r);
+                              g_text_ref = nullptr;   // (left from an earlier copy, it could match a temporary's place by chance)
                               *arena<uint32_t>(ALLOC_NEXT) = 0;
                               for (uint32_t k = 0; k < 0x500; k += 4)   // the window's members: each points somewhere (16 places), so writes through them land
                                   arena<uint32_t>(0x100 + k)[0] = (uint32_t)(uintptr_t)arena<void>(0xc000 + k / 4 % 16 * 0x40);
