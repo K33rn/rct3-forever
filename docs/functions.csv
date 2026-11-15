@@ -1894,8 +1894,8 @@ address,size,name,callers,status
 0x4977e0,169,,1,documented
 0x497890,240,,6,documented
 0x497980,151,,1,documented
-0x497a20,411,,5,documented
-0x497bc0,411,,0,documented
+0x497a20,411,Save::ScanNumber,5,rewritten
+0x497bc0,411,Save::ScanNumber,0,rewritten
 0x497e70,27,GlobalCleanup,1,rewritten
 0x497f20,346,,1,documented
 0x498080,18,Constructor::BaseAndTable,0,rewritten
