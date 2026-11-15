@@ -8436,7 +8436,7 @@ address,size,name,callers,status
 0x730db0,976,,2,documented
 0x731220,172,,1,documented
 0x7312d0,151,Text::FromOwner7312D0,1,rewritten
-0x7313c0,228,,1,documented
+0x7313c0,228,Database::MissingDependency,1,rewritten
 0x7314b0,965,,1,documented
 0x731880,236,RefArray::Remove,1,rewritten
 0x731970,1035,,1,documented
@@ -8538,7 +8538,7 @@ address,size,name,callers,status
 0x739100,904,,2,documented
 0x739540,172,,1,documented
 0x7395f0,151,Text::FromOwner7312D0,1,rewritten
-0x7396e0,228,,1,documented
+0x7396e0,228,Database::MissingDependency,1,rewritten
 0x7397d0,755,,2,documented
 0x739ad0,236,RefArray::Remove,1,rewritten
 0x739bc0,1035,,1,documented
@@ -16974,7 +16974,7 @@ address,size,name,callers,status
 0xac2ed0,783,Class::Construct,2,rewritten
 0xac3270,172,,1,documented
 0xac3320,165,,1,documented
-0xac3420,228,,1,documented
+0xac3420,228,Database::MissingDependency,1,rewritten
 0xac3510,236,RefArray::Remove,1,rewritten
 0xac3600,1035,,1,documented
 0xac3a10,105,Factory::Create,1,rewritten
