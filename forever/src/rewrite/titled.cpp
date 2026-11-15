@@ -67,9 +67,10 @@ static void fpu_pass(const float *from, volatile uint32_t *to) {   // a float lo
     __asm__ volatile("flds %1\n\tfstps %0" : "=m"(*to) : "m"(*from));
 }
 // A value the base takes after (parent or title, text): a constant, or the constructor's argument number value.
-struct TitledExtra {
+struct TitledExtra {   // is_arg: 0 the value, 1 argument value, 2 a text reference made just before (titled_refs), 3 the start text's place
     uint32_t is_arg, value;
 };
+extern const uint32_t titled_refs[];
 
 static void *titled_call(uintptr_t fn, void *self, uint32_t count, const uint32_t *a) {
     switch (count) {
@@ -186,6 +187,14 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     void *made = nullptr;   // the copy of the title when there's no text
     bool copied = false;
     void *used;
+    void *start_name = nullptr;   // a text made from a literal first of all (its place given to the base; name 0 after)
+    bool has_start_name = false;
+    for (uint32_t i = 0; i < EXTRA_COUNT; i++)
+        if (EXTRAS[i].is_arg == 3) {
+            void *memory = memory_alloc(0x10);
+            start_name = memory ? ((void *(__thiscall *)(void *, const char *))0xbcf850)(memory, (const char *)(uintptr_t)EXTRAS[i].value) : nullptr;
+            has_start_name = true;
+        }
     if (text) {
         void *name;
         const char *title_name = *(const char **)(title + 8);
@@ -218,12 +227,24 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         copied = true;
     }
     uint32_t base_args[6] = {(uint32_t)(uintptr_t)(parent ? parent : *(void **)TITLE), (uint32_t)(uintptr_t)used};
-    for (uint32_t i = 0; i < EXTRA_COUNT; i++) base_args[2 + i] = EXTRAS[i].is_arg ? given[EXTRAS[i].value] : EXTRAS[i].value;
+    alignas(16) uint8_t reference[0x40];   // a text reference made just before the base (is_arg 2), destroyed just after
+    void *reference_made = nullptr;
+    for (uint32_t i = 0; i < EXTRA_COUNT; i++)
+        if (EXTRAS[i].is_arg == 2) {
+            const uint32_t *r = &titled_refs[3 * EXTRAS[i].value];
+            reference_made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x41cb90)(reference, r[0], r[1], r[2]);
+        }
+    for (uint32_t i = 0; i < EXTRA_COUNT; i++)
+        base_args[2 + i] = EXTRAS[i].is_arg == 1 ? given[EXTRAS[i].value]
+                           : EXTRAS[i].is_arg == 2 ? (uint32_t)(uintptr_t)reference_made
+                           : EXTRAS[i].is_arg == 3 ? (uint32_t)(uintptr_t)&start_name : EXTRAS[i].value;
     titled_call(BASE, self, 2 + EXTRA_COUNT, base_args);
+    if (reference_made) ((void(__thiscall *)(void *))0xbd1880)(reference);
     if (copied) titled_release(made);
     alignas(16) uint8_t temps[16][0x40];   // temporaries on the stack (texts made for a new object's constructor; titled_ctors.py keeps to 16)
     void *temp_made[16] = {}, *names[16] = {};
     bool temp_built[16] = {}, name_built[16] = {};
+    names[0] = start_name, name_built[0] = has_start_name;   // (the start text: name 0, let go by the steps)
     uint8_t *memory = nullptr;
     bool naming = false;
     uint32_t scratch[8] = {};

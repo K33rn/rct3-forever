@@ -14225,13 +14225,13 @@ address,size,name,callers,status
 0x9a5b90,30,DeletingDestructor,2,rewritten
 0x9a5bb0,30,DeletingDestructor,2,rewritten
 0x9a5c00,244,,1,documented
-0x9a5d00,687,,1,documented
+0x9a5d00,687,Window::Titled,1,rewritten
 0x9a5ff0,161,GameText::Copy,1,rewritten
 0x9a60a0,161,GameText::Copy,1,rewritten
 0x9a6150,161,GameText::Copy,1,rewritten
 0x9a6200,161,GameText::Copy,1,rewritten
 0x9a62b0,202,,2,documented
-0x9a63c0,685,,1,documented
+0x9a63c0,685,Window::Titled,1,rewritten
 0x9a66b0,30,DeletingDestructor,2,rewritten
 0x9a66d0,81,Destructor::MemberThenBaseNullSafe,1,rewritten
 0x9a6730,161,GameText::Copy,1,rewritten

@@ -109,7 +109,16 @@ def parse(a, n):
     if not re.fullmatch(r'0x[0-9a-f]+', base):
         raise Reject('base call ' + base)
     base = num(base)
-    if [c for k, c in calls if k < kb] != FRONT_CALLS:
+    front = [c for k, c in calls if k < kb]
+    # (two front additions: a text made from a literal first of all, its place given to the base (group "start text"),
+    # and a text reference made just before the base, given to it and destroyed just after)
+    start_text = front[:2] == ['0xbcdfc0', '0xbcf850'] and front[2:4] == ['0xbcdfc0', '0xbcf850']
+    if start_text:
+        front = front[2:]
+    ref_before = front[-1:] == ['0x41cb90']
+    if ref_before:
+        front = front[:-1]
+    if front != FRONT_CALLS:
         raise Reject('front calls')
     if f'push {SEPARATOR:#x}' not in t[:kb]:
         raise Reject('separator')
@@ -167,6 +176,14 @@ def parse(a, n):
         # the register's value as of instruction k: look back for its last write (past the copy call for the registers
         # a call keeps)
         for q in range(k - 1, -1 if s in ('ebx', 'esi', 'edi', 'ebp') else k41, -1):
+            if t[q].startswith('call ') and s in ('eax', 'ecx', 'edx'):
+                if t[q] == 'call 0x41cb90' and s == 'eax' and ref_before:
+                    return ('ref', q)   # the text reference made just before
+                return ('?', t[q])
+            if (m := re.fullmatch(r'lea ' + s + r', \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q])):
+                return ('place', num(m.group(1)) - depth_at[q])
+            if s in ('eax', 'ebx', 'ecx', 'edx') and re.match(r'\w+ ' + s[1] + r'[lh]\b', t[q]) and not t[q].startswith(('push ', 'cmp ', 'test ')):
+                return ('?', t[q])   # (a byte of it written: sete dl, mov al, ...)
             if (m := re.fullmatch(r'mov ' + s + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q])):
                 d = depth_at[q]
                 slot = num(m.group(1)) - d
@@ -197,8 +214,38 @@ def parse(a, n):
         elif x.mnemonic == 'call' and re.fullmatch(r'0x[0-9a-f]+', x.op_str):
             d -= 4 * (ret_args(num(x.op_str)) or 0)
     extras = [value_at(k) for k in pushes[2:]]
-    if any(v[0] not in ('const', 'arg') for v in extras):
+    front_name = None
+    if start_text:
+        # push 0x10; call 0xBCDFC0; ...; push LIT; mov ecx, eax; call 0xBCF850; jmp; xor eax, eax; mov [esp + N], eax
+        kt = [k for k, c in calls][1]
+        zl = re.fullmatch(r'push (0x[0-9a-f]+)', t[kt - 2]) if t[kt - 1] == 'mov ecx, eax' else None
+        zs = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax', t[kt + 3]) if t[kt + 2] == 'xor eax, eax' and t[kt + 1].startswith('jmp') else None
+        ka = [k for k, c in calls][0]
+        kp = max(q for q in range(ka) if t[q].startswith('push '))
+        if not zl or not zs or t[kp] != 'push 0x10' or any(not re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, u) for u in t[kp + 1:ka]):
+            raise Reject('start text')
+        front_name = (num(zl.group(1)), num(zs.group(1)) - depth_at[kt + 3])
+    ref = None
+    for i, v in enumerate(extras):
+        if v[0] == 'ref':
+            q = v[1]
+            zz = [re.fullmatch(r'push (0x[0-9a-f]+|\d+)', t[q - j]) for j in (4, 3, 2)]
+            zc = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q - 1])
+            if not all(zz) or not zc or ret_args(0x41cb90) != 3:
+                raise Reject('reference made with')
+            ref = (num(zz[2].group(1)), num(zz[1].group(1)), num(zz[0].group(1)), num(zc.group(1)) - depth_at[q - 1])
+            extras[i] = ('ref', 0)
+        elif v[0] == 'place' and front_name and v[1] == front_name[1]:
+            extras[i] = ('startname', front_name[0])
+    if any(v[0] not in ('const', 'arg', 'ref', 'startname') for v in extras) or ref_before != (ref is not None) or \
+            start_text != any(v[0] == 'startname' for v in extras):
         raise Reject('base extra %s' % (extras,))
+    if ref:
+        # just after the base: the reference destroyed (lea ecx, [esp + its place]; call 0xBD1880), then the copy's release
+        zd = [u for u in t[kb + 1:kb + 6] if not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', u)]
+        zl2 = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', zd[0])
+        if not zl2 or zd[1] != 'call 0xbd1880' or num(zl2.group(1)) - depth_at[t.index(zd[0], kb)] != ref[3] or not zd[2].startswith('test byte ptr'):
+            raise Reject('reference not destroyed after the base')
     # the first: ecx chosen from the parent (an argument) or the title global
     q = pushes[0]
     if t[q] != 'push ecx':
@@ -223,7 +270,7 @@ def parse(a, n):
     if value_at_reg(t, q + 1, t[q][5:], depth_at, nargs, 0) != ('arg', 2):
         raise Reject('text is not argument 2')
     base_this = value_at_reg(t, kb, 'ecx', depth_at, nargs, k41) if False else None
-    p = dict(nargs=nargs, base=base, extras=extras, title=title, kb=kb, ins=ins, t=t, depth_at=depth_at, at=at)
+    p = dict(nargs=nargs, base=base, extras=extras, title=title, kb=kb, ins=ins, t=t, depth_at=depth_at, at=at, ref=ref, front_name=front_name)
     p['ops'] = tail(p)
     return p
 
@@ -393,6 +440,10 @@ def tail(p):
     temps = {}          # stack slot -> temporary number
     built = set()       # temporaries and names made and not yet let go: ('temp', k) / ('name', k)
     nnames = 0
+    if p.get('front_name'):
+        S[p['front_name'][1]] = ('name', 0, None)   # (the text made first of all: name 0, made by the body)
+        built.add(('name', 0))
+        nnames = 1
     naligned = 0        # aligned blocks of memory made (the last one can be stored)
     flag = None         # what the flags were last set from
     k = start
@@ -507,7 +558,7 @@ def tail(p):
         L = []
         q = k0
         while len(L) < 14 and q < len(t):
-            if not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', t[q]):
+            if not re.fullmatch(r'mov (byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', t[q]):   # (the exception state)
                 L.append((q, t[q]))
             q += 1
         b = [u for _, u in L]
@@ -1588,6 +1639,7 @@ if __name__ == '__main__':
     reasons = collections.Counter(); rb = collections.Counter(); ok = 0; okb = 0
     out = ["// Window classes' constructors taken over by titled_construct (titled.cpp); written by tools/titled_ctors.py."]
     info, callees, temps_used, nullable = [], {}, set(), []
+    refs = []   # the text references made before a base: (key, table, flag)
     all_ops = {}
     edx_uses, plain_uses = set(), set()
     rect_uses, norect_uses = set(), set()   # the callees given a run's locals (the tester notes the 16 bytes there)   # the callees made with edx = the window, and those made without
@@ -1610,7 +1662,13 @@ if __name__ == '__main__':
             continue
         ok += 1; okb += n
         ex = p['extras']
-        out.append(f'static const TitledExtra titled_{a:x}_extras[] = {{' + (', '.join(f'{{{int(e[0] == "arg")}, {e[1]:#x}}}' for e in ex) or '{0, 0}') + '};')
+        # (is_arg 2: the text reference made just before the base, titled_refs at value; 3: the start text's place, value its literal)
+        def extra_code(e):
+            if e[0] == 'ref':
+                refs.append(p['ref'][:3])
+                return f'{{2, {len(refs) - 1:#x}}}'
+            return f'{{{ {"arg": 1, "const": 0, "startname": 3}[e[0]] }, {e[1]:#x}}}'
+        out.append(f'static const TitledExtra titled_{a:x}_extras[] = {{' + (', '.join(extra_code(e) for e in ex) or '{0, 0}') + '};')
         def op_text(o):
             kind, off, value, fn, args = o
             codes = []
@@ -1652,6 +1710,9 @@ if __name__ == '__main__':
     # (count | 0x100: always made with edx = the window, which the tester's stand-in notes too)
     # (| 0x200: given a run's locals, whose 16 bytes the tester's stand-in notes)
     out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c | (0x100 if fn in edx_uses and fn not in plain_uses else 0) | (0x200 if fn in rect_uses else 0):#x}, ' for fn, c in sorted(callees.items())) + '0};')
+    out.append('// the text references made just before a base (TitledExtra is_arg 2): key, table, flag')
+    out.append('extern const uint32_t titled_refs[];')
+    out.append('const uint32_t titled_refs[] = {' + ''.join(f'{x:#x}, {y:#x}, {z:#x}, ' for x, y, z in refs) + '0};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
     objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62})
