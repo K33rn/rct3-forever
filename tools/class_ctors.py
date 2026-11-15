@@ -47,6 +47,7 @@ def ret_args(fn):
     return None
 
 
+read_globals = set()   # the game globals the steps read as values: the tester gives each a value of the case's
 ref_setters = set()   # the member functions given a stack reference (kind 25): the tester stands in for them as for 0x560D20
 value_calls = set()   # the functions taking nothing whose value a member gets (kind 23): the tester stands in for them
 
@@ -1229,6 +1230,10 @@ for a, r in sorted(rows.items()):
     done += 1
     total += n
     for kind, o, v, fn, args in ops:
+        if kind == 5:
+            read_globals.add(v)   # (a member set to a global's value)
+        if kind in (3, 10, 11, 15):
+            read_globals.update(x[1] for x in args if isinstance(x, tuple) and x[0] == 'glob')
         if kind in (3, 10, 15):
             member_fns[fn] = len(args) - (kind == 15)
 out.append('// the stretches written by hand (step kind 17), by number')
@@ -1243,6 +1248,9 @@ out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x},
 out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
 out.append('extern const uint32_t class_ref_setters[];')
 out.append('const uint32_t class_ref_setters[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters)) + '0};')
+out.append("// the game globals the steps read as values: the tester gives each a value of the case's (before its own settings)")
+out.append('extern const uint32_t class_read_globals[];')
+out.append('const uint32_t class_read_globals[] = {' + ''.join(f'{g_:#x}, ' for g_ in sorted(read_globals)) + '0};')
 out.append('// the functions taking nothing whose value a member gets (kind 23): the tester stands in for each')
 out.append('extern const uint32_t class_value_calls[];')
 out.append('const uint32_t class_value_calls[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(value_calls)) + '0};')

@@ -523,7 +523,8 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
-extern const uint32_t class_bases[], class_value_calls[], class_ref_setters[];
+extern const uint32_t class_bases[], class_value_calls[], class_ref_setters[], class_read_globals[];
+static uint32_t g_class_read_saved[128];
 extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], titled_text_globals[], value_info[], record_info[];
 static uint32_t g_titled_text_saved[8], g_titled_read_saved[64];
 extern const uint32_t titled_read_globals[];
@@ -6309,6 +6310,11 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(CALL_LOG)[0] = 0;
                          },
                          [](void *fn) {
+                             for (int k = 0; class_read_globals[k] && k < 128; k++) {   // (the globals read as values: the case's, until the settings below)
+                                 g_class_read_saved[k] = *(volatile uint32_t *)(uintptr_t)class_read_globals[k];
+                                 const uint32_t v = arena<uint32_t>(0x10)[1] * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu;
+                                 *(volatile uint32_t *)(uintptr_t)class_read_globals[k] = v % 5 == 0 ? 0 : v;
+                             }
                              *(void **)g_class_description = arena<void>(0x4000);
                              for (int k = 0; k < 4; k++) ((uint32_t *)0x10f1cf8)[k] = arena<uint32_t>(0x8b10)[k];
                              *(uint32_t *)0x133a274 = arena<uint32_t>(0x8b20)[0];
@@ -6343,6 +6349,7 @@ static std::vector<Test> tests() {
                                  arena<uint32_t>(0x70)[0] = *(uint32_t *)g_class_instance - (uint32_t)(uintptr_t)arena<void>(0);
                              for (int i = 0; i < 4; i++)   // what the end left in them (a count goes up by one)
                                  if (g_class_tail_globals[i]) arena<uint32_t>(0x74)[i] = *(uint32_t *)g_class_tail_globals[i] - (uint32_t)(uintptr_t)arena<void>(0);
+                             for (int k = 0; class_read_globals[k] && k < 128; k++) *(volatile uint32_t *)(uintptr_t)class_read_globals[k] = g_class_read_saved[k];
                              return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
                          }};
     class_construct.prepare = [](const rewrite::Entry *e) {

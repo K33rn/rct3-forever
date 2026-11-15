@@ -873,6 +873,9 @@ extern const uint32_t class_member_fns[] = {0x413650, 1, 0x4179b0, 1, 0x435a40, 
 // the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20
 extern const uint32_t class_ref_setters[];
 const uint32_t class_ref_setters[] = {0x560d20, 0x59a5f0, 0x5a3350, 0xb32b60, 0};
+// the game globals the steps read as values: the tester gives each a value of the case's (before its own settings)
+extern const uint32_t class_read_globals[];
+const uint32_t class_read_globals[] = {0x10ec9e4, 0x10ec9e8, 0x10ec9f4, 0x10f0eb8, 0x10f0ebc, 0x10f1e98, 0x10f1e9c, 0x10f1ea0, 0x10f1ea4, 0x10f1ea8, 0x10f1eac, 0x10f1eb0, 0x10f24d8, 0x10f24e4, 0x10f24f0, 0x10f24f8, 0x10f2ea0, 0x10f2ea4, 0x10f2ea8, 0x10f2eb0, 0x10f2eb4, 0x10f2eb8, 0x1341b98, 0x1341b9c, 0x1341ba0, 0x1341ba4, 0x1341ba8, 0x1341bac, 0x1341bb0, 0x1341bb4, 0x13d29c0, 0x13d29c4, 0x13d29c8, 0};
 // the functions taking nothing whose value a member gets (kind 23): the tester stands in for each
 extern const uint32_t class_value_calls[];
 const uint32_t class_value_calls[] = {0xb0e190, 0};
