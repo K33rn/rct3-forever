@@ -17286,7 +17286,7 @@ address,size,name,callers,status
 0xae6460,556,,1,documented
 0xae6690,232,,1,documented
 0xae6780,651,,1,documented
-0xae6a10,580,,1,documented
+0xae6a10,580,Designer::BuildPanelWindow,1,rewritten
 0xae6ca0,30,DeletingDestructor,2,rewritten
 0xae6cc0,97,Destructor::DeleteMember,1,rewritten
 0xae6d40,179,,1,documented
@@ -17295,7 +17295,7 @@ address,size,name,callers,status
 0xae7690,246,Destructor::Steps,1,rewritten
 0xae77c0,230,StructArrayLoad,1,rewritten
 0xae78b0,102,Factory::Create,1,rewritten
-0xae7920,580,,1,documented
+0xae7920,580,Designer::BuildPanelWindow,1,rewritten
 0xae7bb0,30,DeletingDestructor,2,rewritten
 0xae7bd0,97,Destructor::DeleteMember,1,rewritten
 0xae7c50,157,,1,documented
