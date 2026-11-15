@@ -18060,9 +18060,9 @@ address,size,name,callers,status
 0xb38560,468,,3,documented
 0xb38740,726,,1,documented
 0xb38a30,1268,,1,documented
-0xb38f30,271,,1,documented
-0xb39040,271,,1,documented
-0xb39150,271,,1,documented
+0xb38f30,271,WildAnimal::Tick,1,rewritten
+0xb39040,271,WildAnimal::Tick,1,rewritten
+0xb39150,271,WildAnimal::Tick,1,rewritten
 0xb39260,372,,3,documented
 0xb393e0,2134,,4,documented
 0xb39c40,1130,,1,documented

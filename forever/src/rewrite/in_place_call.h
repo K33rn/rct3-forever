@@ -23,4 +23,16 @@ inline void reference_to(uint32_t *at, void *object) {
     at[3] = (uint32_t)(uintptr_t)head;
     head[0] = (uint32_t)(uintptr_t)&at[2];
 }
+// The same to nothing: the empty handle (0x805750).
+inline void reference_null(uint32_t *at) {
+    at[0] = 0xf26ae0;
+    at[4] = (uint32_t)(uintptr_t)at;
+    uint8_t *handle = ((uint8_t * (__cdecl *)())0x805750)();
+    at[1] = (uint32_t)(uintptr_t)handle;
+    uint32_t *head = *(uint32_t **)(handle + 0x20);
+    at[2] = head[0];
+    ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)&at[2];
+    at[3] = (uint32_t)(uintptr_t)head;
+    head[0] = (uint32_t)(uintptr_t)&at[2];
+}
 }   // namespace in_place
