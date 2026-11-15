@@ -6863,7 +6863,7 @@ address,size,name,callers,status
 0x6a41d0,83,,10,documented
 0x6a4240,30,DeletingDestructor,2,rewritten
 0x6a4260,383,,13,documented
-0x6a43e0,767,,30,documented
+0x6a43e0,767,Window::Titled,30,rewritten
 0x6a4700,48,QueryInterface,0,rewritten
 0x6a4760,173,MEMBER_DTOR,1,rewritten
 0x6a4820,260,,6,documented
@@ -14378,7 +14378,7 @@ address,size,name,callers,status
 0x9b9eb0,1720,,1,documented
 0x9ba570,1823,Window::Titled,1,rewritten
 0x9bac90,1417,Window::Titled,1,rewritten
-0x9bb220,1722,,1,documented
+0x9bb220,1722,Window::Titled,1,rewritten
 0x9bb8e0,261,,5,documented
 0x9bb9f0,148,,5,documented
 0x9bba90,30,DeletingDestructor,3,rewritten

@@ -1220,6 +1220,9 @@ def tail(p):
                     ops.append((7, off, 0, 0, []))
                 elif w[0] == 'obj' and w[1] == cur:
                     ops.append((22, off, 0 if w[2] == 'returned' else 1, 0, []))
+                    for r_ in list(R):   # (what holds it is now that member's value: read through as one)
+                        if R[r_] == w and size == 'dword' and off < 0x10000:
+                            R[r_] = ('field', off, len(ops))
                 elif w[0] == 'argderef' and w[2] == len(ops):
                     ops.append((29, off, w[1], 0, []))
                 elif still(w):
