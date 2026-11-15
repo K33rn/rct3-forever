@@ -101,10 +101,13 @@ def parse(a, n):
     k41 = next((k for k, c in calls if c == '0x41c740'), None)
     if k41 is None:
         raise Reject('no copy')
-    sel0 = next((k for k in range(k41, len(t)) if re.fullmatch(r'mov ecx, dword ptr \[(0x1[0-9a-f]{6})\]', t[k]) and ins[k - 1].mnemonic == 'jne'), None)
+    # (the parent or the title chosen into a register: ecx, or another the base is then given)
+    sel0 = next((k for k in range(k41, len(t)) if re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[k]) and ins[k - 1].mnemonic == 'jne'), None)
     if sel0 is None:
         raise Reject('parent or title')
-    kb = next(k for k, c in calls if k > sel0)
+    sel_reg = re.match(r'mov (\w+),', t[sel0]).group(1)
+    kb = next(k for k, c in calls if k > sel0 and c != '0x41cb90')
+
     base = t[kb][5:]
     if not re.fullmatch(r'0x[0-9a-f]+', base):
         raise Reject('base call ' + base)
@@ -213,6 +216,25 @@ def parse(a, n):
             d -= num(m.group(1))
         elif x.mnemonic == 'call' and re.fullmatch(r'0x[0-9a-f]+', x.op_str):
             d -= 4 * (ret_args(num(x.op_str)) or 0)
+    if sel_reg != 'ecx':
+        # the base made on the window: the register ecx was kept in at the start, put back just before it, unchanged since
+        # (or read back from where the window was kept on the stack)
+        km = next((q for q in range(min(24, len(t))) if re.fullmatch(r'mov ' + REG + ', ecx', t[q])), None)
+        keep = t[km][4:7] if km is not None else None
+        kc = kb - 1   # (the exception state's stores passed over)
+        while re.fullmatch(r'mov (byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', t[kc]):
+            kc -= 1
+        saved = {num(z.group(1)) - depth_at[q] for q in range(km or 0, kc) if keep and
+                 (z := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + keep, t[q]))}
+        def rewrites(q):
+            u = t[q]
+            if u.startswith('pop ' + keep):
+                return True
+            if (z := re.fullmatch(r'mov ' + keep + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)) and num(z.group(1)) - depth_at[q] in saved:
+                return False
+            return bool(re.match(r'(?!push|cmp|test)\w+ ' + keep + r'\b', u))
+        if not keep or t[kc] != 'mov ecx, ' + keep or any(rewrites(q) for q in range(km + 1, kc)):
+            raise Reject('base not on the window')
     extras = [value_at(k) for k in pushes[2:]]
     front_name = None
     if start_text:
@@ -244,21 +266,30 @@ def parse(a, n):
         # just after the base: the reference destroyed (lea ecx, [esp + its place]; call 0xBD1880), then the copy's release
         zd = [u for u in t[kb + 1:kb + 6] if not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', u)]
         zl2 = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', zd[0])
-        if not zl2 or zd[1] != 'call 0xbd1880' or num(zl2.group(1)) - depth_at[t.index(zd[0], kb)] != ref[3] or not zd[2].startswith('test byte ptr'):
+        if not zl2 or zd[1] != 'call 0xbd1880' or num(zl2.group(1)) - depth_at[t.index(zd[0], kb)] != ref[3] or \
+                not (zd[2].startswith('test byte ptr') or re.fullmatch(r'mov al, byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', zd[2])):
             raise Reject('reference not destroyed after the base')
     # the first: ecx chosen from the parent (an argument) or the title global
     q = pushes[0]
-    if t[q] != 'push ecx':
+    if t[q] != 'push ' + sel_reg:
         raise Reject('base parent push ' + t[q])
-    sel = [k for k in range(k41, kb) if re.fullmatch(r'mov ecx, dword ptr \[(0x1[0-9a-f]{6})\]', t[k])]
+    sel = [k for k in range(k41, kb) if re.fullmatch(r'mov ' + sel_reg + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[k])]
     if len(sel) != 1 or ins[sel[0] - 1].mnemonic not in ('jne',):
         raise Reject('parent or title')
-    title = num(t[sel[0]][len('mov ecx, dword ptr ['):-1])
-    parent = value_at_reg(t, sel[0] - 1, 'ecx', depth_at, nargs, k41)   # what ecx holds when it isn't null
+    if sel_reg != 'ecx' and any(re.match(r'(?!push|cmp|test)\w+ ' + sel_reg + r'\b', u) or
+                                (sel_reg in ('eax', 'ebx', 'ecx', 'edx') and re.match(r'\w+ ' + sel_reg[1] + r'[lh]\b', u))
+                                for u in t[sel[0] + 1:pushes[0]]):
+        raise Reject('parent register written before the base')
+    title = num(t[sel[0]][len('mov ' + sel_reg + ', dword ptr ['):-1])
+    parent = value_at_reg(t, sel[0] - 1, sel_reg, depth_at, nargs, k41)   # what it holds when it isn't null
     if parent != ('arg', 1):
         raise Reject('parent is %s' % (parent,))
     if t[pushes[1]] != 'push eax':
-        raise Reject('text push')
+        # the text kept in another register: eax moved into it right after the copy, and nothing writing it since
+        rt = t[pushes[1]][5:]
+        if rt not in ('ebx', 'esi', 'edi', 'ebp') or t[k41 + 1] != f'mov {rt}, eax' or \
+                any(re.match(r'(?!push|cmp|test)\w+ ' + rt + r'\b', u) for u in t[k41 + 2:pushes[1]]):
+            raise Reject('text push')
     # the text given: what's pushed for WideString::AssignWide (0x403BB0) is argument 2
     k3 = next(k for k, c in calls if c == '0x403bb0')
     q = k3 - 1

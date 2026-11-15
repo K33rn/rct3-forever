@@ -13776,7 +13776,7 @@ address,size,name,callers,status
 0x97e200,285,,2,documented
 0x97e320,30,DeletingDestructor,3,rewritten
 0x97e520,4657,,1,documented
-0x97f7c0,630,,1,documented
+0x97f7c0,630,Window::Titled,1,rewritten
 0x97fa40,1163,,1,documented
 0x980030,143,Destructor::FiveTablesTwoMembers,1,rewritten
 0x980120,26,OwnedPointer::Reset,2,rewritten
@@ -13787,7 +13787,7 @@ address,size,name,callers,status
 0x980600,161,GameText::Copy,1,rewritten
 0x9806b0,2240,,1,documented
 0x980f70,30,DeletingDestructor,2,rewritten
-0x980f90,683,,1,documented
+0x980f90,683,Window::Titled,1,rewritten
 0x9812b0,48,QueryInterface,0,rewritten
 0x9812f0,84,,9,documented
 0x981350,75,,9,documented
