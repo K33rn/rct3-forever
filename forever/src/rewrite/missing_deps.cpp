@@ -5,12 +5,15 @@
 //   - The message printed with the game's sprintf into 1 KB (no values), made a wide text (0x10 new bytes,
 //     WideString from C; none without memory) and given to the report (0xC211C0: fastcall, the data and the text,
 //     then 3); the text let go.
+// CIDDatabaseEntry::MissingDependency (0xA2C7B0) is the same without the check: it reports "Missing dependency for
+// Carriedtem" (sic) about its +0x7C whether or not it has data. Its row is written here.
 // (The game's stack cookie check guards only its own frame.)
 #include "rewrite.h"
 
 namespace {
 struct MissingDep {
     uint32_t at, data, message;
+    bool checked = true;
 };
 #define MISSING_DEPS(at, data, message, ...) {at, data, message},
 constexpr MissingDep missing_deps[] = {
@@ -27,7 +30,7 @@ typedef void(__cdecl *Free)(void *);
 volatile long g_missing_deps;
 void missing_dep(uint8_t *self, const MissingDep &kind) {
     g_missing_deps++;
-    if (!*(void *volatile *)(self + kind.data)) return;
+    if (kind.checked && !*(void *volatile *)(self + kind.data)) return;
     char message[0x400];
     ((int(__cdecl *)(char *, const char *, ...))0xddcdb5)(message, (const char *)(uintptr_t)kind.message);
     void *memory = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(0x10);
@@ -42,9 +45,13 @@ void missing_dep(uint8_t *self, const MissingDep &kind) {
 }
 
 template <int K> void __fastcall missing_dep_copy(uint8_t *self) { missing_dep(self, missing_deps[K]); }
+constexpr MissingDep carried_item = {0xa2c7b0, 0x7c, 0xf89320, false};
+const uint8_t carried_item_first[] = {0x6a, 0xff, 0x68, 0x39, 0xc7, 0xe7, 0x00};
+void __fastcall missing_dep_carried(uint8_t *self) { missing_dep(self, carried_item); }
 }   // namespace
 // (the addresses again, as numbers, checked against the table)
 static_assert(missing_deps[0].at == 0x7313c0 && missing_deps[1].at == 0x7396e0 && missing_deps[2].at == 0xac3420, "missing_deps.inc changed");
 REWRITE("Database::MissingDependency", 0x7313c0, missing_deps_first[0], (&missing_dep_copy<0>), &g_missing_deps);
 REWRITE("Database::MissingDependency", 0x7396e0, missing_deps_first[1], (&missing_dep_copy<1>), &g_missing_deps);
 REWRITE("Database::MissingDependency", 0xac3420, missing_deps_first[2], (&missing_dep_copy<2>), &g_missing_deps);
+REWRITE("Database::MissingDependency", 0xa2c7b0, carried_item_first, &missing_dep_carried, &g_missing_deps);

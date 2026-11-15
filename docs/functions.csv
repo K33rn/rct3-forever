@@ -15603,7 +15603,7 @@ address,size,name,callers,status
 0xa2c410,364,,0,documented
 0xa2c580,213,,10,documented
 0xa2c660,335,,2,documented
-0xa2c7b0,211,,1,documented
+0xa2c7b0,211,Database::MissingDependency,1,rewritten
 0xa2c8e0,162,Text::FromA2C8E0,1,rewritten
 0xa2c990,421,CarriedItem::GetOrMake,1,rewritten
 0xa2cb40,421,CarriedItem::GetOrMake,2,rewritten

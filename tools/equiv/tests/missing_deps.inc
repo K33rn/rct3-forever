@@ -1,5 +1,5 @@
 // Database::MissingDependency (forever/src/rewrite/missing_deps.cpp). The entry at arena 0x100 with data or none (at
-// +0x80 and +0x8C); sprintf a stand-in (the game's needs its C library set up) noting what it prints; the report notes
+// +0x7C, +0x80 and +0x8C); sprintf a stand-in (the game's needs its C library set up) noting what it prints; the report notes
 // the data and the text; memory never fails (the game lets the text go unchecked).
 #if EQUIV_PART == 1
 static void *__cdecl md_alloc(uint32_t size) { dev_note(340, size); return dev_take(size); }
@@ -22,7 +22,7 @@ static void __fastcall md_report(void *data, uint32_t **text, uint32_t level) { 
                       [=](Rng &r) {
                           fresh(r);
                           arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0x2000;
-                          for (uint32_t at : {0x80u, 0x8cu}) *(uint32_t *)(arena<uint8_t>(0x100) + at) = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x300 + at) : 0;
+                          for (uint32_t at : {0x7cu, 0x80u, 0x8cu}) *(uint32_t *)(arena<uint8_t>(0x100) + at) = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x300 + at) : 0;
                       },
                       [](void *fn) {
                           ((void(__fastcall *)(void *))fn)(arena<void>(0x100));
