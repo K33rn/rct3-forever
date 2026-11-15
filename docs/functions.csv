@@ -4807,8 +4807,8 @@ address,size,name,callers,status
 0x5c6560,162,ObjectRef::CallWith,1,rewritten
 0x5c6610,1643,,3,documented
 0x5c6c80,428,,3,documented
-0x5c6e30,456,,32,documented
-0x5c7000,456,,4,documented
+0x5c6e30,456,TrackedRide::Interface,32,rewritten
+0x5c7000,456,TrackedRide::Interface,4,rewritten
 0x5c71d0,162,ObjectRef::CallWith,2,rewritten
 0x5c7280,288,,2,documented
 0x5c73c0,105,Factory::Create,1,rewritten
