@@ -604,6 +604,9 @@ def tail(p):
             if end_ is None:
                 raise Reject('guarded')
             body = [u for u in t[k + 1:end_] if not re.fullmatch(r'and ' + REG + r', 0x[0-9a-f]+|mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, u)]
+            # (the bits kept on the stack are read too, to clear the one guarding this)
+            body = [u for u in body if not ((z_ := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)) and
+                                            S.get(num(z_.group(2)) - d) == ('eh',))]
             z = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', body[0]) if body else None
             z2 = re.fullmatch(r'call (0x[0-9a-f]+)', body[1]) if len(body) == 2 else None
             if z and z2:
