@@ -481,13 +481,13 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58) or o[0] == 10 and o[3] == 0xbcf850 or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65) or o[0] == 10 and o[3] == 0xbcf850 or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
         if isinstance(v, int):
             return (0, v)
-        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8}[v[0]], v[1]
+        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10}[v[0]], v[1]
 
     nb_used = set()
     nb_eax = ['keep']
@@ -1377,6 +1377,9 @@ def tail(p):
             pushed.append(('field', val(m.group(1))[1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'scratch':
             pushed.append(('scratch', val(m.group(1))[1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'fieldplus' and still(('field',) + val(m.group(1))[1:3]) and \
+                val(m.group(1))[1] < 0x10000 and val(m.group(1))[3] < 0x10000:
+            pushed.append(('fieldplace', val(m.group(1))[1] | val(m.group(1))[3] << 16)); d += 4   # a place inside what a member points to
         elif (m := re.fullmatch(r'push ' + REG, s)) and (sc := take_result(val(m.group(1)))):
             for r in list(R):
                 if R[r] == val(m.group(1)) and r != m.group(1):
@@ -1716,7 +1719,7 @@ if __name__ == '__main__':
                 if isinstance(v, int):
                     codes.append((0, v))
                 else:
-                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9}[v[0]], v[1]))
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10}[v[0]], v[1]))
             kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')

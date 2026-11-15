@@ -1792,7 +1792,7 @@ address,size,name,callers,status
 0x490a60,518,,2,documented
 0x490d20,230,StructArrayLoad,1,rewritten
 0x490e10,102,Factory::Create,1,rewritten
-0x490e80,687,,1,documented
+0x490e80,687,Window::Titled,1,rewritten
 0x491140,118,Singleton::Get,199,rewritten
 0x491260,289,,0,documented
 0x491390,48,QueryInterface,6,rewritten
@@ -6583,7 +6583,7 @@ address,size,name,callers,status
 0x686c40,18,Destructor::TablesThenBase,1,rewritten
 0x686c70,855,,1,documented
 0x686fd0,257,Destructor::Steps,1,rewritten
-0x687100,555,,1,documented
+0x687100,555,Window::Titled,1,rewritten
 0x687350,120,Destructor::Steps,1,rewritten
 0x6873d0,175,,3,documented
 0x687480,479,Window::Construct,1,rewritten
@@ -7661,7 +7661,7 @@ address,size,name,callers,status
 0x6e4ba0,303,Objectives::LabelledNumber,1,rewritten
 0x6e4cd0,610,,1,documented
 0x6e4f40,151,WideText::CopyOf(this),2,rewritten
-0x6e4fe0,638,,1,documented
+0x6e4fe0,638,Window::Titled,1,rewritten
 0x6e5260,368,ObjectiveCondition::Name,1,rewritten
 0x6e53d0,388,,1,documented
 0x6e5560,106,Factory::IntoField,1,rewritten

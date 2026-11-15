@@ -267,6 +267,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             case 7: args[i] = scratch[v]; break;
             case 8: args[i] = *(uint32_t *)((uint8_t *)temp_made[v & 0xff] + (v >> 8)); break;
             case 9: args[i] = (uint32_t)(uintptr_t)&loc[v]; break;
+            case 10: args[i] = *(uint32_t *)(self + (v & 0xffff)) + (v >> 16); break;   // a place inside what a member points to
             default: args[i] = *(uint32_t *)(self + v); break;
             }
         }
