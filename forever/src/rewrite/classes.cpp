@@ -204,7 +204,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
                         uint8_t *memory = (uint8_t *)memory_alloc(field.size);
                         if (memory) {
                             call_with(field.ctor, memory, field.count, field.args);
-                            *(uint32_t *)memory = field.table;
+                            if (field.table) *(uint32_t *)memory = field.table;   // (none when the record's constructor sets its own)
                         }
                         records[k] = memory;
                         uint8_t *list = fields_of + 0x1c;

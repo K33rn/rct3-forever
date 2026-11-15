@@ -17722,7 +17722,7 @@ address,size,name,callers,status
 0xb18aa0,830,,2,documented
 0xb18de0,78,Record::Fields,2,rewritten
 0xb18e70,206,,0,documented
-0xb18f40,436,,2,documented
+0xb18f40,436,Class::Construct,2,rewritten
 0xb19110,92,Paired::Destroy8CDCD0,1,rewritten
 0xb19170,753,,1,documented
 0xb19470,82,,1,documented
@@ -17858,7 +17858,7 @@ address,size,name,callers,status
 0xb24d70,650,Class::Construct,2,rewritten
 0xb25060,30,DeletingDestructor,2,rewritten
 0xb25080,79,Destructor::MemberThenBase,1,rewritten
-0xb250d0,2703,,2,documented
+0xb250d0,2703,Class::Construct,2,rewritten
 0xb25b60,30,DeletingDestructor,2,rewritten
 0xb25b80,105,Factory::Create,1,rewritten
 0xb25bf0,105,Factory::Create,1,rewritten
@@ -17901,7 +17901,7 @@ address,size,name,callers,status
 0xb2d6b0,61,Reference::Reference,0,rewritten
 0xb2d700,67,Reference::Reference(object),0,rewritten
 0xb2d750,212,ReferenceField::Load,1,rewritten
-0xb2d830,503,,2,documented
+0xb2d830,503,Class::Construct,2,rewritten
 0xb2da30,30,DeletingDestructor,2,rewritten
 0xb2da50,973,,1,documented
 0xb2de20,1362,,1,documented

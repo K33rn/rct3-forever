@@ -73,6 +73,36 @@ def leaves_ecx(fn):
     return False
 
 
+def returns_this(fn):
+    # whether a function's first ret gives back what it got in ecx (mov eax, ecx, directly or through a register kept since)
+    holds = {'ecx'}
+    for x in md.disasm(bytes(img[fn - BASE:fn - BASE + 0x400]), fn):
+        s = x.mnemonic + ' ' + x.op_str
+        if x.mnemonic == 'ret':
+            return 'eax' in holds
+        if x.mnemonic.startswith('j') or x.mnemonic == 'call':
+            if x.mnemonic == 'call':
+                holds -= {'eax', 'ecx', 'edx'}
+            if x.mnemonic.startswith('j') and x.mnemonic != 'jmp':
+                continue
+            if x.mnemonic == 'jmp':
+                return False
+        m = re.fullmatch(r'mov (e[a-d]x|e[sd]i|ebp|ebx), (e[a-d]x|e[sd]i|ebp|ebx)', s)
+        if m:
+            if m.group(2) in holds: holds.add(m.group(1))
+            else: holds.discard(m.group(1))
+            continue
+        if x.mnemonic == 'push':
+            continue
+        if x.mnemonic == 'pop' and x.op_str in holds:
+            holds.discard(x.op_str)
+            continue
+        w = re.match(r'(mov|lea|xor|or|and|add|sub|inc|dec|neg|not|shl|shr|sar|imul|movzx|movsx|pop) (e[a-d]x|e[sd]i|ebp|ebx)\b', s)
+        if w:
+            holds.discard(w.group(2))
+    return False
+
+
 def written(r, lines):
     """Whether any of these instructions may change register r (a call changes eax, ecx and edx)."""
     low = {'eax': 'al', 'ebx': 'bl', 'ecx': 'cl', 'edx': 'dl'}.get(r)
@@ -168,7 +198,8 @@ def walk_fields(ins, t, k0, regs0):
             f = pushed.pop() if pushed else None
             depth -= 4
             lst = regs.get('ecx')
-            if not f or f[0] != 'new' or f[1] != len(made) - 1 or f[1] in field_entry or made[f[1]][3] is None or nulls:
+            if not f or f[0] != 'new' or f[1] != len(made) - 1 or f[1] in field_entry or made[f[1]][1] is None or nulls or \
+                    made[f[1]][3] is None and made[f[1]][1] == 0x8088c0:
                 raise Reject('field add')
             if lst == ('L', 0x1c):
                 parent = -1
@@ -178,7 +209,7 @@ def walk_fields(ins, t, k0, regs0):
                 raise Reject('field list %s' % (lst,))
             size, ctor, args, table = made[f[1]]
             field_entry[f[1]] = len(entries)
-            entries.append((size, ctor, table, args, parent))
+            entries.append((size, ctor, table or 0, args, parent))
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
         elif (m := re.fullmatch(r'call dword ptr \[(e[a-d]x)\]', s)) and strict:
@@ -202,6 +233,8 @@ def walk_fields(ins, t, k0, regs0):
             depth -= 4 * n
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
+            if strict and returns_this(num(m.group(1))):
+                regs['eax'] = ('new', len(made) - 1)   # (a constructor that gives back the record)
         elif s.startswith('call'):
             if strict:
                 raise Reject('field call: ' + s)
@@ -258,7 +291,7 @@ def walk_fields(ins, t, k0, regs0):
                 depth -= 4
                 size, ctor, args, table = made[f[1]]
                 field_entry[f[1]] = len(entries)
-                entries.append((size, ctor, table, args, field_entry[tested[1]]))
+                entries.append((size, ctor, table or 0, args, field_entry[tested[1]]))
                 for r in ('eax', 'ecx', 'edx'):
                     regs.pop(r, None)
                 k += 6
@@ -277,7 +310,7 @@ def walk_fields(ins, t, k0, regs0):
                     raise Reject('field two adds kept')
                 size, ctor, args, table = made[f[1]]
                 field_entry[f[1]] = len(entries)
-                entries.append((size, ctor, table, args, field_entry[tested[1]]))
+                entries.append((size, ctor, table or 0, args, field_entry[tested[1]]))
                 for r in ('eax', 'ecx', 'edx'):
                     regs.pop(r, None)
                 regs[mx.group(1)] = tested
@@ -297,7 +330,7 @@ def walk_fields(ins, t, k0, regs0):
                 raise Reject('field two adds list')
             size, ctor, args, table = made[f[1]]
             field_entry[f[1]] = len(entries)
-            entries.append((size, ctor, table, args, field_entry[tested[1]]))
+            entries.append((size, ctor, table or 0, args, field_entry[tested[1]]))
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
             regs[mb.group(1)] = ('L', 0x1c)
