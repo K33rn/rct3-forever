@@ -659,7 +659,7 @@ address,size,name,callers,status
 0x430010,185,,6,documented
 0x4300f0,49,,2,documented
 0x4301e0,220,QuadTree::QuadTree,2,rewritten
-0x4303c0,351,,2,documented
+0x4303c0,351,Pool::GrowFields,2,rewritten
 0x430520,356,QuadTree::Node::Add,2,rewritten
 0x430690,223,Array::Resize430690,1,rewritten
 0x430770,358,QuadTree::UpdateBounds,3,rewritten
@@ -929,7 +929,7 @@ address,size,name,callers,status
 0x449a00,30,,2,documented
 0x449a20,30,,1,documented
 0x449a40,17,,2,documented
-0x449aa0,362,,2,documented
+0x449aa0,362,Pool::GrowFields,2,rewritten
 0x449ea0,577,,2,documented
 0x44a0f0,38,SharedBlock::Release,2,rewritten
 0x44a120,214,,5,documented
@@ -2021,7 +2021,7 @@ address,size,name,callers,status
 0x49e0f0,98,Factory::GlobalWith,1,rewritten
 0x49e1d0,36,OwnedPair::Free,1,rewritten
 0x49e300,46,,1,documented
-0x49e3b0,319,,2,documented
+0x49e3b0,319,Pool::GrowFields,2,rewritten
 0x49e530,275,,2,documented
 0x49e670,1372,,1,documented
 0x49ebd0,49,,1,documented
@@ -15033,7 +15033,7 @@ address,size,name,callers,status
 0x9f79c0,43,,1,documented
 0x9f79f0,1074,,1,documented
 0x9f7e30,350,,1,documented
-0x9f7fc0,365,,2,documented
+0x9f7fc0,365,Pool::GrowFields,2,rewritten
 0x9f8130,320,,1,documented
 0x9f8270,30,DeletingDestructor,1,rewritten
 0x9f8290,48,,2,documented
@@ -15114,7 +15114,7 @@ address,size,name,callers,status
 0x9fccf0,72,,4,documented
 0x9fcd40,91,,1,documented
 0x9fcda0,4905,,2,documented
-0x9fe100,353,,2,documented
+0x9fe100,353,Pool::GrowFields,2,rewritten
 0x9fe270,30,DeletingDestructor,1,rewritten
 0x9fe2a0,109,,14,documented
 0x9fe380,468,,1,documented
@@ -15129,7 +15129,7 @@ address,size,name,callers,status
 0x9ffb70,32,Member::Into495BF0,4,rewritten
 0x9ffb90,152,Destructor::Steps,1,rewritten
 0x9ffcd0,354,,1,documented
-0x9ffe70,380,,1,documented
+0x9ffe70,380,Pool::GrowFields,1,rewritten
 0x9ffff0,634,,1,documented
 0xa00270,30,DeletingDestructor,1,rewritten
 0xa002d0,1082,,2,documented
@@ -18530,7 +18530,7 @@ address,size,name,callers,status
 0xb6cf60,141,,1,documented
 0xb6cff0,107,,1,documented
 0xb6d090,220,QuadTree::QuadTree,1,rewritten
-0xb6d270,298,,2,documented
+0xb6d270,298,Pool::GrowFields,2,rewritten
 0xb6d3a0,356,QuadTree::Node::Add,2,rewritten
 0xb6d510,358,QuadTree::UpdateBounds,6,rewritten
 0xb6d680,245,,0,documented

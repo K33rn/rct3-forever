@@ -1425,7 +1425,11 @@ REWRITE("Level::Value", 0x846740, level_original<0x846740>, (&level_value<2, 0x1
 // ones copied over (as plain data, or through COPY(dst, src) when given), the free list kept with the new items added to its
 // end, the old blocks freed (COPY is __thiscall, the source on the stack). Nothing happens unless n is more than the capacity ------------------------------------------
 static volatile long g_pool_grows;
-template <uint32_t SIZE, uint32_t CTOR, uint32_t COPY> static void __thiscall pool_grow(uint8_t *self, int32_t n) {
+struct PoolField {   // a field an item's copy takes: where, and 1 or 4 bytes
+    uint16_t at, width;
+};
+template <uint32_t SIZE, uint32_t CTOR, uint32_t COPY, const PoolField *FIELDS = nullptr, uint32_t FIELD_COUNT = 0>
+static void __thiscall pool_grow(uint8_t *self, int32_t n) {
     g_pool_grows++;
     int32_t *capacity = (int32_t *)(self + 0xc);
     if (n <= *capacity) return;
@@ -1439,6 +1443,11 @@ template <uint32_t SIZE, uint32_t CTOR, uint32_t COPY> static void __thiscall po
     for (int32_t i = 0; i < *capacity; i++) {
         uint8_t *to = *(uint8_t **)self + (uint32_t)i * SIZE, *from = old_items + (uint32_t)i * SIZE;
         if (COPY) ((void(__thiscall *)(void *, void *))COPY)(to, from);
+        else if (FIELD_COUNT)
+            for (uint32_t f = 0; f < FIELD_COUNT; f++) {
+                if (FIELDS[f].width == 1) to[FIELDS[f].at] = from[FIELDS[f].at];
+                else *(uint32_t *)(to + FIELDS[f].at) = *(uint32_t *)(from + FIELDS[f].at);
+            }
         else for (uint32_t k = 0; k < SIZE; k += 4) *(uint32_t *)(to + k) = *(uint32_t *)(from + k);
     }
     int32_t free_count = *capacity - *(int32_t *)(self + 8);
@@ -1463,6 +1472,22 @@ REWRITE("Pool::Grow8FFA60", 0x94e380, pool_grow_original, (&pool_grow<0x60, 0x94
 REWRITE("Pool::GrowCopied", 0x94e250, pool_grow_original, (&pool_grow<0xd0, 0x94c9c0, 0x94d850>), &g_pool_grows);
 REWRITE("Pool::GrowCopied", 0x964bc0, pool_grow_original, (&pool_grow<0x1018, 0x963f00, 0x9648f0>), &g_pool_grows);
 REWRITE("Pool::GrowCopied", 0x9f98a0, pool_grow_original, (&pool_grow<0x90, 0x9f8400, 0x9f89b0>), &g_pool_grows);
+// (the same, copying only some fields of each item: written into the copy here, as the game reads them)
+static constexpr PoolField fields_9f7fc0[] = {{0, 1}, {0x10, 4}, {0x14, 4}, {0x18, 4}, {0x20, 4}, {0x24, 4}, {0x28, 4}, {0x2c, 4}, {0x30, 4}, {0x34, 4}};
+static constexpr PoolField fields_9fe100[] = {{0, 1}, {1, 1}, {4, 4}, {8, 4}, {0xc, 1}, {0x10, 4}, {0x14, 4}, {0x18, 4}, {0x20, 4}, {0x24, 4}, {0x28, 4}};
+static constexpr PoolField fields_449aa0[] = {{0, 4}, {0x10, 4}, {0x14, 4}, {0x18, 4}, {0x20, 1}, {0x21, 1}, {0x24, 4}, {0x28, 4}, {0x2c, 4}, {0x30, 4}, {0x34, 4}};
+static constexpr PoolField fields_49e3b0[] = {{0, 1}, {0x10, 4}, {0x14, 4}, {0x18, 4}, {0x20, 4}};
+static constexpr PoolField fields_4303c0[] = {{0, 4}, {4, 4}, {8, 4}, {0x10, 4}, {0x14, 4}, {0x18, 4}, {0x20, 4}, {0x24, 4}, {0x28, 1}, {0x2c, 4}};
+static constexpr PoolField fields_9ffe70[] = {{0, 1}, {0x10, 4}, {0x14, 4}, {0x18, 4}, {0x20, 4}, {0x24, 4}, {0x28, 4}, {0x30, 4}, {0x34, 4}, {0x38, 4}, {0x3c, 4}, {0x40, 4}};
+#define POOL_FIELDS(a) fields_##a, sizeof fields_##a / sizeof fields_##a[0]
+REWRITE("Pool::GrowFields", 0x9f7fc0, pool_grow_original, (&pool_grow<0x40, 0x9f7330, 0, POOL_FIELDS(9f7fc0)>), &g_pool_grows);
+REWRITE("Pool::GrowFields", 0x9fe100, pool_grow_original, (&pool_grow<0x30, 0x9fb9f0, 0, POOL_FIELDS(9fe100)>), &g_pool_grows);
+REWRITE("Pool::GrowFields", 0x449aa0, pool_grow_original, (&pool_grow<0x40, 0x449070, 0, POOL_FIELDS(449aa0)>), &g_pool_grows);
+REWRITE("Pool::GrowFields", 0x49e3b0, pool_grow_original, (&pool_grow<0x30, 0x49e180, 0, POOL_FIELDS(49e3b0)>), &g_pool_grows);
+REWRITE("Pool::GrowFields", 0x4303c0, pool_grow_original, (&pool_grow<0x30, 0x42f210, 0, POOL_FIELDS(4303c0)>), &g_pool_grows);
+REWRITE("Pool::GrowFields", 0x9ffe70, pool_grow_original, (&pool_grow<0x50, 0x9ff7a0, 0, POOL_FIELDS(9ffe70)>), &g_pool_grows);
+#undef POOL_FIELDS
+REWRITE("Pool::GrowFields", 0xb6d270, pool_grow_original, (&pool_grow<0xc, 0xb6b4c0, 0>), &g_pool_grows);   // (every field)
 
 // ---- Small destructors (their exception frames only clean up after C++ exceptions, so they are left out) -----------------
 static volatile long g_solo_dtors;
