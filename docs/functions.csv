@@ -7544,7 +7544,7 @@ address,size,name,callers,status
 0x6da930,371,,2,documented
 0x6daae0,30,DeletingDestructor,2,rewritten
 0x6dab10,30,DeletingDestructor,2,rewritten
-0x6dab30,180,,1,documented
+0x6dab30,180,Window::PlacePart,1,rewritten
 0x6dabf0,269,,2,documented
 0x6dad40,30,DeletingDestructor,2,rewritten
 0x6dad70,275,MEMBER_DTOR,1,rewritten
@@ -7555,7 +7555,7 @@ address,size,name,callers,status
 0x6db3a0,159,GuiPart::Make,1,rewritten
 0x6db440,30,DeletingDestructor,2,rewritten
 0x6db4e0,30,DeletingDestructor,2,rewritten
-0x6db500,180,,1,documented
+0x6db500,180,Window::PlacePart,1,rewritten
 0x6db5c0,308,,2,documented
 0x6db740,73,,0,documented
 0x6db790,53,,1,documented
@@ -7575,7 +7575,7 @@ address,size,name,callers,status
 0x6dbf20,30,DeletingDestructor,2,rewritten
 0x6dbf50,136,,1,documented
 0x6dbff0,30,DeletingDestructor,2,rewritten
-0x6dc010,180,,1,documented
+0x6dc010,180,Window::PlacePart,1,rewritten
 0x6dc1e0,30,DeletingDestructor,1,rewritten
 0x6dc430,368,ObjectiveCondition::Name,2,rewritten
 0x6dc5a0,544,,1,documented
