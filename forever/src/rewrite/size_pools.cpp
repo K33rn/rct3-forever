@@ -14,6 +14,7 @@
 namespace {
 struct SizePools {
     uint32_t at, resize;
+    uint32_t unit = 4;   // (an item is n of these bytes)
 };
 #define SIZE_POOLS(at, resize, ...) {at, resize},
 constexpr SizePools size_pools[] = {
@@ -50,7 +51,7 @@ uint8_t *take(uint32_t *self, int32_t n, const SizePools &kind) {
             have = 1;
         }
         if (have <= n) {
-            const int32_t per = (int32_t)(0x1000u / ((uint32_t)n * 4));
+            const int32_t per = (int32_t)(0x1000u / ((uint32_t)n * kind.unit));
             for (int32_t i = have; i <= n; i++) {
                 Pool *p = *(Pool **)self + i;
                 p->per_block = per;
@@ -70,8 +71,8 @@ uint8_t *take(uint32_t *self, int32_t n, const SizePools &kind) {
         free_aligned(p->free);
         p->free = (uint8_t **)alloc_aligned((uint32_t)p->per_block * (uint32_t)blocks * 4);   // (wrapping as the game's does)
         for (int32_t b = blocks - 1; b >= p->block_count; b--) {
-            p->blocks[b] = (uint8_t *)alloc_aligned((uint32_t)p->per_block * (uint32_t)n * 4);
-            for (int32_t k = p->per_block - 1; k >= 0; k--) p->free[p->free_count++] = p->blocks[b] + (uint32_t)k * (uint32_t)n * 4;
+            p->blocks[b] = (uint8_t *)alloc_aligned((uint32_t)p->per_block * (uint32_t)n * kind.unit);
+            for (int32_t k = p->per_block - 1; k >= 0; k--) p->free[p->free_count++] = p->blocks[b] + (uint32_t)k * (uint32_t)n * kind.unit;
         }
         p->block_count = blocks;
     }
@@ -79,8 +80,12 @@ uint8_t *take(uint32_t *self, int32_t n, const SizePools &kind) {
 }
 
 template <int K> uint8_t *__thiscall take_copy(uint32_t *self, int32_t n) { return take(self, n, size_pools[K]); }
+constexpr SizePools pools_16 = {0xce76b0, 0xce7040, 16};   // List::FindCE76B0: items of n 16-byte units (row written here)
+const uint8_t pools_16_first[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0x5c, 0x24};
+uint8_t *__thiscall take_16(uint32_t *self, int32_t n) { return take(self, n, pools_16); }
 }   // namespace
 // (the addresses again, as numbers, checked against the table)
 static_assert(size_pools[0].at == 0x87bcb0 && size_pools[1].at == 0x909c10, "size_pools.inc changed");
 REWRITE("SizePools::Take", 0x87bcb0, size_pools_first[0], (&take_copy<0>), &g_size_pools);
 REWRITE("SizePools::Take", 0x909c10, size_pools_first[1], (&take_copy<1>), &g_size_pools);
+REWRITE("SizePools::Take", 0xce76b0, pools_16_first, &take_16, &g_size_pools);

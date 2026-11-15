@@ -23058,7 +23058,7 @@ address,size,name,callers,status
 0xce7570,58,Vector::FreePair,1,rewritten
 0xce75e0,16,Object::SetFields,1,rewritten
 0xce75f0,180,Table20::Free,1,rewritten
-0xce76b0,428,,2,documented
+0xce76b0,428,SizePools::Take,2,rewritten
 0xce7860,126,BlockPool::Return,2,rewritten
 0xce78e0,310,ObjectArray::Grow,3,rewritten
 0xce7a50,52,,1,documented
