@@ -107,12 +107,15 @@ static void *call_with(uintptr_t fn, void *self, uint32_t count, const uint32_t 
 static volatile long g_class_constructs;
 // given[1..7]: the constructor's arguments, the description first. The base gets the next two, or (PAIR) the two values
 // the second one points to. TAIL: what it does with the object at the end, if anything.
-template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT, const ClassName *NAMES, uint32_t NAME_COUNT, bool PAIR, const ClassTail *TAIL, uintptr_t BASE>
+template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT, const ClassName *NAMES, uint32_t NAME_COUNT, bool PAIR, const ClassTail *TAIL, uintptr_t BASE, uint32_t BASE_N, uint32_t BASE_X>
 static void *class_construct_body(uint8_t *self, const uint32_t *given) {
     g_class_constructs++;
     uint8_t *description = (uint8_t *)(uintptr_t)given[1];
     uint32_t a = PAIR ? ((const uint32_t *)(uintptr_t)given[2])[0] : given[2], b = PAIR ? ((const uint32_t *)(uintptr_t)given[2])[1] : given[3];
-    ((void(__thiscall *)(void *, void *, uint32_t, uint32_t))BASE)(self, description ? description : *(uint8_t **)DESCRIPTION, a, b);   // (Class::Construct, or a parent class's constructor)
+    if (BASE_N == 4)   // (a parent class's constructor taking one more value, a constant)
+        ((void(__thiscall *)(void *, void *, uint32_t, uint32_t, uint32_t))BASE)(self, description ? description : *(uint8_t **)DESCRIPTION, a, b, BASE_X >> 31 ? given[BASE_X & 0xff] : BASE_X);
+    else
+        ((void(__thiscall *)(void *, void *, uint32_t, uint32_t))BASE)(self, description ? description : *(uint8_t **)DESCRIPTION, a, b);   // (Class::Construct, or a parent class's constructor)
     uint32_t k = 0;
     for (int pass = 0; pass < 2; pass++) {
     for (; k < OP_COUNT; k++) {
@@ -211,40 +214,40 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
 }
 // The constructors take the description and one to six more arguments (thiscall: the callee pops them).
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80, uint32_t BASE_N = 3, uint32_t BASE_X = 0>
 static void *__thiscall class_construct2(uint8_t *self, uint32_t d, uint32_t a) {
     const uint32_t given[8] = {0, d, a};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE, BASE_N, BASE_X>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80, uint32_t BASE_N = 3, uint32_t BASE_X = 0>
 static void *__thiscall class_construct(uint8_t *self, uint32_t d, uint32_t a, uint32_t b) {
     const uint32_t given[8] = {0, d, a, b};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE, BASE_N, BASE_X>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80, uint32_t BASE_N = 3, uint32_t BASE_X = 0>
 static void *__thiscall class_construct4(uint8_t *self, uint32_t d, uint32_t a, uint32_t b, uint32_t c) {
     const uint32_t given[8] = {0, d, a, b, c};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE, BASE_N, BASE_X>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80, uint32_t BASE_N = 3, uint32_t BASE_X = 0>
 static void *__thiscall class_construct5(uint8_t *self, uint32_t d, uint32_t a, uint32_t b, uint32_t c, uint32_t e) {
     const uint32_t given[8] = {0, d, a, b, c, e};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE, BASE_N, BASE_X>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80, uint32_t BASE_N = 3, uint32_t BASE_X = 0>
 static void *__thiscall class_construct6(uint8_t *self, uint32_t d, uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f) {
     const uint32_t given[8] = {0, d, a, b, c, e, f};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE, BASE_N, BASE_X>(self, given);
 }
 template <uintptr_t DESCRIPTION, uintptr_t INDEX, const ClassOp *OPS, uint32_t OP_COUNT, const ClassField *FIELDS, uint32_t FIELD_COUNT,
-          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80>
+          const ClassName *NAMES = nullptr, uint32_t NAME_COUNT = 0, bool PAIR = false, const ClassTail *TAIL = nullptr, uintptr_t BASE = 0x800a80, uint32_t BASE_N = 3, uint32_t BASE_X = 0>
 static void *__thiscall class_construct7(uint8_t *self, uint32_t d, uint32_t a, uint32_t b, uint32_t c, uint32_t e, uint32_t f, uint32_t g) {
     const uint32_t given[8] = {0, d, a, b, c, e, f, g};
-    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE>(self, given);
+    return class_construct_body<DESCRIPTION, INDEX, OPS, OP_COUNT, FIELDS, FIELD_COUNT, NAMES, NAME_COUNT, PAIR, TAIL, BASE, BASE_N, BASE_X>(self, given);
 }
 // ---- the last lines of a few constructors, by hand ---------------------------------------------------------------------
 // Person::Person (0x7DF320): the person's firework entry found in the shared lighting object's list (0x425920 makes the

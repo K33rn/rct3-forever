@@ -41,7 +41,7 @@ num = lambda s: int(s, 0)
 
 def ret_args(fn):
     """How many dwords a function takes off the stack (its first ret)."""
-    for x in md.disasm(bytes(img[fn - BASE:fn - BASE + 0x2000]), fn):
+    for x in md.disasm(bytes(img[fn - BASE:fn - BASE + 0x8000]), fn):   # (long enough for the largest constructors)
         if x.mnemonic == 'ret':
             return num(x.op_str) // 4 if x.op_str else 0
     return None
@@ -461,7 +461,7 @@ def parse(a, n):
     t = [x.mnemonic + ' ' + x.op_str for x in ins]
     # the base: the first call, taking (description, a, b): Class::Construct (0x800A80) or a parent class's constructor
     kb = [k for k, x in enumerate(t) if x.startswith('call ')]
-    if not kb or not re.fullmatch(r'call 0x[0-9a-f]+', t[kb[0]]) or ret_args(num(t[kb[0]][5:])) != 3:
+    if not kb or not re.fullmatch(r'call 0x[0-9a-f]+', t[kb[0]]) or ret_args(num(t[kb[0]][5:])) not in (3, 4):
         raise Reject('base')
     kb = kb[0]
     base_fn = num(t[kb][5:])
@@ -516,8 +516,15 @@ def parse(a, n):
         else:
             raise Reject('start: ' + s)
         after_jne = ins[k].mnemonic == 'jne'
-    base = [p for p in pushed[-3:]][::-1]
-    if desc is None or len(pushed) < 3 or base not in ([('desc',), ('arg', 2), ('arg', 3)], [('desc',), ('arg2at', 0), ('arg2at', 4)]):
+    base_n = ret_args(base_fn)   # (3; or 4, the fourth a constant)
+    base = [p for p in pushed[-base_n:]][::-1]
+    base_x = 0
+    if base_n == 4:
+        if len(base) != 4 or not base[3] or base[3][0] not in ('const', 'arg') or base[3][0] == 'arg' and not 4 <= base[3][1] <= nargs:
+            raise Reject('base fourth value %s' % (base[3:],))
+        base_x = base[3][1] if base[3][0] == 'const' else 0x80000000 | base[3][1]   # (bit 31: the constructor's argument n)
+        base = base[:3]
+    if desc is None or len(pushed) < base_n or base not in ([('desc',), ('arg', 2), ('arg', 3)], [('desc',), ('arg2at', 0), ('arg2at', 4)]):
         raise Reject('base arguments %s' % pushed[-3:])
     pair = base[1][0] == 'arg2at'
     if regs.get('ecx') != ('this', 0):
@@ -525,7 +532,7 @@ def parse(a, n):
     # the members: up to the description's first-use check
     for r in ('eax', 'ecx', 'edx'):
         regs.pop(r, None)
-    depth -= 4 * len(pushed[-3:])
+    depth -= 4 * len(pushed[-base_n:])
     pushed = []
     ops = []
     pending = None   # a member made with new, until it is stored
@@ -1001,7 +1008,7 @@ def parse(a, n):
     if a in HAND_AFTER and not after:
         raise Reject('hand-written end not found')
     tail_of = (instance, link, count, after) if (instance or link or count or after) else None
-    return desc, index, ops, fields, names, nargs, pair, tail_of, base_fn
+    return desc, index, ops, fields, names, nargs, pair, tail_of, base_fn, base_n, base_x
 
 
 out = ['// Saved classes\' constructors taken over by class_construct (classes.cpp); written by tools/class_ctors.py.']
@@ -1018,7 +1025,7 @@ for a, r in sorted(rows.items()):
     if '0x800a80' not in calls_ and not ('0x8087e0' in calls_ and re.fullmatch(r'0x[0-9a-f]+', calls_[0])):
         continue
     try:
-        desc, index, ops, fields, names, nargs, pair, tail_of, base_fn = parse(a, n)
+        desc, index, ops, fields, names, nargs, pair, tail_of, base_fn, base_n, base_x = parse(a, n)
     except (Reject, StopIteration, AttributeError, ValueError) as e:
         key = str(e)[:70]
         if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e, '(near %#x)' % AT[0])
@@ -1043,8 +1050,8 @@ for a, r in sorted(rows.items()):
             tail = (tail or ', nullptr, 0') + ', false'
         if '_tail' not in tail:
             tail += ', nullptr'
-        tail += f', {base_fn:#x}'
-        bases.append((a, base_fn))
+        tail += f', {base_fn:#x}' + (f', 4, {base_x:#x}' if base_n == 4 else '')
+        bases.append((a, base_fn, base_n))
     out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{nargs if nargs != 3 else ""}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{tail}>), &g_class_constructs);')
     done += 1
     total += n
@@ -1062,7 +1069,7 @@ out.append('// the functions the steps call on members and new objects, each wit
 out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x}, {c}' for fn, c in sorted(member_fns.items())) + ', 0};')
 out.append("// the constructors built on a parent class's constructor, and that base (the tester stands in for it)")
 out.append('extern const uint32_t class_bases[];')
-out.append('const uint32_t class_bases[] = {' + ''.join(f'{a_:#x}, {b_:#x}, ' for a_, b_ in bases) + '0};')
+out.append('const uint32_t class_bases[] = {' + ''.join(f'{a_:#x}, {b_:#x}, {n_}, ' for a_, b_, n_ in bases) + '0};')
 open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
 print(done, 'constructors,', total, 'bytes; not taken:', sum(reasons.values()), 'constructors,', sum(reason_bytes.values()), 'bytes')
 for key, size in sorted(reason_bytes.items(), key=lambda kv: -kv[1])[:int(os.environ.get('TOP', '14'))]:
