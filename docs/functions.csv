@@ -575,8 +575,8 @@ address,size,name,callers,status
 0x42bd90,42,Chain::Delete,3,rewritten
 0x42bdc0,42,Chain::Delete,3,rewritten
 0x42bf10,35,,1,documented
-0x42bf40,162,,2,documented
-0x42bff0,162,,1,documented
+0x42bf40,162,Items::Next,2,rewritten
+0x42bff0,162,Items::Next,1,rewritten
 0x42c0c0,40,,1,documented
 0x42c1e0,35,Chain::Free42C1E0,1,rewritten
 0x42c210,35,Chain::Free42C1E0,1,rewritten
@@ -13448,8 +13448,8 @@ address,size,name,callers,status
 0x9653a0,9,,1,documented
 0x9653c0,89,,10,documented
 0x965420,30,DeletingDestructor,0,rewritten
-0x965440,162,,2,documented
-0x9654f0,162,,1,documented
+0x965440,162,Items::Next,2,rewritten
+0x9654f0,162,Items::Next,1,rewritten
 0x9655a0,39,Global::Delete,1,rewritten
 0x9655d0,9,Object::SetFields,8,rewritten
 0x9655e0,7,SetTable,16,rewritten
