@@ -22492,8 +22492,8 @@ address,size,name,callers,status
 0xcbbd70,85,Scanner::FlushC09740,2,rewritten
 0xcbbdd0,26,,11,documented
 0xcbbe20,108,,3,documented
-0xcbbe90,675,,2,documented
-0xcbc140,675,,23,documented
+0xcbbe90,675,ShaderLexer::Message,2,rewritten
+0xcbc140,675,ShaderLexer::Message,23,rewritten
 0xcbc490,83,,2,documented
 0xcbc4f0,76,Prime::After,2,rewritten
 0xcbc580,11,,2,documented
