@@ -2505,9 +2505,9 @@ address,size,name,callers,status
 0x4ca030,116,,1,documented
 0x4ca0b0,628,,1,documented
 0x4ca3a0,148,Viewer::Dtor4CA3A0,1,rewritten
-0x4ca440,210,,1,documented
-0x4ca520,210,,1,documented
-0x4ca600,210,,0,documented
+0x4ca440,210,Shop::MakeItem,1,rewritten
+0x4ca520,210,Shop::MakeItem,1,rewritten
+0x4ca600,210,Shop::MakeItem,0,rewritten
 0x4ca6e0,404,,1,documented
 0x4ca880,30,DeletingDestructor,2,rewritten
 0x4ca8c0,9,,10,documented
@@ -3031,11 +3031,11 @@ address,size,name,callers,status
 0x5027b0,30,DeletingDestructor,2,rewritten
 0x5027d0,1864,,4,documented
 0x5036d0,386,,4,documented
-0x503860,208,,8,documented
+0x503860,208,Ride::WindowText,8,rewritten
 0x503930,191,Labelled::Refresh503930,10,rewritten
 0x5039f0,191,Labelled::Refresh503930,8,rewritten
-0x503ab0,208,,7,documented
-0x503b80,208,,11,documented
+0x503ab0,208,Ride::WindowText,7,rewritten
+0x503b80,208,Ride::WindowText,11,rewritten
 0x503c90,114,WideText::CopyOf,9,rewritten
 0x503d10,498,Window::Construct,1,rewritten
 0x503f30,30,DeletingDestructor,2,rewritten
