@@ -24,6 +24,12 @@ OUT = os.path.join(HERE, 'forever', 'src', 'rewrite', 'titled_list.inc')
 mine = set()
 if os.path.exists(OUT):
     mine = {int(x, 16) for x in re.findall(r'^REWRITE\("[^"]+", (0x[0-9a-f]+)', open(OUT).read(), re.M)}
+# the rewritten functions no other rewrite file takes: (were) this list's, so read again even when a run left one out of it
+_others = set()
+for _f in os.listdir(os.path.join(HERE, 'forever', 'src', 'rewrite')):
+    if _f != os.path.basename(OUT) and _f.endswith(('.cpp', '.inc')):
+        _others |= {int(x, 16) for x in re.findall(r'(?:REWRITE\("[^"]+",|^[A-Z_0-9]+\()\s*(0x[0-9a-fA-F]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', _f), encoding='utf-8').read(), re.M)}
+mine |= {a for a, r in rows.items() if r['status'] == 'rewritten' and a not in _others}
 SEPARATOR = 0xf2738c
 
 
