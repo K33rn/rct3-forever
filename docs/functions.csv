@@ -19368,7 +19368,7 @@ address,size,name,callers,status
 0xbb3e20,39,,2,documented
 0xbb3e50,19,,4,documented
 0xbb3e70,24,BRANCH_OFF,244,rewritten
-0xbb3e90,467,,0,documented
+0xbb3e90,467,Names::FromTextInline,0,rewritten
 0xbb40e0,111,Values::Map,2,rewritten
 0xbb4190,47,,9,documented
 0xbb41c0,20,,1,documented
@@ -19507,7 +19507,7 @@ address,size,name,callers,status
 0xbbf8a0,145,Values::Map,1,rewritten
 0xbbf9b0,52,,1,documented
 0xbbf9f0,39,Kind::Lookup5BD960,1,rewritten
-0xbbfa30,467,,0,documented
+0xbbfa30,467,Names::FromTextInline,0,rewritten
 0xbbfc20,433,Names::FromText,0,rewritten
 0xbbfde0,447,,0,documented
 0xbbffa0,1,,1,documented
