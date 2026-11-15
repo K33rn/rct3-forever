@@ -694,7 +694,7 @@ address,size,name,callers,status
 0x434020,26,OwnedPointer::Reset,0,rewritten
 0x434050,26,OwnedPointer::Reset,2,rewritten
 0x434070,3823,,2,documented
-0x4350b0,133,,1,documented
+0x4350b0,133,Array::Remake967360,1,rewritten
 0x435140,76,,1,documented
 0x435190,30,DeletingDestructor,0,rewritten
 0x4351b0,1054,,2,documented
@@ -12523,7 +12523,7 @@ address,size,name,callers,status
 0x8e30c0,160,,1,documented
 0x8e3190,26,OwnedPointer::Reset,2,rewritten
 0x8e31e0,88,Block::Destroy86F7B0,1,rewritten
-0x8e3250,132,,4,documented
+0x8e3250,132,Array::Remake967360,4,rewritten
 0x8e32e0,141,,1,documented
 0x8e3370,30,DeletingDestructor,1,rewritten
 0x8e33b0,469,,1,documented

@@ -1771,6 +1771,8 @@ template <uint32_t SIZE, uint32_t MAKE> static uint32_t __thiscall w2d_remake(ui
 }
 REWRITE("Array::Remake967360", 0x967360, w2c_seh_late, (&w2d_remake<0x18, 0x966ea0>), &g_w2d_remake);
 REWRITE("Array::Remake967360", 0xafd320, w2c_seh_late, (&w2d_remake<0x30, 0xaf9f20>), &g_w2d_remake);
+REWRITE("Array::Remake967360", 0x4350b0, w2c_seh_late, (&w2d_remake<0x50, 0x434040>), &g_w2d_remake);   // (its size made with lea x5, shl 4)
+REWRITE("Array::Remake967360", 0x8e3250, w2c_seh_late, (&w2d_remake<6, 0x8e3020>), &g_w2d_remake);      // (lea x3, shl 1)
 
 // ---- Release::Five: lets go of the five parts held at O1, 0xf0, 0xf4, O4 and O5 (the first three by FA, the last two by FB) -----------------------
 static volatile long g_w2d_release_five;
