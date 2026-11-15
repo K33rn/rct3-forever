@@ -186,11 +186,11 @@ __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t 
 
 static volatile long g_titled_constructs;
 // given[1..]: the constructor's arguments, (parent, text, ...)
-template <uintptr_t TITLE, uintptr_t BASE, const TitledExtra *EXTRAS, uint32_t EXTRA_COUNT, const TitledOp *OPS, uint32_t COUNT>
+template <uintptr_t TITLE, uintptr_t BASE, const TitledExtra *EXTRAS, uint32_t EXTRA_COUNT, const TitledOp *OPS, uint32_t COUNT, uint32_t PARENT, uint32_t TEXT>
 static void *titled_body(uint8_t *self, const uint32_t *given) {
     g_titled_constructs++;
-    void *parent = (void *)(uintptr_t)given[1];
-    void **text = (void **)(uintptr_t)given[2];
+    void *parent = (void *)(uintptr_t)given[PARENT];   // (the parent's and the text's arguments: the first two, or others)
+    void **text = (void **)(uintptr_t)given[TEXT];
     uint8_t *title = *(uint8_t **)TITLE;
     void *made = nullptr;   // the copy of the title when there's no text
     bool copied = false;
@@ -451,10 +451,10 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
 }
 // The constructors take (parent, text) and up to five more values.
 #define TITLED_ENTRY(N, PARAMS, GIVEN)                                                                                        \
-    template <uintptr_t TITLE, uintptr_t BASE, const TitledExtra *EXTRAS, uint32_t EXTRA_COUNT, const TitledOp *OPS, uint32_t COUNT> \
+    template <uintptr_t TITLE, uintptr_t BASE, const TitledExtra *EXTRAS, uint32_t EXTRA_COUNT, const TitledOp *OPS, uint32_t COUNT, uint32_t PARENT = 1, uint32_t TEXT = 2> \
     static void *__thiscall titled_construct##N PARAMS {                                                                       \
         const uint32_t given[] = GIVEN;                                                                                        \
-        return titled_body<TITLE, BASE, EXTRAS, EXTRA_COUNT, OPS, COUNT>(self, given);                                         \
+        return titled_body<TITLE, BASE, EXTRAS, EXTRA_COUNT, OPS, COUNT, PARENT, TEXT>(self, given);                           \
     }
 #define COMMA ,
 TITLED_ENTRY(2, (uint8_t * self, uint32_t a, uint32_t b), {0 COMMA a COMMA b})

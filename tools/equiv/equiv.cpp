@@ -537,7 +537,7 @@ static void *__thiscall stub_text_for_child(void **self, void **name, void *wind
     return self;
 }
 static uintptr_t g_titled_title;
-static uint32_t g_titled_args, g_titled_nullable;
+static uint32_t g_titled_args, g_titled_nullable, g_titled_parent = 1, g_titled_text = 2;
 static uint32_t g_window_args;   // 2 or 3, from the copy's ret
 // saved classes' constructors: the base, members' and fields' constructors (by how many values they take), the field
 // list's add, the description's name step and the object info
@@ -6176,6 +6176,11 @@ static std::vector<Test> tests() {
                               *(void **)g_titled_title = arena<void>(0x8000);
                               g_null_handle = arena<void>(0x700);
                               uint32_t *a = arena<uint32_t>(0x10);
+                              if (g_titled_parent != 1 || g_titled_text != 2) {   // (the parent and the text in the copy's own arguments; blocks elsewhere)
+                                  const uint32_t parent = a[0], text = a[1], blocks[5] = {a[2], a[3], a[4], a[5], a[6]};
+                                  for (uint32_t k = 1, b = 0; k <= 7; k++)
+                                      a[k - 1] = k == g_titled_parent ? parent : k == g_titled_text ? text : blocks[b++ % 5];
+                              }
                               for (int k = 2; k < 7; k++)
                                   if (g_titled_nullable >> k & 1 && (arena<uint32_t>(0x4c)[0] >> (3 * k)) % 3 == 0) a[k - 1] = 0;
                               void *self = arena<void>(0x100), *made;
@@ -6213,8 +6218,11 @@ static std::vector<Test> tests() {
         static void *const built[8] = {(void *)stub_built0, (void *)stub_built1, (void *)stub_built2, (void *)stub_built3, (void *)stub_built4, (void *)stub_built5,
                                        (void *)stub_built6, (void *)stub_built7};
         uint32_t base = 0, base_args = 2;
-        for (int k = 0; titled_info[k]; k += 5)
-            if (titled_info[k] == e->at) g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4];
+        g_titled_parent = 1, g_titled_text = 2;
+        for (int k = 0; titled_info[k]; k += 7)
+            if (titled_info[k] == e->at)
+                g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4],
+                g_titled_parent = titled_info[k + 5], g_titled_text = titled_info[k + 6];
         g_titled_nullable = 0;
         for (int k = 0; titled_nullable[k]; k += 2)
             if (titled_nullable[k] == e->at) g_titled_nullable = titled_nullable[k + 1];

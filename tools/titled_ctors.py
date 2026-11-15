@@ -282,8 +282,9 @@ def parse(a, n):
         raise Reject('parent register written before the base')
     title = num(t[sel[0]][len('mov ' + sel_reg + ', dword ptr ['):-1])
     parent = value_at_reg(t, sel[0] - 1, sel_reg, depth_at, nargs, k41)   # what it holds when it isn't null
-    if parent != ('arg', 1):
+    if not parent or parent[0] != 'arg' or not 1 <= parent[1] <= min(nargs, 7):
         raise Reject('parent is %s' % (parent,))
+    parent_arg = parent[1]   # (the parent's argument: the first, or another)
     if t[pushes[1]] != 'push eax':
         # the text kept in another register: eax moved into it right after the copy, and nothing writing it since
         rt = t[pushes[1]][5:]
@@ -298,10 +299,13 @@ def parse(a, n):
     q -= 1
     while not t[q].startswith('push '):
         q -= 1
-    if value_at_reg(t, q + 1, t[q][5:], depth_at, nargs, 0) != ('arg', 2):
-        raise Reject('text is not argument 2')
+    text_v = value_at_reg(t, q + 1, t[q][5:], depth_at, nargs, 0)
+    if not text_v or text_v[0] != 'arg' or text_v[1] == parent_arg or not 1 <= text_v[1] <= min(nargs, 7):
+        raise Reject('text is %s' % (text_v,))
+    text_arg = text_v[1]
     base_this = value_at_reg(t, kb, 'ecx', depth_at, nargs, k41) if False else None
-    p = dict(nargs=nargs, base=base, extras=extras, title=title, kb=kb, ins=ins, t=t, depth_at=depth_at, at=at, ref=ref, front_name=front_name)
+    p = dict(nargs=nargs, base=base, extras=extras, title=title, kb=kb, ins=ins, t=t, depth_at=depth_at, at=at, ref=ref, front_name=front_name,
+             parent_arg=parent_arg, text_arg=text_arg)
     p['ops'] = tail(p)
     return p
 
@@ -639,7 +643,7 @@ def tail(p):
         m1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[k0 + 1])
         if skip is None or not m1 or num(m1.group(2)) != p['title']:
             return None
-        used = {m1.group(1)} | {r for r in R if R[r] == ('arg', 1)}
+        used = {m1.group(1)} | {r for r in R if R[r] == ('arg', p.get('parent_arg', 1))}
         used_slots = set()
         dd = depth_at[k0]
         zero = lambda r: R.get(r) in (('const', 0), ('byte', 0))
@@ -1290,14 +1294,14 @@ def tail(p):
             k += 3
             flag = None
             continue
-        elif x.mnemonic == 'jne' and flag and flag[1] == ('arg', 1) and (nb := name_block(k)):
+        elif x.mnemonic == 'jne' and flag and flag[1] == ('arg', p.get('parent_arg', 1)) and (nb := name_block(k)):
             # the description (given, or the default) named on its first use, then the default marked (kind 52, then 12)
             k, names_ = nb
             for q_, (off_, name_) in enumerate(names_):
                 ops.append((52, off_, name_, int(q_ > 0), []))   # (the first decides, by the description's +4, for all)
             ops.append((12, 0, 0, 0, []))
             for r in list(R):
-                if R[r] == ('arg', 1) or r in ('eax', 'ecx', 'edx') or R[r] == ('global', p['title']):
+                if R[r] == ('arg', p.get('parent_arg', 1)) or r in ('eax', 'ecx', 'edx') or R[r] == ('global', p['title']):
                     R[r] = None
             for r in nb_used:
                 R[r] = None
@@ -1305,7 +1309,7 @@ def tail(p):
                 R['eax'] = nb_eax[0]
             flag = None
             continue
-        elif x.mnemonic == 'jne' and flag and flag[1] == ('arg', 1):
+        elif x.mnemonic == 'jne' and flag and flag[1] == ('arg', p.get('parent_arg', 1)):
             m1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[k + 1])
             if not m1 or num(m1.group(2)) != p['title'] or t[k + 2] != f'mov byte ptr [{m1.group(1)} + 4], 1' or at.get(int(x.op_str, 0)) != k + 3:
                 raise Reject('tail mark ' + t[k + 1] + ' | ' + t[k + 2])
@@ -1769,14 +1773,15 @@ if __name__ == '__main__':
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')
         out.append(f'static const uint8_t titled_{a:x}_original[] = {{' + ', '.join(f'0x{b:02x}' for b in img[a - BASE:a - BASE + 7]) + '};')
+        pt_ = f', {p["parent_arg"]}, {p["text_arg"]}' if (p['parent_arg'], p['text_arg']) != (1, 2) else ''
         out.append(f'REWRITE("Window::Titled", {a:#x}, titled_{a:x}_original, (&titled_construct{p["nargs"]}<{p["title"]:#x}, {p["base"]:#x}, titled_{a:x}_extras, {len(ex)}, '
-                   f'titled_{a:x}_ops, {len(p["ops"])}>), &g_titled_constructs);')
-        info.append((a, p['title'], p['nargs'], p['base'], 2 + len(ex)))
+                   f'titled_{a:x}_ops, {len(p["ops"])}{pt_}>), &g_titled_constructs);')
+        info.append((a, p['title'], p['nargs'], p['base'], 2 + len(ex), p['parent_arg'], p['text_arg']))
         all_ops[a] = p['ops']
         # the arguments only a cast reads (V ? V + c : 0): the tester gives them 0 at times (none reads through them)
         # (and those a conditional block tests, so both of its ways are run)
         cast_args = {o[4][0][1] for o in p['ops'] if o[0] in (54, 63) and (o[0] == 63 or o[3] == 0) and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'}
-        deref_args = {o[2] for o in p['ops'] if o[0] in (29, 50)} | {o[1] for o in p['ops'] if o[0] == 61} | {1}
+        deref_args = {o[2] for o in p['ops'] if o[0] in (29, 50)} | {o[1] for o in p['ops'] if o[0] == 61} | {p['parent_arg'], p['text_arg']}
         mask = sum(1 << n_ for n_ in cast_args - deref_args)
         if mask:
             nullable.append((a, mask))
@@ -1792,7 +1797,7 @@ if __name__ == '__main__':
     out.append('extern const uint32_t titled_nullable[];')
     out.append('const uint32_t titled_nullable[] = {' + ''.join(f'{a:#x}, {m:#x}, ' for a, m in nullable) + '0};')
     out.append('extern const uint32_t titled_info[];')
-    out.append('const uint32_t titled_info[] = {' + ''.join(f'{a:#x}, {tl:#x}, {na}, {b:#x}, {bn}, ' for a, tl, na, b, bn in info) + '0};')
+    out.append('const uint32_t titled_info[] = {' + ''.join(f'{a:#x}, {tl:#x}, {na}, {b:#x}, {bn}, {pa}, {ta}, ' for a, tl, na, b, bn, pa, ta in info) + '0};')
     out.append('// the functions the members are made with or called, and how many values each takes (the tester stands in for them)')
     out.append('extern const uint32_t titled_callees[];')
     # (count | 0x100: always made with edx = the window, which the tester's stand-in notes too)

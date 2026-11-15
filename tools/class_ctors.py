@@ -483,6 +483,13 @@ AT = [0]   # the address of the instruction being read, for the WHY listing
 
 def parse(a, n):
     ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
+    if ins and ins[-1].mnemonic != 'ret' and ins[-1].address + ins[-1].size == a + n:
+        # the listed size can stop before the epilogue (the compiler put it just after): read on to the ret
+        for x in md.disasm(bytes(img[a - BASE + n:a - BASE + n + 0x40]), a + n):
+            ins.append(x)
+            if x.mnemonic in ('ret', 'int3', 'jmp', 'call'):
+                break
+        n = ins[-1].address + ins[-1].size - a
     if not ins or ins[-1].address + ins[-1].size != a + n or ins[-1].mnemonic != 'ret' or ins[-1].op_str not in ('8', '0xc', '0x10', '0x14', '0x18', '0x1c'):
         raise Reject('not 2 to 7 arguments')
     nargs = num(ins[-1].op_str) // 4

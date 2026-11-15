@@ -9261,7 +9261,7 @@ address,size,name,callers,status
 0x789e20,963,,1,documented
 0x78a1f0,30,DeletingDestructor,2,rewritten
 0x78a210,111,Try::Both4CC090,2,rewritten
-0x78a280,641,,1,documented
+0x78a280,641,Window::Titled,1,rewritten
 0x78a510,30,DeletingDestructor,2,rewritten
 0x78a530,99,,1,documented
 0x78a5c0,289,MEMBER_DTOR,1,rewritten
