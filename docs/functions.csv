@@ -6105,7 +6105,7 @@ address,size,name,callers,status
 0x65d440,265,Destructor::Steps,1,rewritten
 0x65d6d0,161,GameText::Copy,1,rewritten
 0x65d780,516,Window::Titled,0,rewritten
-0x65d9b0,386,,1,documented
+0x65d9b0,386,Buttons::LitLabel,1,rewritten
 0x65db40,30,DeletingDestructor,2,rewritten
 0x65db70,2553,,1,documented
 0x65e570,30,DeletingDestructor,2,rewritten
@@ -6266,7 +6266,7 @@ address,size,name,callers,status
 0x66b190,233,Destructor::Steps,1,rewritten
 0x66b330,38,SharedBlock::Release,1,rewritten
 0x66b360,757,,1,documented
-0x66b660,386,,1,documented
+0x66b660,386,Buttons::LitLabel,1,rewritten
 0x66b7f0,236,,1,documented
 0x66b920,230,,1,documented
 0x66ba40,161,GameText::Copy,1,rewritten
@@ -16325,7 +16325,7 @@ address,size,name,callers,status
 0xa820e0,153,,2,documented
 0xa82180,153,,1,documented
 0xa82220,714,,1,documented
-0xa824f0,386,,1,documented
+0xa824f0,386,Buttons::LitLabel,1,rewritten
 0xa82680,114,WideText::CopyOf,1,rewritten
 0xa82700,528,,2,documented
 0xa829e0,30,DeletingDestructor,2,rewritten
