@@ -53,7 +53,7 @@ def written(r, lines):
     for x in lines:
         if x.startswith('call') and r in ('eax', 'ecx', 'edx'):
             return True
-        if re.match(r'(mov|lea|xor|or|and|add|sub|inc|dec|neg|not|shl|shr|sar|imul|movzx|movsx|setne|sete|xchg) (' + r + (('|' + low) if low else '') + r')', x) or x == 'pop ' + r:
+        if re.match(r'(mov|lea|xor|or|and|add|sub|inc|dec|neg|not|shl|shr|sar|imul|movzx|movsx|setne|sete|xchg) (' + r + (('|' + low) if low else '') + r')\b', x) or x == 'pop ' + r:
             return True
     return False
 
