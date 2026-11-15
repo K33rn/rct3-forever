@@ -34,7 +34,7 @@ class Reject(Exception):
 CDECL = {0xbcdfc0, 0xbcdfd0, 0xbce000, 0xbce010}   # memory: the caller takes the arguments off
 
 
-def ret_args(fn):
+def ret_args(fn, depth=0):
     """How many dwords a function takes off the stack (its first ret, within the function)."""
     if fn in CDECL:
         return 0
@@ -54,7 +54,10 @@ def ret_args(fn):
             if x.mnemonic == 'ret':
                 return num(x.op_str) // 4 if x.op_str else 0
             if x.mnemonic.startswith('j') and re.fullmatch(r'0x[0-9a-f]+', x.op_str):
-                todo.append(num(x.op_str))
+                to = num(x.op_str)
+                if x.mnemonic == 'jmp' and not fn <= to < fn + size + 0x40 and depth < 3:
+                    return ret_args(to, depth + 1)   # (a jump on into another function: it returns for this one)
+                todo.append(to)
                 if x.mnemonic == 'jmp':
                     break
             elif x.mnemonic == 'jmp':

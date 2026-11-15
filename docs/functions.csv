@@ -4313,7 +4313,7 @@ address,size,name,callers,status
 0x598880,110,,1,documented
 0x5988f0,30,DeletingDestructor,2,rewritten
 0x598910,246,,2,documented
-0x598a10,570,,3,documented
+0x598a10,570,Window::Titled,3,rewritten
 0x598c70,30,DeletingDestructor,2,rewritten
 0x598ca0,16,Object::CallThenTail,1,rewritten
 0x598cf0,30,DeletingDestructor,1,rewritten
@@ -5637,7 +5637,7 @@ address,size,name,callers,status
 0x630d80,110,Parts::Drop598620,1,rewritten
 0x630e20,193,MEMBER_DTOR,1,rewritten
 0x630f20,30,DeletingDestructor,2,rewritten
-0x630fb0,549,,3,documented
+0x630fb0,549,Window::Titled,3,rewritten
 0x631200,30,DeletingDestructor,2,rewritten
 0x631270,30,DeletingDestructor,1,rewritten
 0x631740,694,,1,documented
@@ -6230,7 +6230,7 @@ address,size,name,callers,status
 0x667c10,30,DeletingDestructor,1,rewritten
 0x667c30,819,,2,documented
 0x667f70,26,,1,documented
-0x667f90,868,,0,documented
+0x667f90,868,Window::Titled,0,rewritten
 0x668300,593,,1,documented
 0x6685a0,107,Selected::Dtor5A0A30,1,rewritten
 0x668620,107,Selected::Dtor5A0A30,1,rewritten
@@ -13971,7 +13971,7 @@ address,size,name,callers,status
 0x98c090,384,,1,documented
 0x98c210,256,Designer::FileButtonTip,1,rewritten
 0x98c370,161,GameText::Copy,1,rewritten
-0x98c4d0,597,,1,documented
+0x98c4d0,597,Window::Titled,1,rewritten
 0x98c730,137,,1,documented
 0x98c7f0,133,,4,documented
 0x98c880,160,,1,documented
@@ -16771,7 +16771,7 @@ address,size,name,callers,status
 0xaabd70,63,,2,documented
 0xaabdf0,784,,2,documented
 0xaac130,533,,1,documented
-0xaac350,574,,1,documented
+0xaac350,574,Window::Titled,1,rewritten
 0xaac5c0,175,Destructor::Steps,1,rewritten
 0xaac670,1307,,2,documented
 0xaacbd0,30,DeletingDestructor,2,rewritten
