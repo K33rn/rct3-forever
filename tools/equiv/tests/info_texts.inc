@@ -1,7 +1,9 @@
 // Info::NameText (forever/src/rewrite/info_texts.cpp). The info at arena 0x100: its text a dn_ text held 1-3 times;
 // its object (+0xA0 and +0x9C) at 0x700 / 0x740 with a wide name (at 0x780 / 0x7c0) or none. The replacer's stand-in
 // notes the three texts and puts in the text's place a new text (letting the old go by one) when others hold it, else
-// changes it in place; texts from wide and C texts are dn_ texts; the empty text ds_empty's.
+// changes it in place; texts from wide and C texts are dn_ texts; the empty text ds_empty's. For the other two
+// copies: texts of their own at +0x1B0 and +0x74, an object at +0x200 (0x900, or none) with a name or none, the global name
+// [0x12FDEA0] set in the call and put back after.
 #if EQUIV_PART == 1
 static void *__thiscall int_from_wide(DnText *self, const uint16_t *wide) {
     uint32_t n = 0;
@@ -19,6 +21,7 @@ static void __fastcall int_replace(DnText **text, DnText **me, DnText **name) {
         t->characters[0] = (uint16_t)(t->characters[0] + 1);
     }
 }
+static uint32_t g_int_saved;
 static void *__cdecl int_alloc(uint32_t size) { dev_note(622, size); return dev_take(size); }
 #else
     Test info_texts{0xa290d0,
@@ -28,9 +31,15 @@ static void *__cdecl int_alloc(uint32_t size) { dev_note(622, size); return dev_
                         uint16_t wide[8];
                         const uint32_t n = r.range(0, 7);
                         for (uint32_t k = 0; k < n; k++) wide[k] = (uint16_t)('a' + r.range(0, 25));
-                        DnText *text = dn_make((DnText *)dev_take(0x10), wide, n);
-                        text->count = r.range(1, 3);
-                        *(DnText **)(arena<uint8_t>(0x100) + 0x64) = text;
+                        for (uint32_t off : {0x64u, 0x1b0u, 0x74u}) {   // (each copy's place: a text of its own)
+                            DnText *text = dn_make((DnText *)dev_take(0x10), wide, n);
+                            text->count = r.range(1, 3);
+                            wide[0] = (uint16_t)(wide[0] + 1);
+                            *(DnText **)(arena<uint8_t>(0x100) + off) = text;
+                        }
+                        *(void **)(arena<uint8_t>(0x100) + 0x200) = r.range(0, 3) ? arena<void>(0x900) : nullptr;
+                        *(void **)(arena<uint8_t>(0x900) + 8) = r.range(0, 3) ? (void *)arena<uint8_t>(0x700 + 0x80) : nullptr;
+                        arena<uint32_t>(0x50)[0] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<uint8_t>(0x740 + 0x80) : 0;   // the global name
                         *(void **)(arena<uint8_t>(0x100) + 0xa0) = arena<void>(0x700);
                         *(void **)(arena<uint8_t>(0x100) + 0x9c) = arena<void>(0x740);
                         for (uint32_t o : {0x700u, 0x740u}) {
@@ -42,14 +51,19 @@ static void *__cdecl int_alloc(uint32_t size) { dev_note(622, size); return dev_
                         }
                     },
                     [](void *fn) {
+                        *(uint32_t *)(uintptr_t)0x12fdea0 = arena<uint32_t>(0x50)[0];
                         void *back = ((void *(__fastcall *)(void *, void *, void *))fn)(arena<void>(0x100), nullptr, arena<void>(0x80));
                         return Result{(uint32_t)((uintptr_t)back - (uintptr_t)arena<void>(0)) ^ *arena<uint32_t>(0x20)};
                     }};
     info_texts.iterations = 1000;
     info_texts.prepare = [](const rewrite::Entry *) {
+        g_int_saved = *(uint32_t *)(uintptr_t)0x12fdea0;
         stubs_for_now({{0xbcdfc0, (void *)int_alloc}, {0xbcf7d0, (void *)int_from_wide}, {0xbcf850, (void *)dn_text_c}, {0xbd0490, (void *)ds_empty},
                        {0xcd23a0, (void *)int_replace}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}});
     };
-    info_texts.finish = [](const rewrite::Entry *) { unstub_many(); };
+    info_texts.finish = [](const rewrite::Entry *) {
+        unstub_many();
+        *(uint32_t *)(uintptr_t)0x12fdea0 = g_int_saved;
+    };
     quick(info_texts);
 #endif

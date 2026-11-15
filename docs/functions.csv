@@ -9898,7 +9898,7 @@ address,size,name,callers,status
 0x7c7d60,113,ObjectRef::SetMember,2,rewritten
 0x7c7de0,2190,,1,documented
 0x7c86a0,34,Object::FreeField,2,rewritten
-0x7c8700,355,,18,documented
+0x7c8700,355,Info::NameText,18,rewritten
 0x7c8870,282,,1,documented
 0x7c8a90,126,ObjectRef::Assign,1,rewritten
 0x7c8b10,4226,,11,documented
@@ -10780,7 +10780,7 @@ address,size,name,callers,status
 0x81ab30,26,Object::GetRef,1,rewritten
 0x81ab50,130,,1,documented
 0x81abe0,869,,2,documented
-0x81afa0,342,,1,documented
+0x81afa0,342,Info::NameText,1,rewritten
 0x81b100,340,,1,documented
 0x81b260,230,,6,documented
 0x81b360,533,,1,documented
