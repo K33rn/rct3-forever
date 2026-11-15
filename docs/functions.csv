@@ -3716,7 +3716,7 @@ address,size,name,callers,status
 0x552dd0,623,,3,documented
 0x553060,1747,,5,documented
 0x553760,229,Values::Map,1,rewritten
-0x5538e0,433,,0,documented
+0x5538e0,433,Names::FromText,0,rewritten
 0x553ad0,40,Text::Widen,0,rewritten
 0x553ba0,145,Destructor::Steps,1,rewritten
 0x553c50,140,,1,documented
@@ -19376,7 +19376,7 @@ address,size,name,callers,status
 0xbb41f0,28,,3,documented
 0xbb4230,11,,15,documented
 0xbb4280,27,BRANCH_OFF,195,rewritten
-0xbb42a0,433,,0,documented
+0xbb42a0,433,Names::FromText,0,rewritten
 0xbb4460,390,,10,documented
 0xbb45f0,463,,0,documented
 0xbb47d0,2377,,2,documented
@@ -19508,7 +19508,7 @@ address,size,name,callers,status
 0xbbf9b0,52,,1,documented
 0xbbf9f0,39,Kind::Lookup5BD960,1,rewritten
 0xbbfa30,467,,0,documented
-0xbbfc20,433,,0,documented
+0xbbfc20,433,Names::FromText,0,rewritten
 0xbbfde0,447,,0,documented
 0xbbffa0,1,,1,documented
 0xbc0030,30,DeletingDestructor,1,rewritten

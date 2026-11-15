@@ -21,3 +21,11 @@ file twice, so a file has two parts:
 
 Give stand-ins and globals a prefix of your own (`ib_` for ident bars, say), so two files never define the same
 name. [ident_bars.inc](ident_bars.inc) is a complete example.
+
+Traps:
+- `fresh(r)` fills the arena with random values, including the dev_ stand-ins' state at 0x20-0x2C (running sum,
+  count, seed, `dev_take` pointer). Set those **before** your setup calls `dev_take` or any stand-in, or a test that
+  passes alone can crash in the full run.
+- A path in an `#include` is relative to this folder: the rewrite's tables are `../../../forever/src/rewrite/x.inc`.
+- The game's C library (rand, _stricmp, acos of a NaN, ...) needs runtime state the tester doesn't have: stand in for
+  it, or keep its inputs where it needs none.
