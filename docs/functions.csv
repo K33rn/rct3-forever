@@ -3779,7 +3779,7 @@ address,size,name,callers,status
 0x55a090,489,,2,documented
 0x55a280,680,,2,documented
 0x55a530,368,,2,documented
-0x55a6a0,697,,2,documented
+0x55a6a0,697,RidePart::TakeOver,2,rewritten
 0x55a960,813,,1,documented
 0x55ac90,158,,3,documented
 0x55ad30,159,ObjectRef::CallWith,6,rewritten
@@ -3788,7 +3788,7 @@ address,size,name,callers,status
 0x55af30,594,,6,documented
 0x55b190,29,,1,documented
 0x55b1b0,283,,2,documented
-0x55b2d0,697,,1,documented
+0x55b2d0,697,RidePart::TakeOver,1,rewritten
 0x55b5f0,64,,2,documented
 0x55b630,54,,1,documented
 0x55b750,30,DeletingDestructor,1,rewritten
