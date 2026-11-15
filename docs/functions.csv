@@ -14426,8 +14426,8 @@ address,size,name,callers,status
 0x9be4d0,33,,1,documented
 0x9be500,214,,7,documented
 0x9be5e0,359,,5,documented
-0x9be750,448,,4,documented
-0x9be910,448,,5,documented
+0x9be750,448,Window::PointAt,4,rewritten
+0x9be910,448,Window::PointAt,5,rewritten
 0x9bead0,93,,22,documented
 0x9beb30,4101,,1,documented
 0x9bfb70,266,,3,documented
