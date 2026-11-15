@@ -383,6 +383,10 @@ def tail(p):
     k = start
     d = depth_at[start]
 
+    def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45) or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
+                                                  not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
+
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
         if isinstance(v, int):
             return (0, v)
@@ -452,8 +456,11 @@ def tail(p):
                 raise Reject('by-value store ' + s)
         elif (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], esp', s)) and (R.get('eax') or ('',))[0] == 'spslot':
             S.pop(num(m.group(1)) - d, None)   # (the exception frame keeps where that struct is)
+        elif (m := re.fullmatch(r'(or|and) dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and still(val(m.group(2))):
+            ops.append((47 if m.group(1) == 'or' else 48, val(m.group(2))[1], num(m.group(4)), 0, [num(m.group(3) or '0')]))
+            flag = None
         elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(1)) and \
-                val(m.group(1))[0] == 'field' and val(m.group(1))[2] == len(ops):
+                still(val(m.group(1))):
             # a store into what a member points to (a child's value set)
             member, inner, v = val(m.group(1))[1], num(m.group(2) or '0'), m.group(3)
             w = val(v) if v in R else None
@@ -492,7 +499,7 @@ def tail(p):
                     ops.append((22, off, 0 if w[2] == 'returned' else 1, 0, []))
                 elif w[0] == 'argderef' and w[2] == len(ops):
                     ops.append((29, off, w[1], 0, []))
-                elif w[0] == 'field' and w[2] == len(ops):
+                elif still(w):
                     ops.append((30, off, w[1], 0, []))
                 elif w[0] in ('fieldand', 'fieldor') and w[1] == off and w[3] == len(ops):
                     ops.append((26 if w[0] == 'fieldand' else 27, off, w[2], 0, []))
@@ -620,12 +627,16 @@ def tail(p):
             R['eax'] = ('spslot', len(pushed) - 1)
             k += 2
             continue
+        elif s == 'push ecx' and t[k + 2] == 'mov eax, esp' and not re.match(r'\w+ (eax|esp)\b', t[k + 1]):
+            pushed.append(None); d += 4   # (the same, with one more step before eax is pointed at it)
+        elif s == 'mov eax, esp' and pushed and pushed[-1] is None:
+            R['eax'] = ('spslot', len(pushed) - 1)
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack' and \
                 (S.get(val(m.group(1))[1]) or ('',))[0] == 'name':
             pushed.append(('nameaddr', S[val(m.group(1))[1]][1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack':
             pushed.append(('rect', val(m.group(1))[1])); d += 4   # a local's address: only a layout's rectangle is understood
-        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'field' and val(m.group(1))[2] == len(ops):
+        elif (m := re.fullmatch(r'push ' + REG, s)) and still(val(m.group(1))):
             pushed.append(('field', val(m.group(1))[1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] in ('const', 'global', 'arg', 'this', 'member', 'temp'):
             v = val(m.group(1))
@@ -744,7 +755,7 @@ def tail(p):
             flag = None
             k += 9
             continue
-        elif s == 'call 0x6b1640' and val('ecx') and val('ecx')[0] == 'field' and val('ecx')[2] == len(ops) and len(pushed) >= 3 and \
+        elif s == 'call 0x6b1640' and still(val('ecx')) and len(pushed) >= 3 and \
                 isinstance(pushed[-3], tuple) and pushed[-3][0] == 'rect':
             # a child laid out at a rectangle of constants (op 40, bit 6)
             relation, to, rect = pushed[-1], pushed[-2], pushed[-3]
@@ -763,7 +774,7 @@ def tail(p):
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             flag = None
-        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'field' and val('ecx')[2] == len(ops):
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and still(val('ecx')):
             fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
             if n_ is None or n_ > len(pushed) or n_ > 5:
                 raise Reject('field call ' + s)
@@ -777,6 +788,20 @@ def tail(p):
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)):
             fn, this = num(m.group(1)), val('ecx')
+            if this and this[0] == 'obj' and this[1] == cur and ret_args(fn) is not None and ret_args(fn) <= min(len(pushed), 5):
+                # a call on the new object: what its constructor returned or its memory; inside the branch where there
+                # was memory only then, after it always (on null when there was none)
+                n_ = ret_args(fn)
+                args = [pushed.pop() for _ in range(n_)]
+                d -= 4 * n_
+                if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect') for v in args):
+                    raise Reject('new object call with a temporary')
+                ops.append((46, 0 if this[2] == 'returned' else 1, int(bool(nulls)), fn, args))
+                for r in ('eax', 'ecx', 'edx'):
+                    R[r] = None
+                flag = None
+                k += 1
+                continue
             if not this or this[0] not in ('this', 'member') or ret_args(fn) is None or ret_args(fn) > len(pushed) or ret_args(fn) > 5:
                 raise Reject('tail call ' + s)
             n_ = ret_args(fn)

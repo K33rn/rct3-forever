@@ -34,6 +34,9 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   are, bit 5: the window itself instead of the member; bit 6: the rectangle args[0] - args[3] as it is (not asked
 //   the size).
 //   44 / 45 the dword at +args[0] of what the member at +off points to set to value / the global at value as it is then.
+//   47 / 48 or / and the dword at +args[0] of what the member at +off points to with value.
+//   46 call fn on the new object: what its constructor returned (off 0) or its memory (1); with value 1 only when there
+//   was memory, else always (on null when there was none).
 //   41 the dword at +args[1] of the member at +args[0] copied to +value of the member at +off.
 //   42 value bytes of aligned memory (0xBCDFD0), 43 the last of them stored at +off.
 // The values given to fn are by kind (4 bits each in kinds): 0 the value, 1 the global there, 2 the constructor's
@@ -162,6 +165,11 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             ((void(__thiscall *)(void *, uint32_t, void *, volatile uint32_t *))0x6b1640)(child, how >> 8, how & 32 ? (void *)self : *(void **)(self + op.value), rect);
             break;
         }
+        case 47: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) |= op.value; break;
+        case 48: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) &= op.value; break;
+        case 46:
+            if (memory || !op.value) titled_call(op.fn, op.off ? (void *)memory : object, op.count, args);
+            break;
         case 44: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = op.value; break;
         case 45: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = *(uint32_t *)(uintptr_t)op.value; break;
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;

@@ -480,15 +480,15 @@ static uintptr_t g_window_title;
 // gets is recorded by what it holds (it can be a copy on the stack)
 static void titled_base_record(void *self, void *parent, void **text) { record(0x7d, self); record(0x7d, parent); record(0x7d, text ? *text : nullptr); }
 static void *__thiscall stub_titled_base2(void *self, void *p, void **t) { titled_base_record(self, p, t); return self; }
-static void *__thiscall stub_titled_base3(void *self, void *p, void **t, uint32_t a) { titled_base_record(self, p, t); record(0x7d, (void *)(uintptr_t)a); return self; }
+static void *__thiscall stub_titled_base3(void *self, void *p, void **t, uint32_t a) { titled_base_record(self, p, t); record(0x7d, arg_value(a)); return self; }
 static void *__thiscall stub_titled_base4(void *self, void *p, void **t, uint32_t a, uint32_t b) {
-    titled_base_record(self, p, t); record(0x7d, (void *)(uintptr_t)a); record(0x7d, (void *)(uintptr_t)b); return self;
+    titled_base_record(self, p, t); record(0x7d, arg_value(a)); record(0x7d, arg_value(b)); return self;
 }
 static void *__thiscall stub_titled_base5(void *self, void *p, void **t, uint32_t a, uint32_t b, uint32_t c) {
-    titled_base_record(self, p, t); record(0x7d, (void *)(uintptr_t)a); record(0x7d, (void *)(uintptr_t)b); record(0x7d, (void *)(uintptr_t)c); return self;
+    titled_base_record(self, p, t); record(0x7d, arg_value(a)); record(0x7d, arg_value(b)); record(0x7d, arg_value(c)); return self;
 }
 static void *__thiscall stub_titled_base6(void *self, void *p, void **t, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
-    titled_base_record(self, p, t); record(0x7d, (void *)(uintptr_t)a); record(0x7d, (void *)(uintptr_t)b); record(0x7d, (void *)(uintptr_t)c); record(0x7d, (void *)(uintptr_t)d);
+    titled_base_record(self, p, t); record(0x7d, arg_value(a)); record(0x7d, arg_value(b)); record(0x7d, arg_value(c)); record(0x7d, arg_value(d));
     return self;
 }
 static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
@@ -1403,7 +1403,7 @@ static void *__fastcall stub_wide_empty(char flag) {
     record(0x76, (void *)(uintptr_t)(uint8_t)flag);
     return arena<void>(0x260);
 }
-static void __fastcall stub_text_ref_free(void *self) { record(0x77, self == g_text_ref ? (void *)1 : self); }
+static void __fastcall stub_text_ref_free(void *self) { record(0x77, self == g_text_ref ? (void *)1 : arg_value((uint32_t)(uintptr_t)self)); }   // (one on the stack told by what it holds)
 // key commands: the default keys are made on the stack (recorded as 1, as the String above)
 static void *g_keys;
 static void *__fastcall stub_key_combination(void *self, void *, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {

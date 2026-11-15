@@ -5555,7 +5555,7 @@ address,size,name,callers,status
 0x623d00,119,,1,documented
 0x623d90,30,DeletingDestructor,2,rewritten
 0x623db0,242,,1,documented
-0x623eb0,698,,0,documented
+0x623eb0,698,Window::Titled,0,rewritten
 0x6243d0,110,Factory::LazyWith,19,rewritten
 0x624440,118,Singleton::Get,41,rewritten
 0x624520,21,,1,documented
@@ -6577,7 +6577,7 @@ address,size,name,callers,status
 0x686130,294,,1,documented
 0x686260,742,,0,documented
 0x686550,464,,1,documented
-0x686720,706,,1,documented
+0x686720,706,Window::Titled,1,rewritten
 0x6869f0,533,Window::Titled,1,rewritten
 0x686c20,30,DeletingDestructor,2,rewritten
 0x686c40,18,Destructor::TablesThenBase,1,rewritten
@@ -15796,7 +15796,7 @@ address,size,name,callers,status
 0xa40610,26,OwnedPointer::Reset,2,rewritten
 0xa40630,61,Array<4>::Allocate,1,rewritten
 0xa40680,88,Owned::DeleteAllA40680,2,rewritten
-0xa40700,591,,1,documented
+0xa40700,591,Window::Titled,1,rewritten
 0xa40960,122,,1,documented
 0xa409e0,30,DeletingDestructor,2,rewritten
 0xa40a00,117,Dtor::FourTables41B1A0,1,rewritten
@@ -16336,7 +16336,7 @@ address,size,name,callers,status
 0xa83bb0,501,,2,documented
 0xa83df0,30,DeletingDestructor,2,rewritten
 0xa83e10,1203,,1,documented
-0xa842d0,678,,1,documented
+0xa842d0,678,Window::Titled,1,rewritten
 0xa84580,720,,1,documented
 0xa84870,48,QueryInterface,0,rewritten
 0xa84950,76,,1,documented
