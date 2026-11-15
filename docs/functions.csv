@@ -13594,7 +13594,7 @@ address,size,name,callers,status
 0x96dfa0,126,Pool::Free,3,rewritten
 0x96e020,16,Object::SetFields,1,rewritten
 0x96e030,180,Table20::Free,1,rewritten
-0x96e0f0,387,,2,documented
+0x96e0f0,387,Grid::GrowM16,2,rewritten
 0x96e280,126,Pool::Free,3,rewritten
 0x96e300,16,Object::SetFields,1,rewritten
 0x96e310,180,Table20::Free,1,rewritten

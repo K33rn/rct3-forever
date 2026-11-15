@@ -2568,3 +2568,4 @@ REWRITE("Grid::GrowM8", 0x9695d0, grid_grow_m_original, (&grid_grow<0x969140, 8>
 REWRITE("Grid::GrowM8", 0x969ee0, grid_grow_m_original, (&grid_grow<0x969c20, 8>), &g_grid_grows);
 REWRITE("Grid::GrowM4", 0x850030, grid_grow_m_original, (&grid_grow<0x84e1b0, 4>), &g_grid_grows);
 REWRITE("Grid::GrowM4", 0x9692f0, grid_grow_m_original, (&grid_grow<0x969070, 4>), &g_grid_grows);
+REWRITE("Grid::GrowM16", 0x96e0f0, grid_grow_m_original, (&grid_grow<0x96c780, 16>), &g_grid_grows);   // (Water::Grow96E0F0: tests/grid_grows.inc)
