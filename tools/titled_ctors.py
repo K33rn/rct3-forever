@@ -42,6 +42,24 @@ def ret_args(fn):
     for x in md.disasm(bytes(img[fn - BASE:fn - BASE + size]), fn):
         if x.mnemonic == 'ret':
             return num(x.op_str) // 4 if x.op_str else 0
+    # (a jump table inside the function stops the straight read: follow the branches from the start instead)
+    todo, seen = [fn], set()
+    while todo:
+        a = todo.pop()
+        while fn <= a < fn + size + 0x40 and a not in seen:   # (the listed size can stop before the epilogue)
+            seen.add(a)
+            x = next(md.disasm(bytes(img[a - BASE:a - BASE + 16]), a), None)
+            if x is None:
+                break
+            if x.mnemonic == 'ret':
+                return num(x.op_str) // 4 if x.op_str else 0
+            if x.mnemonic.startswith('j') and re.fullmatch(r'0x[0-9a-f]+', x.op_str):
+                todo.append(num(x.op_str))
+                if x.mnemonic == 'jmp':
+                    break
+            elif x.mnemonic == 'jmp':
+                break
+            a += x.size
     return None
 
 
@@ -495,8 +513,8 @@ def tail(p):
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - d
             R[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs else S.get(slot, stored(slot, k))
-        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', s)):
-            R[m.group(1)] = ('global', num(m.group(2)))
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6}|0x[ef][0-9a-f]{5})\]', s)):
+            R[m.group(1)] = ('global', num(m.group(2)))   # (a game global, or a constant the game keeps: read when used)
         elif (m := re.fullmatch(r'mov ' + REG + ', ' + REG, s)):
             R[m.group(1)] = val(m.group(2))
         elif (m := re.fullmatch(r'xor ' + REG + ', ' + REG, s)) and m.group(1) == m.group(2):
@@ -518,8 +536,13 @@ def tail(p):
             flag = ('test', val(a_)) if (a_ == b_ or val(b_) == ('const', 0)) else None
         elif (m := re.fullmatch(r'(or|and) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and (val(m.group(2)) is None or val(m.group(2))[0] in ('const', 'byte', 'eh')):
             R[m.group(2)] = ('eh',); flag = None   # the exception bookkeeping bits (what's been made)
-        elif (m := re.fullmatch(r'test ([abcd])l, (0x[0-9a-f]+|\d+)', s)) and val('e' + m.group(1) + 'x') == ('eh',):
-            flag = ('ehbit', num(m.group(2)))
+        elif (m := re.fullmatch(r'or ' + REG + ', ' + REG, s)) and m.group(1) != m.group(2) and val(m.group(2)) and val(m.group(2))[0] == 'const' and \
+                (val(m.group(1)) is None or val(m.group(1))[0] in ('const', 'byte', 'eh')):
+            R[m.group(1)] = ('eh',); flag = None   # (the same, with the bit kept in a register)
+        elif (m := re.fullmatch(r'test ([abcd])([lh]), (0x[0-9a-f]+|\d+)', s)) and val('e' + m.group(1) + 'x') == ('eh',):
+            flag = ('ehbit', num(m.group(3)) << (8 if m.group(2) == 'h' else 0))
+        elif (m := re.fullmatch(r'test ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2) and val('e' + m.group(1) + 'x') == ('eh',):
+            flag = ('ehsign',)   # the bookkeeping bit 0x80, read through the sign (jns)
         elif (m := re.fullmatch(r'test ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
             flag = ('noparent?', 'e' + m.group(1) + 'x')   # a byte flag: set when there was no parent (the tester checks)
         elif (m := re.fullmatch(r'cmp byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0|[abcd]l)', s)) and (m.group(2) == '0' or val('e' + m.group(2)[0] + 'x') in (('const', 0), ('byte', 0))):
@@ -541,7 +564,7 @@ def tail(p):
             R[m1.group(1)] = None
             k += 3
             continue
-        elif x.mnemonic == 'je' and flag and flag[0] == 'ehbit':
+        elif x.mnemonic == 'je' and flag and flag[0] == 'ehbit' or x.mnemonic == 'jns' and flag == ('ehsign',):
             # what the bookkeeping bit guards: a temporary's destructor (lea ecx, [esp + N]; call D) or a wide string let go
             # (the one a temporary holds, or a name)
             end_ = at.get(int(x.op_str, 0))
@@ -557,6 +580,17 @@ def tail(p):
                 ops.append((15, temps[slot], 0, num(z2.group(1)), []))
                 built.discard(('temp', temps[slot]))
             else:
+                # (a compare with a register that holds 0 is a compare with 0; a saved register the release used is read back
+                # from the stack after it, so it holds what it held before)
+                body = [re.sub(r'^(cmp dword ptr \[' + REG + r'\]), ' + REG + '$', lambda z_: z_.group(1) + ', 0' if val(z_.group(3)) == ('const', 0) else z_.group(0), u)
+                        for u in body]
+                freed = max((i for i, u in enumerate(body) if u == 'call 0xbce000'), default=len(body))
+                reloaded = {re.fullmatch(r'mov (e[sd]i|ebp|ebx), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u).group(1) for u in body[freed:]
+                            if re.fullmatch(r'mov (e[sd]i|ebp|ebx), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)}
+                body = [u for i, u in enumerate(body) if i <= freed or not re.fullmatch(r'mov (e[sd]i|ebp|ebx), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)]
+                for u in body:
+                    if (z_ := re.fullmatch(r'mov (e[sd]i|ebp|ebx), .*', u)) and z_.group(1) not in reloaded:
+                        R[z_.group(1)] = None
                 norm = [re.sub(r'\[esp \+ (0x[0-9a-f]+|\d+)\]', '[esp+X]', re.sub(r'\b(e[a-d]x|e[sd]i|ebp)\b', 'R', u)) for u in body]
                 heads = [['mov R, dword ptr [esp+X]', 'mov R, dword ptr [R]', 'dec R', 'mov dword ptr [R], R', 'mov R, dword ptr [esp+X]', 'cmp dword ptr [R], 0', 'jne ' + x.op_str],
                          ['mov R, dword ptr [esp+X]', 'dec dword ptr [R]', 'mov R, dword ptr [esp+X]', 'cmp dword ptr [R], 0', 'jne ' + x.op_str]]
@@ -586,8 +620,9 @@ def tail(p):
             R['eax'] = ('spslot', len(pushed) - 1)
             k += 2
             continue
-        elif s == 'push ecx' and val('ecx') and val('ecx')[0] == 'stack' and (S.get(val('ecx')[1]) or ('',))[0] == 'name':
-            pushed.append(('nameaddr', S[val('ecx')[1]][1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack' and \
+                (S.get(val(m.group(1))[1]) or ('',))[0] == 'name':
+            pushed.append(('nameaddr', S[val(m.group(1))[1]][1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack':
             pushed.append(('rect', val(m.group(1))[1])); d += 4   # a local's address: only a layout's rectangle is understood
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'field' and val(m.group(1))[2] == len(ops):
@@ -643,6 +678,8 @@ def tail(p):
                 raise Reject('name made with')
             lit = pushed.pop(); d -= 4
             token = val('ecx')
+            if nnames >= 16:
+                raise Reject('names')
             ops.append((21, nnames, lit, 0, []))
             built.add(('name', nnames))
             for r in list(R):
@@ -662,7 +699,7 @@ def tail(p):
             if any(not (isinstance(v, int) or v[0] in ('nameaddr', 'self', 'glob', 'given', 'temp')) for v in targs):
                 raise Reject('stack temporary values')
             kk = len([o for o in ops if o[0] == 20])
-            if kk >= 3 or slot in temps and ('temp', temps[slot]) in built:
+            if kk >= 16 or slot in temps and ('temp', temps[slot]) in built:
                 raise Reject('temporaries')
             temps[slot] = kk
             ops.append((20, kk, 0, fn, targs))

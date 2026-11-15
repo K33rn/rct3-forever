@@ -7765,7 +7765,7 @@ address,size,name,callers,status
 0x6ebd20,28,Member::Update6C6DB0,0,rewritten
 0x6ebd40,125,,0,documented
 0x6ebed0,3689,,2,documented
-0x6ecd40,589,,1,documented
+0x6ecd40,589,Window::Titled,1,rewritten
 0x6ecf90,147,,3,documented
 0x6ed030,674,,1,documented
 0x6ed2e0,39,,2,documented
@@ -8151,7 +8151,7 @@ address,size,name,callers,status
 0x719fd0,663,,2,documented
 0x71a270,108,,7,documented
 0x71a2e0,718,,1,documented
-0x71a5b0,591,,2,documented
+0x71a5b0,591,Window::Titled,2,rewritten
 0x71a830,96,Destructor::Steps,1,rewritten
 0x71a890,30,DeletingDestructor,2,rewritten
 0x71a8d0,48,QueryInterface,3,rewritten
@@ -11766,7 +11766,7 @@ address,size,name,callers,status
 0x870b60,30,DeletingDestructor,2,rewritten
 0x870c60,1498,,0,documented
 0x871240,179,Watch::Add784B20,0,rewritten
-0x871300,590,,0,documented
+0x871300,590,Window::Titled,0,rewritten
 0x871640,101,,1,documented
 0x8716b0,513,Window::Titled,1,rewritten
 0x8718c0,6,,2,documented

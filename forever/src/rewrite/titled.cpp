@@ -108,9 +108,9 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     for (uint32_t i = 0; i < EXTRA_COUNT; i++) base_args[2 + i] = EXTRAS[i].is_arg ? given[EXTRAS[i].value] : EXTRAS[i].value;
     titled_call(BASE, self, 2 + EXTRA_COUNT, base_args);
     if (copied) titled_release(made);
-    alignas(16) uint8_t temps[3][0x40];   // temporaries on the stack (texts made for a new object's constructor)
-    void *temp_made[3] = {}, *names[3] = {};
-    bool temp_built[3] = {}, name_built[3] = {};
+    alignas(16) uint8_t temps[16][0x40];   // temporaries on the stack (texts made for a new object's constructor; titled_ctors.py keeps to 16)
+    void *temp_made[16] = {}, *names[16] = {};
+    bool temp_built[16] = {}, name_built[16] = {};
     uint8_t *memory = nullptr;
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
