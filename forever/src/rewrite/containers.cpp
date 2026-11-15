@@ -1459,6 +1459,10 @@ REWRITE("Pool::GrowCEF970", 0xcef970, pool_grow_late_original<0xea78db>, (&pool_
 REWRITE("Pool::GrowCEF970", 0xcefa90, pool_grow_late_original<0xea78fb>, (&pool_grow<8, 0xcef680, 0>), &g_pool_grows);
 REWRITE("Pool::Grow8FFA60", 0x8ffa60, pool_grow_original, (&pool_grow<0x60, 0x8fd120, 0x8fde70>), &g_pool_grows);
 REWRITE("Pool::Grow8FFA60", 0x94e380, pool_grow_original, (&pool_grow<0x60, 0x94c9e0, 0x94d9c0>), &g_pool_grows);
+// (the same, the size worked out another way: tests/pool_grows.inc finds their copy by reading the code)
+REWRITE("Pool::GrowCopied", 0x94e250, pool_grow_original, (&pool_grow<0xd0, 0x94c9c0, 0x94d850>), &g_pool_grows);
+REWRITE("Pool::GrowCopied", 0x964bc0, pool_grow_original, (&pool_grow<0x1018, 0x963f00, 0x9648f0>), &g_pool_grows);
+REWRITE("Pool::GrowCopied", 0x9f98a0, pool_grow_original, (&pool_grow<0x90, 0x9f8400, 0x9f89b0>), &g_pool_grows);
 
 // ---- Small destructors (their exception frames only clean up after C++ exceptions, so they are left out) -----------------
 static volatile long g_solo_dtors;

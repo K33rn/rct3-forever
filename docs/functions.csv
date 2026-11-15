@@ -8479,7 +8479,7 @@ address,size,name,callers,status
 0x735770,52,,0,documented
 0x7357b0,21,,0,documented
 0x7357d0,30,DeletingDestructor,1,rewritten
-0x735850,326,,2,documented
+0x735850,326,ObjectArray::Grow,2,rewritten
 0x7359a0,76,,17,documented
 0x735a20,185,,2,documented
 0x735ae0,61,Vector::FreeBoth735AE0,2,rewritten
@@ -11872,7 +11872,7 @@ address,size,name,callers,status
 0x87bbf0,180,Table20::Free,1,rewritten
 0x87bcb0,430,SizePools::Take,3,rewritten
 0x87be60,126,BlockPool::Return,1,rewritten
-0x87bee0,326,,2,documented
+0x87bee0,326,ObjectArray::Grow,2,rewritten
 0x87c030,242,TRIVIAL_SETCAP,1,rewritten
 0x87c130,465,,1,documented
 0x87c330,298,,7,documented
@@ -12589,7 +12589,7 @@ address,size,name,callers,status
 0x8e8f00,86,,1,documented
 0x8e90e0,229,,3,documented
 0x8e92b0,61,Vector::FreeBoth735AE0,2,rewritten
-0x8e9330,326,,3,documented
+0x8e9330,326,ObjectArray::Grow,3,rewritten
 0x8e9480,37,Listed::Construct4535C0,1,rewritten
 0x8e94e0,60,Listener::~Listener,4,rewritten
 0x8e9520,211,,1,documented
@@ -13329,7 +13329,7 @@ address,size,name,callers,status
 0x94e000,96,,1,documented
 0x94e060,47,Buffers::Clear94D6D0,4,rewritten
 0x94e090,333,,2,documented
-0x94e250,302,,1,documented
+0x94e250,302,Pool::GrowCopied,1,rewritten
 0x94e380,296,Pool::Grow8FFA60,2,rewritten
 0x94e4b0,608,,1,documented
 0x94e790,1805,,1,documented
@@ -13431,7 +13431,7 @@ address,size,name,callers,status
 0x9648f0,609,Record::CopyWithEntries,1,rewritten
 0x964b60,30,DeletingDestructor,0,rewritten
 0x964b80,51,,4,documented
-0x964bc0,302,,3,documented
+0x964bc0,302,Pool::GrowCopied,3,rewritten
 0x964d20,66,SlotPool::Take735B20,0,rewritten
 0x964d70,201,,1,documented
 0x964e40,98,,4,documented
@@ -15057,7 +15057,7 @@ address,size,name,callers,status
 0x9f90f0,61,,1,documented
 0x9f9130,118,,2,documented
 0x9f91b0,1636,,1,documented
-0x9f98a0,302,,2,documented
+0x9f98a0,302,Pool::GrowCopied,2,rewritten
 0x9f99d0,290,,2,documented
 0x9f9b00,68,,0,documented
 0x9f9b50,61,Pool::Take40D480,0,rewritten

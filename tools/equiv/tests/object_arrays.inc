@@ -7,6 +7,9 @@ static const uint32_t oa_rows[][7] = {
 #define OBJECT_ARRAYS(at, size, header, dtor, ctor, copy, back, ...) {at, size, header, dtor, ctor, copy, back},
 #include "../../../forever/src/rewrite/object_arrays.inc"
 #undef OBJECT_ARRAYS
+    {0x735850, 0x98, 4, 0x7340b0, 0x734250, 0x734160, 0xfffffffc},   // (object_arrays.cpp's rows written by hand)
+    {0x87bee0, 0x80, 0x10, 0x87b5e0, 0x87b570, 0x87b700, 0xfffffff0},
+    {0x8e9330, 0x130, 0x10, 0x8e71c0, 0x8e91d0, 0x8e7e60, 0xfffffff0},
 };
 static uint32_t g_oa_row;
 static uint32_t oa_at(const void *p) { return (uint32_t)((uintptr_t)p - (uintptr_t)arena<void>(0)); }
@@ -49,7 +52,7 @@ static void *__thiscall oa_copy(uint32_t *to, const uint32_t *from) { dev_note(3
                        }};
     object_arrays.iterations = 1000;
     object_arrays.prepare = [](const rewrite::Entry *e) {
-        for (uint32_t k = 0; k < 4; k++)
+        for (uint32_t k = 0; k < sizeof oa_rows / sizeof oa_rows[0]; k++)
             if (oa_rows[k][0] == e->at) g_oa_row = k;
         const uint32_t *row = oa_rows[g_oa_row];
         stubs_for_now({{0xbcdfd0, (void *)oa_alloc}, {0xbce010, (void *)cheat_free_aligned}, {row[4], (void *)oa_ctor}, {row[3], (void *)oa_dtor},
