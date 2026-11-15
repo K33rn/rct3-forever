@@ -311,13 +311,15 @@ def walk_fields(ins, t, k0, regs0):
             # the null path sets the same places to null that the made path set to the record, then joins
             if not nulls or ins[k + 1].address != nulls[-1][0]:
                 raise Reject('field jmp')
-            join, i = num(m.group(1)), nulls.pop()[1]
+            join, i, regs0, stack0, depth0 = num(m.group(1)), *nulls.pop()[1:]
             j = k + 1
             while ins[j].address != join:
                 x = t[j]
-                if (mm := re.fullmatch(r'xor ' + REG + ', ' + REG, x)) and mm.group(1) == mm.group(2) and regs.get(mm.group(1)) == ('new', i):
+                # (judged by the registers and the stack as they were at the je: the null path's own)
+                if (mm := re.fullmatch(r'xor ' + REG + ', ' + REG, x)) and mm.group(1) == mm.group(2) and (regs.get(mm.group(1)) == ('new', i) or regs0.get(mm.group(1)) == ('new', i)):
                     pass
-                elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, x)) and regs.get(mm.group(2)) == ('const', 0) and stack.get(num(mm.group(1)) - depth) == ('new', i):
+                elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, x)) and (regs.get(mm.group(2)) == ('const', 0) or regs0.get(mm.group(2)) == ('const', 0)) and \
+                        (stack.get(num(mm.group(1)) - depth) == ('new', i) or stack0.get(num(mm.group(1)) - depth0) == ('new', i)) and regs0.get(mm.group(2)) == ('const', 0):
                     pass
                 elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], 0', x)) and stack.get(num(mm.group(1)) - depth) == ('new', i):
                     pass

@@ -15677,7 +15677,7 @@ address,size,name,callers,status
 0xa32bb0,30,DeletingDestructor,2,rewritten
 0xa32bd0,48,ObjectArray::Free,1,rewritten
 0xa32c00,271,,2,documented
-0xa32d10,1554,,2,documented
+0xa32d10,1554,Class::Construct,2,rewritten
 0xa33350,522,,1,documented
 0xa33570,221,,1,documented
 0xa33650,420,,1,documented
