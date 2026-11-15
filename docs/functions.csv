@@ -5716,7 +5716,7 @@ address,size,name,callers,status
 0x6347c0,30,DeletingDestructor,3,rewritten
 0x6347e0,30,DeletingDestructor,3,rewritten
 0x634800,30,DeletingDestructor,3,rewritten
-0x634820,586,,1,documented
+0x634820,586,DetailsWindow::Build,1,rewritten
 0x634a70,107,Factory::CreateFromFields,0,rewritten
 0x634ae0,572,Window::Titled,1,rewritten
 0x634d90,266,,1,documented
@@ -5978,7 +5978,7 @@ address,size,name,callers,status
 0x64a840,379,,3,documented
 0x64a9c0,599,,1,documented
 0x64ac60,48,,1,documented
-0x64ac90,586,,1,documented
+0x64ac90,586,DetailsWindow::Build,1,rewritten
 0x64aee0,351,,2,documented
 0x64b060,293,,2,documented
 0x64b190,390,,2,documented
