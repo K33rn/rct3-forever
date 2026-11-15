@@ -6487,7 +6487,7 @@ address,size,name,callers,status
 0x67faf0,1490,,1,documented
 0x680110,47,,4,documented
 0x680140,30,,4,documented
-0x680160,898,,4,documented
+0x680160,898,Window::FillFiles,4,rewritten
 0x6804f0,706,,2,documented
 0x680810,30,DeletingDestructor,2,rewritten
 0x680890,27,GlobalCleanup,1,rewritten
@@ -15203,7 +15203,7 @@ address,size,name,callers,status
 0xa06e30,44,,3,documented
 0xa06ea0,25,Object::GetRef,1,rewritten
 0xa06ec0,246,,1,documented
-0xa06fc0,898,,1,documented
+0xa06fc0,898,Window::FillFiles,1,rewritten
 0xa07350,2722,,1,documented
 0xa07e00,250,,0,documented
 0xa08010,892,,2,documented
