@@ -1,6 +1,7 @@
 // Condition::KindName (forever/src/rewrite/kind_names.cpp). Kinds -1 to 4; the text reference's stand-in notes the key
 // and holds a text or none (by the case); memory sometimes none; the copies, the empty text and the literal text noted.
 #if EQUIV_PART == 1
+static bool g_kn_stack;   // (the copy takes its values on the stack)
 static uint32_t kn_at(const void *p) { return p ? (uint32_t)((uintptr_t)p - (uintptr_t)arena<void>(0)) : 0; }
 static void *__fastcall kn_reference(uint8_t *self, void *, uint32_t key, uint32_t table, uint32_t flag) {
     dev_note(750, key); dev_note(750, table); dev_note(750, flag);
@@ -22,11 +23,13 @@ static void *__fastcall kn_literal(uint32_t *self, void *, const char *c) { dev_
                        arena<uint32_t>(0x60)[0] = r.next();
                    },
                    [](void *fn) {
-                       void *back = ((void *(__fastcall *)(void *, uint32_t))fn)(arena<void>(0x60), arena<uint32_t>(0x50)[0]);
+                       void *back = g_kn_stack ? ((void *(__stdcall *)(void *, uint32_t))fn)(arena<void>(0x60), arena<uint32_t>(0x50)[0])
+                                               : ((void *(__fastcall *)(void *, uint32_t))fn)(arena<void>(0x60), arena<uint32_t>(0x50)[0]);
                        return Result{kn_at(back) ^ *arena<uint32_t>(0x20) ^ kn_at(*arena<void *>(0x60)) * 3};
                    }};
     kind_name.iterations = 1000;
-    kind_name.prepare = [](const rewrite::Entry *) {
+    kind_name.prepare = [](const rewrite::Entry *e) {
+        g_kn_stack = e->at == 0xb6fe70;
         stubs_for_now({{0x4040f0, (void *)kn_reference}, {0xbd1880, (void *)kn_reference_gone}, {0xbcdfc0, (void *)kn_alloc}, {0xbcf7d0, (void *)kn_copy},
                        {0xbd0490, (void *)kn_empty}, {0xbcf850, (void *)kn_literal}});
     };

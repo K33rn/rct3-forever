@@ -18540,7 +18540,7 @@ address,size,name,callers,status
 0xb6f920,261,,2,documented
 0xb6fa30,413,,1,documented
 0xb6fbd0,659,,1,documented
-0xb6fe70,468,,2,documented
+0xb6fe70,468,Condition::KindName,2,rewritten
 0xb70080,44,Named::ValueB70080,1,rewritten
 0xb700b0,44,Named::ValueB70080,1,rewritten
 0xb700e0,44,Named::ValueB70080,1,rewritten
