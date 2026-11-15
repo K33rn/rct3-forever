@@ -7430,13 +7430,14 @@ static std::vector<Test> tests() {
     };
     designer_save.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(designer_save);
-    // Designer::FileButtonTip (three copies): the designer at arena 0x8000 (its state 0 or not), where the text goes (0x8100)
+    // Designer::FileButtonTip (four copies): the designer at arena 0x8000 (its state 0 or not), where the text goes (0x8100)
     Test file_button_tip{0x9bdd70,
                          [=](Rng &r) {
                              fresh(r);
                              for (int i = 0; i < 0x100; i++) arena<uint32_t>(0x8000)[i] = r.next();
                              for (int i = 0; i < 0x800; i++) arena<uint32_t>(0x2000)[i] = r.next();
                              arena<uint32_t>(0x8000)[0x2fc / 4] = r.range(0, 1) ? 0 : r.next();
+                             arena<uint8_t>(0x8000)[0x20a] = (uint8_t)(r.range(0, 1) ? 0 : r.range(1, 255));   // (the fireworks copy's state)
                              arena<uint32_t>(0x8100)[0] = r.next();
                              arena<uint32_t>(0x58)[0] = r.next();
                              arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0;

@@ -6,6 +6,7 @@ static const uint32_t gs_rows[][5] = {
 #define GUI_SOUNDS(at, first, second, third, name, ...) {at, first, second, third, name},
 #include "../../../forever/src/rewrite/gui_sounds.inc"
 #undef GUI_SOUNDS
+    {0x69aad0, 0x1304244, 0x1304244, 0x12fa680, 0xf53220},   // (gui_sounds.cpp's row written by hand)
 };
 static uint32_t g_gs_saved[4], g_gs_row;
 static void *__cdecl gs_alloc(uint32_t size) { dev_note(230, size); return dev_take(size); }
@@ -38,7 +39,7 @@ static void __thiscall gs_start(uint8_t *voice, uint8_t *at) { dev_note(233, (ui
                     }};
     gui_sounds.iterations = 1000;
     gui_sounds.prepare = [](const rewrite::Entry *e) {
-        for (uint32_t k = 0; k < 3; k++)
+        for (uint32_t k = 0; k < sizeof gs_rows / sizeof gs_rows[0]; k++)
             if (gs_rows[k][0] == e->at) g_gs_row = k;
         g_gs_saved[0] = *(uint8_t *)(uintptr_t)0x10eedd0;
         for (int k = 1; k < 4; k++) g_gs_saved[k] = *(uint32_t *)(uintptr_t)gs_rows[g_gs_row][k];

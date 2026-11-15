@@ -6744,7 +6744,7 @@ address,size,name,callers,status
 0x69a6e0,321,Sound::GUISound,0,rewritten
 0x69a830,321,Sound::GUISound,2,rewritten
 0x69a980,321,Sound::GUISound,6,rewritten
-0x69aad0,308,,0,documented
+0x69aad0,308,Sound::GUISound,0,rewritten
 0x69ac90,30,DeletingDestructor,0,rewritten
 0x69acb0,438,NamedTextRef::NamedTextRef,10,rewritten
 0x69ae70,438,NamedTextRef::NamedTextRef,9,rewritten
@@ -13969,7 +13969,7 @@ address,size,name,callers,status
 0x98bee0,36,,1,documented
 0x98bf10,379,,1,documented
 0x98c090,384,,1,documented
-0x98c210,256,,1,documented
+0x98c210,256,Designer::FileButtonTip,1,rewritten
 0x98c370,161,GameText::Copy,1,rewritten
 0x98c4d0,597,,1,documented
 0x98c730,137,,1,documented
