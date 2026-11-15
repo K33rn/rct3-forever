@@ -7262,9 +7262,9 @@ address,size,name,callers,status
 0x6c4f40,692,,1,documented
 0x6c5210,2860,,1,documented
 0x6c5d50,246,,1,documented
-0x6c5e50,249,,1,documented
-0x6c5f50,249,,1,documented
-0x6c6050,249,,2,documented
+0x6c5e50,249,Window::ShownName,1,rewritten
+0x6c5f50,249,Window::ShownName,1,rewritten
+0x6c6050,249,Window::ShownName,2,rewritten
 0x6c6150,107,Thing::New6C6150,1,rewritten
 0x6c61c0,30,DeletingDestructor,2,rewritten
 0x6c61e0,1043,,1,documented
