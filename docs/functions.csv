@@ -1738,7 +1738,7 @@ address,size,name,callers,status
 0x48cbc0,862,,1,documented
 0x48cf20,367,,1,documented
 0x48d090,424,,1,documented
-0x48d240,846,,1,documented
+0x48d240,846,Window::MessageNumberedStacked,1,rewritten
 0x48d5b0,32,Result::Make48D5B0,1,rewritten
 0x48d5d0,122,,1,documented
 0x48d650,32,Result::Make48D5B0,1,rewritten

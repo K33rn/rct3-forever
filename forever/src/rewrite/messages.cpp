@@ -3,6 +3,7 @@
 // number (0 to 4, anything else taking the last), it makes the message for it: the wide text the number's global points
 // to (a copy of it, or the shared empty text when there is none), with every "#" in it replaced by the number written
 // out ("%d", the game's sprintf). The result is given to the caller (ecx: where it goes; the number in edx).
+// Window::Message48D240 is the same function with its own six globals, taking both on the stack (row written here).
 #include "rewrite.h"
 
 namespace {
@@ -67,6 +68,9 @@ template <int K>
 int32_t **__fastcall message_copy(int32_t **out, uint32_t number) {
     return message(out, number, message_kinds[K]);
 }
+constexpr MessageKind stacked_kind = {0x48d240, {0x12fb7b0, 0x12fe290, 0x12fb218, 0x12ff314, 0x1303444, 0x1304768}};
+const uint8_t stacked_first[] = {0x6a, 0xff, 0x68, 0xa9, 0xe9, 0xe0, 0x00};
+int32_t **__stdcall message_stacked(int32_t **out, uint32_t number) { return message(out, number, stacked_kind); }
 }   // namespace
 // (the addresses again, as numbers, checked against the table)
 static_assert(message_kinds[0].at == 0x442c60 && message_kinds[1].at == 0x442fd0 && message_kinds[2].at == 0x443340 && message_kinds[3].at == 0x4436b0 &&
@@ -77,3 +81,4 @@ REWRITE("Window::MessageNumbered", 0x442fd0, message_first[1], (&message_copy<1>
 REWRITE("Window::MessageNumbered", 0x443340, message_first[2], (&message_copy<2>), &g_messages);
 REWRITE("Window::MessageNumbered", 0x4436b0, message_first[3], (&message_copy<3>), &g_messages);
 REWRITE("Window::MessageNumbered", 0x443b70, message_first[4], (&message_copy<4>), &g_messages);
+REWRITE("Window::MessageNumberedStacked", 0x48d240, stacked_first, &message_stacked, &g_messages);
