@@ -9441,7 +9441,7 @@ address,size,name,callers,status
 0x79e460,51,ListNode::Unlink,1,rewritten
 0x79e580,30,DeletingDestructor,1,rewritten
 0x79e5b0,1358,,2,documented
-0x79eb70,1231,,2,documented
+0x79eb70,1231,Guest::MakeRandom,2,rewritten
 0x79f040,1217,,1,documented
 0x79f770,75,,7,documented
 0x79f810,183,,3,documented
@@ -10106,7 +10106,7 @@ address,size,name,callers,status
 0x7e9130,80,,3,documented
 0x7e91e0,320,,2,documented
 0x7e9350,110,,1,documented
-0x7e93d0,1231,,2,documented
+0x7e93d0,1231,Guest::MakeRandom,2,rewritten
 0x7e98a0,153,Mode::Handle756B00,1,rewritten
 0x7e9940,105,Factory::Create,1,rewritten
 0x7e99b0,30,DeletingDestructor,3,rewritten
