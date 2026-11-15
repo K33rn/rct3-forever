@@ -6474,7 +6474,7 @@ address,size,name,callers,status
 0x67ed80,94,,3,documented
 0x67ede0,8,,8,documented
 0x67edf0,71,,3,documented
-0x67ee40,564,,4,documented
+0x67ee40,564,Window::Titled,4,rewritten
 0x67f0b0,156,,1,documented
 0x67f150,228,,1,documented
 0x67f260,98,Destructor::TablesAndMember,1,rewritten
@@ -14369,15 +14369,15 @@ address,size,name,callers,status
 0x9b6980,1841,,2,documented
 0x9b70c0,2170,,1,documented
 0x9b7940,2364,,1,documented
-0x9b8290,2214,,1,documented
+0x9b8290,2214,Window::Titled,1,rewritten
 0x9b8b40,2143,,1,documented
 0x9b93a0,265,,1,documented
 0x9b94b0,2023,,1,documented
 0x9b9cd0,71,,0,documented
 0x9b9d40,356,,1,documented
 0x9b9eb0,1720,,1,documented
-0x9ba570,1823,,1,documented
-0x9bac90,1417,,1,documented
+0x9ba570,1823,Window::Titled,1,rewritten
+0x9bac90,1417,Window::Titled,1,rewritten
 0x9bb220,1722,,1,documented
 0x9bb8e0,261,,5,documented
 0x9bb9f0,148,,5,documented
@@ -15004,7 +15004,7 @@ address,size,name,callers,status
 0x9f5ea0,233,,1,documented
 0x9f5fe0,30,,1,documented
 0x9f6000,11,,1,documented
-0x9f6170,655,,1,documented
+0x9f6170,655,Window::Titled,1,rewritten
 0x9f6420,104,,2,documented
 0x9f6490,132,,1,documented
 0x9f6520,546,,1,documented

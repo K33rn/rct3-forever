@@ -216,6 +216,10 @@ def layout_step(t, k, R):
             continue   # the exception frame's state
         if (mm := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', s)) and sim.get(mm.group(2)) == ('child', child):
             sim[mm.group(1)] = ('table', child)
+        elif (mm := re.fullmatch(r'mov ' + REG + r', dword ptr \[eax(?: \+ 4)?\]', s)) and sim.get('eax') == ('size',) and mm.group(1) != 'eax':
+            sim[mm.group(1)] = ('bits', 1 if '+ 4' in s else 0)   # the size's value copied as it is
+        elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, s)) and (sim.get(mm.group(2)) or ('',))[0] == 'bits':
+            local[num(mm.group(1)) - dd] = sim[mm.group(2)]
         elif (mm := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + me + r' \+ (0x[0-9a-f]+|\d+)\]', s)):
             v = num(mm.group(2))
             sim[mm.group(1)] = ('child', v) if v == child else ('member', v)
@@ -227,6 +231,8 @@ def layout_step(t, k, R):
             reg = mm.group(1)
             if reg in sim:
                 pushes.append(sim[reg])
+            elif R.get(reg) == ('this',):
+                pushes.append(('self',))
             else:   # a register the tail holds a constant in
                 pushes.append(('imm', R[reg][1]) if R.get(reg) and R[reg][0] == 'const' else None)
             dd += 4
@@ -249,13 +255,25 @@ def layout_step(t, k, R):
             if sim.get('ecx') != ('child', child) or len(pushes) != 3 or fpu:
                 return None
             rect, parent, relation = pushes
-            if not rect or rect[0] != 'local' or not parent or parent[0] not in ('member', 'child') or not relation or relation[0] != 'imm':
+            if not rect or rect[0] != 'local' or not parent or parent[0] not in ('member', 'child', 'self') or not relation or relation[0] != 'imm':
                 return None
             r0, r1, r2, r3 = (local.get(rect[1] + 4 * i) for i in range(4))
-            if not (r0 and r0[0] == 'imm' and r1 and r1[0] == 'imm' and r2 and r2[:2] == ('op', 0) and r3 and r3[:2] == ('op', 1)):
+            if not (r0 and r0[0] == 'imm' and r1 and r1[0] == 'imm'):
                 return None
-            flags = (r2[2] == 'sub') | (r3[2] == 'sub') << 1 | relation[1] << 8
-            return q + 1, (40, child, parent[1], 0x6b1640, [r0[1], r1[1], r2[3], r3[3], flags])
+            flags, adds = relation[1] << 8 | (32 if parent[0] == 'self' else 0), [0, 0]
+            for i, r_ in enumerate((r2, r3)):
+                if r_ and r_[:2] == ('op', i):        # w / h plus or minus a game float
+                    flags |= (r_[2] == 'sub') << i
+                    adds[i] = r_[3]
+                elif r_ == ('s', i):                  # only passed through the FPU
+                    flags |= 4 << i
+                elif r_ == ('bits', i):               # copied as it is
+                    flags |= 16
+                else:
+                    return None
+            if flags & 16 and (r2, r3) != (('bits', 0), ('bits', 1)):
+                return None
+            return q + 1, (40, child, 0 if parent[0] == 'self' else parent[1], 0x6b1640, [r0[1], r1[1], adds[0], adds[1], flags])
         else:
             return None
         if any(r in sim for r in ('ebx', 'esi', 'edi', 'ebp')):
@@ -416,6 +434,22 @@ def tail(p):
                 raise Reject('by-value store ' + s)
         elif (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], esp', s)) and (R.get('eax') or ('',))[0] == 'spslot':
             S.pop(num(m.group(1)) - d, None)   # (the exception frame keeps where that struct is)
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(1)) and \
+                val(m.group(1))[0] == 'field' and val(m.group(1))[2] == len(ops):
+            # a store into what a member points to (a child's value set)
+            member, inner, v = val(m.group(1))[1], num(m.group(2) or '0'), m.group(3)
+            w = val(v) if v in R else None
+            if re.fullmatch(r'0x[0-9a-f]+|\d+', v):
+                ops.append((44, member, num(v), 0, [inner]))
+            elif w and w[0] == 'const':
+                ops.append((44, member, w[1], 0, [inner]))
+            elif w and w[0] == 'global':
+                ops.append((45, member, w[1], 0, [inner]))
+            else:
+                raise Reject('child store ' + s)
+            for r_ in R:   # (the member itself is unchanged)
+                if R[r_] and R[r_][0] == 'field' and R[r_][2] == len(ops) - 1:
+                    R[r_] = ('field', R[r_][1], len(ops))
         elif (m := re.fullmatch(r'mov (dword|byte|word) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(2)) and \
                 val(m.group(2))[0] in ('this', 'member'):
             base_off = 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]
@@ -456,6 +490,8 @@ def tail(p):
             z = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, s)
             if z:   # locals (the exception frame's state is a byte or a constant)
                 S[num(z.group(1)) - d] = val(z.group(2))
+            elif (z := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)):
+                S[num(z.group(1)) - d] = ('const', num(z.group(2)))
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - d
             R[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs else S.get(slot, stored(slot, k))
@@ -473,8 +509,8 @@ def tail(p):
             R['e' + m.group(1) + 'x'] = ('byte', num(m.group(2)) & 0xff)
         elif (m := re.fullmatch(r'xor ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
             R['e' + m.group(1) + 'x'] = ('byte', 0); flag = None
-        elif (m := re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
-            R['ecx'] = ('stack', num(m.group(1)) - d)
+        elif (m := re.fullmatch(r'lea ' + REG + r', \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
+            R[m.group(1)] = ('stack', num(m.group(2)) - d)
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] in ('this', 'member'):
             R[m.group(1)] = ('member', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3)))
         elif (m := re.fullmatch(r'(test ' + REG + ', ' + REG + '|cmp ' + REG + ', ' + REG + ')', s)):
@@ -550,11 +586,10 @@ def tail(p):
             R['eax'] = ('spslot', len(pushed) - 1)
             k += 2
             continue
-        elif s == 'push ecx' and val('ecx') and val('ecx')[0] == 'stack':
-            w = S.get(val('ecx')[1])
-            if not w or w[0] != 'name':
-                raise Reject('local address')
-            pushed.append(('nameaddr', w[1])); d += 4
+        elif s == 'push ecx' and val('ecx') and val('ecx')[0] == 'stack' and (S.get(val('ecx')[1]) or ('',))[0] == 'name':
+            pushed.append(('nameaddr', S[val('ecx')[1]][1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack':
+            pushed.append(('rect', val(m.group(1))[1])); d += 4   # a local's address: only a layout's rectangle is understood
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'field' and val(m.group(1))[2] == len(ops):
             pushed.append(('field', val(m.group(1))[1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] in ('const', 'global', 'arg', 'this', 'member', 'temp'):
@@ -672,6 +707,25 @@ def tail(p):
             flag = None
             k += 9
             continue
+        elif s == 'call 0x6b1640' and val('ecx') and val('ecx')[0] == 'field' and val('ecx')[2] == len(ops) and len(pushed) >= 3 and \
+                isinstance(pushed[-3], tuple) and pushed[-3][0] == 'rect':
+            # a child laid out at a rectangle of constants (op 40, bit 6)
+            relation, to, rect = pushed[-1], pushed[-2], pushed[-3]
+            del pushed[-3:]
+            d -= 12
+            rv = [S.get(rect[1] + 4 * i) for i in range(4)]
+            if not isinstance(relation, int) or any(not r_ or r_[0] != 'const' for r_ in rv):
+                raise Reject('layout rectangle')
+            if to == ('self', 0):
+                how, to_off = 32, 0
+            elif isinstance(to, tuple) and to[0] == 'field':
+                how, to_off = 0, to[1]
+            else:
+                raise Reject('layout relative to')
+            ops.append((40, val('ecx')[1], to_off, 0x6b1640, [r_[1] for r_ in rv] + [relation << 8 | 64 | how]))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'field' and val('ecx')[2] == len(ops):
             fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
             if n_ is None or n_ > len(pushed) or n_ > 5:
@@ -706,6 +760,8 @@ def tail(p):
         raise Reject('tail left %s %s %s' % (len(pushed), len(nulls), sorted(built)))
     if ops.count((12, 0, 0, 0, [])) > 1:
         raise Reject('two marks')
+    if any(isinstance(v, tuple) and v[0] == 'rect' for o in ops for v in o[4]):
+        raise Reject('a local address given')
     return ops
 
 

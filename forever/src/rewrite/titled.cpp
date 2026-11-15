@@ -29,7 +29,11 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   only when it was made.
 //   40 a child laid out: the member at +off asked its size (its slot 0x20), then 0x6B1640 on it with the relation
 //   (args[4] >> 8), the member at +value and the rectangle {args[0], args[1] (bits), size w +/- the float at args[2],
-//   size h +/- the float at args[3]} (bit 0 / bit 1 of args[4]: subtracted), the sums on the FPU stored as floats.
+//   size h +/- the float at args[3]} (bit 0 / bit 1 of args[4]: subtracted), the sums on the FPU stored as floats;
+//   bit 2 / bit 3: w / h only passed through the FPU (a signalling NaN comes out quiet), bit 4: w and h copied as they
+//   are, bit 5: the window itself instead of the member; bit 6: the rectangle args[0] - args[3] as it is (not asked
+//   the size).
+//   44 / 45 the dword at +args[0] of what the member at +off points to set to value / the global at value as it is then.
 //   41 the dword at +args[1] of the member at +args[0] copied to +value of the member at +off.
 //   42 value bytes of aligned memory (0xBCDFD0), 43 the last of them stored at +off.
 // The values given to fn are by kind (4 bits each in kinds): 0 the value, 1 the global there, 2 the constructor's
@@ -38,6 +42,9 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 struct TitledOp {
     uint32_t kind, off, value, fn, count, args[5], kinds;
 };
+static void fpu_pass(const float *from, volatile uint32_t *to) {   // a float loaded onto the FPU and stored again
+    __asm__ volatile("flds %1\n\tfstps %0" : "=m"(*to) : "m"(*from));
+}
 // A value the base takes after (parent or title, text): a constant, or the constructor's argument number value.
 struct TitledExtra {
     uint32_t is_arg, value;
@@ -134,18 +141,29 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 41: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.value) = *(uint32_t *)(*(uint8_t **)(self + op.args[0]) + op.args[1]); break;
         case 40: {
             uint8_t *child = *(uint8_t **)(self + op.off);
-            uint8_t scratch[0x10];
-            const float *size = (const float *)((void *(__thiscall *)(void *, void *))(*(void ***)child)[0x20 / 4])(child, scratch);
             volatile uint32_t rect[4];
-            const long double w = (long double)size[0], kw = *(const float *)(uintptr_t)op.args[2];
-            volatile float width = op.args[4] & 1 ? w - kw : w + kw;
-            const long double h = (long double)size[1], kh = *(const float *)(uintptr_t)op.args[3];
-            volatile float height = op.args[4] & 2 ? h - kh : h + kh;
+            const uint32_t how = op.args[4];
             rect[0] = op.args[0], rect[1] = op.args[1];
-            rect[2] = *(volatile uint32_t *)&width, rect[3] = *(volatile uint32_t *)&height;
-            ((void(__thiscall *)(void *, uint32_t, void *, volatile uint32_t *))0x6b1640)(child, op.args[4] >> 8, *(void **)(self + op.value), rect);
+            uint8_t scratch[0x10];
+            const float *size = how & 64 ? nullptr : (const float *)((void *(__thiscall *)(void *, void *))(*(void ***)child)[0x20 / 4])(child, scratch);
+            for (int i = 0; i < 2; i++) {
+                if (how & 64) {
+                    rect[2 + i] = op.args[2 + i];
+                } else if (how & 16) {
+                    rect[2 + i] = ((const uint32_t *)size)[i];
+                } else if (how & (4 << i)) {
+                    fpu_pass(&size[i], &rect[2 + i]);
+                } else {
+                    const long double v = (long double)size[i], k = *(const float *)(uintptr_t)op.args[2 + i];
+                    volatile float sum = how & (1 << i) ? v - k : v + k;
+                    rect[2 + i] = *(volatile uint32_t *)&sum;
+                }
+            }
+            ((void(__thiscall *)(void *, uint32_t, void *, volatile uint32_t *))0x6b1640)(child, how >> 8, how & 32 ? (void *)self : *(void **)(self + op.value), rect);
             break;
         }
+        case 44: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = op.value; break;
+        case 45: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = *(uint32_t *)(uintptr_t)op.value; break;
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;
         case 27: *(uint32_t *)(self + op.off) |= op.value; break;
         case 3: titled_call(op.fn, self + op.off, op.count, args); break;

@@ -6027,6 +6027,8 @@ static std::vector<Test> tests() {
                           [=](Rng &r) {
                               fresh(r);
                               *arena<uint32_t>(ALLOC_NEXT) = 0;
+                              for (uint32_t k = 0; k < 0x500; k += 4)   // the window's members: each points somewhere (16 places), so writes through them land
+                                  arena<uint32_t>(0x100 + k)[0] = (uint32_t)(uintptr_t)arena<void>(0xc000 + k / 4 % 16 * 0x40);
                               uint32_t *title = arena<uint32_t>(0x8000);
                               title[1] = 0;
                               title[2] = r.range(0, 2) ? (uint32_t)(uintptr_t)"Title" : 0;
@@ -6047,8 +6049,12 @@ static std::vector<Test> tests() {
                               }
                               for (int k = 0; k < 16; k++) {   // the children's sizes
                                   const uint32_t odd[] = {0x7fc00000, 0x7f800000, 0xff800000, 0x7fa00001, 0};
-                                  arena<uint32_t>(0x8f00)[k] = r.range(0, 5) ? r.next() >> 3 | (r.range(0, 1) ? 0 : 0x80000000u) : odd[r.range(0, 4)];
-                                  if (r.range(0, 1)) arena<float>(0x8f00)[k] = (float)r.range(0, 900) + 0.5f * (float)r.range(0, 1);
+                                  uint32_t bits = r.range(0, 5) ? r.next() >> 3 | (r.range(0, 1) ? 0 : 0x80000000u) : odd[r.range(0, 4)];
+                                  if (r.range(0, 1)) {
+                                      const float plain = (float)r.range(0, 900) + 0.5f * (float)r.range(0, 1);
+                                      memcpy(&bits, &plain, 4);
+                                  }
+                                  ((volatile uint32_t *)arena<uint32_t>(0x8f00))[k] = bits;   // (as bits: through the FPU a signalling NaN would come out quiet)
                               }
                               arena<uint32_t>(0x100)[0xe0 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8c00);   // (the parent the base keeps)
                               arena<uint32_t>(CALL_LOG)[0] = 0;
