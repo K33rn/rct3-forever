@@ -15665,9 +15665,9 @@ address,size,name,callers,status
 0xa31fd0,212,ReferenceField::Load,1,rewritten
 0xa320b0,122,Array::Make823180,1,rewritten
 0xa32190,102,Factory::Create,1,rewritten
-0xa32200,256,,4,documented
-0xa32320,256,,4,documented
-0xa32440,256,,5,documented
+0xa32200,256,Animal::Value,4,rewritten
+0xa32320,256,Animal::Value,4,rewritten
+0xa32440,256,Animal::Value,5,rewritten
 0xa32560,282,,2,documented
 0xa326a0,283,,6,documented
 0xa327e0,303,,0,documented
