@@ -1129,7 +1129,7 @@ The game's user interface: each window or dialog is built by one function that c
 | `0x6c2e80` | Window::Money6C2E80 | In outline: shows a money text (Money::Text6BEF60) |
 | `0xa3b690` | Window::MakeA3B690 | In outline: makes a part |
 | `0x479850` | Window::Make479850 | In outline: makes a part |
-| `0x458840` | Window::Make458840 | In outline: makes a part |
+| `0x458840` | Window::Make458840 | Copies a file (fastcall: destination path, source path) in 0x400-byte pieces (rewritten as Files::Copy, with 0x479850 and 0xA3B690) |
 | `0x9eea50` | Window::Mode9EEA50 | In outline: a step in mode 1 |
 | `0x67a960` | Window::Mode67A960 | In outline: a step in modes 2 or 3 |
 | `0x6a0560` | Window::Make6A0560 | In outline: makes a part |

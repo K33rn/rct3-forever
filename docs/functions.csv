@@ -1086,7 +1086,7 @@ address,size,name,callers,status
 0x4583a0,551,Folder::SpecialOrDocuments,4,rewritten
 0x4585d0,551,Folder::SpecialOrDocuments,3,rewritten
 0x458820,27,Sized::Construct458130,5,rewritten
-0x458840,457,,2,documented
+0x458840,457,Files::Copy,2,rewritten
 0x458a10,9032,,1,documented
 0x45ad60,102,,1,documented
 0x45ade0,37,,0,documented
@@ -1520,7 +1520,7 @@ address,size,name,callers,status
 0x4797b0,15,,58,documented
 0x4797c0,18,,27,documented
 0x4797e0,69,,1,documented
-0x479850,457,,1,documented
+0x479850,457,Files::Copy,1,rewritten
 0x479a20,246,,0,documented
 0x479b20,260,,0,documented
 0x479c30,248,,0,documented
@@ -15739,7 +15739,7 @@ address,size,name,callers,status
 0xa3aa10,1049,,3,documented
 0xa3ae30,2094,,1,documented
 0xa3b660,34,,1,documented
-0xa3b690,457,,1,documented
+0xa3b690,457,Files::Copy,1,rewritten
 0xa3b860,2392,,1,documented
 0xa3c1c0,171,,2,documented
 0xa3c270,105,Factory::Create,1,rewritten
