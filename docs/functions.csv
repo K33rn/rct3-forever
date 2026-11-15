@@ -7327,7 +7327,7 @@ address,size,name,callers,status
 0x6cd8e0,114,WideText::CopyOf,1,rewritten
 0x6cd960,1647,,1,documented
 0x6ce2c0,3660,,1,documented
-0x6cf110,738,,1,documented
+0x6cf110,738,Window::BuildCentred,1,rewritten
 0x6cf430,40,Text::Widen,0,rewritten
 0x6cf4b0,389,,1,documented
 0x6cf640,306,,1,documented
@@ -7721,7 +7721,7 @@ address,size,name,callers,status
 0x6e9270,127,Five::Destroy6CC840,1,rewritten
 0x6e9340,30,DeletingDestructor,2,rewritten
 0x6e9360,114,WideText::CopyOf,1,rewritten
-0x6e93e0,738,,1,documented
+0x6e93e0,738,Window::BuildCentred,1,rewritten
 0x6e9790,225,,1,documented
 0x6e9890,54,,1,documented
 0x6e98d0,49,,1,documented
