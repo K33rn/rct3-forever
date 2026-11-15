@@ -12,6 +12,7 @@ static const void *__thiscall pp_size(void *part, void *place) {
     if (dev_next() % 3 == 0) *(void **)(arena<uint8_t>(0x100) + 0x11c) = arena<void>(0x600), *(void **)(arena<uint8_t>(0x100) + 0xf8) = arena<void>(0x600);
     return arena<void>(0x700);
 }
+static const void *__thiscall pp_size_20(void *part, void *place) { dev_note(313, 0x20); return pp_size(part, place); }   // (the slots told apart)
 static void *pp_table[0xf4 / 4 + 1];   // (slot 0x20 for 0x6DBC90's part, 0xF4 for the others)
 static float pp_value(Rng &r) {
     switch (r.range(0, 9)) {
@@ -26,7 +27,7 @@ static float pp_value(Rng &r) {
                      [=](Rng &r) {
                          fresh(r);
                          arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next();
-                         pp_table[0xf4 / 4] = (void *)pp_size, pp_table[0x20 / 4] = (void *)pp_size;
+                         pp_table[0xf4 / 4] = (void *)pp_size, pp_table[0x20 / 4] = (void *)pp_size_20;
                          uint8_t *w = arena<uint8_t>(0x100);
                          *(void **)(w + 0xd4) = arena<void>(0x300), *(void **)(w + 0xf4) = arena<void>(0x400), *(void **)(w + 0x11c) = arena<void>(0x500), *(void **)(w + 0xf8) = arena<void>(0x500);
                          for (uint32_t base : {0x300u, 0x400u, 0x500u, 0x600u}) {
