@@ -1120,7 +1120,7 @@ address,size,name,callers,status
 0x45c780,1296,,1,documented
 0x45cc90,173,Destructor::Steps,103,rewritten
 0x45cdc0,5,,15,documented
-0x45cdd0,502,,0,documented
+0x45cdd0,502,Window::Titled,0,rewritten
 0x45d060,30,DeletingDestructor,2,rewritten
 0x45d090,3224,,1,documented
 0x45dd90,40,Text::Widen,0,rewritten
@@ -6457,7 +6457,7 @@ address,size,name,callers,status
 0x67d4b0,149,,1,documented
 0x67d550,715,,1,documented
 0x67d830,642,,1,documented
-0x67dac0,499,,18,documented
+0x67dac0,499,Window::Titled,18,rewritten
 0x67dce0,30,DeletingDestructor,2,rewritten
 0x67dd00,30,DeletingDestructor,3,rewritten
 0x67dd20,511,,5,documented
@@ -11736,7 +11736,7 @@ address,size,name,callers,status
 0x86ee40,155,,2,documented
 0x86eee0,121,,1,documented
 0x86ef60,239,,2,documented
-0x86f050,651,,4,documented
+0x86f050,651,Window::Titled,4,rewritten
 0x86f310,106,Destructor::Steps,7,rewritten
 0x86f380,95,Factory::CreateWith,1,rewritten
 0x86f3e0,417,,1,documented

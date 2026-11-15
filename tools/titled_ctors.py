@@ -509,6 +509,8 @@ def tail(p):
                     raise Reject('tail store ' + s)
             elif size == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] in ('const', 'byte'):
                 ops.append((1, off, val('e' + v[0] + 'x')[1] & 0xff, 0, []))
+            elif size == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] == 'argbyte':
+                ops.append((49, off, val('e' + v[0] + 'x')[1], 0, []))   # an argument's low byte
             else:
                 raise Reject('tail store ' + s)
         elif re.fullmatch(r'mov (dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', s):
@@ -532,6 +534,9 @@ def tail(p):
             R[m.group(1)] = ('const', num(m.group(2)))
         elif (m := re.fullmatch(r'mov ([abcd])l, (0x[0-9a-f]+|\d+)', s)):
             R['e' + m.group(1) + 'x'] = ('byte', num(m.group(2)) & 0xff)
+        elif (m := re.fullmatch(r'mov ([abcd])l, byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and \
+                (num(m.group(2)) - d) >= 4 and (num(m.group(2)) - d) % 4 == 0 and (num(m.group(2)) - d) // 4 <= nargs:
+            R['e' + m.group(1) + 'x'] = ('argbyte', (num(m.group(2)) - d) // 4)   # an argument's low byte
         elif (m := re.fullmatch(r'xor ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
             R['e' + m.group(1) + 'x'] = ('byte', 0); flag = None
         elif (m := re.fullmatch(r'lea ' + REG + r', \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):

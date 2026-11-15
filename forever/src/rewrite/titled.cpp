@@ -35,6 +35,7 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   the size).
 //   44 / 45 the dword at +args[0] of what the member at +off points to set to value / the global at value as it is then.
 //   47 / 48 or / and the dword at +args[0] of what the member at +off points to with value.
+//   49 the byte at +off set to the constructor's argument number value's low byte.
 //   46 call fn on the new object: what its constructor returned (off 0) or its memory (1); with value 1 only when there
 //   was memory, else always (on null when there was none).
 //   41 the dword at +args[1] of the member at +args[0] copied to +value of the member at +off.
@@ -167,6 +168,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         }
         case 47: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) |= op.value; break;
         case 48: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) &= op.value; break;
+        case 49: self[op.off] = (uint8_t)given[op.value]; break;
         case 46:
             if (memory || !op.value) titled_call(op.fn, op.off ? (void *)memory : object, op.count, args);
             break;
