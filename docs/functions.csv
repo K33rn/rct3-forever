@@ -2671,7 +2671,7 @@ address,size,name,callers,status
 0x4d5630,105,Factory::Create,1,rewritten
 0x4d56a0,1642,,1,documented
 0x4d5d40,830,,1,documented
-0x4d60a0,567,,6,documented
+0x4d60a0,567,Window::BuildWithReference,6,rewritten
 0x4d6300,30,DeletingDestructor,2,rewritten
 0x4d6320,79,Destructor::MemberThenBase,1,rewritten
 0x4d63b0,40,Text::Widen,0,rewritten
@@ -18729,7 +18729,7 @@ address,size,name,callers,status
 0xb7ecf0,652,,1,documented
 0xb7ef80,3463,,1,documented
 0xb7fd50,686,,1,documented
-0xb80020,567,,2,documented
+0xb80020,567,Window::BuildWithReference,2,rewritten
 0xb80280,30,DeletingDestructor,2,rewritten
 0xb802a0,79,Destructor::MemberThenBase,1,rewritten
 0xb80330,55,,1,documented
