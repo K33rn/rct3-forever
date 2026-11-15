@@ -3811,7 +3811,7 @@ address,size,name,callers,status
 0x55c630,30,DeletingDestructor,2,rewritten
 0x55c650,3218,,3,documented
 0x55d300,605,Dialog::Label,14,rewritten
-0x55d570,684,,1,documented
+0x55d570,684,Window::Titled,1,rewritten
 0x55d820,5008,,1,documented
 0x55ebb0,50,,0,documented
 0x55ebf0,40,Text::Widen,0,rewritten
@@ -17165,7 +17165,7 @@ address,size,name,callers,status
 0xad5700,3390,,2,documented
 0xad6440,30,DeletingDestructor,3,rewritten
 0xad6460,422,Designer::OpenFiles,1,rewritten
-0xad6610,670,,1,documented
+0xad6610,670,Window::Titled,1,rewritten
 0xad6a10,124,Panel::Dtor923E10,4,rewritten
 0xad6ac0,1062,,2,documented
 0xad6ef0,126,ObjectRef::Assign,3,rewritten
@@ -17346,7 +17346,7 @@ address,size,name,callers,status
 0xaef020,1999,,2,documented
 0xaef7f0,30,DeletingDestructor,3,rewritten
 0xaef810,422,Designer::OpenFiles,1,rewritten
-0xaef9c0,670,,1,documented
+0xaef9c0,670,Window::Titled,1,rewritten
 0xaefca0,353,,2,documented
 0xaefe80,124,Panel::Dtor923E10,4,rewritten
 0xaeff30,126,ObjectRef::Assign,3,rewritten

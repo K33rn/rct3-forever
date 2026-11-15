@@ -32,10 +32,12 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   size h +/- the float at args[3]} (bit 0 / bit 1 of args[4]: subtracted), the sums on the FPU stored as floats;
 //   bit 2 / bit 3: w / h only passed through the FPU (a signalling NaN comes out quiet), bit 4: w and h copied as they
 //   are, bit 5: the window itself instead of the member; bit 6: the rectangle args[0] - args[3] as it is (not asked
-//   the size).
+//   the size); bit 7: the new object instead of the member (off 0: what its constructor returned, 1: its memory).
 //   44 / 45 the dword at +args[0] of what the member at +off points to set to value / the global at value as it is then.
 //   47 / 48 or / and the dword at +args[0] of what the member at +off points to with value.
 //   49 the byte at +off set to the constructor's argument number value's low byte.
+//   51 a game global (at fn) set to value: a byte (off 1) or a dword.
+//   50 one more hold on the shared text the constructor's argument number value holds (its count, at the text's start).
 //   46 call fn on the new object: what its constructor returned (off 0) or its memory (1); with value 1 only when there
 //   was memory, else always (on null when there was none).
 //   41 the dword at +args[1] of the member at +args[0] copied to +value of the member at +off.
@@ -144,7 +146,8 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 30: *(uint32_t *)(self + op.off) = *(uint32_t *)(self + op.value); break;
         case 41: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.value) = *(uint32_t *)(*(uint8_t **)(self + op.args[0]) + op.args[1]); break;
         case 40: {
-            uint8_t *child = *(uint8_t **)(self + op.off);
+            const uint32_t how_ = op.args[4];
+            uint8_t *child = how_ & 128 ? (op.off ? memory : (uint8_t *)object) : *(uint8_t **)(self + op.off);
             volatile uint32_t rect[4];
             const uint32_t how = op.args[4];
             rect[0] = op.args[0], rect[1] = op.args[1];
@@ -169,6 +172,11 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 47: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) |= op.value; break;
         case 48: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) &= op.value; break;
         case 49: self[op.off] = (uint8_t)given[op.value]; break;
+        case 50: ++**(int32_t **)(uintptr_t)given[op.value]; break;
+        case 51:
+            if (op.off == 1) *(volatile uint8_t *)(uintptr_t)op.fn = (uint8_t)op.value;
+            else *(volatile uint32_t *)(uintptr_t)op.fn = op.value;
+            break;
         case 46:
             if (memory || !op.value) titled_call(op.fn, op.off ? (void *)memory : object, op.count, args);
             break;

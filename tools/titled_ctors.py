@@ -427,6 +427,16 @@ def tail(p):
             R[m.group(1)] = ('argderef', val(m.group(2))[1], len(ops))   # what an argument points to
             k += 1
             continue
+        if (m := re.fullmatch(r'mov (byte|dword) ptr \[(0x1[0-9a-f]{6})\], (0x[0-9a-f]+|\d+)', s)):
+            ops.append((51, 1 if m.group(1) == 'byte' else 4, num(m.group(3)), num(m.group(2)), []))   # a game global set
+            k += 1
+            continue
+        if (m := re.fullmatch(r'inc dword ptr \[' + REG + r'\]', s)) and val(m.group(1)) and val(m.group(1))[0] == 'argderef' and \
+                all(o[0] in (29, 0, 1, 2, 4, 5, 6) for o in ops[val(m.group(1))[2]:]):
+            ops.append((50, 0, val(m.group(1))[1], 0, []))   # a hold taken on the text an argument holds
+            flag = None
+            k += 1
+            continue
         if (m := re.fullmatch(r'(and|or) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(2)) and val(m.group(2))[0] == 'field':
             R[m.group(2)] = ('field' + m.group(1), val(m.group(2))[1], num(m.group(3)), val(m.group(2))[2])
             flag = None; k += 1
@@ -768,8 +778,8 @@ def tail(p):
             flag = None
             k += 9
             continue
-        elif s == 'call 0x6b1640' and still(val('ecx')) and len(pushed) >= 3 and \
-                isinstance(pushed[-3], tuple) and pushed[-3][0] == 'rect':
+        elif s == 'call 0x6b1640' and (still(val('ecx')) or val('ecx') and val('ecx')[0] == 'obj' and val('ecx')[1] == cur and not nulls) and \
+                len(pushed) >= 3 and isinstance(pushed[-3], tuple) and pushed[-3][0] == 'rect':
             # a child laid out at a rectangle of constants (op 40, bit 6)
             relation, to, rect = pushed[-1], pushed[-2], pushed[-3]
             del pushed[-3:]
@@ -783,7 +793,10 @@ def tail(p):
                 how, to_off = 0, to[1]
             else:
                 raise Reject('layout relative to')
-            ops.append((40, val('ecx')[1], to_off, 0x6b1640, [r_[1] for r_ in rv] + [relation << 8 | 64 | how]))
+            if val('ecx')[0] == 'obj':   # (the new object laid out: what its constructor returned, or its memory)
+                ops.append((40, 0 if val('ecx')[2] == 'returned' else 1, to_off, 0x6b1640, [r_[1] for r_ in rv] + [relation << 8 | 64 | 128 | how]))
+            else:
+                ops.append((40, val('ecx')[1], to_off, 0x6b1640, [r_[1] for r_ in rv] + [relation << 8 | 64 | how]))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             flag = None

@@ -213,6 +213,7 @@ static void record(uint32_t fn, void *arg) {
 static void *g_text_ref;
 // a value given to a stand-in: a temporary on the stack is told by what it is (the text made last: 0x7e57; other:
 // its first dword), never by where it is, which differs between the original's run and the rewrite's
+static uint8_t g_titled_flags[2];   // (two game flags the titled test puts back after each call)
 static bool g_built_other;   // the member stand-ins return a pointer of their own (so what a constructor returns is told from its memory)
 // (an object built for the titled windows' test gets a table whose slot 0x20 gives its size: two floats from the
 // arena at 0x8f00, picked by the object's address so different children differ, NaN and infinity among them)
@@ -6042,6 +6043,9 @@ static std::vector<Test> tests() {
                               for (int k = 2; k < 7; k++) {   // the other arguments: pointers to filled memory (read through, or kept as values)
                                   arena<uint32_t>(0x10)[k] = (uint32_t)(uintptr_t)arena<void>(0x9000 + k * 0x40);
                                   for (int q = 0; q < 16; q++) arena<uint32_t>(0x9000 + k * 0x40)[q] = r.next();
+                                  // (its first dword a shared text's place, for the copies that hold what it holds)
+                                  arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)arena<void>(0x9400 + k * 0x10);
+                                  arena<uint32_t>(0x9400 + k * 0x10)[0] = r.range(1, 3);
                               }
                               for (uint32_t h : {0x700u, 0x600u}) {   // the empty handle and the one of no object, each with a list
                                   arena<uint32_t>(h)[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(h + 0x80);
@@ -6073,9 +6077,13 @@ static std::vector<Test> tests() {
                               case 6: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]); break;
                               default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
                               }
+                              arena<uint8_t>(0x48)[0] = *(volatile uint8_t *)(uintptr_t)0x13ce4c8;   // (the game globals some copies set: compared)
+                              arena<uint8_t>(0x48)[1] = *(volatile uint8_t *)(uintptr_t)0x13ce594;
+                              *(volatile uint8_t *)(uintptr_t)0x13ce4c8 = g_titled_flags[0], *(volatile uint8_t *)(uintptr_t)0x13ce594 = g_titled_flags[1];
                               return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
                           }};
     titled_construct.prepare = [](const rewrite::Entry *e) {
+        g_titled_flags[0] = *(uint8_t *)(uintptr_t)0x13ce4c8, g_titled_flags[1] = *(uint8_t *)(uintptr_t)0x13ce594;
         static void *const bases[7] = {nullptr, nullptr, (void *)stub_titled_base2, (void *)stub_titled_base3, (void *)stub_titled_base4, (void *)stub_titled_base5, (void *)stub_titled_base6};
         static void *const built[6] = {(void *)stub_built0, (void *)stub_built1, (void *)stub_built2, (void *)stub_built3, (void *)stub_built4, (void *)stub_built5};
         uint32_t base = 0, base_args = 2;
