@@ -531,6 +531,21 @@ static void *__fastcall stub_built_edx3(void *self, void *edx, uint32_t a, uint3
     record(0x81, self); record(0x81, arg_value((uint32_t)(uintptr_t)edx)); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c));
     return built_result(self);
 }
+// the same, for a function given a run's locals: what a place on the stack holds is noted for 16 bytes
+static void built_rect_arg(uint32_t v) {
+    uintptr_t here = (uintptr_t)&v;
+    if (v > here && v - here < 0x4000)
+        for (int k = 0; k < 4; k++) record(0x81, (void *)(uintptr_t)(0x57ac0000u ^ ((uint32_t *)(uintptr_t)v)[k]));
+    else record(0x81, arg_value(v));
+}
+static void *__thiscall stub_built_rect1(void *self, uint32_t a) { record(0x81, self); built_rect_arg(a); return built_result(self); }
+static void *__thiscall stub_built_rect2(void *self, uint32_t a, uint32_t b) { record(0x81, self); built_rect_arg(a); built_rect_arg(b); return built_result(self); }
+static void *__thiscall stub_built_rect3(void *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x81, self); built_rect_arg(a); built_rect_arg(b); built_rect_arg(c); return built_result(self);
+}
+static void *__thiscall stub_built_rect4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x81, self); built_rect_arg(a); built_rect_arg(b); built_rect_arg(c); built_rect_arg(d); return built_result(self);
+}
 static void __thiscall stub_field_add(void *list, void *field) { record(0x82, list); record(0x82, field); }
 static void __thiscall stub_struct_total(void *field) { record(0x86, field); }   // a struct field closed (slot 0, 0x808D90)
 static void *__thiscall stub_list_member(void *self, void *list) { record(0x87, self); record(0x87, list); return self; }   // ListMember::ListMember (0xCD2B30)
@@ -6075,6 +6090,17 @@ static std::vector<Test> tests() {
                                   }
                                   ((volatile uint32_t *)arena<uint32_t>(0x8f00))[k] = bits;   // (as bits: through the FPU a signalling NaN would come out quiet)
                               }
+                              {   // the window's rectangle (+0x7C..+0x8C) and some of what members point to: floats, odd ones among them
+                                  const uint32_t odd[] = {0x7fa00001, 0xffc00000, 0x7fc00000, 0x7f800000, 0x80000000, 0x00000001, 0x7fe00003, 0xff900005};
+                                  auto value = [&]() -> uint32_t {
+                                      if (r.range(0, 3) == 0) return odd[r.range(0, 7)];
+                                      const float f = (float)r.range(-4000, 4000) / 8.0f;
+                                      uint32_t b; memcpy(&b, &f, 4); return b;
+                                  };
+                                  for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0x100 + off)[0] = value();
+                                  for (uint32_t blk = 0; blk < 16; blk++)
+                                      for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0xc000 + blk * 0x40 + (off & 0x3f))[0] = value();
+                              }
                               arena<uint32_t>(0x100)[0xe0 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8c00);   // (the parent the base keeps)
                               arena<uint32_t>(0x4c)[0] = r.next();   // (which of the arguments only a cast reads are 0 this time)
                               arena<uint32_t>(CALL_LOG)[0] = 0;
@@ -6117,10 +6143,12 @@ static std::vector<Test> tests() {
                                                          {0x6b1640, (void *)titled_layout}, {0xbeca40, (void *)stub_name_make},
                                                          {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free},
                                                          {0x41cb90, (void *)stub_named_text_ref}};
+        static void *const built_rect[5] = {(void *)stub_built0, (void *)stub_built_rect1, (void *)stub_built_rect2, (void *)stub_built_rect3, (void *)stub_built_rect4};
         static void *const built_edx[4] = {(void *)stub_built_edx0, (void *)stub_built_edx1, (void *)stub_built_edx2, (void *)stub_built_edx3};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at)
-                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
+                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
+                                                  : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         stubs_for_now(list);
         g_built_other = true;
     };

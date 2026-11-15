@@ -31,6 +31,10 @@ for _f in os.listdir(os.path.join(HERE, 'forever', 'src', 'rewrite')):
         _others |= {int(x, 16) for x in re.findall(r'(?:REWRITE\("[^"]+",|^[A-Z_0-9]+\()\s*(0x[0-9a-fA-F]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', _f), encoding='utf-8').read(), re.M)}
 mine |= {a for a, r in rows.items() if r['status'] == 'rewritten' and a not in _others}
 SEPARATOR = 0xf2738c
+FPU_PROGRAM = []   # the x87 runs' steps (code, kind, value), all constructors' in one table (op 59 gives where its run starts)
+# the run steps: x87 instructions as the game has them, replayed one by one (titled.cpp)
+FPU_CODES = {'fld': 1, 'fild': 21, 'fst': 3, 'fstp': 4, 'fadd': 5, 'fsub': 6, 'fsubr': 7, 'fmul': 8, 'fdiv': 9, 'fdivr': 10,
+             'faddp': 11, 'fsubp': 12, 'fsubrp': 13, 'fmulp': 14, 'fdivp': 15, 'fdivrp': 16}
 
 
 class Reject(Exception):
@@ -698,6 +702,182 @@ def tail(p):
     edx_live = [False]          # edx written since the last call and not used since (a call may read it)
     edx_call = [None]           # a call made with edx live: the step count before it (its step must take edx = this)
 
+    def fpu_step(k0):
+        # a run of x87 work building values on the stack, then a direct call given them: from k0 (an x87 instruction) to
+        # the call. Its steps: fld / fild / fst / fstp / fadd .. fdivr with a dword operand (a game global, the window's,
+        # what a member points to, a stack local of the run or the constructor's argument), fld st(i), fxch st(i),
+        # f..p st(1), fadd st(0), st(i) and the like, fchs, fld1, fldz, fstp st(0); integer copies into locals (mov R,
+        # [operand]; mov [esp + N], R) and constants. Pushes before and in it: constants, the window, a member, what a
+        # member points to, a local's place. The callee's ecx: the window, a member or what a member points to. The
+        # FPU must end empty; nothing else may be written. Gives (index after the call, the op) or None.
+        nonlocal d
+        prog, depth, fpu = [], d, 0
+        regs = {}       # registers set in the run: ('bits', operand) / ('local', slot) / ('ecx', value)
+        written = set() # locals the run writes (entry-relative slots)
+        known_locals = {}
+        def operand(text, q, store=False):
+            mm = re.fullmatch(r'dword ptr \[(0x[0-9a-f]+)\]', text)
+            if mm:
+                return (1, num(mm.group(1)))
+            mm = re.fullmatch(r'dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', text)
+            if mm:
+                slot = num(mm.group(1)) - depth
+                if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs:
+                    if slot in clobbered:
+                        return None
+                    return (5, slot // 4)
+                if slot < 0 and -slot <= 0x100 and slot % 4 == 0:
+                    if slot not in written and not store:
+                        v = S.get(slot)
+                        if not v or v[0] != 'const':
+                            return None
+                        known_locals[slot] = v[1]
+                    return (4, (slot + 0x100) // 4)
+                return None
+            mm = re.fullmatch(r'dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', text)
+            if mm:
+                off = num(mm.group(2) or '0')
+                v = regs.get(mm.group(1), ('r', R.get(mm.group(1))))
+                v = v[1] if v[0] in ('r', 'ecx') else None
+                if v == ('this',): return (2, off)
+                if v and v[0] == 'member': return (2, v[1] + off)
+                if v and still(v) and v[1] < 0x10000 and off < 0x10000: return (3, v[1] | off << 16)
+            return None
+        args_pushed = list(pushed)
+        q = k0
+        while q < len(t):
+            u, xq = t[q], ins[q]
+            if xq.mnemonic == 'call':
+                break
+            if re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', u):
+                q += 1; continue   # (the exception frame's state)
+            mm = re.fullmatch(r'(f\w+) (dword ptr \[.+\])', u)
+            if mm and mm.group(1) in FPU_CODES:
+                code = FPU_CODES[mm.group(1)]
+                o_ = operand(mm.group(2), q, store=code in (3, 4))
+                if o_ is None:
+                    return None
+                if code in (3, 4):   # a store: only into a local
+                    if o_[0] != 4:
+                        return None
+                    written.add(o_[1] * 4 - 0x100)
+                prog.append((code, o_[0], o_[1]))
+                fpu += {1: 1, 21: 1, 4: -1}.get(code, 0)
+            elif (mm := re.fullmatch(r'fld st\((\d)\)', u)):
+                prog.append((2, 0, int(mm.group(1)))); fpu += 1
+            elif (mm := re.fullmatch(r'fxch st\((\d)\)', u)):
+                prog.append((17, 0, int(mm.group(1))))
+            elif (mm := re.fullmatch(r'f(add|sub|subr|mul|div|divr)p st\(1\)', u)):
+                prog.append((FPU_CODES['f' + mm.group(1) + 'p'], 0, 1)); fpu -= 1
+            elif (mm := re.fullmatch(r'f(add|sub|subr|mul|div|divr) st\(0\), st\((\d)\)|f(add|sub|subr|mul|div|divr) st\((\d)\)', u)):
+                op_, i_ = (mm.group(1), mm.group(2)) if mm.group(1) else (mm.group(3), mm.group(4))
+                prog.append((30 + ['add', 'sub', 'subr', 'mul', 'div', 'divr'].index(op_), 0, int(i_)))   # st(0) = st(0) op st(i)
+            elif (mm := re.fullmatch(r'f(add|sub|subr|mul|div|divr) st\((\d)\), st\(0\)', u)):
+                prog.append((40 + ['add', 'sub', 'subr', 'mul', 'div', 'divr'].index(mm.group(1)), 0, int(mm.group(2))))   # st(i) = st(i) op st(0)
+            elif u == 'fchs ':
+                prog.append((18, 0, 0))
+            elif u == 'fld1 ':
+                prog.append((23, 0, 0)); fpu += 1
+            elif u == 'fldz ':
+                prog.append((24, 0, 0)); fpu += 1
+            elif u == 'fstp st(0)':
+                prog.append((22, 0, 0)); fpu -= 1
+            elif (mm := re.fullmatch(r'mov ' + REG + r', (dword ptr \[.+\])', u)) and operand(mm.group(2), q):
+                if mm.group(1) == 'ecx' and (z := re.fullmatch(r'dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', mm.group(2))) and \
+                        (regs.get(z.group(1), ('r', R.get(z.group(1))))[1] == ('this',)):
+                    regs['ecx'] = ('ecx', ('field', num(z.group(2)), len(ops)))   # a member's object: the callee, or read from
+                else:
+                    regs[mm.group(1)] = ('bits', operand(mm.group(2), q))
+            elif (mm := re.fullmatch(r'mov ecx, ' + REG, u)):
+                v = regs.get(mm.group(1), ('r', R.get(mm.group(1))))
+                if v[0] not in ('r', 'ecx') or not v[1]:
+                    return None
+                regs['ecx'] = ('ecx', v[1])
+            elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', u)):
+                slot = num(mm.group(1)) - depth
+                if not (slot < 0 and -slot <= 0x100 and slot % 4 == 0):
+                    return None
+                prog.append((20, 0, num(mm.group(2))) + ((slot + 0x100) // 4,)); written.add(slot)
+            elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, u)):
+                slot = num(mm.group(1)) - depth
+                v = regs.get(mm.group(2), ('r', R.get(mm.group(2))))
+                if not (slot < 0 and -slot <= 0x100 and slot % 4 == 0):
+                    return None
+                if v[0] == 'bits':
+                    prog.append((19, v[1][0], v[1][1]) + ((slot + 0x100) // 4,))
+                elif v[0] == 'r' and v[1] and v[1][0] == 'const':
+                    prog.append((20, 0, v[1][1]) + ((slot + 0x100) // 4,))
+                else:
+                    return None
+                written.add(slot)
+            elif (mm := re.fullmatch(r'lea ' + REG + r', \[esp \+ (0x[0-9a-f]+|\d+)\]', u)):
+                regs[mm.group(1)] = ('local', num(mm.group(2)) - depth)
+            elif (mm := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', u)):
+                args_pushed.append(num(mm.group(1))); depth += 4
+            elif (mm := re.fullmatch(r'push ' + REG, u)):
+                v = regs.get(mm.group(1), ('r', R.get(mm.group(1))))
+                if v[0] == 'local':
+                    args_pushed.append(('local', v[1]))
+                elif v[0] == 'r' and v[1] and v[1][0] == 'stack':
+                    args_pushed.append(('local', v[1][1]))
+                elif v[0] == 'r' and v[1] and v[1][0] == 'const':
+                    args_pushed.append(v[1][1])
+                elif v[0] == 'r' and v[1] == ('this',):
+                    args_pushed.append(('self', 0))
+                elif v[0] == 'r' and v[1] and v[1][0] == 'member':
+                    args_pushed.append(('self', v[1][1]))
+                elif v[0] in ('r', 'ecx') and v[1] and still(v[1]):
+                    args_pushed.append(('field', v[1][1]))
+                else:
+                    return None
+                depth += 4
+            else:
+                return None
+            if fpu < 0 or fpu > 7:
+                return None
+            q += 1
+        else:
+            return None
+        if fpu != 0 or not prog:
+            return None
+        zc = re.fullmatch(r'call (0x[0-9a-f]+)', t[q])
+        if not zc:
+            return None
+        fn = num(zc.group(1)); n_ = ret_args(fn)
+        if n_ is None or n_ != len(args_pushed) or n_ > 5:
+            return None
+        ecx = regs.get('ecx', ('r', R.get('ecx')))[1]
+        if ecx == ('this',): target = 0
+        elif ecx and ecx[0] == 'member': target = ecx[1]
+        elif ecx and still(ecx) and ecx[1] < 0x1000000: target = 1 << 24 | ecx[1]
+        else:
+            return None
+        # each local given: four dwords, each written by the run or a known constant before it
+        args_ = []
+        for v in reversed(args_pushed):
+            if isinstance(v, tuple) and v[0] == 'local':
+                for i in range(4):
+                    sl = v[1] + 4 * i
+                    if sl not in written:
+                        sv = S.get(sl)
+                        if not sv or sv[0] != 'const' or not (sl < 0 and -sl <= 0x100):
+                            return None
+                        known_locals[sl] = sv[1]
+                if not (v[1] < 0 and -v[1] <= 0x100 - 12):
+                    return None
+                args_.append(('local', (v[1] + 0x100) // 4))
+            else:
+                args_.append(v)
+        for sl, val_ in sorted(known_locals.items()):
+            if sl not in written:
+                prog.insert(0, (20, 0, val_, (sl + 0x100) // 4))
+        start = 4 * len(FPU_PROGRAM)   # (where its count is in the flat table: four dwords a step)
+        FPU_PROGRAM.append((len(prog), 0, 0, 0))
+        FPU_PROGRAM.extend(tuple(x) + (0,) * (4 - len(x)) for x in prog)
+        pushed.clear()
+        d = depth - 4 * n_
+        return q + 1, (59, target, start, fn, args_)
+
     def edx_check():
         if edx_call[0] is None:
             return
@@ -722,6 +902,16 @@ def tail(p):
             edx_live[0] = True
         elif re.search(r'\b(edx|dl|dh)\b', s):
             edx_live[0] = False
+        if x.mnemonic.startswith('f') and x.mnemonic not in ('fnstsw',) and (fs := fpu_step(k)):
+            edx_live[0] = False
+            ops.append(fs[1])   # an x87 run and the call given what it built (kind 59)
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            for r in ('ebx', 'esi', 'edi', 'ebp'):
+                pass
+            k = fs[0]
+            flag = None
+            continue
         if not pushed and ((ls := layout_step(t, k, R)) or (ls := copy_step(t, k, R))):
             edx_live[0] = False   # (its own steps use edx as they set it; its call, 0x6B1640, reads no edx)
             ops.append(ls[1])   # a child laid out (kind 40) / a member's value copied into another's (41)
@@ -1304,7 +1494,8 @@ if __name__ == '__main__':
     reasons = collections.Counter(); rb = collections.Counter(); ok = 0; okb = 0
     out = ["// Window classes' constructors taken over by titled_construct (titled.cpp); written by tools/titled_ctors.py."]
     info, callees, temps_used, nullable = [], {}, set(), []
-    edx_uses, plain_uses = set(), set()   # the callees made with edx = the window, and those made without
+    edx_uses, plain_uses = set(), set()
+    rect_uses, norect_uses = set(), set()   # the callees given a run's locals (the tester notes the 16 bytes there)   # the callees made with edx = the window, and those made without
     for a, r in sorted(rows.items()):
         n = int(r['size'])
         if (r['status'] != 'documented' and a not in mine) or n > 4000:
@@ -1332,7 +1523,7 @@ if __name__ == '__main__':
                 if isinstance(v, int):
                     codes.append((0, v))
                 else:
-                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8}[v[0]], v[1]))
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9}[v[0]], v[1]))
             kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')
@@ -1347,9 +1538,10 @@ if __name__ == '__main__':
         if mask:
             nullable.append((a, mask))
         for o in p['ops']:
-            if o[0] in (3, 10, 24):
+            if o[0] in (3, 10, 24, 59) and o[3] != 0x6b1640:   # (0x6B1640: the tester's own stand-in, which notes the rectangle)
                 callees[o[3]] = len(o[4])
                 (edx_uses if o[0] in (3, 24) and o[2] >> 31 else plain_uses).add(o[3])
+                (rect_uses if o[0] == 59 and any(isinstance(v, tuple) and v[0] == 'local' for v in o[4]) else norect_uses).add(o[3])
             if o[0] in (15, 20):
                 temps_used.add(o[3])
     out.append('// each constructor: its address, title global, how many values it takes, its base and how many values that takes')
@@ -1361,7 +1553,11 @@ if __name__ == '__main__':
     out.append('// the functions the members are made with or called, and how many values each takes (the tester stands in for them)')
     out.append('extern const uint32_t titled_callees[];')
     # (count | 0x100: always made with edx = the window, which the tester's stand-in notes too)
-    out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c | (0x100 if fn in edx_uses and fn not in plain_uses else 0):#x}, ' for fn, c in sorted(callees.items())) + '0};')
+    # (| 0x200: given a run's locals, whose 16 bytes the tester's stand-in notes)
+    out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c | (0x100 if fn in edx_uses and fn not in plain_uses else 0) | (0x200 if fn in rect_uses else 0):#x}, ' for fn, c in sorted(callees.items())) + '0};')
+    out.append('// the x87 runs (op 59): each a count, then its steps {code, kind, value, local}')
+    out.append('extern const uint32_t titled_fpu[];')
+    out.append('const uint32_t titled_fpu[] = {' + ''.join(f'{c:#x}, {kd:#x}, {v:#x}, {lc:#x}, ' for c, kd, v, lc in FPU_PROGRAM) + '0};')
     unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740}
     if unknown_temps:
         print('temporaries the tester has no stand-in for:', [hex(x) for x in sorted(unknown_temps)])

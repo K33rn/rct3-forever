@@ -20,6 +20,7 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   8 the member at +off a reference to the empty handle (0x805750) linked (+8) first in that handle's list, 9 the same
 //   with the handle Handle::For (0x805700) gives for the constructor's argument number value (0: none);
 //   12 the mark (no parent: the title object's +4 = 1);
+//   59 an x87 run (the game's steps, titled_fpu from value) building locals, then the call given them (kind 9: a local's place);
 //   58 the new object (a text made with 0xBCF850) kept as a name (its place given to calls, kind 5);
 //   57 a name let go whether or not it was made (as the game: through none, it fails as the game's does);
 //   (3 and 24 with value bit 31: made with edx = the window, as the game makes it);
@@ -90,6 +91,85 @@ static void *titled_call_edx(uintptr_t fn, void *self, void *window, uint32_t co
     }
 }
 
+// An x87 run (op 59): the game's own steps, replayed one by one, so every value (and which NaN comes out of two) is the
+// game's. The FPU stack is carried from one step to the next (nothing between them uses it: the loop is integers only).
+// Each step {code, kind, value, local}; an operand: kind 1 a game global, 2 the window's (self + value), 3 in what a member
+// points to (*(self + value & 0xffff) + (value >> 16)), 4 a local (loc[value]), 5 the constructor's argument.
+extern const uint32_t titled_fpu[];
+#define X87(text) __asm__ volatile(".intel_syntax noprefix\n\t" text "\n\t.att_syntax prefix" : : "a"(p) : "memory")
+#define X87I(text) __asm__ volatile(".intel_syntax noprefix\n\t" text "\n\t.att_syntax prefix" : : : "memory")
+__attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t count, uint8_t *self, const uint32_t *given, uint32_t *loc) {
+    for (uint32_t k = 0; k < count; k++, step += 4) {
+        const uint32_t code = step[0], kind = step[1], v = step[2];
+        uint32_t *p = kind == 1 ? (uint32_t *)(uintptr_t)v
+                      : kind == 2 ? (uint32_t *)(self + v)
+                      : kind == 3 ? (uint32_t *)(*(uint8_t **)(self + (v & 0xffff)) + (v >> 16))
+                      : kind == 4 ? &loc[v]
+                      : kind == 5 ? (uint32_t *)&given[v] : nullptr;
+        switch (code) {
+        case 1: X87("fld dword ptr [eax]"); break;
+        case 21: X87("fild dword ptr [eax]"); break;
+        case 3: X87("fst dword ptr [eax]"); break;
+        case 4: X87("fstp dword ptr [eax]"); break;
+        case 5: X87("fadd dword ptr [eax]"); break;
+        case 6: X87("fsub dword ptr [eax]"); break;
+        case 7: X87("fsubr dword ptr [eax]"); break;
+        case 8: X87("fmul dword ptr [eax]"); break;
+        case 9: X87("fdiv dword ptr [eax]"); break;
+        case 10: X87("fdivr dword ptr [eax]"); break;
+        case 11: X87I("faddp st(1), st"); break;
+        case 12: X87I("fsubp st(1), st"); break;
+        case 13: X87I("fsubrp st(1), st"); break;
+        case 14: X87I("fmulp st(1), st"); break;
+        case 15: X87I("fdivp st(1), st"); break;
+        case 16: X87I("fdivrp st(1), st"); break;
+        case 18: X87I("fchs"); break;
+        case 22: X87I("fstp st(0)"); break;
+        case 23: X87I("fld1"); break;
+        case 24: X87I("fldz"); break;
+        case 19: loc[step[3]] = *p; break;   // an integer copy into a local
+        case 20: loc[step[3]] = v; break;    // a constant into a local
+        case 2:
+            switch (v) {
+            case 0: X87I("fld st(0)"); break;
+            case 1: X87I("fld st(1)"); break;
+            case 2: X87I("fld st(2)"); break;
+            default: X87I("fld st(3)"); break;
+            }
+            break;
+        case 17:
+            switch (v) {
+            case 1: X87I("fxch st(1)"); break;
+            case 2: X87I("fxch st(2)"); break;
+            default: X87I("fxch st(3)"); break;
+            }
+            break;
+        default: {   // 30..35: st(0) = st(0) op st(i); 40..45: st(i) = st(i) op st(0) (add, sub, subr, mul, div, divr), i 1..3
+            const uint32_t which = code % 10 * 4 + (v - 1) + (code >= 40 ? 24 : 0);
+            switch (which) {
+#define ROW(n, text) case n: X87I(text); break;
+                ROW(0, "fadd st(0), st(1)") ROW(1, "fadd st(0), st(2)") ROW(2, "fadd st(0), st(3)")
+                ROW(4, "fsub st(0), st(1)") ROW(5, "fsub st(0), st(2)") ROW(6, "fsub st(0), st(3)")
+                ROW(8, "fsubr st(0), st(1)") ROW(9, "fsubr st(0), st(2)") ROW(10, "fsubr st(0), st(3)")
+                ROW(12, "fmul st(0), st(1)") ROW(13, "fmul st(0), st(2)") ROW(14, "fmul st(0), st(3)")
+                ROW(16, "fdiv st(0), st(1)") ROW(17, "fdiv st(0), st(2)") ROW(18, "fdiv st(0), st(3)")
+                ROW(20, "fdivr st(0), st(1)") ROW(21, "fdivr st(0), st(2)") ROW(22, "fdivr st(0), st(3)")
+                ROW(24, "fadd st(1), st(0)") ROW(25, "fadd st(2), st(0)") ROW(26, "fadd st(3), st(0)")
+                ROW(28, "fsub st(1), st(0)") ROW(29, "fsub st(2), st(0)") ROW(30, "fsub st(3), st(0)")
+                ROW(32, "fsubr st(1), st(0)") ROW(33, "fsubr st(2), st(0)") ROW(34, "fsubr st(3), st(0)")
+                ROW(36, "fmul st(1), st(0)") ROW(37, "fmul st(2), st(0)") ROW(38, "fmul st(3), st(0)")
+                ROW(40, "fdiv st(1), st(0)") ROW(41, "fdiv st(2), st(0)") ROW(42, "fdiv st(3), st(0)")
+                ROW(44, "fdivr st(1), st(0)") ROW(45, "fdivr st(2), st(0)") ROW(46, "fdivr st(3), st(0)")
+#undef ROW
+            }
+            break;
+        }
+        }
+    }
+}
+#undef X87
+#undef X87I
+
 static volatile long g_titled_constructs;
 // given[1..]: the constructor's arguments, (parent, text, ...)
 template <uintptr_t TITLE, uintptr_t BASE, const TitledExtra *EXTRAS, uint32_t EXTRA_COUNT, const TitledOp *OPS, uint32_t COUNT>
@@ -142,6 +222,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     uint8_t *memory = nullptr;
     bool naming = false;
     uint32_t scratch[8] = {};
+    uint32_t loc[0x44] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords)
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
@@ -157,6 +238,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             case 5: args[i] = (uint32_t)(uintptr_t)&names[v]; break;
             case 7: args[i] = scratch[v]; break;
             case 8: args[i] = *(uint32_t *)((uint8_t *)temp_made[v & 0xff] + (v >> 8)); break;
+            case 9: args[i] = (uint32_t)(uintptr_t)&loc[v]; break;
             default: args[i] = *(uint32_t *)(self + v); break;
             }
         }
@@ -218,6 +300,13 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             if (op.value >> 31) titled_call_edx(op.fn, *(uint8_t **)(self + op.off) + (op.value & 0x7fffffff), self, op.count, args);
             else titled_call(op.fn, *(uint8_t **)(self + op.off) + op.value, op.count, args);
             break;
+        case 59: {   // an x87 run (titled_fpu from value), then the call given what it built; on the window + off, or (off bit 24)
+                     // what that member points to
+            titled_x87(&titled_fpu[op.value + 4], titled_fpu[op.value], self, given, loc);
+            uint8_t *on = op.off >> 24 ? *(uint8_t **)(self + (op.off & 0xffffff)) : self + op.off;
+            titled_call(op.fn, on, op.count, args);
+            break;
+        }
         case 57: titled_release(names[op.off]); break;   // (made or not: the game reads through it either way)
         case 58:   // the new object (a text, or none without memory) kept as a name
             names[op.off] = object;
