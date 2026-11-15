@@ -494,7 +494,8 @@ def tail(p):
     clobbered = set()   # argument slots the tail wrote (a later read of one is not the argument)
 
     nscratch = [0]
-    always_temps = set()   # temporaries made whatever happened (not only with a new object's memory)
+    always_temps = set()
+    pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
     QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55}   # steps that call nothing
@@ -1193,6 +1194,9 @@ def tail(p):
                 ('temp', val(m.group(2))[1]) in built and num(m.group(3)) < 0x40:
             R[m.group(1)] = ('tempat', val(m.group(2))[1], num(m.group(3)))   # (what a temporary holds: read when given)
             tempat_ops[val(m.group(2))[1]] = len(ops)
+        elif (m := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and val(m.group(2)) and \
+                (val(m.group(2)) == ('this',) or val(m.group(2))[0] == 'member'):
+            ops.append((67, 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1], 0, num(m.group(1)), []))   # the window's place kept in a global
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - d
             if slot in clobbered:
@@ -1219,6 +1223,8 @@ def tail(p):
             R[m.group(1)] = ('stack', num(m.group(2)) - d)
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] in ('this', 'member'):
             R[m.group(1)] = ('member', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3)))
+        elif (m := re.fullmatch(r'cmp dword ptr \[(0x1[0-9a-f]{6})\], (0|' + REG + ')', s)) and (m.group(2) == '0' or val(m.group(2)) in (('const', 0), ('byte', 0))):
+            flag = ('test', ('global', num(m.group(1))))
         elif (m := re.fullmatch(r'(test ' + REG + ', ' + REG + '|cmp ' + REG + ', ' + REG + ')', s)):
             a_, b_ = (m.group(2), m.group(3)) if m.group(2) else (m.group(4), m.group(5))
             flag = ('test', val(a_)) if (a_ == b_ or val(b_) == ('const', 0)) else None
@@ -1451,7 +1457,7 @@ def tail(p):
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack' and not nulls and \
                 ret_args(num(m.group(1))) is not None and 0 < ret_args(num(m.group(1))) <= min(4, len(pushed)) and \
-                num(m.group(1)) in (0x41cb90, 0x4040f0):
+                num(m.group(1)) in (0x41cb90, 0x4040f0, 0xbd1940):
             # a text reference made on the stack outside a new object's making: always (kind 20, value 1)
             fn, slot = num(m.group(1)), val('ecx')[1]
             n_ = ret_args(fn)
@@ -1464,7 +1470,10 @@ def tail(p):
                 raise Reject('temporaries')
             temps[slot] = kk
             ops.append((20, kk, 1, fn, targs))
-            built.add(('temp', kk))
+            if fn == 0xbd1940:
+                pod_temps.add(kk)   # (a key combination: plain values, nothing to destroy)
+            else:
+                built.add(('temp', kk))
             always_temps.add(kk)
             R['eax'] = ('temp', kk); R['ecx'] = None; R['edx'] = None
             flag = None
@@ -1584,7 +1593,7 @@ def tail(p):
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('field call with a temporary')
             ops.append((24, val('ecx')[1], val('ecx')[3], fn, args))   # (on the place that far into what the member points to)
             for r in ('eax', 'ecx', 'edx'):
@@ -1597,7 +1606,7 @@ def tail(p):
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('field call with a temporary')
             ops.append((24, val('ecx')[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
@@ -1626,7 +1635,7 @@ def tail(p):
             n_ = ret_args(fn)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('member call with a temporary')
             if this[0] == 'arg':
                 ops.append((61, this[1], 0, fn, args))   # on the constructor's argument (an object it was given)
@@ -1744,6 +1753,10 @@ if __name__ == '__main__':
     out.append('// the text references made just before a base (TitledExtra is_arg 2): key, table, flag')
     out.append('extern const uint32_t titled_refs[];')
     out.append('const uint32_t titled_refs[] = {' + ''.join(f'{x:#x}, {y:#x}, {z:#x}, ' for x, y, z in refs) + '0};')
+    out.append('// the game globals the steps write (op 51: off bytes; op 67: 4): the tester gives each a value first and compares them')
+    out.append('extern const uint32_t titled_written_globals[];')
+    wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67)})
+    out.append('const uint32_t titled_written_globals[] = {' + ''.join(f'{g:#x}, {n_}, ' for g, n_ in wg) + '0};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
     objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62})
@@ -1754,7 +1767,7 @@ if __name__ == '__main__':
     out.append('// the x87 runs (op 59): each a count, then its steps {code, kind, value, local}')
     out.append('extern const uint32_t titled_fpu[];')
     out.append('const uint32_t titled_fpu[] = {' + ''.join(f'{c:#x}, {kd:#x}, {v:#x}, {lc:#x}, ' for c, kd, v, lc in FPU_PROGRAM) + '0};')
-    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740}
+    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740, 0xbd1940}   # (0xBD1940: the game's own runs)
     if unknown_temps:
         print('temporaries the tester has no stand-in for:', [hex(x) for x in sorted(unknown_temps)])
     open(OUT, 'w', newline='\n').write('\n'.join(out) + '\n')

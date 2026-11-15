@@ -8132,7 +8132,7 @@ address,size,name,callers,status
 0x718330,64,,1,documented
 0x718370,917,,1,documented
 0x718760,64,,1,documented
-0x7187a0,1108,,1,documented
+0x7187a0,1108,Window::Titled,1,rewritten
 0x718c60,291,Destructor::Steps,1,rewritten
 0x718d90,75,,3,documented
 0x718f10,30,DeletingDestructor,2,rewritten
@@ -16702,7 +16702,7 @@ address,size,name,callers,status
 0xaa52b0,272,,1,documented
 0xaa53c0,59,,5,documented
 0xaa5400,206,,11,documented
-0xaa5500,742,,1,documented
+0xaa5500,742,Window::Titled,1,rewritten
 0xaa57f0,30,DeletingDestructor,2,rewritten
 0xaa5910,212,,1,documented
 0xaa5a10,71,,1,documented

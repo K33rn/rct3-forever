@@ -522,7 +522,8 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
-extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], value_info[], record_info[];
+extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], value_info[], record_info[];
+static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
 extern const uint32_t dtor_steps_info[];
 extern const uint32_t table_make_info[];
@@ -6144,6 +6145,14 @@ static std::vector<Test> tests() {
                           },
                           [](void *fn) {
                               g_text_ref = nullptr;   // (each run from none: the other run's temporary is not this one's)
+                              for (int k = 0; titled_written_globals[2 * k] && k < 16; k++) {   // (the globals the steps write: a value of the case's first)
+                                  volatile uint8_t *g = (volatile uint8_t *)(uintptr_t)titled_written_globals[2 * k];
+                                  g_titled_written_saved[k] = 0;
+                                  for (uint32_t b = 0; b < titled_written_globals[2 * k + 1]; b++) {
+                                      ((uint8_t *)&g_titled_written_saved[k])[b] = g[b];
+                                      g[b] = arena<uint8_t>(0x4c)[b] ^ (uint8_t)k;
+                                  }
+                              }
                               for (int k = 0; titled_object_globals[k] && k < 16; k++) {   // (the globals called on: objects of the arena's)
                                   g_titled_object_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_object_globals[k];
                                   *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = (uint32_t)(uintptr_t)arena<void>(0xd000 + k * 0x100);
@@ -6163,6 +6172,19 @@ static std::vector<Test> tests() {
                               default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
                               }
                               for (int k = 0; titled_object_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
+                              for (int k = 0; titled_written_globals[2 * k] && k < 16; k++) {   // (what they hold now: compared; then put back)
+                                  volatile uint8_t *g = (volatile uint8_t *)(uintptr_t)titled_written_globals[2 * k];
+                                  for (uint32_t b = 0; b < titled_written_globals[2 * k + 1]; b++) {
+                                      uint32_t v = g[b];
+                                      if (b == 0 && titled_written_globals[2 * k + 1] == 4) {   // (the window's place: as an offset in the arena)
+                                          const uint32_t whole = *(volatile uint32_t *)g;
+                                          const uint32_t base = (uint32_t)(uintptr_t)arena<void>(0);
+                                          if (whole - base < sizeof g_arena) { *(volatile uint32_t *)g = whole - base; v = g[0]; }
+                                      }
+                                      arena<uint8_t>(0x7f00 + k * 4)[b] = (uint8_t)v;
+                                      g[b] = ((uint8_t *)&g_titled_written_saved[k])[b];
+                                  }
+                              }
                               arena<uint8_t>(0x48)[0] = *(volatile uint8_t *)(uintptr_t)0x13ce4c8;   // (the game globals some copies set: compared)
                               arena<uint8_t>(0x48)[1] = *(volatile uint8_t *)(uintptr_t)0x13ce594;
                               *(volatile uint8_t *)(uintptr_t)0x13ce4c8 = g_titled_flags[0], *(volatile uint8_t *)(uintptr_t)0x13ce594 = g_titled_flags[1];
