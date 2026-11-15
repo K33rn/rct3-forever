@@ -3411,7 +3411,7 @@ address,size,name,callers,status
 0x531ba0,139,Items::ByIndex,5,rewritten
 0x531c30,501,,3,documented
 0x531e30,337,,2,documented
-0x532110,1216,,3,documented
+0x532110,1216,Condition::KindName,3,rewritten
 0x532600,400,,0,documented
 0x5327b0,167,,0,documented
 0x532860,58,,3,documented

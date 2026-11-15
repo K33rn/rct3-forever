@@ -17,7 +17,7 @@ static void *__fastcall kn_literal(uint32_t *self, void *, const char *c) { dev_
                    [=](Rng &r) {
                        fresh(r);
                        arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0x2000;
-                       arena<int32_t>(0x50)[0] = r.range(0, 5) - 1;   // the kind
+                       arena<int32_t>(0x50)[0] = r.range(0, 11) - 1;   // the kind (-1 to 10: past every copy's count)
                        arena<uint32_t>(0x50)[1] = r.range(0, 2) != 0;   // the key holds a text
                        arena<uint32_t>(0x60)[0] = r.next();
                    },
