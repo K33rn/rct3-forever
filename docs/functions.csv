@@ -13331,7 +13331,7 @@ address,size,name,callers,status
 0x94e090,333,,2,documented
 0x94e250,302,Pool::GrowCopied,1,rewritten
 0x94e380,296,Pool::Grow8FFA60,2,rewritten
-0x94e4b0,608,,1,documented
+0x94e4b0,608,Array::ResizeRecords,1,rewritten
 0x94e790,1805,,1,documented
 0x94eeb0,173,,11,documented
 0x94ef60,240,,32,documented
@@ -16203,7 +16203,7 @@ address,size,name,callers,status
 0xa6faf0,202,,3,documented
 0xa6fbc0,149,,0,documented
 0xa6fc60,189,,1,documented
-0xa6fd20,507,,1,documented
+0xa6fd20,507,Array::ResizeRecords,1,rewritten
 0xa6ff20,608,Array::ResizeRecords,1,rewritten
 0xa70180,600,,1,documented
 0xa70400,225,,2,documented
@@ -17468,7 +17468,7 @@ address,size,name,callers,status
 0xafd100,95,,2,documented
 0xafd160,440,,1,documented
 0xafd320,133,Array::Remake967360,1,rewritten
-0xafd3b0,583,,1,documented
+0xafd3b0,583,Array::ResizeRecords,1,rewritten
 0xafd600,495,,1,documented
 0xafd7f0,467,,3,documented
 0xafd9d0,78,,8,documented

@@ -40,3 +40,14 @@ static int32_t __thiscall array_resize(uint32_t *self, int32_t n) {
     return n;
 }
 #include "array_resizes_list.inc"
+// The same function where the compiler laid the copy loops out another way (tools/array_resizes.py doesn't follow
+// their cursors): rows written here, the fields read from the loop that copies four records at a time.
+namespace hand_rows {   // (REWRITE names its entries by line: these would meet the included list's)
+static const uint8_t array_resize_hand_original[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00};
+static const ResizeField array_resize_94e4b0_fields[] = {{0x0, 4}, {0x4, 4}, {0x8, 4}, {0x10, 4}, {0x14, 4}, {0x18, 4}, {0x1c, 4}, {0x20, 4}};
+REWRITE("Array::ResizeRecords", 0x94e4b0, array_resize_hand_original, (&array_resize<0x30, 0x94da50, array_resize_94e4b0_fields, 8>), &g_array_resizes);
+static const ResizeField array_resize_a6fd20_fields[] = {{0x0, 4}, {0x4, 4}, {0x8, 4}, {0x10, 4}, {0x14, 4}};
+REWRITE("Array::ResizeRecords", 0xa6fd20, array_resize_hand_original, (&array_resize<0x20, 0xa6bc00, array_resize_a6fd20_fields, 5>), &g_array_resizes);
+static const ResizeField array_resize_afd3b0_fields[] = {{0x0, 1}, {0x10, 4}, {0x14, 4}, {0x18, 4}, {0x20, 4}, {0x24, 4}, {0x28, 4}};
+REWRITE("Array::ResizeRecords", 0xafd3b0, array_resize_hand_original, (&array_resize<0x30, 0xaf9f20, array_resize_afd3b0_fields, 7>), &g_array_resizes);
+}   // namespace hand_rows

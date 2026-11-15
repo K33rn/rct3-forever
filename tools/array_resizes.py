@@ -24,6 +24,13 @@ class Unknown(Exception):
 
 def read(a, n):
     ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
+    if ins and ins[-1].mnemonic != 'ret':
+        # (the listed size can stop just before the epilogue: read on from the last whole instruction to its ret)
+        end = ins[-1].address + ins[-1].size
+        for x in md.disasm(bytes(img[end - BASE:end - BASE + 0x20]), end):
+            ins.append(x)
+            if x.mnemonic in ('ret', 'int3'):
+                break
     if ins[0].mnemonic != 'mov' or 'fs:' not in ins[0].op_str:
         raise Unknown('no exception frame at the start')
     if ins[-1].mnemonic != 'ret' or ins[-1].op_str != '4':
