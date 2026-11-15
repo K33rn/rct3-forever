@@ -7669,7 +7669,7 @@ address,size,name,callers,status
 0x6e5860,163,Text::FromName6E5860,2,rewritten
 0x6e5910,368,ObjectiveCondition::Name,1,rewritten
 0x6e5a80,365,,1,documented
-0x6e5bf0,524,,1,documented
+0x6e5bf0,524,Condition::CurrentTextDouble,1,rewritten
 0x6e5e00,163,Text::FromName6E5860,2,rewritten
 0x6e5eb0,124,,2,documented
 0x6e5f30,1159,SpeciesCondition::Build,1,rewritten
