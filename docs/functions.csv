@@ -11088,8 +11088,8 @@ address,size,name,callers,status
 0x8344b0,102,Factory::Create,1,rewritten
 0x834520,30,DeletingDestructor,2,rewritten
 0x834540,96,,12,documented
-0x8345a0,358,,2,documented
-0x834710,358,,1,documented
+0x8345a0,358,Scenery::ScanNumber,2,rewritten
+0x834710,358,Scenery::ScanNumber,1,rewritten
 0x834880,48,QueryInterface,0,rewritten
 0x8348b0,48,QueryInterface,0,rewritten
 0x8348e0,97,,1,documented
