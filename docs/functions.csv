@@ -7589,13 +7589,13 @@ address,size,name,callers,status
 0x6dd4b0,305,Objectives::LabelledNumber,1,rewritten
 0x6dd5f0,151,WideText::CopyOf(this),2,rewritten
 0x6dd690,368,ObjectiveCondition::Name,1,rewritten
-0x6dd800,280,,1,documented
+0x6dd800,280,Objectives::CountText,1,rewritten
 0x6dd920,151,WideText::CopyOf(this),2,rewritten
 0x6dd9c0,368,ObjectiveCondition::Name,1,rewritten
-0x6ddb30,280,,1,documented
+0x6ddb30,280,Objectives::CountText,1,rewritten
 0x6ddc50,151,WideText::CopyOf(this),2,rewritten
 0x6ddcf0,368,ObjectiveCondition::Name,1,rewritten
-0x6dde60,280,,1,documented
+0x6dde60,280,Objectives::CountText,1,rewritten
 0x6de0e0,151,WideText::CopyOf(this),2,rewritten
 0x6de180,368,ObjectiveCondition::Name,1,rewritten
 0x6de2f0,112,,1,documented
