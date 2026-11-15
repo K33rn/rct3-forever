@@ -221,7 +221,33 @@ static void *__thiscall titled_child_size(void *self, void *scratch) {
     record(0x6b1641, self);
     return arena<uint8_t>(0x8f00) + ((uintptr_t)self >> 2 & 7) * 8;
 }
-static void *titled_child_table[9] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, (void *)titled_child_size};
+// the other slots a titled constructor calls: a stand-in per slot (noting the slot, the object and what it is given; giving
+// a place in the arena), its count from titled_vslots, filled in when the test is prepared
+static void *arg_value(uint32_t v);
+template <int SLOT> static void *__thiscall titled_v0(void *self) { record(0x60000 + SLOT, self); return arena<void>(0x8f00); }
+template <int SLOT> static void *__thiscall titled_v1(void *self, uint32_t a) { record(0x60000 + SLOT, self); record(0x60000 + SLOT, arg_value(a)); return arena<void>(0x8f00); }
+template <int SLOT> static void *__thiscall titled_v2(void *self, uint32_t a, uint32_t b) {
+    record(0x60000 + SLOT, self); record(0x60000 + SLOT, arg_value(a)); record(0x60000 + SLOT, arg_value(b)); return arena<void>(0x8f00);
+}
+template <int SLOT> static void *__thiscall titled_v3(void *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x60000 + SLOT, self); record(0x60000 + SLOT, arg_value(a)); record(0x60000 + SLOT, arg_value(b)); record(0x60000 + SLOT, arg_value(c));
+    return arena<void>(0x8f00);
+}
+template <int SLOT> static void *__thiscall titled_v4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x60000 + SLOT, self); record(0x60000 + SLOT, arg_value(a)); record(0x60000 + SLOT, arg_value(b)); record(0x60000 + SLOT, arg_value(c));
+    record(0x60000 + SLOT, arg_value(d)); return arena<void>(0x8f00);
+}
+template <int... S> static void titled_v_fill(void *(*rows)[0x80], std::integer_sequence<int, S...>) {
+    ((rows[0][S] = (void *)titled_v0<S>, rows[1][S] = (void *)titled_v1<S>, rows[2][S] = (void *)titled_v2<S>, rows[3][S] = (void *)titled_v3<S>,
+      rows[4][S] = (void *)titled_v4<S>), ...);
+}
+static void *titled_child_table[0x80] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, (void *)titled_child_size};
+extern const uint32_t titled_vslots[];
+static void titled_tables_ready() {   // each slot the constructors call: its stand-in, taking as many as they give it
+    static void *rows[5][0x80];
+    titled_v_fill(rows, std::make_integer_sequence<int, 0x80>{});
+    for (int k = 0; titled_vslots[k] != 0xffffffffu; k += 2) titled_child_table[titled_vslots[k] / 4] = rows[titled_vslots[k + 1]][titled_vslots[k] / 4];
+}
 static void *built_result(void *self) {
     if (!g_built_other) return self;
     *(void **)self = titled_child_table;
@@ -6100,6 +6126,8 @@ static std::vector<Test> tests() {
                                   for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0x100 + off)[0] = value();
                                   for (uint32_t blk = 0; blk < 16; blk++)
                                       for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0xc000 + blk * 0x40 + (off & 0x3f))[0] = value();
+                                  for (uint32_t blk = 0; blk < 16; blk++)   // (each what a member points to: an object, with the table of stand-ins)
+                                      arena<uint32_t>(0xc000 + blk * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               }
                               arena<uint32_t>(0x100)[0xe0 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8c00);   // (the parent the base keeps)
                               arena<uint32_t>(0x4c)[0] = r.next();   // (which of the arguments only a cast reads are 0 this time)
@@ -6128,6 +6156,7 @@ static std::vector<Test> tests() {
                           }};
     titled_construct.prepare = [](const rewrite::Entry *e) {
         g_titled_flags[0] = *(uint8_t *)(uintptr_t)0x13ce4c8, g_titled_flags[1] = *(uint8_t *)(uintptr_t)0x13ce594;
+        titled_tables_ready();
         static void *const bases[7] = {nullptr, nullptr, (void *)stub_titled_base2, (void *)stub_titled_base3, (void *)stub_titled_base4, (void *)stub_titled_base5, (void *)stub_titled_base6};
         static void *const built[6] = {(void *)stub_built0, (void *)stub_built1, (void *)stub_built2, (void *)stub_built3, (void *)stub_built4, (void *)stub_built5};
         uint32_t base = 0, base_args = 2;

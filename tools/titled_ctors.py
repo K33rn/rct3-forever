@@ -31,6 +31,7 @@ for _f in os.listdir(os.path.join(HERE, 'forever', 'src', 'rewrite')):
         _others |= {int(x, 16) for x in re.findall(r'(?:REWRITE\("[^"]+",|^[A-Z_0-9]+\()\s*(0x[0-9a-fA-F]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', _f), encoding='utf-8').read(), re.M)}
 mine |= {a for a, r in rows.items() if r['status'] == 'rewritten' and a not in _others}
 SEPARATOR = 0xf2738c
+VSLOTS = {0x20: 1}   # the virtual slots called (op 60) and how many values each takes (0x20: a child's size, the tester's own)
 FPU_PROGRAM = []   # the x87 runs' steps (code, kind, value), all constructors' in one table (op 59 gives where its run starts)
 # the run steps: x87 instructions as the game has them, replayed one by one (titled.cpp)
 FPU_CODES = {'fld': 1, 'fild': 21, 'fst': 3, 'fstp': 4, 'fadd': 5, 'fsub': 6, 'fsubr': 7, 'fmul': 8, 'fdiv': 9, 'fdivr': 10,
@@ -893,6 +894,8 @@ def tail(p):
         val = lambda r: R.get(r)
         edx_check()
         if x.mnemonic == 'call':
+            if 'edx' in x.op_str:
+                edx_live[0] = False   # (a call through edx: it was the table, used)
             if edx_live[0]:
                 if R.get('edx') != ('this',) or x.op_str.startswith('dword'):
                     raise Reject('edx given')
@@ -1411,6 +1414,28 @@ def tail(p):
         elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and still(val(m.group(1))) and num(m.group(2)) < 0x10000:
             R[m.group(1)] = ('fieldplus', val(m.group(1))[1], val(m.group(1))[2], num(m.group(2)))   # (a place inside what a member points to)
             flag = None
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[ecx\]', s)) and val('ecx') and (val('ecx') == ('this',) or val('ecx')[0] == 'member' or still(val('ecx'))) \
+                and m.group(1) != 'ecx':
+            R[m.group(1)] = ('vtable', val('ecx'))   # (the object's table: a call through it follows)
+        elif (m := re.fullmatch(r'call dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(1)) and val(m.group(1))[0] == 'vtable' and \
+                val(m.group(1))[1] == val('ecx') and (val('ecx') == ('this',) or val('ecx')[0] == 'member' or still(val('ecx'))) and \
+                num(m.group(2)) % 4 == 0 and num(m.group(2)) < 0x200 and len(pushed) <= 4 and None not in pushed:
+            # a virtual call on the window, a member or what a member points to (kind 60): what was pushed since the last
+            # call is what it takes (the tester's stand-in for the slot takes as many, the same in every constructor)
+            on = val('ecx')
+            target = 0 if on == ('this',) else on[1] if on[0] == 'member' else 1 << 24 | on[1]
+            n_ = len(pushed)
+            args = [pushed.pop() for _ in range(n_)]
+            d -= 4 * n_
+            if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') and not (v[0] == 'temp' and v[1] in always_temps) for v in args):
+                raise Reject('virtual call with a temporary')
+            slot_ = num(m.group(2))
+            if VSLOTS.setdefault(slot_, n_) != n_:
+                raise Reject('virtual slot taking another count')
+            ops.append((60, target, slot_, 0, args))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'fieldplus' and still(('field',) + val('ecx')[1:3]):
             fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
             if n_ is None or n_ > len(pushed) or n_ > 5:
@@ -1555,6 +1580,9 @@ if __name__ == '__main__':
     # (count | 0x100: always made with edx = the window, which the tester's stand-in notes too)
     # (| 0x200: given a run's locals, whose 16 bytes the tester's stand-in notes)
     out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c | (0x100 if fn in edx_uses and fn not in plain_uses else 0) | (0x200 if fn in rect_uses else 0):#x}, ' for fn, c in sorted(callees.items())) + '0};')
+    out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')
+    out.append('extern const uint32_t titled_vslots[];')
+    out.append('const uint32_t titled_vslots[] = {' + ''.join(f'{sl:#x}, {c}, ' for sl, c in sorted(VSLOTS.items()) if sl != 0x20) + '0xffffffff};')
     out.append('// the x87 runs (op 59): each a count, then its steps {code, kind, value, local}')
     out.append('extern const uint32_t titled_fpu[];')
     out.append('const uint32_t titled_fpu[] = {' + ''.join(f'{c:#x}, {kd:#x}, {v:#x}, {lc:#x}, ' for c, kd, v, lc in FPU_PROGRAM) + '0};')

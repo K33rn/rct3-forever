@@ -7928,7 +7928,7 @@ address,size,name,callers,status
 0x700780,30,DeletingDestructor,2,rewritten
 0x7007a0,559,,1,documented
 0x700a60,148,,1,documented
-0x700b00,746,,1,documented
+0x700b00,746,Window::Titled,1,rewritten
 0x700e10,108,,2,documented
 0x700e90,154,,2,documented
 0x700f90,1493,Window::Titled,1,rewritten

@@ -21,6 +21,7 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   with the handle Handle::For (0x805700) gives for the constructor's argument number value (0: none);
 //   12 the mark (no parent: the title object's +4 = 1);
 //   59 an x87 run (the game's steps, titled_fpu from value) building locals, then the call given them (kind 9: a local's place);
+//   60 a virtual call: slot value, on the window + off or (off bit 24) on what that member points to;
 //   58 the new object (a text made with 0xBCF850) kept as a name (its place given to calls, kind 5);
 //   57 a name let go whether or not it was made (as the game: through none, it fails as the game's does);
 //   (3 and 24 with value bit 31: made with edx = the window, as the game makes it);
@@ -305,6 +306,11 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             titled_x87(&titled_fpu[op.value + 4], titled_fpu[op.value], self, given, loc);
             uint8_t *on = op.off >> 24 ? *(uint8_t **)(self + (op.off & 0xffffff)) : self + op.off;
             titled_call(op.fn, on, op.count, args);
+            break;
+        }
+        case 60: {   // a virtual call (slot value) on the window + off, or (off bit 24) on what that member points to
+            uint8_t *on = op.off >> 24 ? *(uint8_t **)(self + (op.off & 0xffffff)) : self + op.off;
+            titled_call((uintptr_t)(*(void ***)on)[op.value / 4], on, op.count, args);
             break;
         }
         case 57: titled_release(names[op.off]); break;   // (made or not: the game reads through it either way)
