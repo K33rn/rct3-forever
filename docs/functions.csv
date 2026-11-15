@@ -12121,7 +12121,7 @@ address,size,name,callers,status
 0x8b0ec0,30,DeletingDestructor,1,rewritten
 0x8b0f00,954,,1,documented
 0x8b12c0,97,,1,documented
-0x8b1330,377,,3,documented
+0x8b1330,377,Scenery::KindNameText,3,rewritten
 0x8b14b0,240,,1,documented
 0x8b15a0,130,,2,documented
 0x8b1690,606,,3,documented
@@ -12194,7 +12194,7 @@ address,size,name,callers,status
 0x8b6700,30,DeletingDestructor,1,rewritten
 0x8b6730,219,,2,documented
 0x8b6810,240,,1,documented
-0x8b6900,377,,8,documented
+0x8b6900,377,Scenery::KindNameText,8,rewritten
 0x8b6a80,984,,4,documented
 0x8b6e60,20,,2,documented
 0x8b6e80,300,,5,documented
