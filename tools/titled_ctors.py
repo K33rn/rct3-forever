@@ -1476,14 +1476,20 @@ def tail(p):
                 flag = None
                 k += 1
                 continue
-            if not this or this[0] not in ('this', 'member') or ret_args(fn) is None or ret_args(fn) > len(pushed) or ret_args(fn) > 5:
+            if not this or this[0] not in ('this', 'member', 'arg', 'global') or ret_args(fn) is None or ret_args(fn) > len(pushed) or \
+                    ret_args(fn) > (7 if this[0] in ('this', 'member') else 5) or this[0] == 'arg' and this[1] < 2:
                 raise Reject('tail call ' + s)
             n_ = ret_args(fn)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
             if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('member call with a temporary')
-            ops.append((3, 0 if this == ('this',) else this[1], 0, fn, args))
+            if this[0] == 'arg':
+                ops.append((61, this[1], 0, fn, args))   # on the constructor's argument (an object it was given)
+            elif this[0] == 'global':
+                ops.append((62, 0, this[1], fn, args))   # on the object a game global holds (read now)
+            else:
+                ops.append((3, 0 if this == ('this',) else this[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             flag = None
@@ -1519,6 +1525,7 @@ if __name__ == '__main__':
     reasons = collections.Counter(); rb = collections.Counter(); ok = 0; okb = 0
     out = ["// Window classes' constructors taken over by titled_construct (titled.cpp); written by tools/titled_ctors.py."]
     info, callees, temps_used, nullable = [], {}, set(), []
+    all_ops = {}
     edx_uses, plain_uses = set(), set()
     rect_uses, norect_uses = set(), set()   # the callees given a run's locals (the tester notes the 16 bytes there)   # the callees made with edx = the window, and those made without
     for a, r in sorted(rows.items()):
@@ -1556,6 +1563,7 @@ if __name__ == '__main__':
         out.append(f'REWRITE("Window::Titled", {a:#x}, titled_{a:x}_original, (&titled_construct{p["nargs"]}<{p["title"]:#x}, {p["base"]:#x}, titled_{a:x}_extras, {len(ex)}, '
                    f'titled_{a:x}_ops, {len(p["ops"])}>), &g_titled_constructs);')
         info.append((a, p['title'], p['nargs'], p['base'], 2 + len(ex)))
+        all_ops[a] = p['ops']
         # the arguments only a cast reads (V ? V + c : 0): the tester gives them 0 at times (none reads through them)
         cast_args = {o[4][0][1] for o in p['ops'] if o[0] == 54 and o[3] == 0 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'}
         deref_args = {o[2] for o in p['ops'] if o[0] in (29, 50)} | {1}
@@ -1563,7 +1571,7 @@ if __name__ == '__main__':
         if mask:
             nullable.append((a, mask))
         for o in p['ops']:
-            if o[0] in (3, 10, 24, 59) and o[3] != 0x6b1640:   # (0x6B1640: the tester's own stand-in, which notes the rectangle)
+            if o[0] in (3, 10, 24, 59, 61, 62) and o[3] != 0x6b1640:   # (0x6B1640: the tester's own stand-in, which notes the rectangle)
                 callees[o[3]] = len(o[4])
                 (edx_uses if o[0] in (3, 24) and o[2] >> 31 else plain_uses).add(o[3])
                 (rect_uses if o[0] == 59 and any(isinstance(v, tuple) and v[0] == 'local' for v in o[4]) else norect_uses).add(o[3])
@@ -1580,6 +1588,10 @@ if __name__ == '__main__':
     # (count | 0x100: always made with edx = the window, which the tester's stand-in notes too)
     # (| 0x200: given a run's locals, whose 16 bytes the tester's stand-in notes)
     out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c | (0x100 if fn in edx_uses and fn not in plain_uses else 0) | (0x200 if fn in rect_uses else 0):#x}, ' for fn, c in sorted(callees.items())) + '0};')
+    out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
+    out.append('extern const uint32_t titled_object_globals[];')
+    objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62})
+    out.append('const uint32_t titled_object_globals[] = {' + ''.join(f'{g:#x}, ' for g in objg) + '0};')
     out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')
     out.append('extern const uint32_t titled_vslots[];')
     out.append('const uint32_t titled_vslots[] = {' + ''.join(f'{sl:#x}, {c}, ' for sl, c in sorted(VSLOTS.items()) if sl != 0x20) + '0xffffffff};')

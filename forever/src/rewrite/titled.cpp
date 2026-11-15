@@ -22,6 +22,7 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   12 the mark (no parent: the title object's +4 = 1);
 //   59 an x87 run (the game's steps, titled_fpu from value) building locals, then the call given them (kind 9: a local's place);
 //   60 a virtual call: slot value, on the window + off or (off bit 24) on what that member points to;
+//   61 a call on the constructor's argument off; 62 a call on the object the game global value holds;
 //   58 the new object (a text made with 0xBCF850) kept as a name (its place given to calls, kind 5);
 //   57 a name let go whether or not it was made (as the game: through none, it fails as the game's does);
 //   (3 and 24 with value bit 31: made with edx = the window, as the game makes it);
@@ -58,7 +59,7 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 // argument number value, 3 a pointer to +value of the object, 4 what temporary number value's maker returned, 5 where
 // name number value is kept, 6 the member at +value.
 struct TitledOp {
-    uint32_t kind, off, value, fn, count, args[5], kinds;
+    uint32_t kind, off, value, fn, count, args[7], kinds;
 };
 static void fpu_pass(const float *from, volatile uint32_t *to) {   // a float loaded onto the FPU and stored again
     __asm__ volatile("flds %1\n\tfstps %0" : "=m"(*to) : "m"(*from));
@@ -76,7 +77,8 @@ static void *titled_call(uintptr_t fn, void *self, uint32_t count, const uint32_
     case 3: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2]);
     case 4: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3]);
     case 5: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4]);
-    default: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]);
+    case 6: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]);
+    default: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
     }
 }
 
@@ -227,7 +229,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
-        uint32_t args[5];
+        uint32_t args[7];
         for (uint32_t i = 0; i < op.count; i++) {
             uint32_t v = op.args[i];
             switch (op.kinds >> (4 * i) & 15) {
@@ -313,6 +315,8 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             titled_call((uintptr_t)(*(void ***)on)[op.value / 4], on, op.count, args);
             break;
         }
+        case 61: titled_call(op.fn, (void *)(uintptr_t)given[op.off], op.count, args); break;              // on an argument
+        case 62: titled_call(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args); break;   // on a global's object
         case 57: titled_release(names[op.off]); break;   // (made or not: the game reads through it either way)
         case 58:   // the new object (a text, or none without memory) kept as a name
             names[op.off] = object;

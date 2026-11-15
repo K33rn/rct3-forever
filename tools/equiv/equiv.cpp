@@ -522,7 +522,8 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
-extern const uint32_t titled_info[], titled_callees[], titled_nullable[], value_info[], record_info[];
+extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], value_info[], record_info[];
+static uint32_t g_titled_object_saved[16];
 extern const uint32_t dtor_steps_info[];
 extern const uint32_t table_make_info[];
 // Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
@@ -538,6 +539,14 @@ static uint32_t g_window_args;   // 2 or 3, from the copy's ret
 // saved classes' constructors: the base, members' and fields' constructors (by how many values they take), the field
 // list's add, the description's name step and the object info
 static void __thiscall stub_class_base(void *self, void *description, uint32_t a, uint32_t b) { record(0x80, self); record(0x80, description); record(0x80, (void *)(uintptr_t)a); record(0x80, (void *)(uintptr_t)b); }
+static void *__thiscall stub_built6(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t f) {
+    record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
+    record(0x81, arg_value(e)); record(0x81, arg_value(f)); return built_result(self);
+}
+static void *__thiscall stub_built7(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t f, uint32_t g) {
+    record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
+    record(0x81, arg_value(e)); record(0x81, arg_value(f)); record(0x81, arg_value(g)); return built_result(self);
+}
 static void *__thiscall stub_built0(void *self) { record(0x81, self); return built_result(self); }
 static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, arg_value(a)); return built_result(self); }
 static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return built_result(self); }
@@ -6135,6 +6144,10 @@ static std::vector<Test> tests() {
                           },
                           [](void *fn) {
                               g_text_ref = nullptr;   // (each run from none: the other run's temporary is not this one's)
+                              for (int k = 0; titled_object_globals[k] && k < 16; k++) {   // (the globals called on: objects of the arena's)
+                                  g_titled_object_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_object_globals[k];
+                                  *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = (uint32_t)(uintptr_t)arena<void>(0xd000 + k * 0x100);
+                              }
                               *(void **)g_titled_title = arena<void>(0x8000);
                               g_null_handle = arena<void>(0x700);
                               uint32_t *a = arena<uint32_t>(0x10);
@@ -6149,6 +6162,7 @@ static std::vector<Test> tests() {
                               case 6: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]); break;
                               default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
                               }
+                              for (int k = 0; titled_object_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
                               arena<uint8_t>(0x48)[0] = *(volatile uint8_t *)(uintptr_t)0x13ce4c8;   // (the game globals some copies set: compared)
                               arena<uint8_t>(0x48)[1] = *(volatile uint8_t *)(uintptr_t)0x13ce594;
                               *(volatile uint8_t *)(uintptr_t)0x13ce4c8 = g_titled_flags[0], *(volatile uint8_t *)(uintptr_t)0x13ce594 = g_titled_flags[1];
@@ -6158,7 +6172,8 @@ static std::vector<Test> tests() {
         g_titled_flags[0] = *(uint8_t *)(uintptr_t)0x13ce4c8, g_titled_flags[1] = *(uint8_t *)(uintptr_t)0x13ce594;
         titled_tables_ready();
         static void *const bases[7] = {nullptr, nullptr, (void *)stub_titled_base2, (void *)stub_titled_base3, (void *)stub_titled_base4, (void *)stub_titled_base5, (void *)stub_titled_base6};
-        static void *const built[6] = {(void *)stub_built0, (void *)stub_built1, (void *)stub_built2, (void *)stub_built3, (void *)stub_built4, (void *)stub_built5};
+        static void *const built[8] = {(void *)stub_built0, (void *)stub_built1, (void *)stub_built2, (void *)stub_built3, (void *)stub_built4, (void *)stub_built5,
+                                       (void *)stub_built6, (void *)stub_built7};
         uint32_t base = 0, base_args = 2;
         for (int k = 0; titled_info[k]; k += 5)
             if (titled_info[k] == e->at) g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4];
