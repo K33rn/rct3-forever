@@ -4318,8 +4318,8 @@ address,size,name,callers,status
 0x598ca0,16,Object::CallThenTail,1,rewritten
 0x598cf0,30,DeletingDestructor,1,rewritten
 0x598d10,2443,,1,documented
-0x5996a0,748,,2,documented
-0x599990,748,,1,documented
+0x5996a0,748,Window::BuildList,2,rewritten
+0x599990,748,Window::BuildList,1,rewritten
 0x599c80,741,,2,documented
 0x59a000,24,,0,documented
 0x59a050,43,,1,documented
