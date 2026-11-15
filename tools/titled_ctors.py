@@ -361,6 +361,8 @@ def tail(p):
                 R.pop(r, None)
             k = ls[0]
             continue
+        if x.mnemonic == 'call' and None in pushed:
+            raise Reject('by-value unset')
         if x.mnemonic == 'ret':
             if R.get('eax') != ('this',):
                 raise Reject('returns')
@@ -400,6 +402,20 @@ def tail(p):
                 ops.append((33, off, val('e' + v[0] + 'x')[1] & 0xff, 0, []))
             else:
                 raise Reject('new object store ' + s)
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'\], (.+)', s)) and val(m.group(1)) and val(m.group(1))[0] == 'spslot' \
+                and pushed[val(m.group(1))[1]] is None:
+            # the value of a 4-byte struct given by value (made in place on the stack): to the callee the same as a pushed value
+            i, v = val(m.group(1))[1], m.group(2)
+            w = val(v) if v in R else None
+            if re.fullmatch(r'0x[0-9a-f]+|\d+', v):
+                pushed[i] = num(v)
+            elif w and w[0] in ('const', 'global', 'arg', 'this', 'member'):
+                pushed[i] = w[1] if w[0] == 'const' else ('self', 0) if w[0] == 'this' else ('self', w[1]) if w[0] == 'member' else \
+                    ('glob' if w[0] == 'global' else 'given', w[1])
+            else:
+                raise Reject('by-value store ' + s)
+        elif (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], esp', s)) and (R.get('eax') or ('',))[0] == 'spslot':
+            S.pop(num(m.group(1)) - d, None)   # (the exception frame keeps where that struct is)
         elif (m := re.fullmatch(r'mov (dword|byte|word) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(2)) and \
                 val(m.group(2))[0] in ('this', 'member'):
             base_off = 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]
@@ -529,6 +545,11 @@ def tail(p):
             continue
         elif (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
             pushed.append(num(m.group(1))); d += 4
+        elif s == 'push ecx' and t[k + 1] == 'mov eax, esp':
+            pushed.append(None); d += 4   # room for a 4-byte struct given by value, filled through eax below
+            R['eax'] = ('spslot', len(pushed) - 1)
+            k += 2
+            continue
         elif s == 'push ecx' and val('ecx') and val('ecx')[0] == 'stack':
             w = S.get(val('ecx')[1])
             if not w or w[0] != 'name':

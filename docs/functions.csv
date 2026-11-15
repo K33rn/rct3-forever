@@ -6578,7 +6578,7 @@ address,size,name,callers,status
 0x686260,742,,0,documented
 0x686550,464,,1,documented
 0x686720,706,,1,documented
-0x6869f0,533,,1,documented
+0x6869f0,533,Window::Titled,1,rewritten
 0x686c20,30,DeletingDestructor,2,rewritten
 0x686c40,18,Destructor::TablesThenBase,1,rewritten
 0x686c70,855,,1,documented
@@ -14152,7 +14152,7 @@ address,size,name,callers,status
 0x99cab0,79,,1,documented
 0x99cb60,90,CachedInterface,1,rewritten
 0x99cc10,26,Object::GetRef,3,rewritten
-0x99cc30,563,,1,documented
+0x99cc30,563,Window::Titled,1,rewritten
 0x99ceb0,30,DeletingDestructor,2,rewritten
 0x99ced0,98,Destructor::TablesAndMember,1,rewritten
 0x99cf40,603,,1,documented
