@@ -15321,8 +15321,8 @@ address,size,name,callers,status
 0xa11310,30,DeletingDestructor,1,rewritten
 0xa11330,7,BaseClass::SetClass,1,rewritten
 0xa11350,126,ObjectRef::Assign,18,rewritten
-0xa113d0,200,,2,documented
-0xa114a0,200,,2,documented
+0xa113d0,200,Bird::MarkedAbove,2,rewritten
+0xa114a0,200,Bird::MarkedAbove,2,rewritten
 0xa11570,261,,4,documented
 0xa11680,261,,4,documented
 0xa11790,126,ObjectRef::Assign,3,rewritten
@@ -15352,8 +15352,8 @@ address,size,name,callers,status
 0xa14b30,30,DeletingDestructor,1,rewritten
 0xa14b50,7,BaseClass::SetClass,1,rewritten
 0xa14b70,126,ObjectRef::Assign,18,rewritten
-0xa14bf0,200,,1,documented
-0xa14cc0,200,,1,documented
+0xa14bf0,200,Bird::MarkedAbove,1,rewritten
+0xa14cc0,200,Bird::MarkedAbove,1,rewritten
 0xa14d90,345,,2,documented
 0xa14ef0,345,,2,documented
 0xa15050,399,,2,documented
