@@ -11338,9 +11338,9 @@ address,size,name,callers,status
 0x848780,30,DeletingDestructor,1,rewritten
 0x8487a0,7,BaseClass::SetClass,1,rewritten
 0x8487c0,126,ObjectRef::Assign,3,rewritten
-0x848840,363,,6,documented
-0x8489b0,363,,6,documented
-0x848b20,363,,6,documented
+0x848840,363,Scenery::SetStep,6,rewritten
+0x8489b0,363,Scenery::SetStep,6,rewritten
+0x848b20,363,Scenery::SetStep,6,rewritten
 0x848c90,403,,6,documented
 0x848e30,2291,,1,documented
 0x849730,610,,1,documented
