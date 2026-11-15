@@ -20,6 +20,9 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   8 the member at +off a reference to the empty handle (0x805750) linked (+8) first in that handle's list, 9 the same
 //   with the handle Handle::For (0x805700) gives for the constructor's argument number value (0: none);
 //   12 the mark (no parent: the title object's +4 = 1);
+//   58 the new object (a text made with 0xBCF850) kept as a name (its place given to calls, kind 5);
+//   57 a name let go whether or not it was made (as the game: through none, it fails as the game's does);
+//   (3 and 24 with value bit 31: made with edx = the window, as the game makes it);
 //   54 a scratch value (off) worked out: fn 0, the value given (args[0]) plus value, or 0 for 0; fn 1, its interface for the
 //      class numbered by the global value, or 0; 55 a scratch value (value) stored at off;
 //   (20 with value 1: a temporary made whether or not a new object was; values given: kind 7 a scratch value, kind 8 a
@@ -72,6 +75,18 @@ static void *titled_call(uintptr_t fn, void *self, uint32_t count, const uint32_
     case 4: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3]);
     case 5: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4]);
     default: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]);
+    }
+}
+
+// the same, made with edx = the window being made (a call the game makes with it there, the callee reading it)
+static void *titled_call_edx(uintptr_t fn, void *self, void *window, uint32_t count, const uint32_t *a) {
+    switch (count) {
+    case 0: return ((void *(__fastcall *)(void *, void *))fn)(self, window);
+    case 1: return ((void *(__fastcall *)(void *, void *, uint32_t))fn)(self, window, a[0]);
+    case 2: return ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t))fn)(self, window, a[0], a[1]);
+    case 3: return ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t))fn)(self, window, a[0], a[1], a[2]);
+    case 4: return ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, window, a[0], a[1], a[2], a[3]);
+    default: return ((void *(__fastcall *)(void *, void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, window, a[0], a[1], a[2], a[3], a[4]);
     }
 }
 
@@ -195,8 +210,19 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 45: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = *(uint32_t *)(uintptr_t)op.value; break;
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;
         case 27: *(uint32_t *)(self + op.off) |= op.value; break;
-        case 3: titled_call(op.fn, self + op.off, op.count, args); break;
-        case 24: titled_call(op.fn, *(uint8_t **)(self + op.off) + op.value, op.count, args); break;
+        case 3:
+            if (op.value >> 31) titled_call_edx(op.fn, self + op.off, self, op.count, args);
+            else titled_call(op.fn, self + op.off, op.count, args);
+            break;
+        case 24:
+            if (op.value >> 31) titled_call_edx(op.fn, *(uint8_t **)(self + op.off) + (op.value & 0x7fffffff), self, op.count, args);
+            else titled_call(op.fn, *(uint8_t **)(self + op.off) + op.value, op.count, args);
+            break;
+        case 57: titled_release(names[op.off]); break;   // (made or not: the game reads through it either way)
+        case 58:   // the new object (a text, or none without memory) kept as a name
+            names[op.off] = object;
+            name_built[op.off] = true;
+            break;
         case 8:
         case 9: {
             uint8_t *handle = op.kind == 8 ? ((uint8_t * (__cdecl *)())0x805750)()

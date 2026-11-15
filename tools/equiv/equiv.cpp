@@ -519,6 +519,18 @@ static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t
 static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d)); return built_result(self);
 }
+// the same, for a function the game makes with edx = the window being made (noted too)
+static void *__fastcall stub_built_edx0(void *self, void *edx) { record(0x81, self); record(0x81, arg_value((uint32_t)(uintptr_t)edx)); return built_result(self); }
+static void *__fastcall stub_built_edx1(void *self, void *edx, uint32_t a) {
+    record(0x81, self); record(0x81, arg_value((uint32_t)(uintptr_t)edx)); record(0x81, arg_value(a)); return built_result(self);
+}
+static void *__fastcall stub_built_edx2(void *self, void *edx, uint32_t a, uint32_t b) {
+    record(0x81, self); record(0x81, arg_value((uint32_t)(uintptr_t)edx)); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return built_result(self);
+}
+static void *__fastcall stub_built_edx3(void *self, void *edx, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x81, self); record(0x81, arg_value((uint32_t)(uintptr_t)edx)); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c));
+    return built_result(self);
+}
 static void __thiscall stub_field_add(void *list, void *field) { record(0x82, list); record(0x82, field); }
 static void __thiscall stub_struct_total(void *field) { record(0x86, field); }   // a struct field closed (slot 0, 0x808D90)
 static void *__thiscall stub_list_member(void *self, void *list) { record(0x87, self); record(0x87, list); return self; }   // ListMember::ListMember (0xCD2B30)
@@ -6105,8 +6117,10 @@ static std::vector<Test> tests() {
                                                          {0x6b1640, (void *)titled_layout}, {0xbeca40, (void *)stub_name_make},
                                                          {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free},
                                                          {0x41cb90, (void *)stub_named_text_ref}};
+        static void *const built_edx[4] = {(void *)stub_built_edx0, (void *)stub_built_edx1, (void *)stub_built_edx2, (void *)stub_built_edx3};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
-            if (titled_callees[k] != e->at) list.push_back({titled_callees[k], built[titled_callees[k + 1]]});
+            if (titled_callees[k] != e->at)
+                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         stubs_for_now(list);
         g_built_other = true;
     };

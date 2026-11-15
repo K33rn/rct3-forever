@@ -388,7 +388,7 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45) or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58) or o[0] == 10 and o[3] == 0xbcf850 or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
@@ -470,6 +470,54 @@ def tail(p):
         if v_ in ('ecx', 'edx', 'eax') or zc.group(1) == v_ or zd.group(1) == v_:
             return None
         return l2, 'eax', 1, base, num(zc.group(2)), {'eax', 'ecx', 'edx', z1.group(1), zc.group(1), zd.group(1)}
+
+    def last_text_object():   # the new object being made: 0x10 bytes, made with 0xBCF850 (a text), nothing since
+        i18 = max((i for i, o in enumerate(ops) if o[0] == 18), default=None)
+        if i18 is None or ops[i18][2] != 0x10:
+            return False
+        rest = ops[i18 + 1:]
+        return len(rest) == 1 and rest[0][0] == 10 and rest[0][3] == 0xbcf850 and len(rest[0][4]) == 1 and isinstance(rest[0][4][0], int)
+
+    def plain_release(k0, reg, at_):
+        # mov A, [esp + N]; dec dword ptr [A]; mov A, [esp + N]; cmp dword ptr [A], 0 (or a register holding 0); jne END;
+        # mov B, A; mov A, [A + 0xc]; push A; call 0xbce010; push B; call 0xbce000; add esp, 8; END (the exception state's
+        # byte stores passed over). Gives (END, the registers written).
+        L = []
+        q = k0
+        while len(L) < 14 and q < len(t):
+            if not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', t[q]):
+                L.append((q, t[q]))
+            q += 1
+        b = [u for _, u in L]
+        slot = at_ - depth_at[k0]
+        z2 = re.fullmatch(r'mov ' + reg + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', b[2])
+        z3 = re.fullmatch(r'cmp dword ptr \[' + reg + r'\], (0|' + REG + ')', b[3])
+        zj = re.fullmatch(r'jne (0x[0-9a-f]+)', b[4])
+        if b[1] != f'dec dword ptr [{reg}]' or not z2 or num(z2.group(1)) - depth_at[L[2][0]] != slot or not z3 or not zj:
+            return None
+        if z3.group(1) != '0' and R.get(z3.group(1)) not in (('const', 0), ('byte', 0)):
+            return None
+        # the frees, in either of the compiler's orders: (mov B, A; mov A, [A + 0xc]; push A) or (mov C, [A + 0xc]; push C;
+        # mov B, A), then call 0xbce010; push B; call 0xbce000; add esp, 8
+        z5 = re.fullmatch(r'mov ' + REG + ', ' + reg, b[5])
+        z6 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + reg + r' \+ 0xc\]', b[5])
+        written = set()
+        if z5 and b[6:9] == [f'mov {reg}, dword ptr [{reg} + 0xc]', f'push {reg}', 'call 0xbce010']:
+            o2 = z5.group(1)
+        elif z6 and b[6] == f'push {z6.group(1)}' and (z7 := re.fullmatch(r'mov ' + REG + ', ' + reg, b[7])) and b[8] == 'call 0xbce010':
+            o2 = z7.group(1); written.add(z6.group(1))
+        else:
+            return None
+        if b[9:12] != [f'push {o2}', 'call 0xbce000', 'add esp, 8']:
+            return None
+        end = at.get(num(zj.group(1)))
+        if end is None or not (L[11][0] < end <= (L[12][0] if len(L) > 12 else end)):
+            return None
+        if o2 in ('esi', 'edi', 'ebx', 'ebp') and R.get(o2) and R[o2][0] in ('this', 'member'):
+            return None
+        if written & {'esi', 'edi', 'ebx', 'ebp'}:
+            return None
+        return end, {reg, o2, 'eax', 'ecx', 'edx'}
 
     def name_block(k0):
         # jne SKIP (the description given); mov X, [title]; then the flag set (mov bl, 1 / mov byte ptr [esp + N], 1), X
@@ -641,10 +689,35 @@ def tail(p):
         nb_used.clear(); nb_used.update(used | set(local) | {zm.group(1)} | ({'ebx'} if flag_at == 'bl' else set()))
         return done, names
 
+    edx_live = [False]          # edx written since the last call and not used since (a call may read it)
+    edx_call = [None]           # a call made with edx live: the step count before it (its step must take edx = this)
+
+    def edx_check():
+        if edx_call[0] is None:
+            return
+        before = edx_call[0]
+        edx_call[0] = None
+        if len(ops) != before + 1 or ops[-1][0] not in (3, 24) or ops[-1][2] >> 31:
+            raise Reject('edx given')
+        o = ops[-1]
+        ops[-1] = (o[0], o[1], o[2] | 1 << 31, o[3], o[4])   # (bit 31: made with edx = this)
+
     while True:
         s, x = t[k], ins[k]
         val = lambda r: R.get(r)
+        edx_check()
+        if x.mnemonic == 'call':
+            if edx_live[0]:
+                if R.get('edx') != ('this',) or x.op_str.startswith('dword'):
+                    raise Reject('edx given')
+                edx_call[0] = len(ops)
+            edx_live[0] = False
+        elif re.match(r'(mov|lea|xor|movzx|movsx|or|and|add|sub) edx, ', s) or re.match(r'mov d[lh], ', s):
+            edx_live[0] = True
+        elif re.search(r'\b(edx|dl|dh)\b', s):
+            edx_live[0] = False
         if not pushed and ((ls := layout_step(t, k, R)) or (ls := copy_step(t, k, R))):
+            edx_live[0] = False   # (its own steps use edx as they set it; its call, 0x6B1640, reads no edx)
             ops.append(ls[1])   # a child laid out (kind 40) / a member's value copied into another's (41)
             for r in ('eax', 'ecx', 'edx'):
                 R.pop(r, None)
@@ -656,6 +729,8 @@ def tail(p):
         if x.mnemonic == 'call' and None in pushed:
             raise Reject('by-value unset')
         if x.mnemonic == 'ret':
+            if edx_call[0] is not None:
+                raise Reject('edx given')
             if R.get('eax') != ('this',):
                 raise Reject('returns')
             break
@@ -783,6 +858,16 @@ def tail(p):
                 S[num(z.group(1)) - d] = val(z.group(2))
             elif (z := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)):
                 S[num(z.group(1)) - d] = ('const', num(z.group(2)))
+        elif (m := re.fullmatch(r'mov (e[a-d]x|e[sd]i|ebp), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and not pushed and \
+                (S.get(num(m.group(2)) - d) or ('',))[0] == 'name' and ('name', S[num(m.group(2)) - d][1]) in built and \
+                (rel := plain_release(k, m.group(1), num(m.group(2)))):
+            ops.append((57, S[num(m.group(2)) - d][1], 0, 0, []))
+            built.discard(('name', S[num(m.group(2)) - d][1]))
+            for r in rel[1]:
+                R[r] = None
+            k = rel[0]
+            flag = None
+            continue
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'temp' and \
                 ('temp', val(m.group(2))[1]) in built and num(m.group(3)) < 0x40:
             R[m.group(1)] = ('tempat', val(m.group(2))[1], num(m.group(3)))   # (what a temporary holds: read when given)
@@ -943,6 +1028,15 @@ def tail(p):
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack' and \
                 (S.get(val(m.group(1))[1]) or ('',))[0] == 'name':
             pushed.append(('nameaddr', S[val(m.group(1))[1]][1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack' and                 (S.get(val(m.group(1))[1]) or ('',))[0] == 'obj' and S[val(m.group(1))[1]][1] == cur and last_text_object():
+            # the new object a text (0x10 bytes made with 0xBCF850), kept on the stack and its place given: a name (kind 58)
+            if nnames >= 16:
+                raise Reject('names')
+            ops.append((58, nnames, 0, 0, []))
+            built.add(('name', nnames))
+            S[val(m.group(1))[1]] = ('name', nnames, None)
+            pushed.append(('nameaddr', nnames)); d += 4
+            nnames += 1
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack':
             pushed.append(('rect', val(m.group(1))[1])); d += 4   # a local's address: only a layout's rectangle is understood
         elif (m := re.fullmatch(r'push ' + REG, s)) and still(val(m.group(1))):
@@ -1127,7 +1221,7 @@ def tail(p):
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built)) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('field call with a temporary')
             ops.append((24, val('ecx')[1], val('ecx')[3], fn, args))   # (on the place that far into what the member points to)
             for r in ('eax', 'ecx', 'edx'):
@@ -1139,7 +1233,7 @@ def tail(p):
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built)) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('field call with a temporary')
             ops.append((24, val('ecx')[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
@@ -1166,7 +1260,7 @@ def tail(p):
             n_ = ret_args(fn)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built)) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and ('temp', v[1]) in built) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('member call with a temporary')
             ops.append((3, 0 if this == ('this',) else this[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
@@ -1204,6 +1298,7 @@ if __name__ == '__main__':
     reasons = collections.Counter(); rb = collections.Counter(); ok = 0; okb = 0
     out = ["// Window classes' constructors taken over by titled_construct (titled.cpp); written by tools/titled_ctors.py."]
     info, callees, temps_used, nullable = [], {}, set(), []
+    edx_uses, plain_uses = set(), set()   # the callees made with edx = the window, and those made without
     for a, r in sorted(rows.items()):
         n = int(r['size'])
         if (r['status'] != 'documented' and a not in mine) or n > 4000:
@@ -1248,6 +1343,7 @@ if __name__ == '__main__':
         for o in p['ops']:
             if o[0] in (3, 10, 24):
                 callees[o[3]] = len(o[4])
+                (edx_uses if o[0] in (3, 24) and o[2] >> 31 else plain_uses).add(o[3])
             if o[0] in (15, 20):
                 temps_used.add(o[3])
     out.append('// each constructor: its address, title global, how many values it takes, its base and how many values that takes')
@@ -1258,7 +1354,8 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_info[] = {' + ''.join(f'{a:#x}, {tl:#x}, {na}, {b:#x}, {bn}, ' for a, tl, na, b, bn in info) + '0};')
     out.append('// the functions the members are made with or called, and how many values each takes (the tester stands in for them)')
     out.append('extern const uint32_t titled_callees[];')
-    out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c}, ' for fn, c in sorted(callees.items())) + '0};')
+    # (count | 0x100: always made with edx = the window, which the tester's stand-in notes too)
+    out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c | (0x100 if fn in edx_uses and fn not in plain_uses else 0):#x}, ' for fn, c in sorted(callees.items())) + '0};')
     unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740}
     if unknown_temps:
         print('temporaries the tester has no stand-in for:', [hex(x) for x in sorted(unknown_temps)])
