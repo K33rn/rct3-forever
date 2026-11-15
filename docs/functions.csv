@@ -14172,8 +14172,8 @@ address,size,name,callers,status
 0x99efe0,1003,,1,documented
 0x99f3e0,653,,1,documented
 0x99f6b0,469,,3,documented
-0x99f890,656,,2,documented
-0x99fb20,656,,2,documented
+0x99f890,656,Folder::LoadOnce,2,rewritten
+0x99fb20,656,Folder::LoadOnce,2,rewritten
 0x99fdb0,179,Text::NameOr99AD00,1,rewritten
 0x99fe70,183,,1,documented
 0x99ff30,187,,8,documented
