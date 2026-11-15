@@ -1986,6 +1986,7 @@ template <uint32_t SOURCE, uint32_t FIELD, uint32_t TEXT> static void **__thisca
 }
 REWRITE("Text::FromA2C8E0", 0xa2c8e0, w3c_start<0x6400e7c76668ff6a>, (&w3d_text<0x7c, 0xc, 0xf65930>), &g_w3d_text);
 REWRITE("Text::FromA2C8E0", 0xba52d0, w3c_start<0x6400e9aec668ff6a>, (&w3d_text<0x50, 0x4, 0xf9d13c>), &g_w3d_text);
+REWRITE("Text::FromA2C8E0", 0xac3320, w3c_start<0x6400e888b668ff6a>, (&w3d_text<0x80, 0x4, 0xf934e0>), &g_w3d_text);   // PoolTypeDatabaseEntry::Name
 
 // ---- Shared::Own: before changing a shared buffer, a buffer still used elsewhere is let go of and copied (with the argument);
 // one used only here is changed in place --------------------------------------------------------------------------------------------

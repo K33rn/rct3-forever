@@ -1,4 +1,4 @@
-// Path::Make731220, Guest::Make739540 and Graph::MakeAC3270 (one function written out three times; they differ in the
+// Path::Make731220, Guest::Make739540, Graph::MakeAC3270 and Animals::MakeBA5230 (one function written out four times; they differ in the
 // object's size and constructor and where it keeps its name): make a named object (fastcall: where its name's text is
 // held, a value; gives the object).
 //   - The object (the copy's size in new bytes, its constructor with 0, 0, 0; the game goes on with none, as it does).
@@ -37,8 +37,10 @@ template <uint32_t SIZE, uintptr_t MAKE, uint32_t NAME> uint8_t *__fastcall path
     return object;
 }
 
-const uint8_t path_make_first[][7] = {{0x6a, 0xff, 0x68, 0x8b, 0xca, 0xe4, 0x00}, {0x6a, 0xff, 0x68, 0x7b, 0xd6, 0xe4, 0x00}, {0x6a, 0xff, 0x68, 0x8b, 0x88, 0xe8, 0x00}};
+const uint8_t path_make_first[][7] = {{0x6a, 0xff, 0x68, 0x8b, 0xca, 0xe4, 0x00}, {0x6a, 0xff, 0x68, 0x7b, 0xd6, 0xe4, 0x00}, {0x6a, 0xff, 0x68, 0x8b, 0x88, 0xe8, 0x00},
+                                       {0x6a, 0xff, 0x68, 0x9b, 0xae, 0xe9, 0x00}};
 }   // namespace
 REWRITE("Object::MakeNamed", 0x731220, path_make_first[0], (&path_make<0xbf8, 0x730db0, 0xc0>), &g_path_makes);
 REWRITE("Object::MakeNamed", 0x739540, path_make_first[1], (&path_make<0x180, 0x739100, 0xc0>), &g_path_makes);
 REWRITE("Object::MakeNamed", 0xac3270, path_make_first[2], (&path_make<0x7c8, 0xac2ed0, 0xb4>), &g_path_makes);
+REWRITE("Object::MakeNamed", 0xba5230, path_make_first[3], (&path_make<0x118, 0xba5000, 0x44>), &g_path_makes);   // Animals::MakeBA5230

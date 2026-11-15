@@ -35,8 +35,8 @@ static void __fastcall pm_ready(uint8_t *object) { dev_note(722, pm_at(object));
                     }};
     path_makes.iterations = 1500;
     path_makes.prepare = [](const rewrite::Entry *e) {
-        g_pm_name_at = e->at == 0xac3270 ? 0xb4 : 0xc0;
-        const uintptr_t make = e->at == 0x731220 ? 0x730db0 : e->at == 0x739540 ? 0x739100 : 0xac2ed0;
+        g_pm_name_at = e->at == 0xac3270 ? 0xb4 : e->at == 0xba5230 ? 0x44 : 0xc0;
+        const uintptr_t make = e->at == 0x731220 ? 0x730db0 : e->at == 0x739540 ? 0x739100 : e->at == 0xba5230 ? 0xba5000 : 0xac2ed0;
         stubs_for_now({{0xbcdfc0, (void *)pm_alloc}, {make, (void *)pm_make}, {0x800860, (void *)pm_ready},
                        {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}});
     };

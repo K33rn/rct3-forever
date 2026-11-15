@@ -16973,7 +16973,7 @@ address,size,name,callers,status
 0xac2ea0,30,DeletingDestructor,0,rewritten
 0xac2ed0,783,Class::Construct,2,rewritten
 0xac3270,172,Object::MakeNamed,1,rewritten
-0xac3320,165,,1,documented
+0xac3320,165,Text::FromA2C8E0,1,rewritten
 0xac3420,228,Database::MissingDependency,1,rewritten
 0xac3510,236,RefArray::Remove,1,rewritten
 0xac3600,1035,,1,documented
@@ -19171,7 +19171,7 @@ address,size,name,callers,status
 0xba4f10,180,NamedTextRef::NamedTextRef(text),1,rewritten
 0xba4fd0,30,DeletingDestructor,0,rewritten
 0xba5000,457,Class::Construct,2,rewritten
-0xba5230,160,,1,documented
+0xba5230,160,Object::MakeNamed,1,rewritten
 0xba52d0,162,Text::FromA2C8E0,2,rewritten
 0xba5380,236,RefArray::Remove,1,rewritten
 0xba5470,931,,1,documented
