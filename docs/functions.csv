@@ -434,7 +434,7 @@ address,size,name,callers,status
 0x41d9c0,2608,,1,documented
 0x41e400,3551,,4,documented
 0x41f210,161,GameText::Copy,1,rewritten
-0x41f2c0,796,,1,documented
+0x41f2c0,796,Window::Titled,1,rewritten
 0x41f760,67,Reference::Reference(object),1,rewritten
 0x41f850,16,Object::AllocStore,2,rewritten
 0x41f910,53,Record::SetFields,3,rewritten
@@ -2844,7 +2844,7 @@ address,size,name,callers,status
 0x4eb650,1957,,1,documented
 0x4ebe50,19,,1,documented
 0x4ebe70,51,Flags::Refresh4EBE70,1,rewritten
-0x4ebeb0,770,,1,documented
+0x4ebeb0,770,Window::Titled,1,rewritten
 0x4ec1f0,30,DeletingDestructor,2,rewritten
 0x4ec210,81,Destructor::MemberThenBaseNullSafe,1,rewritten
 0x4ec2b0,60,,1,documented
@@ -5582,7 +5582,7 @@ address,size,name,callers,status
 0x62ab20,104,,1,documented
 0x62ac40,19,,1,documented
 0x62ac60,51,Flags::Refresh4EBE70,1,rewritten
-0x62aca0,770,,8,documented
+0x62aca0,770,Window::Titled,8,rewritten
 0x62afe0,30,DeletingDestructor,2,rewritten
 0x62b000,81,Destructor::MemberThenBaseNullSafe,1,rewritten
 0x62b060,40,Text::Widen,0,rewritten
@@ -8150,7 +8150,7 @@ address,size,name,callers,status
 0x719f90,30,DeletingDestructor,2,rewritten
 0x719fd0,663,,2,documented
 0x71a270,108,,7,documented
-0x71a2e0,718,,1,documented
+0x71a2e0,718,Window::Titled,1,rewritten
 0x71a5b0,591,Window::Titled,2,rewritten
 0x71a830,96,Destructor::Steps,1,rewritten
 0x71a890,30,DeletingDestructor,2,rewritten
@@ -9343,9 +9343,9 @@ address,size,name,callers,status
 0x791600,107,Factory::CreateFromFields,0,rewritten
 0x791670,2748,,5,documented
 0x792130,1201,Window::Titled,1,rewritten
-0x7925f0,1619,,1,documented
-0x792c50,1276,,1,documented
-0x793150,586,,1,documented
+0x7925f0,1619,Window::Titled,1,rewritten
+0x792c50,1276,Window::Titled,1,rewritten
+0x793150,586,Window::Titled,1,rewritten
 0x7933a0,3178,,1,documented
 0x794010,2533,,1,documented
 0x794a00,2428,,1,documented
@@ -12354,7 +12354,7 @@ address,size,name,callers,status
 0x8d0b20,30,DeletingDestructor,2,rewritten
 0x8d0b40,139,MEMBER_DTOR,1,rewritten
 0x8d0bf0,7292,,1,documented
-0x8d2870,718,,4,documented
+0x8d2870,718,Window::Titled,4,rewritten
 0x8d2b40,107,Factory::CreateFromFields,0,rewritten
 0x8d2bb0,107,Factory::CreateFromFields,0,rewritten
 0x8d2c20,107,Factory::CreateFromFields,0,rewritten
@@ -14093,7 +14093,7 @@ address,size,name,callers,status
 0x9978a0,170,,2,documented
 0x997a30,797,,1,documented
 0x997d60,30,DeletingDestructor,4,rewritten
-0x997ef0,1255,,1,documented
+0x997ef0,1255,Window::Titled,1,rewritten
 0x9983e0,30,DeletingDestructor,2,rewritten
 0x9984a0,57,Reference::Interface,1,rewritten
 0x998630,1030,,1,documented
@@ -15533,7 +15533,7 @@ address,size,name,callers,status
 0xa26330,677,,1,documented
 0xa26780,201,,2,documented
 0xa26850,219,Destructor::Steps,1,rewritten
-0xa26970,1068,,1,documented
+0xa26970,1068,Window::Titled,1,rewritten
 0xa26da0,801,Window::Titled,1,rewritten
 0xa270d0,30,DeletingDestructor,2,rewritten
 0xa271d0,27,GlobalCleanup,1,rewritten

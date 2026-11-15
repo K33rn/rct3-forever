@@ -523,6 +523,8 @@ def tail(p):
         if v == ('this',): return ('self', 0)
         if v[0] == 'member': return ('self', v[1])
         if still(v): return ('field', v[1])
+        if v[0] == 'tempat' and ('temp', v[1]) in built and v[2] < 0x40:   # (what a temporary holds)
+            return ('tempat', v[1] | v[2] << 8)
         return None
 
     def value_block(k0):
@@ -867,6 +869,8 @@ def tail(p):
             if mm:
                 off = num(mm.group(2) or '0')
                 v = regs.get(mm.group(1), ('r', R.get(mm.group(1))))
+                if v[0] == 'bits' and v[1][0] == 2 and v[1][1] < 0x10000 and off < 0x10000:
+                    return (3, v[1][1] | off << 16)   # (a member's value loaded in the run: what it points to, read through)
                 v = v[1] if v[0] in ('r', 'ecx') else None
                 if v == ('this',): return (2, off)
                 if v and v[0] == 'member': return (2, v[1] + off)
