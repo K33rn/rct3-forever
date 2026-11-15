@@ -3468,8 +3468,8 @@ address,size,name,callers,status
 0x536160,323,,0,documented
 0x5362b0,305,,2,documented
 0x536400,380,,4,documented
-0x5365b0,715,,4,documented
-0x536880,715,,3,documented
+0x5365b0,715,Ride::PointHolderAt,4,rewritten
+0x536880,715,Ride::PointHolderAt,3,rewritten
 0x536b50,69,Limit::Check536B50,3,rewritten
 0x536ba0,69,Limit::Check536B50,3,rewritten
 0x536bf0,69,Limit::Check536B50,3,rewritten
