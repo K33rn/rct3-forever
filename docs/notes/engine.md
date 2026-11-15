@@ -1804,7 +1804,7 @@ The rest of Frontier's engine: resources, files, streams, parsing.
 | `0xadff60` | Name::FindADFF60 | In outline: the same (another copy) |
 | `0xc339e0` | Resource::MakeC339E0 | In outline: makes a resource part (Resource::MakeC33730) |
 | `0x909c10` | List::Find909C10 | In outline: finds an entry up to n |
-| `0x87bcb0` | List::Find87BCB0 | In outline: finds an entry up to n |
+| `0x87bcb0` | List::Find87BCB0 | Takes an item of n dwords from pools kept by size, adding a pool or a block when needed (rewritten as SizePools::Take, with 0x909C10) |
 | `0x499720` | List::Grow499720 | In outline: grows a list to hold n |
 | `0xca46f0` | List::FindCA46F0 | In outline: a step for a positive count |
 | `0xce76b0` | List::FindCE76B0 | In outline: finds an entry up to n |
