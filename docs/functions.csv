@@ -15564,7 +15564,7 @@ address,size,name,callers,status
 0xa28df0,36,Record::Fields,1,rewritten
 0xa28e20,54,Reference::Interface,1,rewritten
 0xa28f50,280,,1,documented
-0xa290d0,344,,4,documented
+0xa290d0,344,Info::NameText,4,rewritten
 0xa29230,1394,Class::Construct,13,rewritten
 0xa297b0,30,DeletingDestructor,2,rewritten
 0xa297d0,905,,11,documented
@@ -15653,7 +15653,7 @@ address,size,name,callers,status
 0xa30820,28,Object::FreeField,5,rewritten
 0xa30860,151,,1,documented
 0xa30900,126,ObjectRef::Assign,1,rewritten
-0xa30980,344,,8,documented
+0xa30980,344,Info::NameText,8,rewritten
 0xa30ae0,1640,,1,documented
 0xa31150,460,Class::Construct,2,rewritten
 0xa31340,133,,1,documented
