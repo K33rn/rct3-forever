@@ -415,6 +415,17 @@ def tail(p):
     always_temps = set()   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55}   # steps that call nothing
+
+    def take_result(v):   # a call's result still the last thing called: into a scratch value (kind 64); else None
+        if not v or v[0] != 'result' or any(o[0] not in QUIET for o in ops[v[1] + 1:]):
+            return None
+        if nscratch[0] >= 8:
+            raise Reject('scratch values')
+        ops.append((64, nscratch[0], 0, 0, []))
+        nscratch[0] += 1
+        return ('scratch', nscratch[0] - 1)
+
     def base_code(v):   # a value as a call is given it (the push forms), or None
         if not v:
             return None
@@ -889,10 +900,30 @@ def tail(p):
         o = ops[-1]
         ops[-1] = (o[0], o[1], o[2] | 1 << 31, o[3], o[4])   # (bit 31: made with edx = this)
 
+    conds = []   # forward branches open: (end index, the op's index, registers, stack slots, depth, made things)
+
     while True:
         s, x = t[k], ins[k]
         val = lambda r: R.get(r)
         edx_check()
+        while conds and k == conds[-1][0]:
+            # a block skipped when its value is 0 (or not) ends here: the stack as at its start, nothing made in it left
+            # unlet, nothing pushed; what it changed is forgotten (it may not have happened)
+            end_, at_op, R0, S0, d0, built0 = conds.pop()
+            if pushed or d != d0 or built != built0 or nulls:
+                raise Reject('conditional block leaves')
+            o = ops[at_op]
+            ops[at_op] = (o[0], len(ops) - at_op - 1, o[2], o[3], o[4])
+            for r in list(R):
+                if R.get(r) != R0.get(r):
+                    R[r] = None
+            for sl in set(S) | set(S0):
+                if S.get(sl) != S0.get(sl):
+                    S.pop(sl, None)
+            flag = None
+        if conds and x.mnemonic in ('ret', 'jmp') and not (x.mnemonic == 'jmp' and at.get(int(x.op_str, 0) if re.fullmatch(r'0x[0-9a-f]+', x.op_str) else -1, 1 << 30) <= conds[-1][0]):
+            if x.mnemonic == 'ret' or at.get(int(x.op_str, 0), 1 << 30) > conds[-1][0]:
+                raise Reject('a jump out of a conditional block')
         if x.mnemonic == 'call':
             if 'edx' in x.op_str:
                 edx_live[0] = False   # (a call through edx: it was the table, used)
@@ -928,6 +959,8 @@ def tail(p):
         if x.mnemonic == 'call' and None in pushed:
             raise Reject('by-value unset')
         if x.mnemonic == 'ret':
+            if conds:
+                raise Reject('a conditional block open at the end')
             if edx_call[0] is not None:
                 raise Reject('edx given')
             if R.get('eax') != ('this',):
@@ -1011,6 +1044,13 @@ def tail(p):
             for r_ in R:   # (the member itself is unchanged)
                 if R[r_] and R[r_][0] == 'field' and R[r_][2] == len(ops) - 1:
                     R[r_] = ('field', R[r_][1], len(ops))
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + REG, s)) and val(m.group(1)) and \
+                val(m.group(1))[0] in ('this', 'member') and (sc := take_result(val(m.group(3)))):
+            # a call's result kept in the window (kind 64, then 55)
+            ops.append((55, (0 if val(m.group(1)) == ('this',) else val(m.group(1))[1]) + num(m.group(2) or '0'), sc[1], 0, []))
+            for r in list(R):
+                if R[r] and R[r][0] == 'result':
+                    R[r] = sc
         elif (m := re.fullmatch(r'mov (dword|byte|word) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and val(m.group(2)) and \
                 val(m.group(2))[0] in ('this', 'member'):
             base_off = 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]
@@ -1161,6 +1201,13 @@ def tail(p):
                 raise Reject('scratch values')
             flag = None
             continue
+        elif x.mnemonic in ('je', 'jne') and not pushed and not nulls and flag and flag[0] == 'test' and base_code(flag[1]) is not None and \
+                re.fullmatch(r'0x[0-9a-f]+', x.op_str) and (at.get(int(x.op_str, 0)) or -1) > k + 1 and \
+                (not conds or at.get(int(x.op_str, 0)) <= conds[-1][0]) and not (flag[1] and flag[1][0] in ('alloc', 'namealloc')):
+            # a block skipped when the value is 0 (je) or isn't (jne): kind 63, its length filled in at its end
+            ops.append((63, 0, 0, int(x.mnemonic == 'jne'), [base_code(flag[1])]))
+            conds.append((at[int(x.op_str, 0)], len(ops) - 1, dict(R), dict(S), d, set(built)))
+            flag = None
         elif x.mnemonic == 'je' and flag and flag[0] == 'ehbit' or x.mnemonic == 'jns' and flag == ('ehsign',):
             # what the bookkeeping bit guards: a temporary's destructor (lea ecx, [esp + N]; call D) or a wide string let go
             # (the one a temporary holds, or a name)
@@ -1242,6 +1289,12 @@ def tail(p):
             pushed.append(('field', val(m.group(1))[1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'scratch':
             pushed.append(('scratch', val(m.group(1))[1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and (sc := take_result(val(m.group(1)))):
+            for r in list(R):
+                if R[r] == val(m.group(1)) and r != m.group(1):
+                    R[r] = sc
+            R[m.group(1)] = sc
+            pushed.append(sc); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'tempat' and ('temp', val(m.group(1))[1]) in built and \
                 all(o[0] not in (15, 16) for o in ops[tempat_ops[val(m.group(1))[1]]:]):
             pushed.append(('tempat', val(m.group(1))[1] | val(m.group(1))[2] << 8)); d += 4
@@ -1435,6 +1488,13 @@ def tail(p):
             ops.append((60, target, slot_, 0, args))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
+            R['eax'] = ('result', len(ops) - 1)   # (what it gave back: kept, op 64 takes it while nothing else was called)
+            flag = None
+        elif s in ('call 0xbce000', 'call 0xbce010') and pushed and pushed[-1] is not None and t[k + 1] == 'add esp, 4' and \
+                (isinstance(pushed[-1], int) or pushed[-1][0] in ('field', 'glob', 'given', 'scratch')):
+            ops.append((65, 0, 0, num(s[5:]), [pushed[-1]]))   # memory freed (0xBCE000, or 0xBCE010 aligned)
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'fieldplus' and still(('field',) + val('ecx')[1:3]):
             fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
@@ -1447,6 +1507,7 @@ def tail(p):
             ops.append((24, val('ecx')[1], val('ecx')[3], fn, args))   # (on the place that far into what the member points to)
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
+            R['eax'] = ('result', len(ops) - 1)   # (what it gave back: kept, op 64 takes it while nothing else was called)
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and still(val('ecx')):
             fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
@@ -1459,6 +1520,7 @@ def tail(p):
             ops.append((24, val('ecx')[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
+            R['eax'] = ('result', len(ops) - 1)
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)):
             fn, this = num(m.group(1)), val('ecx')
@@ -1492,6 +1554,7 @@ def tail(p):
                 ops.append((3, 0 if this == ('this',) else this[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
+            R['eax'] = ('result', len(ops) - 1)   # (what it gave back: kept, op 64 takes it while nothing else was called)
             flag = None
         else:
             raise Reject('tail: ' + s + ' @%#x' % x.address)
@@ -1565,8 +1628,9 @@ if __name__ == '__main__':
         info.append((a, p['title'], p['nargs'], p['base'], 2 + len(ex)))
         all_ops[a] = p['ops']
         # the arguments only a cast reads (V ? V + c : 0): the tester gives them 0 at times (none reads through them)
-        cast_args = {o[4][0][1] for o in p['ops'] if o[0] == 54 and o[3] == 0 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'}
-        deref_args = {o[2] for o in p['ops'] if o[0] in (29, 50)} | {1}
+        # (and those a conditional block tests, so both of its ways are run)
+        cast_args = {o[4][0][1] for o in p['ops'] if o[0] in (54, 63) and (o[0] == 63 or o[3] == 0) and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'}
+        deref_args = {o[2] for o in p['ops'] if o[0] in (29, 50)} | {o[1] for o in p['ops'] if o[0] == 61} | {1}
         mask = sum(1 << n_ for n_ in cast_args - deref_args)
         if mask:
             nullable.append((a, mask))

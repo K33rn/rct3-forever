@@ -7906,7 +7906,7 @@ address,size,name,callers,status
 0x6ff1e0,158,,1,documented
 0x6ff280,30,DeletingDestructor,2,rewritten
 0x6ff2a0,124,Destructor::Steps,1,rewritten
-0x6ff360,529,,0,documented
+0x6ff360,529,Window::Titled,0,rewritten
 0x6ff580,161,GameText::Copy,1,rewritten
 0x6ff630,557,,1,documented
 0x6ff860,30,DeletingDestructor,2,rewritten
@@ -10038,7 +10038,7 @@ address,size,name,callers,status
 0x7e3510,30,DeletingDestructor,2,rewritten
 0x7e3530,30,DeletingDestructor,2,rewritten
 0x7e3640,124,,1,documented
-0x7e36e0,540,,2,documented
+0x7e36e0,540,Window::Titled,2,rewritten
 0x7e3920,30,DeletingDestructor,2,rewritten
 0x7e3950,15,,1,documented
 0x7e3960,143,,1,documented

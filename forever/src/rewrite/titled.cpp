@@ -23,6 +23,8 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   59 an x87 run (the game's steps, titled_fpu from value) building locals, then the call given them (kind 9: a local's place);
 //   60 a virtual call: slot value, on the window + off or (off bit 24) on what that member points to;
 //   61 a call on the constructor's argument off; 62 a call on the object the game global value holds;
+//   63 the next off steps skipped when the value given is 0 (fn 0) or is not (fn 1);
+//   64 the last call's result kept as scratch value off; 65 memory freed (fn: 0xBCE000 / 0xBCE010) with the value given;
 //   58 the new object (a text made with 0xBCF850) kept as a name (its place given to calls, kind 5);
 //   57 a name let go whether or not it was made (as the game: through none, it fails as the game's does);
 //   (3 and 24 with value bit 31: made with edx = the window, as the game makes it);
@@ -225,6 +227,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     uint8_t *memory = nullptr;
     bool naming = false;
     uint32_t scratch[8] = {};
+    void *last = nullptr;   // what the last call (3, 24, 60, 61, 62) gave back
     uint32_t loc[0x44] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords)
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
@@ -296,13 +299,15 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;
         case 27: *(uint32_t *)(self + op.off) |= op.value; break;
         case 3:
-            if (op.value >> 31) titled_call_edx(op.fn, self + op.off, self, op.count, args);
-            else titled_call(op.fn, self + op.off, op.count, args);
+            if (op.value >> 31) last = titled_call_edx(op.fn, self + op.off, self, op.count, args);
+            else last = titled_call(op.fn, self + op.off, op.count, args);
             break;
         case 24:
-            if (op.value >> 31) titled_call_edx(op.fn, *(uint8_t **)(self + op.off) + (op.value & 0x7fffffff), self, op.count, args);
-            else titled_call(op.fn, *(uint8_t **)(self + op.off) + op.value, op.count, args);
+            if (op.value >> 31) last = titled_call_edx(op.fn, *(uint8_t **)(self + op.off) + (op.value & 0x7fffffff), self, op.count, args);
+            else last = titled_call(op.fn, *(uint8_t **)(self + op.off) + op.value, op.count, args);
             break;
+        case 64: scratch[op.off] = (uint32_t)(uintptr_t)last; break;   // the last call's result kept
+        case 65: ((void(__cdecl *)(void *))(uintptr_t)op.fn)((void *)(uintptr_t)args[0]); break;   // memory freed
         case 59: {   // an x87 run (titled_fpu from value), then the call given what it built; on the window + off, or (off bit 24)
                      // what that member points to
             titled_x87(&titled_fpu[op.value + 4], titled_fpu[op.value], self, given, loc);
@@ -312,11 +317,14 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         }
         case 60: {   // a virtual call (slot value) on the window + off, or (off bit 24) on what that member points to
             uint8_t *on = op.off >> 24 ? *(uint8_t **)(self + (op.off & 0xffffff)) : self + op.off;
-            titled_call((uintptr_t)(*(void ***)on)[op.value / 4], on, op.count, args);
+            last = titled_call((uintptr_t)(*(void ***)on)[op.value / 4], on, op.count, args);
             break;
         }
-        case 61: titled_call(op.fn, (void *)(uintptr_t)given[op.off], op.count, args); break;              // on an argument
-        case 62: titled_call(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args); break;   // on a global's object
+        case 61: last = titled_call(op.fn, (void *)(uintptr_t)given[op.off], op.count, args); break;              // on an argument
+        case 62: last = titled_call(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args); break;   // on a global's object
+        case 63:   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1)
+            if ((args[0] == 0) != (op.fn == 1)) k += op.off;
+            break;
         case 57: titled_release(names[op.off]); break;   // (made or not: the game reads through it either way)
         case 58:   // the new object (a text, or none without memory) kept as a name
             names[op.off] = object;
