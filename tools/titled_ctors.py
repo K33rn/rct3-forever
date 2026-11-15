@@ -1866,6 +1866,23 @@ if __name__ == '__main__':
     unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740, 0xbd1940}   # (0xBD1940: the game's own runs)
     if unknown_temps:
         print('temporaries the tester has no stand-in for:', [hex(x) for x in sorted(unknown_temps)])
+    # the game globals the steps read as plain values (stored, given to stand-ins, tested): the tester gives each a value of
+    # the case's first, so a step reading the wrong one shows (the game's own state has most of them 0). Left out: those
+    # read through (objects called on, interfaces, texts) and the title and text-copy globals.
+    deref_g = set(objg) | set(tg) | {a_[1] for a_ in info}
+    readg = set()
+    for a_ in info:
+        for o in all_ops.get(a_[0], []):
+            if o[0] in (5, 32, 45):
+                readg.add(o[2])
+            if o[0] == 54:
+                deref_g.update(v[1] for v in o[4] if isinstance(v, tuple) and v[0] == 'glob')
+            elif o[0] in (3, 10, 20, 24, 46, 59, 60, 61, 62, 63, 65):
+                readg.update(v[1] for v in o[4] if isinstance(v, tuple) and v[0] == 'glob')
+    readg -= deref_g
+    out.append('// the game globals the steps read as plain values: the tester gives each a value of the case\'s first in the call')
+    out.append('extern const uint32_t titled_read_globals[];')
+    out.append('const uint32_t titled_read_globals[] = {' + ''.join(f'{g:#x}, ' for g in sorted(readg)) + '0};')
     open(OUT, 'w', newline='\n').write('\n'.join(out) + '\n')
     print(ok, 'constructors,', okb, 'bytes')
     for k, v in rb.most_common(15):
