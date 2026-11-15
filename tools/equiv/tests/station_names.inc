@@ -2,10 +2,12 @@
 // text given is one of the copy's names with the prefix taken off and its case mixed, cut short, with a 0 inside, or
 // junk; texts are real (dn_); _stricmp a stand-in.
 #if EQUIV_PART == 1
-static const uint32_t sn2_rows[][7] = {
-#define STATION_NAMES(at, prefix, n0, n1, n2, n3, n4, ...) {at, prefix, n0, n1, n2, n3, n4},
+static const uint32_t sn2_rows[][8] = {
+#define STATION_NAMES(at, prefix, n0, n1, n2, n3, n4, ...) {at, prefix, n0, n1, n2, n3, n4, 5},
 #include "../../../forever/src/rewrite/station_names.inc"
 #undef STATION_NAMES
+    {0xbb45f0, 0xf9f140, 0xf9f124, 0xf9f108, 0xf9f0e0, 0xf9f0bc, 0, 4},
+    {0xbbfde0, 0xf9fef8, 0xf9febc, 0xf9fed4, 0, 0, 0, 2},
 };
 static uint32_t g_sn2_row;
 #else
@@ -14,7 +16,7 @@ static uint32_t g_sn2_row;
                            fresh(r);
                            arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0x2000;
                            const uint32_t *row = sn2_rows[g_sn2_row];
-                           const char *name = (const char *)(uintptr_t)row[2 + r.range(0, 4)], *prefix = (const char *)(uintptr_t)row[1];
+                           const char *name = (const char *)(uintptr_t)row[2 + r.range(0, (int32_t)row[7] - 1)], *prefix = (const char *)(uintptr_t)row[1];
                            size_t skip = 0;
                            while (prefix[skip] && tolower((uint8_t)prefix[skip]) == tolower((uint8_t)name[skip])) skip++;
                            if (prefix[skip]) skip = 0;
@@ -35,7 +37,7 @@ static uint32_t g_sn2_row;
                        }};
     station_names.iterations = 1000;
     station_names.prepare = [](const rewrite::Entry *e) {
-        for (uint32_t k = 0; k < 2; k++)
+        for (uint32_t k = 0; k < 4; k++)
             if (sn2_rows[k][0] == e->at) g_sn2_row = k;
         stubs_for_now({{0xbcdfc0, (void *)nt_alloc}, {0xbce010, (void *)cheat_free_aligned}, {0xbce000, (void *)cheat_free}, {0xbcf850, (void *)dn_text_c},
                        {0x403bb0, (void *)ds_join}, {0xbcffe0, (void *)dn_room}, {0xde22df, (void *)nt_stricmp}});
