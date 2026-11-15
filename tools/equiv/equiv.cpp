@@ -6038,7 +6038,7 @@ static std::vector<Test> tests() {
                               arena<uint32_t>(0x30)[0] = (uint32_t)(uintptr_t)text;
                               arena<uint32_t>(0x10)[0] = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x8100) : 0;
                               arena<uint32_t>(0x10)[1] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x30) : 0;
-                              for (int k = 2; k < 6; k++) {   // the other arguments: pointers to filled memory (read through, or kept as values)
+                              for (int k = 2; k < 7; k++) {   // the other arguments: pointers to filled memory (read through, or kept as values)
                                   arena<uint32_t>(0x10)[k] = (uint32_t)(uintptr_t)arena<void>(0x9000 + k * 0x40);
                                   for (int q = 0; q < 16; q++) arena<uint32_t>(0x9000 + k * 0x40)[q] = r.next();
                               }
@@ -6069,7 +6069,8 @@ static std::vector<Test> tests() {
                               case 3: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2]); break;
                               case 4: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3]); break;
                               case 5: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4]); break;
-                              default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]); break;
+                              case 6: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]); break;
+                              default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
                               }
                               return Result{(uint32_t)((uintptr_t)made - (uintptr_t)arena<void>(0))};
                           }};

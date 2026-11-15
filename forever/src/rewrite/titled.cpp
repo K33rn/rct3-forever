@@ -235,7 +235,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     }
     return self;
 }
-// The constructors take (parent, text) and up to four more values.
+// The constructors take (parent, text) and up to five more values.
 #define TITLED_ENTRY(N, PARAMS, GIVEN)                                                                                        \
     template <uintptr_t TITLE, uintptr_t BASE, const TitledExtra *EXTRAS, uint32_t EXTRA_COUNT, const TitledOp *OPS, uint32_t COUNT> \
     static void *__thiscall titled_construct##N PARAMS {                                                                       \
@@ -248,6 +248,8 @@ TITLED_ENTRY(3, (uint8_t * self, uint32_t a, uint32_t b, uint32_t c), {0 COMMA a
 TITLED_ENTRY(4, (uint8_t * self, uint32_t a, uint32_t b, uint32_t c, uint32_t d), {0 COMMA a COMMA b COMMA c COMMA d})
 TITLED_ENTRY(5, (uint8_t * self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e), {0 COMMA a COMMA b COMMA c COMMA d COMMA e})
 TITLED_ENTRY(6, (uint8_t * self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t f), {0 COMMA a COMMA b COMMA c COMMA d COMMA e COMMA f})
+TITLED_ENTRY(7, (uint8_t * self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t f, uint32_t g),
+             {0 COMMA a COMMA b COMMA c COMMA d COMMA e COMMA f COMMA g})
 #undef COMMA
 #undef TITLED_ENTRY
 #include "titled_list.inc"

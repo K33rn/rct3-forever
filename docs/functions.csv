@@ -6602,7 +6602,7 @@ address,size,name,callers,status
 0x6881f0,30,DeletingDestructor,2,rewritten
 0x688210,30,DeletingDestructor,2,rewritten
 0x688230,72,,5,documented
-0x688280,542,,1,documented
+0x688280,542,Window::Titled,1,rewritten
 0x6884c0,982,,1,documented
 0x6888a0,30,DeletingDestructor,2,rewritten
 0x6888d0,1393,,13,documented

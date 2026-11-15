@@ -401,6 +401,9 @@ def tail(p):
                 R.pop(r, None)
             k = ls[0]
             continue
+        if x.mnemonic == 'nop' or re.fullmatch(r'lea (e[a-ds][xip]), \[\1\]', s):
+            k += 1   # (filler the compiler put in to align a jump target)
+            continue
         if x.mnemonic == 'call' and None in pushed:
             raise Reject('by-value unset')
         if x.mnemonic == 'ret':
@@ -861,7 +864,7 @@ if __name__ == '__main__':
             continue
         try:
             p = parse(a, n)
-            if p['nargs'] < 2 or p['nargs'] > 6:
+            if p['nargs'] < 2 or p['nargs'] > 7:
                 raise Reject('arguments %d' % p['nargs'])
         except (Reject, StopIteration, ValueError, IndexError, KeyError) as e:
             key = re.sub(r' @0x[0-9a-f]+', '', type(e).__name__ + ' ' + str(e))[:60]
