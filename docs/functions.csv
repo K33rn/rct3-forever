@@ -16422,7 +16422,7 @@ address,size,name,callers,status
 0xa8a6c0,971,,1,documented
 0xa8aa90,189,,1,documented
 0xa8ab50,161,,3,documented
-0xa8ac30,484,,2,documented
+0xa8ac30,484,Info::SetText,2,rewritten
 0xa8ae20,77,,1,documented
 0xa8ae70,48,ObjectArray::Free,2,rewritten
 0xa8aea0,258,ObjectArray::SetCapacity,1,rewritten
@@ -18890,7 +18890,7 @@ address,size,name,callers,status
 0xb8a850,274,,2,documented
 0xb8a970,4213,,1,documented
 0xb8b9f0,109,,1,documented
-0xb8ba60,484,,1,documented
+0xb8ba60,484,Info::SetText,1,rewritten
 0xb8bc50,535,,1,documented
 0xb8be80,487,,4,documented
 0xb8c070,123,,1,documented
