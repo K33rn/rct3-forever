@@ -14160,7 +14160,7 @@ address,size,name,callers,status
 0x99d300,79,,4,documented
 0x99d350,30,DeletingDestructor,2,rewritten
 0x99d370,151,,1,documented
-0x99d410,573,,1,documented
+0x99d410,573,Window::Titled,1,rewritten
 0x99d660,30,DeletingDestructor,2,rewritten
 0x99d680,98,Destructor::TablesAndMember,1,rewritten
 0x99da30,1203,,1,documented

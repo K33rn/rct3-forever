@@ -276,6 +276,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             case 8: args[i] = *(uint32_t *)((uint8_t *)temp_made[v & 0xff] + (v >> 8)); break;
             case 9: args[i] = (uint32_t)(uintptr_t)&loc[v]; break;
             case 10: args[i] = *(uint32_t *)(self + (v & 0xffff)) + (v >> 16); break;   // a place inside what a member points to
+            case 12: args[i] = *(uint32_t *)((uint8_t *)(uintptr_t)given[v & 0xff] + (v >> 8)); break;   // a dword inside what an argument points to
             default: args[i] = *(uint32_t *)(self + v); break;
             }
         }
@@ -338,6 +339,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             else last = titled_call(op.fn, *(uint8_t **)(self + op.off) + op.value, op.count, args);
             break;
         case 64: scratch[op.off] = (uint32_t)(uintptr_t)last; break;   // the last call's result kept
+        case 71: *(uint32_t *)(self + op.off) = args[0]; break;   // a dword read inside what an argument points to (kind 12) stored
         case 67: *(uint8_t *volatile *)(uintptr_t)op.fn = self + op.off; break;   // the window's place kept in a game global
         case 65: ((void(__cdecl *)(void *))(uintptr_t)op.fn)((void *)(uintptr_t)args[0]); break;   // memory freed
         case 59: {   // an x87 run (titled_fpu from value), then the call given what it built; on the window + off, or (off bit 24)

@@ -491,7 +491,7 @@ def tail(p):
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
         if isinstance(v, int):
             return (0, v)
-        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10}[v[0]], v[1]
+        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'darg': 12}[v[0]], v[1]
 
     nb_used = set()
     nb_eax = ['keep']
@@ -514,6 +514,14 @@ def tail(p):
         nscratch[0] += 1
         return ('scratch', nscratch[0] - 1)
 
+    def clobbered_args():   # the argument numbers whose slots the tail wrote
+        return {sl // 4 for sl in clobbered}
+
+    def deref_code(v):   # a dword read inside what an argument points to, still the same (nothing called since)
+        if not v or v[0] != 'deref' or any(o[0] not in QUIET for o in ops[v[4]:]):
+            return None
+        return ('darg', v[2] | v[3] << 8)
+
     def base_code(v):   # a value as a call is given it (the push forms), or None
         if not v:
             return None
@@ -523,6 +531,7 @@ def tail(p):
         if v == ('this',): return ('self', 0)
         if v[0] == 'member': return ('self', v[1])
         if still(v): return ('field', v[1])
+        if v[0] == 'deref': return deref_code(v)
         if v[0] == 'tempat' and ('temp', v[1]) in built and v[2] < 0x40:   # (what a temporary holds)
             return ('tempat', v[1] | v[2] << 8)
         return None
@@ -1242,6 +1251,8 @@ def tail(p):
                     ops.append((43, off, 0, 0, []))
                 elif w[0] == 'scratch':
                     ops.append((55, off, w[1], 0, []))
+                elif (dc := deref_code(w)):
+                    ops.append((71, off, 0, 0, [dc]))   # (a dword inside what an argument points to, stored)
                 else:
                     raise Reject('tail store ' + s)
             elif size == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] in ('const', 'byte'):
@@ -1477,6 +1488,8 @@ def tail(p):
             pushed.append(('field', val(m.group(1))[1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'scratch':
             pushed.append(('scratch', val(m.group(1))[1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and (dc := deref_code(val(m.group(1)))):
+            pushed.append(dc); d += 4   # (a dword inside what an argument points to)
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'fieldplus' and still(('field',) + val(m.group(1))[1:3]) and \
                 val(m.group(1))[1] < 0x10000 and val(m.group(1))[3] < 0x10000:
             pushed.append(('fieldplace', val(m.group(1))[1] | val(m.group(1))[3] << 16)); d += 4   # a place inside what a member points to
@@ -1759,6 +1772,11 @@ def tail(p):
                 R[r] = None
             R['eax'] = ('result', len(ops) - 1)   # (what it gave back: kept, op 64 takes it while nothing else was called)
             flag = None
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] == 'arg' and val(m.group(2))[1] not in clobbered_args() \
+                and num(m.group(3) or '0') < 0x10000:
+            b_ = val(m.group(2))
+            R[m.group(1)] = ('deref', 'arg', b_[1], num(m.group(3) or '0'), len(ops))
         else:
             raise Reject('tail: ' + s + ' @%#x' % x.address)
         if x.mnemonic in FLAGS and not s.startswith(('test', 'cmp')):
@@ -1829,7 +1847,7 @@ if __name__ == '__main__':
                 if isinstance(v, int):
                     codes.append((0, v))
                 else:
-                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10}[v[0]], v[1]))
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'darg': 12}[v[0]], v[1]))
             kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')
