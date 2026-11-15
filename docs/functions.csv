@@ -11967,7 +11967,7 @@ address,size,name,callers,status
 0x8863a0,450,,1,documented
 0x886570,30,DeletingDestructor,2,rewritten
 0x886620,520,,1,documented
-0x8868b0,604,,2,documented
+0x8868b0,604,Window::Titled,2,rewritten
 0x886eb0,3154,,1,documented
 0x887b20,161,MEMBER_DTOR,1,rewritten
 0x887bf0,148,,1,documented
@@ -11977,7 +11977,7 @@ address,size,name,callers,status
 0x887e00,506,Window::Titled,0,rewritten
 0x888020,30,DeletingDestructor,2,rewritten
 0x888050,161,GameText::Copy,1,rewritten
-0x888140,594,,2,documented
+0x888140,594,Window::Titled,2,rewritten
 0x8883a0,7020,,1,documented
 0x889f20,1700,,1,documented
 0x88a5d0,30,DeletingDestructor,2,rewritten

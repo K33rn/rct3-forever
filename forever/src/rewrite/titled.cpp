@@ -31,6 +31,7 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   (args[4] >> 8), the member at +value and the rectangle {args[0], args[1] (bits), size w +/- the float at args[2],
 //   size h +/- the float at args[3]} (bit 0 / bit 1 of args[4]: subtracted), the sums on the FPU stored as floats.
 //   41 the dword at +args[1] of the member at +args[0] copied to +value of the member at +off.
+//   42 value bytes of aligned memory (0xBCDFD0), 43 the last of them stored at +off.
 // The values given to fn are by kind (4 bits each in kinds): 0 the value, 1 the global there, 2 the constructor's
 // argument number value, 3 a pointer to +value of the object, 4 what temporary number value's maker returned, 5 where
 // name number value is kept, 6 the member at +value.
@@ -104,7 +105,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     void *temp_made[3] = {}, *names[3] = {};
     bool temp_built[3] = {}, name_built[3] = {};
     uint8_t *memory = nullptr;
-    void *object = nullptr;
+    void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
         uint32_t args[5];
@@ -185,6 +186,8 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             if (memory) object = titled_call(op.fn, memory, op.count, args);
             break;
         case 22: *(void **)(self + op.off) = op.value ? (void *)memory : object; break;
+        case 42: aligned = memory_alloc_aligned(op.value); break;
+        case 43: *(void **)(self + op.off) = aligned; break;
         case 31: if (memory) *(uint32_t *)(memory + op.off) = op.value; break;
         case 32: if (memory) *(uint32_t *)(memory + op.off) = *(uint32_t *)(uintptr_t)op.value; break;
         case 33: if (memory) memory[op.off] = (uint8_t)op.value; break;

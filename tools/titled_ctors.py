@@ -342,6 +342,7 @@ def tail(p):
     temps = {}          # stack slot -> temporary number
     built = set()       # temporaries and names made and not yet let go: ('temp', k) / ('name', k)
     nnames = 0
+    naligned = 0        # aligned blocks of memory made (the last one can be stored)
     flag = None         # what the flags were last set from
     k = start
     d = depth_at[start]
@@ -427,6 +428,8 @@ def tail(p):
                     ops.append((30, off, w[1], 0, []))
                 elif w[0] in ('fieldand', 'fieldor') and w[1] == off and w[3] == len(ops):
                     ops.append((26 if w[0] == 'fieldand' else 27, off, w[2], 0, []))
+                elif w[0] == 'aligned' and w[1] == naligned:
+                    ops.append((43, off, 0, 0, []))
                 else:
                     raise Reject('tail store ' + s)
             elif size == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] in ('const', 'byte'):
@@ -555,6 +558,12 @@ def tail(p):
                     raise Reject('inner new')
                 R['eax'] = ('namealloc', serial)
             R['ecx'] = None; R['edx'] = None
+            flag = None
+        elif s == 'call 0xbcdfd0' and pushed and isinstance(pushed[-1], int) and not nulls:
+            # an aligned block of memory (the caller takes the size off), kept until it's stored into a member
+            naligned += 1
+            ops.append((42, 0, pushed[-1], 0, []))
+            R['eax'] = ('aligned', naligned); R['ecx'] = None; R['edx'] = None
             flag = None
         elif x.mnemonic == 'je' and flag and flag[1] and flag[1][0] in ('alloc', 'namealloc'):
             nulls.append((int(x.op_str, 0), flag[1]))
