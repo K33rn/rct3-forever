@@ -11243,7 +11243,7 @@ address,size,name,callers,status
 0x843c30,192,,34,documented
 0x843d10,70,,2,documented
 0x843d60,1204,,24,documented
-0x844220,933,,3,documented
+0x844220,933,Condition::KindName,3,rewritten
 0x8446b0,26,OwnedPointer::Reset,3,rewritten
 0x8446d0,130,Array<4>::SetCapacity,1,rewritten
 0x844760,156,,1,documented
