@@ -20391,12 +20391,12 @@ address,size,name,callers,status
 0xbf73a0,396,,1,documented
 0xbf7530,131,,1,documented
 0xbf75c0,424,,0,documented
-0xbf7770,372,,0,documented
+0xbf7770,372,Device::DrawPoints,0,rewritten
 0xbf78f0,953,,0,documented
 0xbf7cb0,705,,0,documented
-0xbf7f80,372,,0,documented
+0xbf7f80,372,Device::DrawPoints,0,rewritten
 0xbf8100,1082,,0,documented
-0xbf8540,372,,0,documented
+0xbf8540,372,Device::DrawPoints,0,rewritten
 0xbf86c0,398,,0,documented
 0xbf8850,304,,1,documented
 0xbf8980,205,Place::AtBF7130,0,rewritten

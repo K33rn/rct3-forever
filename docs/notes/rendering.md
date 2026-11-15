@@ -790,7 +790,7 @@ The graphics engine ("GE", from Frontier's engine fgdk3, whose source paths `c:\
 | `0x9ee8b0` | Fireworks::Camera9EE8B0 | In outline: a step with the camera (MainCamera::Get) |
 | `0xbf8540` | Text::FillBF8540 | In outline: fills buffers for the current device for n entries |
 | `0xbf7f80` | Text::FillBF7F80 | In outline: the same (another copy) |
-| `0xbf7770` | Text::FillBF7770 | In outline: the same (another copy) |
+| `0xbf7770` | Text::FillBF7770 | Draws coloured points as a line list with a device: identity matrix, a vertex buffer filled and drawn (rewritten as Device::DrawPoints; BF7F80 a strip, BF8540 a list) |
 | `0x986750` | Fireworks::Make986750 | In outline: makes a list of 0x30-byte entries when on (+0x1C) |
 | `0xceb410` | Shapes::PassCEB410 | In outline: goes over entries (+0x70) |
 | `0xbfb340` | Vector::AxisBFB340 | In outline: a step when the first part is the largest |
