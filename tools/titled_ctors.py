@@ -548,8 +548,10 @@ def tail(p):
             R[m.group(1)] = ('eh',); flag = None   # (the same, with the bit kept in a register)
         elif (m := re.fullmatch(r'test ([abcd])([lh]), (0x[0-9a-f]+|\d+)', s)) and val('e' + m.group(1) + 'x') == ('eh',):
             flag = ('ehbit', num(m.group(3)) << (8 if m.group(2) == 'h' else 0))
-        elif (m := re.fullmatch(r'test ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2) and val('e' + m.group(1) + 'x') == ('eh',):
-            flag = ('ehsign',)   # the bookkeeping bit 0x80, read through the sign (jns)
+        elif (m := re.fullmatch(r'test ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) == ('eh',):
+            flag = ('ehbit', num(m.group(2)))
+        elif (m := re.fullmatch(r'test ([abcd])([lh]), ([abcd])([lh])', s)) and m.group(1, 2) == m.group(3, 4) and val('e' + m.group(1) + 'x') == ('eh',):
+            flag = ('ehsign',)   # the bookkeeping bit 0x80 or 0x8000, read through the sign (jns)
         elif (m := re.fullmatch(r'test ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
             flag = ('noparent?', 'e' + m.group(1) + 'x')   # a byte flag: set when there was no parent (the tester checks)
         elif (m := re.fullmatch(r'cmp byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0|[abcd]l)', s)) and (m.group(2) == '0' or val('e' + m.group(2)[0] + 'x') in (('const', 0), ('byte', 0))):

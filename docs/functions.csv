@@ -14463,10 +14463,10 @@ address,size,name,callers,status
 0x9c2600,26,OwnedPointer::Reset,2,rewritten
 0x9c2620,61,Array<4>::Allocate,0,rewritten
 0x9c26b0,312,Destructor::Steps,1,rewritten
-0x9c2810,373,,1,documented
+0x9c2810,373,Window::ChildrenExtent,1,rewritten
 0x9c29e0,160,Destructor::Steps,1,rewritten
 0x9c2aa0,60,,1,documented
-0x9c2ae0,373,,1,documented
+0x9c2ae0,373,Window::ChildrenExtent,1,rewritten
 0x9c2ca0,30,DeletingDestructor,2,rewritten
 0x9c2cc0,30,DeletingDestructor,2,rewritten
 0x9c2ce0,30,DeletingDestructor,2,rewritten
