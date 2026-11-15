@@ -7261,7 +7261,7 @@ address,size,name,callers,status
 0x6c4d80,419,,1,documented
 0x6c4f40,692,,1,documented
 0x6c5210,2860,,1,documented
-0x6c5d50,246,,1,documented
+0x6c5d50,246,Window::ShownName,1,rewritten
 0x6c5e50,249,Window::ShownName,1,rewritten
 0x6c5f50,249,Window::ShownName,1,rewritten
 0x6c6050,249,Window::ShownName,2,rewritten
@@ -7567,7 +7567,7 @@ address,size,name,callers,status
 0x6dbba0,94,,1,documented
 0x6dbc00,105,Factory::Create,1,rewritten
 0x6dbc70,30,DeletingDestructor,2,rewritten
-0x6dbc90,177,,1,documented
+0x6dbc90,177,Window::PlacePart,1,rewritten
 0x6dbd50,95,Factory::CreateWith,1,rewritten
 0x6dbdb0,30,DeletingDestructor,2,rewritten
 0x6dbde0,147,GuiPart::Create,1,rewritten

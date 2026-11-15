@@ -1,5 +1,6 @@
 // Window::Place6DAB30, Window::Place6DB500 and Window::Place6DC010 (one function written out three times, the same
-// instructions): place a window's part (+0x11C) twice (thiscall).
+// instructions), and Window::Place6DBC90 (the same for the part at +0xF8, asked its size through slot 0x20):
+// place a window's part (+0x11C) twice (thiscall).
 //   - The window laid out first (0x6D4870).
 //   - The part's rectangle (Window::UpdateRect, 0x6AFAF0, on the part) made {x: the +0xF4 part's +0x84 plus 10
 //     (the game's constant), y: the +0xD4 part's +0x80, x plus the part's own width (+0x84 - +0x7C), y plus its own
@@ -17,10 +18,10 @@ inline float rf(ext x) {   // stored to memory as a float
 inline const float *at(uint8_t *object, uint32_t offset) { return (const float *)(object + offset); }
 
 volatile long g_part_places;
-void __fastcall part_place(uint8_t *self) {
+template <uint32_t PART, uint32_t SIZE_SLOT> void __fastcall part_place(uint8_t *self) {
     g_part_places++;
     ((void(__thiscall *)(void *))0x6d4870)(self);
-    uint8_t *a = *(uint8_t **)(self + 0xd4), *b = *(uint8_t **)(self + 0xf4), *part = *(uint8_t **)(self + 0x11c);
+    uint8_t *a = *(uint8_t **)(self + 0xd4), *b = *(uint8_t **)(self + 0xf4), *part = *(uint8_t **)(self + PART);
     const ext top = *at(a, 0x80);
     const ext left = (ext)*at(b, 0x84) + *(const volatile float *)(uintptr_t)0xf275f4;   // + 10
     const ext width = (ext)*at(part, 0x84) - *at(part, 0x7c);
@@ -31,9 +32,9 @@ void __fastcall part_place(uint8_t *self) {
     rect[3] = rf(((ext)*at(part, 0x88) - *at(part, 0x80)) + top);
     typedef void(__thiscall * Update)(void *, volatile float *);
     ((Update)0x6afaf0)(part, rect);
-    part = *(uint8_t **)(self + 0x11c);
-    const float *size = ((const float *(__thiscall *)(void *, volatile float *))(*(void ***)part)[0xf4 / 4])(part, rect);
-    part = *(uint8_t **)(self + 0x11c);
+    part = *(uint8_t **)(self + PART);
+    const float *size = ((const float *(__thiscall *)(void *, volatile float *))(*(void ***)part)[SIZE_SLOT / 4])(part, rect);
+    part = *(uint8_t **)(self + PART);
     const ext x = *at(part, 0x7c), y = *at(part, 0x80);
     rect[4] = rf(x);
     rect[5] = rf(y);
@@ -44,6 +45,7 @@ void __fastcall part_place(uint8_t *self) {
 
 const uint8_t part_places_first[] = {0x83, 0xec, 0x20, 0x56, 0x8b, 0xf1, 0xe8};
 }   // namespace
-REWRITE("Window::PlacePart", 0x6dab30, part_places_first, &part_place, &g_part_places);
-REWRITE("Window::PlacePart", 0x6db500, part_places_first, &part_place, &g_part_places);
-REWRITE("Window::PlacePart", 0x6dc010, part_places_first, &part_place, &g_part_places);
+REWRITE("Window::PlacePart", 0x6dab30, part_places_first, (&part_place<0x11c, 0xf4>), &g_part_places);
+REWRITE("Window::PlacePart", 0x6db500, part_places_first, (&part_place<0x11c, 0xf4>), &g_part_places);
+REWRITE("Window::PlacePart", 0x6dc010, part_places_first, (&part_place<0x11c, 0xf4>), &g_part_places);
+REWRITE("Window::PlacePart", 0x6dbc90, part_places_first, (&part_place<0xf8, 0x20>), &g_part_places);

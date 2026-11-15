@@ -1,5 +1,5 @@
-// Window::Name6C5E50, Window::Name6C5F50 and Window::Name6C6050 (one function written out three times;
-// tools/family.py: shown_names.inc; they differ in which name field they use, +0x80, +0x84 or +0x88): the name to
+// Window::Name6C5D50, Window::Name6C5E50, Window::Name6C5F50 and Window::Name6C6050 (one function written out four
+// times; tools/family.py: shown_names.inc; they differ in which name field they use, +0x7C to +0x88): the name to
 // show for a field (thiscall: the place for the text; gives it).
 //   - A text reference looked up by a copy of the field's text (NamedTextRef's constructor 0x410C90 with the game's
 //     text table and 1; the copy let go).
@@ -62,7 +62,9 @@ int32_t **shown_name(uint8_t *self, int32_t **out, const ShownName &kind) {
 template <int K> int32_t **__thiscall shown_name_copy(uint8_t *self, int32_t **out) { return shown_name(self, out, shown_names[K]); }
 }   // namespace
 // (the addresses again, as numbers, checked against the table)
-static_assert(shown_names[0].at == 0x6c5e50 && shown_names[1].at == 0x6c5f50 && shown_names[2].at == 0x6c6050, "shown_names.inc changed");
+static_assert(shown_names[0].at == 0x6c5e50 && shown_names[1].at == 0x6c5f50 && shown_names[2].at == 0x6c6050 && shown_names[3].at == 0x6c5d50,
+              "shown_names.inc changed");
 REWRITE("Window::ShownName", 0x6c5e50, shown_names_first[0], (&shown_name_copy<0>), &g_shown_names);
 REWRITE("Window::ShownName", 0x6c5f50, shown_names_first[1], (&shown_name_copy<1>), &g_shown_names);
 REWRITE("Window::ShownName", 0x6c6050, shown_names_first[2], (&shown_name_copy<2>), &g_shown_names);
+REWRITE("Window::ShownName", 0x6c5d50, shown_names_first[3], (&shown_name_copy<3>), &g_shown_names);

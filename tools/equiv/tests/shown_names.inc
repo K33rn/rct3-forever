@@ -22,7 +22,7 @@ static void __fastcall sn_reference_gone(uint32_t *r) { dev_note(295, r[1]); }
                          fresh(r);
                          arena<uint32_t>(0x20)[0] = 0, arena<uint32_t>(0x24)[0] = 0, arena<uint32_t>(0x28)[0] = r.next(), arena<uint32_t>(0x2c)[0] = 0x2000;
                          for (int i = 0; i < 0x400; i++) arena<uint32_t>(0x2000)[i] = r.next();
-                         for (uint32_t at : {0x80u, 0x84u, 0x88u}) *(uint32_t **)(arena<uint8_t>(0x100) + at) = sn_text();
+                         for (uint32_t at : {0x7cu, 0x80u, 0x84u, 0x88u}) *(uint32_t **)(arena<uint8_t>(0x100) + at) = sn_text();
                      },
                      [](void *fn) {
                          void *back = ((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x40));
