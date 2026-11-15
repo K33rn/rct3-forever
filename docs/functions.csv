@@ -11002,7 +11002,7 @@ address,size,name,callers,status
 0x82a1a0,7,BaseClass::SetClass,1,rewritten
 0x82a1b0,30,DeletingDestructor,1,rewritten
 0x82a1e0,30,DeletingDestructor,1,rewritten
-0x82a2a0,236,,1,documented
+0x82a2a0,236,Array::ResizeSizedOther,1,rewritten
 0x82a390,55,Reference::Construct82A390,1,rewritten
 0x82a3d0,272,,1,documented
 0x82a4e0,388,,1,documented
@@ -26285,7 +26285,7 @@ address,size,name,callers,status
 0xe03b30,188,,0,documented
 0xe03ca0,26,OwnedPointer::Reset,0,rewritten
 0xe03cd0,193,,2,documented
-0xe03da0,226,,1,documented
+0xe03da0,226,Plain::Resize863A60,1,rewritten
 0xe03e90,350,,2,documented
 0xe03ff0,142,,1,documented
 0xe04080,85,,1,documented

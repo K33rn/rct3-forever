@@ -1969,6 +1969,7 @@ template <uint32_t ITEM, uint32_t BUILD> static int32_t __thiscall w1d_plain_res
 REWRITE("Plain::Resize863A60", 0x863a60, w1c_seh_late, (&w1d_plain_resize<0x1c, 0x860f50>), &g_w1d_plain_resizes);
 REWRITE("Plain::Resize863A60", 0x91a0b0, w1c_seh_late, (&w1d_plain_resize<0x2c, 0x9176a0>), &g_w1d_plain_resizes);
 REWRITE("Plain::Resize863A60", 0x91c630, w1c_seh_late, (&w1d_plain_resize<0x1c, 0x91a270>), &g_w1d_plain_resizes);
+REWRITE("Plain::Resize863A60", 0xe03da0, w1c_seh_late, (&w1d_plain_resize<0x20, 0xe03cc0>), &g_w1d_plain_resizes);
 
 // ---- Panel::Destroy: tables restored, the shared frame counter caught up once, two owned parts deleted, a member
 // finished, then the base ------------------------------------------------------------------------------------------------------

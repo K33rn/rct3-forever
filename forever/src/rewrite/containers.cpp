@@ -1601,5 +1601,6 @@ static const uint8_t solo_o_556180[] = {0x6a, 0xff, 0x68, 0x18, 0xe1, 0xe1, 0x00
 REWRITE("Member::Destroy555D70", 0x556180, solo_o_556180, (&solo_table_member<0xf3a1e4, 0x5561e0>), &g_solo_dtors);
 static const uint8_t solo_o_46cfb0[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff};
 REWRITE("Array::ResizeSized46CFB0", 0x46cfb0, solo_o_46cfb0, (&solo_resize<0x50, 0x46c470, 0x46c480>), &g_solo_resizes);
+REWRITE("Array::ResizeSizedOther", 0x82a2a0, solo_o_46cfb0, (&solo_resize<0x90, 0x8283a0, 0x8283b0>), &g_solo_resizes);   // (tests/resizes.inc)
 static const uint8_t solo_o_939ac0[] = {0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x6a, 0xff};
 REWRITE("Array::ResizeSized46CFB0", 0x939ac0, solo_o_939ac0, (&solo_resize<0x50, 0x939310, 0x939550>), &g_solo_resizes);
