@@ -524,7 +524,8 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, arg_value(e)); return built_result(self);
 }
 extern const uint32_t class_bases[], class_value_calls[], class_ref_setters[];
-extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], value_info[], record_info[];
+extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], titled_text_globals[], value_info[], record_info[];
+static uint32_t g_titled_text_saved[8];
 static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
 extern const uint32_t dtor_steps_info[];
@@ -6161,6 +6162,13 @@ static std::vector<Test> tests() {
                           },
                           [](void *fn) {
                               g_text_ref = nullptr;   // (each run from none: the other run's temporary is not this one's)
+                              for (int k = 0; titled_text_globals[k] && k < 8; k++) {   // (the globals a text is made from: one, or none)
+                                  g_titled_text_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_text_globals[k];
+                                  uint16_t *wide = arena<uint16_t>(0x7e00 + k * 0x20);
+                                  for (int c = 0; c < 6; c++) wide[c] = (uint16_t)('a' + (arena<uint32_t>(0x4c)[0] >> (c + k)) % 26);
+                                  wide[6] = 0;
+                                  *(volatile uint32_t *)(uintptr_t)titled_text_globals[k] = (arena<uint32_t>(0x4c)[0] >> (12 + k)) % 3 ? (uint32_t)(uintptr_t)wide : 0;
+                              }
                               for (int k = 0; titled_written_globals[2 * k] && k < 16; k++) {   // (the globals the steps write: a value of the case's first)
                                   volatile uint8_t *g = (volatile uint8_t *)(uintptr_t)titled_written_globals[2 * k];
                                   g_titled_written_saved[k] = 0;
@@ -6193,6 +6201,7 @@ static std::vector<Test> tests() {
                               default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
                               }
                               for (int k = 0; titled_object_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
+                              for (int k = 0; titled_text_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_text_globals[k] = g_titled_text_saved[k];
                               for (int k = 0; titled_written_globals[2 * k] && k < 16; k++) {   // (what they hold now: compared; then put back)
                                   volatile uint8_t *g = (volatile uint8_t *)(uintptr_t)titled_written_globals[2 * k];
                                   for (uint32_t b = 0; b < titled_written_globals[2 * k + 1]; b++) {
@@ -6232,7 +6241,7 @@ static std::vector<Test> tests() {
                                                          {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}, {0x6a39d0, (void *)stub_text_for_child},
                                                          {0x6b1640, (void *)titled_layout}, {0xbeca40, (void *)stub_name_make},
                                                          {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free},
-                                                         {0x41cb90, (void *)stub_named_text_ref}};
+                                                         {0x41cb90, (void *)stub_named_text_ref}, {0xbcf7d0, (void *)stub_class_wide_from}};
         static void *const built_rect[5] = {(void *)stub_built0, (void *)stub_built_rect1, (void *)stub_built_rect2, (void *)stub_built_rect3, (void *)stub_built_rect4};
         static void *const built_edx[4] = {(void *)stub_built_edx0, (void *)stub_built_edx1, (void *)stub_built_edx2, (void *)stub_built_edx3};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)

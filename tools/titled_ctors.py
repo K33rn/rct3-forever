@@ -485,7 +485,7 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65) or o[0] == 10 and o[3] == 0xbcf850 or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68) or o[0] == 10 and o[3] == 0xbcf850 or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
@@ -587,6 +587,32 @@ def tail(p):
             return False
         rest = ops[i18 + 1:]
         return len(rest) == 1 and rest[0][0] == 10 and rest[0][3] == 0xbcf850 and len(rest[0][4]) == 1 and isinstance(rest[0][4][0], int)
+
+    def text_or_empty(k0):
+        # je ELSE (on the value V, also in a register R); push 0x10; call 0xBCDFC0; add esp, 4; [mov [esp + A], eax];
+        # test eax, eax; je NULL; push R; mov ecx, eax; call 0xBCF7D0; jmp END; NULL: xor eax, eax; jmp END;
+        # ELSE: mov cl, 1; call 0xBD0490; END (the exception state's stores passed over). Gives (END, R) or None.
+        else_ = at.get(int(ins[k0].op_str, 0))
+        if else_ is None:
+            return None
+        L = []
+        q = k0 + 1
+        while q < len(t) and len(L) < 16:
+            if not re.fullmatch(r'mov (byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|eax)', t[q]):
+                L.append((q, t[q]))
+            q += 1
+        b = [u for _, u in L]
+        want = ['push 0x10', 'call 0xbcdfc0', 'add esp, 4', 'test eax, eax']
+        if b[:4] != want or not b[4].startswith('je ') or not re.fullmatch(r'push ' + REG, b[5]) or b[6:8] != ['mov ecx, eax', 'call 0xbcf7d0'] \
+                or not b[8].startswith('jmp ') or b[9] != 'xor eax, eax' or not b[10].startswith('jmp ') or b[11:13] != ['mov cl, 1', 'call 0xbd0490']:
+            return None
+        holder = b[5][5:]
+        if R.get(holder) != flag[1]:
+            return None
+        end = at.get(num(b[8][4:]))
+        if end is None or end != at.get(num(b[10][4:])) or end != L[12][0] + 1 or at.get(num(b[4][3:])) != L[9][0] or else_ != L[11][0]:
+            return None
+        return end, holder
 
     def plain_release(k0, reg, at_):
         # mov A, [esp + N]; dec dword ptr [A]; mov A, [esp + N]; cmp dword ptr [A], 0 (or a register holding 0); jne END;
@@ -1329,6 +1355,19 @@ def tail(p):
                 raise Reject('scratch values')
             flag = None
             continue
+        elif x.mnemonic == 'je' and not pushed and not nulls and flag and flag[0] == 'test' and base_code(flag[1]) is not None and (te := text_or_empty(k)):
+            # a text made from a wide text when there is one, else the empty text (kind 68): kept as a name
+            k, holder_ = te
+            if nnames >= 16:
+                raise Reject('names')
+            ops.append((68, nnames, 0, 0, [base_code(flag[1])]))
+            built.add(('name', nnames))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            R['eax'] = ('name', nnames, None)
+            nnames += 1
+            flag = None
+            continue
         elif x.mnemonic in ('je', 'jne') and not pushed and not nulls and flag and flag[0] == 'test' and base_code(flag[1]) is not None and \
                 re.fullmatch(r'0x[0-9a-f]+', x.op_str) and (at.get(int(x.op_str, 0)) or -1) > k + 1 and \
                 (not conds or at.get(int(x.op_str, 0)) <= conds[-1][0]) and not (flag[1] and flag[1][0] in ('alloc', 'namealloc')):
@@ -1645,7 +1684,7 @@ def tail(p):
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] in (58, 68) and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('field call with a temporary')
             ops.append((24, val('ecx')[1], val('ecx')[3], fn, args))   # (on the place that far into what the member points to)
             for r in ('eax', 'ecx', 'edx'):
@@ -1658,7 +1697,7 @@ def tail(p):
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] in (58, 68) and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('field call with a temporary')
             ops.append((24, val('ecx')[1], 0, fn, args))
             for r in ('eax', 'ecx', 'edx'):
@@ -1687,7 +1726,7 @@ def tail(p):
             n_ = ret_args(fn)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] == 58 and o_[1] == v[1] for o_ in ops))) for v in args):
+            if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] in (58, 68) and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('member call with a temporary')
             if this[0] == 'arg':
                 ops.append((61, this[1], 0, fn, args))   # on the constructor's argument (an object it was given)
@@ -1806,6 +1845,10 @@ if __name__ == '__main__':
     out.append('// the text references made just before a base (TitledExtra is_arg 2): key, table, flag')
     out.append('extern const uint32_t titled_refs[];')
     out.append('const uint32_t titled_refs[] = {' + ''.join(f'{x:#x}, {y:#x}, {z:#x}, ' for x, y, z in refs) + '0};')
+    out.append('// the game globals a text is made from when they hold one (op 68): the tester gives each a text or none in the call')
+    out.append('extern const uint32_t titled_text_globals[];')
+    tg = sorted({o[4][0][1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 68 and isinstance(o[4][0], tuple) and o[4][0][0] == 'glob'})
+    out.append('const uint32_t titled_text_globals[] = {' + ''.join(f'{g:#x}, ' for g in tg) + '0};')
     out.append('// the game globals the steps write (op 51: off bytes; op 67: 4): the tester gives each a value first and compares them')
     out.append('extern const uint32_t titled_written_globals[];')
     wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67)})

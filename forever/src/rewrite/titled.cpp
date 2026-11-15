@@ -26,6 +26,7 @@ static void titled_release(void *text) {   // a wide string's shared block: free
 //   63 the next off steps skipped when the value given is 0 (fn 0) or is not (fn 1);
 //   64 the last call's result kept as scratch value off; 65 memory freed (fn: 0xBCE000 / 0xBCE010) with the value given;
 //   67 the window + off kept in the game global fn;
+//   68 name off made from the wide text given (a copy), or the empty text when it is none;
 //   58 the new object (a text made with 0xBCF850) kept as a name (its place given to calls, kind 5);
 //   57 a name let go whether or not it was made (as the game: through none, it fails as the game's does);
 //   (3 and 24 with value bit 31: made with edx = the window, as the game makes it);
@@ -356,6 +357,17 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 63:   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1)
             if ((args[0] == 0) != (op.fn == 1)) k += op.off;
             break;
+        case 68: {   // a text copied from the wide text given (0xBCF7D0; none without memory), or the empty text when there is none: name off
+            void *from = (void *)(uintptr_t)args[0];
+            if (from) {
+                void *block = memory_alloc(0x10);
+                names[op.off] = block ? ((void *(__thiscall *)(void *, void *))0xbcf7d0)(block, from) : nullptr;
+            } else {
+                names[op.off] = ((void *(__fastcall *)(uint32_t))0xbd0490)(1);
+            }
+            name_built[op.off] = true;
+            break;
+        }
         case 57: titled_release(names[op.off]); break;   // (made or not: the game reads through it either way)
         case 58:   // the new object (a text, or none without memory) kept as a name
             names[op.off] = object;
