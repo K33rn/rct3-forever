@@ -150,7 +150,7 @@ address,size,name,callers,status
 0x40c4f0,82,,1,documented
 0x40c550,58,Vector::FreePair,1,rewritten
 0x40c5c0,58,Vector::FreePair,1,rewritten
-0x40c6a0,310,,2,documented
+0x40c6a0,310,ObjectArray::Grow,2,rewritten
 0x40c7e0,334,,2,documented
 0x40c980,522,,2,documented
 0x40cb90,34,,1,documented
@@ -2594,7 +2594,7 @@ address,size,name,callers,status
 0x4cf8a0,903,,1,documented
 0x4cfc30,934,,2,documented
 0x4cffe0,341,,1,documented
-0x4d01a0,310,,2,documented
+0x4d01a0,310,ObjectArray::Grow,2,rewritten
 0x4d02e0,426,,1,documented
 0x4d0490,1187,,1,documented
 0x4d0940,58,Vector::FreePair,2,rewritten
@@ -23060,7 +23060,7 @@ address,size,name,callers,status
 0xce75f0,180,Table20::Free,1,rewritten
 0xce76b0,428,,2,documented
 0xce7860,126,BlockPool::Return,2,rewritten
-0xce78e0,310,,3,documented
+0xce78e0,310,ObjectArray::Grow,3,rewritten
 0xce7a50,52,,1,documented
 0xce7a90,339,,2,documented
 0xce7bf0,131,Destructor::Steps,3,rewritten
@@ -23120,7 +23120,7 @@ address,size,name,callers,status
 0xcebc00,71,,0,documented
 0xcebc50,371,,3,documented
 0xcebdd0,58,Vector::FreePair,1,rewritten
-0xcebe40,310,,2,documented
+0xcebe40,310,ObjectArray::Grow,2,rewritten
 0xcebf80,118,Record::SetFields,1,rewritten
 0xcec040,69,,1,documented
 0xcec090,40,,5,documented
