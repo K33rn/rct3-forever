@@ -873,7 +873,7 @@ address,size,name,callers,status
 0x4456c0,22,,1,documented
 0x4456e0,105,OwnedPair::FreeFields,2,rewritten
 0x445750,626,,4,documented
-0x445a00,239,,2,documented
+0x445a00,239,Array::ResizeBig,2,rewritten
 0x445af0,318,,2,documented
 0x445c30,260,,1,documented
 0x445d40,368,,12,documented

@@ -2069,6 +2069,7 @@ template <uint32_t SIZE, uint32_t MAKE, uint32_t COPY> static uint32_t __thiscal
 }
 REWRITE("Array::Resize430690", 0x430690, w2c_seh_late, (&w2d_resize<0x70, 0x42f2f0, 0x42f9b0>), &g_w2d_resize);
 REWRITE("Array::Resize430690", 0x9e1ab0, w2c_seh_late, (&w2d_resize<0x44, 0x9e1330, 0x9e1340>), &g_w2d_resize);
+REWRITE("Array::ResizeBig", 0x445a00, w2c_seh_late, (&w2d_resize<0x1fb4, 0x4459f0, 0x445440>), &g_w2d_resize);   // (big records: tests/resizes.inc)
 
 // ======== fifth pass (w2e) ========
 #include <xmmintrin.h>

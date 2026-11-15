@@ -1,14 +1,12 @@
 // Pool::GrowCopied (forever/src/rewrite/containers.cpp's pool_grow, for the copies whose size is worked out another
-// way): as the Pool::Grow tests in equiv.cpp (their setup and call), with the copy's own copier found by reading its
-// code (the call that is not to the memory functions or ArrayConstruct).
+// way): as the Pool::Grow tests in equiv.cpp (their setup and call), with the copy's own copier.
 #if EQUIV_PART == 1
-static uintptr_t pg_copier(const rewrite::Entry *e) {
-    const uint8_t *code = (const uint8_t *)e->at;
-    for (int k = 0; k < 0x140; k++)
-        if (code[k] == 0xe8) {
-            const uintptr_t to = e->at + k + 5 + *(const int32_t *)(code + k + 1);
-            if (to != 0xbcdfd0 && to != 0x402b90 && to != 0xbce010 && to != 0xbce000) return to;
-        }
+static uintptr_t pg_copier(const rewrite::Entry *e) {   // (each copy's copier, as its code calls it)
+    switch (e->at) {
+    case 0x94e250: return 0x94d850;
+    case 0x964bc0: return 0x9648f0;
+    case 0x9f98a0: return 0x9f89b0;
+    }
     return 0;
 }
 #else
