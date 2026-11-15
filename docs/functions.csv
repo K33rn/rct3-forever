@@ -17170,7 +17170,7 @@ address,size,name,callers,status
 0xad6ac0,1062,,2,documented
 0xad6ef0,126,ObjectRef::Assign,3,rewritten
 0xad6fe0,136,,2,documented
-0xad7110,420,,2,documented
+0xad7110,420,Animal::Text,2,rewritten
 0xad72c0,317,,2,documented
 0xad7400,67,Reference::Reference(object),0,rewritten
 0xad7460,754,Designer::BuildIdentBar,2,rewritten
@@ -17351,7 +17351,7 @@ address,size,name,callers,status
 0xaefe80,124,Panel::Dtor923E10,4,rewritten
 0xaeff30,126,ObjectRef::Assign,3,rewritten
 0xaf0020,136,,2,documented
-0xaf0150,420,,2,documented
+0xaf0150,420,Animal::Text,2,rewritten
 0xaf0300,317,,2,documented
 0xaf0440,67,Reference::Reference(object),0,rewritten
 0xaf04a0,754,Designer::BuildIdentBar,2,rewritten
