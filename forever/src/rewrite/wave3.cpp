@@ -2152,6 +2152,7 @@ template <uint32_t SIZE, uintptr_t CTOR> static uint32_t __fastcall w3d_enlist(v
 }
 REWRITE("Item::Enlist6203A0", 0x6203a0, w3c_start<0x6400e2c68668ff6a>, (&w3d_enlist<0x70, 0x61c9b0>), &g_w3d_enlist);
 REWRITE("Item::Enlist6203A0", 0x9daf50, w3c_start<0x6400e757c668ff6a>, (&w3d_enlist<0x78, 0x9dad90>), &g_w3d_enlist);
+REWRITE("Item::Enlist6203A0", 0x98d6f0, w3c_start<0x6400e6dfb668ff6a>, (&w3d_enlist<0x90, 0x98d520>), &g_w3d_enlist);
 REWRITE("Item::Enlist6203A0", 0xa5b830, w3c_start<0x6400e8268668ff6a>, (&w3d_enlist<0x78, 0xa5b630>), &g_w3d_enlist);
 
 // ---- Array::Resize (plain elements): new elements built by the copy's constructor, the kept ones assigned over, the old array

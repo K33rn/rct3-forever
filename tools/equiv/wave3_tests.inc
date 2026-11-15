@@ -1770,7 +1770,8 @@
                          }};
     w3d_enlist_test.prepare = [=](const rewrite::Entry *e) {
         w3d_registry_was = *(void **)0x12f5798;
-        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}, {w3d_rel(e, 0x3d), (void *)w3d_stub_item}, {0x800860, (void *)stub_plain_dtor},
+        // (the maker's call: 3 bytes later when the size is pushed as a dword, push 0x90)
+        stubs_for_now({{0xbcdfc0, (void *)stub_alloc_next}, {w3d_rel(e, *(const uint8_t *)(uintptr_t)(e->at + 0x17) == 0x68 ? 0x40 : 0x3d), (void *)w3d_stub_item}, {0x800860, (void *)stub_plain_dtor},
                        {0x61e450, (void *)w3d_stub_registry}, {0x61ffe0, (void *)w3d_stub_ctor1}});
     };
     w3d_enlist_test.finish = [](const rewrite::Entry *) { unstub_many(); *(void **)0x12f5798 = w3d_registry_was; };

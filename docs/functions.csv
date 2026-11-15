@@ -13990,7 +13990,7 @@ address,size,name,callers,status
 0x98d330,212,ReferenceField::Load,1,rewritten
 0x98d480,61,Reference::Reference,0,rewritten
 0x98d520,335,,2,documented
-0x98d6f0,197,,1,documented
+0x98d6f0,197,Item::Enlist6203A0,1,rewritten
 0x98d7c0,30,DeletingDestructor,2,rewritten
 0x98d7e0,89,Dtor::TablesMember456980,1,rewritten
 0x98d840,30,DeletingDestructor,0,rewritten
