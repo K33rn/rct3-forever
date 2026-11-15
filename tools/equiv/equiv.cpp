@@ -523,7 +523,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
-extern const uint32_t class_bases[];
+extern const uint32_t class_bases[], class_value_calls[];
 extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], value_info[], record_info[];
 static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
@@ -543,6 +543,10 @@ static uint32_t g_window_args;   // 2 or 3, from the copy's ret
 // list's add, the description's name step and the object info
 static void __thiscall stub_class_base4(void *self, void *description, uint32_t a, uint32_t b, uint32_t c) {   // (a base taking one more)
     record(0x80, self); record(0x80, description); record(0x80, (void *)(uintptr_t)a); record(0x80, (void *)(uintptr_t)b); record(0x80, (void *)(uintptr_t)c);
+}
+static uint32_t __cdecl stub_class_value() {   // (a function taking nothing whose value a member gets: a value from the case, noted)
+    record(0x7a, nullptr);
+    return arena<uint32_t>(0x4c)[0] * 0x9e3779b1u;
 }
 static float __cdecl stub_class_random() {   // (Random::Ran0: a value from the case, noted)
     record(0x475180, nullptr);
@@ -6382,6 +6386,7 @@ static std::vector<Test> tests() {
             for (auto &x : list) have |= x.first == f[0];
             if (!have) list.push_back({f[0], by_count[f[1]]});
         }
+        for (int k = 0; class_value_calls[k]; k++) list.push_back({class_value_calls[k], (void *)stub_class_value});   // (the functions taking nothing)
         stubs_for_now(list);
     };
     class_construct.finish = [](const rewrite::Entry *) {

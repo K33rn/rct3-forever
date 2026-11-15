@@ -138,6 +138,8 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 17) class_hand(op.value, self, given);
         else if (op.kind == 20) class_resource(self + op.off, op.value, op.fn);
         else if (op.kind == 21) class_named_text(self, op.off, op.value, op.fn);
+        else if (op.kind == 23) *(uint32_t *)(self + op.off) = ((uint32_t(__cdecl *)())(uintptr_t)op.fn)();   // what a function taking nothing gives
+        else if (op.kind == 24) *(void **)(self + op.off) = ((void *(__cdecl *)(uint32_t))(uintptr_t)op.fn)(op.value);   // aligned memory
         else if (op.kind == 22) {   // Random::Ran0's value (left on the FPU), times the game constant at value (if any), stored at off
             uintptr_t fn = op.fn;
             float *to = (float *)(self + op.off);

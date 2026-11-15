@@ -17684,7 +17684,7 @@ address,size,name,callers,status
 0xb15730,61,Reference::Reference,1,rewritten
 0xb15780,67,Reference::Reference(object),0,rewritten
 0xb157d0,212,ReferenceField::Load,1,rewritten
-0xb158b0,352,,2,documented
+0xb158b0,352,Class::Construct,2,rewritten
 0xb15a10,30,DeletingDestructor,2,rewritten
 0xb15a30,586,,2,documented
 0xb15c80,761,,1,documented
@@ -18704,7 +18704,7 @@ address,size,name,callers,status
 0xb7dc40,30,DeletingDestructor,2,rewritten
 0xb7dc70,488,Class::Construct,2,rewritten
 0xb7de90,30,DeletingDestructor,2,rewritten
-0xb7dec0,601,,1,documented
+0xb7dec0,601,Class::Construct,1,rewritten
 0xb7e170,30,DeletingDestructor,2,rewritten
 0xb7e190,97,Owner::Dtor5F0520,1,rewritten
 0xb7e200,105,Factory::Create,1,rewritten
@@ -18912,10 +18912,10 @@ address,size,name,callers,status
 0xb8dbd0,613,,4,documented
 0xb8de50,178,,1,documented
 0xb8df10,63,Items::Clear5DFB60,4,rewritten
-0xb8df50,530,,6,documented
+0xb8df50,530,Class::Construct,6,rewritten
 0xb8e1b0,141,Destructor::Steps,4,rewritten
 0xb8e240,794,,2,documented
-0xb8e570,454,,2,documented
+0xb8e570,454,Class::Construct,2,rewritten
 0xb8e760,190,,1,documented
 0xb8e820,438,,1,documented
 0xb8e9e0,230,StructArrayLoad,0,rewritten

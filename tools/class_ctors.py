@@ -47,6 +47,31 @@ def ret_args(fn):
     return None
 
 
+value_calls = set()   # the functions taking nothing whose value a member gets (kind 23): the tester stands in for them
+
+
+def leaves_ecx(fn):
+    # whether a function writes ecx and edx before reading them, in its first straight run (it can be called with whatever
+    # is in them)
+    seen = set()
+    for x in md.disasm(bytes(img[fn - BASE:fn - BASE + 0x80]), fn):
+        s = x.mnemonic + ' ' + x.op_str
+        if x.mnemonic.startswith('j') or x.mnemonic in ('call', 'ret'):
+            return True   # (neither read before it: a read returns False below)
+        for r in ('ecx', 'edx'):
+            if r in seen:
+                continue
+            m = re.fullmatch(r'(mov|lea|xor) ' + r + r', (.*)', s)
+            reads = re.search(r'\b' + r + r'\b|\b' + r[1] + r'[lhx]\b', m.group(2) if m else s)
+            if m and not (m.group(1) == 'xor' and m.group(2) == r) and not reads:
+                seen.add(r)
+            elif m and m.group(1) == 'xor' and m.group(2) == r:
+                seen.add(r)
+            elif reads:
+                return False
+    return False
+
+
 def written(r, lines):
     """Whether any of these instructions may change register r (a call changes eax, ecx and edx)."""
     low = {'eax': 'al', 'ebx': 'bl', 'ecx': 'cl', 'edx': 'dl'}.get(r)
@@ -536,6 +561,17 @@ def parse(a, n):
     pushed = []
     ops = []
     pending = None   # a member made with new, until it is stored
+    left_on_stack = [0]   # cdecl pushes not yet taken off
+    def result_store(k0):
+        # the next store of eax into the object (mov dword ptr [this + off], eax), with nothing before it touching eax or
+        # calling: (its index, the offset)
+        for q_ in range(k0 + 1, min(k0 + 8, len(t))):
+            u = t[q_]
+            if (mm := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', u)) and regs.get(mm.group(1)) and regs[mm.group(1)][0] == 'this':
+                return q_, regs[mm.group(1)][1] + num(mm.group(2) or '0')
+            if u.startswith(('call', 'j', 'ret')) or re.search(r'\b(eax|ax|al|ah)\b', u):
+                return None
+        return None
     dirty = set()    # argument slots the constructor wrote over (its locals reuse them): no longer the argument
     k = kb + 1
     filled = set()   # stores that fill a value passed by value on the stack (taken with its push)
@@ -791,6 +827,25 @@ def parse(a, n):
             regs['eax'] = ('made',)
             k = j + 4
             continue
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and (s == 'call 0xbcdfd0' and len(pushed) == 1 and pushed[0][0] == 'imm' or
+                                                                 not pushed and ret_args(num(m.group(1))) == 0 and leaves_ecx(num(m.group(1))) and
+                                                                 (regs.get('ecx') or ('',))[0] != 'this') and \
+                (st := result_store(k)):
+            # a member set to what a call gives: aligned memory (0xBCDFD0, size bytes; kind 24) or a function that takes
+            # nothing and reads neither ecx nor edx first (kind 23); the store taken out of the steps
+            q_, off_ = st
+            if s == 'call 0xbcdfd0':
+                ops.append((24, off_, pushed[0][1], 0xbcdfd0, []))
+                left_on_stack[0] += 1   # (cdecl: its push stays until an add esp)
+                pushed = []
+            else:
+                ops.append((23, off_, 0, num(m.group(1)), []))
+                value_calls.add(num(m.group(1)))
+            del t[q_], ins[q_]
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+        elif (m := re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', s)) and not pushed and num(m.group(1)) // 4 <= left_on_stack[0] and num(m.group(1)) % 4 == 0:
+            left_on_stack[0] -= num(m.group(1)) // 4   # (the cdecl pushes of earlier calls taken off)
         elif s == 'call 0x475180' and not pushed:
             # Random::Ran0's value (on the FPU), perhaps times a game constant, stored in a member as a float (kind 22): the
             # fmul and the fstp taken out of the steps (nothing between them uses the FPU or calls)
@@ -1087,6 +1142,9 @@ out.append('    }')
 out.append('}')
 out.append('// the functions the steps call on members and new objects, each with how many values it takes (the test stands in for them)')
 out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x}, {c}' for fn, c in sorted(member_fns.items())) + ', 0};')
+out.append('// the functions taking nothing whose value a member gets (kind 23): the tester stands in for each')
+out.append('extern const uint32_t class_value_calls[];')
+out.append('const uint32_t class_value_calls[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(value_calls)) + '0};')
 out.append("// the constructors built on a parent class's constructor, and that base (the tester stands in for it)")
 out.append('extern const uint32_t class_bases[];')
 out.append('const uint32_t class_bases[] = {' + ''.join(f'{a_:#x}, {b_:#x}, {n_}, ' for a_, b_, n_ in bases) + '0};')
