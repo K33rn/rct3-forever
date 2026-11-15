@@ -14194,9 +14194,9 @@ address,size,name,callers,status
 0x9a2880,278,,1,documented
 0x9a2d60,75,,1,documented
 0x9a3140,130,,4,documented
-0x9a31d0,615,,1,documented
-0x9a3440,615,,1,documented
-0x9a36b0,615,,1,documented
+0x9a31d0,615,Window::BuildTitled9A3,1,rewritten
+0x9a3440,615,Window::BuildTitled9A3,1,rewritten
+0x9a36b0,615,Window::BuildTitled9A3,1,rewritten
 0x9a3920,637,,1,documented
 0x9a3bd0,30,DeletingDestructor,4,rewritten
 0x9a3bf0,127,Holder::Destroy99B1F0,1,rewritten
