@@ -8434,7 +8434,7 @@ address,size,name,callers,status
 0x730cc0,180,NamedTextRef::NamedTextRef(text),0,rewritten
 0x730d80,30,DeletingDestructor,0,rewritten
 0x730db0,976,,2,documented
-0x731220,172,,1,documented
+0x731220,172,Object::MakeNamed,1,rewritten
 0x7312d0,151,Text::FromOwner7312D0,1,rewritten
 0x7313c0,228,Database::MissingDependency,1,rewritten
 0x7314b0,965,,1,documented
@@ -8536,7 +8536,7 @@ address,size,name,callers,status
 0x738c90,126,ObjectRef::Assign,1,rewritten
 0x738d10,1005,,3,documented
 0x739100,904,,2,documented
-0x739540,172,,1,documented
+0x739540,172,Object::MakeNamed,1,rewritten
 0x7395f0,151,Text::FromOwner7312D0,1,rewritten
 0x7396e0,228,Database::MissingDependency,1,rewritten
 0x7397d0,755,,2,documented
@@ -16972,7 +16972,7 @@ address,size,name,callers,status
 0xac2de0,180,NamedTextRef::NamedTextRef(text),1,rewritten
 0xac2ea0,30,DeletingDestructor,0,rewritten
 0xac2ed0,783,Class::Construct,2,rewritten
-0xac3270,172,,1,documented
+0xac3270,172,Object::MakeNamed,1,rewritten
 0xac3320,165,,1,documented
 0xac3420,228,Database::MissingDependency,1,rewritten
 0xac3510,236,RefArray::Remove,1,rewritten
