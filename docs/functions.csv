@@ -9320,11 +9320,11 @@ address,size,name,callers,status
 0x78d270,30,DeletingDestructor,2,rewritten
 0x78d290,1631,,7,documented
 0x78d8f0,30,DeletingDestructor,3,rewritten
-0x78d910,1666,,1,documented
+0x78d910,1666,StaffWindow::BuildTabs,1,rewritten
 0x78dfa0,30,DeletingDestructor,3,rewritten
-0x78dfc0,1666,,1,documented
+0x78dfc0,1666,StaffWindow::BuildTabs,1,rewritten
 0x78e650,30,DeletingDestructor,3,rewritten
-0x78e670,1666,,1,documented
+0x78e670,1666,StaffWindow::BuildTabs,1,rewritten
 0x78ed00,30,DeletingDestructor,3,rewritten
 0x78ed20,1148,,1,documented
 0x78f1a0,30,DeletingDestructor,3,rewritten
