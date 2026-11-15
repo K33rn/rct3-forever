@@ -9735,7 +9735,7 @@ address,size,name,callers,status
 0x7bb180,736,,0,documented
 0x7bb470,83,Message::Post7BB470,8,rewritten
 0x7bb4d0,83,Message::Post7BB470,3,rewritten
-0x7bb530,223,,6,documented
+0x7bb530,223,Terrain::TellCell,6,rewritten
 0x7bb640,68,,1,documented
 0x7bb790,7,SetTable,2,rewritten
 0x7bb7c0,7,SetTable,2,rewritten
@@ -18406,7 +18406,7 @@ address,size,name,callers,status
 0xb5f270,128,,3,documented
 0xb5f370,49,Message::Post7B9D30,1,rewritten
 0xb5f3b0,356,QuadTree::CullPlanes,1,rewritten
-0xb5f5e0,223,,0,documented
+0xb5f5e0,223,Terrain::TellCell,0,rewritten
 0xb5f6f0,54,Message::ForwardA0EB00,1,rewritten
 0xb5f760,18,Destructor::TablesThenBase,12,rewritten
 0xb5f790,1,,6,documented
@@ -18596,7 +18596,7 @@ address,size,name,callers,status
 0xb756b0,356,QuadTree::CullPlanes,1,rewritten
 0xb75820,83,Message::Post7BB470,7,rewritten
 0xb75880,83,Message::Post7BB470,2,rewritten
-0xb758e0,223,,3,documented
+0xb758e0,223,Terrain::TellCell,3,rewritten
 0xb759f0,63,,1,documented
 0xb75ab0,28,,0,documented
 0xb75b80,26,OwnedPointer::Reset,0,rewritten

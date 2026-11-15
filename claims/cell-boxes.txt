@@ -1,5 +1,0 @@
-who: K3rn
-since: 2026-11-14
-renewed: 2026-11-14
-covers: 0x7bb530 0xb5f5e0 0xb758e0
-note: 
