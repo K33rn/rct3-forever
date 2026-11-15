@@ -6116,7 +6116,7 @@ address,size,name,callers,status
 0x65eaa0,176,,1,documented
 0x65eb50,200,,2,documented
 0x65ec20,86,,1,documented
-0x65ec80,373,,1,documented
+0x65ec80,373,Window::LineWalk,1,rewritten
 0x65ee00,30,DeletingDestructor,2,rewritten
 0x65ee20,81,Destructor::MemberThenBaseNullSafe,1,rewritten
 0x65ee80,30,DeletingDestructor,1,rewritten
@@ -8106,7 +8106,7 @@ address,size,name,callers,status
 0x715170,1390,,3,documented
 0x7156e0,289,,8,documented
 0x7158f0,576,,2,documented
-0x715b40,373,,1,documented
+0x715b40,373,Window::LineWalk,1,rewritten
 0x715cc0,606,,4,documented
 0x715f20,559,,19,documented
 0x716160,291,,1,documented
