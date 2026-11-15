@@ -459,10 +459,14 @@ def parse(a, n):
         raise Reject('not 2 to 7 arguments')
     nargs = num(ins[-1].op_str) // 4
     t = [x.mnemonic + ' ' + x.op_str for x in ins]
-    kb = [k for k, x in enumerate(t) if x == 'call 0x800a80']
-    if len(kb) != 1:
+    # the base: the first call, taking (description, a, b): Class::Construct (0x800A80) or a parent class's constructor
+    kb = [k for k, x in enumerate(t) if x.startswith('call ')]
+    if not kb or not re.fullmatch(r'call 0x[0-9a-f]+', t[kb[0]]) or ret_args(num(t[kb[0]][5:])) != 3:
         raise Reject('base')
     kb = kb[0]
+    base_fn = num(t[kb][5:])
+    if base_fn != 0x800a80 and t.count(t[kb]) != 1:
+        raise Reject('base called twice')
     # the start: registers and the stack up to the base call
     regs = {'ecx': ('this', 0)}
     depth = 0   # bytes pushed since entry
@@ -997,22 +1001,24 @@ def parse(a, n):
     if a in HAND_AFTER and not after:
         raise Reject('hand-written end not found')
     tail_of = (instance, link, count, after) if (instance or link or count or after) else None
-    return desc, index, ops, fields, names, nargs, pair, tail_of
+    return desc, index, ops, fields, names, nargs, pair, tail_of, base_fn
 
 
 out = ['// Saved classes\' constructors taken over by class_construct (classes.cpp); written by tools/class_ctors.py.']
 member_fns = {}   # the functions the steps call on members and new objects, with how many values each takes (for the test's stand-ins)
 done = total = 0
+bases = []   # the constructors built on a parent class's constructor: (address, that base)
 reasons = {}
 reason_bytes = {}
 for a, r in sorted(rows.items()):
     n = int(r['size'])
     if (r['status'] != 'documented' and a not in mine) or a in taken or n < 150 or n > 20000:
         continue
-    if b'\xe8' not in bytes(img[a - BASE:a - BASE + n]) or 'call 0x800a80' not in [x.mnemonic + ' ' + x.op_str for x in md.disasm(bytes(img[a - BASE:a - BASE + n]), a)]:
+    calls_ = [x.op_str for x in md.disasm(bytes(img[a - BASE:a - BASE + n]), a) if x.mnemonic == 'call']
+    if '0x800a80' not in calls_ and not ('0x8087e0' in calls_ and re.fullmatch(r'0x[0-9a-f]+', calls_[0])):
         continue
     try:
-        desc, index, ops, fields, names, nargs, pair, tail_of = parse(a, n)
+        desc, index, ops, fields, names, nargs, pair, tail_of, base_fn = parse(a, n)
     except (Reject, StopIteration, AttributeError, ValueError) as e:
         key = str(e)[:70]
         if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e, '(near %#x)' % AT[0])
@@ -1032,6 +1038,13 @@ for a, r in sorted(rows.items()):
         link = link or [0, -1, 0]
         out.append(f'static const ClassTail class_{a:x}_tail = {{{instance:#x}, {link[0]:#x}, {link[1]}, {link[2]:#x}, {count:#x}' + (f', {after}' if after else '') + '};')
         tail += f', &class_{a:x}_tail'
+    if base_fn != 0x800a80:   # (another base: the parameters before it written out)
+        if ', true' not in tail and ', false' not in tail:
+            tail = (tail or ', nullptr, 0') + ', false'
+        if '_tail' not in tail:
+            tail += ', nullptr'
+        tail += f', {base_fn:#x}'
+        bases.append((a, base_fn))
     out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{nargs if nargs != 3 else ""}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{tail}>), &g_class_constructs);')
     done += 1
     total += n
@@ -1047,6 +1060,9 @@ out.append('    }')
 out.append('}')
 out.append('// the functions the steps call on members and new objects, each with how many values it takes (the test stands in for them)')
 out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x}, {c}' for fn, c in sorted(member_fns.items())) + ', 0};')
+out.append("// the constructors built on a parent class's constructor, and that base (the tester stands in for it)")
+out.append('extern const uint32_t class_bases[];')
+out.append('const uint32_t class_bases[] = {' + ''.join(f'{a_:#x}, {b_:#x}, ' for a_, b_ in bases) + '0};')
 open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc'), 'w', newline='\n').write('\n'.join(out) + '\n')
 print(done, 'constructors,', total, 'bytes; not taken:', sum(reasons.values()), 'constructors,', sum(reason_bytes.values()), 'bytes')
 for key, size in sorted(reason_bytes.items(), key=lambda kv: -kv[1])[:int(os.environ.get('TOP', '14'))]:

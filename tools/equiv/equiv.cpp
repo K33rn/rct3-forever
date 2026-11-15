@@ -523,6 +523,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); return built_result(self);
 }
+extern const uint32_t class_bases[];
 extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], value_info[], record_info[];
 static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
@@ -6316,7 +6317,10 @@ static std::vector<Test> tests() {
         g_water_manager = *(uint32_t *)0x133a270;
         memcpy(g_scale_values, (void *)0x10eeacc, sizeof g_scale_values);
         g_class_description = 0;
-        for (int k = 0; k < 0x80 && !(code[k] == 0xe8 && (uintptr_t)(code + k + 5) + *(const int32_t *)(code + k + 1) == 0x800a80); k++) {
+        uintptr_t base = 0x800a80;   // (Class::Construct, or the parent class's constructor the copy is built on)
+        for (int k = 0; class_bases[k]; k += 2)
+            if (class_bases[k] == e->at) base = class_bases[k + 1];
+        for (int k = 0; k < 0x80 && !(code[k] == 0xe8 && (uintptr_t)(code + k + 5) + *(const int32_t *)(code + k + 1) == base); k++) {
             uint32_t at = code[k] == 0xa1 ? *(const uint32_t *)(code + k + 1) : code[k] == 0x8b && (code[k + 1] & 0xc7) == 0x05 ? *(const uint32_t *)(code + k + 2) : 0;
             if (at >= 0x1000000 && at < 0x1400000 && code[k - 1] != 0x64) g_class_description = at;
         }
@@ -6348,7 +6352,7 @@ static std::vector<Test> tests() {
             }
         if (!g_class_description) g_class_description = (uintptr_t)arena<void>(0x3ff0);   // not found: the test then fails
         std::vector<std::pair<uintptr_t, void *>> list = {
-            {0x800a80, (void *)stub_class_base}, {0x8087e0, (void *)stub_field_add}, {0xbcdfc0, (void *)stub_plain_alloc}, {0xbd0490, (void *)stub_wide_empty_shared},
+            {base, (void *)stub_class_base}, {0x8087e0, (void *)stub_field_add}, {0xbcdfc0, (void *)stub_plain_alloc}, {0xbd0490, (void *)stub_wide_empty_shared},
             {0xbeca40, (void *)stub_name_make}, {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free}, {0x8088c0, (void *)stub_built4},
             {0x805700, (void *)stub_member_handle_of}, {0x808d90, (void *)stub_struct_total},
             {0xcd2b30, (void *)stub_list_member}, {0x441030, (void *)stub_member_built}, {0x981ee0, (void *)stub_member_built1},
