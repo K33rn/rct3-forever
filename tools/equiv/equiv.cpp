@@ -265,6 +265,9 @@ static void titled_tables_ready() {   // each slot the constructors call: its st
     for (int k = 0; titled_vslots[k] != 0xffffffffu; k += 2) titled_child_table[titled_vslots[k] / 4] = rows[titled_vslots[k + 1]][titled_vslots[k] / 4];
     titled_child_table[1] = (void *)stub_iface_info;   // (slot 1, taking nothing: an object's class info, as the casts read it)
 }
+static void *new_wide_block();
+extern const uint32_t titled_child_holders[];
+static uint32_t g_child_holders[8], g_child_holder_count;   // (the copy being checked: places in its children that counted texts go into)
 static void *built_result(void *self) {
     if (!g_built_other) return self;
     if (*(void **)self == titled_child_table)
@@ -276,6 +279,12 @@ static void *built_result(void *self) {
         const float f = (float)((uint32_t)(uintptr_t)self >> 4 & 0x3ff) * 0.25f + (float)k * 7.5f;
         memcpy((uint8_t *)self + 0x7c + 4 * k, &f, 4);
     }
+    // (the places in children that counted texts are put into: a text there, as the child's own constructor leaves one)
+    for (uint32_t k = 0; k < g_child_holder_count; k++)
+        if (g_child_holders[k] >= 0x10 && g_child_holders[k] < 0x400) {   // (at the memory's place and the result's, 8 further)
+            *(void **)((uint8_t *)self + g_child_holders[k]) = new_wide_block();
+            *(void **)((uint8_t *)self + 8 + g_child_holders[k]) = new_wide_block();
+        }
     return (uint8_t *)self + 8;
 }
 static void __thiscall titled_layout(void *self, uint32_t relation, void *to, const uint32_t *rect) {
@@ -6391,6 +6400,9 @@ static std::vector<Test> tests() {
                 g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4],
                 g_titled_parent = titled_info[k + 5], g_titled_text = titled_info[k + 6];
         g_titled_nullable = 0, g_titled_byte_flags = 0, g_titled_iface_mask = 0, g_titled_at = e->at;
+        g_child_holder_count = 0;
+        for (int k = 0; titled_child_holders[k]; k += 2)
+            if (titled_child_holders[k] == e->at && g_child_holder_count < 8) g_child_holders[g_child_holder_count++] = titled_child_holders[k + 1];
         for (int k = 0; titled_iface_args[k]; k += 2)
             if (titled_iface_args[k] == e->at) g_titled_iface_mask = titled_iface_args[k + 1];
         g_titled_vcall_mask = 0;

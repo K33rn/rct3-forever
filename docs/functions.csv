@@ -7280,7 +7280,7 @@ address,size,name,callers,status
 0x6c6d20,16,Object::CallThenTail,1,rewritten
 0x6c6db0,28,Member::Update6C6DB0,0,rewritten
 0x6c6dd0,89,,0,documented
-0x6c6fd0,3081,,1,documented
+0x6c6fd0,3081,Window::Titled,1,rewritten
 0x6c7be0,610,Window::Titled,1,rewritten
 0x6c7ee0,223,,1,documented
 0x6c7fd0,40,,1,documented

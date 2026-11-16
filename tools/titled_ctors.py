@@ -142,7 +142,7 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
-LEFT_OUT = {0x6c6fd0: "a counted text put into a child made in the call (+0x114 of +0x110's): the tester's child has no text there",
+LEFT_OUT = {
             0x701590:"the original dies in the tester (a stand-in's object read through as something else): to look at",
             0x791670:"the original dies in the tester (a read of 0xC in 0xBCE978, from 0x403C8A: a text the stand-ins don't make?): to look at"}
 
@@ -3174,6 +3174,11 @@ if __name__ == '__main__':
                 pl = o[4][0]
                 hold_.add((0xffff, pl[1]) if pl[0] == 'self' else (pl[1] & 0xffff, pl[1] >> 16))
     out.append('const uint32_t titled_text_holders[] = {' + ''.join(f'{m_:#x}, {i_:#x}, ' for m_, i_ in sorted(hold_)) + '0xffffffff};')
+    # (and per copy, the places inside its children that counted texts go into: (copy, offset) each; the tester's children
+    # made during that copy's run get a text there, as their own constructors leave one)
+    chold_ = sorted({(a_[0], o[4][0][1] >> 16) for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 75 and o[4][0][0] != 'self'})
+    out.append('extern const uint32_t titled_child_holders[];')
+    out.append('const uint32_t titled_child_holders[] = {' + ''.join(f'{a:#x}, {i:#x}, ' for a, i in chold_) + '0};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
     objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73} |
