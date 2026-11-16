@@ -32,6 +32,9 @@ for _f in os.listdir(os.path.join(HERE, 'forever', 'src', 'rewrite')):
         _others |= {int(x, 16) for x in re.findall(r'(?:REWRITE\("[^"]+",|^[A-Z_0-9]+\()\s*(0x[0-9a-fA-F]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', _f), encoding='utf-8').read(), re.M)}
 mine |= {a for a, r in rows.items() if r['status'] == 'rewritten' and a not in _others}
 SEPARATOR = 0xf2738c
+# the functions the tester stands in for itself (its own stand-ins, which know what they make): never listed as plain callees
+TESTER_OWN = {0x403bb0, 0x403be0, 0x4040f0, 0x41c740, 0x41cb90, 0x6a39d0, 0x6b1640, 0x805700, 0x805750, 0xbcdfc0, 0xbcf7d0, 0xbcf850,
+              0xbd0490, 0xbd1880, 0xbec5e0, 0xbeca40, 0xbecc10}
 CMP_CONDITIONS = ['ja', 'jae', 'jb', 'jbe', 'jg', 'jge', 'jl', 'jle', 'je', 'jne']   # (step 63, fn 0x10 | the index)
 VSLOTS = {0x20: 1}   # the virtual slots called (op 60) and how many values each takes (0x20: a child's size, the tester's own)
 FPU_PROGRAM = []   # the x87 runs' steps (code, kind, value), all constructors' in one table (op 59 gives where its run starts)
@@ -143,6 +146,39 @@ LEFT_OUT = {0x701590: "the original dies in the tester (a stand-in's object read
             0x791670: "the original dies in the tester: to look at"}
 
 
+
+def ebp_frame_args(t, ins):
+    """A function with an aligned frame (push ebp; mov ebp, esp; and esp, -N) reads its arguments as [ebp + K]: written
+    here as the same slot through esp ([esp + K - 4 + the depth counted so far: pushes, subtractions and callees' own
+    pops; the alignment is not counted, as the readers below don't count it either), so the readers that know arguments
+    by their esp slot know these. Only while ebp is never written after the frame is made; else the text is left as it is."""
+    if len(t) < 3 or t[0] != 'push ebp' or t[1] != 'mov ebp, esp' or not re.fullmatch(r'and esp, 0xfffffff[08]', t[2]):
+        return t
+    for q in range(3, len(t)):
+        u = t[q]
+        if re.match(r'(mov|lea|add|sub|xor|or|and|inc|dec|pop|xchg|imul|shl|shr|sar|movzx|movsx) ebp\b', u) and \
+                not (u == 'pop ebp' and q + 1 < len(t) and ins[q + 1].mnemonic == 'ret'):
+            return t
+    out, d = list(t), 0
+    for q, u in enumerate(t):
+        if q >= 3:
+            z = re.search(r'dword ptr \[ebp \+ (0x[0-9a-f]+|\d+)\]', u)
+            if z and num(z.group(1)) >= 8:
+                out[q] = u.replace(z.group(0), 'dword ptr [esp + %#x]' % (num(z.group(1)) - 4 + d))
+        x = ins[q]
+        if u.startswith('push '):
+            d += 4
+        elif u.startswith('pop '):
+            d -= 4
+        elif (m := re.fullmatch(r'sub esp, (0x[0-9a-f]+|\d+)', u)):
+            d += num(m.group(1))
+        elif (m := re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', u)):
+            d -= num(m.group(1))
+        elif x.mnemonic == 'call' and re.fullmatch(r'0x[0-9a-f]+', x.op_str):
+            d -= 4 * (ret_args(num(x.op_str)) or 0)
+    return out
+
+
 def parse(a, n):
     if a in LEFT_OUT:
         raise Reject('left out: ' + LEFT_OUT[a])
@@ -160,6 +196,7 @@ def parse(a, n):
         raise Reject('end')
     nargs = num(ins[-1].op_str) // 4
     t = [x.mnemonic + ' ' + x.op_str for x in ins]
+    t = ebp_frame_args(t, ins)
     at = {x.address: i for i, x in enumerate(ins)}
     calls = [(k, s[5:]) for k, s in enumerate(t) if s.startswith('call ')]
     k41 = next((k for k, c in calls if c == '0x41c740'), None)
@@ -613,6 +650,18 @@ def tail(p):
         if tv[0] == 'childval' and tv[2] == 0 and still(on) and on[1] == tv[1] and all(o[0] in QUIET for o in ops[tv[3]:]):
             return ('target', 1 << 24 | on[1])
         return None
+
+    def epilogue_only(q):   # from q to the ret: only the epilogue (registers, the exception frame and the stack put back)
+        while q < len(t):
+            u = t[q]
+            if ins[q].mnemonic == 'ret':
+                return True
+            if not (re.fullmatch(r'pop ' + REG, u) or u in ('mov dword ptr fs:[0], ecx', 'mov esp, ebp') or
+                    re.fullmatch(r'mov (ecx|eax), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u) or re.fullmatch(r'mov eax, ' + REG, u) or
+                    re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', u)):
+                return False
+            q += 1
+        return False
 
     def clobbered_args():   # the argument numbers whose slots the tail wrote
         return {sl // 4 for sl in clobbered}
@@ -1456,7 +1505,10 @@ def tail(p):
         o = ops[-1]
         ops[-1] = (o[0], o[1], o[2] | 1 << 31, o[3], o[4])   # (bit 31: made with edx = this)
 
-    conds = []   # forward branches open: (end index, the op's index, registers, stack slots, depth, made things)
+    conds = []   # forward branches open: (end index, the op's index, registers, stack slots, depth, made things[, the join])
+    elses = {}   # an if's block that ends in a jump over an else: its op's index -> (where they join, the registers and stack
+                 # slots as the if's block ended, the decision's number)
+    ncond = [0]
 
     while True:
         s, x = t[k], ins[k]
@@ -1465,19 +1517,51 @@ def tail(p):
         while conds and k == conds[-1][0]:
             # a block skipped when its value is 0 (or not) ends here: the stack as at its start, nothing made in it left
             # unlet, nothing pushed; what it changed is forgotten (it may not have happened)
-            end_, at_op, R0, S0, d0, built0 = conds.pop()
+            c_ = conds.pop()
+            end_, at_op, R0, S0, d0, built0 = c_[:6]
             if pushed or d != d0 or built != built0 or nulls:
                 raise Reject('conditional block leaves')
             o = ops[at_op]
             ops[at_op] = (o[0], len(ops) - at_op - 1, o[2], o[3], o[4])
+            if at_op in elses:
+                # an if's block ended by a jump over an else: the else runs from the if's state, skipped when the if's block
+                # ran (kind 88, value the decision's number); where they join, what both left alike is kept
+                join_, Rt_, St_, cid_ = elses.pop(at_op)
+                R.clear(); R.update(R0)
+                S.clear(); S.update(S0)
+                ops.append((88, 0, cid_, 0, []))
+                conds.append((join_, len(ops) - 1, R0, S0, d0, built0, (Rt_, St_)))
+                flag = None
+                continue
+            Rb_, Sb_ = c_[6] if len(c_) > 6 else (R0, S0)   # (an else's end: compared with how the if's block ended)
             for r in list(R):
-                if R.get(r) != R0.get(r):
+                if R.get(r) != Rb_.get(r):
                     R[r] = None
-            for sl in set(S) | set(S0):
-                if S.get(sl) != S0.get(sl):
+            for sl in set(S) | set(Sb_):
+                if S.get(sl) != Sb_.get(sl):
                     S.pop(sl, None)
             flag = None
         if conds and x.mnemonic in ('ret', 'jmp') and not (x.mnemonic == 'jmp' and at.get(int(x.op_str, 0) if re.fullmatch(r'0x[0-9a-f]+', x.op_str) else -1, 1 << 30) <= conds[-1][0]):
+            join_ = at.get(int(x.op_str, 0)) if x.mnemonic == 'jmp' and re.fullmatch(r'0x[0-9a-f]+', x.op_str) else None
+            if join_ is not None and k + 1 == conds[-1][0] and len(conds[-1]) == 6 and ops[conds[-1][1]][0] == 63 and \
+                    (len(conds) < 2 or join_ <= conds[-2][0]) and not pushed and not nulls and d == conds[-1][4] and \
+                    built == conds[-1][5] and conds[-1][1] not in elses and ncond[0] < 64 and not epilogue_only(join_):
+                # the if's block ends in a jump over an else: its decision kept (the op's second value: its number)
+                at_op = conds[-1][1]
+                o = ops[at_op]
+                ops[at_op] = (o[0], o[1], o[2], o[3], list(o[4]) + [ncond[0]])
+                elses[at_op] = (join_, dict(R), dict(S), ncond[0])
+                ncond[0] += 1
+                k += 1
+                flag = None
+                continue
+            if x.mnemonic == 'jmp' and re.fullmatch(r'0x[0-9a-f]+', x.op_str) and at.get(int(x.op_str, 0)) is not None and \
+                    not pushed and not built and not nulls and epilogue_only(at[int(x.op_str, 0)]):
+                # the constructor done early: a jump to its own epilogue, nothing made left alive (kind 87: the steps stop)
+                ops.append((87, 0, 0, 0, []))
+                k += 1
+                flag = None
+                continue
             if x.mnemonic == 'ret' or at.get(int(x.op_str, 0), 1 << 30) > conds[-1][0]:
                 raise Reject('a jump out of a conditional block')
         if x.mnemonic == 'call':
@@ -1839,11 +1923,13 @@ def tail(p):
         elif (m := re.fullmatch(r'or ' + REG + ', ' + REG, s)) and m.group(1) != m.group(2) and val(m.group(2)) and val(m.group(2))[0] == 'const' and \
                 (val(m.group(1)) is None or val(m.group(1))[0] in ('const', 'byte', 'eh')):
             R[m.group(1)] = ('eh',); flag = None   # (the same, with the bit kept in a register)
+        elif (m := re.fullmatch(r'mov ([abcd])l, byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and S.get(num(m.group(2)) - d) == ('eh',):
+            R['e' + m.group(1) + 'x'] = ('eh',)   # (the bookkeeping bits' low byte, read to be tested)
         elif (m := re.fullmatch(r'test ([abcd])([lh]), (0x[0-9a-f]+|\d+)', s)) and val('e' + m.group(1) + 'x') == ('eh',):
             flag = ('ehbit', num(m.group(3)) << (8 if m.group(2) == 'h' else 0))
         elif (m := re.fullmatch(r'test ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) == ('eh',):
             flag = ('ehbit', num(m.group(2)))
-        elif (m := re.fullmatch(r'test byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)) and S.get(num(m.group(1)) - d) == ('eh',):
+        elif (m := re.fullmatch(r'test (?:byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)) and S.get(num(m.group(1)) - d) == ('eh',):
             flag = ('ehbit', num(m.group(2)))   # (the bits as kept on the stack)
         elif (m := re.fullmatch(r'test ([abcd])([lh]), ([abcd])([lh])', s)) and m.group(1, 2) == m.group(3, 4) and val('e' + m.group(1) + 'x') == ('eh',):
             flag = ('ehsign',)   # the bookkeeping bit 0x80 or 0x8000, read through the sign (jns)
@@ -1965,6 +2051,10 @@ def tail(p):
             # (the bits kept on the stack are read too, to clear the one guarding this)
             body = [u for u in body if not ((z_ := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)) and
                                             S.get(num(z_.group(2)) - d) == ('eh',))]
+            # (and copies of the bits from the register they were read into, to clear the one guarding this)
+            eh_regs_ = {r_ for r_ in R if R.get(r_) == ('eh',)}
+            if body and (z_ := re.fullmatch(r'mov ' + REG + ', ' + REG, body[0])) and z_.group(2) in eh_regs_:
+                body = body[1:]   # (only as the first step: later, that register may hold something else)
             z = re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', body[0]) if body else None
             z2 = re.fullmatch(r'call (0x[0-9a-f]+)', body[1]) if len(body) == 2 else None
             if z and z2:
@@ -2103,15 +2193,37 @@ def tail(p):
         elif x.mnemonic == 'jmp' and nulls and ins[k + 1].address == nulls[-1][0]:
             # past the null branch: it must only set the register the result is in to null, then join here
             target, token = nulls.pop()
-            z = re.fullmatch(r'xor ' + REG + ', ' + REG, t[k + 1])
-            ok_ = z and z.group(1) == z.group(2) and ins[k + 2].address == int(x.op_str, 0) and val(z.group(1))
-            if ok_ and token[0] == 'alloc':
-                ok_ = val(z.group(1))[0] == 'obj' and val(z.group(1))[1] == token[1]
-            elif ok_:
-                ok_ = val(z.group(1))[0] == 'name' and val(z.group(1))[2] == token[1]
-            if not ok_:
+            # (or the null path a store of 0 into the member the other path just stored the new object in: the step storing
+            # it gives none without memory, the same)
+            zn_ = re.fullmatch(r'mov dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\], ' + REG, t[k + 1]) if k + 2 < len(t) else None
+            if zn_ and val(zn_.group(1)) == ('this',) and val(zn_.group(3)) == ('const', 0) and ins[k + 2].address == int(x.op_str, 0) and \
+                    ops and ops[-1][0] == 22 and ops[-1][1] == num(zn_.group(2)) and token[0] == 'alloc':
+                k += 2
+                flag = None
+                continue
+            # (the null path: xor's only, up to the join; one of them the result's register, any other a register that is
+            # 0 on the other path too, so 0 after the join either way)
+            q_ = k + 1
+            zs_ = []
+            while q_ < len(t) and ins[q_].address != int(x.op_str, 0):
+                z = re.fullmatch(r'xor ' + REG + ', ' + REG, t[q_])
+                if not z or z.group(1) != z.group(2):
+                    raise Reject('null branch')
+                zs_.append(z.group(1))
+                q_ += 1
+            if q_ >= len(t) or not zs_ or len(set(zs_)) != len(zs_):
                 raise Reject('null branch')
-            k += 2
+            def result_reg(r_):
+                v_ = val(r_)
+                if not v_:
+                    return False
+                if token[0] == 'alloc':
+                    return v_[0] == 'obj' and v_[1] == token[1]
+                return v_[0] == 'name' and v_[2] == token[1]
+            res_ = [r_ for r_ in zs_ if result_reg(r_)]
+            if len(res_) != 1 or any(val(r_) != ('const', 0) for r_ in zs_ if r_ != res_[0]):
+                raise Reject('null branch')
+            k = q_
             flag = None
             continue
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'namealloc':
@@ -2556,7 +2668,7 @@ if __name__ == '__main__':
             if o[0] == 80:
                 callees[o[3]] = len(o[4]) - 1
                 obj_uses.add(o[3])
-            if o[0] in (3, 10, 24, 59, 61, 62) and o[3] != 0x6b1640 and o[3]:   # (0x6B1640: the tester's own stand-in, which notes the rectangle; 0: a run calling nothing)
+            if o[0] in (3, 10, 24, 59, 61, 62) and o[3] != 0x6b1640 and o[3] and o[3] not in TESTER_OWN:   # (0x6B1640: the tester's own stand-in, which notes the rectangle; 0: a run calling nothing)
                 obj_uses.add(o[3])
                 callees[o[3]] = len(o[4])
                 (edx_uses if o[0] in (3, 24) and o[2] >> 31 else plain_uses).add(o[3])

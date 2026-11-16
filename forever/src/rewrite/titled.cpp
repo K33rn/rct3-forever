@@ -283,6 +283,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     uint8_t *memory = nullptr;
     bool naming = false;
     uint32_t scratch[32] = {};
+    bool block_ran[64] = {};   // (the if blocks' decisions, by number: whether each one's block ran)
     void *last = nullptr;   // what the last call (3, 24, 60, 61, 62) gave back
     uint32_t loc[0x50] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords; and the arguments' slots they reuse)
     void *object = nullptr, *aligned = nullptr;
@@ -388,6 +389,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         }
         case 61: last = titled_call(op.fn, (void *)(uintptr_t)given[op.off], op.count, args); break;              // on an argument
         case 62: last = titled_call(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args); break;   // on a global's object
+        case 87: k = COUNT; break;   // the constructor done early (a jump to its epilogue): no more steps
         case 83: {   // a virtual call (slot value) on the object argument number off is
             uint8_t *on = (uint8_t *)(uintptr_t)given[op.off];
             last = titled_call((uintptr_t)(*(void ***)on)[op.value / 4], on, op.count, args);
@@ -400,17 +402,22 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         }
         case 63: {   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1); fn 2: when its low byte is 0;
                      // fn 0x10 | n: when the value compares with the constant (value) as the n-th of ja jae jb jbe jg jge jl jle je jne
+            // (a second value: the decision's number, kept for the else that follows, kind 88)
+            bool skipped;
             if (op.fn >= 0x10) {
                 const uint32_t a = args[0], b = op.value;
                 const int32_t sa = (int32_t)a, sb = (int32_t)b;
                 const bool skip[10] = {a > b, a >= b, a < b, a <= b, sa > sb, sa >= sb, sa < sb, sa <= sb, a == b, a != b};
-                if (skip[op.fn & 0xf]) k += op.off;
-                break;
+                skipped = skip[op.fn & 0xf];
+            } else {
+                const bool zero = op.fn >= 2 ? (args[0] & 0xff) == 0 : args[0] == 0;   // (fn 3: skipped when the low byte isn't 0)
+                skipped = zero != (op.fn == 1 || op.fn == 3);
             }
-            const bool zero = op.fn >= 2 ? (args[0] & 0xff) == 0 : args[0] == 0;   // (fn 3: skipped when the low byte isn't 0)
-            if (zero != (op.fn == 1 || op.fn == 3)) k += op.off;
+            if (op.count > 1) block_ran[args[1] & 63] = !skipped;
+            if (skipped) k += op.off;
             break;
         }
+        case 88: if (block_ran[op.value & 63]) k += op.off; break;   // an else: its off steps skipped when the if's block ran
         case 68: {   // a text copied from the wide text given (0xBCF7D0; none without memory), or the empty text when there is none: name off
             void *from = (void *)(uintptr_t)args[0];
             if (from) {
