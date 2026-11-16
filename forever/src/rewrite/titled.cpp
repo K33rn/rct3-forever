@@ -443,7 +443,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             if (op.value && !memory) break;   // (made while making a new object: only with its memory)
             if (from) {
                 void *block = memory_alloc(0x10);
-                names[op.off] = block ? ((void *(__thiscall *)(void *, void *))0xbcf7d0)(block, from) : nullptr;
+                names[op.off] = block ? ((void *(__thiscall *)(void *, void *))(uintptr_t)(op.fn ? op.fn : 0xbcf7d0))(block, from) : nullptr;   // (fn: 0xBCF850 for a narrow text)
             } else {
                 names[op.off] = ((void *(__fastcall *)(uint32_t))0xbd0490)(1);
             }

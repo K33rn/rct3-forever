@@ -906,8 +906,12 @@ def tail(p):
                 L.append((q, t[q]))
             q += 1
         b = [u for _, u in L]
-        want = ['push 0x10', 'call 0xbcdfc0', 'add esp, 4', 'test eax, eax']
-        if b[:4] != want or not b[4].startswith('je ') or not re.fullmatch(r'push ' + REG, b[5]) or b[6:8] != ['mov ecx, eax', 'call 0xbcf7d0'] \
+        want = ['push 0x10', 'call 0xbcdfc0', 'add esp, 4']
+        # (the memory checked: test eax, eax, or a compare with a register holding 0; the text a wide one, 0xBCF7D0, or a narrow
+        # one, 0xBCF850)
+        zc_ = re.fullmatch(r'cmp eax, ' + REG, b[3]) if len(b) > 3 else None
+        if b[:3] != want or not (b[3] == 'test eax, eax' or zc_ and R.get(zc_.group(1)) in (('const', 0), ('byte', 0))) or \
+                not b[4].startswith('je ') or not re.fullmatch(r'push ' + REG, b[5]) or b[6] != 'mov ecx, eax' or b[7] not in ('call 0xbcf7d0', 'call 0xbcf850') \
                 or not b[8].startswith('jmp ') or b[9] != 'xor eax, eax' or not b[10].startswith('jmp ') or b[11:13] != ['mov cl, 1', 'call 0xbd0490']:
             return None
         holder = b[5][5:]
@@ -916,7 +920,7 @@ def tail(p):
         end = at.get(num(b[8][4:]))
         if end is None or end != at.get(num(b[10][4:])) or end != L[12][0] + 1 or at.get(num(b[4][3:])) != L[9][0] or else_ != L[11][0]:
             return None
-        return end, holder
+        return end, holder, num(b[7][5:])
 
 
     def holder_place(b_, off_):   # a dword's place, as a value given to a step: in the window, or inside a child
@@ -2371,10 +2375,11 @@ def tail(p):
             continue
         elif x.mnemonic == 'je' and not pushed and (not nulls or nulls[-1][1][0] == 'alloc' and nulls[-1][1][1] == cur) and flag and flag[0] == 'test' and base_code(flag[1]) is not None and (te := text_or_empty(k)):
             # a text made from a wide text when there is one, else the empty text (kind 68): kept as a name
-            k, holder_ = te
+            k, holder_, maker_ = te
             if nnames >= 48:
                 raise Reject('names')
-            ops.append((68, nnames, int(bool(nulls)), 0, [base_code(flag[1])]))   # (value 1: while making a new object, only with its memory)
+            # (value 1: while making a new object, only with its memory; fn 0xBCF850: from a narrow text, else a wide one)
+            ops.append((68, nnames, int(bool(nulls)), 0xbcf850 if maker_ == 0xbcf850 else 0, [base_code(flag[1])]))
             built.add(('name', nnames))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None

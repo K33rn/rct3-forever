@@ -15505,7 +15505,7 @@ address,size,name,callers,status
 0xa21ab0,125,Three::Destroy623BC0,1,rewritten
 0xa21b30,6142,,1,documented
 0xa23330,460,,7,documented
-0xa236b0,1852,,1,documented
+0xa236b0,1852,Window::Titled,1,rewritten
 0xa23df0,30,DeletingDestructor,2,rewritten
 0xa23ed0,30,DeletingDestructor,3,rewritten
 0xa23fd0,2420,Window::Titled,1,rewritten
