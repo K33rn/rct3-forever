@@ -14375,7 +14375,7 @@ address,size,name,callers,status
 0x9b94b0,2023,Window::Titled,1,rewritten
 0x9b9cd0,71,,0,documented
 0x9b9d40,356,,1,documented
-0x9b9eb0,1720,,1,documented
+0x9b9eb0,1720,Window::Titled,1,rewritten
 0x9ba570,1823,Window::Titled,1,rewritten
 0x9bac90,1417,Window::Titled,1,rewritten
 0x9bb220,1722,Window::Titled,1,rewritten

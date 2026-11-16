@@ -1815,6 +1815,11 @@ def tail(p):
             k = ll_[0]
             flag = None
             continue
+        if x.mnemonic == 'jmp' and re.fullmatch(r'0x[0-9a-f]+', x.op_str) and at.get(int(x.op_str, 0)) is not None and \
+                k < at[int(x.op_str, 0)] <= k + 6 and all(
+                    ins[q_].mnemonic == 'nop' or re.fullmatch(r'(lea (\w+), \[\2\]|mov (\w+), \3|lea esp, \[esp\])', t[q_]) for q_ in range(k + 1, at[int(x.op_str, 0)])):
+            k = at[int(x.op_str, 0)]   # (a jump over the padding the compiler puts before a loop's top)
+            continue
         # loops of a known count, unrolled: a counter and places stepping by constants are tracked as such, and a jump on a
         # compare of two known constants is decided here (one back reads the body again, up to 64 times in all)
         if (m := re.fullmatch(r'(inc|dec) (e[a-d]x|e[sd]i|ebp|ebx)', s)) and val(m.group(2)) and val(m.group(2))[0] == 'const':
