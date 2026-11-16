@@ -5453,7 +5453,7 @@ address,size,name,callers,status
 0x61a030,30,DeletingDestructor,2,rewritten
 0x61a060,30,DeletingDestructor,2,rewritten
 0x61a090,30,DeletingDestructor,2,rewritten
-0x61a0c0,5559,,1,documented
+0x61a0c0,5559,Window::Titled,1,rewritten
 0x61b7a0,252,,3,documented
 0x61b8a0,205,,72,documented
 0x61b970,270,,2,documented

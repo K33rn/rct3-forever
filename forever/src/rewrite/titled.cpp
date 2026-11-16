@@ -307,6 +307,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             case 12: args[i] = *(uint32_t *)((uint8_t *)(uintptr_t)given[v & 0xff] + (v >> 8)); break;   // a dword inside what an argument points to
             case 13: args[i] = v ? (uint32_t)(uintptr_t)memory : (uint32_t)(uintptr_t)object; break;   // the new object (as returned / its memory)
             case 14: args[i] = given[v & 0xff] + (v >> 8); break;   // a place inside an argument object
+            case 15: args[i] = *(uint32_t *)(*(uint8_t **)(uintptr_t)(0x1000000 + (v & 0xffffff)) + (v >> 24)); break;   // inside a global's object
             default: args[i] = *(uint32_t *)(self + v); break;
             }
         }

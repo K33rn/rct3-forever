@@ -143,7 +143,8 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
 LEFT_OUT = {0x701590: "the original dies in the tester (a stand-in's object read through as something else): to look at",
-            0x791670: "the original dies in the tester: to look at"}
+            0x791670: "the original dies in the tester: to look at",
+            0x6c6fd0: "dies in the tester, but not with every stand-in call logged (something read before it is set?): to look at"}
 
 
 
@@ -592,7 +593,7 @@ def tail(p):
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
         if isinstance(v, int):
             return (0, v)
-        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13, 'gplace': 14}[v[0]], v[1]
+        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13, 'gplace': 14, 'gobj': 15}[v[0]], v[1]
 
     nb_used = set()
     nb_eax = ['keep']
@@ -2105,6 +2106,8 @@ def tail(p):
             k = end_
             flag = None
             continue
+        elif s == 'push -1':
+            pushed.append(0xffffffff); d += 4   # (a constant -1)
         elif (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
             pushed.append(num(m.group(1))); d += 4
         elif (m := re.fullmatch(r'and ' + REG + r', 0x800000([0-9a-f]{2})', s)) and (sv_ := scratch_of(m.group(1))) and \
@@ -2150,6 +2153,9 @@ def tail(p):
             pushed.append(('field', val(m.group(1))[1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'scratch':
             pushed.append(('scratch', val(m.group(1))[1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'gfield' and \
+                all(o[0] in QUIET for o in ops[val(m.group(1))[3]:]):
+            pushed.append(('gobj', (val(m.group(1))[1] - 0x1000000) | val(m.group(1))[2] << 24)); d += 4   # (inside a global's object: kind 15)
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'argplus' and val(m.group(1))[1] not in clobbered_args():
             pushed.append(('gplace', val(m.group(1))[1] | val(m.group(1))[2] << 8)); d += 4   # (a place inside an argument object: kind 14)
         elif (m := re.fullmatch(r'push ' + REG, s)) and (dc := deref_code(val(m.group(1)))):
@@ -2367,6 +2373,9 @@ def tail(p):
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             flag = None
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] == 'global' and 0x1000000 <= val(m.group(2))[1] < 0x2000000 and 0 < num(m.group(3) or '0') < 0x100:
+            R[m.group(1)] = ('gfield', val(m.group(2))[1], num(m.group(3) or '0'), len(ops))   # (a dword inside a global's object, read now)
         elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) and val(m.group(1))[0] in ('arg', 'argplus') and                 num(m.group(2)) < 0x1000000:
             v_ = val(m.group(1))   # (a place inside an argument object, moved on)
             R[m.group(1)] = ('argplus', v_[1], num(m.group(2)) + (v_[2] if v_[0] == 'argplus' else 0))
@@ -2654,7 +2663,7 @@ if __name__ == '__main__':
                 if isinstance(v, int):
                     codes.append((0, v))
                 else:
-                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13, 'gplace': 14}[v[0]], v[1]))
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13, 'gplace': 14, 'gobj': 15}[v[0]], v[1]))
             kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')
@@ -2791,7 +2800,8 @@ if __name__ == '__main__':
     out.append('extern const uint32_t titled_object_globals[];')
     objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73} |
                   {o[1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 82} |
-                  {0x1000000 + (st_[2] & 0xffffff) for st_ in FPU_PROGRAM if st_[1] == 7})   # (and those x87 runs read inside: kind 7)
+                  {0x1000000 + (st_[2] & 0xffffff) for st_ in FPU_PROGRAM if st_[1] == 7} |   # (and those x87 runs read inside: kind 7)
+                  {0x1000000 + (v_[1] & 0xffffff) for a_ in info for o in all_ops.get(a_[0], []) for v_ in o[4] if isinstance(v_, tuple) and v_[0] == 'gobj'})
     out.append('const uint32_t titled_object_globals[] = {' + ''.join(f'{g:#x}, ' for g in objg) + '0};')
     out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')
     out.append('extern const uint32_t titled_vslots[];')
