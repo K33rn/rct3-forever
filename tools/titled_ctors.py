@@ -1213,6 +1213,12 @@ def tail(p):
             if mm:
                 slot = num(mm.group(1)) - depth
                 if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs:
+                    if store or slot in written or slot in run_locals:
+                        if slot >= 0x40:
+                            return None
+                        if store:
+                            clobbered.add(slot)   # (the argument is gone: later reads of the slot are the run's value)
+                        return (4, (slot + 0x100) // 4)
                     if slot in clobbered:
                         return None
                     return (5, slot // 4)
@@ -1232,6 +1238,8 @@ def tail(p):
                 v = regs.get(mm.group(1), ('r', R.get(mm.group(1))))
                 if v[0] == 'bits' and v[1][0] == 2 and v[1][1] < 0x10000 and off < 0x10000:
                     return (3, v[1][1] | off << 16)   # (a member's value loaded in the run: what it points to, read through)
+                if v[0] == 'bits' and v[1][0] == 1 and 0x1000000 <= v[1][1] < 0x2000000 and off < 0x100 and not store:
+                    return (7, (v[1][1] - 0x1000000) | off << 24)   # (a game global loaded in the run: its object, read through)
                 v = v[1] if v[0] in ('r', 'ecx') else None
                 if v and v[0] == 'global' and 0x1000000 <= v[1] < 0x2000000 and off < 0x100 and not store:
                     return (7, (v[1] - 0x1000000) | off << 24)   # (inside the object a game global holds, read now)
@@ -1300,6 +1308,8 @@ def tail(p):
                 prog.append((23, 0, 0)); fpu += 1
             elif u == 'fldz ':
                 prog.append((24, 0, 0)); fpu += 1
+            elif (mm := re.fullmatch(r'fstp st\(([1-7])\)', u)):
+                prog.append((26, 0, int(mm.group(1)))); fpu -= 1
             elif u == 'fstp st(0)':
                 prog.append((22, 0, 0)); fpu -= 1
             elif (mm := re.fullmatch(r'mov ' + REG + r', (dword ptr \[.+\])', u)) and operand(mm.group(2), q):

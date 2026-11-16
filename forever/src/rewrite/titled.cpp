@@ -154,6 +154,17 @@ __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t 
         case 16: X87I("fdivrp st(1), st"); break;
         case 18: X87I("fchs"); break;
         case 22: X87I("fstp st(0)"); break;
+        case 26:   // fstp st(v)
+            switch (v) {
+            case 1: X87I("fstp st(1)"); break;
+            case 2: X87I("fstp st(2)"); break;
+            case 3: X87I("fstp st(3)"); break;
+            case 4: X87I("fstp st(4)"); break;
+            case 5: X87I("fstp st(5)"); break;
+            case 6: X87I("fstp st(6)"); break;
+            default: X87I("fstp st(7)"); break;
+            }
+            break;
         case 23: X87I("fld1"); break;
         case 24: X87I("fldz"); break;
         case 19: loc[step[3]] = *p; break;   // an integer copy into a local
@@ -272,7 +283,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     bool naming = false;
     uint32_t scratch[16] = {};
     void *last = nullptr;   // what the last call (3, 24, 60, 61, 62) gave back
-    uint32_t loc[0x44] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords)
+    uint32_t loc[0x50] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords; and the arguments' slots they reuse)
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
