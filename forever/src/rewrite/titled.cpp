@@ -276,12 +276,12 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     if (reference_made) ((void(__thiscall *)(void *))0xbd1880)(reference);
     if (copied) titled_release(made);
     alignas(16) uint8_t temps[16][0x40];   // temporaries on the stack (texts made for a new object's constructor; titled_ctors.py keeps to 16)
-    void *temp_made[16] = {}, *names[16] = {};
-    bool temp_built[16] = {}, name_built[16] = {};
+    void *temp_made[16] = {}, *names[48] = {};   // (titled_ctors.py keeps to 48 names)
+    bool temp_built[16] = {}, name_built[48] = {};
     names[0] = start_name, name_built[0] = has_start_name;   // (the start text: name 0, let go by the steps)
     uint8_t *memory = nullptr;
     bool naming = false;
-    uint32_t scratch[16] = {};
+    uint32_t scratch[32] = {};
     void *last = nullptr;   // what the last call (3, 24, 60, 61, 62) gave back
     uint32_t loc[0x50] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords; and the arguments' slots they reuse)
     void *object = nullptr, *aligned = nullptr;
@@ -500,6 +500,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 33: if (memory) memory[op.off] = (uint8_t)op.value; break;
         case 72: if (memory) *(uint32_t *)(memory + op.off) = args[0]; break;
         case 78: scratch[op.off] = *(uint32_t *)(uintptr_t)(args[0] + op.value); break;   // a dword inside a scratch value's object
+        case 86: scratch[op.off] = (uint32_t)((int32_t)scratch[op.off] % (int32_t)op.value); break;   // a scratch value modulo a power of two (C's sign)
         case 79: scratch[op.off] = args[0] + op.value; break;   // a scratch value plus a constant
         case 80: last = titled_call(op.fn, (void *)(uintptr_t)args[0], op.count - 1, args + 1); break;   // a call on a scratch value
         case 76: last = titled_call(op.fn, nullptr, op.count, args); break;

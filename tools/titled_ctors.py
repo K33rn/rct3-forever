@@ -567,7 +567,7 @@ def tail(p):
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79}   # (75 frees memory: not quiet)   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86}   # (75 frees memory: not quiet)   # steps that call nothing
 
     taken = {}   # the results already taken into scratch values: the step that gave it -> its scratch number
 
@@ -578,7 +578,7 @@ def tail(p):
             return ('scratch', taken[v[1]])
         if any(o[0] not in QUIET for o in ops[v[1] + 1:]):
             return None
-        if nscratch[0] >= 16:
+        if nscratch[0] >= 32:
             raise Reject('scratch values')
         ops.append((64, nscratch[0], 0, 0, []))
         taken[v[1]] = nscratch[0]
@@ -597,7 +597,7 @@ def tail(p):
         return tr_
 
     def new_scratch():
-        if nscratch[0] >= 16:
+        if nscratch[0] >= 32:
             raise Reject('scratch values')
         nscratch[0] += 1
         return nscratch[0] - 1
@@ -1601,7 +1601,7 @@ def tail(p):
                     ('glob' if w[0] == 'global' else 'given', w[1])
             else:
                 raise Reject('by-value store ' + s)
-        elif (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], esp', s)) and (R.get('eax') or ('',))[0] == 'spslot':
+        elif (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], esp', s)) and ((R.get('eax') or ('',))[0] == 'spslot' or pushed and pushed[-1] is None):
             S.pop(num(m.group(1)) - d, None)   # (the exception frame keeps where that struct is)
         elif (m := re.fullmatch(r'(or|and) dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and val(m.group(2)) and                 val(m.group(2))[0] in ('this', 'member'):
             # a dword of the window's own or-ed or and-ed with a constant (kind 27 / 26)
@@ -1727,7 +1727,7 @@ def tail(p):
             continue
         elif s.startswith('mov eax, dword ptr [0x1') and (sg := singleton(k)):
             # a shared object fetched, made if there is none yet (and cast to one of its parts): kind 77, into a scratch value
-            if nscratch[0] >= 16:
+            if nscratch[0] >= 32:
                 raise Reject('scratch values')
             ops.append((77, nscratch[0], sg[3] or 0, sg[2], [sg[1], int(sg[3] is not None)]))
             for r in ('eax', 'ecx', 'edx'):
@@ -1806,6 +1806,13 @@ def tail(p):
             R['e' + m.group(1) + 'x'] = ('byteglobal', num(m.group(2)))   # (a game global's byte, only tested)
         elif (m := re.fullmatch(r'test ([abcd])l, \1l', s)) and val('e' + m.group(1) + 'x') and val('e' + m.group(1) + 'x')[0] in ('bytefield', 'byteglobal'):
             flag = ('testbyte', val('e' + m.group(1) + 'x'))
+        elif (m := re.fullmatch(r'cmp dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and num(m.group(2) or '0') < 0x10000 and \
+                (sv_ := scratch_of(m.group(1))):
+            # a dword inside a call's result (or a scratch value's object) compared with a constant: read into a scratch
+            # value first (kind 78)
+            n_ = new_scratch()
+            ops.append((78, n_, num(m.group(2) or '0'), 0, [sv_]))
+            flag = ('cmpk', ('scratch', n_), num(m.group(3)))
         elif (m := re.fullmatch(r'cmp dword ptr \[(0x1[0-9a-f]{6})\], (0|' + REG + ')', s)) and (m.group(2) == '0' or val(m.group(2)) in (('const', 0), ('byte', 0))):
             flag = ('test', ('global', num(m.group(1))))
         elif (m := re.fullmatch(r'cmp dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0|' + REG + ')', s)) and val(m.group(1)) and                 val(m.group(1))[0] in ('this', 'member') and num(m.group(2) or '0') < 0x10000 and (m.group(3) == '0' or val(m.group(3)) in (('const', 0), ('byte', 0))):
@@ -1886,7 +1893,7 @@ def tail(p):
                 # the interface tested: worked out into a scratch value (kind 54), then the block up to the jne's target
                 # skipped when there is one (kind 63, fn 1)
                 _, end_, k = k
-                if nulls or conds and end_ > conds[-1][0] or nscratch[0] >= 16:
+                if nulls or conds and end_ > conds[-1][0] or nscratch[0] >= 32:
                     raise Reject('interface test')
                 ops.append((54, nscratch[0], extra_, how_, [base_]))
                 ops.append((63, 0, 0, 1, [('scratch', nscratch[0])]))
@@ -1901,14 +1908,14 @@ def tail(p):
                 R[r] = None
             R[dest_] = ('scratch', nscratch[0])
             nscratch[0] += 1
-            if nscratch[0] > 8:
+            if nscratch[0] > 32:
                 raise Reject('scratch values')
             flag = None
             continue
         elif x.mnemonic == 'je' and not pushed and not nulls and flag and flag[0] == 'test' and base_code(flag[1]) is not None and (te := text_or_empty(k)):
             # a text made from a wide text when there is one, else the empty text (kind 68): kept as a name
             k, holder_ = te
-            if nnames >= 16:
+            if nnames >= 48:
                 raise Reject('names')
             ops.append((68, nnames, 0, 0, [base_code(flag[1])]))
             built.add(('name', nnames))
@@ -1996,13 +2003,25 @@ def tail(p):
             continue
         elif (m := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', s)):
             pushed.append(num(m.group(1))); d += 4
+        elif (m := re.fullmatch(r'and ' + REG + r', 0x800000([0-9a-f]{2})', s)) and (sv_ := scratch_of(m.group(1))) and \
+                int(m.group(2), 16) + 1 in (2, 4, 8, 16, 32, 64, 128) and k + 4 < len(t) and \
+                re.fullmatch(r'jns (0x[0-9a-f]+)', t[k + 1]) and t[k + 2] == f'dec {m.group(1)}' and \
+                t[k + 3] == f'or {m.group(1)}, {0xffffffff ^ int(m.group(2), 16):#x}' and t[k + 4] == f'inc {m.group(1)}' and \
+                at.get(int(t[k + 1][4:], 0)) == k + 5:
+            # the value taken modulo a power of two as C does (the sign kept): kind 86, in place in its scratch value
+            from_ = next((ops[i_][3] for i_, n_s in taken.items() if n_s == sv_[1] and ops[i_][0] == 76), 0)
+            ops.append((86, sv_[1], int(m.group(2), 16) + 1, from_, []))   # (fn: the plain call it came from, for the tester)
+            R[m.group(1)] = sv_
+            k += 5
+            flag = None
+            continue
         elif s == 'push ecx' and t[k + 1] == 'mov eax, esp':
             pushed.append(None); d += 4   # room for a 4-byte struct given by value, filled through eax below
             R['eax'] = ('spslot', len(pushed) - 1)
             k += 2
             continue
-        elif s == 'push ecx' and t[k + 2] == 'mov eax, esp' and not re.match(r'\w+ (eax|esp)\b', t[k + 1]):
-            pushed.append(None); d += 4   # (the same, with one more step before eax is pointed at it)
+        elif s == 'push ecx' and any(t[k + j] == 'mov eax, esp' and all(not re.match(r'\w+ (eax|esp)\b', t[k + i]) for i in range(1, j)) for j in (2, 3, 4)):
+            pushed.append(None); d += 4   # (the same, with up to three more steps, not touching eax or esp, before eax is pointed at it)
         elif s == 'mov eax, esp' and pushed and pushed[-1] is None:
             R['eax'] = ('spslot', len(pushed) - 1)
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack' and \
@@ -2010,7 +2029,7 @@ def tail(p):
             pushed.append(('nameaddr', S[val(m.group(1))[1]][1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack' and                 (S.get(val(m.group(1))[1]) or ('',))[0] == 'obj' and S[val(m.group(1))[1]][1] == cur and last_text_object():
             # the new object a text (0x10 bytes made with 0xBCF850), kept on the stack and its place given: a name (kind 58)
-            if nnames >= 16:
+            if nnames >= 48:
                 raise Reject('names')
             ops.append((58, nnames, 0, 0, []))
             built.add(('name', nnames))
@@ -2094,7 +2113,7 @@ def tail(p):
                 raise Reject('name made with')
             lit = pushed.pop(); d -= 4
             token = val('ecx')
-            if nnames >= 16:
+            if nnames >= 48:
                 raise Reject('names')
             ops.append((21, nnames, lit, 0, []))
             built.add(('name', nnames))
@@ -2469,7 +2488,7 @@ if __name__ == '__main__':
     rect_uses, norect_uses = set(), set()   # the callees given a run's locals (the tester notes the 16 bytes there)   # the callees made with edx = the window, and those made without
     for a, r in sorted(rows.items()):
         n = int(r['size'])
-        if (r['status'] != 'documented' and a not in mine) or n > 4000:
+        if (r["status"] != "documented" and a not in mine) or n > 8000:
             continue
         code = bytes(img[a - BASE:a - BASE + n])
         if SEPARATOR.to_bytes(4, 'little') not in code:
@@ -2618,6 +2637,11 @@ if __name__ == '__main__':
         if mask_:
             va_.append((a_[0], mask_))
     out.append('const uint32_t titled_vcall_args[] = {' + ''.join(f'{x_:#x}, {m_:#x}, ' for x_, m_ in va_) + '0};')
+    out.append('// the plain functions whose result is only taken as a number (op 86 on it): the tester\'s stand-in gives a value of')
+    out.append("// the case's, either sign, instead of an object")
+    out.append('extern const uint32_t titled_value_callees[];')
+    vc_ = sorted({o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 86 and o[3]})
+    out.append('const uint32_t titled_value_callees[] = {' + ''.join(f'{f_:#x}, ' for f_ in vc_) + '0};')
     out.append('// the holders counted texts are put into (op 75): a member and the place inside what it points to (member 0xFFFF:')
     out.append('// the place in the window itself); the tester puts a counted text of its own in each first')
     out.append('extern const uint32_t titled_text_holders[];')

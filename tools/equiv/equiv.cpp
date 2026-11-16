@@ -593,6 +593,12 @@ static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t
 }
 // the same, for a function called on no object (it never reads ecx: whatever ecx holds is left alone); what it gives back
 // is an object of its own, from the arena's memory
+extern const uint32_t titled_value_callees[];
+static void *__thiscall stub_plain_value0(void *) {   // a plain function taken as a number: the case's, either sign, one per call
+    uint32_t &n = *arena<uint32_t>(ALLOC_NEXT - 8);
+    record(0x84, nullptr);
+    return (void *)(uintptr_t)((arena<uint32_t>(0x4c)[0] ^ n++ * 0x9e3779b1u) * 0x85ebca6bu);
+}
 static void *plain_result() { return built_result(stub_plain_alloc(0xb0)); }
 static void *__thiscall stub_plain0(void *) { record(0x82, nullptr); return plain_result(); }
 static void *__thiscall stub_plain1(void *, uint32_t a) { record(0x82, arg_value(a)); return plain_result(); }
@@ -6323,10 +6329,11 @@ static std::vector<Test> tests() {
                                                          {0x41cb90, (void *)stub_named_text_ref}, {0xbcf7d0, (void *)stub_class_wide_from}};
         static void *const built_rect[5] = {(void *)stub_built0, (void *)stub_built_rect1, (void *)stub_built_rect2, (void *)stub_built_rect3, (void *)stub_built_rect4};
         static void *const built_edx[4] = {(void *)stub_built_edx0, (void *)stub_built_edx1, (void *)stub_built_edx2, (void *)stub_built_edx3};
+        auto is_value_callee = [](uint32_t fn) { for (int q = 0; titled_value_callees[q]; q++) if (titled_value_callees[q] == fn) return true; return false; };
         static void *const plain_stubs[5] = {(void *)stub_plain0, (void *)stub_plain1, (void *)stub_plain2, (void *)stub_plain3, (void *)stub_plain4};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at)
-                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x400 ? plain_stubs[titled_callees[k + 1] & 0xff] : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
+                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x400 ? (is_value_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xff) == 0 ? (void *)stub_plain_value0 : plain_stubs[titled_callees[k + 1] & 0xff]) : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         stubs_for_now(list);
         g_built_other = true;

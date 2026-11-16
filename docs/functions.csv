@@ -6291,7 +6291,7 @@ address,size,name,callers,status
 0x66d5c0,1350,,2,documented
 0x66db80,583,,2,documented
 0x66ddd0,1460,,2,documented
-0x66e3e0,5728,,1,documented
+0x66e3e0,5728,Window::Titled,1,rewritten
 0x66fa40,933,,1,documented
 0x66fdf0,415,,2,documented
 0x66ffa0,550,,2,documented
