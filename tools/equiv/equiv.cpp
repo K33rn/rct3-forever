@@ -550,6 +550,8 @@ static uint32_t g_titled_text_saved[8], g_titled_read_saved[64];
 extern const uint32_t titled_read_globals[];
 static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
+extern const uint32_t titled_singletons[];
+static uint32_t g_titled_single_global, g_titled_single_fn;   // (the copy's singleton made on first use: its global, its constructor)
 extern const uint32_t dtor_steps_info[];
 extern const uint32_t table_make_info[];
 // Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
@@ -600,6 +602,9 @@ static void *__thiscall stub_built8(void *self, uint32_t a, uint32_t b, uint32_t
 }
 static void *__thiscall stub_built0(void *self) { record(0x81, self); return built_result(self); }
 static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, arg_value(a)); return built_result(self); }
+// a singleton's constructor (it keeps itself in its global, as the game's does)
+static void *__thiscall stub_single0(void *self) { void *r = stub_built0(self); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
+static void *__thiscall stub_single1(void *self, uint32_t a) { void *r = stub_built1(self, a); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
 static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return built_result(self); }
 static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); return built_result(self); }
 static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
@@ -6281,6 +6286,8 @@ static std::vector<Test> tests() {
                                   *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = (uint32_t)(uintptr_t)arena<void>(0xd000 + k * 0x100);
                                   arena<uint32_t>(0xd000 + k * 0x100)[0] = (uint32_t)(uintptr_t)titled_child_table;   // (its table: the stand-ins)
                               }
+                              if (g_titled_single_global && arena<uint32_t>(0x4c)[0] >> 7 & 1)   // (the singleton not made yet, in some cases)
+                                  *(volatile uint32_t *)(uintptr_t)g_titled_single_global = 0;
                               *(void **)g_titled_title = arena<void>(0x8000);
                               g_null_handle = arena<void>(0x700);
                               uint32_t *a = arena<uint32_t>(0x10);
@@ -6357,12 +6364,17 @@ static std::vector<Test> tests() {
                                                          {0x41cb90, (void *)stub_named_text_ref}, {0xbcf7d0, (void *)stub_class_wide_from}};
         static void *const built_rect[5] = {(void *)stub_built0, (void *)stub_built_rect1, (void *)stub_built_rect2, (void *)stub_built_rect3, (void *)stub_built_rect4};
         static void *const built_edx[4] = {(void *)stub_built_edx0, (void *)stub_built_edx1, (void *)stub_built_edx2, (void *)stub_built_edx3};
+        g_titled_single_global = g_titled_single_fn = 0;
+        for (int q = 0; titled_singletons[q]; q += 3)
+            if (titled_singletons[q] == e->at) g_titled_single_global = titled_singletons[q + 1], g_titled_single_fn = titled_singletons[q + 2];
         auto is_value_callee = [](uint32_t fn) { for (int q = 0; titled_value_callees[q]; q++) if (titled_value_callees[q] == fn) return true; return false; };
         static void *const fast_stubs[5] = {(void *)stub_fast0, (void *)stub_fast1, (void *)stub_fast2, (void *)stub_fast3, (void *)stub_fast4};
         static void *const plain_stubs[5] = {(void *)stub_plain0, (void *)stub_plain1, (void *)stub_plain2, (void *)stub_plain3, (void *)stub_plain4};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at)
-                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x800 ? fast_stubs[titled_callees[k + 1] & 0xff] : titled_callees[k + 1] & 0x400 ? (is_value_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xff) == 0 ? (void *)stub_plain_value0 : plain_stubs[titled_callees[k + 1] & 0xff]) : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
+                list.push_back({titled_callees[k], titled_callees[k] == g_titled_single_fn && (titled_callees[k + 1] & 0xf00) == 0 && titled_callees[k + 1] < 2 ?
+                                                  (titled_callees[k + 1] == 0 ? (void *)stub_single0 : (void *)stub_single1) :
+                                                  titled_callees[k + 1] & 0x800 ? fast_stubs[titled_callees[k + 1] & 0xff] : titled_callees[k + 1] & 0x400 ? (is_value_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xff) == 0 ? (void *)stub_plain_value0 : plain_stubs[titled_callees[k + 1] & 0xff]) : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         stubs_for_now(list);
         g_built_other = true;

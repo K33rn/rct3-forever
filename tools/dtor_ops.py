@@ -5,7 +5,7 @@ member's or the base's destructor, and a few fixed odds and ends. This follows e
 only branches skip a step when a member is null) and writes the steps down; dtor_ops.cpp runs them. Anything it
 doesn't know (a loop, a call with computed arguments, arithmetic) leaves the function out, listed with --why. The
 exception frame's bookkeeping (stores to the stack) is not rebuilt. The equivalence tester checks every one.
-usage: dtor_ops.py <exe> [--why]"""
+usage: dtor_ops.py <exe> [--why] [--list REASON]"""
 import collections, csv, glob, os, re, sys
 import capstone, pefile
 from capstone import x86
@@ -594,6 +594,9 @@ def main():
     if '--why' in sys.argv:
         for e, v in sorted(why.items(), key=lambda kv: -sum(n for a, n in kv[1]))[:40]:
             print(f'  {sum(n for a, n in v):6d} {len(v):4d} {hex(v[0][0])} {e}')
+    if '--list' in sys.argv:   # every function left out for a reason (its text): --list REASON
+        for a, n in why.get(sys.argv[sys.argv.index('--list') + 1], []):
+            print(f'  {a:#x} {n}')
 
 
 main()

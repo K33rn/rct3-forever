@@ -1536,6 +1536,14 @@ def tail(p):
     while True:
         s, x = t[k], ins[k]
         val = lambda r: R.get(r)
+        if nulls and x.address == nulls[-1][0] and k > 0 and ins[k - 1].mnemonic not in ('jmp', 'ret') and nulls[-1][1][0] == 'alloc':
+            # the null path joins right after the new object's making, its result left unused (a singleton that keeps itself
+            # in a global, say): past here, nothing holds it
+            _, token_ = nulls.pop()
+            for r_ in list(R):
+                if R[r_] and R[r_][0] in ('obj', 'alloc', 'allocplace') and R[r_][1] == token_[1]:
+                    R[r_] = None
+            flag = None
         if (zc_ := re.fullmatch(r'(and|or) ' + REG + ', ' + REG, s)) and zc_.group(2) != zc_.group(3) and R.get(zc_.group(3)) and                 R[zc_.group(3)][0] == 'const' and R.get(zc_.group(2)) and R[zc_.group(2)][0] in ('field', 'childval'):
             s = '%s %s, %#x' % (zc_.group(1), zc_.group(2), R[zc_.group(3)][1])   # (a member's or a child's dword masked by a register holding a constant)
         elif (zc_ := re.fullmatch(r'(and|or) (dword ptr \[[^\]]+\]), ' + REG, s)) and R.get(zc_.group(3)) and R[zc_.group(3)][0] == 'const':
@@ -1547,7 +1555,7 @@ def tail(p):
             c_ = conds.pop()
             end_, at_op, R0, S0, d0, built0 = c_[:6]
             if pushed or d != d0 or built != built0 or nulls:
-                raise Reject('conditional block leaves')
+                raise Reject('conditional block leaves pushed=%s d=%d/%d made=%s gone=%s nulls=%s @%#x' % (pushed, d, d0, sorted(built - built0), sorted(built0 - built), nulls, x.address))
             o = ops[at_op]
             ops[at_op] = (o[0], len(ops) - at_op - 1, o[2], o[3], o[4])
             if at_op in elses:
@@ -2899,6 +2907,18 @@ if __name__ == '__main__':
                   {0x1000000 + (st_[2] & 0xffffff) for st_ in FPU_PROGRAM if st_[1] == 7} |   # (and those x87 runs read inside: kind 7)
                   {0x1000000 + (v_[1] & 0xffffff) for a_ in info for o in all_ops.get(a_[0], []) for v_ in o[4] if isinstance(v_, tuple) and v_[0] == 'gobj'})
     out.append('const uint32_t titled_object_globals[] = {' + ''.join(f'{g:#x}, ' for g in objg) + '0};')
+    # the singletons made on first use: a block on a global being 0 (op 63) that makes a new object (18, then its constructor,
+    # 10), which keeps itself in that global. The tester leaves the global empty in some cases and has the constructor's
+    # stand-in keep itself there too: (copy, global, constructor) each
+    singles = []
+    for a_ in info:
+        o_ = all_ops.get(a_[0], [])
+        for i_ in range(len(o_) - 2):
+            if o_[i_][0] == 63 and o_[i_][4] and o_[i_][4][0][0] == 'glob' and o_[i_ + 1][0] == 18 and o_[i_ + 2][0] == 10 and \
+                    len(o_[i_ + 2][4]) <= 1:
+                singles.append((a_[0], o_[i_][4][0][1], o_[i_ + 2][3]))
+    out.append('extern const uint32_t titled_singletons[];')
+    out.append('const uint32_t titled_singletons[] = {' + ''.join(f'{a:#x}, {g:#x}, {f:#x}, ' for a, g, f in singles) + '0};')
     out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')
     out.append('extern const uint32_t titled_vslots[];')
     out.append('const uint32_t titled_vslots[] = {' + ''.join(f'{sl:#x}, {c}, ' for sl, c in sorted(VSLOTS.items()) if sl != 0x20) + '0xffffffff};')

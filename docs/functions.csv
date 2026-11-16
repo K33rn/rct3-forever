@@ -9243,7 +9243,7 @@ address,size,name,callers,status
 0x7883a0,203,,1,documented
 0x7884b0,1046,,1,documented
 0x7888d0,611,,1,documented
-0x788b50,800,,1,documented
+0x788b50,800,Window::Titled,1,rewritten
 0x788e70,30,DeletingDestructor,3,rewritten
 0x788eb0,59,Reference::Interface,1,rewritten
 0x788f50,26,OwnedPointer::Reset,2,rewritten
@@ -15219,7 +15219,7 @@ address,size,name,callers,status
 0xa08a50,18,,1,documented
 0xa08a70,218,Destructor::Steps,1,rewritten
 0xa08ba0,30,DeletingDestructor,2,rewritten
-0xa08bc0,929,,1,documented
+0xa08bc0,929,Window::Titled,1,rewritten
 0xa08fa0,107,Destructor::Steps,1,rewritten
 0xa090b0,30,DeletingDestructor,2,rewritten
 0xa090f0,367,,1,documented
