@@ -10145,7 +10145,7 @@ address,size,name,callers,status
 0x7ecc80,270,,9,documented
 0x7ecd90,135,,9,documented
 0x7ece20,105,Factory::Create,1,rewritten
-0x7ece90,588,,7,documented
+0x7ece90,588,Window::Titled,7,rewritten
 0x7ed110,188,,1,documented
 0x7ed1e0,30,DeletingDestructor,2,rewritten
 0x7ed210,4385,,1,documented

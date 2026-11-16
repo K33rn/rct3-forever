@@ -242,12 +242,14 @@ template <int... S> static void titled_v_fill(void *(*rows)[0x80], std::integer_
     ((rows[0][S] = (void *)titled_v0<S>, rows[1][S] = (void *)titled_v1<S>, rows[2][S] = (void *)titled_v2<S>, rows[3][S] = (void *)titled_v3<S>,
       rows[4][S] = (void *)titled_v4<S>), ...);
 }
+static void *__thiscall stub_iface_info(void *self);
 static void *titled_child_table[0x80] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, (void *)titled_child_size};
 extern const uint32_t titled_vslots[];
 static void titled_tables_ready() {   // each slot the constructors call: its stand-in, taking as many as they give it
     static void *rows[5][0x80];
     titled_v_fill(rows, std::make_integer_sequence<int, 0x80>{});
     for (int k = 0; titled_vslots[k] != 0xffffffffu; k += 2) titled_child_table[titled_vslots[k] / 4] = rows[titled_vslots[k + 1]][titled_vslots[k] / 4];
+    titled_child_table[1] = (void *)stub_iface_info;   // (slot 1, taking nothing: an object's class info, as the casts read it)
 }
 static void *built_result(void *self) {
     if (!g_built_other) return self;
@@ -530,7 +532,8 @@ static uint32_t g_class_read_saved[128];
 extern const uint32_t titled_text_holders[];
 extern const uint32_t titled_compared_fields[];
 static uint32_t g_titled_at;   // (the copy being checked)
-extern const uint32_t titled_iface_args[], titled_class_globals[];
+extern const uint32_t titled_iface_args[], titled_class_globals[], titled_vcall_args[];
+static uint32_t g_titled_vcall_mask;   // (the arguments the copy makes virtual calls on: objects with the stand-ins' table)
 static uint32_t g_titled_class_saved[16];
 static uint32_t g_titled_iface_mask;   // (the arguments the copy casts to an interface: objects with a class info)
 static void *__thiscall stub_iface_info(void *self) {   // an object's class info (slot 1): the case's, or none
@@ -6157,6 +6160,7 @@ static std::vector<Test> tests() {
                               }
                               for (int k = 2; k < 7; k++)   // (the arguments cast to an interface: objects whose class info is the case's; argument k + 1 is a[k])
                                   if (g_titled_iface_mask >> (k + 1) & 1) arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)titled_iface_table;
+                                  else if (g_titled_vcall_mask >> (k + 1) & 1) arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               {
                                   uint32_t *info = arena<uint32_t>(0x9a00);   // +0x14 the entries, +0x18 their count; each entry's +0x10 an offset
                                   info[15] = r.range(0, 4) != 0, info[5] = (uint32_t)(uintptr_t)arena<void>(0x9a40), info[6] = r.range(0, 4);
@@ -6296,6 +6300,9 @@ static std::vector<Test> tests() {
         g_titled_nullable = 0, g_titled_byte_flags = 0, g_titled_iface_mask = 0, g_titled_at = e->at;
         for (int k = 0; titled_iface_args[k]; k += 2)
             if (titled_iface_args[k] == e->at) g_titled_iface_mask = titled_iface_args[k + 1];
+        g_titled_vcall_mask = 0;
+        for (int k = 0; titled_vcall_args[k]; k += 2)
+            if (titled_vcall_args[k] == e->at) g_titled_vcall_mask = titled_vcall_args[k + 1];
         for (int k = 0; titled_byte_flags[k]; k += 2)
             if (titled_byte_flags[k] == e->at) g_titled_byte_flags = titled_byte_flags[k + 1];
         for (int k = 0; titled_nullable[k]; k += 2)

@@ -601,6 +601,18 @@ def tail(p):
         nscratch[0] += 1
         return nscratch[0] - 1
 
+    def table_of(tv, on):   # a virtual call's object, from its table read as a plain dword: ('arg', n) / ('target', step 60's) / None
+        if not tv or not on:
+            return None
+        if tv[0] == 'argderef' and on == ('arg', tv[1]) and tv[1] not in clobbered_args() and \
+                all(o[0] in QUIET for o in ops[tv[2]:]):
+            return ('arg', tv[1])
+        if tv[0] == 'field' and tv[1] == 0 and on == ('this',):
+            return ('target', 0)
+        if tv[0] == 'childval' and tv[2] == 0 and still(on) and on[1] == tv[1] and all(o[0] in QUIET for o in ops[tv[3]:]):
+            return ('target', 1 << 24 | on[1])
+        return None
+
     def clobbered_args():   # the argument numbers whose slots the tail wrote
         return {sl // 4 for sl in clobbered}
 
@@ -679,7 +691,15 @@ def tail(p):
         zd = re.fullmatch(r'mov ' + REG + r', dword ptr \[eax \+ 0x14\]', b[8])
         if not zd or b[9] != f'mov eax, dword ptr [{zd.group(1)} + {zc.group(1)}*4]' or not zero(b[10], 'eax'):
             return None
-        if b[12] != 'mov eax, dword ptr [eax + 0x10]' or b[13] != 'add eax, ' + v_ or not (l2 := ends(14, 'eax')):
+        if b[12] == 'mov eax, dword ptr [eax + 0x10]' and b[13] == f'add {v_}, eax' and (l2v := ends(14, v_)) and                 v_ not in ('ecx', 'edx', 'eax') and zc.group(1) != v_ and zd.group(1) != v_:
+            return l2v, v_, 1, base, num(zc.group(2)), {'eax', 'ecx', 'edx', v_, z1.group(1), zc.group(1), zd.group(1)}   # (into V itself)
+        if b[12] != 'mov eax, dword ptr [eax + 0x10]' or b[13] != 'add eax, ' + v_:
+            return None
+        if (zt := re.fullmatch(r'jne (0x[0-9a-f]+)', b[14])) and l1 == L[15][0] and at.get(num(zt.group(1))) and at.get(num(zt.group(1))) > L[15][0] and \
+                v_ not in ('ecx', 'edx', 'eax') and zc.group(1) != v_ and zd.group(1) != v_:
+            # (the interface only tested: the code from L1 on, up to where the jne goes, runs when V hasn't it)
+            return ('test', at.get(num(zt.group(1))), L[15][0]), 'eax', 1, base, num(zc.group(2)), {'eax', 'ecx', 'edx', z1.group(1), zc.group(1), zd.group(1)}
+        if not (l2 := ends(14, 'eax')):
             return None
         if v_ in ('ecx', 'edx', 'eax') or zc.group(1) == v_ or zd.group(1) == v_:
             return None
@@ -1814,6 +1834,20 @@ def tail(p):
         elif x.mnemonic == 'je' and not pushed and flag and flag[0] == 'test' and (vb := value_block(k)):
             # V + c or nothing / V's interface or nothing, into a scratch value (kind 54)
             k, dest_, how_, base_, extra_, wrote_ = vb
+            if isinstance(k, tuple):
+                # the interface tested: worked out into a scratch value (kind 54), then the block up to the jne's target
+                # skipped when there is one (kind 63, fn 1)
+                _, end_, k = k
+                if nulls or conds and end_ > conds[-1][0] or nscratch[0] >= 16:
+                    raise Reject('interface test')
+                ops.append((54, nscratch[0], extra_, how_, [base_]))
+                ops.append((63, 0, 0, 1, [('scratch', nscratch[0])]))
+                nscratch[0] += 1
+                for r in wrote_:
+                    R[r] = None
+                conds.append((end_, len(ops) - 1, dict(R), dict(S), d, set(built)))
+                flag = None
+                continue
             ops.append((54, nscratch[0], extra_, how_, [base_]))
             for r in wrote_:
                 R[r] = None
@@ -2120,6 +2154,36 @@ def tail(p):
             flag = None
         elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and still(val(m.group(1))) and num(m.group(2)) < 0x10000:
             R[m.group(1)] = ('fieldplus', val(m.group(1))[1], val(m.group(1))[2], num(m.group(2)))   # (a place inside what a member points to)
+            flag = None
+        elif (m := re.fullmatch(r'call dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and (vt_ := table_of(val(m.group(1)), val('ecx'))) and \
+                num(m.group(2) or '0') % 4 == 0 and num(m.group(2) or '0') < 0x200 and len(pushed) <= 4 and None not in pushed:
+            # a virtual call whose table was read as a plain dword: of the window (its +0), a child (what a member points
+            # to, +0) or an argument (what it points to, +0): kinds 60 / 60 / 83
+            n_ = len(pushed)
+            args = [pushed.pop() for _ in range(n_)]
+            d -= 4 * n_
+            if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') for v in args):
+                raise Reject('virtual call with a temporary')
+            slot_ = num(m.group(2) or '0')
+            if vt_ != ('target', 0) and VSLOTS.setdefault(slot_, n_) != n_:
+                raise Reject('virtual slot taking another count')
+            if vt_[0] == 'arg':
+                ops.append((83, vt_[1], slot_, 0, args))
+            elif vt_[1] == 0:
+                # on the window, whose table the steps set to a constant (the class's own, in the game's code): the slot's
+                # function read from there, and called as a member call (kind 3)
+                tb_ = next((o[2] for o in reversed(ops) if o[0] == 0 and o[1] == 0), None)
+                if tb_ is None or not 0x400000 <= tb_ < BASE + len(img) - 0x200 or any(o[0] not in QUIET or o[0] in (6, 22) and o[1] == 0 for o in ops[max(i_ for i_, o in enumerate(ops) if o[0] == 0 and o[1] == 0):][1:]):
+                    raise Reject('virtual call on the window before its table')
+                fn_ = int.from_bytes(bytes(img[tb_ + slot_ - BASE:tb_ + slot_ - BASE + 4]), 'little')
+                if fn_ not in rows or ret_args(fn_) != n_:
+                    raise Reject('virtual call on the window: slot function')
+                ops.append((3, 0, 0, fn_, args))
+            else:
+                ops.append((60, vt_[1], slot_, 0, args))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            R['eax'] = ('result', len(ops) - 1)
             flag = None
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[ecx\]', s)) and val('ecx') and val('ecx')[0] == 'global' and m.group(1) != 'ecx':
             R[m.group(1)] = ('vtable', val('ecx'))   # (the table of the object a game global holds)
@@ -2436,16 +2500,21 @@ if __name__ == '__main__':
     ia_ = []
     for a_ in info:
         mask_ = 0
+        held_ = {}   # (members holding an argument: op 2)
         for o in all_ops.get(a_[0], []):
+            if o[0] == 2:
+                held_[o[1]] = o[2]
             if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given':
                 mask_ |= 1 << o[4][0][1]
+            if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] == 'field' and o[4][0][1] in held_:
+                mask_ |= 1 << held_[o[4][0][1]]   # (a cast on a member that holds an argument: on that argument)
         if mask_:
             ia_.append((a_[0], mask_))
     out.append('const uint32_t titled_iface_args[] = {' + ''.join(f'{x_:#x}, {m_:#x}, ' for x_, m_ in ia_) + '0};')
     out.append('// the globals holding the class numbers those casts look up (op 54, fn 1): the tester gives each a small number of the')
     out.append("// case's (0 to 3) in the call")
     out.append('extern const uint32_t titled_class_globals[];')
-    cg_ = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'})
+    cg_ = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] in ('given', 'field')})
     out.append('const uint32_t titled_class_globals[] = {' + ''.join(f'{g_:#x}, ' for g_ in cg_) + '0};')
     out.append('// the window members compared with a constant (op 63, fn 0x10 | n, on a member): constructor, member, constant; the')
     out.append('// tester gives each member a value near the constant first, so both ways are met')
@@ -2456,6 +2525,18 @@ if __name__ == '__main__':
             if o[0] == 63 and o[3] >= 0x10 and isinstance(o[4][0], tuple) and o[4][0][0] == 'field':
                 cf_.append((a_[0], o[4][0][1], o[2]))
     out.append('const uint32_t titled_compared_fields[] = {' + ''.join(f'{x_:#x}, {f_:#x}, {c_:#x}, ' for x_, f_, c_ in cf_) + '0};')
+    out.append('// the arguments a constructor makes virtual calls on (op 83): its address and a mask of their numbers; the tester')
+    out.append("// makes each an object with the stand-ins' table")
+    out.append('extern const uint32_t titled_vcall_args[];')
+    va_ = []
+    for a_ in info:
+        mask_ = 0
+        for o in all_ops.get(a_[0], []):
+            if o[0] == 83:
+                mask_ |= 1 << o[1]
+        if mask_:
+            va_.append((a_[0], mask_))
+    out.append('const uint32_t titled_vcall_args[] = {' + ''.join(f'{x_:#x}, {m_:#x}, ' for x_, m_ in va_) + '0};')
     out.append('// the holders counted texts are put into (op 75): a member and the place inside what it points to (member 0xFFFF:')
     out.append('// the place in the window itself); the tester puts a counted text of its own in each first')
     out.append('extern const uint32_t titled_text_holders[];')
