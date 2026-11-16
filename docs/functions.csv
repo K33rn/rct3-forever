@@ -2325,7 +2325,7 @@ address,size,name,callers,status
 0x4bcf30,41,,1,documented
 0x4bcf60,30,DeletingDestructor,2,rewritten
 0x4bcf80,1369,,1,documented
-0x4bd4e0,1150,,1,documented
+0x4bd4e0,1150,Window::Titled,1,rewritten
 0x4bd980,63,,0,documented
 0x4bd9d0,48,Object::FitInterface,11,rewritten
 0x4bda00,203,MEMBER_DTOR,1,rewritten
@@ -6073,7 +6073,7 @@ address,size,name,callers,status
 0x65ae80,234,,1,documented
 0x65afb0,30,DeletingDestructor,1,rewritten
 0x65aff0,30,DeletingDestructor,2,rewritten
-0x65b010,861,,2,documented
+0x65b010,861,Window::Titled,2,rewritten
 0x65b400,20,,2,documented
 0x65b470,58,,1,documented
 0x65b4d0,26,OwnedPointer::Reset,2,rewritten
@@ -12321,7 +12321,7 @@ address,size,name,callers,status
 0x8cd5b0,67,,5,documented
 0x8cd610,30,DeletingDestructor,2,rewritten
 0x8cd630,240,,1,documented
-0x8cd720,861,,3,documented
+0x8cd720,861,Window::Titled,3,rewritten
 0x8cdb50,366,Destructor::Steps,1,rewritten
 0x8cdcd0,92,Paired::Destroy8CDCD0,1,rewritten
 0x8cde40,30,DeletingDestructor,2,rewritten
@@ -13765,7 +13765,7 @@ address,size,name,callers,status
 0x97d820,82,,3,documented
 0x97d880,30,DeletingDestructor,2,rewritten
 0x97d900,161,GameText::Copy,1,rewritten
-0x97d9b0,642,,3,documented
+0x97d9b0,642,Window::Titled,3,rewritten
 0x97dc40,30,DeletingDestructor,2,rewritten
 0x97dc60,30,DeletingDestructor,2,rewritten
 0x97dc80,496,,4,documented
@@ -16585,7 +16585,7 @@ address,size,name,callers,status
 0xa9ab30,67,Reference::Reference(object),0,rewritten
 0xa9ab80,61,Reference::Reference,2,rewritten
 0xa9abd0,67,Reference::Reference(object),1,rewritten
-0xa9ac20,964,,1,documented
+0xa9ac20,964,Window::Titled,1,rewritten
 0xa9b800,334,,4,documented
 0xa9b950,1444,,5,documented
 0xa9bf00,243,Destructor::Steps,1,rewritten

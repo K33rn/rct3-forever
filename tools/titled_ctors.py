@@ -1340,6 +1340,13 @@ def tail(p):
             R[m.group(1)] = ('member', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3)))
         elif (m := re.fullmatch(r'cmp dword ptr \[(0x1[0-9a-f]{6})\], (0|' + REG + ')', s)) and (m.group(2) == '0' or val(m.group(2)) in (('const', 0), ('byte', 0))):
             flag = ('test', ('global', num(m.group(1))))
+        elif (m := re.fullmatch(r'cmp dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0|' + REG + ')', s)) and (m.group(2) == '0' or val(m.group(2)) in (('const', 0), ('byte', 0))):
+            # a stack slot compared with 0: an argument (its slot as given) or a local whose value is known
+            slot_ = num(m.group(1)) - d
+            if slot_ >= 4 and slot_ % 4 == 0 and slot_ // 4 <= nargs:
+                flag = ('test', ('arg', slot_ // 4)) if slot_ not in clobbered else None
+            else:
+                flag = ('test', S.get(slot_, stored(slot_, k)))
         elif (m := re.fullmatch(r'(test ' + REG + ', ' + REG + '|cmp ' + REG + ', ' + REG + ')', s)):
             a_, b_ = (m.group(2), m.group(3)) if m.group(2) else (m.group(4), m.group(5))
             flag = ('test', val(a_)) if (a_ == b_ or val(b_) == ('const', 0)) else None
