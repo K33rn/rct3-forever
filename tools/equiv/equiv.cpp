@@ -661,6 +661,16 @@ static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t
 // the same, for a function called on no object (it never reads ecx: whatever ecx holds is left alone); what it gives back
 // is an object of its own, from the arena's memory
 extern const uint32_t titled_value_callees[];
+// a call whose result is a counted text's holder (titled_holder_callees): what it was given noted, a holder with a text
+// of its own given back
+extern const uint32_t titled_holder_callees[];
+static void *holder_result() { void **h = (void **)stub_plain_alloc(0x10); *h = new_wide_block(); return h; }
+static void *__thiscall stub_holder0(void *self) { record(0x8a, self); return holder_result(); }
+static void *__thiscall stub_holder1(void *self, uint32_t a) { record(0x8a, self); record(0x8a, arg_value(a)); return holder_result(); }
+static void *__thiscall stub_holder2(void *self, uint32_t a, uint32_t b) { record(0x8a, self); record(0x8a, arg_value(a)); record(0x8a, arg_value(b)); return holder_result(); }
+static void *__thiscall stub_holder3(void *self, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x8a, self); record(0x8a, arg_value(a)); record(0x8a, arg_value(b)); record(0x8a, arg_value(c)); return holder_result();
+}
 static void *__thiscall stub_plain_value0(void *) {   // a plain function taken as a number: the case's, either sign, one per call
     uint32_t &n = *arena<uint32_t>(ALLOC_NEXT - 8);
     record(0x84, nullptr);
@@ -6458,12 +6468,16 @@ static std::vector<Test> tests() {
         g_titled_single_global = g_titled_single_fn = 0;
         for (int q = 0; titled_singletons[q]; q += 3)
             if (titled_singletons[q] == e->at) g_titled_single_global = titled_singletons[q + 1], g_titled_single_fn = titled_singletons[q + 2];
+        auto is_holder_callee = [](uint32_t fn) { for (int q = 0; titled_holder_callees[q]; q++) if (titled_holder_callees[q] == fn) return true; return false; };
+        static void *const holder_stubs[4] = {(void *)stub_holder0, (void *)stub_holder1, (void *)stub_holder2, (void *)stub_holder3};
         auto is_value_callee = [](uint32_t fn) { for (int q = 0; titled_value_callees[q]; q++) if (titled_value_callees[q] == fn) return true; return false; };
         static void *const fast_stubs[5] = {(void *)stub_fast0, (void *)stub_fast1, (void *)stub_fast2, (void *)stub_fast3, (void *)stub_fast4};
         static void *const plain_stubs[5] = {(void *)stub_plain0, (void *)stub_plain1, (void *)stub_plain2, (void *)stub_plain3, (void *)stub_plain4};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at)
-                list.push_back({titled_callees[k], titled_callees[k] == g_titled_single_fn && (titled_callees[k + 1] & 0xf00) == 0 && titled_callees[k + 1] < 4 ?
+                list.push_back({titled_callees[k], is_holder_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xf00) == 0 && titled_callees[k + 1] < 4 ?
+                                                  holder_stubs[titled_callees[k + 1]] :
+                                                  titled_callees[k] == g_titled_single_fn && (titled_callees[k + 1] & 0xf00) == 0 && titled_callees[k + 1] < 4 ?
                                                   (titled_callees[k + 1] == 0 ? (void *)stub_single0 : titled_callees[k + 1] == 1 ? (void *)stub_single1 : titled_callees[k + 1] == 2 ? (void *)stub_single2 : (void *)stub_single3) :
                                                   titled_callees[k + 1] & 0x800 ? fast_stubs[titled_callees[k + 1] & 0xff] : titled_callees[k + 1] & 0x400 ? (is_value_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xff) == 0 ? (void *)stub_plain_value0 : plain_stubs[titled_callees[k + 1] & 0xff]) : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});

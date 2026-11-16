@@ -2690,7 +2690,7 @@ address,size,name,callers,status
 0x4d71b0,30,DeletingDestructor,2,rewritten
 0x4d71d0,81,Destructor::MemberThenBaseNullSafe,1,rewritten
 0x4d7230,586,,1,documented
-0x4d7480,1254,,1,documented
+0x4d7480,1254,Window::Titled,1,rewritten
 0x4d7b50,30,DeletingDestructor,2,rewritten
 0x4d7b70,209,Destructor::Steps,1,rewritten
 0x4d7c50,535,,1,documented

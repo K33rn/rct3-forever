@@ -1904,6 +1904,15 @@ def tail(p):
                     ins[q_].mnemonic == 'nop' or re.fullmatch(r'(lea (\w+), \[\2\]|mov (\w+), \3|lea esp, \[esp\])', t[q_]) for q_ in range(k + 1, at[int(x.op_str, 0)])):
             k = at[int(x.op_str, 0)]   # (a jump over the padding the compiler puts before a loop's top)
             continue
+        if (m := re.fullmatch(r'inc dword ptr \[(' + REG + r'|0x1[0-9a-f]{6})\]', s)) and not pushed and \
+                (m.group(1).startswith('0x') and num(m.group(1)) >= 0x10e7000 or
+                 val(m.group(1)) and val(m.group(1))[0] in ('arg', 'scratch', 'field', 'tempat', 'global') and base_code(val(m.group(1))) is not None):
+            # a dword counted up where a value points (a hold taken on a counted text given or got), or a game global's
+            # counter: kind 98 (the place the value; a global's own address as a constant)
+            ops.append((98, 0, 0, 0, [num(m.group(1)) if m.group(1).startswith('0x') else base_code(val(m.group(1)))]))
+            flag = None
+            k += 1
+            continue
         # loops of a known count, unrolled: a counter and places stepping by constants are tracked as such, and a jump on a
         # compare of two known constants is decided here (one back reads the body again, up to 256 times in all)
         if (m := re.fullmatch(r'(inc|dec) dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and (S.get(num(m.group(2)) - d) or ('',))[0] == 'const' and \
@@ -3374,6 +3383,7 @@ if __name__ == '__main__':
     out.append('// the game globals the steps write (op 51: off bytes; op 67: 4): the tester gives each a value first and compares them')
     out.append('extern const uint32_t titled_written_globals[];')
     wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67, 96)} |
+                {(o[4][0], 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 98 and isinstance(o[4][0], int)} |
                 {(st_[2], 4) for st_ in FPU_PROGRAM if st_[0] == 28})   # (and those x87 runs set, code 28)
     out.append('const uint32_t titled_written_globals[] = {' + ''.join(f'{g:#x}, {n_}, ' for g, n_ in wg) + '0};')
     out.append('// the arguments a constructor casts to an interface (op 54, fn 1): its address and a mask of their numbers; the tester')
@@ -3432,6 +3442,17 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_vcall_args[] = {' + ''.join(f'{x_:#x}, {m_:#x}, ' for x_, m_ in va_) + '0};')
     out.append('// the plain functions whose result is only taken as a number (op 86 on it): the tester\'s stand-in gives a value of')
     out.append("// the case's, either sign, instead of an object")
+    # the calls whose result is a counted text's holder, the text read and counted up (op 64, then 78 at +0, then 98 on it):
+    # the tester's stand-in gives back a holder with a text of its own in it
+    hc_ = set()
+    for a_ in info:
+        o_ = all_ops.get(a_[0], [])
+        for i_ in range(1, len(o_) - 2):
+            if o_[i_][0] == 64 and o_[i_ + 1][0] == 78 and o_[i_ + 1][2] == 0 and o_[i_ + 1][4] == [('scratch', o_[i_][1])] and \
+                    any(p_[0] == 98 and p_[4] == [('scratch', o_[i_ + 1][1])] for p_ in o_[i_ + 2:i_ + 6]) and o_[i_ - 1][3]:
+                hc_.add(o_[i_ - 1][3])
+    out.append('extern const uint32_t titled_holder_callees[];')
+    out.append('const uint32_t titled_holder_callees[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(hc_)) + '0};')
     out.append('extern const uint32_t titled_value_callees[];')
     vc_ = sorted({o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 86 and o[3]})
     out.append('const uint32_t titled_value_callees[] = {' + ''.join(f'{f_:#x}, ' for f_ in vc_) + '0};')
