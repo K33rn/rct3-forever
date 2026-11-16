@@ -3495,7 +3495,7 @@ address,size,name,callers,status
 0x53a2c0,291,,1,documented
 0x53a470,30,DeletingDestructor,2,rewritten
 0x53a490,410,,2,documented
-0x53a650,3391,,1,documented
+0x53a650,3391,Window::Titled,1,rewritten
 0x53b3a0,40,,1,documented
 0x53b3d0,33,,2,documented
 0x53b400,49,,3,documented

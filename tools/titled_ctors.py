@@ -592,7 +592,7 @@ def tail(p):
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
         return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90, 92, 93) or o[0] == 10 and o[3] == 0xbcf850 or
-                                                  o[0] == 20 and o[3] in (0x41cb90, 0x4040f0, 0xbd1940) or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71) and
+                                                  o[0] == 20 and (o[3] in (0x41cb90, 0x4040f0, 0xbd1940) or o[2] & 4) or o[0] == 75 and o[4][0][0] != 'self' or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
@@ -611,6 +611,7 @@ def tail(p):
     inline_built = set()   # new memory set up in line (no constructor called on it)
     byte_tested = [None]   # (the last byte test: where, and what was tested)
     unrolled = [0]   # (how many times a loop's body was read again)
+    fast_temps = set()
     link_pre, link_skip = [], set()   # (list links found inside an x87 run: their steps, done first, and where they are)
     fpu_skip = set()   # x87 steps a run took in, left behind it (passed over when read again)
     text_temps = set()   # the temporaries holding a counted text (0x6A39D0 on the stack), let go by kind 16
@@ -942,6 +943,8 @@ def tail(p):
             return ('self', v_[1] + off_)
         if still(v_) and v_[1] < 0x10000:
             return ('fieldplace', v_[1] | off_ << 16)
+        if v_[0] == 'scratch' and off_ == 0:
+            return v_   # (a place worked out into a scratch value: an array's element)
         return None
 
     def counted_assign(k0):
@@ -990,15 +993,33 @@ def tail(p):
         i += 1
         if not zc and (zc2 := re.fullmatch(r'mov ' + REG + ', ' + y_, b[i])):
             copies.add(zc2.group(1)); i += 1
+        # (the text freed may be read back from where it was kept on the stack: mov R, [esp + X]; push R)
+        saved_ = {num(z_.group(1)) - depth_at[q_] for q_ in range(L[4][0], L[min(i, len(L) - 1)][0] + 1)
+                  if (z_ := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, t[q_])) and z_.group(2) in copies}
+        if i + 3 < len(b) and (zr_ := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', b[i + 2])) and \
+                num(zr_.group(2)) - depth_at[L[i + 2][0]] in saved_ and b[i + 3] == 'push ' + zr_.group(1):
+            copies.add(zr_.group(1))
+            del b[i + 2]; del L[i + 2]
         zp = re.fullmatch(r'push ' + REG, b[i + 2]) if i + 2 < len(b) else None
         if b[i] != f'push {w_}' or b[i + 1] != 'call 0xbce010' or not zp or zp.group(1) not in copies or b[i + 3:i + 5] != ['call 0xbce000', 'add esp, 8']:
             return None
         i += 5
-        ms = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + n_, b[i])
-        if not ms or holder_place(ms.group(1), num(ms.group(2) or '0')) != place or b[i + 1] != f'inc dword ptr [{n_}]':
-            return None
+        # (the new text may be read again through the temporary holding it: mov R, [esp + Y]; mov R, [R]; mov [P], R; inc [R])
+        store_at_ = L[i][0] if i < len(L) else None
+        if i + 3 < len(b) and (zt_ := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', b[i])) and \
+                val(n_) and val(n_)[0] == 'tempat' and val(n_)[2] == 0 and \
+                S.get(num(zt_.group(2)) - depth_at[L[i][0]]) == ('temp', val(n_)[1]) and b[i + 1] == f'mov {zt_.group(1)}, dword ptr [{zt_.group(1)}]':
+            r3_ = zt_.group(1)
+            del b[i:i + 2]; del L[i:i + 2]
+            ms = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + r3_, b[i])
+            if not ms or holder_place(ms.group(1), num(ms.group(2) or '0')) != place or b[i + 1] != f'inc dword ptr [{r3_}]':
+                return None
+        else:
+            ms = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + n_, b[i])
+            if not ms or holder_place(ms.group(1), num(ms.group(2) or '0')) != place or b[i + 1] != f'inc dword ptr [{n_}]':
+                return None
         skip_, end_ = at.get(num(j6.group(1))), at.get(int(b[2][3:], 0))
-        if skip_ != L[i][0] or end_ is None or not (L[i + 1][0] < end_ <= (L[i + 2][0] if i + 2 < len(L) else end_)):
+        if skip_ != store_at_ or end_ is None or not (L[i + 1][0] < end_ <= (L[i + 2][0] if i + 2 < len(L) else end_)):
             return None
         nv = val(n_)
         if nv and nv[0] == 'name' and ('name', nv[1]) in built:
@@ -1777,6 +1798,31 @@ def tail(p):
         if x.mnemonic == 'call':
             if 'edx' in x.op_str:
                 edx_live[0] = False   # (a call through edx: it was the table, used)
+            if edx_live[0] and re.fullmatch(r'0x[0-9a-f]+', x.op_str) and R.get('ecx') and R['ecx'][0] == 'stack' and \
+                    base_code(R.get('edx')) is not None and ret_args(num(x.op_str)) is not None and ret_args(num(x.op_str)) <= min(len(pushed), 3) and \
+                    num(x.op_str) not in TESTER_OWN and not nulls:
+                # a temporary on the stack made by a fastcall (ecx its place, edx a value; a text made from it, say): kind 20,
+                # value 5 (always, as a fastcall), the value in edx first
+                fn_, slot_ = num(x.op_str), R['ecx'][1]
+                n_ = ret_args(fn_)
+                args = [base_code(R['edx'])] + [pushed.pop() for _ in range(n_)]
+                d -= 4 * n_
+                if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') for v in args):
+                    raise Reject('fastcall temporary values')
+                kk = len([o for o in ops if o[0] == 20])
+                if kk >= 32 or slot_ in temps and ('temp', temps[slot_]) in built:
+                    raise Reject('temporaries')
+                temps[slot_] = kk
+                ops.append((20, kk, 5, fn_, args))
+                built.add(('temp', kk))
+                always_temps.add(kk)
+                text_temps.add(kk)
+                fast_temps.add(fn_)
+                R['eax'] = ('temp', kk); R['ecx'] = None; R['edx'] = None
+                edx_live[0] = False
+                flag = None
+                k += 1
+                continue
             if edx_live[0] and R.get('edx') != ('this',) and re.fullmatch(r'0x[0-9a-f]+', x.op_str) and \
                     (fc_ := fast_codes()) and ret_args(num(x.op_str)) is not None and ret_args(num(x.op_str)) <= min(len(pushed), 4) and \
                     num(x.op_str) not in TESTER_OWN:
@@ -2205,6 +2251,7 @@ def tail(p):
         elif not pushed and re.match(r'mov ' + REG + r', dword ptr \[', s) and (ca := counted_assign(k)):
             # a counted text put into a holder in the window or a child (kind 75)
             end_, place_, nc_, name_ = ca
+            edx_live[0] = False   # (edx, if the assign used it, was only the assign's)
             ops.append((75, 0, name_ or 0, int(name_ is not None), [place_] if nc_ is None else [place_, nc_]))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
@@ -2214,9 +2261,15 @@ def tail(p):
             k = end_
             flag = None
             continue
-        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'temp' and \
-                ('temp', val(m.group(2))[1]) in built and num(m.group(3)) < 0x40:
-            R[m.group(1)] = ('tempat', val(m.group(2))[1], num(m.group(3)))   # (what a temporary holds: read when given)
+        elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ ' + REG + r'\*(1|2|4|8)\]', s)) and val(m.group(3)) and val(m.group(3))[0] == 'const' and \
+                val(m.group(2)) and val(m.group(2))[0] != 'const' and base_code(val(m.group(2))) is not None and nscratch[0] < 32:
+            # a place in an array: its start (a value) plus a known index times the size (a loop's counter): a scratch value (kind 79)
+            ops.append((79, nscratch[0], (val(m.group(3))[1] * num(m.group(4))) & 0xffffffff, 0, [base_code(val(m.group(2)))]))
+            R[m.group(1)] = ('scratch', nscratch[0])
+            nscratch[0] += 1
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'temp' and \
+                ('temp', val(m.group(2))[1]) in built and num(m.group(3) or '0') < 0x40:
+            R[m.group(1)] = ('tempat', val(m.group(2))[1], num(m.group(3) or '0'))   # (what a temporary holds: read when given)
             tempat_ops[val(m.group(2))[1]] = len(ops)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and \
                 S.get(num(m.group(2)) - d) is None and stored(num(m.group(2)) - d, k) is None and \
@@ -3319,13 +3372,27 @@ if __name__ == '__main__':
         for o in all_ops.get(a_[0], []):
             if o[0] == 75:
                 pl = o[4][0]
-                hold_.add((0xffff, pl[1]) if pl[0] == 'self' else (pl[1] & 0xffff, pl[1] >> 16))
+                if pl[0] in ('self', 'fieldplace'):   # (a place worked out into a scratch value: none for the tester to fill)
+                    hold_.add((0xffff, pl[1]) if pl[0] == 'self' else (pl[1] & 0xffff, pl[1] >> 16))
     out.append('const uint32_t titled_text_holders[] = {' + ''.join(f'{m_:#x}, {i_:#x}, ' for m_, i_ in sorted(hold_)) + '0xffffffff};')
     # (and per copy, the places inside its children that counted texts go into: (copy, offset) each; the tester's children
     # made during that copy's run get a text there, as their own constructors leave one)
-    chold_ = sorted({(a_[0], o[4][0][1] >> 16) for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 75 and o[4][0][0] != 'self'})
+    chold_ = sorted({(a_[0], o[4][0][1] >> 16) for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 75 and o[4][0][0] == 'fieldplace'})
     out.append('extern const uint32_t titled_child_holders[];')
     out.append('const uint32_t titled_child_holders[] = {' + ''.join(f'{a:#x}, {i:#x}, ' for a, i in chold_) + '0};')
+    # (and the arrays of counted texts inside its children that a text is put into, element by element: op 75 into a scratch
+    # place worked out by op 79 from a dword inside a child, kind 11: (copy, offset in the child, elements) each)
+    carr_ = {}
+    for a_ in info:
+        o_ = all_ops.get(a_[0], [])
+        for i_, o in enumerate(o_):
+            if o[0] == 75 and o[4][0][0] == 'scratch':
+                w_ = next((p_ for p_ in reversed(o_[:i_]) if p_[0] == 79 and p_[1] == o[4][0][1]), None)
+                if w_ and isinstance(w_[4][0], tuple) and w_[4][0][0] == 'dfield':
+                    key_ = (a_[0], w_[4][0][1] >> 16)
+                    carr_[key_] = max(carr_.get(key_, 0), w_[2] // 4 + 1)
+    out.append('extern const uint32_t titled_child_arrays[];')
+    out.append('const uint32_t titled_child_arrays[] = {' + ''.join(f'{a:#x}, {i:#x}, {n}, ' for (a, i), n in sorted(carr_.items())) + '0};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
     objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73} |
@@ -3351,6 +3418,11 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_window_lists[] = {' + ''.join(f'{a:#x}, {m:#x}, ' for a, m in lwm) + '0};')
     out.append('extern const uint32_t titled_list_globals[];')
     out.append('const uint32_t titled_list_globals[] = {' + ''.join(f'{g:#x}, ' for g in lgl) + '0};')
+    # the functions making a stack temporary as a fastcall (op 20, value 5), each with how many values it takes off the
+    # stack: the tester's stand-in notes edx and those, and puts a counted text in the temporary
+    ftemps = sorted({(o[3], len(o[4]) - 1) for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 20 and o[2] & 4})
+    out.append('extern const uint32_t titled_fast_temps[];')
+    out.append('const uint32_t titled_fast_temps[] = {' + ''.join(f'{f:#x}, {n}, ' for f, n in ftemps) + '0};')
     out.append('extern const uint32_t titled_singletons[];')
     out.append('const uint32_t titled_singletons[] = {' + ''.join(f'{a:#x}, {g:#x}, {f:#x}, ' for a, g, f in singles) + '0};')
     out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')
@@ -3359,7 +3431,7 @@ if __name__ == '__main__':
     out.append('// the x87 runs (op 59): each a count, then its steps {code, kind, value, local}')
     out.append('extern const uint32_t titled_fpu[];')
     out.append('const uint32_t titled_fpu[] = {' + ''.join(f'{c:#x}, {kd:#x}, {v:#x}, {lc:#x}, ' for c, kd, v, lc in FPU_PROGRAM) + '0};')
-    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740, 0xbd1940, 0x4b7940}   # (0xBD1940: the game's own runs)
+    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740, 0xbd1940, 0x4b7940} - {f for f, _ in ftemps}   # (0xBD1940: the game's own runs; the fastcall ones: titled_fast_temps)
     if unknown_temps:
         print('temporaries the tester has no stand-in for:', [hex(x) for x in sorted(unknown_temps)])
     # the game globals the steps read as plain values (stored, given to stand-ins, tested): the tester gives each a value of

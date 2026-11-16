@@ -266,8 +266,11 @@ static void titled_tables_ready() {   // each slot the constructors call: its st
     titled_child_table[1] = (void *)stub_iface_info;   // (slot 1, taking nothing: an object's class info, as the casts read it)
 }
 static void *new_wide_block();
+static void *__cdecl stub_plain_alloc(uint32_t size);
 extern const uint32_t titled_child_holders[];
 static uint32_t g_child_holders[8], g_child_holder_count;   // (the copy being checked: places in its children that counted texts go into)
+static uint32_t g_child_arrays[4][2], g_child_array_count;   // (and arrays of counted texts in them: offset, elements)
+extern const uint32_t titled_child_arrays[];
 static void *built_result(void *self) {
     if (!g_built_other) return self;
     if (*(void **)self == titled_child_table)
@@ -280,6 +283,13 @@ static void *built_result(void *self) {
         memcpy((uint8_t *)self + 0x7c + 4 * k, &f, 4);
     }
     // (the places in children that counted texts are put into: a text there, as the child's own constructor leaves one)
+    for (uint32_t k = 0; k < g_child_array_count; k++)   // (an array of counted texts at each, at both places)
+        if (g_child_arrays[k][0] >= 0x10 && g_child_arrays[k][0] < 0x400 && g_child_arrays[k][1] <= 64)
+            for (uint32_t at = 0; at <= 8; at += 8) {
+                void **array = (void **)stub_plain_alloc(4 * g_child_arrays[k][1]);
+                for (uint32_t q = 0; q < g_child_arrays[k][1]; q++) array[q] = new_wide_block();
+                *(void ***)((uint8_t *)self + at + g_child_arrays[k][0]) = array;
+            }
     for (uint32_t k = 0; k < g_child_holder_count; k++)
         if (g_child_holders[k] >= 0x10 && g_child_holders[k] < 0x400) {   // (at the memory's place and the result's, 8 further)
             *(void **)((uint8_t *)self + g_child_holders[k]) = new_wide_block();
@@ -582,6 +592,16 @@ extern const uint32_t dtor_steps_info[];
 extern const uint32_t table_make_info[];
 // Text::Make6A39D0: a text for a child window from a name, its window and a value: recorded by what they are; the
 // text gets a wide string of its own
+// a stack temporary made by a fastcall (titled_fast_temps): edx and the values noted, a counted text put in the temporary
+static void *__fastcall stub_fast_temp0(void **self, uint32_t v) { record(0x89, arg_value(v)); *self = new_wide_block(); return self; }
+static void *__fastcall stub_fast_temp1(void **self, uint32_t v, uint32_t a) { record(0x89, arg_value(v)); record(0x89, arg_value(a)); *self = new_wide_block(); return self; }
+static void *__fastcall stub_fast_temp2(void **self, uint32_t v, uint32_t a, uint32_t b) {
+    record(0x89, arg_value(v)); record(0x89, arg_value(a)); record(0x89, arg_value(b)); *self = new_wide_block(); return self;
+}
+static void *__fastcall stub_fast_temp3(void **self, uint32_t v, uint32_t a, uint32_t b, uint32_t c) {
+    record(0x89, arg_value(v)); record(0x89, arg_value(a)); record(0x89, arg_value(b)); record(0x89, arg_value(c)); *self = new_wide_block(); return self;
+}
+extern const uint32_t titled_fast_temps[];
 static void *__thiscall stub_text_for_child(void **self, void **name, void *window, uint32_t value) {
     record(0x86, name ? *name : nullptr); record(0x86, window); record(0x86, (void *)(uintptr_t)value);
     *self = new_wide_block();
@@ -6405,6 +6425,10 @@ static std::vector<Test> tests() {
         g_child_holder_count = 0;
         for (int k = 0; titled_child_holders[k]; k += 2)
             if (titled_child_holders[k] == e->at && g_child_holder_count < 8) g_child_holders[g_child_holder_count++] = titled_child_holders[k + 1];
+        g_child_array_count = 0;
+        for (int k = 0; titled_child_arrays[k]; k += 3)
+            if (titled_child_arrays[k] == e->at && g_child_array_count < 4)
+                g_child_arrays[g_child_array_count][0] = titled_child_arrays[k + 1], g_child_arrays[g_child_array_count++][1] = titled_child_arrays[k + 2];
         for (int k = 0; titled_iface_args[k]; k += 2)
             if (titled_iface_args[k] == e->at) g_titled_iface_mask = titled_iface_args[k + 1];
         g_titled_vcall_mask = 0;
@@ -6436,6 +6460,8 @@ static std::vector<Test> tests() {
                                                   (titled_callees[k + 1] == 0 ? (void *)stub_single0 : titled_callees[k + 1] == 1 ? (void *)stub_single1 : titled_callees[k + 1] == 2 ? (void *)stub_single2 : (void *)stub_single3) :
                                                   titled_callees[k + 1] & 0x800 ? fast_stubs[titled_callees[k + 1] & 0xff] : titled_callees[k + 1] & 0x400 ? (is_value_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xff) == 0 ? (void *)stub_plain_value0 : plain_stubs[titled_callees[k + 1] & 0xff]) : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
+        static void *const fast_temp_stubs[4] = {(void *)stub_fast_temp0, (void *)stub_fast_temp1, (void *)stub_fast_temp2, (void *)stub_fast_temp3};
+        for (int k = 0; titled_fast_temps[k]; k += 2) list.push_back({titled_fast_temps[k], fast_temp_stubs[titled_fast_temps[k + 1] & 3]});
         stubs_for_now(list);
         g_built_other = true;
     };

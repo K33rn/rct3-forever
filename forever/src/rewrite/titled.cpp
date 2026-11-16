@@ -514,7 +514,16 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             }
             break;
         case 20:
-            if (memory || op.value) {
+            if (op.value & 4) {   // (a fastcall: ecx the temporary, edx the first value, the rest on the stack)
+                using F0 = void *(__fastcall *)(void *, uint32_t);
+                using F1 = void *(__fastcall *)(void *, uint32_t, uint32_t);
+                using F2 = void *(__fastcall *)(void *, uint32_t, uint32_t, uint32_t);
+                using F3 = void *(__fastcall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t);
+                void *t_ = temps[op.off];
+                temp_made[op.off] = op.count <= 1 ? ((F0)(uintptr_t)op.fn)(t_, args[0]) : op.count == 2 ? ((F1)(uintptr_t)op.fn)(t_, args[0], args[1])
+                                    : op.count == 3 ? ((F2)(uintptr_t)op.fn)(t_, args[0], args[1], args[2]) : ((F3)(uintptr_t)op.fn)(t_, args[0], args[1], args[2], args[3]);
+                temp_built[op.off] = true;
+            } else if (memory || op.value) {
                 temp_made[op.off] = titled_call(op.fn, temps[op.off], op.count, args);
                 temp_built[op.off] = true;
             }
