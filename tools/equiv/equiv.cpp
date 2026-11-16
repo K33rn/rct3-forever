@@ -6235,6 +6235,7 @@ static std::vector<Test> tests() {
                               for (int k = 0; titled_object_globals[k] && k < 16; k++) {   // (the globals called on: objects of the arena's)
                                   g_titled_object_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_object_globals[k];
                                   *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = (uint32_t)(uintptr_t)arena<void>(0xd000 + k * 0x100);
+                                  arena<uint32_t>(0xd000 + k * 0x100)[0] = (uint32_t)(uintptr_t)titled_child_table;   // (its table: the stand-ins)
                               }
                               *(void **)g_titled_title = arena<void>(0x8000);
                               g_null_handle = arena<void>(0x700);

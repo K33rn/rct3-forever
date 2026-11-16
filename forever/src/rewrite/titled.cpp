@@ -370,6 +370,11 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         }
         case 61: last = titled_call(op.fn, (void *)(uintptr_t)given[op.off], op.count, args); break;              // on an argument
         case 62: last = titled_call(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args); break;   // on a global's object
+        case 82: {   // a virtual call (slot value) on the object the global at off holds
+            uint8_t *on = *(uint8_t *volatile *)(uintptr_t)op.off;
+            last = titled_call((uintptr_t)(*(void ***)on)[op.value / 4], on, op.count, args);
+            break;
+        }
         case 63: {   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1); fn 2: when its low byte is 0;
                      // fn 0x10 | n: when the value compares with the constant (value) as the n-th of ja jae jb jbe jg jge jl jle je jne
             if (op.fn >= 0x10) {

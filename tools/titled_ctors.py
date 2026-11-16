@@ -2121,6 +2121,25 @@ def tail(p):
         elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and still(val(m.group(1))) and num(m.group(2)) < 0x10000:
             R[m.group(1)] = ('fieldplus', val(m.group(1))[1], val(m.group(1))[2], num(m.group(2)))   # (a place inside what a member points to)
             flag = None
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[ecx\]', s)) and val('ecx') and val('ecx')[0] == 'global' and m.group(1) != 'ecx':
+            R[m.group(1)] = ('vtable', val('ecx'))   # (the table of the object a game global holds)
+        elif (m := re.fullmatch(r'call dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(1)) and val(m.group(1))[0] == 'vtable' and \
+                val(m.group(1))[1] == val('ecx') and val('ecx')[0] == 'global' and num(m.group(2) or '0') % 4 == 0 and num(m.group(2) or '0') < 0x200 and \
+                len(pushed) <= 4 and None not in pushed:
+            # a virtual call on the object a game global holds (kind 82): what was pushed since the last call is what it takes
+            n_ = len(pushed)
+            args = [pushed.pop() for _ in range(n_)]
+            d -= 4 * n_
+            if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') for v in args):
+                raise Reject('virtual call with a temporary')
+            slot_ = num(m.group(2) or '0')
+            if VSLOTS.setdefault(slot_, n_) != n_:
+                raise Reject('virtual slot taking another count')
+            ops.append((82, val('ecx')[1], slot_, 0, args))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            R['eax'] = ('result', len(ops) - 1)
+            flag = None
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[ecx\]', s)) and val('ecx') and (val('ecx') == ('this',) or val('ecx')[0] == 'member' or still(val('ecx'))) \
                 and m.group(1) != 'ecx':
             R[m.group(1)] = ('vtable', val('ecx'))   # (the object's table: a call through it follows)
@@ -2449,7 +2468,8 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_text_holders[] = {' + ''.join(f'{m_:#x}, {i_:#x}, ' for m_, i_ in sorted(hold_)) + '0xffffffff};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
-    objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73})
+    objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73} |
+                  {o[1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 82})
     out.append('const uint32_t titled_object_globals[] = {' + ''.join(f'{g:#x}, ' for g in objg) + '0};')
     out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')
     out.append('extern const uint32_t titled_vslots[];')

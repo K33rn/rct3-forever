@@ -7281,7 +7281,7 @@ address,size,name,callers,status
 0x6c6db0,28,Member::Update6C6DB0,0,rewritten
 0x6c6dd0,89,,0,documented
 0x6c6fd0,3081,,1,documented
-0x6c7be0,610,,1,documented
+0x6c7be0,610,Window::Titled,1,rewritten
 0x6c7ee0,223,,1,documented
 0x6c7fd0,40,,1,documented
 0x6c8000,33,,1,documented
@@ -7312,7 +7312,7 @@ address,size,name,callers,status
 0x6c9d30,28,Member::Update6C6DB0,0,rewritten
 0x6c9d50,108,,0,documented
 0x6ca020,8826,,1,documented
-0x6cc2b0,615,,0,documented
+0x6cc2b0,615,Window::Titled,0,rewritten
 0x6cc580,384,,1,documented
 0x6cc710,304,,4,documented
 0x6cc840,127,Five::Destroy6CC840,1,rewritten
@@ -7767,7 +7767,7 @@ address,size,name,callers,status
 0x6ebed0,3689,,2,documented
 0x6ecd40,589,Window::Titled,1,rewritten
 0x6ecf90,147,,3,documented
-0x6ed030,674,,1,documented
+0x6ed030,674,Window::Titled,1,rewritten
 0x6ed2e0,39,,2,documented
 0x6ed3c0,38,Destructor::TablesThenBase,1,rewritten
 0x6ed400,15,,2,documented
@@ -16337,7 +16337,7 @@ address,size,name,callers,status
 0xa83df0,30,DeletingDestructor,2,rewritten
 0xa83e10,1203,,1,documented
 0xa842d0,678,Window::Titled,1,rewritten
-0xa84580,720,,1,documented
+0xa84580,720,Window::Titled,1,rewritten
 0xa84870,48,QueryInterface,0,rewritten
 0xa84950,76,,1,documented
 0xa84ac0,116,,2,documented
