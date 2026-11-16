@@ -19022,7 +19022,7 @@ address,size,name,callers,status
 0xb971b0,91,,1,documented
 0xb97230,30,DeletingDestructor,3,rewritten
 0xb97250,410,,0,documented
-0xb97440,3189,,1,documented
+0xb97440,3189,Window::Titled,1,rewritten
 0xb98160,48,QueryInterface,0,rewritten
 0xb98260,78,,0,documented
 0xb982d0,292,,2,documented

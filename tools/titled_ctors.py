@@ -1420,6 +1420,8 @@ def tail(p):
         # FPU must end empty; nothing else may be written. Gives (index after the call, the op) or None.
         nonlocal d
         prog, depth, fpu = [], d, 0
+        if t[k0] == 'fstp st(0)' and k0 > 0 and ins[k0 - 1].mnemonic == 'call':
+            fpu = 1   # (the call just made gave a float, on the FPU's stack: the run throws it away first)
         nocall_ = False
         size_seen = []
         regs = {}       # registers set in the run: ('bits', operand) / ('local', slot) / ('ecx', value)
