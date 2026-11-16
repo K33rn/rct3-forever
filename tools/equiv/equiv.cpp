@@ -6193,6 +6193,8 @@ static std::vector<Test> tests() {
                                   for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0x100 + off)[0] = value();
                                   for (uint32_t blk = 0; blk < 16; blk++)
                                       for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0xc000 + blk * 0x40 + (off & 0x3f))[0] = value();
+                                  for (uint32_t g = 0; g < 16; g++)   // (the objects game globals hold: floats too, as their rectangles are read)
+                                      for (uint32_t off = 4; off < 0x100; off += 4) arena<uint32_t>(0xd000 + g * 0x100 + off)[0] = value();
                                   for (uint32_t blk = 0; blk < 16; blk++)   // (each what a member points to: an object, with the table of stand-ins)
                                       arena<uint32_t>(0xc000 + blk * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               }

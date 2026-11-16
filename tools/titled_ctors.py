@@ -1233,6 +1233,8 @@ def tail(p):
                 if v[0] == 'bits' and v[1][0] == 2 and v[1][1] < 0x10000 and off < 0x10000:
                     return (3, v[1][1] | off << 16)   # (a member's value loaded in the run: what it points to, read through)
                 v = v[1] if v[0] in ('r', 'ecx') else None
+                if v and v[0] == 'global' and 0x1000000 <= v[1] < 0x2000000 and off < 0x100 and not store:
+                    return (7, (v[1] - 0x1000000) | off << 24)   # (inside the object a game global holds, read now)
                 if v == ('this',): return (2, off)
                 if v and v[0] == 'member': return (2, v[1] + off)
                 if v and still(v) and v[1] < 0x10000 and off < 0x10000: return (3, v[1] | off << 16)
@@ -2581,7 +2583,8 @@ if __name__ == '__main__':
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
     objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73} |
-                  {o[1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 82})
+                  {o[1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 82} |
+                  {0x1000000 + (st_[2] & 0xffffff) for st_ in FPU_PROGRAM if st_[1] == 7})   # (and those x87 runs read inside: kind 7)
     out.append('const uint32_t titled_object_globals[] = {' + ''.join(f'{g:#x}, ' for g in objg) + '0};')
     out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')
     out.append('extern const uint32_t titled_vslots[];')

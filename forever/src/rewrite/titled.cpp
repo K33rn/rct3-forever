@@ -133,7 +133,8 @@ __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t 
                       : kind == 3 ? (uint32_t *)(*(uint8_t **)(self + (v & 0xffff)) + (v >> 16))
                       : kind == 4 ? &loc[v]
                       : kind == 5 ? (uint32_t *)&given[v]
-                      : kind == 6 ? (uint32_t *)(size + v) : nullptr;
+                      : kind == 6 ? (uint32_t *)(size + v)
+                      : kind == 7 ? (uint32_t *)(*(uint8_t **)(uintptr_t)(0x1000000 + (v & 0xffffff)) + (v >> 24)) : nullptr;   // (7: inside a global's object)
         switch (code) {
         case 1: X87("fld dword ptr [eax]"); break;
         case 21: X87("fild dword ptr [eax]"); break;

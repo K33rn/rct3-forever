@@ -15231,7 +15231,7 @@ address,size,name,callers,status
 0xa09840,30,DeletingDestructor,1,rewritten
 0xa09880,179,Destructor::Steps,1,rewritten
 0xa09a10,30,DeletingDestructor,2,rewritten
-0xa09a30,1810,,1,documented
+0xa09a30,1810,Window::Titled,1,rewritten
 0xa0a260,141,,6,documented
 0xa0a330,15,,2,documented
 0xa0a340,135,,6,documented
