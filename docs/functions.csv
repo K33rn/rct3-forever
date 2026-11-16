@@ -5290,7 +5290,7 @@ address,size,name,callers,status
 0x5f84c0,75,,1,documented
 0x5f8510,30,DeletingDestructor,2,rewritten
 0x5f8530,160,Destructor::Steps,1,rewritten
-0x5f85f0,3118,,1,documented
+0x5f85f0,3118,Window::Titled,1,rewritten
 0x5f9220,491,,1,documented
 0x5f9660,162,,9,documented
 0x5f9740,30,DeletingDestructor,2,rewritten

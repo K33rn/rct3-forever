@@ -859,6 +859,12 @@ def tail(p):
             return l2, z1.group(1), 0, base, num(z1.group(2)), {z1.group(1)}
         if (z1 := re.fullmatch(r'add ' + v_ + r', (0x[0-9a-f]+|\d+)', b[0])) and (l2 := ends(1, v_)):
             return l2, v_, 0, base, num(z1.group(1)), {v_}
+        if (z1 := re.fullmatch(r'mov ' + REG + ', ' + v_, b[0])) and (z2 := re.fullmatch(r'add ' + z1.group(1) + r', (0x[0-9a-f]+|\d+)', b[1])) and \
+                (l2 := ends(2, z1.group(1))):
+            return l2, z1.group(1), 0, base, num(z2.group(1)), {z1.group(1)}   # (copied first, then added to)
+        if (z1 := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', b[0])) and z1.group(2) != v_ and \
+                R.get(z1.group(2)) == ('this',) and num(z1.group(3)) < 0x10000 and (l2 := ends(1, z1.group(1))):
+            return l2, z1.group(1), 2, base, num(z1.group(3)), {z1.group(1)}   # (the window's place + c when V isn't 0: fn 2)
         z1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + v_ + r'\]', b[0])
         if not z1 or b[1] != 'mov ecx, ' + v_ or b[2] != f'call dword ptr [{z1.group(1)} + 4]' or not zero(b[3], 'eax'):
             return None

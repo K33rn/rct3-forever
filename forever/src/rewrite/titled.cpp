@@ -475,6 +475,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             uint8_t *base = (uint8_t *)(uintptr_t)args[0];
             uint32_t got = 0;
             if (base && !op.fn) got = args[0] + op.value;
+            else if (base && op.fn == 2) got = (uint32_t)(uintptr_t)(self + op.value);   // (fn 2: the window's place + value, or none for none)
             else if (base) {
                 uint8_t *info = ((uint8_t * (__thiscall *)(void *))(*(void ***)base)[1])(base);
                 if (info) {
