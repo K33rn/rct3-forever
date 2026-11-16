@@ -1201,6 +1201,7 @@ def tail(p):
         # FPU must end empty; nothing else may be written. Gives (index after the call, the op) or None.
         nonlocal d
         prog, depth, fpu = [], d, 0
+        nocall_ = False
         size_seen = []
         regs = {}       # registers set in the run: ('bits', operand) / ('local', slot) / ('ecx', value)
         written = set() # locals the run writes (entry-relative slots)
@@ -1285,10 +1286,11 @@ def tail(p):
                 o_ = operand(mm.group(2), q, store=code in (3, 4))
                 if o_ is None:
                     return None
-                if code in (3, 4):   # a store: only into a local
-                    if o_[0] != 4:
+                if code in (3, 4):   # a store: into a local, or a member of the window (members read before are read again after)
+                    if o_[0] not in (2, 4):
                         return None
-                    written.add(o_[1] * 4 - 0x100)
+                    if o_[0] == 4:
+                        written.add(o_[1] * 4 - 0x100)
                 prog.append((code, o_[0], o_[1]))
                 fpu += {1: 1, 21: 1, 4: -1}.get(code, 0)
             elif (mm := re.fullmatch(r'fld st\((\d)\)', u)):
@@ -1371,6 +1373,9 @@ def tail(p):
                     return None
                 depth += 4
             else:
+                if fpu == 0 and prog and not args_pushed and not size_seen and not size_query and depth == d:
+                    nocall_ = True   # (the run ends here, with nothing called: it only stored)
+                    break
                 return None
             if fpu < 0 or fpu > 7:
                 return None
@@ -1379,6 +1384,22 @@ def tail(p):
             return None
         if fpu != 0 or not prog:
             return None
+        if nocall_:
+            for sl, val_ in sorted(known_locals.items()):
+                if sl not in written:
+                    prog.insert(0, (20, 0, val_, (sl + 0x100) // 4))
+            run_locals.update(written)
+            start = 4 * len(FPU_PROGRAM)
+            FPU_PROGRAM.append((len(prog), 0, 0, 0))
+            FPU_PROGRAM.extend(tuple(x) + (0,) * (4 - len(x)) for x in prog)
+            for r_, v_ in regs.items():   # (what the run left in registers: a global's or a member's value read in it, else not known)
+                if v_[0] == 'bits' and v_[1][0] == 1:
+                    R[r_] = ('global', v_[1][1])
+                elif v_[0] == 'bits' and v_[1][0] == 2:
+                    R[r_] = ('field', v_[1][1], len(ops) + 1)   # (read as of the run's step: nothing in it writes members)
+                elif v_[0] != 'r':
+                    R[r_] = None
+            return q, (59, 0, start, 0, [])
         zc = re.fullmatch(r'call (0x[0-9a-f]+)', t[q])
         if not zc:
             return None
@@ -1467,7 +1488,7 @@ def tail(p):
         if x.mnemonic.startswith('f') and x.mnemonic not in ('fnstsw',) and (fs := fpu_step(k)):
             edx_live[0] = False
             ops.append(fs[1])   # an x87 run and the call given what it built (kind 59)
-            for r in ('eax', 'ecx', 'edx'):
+            for r in ('eax', 'ecx', 'edx') if fs[1][3] else ():   # (a run with no call leaves the registers as it said)
                 R[r] = None
             for r in ('ebx', 'esi', 'edi', 'ebp'):
                 pass
@@ -2497,7 +2518,7 @@ if __name__ == '__main__':
             if o[0] == 80:
                 callees[o[3]] = len(o[4]) - 1
                 obj_uses.add(o[3])
-            if o[0] in (3, 10, 24, 59, 61, 62) and o[3] != 0x6b1640:   # (0x6B1640: the tester's own stand-in, which notes the rectangle)
+            if o[0] in (3, 10, 24, 59, 61, 62) and o[3] != 0x6b1640 and o[3]:   # (0x6B1640: the tester's own stand-in, which notes the rectangle; 0: a run calling nothing)
                 obj_uses.add(o[3])
                 callees[o[3]] = len(o[4])
                 (edx_uses if o[0] in (3, 24) and o[2] >> 31 else plain_uses).add(o[3])

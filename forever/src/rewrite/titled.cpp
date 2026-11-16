@@ -372,6 +372,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 59: {   // an x87 run (titled_fpu from value), then the call given what it built; on the window + off, or (off bit 24)
                      // what that member points to
             titled_x87(&titled_fpu[op.value + 4], titled_fpu[op.value], self, given, loc);
+            if (!op.fn) break;   // (a run that only stores: nothing called after it)
             uint8_t *on = op.off >> 24 ? *(uint8_t **)(self + (op.off & 0xffffff)) : self + op.off;
             titled_call(op.fn, on, op.count, args);
             break;

@@ -6942,7 +6942,7 @@ address,size,name,callers,status
 0x6aaaa0,430,,4,documented
 0x6aac50,363,,11,documented
 0x6aade0,114,Text::FromField6AADE0,3,rewritten
-0x6aae60,725,,36,documented
+0x6aae60,725,Window::Titled,36,rewritten
 0x6ab150,30,DeletingDestructor,2,rewritten
 0x6ab170,43,,44,documented
 0x6ab1a0,125,,1,documented
