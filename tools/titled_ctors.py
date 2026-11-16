@@ -142,9 +142,9 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
-LEFT_OUT = {0x701590: "the original dies in the tester (a stand-in's object read through as something else): to look at",
-            0x791670: "the original dies in the tester: to look at",
-            0x6c6fd0: "dies in the tester, but not with every stand-in call logged (something read before it is set?): to look at"}
+LEFT_OUT = {0x6c6fd0: "a counted text put into a child made in the call (+0x114 of +0x110's): the tester's child has no text there",
+            0x701590:"the original dies in the tester (a stand-in's object read through as something else): to look at",
+            0x791670:"the original dies in the tester (a read of 0xC in 0xBCE978, from 0x403C8A: a text the stand-ins don't make?): to look at"}
 
 
 
@@ -587,7 +587,7 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90) or o[0] == 10 and o[3] == 0xbcf850 or
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90, 92, 93) or o[0] == 10 and o[3] == 0xbcf850 or
                                                   o[0] == 20 and o[3] in (0x41cb90, 0x4040f0, 0xbd1940) or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
@@ -606,12 +606,13 @@ def tail(p):
     always_temps = set()
     inline_built = set()   # new memory set up in line (no constructor called on it)
     byte_tested = [None]   # (the last byte test: where, and what was tested)
+    link_pre, link_skip = [], set()   # (list links found inside an x87 run: their steps, done first, and where they are)
     fpu_skip = set()   # x87 steps a run took in, left behind it (passed over when read again)
     text_temps = set()   # the temporaries holding a counted text (0x6A39D0 on the stack), let go by kind 16
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86}   # (75 frees memory: not quiet)   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86, 90, 92, 93}   # (75 frees memory: not quiet)   # steps that call nothing
 
     taken = {}   # the results already taken into scratch values: the step that gave it -> its scratch number
 
@@ -670,7 +671,9 @@ def tail(p):
             q += 1
         return False
 
-    def list_link(k0):
+    def list_link(k0, within_run=False):
+        # (within an x87 run, its own steps between the link's are passed over: x87 steps, places of locals, pushes and
+        # constants into locals; a register they set is no longer what the link had in it)
         # a node put first in a list whose head a game global holds (kind 91): mov A, [S] (S holding the head); the node's
         # place (lea N, [the window + K], or a register holding the new object or the window's place); mov [N], A;
         # mov B, [S]; mov [B + 4], N; mov [N + 4], S; mov [S], N, last (the stack bookkeeping stores passed over). Gives
@@ -683,19 +686,33 @@ def tail(p):
         s_ = m0.group(2)
         sym = {m0.group(1): 'F'}
         node = None
+        node_reg = None
         done = []
+        used = [k0]
         q = k0 + 1
-        while q < len(t) and q < k0 + 12 and len(done) < 4:
+        while q < len(t) and q < k0 + (28 if within_run else 12) and len(done) < 4:
             u = t[q]
             if re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', u):
                 q += 1
                 continue
+            if within_run and ins[q].mnemonic.startswith('f') and any(re.search(r'\b' + r_ + r'\b', u) for r_ in list(sym) + [s_] + ([node_reg] if node_reg else [])):
+                return None   # (an x87 step reading through one of the link's registers)
+            if within_run and (ins[q].mnemonic.startswith('f') or
+                               re.fullmatch(r'lea ' + REG + r', \[esp \+ (0x[0-9a-f]+|\d+)\]|push (' + REG + r'|0x[0-9a-f]+|\d+)|mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', u)):
+                if (zl_ := re.fullmatch(r'lea ' + REG + r', .*', u)):
+                    if zl_.group(1) == s_ or zl_.group(1) == node_reg:
+                        return None
+                    sym.pop(zl_.group(1), None)
+                q += 1
+                continue
+            used.append(q)
             if (z := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + s_ + r'\]', u)) and z.group(1) != s_:
                 sym[z.group(1)] = 'F'
             elif (z := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', u)) and z.group(1) != s_ and node is None and \
                     val(z.group(2)) in (('this',),) and num(z.group(3)) < 0x10000:
                 sym[z.group(1)] = 'N'
                 node = ('self', num(z.group(3)))
+                node_reg = z.group(1)
             elif (z := re.fullmatch(r'mov dword ptr \[' + REG + r'( \+ 4)?\], ' + REG, u)):
                 b_, o_, v_ = z.group(1), bool(z.group(2)), z.group(3)
                 bs = 'S' if b_ == s_ else sym.get(b_, 'N' if node is None and b_ not in sym else None)
@@ -712,6 +729,7 @@ def tail(p):
                     else:
                         return None
                     sym[r_] = 'N'
+                    node_reg = r_
                 kind_ = (bs, o_, vs)
                 want = {('N', False, 'F'): 'n0', ('F', True, 'N'): 'f1', ('N', True, 'S'): 'n1', ('S', False, 'N'): 's0'}
                 if kind_ not in want or want[kind_] in done or want[kind_] == 's0' and len(done) != 3:
@@ -724,7 +742,7 @@ def tail(p):
             q += 1
         if len(done) != 4 or node is None:
             return None
-        return q, node, ('glob', val(s_)[1]) if val(s_)[0] == 'global' else ('field', val(s_)[1]), set(sym) | {s_}
+        return q, node, ('glob', val(s_)[1]) if val(s_)[0] == 'global' else ('field', val(s_)[1]), set(sym) | {s_}, used, s_, node_reg
 
     def arg_slot_written_before(slot_):   # was an argument's slot stored into before the tail (the runs' buffer can't know it)?
         return any((z_ := re.fullmatch(r'(?:mov|fstp?) dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\](?:, .*)?', t[q_])) and num(z_.group(1)) - depth_at[q_] == slot_
@@ -1420,8 +1438,20 @@ def tail(p):
             return None
         args_pushed = [('local', v[1]) if isinstance(v, tuple) and v[0] == 'rect' else v for v in pushed]
         q = k0
+        link_pre.clear(); link_skip.clear()
         while q < len(t):
             u, xq = t[q], ins[q]
+            if q in link_skip:   # (a list link's step, taken before the run)
+                q += 1
+                continue
+            if not xq.mnemonic.startswith('f') and (ll_ := list_link(q, True)) and ll_[5] not in regs and (ll_[6] is None or ll_[6] not in regs):
+                # a node put first in a list, among the run's steps (it touches neither the FPU nor the run's locals): done first
+                link_pre.append((91, 0, 0, 0, [ll_[1], ll_[2]]))
+                link_skip.update(ll_[4])
+                for r_ in ll_[3]:
+                    regs[r_] = ('r', None)
+                q += 1
+                continue
             if (zq := re.fullmatch(r'call dword ptr \[' + REG + r' \+ 0x20\]', u)) and (regs.get(zq.group(1), ('r', R.get(zq.group(1))))[1] or ('',))[0] == 'vtable' \
                     and args_pushed and isinstance(args_pushed[-1], tuple) and args_pushed[-1][0] == 'local' and not size_seen:
                 # a child's size asked for (its slot 0x20, a local to fill): a step, what it gives read through eax after
@@ -1590,7 +1620,7 @@ def tail(p):
                 (fn in (0x41cb90, 0x4040f0) and regs.get('ecx', ('', None))[0] == 'local' or fn == 0xbcdfc0 and 'ecx' not in regs):
             # the run only stores; the call after it makes a text temporary or new memory, its constants (and place, lea ecx) set
             # among the run's steps: those are left to be read after the run, its x87 steps passed over then
-            others_ = [q_ for q_ in range(k0, q) if not ins[q_].mnemonic.startswith('f') and
+            others_ = [q_ for q_ in range(k0, q) if not ins[q_].mnemonic.startswith('f') and q_ not in link_skip and
                        not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', t[q_])]
             if not others_ or any(not re.fullmatch(r'push (0x[0-9a-f]+|\d+)|lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q_]) for q_ in others_) or \
                     any('ecx' in t[q_] for q_ in range(k0, q) if ins[q_].mnemonic.startswith('f')):
@@ -1770,6 +1800,10 @@ def tail(p):
             continue
         if x.mnemonic.startswith('f') and x.mnemonic not in ('fnstsw',) and (fs := fpu_step(k)):
             edx_live[0] = False
+            ops.extend(link_pre)   # (list links among the run's steps: first)
+            for q_ in link_skip:
+                for r_ in re.findall(r'\b(e[a-d]x|e[sd]i|ebp)\b', t[q_].split(',')[0]):
+                    R[r_] = None
             ops.append(fs[1])   # an x87 run and the call given what it built (kind 59)
             for r in ('eax', 'ecx', 'edx') if fs[1][3] else ():   # (a run with no call leaves the registers as it said)
                 R[r] = None

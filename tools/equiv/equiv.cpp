@@ -140,7 +140,21 @@ static const char *g_testing_which = "";
 static LONG WINAPI crashed(EXCEPTION_POINTERS *x) {
     printf("  CRASHED %s, case %d, in the %s: exception %08lx at %p\n", g_testing, g_testing_case, g_testing_which,
            x->ExceptionRecord->ExceptionCode, x->ExceptionRecord->ExceptionAddress);
+    if (x->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION && x->ExceptionRecord->NumberParameters >= 2)
+        printf("  (a %s of %p)\n", x->ExceptionRecord->ExceptionInformation[0] ? "write" : "read", (void *)x->ExceptionRecord->ExceptionInformation[1]);
+    fflush(stdout);   // (the output may be a pipe, buffered: ExitProcess would lose it)
     ExitProcess(3);
+}
+// EQUIV_FAULTS: every access violation reported as it happens (first chance, before the game's own exception frames)
+static LONG WINAPI fault_seen(EXCEPTION_POINTERS *x) {
+    if (x->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
+        printf("  FAULT %s, case %d, in the %s: at %p, a %s of %p\n", g_testing, g_testing_case, g_testing_which, x->ExceptionRecord->ExceptionAddress,
+               x->ExceptionRecord->ExceptionInformation[0] ? "write" : "read", (void *)x->ExceptionRecord->ExceptionInformation[1]);
+        printf("    (the stack's top: %08lx %08lx %08lx)\n", ((unsigned long *)x->ContextRecord->Esp)[0], ((unsigned long *)x->ContextRecord->Esp)[1],
+               ((unsigned long *)x->ContextRecord->Esp)[2]);
+        fflush(stdout);
+    }
+    return EXCEPTION_CONTINUE_SEARCH;
 }
 
 static bool check_copy(const rewrite::Entry *e, const Test &t, int iterations, uint64_t seed);
@@ -6202,6 +6216,9 @@ static std::vector<Test> tests() {
                               for (int k = 2; k < 8; k++)   // (the arguments cast to an interface: objects whose class info is the case's; argument k + 1 is a[k])
                                   if (g_titled_iface_mask >> (k + 1) & 1) arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)titled_iface_table;
                                   else if (g_titled_vcall_mask >> (k + 1) & 1) arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
+                              // (and the parent, when it is the one cast or called on: the object at 0x8100, when it is given)
+                              if (g_titled_iface_mask >> g_titled_parent & 1) arena<uint32_t>(0x8100)[0] = (uint32_t)(uintptr_t)titled_iface_table;
+                              else if (g_titled_vcall_mask >> g_titled_parent & 1) arena<uint32_t>(0x8100)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               {
                                   uint32_t *info = arena<uint32_t>(0x9a00);   // +0x14 the entries, +0x18 their count; each entry's +0x10 an offset
                                   info[15] = r.range(0, 4) != 0, info[5] = (uint32_t)(uintptr_t)arena<void>(0x9a40), info[6] = r.range(0, 4);
@@ -6313,6 +6330,12 @@ static std::vector<Test> tests() {
                                       a[k - 1] = (arena<uint32_t>(0x4c)[0] >> (2 * k)) % 3 | ((arena<uint32_t>(0x4c)[0] * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu) & 0xffffff00u);
                               for (int k = 2; k < 8; k++)
                                   if (g_titled_nullable >> k & 1 && (arena<uint32_t>(0x4c)[0] >> (3 * k)) % 3 == 0) a[k - 1] = 0;
+                              for (uint32_t k = 1; k <= 8; k++) {   // (the arguments cast or called on, wherever the moves above put them: their tables)
+                                  uint8_t *o = (uint8_t *)(uintptr_t)a[k - 1];
+                                  if (o < g_arena + 0x100 || o >= g_arena + sizeof g_arena - 4 || (k == g_titled_text)) continue;
+                                  if (g_titled_iface_mask >> k & 1) *(uint32_t *)o = (uint32_t)(uintptr_t)titled_iface_table;
+                                  else if (g_titled_vcall_mask >> k & 1) *(uint32_t *)o = (uint32_t)(uintptr_t)titled_child_table;
+                              }
                               void *self = arena<void>(0x100), *made;
                               for (int k = 0, n = 0; titled_window_lists[k]; k += 2)   // (the window's members holding a list a node is put first in)
                                   if (titled_window_lists[k] == g_titled_at && n < 8) {
@@ -7976,6 +7999,8 @@ int main(int argc, char **argv) {
         }
     install_stubs();
     SetUnhandledExceptionFilter(crashed);
+    if (getenv("EQUIV_FAULTS"))   // (every access violation as it happens, before the game's own exception frames see it)
+        AddVectoredExceptionHandler(1, fault_seen);
     auto all = tests();
     // one line per rewrite; a rewrite of many copies is checked on each copy
     std::vector<const char *> done;

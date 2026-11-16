@@ -2300,7 +2300,7 @@ address,size,name,callers,status
 0x4b9cc0,158,,2,documented
 0x4b9d60,1369,,1,documented
 0x4ba2c0,259,,15,documented
-0x4ba3d0,4074,,0,documented
+0x4ba3d0,4074,Window::Titled,0,rewritten
 0x4bb3c0,30,DeletingDestructor,2,rewritten
 0x4bb400,104,,0,documented
 0x4bb4c0,64,,0,documented
