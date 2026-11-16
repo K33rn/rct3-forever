@@ -11668,10 +11668,10 @@ address,size,name,callers,status
 0x863b60,28,Object::FreeField,4,rewritten
 0x863b80,165,,1,documented
 0x863c30,985,,3,documented
-0x864010,317,,0,documented
+0x864010,317,Scenery::ShapeBox,0,rewritten
 0x864150,1134,,15,documented
 0x8645c0,88,,3,documented
-0x864620,317,,10,documented
+0x864620,317,Scenery::ShapeBox,10,rewritten
 0x864760,711,,2,documented
 0x864a30,16,,5,documented
 0x864a40,860,,1,documented
