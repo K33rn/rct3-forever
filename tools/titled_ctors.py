@@ -770,8 +770,7 @@ def tail(p):
                 args[ai_] = ('local', (v[1] + LB) // 4)
                 run_locals.update(v[1] + 4 * q_ for q_ in range(4))
             elif isinstance(v, tuple) and v[0] == 'rect' and v[1] < 0 and -v[1] <= LB - 0x10 and S.get(v[1]) and \
-                    S[v[1]][0] != 'const' and base_code(S[v[1]]) is not None and \
-                    all(S.get(v[1] + 4 * q_) is None and stored(v[1] + 4 * q_, k) is None for q_ in range(1, 4)):
+                    S[v[1]][0] != 'const' and base_code(S[v[1]]) is not None:
                 # (a holder on the stack: one dword, a value known, given by its place: the value put there first)
                 ops.append((92, (v[1] + LB) // 4, 0, 0, [base_code(S[v[1]])]))
                 args[ai_] = ('local', (v[1] + LB) // 4)

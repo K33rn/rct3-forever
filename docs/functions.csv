@@ -17162,7 +17162,7 @@ address,size,name,callers,status
 0xad1350,57,Children::EachAD1350,2,rewritten
 0xad16a0,338,,1,documented
 0xad1850,14607,,3,documented
-0xad5700,3390,,2,documented
+0xad5700,3390,Window::Titled,2,rewritten
 0xad6440,30,DeletingDestructor,3,rewritten
 0xad6460,422,Designer::OpenFiles,1,rewritten
 0xad6610,670,Window::Titled,1,rewritten
