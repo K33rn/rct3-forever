@@ -554,7 +554,7 @@ def tail(p):
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
         if isinstance(v, int):
             return (0, v)
-        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'darg': 12, 'newobj': 13}[v[0]], v[1]
+        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13}[v[0]], v[1]
 
     nb_used = set()
     nb_eax = ['keep']
@@ -635,6 +635,8 @@ def tail(p):
             return ('tempat', v[1] | v[2] << 8)
         if v[0] == 'scratch':
             return v
+        if v[0] == 'childval' and v[3] == len(ops) and v[2] < 0x10000:   # (a dword inside a child, read with no step since)
+            return ('dfield', v[1] | v[2] << 16)
         if v[0] == 'obj' and v[1] == cur and not nulls:   # (the new object, past its making: as returned, or its memory)
             return ('newobj', 0 if v[2] == 'returned' else 1)
         if v[0] == 'result':   # (the last call's result, nothing called since: kept in a scratch value first)
@@ -1758,6 +1760,14 @@ def tail(p):
                 (re.fullmatch(r'0x[0-9a-f]+|\d+', m.group(2)) or val(m.group(2)) and val(m.group(2))[0] == 'const' and val(m.group(2))[1] != 0):
             # a value compared with a constant (or a register holding one)
             flag = ('cmpk', val(m.group(1)), num(m.group(2)) if re.fullmatch(r'0x[0-9a-f]+|\d+', m.group(2)) else val(m.group(2))[1])
+        elif (m := re.fullmatch(r'mov ([abcd])l, byte ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] in ('this', 'member') and num(m.group(3) or '0') < 0x10000:
+            # a byte of the window read (only tested): kept as the member's dword, whose low byte it is
+            R['e' + m.group(1) + 'x'] = ('bytefield', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3) or '0'), len(ops))
+        elif (m := re.fullmatch(r'mov ([abcd])l, byte ptr \[(0x1[0-9a-f]{6})\]', s)):
+            R['e' + m.group(1) + 'x'] = ('byteglobal', num(m.group(2)))   # (a game global's byte, only tested)
+        elif (m := re.fullmatch(r'test ([abcd])l, \1l', s)) and val('e' + m.group(1) + 'x') and val('e' + m.group(1) + 'x')[0] in ('bytefield', 'byteglobal'):
+            flag = ('testbyte', val('e' + m.group(1) + 'x'))
         elif (m := re.fullmatch(r'cmp dword ptr \[(0x1[0-9a-f]{6})\], (0|' + REG + ')', s)) and (m.group(2) == '0' or val(m.group(2)) in (('const', 0), ('byte', 0))):
             flag = ('test', ('global', num(m.group(1))))
         elif (m := re.fullmatch(r'cmp dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0|' + REG + ')', s)) and val(m.group(1)) and                 val(m.group(1))[0] in ('this', 'member') and num(m.group(2) or '0') < 0x10000 and (m.group(3) == '0' or val(m.group(3)) in (('const', 0), ('byte', 0))):
@@ -1870,6 +1880,16 @@ def tail(p):
             nnames += 1
             flag = None
             continue
+        elif x.mnemonic in ('je', 'jne') and not pushed and not nulls and flag and flag[0] == 'testbyte' and \
+                (flag[1][0] == 'byteglobal' or flag[1][2] == len(ops) or still(('field', flag[1][1], flag[1][2]))) and \
+                re.fullmatch(r'0x[0-9a-f]+', x.op_str) and (at.get(int(x.op_str, 0)) or -1) > k + 1 and \
+                (not conds or at.get(int(x.op_str, 0)) <= conds[-1][0]):
+            # a block skipped when the byte is 0 (je: kind 63, fn 2) or when it isn't (jne: fn 3); the byte read as the low
+            # one of its dword, at the time the step runs (nothing since can have changed it)
+            code_ = ('glob', flag[1][1]) if flag[1][0] == 'byteglobal' else ('field', flag[1][1])
+            ops.append((63, 0, 0, 2 if x.mnemonic == 'je' else 3, [code_]))
+            conds.append((at[int(x.op_str, 0)], len(ops) - 1, dict(R), dict(S), d, set(built)))
+            flag = None
         elif x.mnemonic in CMP_CONDITIONS and not pushed and not nulls and flag and flag[0] == 'cmpk' and base_code(flag[1]) is not None and \
                 re.fullmatch(r'0x[0-9a-f]+', x.op_str) and (at.get(int(x.op_str, 0)) or -1) > k + 1 and \
                 (not conds or at.get(int(x.op_str, 0)) <= conds[-1][0]):
@@ -2430,7 +2450,7 @@ if __name__ == '__main__':
                 if isinstance(v, int):
                     codes.append((0, v))
                 else:
-                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'darg': 12, 'newobj': 13}[v[0]], v[1]))
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13}[v[0]], v[1]))
             kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')
@@ -2511,10 +2531,16 @@ if __name__ == '__main__':
         if mask_:
             ia_.append((a_[0], mask_))
     out.append('const uint32_t titled_iface_args[] = {' + ''.join(f'{x_:#x}, {m_:#x}, ' for x_, m_ in ia_) + '0};')
+    out.append('// the objects inside children those casts are made on (op 54, fn 1, on a dword inside what a member points to): member')
+    out.append('// and place; the tester puts an object with the class-info table there first')
+    out.append('extern const uint32_t titled_iface_places[];')
+    ip_ = sorted({(o[4][0][1] & 0xffff, o[4][0][1] >> 16) for a_ in info for o in all_ops.get(a_[0], [])
+                  if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] == 'dfield'})
+    out.append('const uint32_t titled_iface_places[] = {' + ''.join(f'{m_:#x}, {i_:#x}, ' for m_, i_ in ip_) + '0xffffffff};')
     out.append('// the globals holding the class numbers those casts look up (op 54, fn 1): the tester gives each a small number of the')
     out.append("// case's (0 to 3) in the call")
     out.append('extern const uint32_t titled_class_globals[];')
-    cg_ = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] in ('given', 'field')})
+    cg_ = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] in ('given', 'field', 'dfield')})
     out.append('const uint32_t titled_class_globals[] = {' + ''.join(f'{g_:#x}, ' for g_ in cg_) + '0};')
     out.append('// the window members compared with a constant (op 63, fn 0x10 | n, on a member): constructor, member, constant; the')
     out.append('// tester gives each member a value near the constant first, so both ways are met')
@@ -2531,9 +2557,14 @@ if __name__ == '__main__':
     va_ = []
     for a_ in info:
         mask_ = 0
+        held_ = {}
         for o in all_ops.get(a_[0], []):
+            if o[0] == 2:
+                held_[o[1]] = o[2]
             if o[0] == 83:
                 mask_ |= 1 << o[1]
+            if o[0] == 60 and o[1] >> 24 and (o[1] & 0xffffff) in held_:
+                mask_ |= 1 << held_[o[1] & 0xffffff]   # (a virtual call on a member that holds an argument: on that argument)
         if mask_:
             va_.append((a_[0], mask_))
     out.append('const uint32_t titled_vcall_args[] = {' + ''.join(f'{x_:#x}, {m_:#x}, ' for x_, m_ in va_) + '0};')

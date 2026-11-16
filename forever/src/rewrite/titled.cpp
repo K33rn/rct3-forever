@@ -289,6 +289,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             case 8: args[i] = *(uint32_t *)((uint8_t *)temp_made[v & 0xff] + (v >> 8)); break;
             case 9: args[i] = (uint32_t)(uintptr_t)&loc[v]; break;
             case 10: args[i] = *(uint32_t *)(self + (v & 0xffff)) + (v >> 16); break;   // a place inside what a member points to
+            case 11: args[i] = *(uint32_t *)(*(uint8_t **)(self + (v & 0xffff)) + (v >> 16)); break;   // a dword inside what a member points to
             case 12: args[i] = *(uint32_t *)((uint8_t *)(uintptr_t)given[v & 0xff] + (v >> 8)); break;   // a dword inside what an argument points to
             case 13: args[i] = v ? (uint32_t)(uintptr_t)memory : (uint32_t)(uintptr_t)object; break;   // the new object (as returned / its memory)
             default: args[i] = *(uint32_t *)(self + v); break;
@@ -389,8 +390,8 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
                 if (skip[op.fn & 0xf]) k += op.off;
                 break;
             }
-            const bool zero = op.fn == 2 ? (args[0] & 0xff) == 0 : args[0] == 0;
-            if (zero != (op.fn == 1)) k += op.off;
+            const bool zero = op.fn >= 2 ? (args[0] & 0xff) == 0 : args[0] == 0;   // (fn 3: skipped when the low byte isn't 0)
+            if (zero != (op.fn == 1 || op.fn == 3)) k += op.off;
             break;
         }
         case 68: {   // a text copied from the wide text given (0xBCF7D0; none without memory), or the empty text when there is none: name off

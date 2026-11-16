@@ -17140,7 +17140,7 @@ address,size,name,callers,status
 0xace520,440,,1,documented
 0xace6e0,30,DeletingDestructor,3,rewritten
 0xace700,215,Designer::Destructor,1,rewritten
-0xace7e0,1432,,0,documented
+0xace7e0,1432,Window::Titled,0,rewritten
 0xaceee0,86,,1,documented
 0xacef90,1009,,1,documented
 0xacf3a0,505,,1,documented

@@ -532,7 +532,7 @@ static uint32_t g_class_read_saved[128];
 extern const uint32_t titled_text_holders[];
 extern const uint32_t titled_compared_fields[];
 static uint32_t g_titled_at;   // (the copy being checked)
-extern const uint32_t titled_iface_args[], titled_class_globals[], titled_vcall_args[];
+extern const uint32_t titled_iface_args[], titled_class_globals[], titled_vcall_args[], titled_iface_places[];
 static uint32_t g_titled_vcall_mask;   // (the arguments the copy makes virtual calls on: objects with the stand-ins' table)
 static uint32_t g_titled_class_saved[16];
 static uint32_t g_titled_iface_mask;   // (the arguments the copy casts to an interface: objects with a class info)
@@ -6200,6 +6200,11 @@ static std::vector<Test> tests() {
                               for (int k = 0; titled_compared_fields[3 * k]; k++)   // (members compared with a constant: values near it)
                                   if (titled_compared_fields[3 * k] == g_titled_at)
                                       arena<uint32_t>(0x100 + titled_compared_fields[3 * k + 1])[0] = titled_compared_fields[3 * k + 2] + (uint32_t)r.range(0, 4) - 2;
+                              for (int k = 0; titled_iface_places[2 * k] != 0xffffffffu && k < 8; k++) {   // (objects inside children cast to an interface)
+                                  uint8_t *in = (uint8_t *)(uintptr_t)arena<uint32_t>(0x100 + titled_iface_places[2 * k])[0] + titled_iface_places[2 * k + 1];
+                                  arena<uint32_t>(0x9b00 + k * 0x10)[0] = (uint32_t)(uintptr_t)titled_iface_table;
+                                  *(uint32_t *)in = (uint32_t)(uintptr_t)arena<void>(0x9b00 + k * 0x10);
+                              }
                               for (int k = 0; titled_text_holders[2 * k] != 0xffffffffu && k < 8; k++) {   // (the holders counted texts go into: a text each)
                                   const uint32_t member = titled_text_holders[2 * k], inner = titled_text_holders[2 * k + 1];
                                   uint8_t *holder = member == 0xffff ? arena<uint8_t>(0x100 + inner) : (uint8_t *)(uintptr_t)arena<uint32_t>(0x100 + member)[0] + inner;
