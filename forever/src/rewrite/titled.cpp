@@ -558,7 +558,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 90: scratch[op.off] = (args[0] & 0xff) ? args[1] : args[2]; break;   // one of two values, by an argument's flag byte
         case 80: last = titled_call(op.fn, (void *)(uintptr_t)args[0], op.count - 1, args + 1); break;   // a call on a scratch value
         case 76: last = titled_call(op.fn, nullptr, op.count, args); break;
-        case 81: titled_release((void *)(uintptr_t)args[0]); break;   // a counted text let go (from a member, a stack slot, a register)   // a plain function (it never reads ecx), what it gives kept
+        case 81: titled_release(op.value ? *(void **)(uintptr_t)args[0] : (void *)(uintptr_t)args[0]); break;   // (value 1: the text at that place) a counted text let go (from a member, a stack slot, a register)   // a plain function (it never reads ecx), what it gives kept
         case 77: {   // a shared object: the one the global args[0] holds, else made by fn (taking nothing); args[1]: cast to its part at
                      // +value (none for none)
             uint32_t got = *(volatile uint32_t *)(uintptr_t)args[0];

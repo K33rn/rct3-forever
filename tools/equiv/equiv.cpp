@@ -269,7 +269,7 @@ static void *new_wide_block();
 static void *__cdecl stub_plain_alloc(uint32_t size);
 extern const uint32_t titled_child_holders[];
 static uint32_t g_child_holders[8], g_child_holder_count;   // (the copy being checked: places in its children that counted texts go into)
-static uint32_t g_child_arrays[4][2], g_child_array_count;   // (and arrays of counted texts in them: offset, elements)
+static uint32_t g_child_arrays[4][3], g_child_array_count;   // (and arrays of counted texts in them: offset, elements)
 extern const uint32_t titled_child_arrays[];
 static void *built_result(void *self) {
     if (!g_built_other) return self;
@@ -6226,6 +6226,12 @@ static std::vector<Test> tests() {
                               *arena<uint32_t>(ALLOC_NEXT) = 0;
                               for (uint32_t k = 0; k < 0x500; k += 4)   // the window's members: each points somewhere (16 places), so writes through them land
                                   arena<uint32_t>(0x100 + k)[0] = (uint32_t)(uintptr_t)arena<void>(0xc000 + k / 4 % 16 * 0x40);
+                              for (uint32_t k = 0; k < g_child_array_count; k++)   // (the children already there holding an array of counted texts: one)
+                                  if (g_child_arrays[k][2] < 0x500 && g_child_arrays[k][0] < 0x400 && g_child_arrays[k][1] <= 64) {
+                                      void **array = (void **)stub_plain_alloc(4 * g_child_arrays[k][1]);
+                                      for (uint32_t q = 0; q < g_child_arrays[k][1]; q++) array[q] = new_wide_block();
+                                      *(void ***)(arena<uint8_t>(0x100 + g_child_arrays[k][2])[0] ? (uint8_t *)(uintptr_t)arena<uint32_t>(0x100 + g_child_arrays[k][2])[0] + g_child_arrays[k][0] : nullptr) = array;
+                                  }
                               uint32_t *title = arena<uint32_t>(0x8000);
                               title[1] = 0;
                               *(uint8_t *)&title[1] = (uint8_t)(r.range(0, 2) == 0);   // (+4: the default named already, or not)
@@ -6426,9 +6432,10 @@ static std::vector<Test> tests() {
         for (int k = 0; titled_child_holders[k]; k += 2)
             if (titled_child_holders[k] == e->at && g_child_holder_count < 8) g_child_holders[g_child_holder_count++] = titled_child_holders[k + 1];
         g_child_array_count = 0;
-        for (int k = 0; titled_child_arrays[k]; k += 3)
+        for (int k = 0; titled_child_arrays[k]; k += 4)
             if (titled_child_arrays[k] == e->at && g_child_array_count < 4)
-                g_child_arrays[g_child_array_count][0] = titled_child_arrays[k + 1], g_child_arrays[g_child_array_count++][1] = titled_child_arrays[k + 2];
+                g_child_arrays[g_child_array_count][0] = titled_child_arrays[k + 1], g_child_arrays[g_child_array_count][2] = titled_child_arrays[k + 3],
+                g_child_arrays[g_child_array_count++][1] = titled_child_arrays[k + 2];
         for (int k = 0; titled_iface_args[k]; k += 2)
             if (titled_iface_args[k] == e->at) g_titled_iface_mask = titled_iface_args[k + 1];
         g_titled_vcall_mask = 0;

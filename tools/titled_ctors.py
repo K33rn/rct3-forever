@@ -146,7 +146,7 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
-LEFT_OUT = {
+LEFT_OUT = {0xa21b30: "dies in the tester: its child at +0x14C (0x6A07E0's) has a holder's place at +0x1C8, past what the tester gives it",
             0x701590:"the original dies in the tester (a stand-in's object read through as something else): to look at",
             0x791670:"the original dies in the tester (a read of 0xC in 0xBCE978, from 0x403C8A: a text the stand-ins don't make?): to look at"}
 
@@ -611,6 +611,7 @@ def tail(p):
     inline_built = set()   # new memory set up in line (no constructor called on it)
     byte_tested = [None]   # (the last byte test: where, and what was tested)
     unrolled = [0]   # (how many times a loop's body was read again)
+    ca_reload = [None]   # (a register a counted assign read back from the stack: (register, slot))
     fast_temps = set()
     link_pre, link_skip = [], set()   # (list links found inside an x87 run: their steps, done first, and where they are)
     fpu_skip = set()   # x87 steps a run took in, left behind it (passed over when read again)
@@ -945,9 +946,14 @@ def tail(p):
             return ('fieldplace', v_[1] | off_ << 16)
         if v_[0] == 'scratch' and off_ == 0:
             return v_   # (a place worked out into a scratch value: an array's element)
+        if v_[0] == 'childval' and v_[3] == len(ops) and v_[2] < 0x10000 and v_[1] < 0x10000:
+            if off_ == 0:
+                return ('dfield', v_[1] | v_[2] << 16)   # (a holder's place kept in a child: read when the step runs)
+            return ('dfplus', ('dfield', v_[1] | v_[2] << 16), off_)   # (or a place past it: worked out into a scratch value first)
         return None
 
     def counted_assign(k0):
+        ca_reload[0] = None
         # a counted text put into a holder (kind 75), as the compiler writes it inline (the stack bookkeeping stores passed
         # over): mov H, [P]; cmp N, H; je END; dec dword ptr [H]; mov Y, [P]; cmp dword ptr [Y], 0; jne SKIP; test Y, Y;
         # je SKIP; (the frees: the text's memory at +0xC, 0xBCE010, then the text, 0xBCE000; add esp, 8); SKIP:
@@ -966,12 +972,17 @@ def tail(p):
             return None
         h_ = m0.group(1)
         place = holder_place(m0.group(2), num(m0.group(3) or '0'))
+        bump_ = 0   # (the base moved on to the holder right after it is read: add P, K, with the read at [P + K])
+        if m0.group(3) and len(b) > 1 and b[1] == f'add {m0.group(2)}, {m0.group(3)}':
+            bump_ = num(m0.group(3))
+            del b[1]; del L[1]
         c1 = re.fullmatch(r'cmp ' + REG + ', ' + h_, b[1])
         if not place or not c1 or not b[2].startswith('je ') or b[3] != f'dec dword ptr [{h_}]' or c1.group(1) == m0.group(2):
             return None
         n_ = c1.group(1)
         m4 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', b[4])
-        if not m4 or m4.group(2) in (h_,) and m4.group(2) != m0.group(2) or holder_place(m4.group(2), num(m4.group(3) or '0')) != place:
+        if not m4 or m4.group(2) in (h_,) and m4.group(2) != m0.group(2) or \
+                holder_place(m4.group(2), num(m4.group(3) or '0') + (bump_ if m4.group(2) == m0.group(2) else 0)) != place:
             return None
         y_ = m4.group(1)
         z5 = re.fullmatch(r'cmp dword ptr \[' + y_ + r'\], (0|' + REG + ')', b[5])
@@ -1006,17 +1017,29 @@ def tail(p):
         i += 5
         # (the new text may be read again through the temporary holding it: mov R, [esp + Y]; mov R, [R]; mov [P], R; inc [R])
         store_at_ = L[i][0] if i < len(L) else None
+        reload_ = None   # (a register the code reads back from the stack just before the store, for what follows: (register, slot))
+        if i + 2 < len(b) and (zl_ := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', b[i])) and \
+                zl_.group(1) not in (n_, m0.group(2)) and re.match(r'mov dword ptr \[', b[i + 1]):
+            reload_ = (zl_.group(1), num(zl_.group(2)) - depth_at[L[i][0]])
+            # (its value: the register stored there within the assign's own steps, as it was at their start; else the slot's)
+            sv_ = S.get(reload_[1])
+            for q_ in range(k0, L[i][0]):
+                zs_ = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, t[q_])
+                if zs_ and num(zs_.group(1)) - depth_at[q_] == reload_[1]:
+                    sv_ = val(zs_.group(2)) if not any(re.match(r'(mov|lea|add|sub|xor|pop) ' + zs_.group(2) + ',', t[q2_]) for q2_ in range(k0, q_)) else None
+            ca_reload[0] = (reload_[0], sv_)
+            del b[i]; del L[i]
         if i + 3 < len(b) and (zt_ := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', b[i])) and \
                 val(n_) and val(n_)[0] == 'tempat' and val(n_)[2] == 0 and \
                 S.get(num(zt_.group(2)) - depth_at[L[i][0]]) == ('temp', val(n_)[1]) and b[i + 1] == f'mov {zt_.group(1)}, dword ptr [{zt_.group(1)}]':
             r3_ = zt_.group(1)
             del b[i:i + 2]; del L[i:i + 2]
             ms = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + r3_, b[i])
-            if not ms or holder_place(ms.group(1), num(ms.group(2) or '0')) != place or b[i + 1] != f'inc dword ptr [{r3_}]':
+            if not ms or holder_place(ms.group(1), num(ms.group(2) or '0') + (bump_ if ms.group(1) == m0.group(2) else 0)) != place or b[i + 1] != f'inc dword ptr [{r3_}]':
                 return None
         else:
             ms = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + n_, b[i])
-            if not ms or holder_place(ms.group(1), num(ms.group(2) or '0')) != place or b[i + 1] != f'inc dword ptr [{n_}]':
+            if not ms or holder_place(ms.group(1), num(ms.group(2) or '0') + (bump_ if ms.group(1) == m0.group(2) else 0)) != place or b[i + 1] != f'inc dword ptr [{n_}]':
                 return None
         skip_, end_ = at.get(num(j6.group(1))), at.get(int(b[2][3:], 0))
         if skip_ != store_at_ or end_ is None or not (L[i + 1][0] < end_ <= (L[i + 2][0] if i + 2 < len(L) else end_)):
@@ -1087,6 +1110,8 @@ def tail(p):
             return ('field', (0 if val(z.group(1)) == ('this',) else val(z.group(1))[1]) + num(z.group(2) or '0'))
         if z and still(val(z.group(1))) and val(z.group(1))[1] < 0x10000 and num(z.group(2) or '0') < 0x10000:
             return ('dfield', val(z.group(1))[1] | num(z.group(2) or '0') << 16)   # (a dword inside what a member points to)
+        if z and val(z.group(1)) and val(z.group(1))[0] == 'scratch' and not z.group(2):
+            return ('deref', val(z.group(1)))   # (the dword at a place worked out into a scratch value: read through it then)
         return None
 
     def text_release(k0):
@@ -1797,6 +1822,17 @@ def tail(p):
                 continue
             if x.mnemonic == 'ret' or not re.fullmatch(r'0x[0-9a-f]+', x.op_str) or at.get(int(x.op_str, 0), 1 << 30) > conds[-1][0]:
                 raise Reject('a jump out of a conditional block @%#x' % x.address)
+        if x.mnemonic == 'call' and x.op_str != '0xddcda7' and re.fullmatch(r'0x[0-9a-f]+', x.op_str) and \
+                not (R.get('ecx') and R['ecx'][0] in ('this', 'member', 'field', 'fieldplus', 'obj', 'stack', 'alloc')) and \
+                not uses_ecx(num(x.op_str)):
+            # (the registers a call keeps, holding a place inside what a member points to, worked out before it: kept as
+            # scratch values now, kind 79, so what they hold after is what they held, whatever the call does to the member)
+            for r_ in ('ebx', 'esi', 'edi', 'ebp'):
+                v_ = R.get(r_)
+                if v_ and v_[0] == 'fieldplus' and still(('field', v_[1], v_[2])) and v_[1] < 0x10000 and nscratch[0] < 24:
+                    ops.append((79, nscratch[0], v_[3], 0, [('field', v_[1])]))
+                    R[r_] = ('scratch', nscratch[0])
+                    nscratch[0] += 1
         if x.mnemonic == 'call':
             if 'edx' in x.op_str:
                 edx_live[0] = False   # (a call through edx: it was the table, used)
@@ -1878,6 +1914,16 @@ def tail(p):
             if sl_ in run_locals:
                 ops.append((92, (sl_ + LB) // 4, S[sl_][1], 0, []))
             flag = ('cmpconst', S[sl_][1], 0)
+            k += 1
+            continue
+        if (m := re.fullmatch(r'(inc|dec|add) (e[a-d]x|e[sd]i|ebp|ebx)(?:, (0x[0-9a-f]+|\d+))?', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] == 'scratch' and (m.group(1) == 'add') == bool(m.group(3)) and nscratch[0] < 32:
+            # a scratch value plus a constant (kind 79): a new scratch value
+            c_ = num(m.group(3)) if m.group(3) else 1 if m.group(1) == 'inc' else 0xffffffff
+            ops.append((79, nscratch[0], c_, 0, [val(m.group(2))]))
+            R[m.group(2)] = ('scratch', nscratch[0])
+            nscratch[0] += 1
+            flag = None
             k += 1
             continue
         if (m := re.fullmatch(r'(inc|dec) (e[a-d]x|e[sd]i|ebp|ebx)', s)) and val(m.group(2)) and val(m.group(2))[0] == 'const':
@@ -2223,6 +2269,8 @@ def tail(p):
             if name_ is not None:
                 ops.append((57, name_, 0, 0, []))
                 built.discard(('name', name_))
+            elif value_[0] == 'deref':   # (the text at a place in a scratch value: value 1, read through the place when it runs)
+                ops.append((81, 0, 1, 0, [value_[1]]))
             else:
                 ops.append((81, 0, 0, 0, [value_]))
             for r in written_:
@@ -2254,12 +2302,20 @@ def tail(p):
             # a counted text put into a holder in the window or a child (kind 75)
             end_, place_, nc_, name_ = ca
             edx_live[0] = False   # (edx, if the assign used it, was only the assign's)
+            if place_[0] == 'dfplus':   # (a place past one kept in a child: worked out first, kind 79)
+                if nscratch[0] >= 32:
+                    raise Reject('scratch values')
+                ops.append((79, nscratch[0], place_[2], 0, [place_[1]]))
+                place_ = ('scratch', nscratch[0])
+                nscratch[0] += 1
             ops.append((75, 0, name_ or 0, int(name_ is not None), [place_] if nc_ is None else [place_, nc_]))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             for r in R:   # (what the frees can't have changed: the window's registers; the rest read again)
                 if R[r] and R[r][0] not in ('this', 'member', 'const', 'name', 'arg', 'global', 'field', 'fieldplus'):
                     R[r] = None
+            if ca_reload[0]:   # (and the register it read back for what follows: the slot's value)
+                R[ca_reload[0][0]] = ca_reload[0][1]
             k = end_
             flag = None
             continue
@@ -3122,6 +3178,19 @@ def tail(p):
             n_ = rn_
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
+            for ai_, v in enumerate(args):
+                # (a local area given by its address, its four dwords known constants: put in the runs' buffer first, kind
+                # 92, and its place there given, value kind 9)
+                if isinstance(v, tuple) and v[0] == 'rect' and v[1] < 0 and -v[1] <= LB - 0x10 and \
+                        all((S.get(v[1] + 4 * q_) or ('',))[0] == 'const' for q_ in range(4)):
+                    for q_ in range(4):
+                        ops.append((92, (v[1] + 4 * q_ + LB) // 4, S[v[1] + 4 * q_][1] & 0xffffffff, 0, []))
+                    args[ai_] = ('local', (v[1] + LB) // 4)
+                # (or an area nothing wrote yet, which the callee fills: the runs' buffer there, read through it after)
+                elif isinstance(v, tuple) and v[0] == 'rect' and v[1] < 0 and -v[1] <= LB - 0x10 and \
+                        all(S.get(v[1] + 4 * q_) is None and stored(v[1] + 4 * q_, k) is None and v[1] + 4 * q_ not in run_locals for q_ in range(4)):
+                    args[ai_] = ('local', (v[1] + LB) // 4)
+                    run_locals.update(v[1] + 4 * q_ for q_ in range(4))
             if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] in (58, 68) and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('member call with a temporary')
             if this[0] == 'arg':
@@ -3172,7 +3241,7 @@ def tail(p):
     if ops.count((12, 0, 0, 0, [])) > 1:
         raise Reject('two marks')
     if any(isinstance(v, tuple) and v[0] == 'rect' for o in ops for v in o[4]):
-        raise Reject('a local address given')
+        raise Reject('a local address given %s' % [o[:4] for o in ops if any(isinstance(v, tuple) and v[0] == 'rect' for v in o[4])][:3])
     # the argument slots the tail stores constants into (kind 92): first given the argument, in the runs' buffer (kind 93),
     # so a run reads the argument there when the store's block didn't run (the steps count their skips: one put first is fine)
     for off_ in sorted({o[1] for o in ops if o[0] == 92}, reverse=True):
@@ -3383,18 +3452,21 @@ if __name__ == '__main__':
     out.append('extern const uint32_t titled_child_holders[];')
     out.append('const uint32_t titled_child_holders[] = {' + ''.join(f'{a:#x}, {i:#x}, ' for a, i in chold_) + '0};')
     # (and the arrays of counted texts inside its children that a text is put into, element by element: op 75 into a scratch
-    # place worked out by op 79 from a dword inside a child, kind 11: (copy, offset in the child, elements) each)
+    # place worked out by op 79 from a dword inside a child, kind 11: (copy, offset in the child, elements, the window's member holding the child) each)
     carr_ = {}
     for a_ in info:
         o_ = all_ops.get(a_[0], [])
         for i_, o in enumerate(o_):
-            if o[0] == 75 and o[4][0][0] == 'scratch':
+            if o[0] in (75, 81) and isinstance(o[4][0], tuple) and o[4][0][0] == 'dfield' and (o[0] == 75 or o[2] == 1):
+                key_ = (a_[0], o[4][0][1] & 0xffff, o[4][0][1] >> 16)   # (a holder kept in a child, given directly: the array's first element)
+                carr_[key_] = max(carr_.get(key_, 0), 1)
+            if o[0] in (75, 81) and isinstance(o[4][0], tuple) and o[4][0][0] == 'scratch' and (o[0] == 75 or o[2] == 1):
                 w_ = next((p_ for p_ in reversed(o_[:i_]) if p_[0] == 79 and p_[1] == o[4][0][1]), None)
                 if w_ and isinstance(w_[4][0], tuple) and w_[4][0][0] == 'dfield':
-                    key_ = (a_[0], w_[4][0][1] >> 16)
+                    key_ = (a_[0], w_[4][0][1] & 0xffff, w_[4][0][1] >> 16)
                     carr_[key_] = max(carr_.get(key_, 0), w_[2] // 4 + 1)
     out.append('extern const uint32_t titled_child_arrays[];')
-    out.append('const uint32_t titled_child_arrays[] = {' + ''.join(f'{a:#x}, {i:#x}, {n}, ' for (a, i), n in sorted(carr_.items())) + '0};')
+    out.append('const uint32_t titled_child_arrays[] = {' + ''.join(f'{a:#x}, {i:#x}, {n}, {m:#x}, ' for (a, m, i), n in sorted(carr_.items())) + '0};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
     objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73} |
