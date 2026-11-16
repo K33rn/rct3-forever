@@ -610,6 +610,7 @@ def tail(p):
     always_temps = set()
     inline_built = set()   # new memory set up in line (no constructor called on it)
     byte_tested = [None]   # (the last byte test: where, and what was tested)
+    unrolled = [0]   # (how many times a loop's body was read again)
     link_pre, link_skip = [], set()   # (list links found inside an x87 run: their steps, done first, and where they are)
     fpu_skip = set()   # x87 steps a run took in, left behind it (passed over when read again)
     text_temps = set()   # the temporaries holding a counted text (0x6A39D0 on the stack), let go by kind 16
@@ -1814,6 +1815,46 @@ def tail(p):
             k = ll_[0]
             flag = None
             continue
+        # loops of a known count, unrolled: a counter and places stepping by constants are tracked as such, and a jump on a
+        # compare of two known constants is decided here (one back reads the body again, up to 64 times in all)
+        if (m := re.fullmatch(r'(inc|dec) (e[a-d]x|e[sd]i|ebp|ebx)', s)) and val(m.group(2)) and val(m.group(2))[0] == 'const':
+            R[m.group(2)] = ('const', (val(m.group(2))[1] + (1 if m.group(1) == 'inc' else -1)) & 0xffffffff)
+            flag = ('cmpconst', R[m.group(2)][1], 0)
+            k += 1
+            continue
+        if (m := re.fullmatch(r'add (e[a-d]x|e[sd]i|ebp|ebx), (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) and \
+                (val(m.group(1))[0] == 'const' or val(m.group(1))[0] == 'member' and val(m.group(1))[1] + num(m.group(2)) < 0x10000 or
+                 val(m.group(1)) == ('this',) and num(m.group(2)) < 0x10000):
+            v_ = val(m.group(1))
+            R[m.group(1)] = ('const', (v_[1] + num(m.group(2))) & 0xffffffff) if v_[0] == 'const' else \
+                ('member', (v_[1] if v_[0] == 'member' else 0) + num(m.group(2)))
+            flag = None
+            k += 1
+            continue
+        if (m := re.fullmatch(r'cmp (e[a-d]x|e[sd]i|ebp|ebx), (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) and val(m.group(1))[0] == 'const':
+            flag = ('cmpconst', val(m.group(1))[1], num(m.group(2)))
+            k += 1
+            continue
+        if x.mnemonic in CMP_CONDITIONS and flag and flag[0] == 'cmpconst' and re.fullmatch(r'0x[0-9a-f]+', x.op_str) and \
+                at.get(int(x.op_str, 0)) is not None and not pushed:
+            a_, b_ = flag[1], flag[2]
+            sa_, sb_ = a_ - (1 << 32) if a_ >> 31 else a_, b_ - (1 << 32) if b_ >> 31 else b_
+            jumps_ = [a_ > b_, a_ >= b_, a_ < b_, a_ <= b_, sa_ > sb_, sa_ >= sb_, sa_ < sb_, sa_ <= sb_, a_ == b_, a_ != b_][CMP_CONDITIONS.index(x.mnemonic)]
+            to_ = at[int(x.op_str, 0)]
+            flag = None
+            if not jumps_:
+                k += 1
+                continue
+            if to_ <= k:   # (back: the loop's body again)
+                unrolled[0] += 1
+                if unrolled[0] > 64:
+                    raise Reject('loop too long')
+                k = to_
+                continue
+            if not conds or to_ <= conds[-1][0]:
+                k = to_
+                continue
+            raise Reject('a decided jump out of a conditional block')
         if s == 'call 0xddcda7' and not pushed and cookie_given(k):
             # the stack cookie checked (__security_check_cookie, given the game's cookie kept on the stack at the start): it
             # holds as long as the stack does, and leaves the registers but ecx and the flags as they were

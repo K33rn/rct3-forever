@@ -7166,7 +7166,7 @@ address,size,name,callers,status
 0x6bab50,30,DeletingDestructor,2,rewritten
 0x6bac90,30,DeletingDestructor,2,rewritten
 0x6bacc0,3603,,2,documented
-0x6bbae0,2045,,1,documented
+0x6bbae0,2045,Window::Titled,1,rewritten
 0x6bc310,40,Text::Widen,0,rewritten
 0x6bc360,135,,0,documented
 0x6bc4d0,77,,2,documented
