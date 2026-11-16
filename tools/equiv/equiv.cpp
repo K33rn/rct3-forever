@@ -6189,14 +6189,14 @@ static std::vector<Test> tests() {
                               arena<uint32_t>(0x30)[0] = (uint32_t)(uintptr_t)text;
                               arena<uint32_t>(0x10)[0] = r.range(0, 2) ? (uint32_t)(uintptr_t)arena<void>(0x8100) : 0;
                               arena<uint32_t>(0x10)[1] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x30) : 0;
-                              for (int k = 2; k < 7; k++) {   // the other arguments: pointers to filled memory (read through, or kept as values)
+                              for (int k = 2; k < 8; k++) {   // the other arguments: pointers to filled memory (read through, or kept as values)
                                   arena<uint32_t>(0x10)[k] = (uint32_t)(uintptr_t)arena<void>(0x9000 + k * 0x40);
                                   for (int q = 0; q < 16; q++) arena<uint32_t>(0x9000 + k * 0x40)[q] = r.next();
                                   // (its first dword a shared text's place, for the copies that hold what it holds)
                                   arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)arena<void>(0x9400 + k * 0x10);
                                   arena<uint32_t>(0x9400 + k * 0x10)[0] = r.range(1, 3);
                               }
-                              for (int k = 2; k < 7; k++)   // (the arguments cast to an interface: objects whose class info is the case's; argument k + 1 is a[k])
+                              for (int k = 2; k < 8; k++)   // (the arguments cast to an interface: objects whose class info is the case's; argument k + 1 is a[k])
                                   if (g_titled_iface_mask >> (k + 1) & 1) arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)titled_iface_table;
                                   else if (g_titled_vcall_mask >> (k + 1) & 1) arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               {
@@ -6292,14 +6292,14 @@ static std::vector<Test> tests() {
                               g_null_handle = arena<void>(0x700);
                               uint32_t *a = arena<uint32_t>(0x10);
                               if (g_titled_parent != 1 || g_titled_text != 2) {   // (the parent and the text in the copy's own arguments; blocks elsewhere)
-                                  const uint32_t parent = a[0], text = a[1], blocks[5] = {a[2], a[3], a[4], a[5], a[6]};
-                                  for (uint32_t k = 1, b = 0; k <= 7; k++)
-                                      a[k - 1] = k == g_titled_parent ? parent : k == g_titled_text ? text : blocks[b++ % 5];
+                                  const uint32_t parent = a[0], text = a[1], blocks[6] = {a[2], a[3], a[4], a[5], a[6], a[7]};
+                                  for (uint32_t k = 1, b = 0; k <= 8; k++)
+                                      a[k - 1] = k == g_titled_parent ? parent : k == g_titled_text ? text : blocks[b++ % 6];
                               }
-                              for (int k = 2; k <= 7; k++)   // (the flag arguments a byte test reads: 0, 1 or 2)
+                              for (int k = 2; k <= 8; k++)   // (the flag arguments a byte test reads: 0, 1 or 2)
                                   if (g_titled_byte_flags >> k & 1)   // (the upper bytes whatever the caller left: only the low one is the flag)
                                       a[k - 1] = (arena<uint32_t>(0x4c)[0] >> (2 * k)) % 3 | ((arena<uint32_t>(0x4c)[0] * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu) & 0xffffff00u);
-                              for (int k = 2; k < 7; k++)
+                              for (int k = 2; k < 8; k++)
                                   if (g_titled_nullable >> k & 1 && (arena<uint32_t>(0x4c)[0] >> (3 * k)) % 3 == 0) a[k - 1] = 0;
                               void *self = arena<void>(0x100), *made;
                               switch (g_titled_args) {
@@ -6308,7 +6308,8 @@ static std::vector<Test> tests() {
                               case 4: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3]); break;
                               case 5: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4]); break;
                               case 6: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]); break;
-                              default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
+                              case 7: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
+                              default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]); break;
                               }
                               for (int k = 0; titled_object_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
                               for (int k = 0; titled_text_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_text_globals[k] = g_titled_text_saved[k];

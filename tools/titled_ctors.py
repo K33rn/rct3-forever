@@ -384,7 +384,7 @@ def parse(a, n):
         raise Reject('parent register written before the base')
     title = num(t[sel[0]][len('mov ' + sel_reg + ', dword ptr ['):-1])
     parent = value_at_reg(t, sel[0] - 1, sel_reg, depth_at, nargs, k41)   # what it holds when it isn't null
-    if not parent or parent[0] != 'arg' or not 1 <= parent[1] <= min(nargs, 7):
+    if not parent or parent[0] != 'arg' or not 1 <= parent[1] <= min(nargs, 8):
         raise Reject('parent is %s' % (parent,))
     parent_arg = parent[1]   # (the parent's argument: the first, or another)
     if t[pushes[1]] != 'push eax':
@@ -402,7 +402,7 @@ def parse(a, n):
     while not t[q].startswith('push '):
         q -= 1
     text_v = value_at_reg(t, q + 1, t[q][5:], depth_at, nargs, 0)
-    if not text_v or text_v[0] != 'arg' or text_v[1] == parent_arg or not 1 <= text_v[1] <= min(nargs, 7):
+    if not text_v or text_v[0] != 'arg' or text_v[1] == parent_arg or not 1 <= text_v[1] <= min(nargs, 8):
         raise Reject('text is %s' % (text_v,))
     text_arg = text_v[1]
     base_this = value_at_reg(t, kb, 'ecx', depth_at, nargs, k41) if False else None
@@ -667,6 +667,32 @@ def tail(p):
                     re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', u)):
                 return False
             q += 1
+        return False
+
+    def cookie_given(k0):
+        # is ecx, at the call at k0, the game's stack cookie (its global 0x10FE634, kept on the stack at the start)? The
+        # cookie's slot: where the first read of the global is stored; ecx: read from that slot, the last thing set in it
+        slot_ = None
+        for q_ in range(len(t)):
+            z_ = re.fullmatch(r'mov (e[a-d]x|e[sd]i|ebp), dword ptr \[0x10fe634\]', t[q_])
+            if z_:
+                for q2_ in range(q_ + 1, min(q_ + 12, len(t))):
+                    z2_ = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + z_.group(1), t[q2_])
+                    if z2_:
+                        slot_ = num(z2_.group(1)) - depth_at[q2_]
+                        break
+                    if re.match(r'(mov|xor|lea|pop|add|sub|or|and) ' + z_.group(1) + ',', t[q2_]):
+                        break
+                break
+        if slot_ is None:
+            return False
+        for q_ in range(k0 - 1, max(k0 - 5, 0), -1):
+            if re.match(r'(mov|lea|xor|pop|add|sub|or|and) ecx\b', t[q_]) or t[q_].startswith('call '):
+                z_ = re.fullmatch(r'mov ecx, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q_])
+                # (and nothing else stored in that slot since the start)
+                return bool(z_) and num(z_.group(1)) - depth_at[q_] == slot_ and \
+                    sum(1 for q2_ in range(q_) if (z3_ := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], .*', t[q2_])) and
+                        num(z3_.group(1)) - depth_at[q2_] == slot_) == 1
         return False
 
     def fast_codes():   # ecx and edx as a fastcall is given them: values (a temporary held alive counts), or None
@@ -1664,6 +1690,13 @@ def tail(p):
         elif re.search(r'\b(edx|dl|dh)\b', s):
             edx_live[0] = False
         if k in fpu_skip:   # (an x87 step an earlier run took in, read past the pushes set among its steps)
+            k += 1
+            continue
+        if s == 'call 0xddcda7' and not pushed and cookie_given(k):
+            # the stack cookie checked (__security_check_cookie, given the game's cookie kept on the stack at the start): it
+            # holds as long as the stack does, and leaves the registers but ecx and the flags as they were
+            R['ecx'] = None
+            flag = None
             k += 1
             continue
         if x.mnemonic.startswith('f') and x.mnemonic not in ('fnstsw',) and (fs := fpu_step(k)):
@@ -2832,7 +2865,7 @@ if __name__ == '__main__':
             continue
         try:
             p = parse(a, n)
-            if p['nargs'] < 2 or p['nargs'] > 7:
+            if p['nargs'] < 2 or p['nargs'] > 8:
                 raise Reject('arguments %d' % p['nargs'])
         except (Reject, StopIteration, ValueError, IndexError, KeyError) as e:
             key = re.sub(r' @0x[0-9a-f]+', '', type(e).__name__ + ' ' + str(e))[:60]

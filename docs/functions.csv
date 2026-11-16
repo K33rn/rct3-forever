@@ -16330,7 +16330,7 @@ address,size,name,callers,status
 0xa82700,528,,2,documented
 0xa829e0,30,DeletingDestructor,2,rewritten
 0xa82a40,605,Dialog::Label,7,rewritten
-0xa82ca0,3054,,1,documented
+0xa82ca0,3054,Window::Titled,1,rewritten
 0xa83890,568,,1,documented
 0xa83ad0,180,Destructor::Steps,1,rewritten
 0xa83bb0,501,,2,documented
