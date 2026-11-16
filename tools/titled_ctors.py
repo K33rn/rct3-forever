@@ -755,6 +755,27 @@ def tail(p):
         return any((z_ := re.fullmatch(r'(?:mov|fstp?) dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\](?:, .*)?', t[q_])) and num(z_.group(1)) - depth_at[q_] == slot_
                    for q_ in range(start))
 
+    def local_areas(args):
+        # a call's values that are a local area's address: given as its place in the runs' buffer (value kind 9). Four dwords
+        # of known constants are put there first (kind 92); an area nothing wrote yet (the callee fills it) is read through
+        # the buffer after
+        for ai_, v in enumerate(args):
+            if isinstance(v, tuple) and v[0] == 'rect' and v[1] < 0 and -v[1] <= LB - 0x10 and \
+                    all((S.get(v[1] + 4 * q_) or ('',))[0] == 'const' for q_ in range(4)):
+                for q_ in range(4):
+                    ops.append((92, (v[1] + 4 * q_ + LB) // 4, S[v[1] + 4 * q_][1] & 0xffffffff, 0, []))
+                args[ai_] = ('local', (v[1] + LB) // 4)
+            elif isinstance(v, tuple) and v[0] == 'rect' and v[1] < 0 and -v[1] <= LB - 0x10 and \
+                    all(S.get(v[1] + 4 * q_) is None and stored(v[1] + 4 * q_, k) is None and v[1] + 4 * q_ not in run_locals for q_ in range(4)):
+                args[ai_] = ('local', (v[1] + LB) // 4)
+                run_locals.update(v[1] + 4 * q_ for q_ in range(4))
+            elif isinstance(v, tuple) and v[0] == 'rect' and v[1] < 0 and -v[1] <= LB - 0x10 and S.get(v[1]) and \
+                    S[v[1]][0] != 'const' and base_code(S[v[1]]) is not None and \
+                    all(S.get(v[1] + 4 * q_) is None and stored(v[1] + 4 * q_, k) is None for q_ in range(1, 4)):
+                # (a holder on the stack: one dword, a value known, given by its place: the value put there first)
+                ops.append((92, (v[1] + LB) // 4, 0, 0, [base_code(S[v[1]])]))
+                args[ai_] = ('local', (v[1] + LB) // 4)
+
     def cookie_given(k0):
         # is ecx, at the call at k0, the game's stack cookie (its global 0x10FE634, kept on the stack at the start)? The
         # cookie's slot: where the first read of the global is stored; ecx: read from that slot, the last thing set in it
@@ -1100,7 +1121,7 @@ def tail(p):
         # when the step runs: no call between), or a stack slot whose value is known
         z = re.fullmatch(r'dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', op_text)
         if z:
-            slot_ = num(z.group(1)) - depth_at[q_]
+            slot_ = num(z.group(1)) - depth_at[q_] - (d - depth_at[k])   # (the static depths corrected by how far they drifted from the steps' own)
             if slot_ >= 4 and slot_ % 4 == 0 and slot_ // 4 <= nargs:
                 return None if slot_ in clobbered else base_code(('arg', slot_ // 4))
             v_ = S.get(slot_, stored(slot_, q_))
@@ -1176,6 +1197,10 @@ def tail(p):
         i += 1
         if not zc and (zc2 := re.fullmatch(r'mov ' + REG + ', ' + x_, b[i])):
             copies.add(zc2.group(1)); written.add(zc2.group(1)); i += 1
+        elif not zc and i + 1 < len(b) and b[i] == f'push {zw.group(1)}' and (zc3 := re.fullmatch(r'mov ' + REG + ', ' + x_, b[i + 1])) and \
+                zc3.group(1) != zw.group(1):
+            copies.add(zc3.group(1)); written.add(zc3.group(1))   # (the copy made between the push and the call)
+            del b[i + 1]; del L[i + 1]
         if i + 4 >= len(b) + 1:
             return None
         zp = re.fullmatch(r'push ' + REG, b[i + 2]) if i + 2 < len(b) else None
@@ -2381,7 +2406,7 @@ def tail(p):
             # (a game global's value worked on: kept so, for the store back that follows)
             R[m.group(2)] = ('globmask', R[m.group(2)][1], m.group(1), num(m.group(3)), len(ops))
             flag = None
-        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and not (not pushed and not register_release(k) and text_release(k)):
             slot = num(m.group(2)) - d
             if slot in clobbered or slot in slot_stored:
                 if not S.get(slot):
@@ -2940,6 +2965,7 @@ def tail(p):
                 raise Reject('new object constructor')
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
+            local_areas(args)
             ops.append((10, 0, 0, fn, args))
             for r in list(R):
                 if R[r] == token:
@@ -3070,9 +3096,9 @@ def tail(p):
             k = fs[0]
             flag = None
             continue
-        elif (m := re.fullmatch(r'call dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(1)) and val(m.group(1))[0] == 'vtable' and \
+        elif (m := re.fullmatch(r'call dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(1)) and val(m.group(1))[0] == 'vtable' and \
                 val(m.group(1))[1] == val('ecx') and (val('ecx') == ('this',) or val('ecx')[0] == 'member' or still(val('ecx'))) and \
-                num(m.group(2)) % 4 == 0 and num(m.group(2)) < 0x200 and len(pushed) <= 4 and None not in pushed:
+                num(m.group(2) or '0') % 4 == 0 and num(m.group(2) or '0') < 0x200 and len(pushed) <= 4 and None not in pushed:
             # a virtual call on the window, a member or what a member points to (kind 60): what was pushed since the last
             # call is what it takes (the tester's stand-in for the slot takes as many, the same in every constructor)
             on = val('ecx')
@@ -3082,7 +3108,7 @@ def tail(p):
             d -= 4 * n_
             if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') and not (v[0] == 'temp' and v[1] in always_temps) for v in args):
                 raise Reject('virtual call with a temporary')
-            slot_ = num(m.group(2))
+            slot_ = num(m.group(2) or '0')
             if VSLOTS.setdefault(slot_, n_) != n_:
                 raise Reject('virtual slot taking another count')
             ops.append((60, target, slot_, 0, args))
@@ -3209,19 +3235,7 @@ def tail(p):
             n_ = rn_
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
-            for ai_, v in enumerate(args):
-                # (a local area given by its address, its four dwords known constants: put in the runs' buffer first, kind
-                # 92, and its place there given, value kind 9)
-                if isinstance(v, tuple) and v[0] == 'rect' and v[1] < 0 and -v[1] <= LB - 0x10 and \
-                        all((S.get(v[1] + 4 * q_) or ('',))[0] == 'const' for q_ in range(4)):
-                    for q_ in range(4):
-                        ops.append((92, (v[1] + 4 * q_ + LB) // 4, S[v[1] + 4 * q_][1] & 0xffffffff, 0, []))
-                    args[ai_] = ('local', (v[1] + LB) // 4)
-                # (or an area nothing wrote yet, which the callee fills: the runs' buffer there, read through it after)
-                elif isinstance(v, tuple) and v[0] == 'rect' and v[1] < 0 and -v[1] <= LB - 0x10 and \
-                        all(S.get(v[1] + 4 * q_) is None and stored(v[1] + 4 * q_, k) is None and v[1] + 4 * q_ not in run_locals for q_ in range(4)):
-                    args[ai_] = ('local', (v[1] + LB) // 4)
-                    run_locals.update(v[1] + 4 * q_ for q_ in range(4))
+            local_areas(args)
             if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] in (58, 68) and o_[1] == v[1] for o_ in ops))) for v in args):
                 raise Reject('member call with a temporary')
             if this[0] == 'arg':
@@ -3275,7 +3289,7 @@ def tail(p):
         raise Reject('a local address given %s' % [o[:4] for o in ops if any(isinstance(v, tuple) and v[0] == 'rect' for v in o[4])][:3])
     # the argument slots the tail stores constants into (kind 92): first given the argument, in the runs' buffer (kind 93),
     # so a run reads the argument there when the store's block didn't run (the steps count their skips: one put first is fine)
-    for off_ in sorted({o[1] for o in ops if o[0] == 92}, reverse=True):
+    for off_ in sorted({o[1] for o in ops if o[0] == 92 and o[1] > LB // 4}, reverse=True):   # (argument slots only)
         ops.insert(0, (93, off_, off_ - LB // 4, 0, []))
     return ops
 
@@ -3466,13 +3480,18 @@ if __name__ == '__main__':
     out.append("// the case's, either sign, instead of an object")
     # the calls whose result is a counted text's holder, the text read and counted up (op 64, then 78 at +0, then 98 on it):
     # the tester's stand-in gives back a holder with a text of its own in it
-    hc_ = set()
+    hc_, ha_ = set(), {}
     for a_ in info:
         o_ = all_ops.get(a_[0], [])
         for i_ in range(1, len(o_) - 2):
             if o_[i_][0] == 64 and o_[i_ + 1][0] == 78 and o_[i_ + 1][2] == 0 and o_[i_ + 1][4] == [('scratch', o_[i_][1])] and \
-                    any(p_[0] == 98 and p_[4] == [('scratch', o_[i_ + 1][1])] for p_ in o_[i_ + 2:i_ + 6]) and o_[i_ - 1][3]:
-                hc_.add(o_[i_ - 1][3])
+                    any(p_[0] == 98 and p_[4] == [('scratch', o_[i_ + 1][1])] for p_ in o_[i_ + 2:i_ + 6]):
+                if o_[i_ - 1][0] == 83:   # (a virtual call on an argument: that argument's object gets a table giving holders)
+                    ha_[a_[0]] = ha_.get(a_[0], 0) | 1 << o_[i_ - 1][1]
+                elif o_[i_ - 1][3]:
+                    hc_.add(o_[i_ - 1][3])
+    out.append('extern const uint32_t titled_holder_args[];')
+    out.append('const uint32_t titled_holder_args[] = {' + ''.join(f'{a:#x}, {m:#x}, ' for a, m in sorted(ha_.items())) + '0};')
     out.append('extern const uint32_t titled_holder_callees[];')
     out.append('const uint32_t titled_holder_callees[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(hc_)) + '0};')
     out.append('extern const uint32_t titled_value_callees[];')

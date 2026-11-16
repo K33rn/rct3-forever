@@ -17343,7 +17343,7 @@ address,size,name,callers,status
 0xaecbb0,57,Children::EachAD1350,2,rewritten
 0xaed6a0,302,Destructor::Steps,1,rewritten
 0xaed820,5931,,2,documented
-0xaef020,1999,,2,documented
+0xaef020,1999,Window::Titled,2,rewritten
 0xaef7f0,30,DeletingDestructor,3,rewritten
 0xaef810,422,Designer::OpenFiles,1,rewritten
 0xaef9c0,670,Window::Titled,1,rewritten

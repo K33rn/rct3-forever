@@ -671,6 +671,13 @@ static void *__thiscall stub_holder2(void *self, uint32_t a, uint32_t b) { recor
 static void *__thiscall stub_holder3(void *self, uint32_t a, uint32_t b, uint32_t c) {
     record(0x8a, self); record(0x8a, arg_value(a)); record(0x8a, arg_value(b)); record(0x8a, arg_value(c)); return holder_result();
 }
+// (the table of an argument's object whose virtual calls give back a counted text's holder: each slot that stand-in)
+static void *const titled_holder_table[16] = {(void *)stub_holder0, (void *)stub_holder0, (void *)stub_holder0, (void *)stub_holder0,
+                                               (void *)stub_holder0, (void *)stub_holder0, (void *)stub_holder0, (void *)stub_holder0,
+                                               (void *)stub_holder0, (void *)stub_holder0, (void *)stub_holder0, (void *)stub_holder0,
+                                               (void *)stub_holder0, (void *)stub_holder0, (void *)stub_holder0, (void *)stub_holder0};
+extern const uint32_t titled_holder_args[];
+static uint32_t g_titled_holder_mask;
 static void *__thiscall stub_plain_value0(void *) {   // a plain function taken as a number: the case's, either sign, one per call
     uint32_t &n = *arena<uint32_t>(ALLOC_NEXT - 8);
     record(0x84, nullptr);
@@ -6380,7 +6387,8 @@ static std::vector<Test> tests() {
                               for (uint32_t k = 1; k <= 8; k++) {   // (the arguments cast or called on, wherever the moves above put them: their tables)
                                   uint8_t *o = (uint8_t *)(uintptr_t)a[k - 1];
                                   if (o < g_arena + 0x100 || o >= g_arena + sizeof g_arena - 4 || (k == g_titled_text)) continue;
-                                  if (g_titled_iface_mask >> k & 1) *(uint32_t *)o = (uint32_t)(uintptr_t)titled_iface_table;
+                                  if (g_titled_holder_mask >> k & 1) *(uint32_t *)o = (uint32_t)(uintptr_t)titled_holder_table;
+                                  else if (g_titled_iface_mask >> k & 1) *(uint32_t *)o = (uint32_t)(uintptr_t)titled_iface_table;
                                   else if (g_titled_vcall_mask >> k & 1) *(uint32_t *)o = (uint32_t)(uintptr_t)titled_child_table;
                               }
                               void *self = arena<void>(0x100), *made;
@@ -6438,6 +6446,9 @@ static std::vector<Test> tests() {
                 g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4],
                 g_titled_parent = titled_info[k + 5], g_titled_text = titled_info[k + 6];
         g_titled_nullable = 0, g_titled_byte_flags = 0, g_titled_iface_mask = 0, g_titled_at = e->at;
+        g_titled_holder_mask = 0;
+        for (int k = 0; titled_holder_args[k]; k += 2)
+            if (titled_holder_args[k] == e->at) g_titled_holder_mask = titled_holder_args[k + 1];
         g_child_holder_count = 0;
         for (int k = 0; titled_child_holders[k]; k += 2)
             if (titled_child_holders[k] == e->at && g_child_holder_count < 8) g_child_holders[g_child_holder_count++] = titled_child_holders[k + 1];
