@@ -2294,7 +2294,7 @@ address,size,name,callers,status
 0x4b8760,1703,,2,documented
 0x4b8e10,718,,5,documented
 0x4b90e0,661,,2,documented
-0x4b9380,1515,,1,documented
+0x4b9380,1515,Window::Titled,1,rewritten
 0x4b9b20,197,,1,documented
 0x4b9c20,153,,2,documented
 0x4b9cc0,158,,2,documented
@@ -6199,7 +6199,7 @@ address,size,name,callers,status
 0x6659a0,47,Array::GrowTo6659A0,0,rewritten
 0x6659d0,47,Array::GrowTo6659A0,0,rewritten
 0x665a00,47,Array::GrowTo6659A0,0,rewritten
-0x665af0,704,,11,documented
+0x665af0,704,Window::Titled,11,rewritten
 0x665e90,386,,5,documented
 0x666020,934,,1,documented
 0x6663d0,263,,1,documented

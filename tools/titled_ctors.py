@@ -11,6 +11,7 @@ title object used, +4, when there's no parent) where the code has it.
 usage: titled_ctors.py [--why PREFIX] (reads your RCT3plus.exe through tools/gamepath.py)"""
 import collections, csv, os, re, sys
 import capstone, pefile
+from capstone import x86
 from gamepath import HERE, game_exe
 
 pe = pefile.PE(game_exe(), fast_load=True)
@@ -75,6 +76,61 @@ def ret_args(fn, depth=0):
                 break
             a += x.size
     return None
+
+
+_mdd = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+_mdd.detail = True
+_ECX = {x86.X86_REG_ECX, x86.X86_REG_CX, x86.X86_REG_CL, x86.X86_REG_CH}
+_ecx_users = {0xbcdfc0: False, 0xbcdfd0: False, 0xbce000: False, 0xbce010: False}   # (the memory functions: cdecl)
+
+
+def uses_ecx(fn, depth=0):
+    """Whether a function can read ecx as it was given: on some path, before it writes it or calls something (after a call
+    ecx is the callee's leftover). A push ecx in the first 0x20 bytes not taken by a call is the compiler's stack
+    reservation. Calls made before ecx is written are asked the same, two deep; anything unclear counts as a use."""
+    if fn in _ecx_users:
+        return _ecx_users[fn]
+    _ecx_users[fn] = True   # (while being worked out)
+    todo, seen, result = [fn], set(), False
+    while todo and not result:
+        a = todo.pop()
+        steps = 0
+        while a not in seen and steps < 3000:
+            seen.add(a)
+            steps += 1
+            x = next(_mdd.disasm(bytes(img[a - BASE:a - BASE + 16]), a), None)
+            if x is None:
+                result = True
+                break
+            s = x.mnemonic + ' ' + x.op_str
+            if s == 'push ecx' and a - fn < 0x20:
+                nx = next(_mdd.disasm(bytes(img[a + 1 - BASE:a + 1 - BASE + 16]), a + 1), None)
+                if nx is not None and nx.mnemonic != 'call':
+                    a += x.size
+                    continue
+            if s == 'xor ecx, ecx':
+                break
+            read_, written_ = x.regs_access()
+            if set(read_) & _ECX:
+                result = True
+                break
+            if x86.X86_REG_ECX in written_ or x.mnemonic == 'ret':
+                break
+            if x.mnemonic == 'call':
+                if not re.fullmatch(r'0x[0-9a-f]+', x.op_str) or depth >= 2 or uses_ecx(num(x.op_str), depth + 1):
+                    result = True
+                break
+            if x.mnemonic.startswith('j'):
+                if not re.fullmatch(r'0x[0-9a-f]+', x.op_str):
+                    result = True
+                    break
+                if x.mnemonic == 'jmp':
+                    a = num(x.op_str)
+                    continue
+                todo.append(num(x.op_str))
+            a += x.size
+    _ecx_users[fn] = result
+    return result
 
 
 # The front part's calls, in order, when the text is given and when it isn't (a release is 0xBCE010 then 0xBCE000).
@@ -503,16 +559,33 @@ def tail(p):
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74}   # (75 frees memory: not quiet)   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79}   # (75 frees memory: not quiet)   # steps that call nothing
 
     def take_result(v):   # a call's result still the last thing called: into a scratch value (kind 64); else None
         if not v or v[0] != 'result' or any(o[0] not in QUIET for o in ops[v[1] + 1:]):
             return None
-        if nscratch[0] >= 8:
+        if nscratch[0] >= 16:
             raise Reject('scratch values')
         ops.append((64, nscratch[0], 0, 0, []))
         nscratch[0] += 1
         return ('scratch', nscratch[0] - 1)
+
+    def scratch_of(reg):   # a register's value as a scratch value: one already, or the last call's result taken into one
+        v_ = val(reg)
+        if v_ and v_[0] == 'scratch':
+            return v_
+        tr_ = take_result(v_) if v_ and v_[0] == 'result' else None
+        if tr_:
+            for r_ in R:
+                if R[r_] == v_:
+                    R[r_] = tr_
+        return tr_
+
+    def new_scratch():
+        if nscratch[0] >= 16:
+            raise Reject('scratch values')
+        nscratch[0] += 1
+        return nscratch[0] - 1
 
     def clobbered_args():   # the argument numbers whose slots the tail wrote
         return {sl // 4 for sl in clobbered}
@@ -701,6 +774,136 @@ def tail(p):
         if nc is None:
             return None
         return end_, place, nc, None
+
+    def singleton(k0):
+        # a shared object fetched (kind 77): mov eax, [G]; test eax, eax (or cmp with a register holding 0); jne A;
+        # call MAKE (a plain function taking nothing: it makes the object and keeps it in G); A: ... and, when it follows,
+        # the cast to one of its parts: test eax, eax; je Z; A: add eax, K; jmp J; Z: xor eax, eax; J (the stack bookkeeping
+        # stores passed over). Gives (where it ends, G, MAKE, K or None).
+        L = []
+        q = k0
+        while len(L) < 9 and q < len(t):
+            if not re.fullmatch(r'mov (byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', t[q]):
+                L.append((q, t[q]))
+            q += 1
+        b = [u for _, u in L]
+        if len(b) < 4:
+            return None
+        def zero_test(u):
+            z = re.fullmatch(r'(test eax, eax|cmp eax, ' + REG + ')', u)
+            return bool(z) and (u == 'test eax, eax' or val(z.group(2)) in (('const', 0), ('byte', 0)))
+        m0 = re.fullmatch(r'mov eax, dword ptr \[(0x1[0-9a-f]{6})\]', b[0])
+        j2 = re.fullmatch(r'jne (0x[0-9a-f]+)', b[2])
+        mc = re.fullmatch(r'call (0x[0-9a-f]+)', b[3])
+        if not m0 or not zero_test(b[1]) or not j2 or not mc:
+            return None
+        make = num(mc.group(1))
+        if ret_args(make) != 0 or uses_ecx(make):
+            return None
+        a_ = at.get(num(j2.group(1)))
+        if a_ is None:
+            return None
+        if a_ == L[4][0] if len(L) > 4 else False:
+            return a_, num(m0.group(1)), make, None   # (no cast: the object itself)
+        # the cast
+        if len(b) < 9 or not zero_test(b[4]):
+            return None
+        jz = re.fullmatch(r'je (0x[0-9a-f]+)', b[5])
+        ka = re.fullmatch(r'add eax, (0x[0-9a-f]+|\d+)', b[6])
+        jj = re.fullmatch(r'jmp (0x[0-9a-f]+)', b[7])
+        if not jz or not ka or not jj or b[8] != 'xor eax, eax' or a_ != L[6][0] or at.get(num(jz.group(1))) != L[8][0]:
+            return None
+        j_ = at.get(num(jj.group(1)))
+        if j_ is None or j_ != L[8][0] + 1:
+            return None
+        return j_, num(m0.group(1)), make, num(ka.group(1))
+
+    def place_value(op_text, q_):
+        # the value a 'dword ptr [...]' operand reads, as a value given to a step (or None): a member of the window (read
+        # when the step runs: no call between), or a stack slot whose value is known
+        z = re.fullmatch(r'dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', op_text)
+        if z:
+            slot_ = num(z.group(1)) - depth_at[q_]
+            if slot_ >= 4 and slot_ % 4 == 0 and slot_ // 4 <= nargs:
+                return None if slot_ in clobbered else base_code(('arg', slot_ // 4))
+            v_ = S.get(slot_, stored(slot_, q_))
+            return base_code(v_) if v_ else None
+        z = re.fullmatch(r'dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', op_text)
+        if z and val(z.group(1)) and val(z.group(1))[0] in ('this', 'member') and num(z.group(2) or '0') < 0x10000:
+            return ('field', (0 if val(z.group(1)) == ('this',) else val(z.group(1))[1]) + num(z.group(2) or '0'))
+        return None
+
+    def text_release(k0):
+        # a counted text let go (kind 81), when what holds it is known (the stack bookkeeping stores passed over):
+        #   mov A, [P]; dec dword ptr [A]; mov B, [P]; cmp dword ptr [B], 0; jne END; [test B, B; je END;] frees(B); END
+        #   mov A, [N]; dec A; mov [N], A; jne END; frees(N); END         (N a register holding it)
+        # frees(X): [mov Y, X;] mov W, [X or Y + 0xc]; push W; call 0xBCE010; [mov Y, X;] push X or Y; call 0xBCE000;
+        # add esp, 8. Gives (END, the text's value, its name number or None, the registers written).
+        L = []
+        q = k0
+        while len(L) < 16 and q < len(t):
+            if not re.fullmatch(r'mov (byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', t[q]):
+                L.append((q, t[q]))
+            q += 1
+        b = [u for _, u in L]
+        if len(b) < 10:
+            return None
+        m0 = re.fullmatch(r'mov ' + REG + r', (dword ptr \[.+\])', b[0])
+        if not m0:
+            return None
+        a_ = m0.group(1)
+        written = {a_, 'eax', 'ecx', 'edx'}
+        if b[1] == f'dec dword ptr [{a_}]':
+            m2 = re.fullmatch(r'mov ' + REG + r', (dword ptr \[.+\])', b[2])
+            if not m2 or m2.group(2) != m0.group(2) and place_value(m2.group(2), L[2][0]) != place_value(m0.group(2), L[0][0]):
+                return None
+            x_ = m2.group(1)
+            written.add(x_)
+            z3 = re.fullmatch(r'cmp dword ptr \[' + x_ + r'\], (0|' + REG + ')', b[3])
+            jz = re.fullmatch(r'jne (0x[0-9a-f]+)', b[4])
+            if not z3 or z3.group(1) != '0' and val(z3.group(1)) not in (('const', 0), ('byte', 0)) or not jz:
+                return None
+            i = 5
+            if b[5] == f'test {x_}, {x_}' and re.fullmatch(r'je (0x[0-9a-f]+)', b[6]) and b[6][3:] == jz.group(1):
+                i = 7
+            value_ = place_value(m0.group(2), L[0][0])
+            if value_ is None or m0.group(2).startswith('dword ptr [' + a_):
+                return None
+            name_ = None
+        else:
+            mn = re.fullmatch(r'dword ptr \[' + REG + r'\]', m0.group(2))
+            jz = re.fullmatch(r'jne (0x[0-9a-f]+)', b[3])
+            if not mn or b[1] != f'dec {a_}' or b[2] != f'mov dword ptr [{mn.group(1)}], {a_}' or not jz or mn.group(1) == a_:
+                return None
+            x_ = mn.group(1)
+            nv = val(x_)
+            if nv and nv[0] == 'name' and ('name', nv[1]) in built:
+                value_, name_ = None, nv[1]
+            else:
+                value_, name_ = base_code(nv), None
+                if value_ is None:
+                    return None
+            i = 4
+        copies = {x_}
+        zc = re.fullmatch(r'mov ' + REG + ', ' + x_, b[i])
+        if zc:
+            copies.add(zc.group(1)); written.add(zc.group(1)); i += 1
+        zw = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ 0xc\]', b[i])
+        if not zw or zw.group(2) not in copies:
+            return None
+        written.add(zw.group(1))
+        i += 1
+        if not zc and (zc2 := re.fullmatch(r'mov ' + REG + ', ' + x_, b[i])):
+            copies.add(zc2.group(1)); written.add(zc2.group(1)); i += 1
+        if i + 4 >= len(b) + 1:
+            return None
+        zp = re.fullmatch(r'push ' + REG, b[i + 2]) if i + 2 < len(b) else None
+        if b[i] != f'push {zw.group(1)}' or b[i + 1] != 'call 0xbce010' or not zp or zp.group(1) not in copies or b[i + 3:i + 5] != ['call 0xbce000', 'add esp, 8']:
+            return None
+        end_ = at.get(num(jz.group(1)))
+        if end_ is None or not (L[i + 4][0] < end_ <= (L[i + 5][0] if i + 5 < len(L) else end_)):
+            return None
+        return end_, value_, name_, written
 
     def register_release(k0):
         # a name held in a register let go: mov A, [N]; dec A; mov [N], A; jne END; mov W, [N + 0xc]; push W; call 0xBCE010;
@@ -1239,6 +1442,14 @@ def tail(p):
         if s == 'mov dword ptr fs:[0], ecx' or (s.startswith('add esp, ') and not pushed and ins[k + 1].mnemonic == 'ret'):
             k += 1
             continue
+        if not pushed and (m_ := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m_.group(2)) and                 val(m_.group(2))[0] in ('this', 'member') and next((u for u in t[k + 1:k + 4] if not u.startswith('mov byte ptr [esp')), '') == f'dec dword ptr [{m_.group(1)}]' and                 (tr_ := text_release(k)) and tr_[2] is None:
+            # a member's counted text let go (kind 81): before the member read below takes the load
+            ops.append((81, 0, 0, 0, [tr_[1]]))
+            for r in tr_[3]:
+                R[r] = None
+            k = tr_[0]
+            flag = None
+            continue
         # a member's value read earlier is only good until something else happens
         if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and val(m.group(2))[0] in ('this', 'member') \
 :
@@ -1414,6 +1625,31 @@ def tail(p):
             k = rel[0]
             flag = None
             continue
+        elif not pushed and re.match(r'mov ' + REG + r', dword ptr \[', s) and not register_release(k) and (tr_ := text_release(k)):
+            # a counted text let go, from a member, a stack slot or a register holding it (kind 81; a name's: 57)
+            end_, value_, name_, written_ = tr_
+            if name_ is not None:
+                ops.append((57, name_, 0, 0, []))
+                built.discard(('name', name_))
+            else:
+                ops.append((81, 0, 0, 0, [value_]))
+            for r in written_:
+                R[r] = None
+            k = end_
+            flag = None
+            continue
+        elif s.startswith('mov eax, dword ptr [0x1') and (sg := singleton(k)):
+            # a shared object fetched, made if there is none yet (and cast to one of its parts): kind 77, into a scratch value
+            if nscratch[0] >= 16:
+                raise Reject('scratch values')
+            ops.append((77, nscratch[0], sg[3] or 0, sg[2], [sg[1], int(sg[3] is not None)]))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            R['eax'] = ('scratch', nscratch[0])
+            nscratch[0] += 1
+            k = sg[0]
+            flag = None
+            continue
         elif not pushed and re.match(r'mov ' + REG + r', dword ptr \[', s) and (rr := register_release(k)):
             ops.append((57, rr[1], 0, 0, []))   # (a name held in a register let go)
             built.discard(('name', rr[1]))
@@ -1469,6 +1705,9 @@ def tail(p):
             R[m.group(1)] = ('member', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3)))
         elif (m := re.fullmatch(r'cmp dword ptr \[(0x1[0-9a-f]{6})\], (0|' + REG + ')', s)) and (m.group(2) == '0' or val(m.group(2)) in (('const', 0), ('byte', 0))):
             flag = ('test', ('global', num(m.group(1))))
+        elif (m := re.fullmatch(r'cmp dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0|' + REG + ')', s)) and val(m.group(1)) and                 val(m.group(1))[0] in ('this', 'member') and num(m.group(2) or '0') < 0x10000 and (m.group(3) == '0' or val(m.group(3)) in (('const', 0), ('byte', 0))):
+            # a member of the window compared with 0: as its value read now
+            flag = ('test', ('field', (0 if val(m.group(1)) == ('this',) else val(m.group(1))[1]) + num(m.group(2) or '0'), len(ops)))
         elif (m := re.fullmatch(r'cmp dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0|' + REG + ')', s)) and (m.group(2) == '0' or val(m.group(2)) in (('const', 0), ('byte', 0))):
             # a stack slot compared with 0: an argument (its slot as given) or a local whose value is known
             slot_ = num(m.group(1)) - d
@@ -1641,7 +1880,11 @@ def tail(p):
                 raise Reject('names')
             ops.append((58, nnames, 0, 0, []))
             built.add(('name', nnames))
+            was_ = S[val(m.group(1))[1]]
             S[val(m.group(1))[1]] = ('name', nnames, None)
+            for r_ in R:   # (the registers holding that object hold the name now)
+                if R[r_] == was_:
+                    R[r_] = ('name', nnames, None)
             pushed.append(('nameaddr', nnames)); d += 4
             nnames += 1
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack':
@@ -1755,7 +1998,7 @@ def tail(p):
             always_temps.add(kk)
             R['eax'] = ('temp', kk); R['ecx'] = None; R['edx'] = None
             flag = None
-        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack':
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack' and uses_ecx(num(m.group(1))):
             # a temporary on the stack, made while making the new object (so only when there was memory)
             fn, slot = num(m.group(1)), val('ecx')[1]
             n_ = ret_args(fn)
@@ -1916,6 +2159,35 @@ def tail(p):
                 flag = None
                 k += 1
                 continue
+            if this and this[0] in ('scratch', 'result') and ret_args(fn) is not None and ret_args(fn) <= min(len(pushed), 4) and (sv_ := scratch_of('ecx')):
+                # a call on a scratch value (what an earlier step gave or read): kind 80
+                n_ = ret_args(fn)
+                args = [pushed.pop() for _ in range(n_)]
+                d -= 4 * n_
+                if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] in (58, 68) and o_[1] == v[1] for o_ in ops))) for v in args):
+                    raise Reject('scratch call with a temporary')
+                ops.append((80, 0, 0, fn, [sv_] + args))
+                for r in ('eax', 'ecx', 'edx'):
+                    R[r] = None
+                R['eax'] = ('result', len(ops) - 1)
+                flag = None
+                k += 1
+                continue
+            if (not this or this[0] not in ('this', 'member', 'arg', 'global')) and ret_args(fn) is not None and ret_args(fn) <= min(len(pushed), 4) and \
+                    not uses_ecx(fn):
+                # a plain function, on no object (it never reads ecx as given): kind 76, what it gives back kept
+                n_ = ret_args(fn)
+                args = [pushed.pop() for _ in range(n_)]
+                d -= 4 * n_
+                if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] in (58, 68) and o_[1] == v[1] for o_ in ops))) for v in args):
+                    raise Reject('plain call with a temporary')
+                ops.append((76, 0, 0, fn, args))
+                for r in ('eax', 'ecx', 'edx'):
+                    R[r] = None
+                R['eax'] = ('result', len(ops) - 1)
+                flag = None
+                k += 1
+                continue
             if not this or this[0] not in ('this', 'member', 'arg', 'global') or ret_args(fn) is None or ret_args(fn) > len(pushed) or \
                     ret_args(fn) > (7 if this[0] in ('this', 'member') else 5) or this[0] == 'arg' and this[1] < 2:
                 raise Reject('tail call ' + s)
@@ -1933,6 +2205,17 @@ def tail(p):
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             R['eax'] = ('result', len(ops) - 1)   # (what it gave back: kept, op 64 takes it while nothing else was called)
+            flag = None
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and num(m.group(3) or '0') < 0x10000 and \
+                (sv_ := scratch_of(m.group(2))):
+            n_ = new_scratch()
+            ops.append((78, n_, num(m.group(3) or '0'), 0, [sv_]))   # (a dword read inside a scratch value's object: kind 78)
+            R[m.group(1)] = ('scratch', n_)
+        elif (m := re.fullmatch(r'(?:add ' + REG + r', (0x[0-9a-f]+|\d+)|lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\])', s)) and \
+                (sv_ := scratch_of(m.group(1) or m.group(4))) and num(m.group(2) or m.group(5)) < 0x10000:
+            n_ = new_scratch()
+            ops.append((79, n_, num(m.group(2) or m.group(5)), 0, [sv_]))   # (a scratch value plus a constant: kind 79)
+            R[m.group(1) or m.group(3)] = ('scratch', n_)
             flag = None
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and \
                 val(m.group(2))[0] == 'arg' and val(m.group(2))[1] not in clobbered_args() \
@@ -1975,6 +2258,7 @@ if __name__ == '__main__':
     refs = []   # the text references made before a base: (key, table, flag)
     all_ops = {}
     edx_uses, plain_uses = set(), set()
+    noobj_uses, obj_uses = set(), set()   # the callees called on no object (op 76), and those called on one
     rect_uses, norect_uses = set(), set()   # the callees given a run's locals (the tester notes the 16 bytes there)   # the callees made with edx = the window, and those made without
     for a, r in sorted(rows.items()):
         n = int(r['size'])
@@ -2034,7 +2318,14 @@ if __name__ == '__main__':
         if bmask:
             byte_flags.append((a, bmask))
         for o in p['ops']:
+            if o[0] in (76, 77):
+                callees[o[3]] = len(o[4]) if o[0] == 76 else 0
+                noobj_uses.add(o[3])
+            if o[0] == 80:
+                callees[o[3]] = len(o[4]) - 1
+                obj_uses.add(o[3])
             if o[0] in (3, 10, 24, 59, 61, 62) and o[3] != 0x6b1640:   # (0x6B1640: the tester's own stand-in, which notes the rectangle)
+                obj_uses.add(o[3])
                 callees[o[3]] = len(o[4])
                 (edx_uses if o[0] in (3, 24) and o[2] >> 31 else plain_uses).add(o[3])
                 (rect_uses if o[0] == 59 and any(isinstance(v, tuple) and v[0] == 'local' for v in o[4]) else norect_uses).add(o[3])
@@ -2053,7 +2344,8 @@ if __name__ == '__main__':
     out.append('extern const uint32_t titled_callees[];')
     # (count | 0x100: always made with edx = the window, which the tester's stand-in notes too)
     # (| 0x200: given a run's locals, whose 16 bytes the tester's stand-in notes)
-    out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c | (0x100 if fn in edx_uses and fn not in plain_uses else 0) | (0x200 if fn in rect_uses else 0):#x}, ' for fn, c in sorted(callees.items())) + '0};')
+    # (| 0x400: called on no object only: the tester's stand-in leaves ecx alone and makes what it gives back itself)
+    out.append('const uint32_t titled_callees[] = {' + ''.join(f'{fn:#x}, {c | (0x100 if fn in edx_uses and fn not in plain_uses else 0) | (0x200 if fn in rect_uses else 0) | (0x400 if fn in noobj_uses and fn not in obj_uses else 0):#x}, ' for fn, c in sorted(callees.items())) + '0};')
     out.append('// the text references made just before a base (TitledExtra is_arg 2): key, table, flag')
     out.append('extern const uint32_t titled_refs[];')
     out.append('const uint32_t titled_refs[] = {' + ''.join(f'{x:#x}, {y:#x}, {z:#x}, ' for x, y, z in refs) + '0};')
@@ -2065,6 +2357,23 @@ if __name__ == '__main__':
     out.append('extern const uint32_t titled_written_globals[];')
     wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67)})
     out.append('const uint32_t titled_written_globals[] = {' + ''.join(f'{g:#x}, {n_}, ' for g, n_ in wg) + '0};')
+    out.append('// the arguments a constructor casts to an interface (op 54, fn 1): its address and a mask of their numbers; the tester')
+    out.append('// makes each an object with a class info of its own')
+    out.append('extern const uint32_t titled_iface_args[];')
+    ia_ = []
+    for a_ in info:
+        mask_ = 0
+        for o in all_ops.get(a_[0], []):
+            if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given':
+                mask_ |= 1 << o[4][0][1]
+        if mask_:
+            ia_.append((a_[0], mask_))
+    out.append('const uint32_t titled_iface_args[] = {' + ''.join(f'{x_:#x}, {m_:#x}, ' for x_, m_ in ia_) + '0};')
+    out.append('// the globals holding the class numbers those casts look up (op 54, fn 1): the tester gives each a small number of the')
+    out.append("// case's (0 to 3) in the call")
+    out.append('extern const uint32_t titled_class_globals[];')
+    cg_ = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'})
+    out.append('const uint32_t titled_class_globals[] = {' + ''.join(f'{g_:#x}, ' for g_ in cg_) + '0};')
     out.append('// the holders counted texts are put into (op 75): a member and the place inside what it points to (member 0xFFFF:')
     out.append('// the place in the window itself); the tester puts a counted text of its own in each first')
     out.append('extern const uint32_t titled_text_holders[];')
@@ -2097,6 +2406,8 @@ if __name__ == '__main__':
         for o in all_ops.get(a_[0], []):
             if o[0] in (5, 32, 45):
                 readg.add(o[2])
+            if o[0] == 77:
+                readg.add(o[4][0])   # (the shared object's global: none, or a value of the case's, so both ways are met)
             if o[0] == 54:
                 deref_g.update(v[1] for v in o[4] if isinstance(v, tuple) and v[0] == 'glob')
             elif o[0] in (3, 10, 20, 24, 46, 59, 60, 61, 62, 63, 65):

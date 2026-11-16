@@ -526,6 +526,14 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
 extern const uint32_t class_bases[], class_value_calls[], class_ref_setters[], class_read_globals[];
 static uint32_t g_class_read_saved[128];
 extern const uint32_t titled_text_holders[];
+extern const uint32_t titled_iface_args[], titled_class_globals[];
+static uint32_t g_titled_class_saved[16];
+static uint32_t g_titled_iface_mask;   // (the arguments the copy casts to an interface: objects with a class info)
+static void *__thiscall stub_iface_info(void *self) {   // an object's class info (slot 1): the case's, or none
+    record(0x83, self);
+    return arena<uint32_t>(0x9a00)[15] ? arena<void>(0x9a00) : nullptr;
+}
+static void *titled_iface_table[2] = {nullptr, (void *)stub_iface_info};
 extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], titled_text_globals[], value_info[], record_info[];
 static uint32_t g_titled_text_saved[8], g_titled_read_saved[64];
 extern const uint32_t titled_read_globals[];
@@ -575,6 +583,16 @@ static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record
 static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); return built_result(self); }
 static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d)); return built_result(self);
+}
+// the same, for a function called on no object (it never reads ecx: whatever ecx holds is left alone); what it gives back
+// is an object of its own, from the arena's memory
+static void *plain_result() { return built_result(stub_plain_alloc(0xb0)); }
+static void *__thiscall stub_plain0(void *) { record(0x82, nullptr); return plain_result(); }
+static void *__thiscall stub_plain1(void *, uint32_t a) { record(0x82, arg_value(a)); return plain_result(); }
+static void *__thiscall stub_plain2(void *, uint32_t a, uint32_t b) { record(0x82, arg_value(a)); record(0x82, arg_value(b)); return plain_result(); }
+static void *__thiscall stub_plain3(void *, uint32_t a, uint32_t b, uint32_t c) { record(0x82, arg_value(a)); record(0x82, arg_value(b)); record(0x82, arg_value(c)); return plain_result(); }
+static void *__thiscall stub_plain4(void *, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    record(0x82, arg_value(a)); record(0x82, arg_value(b)); record(0x82, arg_value(c)); record(0x82, arg_value(d)); return plain_result();
 }
 // the same, for a function the game makes with edx = the window being made (noted too)
 static void *__fastcall stub_built_edx0(void *self, void *edx) { record(0x81, self); record(0x81, arg_value((uint32_t)(uintptr_t)edx)); return built_result(self); }
@@ -6133,6 +6151,16 @@ static std::vector<Test> tests() {
                                   arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)arena<void>(0x9400 + k * 0x10);
                                   arena<uint32_t>(0x9400 + k * 0x10)[0] = r.range(1, 3);
                               }
+                              for (int k = 2; k < 7; k++)   // (the arguments cast to an interface: objects whose class info is the case's; argument k + 1 is a[k])
+                                  if (g_titled_iface_mask >> (k + 1) & 1) arena<uint32_t>(0x9000 + k * 0x40)[0] = (uint32_t)(uintptr_t)titled_iface_table;
+                              {
+                                  uint32_t *info = arena<uint32_t>(0x9a00);   // +0x14 the entries, +0x18 their count; each entry's +0x10 an offset
+                                  info[15] = r.range(0, 4) != 0, info[5] = (uint32_t)(uintptr_t)arena<void>(0x9a40), info[6] = r.range(0, 4);
+                                  for (int q = 0; q < 4; q++) {
+                                      arena<uint32_t>(0x9a40)[q] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x9a80 + q * 0x20) : 0;
+                                      arena<uint32_t>(0x9a80 + q * 0x20)[4] = 4 * r.range(0, 8);
+                                  }
+                              }
                               for (uint32_t h : {0x700u, 0x600u}) {   // the empty handle and the one of no object, each with a list
                                   arena<uint32_t>(h)[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(h + 0x80);
                                   arena<uint32_t>(h + 0x80)[0] = (uint32_t)(uintptr_t)arena<void>(h + 0x90);
@@ -6173,6 +6201,10 @@ static std::vector<Test> tests() {
                           },
                           [](void *fn) {
                               g_text_ref = nullptr;   // (each run from none: the other run's temporary is not this one's)
+                              for (int k = 0; titled_class_globals[k] && k < 16; k++) {   // (the class numbers the interface casts look up: small ones)
+                                  g_titled_class_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_class_globals[k];
+                                  *(volatile int32_t *)(uintptr_t)titled_class_globals[k] = (int32_t)((arena<uint32_t>(0x4c)[0] >> (2 * k + 1)) % 4);
+                              }
                               for (int k = 0; titled_read_globals[k] && k < 64; k++) {   // (the globals read as values: values of the case's)
                                   g_titled_read_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_read_globals[k];
                                   const uint32_t v = arena<uint32_t>(0x4c)[0] * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu;
@@ -6222,6 +6254,7 @@ static std::vector<Test> tests() {
                               for (int k = 0; titled_object_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
                               for (int k = 0; titled_text_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_text_globals[k] = g_titled_text_saved[k];
                               for (int k = 0; titled_read_globals[k] && k < 64; k++) *(volatile uint32_t *)(uintptr_t)titled_read_globals[k] = g_titled_read_saved[k];
+                              for (int k = 0; titled_class_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_class_globals[k] = g_titled_class_saved[k];
                               for (int k = 0; titled_written_globals[2 * k] && k < 16; k++) {   // (what they hold now: compared; then put back)
                                   volatile uint8_t *g = (volatile uint8_t *)(uintptr_t)titled_written_globals[2 * k];
                                   for (uint32_t b = 0; b < titled_written_globals[2 * k + 1]; b++) {
@@ -6252,7 +6285,9 @@ static std::vector<Test> tests() {
             if (titled_info[k] == e->at)
                 g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4],
                 g_titled_parent = titled_info[k + 5], g_titled_text = titled_info[k + 6];
-        g_titled_nullable = 0, g_titled_byte_flags = 0;
+        g_titled_nullable = 0, g_titled_byte_flags = 0, g_titled_iface_mask = 0;
+        for (int k = 0; titled_iface_args[k]; k += 2)
+            if (titled_iface_args[k] == e->at) g_titled_iface_mask = titled_iface_args[k + 1];
         for (int k = 0; titled_byte_flags[k]; k += 2)
             if (titled_byte_flags[k] == e->at) g_titled_byte_flags = titled_byte_flags[k + 1];
         for (int k = 0; titled_nullable[k]; k += 2)
@@ -6266,9 +6301,10 @@ static std::vector<Test> tests() {
                                                          {0x41cb90, (void *)stub_named_text_ref}, {0xbcf7d0, (void *)stub_class_wide_from}};
         static void *const built_rect[5] = {(void *)stub_built0, (void *)stub_built_rect1, (void *)stub_built_rect2, (void *)stub_built_rect3, (void *)stub_built_rect4};
         static void *const built_edx[4] = {(void *)stub_built_edx0, (void *)stub_built_edx1, (void *)stub_built_edx2, (void *)stub_built_edx3};
+        static void *const plain_stubs[5] = {(void *)stub_plain0, (void *)stub_plain1, (void *)stub_plain2, (void *)stub_plain3, (void *)stub_plain4};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at)
-                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
+                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x400 ? plain_stubs[titled_callees[k + 1] & 0xff] : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         stubs_for_now(list);
         g_built_other = true;

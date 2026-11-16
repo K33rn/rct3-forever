@@ -269,7 +269,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     names[0] = start_name, name_built[0] = has_start_name;   // (the start text: name 0, let go by the steps)
     uint8_t *memory = nullptr;
     bool naming = false;
-    uint32_t scratch[8] = {};
+    uint32_t scratch[16] = {};
     void *last = nullptr;   // what the last call (3, 24, 60, 61, 62) gave back
     uint32_t loc[0x44] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords)
     void *object = nullptr, *aligned = nullptr;
@@ -463,6 +463,18 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 32: if (memory) *(uint32_t *)(memory + op.off) = *(uint32_t *)(uintptr_t)op.value; break;
         case 33: if (memory) memory[op.off] = (uint8_t)op.value; break;
         case 72: if (memory) *(uint32_t *)(memory + op.off) = args[0]; break;
+        case 78: scratch[op.off] = *(uint32_t *)(uintptr_t)(args[0] + op.value); break;   // a dword inside a scratch value's object
+        case 79: scratch[op.off] = args[0] + op.value; break;   // a scratch value plus a constant
+        case 80: last = titled_call(op.fn, (void *)(uintptr_t)args[0], op.count - 1, args + 1); break;   // a call on a scratch value
+        case 76: last = titled_call(op.fn, nullptr, op.count, args); break;
+        case 81: titled_release((void *)(uintptr_t)args[0]); break;   // a counted text let go (from a member, a stack slot, a register)   // a plain function (it never reads ecx), what it gives kept
+        case 77: {   // a shared object: the one the global args[0] holds, else made by fn (taking nothing); args[1]: cast to its part at
+                     // +value (none for none)
+            uint32_t got = *(volatile uint32_t *)(uintptr_t)args[0];
+            if (!got) got = (uint32_t)(uintptr_t)titled_call(op.fn, nullptr, 0, args);
+            scratch[op.off] = args[1] ? (got ? got + op.value : 0) : got;
+            break;
+        }
         case 75: titled_assign((void **)(uintptr_t)args[0], op.fn ? names[op.value] : (void *)(uintptr_t)args[1]); break;   // a counted text into a holder
         case 74: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.value) = args[0]; break;   // a value into what a member points to (a child)
         case 73:   // a constant into the object a game global points to (args[0]: its size, | 0x100 only when there was memory)
