@@ -340,7 +340,9 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
                     rect[2 + i] = *(volatile uint32_t *)&sum;
                 }
             }
-            ((void(__thiscall *)(void *, uint32_t, void *, volatile uint32_t *))0x6b1640)(child, how >> 8, how & 32 ? (void *)self : *(void **)(self + op.value), rect);
+            for (int i = 0; i < 4; i++)   // (bits 16..19: that value copied from the game global at its address, as it is now)
+                if (how >> (16 + i) & 1) rect[i] = *(volatile uint32_t *)(uintptr_t)op.args[i];
+            ((void(__thiscall *)(void *, uint32_t, void *, volatile uint32_t *))0x6b1640)(child, how >> 8 & 0xff, how & 32 ? (void *)self : *(void **)(self + op.value), rect);
             break;
         }
         case 47: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) |= op.value; break;

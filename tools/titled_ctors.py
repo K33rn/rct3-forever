@@ -139,7 +139,8 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
-LEFT_OUT = {0x701590: "the original dies in the tester (a stand-in's object read through as something else): to look at"}
+LEFT_OUT = {0x701590: "the original dies in the tester (a stand-in's object read through as something else): to look at",
+            0x791670: "the original dies in the tester: to look at"}
 
 
 def parse(a, n):
@@ -2196,8 +2197,9 @@ def tail(p):
             del pushed[-3:]
             d -= 12
             rv = [S.get(rect[1] + 4 * i) for i in range(4)]
-            if not isinstance(relation, int) or any(not r_ or r_[0] != 'const' for r_ in rv):
+            if not isinstance(relation, int) or relation >= 0x100 or any(not r_ or r_[0] not in ('const', 'global') for r_ in rv):
                 raise Reject('layout rectangle')
+            gmask_ = sum(1 << (16 + i) for i, r_ in enumerate(rv) if r_[0] == 'global')   # (values copied from game globals, read when it runs)
             if to == ('self', 0):
                 how, to_off = 32, 0
             elif isinstance(to, tuple) and to[0] == 'field':
@@ -2205,9 +2207,9 @@ def tail(p):
             else:
                 raise Reject('layout relative to')
             if val('ecx')[0] == 'obj':   # (the new object laid out: what its constructor returned, or its memory)
-                ops.append((40, 0 if val('ecx')[2] == 'returned' else 1, to_off, 0x6b1640, [r_[1] for r_ in rv] + [relation << 8 | 64 | 128 | how]))
+                ops.append((40, 0 if val('ecx')[2] == 'returned' else 1, to_off, 0x6b1640, [r_[1] for r_ in rv] + [gmask_ | relation << 8 | 64 | 128 | how]))
             else:
-                ops.append((40, val('ecx')[1], to_off, 0x6b1640, [r_[1] for r_ in rv] + [relation << 8 | 64 | how]))
+                ops.append((40, val('ecx')[1], to_off, 0x6b1640, [r_[1] for r_ in rv] + [gmask_ | relation << 8 | 64 | how]))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             flag = None
@@ -2652,6 +2654,8 @@ if __name__ == '__main__':
                 readg.add(o[2])
             if o[0] == 77:
                 readg.add(o[4][0])   # (the shared object's global: none, or a value of the case's, so both ways are met)
+            if o[0] == 40 and o[4][4] >> 16 & 15:
+                readg.update(o[4][i] for i in range(4) if o[4][4] >> (16 + i) & 1)   # (a rectangle's values copied from globals)
             if o[0] == 54:
                 deref_g.update(v[1] for v in o[4] if isinstance(v, tuple) and v[0] == 'glob')
             elif o[0] in (3, 10, 20, 24, 46, 59, 60, 61, 62, 63, 65):

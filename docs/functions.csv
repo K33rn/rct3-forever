@@ -6000,9 +6000,9 @@ address,size,name,callers,status
 0x64e4e0,30,DeletingDestructor,2,rewritten
 0x64e510,30,DeletingDestructor,2,rewritten
 0x64e530,30,DeletingDestructor,2,rewritten
-0x64e550,1228,,2,documented
+0x64e550,1228,Window::Titled,2,rewritten
 0x64ea20,1928,,1,documented
-0x64f1c0,1799,,2,documented
+0x64f1c0,1799,Window::Titled,2,rewritten
 0x64f8d0,2218,Window::Titled,1,rewritten
 0x650180,2236,Window::Titled,1,rewritten
 0x650a40,30,DeletingDestructor,2,rewritten
