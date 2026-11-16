@@ -6006,7 +6006,7 @@ address,size,name,callers,status
 0x64f8d0,2218,Window::Titled,1,rewritten
 0x650180,2236,Window::Titled,1,rewritten
 0x650a40,30,DeletingDestructor,2,rewritten
-0x650a60,1214,,1,documented
+0x650a60,1214,Window::Titled,1,rewritten
 0x650f20,107,Factory::CreateFromFields,0,rewritten
 0x650f90,107,Factory::CreateFromFields,0,rewritten
 0x651000,107,Factory::CreateFromFields,0,rewritten

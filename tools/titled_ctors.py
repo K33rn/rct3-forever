@@ -601,6 +601,7 @@ def tail(p):
     clobbered = set()   # argument slots the tail wrote (a later read of one is not the argument)
 
     nscratch = [0]
+    slot_stored = set()  # argument slots the tail stored into (its own steps: what is there read from what was stored)
     run_locals = set()   # locals earlier x87 runs wrote (the rewrite's buffer keeps them), until the steps write the slot
     always_temps = set()
     inline_built = set()   # new memory set up in line (no constructor called on it)
@@ -675,9 +676,10 @@ def tail(p):
         # mov B, [S]; mov [B + 4], N; mov [N + 4], S; mov [S], N, last (the stack bookkeeping stores passed over). Gives
         # (index after, the node's value, the head's value, the registers written) or None.
         m0 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', t[k0])
-        if not m0 or m0.group(1) == m0.group(2) or not val(m0.group(2)) or val(m0.group(2))[0] != 'global' or \
-                not 0x1000000 <= val(m0.group(2))[1] < 0x2000000:
-            return None
+        if not m0 or m0.group(1) == m0.group(2) or not val(m0.group(2)) or not (
+                val(m0.group(2))[0] == 'global' and 0x1000000 <= val(m0.group(2))[1] < 0x2000000 or
+                still(val(m0.group(2))) and val(m0.group(2))[1] < 0x10000):
+            return None   # (the head: a game global's, or one of the window's members')
         s_ = m0.group(2)
         sym = {m0.group(1): 'F'}
         node = None
@@ -722,7 +724,11 @@ def tail(p):
             q += 1
         if len(done) != 4 or node is None:
             return None
-        return q, node, ('glob', val(s_)[1]), set(sym) | {s_}
+        return q, node, ('glob', val(s_)[1]) if val(s_)[0] == 'global' else ('field', val(s_)[1]), set(sym) | {s_}
+
+    def arg_slot_written_before(slot_):   # was an argument's slot stored into before the tail (the runs' buffer can't know it)?
+        return any((z_ := re.fullmatch(r'(?:mov|fstp?) dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\](?:, .*)?', t[q_])) and num(z_.group(1)) - depth_at[q_] == slot_
+                   for q_ in range(start))
 
     def cookie_given(k0):
         # is ecx, at the call at k0, the game's stack cookie (its global 0x10FE634, kept on the stack at the start)? The
@@ -1378,7 +1384,7 @@ def tail(p):
                         if store:
                             clobbered.add(slot)   # (the argument is gone: later reads of the slot are the run's value)
                         return (4, (slot + 0x100) // 4)
-                    if slot in clobbered:
+                    if slot in clobbered or slot in slot_stored:
                         return None
                     return (5, slot // 4)
                 if slot < 0 and -slot <= 0x100 and slot % 4 == 0:
@@ -1749,6 +1755,7 @@ def tail(p):
             continue
         if not pushed and (ll_ := list_link(k)):
             ops.append((91, 0, 0, 0, [ll_[1], ll_[2]]))
+            edx_live[0] = False   # (edx, if the link used it, was only the link's)
             for r_ in ll_[3]:
                 R[r_] = None
             k = ll_[0]
@@ -1872,6 +1879,8 @@ def tail(p):
                 ops.append((72, off, 0, 0, [('newobj', 1)]))
             elif m.group(1) == 'dword' and w and w[0] == 'allocplace' and w[1] == cur:
                 ops.append((72, off, 0, 0, [('newobj', 1 | w[2] << 8)]))
+            elif m.group(1) == 'dword' and still(w):
+                ops.append((72, off, 0, 0, [('field', w[1])]))   # (a member's value, still as read)
             else:
                 raise Reject('in-line store @%#x' % x.address)
             inline_built.add(cur)
@@ -2007,12 +2016,27 @@ def tail(p):
                 raise Reject('tail store ' + s)
         elif re.fullmatch(r'mov (dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', s):
             z = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, s)
-            if z:   # locals (the exception frame's state is a byte or a constant)
+            zc_ = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)
+            sl_ = num((z or zc_).group(1)) - d if (z or zc_) else None
+            cv_ = (num(zc_.group(2)) if zc_ else val(z.group(2))[1] if z and val(z.group(2)) and val(z.group(2))[0] in ('const', 'byte') else None) if sl_ is not None else None
+            if sl_ is not None and sl_ >= 4 and sl_ % 4 == 0 and sl_ // 4 <= nargs:
+                # an argument's slot reused: its value now the one stored. A constant is kept in the runs' buffer too (kind
+                # 92), so a later x87 run reads what is there however the blocks went (when nothing before the tail stored
+                # there); anything else is only remembered (a run can't read it)
+                slot_stored.add(sl_)
+                if cv_ is not None and sl_ < 0x40 and not arg_slot_written_before(sl_):
+                    ops.append((92, (sl_ + 0x100) // 4, cv_ & 0xffffffff, 0, []))
+                    run_locals.add(sl_)
+                    S[sl_] = ('const', cv_ & 0xffffffff)
+                else:
+                    run_locals.discard(sl_)
+                    S[sl_] = ('const', cv_ & 0xffffffff) if cv_ is not None else val(z.group(2)) if z else None
+            elif z:   # locals (the exception frame's state is a byte or a constant)
                 S[num(z.group(1)) - d] = val(z.group(2))
                 run_locals.discard(num(z.group(1)) - d)
-            elif (z := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)):
-                S[num(z.group(1)) - d] = ('const', num(z.group(2)))
-                run_locals.discard(num(z.group(1)) - d)
+            elif zc_:
+                S[num(zc_.group(1)) - d] = ('const', num(zc_.group(2)))
+                run_locals.discard(num(zc_.group(1)) - d)
         elif (m := re.fullmatch(r'mov (e[a-d]x|e[sd]i|ebp), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and not pushed and \
                 (S.get(num(m.group(2)) - d) or ('',))[0] == 'name' and ('name', S[num(m.group(2)) - d][1]) in built and \
                 (rel := plain_release(k, m.group(1), num(m.group(2)))):
@@ -2096,9 +2120,12 @@ def tail(p):
             ops.append((67, 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1], 0, num(m.group(1)), []))   # the window's place kept in a global
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - d
-            if slot in clobbered:
-                raise Reject('argument slot reused')
-            R[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs else S.get(slot, stored(slot, k))
+            if slot in clobbered or slot in slot_stored:
+                if not S.get(slot):
+                    raise Reject('argument slot reused')
+                R[m.group(1)] = S[slot]   # (what was stored there, when known on every way here)
+            else:
+                R[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs else S.get(slot, stored(slot, k))
         elif (m := re.fullmatch(r'(or|and|add) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and R.get(m.group(2)) and R[m.group(2)][0] == 'global' and \
                 0xf26000 <= R[m.group(2)][1] < 0x10e7000:
             # a constant the game keeps in its read-only data, worked on: a constant (read from the game's image)
@@ -2912,6 +2939,10 @@ def tail(p):
         raise Reject('two marks')
     if any(isinstance(v, tuple) and v[0] == 'rect' for o in ops for v in o[4]):
         raise Reject('a local address given')
+    # the argument slots the tail stores constants into (kind 92): first given the argument, in the runs' buffer (kind 93),
+    # so a run reads the argument there when the store's block didn't run (the steps count their skips: one put first is fine)
+    for off_ in sorted({o[1] for o in ops if o[0] == 92}, reverse=True):
+        ops.insert(0, (93, off_, off_ - 0x40, 0, []))
     return ops
 
 
@@ -3127,7 +3158,11 @@ if __name__ == '__main__':
                     len(o_[i_ + 2][4]) <= 1:
                 singles.append((a_[0], o_[i_][4][0][1], o_[i_ + 2][3]))
     # the game globals holding a list's head that a node is put first in (op 91): the tester gives each an empty list
-    lgl = sorted({o[4][1][1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 91})
+    lgl = sorted({o[4][1][1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 91 and o[4][1][0] == 'glob'})
+    # (and the window's members holding one: (copy, member) each, an empty list put there before the call)
+    lwm = sorted({(a_[0], o[4][1][1]) for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 91 and o[4][1][0] == 'field'})
+    out.append('extern const uint32_t titled_window_lists[];')
+    out.append('const uint32_t titled_window_lists[] = {' + ''.join(f'{a:#x}, {m:#x}, ' for a, m in lwm) + '0};')
     out.append('extern const uint32_t titled_list_globals[];')
     out.append('const uint32_t titled_list_globals[] = {' + ''.join(f'{g:#x}, ' for g in lgl) + '0};')
     out.append('extern const uint32_t titled_singletons[];')

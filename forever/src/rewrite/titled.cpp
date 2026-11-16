@@ -529,6 +529,8 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 78: scratch[op.off] = *(uint32_t *)(uintptr_t)(args[0] + op.value); break;   // a dword inside a scratch value's object
         case 86: scratch[op.off] = (uint32_t)((int32_t)scratch[op.off] % (int32_t)op.value); break;   // a scratch value modulo a power of two (C's sign)
         case 79: scratch[op.off] = args[0] + op.value; break;   // a scratch value plus a constant
+        case 92: loc[op.off] = op.value; break;           // a constant stored into an argument's slot (the runs read it there)
+        case 93: loc[op.off] = given[op.value]; break;    // an argument's slot in the runs' buffer, first holding the argument
         case 91: {   // a node (args[0]) put first in the list whose head is args[1]: node.next = head.next; head.next.prev = node;
             uint32_t *node = (uint32_t *)(uintptr_t)args[0], *head = (uint32_t *)(uintptr_t)args[1];   // node.prev = head; head.next = node
             node[0] = head[0];

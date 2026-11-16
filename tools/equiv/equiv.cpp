@@ -552,6 +552,7 @@ static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
 extern const uint32_t titled_singletons[];
 extern const uint32_t titled_list_globals[];
+extern const uint32_t titled_window_lists[];
 static uint32_t g_titled_list_saved[8];
 static uint32_t g_titled_single_global, g_titled_single_fn;   // (the copy's singleton made on first use: its global, its constructor)
 extern const uint32_t dtor_steps_info[];
@@ -6313,6 +6314,15 @@ static std::vector<Test> tests() {
                               for (int k = 2; k < 8; k++)
                                   if (g_titled_nullable >> k & 1 && (arena<uint32_t>(0x4c)[0] >> (3 * k)) % 3 == 0) a[k - 1] = 0;
                               void *self = arena<void>(0x100), *made;
+                              for (int k = 0, n = 0; titled_window_lists[k]; k += 2)   // (the window's members holding a list a node is put first in)
+                                  if (titled_window_lists[k] == g_titled_at && n < 8) {
+                                      uint32_t *head = arena<uint32_t>(0xe100 + n++ * 0x20), *one = head + 4;
+                                      *(uint32_t *)((uint8_t *)self + titled_window_lists[k + 1]) = (uint32_t)(uintptr_t)head;
+                                      if (arena<uint32_t>(0x4c)[0] >> (17 + n) & 1)
+                                          head[0] = head[1] = (uint32_t)(uintptr_t)one, one[0] = one[1] = (uint32_t)(uintptr_t)head;
+                                      else
+                                          head[0] = head[1] = (uint32_t)(uintptr_t)head;
+                                  }
                               switch (g_titled_args) {
                               case 2: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t))fn)(self, a[0], a[1]); break;
                               case 3: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2]); break;
