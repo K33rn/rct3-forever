@@ -369,7 +369,15 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         }
         case 61: last = titled_call(op.fn, (void *)(uintptr_t)given[op.off], op.count, args); break;              // on an argument
         case 62: last = titled_call(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args); break;   // on a global's object
-        case 63: {   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1); fn 2: when its low byte is 0
+        case 63: {   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1); fn 2: when its low byte is 0;
+                     // fn 0x10 | n: when the value compares with the constant (value) as the n-th of ja jae jb jbe jg jge jl jle je jne
+            if (op.fn >= 0x10) {
+                const uint32_t a = args[0], b = op.value;
+                const int32_t sa = (int32_t)a, sb = (int32_t)b;
+                const bool skip[10] = {a > b, a >= b, a < b, a <= b, sa > sb, sa >= sb, sa < sb, sa <= sb, a == b, a != b};
+                if (skip[op.fn & 0xf]) k += op.off;
+                break;
+            }
             const bool zero = op.fn == 2 ? (args[0] & 0xff) == 0 : args[0] == 0;
             if (zero != (op.fn == 1)) k += op.off;
             break;

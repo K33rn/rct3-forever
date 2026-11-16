@@ -528,6 +528,8 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
 extern const uint32_t class_bases[], class_value_calls[], class_ref_setters[], class_read_globals[];
 static uint32_t g_class_read_saved[128];
 extern const uint32_t titled_text_holders[];
+extern const uint32_t titled_compared_fields[];
+static uint32_t g_titled_at;   // (the copy being checked)
 extern const uint32_t titled_iface_args[], titled_class_globals[];
 static uint32_t g_titled_class_saved[16];
 static uint32_t g_titled_iface_mask;   // (the arguments the copy casts to an interface: objects with a class info)
@@ -6191,6 +6193,9 @@ static std::vector<Test> tests() {
                                       arena<uint32_t>(0xc000 + blk * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               }
                               arena<uint32_t>(0x100)[0xe0 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8c00);   // (the parent the base keeps)
+                              for (int k = 0; titled_compared_fields[3 * k]; k++)   // (members compared with a constant: values near it)
+                                  if (titled_compared_fields[3 * k] == g_titled_at)
+                                      arena<uint32_t>(0x100 + titled_compared_fields[3 * k + 1])[0] = titled_compared_fields[3 * k + 2] + (uint32_t)r.range(0, 4) - 2;
                               for (int k = 0; titled_text_holders[2 * k] != 0xffffffffu && k < 8; k++) {   // (the holders counted texts go into: a text each)
                                   const uint32_t member = titled_text_holders[2 * k], inner = titled_text_holders[2 * k + 1];
                                   uint8_t *holder = member == 0xffff ? arena<uint8_t>(0x100 + inner) : (uint8_t *)(uintptr_t)arena<uint32_t>(0x100 + member)[0] + inner;
@@ -6287,7 +6292,7 @@ static std::vector<Test> tests() {
             if (titled_info[k] == e->at)
                 g_titled_title = titled_info[k + 1], g_titled_args = titled_info[k + 2], base = titled_info[k + 3], base_args = titled_info[k + 4],
                 g_titled_parent = titled_info[k + 5], g_titled_text = titled_info[k + 6];
-        g_titled_nullable = 0, g_titled_byte_flags = 0, g_titled_iface_mask = 0;
+        g_titled_nullable = 0, g_titled_byte_flags = 0, g_titled_iface_mask = 0, g_titled_at = e->at;
         for (int k = 0; titled_iface_args[k]; k += 2)
             if (titled_iface_args[k] == e->at) g_titled_iface_mask = titled_iface_args[k + 1];
         for (int k = 0; titled_byte_flags[k]; k += 2)

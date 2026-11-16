@@ -32,6 +32,7 @@ for _f in os.listdir(os.path.join(HERE, 'forever', 'src', 'rewrite')):
         _others |= {int(x, 16) for x in re.findall(r'(?:REWRITE\("[^"]+",|^[A-Z_0-9]+\()\s*(0x[0-9a-fA-F]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', _f), encoding='utf-8').read(), re.M)}
 mine |= {a for a, r in rows.items() if r['status'] == 'rewritten' and a not in _others}
 SEPARATOR = 0xf2738c
+CMP_CONDITIONS = ['ja', 'jae', 'jb', 'jbe', 'jg', 'jge', 'jl', 'jle', 'je', 'jne']   # (step 63, fn 0x10 | the index)
 VSLOTS = {0x20: 1}   # the virtual slots called (op 60) and how many values each takes (0x20: a child's size, the tester's own)
 FPU_PROGRAM = []   # the x87 runs' steps (code, kind, value), all constructors' in one table (op 59 gives where its run starts)
 # the run steps: x87 instructions as the game has them, replayed one by one (titled.cpp)
@@ -1720,6 +1721,14 @@ def tail(p):
             R[m.group(1)] = ('stack', num(m.group(2)) - d)
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] in ('this', 'member'):
             R[m.group(1)] = ('member', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3)))
+        elif (m := re.fullmatch(r'cmp dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|[1-9]\d*)', s)) and val(m.group(1)) and \
+                val(m.group(1))[0] in ('this', 'member') and num(m.group(2) or '0') < 0x10000:
+            # a member of the window compared with a constant (read now)
+            flag = ('cmpk', ('field', (0 if val(m.group(1)) == ('this',) else val(m.group(1))[1]) + num(m.group(2) or '0'), len(ops)), num(m.group(3)))
+        elif (m := re.fullmatch(r'cmp ' + REG + r', (0x[0-9a-f]+|[1-9]\d*|' + REG + ')', s)) and \
+                (re.fullmatch(r'0x[0-9a-f]+|\d+', m.group(2)) or val(m.group(2)) and val(m.group(2))[0] == 'const' and val(m.group(2))[1] != 0):
+            # a value compared with a constant (or a register holding one)
+            flag = ('cmpk', val(m.group(1)), num(m.group(2)) if re.fullmatch(r'0x[0-9a-f]+|\d+', m.group(2)) else val(m.group(2))[1])
         elif (m := re.fullmatch(r'cmp dword ptr \[(0x1[0-9a-f]{6})\], (0|' + REG + ')', s)) and (m.group(2) == '0' or val(m.group(2)) in (('const', 0), ('byte', 0))):
             flag = ('test', ('global', num(m.group(1))))
         elif (m := re.fullmatch(r'cmp dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0|' + REG + ')', s)) and val(m.group(1)) and                 val(m.group(1))[0] in ('this', 'member') and num(m.group(2) or '0') < 0x10000 and (m.group(3) == '0' or val(m.group(3)) in (('const', 0), ('byte', 0))):
@@ -1818,6 +1827,13 @@ def tail(p):
             nnames += 1
             flag = None
             continue
+        elif x.mnemonic in CMP_CONDITIONS and not pushed and not nulls and flag and flag[0] == 'cmpk' and base_code(flag[1]) is not None and \
+                re.fullmatch(r'0x[0-9a-f]+', x.op_str) and (at.get(int(x.op_str, 0)) or -1) > k + 1 and \
+                (not conds or at.get(int(x.op_str, 0)) <= conds[-1][0]):
+            # a block skipped when the value compares so with the constant (kind 63, fn 0x10 | the condition, value the constant)
+            ops.append((63, 0, flag[2] & 0xffffffff, 0x10 | CMP_CONDITIONS.index(x.mnemonic), [base_code(flag[1])]))
+            conds.append((at[int(x.op_str, 0)], len(ops) - 1, dict(R), dict(S), d, set(built)))
+            flag = None
         elif x.mnemonic in ('je', 'jne') and not pushed and not nulls and flag and flag[0] == 'test' and base_code(flag[1]) is not None and \
                 re.fullmatch(r'0x[0-9a-f]+', x.op_str) and (at.get(int(x.op_str, 0)) or -1) > k + 1 and \
                 (not conds or at.get(int(x.op_str, 0)) <= conds[-1][0]) and not (flag[1] and flag[1][0] in ('alloc', 'namealloc')):
@@ -2403,6 +2419,15 @@ if __name__ == '__main__':
     out.append('extern const uint32_t titled_class_globals[];')
     cg_ = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 54 and o[3] == 1 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'})
     out.append('const uint32_t titled_class_globals[] = {' + ''.join(f'{g_:#x}, ' for g_ in cg_) + '0};')
+    out.append('// the window members compared with a constant (op 63, fn 0x10 | n, on a member): constructor, member, constant; the')
+    out.append('// tester gives each member a value near the constant first, so both ways are met')
+    out.append('extern const uint32_t titled_compared_fields[];')
+    cf_ = []
+    for a_ in info:
+        for o in all_ops.get(a_[0], []):
+            if o[0] == 63 and o[3] >= 0x10 and isinstance(o[4][0], tuple) and o[4][0][0] == 'field':
+                cf_.append((a_[0], o[4][0][1], o[2]))
+    out.append('const uint32_t titled_compared_fields[] = {' + ''.join(f'{x_:#x}, {f_:#x}, {c_:#x}, ' for x_, f_, c_ in cf_) + '0};')
     out.append('// the holders counted texts are put into (op 75): a member and the place inside what it points to (member 0xFFFF:')
     out.append('// the place in the window itself); the tester puts a counted text of its own in each first')
     out.append('extern const uint32_t titled_text_holders[];')

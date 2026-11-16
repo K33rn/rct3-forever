@@ -10205,7 +10205,7 @@ address,size,name,callers,status
 0x7f2a50,933,,5,documented
 0x7f2e20,139,,1,documented
 0x7f2ed0,30,DeletingDestructor,2,rewritten
-0x7f2f00,849,,1,documented
+0x7f2f00,849,Window::Titled,1,rewritten
 0x7f3260,4497,,1,documented
 0x7f4420,118,Destructor::Steps,1,rewritten
 0x7f4520,30,DeletingDestructor,2,rewritten
