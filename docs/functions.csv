@@ -9573,8 +9573,8 @@ address,size,name,callers,status
 0x7ac530,470,Picker::TakeFirst7AC350,1,rewritten
 0x7ac710,1418,,1,documented
 0x7acca0,977,,1,documented
-0x7ad080,354,,1,documented
-0x7ad1f0,354,,1,documented
+0x7ad080,354,Attraction::First,1,rewritten
+0x7ad1f0,354,Attraction::First,1,rewritten
 0x7ad360,975,,1,documented
 0x7ad730,42,,1,documented
 0x7ad760,284,,1,documented

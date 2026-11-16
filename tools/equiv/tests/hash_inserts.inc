@@ -23,13 +23,13 @@ static void __cdecl hi_free(void *p) { dev_note(773, hi_at(p)); }
                          table[3] = at(0x140), table[4] = at(0x180), table[5] = at(0x1c0);
                          uint32_t *starts = arena<uint32_t>(0x140);
                          starts[0] = 0;
-                         for (uint32_t b = 1; b < buckets; b++) starts[b] = r.range(starts[b - 1], count + 1);
+                         for (uint32_t b = 1; b < buckets; b++) starts[b] = r.range(starts[b - 1], count);   // (r.range includes its upper bound)
                          starts[buckets] = count;
                          for (uint32_t i = 0; i < 8; i++) {
-                             arena<uint32_t>(0x180)[i] = at(0x400 + 0x20 * r.range(0, 8));
+                             arena<uint32_t>(0x180)[i] = at(0x400 + 0x20 * r.range(0, 7));
                              arena<uint32_t>(0x1c0)[i] = r.next();
                          }
-                         arena<uint32_t>(0x80)[0] = at(0x400 + 0x20 * r.range(0, 8));   // the key
+                         arena<uint32_t>(0x80)[0] = at(0x400 + 0x20 * r.range(0, 7));   // the key
                          arena<uint32_t>(0x84)[0] = r.next();   // the value
                          arena<uint32_t>(0x50)[0] = r.next();   // the hash
                      },
