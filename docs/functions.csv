@@ -14939,7 +14939,7 @@ address,size,name,callers,status
 0x9eda50,19,,1,documented
 0x9eda70,1439,,1,documented
 0x9ee010,51,,0,documented
-0x9ee050,1728,,1,documented
+0x9ee050,1728,Window::Titled,1,rewritten
 0x9ee710,215,,2,documented
 0x9ee850,83,,1,documented
 0x9ee8b0,374,,1,documented

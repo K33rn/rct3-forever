@@ -1363,6 +1363,10 @@ def tail(p):
                     args_pushed.append(('self', v[1][1]))
                 elif v[0] in ('r', 'ecx') and v[1] and still(v[1]):
                     args_pushed.append(('field', v[1][1]))
+                elif v[0] == 'bits' and v[1][0] == 2:
+                    args_pushed.append(('field', v[1][1]))   # (a member's value loaded in the run: nothing in it writes members)
+                elif v[0] == 'r' and v[1] and v[1][0] == 'global':
+                    args_pushed.append(('glob', v[1][1]))   # (a game global's value)
                 else:
                     return None
                 depth += 4
