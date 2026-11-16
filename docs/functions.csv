@@ -2103,7 +2103,7 @@ address,size,name,callers,status
 0x4a3640,36,,5,documented
 0x4a3670,44,,5,documented
 0x4a36a0,26,,1,documented
-0x4a36e0,316,,2,documented
+0x4a36e0,316,Pair::Compare,2,rewritten
 0x4a3820,1668,,4,documented
 0x4a3ed0,344,,1,documented
 0x4a4030,1628,,3,documented
@@ -18969,7 +18969,7 @@ address,size,name,callers,status
 0xb929d0,30,DeletingDestructor,0,rewritten
 0xb929f0,438,NamedTextRef::NamedTextRef,1,rewritten
 0xb92bb0,131,PAIR_RELEASE,7,rewritten
-0xb92c80,316,,2,documented
+0xb92c80,316,Pair::Compare,2,rewritten
 0xb92dc0,718,,2,documented
 0xb930b0,274,,1,documented
 0xb931d0,338,,1,documented
