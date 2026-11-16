@@ -251,6 +251,8 @@ static void titled_tables_ready() {   // each slot the constructors call: its st
 }
 static void *built_result(void *self) {
     if (!g_built_other) return self;
+    if (*(void **)self == titled_child_table)
+        return (uint8_t *)self + 8;   // (made already, or one the case filled: what was written into it since is kept, so it shows)
     *(void **)self = titled_child_table;
     *(void **)((uint8_t *)self + 8) = titled_child_table;
     for (int k = 1; k < 0x28; k++) ((uint32_t *)self)[2 + k] = (uint32_t)(uintptr_t)self * 0x9e3779b1u + k;   // (its members told apart)

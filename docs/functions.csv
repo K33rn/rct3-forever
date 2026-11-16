@@ -5976,7 +5976,7 @@ address,size,name,callers,status
 0x64a320,159,Text::Refresh64A320,3,rewritten
 0x64a3c0,1137,,3,documented
 0x64a840,379,,3,documented
-0x64a9c0,599,,1,documented
+0x64a9c0,599,Window::Titled,1,rewritten
 0x64ac60,48,,1,documented
 0x64ac90,586,DetailsWindow::Build,1,rewritten
 0x64aee0,351,,2,documented
@@ -6341,7 +6341,7 @@ address,size,name,callers,status
 0x672350,37,,2,documented
 0x672380,184,,3,documented
 0x672440,223,,1,documented
-0x672520,804,,2,documented
+0x672520,804,Window::Titled,2,rewritten
 0x6728b0,197,,5,documented
 0x672990,870,,2,documented
 0x672d00,201,,7,documented

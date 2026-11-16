@@ -137,7 +137,13 @@ def uses_ecx(fn, depth=0):
 FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0xbce010', '0xbce000'] * 4 + ['0x41c740']
 
 
+# constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
+LEFT_OUT = {0x701590: "the original dies in the tester (a stand-in's object read through as something else): to look at"}
+
+
 def parse(a, n):
+    if a in LEFT_OUT:
+        raise Reject('left out: ' + LEFT_OUT[a])
     ins = list(md.disasm(bytes(img[a - BASE:a - BASE + n]), a))
     if ins and ins[-1].mnemonic != 'ret':
         # the listed size can stop before the epilogue (the compiler put it just after), even inside an instruction:
@@ -607,6 +613,10 @@ def tail(p):
         if v[0] == 'deref': return deref_code(v)
         if v[0] == 'tempat' and ('temp', v[1]) in built and v[2] < 0x40:   # (what a temporary holds)
             return ('tempat', v[1] | v[2] << 8)
+        if v[0] == 'scratch':
+            return v
+        if v[0] == 'result':   # (the last call's result, nothing called since: kept in a scratch value first)
+            return take_result(v)
         return None
 
     def value_block(k0):
@@ -1462,6 +1472,10 @@ def tail(p):
             R[m.group(1)] = ('argderef', val(m.group(2))[1], len(ops))   # what an argument points to
             k += 1
             continue
+        if (m := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and val(m.group(2)) and val(m.group(2))[0] == 'const':
+            ops.append((51, 4, val(m.group(2))[1], num(m.group(1)), []))   # a game global set (from a register holding a constant)
+            k += 1
+            continue
         if (m := re.fullmatch(r'mov (byte|dword) ptr \[(0x1[0-9a-f]{6})\], (0x[0-9a-f]+|\d+)', s)):
             ops.append((51, 1 if m.group(1) == 'byte' else 4, num(m.group(3)), num(m.group(2)), []))   # a game global set
             k += 1
@@ -1548,6 +1562,9 @@ def tail(p):
                 ops.append((74, member, inner, 0, [('field', w[1])]))   # (a member's value, still as read)
             elif w and w[0] == 'fieldplus' and still(('field',) + w[1:3]) and w[3] < 0x10000:
                 ops.append((74, member, inner, 0, [('fieldplace', w[1] | w[3] << 16)]))   # (a place inside what a member points to)
+            elif w and w[0] in ('childor', 'childand') and w[1] == member and w[2] == inner and                     all(o[0] in QUIET and o[0] not in (44, 45, 47, 48, 74) for o in ops[w[3]:]):
+                # read from there, or-ed / and-ed, stored back with nothing between able to change it (kinds 47 / 48)
+                ops.append((47 if w[0] == 'childor' else 48, member, w[4], 0, [inner]))
             else:
                 raise Reject('child store ' + s)
             for r_ in R:   # (the member itself is unchanged)
@@ -2206,6 +2223,18 @@ def tail(p):
                 R[r] = None
             R['eax'] = ('result', len(ops) - 1)   # (what it gave back: kept, op 64 takes it while nothing else was called)
             flag = None
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and m.group(1) != m.group(2) and still(val(m.group(2))) and \
+                num(m.group(3) or '0') < 0x10000:
+            R[m.group(1)] = ('childval', val(m.group(2))[1], num(m.group(3) or '0'), len(ops))   # (a dword inside a child: only stored back)
+        elif (m := re.fullmatch(r'(or|and) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(2)) and val(m.group(2))[0] == 'childval':
+            R[m.group(2)] = ('child' + m.group(1),) + val(m.group(2))[1:] + (num(m.group(3)),)
+            flag = None
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + REG, s)) and val(m.group(3)) and \
+                val(m.group(3))[0] in ('childor', 'childand') and still(val(m.group(1))) and val(m.group(1))[1] == val(m.group(3))[1] and \
+                num(m.group(2) or '0') == val(m.group(3))[2] and all(o[0] in QUIET and o[0] not in (44, 45, 47, 48, 74) for o in ops[val(m.group(3))[3]:]):
+            # stored back to where it was read, nothing since able to change it: the child's dword or-ed / and-ed (47 / 48)
+            cv = val(m.group(3))
+            ops.append((47 if cv[0] == 'childor' else 48, cv[1], cv[4], 0, [cv[2]]))
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and num(m.group(3) or '0') < 0x10000 and \
                 (sv_ := scratch_of(m.group(2))):
             n_ = new_scratch()
