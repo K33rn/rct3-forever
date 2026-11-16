@@ -649,12 +649,18 @@ static void *__thiscall stub_built8(void *self, uint32_t a, uint32_t b, uint32_t
 static void *__thiscall stub_built0(void *self) { record(0x81, self); return built_result(self); }
 static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, arg_value(a)); return built_result(self); }
 // a singleton's constructor (it keeps itself in its global, as the game's does)
-static void *__thiscall stub_single0(void *self) { void *r = stub_built0(self); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
-static void *__thiscall stub_single1(void *self, uint32_t a) { void *r = stub_built1(self, a); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
+// (its members, past what built_result fills, point into the arena's filled places, as a global's object's do: so reads
+// through them land)
+static void single_members(void *self) {
+    for (int k = 0x2a; k < 0x40; k++) ((uint32_t *)self)[k] = (uint32_t)(uintptr_t)(g_arena + 0xc000 + (k * 7 % 16) * 0x40);
+    for (int k = 3; k < 0x2a; k++) ((uint32_t *)self)[k] = (uint32_t)(uintptr_t)(g_arena + 0xc000 + ((k * 5 + 3) % 16) * 0x40);
+}
+static void *__thiscall stub_single0(void *self) { void *r = stub_built0(self); single_members(self); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
+static void *__thiscall stub_single1(void *self, uint32_t a) { void *r = stub_built1(self, a); single_members(self); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
 static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return built_result(self); }
 static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); return built_result(self); }
-static void *__thiscall stub_single2(void *self, uint32_t a, uint32_t b) { void *r = stub_built2(self, a, b); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
-static void *__thiscall stub_single3(void *self, uint32_t a, uint32_t b, uint32_t c) { void *r = stub_built3(self, a, b, c); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
+static void *__thiscall stub_single2(void *self, uint32_t a, uint32_t b) { void *r = stub_built2(self, a, b); single_members(self); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
+static void *__thiscall stub_single3(void *self, uint32_t a, uint32_t b, uint32_t c) { void *r = stub_built3(self, a, b, c); single_members(self); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
 static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d)); return built_result(self);
 }
@@ -6359,6 +6365,8 @@ static std::vector<Test> tests() {
                                   g_titled_object_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_object_globals[k];
                                   *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = (uint32_t)(uintptr_t)arena<void>(0xd000 + k * 0x100);
                                   arena<uint32_t>(0xd000 + k * 0x100)[0] = (uint32_t)(uintptr_t)titled_child_table;   // (its table: the stand-ins)
+                                  for (int q = 0x0b; q < 0x40; q++)   // (its members from +0x2C on point into the filled places, so a chain read through one lands)
+                                      arena<uint32_t>(0xd000 + k * 0x100)[q] = (uint32_t)(uintptr_t)arena<void>(0xc000 + ((q * 3 + k) % 16) * 0x40);
                               }
                               for (int k = 0; titled_list_globals[k] && k < 8; k++) {   // (the lists a node is put first in: one node in each, or none)
                                   g_titled_list_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_list_globals[k];

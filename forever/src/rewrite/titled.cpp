@@ -534,7 +534,12 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 22: *(void **)(self + op.off) = op.value ? (void *)memory : object; break;
         case 42: aligned = memory_alloc_aligned(op.value); break;
         case 43: *(void **)(self + op.off) = aligned; break;
-        case 98: ++*(volatile uint32_t *)(uintptr_t)args[0]; break;   // a dword counted up where the value points (a hold taken)
+        case 98: ++*(volatile uint32_t *)(uintptr_t)args[0]; break;
+        case 102:   // a constant into a value's object at off (fn: 1 a byte, 4 a dword)
+            if (op.fn == 1) *(volatile uint8_t *)(uintptr_t)(args[0] + op.off) = (uint8_t)op.value;
+            else *(volatile uint32_t *)(uintptr_t)(args[0] + op.off) = op.value;
+            break;
+        case 101: *(void *volatile *)(uintptr_t)op.fn = op.value ? (void *)memory : object; break;   // the new object kept in a game global   // a dword counted up where the value points (a hold taken)
         case 99: self[op.off] = *(volatile uint8_t *)(uintptr_t)op.value; break;   // a game global's byte into a member byte
         case 100: scratch[op.off] = self[op.value]; break;   // a member's byte, zero-extended, kept as a scratch value
         case 31: if (memory) *(uint32_t *)(memory + op.off) = op.value; break;

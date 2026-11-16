@@ -146,7 +146,8 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
-LEFT_OUT = {0xa21b30: "dies in the tester: its child at +0x14C (0x6A07E0's) has a holder's place at +0x1C8, past what the tester gives it",
+LEFT_OUT = {0xb94fd0: "dies in the tester: a built stand-in given an object read through a field the tester leaves random (two singletons in one copy; the tester keeps one)",
+            0xa21b30: "dies in the tester: its child at +0x14C (0x6A07E0's) has a holder's place at +0x1C8, past what the tester gives it",
             0x701590:"the original dies in the tester (a stand-in's object read through as something else): to look at",
             0x791670:"the original dies in the tester (a read of 0xC in 0xBCE978, from 0x403C8A: a text the stand-ins don't make?): to look at"}
 
@@ -1928,6 +1929,15 @@ def tail(p):
                     ins[q_].mnemonic == 'nop' or re.fullmatch(r'(lea (\w+), \[\2\]|mov (\w+), \3|lea esp, \[esp\])', t[q_]) for q_ in range(k + 1, at[int(x.op_str, 0)])):
             k = at[int(x.op_str, 0)]   # (a jump over the padding the compiler puts before a loop's top)
             continue
+        if (m := re.fullmatch(r'mov (byte|dword) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and not pushed and \
+                val(m.group(2)) and val(m.group(2))[0] in ('result', 'scratch') and (sc_ := base_code(val(m.group(2)))) is not None and \
+                sc_[0] == 'scratch' and num(m.group(3) or '0') < 0x10000:
+            # a constant into what a call gave back (taken into a scratch value): kind 102, fn the size in bytes
+            ops.append((102, num(m.group(3) or '0'), num(m.group(4)) & 0xffffffff, 1 if m.group(1) == 'byte' else 4, [sc_]))
+            R[m.group(2)] = sc_
+            flag = None
+            k += 1
+            continue
         if ((m := re.fullmatch(r'movzx (e[a-d]x), byte ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) or
                 (m := re.fullmatch(r'mov ([a-d])l, byte ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and
                 val('e' + m.group(1) + 'x') in (('const', 0), ('byte', 0))) and val(m.group(2)) in (('this',),) and num(m.group(3) or '0') < 0x10000:
@@ -2396,6 +2406,14 @@ def tail(p):
         elif (m := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and val(m.group(2)) and \
                 (val(m.group(2)) == ('this',) or val(m.group(2))[0] == 'member'):
             ops.append((67, 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1], 0, num(m.group(1)), []))   # the window's place kept in a global
+        elif (m := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and val(m.group(2)) and val(m.group(2))[0] == 'obj' and \
+                val(m.group(2))[1] == cur and not nulls and num(m.group(1)) >= 0x10e7000:
+            # the new object kept in a game global (kind 101: as returned, or value 1 its memory)
+            ops.append((101, 0, int(val(m.group(2))[2] != 'returned'), num(m.group(1)), []))
+            w_ = val(m.group(2))
+            for r_ in list(R):   # (what holds it holds what the global now holds: read so, for the paths that join after)
+                if R[r_] == w_:
+                    R[r_] = ('global', num(m.group(1)))
         elif (m := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and val(m.group(2)) and val(m.group(2))[0] == 'globmask' and \
                 val(m.group(2))[1] == num(m.group(1)) and all(o[0] in QUIET and o[0] not in (51, 96) for o in ops[val(m.group(2))[4]:]):
             # a game global read, or-ed / and-ed with a constant and stored back, nothing between able to change it (kind 96)
@@ -3020,6 +3038,14 @@ def tail(p):
                 R[r] = None
             flag = None
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] == 'gfield' and all(o[0] in QUIET for o in ops[val(m.group(2))[3]:]) and num(m.group(3) or '0') < 0x1000 and \
+                nscratch[0] < 32:
+            # a dword read through a dword inside a global's object (a chain): kept in a scratch value (kind 78, from kind 15)
+            g_ = val(m.group(2))
+            ops.append((78, nscratch[0], num(m.group(3) or '0'), 0, [('gobj', (g_[1] - 0x1000000) | g_[2] << 24)]))
+            R[m.group(1)] = ('scratch', nscratch[0])
+            nscratch[0] += 1
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and \
                 val(m.group(2))[0] == 'global' and 0x1000000 <= val(m.group(2))[1] < 0x2000000 and 0 < num(m.group(3) or '0') < 0x100:
             R[m.group(1)] = ('gfield', val(m.group(2))[1], num(m.group(3) or '0'), len(ops))   # (a dword inside a global's object, read now)
         elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) and val(m.group(1))[0] in ('arg', 'argplus') and                 num(m.group(2)) < 0x1000000:
@@ -3417,7 +3443,7 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_text_globals[] = {' + ''.join(f'{g:#x}, ' for g in tg) + '0};')
     out.append('// the game globals the steps write (op 51: off bytes; op 67: 4): the tester gives each a value first and compares them')
     out.append('extern const uint32_t titled_written_globals[];')
-    wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67, 96)} |
+    wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67, 96, 101)} |
                 {(o[4][0], 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 98 and isinstance(o[4][0], int)} |
                 {(st_[2], 4) for st_ in FPU_PROGRAM if st_[0] == 28})   # (and those x87 runs set, code 28)
     out.append('const uint32_t titled_written_globals[] = {' + ''.join(f'{g:#x}, {n_}, ' for g, n_ in wg) + '0};')
