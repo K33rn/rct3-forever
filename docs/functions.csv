@@ -6921,7 +6921,7 @@ address,size,name,callers,status
 0x6a8400,197,,4,documented
 0x6a84d0,511,Window::Titled,1,rewritten
 0x6a8710,30,DeletingDestructor,2,rewritten
-0x6a8740,1466,,3,documented
+0x6a8740,1466,Window::Titled,3,rewritten
 0x6a8d00,526,Window::Titled,133,rewritten
 0x6a8f40,30,DeletingDestructor,2,rewritten
 0x6a8f90,705,,7,documented
@@ -15508,7 +15508,7 @@ address,size,name,callers,status
 0xa236b0,1852,,1,documented
 0xa23df0,30,DeletingDestructor,2,rewritten
 0xa23ed0,30,DeletingDestructor,3,rewritten
-0xa23fd0,2420,,1,documented
+0xa23fd0,2420,Window::Titled,1,rewritten
 0xa24950,30,DeletingDestructor,2,rewritten
 0xa24a80,30,DeletingDestructor,3,rewritten
 0xa24c40,165,MEMBER_DTOR,1,rewritten

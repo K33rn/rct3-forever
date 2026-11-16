@@ -503,7 +503,7 @@ def tail(p):
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73}   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74}   # steps that call nothing
 
     def take_result(v):   # a call's result still the last thing called: into a scratch value (kind 64); else None
         if not v or v[0] != 'result' or any(o[0] not in QUIET for o in ops[v[1] + 1:]):
@@ -1218,6 +1218,16 @@ def tail(p):
                 ops.append((44, member, w[1], 0, [inner]))
             elif w and w[0] == 'global':
                 ops.append((45, member, w[1], 0, [inner]))
+            elif w == ('this',):
+                ops.append((74, member, inner, 0, [('self', 0)]))   # (the window's place stored into the child: kind 74)
+            elif w and w[0] == 'member':
+                ops.append((74, member, inner, 0, [('self', w[1])]))   # (the place of one of the window's members)
+            elif w and w[0] == 'arg' and w[1] not in clobbered_args():
+                ops.append((74, member, inner, 0, [('given', w[1])]))   # (an argument)
+            elif w and still(w):
+                ops.append((74, member, inner, 0, [('field', w[1])]))   # (a member's value, still as read)
+            elif w and w[0] == 'fieldplus' and still(('field',) + w[1:3]) and w[3] < 0x10000:
+                ops.append((74, member, inner, 0, [('fieldplace', w[1] | w[3] << 16)]))   # (a place inside what a member points to)
             else:
                 raise Reject('child store ' + s)
             for r_ in R:   # (the member itself is unchanged)
