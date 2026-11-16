@@ -525,6 +525,7 @@ static void *__thiscall stub_built5(void *self, uint32_t a, uint32_t b, uint32_t
 }
 extern const uint32_t class_bases[], class_value_calls[], class_ref_setters[], class_read_globals[];
 static uint32_t g_class_read_saved[128];
+extern const uint32_t titled_text_holders[];
 extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], titled_text_globals[], value_info[], record_info[];
 static uint32_t g_titled_text_saved[8], g_titled_read_saved[64];
 extern const uint32_t titled_read_globals[];
@@ -6160,6 +6161,13 @@ static std::vector<Test> tests() {
                                       arena<uint32_t>(0xc000 + blk * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               }
                               arena<uint32_t>(0x100)[0xe0 / 4] = (uint32_t)(uintptr_t)arena<void>(0x8c00);   // (the parent the base keeps)
+                              for (int k = 0; titled_text_holders[2 * k] != 0xffffffffu && k < 8; k++) {   // (the holders counted texts go into: a text each)
+                                  const uint32_t member = titled_text_holders[2 * k], inner = titled_text_holders[2 * k + 1];
+                                  uint8_t *holder = member == 0xffff ? arena<uint8_t>(0x100 + inner) : (uint8_t *)(uintptr_t)arena<uint32_t>(0x100 + member)[0] + inner;
+                                  uint32_t *held = arena<uint32_t>(0x8e00 + k * 0x20);
+                                  held[0] = r.range(1, 2), held[1] = r.next(), held[2] = r.next(), held[3] = (uint32_t)(uintptr_t)arena<void>(0x8e10 + k * 0x20);
+                                  *(uint32_t *)holder = (uint32_t)(uintptr_t)held;
+                              }
                               arena<uint32_t>(0x4c)[0] = r.next();   // (which of the arguments only a cast reads are 0 this time)
                               arena<uint32_t>(CALL_LOG)[0] = 0;
                           },

@@ -503,7 +503,7 @@ def tail(p):
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74}   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74}   # (75 frees memory: not quiet)   # steps that call nothing
 
     def take_result(v):   # a call's result still the last thing called: into a scratch value (kind 64); else None
         if not v or v[0] != 'result' or any(o[0] not in QUIET for o in ops[v[1] + 1:]):
@@ -624,6 +624,113 @@ def tail(p):
         if end is None or end != at.get(num(b[10][4:])) or end != L[12][0] + 1 or at.get(num(b[4][3:])) != L[9][0] or else_ != L[11][0]:
             return None
         return end, holder
+
+
+    def holder_place(b_, off_):   # a dword's place, as a value given to a step: in the window, or inside a child
+        v_ = val(b_)
+        if not v_ or off_ >= 0x10000:
+            return None
+        if v_ == ('this',):
+            return ('self', off_)
+        if v_[0] == 'member':
+            return ('self', v_[1] + off_)
+        if still(v_) and v_[1] < 0x10000:
+            return ('fieldplace', v_[1] | off_ << 16)
+        return None
+
+    def counted_assign(k0):
+        # a counted text put into a holder (kind 75), as the compiler writes it inline (the stack bookkeeping stores passed
+        # over): mov H, [P]; cmp N, H; je END; dec dword ptr [H]; mov Y, [P]; cmp dword ptr [Y], 0; jne SKIP; test Y, Y;
+        # je SKIP; (the frees: the text's memory at +0xC, 0xBCE010, then the text, 0xBCE000; add esp, 8); SKIP:
+        # mov [P], N; inc dword ptr [N]; END. Gives (END, place, the text's value, its name number or None).
+        L = []
+        q = k0
+        while len(L) < 22 and q < len(t):
+            if not re.fullmatch(r'mov (byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', t[q]):
+                L.append((q, t[q]))
+            q += 1
+        b = [u for _, u in L]
+        if len(b) < 17:
+            return None
+        m0 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', b[0])
+        if not m0:
+            return None
+        h_ = m0.group(1)
+        place = holder_place(m0.group(2), num(m0.group(3) or '0'))
+        c1 = re.fullmatch(r'cmp ' + REG + ', ' + h_, b[1])
+        if not place or not c1 or not b[2].startswith('je ') or b[3] != f'dec dword ptr [{h_}]' or c1.group(1) == m0.group(2):
+            return None
+        n_ = c1.group(1)
+        m4 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', b[4])
+        if not m4 or m4.group(2) in (h_,) and m4.group(2) != m0.group(2) or holder_place(m4.group(2), num(m4.group(3) or '0')) != place:
+            return None
+        y_ = m4.group(1)
+        z5 = re.fullmatch(r'cmp dword ptr \[' + y_ + r'\], (0|' + REG + ')', b[5])
+        if not z5 or z5.group(1) != '0' and val(z5.group(1)) not in (('const', 0), ('byte', 0)):
+            return None
+        j6, j8 = re.fullmatch(r'jne (0x[0-9a-f]+)', b[6]), re.fullmatch(r'je (0x[0-9a-f]+)', b[8])
+        if not j6 or not j8 or j6.group(1) != j8.group(1) or b[7] != f'test {y_}, {y_}':
+            return None
+        # the frees: [mov Z, Y]; mov W, [Y|Z + 0xc]; push W; call 0xBCE010; push Y|Z; call 0xBCE000; add esp, 8
+        i = 9
+        copies = {y_}
+        zc = re.fullmatch(r'mov ' + REG + ', ' + y_, b[i])
+        if zc:
+            copies.add(zc.group(1)); i += 1
+        zw = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ 0xc\]', b[i])
+        if not zw or zw.group(2) not in copies:
+            return None
+        w_ = zw.group(1)
+        i += 1
+        if not zc and (zc2 := re.fullmatch(r'mov ' + REG + ', ' + y_, b[i])):
+            copies.add(zc2.group(1)); i += 1
+        zp = re.fullmatch(r'push ' + REG, b[i + 2]) if i + 2 < len(b) else None
+        if b[i] != f'push {w_}' or b[i + 1] != 'call 0xbce010' or not zp or zp.group(1) not in copies or b[i + 3:i + 5] != ['call 0xbce000', 'add esp, 8']:
+            return None
+        i += 5
+        ms = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + n_, b[i])
+        if not ms or holder_place(ms.group(1), num(ms.group(2) or '0')) != place or b[i + 1] != f'inc dword ptr [{n_}]':
+            return None
+        skip_, end_ = at.get(num(j6.group(1))), at.get(int(b[2][3:], 0))
+        if skip_ != L[i][0] or end_ is None or not (L[i + 1][0] < end_ <= (L[i + 2][0] if i + 2 < len(L) else end_)):
+            return None
+        nv = val(n_)
+        if nv and nv[0] == 'name' and ('name', nv[1]) in built:
+            return end_, place, None, nv[1]
+        nc = base_code(nv)
+        if nc is None:
+            return None
+        return end_, place, nc, None
+
+    def register_release(k0):
+        # a name held in a register let go: mov A, [N]; dec A; mov [N], A; jne END; mov W, [N + 0xc]; push W; call 0xBCE010;
+        # push N; call 0xBCE000; add esp, 8; END (the stack bookkeeping stores passed over). Gives (END, name, written).
+        L = []
+        q = k0
+        while len(L) < 11 and q < len(t):
+            if not re.fullmatch(r'mov (byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', t[q]):
+                L.append((q, t[q]))
+            q += 1
+        b = [u for _, u in L]
+        if len(b) < 11:
+            return None
+        m0 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', b[0])
+        if not m0:
+            return None
+        a_, n_ = m0.group(1), m0.group(2)
+        nv = val(n_)
+        if a_ == n_ or not nv or nv[0] != 'name' or ('name', nv[1]) not in built:
+            return None
+        jz = re.fullmatch(r'jne (0x[0-9a-f]+)', b[3])
+        zw = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + n_ + r' \+ 0xc\]', b[4])
+        if b[1] != f'dec {a_}' or b[2] != f'mov dword ptr [{n_}], {a_}' or not jz or not zw or zw.group(1) == n_:
+            return None
+        if b[5:10] != [f'push {zw.group(1)}', 'call 0xbce010', f'push {n_}', 'call 0xbce000', 'add esp, 8']:
+            return None
+        end_ = at.get(num(jz.group(1)))
+        if end_ is None or not (L[9][0] < end_ <= L[10][0]):
+            return None
+        return end_, nv[1], {a_, zw.group(1), 'eax', 'ecx', 'edx'}
 
     def plain_release(k0, reg, at_):
         # mov A, [esp + N]; dec dword ptr [A]; mov A, [esp + N]; cmp dword ptr [A], 0 (or a register holding 0); jne END;
@@ -1134,7 +1241,9 @@ def tail(p):
             continue
         # a member's value read earlier is only good until something else happens
         if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and val(m.group(2))[0] in ('this', 'member') \
-                and m.group(1) != m.group(2):
+:
+            # (into its own base register too: the steps reach the window directly, and the code reads it back from where it
+            # kept it)
             R[m.group(1)] = ('field', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3) or '0'), len(ops))
             k += 1
             continue
@@ -1303,6 +1412,26 @@ def tail(p):
             for r in rel[1]:
                 R[r] = None
             k = rel[0]
+            flag = None
+            continue
+        elif not pushed and re.match(r'mov ' + REG + r', dword ptr \[', s) and (rr := register_release(k)):
+            ops.append((57, rr[1], 0, 0, []))   # (a name held in a register let go)
+            built.discard(('name', rr[1]))
+            for r in rr[2]:
+                R[r] = None
+            k = rr[0]
+            flag = None
+            continue
+        elif not pushed and re.match(r'mov ' + REG + r', dword ptr \[', s) and (ca := counted_assign(k)):
+            # a counted text put into a holder in the window or a child (kind 75)
+            end_, place_, nc_, name_ = ca
+            ops.append((75, 0, name_ or 0, int(name_ is not None), [place_] if nc_ is None else [place_, nc_]))
+            for r in ('eax', 'ecx', 'edx'):
+                R[r] = None
+            for r in R:   # (what the frees can't have changed: the window's registers; the rest read again)
+                if R[r] and R[r][0] not in ('this', 'member', 'const', 'name', 'arg', 'global', 'field', 'fieldplus'):
+                    R[r] = None
+            k = end_
             flag = None
             continue
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'temp' and \
@@ -1936,6 +2065,16 @@ if __name__ == '__main__':
     out.append('extern const uint32_t titled_written_globals[];')
     wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67)})
     out.append('const uint32_t titled_written_globals[] = {' + ''.join(f'{g:#x}, {n_}, ' for g, n_ in wg) + '0};')
+    out.append('// the holders counted texts are put into (op 75): a member and the place inside what it points to (member 0xFFFF:')
+    out.append('// the place in the window itself); the tester puts a counted text of its own in each first')
+    out.append('extern const uint32_t titled_text_holders[];')
+    hold_ = set()
+    for a_ in info:
+        for o in all_ops.get(a_[0], []):
+            if o[0] == 75:
+                pl = o[4][0]
+                hold_.add((0xffff, pl[1]) if pl[0] == 'self' else (pl[1] & 0xffff, pl[1] >> 16))
+    out.append('const uint32_t titled_text_holders[] = {' + ''.join(f'{m_:#x}, {i_:#x}, ' for m_, i_ in sorted(hold_)) + '0xffffffff};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
     objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73})

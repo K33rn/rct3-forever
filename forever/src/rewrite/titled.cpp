@@ -11,6 +11,19 @@ static void titled_release(void *text) {   // a wide string's shared block: free
     memory_free(block);
 }
 
+static void titled_assign(void **holder, void *text) {   // a counted text put into a holder, as the game writes it inline
+    if (*holder == text) return;
+    int32_t *old = (int32_t *)*holder;
+    --*old;
+    old = (int32_t *)*holder;
+    if (!*old && old) {
+        memory_free_aligned((void *)(uintptr_t)old[3]);
+        memory_free(old);
+    }
+    *holder = text;
+    ++*(int32_t *)text;
+}
+
 // A member step, in the order the code does them:
 //   0 dword store, 1 byte store, 4 word store, 2 store the constructor's argument number value, 5 store the global at
 //   value as it is then, 6 store a pointer to +value of the object, 7 store the shared empty wide string, 29 store what
@@ -450,6 +463,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 32: if (memory) *(uint32_t *)(memory + op.off) = *(uint32_t *)(uintptr_t)op.value; break;
         case 33: if (memory) memory[op.off] = (uint8_t)op.value; break;
         case 72: if (memory) *(uint32_t *)(memory + op.off) = args[0]; break;
+        case 75: titled_assign((void **)(uintptr_t)args[0], op.fn ? names[op.value] : (void *)(uintptr_t)args[1]); break;   // a counted text into a holder
         case 74: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.value) = args[0]; break;   // a value into what a member points to (a child)
         case 73:   // a constant into the object a game global points to (args[0]: its size, | 0x100 only when there was memory)
             if (!(args[0] & 0x100) || memory) {

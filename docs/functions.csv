@@ -463,7 +463,7 @@ address,size,name,callers,status
 0x421db0,1548,,1,documented
 0x4224f0,4832,,3,documented
 0x4237d0,30,DeletingDestructor,3,rewritten
-0x4237f0,889,,1,documented
+0x4237f0,889,Window::Titled,1,rewritten
 0x423b70,39,Field::Construct,22,rewritten
 0x423ba0,1,,359,documented
 0x423bb0,39,Field::Construct,10,rewritten
