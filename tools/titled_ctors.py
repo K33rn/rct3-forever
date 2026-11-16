@@ -1269,8 +1269,10 @@ def tail(p):
                     ops.append((29, off, w[1], 0, []))
                 elif still(w):
                     ops.append((30, off, w[1], 0, []))
-                elif w[0] in ('fieldand', 'fieldor') and w[1] == off and w[3] == len(ops):
-                    ops.append((26 if w[0] == 'fieldand' else 27, off, w[2], 0, []))
+                elif w[0] in ('fieldand', 'fieldor') and w[1] == off and (w[3] == len(ops) or still(('field', w[1], w[3]))):
+                    ops.append((26 if w[0] == 'fieldand' else 27, off, w[2], 0, []))   # (the member unchanged since it was read)
+                elif w[0] == 'fieldplus' and still(('field',) + w[1:3]) and w[3] < 0x10000:
+                    ops.append((71, off, 0, 0, [('fieldplace', w[1] | w[3] << 16)]))   # (a place inside what a member points to)
                 elif w[0] == 'aligned' and w[1] == naligned:
                     ops.append((43, off, 0, 0, []))
                 elif w[0] == 'scratch':

@@ -6297,7 +6297,7 @@ address,size,name,callers,status
 0x66ffa0,550,,2,documented
 0x6701d0,91,,1,documented
 0x670230,230,,1,documented
-0x670380,526,,4,documented
+0x670380,526,Window::Titled,4,rewritten
 0x6705c0,30,DeletingDestructor,2,rewritten
 0x670620,68,,0,documented
 0x670670,66,Child::DropBoth63A180,1,rewritten
@@ -6479,7 +6479,7 @@ address,size,name,callers,status
 0x67f150,228,,1,documented
 0x67f260,98,Destructor::TablesAndMember,1,rewritten
 0x67f300,74,,0,documented
-0x67f3b0,557,,2,documented
+0x67f3b0,557,Window::Titled,2,rewritten
 0x67f5e0,30,DeletingDestructor,3,rewritten
 0x67f640,131,,1,documented
 0x67f7d0,30,DeletingDestructor,2,rewritten
@@ -6830,7 +6830,7 @@ address,size,name,callers,status
 0x6a21c0,210,Members::Notify6A20E0,1,rewritten
 0x6a22a0,185,,13,documented
 0x6a2360,121,,3,documented
-0x6a23e0,533,,1,documented
+0x6a23e0,533,Window::Titled,1,rewritten
 0x6a2600,30,DeletingDestructor,2,rewritten
 0x6a2620,609,,181,documented
 0x6a28b0,115,Destructor::Steps,46,rewritten
