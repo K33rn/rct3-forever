@@ -20063,8 +20063,8 @@ address,size,name,callers,status
 0xbdf160,27,Map::ValueBDF160,92,rewritten
 0xbdf180,27,Map::ValueBDF160,24,rewritten
 0xbdf1a0,27,Map::ValueBDF160,27,rewritten
-0xbdf1c0,268,,2,documented
-0xbdf2d0,268,,2,documented
+0xbdf1c0,268,HashTable::Insert,2,rewritten
+0xbdf2d0,268,HashTable::Insert,2,rewritten
 0xbdf5f0,91,Array::Reserve,4,rewritten
 0xbdf650,30,DeletingDestructor,1,rewritten
 0xbdf6a0,38,SharedBlock::Release,1,rewritten
