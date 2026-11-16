@@ -449,6 +449,14 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 31: if (memory) *(uint32_t *)(memory + op.off) = op.value; break;
         case 32: if (memory) *(uint32_t *)(memory + op.off) = *(uint32_t *)(uintptr_t)op.value; break;
         case 33: if (memory) memory[op.off] = (uint8_t)op.value; break;
+        case 72: if (memory) *(uint32_t *)(memory + op.off) = args[0]; break;
+        case 73:   // a constant into the object a game global points to (args[0]: its size, | 0x100 only when there was memory)
+            if (!(args[0] & 0x100) || memory) {
+                uint8_t *o = *(uint8_t **)(uintptr_t)op.fn;
+                if ((args[0] & 0xff) == 1) o[op.off] = (uint8_t)op.value;
+                else *(uint32_t *)(o + op.off) = op.value;
+            }
+            break;   // a value (the window, an argument, a member) into the new object
         case 15:
             if (temp_built[op.off]) ((void(__thiscall *)(void *))(uintptr_t)op.fn)(temps[op.off]);
             temp_built[op.off] = false;

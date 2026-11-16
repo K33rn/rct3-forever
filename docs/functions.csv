@@ -6060,7 +6060,7 @@ address,size,name,callers,status
 0x659fc0,500,Window::Construct,0,rewritten
 0x65a1d0,181,,1,documented
 0x65a2a0,30,DeletingDestructor,2,rewritten
-0x65a2d0,980,,8,documented
+0x65a2d0,980,Window::Titled,8,rewritten
 0x65a6d0,53,,0,documented
 0x65a720,54,,1,documented
 0x65a7b0,165,MEMBER_DTOR,5,rewritten
@@ -11983,7 +11983,7 @@ address,size,name,callers,status
 0x88a5d0,30,DeletingDestructor,2,rewritten
 0x88a5f0,923,,1,documented
 0x88a9a0,30,DeletingDestructor,2,rewritten
-0x88aa10,823,,1,documented
+0x88aa10,823,Window::Titled,1,rewritten
 0x88ad50,339,,3,documented
 0x88aeb0,75,,4,documented
 0x88af00,213,,1,documented
@@ -15965,7 +15965,7 @@ address,size,name,callers,status
 0xa57310,502,Window::Titled,0,rewritten
 0xa57530,356,,1,documented
 0xa576a0,30,DeletingDestructor,2,rewritten
-0xa576d0,2617,,1,documented
+0xa576d0,2617,Window::Titled,1,rewritten
 0xa58110,30,DeletingDestructor,2,rewritten
 0xa58130,474,,1,documented
 0xa58310,944,,1,documented

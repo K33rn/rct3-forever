@@ -485,7 +485,7 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68) or o[0] == 10 and o[3] == 0xbcf850 or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72) or o[0] == 10 and o[3] == 0xbcf850 or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
@@ -503,7 +503,7 @@ def tail(p):
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55}   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73}   # steps that call nothing
 
     def take_result(v):   # a call's result still the last thing called: into a scratch value (kind 64); else None
         if not v or v[0] != 'result' or any(o[0] not in QUIET for o in ops[v[1] + 1:]):
@@ -1146,6 +1146,14 @@ def tail(p):
             ops.append((51, 1 if m.group(1) == 'byte' else 4, num(m.group(3)), num(m.group(2)), []))   # a game global set
             k += 1
             continue
+        if (m := re.fullmatch(r'mov (byte|dword) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] == 'global' and val(m.group(2))[1] >= 0x1000000 and num(m.group(3) or '0') < 0x1000 and \
+                (not nulls or len(nulls) == 1 and nulls[0][1][0] == 'alloc' and nulls[0][1][1] == cur):
+            # a constant stored into the object a game global points to (kind 73; inside the new object's branch: only when
+            # there was memory)
+            ops.append((73, num(m.group(3) or '0'), num(m.group(4)), val(m.group(2))[1], [(1 if m.group(1) == 'byte' else 4) | (0x100 if nulls else 0)]))
+            k += 1
+            continue
         if (m := re.fullmatch(r'inc dword ptr \[' + REG + r'\]', s)) and val(m.group(1)) and val(m.group(1))[0] == 'argderef' and \
                 all(o[0] in (29, 0, 1, 2, 4, 5, 6) for o in ops[val(m.group(1))[2]:]):
             ops.append((50, 0, val(m.group(1))[1], 0, []))   # a hold taken on the text an argument holds
@@ -1169,6 +1177,12 @@ def tail(p):
                 ops.append((32, off, w[1], 0, []))
             elif m.group(1) == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] in ('const', 'byte'):
                 ops.append((33, off, val('e' + v[0] + 'x')[1] & 0xff, 0, []))
+            elif m.group(1) == 'dword' and w == ('this',):
+                ops.append((72, off, 0, 0, [('self', 0)]))   # (the window's place stored into the new object)
+            elif m.group(1) == 'dword' and w and w[0] == 'arg' and w[1] not in clobbered_args():
+                ops.append((72, off, 0, 0, [('given', w[1])]))   # (an argument)
+            elif m.group(1) == 'dword' and still(w):
+                ops.append((72, off, 0, 0, [('field', w[1])]))   # (a member's value, still as read)
             else:
                 raise Reject('new object store ' + s)
         elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'\], (.+)', s)) and val(m.group(1)) and val(m.group(1))[0] == 'spslot' \
@@ -1905,7 +1919,7 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_written_globals[] = {' + ''.join(f'{g:#x}, {n_}, ' for g, n_ in wg) + '0};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
-    objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62})
+    objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73})
     out.append('const uint32_t titled_object_globals[] = {' + ''.join(f'{g:#x}, ' for g in objg) + '0};')
     out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')
     out.append('extern const uint32_t titled_vslots[];')
