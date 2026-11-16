@@ -554,7 +554,7 @@ def tail(p):
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
         if isinstance(v, int):
             return (0, v)
-        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13}[v[0]], v[1]
+        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13, 'gplace': 14}[v[0]], v[1]
 
     nb_used = set()
     nb_eax = ['keep']
@@ -2026,6 +2026,8 @@ def tail(p):
             pushed.append(('field', val(m.group(1))[1])); d += 4
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'scratch':
             pushed.append(('scratch', val(m.group(1))[1])); d += 4
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'argplus' and val(m.group(1))[1] not in clobbered_args():
+            pushed.append(('gplace', val(m.group(1))[1] | val(m.group(1))[2] << 8)); d += 4   # (a place inside an argument object: kind 14)
         elif (m := re.fullmatch(r'push ' + REG, s)) and (dc := deref_code(val(m.group(1)))):
             pushed.append(dc); d += 4   # (a dword inside what an argument points to)
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'fieldplus' and still(('field',) + val(m.group(1))[1:3]) and \
@@ -2152,7 +2154,7 @@ def tail(p):
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'alloc' and val('ecx')[1] == cur:
             fn, token = num(m.group(1)), val('ecx')
             n_ = ret_args(fn)
-            if n_ is None or n_ > len(pushed) or n_ > 5:
+            if n_ is None or n_ > len(pushed) or n_ > 7:
                 raise Reject('new object constructor')
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
@@ -2209,6 +2211,15 @@ def tail(p):
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             flag = None
+        elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) and val(m.group(1))[0] in ('arg', 'argplus') and                 num(m.group(2)) < 0x1000000:
+            v_ = val(m.group(1))   # (a place inside an argument object, moved on)
+            R[m.group(1)] = ('argplus', v_[1], num(m.group(2)) + (v_[2] if v_[0] == 'argplus' else 0))
+            flag = None
+        elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'arg' and \
+                num(m.group(3)) < 0x1000000:
+            R[m.group(1)] = ('argplus', val(m.group(2))[1], num(m.group(3)))   # (a place inside an argument object)
+        elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and still(val(m.group(2))) and num(m.group(3)) < 0x10000:
+            R[m.group(1)] = ('fieldplus', val(m.group(2))[1], val(m.group(2))[2], num(m.group(3)))   # (a place inside what a member points to)
         elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and still(val(m.group(1))) and num(m.group(2)) < 0x10000:
             R[m.group(1)] = ('fieldplus', val(m.group(1))[1], val(m.group(1))[2], num(m.group(2)))   # (a place inside what a member points to)
             flag = None
@@ -2487,7 +2498,7 @@ if __name__ == '__main__':
                 if isinstance(v, int):
                     codes.append((0, v))
                 else:
-                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13}[v[0]], v[1]))
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'dfield': 11, 'darg': 12, 'newobj': 13, 'gplace': 14}[v[0]], v[1]))
             kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')

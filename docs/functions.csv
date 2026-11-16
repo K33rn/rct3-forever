@@ -4431,7 +4431,7 @@ address,size,name,callers,status
 0x5a0a30,107,Selected::Dtor5A0A30,1,rewritten
 0x5a0ab0,79,,1,documented
 0x5a0b10,30,DeletingDestructor,2,rewritten
-0x5a0b30,667,,1,documented
+0x5a0b30,667,Window::Titled,1,rewritten
 0x5a0e00,40,Text::Widen,0,rewritten
 0x5a0fc0,29,Values::Map,1,rewritten
 0x5a1120,46,,0,documented
@@ -7429,7 +7429,7 @@ address,size,name,callers,status
 0x6d4870,171,,8,documented
 0x6d4920,738,,3,documented
 0x6d4c10,1889,,4,documented
-0x6d5380,677,,7,documented
+0x6d5380,677,Window::Titled,7,rewritten
 0x6d5660,40,Text::Widen,0,rewritten
 0x6d56d0,88,Singleton::Get40DA80,10,rewritten
 0x6d5740,128,,1,documented
