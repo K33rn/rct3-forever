@@ -554,7 +554,7 @@ def tail(p):
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
         if isinstance(v, int):
             return (0, v)
-        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'darg': 12}[v[0]], v[1]
+        return {'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'darg': 12, 'newobj': 13}[v[0]], v[1]
 
     nb_used = set()
     nb_eax = ['keep']
@@ -568,12 +568,19 @@ def tail(p):
 
     QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79}   # (75 frees memory: not quiet)   # steps that call nothing
 
+    taken = {}   # the results already taken into scratch values: the step that gave it -> its scratch number
+
     def take_result(v):   # a call's result still the last thing called: into a scratch value (kind 64); else None
-        if not v or v[0] != 'result' or any(o[0] not in QUIET for o in ops[v[1] + 1:]):
+        if not v or v[0] != 'result':
+            return None
+        if v[1] in taken:   # (taken already: asked again, the same scratch value)
+            return ('scratch', taken[v[1]])
+        if any(o[0] not in QUIET for o in ops[v[1] + 1:]):
             return None
         if nscratch[0] >= 16:
             raise Reject('scratch values')
         ops.append((64, nscratch[0], 0, 0, []))
+        taken[v[1]] = nscratch[0]
         nscratch[0] += 1
         return ('scratch', nscratch[0] - 1)
 
@@ -616,6 +623,8 @@ def tail(p):
             return ('tempat', v[1] | v[2] << 8)
         if v[0] == 'scratch':
             return v
+        if v[0] == 'obj' and v[1] == cur and not nulls:   # (the new object, past its making: as returned, or its memory)
+            return ('newobj', 0 if v[2] == 'returned' else 1)
         if v[0] == 'result':   # (the last call's result, nothing called since: kept in a scratch value first)
             return take_result(v)
         return None
@@ -2338,7 +2347,7 @@ if __name__ == '__main__':
                 if isinstance(v, int):
                     codes.append((0, v))
                 else:
-                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'darg': 12}[v[0]], v[1]))
+                    codes.append(({'glob': 1, 'given': 2, 'self': 3, 'temp': 4, 'nameaddr': 5, 'field': 6, 'scratch': 7, 'tempat': 8, 'local': 9, 'fieldplace': 10, 'darg': 12, 'newobj': 13}[v[0]], v[1]))
             kinds = sum(c << (4 * q) for q, (c, _) in enumerate(codes))
             return f'{{{kind}, {off:#x}, {value:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(v) for _, v in codes) or "0"}}}, {kinds:#x}}}'
         out.append(f'static const TitledOp titled_{a:x}_ops[] = {{' + (', '.join(op_text(o) for o in p['ops']) or '{0, 0, 0, 0, 0, {0}, 0}') + '};')

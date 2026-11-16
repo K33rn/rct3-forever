@@ -7773,7 +7773,7 @@ address,size,name,callers,status
 0x6ed400,15,,2,documented
 0x6ed420,30,DeletingDestructor,2,rewritten
 0x6ed440,172,,1,documented
-0x6ed4f0,668,,1,documented
+0x6ed4f0,668,Window::Titled,1,rewritten
 0x6ed820,151,MEMBER_DTOR,1,rewritten
 0x6ed970,30,DeletingDestructor,2,rewritten
 0x6ed990,1298,,2,documented
@@ -16295,7 +16295,7 @@ address,size,name,callers,status
 0xa7f870,475,,1,documented
 0xa7fa90,889,,1,documented
 0xa7fe30,212,,1,documented
-0xa7ff10,763,,1,documented
+0xa7ff10,763,Window::Titled,1,rewritten
 0xa80240,71,Cached::PassA80240,1,rewritten
 0xa80290,159,,1,documented
 0xa80330,30,DeletingDestructor,2,rewritten
