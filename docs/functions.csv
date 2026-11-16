@@ -5897,7 +5897,7 @@ address,size,name,callers,status
 0x643eb0,11,,1,documented
 0x643ec0,551,Window::Titled,1,rewritten
 0x644140,30,DeletingDestructor,2,rewritten
-0x644170,2795,,17,documented
+0x644170,2795,Window::Titled,17,rewritten
 0x644c60,30,DeletingDestructor,2,rewritten
 0x644d20,4,,4,documented
 0x644d50,38,Destructor::TablesThenBase,1,rewritten

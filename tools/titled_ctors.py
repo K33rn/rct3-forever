@@ -669,6 +669,61 @@ def tail(p):
             q += 1
         return False
 
+    def list_link(k0):
+        # a node put first in a list whose head a game global holds (kind 91): mov A, [S] (S holding the head); the node's
+        # place (lea N, [the window + K], or a register holding the new object or the window's place); mov [N], A;
+        # mov B, [S]; mov [B + 4], N; mov [N + 4], S; mov [S], N, last (the stack bookkeeping stores passed over). Gives
+        # (index after, the node's value, the head's value, the registers written) or None.
+        m0 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', t[k0])
+        if not m0 or m0.group(1) == m0.group(2) or not val(m0.group(2)) or val(m0.group(2))[0] != 'global' or \
+                not 0x1000000 <= val(m0.group(2))[1] < 0x2000000:
+            return None
+        s_ = m0.group(2)
+        sym = {m0.group(1): 'F'}
+        node = None
+        done = []
+        q = k0 + 1
+        while q < len(t) and q < k0 + 12 and len(done) < 4:
+            u = t[q]
+            if re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', u):
+                q += 1
+                continue
+            if (z := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + s_ + r'\]', u)) and z.group(1) != s_:
+                sym[z.group(1)] = 'F'
+            elif (z := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', u)) and z.group(1) != s_ and node is None and \
+                    val(z.group(2)) in (('this',),) and num(z.group(3)) < 0x10000:
+                sym[z.group(1)] = 'N'
+                node = ('self', num(z.group(3)))
+            elif (z := re.fullmatch(r'mov dword ptr \[' + REG + r'( \+ 4)?\], ' + REG, u)):
+                b_, o_, v_ = z.group(1), bool(z.group(2)), z.group(3)
+                bs = 'S' if b_ == s_ else sym.get(b_, 'N' if node is None and b_ not in sym else None)
+                vs = 'S' if v_ == s_ else sym.get(v_, 'N' if node is None and v_ not in sym else None)
+                if bs == 'N' and node is None or vs == 'N' and node is None:
+                    r_ = b_ if bs == 'N' else v_
+                    w_ = val(r_)
+                    if w_ == ('this',):
+                        node = ('self', 0)
+                    elif w_ and w_[0] == 'member' and w_[1] < 0x10000:
+                        node = ('self', w_[1])
+                    elif w_ and w_[0] == 'obj' and w_[1] == cur and not nulls:
+                        node = ('newobj', 0 if w_[2] == 'returned' else 1)
+                    else:
+                        return None
+                    sym[r_] = 'N'
+                kind_ = (bs, o_, vs)
+                want = {('N', False, 'F'): 'n0', ('F', True, 'N'): 'f1', ('N', True, 'S'): 'n1', ('S', False, 'N'): 's0'}
+                if kind_ not in want or want[kind_] in done or want[kind_] == 's0' and len(done) != 3:
+                    return None
+                if want[kind_] == 'f1' and 'n0' not in done:
+                    return None   # (the first node's back link set before the new node takes it over: as the game does it)
+                done.append(want[kind_])
+            else:
+                return None
+            q += 1
+        if len(done) != 4 or node is None:
+            return None
+        return q, node, ('glob', val(s_)[1]), set(sym) | {s_}
+
     def cookie_given(k0):
         # is ecx, at the call at k0, the game's stack cookie (its global 0x10FE634, kept on the stack at the start)? The
         # cookie's slot: where the first read of the global is stored; ecx: read from that slot, the last thing set in it
@@ -1692,6 +1747,13 @@ def tail(p):
         if k in fpu_skip:   # (an x87 step an earlier run took in, read past the pushes set among its steps)
             k += 1
             continue
+        if not pushed and (ll_ := list_link(k)):
+            ops.append((91, 0, 0, 0, [ll_[1], ll_[2]]))
+            for r_ in ll_[3]:
+                R[r_] = None
+            k = ll_[0]
+            flag = None
+            continue
         if s == 'call 0xddcda7' and not pushed and cookie_given(k):
             # the stack cookie checked (__security_check_cookie, given the game's cookie kept on the stack at the start): it
             # holds as long as the stack does, and leaves the registers but ecx and the flags as they were
@@ -2278,9 +2340,13 @@ def tail(p):
                 # from the stack after it, so it holds what it held before)
                 body = [re.sub(r'^(cmp dword ptr \[' + REG + r'\]), ' + REG + '$', lambda z_: z_.group(1) + ', 0' if val(z_.group(3)) == ('const', 0) else z_.group(0), u)
                         for u in body]
-                zero_after_ = None   # (the zero register made again after the frees: xor R, R last)
+                zero_after_ = None   # (the zero register made again after the frees: xor R, R last; 0 after only if it was before)
+                set_after_ = None    # (a register given a constant last, for the exception state: not known after)
                 if body and (zx_ := re.fullmatch(r'xor ' + REG + ', ' + REG, body[-1])) and zx_.group(1) == zx_.group(2):
-                    zero_after_ = zx_.group(1)
+                    zero_after_ = (zx_.group(1), R.get(zx_.group(1)) in (('const', 0), ('byte', 0)))
+                    body = body[:-1]
+                elif body and (zx_ := re.fullmatch(r'mov ' + REG + r', (0x[0-9a-f]+|\d+)', body[-1])):
+                    set_after_ = zx_.group(1)
                     body = body[:-1]
                 freed = max((i for i, u in enumerate(body) if u == 'call 0xbce000'), default=len(body))
                 reloaded = {re.fullmatch(r'mov (e[sd]i|ebp|ebx), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u).group(1) for u in body[freed:]
@@ -2312,7 +2378,9 @@ def tail(p):
                 else:
                     raise Reject('release of what')
                 if zero_after_:
-                    R[zero_after_] = ('const', 0)
+                    R[zero_after_[0]] = ('const', 0) if zero_after_[1] else None
+                if set_after_:
+                    R[set_after_] = None
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             k = end_
@@ -2771,6 +2839,22 @@ def tail(p):
                 flag = None
                 k += 1
                 continue
+            if this and this[0] == 'obj' and this[1] == cur and not nulls and ret_args(fn) is not None and ret_args(fn) <= min(len(pushed), 7) and \
+                    fn not in TESTER_OWN:
+                # a call on the new object, past its making (kind 80, the object the first value): what it gives kept
+                n_ = ret_args(fn)
+                args = [pushed.pop() for _ in range(n_)]
+                d -= 4 * n_
+                if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') and
+                       not (v[0] == 'nameaddr' and ('name', v[1]) in built) and not (v[0] == 'temp' and ('temp', v[1]) in built) for v in args):
+                    raise Reject('new object call with a temporary')
+                ops.append((80, 0, 0, fn, [('newobj', 0 if this[2] == 'returned' else 1)] + args))
+                for r in ('eax', 'ecx', 'edx'):
+                    R[r] = None
+                R['eax'] = ('result', len(ops) - 1)
+                flag = None
+                k += 1
+                continue
             if not this or this[0] not in ('this', 'member', 'arg', 'global') or ret_args(fn) is None or ret_args(fn) > len(pushed) or \
                     ret_args(fn) > (7 if this[0] in ('this', 'member') else 5) or this[0] == 'arg' and this[1] < 2:
                 raise Reject('tail call ' + s + ' this=%s n=%s pushed=%d @%#x' % (this, ret_args(fn), len(pushed), x.address) + (' breakers: %s' % [ops[j][:4] for j in range(this[2], len(ops)) if not still(('field', this[1], j)) and still(('field', this[1], j + 1))] if this and this[0] == 'field' else ''))
@@ -3042,6 +3126,10 @@ if __name__ == '__main__':
             if o_[i_][0] == 63 and o_[i_][4] and o_[i_][4][0][0] == 'glob' and o_[i_ + 1][0] == 18 and o_[i_ + 2][0] == 10 and \
                     len(o_[i_ + 2][4]) <= 1:
                 singles.append((a_[0], o_[i_][4][0][1], o_[i_ + 2][3]))
+    # the game globals holding a list's head that a node is put first in (op 91): the tester gives each an empty list
+    lgl = sorted({o[4][1][1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 91})
+    out.append('extern const uint32_t titled_list_globals[];')
+    out.append('const uint32_t titled_list_globals[] = {' + ''.join(f'{g:#x}, ' for g in lgl) + '0};')
     out.append('extern const uint32_t titled_singletons[];')
     out.append('const uint32_t titled_singletons[] = {' + ''.join(f'{a:#x}, {g:#x}, {f:#x}, ' for a, g, f in singles) + '0};')
     out.append('// the virtual slots called (op 60) and how many values each takes: the tester stands in for each')

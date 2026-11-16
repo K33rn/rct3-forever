@@ -551,6 +551,8 @@ extern const uint32_t titled_read_globals[];
 static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
 extern const uint32_t titled_singletons[];
+extern const uint32_t titled_list_globals[];
+static uint32_t g_titled_list_saved[8];
 static uint32_t g_titled_single_global, g_titled_single_fn;   // (the copy's singleton made on first use: its global, its constructor)
 extern const uint32_t dtor_steps_info[];
 extern const uint32_t table_make_info[];
@@ -6286,6 +6288,15 @@ static std::vector<Test> tests() {
                                   *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = (uint32_t)(uintptr_t)arena<void>(0xd000 + k * 0x100);
                                   arena<uint32_t>(0xd000 + k * 0x100)[0] = (uint32_t)(uintptr_t)titled_child_table;   // (its table: the stand-ins)
                               }
+                              for (int k = 0; titled_list_globals[k] && k < 8; k++) {   // (the lists a node is put first in: one node in each, or none)
+                                  g_titled_list_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_list_globals[k];
+                                  uint32_t *head = arena<uint32_t>(0xe000 + k * 0x20), *one = head + 4;
+                                  *(volatile uint32_t *)(uintptr_t)titled_list_globals[k] = (uint32_t)(uintptr_t)head;
+                                  if (arena<uint32_t>(0x4c)[0] >> (9 + k) & 1)
+                                      head[0] = head[1] = (uint32_t)(uintptr_t)one, one[0] = one[1] = (uint32_t)(uintptr_t)head;
+                                  else
+                                      head[0] = head[1] = (uint32_t)(uintptr_t)head;
+                              }
                               if (g_titled_single_global && arena<uint32_t>(0x4c)[0] >> 7 & 1)   // (the singleton not made yet, in some cases)
                                   *(volatile uint32_t *)(uintptr_t)g_titled_single_global = 0;
                               *(void **)g_titled_title = arena<void>(0x8000);
@@ -6312,6 +6323,7 @@ static std::vector<Test> tests() {
                               default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]); break;
                               }
                               for (int k = 0; titled_object_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
+                              for (int k = 0; titled_list_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_list_globals[k] = g_titled_list_saved[k];
                               for (int k = 0; titled_text_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_text_globals[k] = g_titled_text_saved[k];
                               for (int k = 0; titled_read_globals[k] && k < 64; k++) *(volatile uint32_t *)(uintptr_t)titled_read_globals[k] = g_titled_read_saved[k];
                               for (int k = 0; titled_class_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_class_globals[k] = g_titled_class_saved[k];

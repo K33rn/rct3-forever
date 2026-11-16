@@ -529,6 +529,14 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 78: scratch[op.off] = *(uint32_t *)(uintptr_t)(args[0] + op.value); break;   // a dword inside a scratch value's object
         case 86: scratch[op.off] = (uint32_t)((int32_t)scratch[op.off] % (int32_t)op.value); break;   // a scratch value modulo a power of two (C's sign)
         case 79: scratch[op.off] = args[0] + op.value; break;   // a scratch value plus a constant
+        case 91: {   // a node (args[0]) put first in the list whose head is args[1]: node.next = head.next; head.next.prev = node;
+            uint32_t *node = (uint32_t *)(uintptr_t)args[0], *head = (uint32_t *)(uintptr_t)args[1];   // node.prev = head; head.next = node
+            node[0] = head[0];
+            ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)node;
+            node[1] = (uint32_t)(uintptr_t)head;
+            head[0] = (uint32_t)(uintptr_t)node;
+            break;
+        }
         case 90: scratch[op.off] = (args[0] & 0xff) ? args[1] : args[2]; break;   // one of two values, by an argument's flag byte
         case 80: last = titled_call(op.fn, (void *)(uintptr_t)args[0], op.count - 1, args + 1); break;   // a call on a scratch value
         case 76: last = titled_call(op.fn, nullptr, op.count, args); break;
