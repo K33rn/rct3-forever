@@ -5621,7 +5621,7 @@ address,size,name,callers,status
 0x62e7c0,39,,1,documented
 0x62e810,43,Panel::Sync62E790,1,rewritten
 0x62e840,30,DeletingDestructor,2,rewritten
-0x62f160,4112,,1,documented
+0x62f160,4112,Window::Titled,1,rewritten
 0x6301b0,136,Destructor::Steps,6,rewritten
 0x630250,88,View::ApplyTransform630250,3,rewritten
 0x630360,33,Record::Fields,4,rewritten

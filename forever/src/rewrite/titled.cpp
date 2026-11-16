@@ -428,8 +428,9 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
                 const bool skip[10] = {a > b, a >= b, a < b, a <= b, sa > sb, sa >= sb, sa < sb, sa <= sb, a == b, a != b};
                 skipped = skip[op.fn & 0xf];
             } else {
-                const bool zero = op.fn >= 2 ? (args[0] & 0xff) == 0 : args[0] == 0;   // (fn 3: skipped when the low byte isn't 0)
-                skipped = zero != (op.fn == 1 || op.fn == 3);
+                // (fn 3: skipped when the low byte isn't 0; fn 4 / 5: when the bits under the mask, value, are all 0 / aren't)
+                const bool zero = op.fn >= 4 ? (args[0] & op.value) == 0 : op.fn >= 2 ? (args[0] & 0xff) == 0 : args[0] == 0;
+                skipped = zero != (op.fn == 1 || op.fn == 3 || op.fn == 5);
             }
             if (op.count > 1) block_ran[args[1] & 63] = !skipped;
             if (skipped) k += op.off;

@@ -120,6 +120,9 @@ def uses_ecx(fn, depth=0):
                 break
             if x86.X86_REG_ECX in written_ or x.mnemonic == 'ret':
                 break
+            if x.mnemonic == 'call' and x.op_str == '0xddd770':
+                a += x.size   # (__chkstk, the stack probe: it gives ecx back as it found it, so ecx is still the caller's after)
+                continue
             if x.mnemonic == 'call':
                 if not re.fullmatch(r'0x[0-9a-f]+', x.op_str) or depth >= 2 or uses_ecx(num(x.op_str), depth + 1):
                     result = True
@@ -2200,6 +2203,28 @@ def tail(p):
                 val(m.group(2))[0] in ('this', 'member') and num(m.group(3) or '0') < 0x10000:
             # a byte of the window read (only tested): kept as the member's dword, whose low byte it is
             R['e' + m.group(1) + 'x'] = ('bytefield', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3) or '0'), len(ops))
+        elif (m := re.fullmatch(r'shr (e[a-d]x|e[sd]i|ebp|ebx), ([1-9]|0x[0-9a-f]|1[0-9]|2[0-3])', s)) and val(m.group(1)) and \
+                val(m.group(1))[0] in ('global', 'field') and base_code(val(m.group(1))) is not None:
+            # a game global's or a member's value shifted right, for a bit test that follows (the test's mask shifted back)
+            R[m.group(1)] = ('shifted', val(m.group(1)), num(m.group(2)))
+            flag = None
+            k += 1
+            continue
+        elif (m := re.fullmatch(r'(test|and) (e[a-d]x|[a-d]l|e[sd]i|ebp|ebx), (0x[0-9a-f]+|\d+)', s)) and num(m.group(3)) and \
+                (r_ := m.group(2) if m.group(2).startswith('e') else 'e' + m.group(2)[0] + 'x') and val(r_) and \
+                (val(r_)[0] in ('global', 'field', 'const') and base_code(val(r_)) is not None or
+                 val(r_)[0] == 'shifted' and base_code(val(r_)[1]) is not None) and (m.group(1) == 'test' or m.group(2).endswith('l')):
+            # bits of a value tested (a game global's, a member's, perhaps shifted right first): the block that follows is kept
+            # by them (fn 4 / 5); an and of the low byte leaves those bits in it (a value not known after)
+            base_, sh_ = (val(r_)[1], val(r_)[2]) if val(r_)[0] == 'shifted' else (val(r_), 0)
+            mask_ = (num(m.group(3)) & (0xff if not m.group(2).startswith('e') else 0xffffffff)) << sh_
+            if mask_ >> 32:
+                raise Reject('bit test past the value')
+            flag = ('testmask', base_, mask_)
+            if m.group(1) == 'and':
+                R[r_] = None
+            k += 1
+            continue
         elif (m := re.fullmatch(r'mov ([abcd])l, byte ptr \[(0x1[0-9a-f]{6})\]', s)):
             R['e' + m.group(1) + 'x'] = ('byteglobal', num(m.group(2)))   # (a game global's byte, only tested)
         elif (m := re.fullmatch(r'test ([abcd])l, \1l', s)) and val('e' + m.group(1) + 'x') and val('e' + m.group(1) + 'x')[0] in ('bytefield', 'byteglobal'):
@@ -2364,6 +2389,13 @@ def tail(p):
                 (not conds or at.get(int(x.op_str, 0)) <= conds[-1][0]):
             # a block skipped when the value compares so with the constant (kind 63, fn 0x10 | the condition, value the constant)
             ops.append((63, 0, flag[2] & 0xffffffff, 0x10 | CMP_CONDITIONS.index(x.mnemonic), [base_code(flag[1])]))
+            conds.append((at[int(x.op_str, 0)], len(ops) - 1, dict(R), dict(S), d, set(built)))
+            flag = None
+        elif x.mnemonic in ('je', 'jne') and not pushed and not nulls and flag and flag[0] == 'testmask' and base_code(flag[1]) is not None and \
+                re.fullmatch(r'0x[0-9a-f]+', x.op_str) and (at.get(int(x.op_str, 0)) or -1) > k + 1 and \
+                (not conds or at.get(int(x.op_str, 0)) <= conds[-1][0]):
+            # a block skipped when the value's bits under the mask are all 0 (je, fn 4) or aren't (jne, fn 5): kind 63
+            ops.append((63, 0, flag[2], 4 + int(x.mnemonic == 'jne'), [base_code(flag[1])]))
             conds.append((at[int(x.op_str, 0)], len(ops) - 1, dict(R), dict(S), d, set(built)))
             flag = None
         elif x.mnemonic in ('je', 'jne') and not pushed and not nulls and flag and flag[0] == 'test' and base_code(flag[1]) is not None and \
@@ -2900,6 +2932,22 @@ def tail(p):
                 flag = None
                 k += 1
                 continue
+            if this and this[0] == 'const' and 0x10e7000 <= this[1] < 0x1420000 and ret_args(fn) is not None and ret_args(fn) <= min(len(pushed), 7) and \
+                    fn not in TESTER_OWN:
+                # a call on a game global's place (ecx its address: a settings object loaded once, say): kind 80, the address
+                # the first value
+                n_ = ret_args(fn)
+                args = [pushed.pop() for _ in range(n_)]
+                d -= 4 * n_
+                if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') for v in args):
+                    raise Reject('global place call with a temporary')
+                ops.append((80, 0, 0, fn, [this[1]] + args))
+                for r in ('eax', 'ecx', 'edx'):
+                    R[r] = None
+                R['eax'] = ('result', len(ops) - 1)
+                flag = None
+                k += 1
+                continue
             if this and this[0] == 'obj' and this[1] == cur and not nulls and ret_args(fn) is not None and ret_args(fn) <= min(len(pushed), 7) and \
                     fn not in TESTER_OWN:
                 # a call on the new object, past its making (kind 80, the object the first value): what it gives kept
@@ -3068,7 +3116,8 @@ if __name__ == '__main__':
                 noobj_uses.add(o[3])
             if o[0] == 80:
                 callees[o[3]] = len(o[4]) - 1
-                obj_uses.add(o[3])
+                # (on a game global's place: the plain stand-in, which fills nothing, so the global keeps the case's value)
+                (noobj_uses if isinstance(o[4][0], int) else obj_uses).add(o[3])
             if o[0] == 89:
                 callees[o[3]] = len(o[4]) - 2
                 fast_uses.add(o[3])

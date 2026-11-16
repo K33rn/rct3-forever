@@ -569,7 +569,7 @@ static void *__thiscall stub_iface_info(void *self) {   // an object's class inf
 }
 static void *titled_iface_table[2] = {nullptr, (void *)stub_iface_info};
 extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled_object_globals[], titled_written_globals[], titled_text_globals[], value_info[], record_info[];
-static uint32_t g_titled_text_saved[8], g_titled_read_saved[64];
+static uint32_t g_titled_text_saved[8], g_titled_read_saved[256];
 extern const uint32_t titled_read_globals[];
 static uint32_t g_titled_written_saved[16];
 static uint32_t g_titled_object_saved[16];
@@ -6290,7 +6290,7 @@ static std::vector<Test> tests() {
                                   g_titled_class_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_class_globals[k];
                                   *(volatile int32_t *)(uintptr_t)titled_class_globals[k] = (int32_t)((arena<uint32_t>(0x4c)[0] >> (2 * k + 1)) % 4);
                               }
-                              for (int k = 0; titled_read_globals[k] && k < 64; k++) {   // (the globals read as values: values of the case's)
+                              for (int k = 0; titled_read_globals[k] && k < 256; k++) {   // (the globals read as values: values of the case's)
                                   g_titled_read_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_read_globals[k];
                                   const uint32_t v = arena<uint32_t>(0x4c)[0] * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu;
                                   *(volatile uint32_t *)(uintptr_t)titled_read_globals[k] = v % 5 == 0 ? 0 : v;
@@ -6367,7 +6367,7 @@ static std::vector<Test> tests() {
                               for (int k = 0; titled_object_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
                               for (int k = 0; titled_list_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_list_globals[k] = g_titled_list_saved[k];
                               for (int k = 0; titled_text_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_text_globals[k] = g_titled_text_saved[k];
-                              for (int k = 0; titled_read_globals[k] && k < 64; k++) *(volatile uint32_t *)(uintptr_t)titled_read_globals[k] = g_titled_read_saved[k];
+                              for (int k = 0; titled_read_globals[k] && k < 256; k++) *(volatile uint32_t *)(uintptr_t)titled_read_globals[k] = g_titled_read_saved[k];
                               for (int k = 0; titled_class_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_class_globals[k] = g_titled_class_saved[k];
                               for (int k = 0; titled_written_globals[2 * k] && k < 16; k++) {   // (what they hold now: compared; then put back)
                                   volatile uint8_t *g = (volatile uint8_t *)(uintptr_t)titled_written_globals[2 * k];
