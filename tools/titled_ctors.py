@@ -1904,6 +1904,24 @@ def tail(p):
                     ins[q_].mnemonic == 'nop' or re.fullmatch(r'(lea (\w+), \[\2\]|mov (\w+), \3|lea esp, \[esp\])', t[q_]) for q_ in range(k + 1, at[int(x.op_str, 0)])):
             k = at[int(x.op_str, 0)]   # (a jump over the padding the compiler puts before a loop's top)
             continue
+        if ((m := re.fullmatch(r'movzx (e[a-d]x), byte ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) or
+                (m := re.fullmatch(r'mov ([a-d])l, byte ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and
+                val('e' + m.group(1) + 'x') in (('const', 0), ('byte', 0))) and val(m.group(2)) in (('this',),) and num(m.group(3) or '0') < 0x10000:
+            # a member's byte, zero-extended into a register (movzx, or mov into the low byte of one holding 0): kept as such
+            reg_ = m.group(1) if m.group(1).startswith('e') else 'e' + m.group(1) + 'x'
+            R[reg_] = ('bytezx', num(m.group(3) or '0'), len(ops))
+            flag = None
+            k += 1
+            continue
+        if (m := re.fullmatch(r'push (e[a-d]x|e[sd]i|ebp|ebx)', s)) and val(m.group(1)) and val(m.group(1))[0] == 'bytezx' and \
+                all(o[0] in QUIET for o in ops[val(m.group(1))[2]:]) and nscratch[0] < 32:
+            # that pushed: read into a scratch value first (kind 100), the byte as it is now
+            ops.append((100, nscratch[0], val(m.group(1))[1], 0, []))
+            pushed.append(('scratch', nscratch[0]))
+            nscratch[0] += 1
+            d += 4
+            k += 1
+            continue
         if (m := re.fullmatch(r'inc dword ptr \[(' + REG + r'|0x1[0-9a-f]{6})\]', s)) and not pushed and \
                 (m.group(1).startswith('0x') and num(m.group(1)) >= 0x10e7000 or
                  val(m.group(1)) and val(m.group(1))[0] in ('arg', 'scratch', 'field', 'tempat', 'global') and base_code(val(m.group(1))) is not None):
@@ -2036,7 +2054,8 @@ def tail(p):
             R[m.group(1)] = ('field', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3) or '0'), len(ops))
             k += 1
             continue
-        if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'arg':
+        if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', s)) and val(m.group(2)) and val(m.group(2))[0] == 'arg' and \
+                not (not pushed and text_release(k)):
             R[m.group(1)] = ('argderef', val(m.group(2))[1], len(ops))   # what an argument points to
             k += 1
             continue
@@ -2228,6 +2247,8 @@ def tail(p):
                 ops.append((1, off, val('e' + v[0] + 'x')[1] & 0xff, 0, []))
             elif size == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] == 'argbyte':
                 ops.append((49, off, val('e' + v[0] + 'x')[1], 0, []))   # an argument's low byte
+            elif size == 'byte' and v in ('al', 'bl', 'cl', 'dl') and val('e' + v[0] + 'x') and val('e' + v[0] + 'x')[0] == 'byteglobal':
+                ops.append((99, off, val('e' + v[0] + 'x')[1], 0, []))   # a game global's byte (kind 99)
             else:
                 raise Reject('tail store ' + s)
         elif re.fullmatch(r'mov (dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l|e[a-d]x|e[sd]i|ebp|ebx)', s):
@@ -3146,16 +3167,17 @@ def tail(p):
                 flag = None
                 k += 1
                 continue
-            if this and this[0] == 'const' and 0x10e7000 <= this[1] < 0x1420000 and ret_args(fn) is not None and ret_args(fn) <= min(len(pushed), 7) and \
-                    fn not in TESTER_OWN:
-                # a call on a game global's place (ecx its address: a settings object loaded once, say): kind 80, the address
-                # the first value
+            if this and (this[0] == 'const' and 0x10e7000 <= this[1] < 0x1420000 or
+                         this[0] == 'gfield' and all(o[0] in QUIET for o in ops[this[3]:])) and \
+                    ret_args(fn) is not None and ret_args(fn) <= min(len(pushed), 7) and fn not in TESTER_OWN:
+                # a call on a game global's place (ecx its address: a settings object loaded once, say), or on a dword inside
+                # the object a global holds (read when it runs, kind 15): kind 80, that the first value
                 n_ = ret_args(fn)
                 args = [pushed.pop() for _ in range(n_)]
                 d -= 4 * n_
                 if any(not isinstance(v, int) and v[0] in ('temp', 'nameaddr', 'rect', 'local') for v in args):
                     raise Reject('global place call with a temporary')
-                ops.append((80, 0, 0, fn, [this[1]] + args))
+                ops.append((80, 0, 0, fn, [this[1] if this[0] == 'const' else ('gobj', (this[1] - 0x1000000) | this[2] << 24)] + args))
                 for r in ('eax', 'ecx', 'edx'):
                     R[r] = None
                 R['eax'] = ('result', len(ops) - 1)
@@ -3536,7 +3558,7 @@ if __name__ == '__main__':
     readg = set()
     for a_ in info:
         for o in all_ops.get(a_[0], []):
-            if o[0] in (5, 32, 45):
+            if o[0] in (5, 32, 45, 99):
                 readg.add(o[2])
             if o[0] == 77:
                 readg.add(o[4][0])   # (the shared object's global: none, or a value of the case's, so both ways are met)

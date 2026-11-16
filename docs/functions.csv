@@ -6366,7 +6366,7 @@ address,size,name,callers,status
 0x675b70,104,,1,documented
 0x675be0,1537,,5,documented
 0x676220,248,,16,documented
-0x676320,2801,,3,documented
+0x676320,2801,Window::Titled,3,rewritten
 0x676e40,576,,4,documented
 0x677090,117,,2,documented
 0x677110,3117,,3,documented
