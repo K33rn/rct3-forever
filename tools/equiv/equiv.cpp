@@ -559,6 +559,12 @@ static void *__thiscall stub_text_for_child(void **self, void **name, void *wind
     *self = new_wide_block();
     return self;
 }
+// 0x4B7940 (a text holder set from a name and a value): the name's text and the value noted, a text of its own put in
+static void *__thiscall stub_text_assign2(void **self, void **name, uint32_t value) {
+    record(0x87, name ? *name : nullptr); record(0x87, (void *)(uintptr_t)value);
+    *self = new_wide_block();
+    return self;
+}
 static uintptr_t g_titled_title;
 static uint32_t g_titled_args, g_titled_nullable, g_titled_byte_flags, g_titled_parent = 1, g_titled_text = 2;
 extern const uint32_t titled_byte_flags[];
@@ -6328,6 +6334,7 @@ static std::vector<Test> tests() {
                                                          {0x403be0, (void *)stub_wide_assign_c}, {0x403bb0, (void *)stub_wide_assign}, {0x41c740, (void *)stub_wide_copy},
                                                          {0x805750, (void *)stub_null_handle}, {0x805700, (void *)stub_member_handle_of}, {base, bases[base_args]},
                                                          {0x4040f0, (void *)stub_named_text_ref}, {0xbd1880, (void *)stub_text_ref_free}, {0x6a39d0, (void *)stub_text_for_child},
+                                                         {0x4b7940, (void *)stub_text_assign2},
                                                          {0x6b1640, (void *)titled_layout}, {0xbeca40, (void *)stub_name_make},
                                                          {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free},
                                                          {0x41cb90, (void *)stub_named_text_ref}, {0xbcf7d0, (void *)stub_class_wide_from}};

@@ -34,7 +34,7 @@ mine |= {a for a, r in rows.items() if r['status'] == 'rewritten' and a not in _
 SEPARATOR = 0xf2738c
 # the functions the tester stands in for itself (its own stand-ins, which know what they make): never listed as plain callees
 TESTER_OWN = {0x403bb0, 0x403be0, 0x4040f0, 0x41c740, 0x41cb90, 0x6a39d0, 0x6b1640, 0x805700, 0x805750, 0xbcdfc0, 0xbcf7d0, 0xbcf850,
-              0xbd0490, 0xbd1880, 0xbec5e0, 0xbeca40, 0xbecc10}
+              0xbd0490, 0xbd1880, 0xbec5e0, 0xbeca40, 0xbecc10, 0x4b7940}
 CMP_CONDITIONS = ['ja', 'jae', 'jb', 'jbe', 'jg', 'jge', 'jl', 'jle', 'je', 'jne']   # (step 63, fn 0x10 | the index)
 VSLOTS = {0x20: 1}   # the virtual slots called (op 60) and how many values each takes (0x20: a child's size, the tester's own)
 FPU_PROGRAM = []   # the x87 runs' steps (code, kind, value), all constructors' in one table (op 59 gives where its run starts)
@@ -1918,6 +1918,8 @@ def tail(p):
         elif (m := re.fullmatch(r'(test ' + REG + ', ' + REG + '|cmp ' + REG + ', ' + REG + ')', s)):
             a_, b_ = (m.group(2), m.group(3)) if m.group(2) else (m.group(4), m.group(5))
             flag = ('test', val(a_)) if (a_ == b_ or val(b_) == ('const', 0)) else None
+            if a_ == b_ and val(a_) == ('eh',) and m.group(2):
+                flag = ('ehsign',)   # (the bookkeeping bits in a register, their top bit read through the sign: jns)
         elif (m := re.fullmatch(r'(or|and) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and (val(m.group(2)) is None or val(m.group(2))[0] in ('const', 'byte', 'eh')):
             R[m.group(2)] = ('eh',); flag = None   # the exception bookkeeping bits (what's been made)
         elif (m := re.fullmatch(r'or ' + REG + ', ' + REG, s)) and m.group(1) != m.group(2) and val(m.group(2)) and val(m.group(2))[0] == 'const' and \
@@ -1929,8 +1931,13 @@ def tail(p):
             flag = ('ehbit', num(m.group(3)) << (8 if m.group(2) == 'h' else 0))
         elif (m := re.fullmatch(r'test ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) == ('eh',):
             flag = ('ehbit', num(m.group(2)))
-        elif (m := re.fullmatch(r'test (?:byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)) and S.get(num(m.group(1)) - d) == ('eh',):
-            flag = ('ehbit', num(m.group(2)))   # (the bits as kept on the stack)
+        elif (m := re.fullmatch(r'test (?:byte|dword) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)) and \
+                (S.get(num(m.group(1)) - d) == ('eh',) or (S.get(num(m.group(1)) - d) or ('',))[0] == 'const' and num(m.group(1)) - d < 0):
+            flag = ('ehbit', num(m.group(2)), num(m.group(1)) - d)   # (the bits as kept on the stack; or a local holding a known value: the bits as set
+                                                # so far. Only a guarded release or destructor is taken after it, else it's refused)
+        elif (m := re.fullmatch(r'or dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)) and num(m.group(1)) - d < 0 and \
+                (S.get(num(m.group(1)) - d) is None or S[num(m.group(1)) - d][0] in ('const', 'eh')):
+            S[num(m.group(1)) - d] = ('eh',); flag = None   # (a bookkeeping bit set in the bits kept on the stack)
         elif (m := re.fullmatch(r'test ([abcd])([lh]), ([abcd])([lh])', s)) and m.group(1, 2) == m.group(3, 4) and val('e' + m.group(1) + 'x') == ('eh',):
             flag = ('ehsign',)   # the bookkeeping bit 0x80 or 0x8000, read through the sign (jns)
         elif (m := re.fullmatch(r'test ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
@@ -2049,8 +2056,9 @@ def tail(p):
                 raise Reject('guarded')
             body = [u for u in t[k + 1:end_] if not re.fullmatch(r'and ' + REG + r', 0x[0-9a-f]+|mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, u)]
             # (the bits kept on the stack are read too, to clear the one guarding this)
+            tested_ = flag[2] if flag and len(flag) > 2 else None   # (the slot the bits were tested in)
             body = [u for u in body if not ((z_ := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)) and
-                                            S.get(num(z_.group(2)) - d) == ('eh',))]
+                                            (S.get(num(z_.group(2)) - d) == ('eh',) or num(z_.group(2)) - d == tested_))]
             # (and copies of the bits from the register they were read into, to clear the one guarding this)
             eh_regs_ = {r_ for r_ in R if R.get(r_) == ('eh',)}
             if body and (z_ := re.fullmatch(r'mov ' + REG + ', ' + REG, body[0])) and z_.group(2) in eh_regs_:
@@ -2205,12 +2213,21 @@ def tail(p):
             # 0 on the other path too, so 0 after the join either way)
             q_ = k + 1
             zs_ = []
+            reloads_ = []   # (the bookkeeping bits read back on the null path: the same register on both ways, or not known)
             while q_ < len(t) and ins[q_].address != int(x.op_str, 0):
+                zr_ = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q_])
+                if zr_ and S.get(num(zr_.group(2)) - depth_at[q_]) == ('eh',):
+                    reloads_.append(zr_.group(1))
+                    q_ += 1
+                    continue
                 z = re.fullmatch(r'xor ' + REG + ', ' + REG, t[q_])
                 if not z or z.group(1) != z.group(2):
                     raise Reject('null branch')
                 zs_.append(z.group(1))
                 q_ += 1
+            for r_ in reloads_:
+                if val(r_) != ('eh',):
+                    R[r_] = None
             if q_ >= len(t) or not zs_ or len(set(zs_)) != len(zs_):
                 raise Reject('null branch')
             def result_reg(r_):
@@ -2782,7 +2799,7 @@ if __name__ == '__main__':
     out.append('// the x87 runs (op 59): each a count, then its steps {code, kind, value, local}')
     out.append('extern const uint32_t titled_fpu[];')
     out.append('const uint32_t titled_fpu[] = {' + ''.join(f'{c:#x}, {kd:#x}, {v:#x}, {lc:#x}, ' for c, kd, v, lc in FPU_PROGRAM) + '0};')
-    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740, 0xbd1940}   # (0xBD1940: the game's own runs)
+    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740, 0xbd1940, 0x4b7940}   # (0xBD1940: the game's own runs)
     if unknown_temps:
         print('temporaries the tester has no stand-in for:', [hex(x) for x in sorted(unknown_temps)])
     # the game globals the steps read as plain values (stored, given to stand-ins, tested): the tester gives each a value of

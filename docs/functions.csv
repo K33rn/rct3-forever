@@ -8027,7 +8027,7 @@ address,size,name,callers,status
 0x70ba30,154,,1,documented
 0x70bad0,1992,,2,documented
 0x70c2a0,144,Text::Set57AC20,1,rewritten
-0x70c330,7779,,2,documented
+0x70c330,7779,Window::Titled,2,rewritten
 0x70e1e0,735,,1,documented
 0x70e4c0,239,,1,documented
 0x70e5b0,281,,1,documented
