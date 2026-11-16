@@ -9114,8 +9114,8 @@ address,size,name,callers,status
 0x7778e0,170,,9,documented
 0x777990,3041,,3,documented
 0x778580,768,,3,documented
-0x778880,309,,3,documented
-0x7789c0,309,,4,documented
+0x778880,309,GuestGroup::Check,3,rewritten
+0x7789c0,309,GuestGroup::Check,4,rewritten
 0x778b00,389,,1,documented
 0x778c90,393,,1,documented
 0x778e20,414,,1,documented
