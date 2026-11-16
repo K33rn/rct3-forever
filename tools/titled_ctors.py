@@ -1821,7 +1821,17 @@ def tail(p):
             k = at[int(x.op_str, 0)]   # (a jump over the padding the compiler puts before a loop's top)
             continue
         # loops of a known count, unrolled: a counter and places stepping by constants are tracked as such, and a jump on a
-        # compare of two known constants is decided here (one back reads the body again, up to 64 times in all)
+        # compare of two known constants is decided here (one back reads the body again, up to 256 times in all)
+        if (m := re.fullmatch(r'(inc|dec) dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and (S.get(num(m.group(2)) - d) or ('',))[0] == 'const' and \
+                (num(m.group(2)) - d < 0 and num(m.group(2)) - d not in run_locals or num(m.group(2)) - d in slot_stored):
+            # (a counter kept on the stack, perhaps in an argument's reused slot: the same; the runs' buffer kept in step)
+            sl_ = num(m.group(2)) - d
+            S[sl_] = ('const', (S[sl_][1] + (1 if m.group(1) == 'inc' else -1)) & 0xffffffff)
+            if sl_ in run_locals:
+                ops.append((92, (sl_ + LB) // 4, S[sl_][1], 0, []))
+            flag = ('cmpconst', S[sl_][1], 0)
+            k += 1
+            continue
         if (m := re.fullmatch(r'(inc|dec) (e[a-d]x|e[sd]i|ebp|ebx)', s)) and val(m.group(2)) and val(m.group(2))[0] == 'const':
             R[m.group(2)] = ('const', (val(m.group(2))[1] + (1 if m.group(1) == 'inc' else -1)) & 0xffffffff)
             flag = ('cmpconst', R[m.group(2)][1], 0)
@@ -1852,7 +1862,7 @@ def tail(p):
                 continue
             if to_ <= k:   # (back: the loop's body again)
                 unrolled[0] += 1
-                if unrolled[0] > 64:
+                if unrolled[0] > 256:
                     raise Reject('loop too long')
                 k = to_
                 continue

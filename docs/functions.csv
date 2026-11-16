@@ -14368,7 +14368,7 @@ address,size,name,callers,status
 0x9b6900,114,WideText::CopyOf,1,rewritten
 0x9b6980,1841,,2,documented
 0x9b70c0,2170,Window::Titled,1,rewritten
-0x9b7940,2364,,1,documented
+0x9b7940,2364,Window::Titled,1,rewritten
 0x9b8290,2214,Window::Titled,1,rewritten
 0x9b8b40,2143,,1,documented
 0x9b93a0,265,,1,documented
