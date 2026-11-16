@@ -5259,7 +5259,7 @@ address,size,name,callers,status
 0x5f4f30,108,Child::Attach5F4F30,1,rewritten
 0x5f4fe0,30,DeletingDestructor,1,rewritten
 0x5f5000,87,Holder::Dtor4E4110,1,rewritten
-0x5f5060,7432,,1,documented
+0x5f5060,7432,Window::Titled,1,rewritten
 0x5f6d70,549,,1,documented
 0x5f6fc0,139,MEMBER_DTOR,1,rewritten
 0x5f70f0,30,DeletingDestructor,2,rewritten
@@ -5402,7 +5402,7 @@ address,size,name,callers,status
 0x616680,108,Child::Attach5F4F30,1,rewritten
 0x616730,30,DeletingDestructor,1,rewritten
 0x616750,87,Holder::Dtor4E4110,1,rewritten
-0x6167b0,2739,,1,documented
+0x6167b0,2739,Window::Titled,1,rewritten
 0x617290,111,,1,documented
 0x617350,26,OwnedPointer::Reset,2,rewritten
 0x617370,61,Array<8>::Allocate,0,rewritten

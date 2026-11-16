@@ -610,6 +610,19 @@ static void *__thiscall stub_plain_value0(void *) {   // a plain function taken 
     return (void *)(uintptr_t)((arena<uint32_t>(0x4c)[0] ^ n++ * 0x9e3779b1u) * 0x85ebca6bu);
 }
 static void *plain_result() { return built_result(stub_plain_alloc(0xb0)); }
+// the same for a fastcall (ecx and edx values, noted as values; what it gives back an object of its own)
+static void *__fastcall stub_fast0(uint32_t c, uint32_t d) { record(0x85, arg_value(c)); record(0x85, arg_value(d)); return plain_result(); }
+static void *__fastcall stub_fast1(uint32_t c, uint32_t d, uint32_t a) { record(0x85, arg_value(c)); record(0x85, arg_value(d)); record(0x85, arg_value(a)); return plain_result(); }
+static void *__fastcall stub_fast2(uint32_t c, uint32_t d, uint32_t a, uint32_t b) {
+    record(0x85, arg_value(c)); record(0x85, arg_value(d)); record(0x85, arg_value(a)); record(0x85, arg_value(b)); return plain_result();
+}
+static void *__fastcall stub_fast3(uint32_t c, uint32_t d, uint32_t a, uint32_t b, uint32_t e) {
+    record(0x85, arg_value(c)); record(0x85, arg_value(d)); record(0x85, arg_value(a)); record(0x85, arg_value(b)); record(0x85, arg_value(e)); return plain_result();
+}
+static void *__fastcall stub_fast4(uint32_t c, uint32_t d, uint32_t a, uint32_t b, uint32_t e, uint32_t f) {
+    record(0x85, arg_value(c)); record(0x85, arg_value(d)); record(0x85, arg_value(a)); record(0x85, arg_value(b)); record(0x85, arg_value(e)); record(0x85, arg_value(f));
+    return plain_result();
+}
 static void *__thiscall stub_plain0(void *) { record(0x82, nullptr); return plain_result(); }
 static void *__thiscall stub_plain1(void *, uint32_t a) { record(0x82, arg_value(a)); return plain_result(); }
 static void *__thiscall stub_plain2(void *, uint32_t a, uint32_t b) { record(0x82, arg_value(a)); record(0x82, arg_value(b)); return plain_result(); }
@@ -6341,10 +6354,11 @@ static std::vector<Test> tests() {
         static void *const built_rect[5] = {(void *)stub_built0, (void *)stub_built_rect1, (void *)stub_built_rect2, (void *)stub_built_rect3, (void *)stub_built_rect4};
         static void *const built_edx[4] = {(void *)stub_built_edx0, (void *)stub_built_edx1, (void *)stub_built_edx2, (void *)stub_built_edx3};
         auto is_value_callee = [](uint32_t fn) { for (int q = 0; titled_value_callees[q]; q++) if (titled_value_callees[q] == fn) return true; return false; };
+        static void *const fast_stubs[5] = {(void *)stub_fast0, (void *)stub_fast1, (void *)stub_fast2, (void *)stub_fast3, (void *)stub_fast4};
         static void *const plain_stubs[5] = {(void *)stub_plain0, (void *)stub_plain1, (void *)stub_plain2, (void *)stub_plain3, (void *)stub_plain4};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at)
-                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x400 ? (is_value_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xff) == 0 ? (void *)stub_plain_value0 : plain_stubs[titled_callees[k + 1] & 0xff]) : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
+                list.push_back({titled_callees[k], titled_callees[k + 1] & 0x800 ? fast_stubs[titled_callees[k + 1] & 0xff] : titled_callees[k + 1] & 0x400 ? (is_value_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xff) == 0 ? (void *)stub_plain_value0 : plain_stubs[titled_callees[k + 1] & 0xff]) : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         stubs_for_now(list);
         g_built_other = true;

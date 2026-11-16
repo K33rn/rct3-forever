@@ -305,7 +305,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             case 10: args[i] = *(uint32_t *)(self + (v & 0xffff)) + (v >> 16); break;   // a place inside what a member points to
             case 11: args[i] = *(uint32_t *)(*(uint8_t **)(self + (v & 0xffff)) + (v >> 16)); break;   // a dword inside what a member points to
             case 12: args[i] = *(uint32_t *)((uint8_t *)(uintptr_t)given[v & 0xff] + (v >> 8)); break;   // a dword inside what an argument points to
-            case 13: args[i] = v ? (uint32_t)(uintptr_t)memory : (uint32_t)(uintptr_t)object; break;   // the new object (as returned / its memory)
+            case 13: args[i] = v ? (uint32_t)(uintptr_t)(memory + (v >> 8)) : (uint32_t)(uintptr_t)object; break;   // the new object (as returned / its memory, or a place inside that: 1 | off << 8)
             case 14: args[i] = given[v & 0xff] + (v >> 8); break;   // a place inside an argument object
             case 15: args[i] = *(uint32_t *)(*(uint8_t **)(uintptr_t)(0x1000000 + (v & 0xffffff)) + (v >> 24)); break;   // inside a global's object
             default: args[i] = *(uint32_t *)(self + v); break;
@@ -390,6 +390,21 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         }
         case 61: last = titled_call(op.fn, (void *)(uintptr_t)given[op.off], op.count, args); break;              // on an argument
         case 62: last = titled_call(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args); break;   // on a global's object
+        case 89: {   // a fastcall: ecx and edx the first two values, the rest on the stack; what it gives kept
+            using F0 = void *(__fastcall *)(uint32_t, uint32_t);
+            using F1 = void *(__fastcall *)(uint32_t, uint32_t, uint32_t);
+            using F2 = void *(__fastcall *)(uint32_t, uint32_t, uint32_t, uint32_t);
+            using F3 = void *(__fastcall *)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+            using F4 = void *(__fastcall *)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+            switch (op.count - 2) {
+            case 0: last = ((F0)(uintptr_t)op.fn)(args[0], args[1]); break;
+            case 1: last = ((F1)(uintptr_t)op.fn)(args[0], args[1], args[2]); break;
+            case 2: last = ((F2)(uintptr_t)op.fn)(args[0], args[1], args[2], args[3]); break;
+            case 3: last = ((F3)(uintptr_t)op.fn)(args[0], args[1], args[2], args[3], args[4]); break;
+            default: last = ((F4)(uintptr_t)op.fn)(args[0], args[1], args[2], args[3], args[4], args[5]); break;
+            }
+            break;
+        }
         case 87: k = COUNT; break;   // the constructor done early (a jump to its epilogue): no more steps
         case 83: {   // a virtual call (slot value) on the object argument number off is
             uint8_t *on = (uint8_t *)(uintptr_t)given[op.off];
