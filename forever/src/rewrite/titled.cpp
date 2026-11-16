@@ -171,6 +171,7 @@ __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t 
         case 24: X87I("fldz"); break;
         case 19: loc[step[3]] = *p; break;   // an integer copy into a local
         case 27: *(uint32_t *)(*(uint8_t **)(self + (step[3] & 0xffff)) + (step[3] >> 16)) = *p; break;   // into what a member points to
+        case 28: *(volatile uint32_t *)p = step[3]; break;   // a constant into a game global (kind 1: p is the global)
         case 20: loc[step[3]] = v; break;    // a constant into a local
         case 2:
             switch (v) {

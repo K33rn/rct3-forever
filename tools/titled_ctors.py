@@ -1444,6 +1444,12 @@ def tail(p):
         link_pre.clear(); link_skip.clear()
         while q < len(t):
             u, xq = t[q], ins[q]
+            if conds and q > k0 and q == conds[-1][0]:
+                # (the open block ends here: the run ends with it, only storing, or it can't be taken)
+                if fpu == 0 and prog and not args_pushed and not size_seen and not size_query and depth == d:
+                    nocall_ = True
+                    break
+                return None
             if q in link_skip:   # (a list link's step, taken before the run)
                 q += 1
                 continue
@@ -1489,8 +1495,8 @@ def tail(p):
                 o_ = operand(mm.group(2), q, store=code in (3, 4))
                 if o_ is None:
                     return None
-                if code in (3, 4):   # a store: into a local, or a member of the window (members read before are read again after)
-                    if o_[0] not in (2, 4):
+                if code in (3, 4):   # a store: into a local, a member of the window (members read before are read again after),
+                    if o_[0] not in (2, 3, 4):   # or inside what a member points to (a child's value: the window's members unchanged)
                         return None
                     if o_[0] == 4:
                         written.add(o_[1] * 4 - 0x100)
@@ -1541,6 +1547,8 @@ def tail(p):
                 if not (tv_[0] == 'r' and tv_[1] and still(tv_[1]) and tv_[1][1] < 0x10000 and off_ < 0x10000 and v[0] == 'bits'):
                     return None
                 prog.append((27, v[1][0], v[1][1], tv_[1][1] | off_ << 16))
+            elif (mm := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], (0x[0-9a-f]+|\d+)', u)) and num(mm.group(1)) >= 0x10e7000:
+                prog.append((28, 1, num(mm.group(1)), num(mm.group(2))))   # a constant into a game global (code 28)
             elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', u)):
                 slot = num(mm.group(1)) - depth
                 if not (slot < 0 and -slot <= 0x100 and slot % 4 == 0):
@@ -1752,7 +1760,7 @@ def tail(p):
                 flag = None
                 continue
             if x.mnemonic == 'ret' or at.get(int(x.op_str, 0), 1 << 30) > conds[-1][0]:
-                raise Reject('a jump out of a conditional block')
+                raise Reject('a jump out of a conditional block @%#x' % x.address)
         if x.mnemonic == 'call':
             if 'edx' in x.op_str:
                 edx_live[0] = False   # (a call through edx: it was the table, used)
@@ -3152,7 +3160,8 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_text_globals[] = {' + ''.join(f'{g:#x}, ' for g in tg) + '0};')
     out.append('// the game globals the steps write (op 51: off bytes; op 67: 4): the tester gives each a value first and compares them')
     out.append('extern const uint32_t titled_written_globals[];')
-    wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67)})
+    wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67)} |
+                {(st_[2], 4) for st_ in FPU_PROGRAM if st_[0] == 28})   # (and those x87 runs set, code 28)
     out.append('const uint32_t titled_written_globals[] = {' + ''.join(f'{g:#x}, {n_}, ' for g, n_ in wg) + '0};')
     out.append('// the arguments a constructor casts to an interface (op 54, fn 1): its address and a mask of their numbers; the tester')
     out.append('// makes each an object with a class info of its own')
