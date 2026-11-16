@@ -170,6 +170,7 @@ __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t 
         case 23: X87I("fld1"); break;
         case 24: X87I("fldz"); break;
         case 19: loc[step[3]] = *p; break;   // an integer copy into a local
+        case 27: *(uint32_t *)(*(uint8_t **)(self + (step[3] & 0xffff)) + (step[3] >> 16)) = *p; break;   // into what a member points to
         case 20: loc[step[3]] = v; break;    // a constant into a local
         case 2:
             switch (v) {
@@ -528,6 +529,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 78: scratch[op.off] = *(uint32_t *)(uintptr_t)(args[0] + op.value); break;   // a dword inside a scratch value's object
         case 86: scratch[op.off] = (uint32_t)((int32_t)scratch[op.off] % (int32_t)op.value); break;   // a scratch value modulo a power of two (C's sign)
         case 79: scratch[op.off] = args[0] + op.value; break;   // a scratch value plus a constant
+        case 90: scratch[op.off] = (args[0] & 0xff) ? args[1] : args[2]; break;   // one of two values, by an argument's flag byte
         case 80: last = titled_call(op.fn, (void *)(uintptr_t)args[0], op.count - 1, args + 1); break;   // a call on a scratch value
         case 76: last = titled_call(op.fn, nullptr, op.count, args); break;
         case 81: titled_release((void *)(uintptr_t)args[0]); break;   // a counted text let go (from a member, a stack slot, a register)   // a plain function (it never reads ecx), what it gives kept
@@ -544,7 +546,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             if (!(args[0] & 0x100) || memory) {
                 uint8_t *o = *(uint8_t **)(uintptr_t)op.fn;
                 if ((args[0] & 0xff) == 1) o[op.off] = (uint8_t)op.value;
-                else *(uint32_t *)(o + op.off) = op.value;
+                else *(uint32_t *)(o + op.off) = op.count > 1 ? args[1] : op.value;   // (a second value: stored instead)
             }
             break;   // a value (the window, an argument, a member) into the new object
         case 15:

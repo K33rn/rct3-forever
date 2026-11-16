@@ -587,7 +587,7 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 86) or o[0] == 10 and o[3] == 0xbcf850 or
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90) or o[0] == 10 and o[3] == 0xbcf850 or
                                                   o[0] == 20 and o[3] in (0x41cb90, 0x4040f0, 0xbd1940) or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
@@ -604,6 +604,8 @@ def tail(p):
     run_locals = set()   # locals earlier x87 runs wrote (the rewrite's buffer keeps them), until the steps write the slot
     always_temps = set()
     inline_built = set()   # new memory set up in line (no constructor called on it)
+    byte_tested = [None]   # (the last byte test: where, and what was tested)
+    fpu_skip = set()   # x87 steps a run took in, left behind it (passed over when read again)
     text_temps = set()   # the temporaries holding a counted text (0x6A39D0 on the stack), let go by kind 16
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
@@ -941,6 +943,8 @@ def tail(p):
         z = re.fullmatch(r'dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', op_text)
         if z and val(z.group(1)) and val(z.group(1))[0] in ('this', 'member') and num(z.group(2) or '0') < 0x10000:
             return ('field', (0 if val(z.group(1)) == ('this',) else val(z.group(1))[1]) + num(z.group(2) or '0'))
+        if z and still(val(z.group(1))) and val(z.group(1))[1] < 0x10000 and num(z.group(2) or '0') < 0x10000:
+            return ('dfield', val(z.group(1))[1] | num(z.group(2) or '0') << 16)   # (a dword inside what a member points to)
         return None
 
     def text_release(k0):
@@ -1409,6 +1413,14 @@ def tail(p):
                 if v[0] not in ('r', 'ecx') or not v[1]:
                     return None
                 regs['ecx'] = ('ecx', v[1])
+            elif (mm := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + REG, u)):
+                # an integer copied (a game global's, a member's...) into what a member points to (code 27)
+                tv_ = regs.get(mm.group(1), ('r', R.get(mm.group(1))))
+                v = regs.get(mm.group(3), ('r', R.get(mm.group(3))))
+                off_ = num(mm.group(2) or '0')
+                if not (tv_[0] == 'r' and tv_[1] and still(tv_[1]) and tv_[1][1] < 0x10000 and off_ < 0x10000 and v[0] == 'bits'):
+                    return None
+                prog.append((27, v[1][0], v[1][1], tv_[1][1] | off_ << 16))
             elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', u)):
                 slot = num(mm.group(1)) - depth
                 if not (slot < 0 and -slot <= 0x100 and slot % 4 == 0):
@@ -1483,9 +1495,31 @@ def tail(p):
         if not zc:
             return None
         fn = num(zc.group(1)); n_ = ret_args(fn)
+        if fn == 0xbcdfc0:
+            n_ = 1   # (new memory: cdecl, its size the one value; the caller takes it off)
         if n_ is None or n_ != len(args_pushed) or n_ > 5:
             return None
+        if not pushed and fpu == 0 and not size_seen and not size_query and all(isinstance(v_, int) for v_ in args_pushed) and \
+                (fn in (0x41cb90, 0x4040f0) and regs.get('ecx', ('', None))[0] == 'local' or fn == 0xbcdfc0 and 'ecx' not in regs):
+            # the run only stores; the call after it makes a text temporary or new memory, its constants (and place, lea ecx) set
+            # among the run's steps: those are left to be read after the run, its x87 steps passed over then
+            others_ = [q_ for q_ in range(k0, q) if not ins[q_].mnemonic.startswith('f') and
+                       not re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', t[q_])]
+            if not others_ or any(not re.fullmatch(r'push (0x[0-9a-f]+|\d+)|lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q_]) for q_ in others_) or \
+                    any('ecx' in t[q_] for q_ in range(k0, q) if ins[q_].mnemonic.startswith('f')):
+                return None
+            for sl, val_ in sorted(known_locals.items()):
+                if sl not in written:
+                    prog.insert(0, (20, 0, val_, (sl + 0x100) // 4))
+            run_locals.update(written)
+            start = 4 * len(FPU_PROGRAM)
+            FPU_PROGRAM.append((len(prog), 0, 0, 0))
+            FPU_PROGRAM.extend(tuple(x) + (0,) * (4 - len(x)) for x in prog)
+            fpu_skip.update(q_ for q_ in range(others_[0], q) if q_ not in others_)
+            return others_[0], (59, 0, start, 0, [])
         ecx = regs.get('ecx', ('r', R.get('ecx')))[1]
+        if not isinstance(ecx, tuple):   # (a value the run worked out: not a window place)
+            ecx = None
         if ecx == ('this',): target = 0
         elif ecx and ecx[0] == 'member': target = ecx[1]
         elif ecx and still(ecx) and ecx[1] < 0x1000000: target = 1 << 24 | ecx[1]
@@ -1629,6 +1663,9 @@ def tail(p):
             edx_live[0] = True
         elif re.search(r'\b(edx|dl|dh)\b', s):
             edx_live[0] = False
+        if k in fpu_skip:   # (an x87 step an earlier run took in, read past the pushes set among its steps)
+            k += 1
+            continue
         if x.mnemonic.startswith('f') and x.mnemonic not in ('fnstsw',) and (fs := fpu_step(k)):
             edx_live[0] = False
             ops.append(fs[1])   # an x87 run and the call given what it built (kind 59)
@@ -1675,7 +1712,7 @@ def tail(p):
             continue
         # a member's value read earlier is only good until something else happens
         if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and val(m.group(2))[0] in ('this', 'member') \
-:
+ and not (not pushed and counted_assign(k)):
             # (into its own base register too: the steps reach the window directly, and the code reads it back from where it
             # kept it)
             R[m.group(1)] = ('field', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3) or '0'), len(ops))
@@ -1691,6 +1728,14 @@ def tail(p):
             continue
         if (m := re.fullmatch(r'mov (byte|dword) ptr \[(0x1[0-9a-f]{6})\], (0x[0-9a-f]+|\d+)', s)):
             ops.append((51, 1 if m.group(1) == 'byte' else 4, num(m.group(3)), num(m.group(2)), []))   # a game global set
+            k += 1
+            continue
+        if (m := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + REG, s)) and val(m.group(1)) and \
+                val(m.group(1))[0] == 'global' and val(m.group(1))[1] >= 0x1000000 and num(m.group(2) or '0') < 0x1000 and \
+                m.group(1) != m.group(3) and val(m.group(3)) and val(m.group(3))[0] != 'result' and base_code(val(m.group(3))) is not None and \
+                (not nulls or len(nulls) == 1 and nulls[0][1][0] == 'alloc' and nulls[0][1][1] == cur):
+            # a value (the window, a member, an argument...) stored into the object a game global points to (kind 73, a second value)
+            ops.append((73, num(m.group(2) or '0'), 0, val(m.group(1))[1], [4 | (0x100 if nulls else 0), base_code(val(m.group(3)))]))
             k += 1
             continue
         if (m := re.fullmatch(r'mov (byte|dword) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and val(m.group(2)) and \
@@ -1799,6 +1844,8 @@ def tail(p):
                 ops.append((74, member, inner, 0, [('given', w[1])]))   # (an argument)
             elif w and still(w):
                 ops.append((74, member, inner, 0, [('field', w[1])]))   # (a member's value, still as read)
+            elif w and w[0] == 'obj' and w[1] == cur and not nulls:
+                ops.append((74, member, inner, 0, [('newobj', 0 if w[2] == 'returned' else 1)]))   # (the new object, past its making)
             elif w and w[0] == 'fieldplus' and still(('field',) + w[1:3]) and w[3] < 0x10000:
                 ops.append((74, member, inner, 0, [('fieldplace', w[1] | w[3] << 16)]))   # (a place inside what a member points to)
             elif w and w[0] in ('childor', 'childand') and w[1] == member and w[2] == inner and                     all(o[0] in QUIET and o[0] not in (44, 45, 47, 48, 74) for o in ops[w[3]:]):
@@ -1939,6 +1986,16 @@ def tail(p):
                 ('temp', val(m.group(2))[1]) in built and num(m.group(3)) < 0x40:
             R[m.group(1)] = ('tempat', val(m.group(2))[1], num(m.group(3)))   # (what a temporary holds: read when given)
             tempat_ops[val(m.group(2))[1]] = len(ops)
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and \
+                S.get(num(m.group(2)) - d) is None and stored(num(m.group(2)) - d, k) is None and \
+                any(num(m.group(2)) - d - sl_ in (0, 4, 8, 0xc) and ('temp', kk_) in built and
+                    any(o_[0] == 20 and o_[1] == kk_ and o_[3] in (0x41cb90, 0x4040f0) for o_ in ops) for sl_, kk_ in temps.items()):
+            # a dword of a text reference made on the stack, read from its place there (what it holds: read when given; the
+            # slot holding nothing else known)
+            sl_, kk_ = next((sl_, kk_) for sl_, kk_ in temps.items() if num(m.group(2)) - d - sl_ in (0, 4, 8, 0xc) and ('temp', kk_) in built and
+                            any(o_[0] == 20 and o_[1] == kk_ and o_[3] in (0x41cb90, 0x4040f0) for o_ in ops))
+            R[m.group(1)] = ('tempat', kk_, num(m.group(2)) - d - sl_)
+            tempat_ops[kk_] = len(ops)
         elif (m := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and val(m.group(2)) and \
                 (val(m.group(2)) == ('this',) or val(m.group(2))[0] == 'member'):
             ops.append((67, 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1], 0, num(m.group(1)), []))   # the window's place kept in a global
@@ -1947,6 +2004,13 @@ def tail(p):
             if slot in clobbered:
                 raise Reject('argument slot reused')
             R[m.group(1)] = ('arg', slot // 4) if slot >= 4 and slot % 4 == 0 and slot // 4 <= nargs else S.get(slot, stored(slot, k))
+        elif (m := re.fullmatch(r'(or|and|add) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and R.get(m.group(2)) and R[m.group(2)][0] == 'global' and \
+                0xf26000 <= R[m.group(2)][1] < 0x10e7000:
+            # a constant the game keeps in its read-only data, worked on: a constant (read from the game's image)
+            c_ = int.from_bytes(img[R[m.group(2)][1] - BASE:R[m.group(2)][1] - BASE + 4], 'little')
+            n_ = num(m.group(3))
+            R[m.group(2)] = ('const', (c_ | n_ if m.group(1) == 'or' else c_ & n_ if m.group(1) == 'and' else c_ + n_) & 0xffffffff)
+            flag = None
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6}|0x[ef][0-9a-f]{5})\]', s)):
             R[m.group(1)] = ('global', num(m.group(2)))   # (a game global, or a constant the game keeps: read when used)
         elif (m := re.fullmatch(r'mov ' + REG + ', ' + REG, s)):
@@ -2030,8 +2094,25 @@ def tail(p):
             flag = ('ehsign',)   # the bookkeeping bit 0x80 or 0x8000, read through the sign (jns)
         elif (m := re.fullmatch(r'test ([abcd])l, ([abcd])l', s)) and m.group(1) == m.group(2):
             flag = ('noparent?', 'e' + m.group(1) + 'x')   # a byte flag: set when there was no parent (the tester checks)
+            byte_tested[0] = (k, val('e' + m.group(1) + 'x'))
         elif (m := re.fullmatch(r'cmp byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0|[abcd]l)', s)) and (m.group(2) == '0' or val('e' + m.group(2)[0] + 'x') in (('const', 0), ('byte', 0))):
             flag = ('noparent?', 'stack')
+        elif x.mnemonic in ('je', 'jne') and flag and flag[0] == 'noparent?' and byte_tested[0] and byte_tested[0][1] and \
+                byte_tested[0][1][0] == 'argbyte' and byte_tested[0][1][1] not in clobbered_args() and k + 2 < len(t) and \
+                (zs_ := re.fullmatch(r'mov ' + REG + r', (0x[0-9a-f]+|\d+)', t[k + 1])) and at.get(int(x.op_str, 0)) == k + 2 and \
+                R.get(zs_.group(1)) and R[zs_.group(1)][0] == 'const' and \
+                any(re.fullmatch(r'mov ' + zs_.group(1) + r', (0x[0-9a-f]+|\d+)', t[q_]) for q_ in range(byte_tested[0][0] + 1, k)):
+            # a value chosen by an argument's flag byte: mov R, A; jne/je past; mov R, B (kind 90: kept in a scratch value)
+            jumped_, other_ = R[zs_.group(1)][1], num(zs_.group(2))   # (the jump keeps A: when the flag is set for jne, clear for je)
+            set_, clear_ = (jumped_, other_) if x.mnemonic == 'jne' else (other_, jumped_)
+            ops.append((90, nscratch[0], 0, 0, [('given', byte_tested[0][1][1]), set_, clear_]))
+            R[zs_.group(1)] = ('scratch', nscratch[0])
+            nscratch[0] += 1
+            if nscratch[0] > 32:
+                raise Reject('scratch values')
+            flag = None
+            k += 2
+            continue
         elif x.mnemonic == 'je' and flag and flag[0] == 'noparent?':
             m1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[k + 1])
             if not m1 or num(m1.group(2)) != p['title'] or t[k + 2] != f'mov byte ptr [{m1.group(1)} + 4], 1' or at.get(int(x.op_str, 0)) != k + 3:
@@ -2164,6 +2245,10 @@ def tail(p):
                 # from the stack after it, so it holds what it held before)
                 body = [re.sub(r'^(cmp dword ptr \[' + REG + r'\]), ' + REG + '$', lambda z_: z_.group(1) + ', 0' if val(z_.group(3)) == ('const', 0) else z_.group(0), u)
                         for u in body]
+                zero_after_ = None   # (the zero register made again after the frees: xor R, R last)
+                if body and (zx_ := re.fullmatch(r'xor ' + REG + ', ' + REG, body[-1])) and zx_.group(1) == zx_.group(2):
+                    zero_after_ = zx_.group(1)
+                    body = body[:-1]
                 freed = max((i for i, u in enumerate(body) if u == 'call 0xbce000'), default=len(body))
                 reloaded = {re.fullmatch(r'mov (e[sd]i|ebp|ebx), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u).group(1) for u in body[freed:]
                             if re.fullmatch(r'mov (e[sd]i|ebp|ebx), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)}
@@ -2175,8 +2260,13 @@ def tail(p):
                 heads = [['mov R, dword ptr [esp+X]', 'mov R, dword ptr [R]', 'dec R', 'mov dword ptr [R], R', 'mov R, dword ptr [esp+X]', 'cmp dword ptr [R], 0', 'jne ' + x.op_str],
                          ['mov R, dword ptr [esp+X]', 'dec dword ptr [R]', 'mov R, dword ptr [esp+X]', 'cmp dword ptr [R], 0', 'jne ' + x.op_str]]
                 frees = [['mov R, R', 'mov R, dword ptr [R + 0xc]', 'push R', 'call 0xbce010', 'push R', 'call 0xbce000', 'add esp, 8'],
-                         ['mov R, dword ptr [R + 0xc]', 'push R', 'mov R, R', 'call 0xbce010', 'push R', 'call 0xbce000', 'add esp, 8']]
+                         ['mov R, dword ptr [R + 0xc]', 'push R', 'mov R, R', 'call 0xbce010', 'push R', 'call 0xbce000', 'add esp, 8'],
+                         ['mov R, dword ptr [R + 0xc]', 'push R', 'call 0xbce010', 'mov R, dword ptr [esp+X]', 'push R', 'call 0xbce000', 'add esp, 8']]   # (the text read back from its place, one push further)
                 reads = {u.split('[')[1] for u in body if re.fullmatch(r'mov e[a-d]x, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', u)}
+                if norm[-7:] == frees[2] and len(reads) == 2:   # (the read back is one push further: the same place)
+                    offs_ = sorted(num(re.fullmatch(r'esp \+ (0x[0-9a-f]+|\d+)\]', r_).group(1)) for r_ in reads)
+                    if (offs_[1] - offs_[0] == 4 or offs_[1] in [num(z_.group(1)) + 4 for z_ in (re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], e[a-d]x', u_) for u_ in t[k + 1:end_]) if z_]) and num(re.fullmatch(r'mov e[a-d]x, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', body[0]).group(1)) == offs_[0]:
+                        reads = {reads.pop()}
                 if not any(norm == h_ + f_ for h_ in heads for f_ in frees) or len(reads) != 1:
                     raise Reject('guarded release @%#x' % x.address)
                 slot = num(re.fullmatch(r'mov e[a-d]x, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', body[0]).group(1)) - d
@@ -2188,6 +2278,8 @@ def tail(p):
                     built.discard(('name', S[slot][1]))
                 else:
                     raise Reject('release of what')
+                if zero_after_:
+                    R[zero_after_] = ('const', 0)
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
             k = end_
@@ -2367,7 +2459,7 @@ def tail(p):
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack' and not nulls and \
                 ret_args(num(m.group(1))) is not None and 0 < ret_args(num(m.group(1))) <= min(4, len(pushed)) and \
-                num(m.group(1)) in (0x41cb90, 0x4040f0, 0xbd1940, 0x6a39d0):
+                num(m.group(1)) in (0x41cb90, 0x4040f0, 0xbd1940, 0x6a39d0, 0xbd1800):
             # a text reference made on the stack outside a new object's making: always (kind 20, value 1); or a child's text
             # (0x6A39D0, given a name's place, the window and a value)
             fn, slot = num(m.group(1)), val('ecx')[1]
@@ -2378,7 +2470,7 @@ def tail(p):
                 if any(not (isinstance(v, int) or v[0] in ('nameaddr', 'self', 'glob', 'given')) for v in targs) or \
                         any(not isinstance(v, int) and v[0] == 'nameaddr' and ('name', v[1]) not in built for v in targs):
                     raise Reject('child text values')
-            elif any(not isinstance(v, int) for v in targs):
+            elif any(not (isinstance(v, int) or fn == 0xbd1800 and v[0] in ('scratch', 'glob')) for v in targs):   # (0xBD1800: a list copied from the one given)
                 raise Reject('text reference values')
             kk = len([o for o in ops if o[0] == 20])
             if kk >= 32 or slot in temps and ('temp', temps[slot]) in built:
@@ -2782,8 +2874,8 @@ if __name__ == '__main__':
         if mask:
             nullable.append((a, mask))
         # the arguments only a block's byte test reads (flags): the tester gives them small values (0, 1 or 2)
-        byte_args = {o[4][0][1] for o in p['ops'] if o[0] == 63 and o[3] == 2 and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'}
-        other_uses = {v[1] for o in p['ops'] if not (o[0] == 63 and o[3] == 2) for v in o[4] if isinstance(v, tuple) and v[0] == 'given'} | \
+        byte_args = {o[4][0][1] for o in p['ops'] if (o[0] == 63 and o[3] == 2 or o[0] == 90) and isinstance(o[4][0], tuple) and o[4][0][0] == 'given'}
+        other_uses = {v[1] for o in p['ops'] if not (o[0] == 63 and o[3] == 2 or o[0] == 90) for v in o[4] if isinstance(v, tuple) and v[0] == 'given'} | \
                      {o[2] for o in p['ops'] if o[0] in (2, 29, 50)} | {e[1] for e in p['extras'] if e[0] == 'arg'}
         bmask = sum(1 << n_ for n_ in byte_args - other_uses - deref_args)
         if bmask:
