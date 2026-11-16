@@ -76,7 +76,7 @@ static void titled_assign(void **holder, void *text) {   // a counted text put i
 // argument number value, 3 a pointer to +value of the object, 4 what temporary number value's maker returned, 5 where
 // name number value is kept, 6 the member at +value.
 struct TitledOp {
-    uint32_t kind, off, value, fn, count, args[7], kinds;
+    uint32_t kind, off, value, fn, count, args[8], kinds;
 };
 static void fpu_pass(const float *from, volatile uint32_t *to) {   // a float loaded onto the FPU and stored again
     __asm__ volatile("flds %1\n\tfstps %0" : "=m"(*to) : "m"(*from));
@@ -96,7 +96,8 @@ static void *titled_call(uintptr_t fn, void *self, uint32_t count, const uint32_
     case 4: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3]);
     case 5: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4]);
     case 6: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5]);
-    default: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
+    case 7: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
+    default: return ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]);
     }
 }
 
@@ -289,7 +290,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
-        uint32_t args[7];
+        uint32_t args[8];
         for (uint32_t i = 0; i < op.count; i++) {
             uint32_t v = op.args[i];
             switch (op.kinds >> (4 * i) & 15) {
@@ -436,6 +437,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 88: if (block_ran[op.value & 63]) k += op.off; break;   // an else: its off steps skipped when the if's block ran
         case 68: {   // a text copied from the wide text given (0xBCF7D0; none without memory), or the empty text when there is none: name off
             void *from = (void *)(uintptr_t)args[0];
+            if (op.value && !memory) break;   // (made while making a new object: only with its memory)
             if (from) {
                 void *block = memory_alloc(0x10);
                 names[op.off] = block ? ((void *(__thiscall *)(void *, void *))0xbcf7d0)(block, from) : nullptr;

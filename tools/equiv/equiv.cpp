@@ -594,6 +594,10 @@ static void *__thiscall stub_built7(void *self, uint32_t a, uint32_t b, uint32_t
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
     record(0x81, arg_value(e)); record(0x81, arg_value(f)); record(0x81, arg_value(g)); return built_result(self);
 }
+static void *__thiscall stub_built8(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t f, uint32_t g, uint32_t h) {
+    record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d));
+    record(0x81, arg_value(e)); record(0x81, arg_value(f)); record(0x81, arg_value(g)); record(0x81, arg_value(h)); return built_result(self);
+}
 static void *__thiscall stub_built0(void *self) { record(0x81, self); return built_result(self); }
 static void *__thiscall stub_built1(void *self, uint32_t a) { record(0x81, self); record(0x81, arg_value(a)); return built_result(self); }
 static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return built_result(self); }
@@ -6325,8 +6329,8 @@ static std::vector<Test> tests() {
         g_titled_flags[0] = *(uint8_t *)(uintptr_t)0x13ce4c8, g_titled_flags[1] = *(uint8_t *)(uintptr_t)0x13ce594;
         titled_tables_ready();
         static void *const bases[7] = {nullptr, nullptr, (void *)stub_titled_base2, (void *)stub_titled_base3, (void *)stub_titled_base4, (void *)stub_titled_base5, (void *)stub_titled_base6};
-        static void *const built[8] = {(void *)stub_built0, (void *)stub_built1, (void *)stub_built2, (void *)stub_built3, (void *)stub_built4, (void *)stub_built5,
-                                       (void *)stub_built6, (void *)stub_built7};
+        static void *const built[9] = {(void *)stub_built0, (void *)stub_built1, (void *)stub_built2, (void *)stub_built3, (void *)stub_built4, (void *)stub_built5,
+                                       (void *)stub_built6, (void *)stub_built7, (void *)stub_built8};
         uint32_t base = 0, base_args = 2;
         g_titled_parent = 1, g_titled_text = 2;
         for (int k = 0; titled_info[k]; k += 7)

@@ -587,7 +587,8 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72) or o[0] == 10 and o[3] == 0xbcf850 or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22) and
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 86) or o[0] == 10 and o[3] == 0xbcf850 or
+                                                  o[0] == 20 and o[3] in (0x41cb90, 0x4040f0, 0xbd1940) or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
@@ -1535,6 +1536,10 @@ def tail(p):
     while True:
         s, x = t[k], ins[k]
         val = lambda r: R.get(r)
+        if (zc_ := re.fullmatch(r'(and|or) ' + REG + ', ' + REG, s)) and zc_.group(2) != zc_.group(3) and R.get(zc_.group(3)) and                 R[zc_.group(3)][0] == 'const' and R.get(zc_.group(2)) and R[zc_.group(2)][0] in ('field', 'childval'):
+            s = '%s %s, %#x' % (zc_.group(1), zc_.group(2), R[zc_.group(3)][1])   # (a member's or a child's dword masked by a register holding a constant)
+        elif (zc_ := re.fullmatch(r'(and|or) (dword ptr \[[^\]]+\]), ' + REG, s)) and R.get(zc_.group(3)) and R[zc_.group(3)][0] == 'const':
+            s = '%s %s, %#x' % (zc_.group(1), zc_.group(2), R[zc_.group(3)][1])   # (the same in memory)
         edx_check()
         while conds and k == conds[-1][0]:
             # a block skipped when its value is 0 (or not) ends here: the stack as at its start, nothing made in it left
@@ -1609,7 +1614,7 @@ def tail(p):
                 continue
             if edx_live[0]:
                 if R.get('edx') != ('this',) or x.op_str.startswith('dword'):
-                    raise Reject('edx given')
+                    raise Reject('edx given @%#x' % x.address)
                 edx_call[0] = len(ops)
             edx_live[0] = False
         elif re.match(r'(mov|lea|xor|movzx|movsx|or|and|add|sub) edx, ', s) or re.match(r'mov d[lh], ', s):
@@ -2086,12 +2091,12 @@ def tail(p):
                 raise Reject('scratch values')
             flag = None
             continue
-        elif x.mnemonic == 'je' and not pushed and not nulls and flag and flag[0] == 'test' and base_code(flag[1]) is not None and (te := text_or_empty(k)):
+        elif x.mnemonic == 'je' and not pushed and (not nulls or nulls[-1][1][0] == 'alloc' and nulls[-1][1][1] == cur) and flag and flag[0] == 'test' and base_code(flag[1]) is not None and (te := text_or_empty(k)):
             # a text made from a wide text when there is one, else the empty text (kind 68): kept as a name
             k, holder_ = te
             if nnames >= 48:
                 raise Reject('names')
-            ops.append((68, nnames, 0, 0, [base_code(flag[1])]))
+            ops.append((68, nnames, int(bool(nulls)), 0, [base_code(flag[1])]))   # (value 1: while making a new object, only with its memory)
             built.add(('name', nnames))
             for r in ('eax', 'ecx', 'edx'):
                 R[r] = None
@@ -2402,7 +2407,7 @@ def tail(p):
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'alloc' and val('ecx')[1] == cur:
             fn, token = num(m.group(1)), val('ecx')
             n_ = ret_args(fn)
-            if n_ is None or n_ > len(pushed) or n_ > 7:
+            if n_ is None or n_ > len(pushed) or n_ > 8:
                 raise Reject('new object constructor')
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
@@ -2635,7 +2640,7 @@ def tail(p):
                 continue
             if not this or this[0] not in ('this', 'member', 'arg', 'global') or ret_args(fn) is None or ret_args(fn) > len(pushed) or \
                     ret_args(fn) > (7 if this[0] in ('this', 'member') else 5) or this[0] == 'arg' and this[1] < 2:
-                raise Reject('tail call ' + s)
+                raise Reject('tail call ' + s + ' this=%s n=%s pushed=%d @%#x' % (this, ret_args(fn), len(pushed), x.address) + (' breakers: %s' % [ops[j][:4] for j in range(this[2], len(ops)) if not still(('field', this[1], j)) and still(('field', this[1], j + 1))] if this and this[0] == 'field' else ''))
             n_ = ret_args(fn)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_

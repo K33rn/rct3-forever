@@ -6287,7 +6287,7 @@ address,size,name,callers,status
 0x66d070,30,DeletingDestructor,2,rewritten
 0x66d0d0,30,DeletingDestructor,0,rewritten
 0x66d100,192,,1,documented
-0x66d1c0,1023,,1,documented
+0x66d1c0,1023,Window::Titled,1,rewritten
 0x66d5c0,1350,,2,documented
 0x66db80,583,,2,documented
 0x66ddd0,1460,,2,documented
@@ -17056,7 +17056,7 @@ address,size,name,callers,status
 0xac7fb0,71,,0,documented
 0xac8020,30,DeletingDestructor,3,rewritten
 0xac8060,663,Window::Titled,2,rewritten
-0xac8300,761,,8,documented
+0xac8300,761,Window::Titled,8,rewritten
 0xac8620,180,Destructor::Steps,4,rewritten
 0xac86e0,544,,2,documented
 0xac8900,294,,11,documented
