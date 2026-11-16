@@ -1243,6 +1243,12 @@ def tail(p):
                 if v[0] == 'bits' and v[1][0] == 1 and 0x1000000 <= v[1][1] < 0x2000000 and off < 0x100 and not store:
                     return (7, (v[1][1] - 0x1000000) | off << 24)   # (a game global loaded in the run: its object, read through)
                 v = v[1] if v[0] in ('r', 'ecx') else None
+                if v and v[0] == 'fieldplus' and still(('field',) + v[1:3]) and v[1] < 0x10000 and v[3] + off < 0x10000:
+                    return (3, v[1] | (v[3] + off) << 16)   # (a place inside what a member points to, read through)
+                if v and v[0] in ('arg', 'argplus') and v[1] not in clobbered_args() and not store:
+                    at_ = off + (v[2] if v[0] == 'argplus' else 0)
+                    if at_ < 0x1000000:
+                        return (8, v[1] | at_ << 8)   # (inside an argument object: the argument, or a place inside it)
                 if v and v[0] == 'global' and 0x1000000 <= v[1] < 0x2000000 and off < 0x100 and not store:
                     return (7, (v[1] - 0x1000000) | off << 24)   # (inside the object a game global holds, read now)
                 if v == ('this',): return (2, off)
@@ -2142,7 +2148,7 @@ def tail(p):
             if any(not isinstance(v, int) for v in targs):
                 raise Reject('text reference values')
             kk = len([o for o in ops if o[0] == 20])
-            if kk >= 16 or slot in temps and ('temp', temps[slot]) in built:
+            if kk >= 32 or slot in temps and ('temp', temps[slot]) in built:
                 raise Reject('temporaries')
             temps[slot] = kk
             ops.append((20, kk, 1, fn, targs))
@@ -2164,7 +2170,7 @@ def tail(p):
             if any(not (isinstance(v, int) or v[0] in ('nameaddr', 'self', 'glob', 'given', 'temp')) for v in targs):
                 raise Reject('stack temporary values')
             kk = len([o for o in ops if o[0] == 20])
-            if kk >= 16 or slot in temps and ('temp', temps[slot]) in built:
+            if kk >= 32 or slot in temps and ('temp', temps[slot]) in built:
                 raise Reject('temporaries')
             temps[slot] = kk
             ops.append((20, kk, 0, fn, targs))
@@ -2333,7 +2339,7 @@ def tail(p):
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'fieldplus' and still(('field',) + val('ecx')[1:3]):
             fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
-            if n_ is None or n_ > len(pushed) or n_ > 5:
+            if n_ is None or n_ > len(pushed) or n_ > 7:
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
@@ -2346,7 +2352,7 @@ def tail(p):
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and still(val('ecx')):
             fn, n_ = num(m.group(1)), ret_args(num(m.group(1)))
-            if n_ is None or n_ > len(pushed) or n_ > 5:
+            if n_ is None or n_ > len(pushed) or n_ > 7:
                 raise Reject('field call ' + s)
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_

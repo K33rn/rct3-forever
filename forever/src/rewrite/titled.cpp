@@ -134,7 +134,8 @@ __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t 
                       : kind == 4 ? &loc[v]
                       : kind == 5 ? (uint32_t *)&given[v]
                       : kind == 6 ? (uint32_t *)(size + v)
-                      : kind == 7 ? (uint32_t *)(*(uint8_t **)(uintptr_t)(0x1000000 + (v & 0xffffff)) + (v >> 24)) : nullptr;   // (7: inside a global's object)
+                      : kind == 7 ? (uint32_t *)(*(uint8_t **)(uintptr_t)(0x1000000 + (v & 0xffffff)) + (v >> 24))   // (7: inside a global's object)
+                      : kind == 8 ? (uint32_t *)((uint8_t *)(uintptr_t)given[v & 0xff] + (v >> 8)) : nullptr;   // (8: inside an argument object)
         switch (code) {
         case 1: X87("fld dword ptr [eax]"); break;
         case 21: X87("fild dword ptr [eax]"); break;
@@ -275,9 +276,9 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     titled_call(BASE, self, 2 + EXTRA_COUNT, base_args);
     if (reference_made) ((void(__thiscall *)(void *))0xbd1880)(reference);
     if (copied) titled_release(made);
-    alignas(16) uint8_t temps[16][0x40];   // temporaries on the stack (texts made for a new object's constructor; titled_ctors.py keeps to 16)
-    void *temp_made[16] = {}, *names[48] = {};   // (titled_ctors.py keeps to 48 names)
-    bool temp_built[16] = {}, name_built[48] = {};
+    alignas(16) uint8_t temps[32][0x40];   // temporaries on the stack (texts made for a new object's constructor; titled_ctors.py keeps to 32)
+    void *temp_made[32] = {}, *names[48] = {};   // (titled_ctors.py keeps to 48 names)
+    bool temp_built[32] = {}, name_built[48] = {};
     names[0] = start_name, name_built[0] = has_start_name;   // (the start text: name 0, let go by the steps)
     uint8_t *memory = nullptr;
     bool naming = false;

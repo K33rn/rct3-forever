@@ -258,6 +258,10 @@ static void *built_result(void *self) {
     *(void **)self = titled_child_table;
     *(void **)((uint8_t *)self + 8) = titled_child_table;
     for (int k = 1; k < 0x28; k++) ((uint32_t *)self)[2 + k] = (uint32_t)(uintptr_t)self * 0x9e3779b1u + k;   // (its members told apart)
+    for (int k = 0; k < 5; k++) {   // (its rectangle, +0x7C..+0x8C as a window's: plain floats, each its own, so reads of it are told apart)
+        const float f = (float)((uint32_t)(uintptr_t)self >> 4 & 0x3ff) * 0.25f + (float)k * 7.5f;
+        memcpy((uint8_t *)self + 0x7c + 4 * k, &f, 4);
+    }
     return (uint8_t *)self + 8;
 }
 static void __thiscall titled_layout(void *self, uint32_t relation, void *to, const uint32_t *rect) {

@@ -9346,9 +9346,9 @@ address,size,name,callers,status
 0x7925f0,1619,Window::Titled,1,rewritten
 0x792c50,1276,Window::Titled,1,rewritten
 0x793150,586,Window::Titled,1,rewritten
-0x7933a0,3178,,1,documented
-0x794010,2533,,1,documented
-0x794a00,2428,,1,documented
+0x7933a0,3178,Window::Titled,1,rewritten
+0x794010,2533,Window::Titled,1,rewritten
+0x794a00,2428,Window::Titled,1,rewritten
 0x795380,6553,,1,documented
 0x796d20,107,Factory::CreateFromFields,0,rewritten
 0x796d90,107,Factory::CreateFromFields,0,rewritten
