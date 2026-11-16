@@ -58,6 +58,8 @@ def leaves_ecx(fn):
     seen = set()
     for x in md.disasm(bytes(img[fn - BASE:fn - BASE + 0x80]), fn):
         s = x.mnemonic + ' ' + x.op_str
+        if s == 'call 0xddd770':
+            continue   # (__chkstk, the stack probe: it gives ecx back as it found it; edx it doesn't touch)
         if x.mnemonic.startswith('j') or x.mnemonic in ('call', 'ret'):
             return True   # (neither read before it: a read returns False below)
         for r in ('ecx', 'edx'):
