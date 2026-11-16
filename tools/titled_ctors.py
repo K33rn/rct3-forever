@@ -36,6 +36,7 @@ SEPARATOR = 0xf2738c
 TESTER_OWN = {0x403bb0, 0x403be0, 0x4040f0, 0x41c740, 0x41cb90, 0x6a39d0, 0x6b1640, 0x805700, 0x805750, 0xbcdfc0, 0xbcf7d0, 0xbcf850,
               0xbd0490, 0xbd1880, 0xbec5e0, 0xbeca40, 0xbecc10, 0x4b7940}
 CMP_CONDITIONS = ['ja', 'jae', 'jb', 'jbe', 'jg', 'jge', 'jl', 'jle', 'je', 'jne']   # (step 63, fn 0x10 | the index)
+LB = 0x200   # the x87 runs' locals buffer (titled.cpp loc[]): a stack place S below the entry is loc[(S + LB) / 4]; arguments' slots after
 VSLOTS = {0x20: 1}   # the virtual slots called (op 60) and how many values each takes (0x20: a child's size, the tester's own)
 FPU_PROGRAM = []   # the x87 runs' steps (code, kind, value), all constructors' in one table (op 59 gives where its run starts)
 # the run steps: x87 instructions as the game has them, replayed one by one (titled.cpp)
@@ -802,6 +803,7 @@ def tail(p):
     def base_code(v):   # a value as a call is given it (the push forms), or None
         if not v:
             return None
+        if v[0] == 'code': return v[1]   # (a value already worked out as the steps read it)
         if v[0] == 'const': return v[1]
         if v[0] == 'global': return ('glob', v[1])
         if v[0] == 'arg': return ('given', v[1])
@@ -1414,17 +1416,17 @@ def tail(p):
                             return None
                         if store:
                             clobbered.add(slot)   # (the argument is gone: later reads of the slot are the run's value)
-                        return (4, (slot + 0x100) // 4)
+                        return (4, (slot + LB) // 4)
                     if slot in clobbered or slot in slot_stored:
                         return None
                     return (5, slot // 4)
-                if slot < 0 and -slot <= 0x100 and slot % 4 == 0:
+                if slot < 0 and -slot <= LB and slot % 4 == 0:
                     if slot not in written and not store and slot not in run_locals:
                         v = S.get(slot)
                         if not v or v[0] != 'const':
                             return None
                         known_locals[slot] = v[1]
-                    return (4, (slot + 0x100) // 4)
+                    return (4, (slot + LB) // 4)
                 return None
             mm = re.fullmatch(r'dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', text)
             if mm and regs.get(mm.group(1)) == ('size',) and not store:
@@ -1485,10 +1487,10 @@ def tail(p):
                     return None
                 sl = args_pushed.pop()[1]
                 depth -= 4
-                if not (sl < 0 and -sl <= 0x100):
+                if not (sl < 0 and -sl <= LB):
                     return None
                 written.update(sl + 4 * i for i in range(4))   # (the size filled in: two floats, and room)
-                prog.append((25, okind, oval, (sl + 0x100) // 4))
+                prog.append((25, okind, oval, (sl + LB) // 4))
                 regs['eax'] = ('size',)
                 for r_ in ('ecx', 'edx'):
                     regs[r_] = ('r', None)
@@ -1509,7 +1511,7 @@ def tail(p):
                     if o_[0] not in (2, 3, 4):   # or inside what a member points to (a child's value: the window's members unchanged)
                         return None
                     if o_[0] == 4:
-                        written.add(o_[1] * 4 - 0x100)
+                        written.add(o_[1] * 4 - LB)
                 prog.append((code, o_[0], o_[1]))
                 fpu += {1: 1, 21: 1, 4: -1}.get(code, 0)
             elif (mm := re.fullmatch(r'fld st\((\d)\)', u)):
@@ -1561,18 +1563,18 @@ def tail(p):
                 prog.append((28, 1, num(mm.group(1)), num(mm.group(2))))   # a constant into a game global (code 28)
             elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', u)):
                 slot = num(mm.group(1)) - depth
-                if not (slot < 0 and -slot <= 0x100 and slot % 4 == 0):
+                if not (slot < 0 and -slot <= LB and slot % 4 == 0):
                     return None
-                prog.append((20, 0, num(mm.group(2))) + ((slot + 0x100) // 4,)); written.add(slot)
+                prog.append((20, 0, num(mm.group(2))) + ((slot + LB) // 4,)); written.add(slot)
             elif (mm := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, u)):
                 slot = num(mm.group(1)) - depth
                 v = regs.get(mm.group(2), ('r', R.get(mm.group(2))))
-                if not (slot < 0 and -slot <= 0x100 and slot % 4 == 0):
+                if not (slot < 0 and -slot <= LB and slot % 4 == 0):
                     return None
                 if v[0] == 'bits':
-                    prog.append((19, v[1][0], v[1][1]) + ((slot + 0x100) // 4,))
+                    prog.append((19, v[1][0], v[1][1]) + ((slot + LB) // 4,))
                 elif v[0] == 'r' and v[1] and v[1][0] == 'const':
-                    prog.append((20, 0, v[1][1]) + ((slot + 0x100) // 4,))
+                    prog.append((20, 0, v[1][1]) + ((slot + LB) // 4,))
                 else:
                     return None
                 written.add(slot)
@@ -1616,7 +1618,7 @@ def tail(p):
         if nocall_:
             for sl, val_ in sorted(known_locals.items()):
                 if sl not in written:
-                    prog.insert(0, (20, 0, val_, (sl + 0x100) // 4))
+                    prog.insert(0, (20, 0, val_, (sl + LB) // 4))
             run_locals.update(written)
             start = 4 * len(FPU_PROGRAM)
             FPU_PROGRAM.append((len(prog), 0, 0, 0))
@@ -1648,7 +1650,7 @@ def tail(p):
                 return None
             for sl, val_ in sorted(known_locals.items()):
                 if sl not in written:
-                    prog.insert(0, (20, 0, val_, (sl + 0x100) // 4))
+                    prog.insert(0, (20, 0, val_, (sl + LB) // 4))
             run_locals.update(written)
             start = 4 * len(FPU_PROGRAM)
             FPU_PROGRAM.append((len(prog), 0, 0, 0))
@@ -1671,17 +1673,17 @@ def tail(p):
                     sl = v[1] + 4 * i
                     if sl not in written:
                         sv = S.get(sl)
-                        if not sv or sv[0] != 'const' or not (sl < 0 and -sl <= 0x100):
+                        if not sv or sv[0] != 'const' or not (sl < 0 and -sl <= LB):
                             return None
                         known_locals[sl] = sv[1]
-                if not (v[1] < 0 and -v[1] <= 0x100 - 12):
+                if not (v[1] < 0 and -v[1] <= LB - 12):
                     return None
-                args_.append(('local', (v[1] + 0x100) // 4))
+                args_.append(('local', (v[1] + LB) // 4))
             else:
                 args_.append(v)
         for sl, val_ in sorted(known_locals.items()):
             if sl not in written:
-                prog.insert(0, (20, 0, val_, (sl + 0x100) // 4))
+                prog.insert(0, (20, 0, val_, (sl + LB) // 4))
         run_locals.update(written)   # (what this run wrote stays in the locals for later runs, until written otherwise)
         start = 4 * len(FPU_PROGRAM)   # (where its count is in the flat table: four dwords a step)
         FPU_PROGRAM.append((len(prog), 0, 0, 0))
@@ -1769,7 +1771,7 @@ def tail(p):
                 k += 1
                 flag = None
                 continue
-            if x.mnemonic == 'ret' or at.get(int(x.op_str, 0), 1 << 30) > conds[-1][0]:
+            if x.mnemonic == 'ret' or not re.fullmatch(r'0x[0-9a-f]+', x.op_str) or at.get(int(x.op_str, 0), 1 << 30) > conds[-1][0]:
                 raise Reject('a jump out of a conditional block @%#x' % x.address)
         if x.mnemonic == 'call':
             if 'edx' in x.op_str:
@@ -2080,7 +2082,7 @@ def tail(p):
                 # there); anything else is only remembered (a run can't read it)
                 slot_stored.add(sl_)
                 if cv_ is not None and sl_ < 0x40 and not arg_slot_written_before(sl_):
-                    ops.append((92, (sl_ + 0x100) // 4, cv_ & 0xffffffff, 0, []))
+                    ops.append((92, (sl_ + LB) // 4, cv_ & 0xffffffff, 0, []))
                     run_locals.add(sl_)
                     S[sl_] = ('const', cv_ & 0xffffffff)
                 else:
@@ -2173,6 +2175,15 @@ def tail(p):
         elif (m := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and val(m.group(2)) and \
                 (val(m.group(2)) == ('this',) or val(m.group(2))[0] == 'member'):
             ops.append((67, 0 if val(m.group(2)) == ('this',) else val(m.group(2))[1], 0, num(m.group(1)), []))   # the window's place kept in a global
+        elif (m := re.fullmatch(r'mov dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and val(m.group(2)) and val(m.group(2))[0] == 'globmask' and \
+                val(m.group(2))[1] == num(m.group(1)) and all(o[0] in QUIET and o[0] not in (51, 96) for o in ops[val(m.group(2))[4]:]):
+            # a game global read, or-ed / and-ed with a constant and stored back, nothing between able to change it (kind 96)
+            ops.append((96, 0, val(m.group(2))[3], num(m.group(1)), [int(val(m.group(2))[2] == 'and')]))
+        elif (m := re.fullmatch(r'(or|and) ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and R.get(m.group(2)) and R[m.group(2)][0] == 'global' and \
+                0x10e7000 <= R[m.group(2)][1] < 0x1420000:
+            # (a game global's value worked on: kept so, for the store back that follows)
+            R[m.group(2)] = ('globmask', R[m.group(2)][1], m.group(1), num(m.group(3)), len(ops))
+            flag = None
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)):
             slot = num(m.group(2)) - d
             if slot in clobbered or slot in slot_stored:
@@ -2221,6 +2232,14 @@ def tail(p):
                 val(m.group(2))[0] in ('this', 'member') and num(m.group(3) or '0') < 0x10000:
             # a byte of the window read (only tested): kept as the member's dword, whose low byte it is
             R['e' + m.group(1) + 'x'] = ('bytefield', (0 if val(m.group(2)) == ('this',) else val(m.group(2))[1]) + num(m.group(3) or '0'), len(ops))
+        elif (m := re.fullmatch(r'test byte ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)) and val(m.group(1)) and \
+                val(m.group(1))[0] == 'global' and 0x1000000 <= val(m.group(1))[1] < 0x2000000 and num(m.group(2)) < 0x100 and \
+                0 < num(m.group(3)) < 0x100:
+            # bits of a byte inside the object a game global holds tested: its dword read then (kind 15), the mask on that byte
+            g_ = val(m.group(1))[1]
+            flag = ('testmask', ('code', ('gobj', (g_ - 0x1000000) | num(m.group(2)) << 24)), num(m.group(3)))
+            k += 1
+            continue
         elif (m := re.fullmatch(r'shr (e[a-d]x|e[sd]i|ebp|ebx), ([1-9]|0x[0-9a-f]|1[0-9]|2[0-3])', s)) and val(m.group(1)) and \
                 val(m.group(1))[0] in ('global', 'field') and base_code(val(m.group(1))) is not None:
             # a game global's or a member's value shifted right, for a bit test that follows (the test's mask shifted back)
@@ -2983,10 +3002,13 @@ def tail(p):
                 flag = None
                 k += 1
                 continue
-            if not this or this[0] not in ('this', 'member', 'arg', 'global') or ret_args(fn) is None or ret_args(fn) > len(pushed) or \
-                    ret_args(fn) > (7 if this[0] in ('this', 'member') else 5) or this[0] == 'arg' and this[1] < 2:
+            rn_ = ret_args(fn)
+            if rn_ is None and not pushed and k + 1 < len(t) and not t[k + 1].startswith('add esp'):
+                rn_ = 0   # (its end not readable, a virtual call it jumps on to: nothing was pushed for it, so it takes nothing)
+            if not this or this[0] not in ('this', 'member', 'arg', 'global') or rn_ is None or rn_ > len(pushed) or \
+                    rn_ > (7 if this[0] in ('this', 'member') else 5) or this[0] == 'arg' and this[1] < 2:
                 raise Reject('tail call ' + s + ' this=%s n=%s pushed=%d @%#x' % (this, ret_args(fn), len(pushed), x.address) + (' breakers: %s' % [ops[j][:4] for j in range(this[2], len(ops)) if not still(('field', this[1], j)) and still(('field', this[1], j + 1))] if this and this[0] == 'field' else ''))
-            n_ = ret_args(fn)
+            n_ = rn_
             args = [pushed.pop() for _ in range(n_)]
             d -= 4 * n_
             if any((not isinstance(v, int) and v[0] in ('temp', 'nameaddr') and not (v[0] == 'temp' and v[1] in always_temps and (('temp', v[1]) in built or v[1] in pod_temps)) and not (v[0] == 'nameaddr' and ('name', v[1]) in built and any(o_[0] in (58, 68) and o_[1] == v[1] for o_ in ops))) for v in args):
@@ -3043,7 +3065,7 @@ def tail(p):
     # the argument slots the tail stores constants into (kind 92): first given the argument, in the runs' buffer (kind 93),
     # so a run reads the argument there when the store's block didn't run (the steps count their skips: one put first is fine)
     for off_ in sorted({o[1] for o in ops if o[0] == 92}, reverse=True):
-        ops.insert(0, (93, off_, off_ - 0x40, 0, []))
+        ops.insert(0, (93, off_, off_ - LB // 4, 0, []))
     return ops
 
 
@@ -3171,7 +3193,7 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_text_globals[] = {' + ''.join(f'{g:#x}, ' for g in tg) + '0};')
     out.append('// the game globals the steps write (op 51: off bytes; op 67: 4): the tester gives each a value first and compares them')
     out.append('extern const uint32_t titled_written_globals[];')
-    wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67)} |
+    wg = sorted({(o[3], o[1] if o[0] == 51 else 4) for a_ in info for o in all_ops.get(a_[0], []) if o[0] in (51, 67, 96)} |
                 {(st_[2], 4) for st_ in FPU_PROGRAM if st_[0] == 28})   # (and those x87 runs set, code 28)
     out.append('const uint32_t titled_written_globals[] = {' + ''.join(f'{g:#x}, {n_}, ' for g, n_ in wg) + '0};')
     out.append('// the arguments a constructor casts to an interface (op 54, fn 1): its address and a mask of their numbers; the tester')
@@ -3263,7 +3285,7 @@ if __name__ == '__main__':
         o_ = all_ops.get(a_[0], [])
         for i_ in range(len(o_) - 2):
             if o_[i_][0] == 63 and o_[i_][4] and o_[i_][4][0][0] == 'glob' and o_[i_ + 1][0] == 18 and o_[i_ + 2][0] == 10 and \
-                    len(o_[i_ + 2][4]) <= 1:
+                    len(o_[i_ + 2][4]) <= 3 and o_[i_][3] == 1 and o_[i_ + 2][3] not in TESTER_OWN:
                 singles.append((a_[0], o_[i_][4][0][1], o_[i_ + 2][3]))
     # the game globals holding a list's head that a node is put first in (op 91): the tester gives each an empty list
     lgl = sorted({o[4][1][1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 91 and o[4][1][0] == 'glob'})

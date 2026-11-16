@@ -633,6 +633,8 @@ static void *__thiscall stub_single0(void *self) { void *r = stub_built0(self); 
 static void *__thiscall stub_single1(void *self, uint32_t a) { void *r = stub_built1(self, a); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
 static void *__thiscall stub_built2(void *self, uint32_t a, uint32_t b) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); return built_result(self); }
 static void *__thiscall stub_built3(void *self, uint32_t a, uint32_t b, uint32_t c) { record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); return built_result(self); }
+static void *__thiscall stub_single2(void *self, uint32_t a, uint32_t b) { void *r = stub_built2(self, a, b); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
+static void *__thiscall stub_single3(void *self, uint32_t a, uint32_t b, uint32_t c) { void *r = stub_built3(self, a, b, c); *(void *volatile *)(uintptr_t)g_titled_single_global = self; return r; }
 static void *__thiscall stub_built4(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
     record(0x81, self); record(0x81, arg_value(a)); record(0x81, arg_value(b)); record(0x81, arg_value(c)); record(0x81, arg_value(d)); return built_result(self);
 }
@@ -6430,8 +6432,8 @@ static std::vector<Test> tests() {
         static void *const plain_stubs[5] = {(void *)stub_plain0, (void *)stub_plain1, (void *)stub_plain2, (void *)stub_plain3, (void *)stub_plain4};
         for (int k = 0; titled_callees[k]; k += 2)   // (never the copy being checked, which other classes make as a member)
             if (titled_callees[k] != e->at)
-                list.push_back({titled_callees[k], titled_callees[k] == g_titled_single_fn && (titled_callees[k + 1] & 0xf00) == 0 && titled_callees[k + 1] < 2 ?
-                                                  (titled_callees[k + 1] == 0 ? (void *)stub_single0 : (void *)stub_single1) :
+                list.push_back({titled_callees[k], titled_callees[k] == g_titled_single_fn && (titled_callees[k + 1] & 0xf00) == 0 && titled_callees[k + 1] < 4 ?
+                                                  (titled_callees[k + 1] == 0 ? (void *)stub_single0 : titled_callees[k + 1] == 1 ? (void *)stub_single1 : titled_callees[k + 1] == 2 ? (void *)stub_single2 : (void *)stub_single3) :
                                                   titled_callees[k + 1] & 0x800 ? fast_stubs[titled_callees[k + 1] & 0xff] : titled_callees[k + 1] & 0x400 ? (is_value_callee(titled_callees[k]) && (titled_callees[k + 1] & 0xff) == 0 ? (void *)stub_plain_value0 : plain_stubs[titled_callees[k + 1] & 0xff]) : titled_callees[k + 1] & 0x200 ? built_rect[titled_callees[k + 1] & 0xff]
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         stubs_for_now(list);

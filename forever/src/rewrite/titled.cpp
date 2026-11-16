@@ -288,7 +288,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     uint32_t scratch[32] = {};
     bool block_ran[64] = {};   // (the if blocks' decisions, by number: whether each one's block ran)
     void *last = nullptr;   // what the last call (3, 24, 60, 61, 62) gave back
-    uint32_t loc[0x50] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords; and the arguments' slots they reuse)
+    uint32_t loc[0x90] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords; and the arguments' slots they reuse)
     void *object = nullptr, *aligned = nullptr;
     for (uint32_t k = 0; k < COUNT; k++) {
         const TitledOp &op = OPS[k];
@@ -534,6 +534,10 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 79: scratch[op.off] = args[0] + op.value; break;   // a scratch value plus a constant
         case 92: loc[op.off] = op.value; break;           // a constant stored into an argument's slot (the runs read it there)
         case 93: loc[op.off] = given[op.value]; break;    // an argument's slot in the runs' buffer, first holding the argument
+        case 96:   // a game global (fn) or-ed with the constant (value), or (args[0] 1) and-ed
+            if (args[0]) *(volatile uint32_t *)(uintptr_t)op.fn &= op.value;
+            else *(volatile uint32_t *)(uintptr_t)op.fn |= op.value;
+            break;
         case 91: {   // a node (args[0]) put first in the list whose head is args[1]: node.next = head.next; head.next.prev = node;
             uint32_t *node = (uint32_t *)(uintptr_t)args[0], *head = (uint32_t *)(uintptr_t)args[1];   // node.prev = head; head.next = node
             node[0] = head[0];

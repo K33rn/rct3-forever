@@ -16529,7 +16529,7 @@ address,size,name,callers,status
 0xa93990,95,,12,documented
 0xa93a30,30,DeletingDestructor,2,rewritten
 0xa93a50,3165,,1,documented
-0xa94a30,934,,1,documented
+0xa94a30,934,Window::Titled,1,rewritten
 0xa94e20,349,MEMBER_DTOR,1,rewritten
 0xa95220,30,DeletingDestructor,2,rewritten
 0xa95240,1196,,1,documented
