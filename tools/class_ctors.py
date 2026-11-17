@@ -1002,7 +1002,7 @@ def parse(a, n):
             if slot >= 4:
                 dirty.add(slot // 4)
             kept.pop(slot, None)
-            if m.group(1) == 'dword' and slot < 0 and regs.get(m.group(3)) and regs[m.group(3)][0] == 'this':
+            if m.group(1) == 'dword' and regs.get(m.group(3)) and regs[m.group(3)][0] == 'this':
                 kept[slot] = regs[m.group(3)]   # a pointer into the object kept in a local
         elif (m := re.fullmatch(r'add ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'this':
             regs[m.group(1)] = ('this', regs[m.group(1)][1] + num(m.group(2)))   # a pointer into the object moved on

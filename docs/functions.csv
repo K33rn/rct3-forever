@@ -8433,7 +8433,7 @@ address,size,name,callers,status
 0x730bf0,102,Refs::DeleteUnused730BF0,1,rewritten
 0x730cc0,180,NamedTextRef::NamedTextRef(text),0,rewritten
 0x730d80,30,DeletingDestructor,0,rewritten
-0x730db0,976,,2,documented
+0x730db0,976,Class::Construct,2,rewritten
 0x731220,172,Object::MakeNamed,1,rewritten
 0x7312d0,151,Text::FromOwner7312D0,1,rewritten
 0x7313c0,228,Database::MissingDependency,1,rewritten
@@ -8535,7 +8535,7 @@ address,size,name,callers,status
 0x738b40,272,,1,documented
 0x738c90,126,ObjectRef::Assign,1,rewritten
 0x738d10,1005,,3,documented
-0x739100,904,,2,documented
+0x739100,904,Class::Construct,2,rewritten
 0x739540,172,Object::MakeNamed,1,rewritten
 0x7395f0,151,Text::FromOwner7312D0,1,rewritten
 0x7396e0,228,Database::MissingDependency,1,rewritten
@@ -10907,7 +10907,7 @@ address,size,name,callers,status
 0x824790,72,QueryInterface::OrReport,0,rewritten
 0x824810,30,DeletingDestructor,2,rewritten
 0x8249b0,30,DeletingDestructor,2,rewritten
-0x8249d0,800,,2,documented
+0x8249d0,800,Class::Construct,2,rewritten
 0x824d40,221,,1,documented
 0x824ea0,506,Window::Titled,0,rewritten
 0x8250c0,30,DeletingDestructor,2,rewritten
@@ -12140,7 +12140,7 @@ address,size,name,callers,status
 0x8b2dd0,501,,1,documented
 0x8b30f0,26,,1,documented
 0x8b3110,107,Factory::CreateFromFields,1,rewritten
-0x8b3310,1713,,2,documented
+0x8b3310,1713,Class::Construct,2,rewritten
 0x8b3a30,30,DeletingDestructor,0,rewritten
 0x8b3a50,149,,2,documented
 0x8b3af0,453,,1,documented
