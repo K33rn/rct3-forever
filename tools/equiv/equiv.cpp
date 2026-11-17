@@ -6656,6 +6656,11 @@ static std::vector<Test> tests() {
                                      holder[0] = (uint32_t)(uintptr_t)text;
                                      text[0] = 1 + arena<uint32_t>(0x8b64)[0] % 5;
                                      (n >= 5 ? x[n - 5] : a[n - 1]) = (uint32_t)(uintptr_t)holder;
+                                 } else if (g_class_text_args >> (n + 8) & 1) {   // (the argument a text itself)
+                                     uint32_t *text = arena<uint32_t>(0x9810 + 0x20 * n);
+                                     text[0] = arena<uint32_t>(0x8b64)[0] % 3;   // (0 now and then: raised and let go, it is freed)
+                                     text[1] = 0x7000 + n, text[2] = 0x6000 + n, text[3] = 0x5000 + n;   // (its length and characters: told apart)
+                                     (n >= 5 ? x[n - 5] : a[n - 1]) = (uint32_t)(uintptr_t)text;
                                  }
                              if (g_class_count) *(volatile uint32_t *)g_class_count = arena<uint32_t>(0x8b60)[0];
                              if (g_class_owner) {

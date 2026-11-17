@@ -1372,6 +1372,10 @@ def parse(a, n):
             regs.pop(m.group(1), None)
             k += 3
             continue
+        elif (m := re.fullmatch(r'inc dword ptr \[' + REG + r'\]', s)) and (regs.get(m.group(1)) or ('',))[0] == 'arg' and regs[m.group(1)][1] not in dirty:
+            # the count of the counted text an argument is, raised (kind 41)
+            ops.append((41, 0, regs[m.group(1)][1], 0, []))
+            text_args.setdefault(a, set()).add(regs[m.group(1)][1] + 8)
         elif ins[k].mnemonic == 'pop' and k + 1 < len(t):
             pass   # a register given back early
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r'\]', s)) and m.group(1) == m.group(2):
@@ -1514,6 +1518,28 @@ def parse(a, n):
         if a in HAND_AFTER and s == HAND_AFTER[a][0] and not tail_pushed:
             after = HAND_AFTER[a][1]   # the rest is the hand-written function's
             break
+        # the counted text an argument is, let go: mov R, [arg]; mov eax, [R]; dec eax; mov [R], eax; jne END;
+        # mov ecx, [R + 0xC]; push ecx; call 0xBCE010; push R; call 0xBCE000; add esp, 8; END: (kind 42, after the mark)
+        if not tail_pushed and (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and \
+                (slot_ := num(m.group(2)) - tail_depth) >= 8 and slot_ % 4 == 0 and slot_ // 4 <= nargs and slot_ // 4 not in dirty:
+            R_ = m.group(1)
+            mark_ = lambda u: re.fullmatch(r'cmp byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], [a-d]l|je 0x[0-9a-f]+|mov e[a-d]x, dword ptr \[0x1[0-9a-f]{6}\]|mov byte ptr \[e[a-d]x \+ 4\], 1', u)
+            rest_ = [u for u in tail[ti + 1:ti + 20] if not re.fullmatch(STATE, u) and not re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], 0xffffffff', u)]
+            while rest_ and rest_[0] != 'mov eax, dword ptr [%s]' % R_ and mark_(rest_[0]):
+                rest_ = rest_[1:]   # (the registration's mark between: the executor makes it)
+            if R_ not in ('eax', 'ecx') and rest_[:3] == ['mov eax, dword ptr [%s]' % R_, 'dec eax', 'mov dword ptr [%s], eax' % R_] and \
+                    rest_[3].startswith('jne ') and rest_[4:10] == ['mov ecx, dword ptr [%s + 0xc]' % R_, 'push ecx', 'call 0xbce010', 'push ' + R_,
+                                                                  'call 0xbce000', 'add esp, 8']:
+                end_ = next(q_ for q_ in range(ti + 1, len(tail)) if ins[last + 1 + q_].address == num(rest_[3][4:]))
+                if not marked:
+                    ops.append((14, 0, 0, 0, []))
+                    marked = True
+                ops.append((42, 0, slot_ // 4, 0, []))
+                text_args.setdefault(a, set()).add(slot_ // 4 + 8)
+                for r in ('eax', 'ecx', 'edx', R_):
+                    regs.pop(r, None)
+                skip_to = end_
+                continue
         if (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and num(m.group(2)) - tail_depth - 4 * len(tail_pushed) in kept:
             regs[m.group(1)] = kept[num(m.group(2)) - tail_depth - 4 * len(tail_pushed)]
             continue
@@ -1709,7 +1735,7 @@ out.append('// the copies whose end raises a game count (doing something the fir
 out.append('extern const uint32_t class_counts[];')
 out.append('const uint32_t class_counts[] = {' + ''.join(f'{a_:#x}, {g_:#x}, ' for a_, g_ in sorted(HAND_COUNTS.items()) if a_ in done_set) + '0};')
 out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
-out.append('// the copies given counted texts through arguments (kind 40): copy, a mask of the arguments (the test points each at a holder of a text)')
+out.append('// the copies given counted texts through arguments (kind 40): copy, a mask of the arguments (the test points each at a holder of a text; bit n + 8: the argument is a text itself)')
 out.append('extern const uint32_t class_text_args[];')
 out.append('const uint32_t class_text_args[] = {' + ''.join(f'{a_:#x}, {sum(1 << n for n in ns):#x}, ' for a_, ns in sorted(text_args.items())) + '0};')
 out.append('extern const uint32_t class_ref_setters2[];')

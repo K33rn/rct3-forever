@@ -17595,7 +17595,7 @@ address,size,name,callers,status
 0xb0f840,30,DeletingDestructor,2,rewritten
 0xb0f930,363,,2,documented
 0xb0faa0,670,,1,documented
-0xb0fd40,812,,3,documented
+0xb0fd40,812,Class::Construct,3,rewritten
 0xb100a0,145,,4,documented
 0xb10140,401,,2,documented
 0xb10310,171,,1,documented

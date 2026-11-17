@@ -136,6 +136,15 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 33) self[op.off] = (uint8_t)given[op.value] != 0;   // whether it is not 0
         else if (op.kind == 38) *(uint32_t *)(self + op.off) = (uint8_t)given[op.value];   // or a dword given it, zero-extended
         else if (op.kind == 37) *(volatile uint32_t *)(self + op.off) |= op.value;   // a member with bits set
+        else if (op.kind == 42) {   // the counted text argument value is, let go: its count down by one; at none, its characters and itself freed
+            uint32_t *const text = (uint32_t *)(uintptr_t)given[op.value];
+            const uint32_t count = *(volatile uint32_t *)text - 1;
+            *(volatile uint32_t *)text = count;
+            if (!count) {
+                ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)text[3]);
+                ((void(__cdecl *)(void *))0xbce000)(text);
+            }
+        } else if (op.kind == 41) ++*(volatile uint32_t *)(uintptr_t)given[op.value];   // the count of the counted text argument value is, raised
         else if (op.kind == 40) {   // the counted text argument value points to put in the member, its count raised
             uint32_t *const text = *(uint32_t *volatile *)(uintptr_t)given[op.value];
             *(uint32_t *volatile *)(self + op.off) = text;
