@@ -629,6 +629,12 @@ static uint32_t __cdecl stub_class_value() {   // (a function taking nothing who
 static uint32_t g_class_random_n;   // (the draws so far in this run)
 // 0x6C3BE0 (a list of named entries the game fills, made on the stack): {table, entries, room, count} as the case
 // decides (entries or none; room or none; the first entry's name or none)
+// 0x4BF730 (an array of 12-byte entries given a size): noted; the array gets items at arena 0x9300 (the case's values in them)
+static void __thiscall stub_class_entries_sized(uint32_t *array, uint32_t n) {
+    record(0x9f, array); record(0x9f, (void *)(uintptr_t)n);
+    array[0] = (uint32_t)(uintptr_t)arena<void>(0x9300);
+    array[1] = n;
+}
 static void *__thiscall stub_class_name_list(uint32_t *list) {
     record(0x9e, nullptr);
     const uint32_t c = arena<uint32_t>(0x8b50)[0];
@@ -6544,6 +6550,7 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x8b48)[0] = r.range(0, 1);   // (the game object of class_singletons there already, or not)
                              arena<uint32_t>(0x8b4c)[0] = r.range(0, 1);   // (and an object in the instance global already, or not)
                              arena<uint32_t>(0x8b50)[0] = r.next();         // (what 0x6C3BE0's list holds)
+                             for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9300)[k] = r.next();   // (0x4BF730's items)
                              for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9000)[k] = r.next();   // (and its contents when there)
                              static void *vtable[2] = {nullptr, (void *)stub_object_info};
                              uint8_t *description = arena<uint8_t>(0x4000);
@@ -6697,7 +6704,7 @@ static std::vector<Test> tests() {
             {0x403f30, (void *)stub_class_named_in}, {0xbcfb10, (void *)stub_class_text_c}, {0xbdf160, (void *)stub_class_lookup},
             {0xbdf1a0, (void *)stub_class_lookup2}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
             {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list},
-            {0x63e1c0, (void *)stub_class_given}, {0x6c3be0, (void *)stub_class_name_list}, {0x6f5f30, (void *)stub_class_member1}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
+            {0x63e1c0, (void *)stub_class_given}, {0x6c3be0, (void *)stub_class_name_list}, {0x4bf730, (void *)stub_class_entries_sized}, {0x6f5f30, (void *)stub_class_member1}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;

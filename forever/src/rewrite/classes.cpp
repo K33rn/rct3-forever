@@ -139,6 +139,8 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 20) class_resource(self + op.off, op.value, op.fn);
         else if (op.kind == 21) class_named_text(self, op.off, op.value, op.fn);
         else if (op.kind == 23) *(uint32_t *)(self + op.off) = ((uint32_t(__cdecl *)())(uintptr_t)op.fn)();   // what a function taking nothing gives
+        else if (op.kind == 32)   // a constant into what the member at off points to, at fn
+            *(volatile uint32_t *)(uintptr_t)(*(volatile uint32_t *)(self + op.off) + op.fn) = op.value;
         else if (op.kind == 31)   // and its signed remainder by value (the sign of what it gave)
             *(int32_t *)(self + op.off) = (int32_t)((uint32_t(__cdecl *)())(uintptr_t)op.fn)() % (int32_t)op.value;
         else if (op.kind == 24) *(void **)(self + op.off) = ((void *(__cdecl *)(uint32_t))(uintptr_t)op.fn)(op.value);   // aligned memory
@@ -521,6 +523,16 @@ static void reference_emptied_b6a000(uint8_t *self) {
     *(uint8_t *volatile *)(reference + 4) = handle;
     link_before((uint32_t *)link, *(uint32_t **)(handle + 0x20));
     (**(void(__thiscall *const *const *)(void *))reference)(reference);
+}
+// 0x4C29F0, its end: the array at +0x9C sized for 10 entries (0x4BF730), its ten 12-byte entries cleared (its items read
+// again for each entry, as the game does), then the members at +0x90, +0x94 and +0x98 cleared.
+static void entries_cleared_4c29f0(uint8_t *self) {
+    ((void(__thiscall *)(void *, uint32_t))0x4bf730)(self + 0x9c, 10);
+    for (uint32_t entry = 0; entry < 10; entry++)
+        for (uint32_t k = 0; k < 3; k++) ((volatile uint32_t *)(uintptr_t)*(volatile uint32_t *)(self + 0x9c))[3 * entry + k] = 0;
+    *(volatile uint32_t *)(self + 0x90) = 0;
+    *(volatile uint32_t *)(self + 0x94) = 0;
+    *(volatile uint32_t *)(self + 0x98) = 0;
 }
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).

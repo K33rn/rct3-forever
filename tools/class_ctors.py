@@ -27,7 +27,8 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0xb4b7a0: ('mov eax, dword ptr [0x10f28e8]', 'link_last_b4b7a0'), 0x6404d0: ('fld dword ptr [0x10eead0]', 'scaled_value_6404d0'),
               0x9d91f0: ('lea ecx, [esp + 0x10]', 'empty_reference_9d91f0'), 0xa5d6f0: ('push 6', 'slots_a5d6f0'),
               0x76b880: ('call 0x475180', 'random_values_76b880'), 0x6f5fd0: ('lea ecx, [esp + 0x18]', 'list_name_6f5fd0'),
-              0x4adef0: ('cmp dword ptr [esi + 0x370], ebx', 'arrays_emptied_4adef0'), 0xb6a000: ('lea ebp, [esi + 0x188]', 'reference_emptied_b6a000')}
+              0x4adef0: ('cmp dword ptr [esi + 0x370], ebx', 'arrays_emptied_4adef0'), 0xb6a000: ('lea ebp, [esi + 0x188]', 'reference_emptied_b6a000'),
+              0x4c29f0: ('lea edi, [esi + 0x9c]', 'entries_cleared_4c29f0')}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.
@@ -985,6 +986,11 @@ def parse(a, n):
                 regs.pop(r, None)
             k += 9 + extra
             continue
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and isinstance(regs.get(m.group(1)), tuple) and                 regs[m.group(1)][0] == 'field' and (re.fullmatch(r'0x[0-9a-f]+|\d+', m.group(3)) or (regs.get(m.group(3)) or ('',))[0] == 'const') and                 all(o[0] in (0, 1, 2, 5, 8, 12, 18, 32) and (o[1] + (1 if o[0] in (1, 12) else 4) <= regs[m.group(1)][1] or o[1] >= regs[m.group(1)][1] + 4) for o in ops[regs[m.group(1)][2]:]):
+            # a constant into what a member points to (kind 32, fn the offset there): the member read as the store is made
+            # (unchanged since it was read)
+            v_ = num(m.group(3)) if re.fullmatch(r'0x[0-9a-f]+|\d+', m.group(3)) else regs[m.group(3)][1]
+            ops.append((32, regs[m.group(1)][1], v_ & 0xffffffff, num(m.group(2) or '0'), []))
         elif (m := re.fullmatch(r'mov (dword|byte) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and isinstance(regs.get(m.group(2)), tuple) and regs[m.group(2)][0] == 'this':
             off = regs[m.group(2)][1] + num(m.group(3) or '0')
             v = m.group(4)
@@ -1401,7 +1407,7 @@ def parse(a, n):
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
             continue
-        if tail_pushed and not s.startswith('lea '):
+        if tail_pushed and not s.startswith('lea ') and not re.fullmatch(r'mov ecx, ' + REG, s):
             raise Reject('end pushed: ' + s)
         if s.startswith('pop '):
             tail_depth -= 4

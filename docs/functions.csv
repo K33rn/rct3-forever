@@ -2411,7 +2411,7 @@ address,size,name,callers,status
 0x4c23e0,485,,4,documented
 0x4c27f0,230,StructArrayLoad,1,rewritten
 0x4c28e0,258,ObjectArray::SetCapacity,1,rewritten
-0x4c29f0,2665,,2,documented
+0x4c29f0,2665,Class::Construct,2,rewritten
 0x4c3460,30,DeletingDestructor,4,rewritten
 0x4c3480,105,Factory::Create,1,rewritten
 0x4c34f0,48,QueryInterface,0,rewritten
