@@ -9421,7 +9421,7 @@ address,size,name,callers,status
 0x79c2e0,1641,,3,documented
 0x79c950,525,,1,documented
 0x79cb60,223,,1,documented
-0x79cd20,1211,,2,documented
+0x79cd20,1211,Class::Construct,2,rewritten
 0x79d1e0,30,DeletingDestructor,2,rewritten
 0x79d200,412,,4,documented
 0x79d3a0,330,,1,documented
@@ -18340,7 +18340,7 @@ address,size,name,callers,status
 0xb58d80,212,ReferenceField::Load,1,rewritten
 0xb58e60,212,ReferenceField::Load,1,rewritten
 0xb58f40,568,,1,documented
-0xb59180,1634,,2,documented
+0xb59180,1634,Class::Construct,2,rewritten
 0xb597f0,30,DeletingDestructor,5,rewritten
 0xb59810,172,Ref::PassTo,1,rewritten
 0xb59c20,160,,1,documented

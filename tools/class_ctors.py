@@ -556,6 +556,39 @@ def resource_step(t, ins, k, regs, pushed_already=False):
     return end, num(mn.group(1)), num(mf.group(1)), regs[ms.group(1)][1] + num(ms.group(2) or '0'), x
 
 
+# (the same as titled_ctors.py's: an aligned frame's argument reads written as esp slots)
+def ebp_frame_args(t, ins):
+    """A function with an aligned frame (push ebp; mov ebp, esp; and esp, -N) reads its arguments as [ebp + K]: written
+    here as the same slot through esp ([esp + K - 4 + the depth counted so far: pushes, subtractions and callees' own
+    pops; the alignment is not counted, as the readers below don't count it either), so the readers that know arguments
+    by their esp slot know these. Only while ebp is never written after the frame is made; else the text is left as it is."""
+    if len(t) < 3 or t[0] != 'push ebp' or t[1] != 'mov ebp, esp' or not re.fullmatch(r'and esp, 0xfffffff[08]', t[2]):
+        return t
+    for q in range(3, len(t)):
+        u = t[q]
+        if re.match(r'(mov|lea|add|sub|xor|or|and|inc|dec|pop|xchg|imul|shl|shr|sar|movzx|movsx) ebp\b', u) and \
+                not (u == 'pop ebp' and q + 1 < len(t) and ins[q + 1].mnemonic == 'ret'):
+            return t
+    out, d = list(t), 0
+    for q, u in enumerate(t):
+        if q >= 3:
+            z = re.search(r'dword ptr \[ebp \+ (0x[0-9a-f]+|\d+)\]', u)
+            if z and num(z.group(1)) >= 8:
+                out[q] = u.replace(z.group(0), 'dword ptr [esp + %#x]' % (num(z.group(1)) - 4 + d))
+        x = ins[q]
+        if u.startswith('push '):
+            d += 4
+        elif u.startswith('pop '):
+            d -= 4
+        elif (m := re.fullmatch(r'sub esp, (0x[0-9a-f]+|\d+)', u)):
+            d += num(m.group(1))
+        elif (m := re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', u)):
+            d -= num(m.group(1))
+        elif x.mnemonic == 'call' and re.fullmatch(r'0x[0-9a-f]+', x.op_str):
+            d -= 4 * (ret_args(num(x.op_str)) or 0)
+    return out
+
+
 AT = [0]   # the address of the instruction being read, for the WHY listing
 
 
@@ -572,6 +605,8 @@ def parse(a, n):
         raise Reject('not 2 to 7 arguments')
     nargs = num(ins[-1].op_str) // 4
     t = [x.mnemonic + ' ' + x.op_str for x in ins]
+    t = ebp_frame_args(t, ins)
+    framed = t[:2] == ['push ebp', 'mov ebp, esp'] and any('[esp + ' in u for u, v in zip(t, [x.mnemonic + ' ' + x.op_str for x in ins]) if u != v)
     # the base: the first call, taking (description, a, b): Class::Construct (0x800A80) or a parent class's constructor
     kb = [k for k, x in enumerate(t) if x.startswith('call ')]
     if not kb or not re.fullmatch(r'call 0x[0-9a-f]+', t[kb[0]]) or ret_args(num(t[kb[0]][5:])) not in (3, 4):
@@ -592,7 +627,9 @@ def parse(a, n):
         if s == 'mov eax, dword ptr [0x10fe634]':
             regs['eax'] = ('cookie',)   # the compiler's stack check: kept in a local, checked at the end (0xDDCDA7)
             continue
-        if s.startswith(('push -1', 'push 0xe')) and k < 3 or 'fs:[0]' in s:
+        if framed and (k == 1 and s == 'mov ebp, esp' or k == 2 and re.fullmatch(r'and esp, 0xfffffff[08]', s)):
+            continue   # (the aligned frame: its alignment is not counted, as the argument slots were written without it)
+        if s.startswith(('push -1', 'push 0xe')) and k < 6 or 'fs:[0]' in s:
             if s.startswith('push'):
                 depth += 4
             continue
@@ -914,21 +951,32 @@ def parse(a, n):
             target = None if s == 'call 0x805750' else regs['ecx'][1]
             of_arg = s == 'call 0x805700' and regs['ecx'][0] == 'arg'   # the handle of the object an argument gives
             of_self = s == 'call 0x805700' and regs['ecx'][0] == 'this'   # the handle of the object itself (or a member)
+            if (mk := re.fullmatch(r'mov (e[a-d]x|e[sd]i|ebp|ebx), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 1])) and mk.group(1) != 'eax' and \
+                    num(mk.group(2)) - depth - 4 * len(pushed) in kept:
+                # (the link's place read back from the local it was kept in, first)
+                regs[mk.group(1)] = kept[num(mk.group(2)) - depth - 4 * len(pushed)]
+                del t[k + 1], ins[k + 1]
             m = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', t[k + 1])
             if not m or not regs.get(m.group(1)) or regs[m.group(1)][0] != 'this':
                 raise Reject('reference member')
             member = regs[m.group(1)][1] + num(m.group(2) or '0') - 4   # (stored through the member's pointer or through this)
-            body = [re.sub(REG, 'R', x) for x in t[k + 2:k + 9]]
+            lines, extra = t[k + 2:k + 9], 0
+            # (the link's place may be worked out inside: ...; mov edx, [eax]; lea L, [M + 8]; mov [L], edx; ...)
+            ml_ = re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ 8\]', t[k + 4]) if k + 10 <= len(t) else None
+            if ml_ and regs.get(ml_.group(2)) == ('this', member) and not any(re.search(r'\b' + ml_.group(1) + r'\b', x) for x in t[k + 2:k + 4]):
+                lines, extra = t[k + 2:k + 4] + t[k + 5:k + 10], 1
+                regs[ml_.group(1)] = ('this', member + 8)
+            body = [re.sub(REG, 'R', x) for x in lines]
             if body != ['mov R, dword ptr [R + 0x20]', 'mov R, dword ptr [R]', 'mov dword ptr [R], R', 'mov R, dword ptr [R]', 'mov dword ptr [R + 4], R',
                         'mov dword ptr [R + 4], R', 'mov dword ptr [R], R']:
                 raise Reject('reference link')
-            link = re.fullmatch(r'mov dword ptr \[' + REG + r'\], ' + REG, t[k + 4]).group(1)
+            link = re.fullmatch(r'mov dword ptr \[' + REG + r'\], ' + REG, lines[2]).group(1)
             if regs.get(link) != ('this', member + 8):
                 raise Reject('reference link register')
             ops.append((6, member, 0, 0, []) if target is None else (16 if of_arg else 19 if of_self else 9, member, target, 0, []))
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
-            k += 9
+            k += 9 + extra
             continue
         elif (m := re.fullmatch(r'mov (dword|byte) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (.+)', s)) and isinstance(regs.get(m.group(2)), tuple) and regs[m.group(2)][0] == 'this':
             off = regs[m.group(2)][1] + num(m.group(3) or '0')
@@ -999,8 +1047,8 @@ def parse(a, n):
             pass   # the description chosen for the registration (the one given, or the class's own)
         elif (m := re.fullmatch(r'mov (dword|byte) ptr \[esp(?: \+ (0x[0-9a-f]+|\d+))?\], (.*)', s)):
             slot = num(m.group(2) or '0') - depth - 4 * len(pushed)
-            if slot >= 4:
-                dirty.add(slot // 4)
+            if slot >= 4 and not (slot == 4 and m.group(1) == 'dword' and regs.get(m.group(3)) == ('desc',)):
+                dirty.add(slot // 4)   # (the class's own description put in the description's slot: the registration's choice, made early)
             kept.pop(slot, None)
             if m.group(1) == 'dword' and regs.get(m.group(3)) and regs[m.group(3)][0] == 'this':
                 kept[slot] = regs[m.group(3)]   # a pointer into the object kept in a local
@@ -1206,7 +1254,9 @@ def parse(a, n):
     if len(steps) > 12:
         raise Reject('name steps')
     for q in steps:
-        if rest[q + 1:q + 2] != ['push eax'] or not any(x == 'call 0xbecc10' for x in rest[q:q + 5]) or not any(x == 'call 0xbec5e0' for x in rest[q:q + 9]):
+        # (the description may be read back for the give before the push: the chosen one, as the registration's)
+        reread = bool(re.fullmatch(r'mov (?:ecx|esi|edi|ebx|ebp), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', rest[q + 1])) and rest[q + 2] == 'push eax'
+        if (rest[q + 1:q + 2] != ['push eax'] and not reread) or not any(x == 'call 0xbecc10' for x in rest[q:q + 6]) or not any(x == 'call 0xbec5e0' for x in rest[q:q + 10]):
             raise Reject('name step')
         if not re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', rest[q - 1]):
             raise Reject('name text')
@@ -1273,6 +1323,8 @@ def parse(a, n):
         if s == 'call 0xddcda7':
             regs.pop('ecx', None)
             continue
+        if framed and s == 'mov esp, ebp' and not tail_pushed:
+            continue   # (the aligned frame given back: its pop ebp follows)
         # the global's object before, if any, deleted (its table's slot 0, given 1): mov ecx, [G]; cmp ecx, 0; je OVER;
         # mov R, [ecx]; push 1; call [R]; OVER: (then this one put in its place, below)
         if not tail_pushed and not replaced and (m := re.fullmatch(r'mov ecx, dword ptr \[(0x1[0-9a-f]{6})\]', s)) and ti + 6 < len(tail):
