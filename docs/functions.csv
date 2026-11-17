@@ -12390,7 +12390,7 @@ address,size,name,callers,status
 0x8d4650,6731,,2,documented
 0x8d6180,150,,1,documented
 0x8d6220,370,,1,documented
-0x8d63a0,776,,215,documented
+0x8d63a0,776,Class::Construct,215,rewritten
 0x8d66b0,30,DeletingDestructor,3,rewritten
 0x8d66d0,105,Factory::Create,1,rewritten
 0x8d67a0,320,,8,documented

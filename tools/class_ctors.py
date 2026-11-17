@@ -542,7 +542,7 @@ def resource_step(t, ins, k, regs, pushed_already=False):
        27 call 0xBCE000; 28 add esp, 8; END."""
     seq, at = (['push 0x10'], [k]) if pushed_already else ([], [])
     q = k
-    while q < len(t) and len(seq) < 29:
+    while q < len(t) and len(seq) < 30:
         if not re.fullmatch(STATE, t[q]):
             seq.append(t[q])
             at.append(q)
@@ -571,7 +571,7 @@ def resource_step(t, ins, k, regs, pushed_already=False):
         return None
     if r == 'ecx' and three.index(manager) < three.index('push ecx'):
         return None
-    mf = re.fullmatch(r'call (0xbdf160|0xbdf1a0)', seq[15])
+    mf = re.fullmatch(r'call (0xbdf160|0xbdf180|0xbdf1a0)', seq[15])
     ms = re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], eax', seq[16])
     if not mf or not ms or not regs.get(ms.group(1)) or regs[ms.group(1)][0] != 'this':
         return None
@@ -580,12 +580,22 @@ def resource_step(t, ins, k, regs, pushed_already=False):
     mx = re.fullmatch(r'mov ' + REG + ', eax', seq[22])
     if seq[17:20] != [load, 'dec dword ptr [eax]', load] or not mc or not (mc.group(1) == '0' or zero(mc.group(1))):
         return None
-    if not seq[21].startswith('jne ') or not mx or mx.group(1) in ('eax', 'ecx', 'edx'):
+    # (the text's place kept in a register, or in a stack slot read back into one for the second free)
+    mk = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax', seq[22])
+    if not seq[21].startswith('jne ') or not (mx and mx.group(1) not in ('eax', 'ecx', 'edx') or mk):
         return None
-    x = mx.group(1)
-    if seq[23:29] != ['mov eax, dword ptr [eax + 0xc]', 'push eax', 'call 0xbce010', 'push ' + x, 'call 0xbce000', 'add esp, 8']:
-        return None
-    end = at[28] + 1
+    if mx:
+        x = mx.group(1)
+        if seq[23:29] != ['mov eax, dword ptr [eax + 0xc]', 'push eax', 'call 0xbce010', 'push ' + x, 'call 0xbce000', 'add esp, 8']:
+            return None
+        end = at[28] + 1
+    else:
+        mr = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', seq[26]) if len(seq) >= 30 else None
+        if seq[23:26] != ['mov eax, dword ptr [eax + 0xc]', 'push eax', 'call 0xbce010'] or not mr or num(mr.group(2)) != num(mk.group(1)) + 4 or \
+                seq[27:30] != ['push ' + mr.group(1), 'call 0xbce000', 'add esp, 8']:
+            return None
+        x = mr.group(1)
+        end = at[29] + 1
     if end >= len(t) or ins[end].address != num(seq[21][4:]):
         return None
     return end, num(mn.group(1)), num(mf.group(1)), regs[ms.group(1)][1] + num(ms.group(2) or '0'), x

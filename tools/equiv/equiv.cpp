@@ -944,6 +944,7 @@ static uint32_t class_lookup(uint32_t tag, void *manager, int32_t **text) {
 }
 static uint32_t __thiscall stub_class_lookup(void *manager, int32_t **text) { return class_lookup(0xa3, manager, text); }
 static uint32_t __thiscall stub_class_lookup2(void *manager, int32_t **text) { return class_lookup(0xa4, manager, text); }
+static uint32_t __thiscall stub_class_lookup3(void *manager, int32_t **text) { return class_lookup(0xa5, manager, text); }
 static void __thiscall stub_class_after_figures(uint8_t *self) { record(0x9e, self); record(0x9e, (void *)(uintptr_t)*(uint32_t *)(self + 0x1bc)); }
 static void *__thiscall stub_class_from_pair(void *self, void *object, const uint32_t *pair) {
     record(0x9d, self); record(0x9d, object); record(0x9d, (void *)(uintptr_t)pair[0]); record(0x9d, (void *)(uintptr_t)pair[1]);
@@ -6747,7 +6748,7 @@ static std::vector<Test> tests() {
             {0x9e87e0, (void *)stub_class_start}, {0x48c9c0, (void *)stub_class_from_pair}, {0xbd0520, (void *)stub_wide_empty_other},
             {0x707530, (void *)stub_class_after_figures}, {0x6a3b60, (void *)stub_class_record_pairs}, {0x940ea0, (void *)stub_class_water_table},
             {0x403f30, (void *)stub_class_named_in}, {0xbcfb10, (void *)stub_class_text_c}, {0xbdf160, (void *)stub_class_lookup},
-            {0xbdf1a0, (void *)stub_class_lookup2}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
+            {0xbdf1a0, (void *)stub_class_lookup2}, {0xbdf180, (void *)stub_class_lookup3}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
             {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list},
             {0x63e1c0, (void *)stub_class_given}, {0x6c3be0, (void *)stub_class_name_list}, {0x4de7d0, (void *)stub_class_member2}, {0x45b600, (void *)stub_class_member2}, {0x991a50, (void *)stub_class_member1}, {0x7541a0, (void *)stub_class_member0}, {0xa0ddf0, (void *)stub_class_member1}, {0x4bf730, (void *)stub_class_entries_sized}, {0x6f5f30, (void *)stub_class_member1}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
