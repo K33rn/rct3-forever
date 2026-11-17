@@ -1343,6 +1343,26 @@ def parse(a, n):
         if s == 'call 0xddcda7':
             regs.pop('ecx', None)
             continue
+        # a member linked in at the end of the list a global points to (just before its head):
+        #   mov A, [G]; mov P, [A + 4]; lea C, [A + 4]; mov D, A; lea N, [this + off]; mov [N + 4], P; mov P2, [C];
+        #   mov [P2], N; mov [N], D; mov [C], N
+        if step == 0 and not tail_pushed and a not in HAND_AFTER and ti + 10 <= len(tail) and (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x1[0-9a-f]{6})\]', s)):
+            A = m.group(1)
+            m1 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + A + r' \+ 4\]', tail[ti + 1])
+            m2 = re.fullmatch(r'lea ' + REG + r', \[' + A + r' \+ 4\]', tail[ti + 2])
+            m3 = re.fullmatch(r'mov ' + REG + ', ' + A, tail[ti + 3])
+            m4 = re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', tail[ti + 4])
+            if m1 and m2 and m3 and m4 and regs.get(m4.group(2)) == ('this', 0) and len({A, m1.group(1), m2.group(1), m3.group(1)}) == 4 and \
+                    m4.group(1) not in (m1.group(1), m2.group(1), m3.group(1)):
+                P, C, D, N = m1.group(1), m2.group(1), m3.group(1), m4.group(1)
+                m6 = re.fullmatch(r'mov ' + REG + r', dword ptr \[' + C + r'\]', tail[ti + 6])
+                if tail[ti + 5] == 'mov dword ptr [%s + 4], %s' % (N, P) and m6 and tail[ti + 7] == 'mov dword ptr [%s], %s' % (m6.group(1), N) and \
+                        tail[ti + 8] == 'mov dword ptr [%s], %s' % (N, D) and tail[ti + 9] == 'mov dword ptr [%s], %s' % (C, N):
+                    link, step = [num(m.group(2)) | 1, -1, num(m4.group(3))], 4   # (bit 0: at the end)
+                    for r in (A, P, C, D, N, m6.group(1)):
+                        regs.pop(r, None)
+                    skip_to = ti + 10
+                    continue
         if framed and s == 'mov esp, ebp' and not tail_pushed:
             continue   # (the aligned frame given back: its pop ebp follows)
         # the global's object before, if any, deleted (its table's slot 0, given 1): mov ecx, [G]; cmp ecx, 0; je OVER;

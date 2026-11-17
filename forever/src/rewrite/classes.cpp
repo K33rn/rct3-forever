@@ -237,9 +237,16 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
     if (!description) (*(uint8_t **)DESCRIPTION)[4] = 1;
     }
     if constexpr (TAIL != nullptr) {
-        if (TAIL->link) {
-            uint8_t *list = *(uint8_t **)TAIL->link;
-            link_before((uint32_t *)(self + TAIL->member), TAIL->link_at < 0 ? (uint32_t *)list : *(uint32_t **)(list + TAIL->link_at));
+        if (TAIL->link) {   // (bit 0: linked in at the list's end, just before its head)
+            uint8_t *list = *(uint8_t **)(TAIL->link & ~(uintptr_t)1);
+            uint32_t *const node = (uint32_t *)(self + TAIL->member), *const head = TAIL->link_at < 0 ? (uint32_t *)list : *(uint32_t **)(list + TAIL->link_at);
+            if (TAIL->link & 1) {
+                node[1] = head[1];
+                ((uint32_t *)(uintptr_t)head[1])[0] = (uint32_t)(uintptr_t)node;
+                node[0] = (uint32_t)(uintptr_t)head;
+                head[1] = (uint32_t)(uintptr_t)node;
+            } else
+                link_before(node, head);
         }
         if (TAIL->count) ++*(uint32_t *)TAIL->count;
         if (TAIL->instance) {   // (bit 0: the object there before, if any, deleted first: its table's slot 0, given 1)
