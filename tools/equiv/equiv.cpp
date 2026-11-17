@@ -635,6 +635,7 @@ static uintptr_t g_class_chain, g_class_chain_flag;
 // the case's room and count (full or not) with items at 0x9600
 extern const uint32_t class_owner_arrays[];
 extern const uint32_t class_counts[];
+extern const uint32_t class_instances[];   // (a hand-written end's instance global, which the scan below doesn't find)
 extern const uint32_t class_text_args[];   // (the copies given counted texts through arguments: each points at a holder)
 static uint32_t g_class_text_args;   // (and one raising a game count: given 0 or not by the case, noted after)
 static uintptr_t g_class_count;
@@ -6720,6 +6721,8 @@ static std::vector<Test> tests() {
         g_class_owner = 0;
         g_class_count = 0;
         g_class_text_args = 0;
+        for (int k = 0; class_instances[k]; k += 2)
+            if (class_instances[k] == e->at) g_class_instance = class_instances[k + 1];
         for (int k = 0; class_text_args[k]; k += 2)
             if (class_text_args[k] == e->at) g_class_text_args = class_text_args[k + 1];
         for (int k = 0; class_counts[k]; k += 2)
@@ -6773,7 +6776,8 @@ static std::vector<Test> tests() {
             {0x403f30, (void *)stub_class_named_in}, {0xbcfb10, (void *)stub_class_text_c}, {0xbdf160, (void *)stub_class_lookup},
             {0xbdf1a0, (void *)stub_class_lookup2}, {0xbdf180, (void *)stub_class_lookup3}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
             {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list},
-            {0x63e1c0, (void *)stub_class_given}, {0x6c3be0, (void *)stub_class_name_list}, {0x4de7d0, (void *)stub_class_member2}, {0x45b600, (void *)stub_class_member2}, {0x991a50, (void *)stub_class_member1}, {0x7541a0, (void *)stub_class_member0}, {0xa0ddf0, (void *)stub_class_member1}, {0x4bf730, (void *)stub_class_entries_sized}, {0x6f5f30, (void *)stub_class_member1}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
+            {0x63e1c0, (void *)stub_class_given}, {0x6c3be0, (void *)stub_class_name_list}, {0x4de7d0, (void *)stub_class_member2}, {0x45b600, (void *)stub_class_member2}, {0x991a50, (void *)stub_class_member1}, {0x7541a0, (void *)stub_class_member0}, {0xa0ddf0, (void *)stub_class_member1}, {0xa61160, (void *)stub_class_member2}, {0xa5f3c0, (void *)stub_class_member2},
+            {0xa5fa50, (void *)stub_class_member2}, {0xa61b20, (void *)stub_class_member2}, {0x4bf730, (void *)stub_class_entries_sized}, {0x6f5f30, (void *)stub_class_member1}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;

@@ -734,6 +734,17 @@ static void listed_af19c0(uint8_t *self) {
     node[0] = (uint32_t)(uintptr_t)head;
     head[1] = (uint32_t)(uintptr_t)node;
 }
+// 0xA630E0, its end: the object put in the global 0x13429A8; then four parts made, each on new memory (none without it)
+// given the members at +0x200 and +0x3B0, into +0x3B8 (0xE0 bytes, 0xA61160), +0x3BC (0x30, 0xA5F3C0), +0x3C0 (0x50,
+// 0xA5FA50) and +0x3C4 (0x50, 0xA61B20).
+static void parts_a630e0(uint8_t *self) {
+    static const uint32_t parts[4][3] = {{0xe0, 0xa61160, 0x3b8}, {0x30, 0xa5f3c0, 0x3bc}, {0x50, 0xa5fa50, 0x3c0}, {0x50, 0xa61b20, 0x3c4}};
+    *(uint8_t *volatile *)0x13429a8 = self;
+    for (const auto &part : parts) {
+        void *const memory = memory_alloc(part[0]);
+        *(void *volatile *)(self + part[2]) = memory ? ((void *(__thiscall *)(void *, void *, void *))(uintptr_t)part[1])(memory, self + 0x200, self + 0x3b0) : nullptr;
+    }
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

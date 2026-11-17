@@ -16112,7 +16112,7 @@ address,size,name,callers,status
 0xa62f30,18,,8,documented
 0xa62f70,30,DeletingDestructor,2,rewritten
 0xa62f90,324,,1,documented
-0xa630e0,755,,2,documented
+0xa630e0,755,Class::Construct,2,rewritten
 0xa633e0,105,Factory::Create,1,rewritten
 0xa63450,109,Singleton::Make6C1DA0,249,rewritten
 0xa634c0,482,,1,documented
