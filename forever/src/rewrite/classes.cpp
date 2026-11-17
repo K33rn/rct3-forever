@@ -534,6 +534,14 @@ static void reference_emptied(uint8_t *const reference) {
     (**(void(__thiscall *const *const *)(void *))reference)(reference);
 }
 static void reference_emptied_b6a000(uint8_t *self) { reference_emptied(self + 0x188); }
+// 0xB17C70, its end: the same for its three reference members, at +0x110, +0xB4 and +0xD4 in that order.
+static void references_emptied_b17c70(uint8_t *self) {
+    reference_emptied(self + 0x110);
+    reference_emptied(self + 0xb4);
+    reference_emptied(self + 0xd4);
+}
+// 0x992B60, its end: the member at +0x40 given 0x14 (0x991A50).
+static void member_992b60(uint8_t *self) { ((void(__thiscall *)(void *, uint32_t))0x991a50)(self + 0x40, 0x14); }
 // 0xB7D6A0, its end: the same for its reference member at +0xF0.
 static void reference_emptied_b7d6a0(uint8_t *self) { reference_emptied(self + 0xf0); }
 // 0x4C29F0, its end: the array at +0x9C sized for 10 entries (0x4BF730), its ten 12-byte entries cleared (its items read

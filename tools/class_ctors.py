@@ -32,7 +32,8 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0xb7d6a0: ('lea edi, [ebx + 8]', 'reference_emptied_b7d6a0'), 0xa11c30: ('call 0x4751e0', 'random_kind_a11c30'),
               0x72d930: ('mov byte ptr [esi + 0x8b], 2', 'listed_72d930'), 0xae0480: ('push -1', 'member_ae0480'),
               0x586fa0: ('lea eax, [esi + 0x1ac]', 'entries_586fa0'), 0x7557d0: ('mov eax, dword ptr [0x10ef7f8]', 'chained_7557d0'),
-              0x79e5b0: ('mov eax, dword ptr [0x10efb90]', 'chained_79e5b0')}
+              0x79e5b0: ('mov eax, dword ptr [0x10efb90]', 'chained_79e5b0'), 0xb17c70: ('lea eax, [edi + 8]', 'references_emptied_b17c70'),
+              0x992b60: ('push 0x14', 'member_992b60')}
 # (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)
 HAND_CHAINS = {0x7557d0: (0x10ef7f8, 0x1306508), 0x79e5b0: (0x10efb90, 0x1306c14)}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they

@@ -14044,7 +14044,7 @@ address,size,name,callers,status
 0x991ff0,105,Factory::Create,1,rewritten
 0x992060,621,,1,documented
 0x992b40,30,DeletingDestructor,1,rewritten
-0x992b60,729,,4,documented
+0x992b60,729,Class::Construct,4,rewritten
 0x992e60,139,,3,documented
 0x992fd0,222,,1,documented
 0x9933f0,494,,1,documented
@@ -17713,7 +17713,7 @@ address,size,name,callers,status
 0xb17b50,30,Object::CountList,1,rewritten
 0xb17b70,212,ReferenceField::Load,1,rewritten
 0xb17c50,32,,2,documented
-0xb17c70,1069,,3,documented
+0xb17c70,1069,Class::Construct,3,rewritten
 0xb180a0,30,DeletingDestructor,2,rewritten
 0xb180c0,1435,,0,documented
 0xb18660,850,,2,documented
