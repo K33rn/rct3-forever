@@ -613,6 +613,27 @@ static void chained_79e5b0(uint8_t *self) {
     *(volatile uint32_t *)(self + 0x200) = 0x12fcf10;
     link_before((uint32_t *)(self + 0x534), *(uint32_t *volatile *)0x10efba0);
 }
+// 0xA2B130, its end: the object added to the array of the game object 0x1342788 points to ({+0x18 room, +0x1C count, +0x20
+// items}). When the array is full, it is grown first: room doubled (at least 16), new aligned memory, the items copied
+// over (the object, its count and its items read again for each), the old items freed. Then +0xB8 gets the count, the
+// count goes up by one, and the object goes in at its index. Every read is through the global, as the game does.
+static void appended_a2b130(uint8_t *self) {
+    uint8_t *volatile *const owner = (uint8_t * volatile *)0x1342788;
+    const int32_t room = *(volatile int32_t *)(*owner + 0x18);
+    if (*(volatile int32_t *)(*owner + 0x1c) >= room) {
+        int32_t grown = room + room;
+        if (grown < 0x10) grown = 0x10;
+        uint32_t *const items = (uint32_t *)((void *(__cdecl *)(uint32_t))0xbcdfd0)((uint32_t)grown * 4);
+        for (int32_t k = 0; k < *(volatile int32_t *)(*owner + 0x1c); k++)
+            items[k] = ((volatile uint32_t *)(uintptr_t)*(volatile uint32_t *)(*owner + 0x20))[k];
+        ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)*(volatile uint32_t *)(*owner + 0x20));
+        *(volatile uint32_t *)(*owner + 0x20) = (uint32_t)(uintptr_t)items;
+        *(volatile int32_t *)(*owner + 0x18) = grown;
+    }
+    *(volatile uint32_t *)(self + 0xb8) = *(volatile uint32_t *)(*owner + 0x1c);
+    ++*(volatile uint32_t *)(*owner + 0x1c);
+    ((volatile uint32_t *)(uintptr_t)*(volatile uint32_t *)(*owner + 0x20))[*(volatile uint32_t *)(self + 0xb8)] = (uint32_t)(uintptr_t)self;
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

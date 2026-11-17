@@ -631,6 +631,11 @@ static uint32_t g_class_random_n;   // (the draws so far in this run)
 // points the chain's global at a chain of the case's length (arena 0x9400, 16 bytes a node) and notes the flag after
 extern const uint32_t class_chains[];
 static uintptr_t g_class_chain, g_class_chain_flag;
+// and one adding the object to a game object's array (class_owner_arrays): the global points at arena 0x9500, an array of
+// the case's room and count (full or not) with items at 0x9600
+extern const uint32_t class_owner_arrays[];
+static uintptr_t g_class_owner;
+static uint32_t g_class_owner_saved;
 static uint32_t g_class_chain_saved[2];
 // 0x6C3BE0 (a list of named entries the game fills, made on the stack): {table, entries, room, count} as the case
 // decides (entries or none; room or none; the first entry's name or none)
@@ -6556,6 +6561,9 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x8b4c)[0] = r.range(0, 1);   // (and an object in the instance global already, or not)
                              arena<uint32_t>(0x8b50)[0] = r.next();         // (what 0x6C3BE0's list holds)
                              arena<uint32_t>(0x8b54)[0] = r.range(0, 3);    // (how many nodes follow the first in a class_chains chain)
+                             arena<uint32_t>(0x8b58)[0] = r.range(0, 20);   // (a class_owner_arrays array's room, and its count: full half the time)
+                             arena<uint32_t>(0x8b58)[1] = r.range(0, 1) ? arena<uint32_t>(0x8b58)[0] : r.range(0, arena<uint32_t>(0x8b58)[0]);
+                             for (int k = 0; k < 0x80 / 4; k++) arena<uint32_t>(0x9600)[k] = r.next();
                              for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9300)[k] = r.next();   // (0x4BF730's items)
                              for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9000)[k] = r.next();   // (and its contents when there)
                              static void *vtable[2] = {nullptr, (void *)stub_object_info};
@@ -6629,6 +6637,12 @@ static std::vector<Test> tests() {
                              // (the object at 0xA000, clear of the handles and lists above: the biggest classes reach +0x1000)
                              for (int k = 0; k < 0x1000 / 4; k++) arena<uint32_t>(0xa000)[k] = arena<uint32_t>(0x100)[k & 0xff];
                              g_class_random_n = 0;
+                             if (g_class_owner) {
+                                 arena<uint32_t>(0x9500)[0x18 / 4] = arena<uint32_t>(0x8b58)[0];
+                                 arena<uint32_t>(0x9500)[0x1c / 4] = arena<uint32_t>(0x8b58)[1];
+                                 arena<uint32_t>(0x9500)[0x20 / 4] = (uint32_t)(uintptr_t)arena<void>(0x9600);
+                                 *(volatile uint32_t *)g_class_owner = (uint32_t)(uintptr_t)arena<void>(0x9500);
+                             }
                              if (g_class_chain) {
                                  const uint32_t more = arena<uint32_t>(0x8b54)[0];
                                  for (uint32_t q = 0; q <= more; q++) arena<uint32_t>(0x9400 + 0x10 * q)[0] = q < more ? (uint32_t)(uintptr_t)arena<void>(0x9410 + 0x10 * q) : 0;
@@ -6676,6 +6690,9 @@ static std::vector<Test> tests() {
         g_class_instance = 0;
         g_class_single = 0;
         g_class_chain = g_class_chain_flag = 0;
+        g_class_owner = 0;
+        for (int k = 0; class_owner_arrays[k]; k += 2)
+            if (class_owner_arrays[k] == e->at) g_class_owner = class_owner_arrays[k + 1], g_class_owner_saved = *(volatile uint32_t *)g_class_owner;
         for (int k = 0; class_chains[k]; k += 3)
             if (class_chains[k] == e->at) {
                 g_class_chain = class_chains[k + 1], g_class_chain_flag = class_chains[k + 2];
@@ -6739,6 +6756,7 @@ static std::vector<Test> tests() {
     class_construct.finish = [](const rewrite::Entry *) {
         unstub_many();
         if (g_class_single) *(volatile uint32_t *)g_class_single = g_class_single_saved;
+        if (g_class_owner) *(volatile uint32_t *)g_class_owner = g_class_owner_saved;
         if (g_class_chain) *(volatile uint32_t *)g_class_chain = g_class_chain_saved[0], *(volatile uint32_t *)g_class_chain_flag = g_class_chain_saved[1];
         memcpy((void *)0x10f1cf8, g_weather_defaults, sizeof g_weather_defaults);
         *(uint32_t *)0x133a274 = g_water_table;

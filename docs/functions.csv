@@ -15593,7 +15593,7 @@ address,size,name,callers,status
 0xa2aef0,10,,2,documented
 0xa2af00,23,,4,documented
 0xa2af70,438,NamedTextRef::NamedTextRef,1,rewritten
-0xa2b130,861,,2,documented
+0xa2b130,861,Class::Construct,2,rewritten
 0xa2b4c0,289,,1,documented
 0xa2b5f0,356,,1,documented
 0xa2b830,266,,1,documented

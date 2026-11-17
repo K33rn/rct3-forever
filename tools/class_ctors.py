@@ -33,7 +33,9 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x72d930: ('mov byte ptr [esi + 0x8b], 2', 'listed_72d930'), 0xae0480: ('push -1', 'member_ae0480'),
               0x586fa0: ('lea eax, [esi + 0x1ac]', 'entries_586fa0'), 0x7557d0: ('mov eax, dword ptr [0x10ef7f8]', 'chained_7557d0'),
               0x79e5b0: ('mov eax, dword ptr [0x10efb90]', 'chained_79e5b0'), 0xb17c70: ('lea eax, [edi + 8]', 'references_emptied_b17c70'),
-              0x992b60: ('push 0x14', 'member_992b60')}
+              0x992b60: ('push 0x14', 'member_992b60'), 0xa2b130: ('mov eax, dword ptr [0x1342788]', 'appended_a2b130')}
+# (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
+HAND_ARRAYS = {0xa2b130: 0x1342788}
 # (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)
 HAND_CHAINS = {0x7557d0: (0x10ef7f8, 0x1306508), 0x79e5b0: (0x10efb90, 0x1306c14)}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
@@ -1589,6 +1591,9 @@ out.append('const uint32_t class_singletons[] = {' + ''.join(f'{a_:#x}, {g_:#x},
 out.append('// the copies whose end counts a chain a global points to and clears a flag global: copy, chain, flag (the test gives each a chain)')
 out.append('extern const uint32_t class_chains[];')
 out.append('const uint32_t class_chains[] = {' + ''.join(f'{a_:#x}, {c_:#x}, {f_:#x}, ' for a_, (c_, f_) in sorted(HAND_CHAINS.items()) if a_ in done_set) + '0};')
+out.append("// the copies whose end adds the object to a game object's array: copy, the global (the test gives it an array of its own)")
+out.append('extern const uint32_t class_owner_arrays[];')
+out.append('const uint32_t class_owner_arrays[] = {' + ''.join(f'{a_:#x}, {g_:#x}, ' for a_, g_ in sorted(HAND_ARRAYS.items()) if a_ in done_set) + '0};')
 out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
 out.append('extern const uint32_t class_ref_setters[];')
 out.append('const uint32_t class_ref_setters[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters)) + '0};')
