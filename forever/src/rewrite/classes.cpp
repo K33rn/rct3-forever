@@ -133,6 +133,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         } else if (op.kind == 7) *(void **)(self + op.off) = ((void *(__fastcall *)(uint32_t))(op.fn ? op.fn : 0xbd0490))(1);
         else if (op.kind == 8) *(uint32_t *)(self + op.off) = given[op.value];
         else if (op.kind == 12) self[op.off] = (uint8_t)given[op.value];   // an argument's low byte
+        else if (op.kind == 33) self[op.off] = (uint8_t)given[op.value] != 0;   // whether it is not 0
         else if (op.kind == 13) (*(uint32_t **)(self + op.off))[*(uint32_t *)(self + op.off + 4)] = op.value;
         else if (op.kind == 18) *(uint32_t *)(self + op.off) = *(uint32_t *)(self + op.value);
         else if (op.kind == 17) class_hand(op.value, self, given);

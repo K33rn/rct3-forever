@@ -1004,6 +1004,8 @@ def parse(a, n):
                 ops.append((2, off, regs[v][1], 0, []))
             elif v in regs and regs[v] and regs[v][0] == 'arg' and m.group(1) == 'dword':
                 ops.append((8, off, regs[v][1], 0, []))
+            elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'argnz' and m.group(1) == 'byte':
+                ops.append((33, off, regs['e' + v[0] + 'x'][1], 0, []))   # whether an argument's low byte is not 0
             elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'arg8' and m.group(1) == 'byte':
                 ops.append((12, off, regs['e' + v[0] + 'x'][1], 0, []))   # an argument's low byte (a bool)
             elif v == 'eax' and regs.get('eax') and regs['eax'][0] == 'empty' and m.group(1) == 'dword':
@@ -1249,6 +1251,10 @@ def parse(a, n):
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and regs.get(m.group(2)) and \
                 regs[m.group(2)][0] == 'global' and regs[m.group(2)][1] < 1 << 25 and num(m.group(3)) < 0x80:
             regs[m.group(1)] = ('gfield', regs[m.group(2)][1], num(m.group(3)))   # a dword inside a global's object, read now
+        elif (m := re.fullmatch(r'cmp ([a-d])l, ([a-d])l', s)) and k + 1 < len(t) and (ms_ := re.fullmatch(r'setne ([a-d])l', t[k + 1])) and                 (regs.get('e' + m.group(1) + 'x') or ('',))[0] == 'arg8' and (regs.get('e' + m.group(2) + 'x') or ('', 1))[0] in ('const', 'const8') and                 regs['e' + m.group(2) + 'x'][1] & 0xff == 0:
+            regs['e' + ms_.group(1) + 'x'] = ('argnz', regs['e' + m.group(1) + 'x'][1])   # (only its low byte: whether the argument's is not 0)
+            k += 2
+            continue
         elif ins[k].mnemonic == 'pop' and k + 1 < len(t):
             pass   # a register given back early
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r'\]', s)) and m.group(1) == m.group(2):

@@ -18448,7 +18448,7 @@ address,size,name,callers,status
 0xb63dc0,126,ObjectRef::Assign,2,rewritten
 0xb63e40,67,Reference::Reference(object),2,rewritten
 0xb63ea0,212,ReferenceField::Load,0,rewritten
-0xb63f80,2169,,7,documented
+0xb63f80,2169,Class::Construct,7,rewritten
 0xb64800,2508,,6,documented
 0xb651d0,2955,,2,documented
 0xb65d60,1316,,1,documented
