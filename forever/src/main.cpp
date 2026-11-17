@@ -3,6 +3,7 @@
 // rewritten game functions in place. Settings: RCT3Forever.ini beside this file; log: RCT3Forever.log.
 #include "forever.h"
 #include "exe.h"
+#include "rewrite/rewrite.h"
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -62,6 +63,48 @@ static DWORD WINAPI reporter(void *) {
     }
 }
 
+// A crash, noted in RCT3Forever.log before the game goes down: what happened and where (the module and offset; in
+// forever.dll, the rewritten function whose code is nearest below), then the game addresses on the stack (the game
+// functions that led there, newest first). Only faults are noted, and only the first few (the game may handle one).
+static LONG CALLBACK crash_note(EXCEPTION_POINTERS *e) {
+    const DWORD code = e->ExceptionRecord->ExceptionCode;
+    if (code != EXCEPTION_ACCESS_VIOLATION && code != EXCEPTION_ILLEGAL_INSTRUCTION && code != EXCEPTION_PRIV_INSTRUCTION &&
+        code != EXCEPTION_INT_DIVIDE_BY_ZERO && code != EXCEPTION_STACK_OVERFLOW && code != EXCEPTION_BREAKPOINT)
+        return EXCEPTION_CONTINUE_SEARCH;
+    static volatile long noted;
+    if (InterlockedIncrement(&noted) > 3) return EXCEPTION_CONTINUE_SEARCH;
+    const uintptr_t at = (uintptr_t)e->ExceptionRecord->ExceptionAddress;
+    HMODULE mod = nullptr;
+    char path[MAX_PATH] = "?";
+    if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)at, &mod))
+        GetModuleFileNameA(mod, path, MAX_PATH);
+    const char *file = strrchr(path, '\\') ? strrchr(path, '\\') + 1 : path;
+    const char *near_rewrite = "";
+    if (mod == g_self) {
+        uintptr_t best = 0;
+        for (const rewrite::Entry *r = rewrite::list(); r; r = r->next)
+            if ((uintptr_t)r->with <= at && (uintptr_t)r->with > best) best = (uintptr_t)r->with, near_rewrite = r->name;
+    }
+    const uintptr_t what = e->ExceptionRecord->NumberParameters >= 2 ? e->ExceptionRecord->ExceptionInformation[1] : 0;
+    flog("CRASH %08lx at %08x (%s+0x%x)%s%s, address %08x", code, (unsigned)at, file, (unsigned)(at - (uintptr_t)mod),
+         *near_rewrite ? ", in or after the rewrite " : "", near_rewrite, (unsigned)what);
+    char chain[400] = "";
+    size_t used = 0;
+    int found = 0;
+    const uint32_t *sp = (const uint32_t *)(uintptr_t)e->ContextRecord->Esp;
+    for (int k = 0; k < 256 && found < 16; k++) {
+        uint32_t v = 0;
+        SIZE_T got = 0;
+        if (!ReadProcessMemory(GetCurrentProcess(), sp + k, &v, 4, &got) || got != 4) break;
+        if (v >= 0x401000 && v < 0xe10000) {
+            used += snprintf(chain + used, sizeof chain - used, " %06x", (unsigned)v);
+            found++;
+        }
+    }
+    flog("CRASH game addresses on the stack:%s", chain);
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
 BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
     if (why == DLL_PROCESS_DETACH && g_self) {
         // the game's own exit work (atexit) has run by now: report the calls made since the last report
@@ -77,6 +120,7 @@ BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
     DeleteFileA(g_log);
     flog("RCT3 Forever %s in pid %lu", FOREVER_VERSION, GetCurrentProcessId());
     if (!known_exe()) return TRUE;
+    AddVectoredExceptionHandler(1, crash_note);
 
     // [Forever] CheatsMenu (or, in a settings file from before the rename, PeepEditor)
     if (setting("Forever", "CheatsMenu", setting("Forever", "PeepEditor", 1))) {
