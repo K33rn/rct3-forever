@@ -617,8 +617,8 @@ static void chained_79e5b0(uint8_t *self) {
 // items}). When the array is full, it is grown first: room doubled (at least 16), new aligned memory, the items copied
 // over (the object, its count and its items read again for each), the old items freed. Then +0xB8 gets the count, the
 // count goes up by one, and the object goes in at its index. Every read is through the global, as the game does.
-static void appended_a2b130(uint8_t *self) {
-    uint8_t *volatile *const owner = (uint8_t * volatile *)0x1342788;
+static void appended(uint8_t *self, uintptr_t global, uint32_t index_at) {
+    uint8_t *volatile *const owner = (uint8_t * volatile *)global;
     const int32_t room = *(volatile int32_t *)(*owner + 0x18);
     if (*(volatile int32_t *)(*owner + 0x1c) >= room) {
         int32_t grown = room + room;
@@ -630,9 +630,21 @@ static void appended_a2b130(uint8_t *self) {
         *(volatile uint32_t *)(*owner + 0x20) = (uint32_t)(uintptr_t)items;
         *(volatile int32_t *)(*owner + 0x18) = grown;
     }
-    *(volatile uint32_t *)(self + 0xb8) = *(volatile uint32_t *)(*owner + 0x1c);
+    *(volatile uint32_t *)(self + index_at) = *(volatile uint32_t *)(*owner + 0x1c);
     ++*(volatile uint32_t *)(*owner + 0x1c);
-    ((volatile uint32_t *)(uintptr_t)*(volatile uint32_t *)(*owner + 0x20))[*(volatile uint32_t *)(self + 0xb8)] = (uint32_t)(uintptr_t)self;
+    ((volatile uint32_t *)(uintptr_t)*(volatile uint32_t *)(*owner + 0x20))[*(volatile uint32_t *)(self + index_at)] = (uint32_t)(uintptr_t)self;
+}
+static void appended_a2b130(uint8_t *self) { appended(self, 0x1342788, 0xb8); }
+// 0xA2A600, its end: the same into the array of the game object 0x134276C points to, its index at +0x44.
+static void appended_a2a600(uint8_t *self) { appended(self, 0x134276c, 0x44); }
+// 0xA189C0, its end: +0xC0 given Random::Advance's signed remainder by 4; +0x6C and +0x70 cleared, +0xD0 set to 2.0 and
+// +0x68 to 0x200.
+static void random_kind_a189c0(uint8_t *self) {
+    *(volatile int32_t *)(self + 0xc0) = (int32_t)((uint32_t(__cdecl *)())0x4751e0)() % 4;
+    *(volatile uint32_t *)(self + 0x6c) = 0;
+    *(volatile uint32_t *)(self + 0x70) = 0;
+    *(volatile uint32_t *)(self + 0xd0) = 0x40000000;
+    *(volatile uint32_t *)(self + 0x68) = 0x200;
 }
 // 0x46D2B0, its end: a colour from three Random::Ran0 draws (the first two stored as floats first, the third used as it
 // is on the FPU), each times the game's constant at 0xF264C0 and rounded to a whole number on the FPU (its rounding mode;
