@@ -8810,7 +8810,7 @@ address,size,name,callers,status
 0x755430,139,Array<8>::SetCapacity,1,rewritten
 0x7554c0,340,,1,documented
 0x755630,34,Object::FreeField,1,rewritten
-0x7557d0,945,,2,documented
+0x7557d0,945,Class::Construct,2,rewritten
 0x755bf0,1402,,2,documented
 0x756170,317,,1,documented
 0x7562b0,663,,1,documented
@@ -9440,7 +9440,7 @@ address,size,name,callers,status
 0x79e260,57,Reference::Interface,6,rewritten
 0x79e460,51,ListNode::Unlink,1,rewritten
 0x79e580,30,DeletingDestructor,1,rewritten
-0x79e5b0,1358,,2,documented
+0x79e5b0,1358,Class::Construct,2,rewritten
 0x79eb70,1231,Guest::MakeRandom,2,rewritten
 0x79f040,1217,,1,documented
 0x79f770,75,,7,documented

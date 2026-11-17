@@ -574,6 +574,37 @@ static void entries_586fa0(uint8_t *self) {
     }
     for (uint32_t at = 0x1fc; at <= 0x208; at += 4) *(volatile uint32_t *)(self + at) = 0xffffffff;
 }
+// A chain of nodes a global points to (each node's first dword the next, none at the end) counted as the game does:
+// with no first next, or none at all, a flag global is cleared. (Each node is read before it is checked, as the game's
+// loop does.)
+static void cleared_if_chain_empty(uintptr_t chain, uintptr_t flag) {
+    const uint32_t *node = *(const uint32_t *volatile *)chain;
+    uint32_t next = *(const volatile uint32_t *)node;
+    int32_t count = 0;
+    if (next && node)
+        do {
+            node = (const uint32_t *)(uintptr_t)*(const volatile uint32_t *)node;
+            next = *(const volatile uint32_t *)node;
+            count++;
+        } while (next && node);
+    if (count <= 0) *(volatile uint32_t *)flag = 0;
+}
+// 0x7557D0, its end: 0x1306508 cleared when the chain 0x10EF7F8 points to is empty; +0x200 set to 0x12FF8A0; the member at
+// +0x530 linked into the list 0x10EF808 points to, just after its head.
+static void chained_7557d0(uint8_t *self) {
+    cleared_if_chain_empty(0x10ef7f8, 0x1306508);
+    *(volatile uint32_t *)(self + 0x200) = 0x12ff8a0;
+    link_before((uint32_t *)(self + 0x530), *(uint32_t *volatile *)0x10ef808);
+}
+// 0x79E5B0, its end: 0x1306C14 cleared when the chain 0x10EFB90 points to is empty; +0x194 cleared, +0x408 set to 3 and
+// +0x200 to 0x12FCF10; the member at +0x534 linked into the list 0x10EFBA0 points to, just after its head.
+static void chained_79e5b0(uint8_t *self) {
+    cleared_if_chain_empty(0x10efb90, 0x1306c14);
+    *(volatile uint32_t *)(self + 0x194) = 0;
+    *(volatile uint32_t *)(self + 0x408) = 3;
+    *(volatile uint32_t *)(self + 0x200) = 0x12fcf10;
+    link_before((uint32_t *)(self + 0x534), *(uint32_t *volatile *)0x10efba0);
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

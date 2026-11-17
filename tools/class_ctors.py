@@ -31,7 +31,10 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x4c29f0: ('lea edi, [esi + 0x9c]', 'entries_cleared_4c29f0'), 0x5940a0: ('cmp dword ptr [esi + 0x1bc], ebx', 'array_emptied_5940a0'),
               0xb7d6a0: ('lea edi, [ebx + 8]', 'reference_emptied_b7d6a0'), 0xa11c30: ('call 0x4751e0', 'random_kind_a11c30'),
               0x72d930: ('mov byte ptr [esi + 0x8b], 2', 'listed_72d930'), 0xae0480: ('push -1', 'member_ae0480'),
-              0x586fa0: ('lea eax, [esi + 0x1ac]', 'entries_586fa0')}
+              0x586fa0: ('lea eax, [esi + 0x1ac]', 'entries_586fa0'), 0x7557d0: ('mov eax, dword ptr [0x10ef7f8]', 'chained_7557d0'),
+              0x79e5b0: ('mov eax, dword ptr [0x10efb90]', 'chained_79e5b0')}
+# (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)
+HAND_CHAINS = {0x7557d0: (0x10ef7f8, 0x1306508), 0x79e5b0: (0x10efb90, 0x1306c14)}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.
@@ -1520,6 +1523,7 @@ member_fns = {}   # the functions the steps call on members and new objects, wit
 done = total = 0
 bases = []   # the constructors built on a parent class's constructor: (address, that base)
 reasons = {}
+done_set = set()
 singles = {}   # (the copies that make a game object if its global holds none: the global and the constructor)
 reason_bytes = {}
 for a, r in sorted(rows.items()):
@@ -1560,6 +1564,7 @@ for a, r in sorted(rows.items()):
         bases.append((a, base_fn, base_n))
     out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{nargs if nargs != 3 else ""}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{tail}>), &g_class_constructs);')
     done += 1
+    done_set.add(a)
     total += n
     for kind, o, v, fn, args in ops:
         if kind == 5:
@@ -1580,6 +1585,9 @@ out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x},
 out.append('// the copies that make a game object when its global holds none (kind 30): copy, global, constructor (the tester stands in for it)')
 out.append('extern const uint32_t class_singletons[];')
 out.append('const uint32_t class_singletons[] = {' + ''.join(f'{a_:#x}, {g_:#x}, {f_:#x}, ' for a_, (g_, f_) in sorted(singles.items())) + '0};')
+out.append('// the copies whose end counts a chain a global points to and clears a flag global: copy, chain, flag (the test gives each a chain)')
+out.append('extern const uint32_t class_chains[];')
+out.append('const uint32_t class_chains[] = {' + ''.join(f'{a_:#x}, {c_:#x}, {f_:#x}, ' for a_, (c_, f_) in sorted(HAND_CHAINS.items()) if a_ in done_set) + '0};')
 out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
 out.append('extern const uint32_t class_ref_setters[];')
 out.append('const uint32_t class_ref_setters[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters)) + '0};')

@@ -627,6 +627,11 @@ static uint32_t __cdecl stub_class_value() {   // (a function taking nothing who
     return arena<uint32_t>(0x4c)[0] * 0x9e3779b1u;
 }
 static uint32_t g_class_random_n;   // (the draws so far in this run)
+// the copy's end counts a chain a global points to and clears a flag global when it is empty (class_chains): the test
+// points the chain's global at a chain of the case's length (arena 0x9400, 16 bytes a node) and notes the flag after
+extern const uint32_t class_chains[];
+static uintptr_t g_class_chain, g_class_chain_flag;
+static uint32_t g_class_chain_saved[2];
 // 0x6C3BE0 (a list of named entries the game fills, made on the stack): {table, entries, room, count} as the case
 // decides (entries or none; room or none; the first entry's name or none)
 // 0x4BF730 (an array of 12-byte entries given a size): noted; the array gets items at arena 0x9300 (the case's values in them)
@@ -6550,6 +6555,7 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x8b48)[0] = r.range(0, 1);   // (the game object of class_singletons there already, or not)
                              arena<uint32_t>(0x8b4c)[0] = r.range(0, 1);   // (and an object in the instance global already, or not)
                              arena<uint32_t>(0x8b50)[0] = r.next();         // (what 0x6C3BE0's list holds)
+                             arena<uint32_t>(0x8b54)[0] = r.range(0, 3);    // (how many nodes follow the first in a class_chains chain)
                              for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9300)[k] = r.next();   // (0x4BF730's items)
                              for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9000)[k] = r.next();   // (and its contents when there)
                              static void *vtable[2] = {nullptr, (void *)stub_object_info};
@@ -6623,6 +6629,12 @@ static std::vector<Test> tests() {
                              // (the object at 0xA000, clear of the handles and lists above: the biggest classes reach +0x1000)
                              for (int k = 0; k < 0x1000 / 4; k++) arena<uint32_t>(0xa000)[k] = arena<uint32_t>(0x100)[k & 0xff];
                              g_class_random_n = 0;
+                             if (g_class_chain) {
+                                 const uint32_t more = arena<uint32_t>(0x8b54)[0];
+                                 for (uint32_t q = 0; q <= more; q++) arena<uint32_t>(0x9400 + 0x10 * q)[0] = q < more ? (uint32_t)(uintptr_t)arena<void>(0x9410 + 0x10 * q) : 0;
+                                 *(volatile uint32_t *)g_class_chain = (uint32_t)(uintptr_t)arena<void>(0x9400);
+                                 *(volatile uint32_t *)g_class_chain_flag = 0x5a5a0000 | more;
+                             }
                              if (g_class_single) *(volatile uint32_t *)g_class_single = arena<uint32_t>(0x8b48)[0] ? (uint32_t)(uintptr_t)arena<void>(0x9000) : 0;
                              void *self = arena<void>(0xa000), *d = (void *)(uintptr_t)a[0], *made = nullptr;
                              typedef uint32_t U;
@@ -6634,6 +6646,7 @@ static std::vector<Test> tests() {
                              case 6: made = ((void *(__thiscall *)(void *, void *, U, U, U, U, U))fn)(self, d, a[1], a[2], a[3], x[0], x[1]); break;
                              default: made = ((void *(__thiscall *)(void *, void *, U, U, U, U, U, U))fn)(self, d, a[1], a[2], a[3], x[0], x[1], x[2]); break;
                              }
+                             if (g_class_chain) arena<uint32_t>(0x84)[0] = *(volatile uint32_t *)g_class_chain_flag;   // (the flag, so the memory check sees it)
                              if (g_class_instance)   // what the instance global was given, as an arena offset, so the memory check sees it
                                  arena<uint32_t>(0x70)[0] = *(uint32_t *)g_class_instance - (uint32_t)(uintptr_t)arena<void>(0);
                              for (int i = 0; i < 4; i++)   // what the end left in them (a count goes up by one)
@@ -6662,6 +6675,12 @@ static std::vector<Test> tests() {
         g_class_args = 3;
         g_class_instance = 0;
         g_class_single = 0;
+        g_class_chain = g_class_chain_flag = 0;
+        for (int k = 0; class_chains[k]; k += 3)
+            if (class_chains[k] == e->at) {
+                g_class_chain = class_chains[k + 1], g_class_chain_flag = class_chains[k + 2];
+                g_class_chain_saved[0] = *(volatile uint32_t *)g_class_chain, g_class_chain_saved[1] = *(volatile uint32_t *)g_class_chain_flag;
+            }
         uint32_t single_fn = 0;
         for (int k = 0; class_singletons[k]; k += 3)
             if (class_singletons[k] == e->at) g_class_single = class_singletons[k + 1], single_fn = class_singletons[k + 2];
@@ -6720,6 +6739,7 @@ static std::vector<Test> tests() {
     class_construct.finish = [](const rewrite::Entry *) {
         unstub_many();
         if (g_class_single) *(volatile uint32_t *)g_class_single = g_class_single_saved;
+        if (g_class_chain) *(volatile uint32_t *)g_class_chain = g_class_chain_saved[0], *(volatile uint32_t *)g_class_chain_flag = g_class_chain_saved[1];
         memcpy((void *)0x10f1cf8, g_weather_defaults, sizeof g_weather_defaults);
         *(uint32_t *)0x133a274 = g_water_table;
         *(uint32_t *)0x13d0e04 = g_resource_manager;
