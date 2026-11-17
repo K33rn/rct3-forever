@@ -634,6 +634,28 @@ static void appended_a2b130(uint8_t *self) {
     ++*(volatile uint32_t *)(*owner + 0x1c);
     ((volatile uint32_t *)(uintptr_t)*(volatile uint32_t *)(*owner + 0x20))[*(volatile uint32_t *)(self + 0xb8)] = (uint32_t)(uintptr_t)self;
 }
+// 0x46D2B0, its end: a colour from three Random::Ran0 draws (the first two stored as floats first, the third used as it
+// is on the FPU), each times the game's constant at 0xF264C0 and rounded to a whole number on the FPU (its rounding mode;
+// the low half of the 64-bit result): {0xFF, third, second, first} from the top byte down, at +0x74. Then the member at
+// +0x60 linked in at the end of the list 0x10EC998 points to, just before its head.
+static uint32_t rounded_scaled(long double value) {
+    int64_t whole;
+    __asm__("fistpll %0" : "=m"(whole) : "t"(value * (long double)*(volatile const float *)0xf264c0) : "st");
+    return (uint32_t)whole;
+}
+static void colour_listed_46d2b0(uint8_t *self) {
+    const float first = (float)ran0();
+    const float second = (float)ran0();
+    uint32_t colour = (rounded_scaled(ran0()) | 0xffffff00) << 8;
+    colour = (colour | rounded_scaled(second)) << 8;
+    colour |= rounded_scaled(first);
+    *(volatile uint32_t *)(self + 0x74) = colour;
+    uint32_t *const head = *(uint32_t *volatile *)0x10ec998, *const node = (uint32_t *)(self + 0x60);
+    node[1] = head[1];
+    ((uint32_t *)(uintptr_t)head[1])[0] = (uint32_t)(uintptr_t)node;
+    node[0] = (uint32_t)(uintptr_t)head;
+    head[1] = (uint32_t)(uintptr_t)node;
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

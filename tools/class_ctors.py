@@ -33,7 +33,8 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x72d930: ('mov byte ptr [esi + 0x8b], 2', 'listed_72d930'), 0xae0480: ('push -1', 'member_ae0480'),
               0x586fa0: ('lea eax, [esi + 0x1ac]', 'entries_586fa0'), 0x7557d0: ('mov eax, dword ptr [0x10ef7f8]', 'chained_7557d0'),
               0x79e5b0: ('mov eax, dword ptr [0x10efb90]', 'chained_79e5b0'), 0xb17c70: ('lea eax, [edi + 8]', 'references_emptied_b17c70'),
-              0x992b60: ('push 0x14', 'member_992b60'), 0xa2b130: ('mov eax, dword ptr [0x1342788]', 'appended_a2b130')}
+              0x992b60: ('push 0x14', 'member_992b60'), 0xa2b130: ('mov eax, dword ptr [0x1342788]', 'appended_a2b130'),
+              0x46d2b0: ('call 0x475180', 'colour_listed_46d2b0')}
 # (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
 HAND_ARRAYS = {0xa2b130: 0x1342788}
 # (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)

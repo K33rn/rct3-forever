@@ -1312,7 +1312,7 @@ address,size,name,callers,status
 0x46d180,30,DeletingDestructor,2,rewritten
 0x46d1b0,126,ObjectRef::Assign,6,rewritten
 0x46d230,92,Managed::Destroy46D230,1,rewritten
-0x46d2b0,772,,2,documented
+0x46d2b0,772,Class::Construct,2,rewritten
 0x46d630,25,Object::GetRef,16,rewritten
 0x46d650,213,,1,documented
 0x46d730,133,Text::NumberedName,2,rewritten
