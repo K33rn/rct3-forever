@@ -11292,7 +11292,7 @@ address,size,name,callers,status
 0x845e40,35,,7,documented
 0x845e90,75,,2,documented
 0x845ee0,30,DeletingDestructor,1,rewritten
-0x845f40,440,,7,documented
+0x845f40,440,Class::Construct,7,rewritten
 0x846160,30,DeletingDestructor,3,rewritten
 0x846180,102,Factory::Create,1,rewritten
 0x846370,128,,1,documented

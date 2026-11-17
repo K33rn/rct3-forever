@@ -142,6 +142,8 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 23) *(uint32_t *)(self + op.off) = ((uint32_t(__cdecl *)())(uintptr_t)op.fn)();   // what a function taking nothing gives
         else if (op.kind == 32)   // a constant into what the member at off points to, at fn
             *(volatile uint32_t *)(uintptr_t)(*(volatile uint32_t *)(self + op.off) + op.fn) = op.value;
+        else if (op.kind == 36)   // what a fastcall gives for value in ecx (it never reads edx)
+            *(volatile uint32_t *)(self + op.off) = ((uint32_t(__fastcall *)(uint32_t))(uintptr_t)op.fn)(op.value);
         else if (op.kind == 31)   // and its signed remainder by value (the sign of what it gave)
             *(int32_t *)(self + op.off) = (int32_t)((uint32_t(__cdecl *)())(uintptr_t)op.fn)() % (int32_t)op.value;
         else if (op.kind == 24) *(void **)(self + op.off) = ((void *(__cdecl *)(uint32_t))(uintptr_t)op.fn)(op.value);   // aligned memory

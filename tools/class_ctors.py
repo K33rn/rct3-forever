@@ -97,6 +97,17 @@ def leaves_ecx(fn):
     return False
 
 
+def edx_unused(fn):
+    # a function (its listed size) that never names edx and makes no calls: it can be called with whatever edx holds
+    n = int(rows[fn]['size']) if fn in rows else 0
+    if not n:
+        return False
+    for x in md.disasm(bytes(img[fn - BASE:fn - BASE + n]), fn):
+        if x.mnemonic in ('call', 'cdq', 'mul', 'div', 'idiv') or (x.mnemonic == 'imul' and ',' not in x.op_str) or re.search(r'\b(edx|dx|dl|dh)\b', x.op_str):
+            return False
+    return True
+
+
 def returns_this(fn):
     # whether a function's first ret gives back what it got in ecx (mov eax, ecx, directly or through a register kept since)
     holds = {'ecx'}
@@ -1260,6 +1271,14 @@ def parse(a, n):
             # the compiler's array constructor (eh_vector_constructor_iterator, stdcall): array, size, count, ctor, dtor
             ops.append((11, 0, 0, 0xddcf99, pushed[::-1]))
             pushed = []
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and not pushed and (regs.get('ecx') or ('',))[0] == 'const' and \
+                ret_args(num(m.group(1))) == 0 and edx_unused(num(m.group(1))) and (st := result_store(k)):
+            # a member set to what a fastcall gives for a constant in ecx (kind 36); the store taken out of the steps
+            q_, off_ = st
+            ops.append((36, off_, regs['ecx'][1], num(m.group(1)), []))
+            del t[q_], ins[q_]
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and (regs.get('ecx') or ('',))[0] == 'global' and \
