@@ -833,7 +833,7 @@ def parse(a, n):
                 regs.pop(x, None)
                 k += 2
                 continue
-        if re.fullmatch(r'(mov al, byte ptr|cmp byte ptr) \[' + REG + r' \+ 4\].*', s):
+        if re.fullmatch(r'(mov [a-d]l, byte ptr|cmp byte ptr) \[' + REG + r' \+ 4\].*', s):
             break
         if not pushed and not pending and (rs := reference_setter(k)):
             # a reference made on the stack, given with a name and a value to a member's function, let go (kind 25)

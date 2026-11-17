@@ -10133,7 +10133,7 @@ address,size,name,callers,status
 0x7ea7a0,831,,1,documented
 0x7eaaf0,30,DeletingDestructor,2,rewritten
 0x7eab10,123,MEMBER_DTOR,1,rewritten
-0x7eac20,2016,,9,documented
+0x7eac20,2016,Class::Construct,9,rewritten
 0x7eb450,308,,23,documented
 0x7eb590,825,,9,documented
 0x7eb8d0,94,,2,documented
@@ -12157,7 +12157,7 @@ address,size,name,callers,status
 0x8b44a0,36,Slot::Release818F80,1,rewritten
 0x8b4500,36,,1,documented
 0x8b4530,303,,2,documented
-0x8b4680,632,,2,documented
+0x8b4680,632,Class::Construct,2,rewritten
 0x8b4930,146,,1,documented
 0x8b49d0,25,Registry::Join786D20,1,rewritten
 0x8b49f0,26,Object::Forward2,1,rewritten
@@ -13855,7 +13855,7 @@ address,size,name,callers,status
 0x9839d0,112,,2,documented
 0x983b00,288,,1,documented
 0x983c20,68,,0,documented
-0x983c70,892,,2,documented
+0x983c70,892,Class::Construct,2,rewritten
 0x984000,25,,1,documented
 0x984040,177,,1,documented
 0x984100,266,,1,documented
