@@ -627,6 +627,19 @@ static uint32_t __cdecl stub_class_value() {   // (a function taking nothing who
     return arena<uint32_t>(0x4c)[0] * 0x9e3779b1u;
 }
 static uint32_t g_class_random_n;   // (the draws so far in this run)
+// 0x6C3BE0 (a list of named entries the game fills, made on the stack): {table, entries, room, count} as the case
+// decides (entries or none; room or none; the first entry's name or none)
+static void *__thiscall stub_class_name_list(uint32_t *list) {
+    record(0x9e, nullptr);
+    const uint32_t c = arena<uint32_t>(0x8b50)[0];
+    list[0] = 0xf622f0;
+    list[1] = c & 3 ? (uint32_t)(uintptr_t)arena<void>(0x9200) : 0;
+    list[2] = c & 2 ? 1 + (c >> 8) % 9 : 0;
+    list[3] = list[2];
+    arena<uint32_t>(0x9200)[0] = (uint32_t)(uintptr_t)arena<void>(0x9240);
+    arena<uint32_t>(0x9240)[1] = c & 4 ? (uint32_t)(uintptr_t)arena<void>(0x9280) : 0;
+    return list;
+}
 // an object the instance global holds already: its table's slot 0 (the deleting destructor) notes what it was given
 static void __thiscall stub_class_old_delete(void *self, uint32_t flag) { record(0x9d, self); record(0x9d, (void *)(uintptr_t)flag); }
 static void *const g_class_old_table[2] = {(void *)stub_class_old_delete, (void *)stub_class_old_delete};
@@ -6530,6 +6543,7 @@ static std::vector<Test> tests() {
                              for (int k = 0; k < 0x2000 / 4; k++) arena<uint32_t>(0x2000)[k] = r.next();   // (new memory holds what was there)
                              arena<uint32_t>(0x8b48)[0] = r.range(0, 1);   // (the game object of class_singletons there already, or not)
                              arena<uint32_t>(0x8b4c)[0] = r.range(0, 1);   // (and an object in the instance global already, or not)
+                             arena<uint32_t>(0x8b50)[0] = r.next();         // (what 0x6C3BE0's list holds)
                              for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9000)[k] = r.next();   // (and its contents when there)
                              static void *vtable[2] = {nullptr, (void *)stub_object_info};
                              uint8_t *description = arena<uint8_t>(0x4000);
@@ -6683,7 +6697,7 @@ static std::vector<Test> tests() {
             {0x403f30, (void *)stub_class_named_in}, {0xbcfb10, (void *)stub_class_text_c}, {0xbdf160, (void *)stub_class_lookup},
             {0xbdf1a0, (void *)stub_class_lookup2}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
             {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list},
-            {0x63e1c0, (void *)stub_class_given}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
+            {0x63e1c0, (void *)stub_class_given}, {0x6c3be0, (void *)stub_class_name_list}, {0x6f5f30, (void *)stub_class_member1}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;

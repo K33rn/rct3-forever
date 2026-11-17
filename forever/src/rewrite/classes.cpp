@@ -448,6 +448,33 @@ static void random_values_76b880(uint8_t *self) {
     if (ran0() < game_float(0xf270b4))
         *(volatile float *)(self + 0x4b0) = (float)(ran0() + game_float((uintptr_t)(self + 0x4b0)));
 }
+// 0x6F5FD0, its end: a list made on the stack (0x6C3BE0: {table, entries, room, count}, filled by the game). When it has
+// room, the counted text at +0x11C is let go (its count down by one; at none, its characters and itself freed) and
+// replaced by a text of the first entry's name (+4; 16 new bytes made from it, none without memory), or the shared empty
+// text when the name is none. Then the object array at +0x114 resized (0x6F5F30, given 1), and the list's entries freed.
+static void list_name_6f5fd0(uint8_t *self) {
+    uint32_t list[4];
+    ((void *(__thiscall *)(void *))0x6c3be0)(list);
+    if (*(volatile uint32_t *)&list[2]) {
+        const uintptr_t name = *(volatile uint32_t *)(uintptr_t)(**(volatile uint32_t *volatile *)&list[1] + 4);
+        int32_t *volatile *const member = (int32_t * volatile *)(self + 0x11c);
+        --**member;
+        int32_t *text = *member;   // (read again, as the game does)
+        if (*(volatile int32_t *)text == 0 && text) {
+            ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)(uint32_t)text[3]);
+            ((void(__cdecl *)(void *))0xbce000)(text);
+        }
+        void *made;
+        if (name) {
+            void *memory = memory_alloc(0x10);
+            made = memory ? ((void *(__thiscall *)(void *, uintptr_t))0xbcf850)(memory, name) : nullptr;
+        } else
+            made = ((void *(__fastcall *)(uint32_t))0xbd0490)(1);
+        *(void *volatile *)(self + 0x11c) = made;
+    }
+    ((void(__thiscall *)(void *, uint32_t))0x6f5f30)(self + 0x114, 1);
+    if (const uint32_t entries = *(volatile uint32_t *)&list[1]) ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)entries);
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

@@ -7847,7 +7847,7 @@ address,size,name,callers,status
 0x6f59e0,106,Factory::IntoField,1,rewritten
 0x6f5a50,1230,,1,documented
 0x6f5f30,155,ObjectArray::Resize,4,rewritten
-0x6f5fd0,4339,,2,documented
+0x6f5fd0,4339,Class::Construct,2,rewritten
 0x6f7140,487,,1,documented
 0x6f7330,644,,1,documented
 0x6f75c0,311,,3,documented
