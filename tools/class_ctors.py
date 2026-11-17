@@ -1176,6 +1176,23 @@ def parse(a, n):
             k = j + 4
             continue
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and not pushed and ret_args(num(m.group(1))) == 0 and leaves_ecx(num(m.group(1))) and \
+                k + 4 < len(t) and t[k + 1].strip() == 'cdq' and (md_ := re.fullmatch(r'mov ' + REG + r', (0x[0-9a-f]+|\d+)', t[k + 2])) and \
+                t[k + 3] == 'idiv ' + md_.group(1) and 1 < num(md_.group(2)) < 0x80000000 and \
+                (rs_ := next((q_ for q_ in range(k + 4, min(k + 12, len(t))) if re.fullmatch(r'mov dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\], edx', t[q_])), None)) and \
+                not any(re.search(r'\b(edx|dx|dl|dh)\b', u) or u.startswith(('call', 'j', 'ret', 'cdq', 'idiv', 'div', 'mul', 'imul')) for u in t[k + 4:rs_]) and \
+                (mr_ := re.fullmatch(r'mov dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\], edx', t[rs_])) and regs.get(mr_.group(1)) and regs[mr_.group(1)][0] == 'this' and \
+                not any(re.match(r'\w+ ' + mr_.group(1) + r'\b', u) and not u.startswith(('cmp', 'test', 'push')) for u in t[k + 4:rs_]):
+            # the same, its signed remainder by a constant through cdq; idiv (the remainder's store a few lines on, nothing
+            # between touching edx: taken out of the steps; the quotient in eax is left unknown)
+            ops.append((31, regs[mr_.group(1)][1] + num(mr_.group(2)), num(md_.group(2)), num(m.group(1)), []))
+            value_calls.add(num(m.group(1)))
+            del t[rs_], ins[rs_]
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+            regs[md_.group(1)] = ('const', num(md_.group(2)))
+            k += 4
+            continue
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and not pushed and ret_args(num(m.group(1))) == 0 and leaves_ecx(num(m.group(1))) and \
                 k + 6 < len(t) and t[k + 1] == 'and eax, 0x80000001' and (mj := re.fullmatch(r'jns (0x[0-9a-f]+)', t[k + 2])) and \
                 t[k + 3:k + 6] == ['dec eax', 'or eax, 0xfffffffe', 'inc eax'] and ins[k + 6].address == num(mj.group(1)) and \
                 (st := result_store(k + 5)):
