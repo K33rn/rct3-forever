@@ -115,7 +115,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
     if (BASE_N == 4)   // (a parent class's constructor taking one more value, a constant)
         ((void(__thiscall *)(void *, void *, uint32_t, uint32_t, uint32_t))BASE)(self, description ? description : *(uint8_t **)DESCRIPTION, a, b, BASE_X >> 31 ? given[BASE_X & 0xff] : BASE_X);
     else
-        ((void(__thiscall *)(void *, void *, uint32_t, uint32_t))BASE)(self, description ? description : *(uint8_t **)DESCRIPTION, a, b);   // (Class::Construct, or a parent class's constructor)
+        ((void(__thiscall *)(void *, void *, uint32_t, uint32_t))BASE)(self, BASE_N & 0x100 || description ? description : *(uint8_t **)DESCRIPTION, a, b);   // (BASE_N bit 8: as given)   // (Class::Construct, or a parent class's constructor)
     uint32_t k = 0;
     for (int pass = 0; pass < 2; pass++) {
     for (; k < OP_COUNT; k++) {

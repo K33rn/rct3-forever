@@ -721,6 +721,28 @@ def parse(a, n):
             raise Reject('base fourth value %s' % (base[3:],))
         base_x = base[3][1] if base[3][0] == 'const' else 0x80000000 | base[3][1]   # (bit 31: the constructor's argument n)
         base = base[:3]
+    raw = False
+    if desc is None and base_n == 3 and base == [('arg', 1), ('arg', 2), ('arg', 3)]:
+        # the description given to the base as it came (none stays none); the class's own is chosen later, for the
+        # registration: cmp R, 0; jne GIVEN; mov R, [default] (the first such after the base call)
+        for q in range(kb + 1, len(t) - 3):
+            mc = re.fullmatch(r'(?:cmp ' + REG + r', ' + REG + r'|test ' + REG + ', ' + REG + ')', t[q])
+            if not mc:
+                continue
+            r = mc.group(1) or mc.group(3)
+            j = q + 1
+            while j < len(t) and (re.fullmatch(STATE, t[j]) or re.fullmatch(r'mov (?:dword|byte) ptr \[(?:esi|edi|ebp|ebx)(?: \+ (?:0x[0-9a-f]+|\d+))?\], .*', t[j]) or
+                                  (re.fullmatch(r'mov (e[a-d]x|e[sd]i|ebp|ebx), (?:0x[0-9a-f]+|\d+)', t[j]) and not t[j].startswith('mov ' + r + ','))):
+                j += 1
+            mj = re.fullmatch(r'jne (0x[0-9a-f]+)', t[j]) if j < len(t) else None
+            md_ = re.fullmatch(r'mov ' + r + r', dword ptr \[(0x1[0-9a-f]{6})\]', t[j + 1]) if mj else None
+            if md_:
+                desc = num(md_.group(1))
+                break
+        if desc is None:
+            raise Reject('base raw description')
+        raw = True
+        base = [('desc',), ('arg', 2), ('arg', 3)]
     if desc is None or len(pushed) < base_n or base not in ([('desc',), ('arg', 2), ('arg', 3)], [('desc',), ('arg2at', 0), ('arg2at', 4)]):
         raise Reject('base arguments %s' % pushed[-3:])
     pair = base[1][0] == 'arg2at'
@@ -1425,10 +1447,18 @@ def parse(a, n):
             if (mm := re.fullmatch(r'mov ' + r + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', rest[q - 5])) and num(mm.group(1)) - depth in kept and regs.get(base) == ('this', 0) and not written(base, rest[:q - 4]):
                 names.append((num(nm.group(1)), kept[num(mm.group(1)) - depth][1]))
                 continue
+            # (or the object itself read back from the local it was kept in, into the register subtracted)
+            if (mm := re.fullmatch(r'mov ' + base + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', rest[q - 5])) and kept.get(num(mm.group(1)) - depth) == ('this', 0) and \
+                    regs.get(r) and regs[r][0] == 'this' and not written(r, rest[:q - 4]):
+                names.append((num(nm.group(1)), regs[r][1]))
+                continue
             # the register must still hold what the member set-up left in it: nothing in between writes it
             if regs.get(base) != ('this', 0) or not regs.get(r) or regs[r][0] != 'this' or written(r, rest[:q - 4]) or written(base, rest[:q - 4]):
                 raise Reject('name offset')
             value = regs[r][1]
+        elif (m := re.fullmatch(r'push ' + REG, rest[q - 3])) and (ms := re.fullmatch(r'sub ' + m.group(1) + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', rest[q - 4])) and \
+                kept.get(num(ms.group(1)) - depth) == ('this', 0) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'this' and not written(m.group(1), rest[:q - 4]):
+            value = regs[m.group(1)][1]   # (the object subtracted as read back from the local it was kept in)
         elif (m := re.fullmatch(r'push ' + REG, rest[q - 3])) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'const' and not written(m.group(1), rest[:q - 3]):
             value = regs[m.group(1)][1]
         else:
@@ -1651,7 +1681,7 @@ def parse(a, n):
             raise Reject('end replaced')
         instance |= 1   # (bit 0: the object there before deleted first)
     tail_of = (instance, link, count, after) if (instance or link or count or after) else None
-    return desc, index, ops, fields, names, nargs, pair, tail_of, base_fn, base_n, base_x
+    return desc, index, ops, fields, names, nargs, pair, tail_of, base_fn, base_n | (0x100 if raw else 0), base_x
 
 
 out = ['// Saved classes\' constructors taken over by class_construct (classes.cpp); written by tools/class_ctors.py.']
@@ -1693,12 +1723,12 @@ for a, r in sorted(rows.items()):
         link = link or [0, -1, 0]
         out.append(f'static const ClassTail class_{a:x}_tail = {{{instance:#x}, {link[0]:#x}, {link[1]}, {link[2]:#x}, {count:#x}' + (f', {after}' if after else '') + '};')
         tail += f', &class_{a:x}_tail'
-    if base_fn != 0x800a80:   # (another base: the parameters before it written out)
+    if base_fn != 0x800a80 or base_n & 0x100:   # (another base, or the description given as it came: the parameters before it written out)
         if ', true' not in tail and ', false' not in tail:
             tail = (tail or ', nullptr, 0') + ', false'
         if '_tail' not in tail:
             tail += ', nullptr'
-        tail += f', {base_fn:#x}' + (f', 4, {base_x:#x}' if base_n == 4 else '')
+        tail += f', {base_fn:#x}' + (f', 4, {base_x:#x}' if base_n == 4 else f', {base_n:#x}' if base_n & 0x100 else '')
         bases.append((a, base_fn, base_n))
     out.append(f'REWRITE("Class::Construct", {a:#x}, class_{a:x}_original, (&class_construct{nargs if nargs != 3 else ""}<{desc:#x}, {index:#x}, class_{a:x}_ops, {len(ops)}, class_{a:x}_fields, {len(fields)}{tail}>), &g_class_constructs);')
     done += 1

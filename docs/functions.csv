@@ -2435,7 +2435,7 @@ address,size,name,callers,status
 0x4c3eb0,461,,4,documented
 0x4c4110,48,QueryInterface,4,rewritten
 0x4c4220,83,,9,documented
-0x4c43c0,1154,,6,documented
+0x4c43c0,1154,Class::Construct,6,rewritten
 0x4c48d0,147,,16,documented
 0x4c4970,105,Factory::Create,1,rewritten
 0x4c49e0,30,DeletingDestructor,4,rewritten
