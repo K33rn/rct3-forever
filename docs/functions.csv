@@ -17369,7 +17369,7 @@ address,size,name,callers,status
 0xaf1290,457,,2,documented
 0xaf1460,1113,,1,documented
 0xaf18c0,252,,2,documented
-0xaf19c0,911,,3,documented
+0xaf19c0,911,Class::Construct,3,rewritten
 0xaf1da0,266,,1,documented
 0xaf1eb0,123,Part::ResetA39F80,1,rewritten
 0xaf1f30,224,,1,documented

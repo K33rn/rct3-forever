@@ -36,7 +36,8 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x992b60: ('push 0x14', 'member_992b60'), 0xa2b130: ('mov eax, dword ptr [0x1342788]', 'appended_a2b130'),
               0x46d2b0: ('call 0x475180', 'colour_listed_46d2b0'), 0xa2a600: ('mov eax, dword ptr [0x134276c]', 'appended_a2a600'),
               0xa189c0: ('call 0x4751e0', 'random_kind_a189c0'), 0x6e6530: ('cmp dword ptr [esi + 0x88], ebx', 'cleared_6e6530'),
-              0x7977f0: ('mov eax, dword ptr [0x10ef9d0]', 'chained_7977f0'), 0xa0a650: ('mov dword ptr [esi + 0xb8], eax', 'registered_a0a650')}
+              0x7977f0: ('mov eax, dword ptr [0x10ef9d0]', 'chained_7977f0'), 0xa0a650: ('mov dword ptr [esi + 0xb8], eax', 'registered_a0a650'),
+              0xaf19c0: ('mov edx, dword ptr [0x13ce5c0]', 'listed_af19c0')}
 # (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
 HAND_ARRAYS = {0xa2b130: 0x1342788, 0xa2a600: 0x134276c}
 # (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)
@@ -1361,6 +1362,16 @@ def parse(a, n):
             regs['e' + ms_.group(1) + 'x'] = ('argnz', regs['e' + m.group(1) + 'x'][1])   # (only its low byte: whether the argument's is not 0)
             k += 2
             continue
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'\]', s)) and (regs.get(m.group(2)) or ('',))[0] == 'arg' and \
+                regs[m.group(2)][1] not in dirty and k + 2 < len(t) and \
+                (ms_ := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + m.group(1), t[k + 1])) and \
+                regs.get(ms_.group(1)) and regs[ms_.group(1)][0] == 'this' and t[k + 2] == 'inc dword ptr [%s]' % m.group(1):
+            # a counted text an argument points to put in a member, its count raised (kind 40)
+            ops.append((40, regs[ms_.group(1)][1] + num(ms_.group(2) or '0'), regs[m.group(2)][1], 0, []))
+            text_args.setdefault(a, set()).add(regs[m.group(2)][1])
+            regs.pop(m.group(1), None)
+            k += 3
+            continue
         elif ins[k].mnemonic == 'pop' and k + 1 < len(t):
             pass   # a register given back early
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r'\]', s)) and m.group(1) == m.group(2):
@@ -1623,6 +1634,7 @@ done = total = 0
 bases = []   # the constructors built on a parent class's constructor: (address, that base)
 reasons = {}
 done_set = set()
+text_args = {}   # (the copies given counted texts through arguments: the arguments' numbers)
 singles = {}   # (the copies that make a game object if its global holds none: the global and the constructor)
 reason_bytes = {}
 for a, r in sorted(rows.items()):
@@ -1637,6 +1649,7 @@ for a, r in sorted(rows.items()):
     except (Reject, StopIteration, AttributeError, ValueError) as e:
         key = str(e)[:70]
         singles.pop(a, None)
+        text_args.pop(a, None)
         if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e, '(near %#x)' % AT[0])
         reasons[key] = reasons.get(key, 0) + 1
         reason_bytes[key] = reason_bytes.get(key, 0) + n
@@ -1696,6 +1709,9 @@ out.append('// the copies whose end raises a game count (doing something the fir
 out.append('extern const uint32_t class_counts[];')
 out.append('const uint32_t class_counts[] = {' + ''.join(f'{a_:#x}, {g_:#x}, ' for a_, g_ in sorted(HAND_COUNTS.items()) if a_ in done_set) + '0};')
 out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
+out.append('// the copies given counted texts through arguments (kind 40): copy, a mask of the arguments (the test points each at a holder of a text)')
+out.append('extern const uint32_t class_text_args[];')
+out.append('const uint32_t class_text_args[] = {' + ''.join(f'{a_:#x}, {sum(1 << n for n in ns):#x}, ' for a_, ns in sorted(text_args.items())) + '0};')
 out.append('extern const uint32_t class_ref_setters2[];')
 out.append('const uint32_t class_ref_setters2[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters2)) + '0};')
 out.append('extern const uint32_t class_ref_setters[];')

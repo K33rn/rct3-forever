@@ -634,7 +634,9 @@ static uintptr_t g_class_chain, g_class_chain_flag;
 // and one adding the object to a game object's array (class_owner_arrays): the global points at arena 0x9500, an array of
 // the case's room and count (full or not) with items at 0x9600
 extern const uint32_t class_owner_arrays[];
-extern const uint32_t class_counts[];   // (and one raising a game count: given 0 or not by the case, noted after)
+extern const uint32_t class_counts[];
+extern const uint32_t class_text_args[];   // (the copies given counted texts through arguments: each points at a holder)
+static uint32_t g_class_text_args;   // (and one raising a game count: given 0 or not by the case, noted after)
 static uintptr_t g_class_count;
 static uint32_t g_class_count_saved;
 static uintptr_t g_class_owner;
@@ -6571,6 +6573,7 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x8b50)[0] = r.next();         // (what 0x6C3BE0's list holds)
                              arena<uint32_t>(0x8b54)[0] = r.range(0, 3);    // (how many nodes follow the first in a class_chains chain)
                              arena<uint32_t>(0x8b60)[0] = r.range(0, 1) ? r.range(1, 5) : 0;   // (a class_counts count)
+                             arena<uint32_t>(0x8b64)[0] = r.next();   // (the counts of class_text_args texts)
                              arena<uint32_t>(0x8b58)[0] = r.range(0, 20);   // (a class_owner_arrays array's room, and its count: full half the time)
                              arena<uint32_t>(0x8b58)[1] = r.range(0, 1) ? arena<uint32_t>(0x8b58)[0] : r.range(0, arena<uint32_t>(0x8b58)[0]);
                              for (int k = 0; k < 0x80 / 4; k++) arena<uint32_t>(0x9600)[k] = r.next();
@@ -6647,6 +6650,13 @@ static std::vector<Test> tests() {
                              // (the object at 0xA000, clear of the handles and lists above: the biggest classes reach +0x1000)
                              for (int k = 0; k < 0x1000 / 4; k++) arena<uint32_t>(0xa000)[k] = arena<uint32_t>(0x100)[k & 0xff];
                              g_class_random_n = 0;
+                             for (uint32_t n = 2; n <= 7; n++)
+                                 if (g_class_text_args >> n & 1) {
+                                     uint32_t *holder = arena<uint32_t>(0x9800 + 0x20 * n), *text = arena<uint32_t>(0x9810 + 0x20 * n);
+                                     holder[0] = (uint32_t)(uintptr_t)text;
+                                     text[0] = 1 + arena<uint32_t>(0x8b64)[0] % 5;
+                                     (n >= 5 ? x[n - 5] : a[n - 1]) = (uint32_t)(uintptr_t)holder;
+                                 }
                              if (g_class_count) *(volatile uint32_t *)g_class_count = arena<uint32_t>(0x8b60)[0];
                              if (g_class_owner) {
                                  arena<uint32_t>(0x9500)[0x18 / 4] = arena<uint32_t>(0x8b58)[0];
@@ -6704,6 +6714,9 @@ static std::vector<Test> tests() {
         g_class_chain = g_class_chain_flag = 0;
         g_class_owner = 0;
         g_class_count = 0;
+        g_class_text_args = 0;
+        for (int k = 0; class_text_args[k]; k += 2)
+            if (class_text_args[k] == e->at) g_class_text_args = class_text_args[k + 1];
         for (int k = 0; class_counts[k]; k += 2)
             if (class_counts[k] == e->at) g_class_count = class_counts[k + 1], g_class_count_saved = *(volatile uint32_t *)g_class_count;
         for (int k = 0; class_owner_arrays[k]; k += 2)

@@ -136,6 +136,11 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 33) self[op.off] = (uint8_t)given[op.value] != 0;   // whether it is not 0
         else if (op.kind == 38) *(uint32_t *)(self + op.off) = (uint8_t)given[op.value];   // or a dword given it, zero-extended
         else if (op.kind == 37) *(volatile uint32_t *)(self + op.off) |= op.value;   // a member with bits set
+        else if (op.kind == 40) {   // the counted text argument value points to put in the member, its count raised
+            uint32_t *const text = *(uint32_t *volatile *)(uintptr_t)given[op.value];
+            *(uint32_t *volatile *)(self + op.off) = text;
+            ++*(volatile uint32_t *)text;
+        }
         else if (op.kind == 39) self[op.off] = *(volatile uint32_t *)(uintptr_t)op.value != 0;   // whether a global is not 0
         else if (op.kind == 13) (*(uint32_t **)(self + op.off))[*(uint32_t *)(self + op.off + 4)] = op.value;
         else if (op.kind == 18) *(uint32_t *)(self + op.off) = *(uint32_t *)(self + op.value);
@@ -710,6 +715,15 @@ static void registered_a0a650(uint8_t *self) {
     for (const uint16_t at : zeros) *(volatile uint32_t *)(self + at) = 0;
     for (const uint16_t at : ones) *(volatile uint32_t *)(self + at) = 0x3f800000;
     ((void(__thiscall *)(void *, void *))0xa0ddf0)(*(void *volatile *)0x13422c0, self);
+}
+// 0xAF19C0, its end: the member at +0xB0 linked in at the end of the list whose head the game object 0x13CE5C0 holds
+// points to (just before that head).
+static void listed_af19c0(uint8_t *self) {
+    uint32_t *const head = **(uint32_t **volatile *)0x13ce5c0, *const node = (uint32_t *)(self + 0xb0);
+    node[1] = head[1];
+    ((uint32_t *)(uintptr_t)head[1])[0] = (uint32_t)(uintptr_t)node;
+    node[0] = (uint32_t)(uintptr_t)head;
+    head[1] = (uint32_t)(uintptr_t)node;
 }
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
