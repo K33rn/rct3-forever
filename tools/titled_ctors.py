@@ -185,6 +185,15 @@ def ebp_frame_args(t, ins):
     return out
 
 
+# Stretches of the tail written by hand in titled.cpp (step 103): the copy -> (first instruction's address, the address
+# reading goes on at, the function's name, the registers it is given). Mostly loops counted at run time.
+TITLED_HANDS = {0x9a0b90: [(0x9a2319, 0x9a23da, 'texts_listed_9a0b90', ['edi'])]}
+TITLED_HAND_NAMES = ['texts_listed_9a0b90']
+# (the arrays of counted texts the hand-written stretches use in children: (the window's member holding the child, the
+# array's place in it, elements), for the test)
+TITLED_HAND_ARRAYS = {0x9a0b90: [(0x114, 0x2cc, 8)]}   # (their numbers, as titled.cpp's titled_hand switch has them)
+
+
 def parse(a, n):
     if a in LEFT_OUT:
         raise Reject('left out: ' + LEFT_OUT[a])
@@ -592,8 +601,8 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90, 92, 93) or o[0] == 10 and o[3] == 0xbcf850 or
-                                                  o[0] == 20 and (o[3] in (0x41cb90, 0x4040f0, 0xbd1940) or o[2] & 4) or o[0] == 75 and o[4][0][0] != 'self' or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71) and
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90, 92, 93, 104) or o[0] == 10 and o[3] == 0xbcf850 or
+                                                  o[0] == 20 and (o[3] in (0x41cb90, 0x4040f0, 0xbd1940, 0xbd14e0, 0xbd1880) or o[2] & 4) or o[0] == 24 and o[3] in (0xbd14e0, 0xbd1880) or o[0] == 75 and o[4][0][0] != 'self' or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
     def value_of(v):    # a value given to a call: (kind, value) as the template reads it
@@ -1784,6 +1793,32 @@ def tail(p):
     while True:
         s, x = t[k], ins[k]
         val = lambda r: R.get(r)
+        hand_ = next((h for h in TITLED_HANDS.get(ins[0].address, []) if h[0] == x.address), None)
+        if hand_ and not pushed and not nulls:
+            # a stretch written by hand in titled.cpp (step 103: value its number), given the registers named (as values the
+            # steps can give); reading goes on at its end, the registers it writes and the stack slots it stores forgotten
+            hargs_ = []
+            for r_ in hand_[3]:
+                v_ = base_code(val(r_)) or scratch_of(r_)
+                if v_ is None:
+                    raise Reject('hand stretch value ' + r_)
+                hargs_.append(v_)
+            ops.append((103, 0, TITLED_HAND_NAMES.index(hand_[2]), 0, hargs_))
+            end_ = at[hand_[1]]
+            dd_ = d
+            for q_ in range(k, end_):
+                u_ = t[q_]
+                if (mm_ := re.fullmatch(r'mov (?:dword|byte) ptr \[esp \+ (0x[0-9a-f]+|\d+)\], .*', u_)):
+                    S.pop(num(mm_.group(1)) - depth_at[q_], None)
+                for r_ in list(R):
+                    if re.match(r'(mov|lea|add|sub|xor|or|and|inc|dec|shl|shr|sar|imul|neg|not|movzx|movsx|pop|setne|sete) ' + r_ + r'\b', u_) or \
+                            u_.startswith('call') and r_ in ('eax', 'ecx', 'edx'):
+                        R[r_] = None
+            if depth_at[end_] != dd_:
+                raise Reject('hand stretch moves the stack')
+            k = end_
+            flag = None
+            continue
         if nulls and x.address == nulls[-1][0] and k > 0 and ins[k - 1].mnemonic not in ('jmp', 'ret') and nulls[-1][1][0] == 'alloc':
             # the null path joins right after the new object's making, its result left unused (a singleton that keeps itself
             # in a global, say): past here, nothing holds it
@@ -1928,6 +1963,13 @@ def tail(p):
                 k < at[int(x.op_str, 0)] <= k + 6 and all(
                     ins[q_].mnemonic == 'nop' or re.fullmatch(r'(lea (\w+), \[\2\]|mov (\w+), \3|lea esp, \[esp\])', t[q_]) for q_ in range(k + 1, at[int(x.op_str, 0)])):
             k = at[int(x.op_str, 0)]   # (a jump over the padding the compiler puts before a loop's top)
+            continue
+        if (m := re.fullmatch(r'mov (byte|dword) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and \
+                still(val(m.group(2))) and val(m.group(2))[1] < 0x10000 and num(m.group(3) or '0') < 0x10000:
+            # a constant into what a member points to, the member still as read: kind 104 (off the member | the place there << 16)
+            ops.append((104, val(m.group(2))[1] | num(m.group(3) or '0') << 16, num(m.group(4)) & 0xffffffff, 1 if m.group(1) == 'byte' else 4, []))
+            flag = None
+            k += 1
             continue
         if (m := re.fullmatch(r'mov (byte|dword) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and not pushed and \
                 val(m.group(2)) and val(m.group(2))[0] in ('result', 'scratch') and (sc_ := base_code(val(m.group(2)))) is not None and \
@@ -3552,6 +3594,9 @@ if __name__ == '__main__':
                 if w_ and isinstance(w_[4][0], tuple) and w_[4][0][0] == 'dfield':
                     key_ = (a_[0], w_[4][0][1] & 0xffff, w_[4][0][1] >> 16)
                     carr_[key_] = max(carr_.get(key_, 0), w_[2] // 4 + 1)
+    for a_ in info:   # (and the arrays the hand-written stretches use)
+        for m_, i_, n_ in TITLED_HAND_ARRAYS.get(a_[0], []):
+            carr_[(a_[0], m_, i_)] = max(carr_.get((a_[0], m_, i_), 0), n_)
     out.append('extern const uint32_t titled_child_arrays[];')
     out.append('const uint32_t titled_child_arrays[] = {' + ''.join(f'{a:#x}, {i:#x}, {n}, {m:#x}, ' for (a, m, i), n in sorted(carr_.items())) + '0};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')

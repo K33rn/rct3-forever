@@ -14189,7 +14189,7 @@ address,size,name,callers,status
 0x9a05e0,1226,,1,documented
 0x9a0ab0,62,,1,documented
 0x9a0af0,147,,3,documented
-0x9a0b90,7361,,1,documented
+0x9a0b90,7361,Window::Titled,1,rewritten
 0x9a2860,30,DeletingDestructor,2,rewritten
 0x9a2880,278,,1,documented
 0x9a2d60,75,,1,documented

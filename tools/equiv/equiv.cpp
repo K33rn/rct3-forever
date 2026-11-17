@@ -214,11 +214,11 @@ template <class T> static T &at(uintptr_t a) { return *(T *)a; }
 // The game's memory functions can't run here (its C runtime isn't started), and what matters is what gets freed,
 // in which order: these record each call at the end of the arena, which is compared.
 
-static const size_t CALL_LOG = sizeof g_arena - 0x1000;   // {count, then (function, argument) pairs}
+static const size_t CALL_LOG = sizeof g_arena - 0x9000;   // {count, then (function, argument) pairs}
 
 static void record(uint32_t fn, void *arg) {
     uint32_t *log = arena<uint32_t>(CALL_LOG);
-    if (log[0] < 500) {
+    if (log[0] < 4000) {
         log[1 + 2 * log[0]] = fn;
         log[2 + 2 * log[0]] = (uint32_t)(uintptr_t)arg;
         log[0]++;
@@ -266,6 +266,14 @@ static void titled_tables_ready() {   // each slot the constructors call: its st
     titled_child_table[1] = (void *)stub_iface_info;   // (slot 1, taking nothing: an object's class info, as the casts read it)
 }
 static void *new_wide_block();
+// 0x9A0B90's hand-written loop: its count (0x53C790) from the case, 0 to 7; the name source's texts (0x53DD80: into the
+// place given, for the index) new each time
+static uint32_t __thiscall stub_titled_count8(void *self) { record(0xa9, self); return arena<uint32_t>(0x4c)[0] >> 3 & 7; }
+static void *__thiscall stub_titled_text_out(void *self, void **out, int32_t i) {
+    record(0xaa, self); record(0xaa, (void *)(uintptr_t)i);
+    *out = new_wide_block();
+    return out;
+}
 static void *__cdecl stub_plain_alloc(uint32_t size);
 extern const uint32_t titled_child_holders[];
 static uint32_t g_child_holders[8], g_child_holder_count;   // (the copy being checked: places in its children that counted texts go into)
@@ -1693,7 +1701,13 @@ static void *__fastcall stub_wide_empty(char flag) {
     record(0x76, (void *)(uintptr_t)(uint8_t)flag);
     return arena<void>(0x260);
 }
-static void __fastcall stub_text_ref_free(void *self) { record(0x77, self == g_text_ref ? (void *)1 : arg_value((uint32_t)(uintptr_t)self)); }   // (one on the stack told by what it holds)
+static void __fastcall stub_text_ref_free(void *self) {   // (one on the stack told by what it holds)
+    if (self == g_text_ref) {
+        record(0x77, (void *)1);
+        g_text_ref = nullptr;   // (let go: its place no longer holds it, and may be used again for something else)
+    } else
+        record(0x77, arg_value((uint32_t)(uintptr_t)self));
+}
 // key commands: the default keys are made on the stack (recorded as 1, as the String above)
 static void *g_keys;
 static void *__fastcall stub_key_combination(void *self, void *, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
@@ -6573,6 +6587,10 @@ static std::vector<Test> tests() {
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         static void *const fast_temp_stubs[4] = {(void *)stub_fast_temp0, (void *)stub_fast_temp1, (void *)stub_fast_temp2, (void *)stub_fast_temp3};
         for (int k = 0; titled_fast_temps[k]; k += 2) list.push_back({titled_fast_temps[k], fast_temp_stubs[titled_fast_temps[k + 1] & 3]});
+        if (e->at == 0x9a0b90)   // (its hand-written loop: the count small, the texts made by the name source new each time)
+            for (auto &x : list)
+                if (x.first == 0x53c790) x.second = (void *)stub_titled_count8;
+        if (e->at == 0x9a0b90) list.push_back({0x53dd80, (void *)stub_titled_text_out});
         stubs_for_now(list);
         g_built_other = true;
     };

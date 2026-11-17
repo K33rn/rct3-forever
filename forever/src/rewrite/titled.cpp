@@ -75,6 +75,46 @@ static void titled_assign(void **holder, void *text) {   // a counted text put i
 // The values given to fn are by kind (4 bits each in kinds): 0 the value, 1 the global there, 2 the constructor's
 // argument number value, 3 a pointer to +value of the object, 4 what temporary number value's maker returned, 5 where
 // name number value is kept, 6 the member at +value.
+// ---- stretches of a tail written by hand (step 103), by number (tools/titled_ctors.py's TITLED_HAND_NAMES) -----------
+// A counted text let go: its count down by one; at none, its characters and itself freed (no check for none first).
+static void text_let_go_titled(uint32_t *text) {
+    if (!--*(volatile uint32_t *)text) {
+        ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)text[3]);
+        ((void(__cdecl *)(void *))0xbce000)(text);
+    }
+}
+// 0x9A0B90, its loop over the names the game's name source holds (count: what 0x53C790 gave). For each, its text made
+// into a local (0x53DD80 on what 0x5435A0 gives, with the index); the list part of the child at +0x114 (+0x104) gets it:
+// the child's text array (+0x2CC) at the index is replaced (the old text let go, checked for none; the new one's count
+// raised) unless it is the same; 0x6A0560 run on the list part; the local text let go.
+static void texts_listed_9a0b90(uint8_t *self, const uint32_t *args) {
+    const int32_t count = (int32_t)args[0];
+    for (int32_t i = 0; i < count; i++) {
+        uint32_t *text;
+        void *const source = ((void *(__cdecl *)())0x5435a0)();
+        ((void(__thiscall *)(void *, uint32_t **, int32_t))0x53dd80)(source, &text, i);
+        uint8_t *const child = *(uint8_t *volatile *)(self + 0x114);
+        uint32_t *volatile *const slot = (uint32_t * volatile *)(*(uint8_t *volatile *)(child + 0x2cc)) + i;
+        if (text != *slot) {
+            --**slot;
+            uint32_t *const old = *slot;
+            if (*(volatile uint32_t *)old == 0 && old) {
+                ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)old[3]);
+                ((void(__cdecl *)(void *))0xbce000)(old);
+            }
+            *slot = text;
+            ++*(volatile uint32_t *)text;
+        }
+        ((void(__thiscall *)(void *))0x6a0560)(child + 0x104);
+        text_let_go_titled(text);
+    }
+}
+static void titled_hand(uint32_t number, uint8_t *self, const uint32_t *args) {
+    switch (number) {
+    case 0: texts_listed_9a0b90(self, args); break;
+    default: break;
+    }
+}
 struct TitledOp {
     uint32_t kind, off, value, fn, count, args[8], kinds;
 };
@@ -535,6 +575,13 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 42: aligned = memory_alloc_aligned(op.value); break;
         case 43: *(void **)(self + op.off) = aligned; break;
         case 98: ++*(volatile uint32_t *)(uintptr_t)args[0]; break;
+        case 103: titled_hand(op.value, self, args); break;
+        case 104: {   // a constant into what the member at off's low half points to, at its high half (fn: 1 a byte, 4 a dword)
+            uint8_t *const to = *(uint8_t *volatile *)(self + (op.off & 0xffff)) + (op.off >> 16);
+            if (op.fn == 1) *(volatile uint8_t *)to = (uint8_t)op.value;
+            else *(volatile uint32_t *)to = op.value;
+            break;
+        }   // a stretch written by hand (below), given its values
         case 102:   // a constant into a value's object at off (fn: 1 a byte, 4 a dword)
             if (op.fn == 1) *(volatile uint8_t *)(uintptr_t)(args[0] + op.off) = (uint8_t)op.value;
             else *(volatile uint32_t *)(uintptr_t)(args[0] + op.off) = op.value;
