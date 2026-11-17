@@ -959,7 +959,7 @@ def parse(a, n):
             ops.append((17, 0, HANDS.index(hand[2]), 0, []))
             k = j + 1
             continue
-        if s == 'mov cl, 1':
+        if s == 'mov cl, 1' or (re.fullmatch(r'mov cl, ([abd])l', s) and (regs.get('e' + s[-2] + 'x') or ('',))[0] in ('const', 'const8') and regs['e' + s[-2] + 'x'][1] & 0xff == 1):
             regs['ecx'] = ('cl1',)
         elif s in ('call 0xbd0490', 'call 0xbd0520') and regs.get('ecx') == ('cl1',):
             for r in ('ecx', 'edx'):

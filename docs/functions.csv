@@ -1761,7 +1761,7 @@ address,size,name,callers,status
 0x48e7a0,30,DeletingDestructor,1,rewritten
 0x48e7d0,30,DeletingDestructor,1,rewritten
 0x48e7f0,7,BaseClass::SetClass,1,rewritten
-0x48e800,631,,2,documented
+0x48e800,631,Class::Construct,2,rewritten
 0x48eaa0,30,DeletingDestructor,2,rewritten
 0x48eac0,118,,1,documented
 0x48eb40,117,Text::Create,1,rewritten
@@ -9759,7 +9759,7 @@ address,size,name,callers,status
 0x7bc4d0,438,NamedTextRef::NamedTextRef,1,rewritten
 0x7bc6a0,30,DeletingDestructor,0,rewritten
 0x7bc6c0,30,DeletingDestructor,0,rewritten
-0x7bc6e0,669,,2,documented
+0x7bc6e0,669,Class::Construct,2,rewritten
 0x7bc9b0,208,,1,documented
 0x7bca80,155,,1,documented
 0x7bcb20,683,,1,documented
