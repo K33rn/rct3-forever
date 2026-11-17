@@ -18470,7 +18470,7 @@ address,size,name,callers,status
 0xb69c90,298,,1,documented
 0xb69dc0,346,,1,documented
 0xb69f20,222,,1,documented
-0xb6a000,2885,,3,documented
+0xb6a000,2885,Class::Construct,3,rewritten
 0xb6ac20,119,,1,documented
 0xb6aca0,265,,1,documented
 0xb6adb0,107,Factory::CreateAround,1,rewritten

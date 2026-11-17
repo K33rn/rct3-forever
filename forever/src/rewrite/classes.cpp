@@ -499,6 +499,29 @@ static void arrays_emptied_4adef0(uint8_t *self) {
         }
     }
 }
+// 0xB6A000, its end: the reference member at +0x188 pointed at nothing again. Its link (+8) is taken out of its handle's
+// list: the game checks both neighbours point back at it and stops (int3) when not. Its handle (+4) is let go (0x8055C0,
+// given 0), the empty handle (0x805750) taken and the link put in that one's list (just after its head), and the
+// reference told through its table's slot 0.
+static void reference_emptied_b6a000(uint8_t *self) {
+    uint8_t *const reference = self + 0x188;
+    volatile uint32_t *const link = (volatile uint32_t *)(reference + 8);
+    {
+        const uint32_t previous = link[1], next = link[0];
+        if (!previous || !next || ((volatile uint32_t *)(uintptr_t)next)[1] != (uint32_t)(uintptr_t)link ||
+            ((volatile uint32_t *)(uintptr_t)previous)[0] != (uint32_t)(uintptr_t)link)
+            __asm__ volatile("int3");
+        ((volatile uint32_t *)(uintptr_t)next)[1] = previous;
+        ((volatile uint32_t *)(uintptr_t)link[1])[0] = link[0];
+        link[0] = 0;
+        link[1] = 0;
+    }
+    ((void(__thiscall *)(void *, uint32_t))0x8055c0)(*(void *volatile *)(reference + 4), 0);
+    uint8_t *const handle = ((uint8_t * (__cdecl *)())0x805750)();
+    *(uint8_t *volatile *)(reference + 4) = handle;
+    link_before((uint32_t *)link, *(uint32_t **)(handle + 0x20));
+    (**(void(__thiscall *const *const *)(void *))reference)(reference);
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {
