@@ -482,6 +482,23 @@ static void list_name_6f5fd0(uint8_t *self) {
     ((void(__thiscall *)(void *, uint32_t))0x6f5f30)(self + 0x114, 1);
     if (const uint32_t entries = *(volatile uint32_t *)&list[1]) ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)entries);
 }
+// 0x4ADEF0, its end: its two arrays {items, count} at +0x36C and +0x374 emptied, each only when it has a count: the items
+// freed (aligned) if any, then the count and the items cleared. (The constructor cleared both earlier, so in practice there
+// is nothing to do; done as the game does it all the same.)
+static void arrays_emptied_4adef0(uint8_t *self) {
+    static const uint32_t arrays[2] = {0x36c, 0x374};
+    for (const uint32_t at : arrays) {
+        volatile uint32_t *const array = (volatile uint32_t *)(self + at);
+        if (array[1]) {
+            if (const uint32_t items = array[0]) {
+                ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)items);
+                array[0] = 0;
+            }
+            array[1] = 0;
+            array[0] = 0;
+        }
+    }
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

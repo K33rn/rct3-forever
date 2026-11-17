@@ -2214,7 +2214,7 @@ address,size,name,callers,status
 0x4adcc0,212,ReferenceField::Load,1,rewritten
 0x4adda0,212,ReferenceField::Load,1,rewritten
 0x4ade80,102,,10,documented
-0x4adef0,2991,,2,documented
+0x4adef0,2991,Class::Construct,2,rewritten
 0x4aeb40,57,,9,documented
 0x4aede0,47,VCOUNT_PROD,3,rewritten
 0x4aee60,95,Factory::CreateWith,1,rewritten
