@@ -6581,7 +6581,9 @@ static std::vector<Test> tests() {
                              g_null_handle = arena<void>(0x700);
                              uint32_t *a = arena<uint32_t>(0x10);
                              uint32_t *x = arena<uint32_t>(0x40);
-                             void *self = arena<void>(0x100), *d = (void *)(uintptr_t)a[0], *made = nullptr;
+                             // (the object at 0xA000, clear of the handles and lists above: the biggest classes reach +0x1000)
+                             for (int k = 0; k < 0x1000 / 4; k++) arena<uint32_t>(0xa000)[k] = arena<uint32_t>(0x100)[k & 0xff];
+                             void *self = arena<void>(0xa000), *d = (void *)(uintptr_t)a[0], *made = nullptr;
                              typedef uint32_t U;
                              switch (g_class_args) {
                              case 2: made = ((void *(__thiscall *)(void *, void *, void *))fn)(self, d, arena<void>(0x60)); break;

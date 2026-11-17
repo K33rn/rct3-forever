@@ -20,7 +20,7 @@ for f in os.listdir(os.path.join(HERE, 'forever', 'src', 'rewrite')):
 mine = set()   # the constructors taken before (functions.csv already calls them rewritten)
 if os.path.exists(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc')):
     mine = {int(x, 16) for x in re.findall(r'^REWRITE\("[^"]+", (0x[0-9a-f]+)', open(os.path.join(HERE, 'forever', 'src', 'rewrite', 'class_list.inc')).read(), re.M)}
-REG = r'(e[a-d]x|e[sd]i|ebp|ebx)'
+REG = r'(e[a-d]x|e[sd]i|ebp|ebx|__below)'
 # Constructors whose last lines are written by hand in classes.cpp (a function run after everything else): the
 # instruction those lines start with, and the function. Everything before it is still read and checked here.
 HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 0x133a2bc', 'water_manager_after'),
@@ -284,6 +284,21 @@ def walk_fields(ins, t, k0, regs0):
             # the record added to a struct's list, or to the class's list when the struct is null, as two calls:
             #   je ELSE; lea ecx, [S + 4]; call add; mov X, [L kept]; jmp JOIN; ELSE: mov X, [L kept]; mov ecx, X; call add; JOIN:
             f = pushed[-1] if pushed else None
+            # (or the list chosen first, the struct already in ecx: je ELSE; add ecx, 4; jmp JOIN; ELSE: mov ecx, L; JOIN: call add)
+            ml = re.fullmatch(r'mov ecx, ' + REG, t[k + 3])
+            if (regs.get('ecx') == tested and t[k + 1] == 'add ecx, 4' and t[k + 2].startswith('jmp ') and ml
+                    and ins[k + 3].address == num(m.group(1)) and regs.get(ml.group(1)) == ('L', 0x1c) and ins[k + 4].address == num(t[k + 2][4:])
+                    and t[k + 4] == 'call 0x8087e0' and f and f[0] == 'new' and f[1] == len(made) - 1 and f[1] not in field_entry
+                    and (made[f[1]][3] is not None or made[f[1]][1] not in (None, 0x8088c0)) and not nulls):
+                pushed.pop()
+                depth -= 4
+                size, ctor, args, table = made[f[1]]
+                field_entry[f[1]] = len(entries)
+                entries.append((size, ctor, table or 0, args, field_entry[tested[1]]))
+                for r in ('eax', 'ecx', 'edx'):
+                    regs.pop(r, None)
+                k += 5
+                continue
             # (or the list chosen first: je ELSE; mov ecx, S; add ecx, 4; jmp JOIN; ELSE: mov ecx, L; JOIN: call add)
             mr = re.fullmatch(r'mov ecx, ' + REG, t[k + 1])
             ml = re.fullmatch(r'mov ecx, ' + REG, t[k + 4])
@@ -694,6 +709,11 @@ def parse(a, n):
     while k < len(t):
         s = t[k]
         AT[0] = ins[k].address
+        if (mneg := re.search(r'\[' + REG + r' - (0x[0-9a-f]+|\d+)\]', s)) and regs.get(mneg.group(1)) and regs[mneg.group(1)][0] == 'this' and \
+                regs[mneg.group(1)][1] >= num(mneg.group(2)):
+            # (below a pointer into the object, still inside it: read as the same place reached from this)
+            regs['__below'] = ('this', regs[mneg.group(1)][1] - num(mneg.group(2)))
+            s = s[:mneg.start()] + '[__below]' + s[mneg.end():]
         if k in filled:
             k += 1
             continue
@@ -1016,6 +1036,20 @@ def parse(a, n):
             regs[m.group(1)] = ('global', num(m.group(2)))
         elif ins[k].mnemonic == 'pop' and k + 1 < len(t):
             pass   # a register given back early
+        elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r'\]', s)) and m.group(1) == m.group(2):
+            pass   # padding before a loop: does nothing
+        elif (m := re.fullmatch(r'dec ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'const' and \
+                k + 1 < len(t) and (mj := re.fullmatch(r'jne (0x[0-9a-f]+)', t[k + 1])) and num(mj.group(1)) < ins[k].address:
+            # a loop counted by a constant: read again for each pass (the same steps, in the same order)
+            n_ = regs[m.group(1)][1] - 1
+            regs[m.group(1)] = ('const', n_)
+            if n_ < 0 or n_ > 256:
+                raise Reject('member loop count')
+            if n_ == 0:
+                k += 2
+                continue
+            k = next(q_ for q_ in range(len(ins)) if ins[q_].address == num(mj.group(1)))
+            continue
         else:
             raise Reject('member: ' + s)
         k += 1

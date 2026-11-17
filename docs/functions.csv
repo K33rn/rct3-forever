@@ -3274,7 +3274,7 @@ address,size,name,callers,status
 0x51bc80,230,StructArrayLoad,0,rewritten
 0x51bd70,48,ObjectArray::Free,2,rewritten
 0x51be40,304,,2,documented
-0x51bf70,7220,,3,documented
+0x51bf70,7220,Class::Construct,3,rewritten
 0x51dbd0,663,,2,documented
 0x51de70,30,DeletingDestructor,0,rewritten
 0x51de90,633,,4,documented
