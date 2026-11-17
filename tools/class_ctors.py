@@ -35,7 +35,7 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x79e5b0: ('mov eax, dword ptr [0x10efb90]', 'chained_79e5b0'), 0xb17c70: ('lea eax, [edi + 8]', 'references_emptied_b17c70'),
               0x992b60: ('push 0x14', 'member_992b60'), 0xa2b130: ('mov eax, dword ptr [0x1342788]', 'appended_a2b130'),
               0x46d2b0: ('call 0x475180', 'colour_listed_46d2b0'), 0xa2a600: ('mov eax, dword ptr [0x134276c]', 'appended_a2a600'),
-              0xa189c0: ('call 0x4751e0', 'random_kind_a189c0')}
+              0xa189c0: ('call 0x4751e0', 'random_kind_a189c0'), 0x6e6530: ('cmp dword ptr [esi + 0x88], ebx', 'cleared_6e6530')}
 # (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
 HAND_ARRAYS = {0xa2b130: 0x1342788, 0xa2a600: 0x134276c}
 # (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)
@@ -1260,6 +1260,17 @@ def parse(a, n):
             pushed = []
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and (regs.get('ecx') or ('',))[0] == 'global' and \
+                ret_args(num(m.group(1))) == len(pushed) and len(pushed) <= 4 and all(p_ and p_[0] in ('imm', 'glob', 'self') for p_ in pushed) and \
+                (st := result_store(k)):
+            # a member set to what a call on a global's object gives (kind 34: value the global, read as the call is made);
+            # the store taken out of the steps
+            q_, off_ = st
+            ops.append((34, off_, regs['ecx'][1], num(m.group(1)), pushed[::-1]))
+            del t[q_], ins[q_]
+            pushed = []
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)):
             fn = num(m.group(1))
             this = regs.get('ecx')
@@ -1593,8 +1604,10 @@ for a, r in sorted(rows.items()):
             read_globals.add(v)   # (a member set to a global's value)
         if kind in (3, 10, 11, 15):
             read_globals.update(x[1] for x in args if isinstance(x, tuple) and x[0] == 'glob')
-        if kind in (3, 10, 15):
+        if kind in (3, 10, 15, 34):
             member_fns[fn] = len(args) - (kind == 15)
+        if kind == 34:
+            read_globals.add(v)   # (the global whose object it is called on)
 out.append('// the stretches written by hand (step kind 17), by number')
 out.append('static void class_hand(uint32_t number, uint8_t *self, const uint32_t *given) {')
 out.append('    switch (number) {')

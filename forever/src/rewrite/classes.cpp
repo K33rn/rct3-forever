@@ -192,7 +192,9 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
                     *(uint32_t *)memory = op.args[op.count - 1];
                 }
                 *(void **)(self + op.off) = memory;
-            } else
+            } else if (op.kind == 34)   // a member set to what fn gives, called on the object the global value holds
+                *(void **)(self + op.off) = call_with(op.fn, *(void *volatile *)(uintptr_t)op.value, op.count, args);
+            else
                 call_with(op.fn, self + op.off, op.count, args);
         }
     }
@@ -667,6 +669,10 @@ static void colour_listed_46d2b0(uint8_t *self) {
     ((uint32_t *)(uintptr_t)head[1])[0] = (uint32_t)(uintptr_t)node;
     node[0] = (uint32_t)(uintptr_t)head;
     head[1] = (uint32_t)(uintptr_t)node;
+}
+// 0x6E6530, its end: +0x90 cleared when +0x88 is not 0.
+static void cleared_6e6530(uint8_t *self) {
+    if (*(volatile uint32_t *)(self + 0x88)) *(volatile uint32_t *)(self + 0x90) = 0;
 }
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).

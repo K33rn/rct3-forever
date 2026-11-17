@@ -7562,7 +7562,7 @@ address,size,name,callers,status
 0x6db7d0,169,,1,documented
 0x6db880,159,,1,documented
 0x6db920,30,DeletingDestructor,2,rewritten
-0x6db950,415,,2,documented
+0x6db950,415,Class::Construct,2,rewritten
 0x6dbb80,30,DeletingDestructor,3,rewritten
 0x6dbba0,94,,1,documented
 0x6dbc00,105,Factory::Create,1,rewritten
@@ -7674,7 +7674,7 @@ address,size,name,callers,status
 0x6e5eb0,124,,2,documented
 0x6e5f30,1159,SpeciesCondition::Build,1,rewritten
 0x6e63c0,368,ObjectiveCondition::Name,1,rewritten
-0x6e6530,445,,2,documented
+0x6e6530,445,Class::Construct,2,rewritten
 0x6e6740,34,,1,documented
 0x6e6770,30,DeletingDestructor,3,rewritten
 0x6e6790,147,Destructor::Steps,1,rewritten
