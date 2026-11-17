@@ -546,6 +546,20 @@ static void entries_cleared_4c29f0(uint8_t *self) {
     *(volatile uint32_t *)(self + 0x94) = 0;
     *(volatile uint32_t *)(self + 0x98) = 0;
 }
+// 0xA11C30, its end: Random::Advance (0x4751E0) drawn; 2.0 put at +0xD0; then +0xC0 given the draw's signed remainder by
+// 3, plus 1.
+static void random_kind_a11c30(uint8_t *self) {
+    const int32_t drawn = (int32_t)((uint32_t(__cdecl *)())0x4751e0)();
+    *(volatile uint32_t *)(self + 0xd0) = 0x40000000;
+    *(volatile int32_t *)(self + 0xc0) = drawn % 3 + 1;
+}
+// 0x72D930, its end: the byte at +0x8B set to 2; the member at +0xE8 linked into the list the global 0x10EF72C points to,
+// just after its head; the members +0xF4..+0x100 set to -1.
+static void listed_72d930(uint8_t *self) {
+    self[0x8b] = 2;
+    link_before((uint32_t *)(self + 0xe8), *(uint32_t *volatile *)0x10ef72c);
+    for (uint32_t at = 0xf4; at <= 0x100; at += 4) *(volatile uint32_t *)(self + at) = 0xffffffff;
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

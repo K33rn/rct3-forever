@@ -8386,7 +8386,7 @@ address,size,name,callers,status
 0x72d710,30,DeletingDestructor,2,rewritten
 0x72d730,30,DeletingDestructor,2,rewritten
 0x72d750,467,,4,documented
-0x72d930,1069,,2,documented
+0x72d930,1069,Class::Construct,2,rewritten
 0x72dd90,421,,1,documented
 0x72df40,661,,3,documented
 0x72e1e0,574,,4,documented
@@ -15330,7 +15330,7 @@ address,size,name,callers,status
 0xa11950,412,,2,documented
 0xa11af0,67,Reference::Reference(object),8,rewritten
 0xa11b50,212,ReferenceField::Load,1,rewritten
-0xa11c30,763,,3,documented
+0xa11c30,763,Class::Construct,3,rewritten
 0xa11f70,1080,,2,documented
 0xa123b0,1498,,4,documented
 0xa12990,788,,3,documented
