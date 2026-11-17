@@ -38,7 +38,7 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0xa189c0: ('call 0x4751e0', 'random_kind_a189c0'), 0x6e6530: ('cmp dword ptr [esi + 0x88], ebx', 'cleared_6e6530'),
               0x7977f0: ('mov eax, dword ptr [0x10ef9d0]', 'chained_7977f0'), 0xa0a650: ('mov dword ptr [esi + 0xb8], eax', 'registered_a0a650'),
               0xaf19c0: ('mov edx, dword ptr [0x13ce5c0]', 'listed_af19c0'), 0xa630e0: ('push 0xe0', 'parts_a630e0'),
-              0x79a440: ('mov dword ptr [esi + 0x200], 0x12fa250', 'listed_79a440')}
+              0x79a440: ('mov dword ptr [esi + 0x200], 0x12fa250', 'listed_79a440'), 0xadf4e0: ('mov edx, dword ptr [0x13ce524]', 'named_parts_adf4e0')}
 # (the ends written by hand that put the object in a game global earlier than the test looks for it: that global)
 HAND_INSTANCES = {0xa630e0: 0x13429a8}
 # (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
@@ -917,12 +917,14 @@ def parse(a, n):
             return None
         return j + 6, count - 4, value, [mm.group(1), m1.group(1), m2.group(2), m3.group(1)]
 
+    ops_at, loop_n = {}, {}   # (where the steps stood when each instruction was first read; the loops' counts)
     dirty = set()    # argument slots the constructor wrote over (its locals reuse them): no longer the argument
     k = kb + 1
     filled = set()   # stores that fill a value passed by value on the stack (taken with its push)
     while k < len(t):
         s = t[k]
         AT[0] = ins[k].address
+        ops_at.setdefault(k, len(ops))
         if (mneg := re.search(r'\[' + REG + r' - (0x[0-9a-f]+|\d+)\]', s)) and regs.get(mneg.group(1)) and regs[mneg.group(1)][0] == 'this' and \
                 regs[mneg.group(1)][1] >= num(mneg.group(2)):
             # (below a pointer into the object, still inside it: read as the same place reached from this)
@@ -1410,12 +1412,28 @@ def parse(a, n):
             # a loop counted by a constant: read again for each pass (the same steps, in the same order)
             n_ = regs[m.group(1)][1] - 1
             regs[m.group(1)] = ('const', n_)
-            if n_ < 0 or n_ > 256:
+            if n_ < 0 or n_ > 4096:
                 raise Reject('member loop count')
+            kx_ = next(q_ for q_ in range(len(ins)) if ins[q_].address == num(mj.group(1)))
+            loop_n.setdefault(kx_, n_ + 1)
             if n_ == 0:
+                # (a long loop of plain stores, the same each pass but further on: one step 26 and the first pass's steps)
+                st_, n0_ = ops_at[kx_], loop_n.pop(kx_)
+                seg_ = ops[st_:]
+                done_ = False
+                if n0_ >= 2 and len(seg_) > 64 and len(seg_) % n0_ == 0 and pending is None and \
+                        not any(isinstance(v_, tuple) and v_[0] == 'field' and v_[2] > st_ for v_ in regs.values()):
+                    l_ = len(seg_) // n0_
+                    body_, stride_ = seg_[:l_], seg_[l_][1] - seg_[0][1]
+                    if stride_ > 0 and all(o_[0] in (0, 1) and not o_[3] and not o_[4] for o_ in body_) and \
+                            all(seg_[p_ * l_ + j_] == (b_[0], b_[1] + p_ * stride_) + tuple(b_[2:]) for p_ in range(n0_) for j_, b_ in enumerate(body_)):
+                        ops[st_:] = [(26, n0_, l_, stride_, [])] + body_
+                        done_ = True
+                if not done_ and len(seg_) > 1024:
+                    raise Reject('member loop too long')
                 k += 2
                 continue
-            k = next(q_ for q_ in range(len(ins)) if ins[q_].address == num(mj.group(1)))
+            k = kx_
             continue
         else:
             raise Reject('member: ' + s)

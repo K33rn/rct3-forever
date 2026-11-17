@@ -101,7 +101,7 @@ struct Rng {
 };
 
 // Test objects live here; it's compared too.
-alignas(16) static uint8_t g_arena[1 << 16];
+alignas(16) static uint8_t g_arena[1 << 17];
 template <class T> static T *arena(size_t offset) { return (T *)(g_arena + offset); }
 
 // ---- running original and rewrite ---------------------------------------------------------------------------

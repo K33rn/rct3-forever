@@ -17223,7 +17223,7 @@ address,size,name,callers,status
 0xadbdf0,108,,1,documented
 0xadbe60,13762,,1,documented
 0xadf440,152,,1,documented
-0xadf4e0,1482,,4,documented
+0xadf4e0,1482,Class::Construct,4,rewritten
 0xadfab0,30,DeletingDestructor,2,rewritten
 0xadfba0,162,ObjectRef::CallWith,3,rewritten
 0xadfc50,324,Animal::Link,3,rewritten

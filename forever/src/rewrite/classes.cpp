@@ -123,6 +123,15 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         if (op.kind == 14) break;
         if (op.kind == 0) *(uint32_t *)(self + op.off) = op.value;
         else if (op.kind == 1) self[op.off] = (uint8_t)op.value;
+        else if (op.kind == 26) {   // a loop counted by a constant: the next value steps (plain stores), off times, fn bytes further on each pass
+            for (uint32_t p = 0; p < op.off; p++)
+                for (uint32_t j = 1; j <= op.value; j++) {
+                    const ClassOp &b = OPS[k + j];
+                    if (b.kind == 0) *(uint32_t *)(self + b.off + p * op.fn) = b.value;
+                    else self[b.off + p * op.fn] = (uint8_t)b.value;
+                }
+            k += op.value;
+        }
         else if (op.kind == 2) *(uint8_t **)(self + op.off) = self + op.value;
         else if (op.kind == 5) *(uint32_t *)(self + op.off) = *(uint32_t *)(uintptr_t)op.value;
         else if (op.kind == 6 || op.kind == 9 || op.kind == 16 || op.kind == 19) {
@@ -753,6 +762,18 @@ static void listed_79a440(uint8_t *self) {
     *(volatile uint32_t *)(self + 0xb8) = 0x147;
     *(volatile uint32_t *)(self + 0xbc) = 0;
     ((void(__thiscall *)(void *, uint32_t, uint32_t))0x7cd220)(self, 0xd, 0);
+}
+// 0xADF4E0, its end: the member at +0xDC linked into the list the game object 0x13CE524 holds keeps at +0x10, just after
+// its head; then three named parts (0x1C bytes each, 0x403F30 given the name, 0x1303CFC and 1; none without memory) into
+// +0xF0, +0xF4 and +0xF8.
+static void named_parts_adf4e0(uint8_t *self) {
+    link_before((uint32_t *)(self + 0xdc), *(uint32_t **)(*(uint8_t *volatile *)0x13ce524 + 0x10));
+    static const uint32_t parts[3][2] = {{0xf954d0, 0xf0}, {0xf954c4, 0xf4}, {0xf954b8, 0xf8}};
+    for (const auto &part : parts) {
+        void *const memory = memory_alloc(0x1c);
+        *(void *volatile *)(self + part[1]) =
+            memory ? ((void *(__thiscall *)(void *, uintptr_t, uintptr_t, uint32_t))0x403f30)(memory, part[0], 0x1303cfc, 1) : nullptr;
+    }
 }
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
