@@ -154,6 +154,8 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
             else
                 __asm__ volatile("call *%%eax\n\tfstps (%%esi)" : "+a"(fn) : "S"(to) : "ecx", "edx", "memory", "st", "st(1)", "st(2)", "st(3)", "st(4)", "st(5)", "st(6)", "st(7)");
         }
+        else if (op.kind == 27)   // a stdcall given two plain values whose float result (on the FPU) is stored at off
+            *(float *)(self + op.off) = ((float(__stdcall *)(uint32_t, uint32_t))(uintptr_t)op.fn)(op.args[0], op.args[1]);
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)
@@ -394,6 +396,35 @@ static void link_last_b4b7a0(uint8_t *self) {
     *(uint32_t **)(uintptr_t)head[1] = node;
     node[0] = (uint32_t)(uintptr_t)head;
     head[1] = (uint32_t)(uintptr_t)node;
+}
+// 0x76B880, its end: values drawn from Random::Ran0 (0x475180, a value from 0 to 1 left on the FPU), worked with the
+// game's constants (read where the game keeps them; on the FPU, in its precision):
+//   +0x408 = Ran0 * 0.3 + 0.35, with -1.0 at +0x40C and +0x414, 0 at +0x410; then +0x418..+0x424 = {+0x408, -1, 0, -1}
+//   and -1.0 at +0x428, +0x42C, +0x430;
+//   +0x4B0 = Ran0 * 0.2 + 0.9; if a new Ran0 is below 0.4, Ran0 * 0.6 is added to it; if another is below 0.05, a Ran0 is added too
+//   (a draw that is not a number is never below: the game's test passes over it then too).
+static long double ran0() { return ((long double(__cdecl *)())0x475180)(); }
+static long double game_float(uintptr_t at) { return (long double)*(volatile const float *)at; }
+static void random_values_76b880(uint8_t *self) {
+    const uint32_t minus_one = 0xbf800000;
+    long double x = ran0() * game_float(0xf27ca8);
+    *(volatile uint32_t *)(self + 0x40c) = minus_one;
+    x = x + game_float(0xf3d890);
+    *(volatile uint32_t *)(self + 0x410) = 0;
+    *(volatile uint32_t *)(self + 0x414) = minus_one;
+    *(volatile float *)(self + 0x408) = (float)x;
+    *(volatile uint32_t *)(self + 0x418) = *(volatile uint32_t *)(self + 0x408);
+    *(volatile uint32_t *)(self + 0x41c) = minus_one;
+    *(volatile uint32_t *)(self + 0x420) = 0;
+    *(volatile uint32_t *)(self + 0x424) = minus_one;
+    *(volatile uint32_t *)(self + 0x428) = minus_one;
+    *(volatile uint32_t *)(self + 0x42c) = minus_one;
+    *(volatile uint32_t *)(self + 0x430) = minus_one;
+    *(volatile float *)(self + 0x4b0) = (float)(ran0() * game_float(0xf283d8) + game_float(0xf29640));
+    if (ran0() < game_float(0xf355e4))
+        *(volatile float *)(self + 0x4b0) = (float)(ran0() * game_float(0xf29658) + game_float((uintptr_t)(self + 0x4b0)));
+    if (ran0() < game_float(0xf270b4))
+        *(volatile float *)(self + 0x4b0) = (float)(ran0() + game_float((uintptr_t)(self + 0x4b0)));
 }
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).

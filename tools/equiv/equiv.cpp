@@ -626,12 +626,12 @@ static uint32_t __cdecl stub_class_value() {   // (a function taking nothing who
     record(0x7a, nullptr);
     return arena<uint32_t>(0x4c)[0] * 0x9e3779b1u;
 }
-static float __cdecl stub_class_random() {   // (Random::Ran0: a value from the case, noted)
+static uint32_t g_class_random_n;   // (the draws so far in this run)
+static float __cdecl stub_class_random() {   // (Random::Ran0: a new value in [0, 1) for each draw, from the case, noted)
     record(0x475180, nullptr);
-    float f;
-    const uint32_t bits = arena<uint32_t>(0x4c)[0] >> 9 | 0x3f000000u;   // (in [0.5, 1))
-    memcpy(&f, &bits, 4);
-    return f;
+    uint32_t h = arena<uint32_t>(0x4c)[0] + 0x9e3779b9u * ++g_class_random_n;
+    h ^= h >> 15, h *= 0x2c1b3c6du, h ^= h >> 12, h *= 0x297a2d39u, h ^= h >> 15;
+    return (float)(h >> 8) * (1.0f / 16777216.0f);
 }
 static void __thiscall stub_class_base(void *self, void *description, uint32_t a, uint32_t b) { record(0x80, self); record(0x80, description); record(0x80, (void *)(uintptr_t)a); record(0x80, (void *)(uintptr_t)b); }
 static void *__thiscall stub_built6(void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t f) {
@@ -6583,6 +6583,7 @@ static std::vector<Test> tests() {
                              uint32_t *x = arena<uint32_t>(0x40);
                              // (the object at 0xA000, clear of the handles and lists above: the biggest classes reach +0x1000)
                              for (int k = 0; k < 0x1000 / 4; k++) arena<uint32_t>(0xa000)[k] = arena<uint32_t>(0x100)[k & 0xff];
+                             g_class_random_n = 0;
                              void *self = arena<void>(0xa000), *d = (void *)(uintptr_t)a[0], *made = nullptr;
                              typedef uint32_t U;
                              switch (g_class_args) {

@@ -25,7 +25,8 @@ REG = r'(e[a-d]x|e[sd]i|ebp|ebx|__below)'
 # instruction those lines start with, and the function. Everything before it is still read and checked here.
 HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 0x133a2bc', 'water_manager_after'),
               0xb4b7a0: ('mov eax, dword ptr [0x10f28e8]', 'link_last_b4b7a0'), 0x6404d0: ('fld dword ptr [0x10eead0]', 'scaled_value_6404d0'),
-              0x9d91f0: ('lea ecx, [esp + 0x10]', 'empty_reference_9d91f0'), 0xa5d6f0: ('push 6', 'slots_a5d6f0')}
+              0x9d91f0: ('lea ecx, [esp + 0x10]', 'empty_reference_9d91f0'), 0xa5d6f0: ('push 6', 'slots_a5d6f0'),
+              0x76b880: ('call 0x475180', 'random_values_76b880')}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.
@@ -991,6 +992,15 @@ def parse(a, n):
                 regs.pop(r, None)
         elif (m := re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', s)) and not pushed and num(m.group(1)) // 4 <= left_on_stack[0] and num(m.group(1)) % 4 == 0:
             left_on_stack[0] -= num(m.group(1)) // 4   # (the cdecl pushes of earlier calls taken off)
+        elif s == 'call 0x475230' and len(pushed) == 2 and all(p_ and p_[0] == 'imm' for p_ in pushed) and k + 1 < len(t) and \
+                (mf_ := re.fullmatch(r'fstp dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', t[k + 1])) and \
+                regs.get(mf_.group(1)) and regs[mf_.group(1)][0] == 'this':
+            # a value between two floats (0x475230: the first, or a random point up to the second) stored in a member (kind 27)
+            ops.append((27, regs[mf_.group(1)][1] + num(mf_.group(2) or '0'), 0, 0x475230, pushed[::-1]))
+            pushed = []
+            del t[k + 1], ins[k + 1]
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
         elif s == 'call 0x475180' and not pushed:
             # Random::Ran0's value (on the FPU), perhaps times a game constant, stored in a member as a float (kind 22): the
             # fmul and the fstp taken out of the steps (nothing between them uses the FPU or calls)
