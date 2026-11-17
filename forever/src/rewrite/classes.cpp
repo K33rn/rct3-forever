@@ -347,6 +347,12 @@ static void weather_start(uint8_t *self, const uint32_t *) {
     *(volatile uint32_t *)(self + 0x6c) = 0;
     ((void(__thiscall *)(void *, uint32_t))0x9e87e0)(self, 0);
 }
+// 0xBA9840, in its member set-up: the member at +0x40 given (0x4DE7D0) the value 0x4C3610 gives for kind 2 (a game
+// constant, left on the FPU and stored as a float) and 10.0.
+static void member_float_ba9840(uint8_t *self, const uint32_t *) {
+    const long double value = ((long double(__fastcall *)(uint32_t))0x4c3610)(2);
+    ((void(__thiscall *)(void *, float, uint32_t))0x4de7d0)(self + 0x40, (float)value, 0x41200000);
+}
 // 0x830740, in its member set-up: the member at +0x40 made for the object with a pair of zeros made on the stack.
 static void member_from_pair_830740(uint8_t *self, const uint32_t *) {
     uint32_t pair[4];

@@ -19229,7 +19229,7 @@ address,size,name,callers,status
 0xba9600,59,,0,documented
 0xba9640,82,,1,documented
 0xba9700,316,,3,documented
-0xba9840,1496,,2,documented
+0xba9840,1496,Class::Construct,2,rewritten
 0xba9ee0,117,Text::Create,1,rewritten
 0xba9f60,92,,1,documented
 0xba9fc0,92,,1,documented

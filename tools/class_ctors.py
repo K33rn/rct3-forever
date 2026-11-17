@@ -37,7 +37,8 @@ HAND_STEPS = {0x56bf80: [('lea ecx, [esp + 0x2c]', 'call 0xbd99e0', 'ride_train_
               0x830740: [('lea eax, [esp + 0x44]', 'call 0x48c9c0', 'member_from_pair_830740')],
               0x707680: [('call 0x704a50', 'call 0x707530', 'park_figures')],
               0x9e51d0: [('mov eax, 0x3f800000', 'mov dword ptr [esi + 0x3e0], eax', 'sky_colours')],
-              0x947720: [('cmp dword ptr [0x133a274], edi', 'call 0x403f30', 'water_manager_name')]}
+              0x947720: [('cmp dword ptr [0x133a274], edi', 'call 0x403f30', 'water_manager_name')],
+              0xba9840: [('push 0x41200000', 'call 0x4de7d0', 'member_float_ba9840')]}
 HANDS = []   # the hand-written stretches' functions, in the order class_hand numbers them
 num = lambda s: int(s, 0)
 
