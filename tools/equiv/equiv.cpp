@@ -6514,6 +6514,7 @@ static std::vector<Test> tests() {
                          [=](Rng &r) {
                              fresh(r);
                              *arena<uint32_t>(ALLOC_NEXT) = 0;
+                             for (int k = 0; k < 0x2000 / 4; k++) arena<uint32_t>(0x2000)[k] = r.next();   // (new memory holds what was there)
                              static void *vtable[2] = {nullptr, (void *)stub_object_info};
                              uint8_t *description = arena<uint8_t>(0x4000);
                              *(void **)description = vtable;

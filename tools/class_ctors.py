@@ -704,6 +704,69 @@ def parse(a, n):
             if u.startswith(('call', 'j', 'ret')) or re.search(r'\b(eax|ax|al|ah)\b', u):
                 return None
         return None
+    def zero(r):
+        return regs.get(r) == ('const', 0)
+
+    def member_at(x):   # [B + o] with B a pointer into the object: the member's offset
+        mm = re.fullmatch(r'\[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', x)
+        if mm and regs.get(mm.group(1)) and regs[mm.group(1)][0] == 'this':
+            return regs[mm.group(1)][1] + num(mm.group(2) or '0')
+        return None
+
+    def skip_state(j):   # (the exception frame's state bytes between: nothing else reads them here)
+        while j < len(t) and re.fullmatch(STATE, t[j]):
+            j += 1
+        return j
+
+    def released(k):
+        mm = re.fullmatch(r'mov ' + REG + r', dword ptr (\[.*\])', t[k])
+        if not mm or (off := member_at(mm.group(2))) is None or k + 8 >= len(t):
+            return None
+        r = mm.group(1)
+        j = skip_state(k + 1)
+        mc = re.fullmatch(r'(?:cmp ' + r + r', ' + REG + r'|test ' + r + ', ' + r + ')', t[j])
+        if not mc or (mc.group(1) and not zero(mc.group(1))):
+            return None
+        j = skip_state(j + 1)
+        mj = re.fullmatch(r'je (0x[0-9a-f]+)', t[j])
+        mf = re.fullmatch(r'call (0x[0-9a-f]+)', t[j + 2])
+        ms = re.fullmatch(r'mov dword ptr (\[.*\]), (.+)', t[j + 4])
+        if not mj or t[j + 1] != 'push ' + r or not mf or num(mf.group(1)) not in (0xbce010, 0xbce000) or t[j + 3] != 'add esp, 4' or \
+                not ms or member_at(ms.group(1)) != off or not (ms.group(2) == '0' or zero(ms.group(2))) or j + 5 >= len(t) or \
+                ins[j + 5].address != num(mj.group(1)):
+            return None
+        return j + 5, off, num(mf.group(1)), r
+
+    def cleared(k):
+        mm = re.fullmatch(r'cmp ' + REG + ', ' + REG, t[k])
+        if not mm or not zero(mm.group(2)) or not regs.get(mm.group(1)) or regs[mm.group(1)][0] != 'field' or regs[mm.group(1)][2] != len(ops) or \
+                k + 8 >= len(t):
+            return None
+        count = regs[mm.group(1)][1]
+        mj = re.fullmatch(r'jle (0x[0-9a-f]+)', t[k + 1])
+        if not mj:
+            return None
+        j = k + 2
+        while (mp := re.fullmatch(r'lea ' + REG + r', \[' + REG + r'\]', t[j])) and mp.group(1) == mp.group(2):
+            j += 1   # (padding)
+        if j + 6 >= len(t):
+            return None
+        m1 = re.fullmatch(r'mov ' + REG + r', dword ptr (\[.*\])', t[j])
+        m2 = re.fullmatch(r'mov dword ptr \[' + REG + r' \+ ' + REG + r'\*4\], (.+)', t[j + 1])
+        m3 = re.fullmatch(r'mov ' + REG + r', dword ptr (\[.*\])', t[j + 2])
+        if not m1 or member_at(m1.group(2)) != count - 4 or not m2 or m2.group(1) != m1.group(1) or not zero(m2.group(2)) or \
+                not m3 or member_at(m3.group(2)) != count or t[j + 3] != 'inc ' + m2.group(2) or t[j + 4] != 'cmp %s, %s' % (m2.group(2), m3.group(1)) or \
+                t[j + 5] != 'jl %#x' % ins[j].address or ins[j + 6].address != num(mj.group(1)):
+            return None
+        v = m2.group(3)
+        if re.fullmatch(r'0x[0-9a-f]+|\d+', v):
+            value = num(v)
+        elif regs.get(v) and regs[v][0] == 'const':
+            value = regs[v][1]
+        else:
+            return None
+        return j + 6, count - 4, value, [mm.group(1), m1.group(1), m2.group(2), m3.group(1)]
+
     dirty = set()    # argument slots the constructor wrote over (its locals reuse them): no longer the argument
     k = kb + 1
     filled = set()   # stores that fill a value passed by value on the stack (taken with its push)
@@ -863,6 +926,21 @@ def parse(a, n):
                 ops.append((18, off, regs[v][1], 0, []))   # a member's value (unchanged since it was read) copied
             else:
                 raise Reject('member store: ' + s)
+        elif not pushed and (rel_ := released(k)):
+            # a member's memory let go if there is any (kind 28): mov R, [M]; cmp R, 0; je OVER; push R; call free; add esp, 4;
+            # mov [M], 0; OVER:
+            k, off_, fn_, r_ = rel_
+            ops.append((28, off_, 0, fn_, []))
+            for r in ('eax', 'ecx', 'edx', r_):
+                regs.pop(r, None)
+            continue
+        elif not pushed and (clr_ := cleared(k)):
+            # an array member {items, count} cleared up to its count, both read again on each pass (kind 29)
+            k, off_, v_, regs_ = clr_
+            ops.append((29, off_, v_, 0, []))
+            for r in regs_:
+                regs.pop(r, None)
+            continue
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and regs.get(m.group(2)) and regs[m.group(2)][0] == 'this':
             regs[m.group(1)] = ('field', regs[m.group(2)][1] + num(m.group(3) or '0'), len(ops))   # a member's value, as it is now
         elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r' \+ ' + REG + r'\*4\], (0x[0-9a-f]+|\d+)', s)):

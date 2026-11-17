@@ -156,6 +156,14 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         }
         else if (op.kind == 27)   // a stdcall given two plain values whose float result (on the FPU) is stored at off
             *(float *)(self + op.off) = ((float(__stdcall *)(uint32_t, uint32_t))(uintptr_t)op.fn)(op.args[0], op.args[1]);
+        else if (op.kind == 28) {   // a member's memory let go (fn, cdecl) if there is any, and the member cleared
+            const uint32_t memory = *(volatile uint32_t *)(self + op.off);
+            if (memory) {
+                ((void(__cdecl *)(uint32_t))(uintptr_t)op.fn)(memory);
+                *(volatile uint32_t *)(self + op.off) = 0;
+            }
+        } else if (op.kind == 29)   // an array member {items, count} given value up to its count, both read again on each pass
+            for (int32_t i = 0; i < *(volatile int32_t *)(self + op.off + 4); i++) (*(uint32_t *volatile *)(self + op.off))[i] = op.value;
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)

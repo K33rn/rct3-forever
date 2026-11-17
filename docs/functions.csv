@@ -3485,7 +3485,7 @@ address,size,name,callers,status
 0x537b90,139,,3,documented
 0x537c20,40,,3,documented
 0x537c50,51,ObjectArray::Free,2,rewritten
-0x537c90,4918,,3,documented
+0x537c90,4918,Class::Construct,3,rewritten
 0x539090,2988,,3,documented
 0x539c40,825,,7,documented
 0x539f90,233,StructArrayLoad,1,rewritten
