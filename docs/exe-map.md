@@ -63,7 +63,7 @@ capacity; int count; flag}`. The current value is `data[index]`; capacity is 64 
 | `0x49AC80` / `0x4BD9D0` | An object's interface by id (`[0x13CDE74]`, `[0x13D0680]`): class info = virtual function 1, table +0x14, count +0x18, entry +0x10 = offset | **rewritten** |
 | `0x4BFC00` | Ride: running average of a score part, array at +0x12C | **rewritten** |
 | `0xA88450` | Attraction: 3 x value at +0x70 (IdealGuests share) | **rewritten** |
-| `0x781DA0` | Makes a guest group of a type (fastcall, `ecx` = type 0–7, 11 = weighted random) at an injection point and sends it to an entrance; returns the group or 0 | used by the Peep Editor |
+| `0x781DA0` | Makes a guest group of a type (fastcall, `ecx` = type 0–7, 11 = weighted random) at an injection point and sends it to an entrance; returns the group or 0 | used by the Cheats Menu |
 | `0x43D940` | The park's update (guest arrivals from `0x43DF37`) | |
 | `0x437A10` | Works out the park's attractiveness numbers each update | |
 | `0x704AB0` | The park's "guest added" handler (counts GuestsInPark, intake) | |
@@ -71,9 +71,9 @@ capacity; int count; flag}`. The current value is `data[index]`; capacity is 64 
 | `0x76E3A0` | A guest's score for a ride (wrapped by `0x76EE40`) | |
 | `0x75F3A0` | After a ride: did the guest like it, favourite ride | |
 | `0x567390` | One train physics step | |
-| `0x7778E0` | Guest group route planner (to `0x772DE0`) | used by the Peep Editor |
-| `0x8055C0` / `0x805700` | Drop / make an object handle | used by the Peep Editor |
-| `0xBCDFC0` | The game's memory allocator | used by the Peep Editor |
+| `0x7778E0` | Guest group route planner (to `0x772DE0`) | used by the Cheats Menu |
+| `0x8055C0` / `0x805700` | Drop / make an object handle | used by the Cheats Menu |
+| `0xBCDFC0` | The game's memory allocator | used by the Cheats Menu |
 | `0x410F20` | Registers the 32 cheats (guest names) | |
 
 The research notes list many more, with what each one computes.

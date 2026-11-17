@@ -1,12 +1,12 @@
 // forever.dll: RCT3 Forever inside the game. The launcher loads it into RCT3plus.exe before the game's own code
-// starts. It checks the exe is the version it knows, turns on the built-in Park & Peep Editor and puts the
+// starts. It checks the exe is the version it knows, turns on the built-in Cheats Menu and puts the
 // rewritten game functions in place. Settings: RCT3Forever.ini beside this file; log: RCT3Forever.log.
 #include "forever.h"
 #include "exe.h"
 #include <stdio.h>
 #include <stdarg.h>
 
-// the Park & Peep Editor (peepeditor/src, built with FOREVER)
+// the Cheats Menu (cheatsmenu/src)
 void peep_attach(HINSTANCE h);
 extern void *peep_real_create9;
 extern "C" void *__stdcall Proxy_Direct3DCreate9(unsigned sdk);
@@ -78,15 +78,13 @@ BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
     flog("RCT3 Forever %s in pid %lu", FOREVER_VERSION, GetCurrentProcessId());
     if (!known_exe()) return TRUE;
 
-    // the launcher sets RCT3FOREVER_NO_PEEP when the standalone Peep Editor is installed in the game folder
-    char no_peep[8];
-    bool peep = setting("Forever", "PeepEditor", 1) && !GetEnvironmentVariableA("RCT3FOREVER_NO_PEEP", no_peep, 8);
-    if (peep) {
+    // [Forever] CheatsMenu (or, in a settings file from before the rename, PeepEditor)
+    if (setting("Forever", "CheatsMenu", setting("Forever", "PeepEditor", 1))) {
         peep_attach(h);
         peep_real_create9 = replace_import(exe::IAT_Direct3DCreate9, (void *)Proxy_Direct3DCreate9);
-        flog("Park & Peep Editor on");
+        flog("Cheats Menu on");
     } else {
-        flog("Park & Peep Editor off");
+        flog("Cheats Menu off");
     }
 
     g_real_create_window = (decltype(&CreateWindowExA))replace_import(exe::IAT_CreateWindowExA, (void *)titled_create_window);

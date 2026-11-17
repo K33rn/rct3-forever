@@ -154,17 +154,27 @@ def main():
     total_n, total_b = sum(count[s] for s in game), sum(size[s] for s in game)
     pct = lambda v, t: f'{100 * v / t:.2f}%' if t else '-'
 
-    bar_w = 40
-    done = round(bar_w * size['rewritten'] / total_b) if total_b else 0
-    known = round(bar_w * size['documented'] / total_b) if total_b else 0
-    bar = '█' * done + '▓' * known + '░' * (bar_w - done - known)
+    # one labelled bar per line on a scale of 0-100%: 50 cells (2% each), the last filled one in eighths
+    bar_w = 50
+    def bar(share):
+        eighths = round(8 * bar_w * share)
+        full, part = divmod(eighths, 8)
+        cells = '█' * full + (' ▏▎▍▌▋▊▉'[part] if part else '')
+        return cells + '░' * (bar_w - len(cells))
 
     # documented counts every game function a note describes, rewritten ones included
     noted_b = size['documented'] + sum(int(r['size']) for r in rows
                                        if r['status'] == 'rewritten' and int(r['address'], 16) in notes | doc)
+    scale = ''.join(f'{p}%'.ljust(10) for p in range(0, 100, 20)) + '100%'
     summary = [
-        f'`{bar}` **{pct(size["rewritten"], total_b)} rewritten**, {pct(noted_b, total_b)} understood '
-        f'and documented (by code size; the rewritten part included)',
+        '```',
+        f'Rewritten    {bar(size["rewritten"] / total_b if total_b else 0)} {pct(size["rewritten"], total_b):>7}',
+        f'Understood   {bar(noted_b / total_b if total_b else 0)} {pct(noted_b, total_b):>7}',
+        f'             {scale}',
+        '```',
+        '',
+        f'**{pct(size["rewritten"], total_b)} of the game\'s code is rewritten** and {pct(noted_b, total_b)} is understood '
+        f'and documented (by code size; understood includes the rewritten part).',
         '',
         '| Status | Functions | Code | Share of the game\'s code |',
         '|---|---:|---:|---:|',

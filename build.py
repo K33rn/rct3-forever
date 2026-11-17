@@ -1,4 +1,4 @@
-"""Build RCT3 Forever: forever.dll (with the Park & Peep Editor built in) and RCT3Forever.exe (32-bit, Zig's C++
+"""Build RCT3 Forever: forever.dll (with the Cheats Menu built in) and RCT3Forever.exe (32-bit, Zig's C++
 compiler), then dist/RCT3Forever-<version>.zip.
 
 usage: uv run --no-project --with ziglang --with pefile python build.py
@@ -43,7 +43,7 @@ def fetch_imgui():
 
 
 def build_dll():
-    peep = os.path.join(HERE, 'peepeditor', 'src')
+    peep = os.path.join(HERE, 'cheatsmenu', 'src')
     src = glob.glob(os.path.join(HERE, 'forever', 'src', '*.cpp'))
     src += glob.glob(os.path.join(HERE, 'forever', 'src', 'rewrite', '*.cpp'))
     src += [os.path.join(peep, f) for f in ('main.cpp', 'game.cpp', 'goto.cpp', 'park.cpp', 'ui.cpp')]

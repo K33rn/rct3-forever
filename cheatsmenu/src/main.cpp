@@ -1,6 +1,6 @@
-// Peep Editor for RollerCoaster Tycoon 3: a d3d9.dll placed beside RCT3plus.exe. It forwards Direct3DCreate9 to
-// the real system d3d9.dll, hooks the device's Present / Reset to draw an ImGui menu, the window procedure and
-// DirectInput to keep the game from seeing clicks and keys meant for the menu.
+// The Cheats Menu, built into RCT3 Forever's forever.dll. forever.dll points the game's import of Direct3DCreate9
+// here; this hooks the device's Present / Reset to draw an ImGui menu, the window procedure and DirectInput to keep
+// the game from seeing clicks and keys meant for the menu.
 #define DIRECTINPUT_VERSION 0x0800
 #include <windows.h>
 #include <d3d9.h>
@@ -34,17 +34,25 @@ void log(const char *fmt, ...) {
     fclose(f);
 }
 
-// PeepEditor.ini beside RCT3plus.exe; built into RCT3 Forever, RCT3Forever.ini beside forever.dll
+// RCT3Forever.ini beside forever.dll
 void settings_path(char *out) {
-#ifdef FOREVER
     GetModuleFileNameA(g_self, out, MAX_PATH);
-    const char *name = "RCT3Forever.ini";
-#else
-    GetModuleFileNameA(nullptr, out, MAX_PATH);
-    const char *name = "PeepEditor.ini";
-#endif
     char *s = strrchr(out, '\\');
-    strcpy(s ? s + 1 : out, name);
+    strcpy(s ? s + 1 : out, "RCT3Forever.ini");
+}
+
+// A [CheatsMenu] setting; a settings file from before the rename keeps working (its [PeepEditor] section is read
+// when [CheatsMenu] doesn't have the key).
+int menu_setting(const char *key, int fallback) {
+    char ini[MAX_PATH];
+    settings_path(ini);
+    return GetPrivateProfileIntA("CheatsMenu", key, GetPrivateProfileIntA("PeepEditor", key, fallback, ini), ini);
+}
+void menu_setting_text(const char *key, const char *fallback, char *out, unsigned size) {
+    char ini[MAX_PATH], old[64];
+    settings_path(ini);
+    GetPrivateProfileStringA("PeepEditor", key, fallback, old, sizeof old, ini);
+    GetPrivateProfileStringA("CheatsMenu", key, old, out, size, ini);
 }
 
 static void *patch(void **vt, int i, void *fn) {
@@ -177,11 +185,9 @@ static HRESULT WINAPI hk_di8(HINSTANCE h, DWORD v, REFIID riid, void **out, void
 
 // Point the exe's import of DINPUT8!DirectInput8Create at our wrapper.
 static void hook_dinput_iat() {
-    static int enabled = -1;   // [PeepEditor] HookGameInput=0 in the settings leaves DirectInput alone
+    static int enabled = -1;   // [CheatsMenu] HookGameInput=0 in the settings leaves DirectInput alone
     if (enabled < 0) {
-        char ini[MAX_PATH];
-        settings_path(ini);
-        enabled = GetPrivateProfileIntA("PeepEditor", "HookGameInput", 1, ini) != 0;
+        enabled = menu_setting("HookGameInput", 1) != 0;
         log("HookGameInput=%d", enabled);
     }
     if (!enabled) return;
@@ -433,16 +439,12 @@ static HRESULT WINAPI hk_create(IDirect3D9 *d3d, UINT ad, D3DDEVTYPE t, HWND foc
 
 typedef IDirect3D9 *(WINAPI *Create9_t)(UINT);
 
-#ifdef FOREVER
 void *peep_real_create9;   // what RCT3plus.exe imported, set by forever.dll before it points the import here
-#endif
 
 extern "C" IDirect3D9 *WINAPI Proxy_Direct3DCreate9(UINT sdk) {
     static Create9_t real;
-#ifdef FOREVER
     real = (Create9_t)peep_real_create9;
-#endif
-    if (!real) {
+    if (!real) {   // (none known: the system's own)
         char p[MAX_PATH];
         GetSystemDirectoryA(p, MAX_PATH);
         strcat(p, "\\d3d9.dll");
@@ -463,20 +465,10 @@ static void attach(HINSTANCE h) {
     InitializeCriticalSection(&g_vt_lock);
     GetModuleFileNameA(h, g_log_path, MAX_PATH);
     char *s = strrchr(g_log_path, '\\');
-    strcpy(s ? s + 1 : g_log_path, "PeepEditor.log");
+    strcpy(s ? s + 1 : g_log_path, "CheatsMenu.log");
     DeleteFileA(g_log_path);
-    log("Peep Editor loaded into pid %lu", GetCurrentProcessId());
+    log("Cheats Menu loaded into pid %lu", GetCurrentProcessId());
     game::start_scanner();
 }
 
-#ifdef FOREVER
 void peep_attach(HINSTANCE h) { attach(h); }   // forever.dll's DllMain calls this
-#else
-BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
-    if (why == DLL_PROCESS_ATTACH) {
-        DisableThreadLibraryCalls(h);
-        attach(h);
-    }
-    return TRUE;
-}
-#endif

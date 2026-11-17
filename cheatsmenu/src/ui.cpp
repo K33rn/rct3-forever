@@ -35,15 +35,13 @@ static int parse_key(const char *s) {
 }
 
 void init() {
-    char path[MAX_PATH];
-    settings_path(path);
     char key[32];
-    GetPrivateProfileStringA("PeepEditor", "ToggleKey", "F9", key, sizeof key, path);
+    menu_setting_text("ToggleKey", "F9", key, sizeof key);
     if (int vk = parse_key(key)) {
         g_key = vk;
         strncpy(g_key_name, key, sizeof g_key_name - 1);
     }
-    float scale = GetPrivateProfileIntA("PeepEditor", "UiScalePercent", 110, path) / 100.0f;
+    float scale = menu_setting("UiScalePercent", 110) / 100.0f;
     ImGuiStyle &st = ImGui::GetStyle();
     ImGui::StyleColorsDark();
     st.WindowRounding = 6;
@@ -62,6 +60,8 @@ void init() {
     st.Colors[ImGuiCol_CheckMark] = ImVec4(0.15f, 0.85f, 0.95f, 1);
     st.ScaleAllSizes(scale);
     ImGui::GetIO().FontGlobalScale = scale;
+    char path[MAX_PATH];
+    settings_path(path);
     log("toggle key %s (vk %d), ini %s", g_key_name, g_key, path);
 }
 
@@ -742,11 +742,7 @@ void frame(bool toast) {
             ImGui::SetNextWindowBgAlpha(0.75f);
             ImGui::Begin("##toast", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
                                                  ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings);
-#ifdef FOREVER
-            ImGui::Text("RCT3 Forever - Park & Peep Editor: press %s in a park", g_key_name);
-#else
-            ImGui::Text("Park & Peep Editor loaded - press %s in a park", g_key_name);
-#endif
+            ImGui::Text("RCT3 Forever - Cheats Menu: press %s in a park", g_key_name);
             ImGui::End();
         }
         return;
@@ -758,7 +754,7 @@ void frame(bool toast) {
     refresh_rows(false);
     ImGui::SetNextWindowSize(ImVec2(1000, 620), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(40, 60), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Park & Peep Editor###PeepEditor", &g_open)) { ImGui::End(); return; }
+    if (!ImGui::Begin("Cheats Menu###CheatsMenu", &g_open)) { ImGui::End(); return; }
     if (ImGui::BeginTabBar("top")) {
         if (ImGui::BeginTabItem("Guests")) { guests_tab(); ImGui::EndTabItem(); }
         if (ImGui::BeginTabItem("Park")) { park::tab(); ImGui::EndTabItem(); }

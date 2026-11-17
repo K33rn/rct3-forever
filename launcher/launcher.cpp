@@ -149,18 +149,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         return 1;
     }
 
-    // the standalone Park & Peep Editor in the game folder would draw a second menu
-    if (exists(game, L"d3d9.dll") && exists(game, L"PeepEditor.ini")) {
-        int r = MessageBoxW(nullptr,
-                            L"The standalone Park & Peep Editor is installed in the game folder. RCT3 Forever has it "
-                            L"built in, so with both you'd get two menus.\n\nDisable it in the Mod Loader (or remove "
-                            L"d3d9.dll and PeepEditor.ini from the game folder) to use Forever's.\n\nStart now "
-                            L"with the standalone one, and Forever's editor off?",
-                            TITLE, MB_ICONWARNING | MB_YESNO);
-        if (r != IDYES) return 1;
-        SetEnvironmentVariableW(L"RCT3FOREVER_NO_PEEP", L"1");
-    }
-
     // the game's command line is passed on: RCT3Forever.exe <args> -> RCT3plus.exe <args>
     wchar_t *args = GetCommandLineW();
     if (*args == L'"') args = wcschr(args + 1, L'"') ? wcschr(args + 1, L'"') + 1 : args + wcslen(args);
