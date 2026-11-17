@@ -9392,7 +9392,7 @@ address,size,name,callers,status
 0x79a280,126,ObjectRef::Assign,1,rewritten
 0x79a300,67,Reference::Reference(object),0,rewritten
 0x79a360,212,ReferenceField::Load,0,rewritten
-0x79a440,583,,2,documented
+0x79a440,583,Class::Construct,2,rewritten
 0x79a690,30,DeletingDestructor,3,rewritten
 0x79a6b0,913,,1,documented
 0x79aa50,114,,1,documented

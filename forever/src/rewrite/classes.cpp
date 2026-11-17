@@ -745,6 +745,15 @@ static void parts_a630e0(uint8_t *self) {
         *(void *volatile *)(self + part[2]) = memory ? ((void *(__thiscall *)(void *, void *, void *))(uintptr_t)part[1])(memory, self + 0x200, self + 0x3b0) : nullptr;
     }
 }
+// 0x79A440, its end: +0x200 set to 0x12FA250; the member at +0x520 linked into the list 0x10EFA10 points to, just after
+// its head; +0xB8 set to 0x147 and +0xBC cleared; then the object given 0xD and 0 (0x7CD220).
+static void listed_79a440(uint8_t *self) {
+    *(volatile uint32_t *)(self + 0x200) = 0x12fa250;
+    link_before((uint32_t *)(self + 0x520), *(uint32_t *volatile *)0x10efa10);
+    *(volatile uint32_t *)(self + 0xb8) = 0x147;
+    *(volatile uint32_t *)(self + 0xbc) = 0;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))0x7cd220)(self, 0xd, 0);
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

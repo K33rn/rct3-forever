@@ -37,7 +37,8 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x46d2b0: ('call 0x475180', 'colour_listed_46d2b0'), 0xa2a600: ('mov eax, dword ptr [0x134276c]', 'appended_a2a600'),
               0xa189c0: ('call 0x4751e0', 'random_kind_a189c0'), 0x6e6530: ('cmp dword ptr [esi + 0x88], ebx', 'cleared_6e6530'),
               0x7977f0: ('mov eax, dword ptr [0x10ef9d0]', 'chained_7977f0'), 0xa0a650: ('mov dword ptr [esi + 0xb8], eax', 'registered_a0a650'),
-              0xaf19c0: ('mov edx, dword ptr [0x13ce5c0]', 'listed_af19c0'), 0xa630e0: ('push 0xe0', 'parts_a630e0')}
+              0xaf19c0: ('mov edx, dword ptr [0x13ce5c0]', 'listed_af19c0'), 0xa630e0: ('push 0xe0', 'parts_a630e0'),
+              0x79a440: ('mov dword ptr [esi + 0x200], 0x12fa250', 'listed_79a440')}
 # (the ends written by hand that put the object in a game global earlier than the test looks for it: that global)
 HAND_INSTANCES = {0xa630e0: 0x13429a8}
 # (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
