@@ -11907,7 +11907,7 @@ address,size,name,callers,status
 0x87f6c0,238,,1,documented
 0x87f7b0,267,,1,documented
 0x87f8c0,132,Shared::Destroy87F8C0,1,rewritten
-0x87f950,965,,2,documented
+0x87f950,965,Class::Construct,2,rewritten
 0x87fd50,4612,,1,documented
 0x880f60,76,,37,documented
 0x880fb0,2370,,2,documented

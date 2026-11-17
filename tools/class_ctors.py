@@ -67,6 +67,7 @@ def ret_args(fn):
 
 
 read_globals = set()   # the game globals the steps read as values: the tester gives each a value of the case's
+ref_setters2 = set()   # (and those given only the name and the reference)
 ref_setters = set()   # the member functions given a stack reference (kind 25): the tester stands in for them as for 0x560D20
 value_calls = set()   # the functions taking nothing whose value a member gets (kind 23): the tester stands in for them
 
@@ -764,6 +765,12 @@ def parse(a, n):
                 seq.append((q, t[q]))
             q += 1
         b = [u for _, u in seq]
+        if len(b) >= 6 and b[0] == 'push eax' and (zn := re.fullmatch(r'push (0x[0-9a-f]+)', b[1])) and \
+                (zm := re.fullmatch(r'lea ecx, \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', b[2])) and (zc := re.fullmatch(r'call (0x[0-9a-f]+)', b[3])) and \
+                (zl := re.fullmatch(r'lea ecx, \[esp \+ (0x[0-9a-f]+|\d+)\]', b[4])) and b[5] == 'call 0xbd99e0' and \
+                regs.get(zm.group(1)) and regs[zm.group(1)][0] == 'this' and ret_args(num(zc.group(1))) == 2 and num(zl.group(1)) - depth == slot:
+            # (or two values: push eax; push NAME; lea ecx, [this + off]; call FN; ...: no flag)
+            return seq[5][0] + 1, stores, regs[zm.group(1)][1] + num(zm.group(2)), num(zn.group(1)), None, num(zc.group(1))
         zf = re.fullmatch(r'push (0x[0-9a-f]+|\d+)', b[0])
         zn = re.fullmatch(r'push (0x[0-9a-f]+)', b[2])
         zm = re.fullmatch(r'lea ecx, \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', b[3])
@@ -921,8 +928,8 @@ def parse(a, n):
             # a reference made on the stack, given with a name and a value to a member's function, let go (kind 25)
             k, stores, off_, name_, flag_, fn_ = rs
             ops.extend(stores)
-            ops.append((25, off_, name_, fn_, [('imm', flag_)]))
-            ref_setters.add(fn_)
+            ops.append((25, off_, name_, fn_, [('imm', flag_)] if flag_ is not None else []))
+            (ref_setters if flag_ is not None else ref_setters2).add(fn_)
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
             continue
@@ -1689,6 +1696,8 @@ out.append('// the copies whose end raises a game count (doing something the fir
 out.append('extern const uint32_t class_counts[];')
 out.append('const uint32_t class_counts[] = {' + ''.join(f'{a_:#x}, {g_:#x}, ' for a_, g_ in sorted(HAND_COUNTS.items()) if a_ in done_set) + '0};')
 out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
+out.append('extern const uint32_t class_ref_setters2[];')
+out.append('const uint32_t class_ref_setters2[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters2)) + '0};')
 out.append('extern const uint32_t class_ref_setters[];')
 out.append('const uint32_t class_ref_setters[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters)) + '0};')
 out.append("// the game globals the steps read as values: the tester gives each a value of the case's (before its own settings)")

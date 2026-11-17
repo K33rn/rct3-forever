@@ -854,7 +854,12 @@ static void __thiscall stub_class_info_text(uint8_t *self) { record(0x98, self);
 static void *__thiscall stub_class_reference(uint32_t *self) { record(0x99, nullptr); self[0] = 0xfa5388, self[1] = *arena<uint32_t>(0x8b04); return self; }
 static void *__thiscall stub_class_named_text(void *self, uint32_t name, const uint32_t *reference, uint32_t flag) {
     record(0x9a, self); record(0x9a, (void *)(uintptr_t)name); record(0x9a, (void *)(uintptr_t)reference[1]); record(0x9a, (void *)(uintptr_t)flag);
-    record(0x9a, (void *)(uintptr_t)arena<uint32_t>(0x100)[0x290 / 4]);   // the store before it done
+    record(0x9a, (void *)(uintptr_t)arena<uint32_t>(0xa000)[0x290 / 4]);   // the store before it done
+    return self;
+}
+extern const uint32_t class_ref_setters2[];
+static void *__thiscall stub_class_named_text2(void *self, uint32_t name, const uint32_t *reference) {
+    record(0xa6, self); record(0xa6, (void *)(uintptr_t)name); record(0xa6, (void *)(uintptr_t)reference[1]);
     return self;
 }
 static void __thiscall stub_class_unreference(uint32_t *self) { record(0x9b, (void *)(uintptr_t)self[1]); }
@@ -6759,6 +6764,7 @@ static std::vector<Test> tests() {
         }
         for (int k = 0; class_value_calls[k]; k++) list.push_back({class_value_calls[k], (void *)stub_class_value});   // (the functions taking nothing)
         if (single_fn) list.push_back({single_fn, (void *)stub_class_single});
+        for (int k = 0; class_ref_setters2[k]; k++) list.push_back({class_ref_setters2[k], (void *)stub_class_named_text2});
         for (int k = 0; class_ref_setters[k]; k++)   // (the member functions given a stack reference: as 0x560D20)
             if (class_ref_setters[k] != 0x560d20) list.push_back({class_ref_setters[k], (void *)stub_class_named_text});
         stubs_for_now(list);

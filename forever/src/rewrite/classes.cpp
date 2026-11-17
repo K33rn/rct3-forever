@@ -153,7 +153,10 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 25) {   // a reference made on the stack (0xBD9AD0), given with the name value and a flag to fn on the member at off, let go (0xBD99E0)
             alignas(16) uint8_t reference[0x40];
             void *made = ((void *(__thiscall *)(void *))0xbd9ad0)(reference);
-            ((void(__thiscall *)(void *, uint32_t, void *, uint32_t))(uintptr_t)op.fn)(self + op.off, op.value, made, op.args[0]);
+            if (op.count)
+                ((void(__thiscall *)(void *, uint32_t, void *, uint32_t))(uintptr_t)op.fn)(self + op.off, op.value, made, op.args[0]);
+            else   // (given only the name value and the reference)
+                ((void(__thiscall *)(void *, uint32_t, void *))(uintptr_t)op.fn)(self + op.off, op.value, made);
             ((void(__thiscall *)(void *))0xbd99e0)(reference);
         } else if (op.kind == 22) {   // Random::Ran0's value (left on the FPU), times the game constant at value (if any), stored at off
             uintptr_t fn = op.fn;
