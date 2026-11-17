@@ -240,8 +240,8 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
             ((void(__thiscall *)(void *))0xbec5e0)(text);
         }
         uint8_t *info = ((uint8_t * (__thiscall *)(void *))(*(void ***)used)[1])(used);
-        int32_t index = *(int32_t *)INDEX;
-        if (info && index < *(int32_t *)(info + 0x18)) {
+        int32_t index = FIELD_COUNT ? *(int32_t *)INDEX : 0;   // (a class registering no fields only casts: nothing else read)
+        if (FIELD_COUNT && info && index < *(int32_t *)(info + 0x18)) {
             uint8_t *part = (*(uint8_t ***)(info + 0x14))[index];
             if (part) {
                 uintptr_t fields_at = (uintptr_t)used + *(int32_t *)(part + 0x10);   // integers: the compiler would drop a pointer's null check
