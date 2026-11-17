@@ -627,6 +627,9 @@ static uint32_t __cdecl stub_class_value() {   // (a function taking nothing who
     return arena<uint32_t>(0x4c)[0] * 0x9e3779b1u;
 }
 static uint32_t g_class_random_n;   // (the draws so far in this run)
+// an object the instance global holds already: its table's slot 0 (the deleting destructor) notes what it was given
+static void __thiscall stub_class_old_delete(void *self, uint32_t flag) { record(0x9d, self); record(0x9d, (void *)(uintptr_t)flag); }
+static void *const g_class_old_table[2] = {(void *)stub_class_old_delete, (void *)stub_class_old_delete};
 // a game object the copy makes when its global holds none (class_singletons): its constructor's stand-in notes what it was
 // given and puts the object in the global, as the real one does
 extern const uint32_t class_singletons[];
@@ -6526,6 +6529,7 @@ static std::vector<Test> tests() {
                              *arena<uint32_t>(ALLOC_NEXT) = 0;
                              for (int k = 0; k < 0x2000 / 4; k++) arena<uint32_t>(0x2000)[k] = r.next();   // (new memory holds what was there)
                              arena<uint32_t>(0x8b48)[0] = r.range(0, 1);   // (the game object of class_singletons there already, or not)
+                             arena<uint32_t>(0x8b4c)[0] = r.range(0, 1);   // (and an object in the instance global already, or not)
                              for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9000)[k] = r.next();   // (and its contents when there)
                              static void *vtable[2] = {nullptr, (void *)stub_object_info};
                              uint8_t *description = arena<uint8_t>(0x4000);
@@ -6579,7 +6583,8 @@ static std::vector<Test> tests() {
                              *(uint32_t *)0x133a274 = arena<uint32_t>(0x8b20)[0];
                              *(uint32_t *)0x133a270 = 0;   // the water manager's global (set by its constructor)
                              ((uint32_t *)0x10eeacc)[0] = arena<uint32_t>(0x8b38)[0], ((uint32_t *)0x10eeacc)[1] = arena<uint32_t>(0x8b38)[1];
-                             if (g_class_instance) *(uint32_t *)g_class_instance = 0;
+                             arena<uint32_t>(0x9100)[0] = (uint32_t)(uintptr_t)g_class_old_table;
+                             if (g_class_instance) *(uint32_t *)g_class_instance = arena<uint32_t>(0x8b4c)[0] ? (uint32_t)(uintptr_t)arena<void>(0x9100) : 0;
                              // a game list for the end's globals: what they point to (0x7C0) is a list head, and at +0x14 holds another (0x7E0)
                              uint32_t *list = arena<uint32_t>(0x7c0), *inner = arena<uint32_t>(0x7e0);
                              list[0] = (uint32_t)(uintptr_t)arena<void>(0x7b0), arena<uint32_t>(0x7b0)[1] = (uint32_t)(uintptr_t)list;

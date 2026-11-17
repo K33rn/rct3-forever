@@ -240,7 +240,12 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
             link_before((uint32_t *)(self + TAIL->member), TAIL->link_at < 0 ? (uint32_t *)list : *(uint32_t **)(list + TAIL->link_at));
         }
         if (TAIL->count) ++*(uint32_t *)TAIL->count;
-        if (TAIL->instance) *(uint8_t **)TAIL->instance = self;
+        if (TAIL->instance) {   // (bit 0: the object there before, if any, deleted first: its table's slot 0, given 1)
+            uint8_t *volatile *const at = (uint8_t * volatile *)(TAIL->instance & ~(uintptr_t)1);
+            if (TAIL->instance & 1)
+                if (void *before = *at) ((void(__thiscall *)(void *, uint32_t))(**(void ***)before))(before, 1);
+            *at = self;
+        }
         if (TAIL->after) TAIL->after(self);
     }
     return self;

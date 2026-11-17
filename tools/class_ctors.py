@@ -1257,6 +1257,7 @@ def parse(a, n):
     tail_depth, tail_pushed, marked = depth, [], False
     after = None
     skip_to = 0
+    replaced = 0   # (a global whose object, if any, is deleted before this one takes its place)
     for ti, s in enumerate(tail):
         if ti < skip_to:
             continue
@@ -1272,6 +1273,19 @@ def parse(a, n):
         if s == 'call 0xddcda7':
             regs.pop('ecx', None)
             continue
+        # the global's object before, if any, deleted (its table's slot 0, given 1): mov ecx, [G]; cmp ecx, 0; je OVER;
+        # mov R, [ecx]; push 1; call [R]; OVER: (then this one put in its place, below)
+        if not tail_pushed and not replaced and (m := re.fullmatch(r'mov ecx, dword ptr \[(0x1[0-9a-f]{6})\]', s)) and ti + 6 < len(tail):
+            mc = re.fullmatch(r'(?:cmp ecx, ' + REG + r'|test ecx, ecx)', tail[ti + 1])
+            mj = re.fullmatch(r'je (0x[0-9a-f]+)', tail[ti + 2])
+            mr = re.fullmatch(r'mov ' + REG + r', dword ptr \[ecx\]', tail[ti + 3])
+            if mc and (not mc.group(1) or regs.get(mc.group(1)) == ('const', 0)) and mj and mr and tail[ti + 4] == 'push 1' and \
+                    tail[ti + 5] == 'call dword ptr [%s]' % mr.group(1) and ins[last + 1 + ti + 6].address == num(mj.group(1)):
+                replaced = num(m.group(1))
+                for r in ('eax', 'ecx', 'edx', mr.group(1)):
+                    regs.pop(r, None)
+                skip_to = ti + 6
+                continue
         if a in HAND_AFTER and s == HAND_AFTER[a][0] and not tail_pushed:
             after = HAND_AFTER[a][1]   # the rest is the hand-written function's
             break
@@ -1381,6 +1395,10 @@ def parse(a, n):
         raise Reject('end link')
     if a in HAND_AFTER and not after:
         raise Reject('hand-written end not found')
+    if replaced:
+        if replaced != instance:
+            raise Reject('end replaced')
+        instance |= 1   # (bit 0: the object there before deleted first)
     tail_of = (instance, link, count, after) if (instance or link or count or after) else None
     return desc, index, ops, fields, names, nargs, pair, tail_of, base_fn, base_n, base_x
 
