@@ -851,6 +851,13 @@ static void slot_part_44f240(uint8_t *self) {
         *(volatile uint32_t *)(again + 0x30) = 0;
     }
 }
+// 0x8DD190, its end: the game flags 0x1313C64 given bit 0 and their bits 1-3 cleared; then the object put in the global
+// 0x1313C60, the one there before (if any) deleted first (its table's slot 0, given 1).
+static void flagged_instance_8dd190(uint8_t *self) {
+    *(volatile uint32_t *)0x1313c64 = (*(volatile uint32_t *)0x1313c64 & 0xfffffff1) | 1;
+    if (void *before = *(void *volatile *)0x1313c60) ((void(__thiscall *)(void *, uint32_t))(**(void ***)before))(before, 1);
+    *(uint8_t *volatile *)0x1313c60 = self;
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

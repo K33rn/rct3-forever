@@ -39,7 +39,7 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x7977f0: ('mov eax, dword ptr [0x10ef9d0]', 'chained_7977f0'), 0xa0a650: ('mov dword ptr [esi + 0xb8], eax', 'registered_a0a650'),
               0xaf19c0: ('mov edx, dword ptr [0x13ce5c0]', 'listed_af19c0'), 0xa630e0: ('push 0xe0', 'parts_a630e0'),
               0x79a440: ('mov dword ptr [esi + 0x200], 0x12fa250', 'listed_79a440'), 0xadf4e0: ('mov edx, dword ptr [0x13ce524]', 'named_parts_adf4e0'),
-              0x44f240: ('mov ecx, dword ptr [0x1106d10]', 'slot_part_44f240')}
+              0x44f240: ('mov ecx, dword ptr [0x1106d10]', 'slot_part_44f240'), 0x8dd190: ('mov edx, dword ptr [0x1313c64]', 'flagged_instance_8dd190')}
 # (the ends written by hand that put the object in a game global earlier than the test looks for it: that global)
 HAND_INSTANCES = {0xa630e0: 0x13429a8}
 # (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
@@ -47,7 +47,7 @@ HAND_ARRAYS = {0xa2b130: 0x1342788, 0xa2a600: 0x134276c}
 # (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)
 HAND_CHAINS = {0x7557d0: (0x10ef7f8, 0x1306508), 0x79e5b0: (0x10efb90, 0x1306c14), 0x7977f0: (0x10ef9d0, 0x1306af8)}
 # (the ends that raise a game count, doing something the first time: the count's global, for the test)
-HAND_COUNTS = {0x7977f0: 0x1306afc}
+HAND_COUNTS = {0x7977f0: 0x1306afc, 0x8dd190: 0x1313c64}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.

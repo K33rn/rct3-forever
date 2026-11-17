@@ -12459,7 +12459,7 @@ address,size,name,callers,status
 0x8dce20,192,,8,documented
 0x8dcee0,378,,3,documented
 0x8dd060,40,,7,documented
-0x8dd190,249,,46,documented
+0x8dd190,249,Class::Construct,46,rewritten
 0x8dd2b0,81,,1,documented
 0x8dd310,96,,1,documented
 0x8dd380,42,,11,documented
