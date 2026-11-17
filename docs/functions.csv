@@ -5472,8 +5472,8 @@ address,size,name,callers,status
 0x61c280,142,,1,documented
 0x61c320,223,Array::Resize61C320,5,rewritten
 0x61c400,1007,,1,documented
-0x61c7f0,434,,9,documented
-0x61c9b0,436,,1,documented
+0x61c7f0,434,Class::Construct,9,rewritten
+0x61c9b0,436,Class::Construct,1,rewritten
 0x61cb70,111,Text::FromField61CB70,6,rewritten
 0x61cbe0,758,,5,documented
 0x61cef0,60,,3,documented
@@ -15923,7 +15923,7 @@ address,size,name,callers,status
 0xa544a0,240,,2,documented
 0xa54590,147,Destructor::Steps,9,rewritten
 0xa54630,237,StructArrayLoad,1,rewritten
-0xa54720,723,,3,documented
+0xa54720,723,Class::Construct,3,rewritten
 0xa54a30,95,Destructor::TablesAndMember,1,rewritten
 0xa54a90,135,,1,documented
 0xa54b40,92,,1,documented

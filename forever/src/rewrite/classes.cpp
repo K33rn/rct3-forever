@@ -179,7 +179,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
             for (uint32_t i = 0; i < 5; i++)
                 args[i] = op.globals >> i & op.selfs >> i & 1 ?   // (both: a dword inside a global's object, {global | offset << 25})
                           *(volatile uint32_t *)(uintptr_t)(*(volatile uint32_t *)(uintptr_t)(op.args[i] & 0x1ffffff) + (op.args[i] >> 25)) :
-                          op.globals >> i & 1 ? *(uint32_t *)(uintptr_t)op.args[i] : op.selfs >> i & 1 ? (uint32_t)(uintptr_t)(self + op.args[i]) : op.args[i];
+                          op.globals >> i & 1 ? *(uint32_t *)(uintptr_t)op.args[i] : op.selfs >> i & 1 ? (op.args[i] >> 31 ? given[op.args[i] & 0xff] : (uint32_t)(uintptr_t)(self + op.args[i])) : op.args[i];   // (bit 31: an argument's value)
             if (op.kind == 11)   // a stdcall with five values (the compiler's array constructor, 0xDDCF99)
                 ((void(__stdcall *)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))op.fn)(args[0], args[1], args[2], args[3], args[4]);
             else if (op.kind == 10) {   // new: value bytes, fn constructs them (nothing when there was no memory)

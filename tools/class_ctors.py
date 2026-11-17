@@ -1133,6 +1133,8 @@ def parse(a, n):
             pushed.append(('gobj', regs[m.group(1)][1] | regs[m.group(1)][2] << 25))   # (read as the call is made: nothing between)
         elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'this':
             pushed.append(('self', regs[m.group(1)][1]))   # a pointer into the object itself
+        elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'arg' and regs[m.group(1)][1] not in dirty:
+            pushed.append(('self', 0x80000000 | regs[m.group(1)][1]))   # an argument's value (self bit with bit 31: given[n])
         elif s == 'call 0xbcdfc0':
             # a member made with new: size bytes (0xBCDFC0), the class's constructor run on them with plain values (or
             # null when there was no memory); the result is stored into the member later (kind 10, see the store)
