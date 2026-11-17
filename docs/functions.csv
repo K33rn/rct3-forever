@@ -1784,7 +1784,7 @@ address,size,name,callers,status
 0x4900f0,594,,1,documented
 0x490350,48,ObjectArray::Free,2,rewritten
 0x490420,258,ObjectArray::SetCapacity,2,rewritten
-0x490530,425,,3,documented
+0x490530,425,Class::Construct,3,rewritten
 0x490700,30,DeletingDestructor,2,rewritten
 0x490720,212,,1,documented
 0x490800,118,ObjectRef::DeleteTarget,1,rewritten
@@ -7459,7 +7459,7 @@ address,size,name,callers,status
 0x6d68c0,502,Class::Construct,7,rewritten
 0x6d6ac0,466,,22,documented
 0x6d6ca0,1947,,24,documented
-0x6d7450,366,,39,documented
+0x6d7450,366,Class::Construct,39,rewritten
 0x6d7610,30,DeletingDestructor,2,rewritten
 0x6d7630,102,Factory::Create,1,rewritten
 0x6d76a0,102,Factory::Create,1,rewritten
@@ -9366,7 +9366,7 @@ address,size,name,callers,status
 0x7975c0,47,Owned::Replace7975C0,6,rewritten
 0x7975f0,25,Step::Then67AC00,1,rewritten
 0x797630,19,,1,documented
-0x7977f0,825,,2,documented
+0x7977f0,825,Class::Construct,2,rewritten
 0x797bb0,418,,1,documented
 0x797d70,1183,,2,documented
 0x798210,332,,1,documented

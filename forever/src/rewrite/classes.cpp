@@ -134,6 +134,8 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 8) *(uint32_t *)(self + op.off) = given[op.value];
         else if (op.kind == 12) self[op.off] = (uint8_t)given[op.value];   // an argument's low byte
         else if (op.kind == 33) self[op.off] = (uint8_t)given[op.value] != 0;   // whether it is not 0
+        else if (op.kind == 38) *(uint32_t *)(self + op.off) = (uint8_t)given[op.value];   // or a dword given it, zero-extended
+        else if (op.kind == 37) *(volatile uint32_t *)(self + op.off) |= op.value;   // a member with bits set
         else if (op.kind == 13) (*(uint32_t **)(self + op.off))[*(uint32_t *)(self + op.off + 4)] = op.value;
         else if (op.kind == 18) *(uint32_t *)(self + op.off) = *(uint32_t *)(self + op.value);
         else if (op.kind == 17) class_hand(op.value, self, given);
@@ -675,6 +677,20 @@ static void colour_listed_46d2b0(uint8_t *self) {
 // 0x6E6530, its end: +0x90 cleared when +0x88 is not 0.
 static void cleared_6e6530(uint8_t *self) {
     if (*(volatile uint32_t *)(self + 0x88)) *(volatile uint32_t *)(self + 0x90) = 0;
+}
+// 0x7977F0, its end: 0x1306AF8 cleared when the chain 0x10EF9D0 points to is empty; +0x200 set to 0x12F8C38; the first
+// time (the count 0x1306AFC still 0) the game objects at 0x1306B1C, 0x1306B64 and 0x1306B4C set up (0x7541A0 on each),
+// and the count raised; then the member at +0x510 linked into the list 0x10EF9E0 points to, just after its head.
+static void chained_7977f0(uint8_t *self) {
+    cleared_if_chain_empty(0x10ef9d0, 0x1306af8);
+    *(volatile uint32_t *)(self + 0x200) = 0x12f8c38;
+    if (!*(volatile uint32_t *)0x1306afc) {
+        ((void(__thiscall *)(void *))0x7541a0)((void *)0x1306b1c);
+        ((void(__thiscall *)(void *))0x7541a0)((void *)0x1306b64);
+        ((void(__thiscall *)(void *))0x7541a0)((void *)0x1306b4c);
+    }
+    ++*(volatile uint32_t *)0x1306afc;
+    link_before((uint32_t *)(self + 0x510), *(uint32_t *volatile *)0x10ef9e0);
 }
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).

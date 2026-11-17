@@ -634,6 +634,9 @@ static uintptr_t g_class_chain, g_class_chain_flag;
 // and one adding the object to a game object's array (class_owner_arrays): the global points at arena 0x9500, an array of
 // the case's room and count (full or not) with items at 0x9600
 extern const uint32_t class_owner_arrays[];
+extern const uint32_t class_counts[];   // (and one raising a game count: given 0 or not by the case, noted after)
+static uintptr_t g_class_count;
+static uint32_t g_class_count_saved;
 static uintptr_t g_class_owner;
 static uint32_t g_class_owner_saved;
 static uint32_t g_class_chain_saved[2];
@@ -6561,6 +6564,7 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x8b4c)[0] = r.range(0, 1);   // (and an object in the instance global already, or not)
                              arena<uint32_t>(0x8b50)[0] = r.next();         // (what 0x6C3BE0's list holds)
                              arena<uint32_t>(0x8b54)[0] = r.range(0, 3);    // (how many nodes follow the first in a class_chains chain)
+                             arena<uint32_t>(0x8b60)[0] = r.range(0, 1) ? r.range(1, 5) : 0;   // (a class_counts count)
                              arena<uint32_t>(0x8b58)[0] = r.range(0, 20);   // (a class_owner_arrays array's room, and its count: full half the time)
                              arena<uint32_t>(0x8b58)[1] = r.range(0, 1) ? arena<uint32_t>(0x8b58)[0] : r.range(0, arena<uint32_t>(0x8b58)[0]);
                              for (int k = 0; k < 0x80 / 4; k++) arena<uint32_t>(0x9600)[k] = r.next();
@@ -6637,6 +6641,7 @@ static std::vector<Test> tests() {
                              // (the object at 0xA000, clear of the handles and lists above: the biggest classes reach +0x1000)
                              for (int k = 0; k < 0x1000 / 4; k++) arena<uint32_t>(0xa000)[k] = arena<uint32_t>(0x100)[k & 0xff];
                              g_class_random_n = 0;
+                             if (g_class_count) *(volatile uint32_t *)g_class_count = arena<uint32_t>(0x8b60)[0];
                              if (g_class_owner) {
                                  arena<uint32_t>(0x9500)[0x18 / 4] = arena<uint32_t>(0x8b58)[0];
                                  arena<uint32_t>(0x9500)[0x1c / 4] = arena<uint32_t>(0x8b58)[1];
@@ -6660,7 +6665,8 @@ static std::vector<Test> tests() {
                              case 6: made = ((void *(__thiscall *)(void *, void *, U, U, U, U, U))fn)(self, d, a[1], a[2], a[3], x[0], x[1]); break;
                              default: made = ((void *(__thiscall *)(void *, void *, U, U, U, U, U, U))fn)(self, d, a[1], a[2], a[3], x[0], x[1], x[2]); break;
                              }
-                             if (g_class_chain) arena<uint32_t>(0x84)[0] = *(volatile uint32_t *)g_class_chain_flag;   // (the flag, so the memory check sees it)
+                             if (g_class_chain) arena<uint32_t>(0x84)[0] = *(volatile uint32_t *)g_class_chain_flag;
+                             if (g_class_count) arena<uint32_t>(0x88)[0] = *(volatile uint32_t *)g_class_count;   // (the flag, so the memory check sees it)
                              if (g_class_instance)   // what the instance global was given, as an arena offset, so the memory check sees it
                                  arena<uint32_t>(0x70)[0] = *(uint32_t *)g_class_instance - (uint32_t)(uintptr_t)arena<void>(0);
                              for (int i = 0; i < 4; i++)   // what the end left in them (a count goes up by one)
@@ -6691,6 +6697,9 @@ static std::vector<Test> tests() {
         g_class_single = 0;
         g_class_chain = g_class_chain_flag = 0;
         g_class_owner = 0;
+        g_class_count = 0;
+        for (int k = 0; class_counts[k]; k += 2)
+            if (class_counts[k] == e->at) g_class_count = class_counts[k + 1], g_class_count_saved = *(volatile uint32_t *)g_class_count;
         for (int k = 0; class_owner_arrays[k]; k += 2)
             if (class_owner_arrays[k] == e->at) g_class_owner = class_owner_arrays[k + 1], g_class_owner_saved = *(volatile uint32_t *)g_class_owner;
         for (int k = 0; class_chains[k]; k += 3)
@@ -6740,7 +6749,7 @@ static std::vector<Test> tests() {
             {0x403f30, (void *)stub_class_named_in}, {0xbcfb10, (void *)stub_class_text_c}, {0xbdf160, (void *)stub_class_lookup},
             {0xbdf1a0, (void *)stub_class_lookup2}, {0xbd14e0, (void *)stub_class_text_assign}, {0xbd1880, (void *)stub_class_text_release},
             {0xddcdb5, (void *)stub_class_sprintf}, {0x9402f0, (void *)stub_class_water_step}, {0x942510, (void *)stub_class_water_list},
-            {0x63e1c0, (void *)stub_class_given}, {0x6c3be0, (void *)stub_class_name_list}, {0x4de7d0, (void *)stub_class_member2}, {0x45b600, (void *)stub_class_member2}, {0x991a50, (void *)stub_class_member1}, {0x4bf730, (void *)stub_class_entries_sized}, {0x6f5f30, (void *)stub_class_member1}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
+            {0x63e1c0, (void *)stub_class_given}, {0x6c3be0, (void *)stub_class_name_list}, {0x4de7d0, (void *)stub_class_member2}, {0x45b600, (void *)stub_class_member2}, {0x991a50, (void *)stub_class_member1}, {0x7541a0, (void *)stub_class_member0}, {0x4bf730, (void *)stub_class_entries_sized}, {0x6f5f30, (void *)stub_class_member1}, {0xa5d540, (void *)stub_class_slots}, {0x4040f0, (void *)stub_class_named_make}, {0xbcf7d0, (void *)stub_class_wide_from}, {0x98a770, (void *)stub_class_given_reference}, {0x40f730, (void *)stub_class_reference_gone}};   // (0x704A50, which only works on the object, runs as it is)
         static void *const by_count[5] = {(void *)stub_class_member0, (void *)stub_class_member1, (void *)stub_class_member2, (void *)stub_class_member3, (void *)stub_class_member4};
         for (const uint32_t *f = class_member_fns; *f; f += 2) {
             bool have = false;
@@ -6757,6 +6766,7 @@ static std::vector<Test> tests() {
         unstub_many();
         if (g_class_single) *(volatile uint32_t *)g_class_single = g_class_single_saved;
         if (g_class_owner) *(volatile uint32_t *)g_class_owner = g_class_owner_saved;
+        if (g_class_count) *(volatile uint32_t *)g_class_count = g_class_count_saved;
         if (g_class_chain) *(volatile uint32_t *)g_class_chain = g_class_chain_saved[0], *(volatile uint32_t *)g_class_chain_flag = g_class_chain_saved[1];
         memcpy((void *)0x10f1cf8, g_weather_defaults, sizeof g_weather_defaults);
         *(uint32_t *)0x133a274 = g_water_table;

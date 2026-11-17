@@ -35,11 +35,14 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x79e5b0: ('mov eax, dword ptr [0x10efb90]', 'chained_79e5b0'), 0xb17c70: ('lea eax, [edi + 8]', 'references_emptied_b17c70'),
               0x992b60: ('push 0x14', 'member_992b60'), 0xa2b130: ('mov eax, dword ptr [0x1342788]', 'appended_a2b130'),
               0x46d2b0: ('call 0x475180', 'colour_listed_46d2b0'), 0xa2a600: ('mov eax, dword ptr [0x134276c]', 'appended_a2a600'),
-              0xa189c0: ('call 0x4751e0', 'random_kind_a189c0'), 0x6e6530: ('cmp dword ptr [esi + 0x88], ebx', 'cleared_6e6530')}
+              0xa189c0: ('call 0x4751e0', 'random_kind_a189c0'), 0x6e6530: ('cmp dword ptr [esi + 0x88], ebx', 'cleared_6e6530'),
+              0x7977f0: ('mov eax, dword ptr [0x10ef9d0]', 'chained_7977f0')}
 # (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
 HAND_ARRAYS = {0xa2b130: 0x1342788, 0xa2a600: 0x134276c}
 # (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)
-HAND_CHAINS = {0x7557d0: (0x10ef7f8, 0x1306508), 0x79e5b0: (0x10efb90, 0x1306c14)}
+HAND_CHAINS = {0x7557d0: (0x10ef7f8, 0x1306508), 0x79e5b0: (0x10efb90, 0x1306c14), 0x7977f0: (0x10ef9d0, 0x1306af8)}
+# (the ends that raise a game count, doing something the first time: the count's global, for the test)
+HAND_COUNTS = {0x7977f0: 0x1306afc}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.
@@ -1025,6 +1028,10 @@ def parse(a, n):
                 ops.append((1, off, regs['e' + v[0] + 'x'][1] & 0xff, 0, []))
             elif v in regs and regs[v] and regs[v][0] == 'this' and m.group(1) == 'dword':
                 ops.append((2, off, regs[v][1], 0, []))
+            elif v in regs and regs[v] and regs[v][0] == 'fieldor' and m.group(1) == 'dword' and regs[v][1] == off:
+                ops.append((37, off, regs[v][2], 0, []))   # the member with bits set
+            elif v in regs and regs[v] and regs[v][0] == 'argzx' and m.group(1) == 'dword':
+                ops.append((38, off, regs[v][1], 0, []))   # an argument's low byte, zero-extended
             elif v in regs and regs[v] and regs[v][0] == 'arg' and m.group(1) == 'dword':
                 ops.append((8, off, regs[v][1], 0, []))
             elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'argnz' and m.group(1) == 'byte':
@@ -1301,6 +1308,19 @@ def parse(a, n):
             pushed = []
             for r in ('eax', 'ecx', 'edx'):
                 regs.pop(r, None)
+        elif (m := re.fullmatch(r'cmp ' + REG + ', ' + REG, s)) and (regs.get(m.group(1)) or ('',))[0] == 'const' and \
+                regs.get(m.group(1)) == regs.get(m.group(2)) and k + 2 < len(t) and \
+                (mj := re.fullmatch(r'je (0x[0-9a-f]+)', t[k + 1] if not re.fullmatch(STATE, t[k + 1]) else t[k + 2])) and \
+                num(mj.group(1)) > ins[k].address and not pushed and not pending:
+            # (equal constants: the jump is taken, the code it passes over never runs; a state byte between is passed over too)
+            k = next(q_ for q_ in range(len(ins)) if ins[q_].address == num(mj.group(1)))
+            continue
+        elif (m := re.fullmatch(r'or ' + REG + r', (0x[0-9a-f]+|\d+)', s)) and (regs.get(m.group(1)) or ('',))[0] == 'field' and \
+                all(o[0] in (0, 1, 2, 5, 8, 12, 18, 32) and (o[1] + (1 if o[0] in (1, 12) else 4) <= regs[m.group(1)][1] or o[1] >= regs[m.group(1)][1] + 4) for o in ops[regs[m.group(1)][2]:]):
+            regs[m.group(1)] = ('fieldor', regs[m.group(1)][1], num(m.group(2)))   # (a member's value with bits set, as it is now)
+        elif (m := re.fullmatch(r'movzx ' + REG + r', byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and \
+                (slot_ := num(m.group(2)) - depth - 4 * len(pushed)) >= 8 and slot_ % 4 == 0 and slot_ // 4 <= nargs and slot_ // 4 not in dirty:
+            regs[m.group(1)] = ('argzx', slot_ // 4)   # (an argument's low byte, zero-extended)
         elif re.fullmatch(r'(test|cmp) ' + REG + ', ' + REG, s) or ins[k].mnemonic == 'jne':
             pass
         elif (m := re.fullmatch(r'cmp dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, s)) and num(m.group(1)) - depth - 4 * len(pushed) == 4 and regs.get(m.group(2)) == ('const', 0):
@@ -1647,6 +1667,9 @@ out.append('const uint32_t class_chains[] = {' + ''.join(f'{a_:#x}, {c_:#x}, {f_
 out.append("// the copies whose end adds the object to a game object's array: copy, the global (the test gives it an array of its own)")
 out.append('extern const uint32_t class_owner_arrays[];')
 out.append('const uint32_t class_owner_arrays[] = {' + ''.join(f'{a_:#x}, {g_:#x}, ' for a_, g_ in sorted(HAND_ARRAYS.items()) if a_ in done_set) + '0};')
+out.append('// the copies whose end raises a game count (doing something the first time): copy, the count (the test gives it 0 or not, and notes it)')
+out.append('extern const uint32_t class_counts[];')
+out.append('const uint32_t class_counts[] = {' + ''.join(f'{a_:#x}, {g_:#x}, ' for a_, g_ in sorted(HAND_COUNTS.items()) if a_ in done_set) + '0};')
 out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
 out.append('extern const uint32_t class_ref_setters[];')
 out.append('const uint32_t class_ref_setters[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters)) + '0};')
