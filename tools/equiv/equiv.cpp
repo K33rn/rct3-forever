@@ -627,6 +627,16 @@ static uint32_t __cdecl stub_class_value() {   // (a function taking nothing who
     return arena<uint32_t>(0x4c)[0] * 0x9e3779b1u;
 }
 static uint32_t g_class_random_n;   // (the draws so far in this run)
+// a game object the copy makes when its global holds none (class_singletons): its constructor's stand-in notes what it was
+// given and puts the object in the global, as the real one does
+extern const uint32_t class_singletons[];
+static uintptr_t g_class_single;          // (the copy's global, or 0)
+static uint32_t g_class_single_saved;
+static void *__thiscall stub_class_single(void *self, uint32_t a) {
+    record(0x9c, self); record(0x9c, (void *)(uintptr_t)a);
+    if (g_class_single) *(void *volatile *)g_class_single = self;
+    return self;
+}
 static float __cdecl stub_class_random() {   // (Random::Ran0: a new value in [0, 1) for each draw, from the case, noted)
     record(0x475180, nullptr);
     uint32_t h = arena<uint32_t>(0x4c)[0] + 0x9e3779b9u * ++g_class_random_n;
@@ -6515,6 +6525,8 @@ static std::vector<Test> tests() {
                              fresh(r);
                              *arena<uint32_t>(ALLOC_NEXT) = 0;
                              for (int k = 0; k < 0x2000 / 4; k++) arena<uint32_t>(0x2000)[k] = r.next();   // (new memory holds what was there)
+                             arena<uint32_t>(0x8b48)[0] = r.range(0, 1);   // (the game object of class_singletons there already, or not)
+                             for (int k = 0; k < 0x100 / 4; k++) arena<uint32_t>(0x9000)[k] = r.next();   // (and its contents when there)
                              static void *vtable[2] = {nullptr, (void *)stub_object_info};
                              uint8_t *description = arena<uint8_t>(0x4000);
                              *(void **)description = vtable;
@@ -6585,6 +6597,7 @@ static std::vector<Test> tests() {
                              // (the object at 0xA000, clear of the handles and lists above: the biggest classes reach +0x1000)
                              for (int k = 0; k < 0x1000 / 4; k++) arena<uint32_t>(0xa000)[k] = arena<uint32_t>(0x100)[k & 0xff];
                              g_class_random_n = 0;
+                             if (g_class_single) *(volatile uint32_t *)g_class_single = arena<uint32_t>(0x8b48)[0] ? (uint32_t)(uintptr_t)arena<void>(0x9000) : 0;
                              void *self = arena<void>(0xa000), *d = (void *)(uintptr_t)a[0], *made = nullptr;
                              typedef uint32_t U;
                              switch (g_class_args) {
@@ -6622,6 +6635,11 @@ static std::vector<Test> tests() {
         }
         g_class_args = 3;
         g_class_instance = 0;
+        g_class_single = 0;
+        uint32_t single_fn = 0;
+        for (int k = 0; class_singletons[k]; k += 3)
+            if (class_singletons[k] == e->at) g_class_single = class_singletons[k + 1], single_fn = class_singletons[k + 2];
+        if (g_class_single) g_class_single_saved = *(volatile uint32_t *)g_class_single;
         memset(g_class_tail_globals, 0, sizeof g_class_tail_globals);
         for (int k = 0x80; k < 0x1000; k++)
             if (code[k] == 0x64 && code[k + 1] == 0x89 && code[k + 2] == 0x0d && !*(const uint32_t *)(code + k + 3)) {
@@ -6668,12 +6686,14 @@ static std::vector<Test> tests() {
             if (!have) list.push_back({f[0], by_count[f[1]]});
         }
         for (int k = 0; class_value_calls[k]; k++) list.push_back({class_value_calls[k], (void *)stub_class_value});   // (the functions taking nothing)
+        if (single_fn) list.push_back({single_fn, (void *)stub_class_single});
         for (int k = 0; class_ref_setters[k]; k++)   // (the member functions given a stack reference: as 0x560D20)
             if (class_ref_setters[k] != 0x560d20) list.push_back({class_ref_setters[k], (void *)stub_class_named_text});
         stubs_for_now(list);
     };
     class_construct.finish = [](const rewrite::Entry *) {
         unstub_many();
+        if (g_class_single) *(volatile uint32_t *)g_class_single = g_class_single_saved;
         memcpy((void *)0x10f1cf8, g_weather_defaults, sizeof g_weather_defaults);
         *(uint32_t *)0x133a274 = g_water_table;
         *(uint32_t *)0x13d0e04 = g_resource_manager;

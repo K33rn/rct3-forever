@@ -10761,7 +10761,7 @@ address,size,name,callers,status
 0x819220,30,DeletingDestructor,2,rewritten
 0x819240,26,Object::Forward2,1,rewritten
 0x8192d0,30,DeletingDestructor,2,rewritten
-0x819320,647,,2,documented
+0x819320,647,Class::Construct,2,rewritten
 0x8195b0,30,DeletingDestructor,2,rewritten
 0x8195d0,1104,,3,documented
 0x819ab0,192,,1,documented
@@ -12210,7 +12210,7 @@ address,size,name,callers,status
 0x8b79c0,1227,,1,documented
 0x8b7e90,517,,1,documented
 0x8b8240,67,Reference::Reference(object),0,rewritten
-0x8b82a0,1578,,2,documented
+0x8b82a0,1578,Class::Construct,2,rewritten
 0x8b8940,501,,1,documented
 0x8b8b40,352,,2,documented
 0x8b8ca0,504,,3,documented

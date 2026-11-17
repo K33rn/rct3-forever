@@ -162,12 +162,19 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
                 ((void(__cdecl *)(uint32_t))(uintptr_t)op.fn)(memory);
                 *(volatile uint32_t *)(self + op.off) = 0;
             }
+        } else if (op.kind == 30) {   // a game object made if its global (value) holds none: off bytes, fn run on them with args[0]
+            if (!*(volatile uint32_t *)(uintptr_t)op.value) {
+                void *memory = ((void *(__cdecl *)(uint32_t))0xbcdfc0)(op.off);
+                if (memory) ((void *(__thiscall *)(void *, uint32_t))(uintptr_t)op.fn)(memory, op.args[0]);
+            }
         } else if (op.kind == 29)   // an array member {items, count} given value up to its count, both read again on each pass
             for (int32_t i = 0; i < *(volatile int32_t *)(self + op.off + 4); i++) (*(uint32_t *volatile *)(self + op.off))[i] = op.value;
         else {
             uint32_t args[5];
             for (uint32_t i = 0; i < 5; i++)
-                args[i] = op.globals >> i & 1 ? *(uint32_t *)(uintptr_t)op.args[i] : op.selfs >> i & 1 ? (uint32_t)(uintptr_t)(self + op.args[i]) : op.args[i];
+                args[i] = op.globals >> i & op.selfs >> i & 1 ?   // (both: a dword inside a global's object, {global | offset << 25})
+                          *(volatile uint32_t *)(uintptr_t)(*(volatile uint32_t *)(uintptr_t)(op.args[i] & 0x1ffffff) + (op.args[i] >> 25)) :
+                          op.globals >> i & 1 ? *(uint32_t *)(uintptr_t)op.args[i] : op.selfs >> i & 1 ? (uint32_t)(uintptr_t)(self + op.args[i]) : op.args[i];
             if (op.kind == 11)   // a stdcall with five values (the compiler's array constructor, 0xDDCF99)
                 ((void(__stdcall *)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))op.fn)(args[0], args[1], args[2], args[3], args[4]);
             else if (op.kind == 10) {   // new: value bytes, fn constructs them (nothing when there was no memory)

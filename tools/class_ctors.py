@@ -718,6 +718,41 @@ def parse(a, n):
             j += 1
         return j
 
+    def single(k):
+        mm = re.fullmatch(r'cmp dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, t[k])
+        if not mm or not zero(mm.group(2)) or k + 14 >= len(t):
+            return None
+        j = skip_state(k + 1)
+        if (mj := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], ' + REG, t[j])) and zero(mj.group(2)) and \
+                num(mj.group(1)) - depth - 4 * len(pushed) < 0:
+            j = skip_state(j + 1)   # (a local cleared between: the exception frame's)
+        mh = re.fullmatch(r'jne (0x[0-9a-f]+)', t[j])
+        ms = re.fullmatch(r'push (0x[0-9a-f]+|\d+)', t[j + 1])
+        ml = re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], eax', t[j + 4])
+        if not mh or not ms or t[j + 2] != 'call 0xbcdfc0' or t[j + 3] != 'add esp, 4' or not ml:
+            return None
+        q = skip_state(j + 5)
+        mc = re.fullmatch(r'cmp eax, ' + REG, t[q])
+        if not mc or not zero(mc.group(1)):
+            return None
+        q = skip_state(q + 1)
+        mn = re.fullmatch(r'je (0x[0-9a-f]+)', t[q])
+        mv = re.fullmatch(r'push (' + REG[1:-1] + r'|0x[0-9a-f]+|\d+)', t[q + 1])
+        mf = re.fullmatch(r'call (0x[0-9a-f]+)', t[q + 3])
+        if not mn or not mv or t[q + 2] != 'mov ecx, eax' or not mf or ins[q + 4].address != num(mn.group(1)):
+            return None
+        v = mv.group(1)
+        if re.fullmatch(r'0x[0-9a-f]+|\d+', v):
+            v = num(v)
+        elif regs.get(v) and regs[v][0] == 'const':
+            v = regs[v][1]
+        else:
+            return None
+        e = skip_state(q + 4)
+        if e >= len(t) or ins[e].address != num(mh.group(1)) or ret_args(num(mf.group(1))) != 1:
+            return None
+        return e, num(mm.group(1)), num(ms.group(1)), num(mf.group(1)), v, num(ml.group(1)) - depth
+
     def released(k):
         mm = re.fullmatch(r'mov ' + REG + r', dword ptr (\[.*\])', t[k])
         if not mm or (off := member_at(mm.group(2))) is None or k + 8 >= len(t):
@@ -926,6 +961,18 @@ def parse(a, n):
                 ops.append((18, off, regs[v][1], 0, []))   # a member's value (unchanged since it was read) copied
             else:
                 raise Reject('member store: ' + s)
+        elif not pushed and (sg_ := single(k)):
+            # a game object made if its global holds none (kind 30): cmp [G], 0; jne HAVE; push size; call new; add esp, 4;
+            # mov [local], eax; cmp eax, 0; je NONE; push value; mov ecx, eax; call ctor; NONE: HAVE: (its constructor sets G)
+            k, g_, size_, fn_, v_, slot_ = sg_
+            if slot_ >= 4:
+                dirty.add(slot_ // 4)   # (the new memory kept in an argument's slot: no longer the argument)
+            kept.pop(slot_, None)
+            ops.append((30, size_, g_, fn_, [('imm', v_)]))
+            singles[a] = (g_, fn_)
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+            continue
         elif not pushed and (rel_ := released(k)):
             # a member's memory let go if there is any (kind 28): mov R, [M]; cmp R, 0; je OVER; push R; call free; add esp, 4;
             # mov [M], 0; OVER:
@@ -1007,6 +1054,8 @@ def parse(a, n):
             pushed.append(('imm', regs[m.group(1)][1]))
         elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'global':
             pushed.append(('glob', regs[m.group(1)][1]))
+        elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'gfield':
+            pushed.append(('gobj', regs[m.group(1)][1] | regs[m.group(1)][2] << 25))   # (read as the call is made: nothing between)
         elif (m := re.fullmatch(r'push ' + REG, s)) and regs.get(m.group(1)) and regs[m.group(1)][0] == 'this':
             pushed.append(('self', regs[m.group(1)][1]))   # a pointer into the object itself
         elif s == 'call 0xbcdfc0':
@@ -1122,6 +1171,9 @@ def parse(a, n):
             regs[m.group(1)] = ('desc',)
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[(0x[0-9a-f]{7})\]', s)):
             regs[m.group(1)] = ('global', num(m.group(2)))
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and regs.get(m.group(2)) and \
+                regs[m.group(2)][0] == 'global' and regs[m.group(2)][1] < 1 << 25 and num(m.group(3)) < 0x80:
+            regs[m.group(1)] = ('gfield', regs[m.group(2)][1], num(m.group(3)))   # a dword inside a global's object, read now
         elif ins[k].mnemonic == 'pop' and k + 1 < len(t):
             pass   # a register given back early
         elif (m := re.fullmatch(r'lea ' + REG + r', \[' + REG + r'\]', s)) and m.group(1) == m.group(2):
@@ -1338,6 +1390,7 @@ member_fns = {}   # the functions the steps call on members and new objects, wit
 done = total = 0
 bases = []   # the constructors built on a parent class's constructor: (address, that base)
 reasons = {}
+singles = {}   # (the copies that make a game object if its global holds none: the global and the constructor)
 reason_bytes = {}
 for a, r in sorted(rows.items()):
     n = int(r['size'])
@@ -1350,11 +1403,12 @@ for a, r in sorted(rows.items()):
         desc, index, ops, fields, names, nargs, pair, tail_of, base_fn, base_n, base_x = parse(a, n)
     except (Reject, StopIteration, AttributeError, ValueError) as e:
         key = str(e)[:70]
+        singles.pop(a, None)
         if os.environ.get('WHY') and (key.startswith(os.environ["WHY"]) or os.environ["WHY"] == "*"): print(hex(a), e, '(near %#x)' % AT[0])
         reasons[key] = reasons.get(key, 0) + 1
         reason_bytes[key] = reason_bytes.get(key, 0) + n
         continue
-    out.append(f'static const ClassOp class_{a:x}_ops[] = {{' + ', '.join(f'{{{k}, {o:#x}, {v:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(x[1]) for x in args) or "0"}}}, {sum(1 << q for q, x in enumerate(args) if x[0] == "glob"):#x}, {sum(1 << q for q, x in enumerate(args) if x[0] == "self"):#x}}}' for k, o, v, fn, args in ops) + '};' if ops else f'static const ClassOp class_{a:x}_ops[] = {{{{0, 0, 0, 0, 0, {{0}}, 0, 0}}}};')
+    out.append(f'static const ClassOp class_{a:x}_ops[] = {{' + ', '.join(f'{{{k}, {o:#x}, {v:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(x[1]) for x in args) or "0"}}}, {sum(1 << q for q, x in enumerate(args) if x[0] in ("glob", "gobj")):#x}, {sum(1 << q for q, x in enumerate(args) if x[0] in ("self", "gobj")):#x}}}' for k, o, v, fn, args in ops) + '};' if ops else f'static const ClassOp class_{a:x}_ops[] = {{{{0, 0, 0, 0, 0, {{0}}, 0, 0}}}};')
     out.append(f'static const ClassField class_{a:x}_fields[] = {{' + ', '.join(f'{{{s:#x}, {c:#x}, {tb:#x}, {len(args)}, {{{", ".join(hex(x) for x in args) or "0"}}}, {par}}}' for s, c, tb, args, par in fields) + '};')
     out.append(f'static const uint8_t class_{a:x}_original[] = {{' + ', '.join(f'0x{b:02x}' for b in img[a - BASE:a - BASE + 7]) + '};')
     if names:
@@ -1393,6 +1447,9 @@ out.append('    }')
 out.append('}')
 out.append('// the functions the steps call on members and new objects, each with how many values it takes (the test stands in for them)')
 out.append('extern const uint32_t class_member_fns[] = {' + ', '.join(f'{fn:#x}, {c}' for fn, c in sorted(member_fns.items())) + ', 0};')
+out.append('// the copies that make a game object when its global holds none (kind 30): copy, global, constructor (the tester stands in for it)')
+out.append('extern const uint32_t class_singletons[];')
+out.append('const uint32_t class_singletons[] = {' + ''.join(f'{a_:#x}, {g_:#x}, {f_:#x}, ' for a_, (g_, f_) in sorted(singles.items())) + '0};')
 out.append('// the member functions given a stack reference (kind 25): the tester stands in for each as for 0x560D20')
 out.append('extern const uint32_t class_ref_setters[];')
 out.append('const uint32_t class_ref_setters[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(ref_setters)) + '0};')
