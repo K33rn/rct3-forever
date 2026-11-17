@@ -560,6 +560,20 @@ static void listed_72d930(uint8_t *self) {
     link_before((uint32_t *)(self + 0xe8), *(uint32_t *volatile *)0x10ef72c);
     for (uint32_t at = 0xf4; at <= 0x100; at += 4) *(volatile uint32_t *)(self + at) = 0xffffffff;
 }
+// 0xAE0480, its end: +0x50 cleared and +0x6C set to 1, then the member at +0x58 given 5 and -1 (0x45B600).
+static void member_ae0480(uint8_t *self) {
+    *(volatile uint32_t *)(self + 0x50) = 0;
+    *(volatile uint32_t *)(self + 0x6c) = 1;
+    ((void(__thiscall *)(void *, uint32_t, uint32_t))0x45b600)(self + 0x58, 5, 0xffffffff);
+}
+// 0x586FA0, its end: four 8-byte entries from +0x1A8, each {0, its byte at +4 set to 1}; then +0x1FC..+0x208 set to -1.
+static void entries_586fa0(uint8_t *self) {
+    for (uint32_t k = 0; k < 4; k++) {
+        *(volatile uint32_t *)(self + 0x1a8 + 8 * k) = 0;
+        self[0x1ac + 8 * k] = 1;
+    }
+    for (uint32_t at = 0x1fc; at <= 0x208; at += 4) *(volatile uint32_t *)(self + at) = 0xffffffff;
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

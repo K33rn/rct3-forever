@@ -4102,7 +4102,7 @@ address,size,name,callers,status
 0x586750,293,,2,documented
 0x586880,294,,2,documented
 0x586b40,1028,,2,documented
-0x586fa0,917,,2,documented
+0x586fa0,917,Class::Construct,2,rewritten
 0x587380,95,Factory::CreateWith,1,rewritten
 0x5874c0,2101,,1,documented
 0x587d00,983,,1,documented
@@ -17232,7 +17232,7 @@ address,size,name,callers,status
 0xadfed0,139,,2,documented
 0xadff60,432,Name::MakeObject,2,rewritten
 0xae0130,48,QueryInterface,0,rewritten
-0xae0480,1004,,3,documented
+0xae0480,1004,Class::Construct,3,rewritten
 0xae0890,235,,1,documented
 0xae0980,112,,2,documented
 0xae09f0,217,,1,documented

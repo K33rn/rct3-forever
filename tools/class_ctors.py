@@ -30,7 +30,8 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x4adef0: ('cmp dword ptr [esi + 0x370], ebx', 'arrays_emptied_4adef0'), 0xb6a000: ('lea ebp, [esi + 0x188]', 'reference_emptied_b6a000'),
               0x4c29f0: ('lea edi, [esi + 0x9c]', 'entries_cleared_4c29f0'), 0x5940a0: ('cmp dword ptr [esi + 0x1bc], ebx', 'array_emptied_5940a0'),
               0xb7d6a0: ('lea edi, [ebx + 8]', 'reference_emptied_b7d6a0'), 0xa11c30: ('call 0x4751e0', 'random_kind_a11c30'),
-              0x72d930: ('mov byte ptr [esi + 0x8b], 2', 'listed_72d930')}
+              0x72d930: ('mov byte ptr [esi + 0x8b], 2', 'listed_72d930'), 0xae0480: ('push -1', 'member_ae0480'),
+              0x586fa0: ('lea eax, [esi + 0x1ac]', 'entries_586fa0')}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.
@@ -1379,6 +1380,9 @@ def parse(a, n):
                         regs.pop(r, None)
                     skip_to = ti + 10
                     continue
+        if (m := re.fullmatch(r'or ' + REG + r', 0xffffffff', s)):
+            regs[m.group(1)] = ('const', 0xffffffff)   # (all ones, whatever it held)
+            continue
         if framed and s == 'mov esp, ebp' and not tail_pushed:
             continue   # (the aligned frame given back: its pop ebp follows)
         # the global's object before, if any, deleted (its table's slot 0, given 1): mov ecx, [G]; cmp ecx, 0; je OVER;
