@@ -656,7 +656,7 @@ address,size,name,callers,status
 0x42ff00,46,,0,documented
 0x42ff30,28,Object::FreeField,2,rewritten
 0x42ff50,187,,1,documented
-0x430010,185,,6,documented
+0x430010,185,Class::Construct,6,rewritten
 0x4300f0,49,,2,documented
 0x4301e0,220,QuadTree::QuadTree,2,rewritten
 0x4303c0,351,Pool::GrowFields,2,rewritten
@@ -13037,7 +13037,7 @@ address,size,name,callers,status
 0x927d60,2512,,1,documented
 0x928770,71,,5,documented
 0x9287c0,122,,3,documented
-0x9288f0,2301,,19,documented
+0x9288f0,2301,Class::Construct,19,rewritten
 0x929420,358,,2,documented
 0x929590,214,,1,documented
 0x929670,138,,4,documented
@@ -13094,7 +13094,7 @@ address,size,name,callers,status
 0x92ee40,171,,3,documented
 0x92eef0,1556,,2,documented
 0x92f510,736,,1,documented
-0x92f800,1113,,11,documented
+0x92f800,1113,Class::Construct,11,rewritten
 0x92fc60,75,,1,documented
 0x92fcb0,3589,,1,documented
 0x930ac0,351,Table::Make,1,rewritten

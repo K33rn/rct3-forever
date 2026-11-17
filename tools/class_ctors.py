@@ -58,7 +58,9 @@ HAND_STEPS = {0x56bf80: [('lea ecx, [esp + 0x2c]', 'call 0xbd99e0', 'ride_train_
               0x9e51d0: [('mov eax, 0x3f800000', 'mov dword ptr [esi + 0x3e0], eax', 'sky_colours')],
               0x947720: [('cmp dword ptr [0x133a274], edi', 'call 0x403f30', 'water_manager_name')],
               0xba9840: [('push 0x41200000', 'call 0x4de7d0', 'member_float_ba9840')],
-              0xa0a650: [('lea eax, [esp + 0x14]', 'call 0x48c9c0', 'member_from_pair_a0a650')]}
+              0xa0a650: [('lea eax, [esp + 0x14]', 'call 0x48c9c0', 'member_from_pair_a0a650')],
+              0x9288f0: [(0x928e66, 'mov dword ptr [esi + 0x34c], edi', 'parts_9288f0', [('imm', 0x40)]),
+                         (0x9290a3, 'mov dword ptr [esi + 0x3c4], edi', 'parts_9288f0b', [('imm', 0x40)])]}
 HANDS = []   # the hand-written stretches' functions, in the order class_hand numbers them
 num = lambda s: int(s, 0)
 
@@ -173,6 +175,8 @@ def walk_fields(ins, t, k0, regs0):
     nulls = []                      # (null path address, field number) of records being made
     tested, strict = None, False
     adds = [q for q in range(k0, len(t)) if t[q] == 'call 0x8087e0']
+    if not adds and (cast_ := next((q for q in range(k0, min(k0 + 40, len(t))) if re.fullmatch(r'call dword ptr \[e[a-d]x \+ 4\]', t[q])), None)) is not None:
+        return [], cast_, regs   # (a class registering no fields: the cast, and nothing added)
     if not adds:
         raise Reject('fields')
     last = adds[-1]
@@ -978,17 +982,20 @@ def parse(a, n):
             pushed = []
             k = rs[0]
             continue
-        hand = next((h for h in HAND_STEPS.get(a, []) if h[0] == s), None)
+        hand = next((h for h in HAND_STEPS.get(a, []) if h[0] == s or h[0] == ins[k].address), None)
         if hand:
-            # a stretch written by hand (kind 17): skipped here, the registers it writes forgotten
-            if pushed or pending:
+            # a stretch written by hand (kind 17): skipped here, the registers it writes forgotten. (It may start at an
+            # address, and take values already pushed before it, named as its fourth entry: it takes them off the stack.)
+            if pending or pushed != (hand[3] if len(hand) > 3 else []):
                 raise Reject('hand stretch with values pushed')
+            took_ = len(pushed)
+            pushed = []
             j = next((q for q in range(k, len(t)) if t[q] == hand[1]), None)
             if j is None:
                 raise Reject('hand stretch end not found')
             # followed for the stack (it must end where it began) and for pointers into the object it leaves in
             # registers and locals; any other register it writes is forgotten
-            d = 0
+            d = 4 * took_
             for x in t[k:j + 1]:
                 if x.startswith('push '):
                     d += 4
@@ -1549,6 +1556,10 @@ def parse(a, n):
                         regs.pop(r, None)
                     skip_to = ti + 10
                     continue
+        if not tail_pushed and (m := re.fullmatch(r'or dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|\d+)', s)) and \
+                regs.get(m.group(1)) and regs[m.group(1)][0] == 'this':
+            ops.append((37, regs[m.group(1)][1] + num(m.group(2) or '0'), num(m.group(3)), 0, []))   # (a member with bits set, after the mark)
+            continue
         if (m := re.fullmatch(r'or ' + REG + r', 0xffffffff', s)):
             regs[m.group(1)] = ('const', 0xffffffff)   # (all ones, whatever it held)
             continue
@@ -1733,7 +1744,7 @@ for a, r in sorted(rows.items()):
         reason_bytes[key] = reason_bytes.get(key, 0) + n
         continue
     out.append(f'static const ClassOp class_{a:x}_ops[] = {{' + ', '.join(f'{{{k}, {o:#x}, {v:#x}, {fn:#x}, {len(args)}, {{{", ".join(hex(x[1]) for x in args) or "0"}}}, {sum(1 << q for q, x in enumerate(args) if x[0] in ("glob", "gobj")):#x}, {sum(1 << q for q, x in enumerate(args) if x[0] in ("self", "gobj")):#x}}}' for k, o, v, fn, args in ops) + '};' if ops else f'static const ClassOp class_{a:x}_ops[] = {{{{0, 0, 0, 0, 0, {{0}}, 0, 0}}}};')
-    out.append(f'static const ClassField class_{a:x}_fields[] = {{' + ', '.join(f'{{{s:#x}, {c:#x}, {tb:#x}, {len(args)}, {{{", ".join(hex(x) for x in args) or "0"}}}, {par}}}' for s, c, tb, args, par in fields) + '};')
+    out.append(f'static const ClassField class_{a:x}_fields[] = {{' + (', '.join(f'{{{s:#x}, {c:#x}, {tb:#x}, {len(args)}, {{{", ".join(hex(x) for x in args) or "0"}}}, {par}}}' for s, c, tb, args, par in fields) or '{0, 0, 0, 0, {0}, -1}') + '};')
     out.append(f'static const uint8_t class_{a:x}_original[] = {{' + ', '.join(f'0x{b:02x}' for b in img[a - BASE:a - BASE + 7]) + '};')
     if names:
         out.append(f'static const ClassName class_{a:x}_names[] = {{' + ', '.join(f'{{{nm:#x}, {v:#x}}}' for nm, v in names) + '};')

@@ -392,6 +392,24 @@ static void member_from_pair_a0a650(uint8_t *self, const uint32_t *) {
     pair[1] = 0, pair[0] = 4;
     ((void *(__thiscall *)(void *, void *, void *))0x48c9c0)(self + 0x48, self, pair);
 }
+// 0x9288F0, in its member set-up: parts made in place on 0x40 new bytes each (none without memory): their first three
+// dwords cleared, 1.0 at +0x10, +0x14 and +0x18 cleared, the member at +0x20 given 0x3FFFFFFF (0x435A40), 10000.0 at
+// +0x30 and +0x34 (+0xC and the rest left as they were); seven into +0x334..+0x34C, then two into +0x3C0 and +0x3C4.
+static void *part_9288f0() {
+    uint32_t *const part = (uint32_t *)memory_alloc(0x40);
+    if (!part) return nullptr;
+    part[0] = 0, part[1] = 0, part[2] = 0;
+    part[4] = 0x3f800000, part[5] = 0, part[6] = 0;
+    ((void(__thiscall *)(void *, uint32_t))0x435a40)(part + 8, 0x3fffffff);
+    part[12] = 0x461c4000, part[13] = 0x461c4000;
+    return part;
+}
+static void parts_9288f0(uint8_t *self, const uint32_t *) {
+    for (uint32_t at = 0x334; at <= 0x34c; at += 4) *(void *volatile *)(self + at) = part_9288f0();
+}
+static void parts_9288f0b(uint8_t *self, const uint32_t *) {
+    for (uint32_t at = 0x3c0; at <= 0x3c4; at += 4) *(void *volatile *)(self + at) = part_9288f0();
+}
 // 0x830740, in its member set-up: the member at +0x40 made for the object with a pair of zeros made on the stack.
 static void member_from_pair_830740(uint8_t *self, const uint32_t *) {
     uint32_t pair[4];
