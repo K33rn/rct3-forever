@@ -10713,7 +10713,7 @@ address,size,name,callers,status
 0x815f40,411,Class::Construct,6,rewritten
 0x8160e0,30,DeletingDestructor,2,rewritten
 0x816100,159,ObjectRef::CallWith,6,rewritten
-0x8161a0,337,,2,documented
+0x8161a0,337,Class::Construct,2,rewritten
 0x816300,30,DeletingDestructor,2,rewritten
 0x816320,441,,1,documented
 0x8164f0,669,,1,documented
@@ -18291,7 +18291,7 @@ address,size,name,callers,status
 0xb54970,186,,2,documented
 0xb54a30,162,ObjectRef::CallWith,1,rewritten
 0xb54ae0,897,,1,documented
-0xb54e70,391,,2,documented
+0xb54e70,391,Class::Construct,2,rewritten
 0xb55000,30,DeletingDestructor,2,rewritten
 0xb55020,62,,1,documented
 0xb551c0,105,Factory::Create,1,rewritten

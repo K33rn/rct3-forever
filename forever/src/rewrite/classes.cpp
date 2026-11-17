@@ -139,6 +139,8 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 20) class_resource(self + op.off, op.value, op.fn);
         else if (op.kind == 21) class_named_text(self, op.off, op.value, op.fn);
         else if (op.kind == 23) *(uint32_t *)(self + op.off) = ((uint32_t(__cdecl *)())(uintptr_t)op.fn)();   // what a function taking nothing gives
+        else if (op.kind == 31)   // and its signed remainder by value (the sign of what it gave)
+            *(int32_t *)(self + op.off) = (int32_t)((uint32_t(__cdecl *)())(uintptr_t)op.fn)() % (int32_t)op.value;
         else if (op.kind == 24) *(void **)(self + op.off) = ((void *(__cdecl *)(uint32_t))(uintptr_t)op.fn)(op.value);   // aligned memory
         else if (op.kind == 25) {   // a reference made on the stack (0xBD9AD0), given with the name value and a flag to fn on the member at off, let go (0xBD99E0)
             alignas(16) uint8_t reference[0x40];

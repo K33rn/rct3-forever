@@ -63,6 +63,12 @@ def leaves_ecx(fn):
             continue   # (__chkstk, the stack probe: it gives ecx back as it found it; edx it doesn't touch)
         if x.mnemonic.startswith('j') or x.mnemonic in ('call', 'ret'):
             return True   # (neither read before it: a read returns False below)
+        if (mm := re.fullmatch(r'i?mul (\w+)', s)):
+            # (one operand: eax times it into edx:eax; edx written, not read)
+            if mm.group(1) in ('ecx', 'edx') and mm.group(1) not in seen:
+                return False
+            seen.add('edx')
+            continue
         for r in ('ecx', 'edx'):
             if r in seen:
                 continue
@@ -1147,6 +1153,20 @@ def parse(a, n):
                 regs.pop(r, None)
             regs['eax'] = ('made',)
             k = j + 4
+            continue
+        elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and not pushed and ret_args(num(m.group(1))) == 0 and leaves_ecx(num(m.group(1))) and \
+                k + 6 < len(t) and t[k + 1] == 'and eax, 0x80000001' and (mj := re.fullmatch(r'jns (0x[0-9a-f]+)', t[k + 2])) and \
+                t[k + 3:k + 6] == ['dec eax', 'or eax, 0xfffffffe', 'inc eax'] and ins[k + 6].address == num(mj.group(1)) and \
+                (st := result_store(k + 5)):
+            # a member set to what a function taking nothing gives, its signed remainder by 2 (and 0x80000001; jns; dec; or -2;
+            # inc: kind 31, value the divisor); the store taken out of the steps
+            q_, off_ = st
+            ops.append((31, off_, 2, num(m.group(1)), []))
+            value_calls.add(num(m.group(1)))
+            del t[q_], ins[q_]
+            for r in ('eax', 'ecx', 'edx'):
+                regs.pop(r, None)
+            k += 6
             continue
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and (s == 'call 0xbcdfd0' and len(pushed) == 1 and pushed[0][0] == 'imm' or
                                                                  not pushed and ret_args(num(m.group(1))) == 0 and leaves_ecx(num(m.group(1))) and
