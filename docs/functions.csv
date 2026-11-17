@@ -4272,7 +4272,7 @@ address,size,name,callers,status
 0x593fa0,83,Linked::DeleteAt,1,rewritten
 0x594000,73,Dtor::Pair496DC0,3,rewritten
 0x594050,73,Dtor::Pair496DC0,1,rewritten
-0x5940a0,1373,,2,documented
+0x5940a0,1373,Class::Construct,2,rewritten
 0x594710,95,Factory::CreateWith,1,rewritten
 0x594770,30,DeletingDestructor,0,rewritten
 0x594790,30,DeletingDestructor,0,rewritten
@@ -18700,7 +18700,7 @@ address,size,name,callers,status
 0xb7d520,194,Registered::Construct4D3CB0,2,rewritten
 0xb7d610,30,DeletingDestructor,2,rewritten
 0xb7d640,93,,2,documented
-0xb7d6a0,1436,,3,documented
+0xb7d6a0,1436,Class::Construct,3,rewritten
 0xb7dc40,30,DeletingDestructor,2,rewritten
 0xb7dc70,488,Class::Construct,2,rewritten
 0xb7de90,30,DeletingDestructor,2,rewritten

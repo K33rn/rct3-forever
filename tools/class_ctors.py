@@ -28,7 +28,8 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x9d91f0: ('lea ecx, [esp + 0x10]', 'empty_reference_9d91f0'), 0xa5d6f0: ('push 6', 'slots_a5d6f0'),
               0x76b880: ('call 0x475180', 'random_values_76b880'), 0x6f5fd0: ('lea ecx, [esp + 0x18]', 'list_name_6f5fd0'),
               0x4adef0: ('cmp dword ptr [esi + 0x370], ebx', 'arrays_emptied_4adef0'), 0xb6a000: ('lea ebp, [esi + 0x188]', 'reference_emptied_b6a000'),
-              0x4c29f0: ('lea edi, [esi + 0x9c]', 'entries_cleared_4c29f0')}
+              0x4c29f0: ('lea edi, [esi + 0x9c]', 'entries_cleared_4c29f0'), 0x5940a0: ('cmp dword ptr [esi + 0x1bc], ebx', 'array_emptied_5940a0'),
+              0xb7d6a0: ('lea edi, [ebx + 8]', 'reference_emptied_b7d6a0')}
 # Stretches inside the member set-up written by hand (classes.cpp): from the instruction they start with to the one they
 # end with (both taken), and the function that does them. The stretch must leave the stack as it found it; the registers
 # it writes are forgotten.

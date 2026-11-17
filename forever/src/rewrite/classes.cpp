@@ -494,26 +494,28 @@ static void list_name_6f5fd0(uint8_t *self) {
 // 0x4ADEF0, its end: its two arrays {items, count} at +0x36C and +0x374 emptied, each only when it has a count: the items
 // freed (aligned) if any, then the count and the items cleared. (The constructor cleared both earlier, so in practice there
 // is nothing to do; done as the game does it all the same.)
-static void arrays_emptied_4adef0(uint8_t *self) {
-    static const uint32_t arrays[2] = {0x36c, 0x374};
-    for (const uint32_t at : arrays) {
-        volatile uint32_t *const array = (volatile uint32_t *)(self + at);
-        if (array[1]) {
-            if (const uint32_t items = array[0]) {
-                ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)items);
-                array[0] = 0;
-            }
-            array[1] = 0;
+static void array_emptied(uint8_t *at) {
+    volatile uint32_t *const array = (volatile uint32_t *)at;
+    if (array[1]) {
+        if (const uint32_t items = array[0]) {
+            ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)items);
             array[0] = 0;
         }
+        array[1] = 0;
+        array[0] = 0;
     }
 }
+static void arrays_emptied_4adef0(uint8_t *self) {
+    array_emptied(self + 0x36c);
+    array_emptied(self + 0x374);
+}
+// 0x5940A0, its end: the same for its one array, at +0x1B8.
+static void array_emptied_5940a0(uint8_t *self) { array_emptied(self + 0x1b8); }
 // 0xB6A000, its end: the reference member at +0x188 pointed at nothing again. Its link (+8) is taken out of its handle's
 // list: the game checks both neighbours point back at it and stops (int3) when not. Its handle (+4) is let go (0x8055C0,
 // given 0), the empty handle (0x805750) taken and the link put in that one's list (just after its head), and the
 // reference told through its table's slot 0.
-static void reference_emptied_b6a000(uint8_t *self) {
-    uint8_t *const reference = self + 0x188;
+static void reference_emptied(uint8_t *const reference) {
     volatile uint32_t *const link = (volatile uint32_t *)(reference + 8);
     {
         const uint32_t previous = link[1], next = link[0];
@@ -531,6 +533,9 @@ static void reference_emptied_b6a000(uint8_t *self) {
     link_before((uint32_t *)link, *(uint32_t **)(handle + 0x20));
     (**(void(__thiscall *const *const *)(void *))reference)(reference);
 }
+static void reference_emptied_b6a000(uint8_t *self) { reference_emptied(self + 0x188); }
+// 0xB7D6A0, its end: the same for its reference member at +0xF0.
+static void reference_emptied_b7d6a0(uint8_t *self) { reference_emptied(self + 0xf0); }
 // 0x4C29F0, its end: the array at +0x9C sized for 10 entries (0x4BF730), its ten 12-byte entries cleared (its items read
 // again for each entry, as the game does), then the members at +0x90, +0x94 and +0x98 cleared.
 static void entries_cleared_4c29f0(uint8_t *self) {
