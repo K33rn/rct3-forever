@@ -4602,7 +4602,7 @@ address,size,name,callers,status
 0x5b0730,230,StructArrayLoad,1,rewritten
 0x5b0820,258,ObjectArray::SetCapacity,1,rewritten
 0x5b0930,61,Reference::Reference,1,rewritten
-0x5b0970,16982,,7,documented
+0x5b0970,16982,Class::Construct,7,rewritten
 0x5b4ff0,1093,,3,documented
 0x5b5440,147,,1,documented
 0x5b54e0,216,,3,documented

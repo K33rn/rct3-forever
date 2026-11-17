@@ -289,7 +289,8 @@ def walk_fields(ins, t, k0, regs0):
             ml = re.fullmatch(r'mov ecx, ' + REG, t[k + 4])
             if (mr and regs.get(mr.group(1)) == tested and t[k + 2] == 'add ecx, 4' and t[k + 3].startswith('jmp ') and ml
                     and ins[k + 4].address == num(m.group(1)) and regs.get(ml.group(1)) == ('L', 0x1c) and ins[k + 5].address == num(t[k + 3][4:])
-                    and t[k + 5] == 'call 0x8087e0' and f and f[0] == 'new' and f[1] == len(made) - 1 and f[1] not in field_entry and made[f[1]][3] is not None and not nulls):
+                    and t[k + 5] == 'call 0x8087e0' and f and f[0] == 'new' and f[1] == len(made) - 1 and f[1] not in field_entry
+                    and (made[f[1]][3] is not None or made[f[1]][1] not in (None, 0x8088c0)) and not nulls):
                 pushed.pop()
                 depth -= 4
                 size, ctor, args, table = made[f[1]]
@@ -318,6 +319,29 @@ def walk_fields(ins, t, k0, regs0):
                     regs.pop(r, None)
                 regs[mx.group(1)] = tested
                 k += 8
+                continue
+            # (or the struct read back from where it was kept: je ELSE; mov ecx, [S kept]; add ecx, 4; call add; mov X, [L kept];
+            # jmp JOIN; ELSE: mov X, [L kept]; mov ecx, X; call add; JOIN:)
+            ms = re.fullmatch(r'mov ecx, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 1])
+            m4 = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 4])
+            m6 = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 6]) if k + 9 < len(t) else None
+            if (ms and stack.get(num(ms.group(1)) - depth) == tested and t[k + 2] == 'add ecx, 4' and t[k + 3] == 'call 0x8087e0'
+                    and m4 and t[k + 5].startswith('jmp ') and ins[k + 6].address == num(m.group(1)) and m6 and m6.group(1) == m4.group(1)
+                    and m4.group(1) != 'ecx' and t[k + 7] == 'mov ecx, ' + m4.group(1) and t[k + 8] == 'call 0x8087e0'
+                    and ins[k + 9].address == num(t[k + 5][4:])
+                    and f and f[0] == 'new' and f[1] == len(made) - 1 and f[1] not in field_entry
+                    and (made[f[1]][3] is not None or made[f[1]][1] not in (None, 0x8088c0)) and not nulls):
+                pushed.pop()
+                depth -= 4
+                if stack.get(num(m4.group(2)) - depth) != ('L', 0x1c) or stack.get(num(m6.group(2)) - depth - 4) != ('L', 0x1c):
+                    raise Reject('field two adds list kept')
+                size, ctor, args, table = made[f[1]]
+                field_entry[f[1]] = len(entries)
+                entries.append((size, ctor, table or 0, args, field_entry[tested[1]]))
+                for r in ('eax', 'ecx', 'edx'):
+                    regs.pop(r, None)
+                regs[m4.group(1)] = ('L', 0x1c)
+                k += 9
                 continue
             ma = re.fullmatch(r'lea ecx, \[' + REG + r' \+ 4\]', t[k + 1])
             mb = re.fullmatch(r'mov ' + REG + r', dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', t[k + 3])
