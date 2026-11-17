@@ -3066,7 +3066,7 @@ address,size,name,callers,status
 0x507b60,61,Reference::Reference,2,rewritten
 0x507bb0,67,Reference::Reference(object),0,rewritten
 0x507c00,212,ReferenceField::Load,1,rewritten
-0x507ce0,1400,,3,documented
+0x507ce0,1400,Class::Construct,3,rewritten
 0x508260,30,DeletingDestructor,2,rewritten
 0x508280,172,,2,documented
 0x508330,41,,2,documented
@@ -15237,7 +15237,7 @@ address,size,name,callers,status
 0xa0a340,135,,6,documented
 0xa0a3d0,468,,6,documented
 0xa0a5d0,61,,0,documented
-0xa0a650,1386,,3,documented
+0xa0a650,1386,Class::Construct,3,rewritten
 0xa0abc0,30,DeletingDestructor,3,rewritten
 0xa0abe0,105,Factory::Create,1,rewritten
 0xa0ac90,27,GlobalCleanup,1,rewritten

@@ -36,7 +36,7 @@ HAND_AFTER = {0x7df320: ('call 0x425920', 'person_after'), 0x947720: ('mov ecx, 
               0x992b60: ('push 0x14', 'member_992b60'), 0xa2b130: ('mov eax, dword ptr [0x1342788]', 'appended_a2b130'),
               0x46d2b0: ('call 0x475180', 'colour_listed_46d2b0'), 0xa2a600: ('mov eax, dword ptr [0x134276c]', 'appended_a2a600'),
               0xa189c0: ('call 0x4751e0', 'random_kind_a189c0'), 0x6e6530: ('cmp dword ptr [esi + 0x88], ebx', 'cleared_6e6530'),
-              0x7977f0: ('mov eax, dword ptr [0x10ef9d0]', 'chained_7977f0')}
+              0x7977f0: ('mov eax, dword ptr [0x10ef9d0]', 'chained_7977f0'), 0xa0a650: ('mov dword ptr [esi + 0xb8], eax', 'registered_a0a650')}
 # (the ends that add the object to a game object's array {+0x18 room, +0x1C count, +0x20 items}: that object's global, for the test)
 HAND_ARRAYS = {0xa2b130: 0x1342788, 0xa2a600: 0x134276c}
 # (the ends that count a chain a global points to and clear a flag global: the chain's global and the flag's, for the test)
@@ -52,7 +52,8 @@ HAND_STEPS = {0x56bf80: [('lea ecx, [esp + 0x2c]', 'call 0xbd99e0', 'ride_train_
               0x707680: [('call 0x704a50', 'call 0x707530', 'park_figures')],
               0x9e51d0: [('mov eax, 0x3f800000', 'mov dword ptr [esi + 0x3e0], eax', 'sky_colours')],
               0x947720: [('cmp dword ptr [0x133a274], edi', 'call 0x403f30', 'water_manager_name')],
-              0xba9840: [('push 0x41200000', 'call 0x4de7d0', 'member_float_ba9840')]}
+              0xba9840: [('push 0x41200000', 'call 0x4de7d0', 'member_float_ba9840')],
+              0xa0a650: [('lea eax, [esp + 0x14]', 'call 0x48c9c0', 'member_from_pair_a0a650')]}
 HANDS = []   # the hand-written stretches' functions, in the order class_hand numbers them
 num = lambda s: int(s, 0)
 
@@ -1034,6 +1035,8 @@ def parse(a, n):
                 ops.append((38, off, regs[v][1], 0, []))   # an argument's low byte, zero-extended
             elif v in regs and regs[v] and regs[v][0] == 'arg' and m.group(1) == 'dword':
                 ops.append((8, off, regs[v][1], 0, []))
+            elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'globnz' and m.group(1) == 'byte':
+                ops.append((39, off, regs['e' + v[0] + 'x'][1], 0, []))   # whether a global is not 0
             elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'argnz' and m.group(1) == 'byte':
                 ops.append((33, off, regs['e' + v[0] + 'x'][1], 0, []))   # whether an argument's low byte is not 0
             elif v in ('bl', 'cl', 'dl', 'al') and regs.get('e' + v[0] + 'x') and regs['e' + v[0] + 'x'][0] == 'arg8' and m.group(1) == 'byte':
@@ -1332,6 +1335,11 @@ def parse(a, n):
         elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', s)) and regs.get(m.group(2)) and \
                 regs[m.group(2)][0] == 'global' and regs[m.group(2)][1] < 1 << 25 and num(m.group(3)) < 0x80:
             regs[m.group(1)] = ('gfield', regs[m.group(2)][1], num(m.group(3)))   # a dword inside a global's object, read now
+        elif (m := re.fullmatch(r'cmp dword ptr \[(0x1[0-9a-f]{6})\], ' + REG, s)) and k + 1 < len(t) and (ms_ := re.fullmatch(r'setne ([a-d])l', t[k + 1])) and \
+                regs.get(m.group(2)) == ('const', 0):
+            regs['e' + ms_.group(1) + 'x'] = ('globnz', num(m.group(1)))   # (only its low byte: whether the global is not 0, as now)
+            k += 2
+            continue
         elif (m := re.fullmatch(r'cmp ([a-d])l, ([a-d])l', s)) and k + 1 < len(t) and (ms_ := re.fullmatch(r'setne ([a-d])l', t[k + 1])) and                 (regs.get('e' + m.group(1) + 'x') or ('',))[0] == 'arg8' and (regs.get('e' + m.group(2) + 'x') or ('', 1))[0] in ('const', 'const8') and                 regs['e' + m.group(2) + 'x'][1] & 0xff == 0:
             regs['e' + ms_.group(1) + 'x'] = ('argnz', regs['e' + m.group(1) + 'x'][1])   # (only its low byte: whether the argument's is not 0)
             k += 2
@@ -1641,8 +1649,8 @@ for a, r in sorted(rows.items()):
     done_set.add(a)
     total += n
     for kind, o, v, fn, args in ops:
-        if kind == 5:
-            read_globals.add(v)   # (a member set to a global's value)
+        if kind in (5, 39):
+            read_globals.add(v)   # (a member set to a global's value, or whether it is 0)
         if kind in (3, 10, 11, 15):
             read_globals.update(x[1] for x in args if isinstance(x, tuple) and x[0] == 'glob')
         if kind in (3, 10, 15, 34):

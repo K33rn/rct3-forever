@@ -136,6 +136,7 @@ static void *class_construct_body(uint8_t *self, const uint32_t *given) {
         else if (op.kind == 33) self[op.off] = (uint8_t)given[op.value] != 0;   // whether it is not 0
         else if (op.kind == 38) *(uint32_t *)(self + op.off) = (uint8_t)given[op.value];   // or a dword given it, zero-extended
         else if (op.kind == 37) *(volatile uint32_t *)(self + op.off) |= op.value;   // a member with bits set
+        else if (op.kind == 39) self[op.off] = *(volatile uint32_t *)(uintptr_t)op.value != 0;   // whether a global is not 0
         else if (op.kind == 13) (*(uint32_t **)(self + op.off))[*(uint32_t *)(self + op.off + 4)] = op.value;
         else if (op.kind == 18) *(uint32_t *)(self + op.off) = *(uint32_t *)(self + op.value);
         else if (op.kind == 17) class_hand(op.value, self, given);
@@ -358,6 +359,12 @@ static void weather_start(uint8_t *self, const uint32_t *) {
 static void member_float_ba9840(uint8_t *self, const uint32_t *) {
     const long double value = ((long double(__fastcall *)(uint32_t))0x4c3610)(2);
     ((void(__thiscall *)(void *, float, uint32_t))0x4de7d0)(self + 0x40, (float)value, 0x41200000);
+}
+// 0xA0A650, in its member set-up: the member at +0x48 made (0x48C9C0) for the object with a pair {4, 0} made on the stack.
+static void member_from_pair_a0a650(uint8_t *self, const uint32_t *) {
+    uint32_t pair[4];
+    pair[1] = 0, pair[0] = 4;
+    ((void *(__thiscall *)(void *, void *, void *))0x48c9c0)(self + 0x48, self, pair);
 }
 // 0x830740, in its member set-up: the member at +0x40 made for the object with a pair of zeros made on the stack.
 static void member_from_pair_830740(uint8_t *self, const uint32_t *) {
@@ -691,6 +698,15 @@ static void chained_7977f0(uint8_t *self) {
     }
     ++*(volatile uint32_t *)0x1306afc;
     link_before((uint32_t *)(self + 0x510), *(uint32_t *volatile *)0x10ef9e0);
+}
+// 0xA0A650, its end: twelve members cleared and four set to 1.0 (in the game's order), then the object given to 0xA0DDF0,
+// called on the game object 0x13422C0 holds.
+static void registered_a0a650(uint8_t *self) {
+    static const uint16_t zeros[12] = {0xb8, 0xb4, 0xb0, 0xac, 0xa4, 0xa0, 0x9c, 0x98, 0x90, 0x8c, 0x88, 0x84};
+    static const uint16_t ones[4] = {0xbc, 0xa8, 0x94, 0x80};
+    for (const uint16_t at : zeros) *(volatile uint32_t *)(self + at) = 0;
+    for (const uint16_t at : ones) *(volatile uint32_t *)(self + at) = 0x3f800000;
+    ((void(__thiscall *)(void *, void *))0xa0ddf0)(*(void *volatile *)0x13422c0, self);
 }
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
