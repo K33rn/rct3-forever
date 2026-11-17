@@ -775,6 +775,64 @@ static void named_parts_adf4e0(uint8_t *self) {
             memory ? ((void *(__thiscall *)(void *, uintptr_t, uintptr_t, uint32_t))0x403f30)(memory, part[0], 0x1303cfc, 1) : nullptr;
     }
 }
+// 0x44F240, its end:
+// - the object put in the first empty slot of the game's array 0x1106D0C {items, size} (or past its end; the array made
+//   one bigger first, 0x44D040, when the slot isn't inside it);
+// - a part made on 0x64 new bytes (0x47D160, given 0, 0, the game value 0x1302858, +0xA0, +0x130 and 0; none without
+//   memory) into +0x1A8;
+// - that part's counted text at +0x44 replaced by a text of 0xF29590 (16 new bytes; the old one let go, the new one's
+//   count raised), the text made then let go once (the part keeps its count);
+// - the part's inner object (+0xC) given 40.0 at +0x80 and 500.0 at +0x84;
+// - the part's byte +0x10 set; then, when its +0x18 is 0, its byte +0x12 set; else, when its byte +0x11 is 0, 0xCE4770
+//   run on the inner object (given its +0x50), the byte +0x11 set and +0x30 cleared.
+static void counted_text_let_go(uint32_t *text) {
+    if (*(volatile uint32_t *)text == 0 && text) {
+        ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)text[3]);
+        ((void(__cdecl *)(void *))0xbce000)(text);
+    }
+}
+static void slot_part_44f240(uint8_t *self) {
+    volatile uint32_t *const array = (volatile uint32_t *)0x1106d0c;
+    const int32_t size = (int32_t)array[1];
+    int32_t slot = size;
+    for (int32_t k = 0; k < size; k++)
+        if (!((volatile uint32_t *)(uintptr_t)array[0])[k]) {
+            slot = k;
+            break;
+        }
+    if (slot + 1 >= size) ((void(__thiscall *)(void *, uint32_t))0x44d040)((void *)array, (uint32_t)(slot + 1));
+    ((volatile uint32_t *)(uintptr_t)array[0])[slot] = (uint32_t)(uintptr_t)self;
+    void *const memory = memory_alloc(0x64);
+    *(void *volatile *)(self + 0x1a8) = memory ?
+        ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, void *, void *, uint32_t))0x47d160)(memory, 0, 0, *(volatile uint32_t *)0x1302858, self + 0xa0, self + 0x130, 0) : nullptr;
+    void *const text_memory = memory_alloc(0x10);
+    uint32_t *const text = text_memory ? (uint32_t *)((void *(__thiscall *)(void *, uintptr_t))0xbcf850)(text_memory, 0xf29590) : nullptr;
+    uint8_t *const part = *(uint8_t *volatile *)(self + 0x1a8);
+    if ((uint32_t)(uintptr_t)text != *(volatile uint32_t *)(part + 0x44)) {
+        --**(volatile uint32_t *volatile *)(part + 0x44);
+        counted_text_let_go(*(uint32_t *volatile *)(part + 0x44));
+        *(uint32_t *volatile *)(part + 0x44) = text;
+        ++*(volatile uint32_t *)text;
+    }
+    --*(volatile uint32_t *)text;
+    if (!*(volatile uint32_t *)text) {
+        ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)text[3]);
+        ((void(__cdecl *)(void *))0xbce000)(text);
+    }
+    *(volatile uint32_t *)(*(uint8_t *volatile *)(*(uint8_t *volatile *)(self + 0x1a8) + 0xc) + 0x80) = 0x42200000;
+    *(volatile uint32_t *)(*(uint8_t *volatile *)(*(uint8_t *volatile *)(self + 0x1a8) + 0xc) + 0x84) = 0x43fa0000;
+    uint8_t *const again = *(uint8_t *volatile *)(self + 0x1a8);
+    const uint32_t there = *(volatile uint32_t *)(again + 0x18);
+    again[0x10] = 1;
+    if (!there)
+        again[0x12] = 1;
+    else if (!again[0x11]) {
+        uint8_t *const inner = *(uint8_t *volatile *)(again + 0xc);
+        ((void(__thiscall *)(void *, void *))0xce4770)(inner, inner + 0x50);
+        again[0x11] = 1;
+        *(volatile uint32_t *)(again + 0x30) = 0;
+    }
+}
 // 0x6404D0, its end: the member at +0x5C given (0x63E1C0) the product of two game values (0x10EEAD0 by 0x10EEACC),
 // rounded to a whole number on the FPU (its rounding mode; the low half of the 64-bit result).
 static void scaled_value_6404d0(uint8_t *self) {

@@ -995,7 +995,7 @@ address,size,name,callers,status
 0x44ef90,212,ReferenceField::Load,0,rewritten
 0x44f070,212,ReferenceField::Load,0,rewritten
 0x44f150,237,Rows::Load,0,rewritten
-0x44f240,2359,,2,documented
+0x44f240,2359,Class::Construct,2,rewritten
 0x44fb80,30,DeletingDestructor,2,rewritten
 0x44fba0,212,,1,documented
 0x44fc80,2666,,1,documented
