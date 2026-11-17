@@ -2124,7 +2124,7 @@ address,size,name,callers,status
 0x4a6120,48,ObjectArray::Free,6,rewritten
 0x4a6150,153,ObjectArray::Resize,1,rewritten
 0x4a61f0,258,ObjectArray::SetCapacity,8,rewritten
-0x4a6300,1923,,2,documented
+0x4a6300,1923,Class::Construct,2,rewritten
 0x4a6ac0,605,,1,documented
 0x4a6d20,1133,,3,documented
 0x4a7190,96,Factory::Global,1,rewritten

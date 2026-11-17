@@ -410,6 +410,29 @@ static void parts_9288f0(uint8_t *self, const uint32_t *) {
 static void parts_9288f0b(uint8_t *self, const uint32_t *) {
     for (uint32_t at = 0x3c0; at <= 0x3c4; at += 4) *(void *volatile *)(self + at) = part_9288f0();
 }
+// 0x4A6300, in its member set-up: two texts of 0xF264AD made (16 new bytes each, none without memory), the second put in
+// +0xB4 and the first in +0xB8, each count raised; then each let go once (the second first). (A text made without memory
+// is used all the same, as the game does.)
+static uint32_t *text_of_4a6300() {
+    void *const memory = memory_alloc(0x10);
+    return memory ? (uint32_t *)((void *(__thiscall *)(void *, uintptr_t))0xbcf850)(memory, 0xf264ad) : nullptr;
+}
+static void text_let_go_4a6300(uint32_t *text) {
+    if (!--*(volatile uint32_t *)text) {
+        ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)text[3]);
+        ((void(__cdecl *)(void *))0xbce000)(text);
+    }
+}
+static void texts_4a6300(uint8_t *self, const uint32_t *) {
+    uint32_t *const first = text_of_4a6300();
+    uint32_t *const second = text_of_4a6300();
+    *(uint32_t *volatile *)(self + 0xb4) = second;
+    ++*(volatile uint32_t *)second;
+    *(uint32_t *volatile *)(self + 0xb8) = first;
+    ++*(volatile uint32_t *)first;
+    text_let_go_4a6300(second);
+    text_let_go_4a6300(first);
+}
 // 0x830740, in its member set-up: the member at +0x40 made for the object with a pair of zeros made on the stack.
 static void member_from_pair_830740(uint8_t *self, const uint32_t *) {
     uint32_t pair[4];

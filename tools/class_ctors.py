@@ -60,7 +60,8 @@ HAND_STEPS = {0x56bf80: [('lea ecx, [esp + 0x2c]', 'call 0xbd99e0', 'ride_train_
               0xba9840: [('push 0x41200000', 'call 0x4de7d0', 'member_float_ba9840')],
               0xa0a650: [('lea eax, [esp + 0x14]', 'call 0x48c9c0', 'member_from_pair_a0a650')],
               0x9288f0: [(0x928e66, 'mov dword ptr [esi + 0x34c], edi', 'parts_9288f0', [('imm', 0x40)]),
-                         (0x9290a3, 'mov dword ptr [esi + 0x3c4], edi', 'parts_9288f0b', [('imm', 0x40)])]}
+                         (0x9290a3, 'mov dword ptr [esi + 0x3c4], edi', 'parts_9288f0b', [('imm', 0x40)])],
+              0x4a6300: [(0x4a6397, 0x4a6466, 'texts_4a6300', [('imm', 0x10)])]}
 HANDS = []   # the hand-written stretches' functions, in the order class_hand numbers them
 num = lambda s: int(s, 0)
 
@@ -990,7 +991,7 @@ def parse(a, n):
                 raise Reject('hand stretch with values pushed')
             took_ = len(pushed)
             pushed = []
-            j = next((q for q in range(k, len(t)) if t[q] == hand[1]), None)
+            j = next((q for q in range(k, len(t)) if t[q] == hand[1] or ins[q].address == hand[1]), None)   # (its last instruction, or its address)
             if j is None:
                 raise Reject('hand stretch end not found')
             # followed for the stack (it must end where it began) and for pointers into the object it leaves in
@@ -1002,7 +1003,8 @@ def parse(a, n):
                 elif (mm := re.fullmatch(r'add esp, (0x[0-9a-f]+|\d+)', x)):
                     d -= num(mm.group(1))
                 elif (mm := re.fullmatch(r'call (0x[0-9a-f]+)', x)):
-                    d -= 4 * ret_args(num(mm.group(1)))
+                    if num(mm.group(1)) not in (0xbce000, 0xbce010):   # (the frees are cdecl: their value comes off with an add esp)
+                        d -= 4 * ret_args(num(mm.group(1)))
                     for r in ('eax', 'ecx', 'edx'):
                         regs.pop(r, None)
                 elif (mm := re.fullmatch(r'lea ' + REG + r', \[' + REG + r' \+ (0x[0-9a-f]+|\d+)\]', x)) and regs.get(mm.group(2)) and regs[mm.group(2)][0] == 'this':
