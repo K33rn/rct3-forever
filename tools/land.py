@@ -132,7 +132,7 @@ def regenerate():
     exe = run(UV + ['python', 'tools/gamepath.py'], 'finding the game').strip()
     run(UV + TOOLS + ['python', 'tools/rewritten_notes.py', exe], 'tools/rewritten_notes.py')
     run(UV + ['--with', 'pefile', 'python', 'tools/progress.py'], 'tools/progress.py')
-    m = re.search(r'\*\*([0-9.]+%) rewritten\*\*', open(os.path.join(HERE, 'README.md'), encoding='utf-8').read())
+    m = re.search(r"\*\*([0-9.]+%) (?:of the game's code is )?rewritten\*\*", open(os.path.join(HERE, 'README.md'), encoding='utf-8').read())
     return m.group(1) if m else '?'
 
 
