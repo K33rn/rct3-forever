@@ -11,6 +11,8 @@
 #include "game.h"
 #include "ui.h"
 
+static const ImGuiTabBarFlags kTabBarFlags = ImGuiTabBarFlags_FittingPolicyScroll;   // (see ui.cpp)
+
 using namespace game;
 
 namespace park {
@@ -185,7 +187,7 @@ void tab() {
     ImGui::SameLine();
     if (ImGui::SmallButton("Unlock all")) g_locks.clear();
 
-    if (ImGui::BeginTabBar("parktabs")) {
+    if (ImGui::BeginTabBar("parktabs", kTabBarFlags)) {
         if (ImGui::BeginTabItem("Park")) {
             ImGui::BeginChild("p", ImVec2(0, 0));
             ImGui::SeparatorText("Rating");

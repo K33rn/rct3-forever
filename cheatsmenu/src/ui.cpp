@@ -9,6 +9,11 @@
 #include "game.h"
 #include "park.h"
 
+// Tab bars scroll when their tabs don't fit, instead of shrinking them: Dear ImGui's shrinking (ShrinkWidths, 1.91.9)
+// can loop forever when the width left to take off becomes too small to share out (it froze the game on some screen
+// sizes when a guest was picked).
+static const ImGuiTabBarFlags kTabBarFlags = ImGuiTabBarFlags_FittingPolicyScroll;
+
 using namespace game;
 
 namespace ui {
@@ -755,7 +760,7 @@ void frame(bool toast) {
     ImGui::SetNextWindowSize(ImVec2(1000, 620), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(40, 60), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Cheats Menu###CheatsMenu", &g_open)) { ImGui::End(); return; }
-    if (ImGui::BeginTabBar("top")) {
+    if (ImGui::BeginTabBar("top", kTabBarFlags)) {
         if (ImGui::BeginTabItem("Guests")) { guests_tab(); ImGui::EndTabItem(); }
         if (ImGui::BeginTabItem("Park")) { park::tab(); ImGui::EndTabItem(); }
         ImGui::EndTabBar();
@@ -792,7 +797,7 @@ static void guests_tab() {
         for (auto &r : g_rows) if (r.g == g_sel) idx = r.index;
         ImGui::TextColored(ImVec4(0.15f, 0.85f, 0.95f, 1), "%s", display_name(g_sel, idx).c_str());
     }
-    if (ImGui::BeginTabBar("tabs")) {
+    if (ImGui::BeginTabBar("tabs", kTabBarFlags)) {
         if (have) {
             if (ImGui::BeginTabItem("Overview", nullptr, g_sel_changed ? ImGuiTabItemFlags_SetSelected : 0)) { tab_overview(g_sel); ImGui::EndTabItem(); }
             if (ImGui::BeginTabItem("Money")) { tab_money(g_sel); ImGui::EndTabItem(); }

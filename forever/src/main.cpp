@@ -71,7 +71,8 @@ static DWORD WINAPI reporter(void *) {
 // A frozen game: when its main window stops answering for 8 seconds, where its main thread is, noted in
 // RCT3Forever.log (the module and offset; in forever.dll, the rewrite nearest below), with the game addresses on its
 // stack. Noted again (up to three times) while it stays frozen, so a loop shows as the same places.
-static void where_note(const char *what, uintptr_t at, uintptr_t sp);
+static void where_note(const char *what, uintptr_t at, const uint32_t *stack, int words);
+static const int kStackWords = 256;
 static DWORD WINAPI freeze_watch(void *) {
     int frozen = 0, noted = 0;
     for (;;) {
@@ -85,13 +86,25 @@ static DWORD WINAPI freeze_watch(void *) {
         if (++frozen < 4 || noted >= 3 || (frozen - 4) % 5) continue;   // (8 s frozen, then every 10 s)
         HANDLE th = OpenThread(THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT, FALSE, g_game_thread);
         if (!th) continue;
+        // While it is paused the game thread may hold any lock (the heap's, the C library's, the loader's): only
+        // kernel calls here (no file, no allocation, no module lookup), and the note is written once it runs again.
         CONTEXT c = {};
         c.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
+        static uint32_t stack[kStackWords];
+        int words = 0;
+        bool got = false;
         if (SuspendThread(th) != (DWORD)-1) {
-            if (GetThreadContext(th, &c)) where_note("FREEZE", c.Eip, c.Esp), noted++;
+            if (GetThreadContext(th, &c)) {
+                got = true;
+                for (; words < kStackWords; words++) {
+                    SIZE_T n = 0;
+                    if (!ReadProcessMemory(GetCurrentProcess(), (const uint32_t *)(uintptr_t)c.Esp + words, stack + words, 4, &n) || n != 4) break;
+                }
+            }
             ResumeThread(th);
         }
         CloseHandle(th);
+        if (got) where_note("FREEZE", c.Eip, stack, words), noted++;
     }
 }
 
@@ -109,11 +122,17 @@ static LONG CALLBACK crash_note(EXCEPTION_POINTERS *e) {
     const uintptr_t what = e->ExceptionRecord->NumberParameters >= 2 ? e->ExceptionRecord->ExceptionInformation[1] : 0;
     char head[64];
     snprintf(head, sizeof head, "CRASH %08lx (address %08x)", code, (unsigned)what);
-    where_note(head, at, e->ContextRecord->Esp);
+    static uint32_t stack[kStackWords];
+    int words = 0;
+    for (; words < kStackWords; words++) {
+        SIZE_T n = 0;
+        if (!ReadProcessMemory(GetCurrentProcess(), (const uint32_t *)(uintptr_t)e->ContextRecord->Esp + words, stack + words, 4, &n) || n != 4) break;
+    }
+    where_note(head, at, stack, words);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-static void where_note(const char *what, uintptr_t at, uintptr_t esp) {
+static void where_note(const char *what, uintptr_t at, const uint32_t *stack, int words) {
     HMODULE mod = nullptr;
     char path[MAX_PATH] = "?";
     if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)at, &mod))
@@ -130,11 +149,8 @@ static void where_note(const char *what, uintptr_t at, uintptr_t esp) {
     char chain[400] = "";
     size_t used = 0;
     int found = 0;
-    const uint32_t *sp = (const uint32_t *)esp;
-    for (int k = 0; k < 256 && found < 16; k++) {
-        uint32_t v = 0;
-        SIZE_T got = 0;
-        if (!ReadProcessMemory(GetCurrentProcess(), sp + k, &v, 4, &got) || got != 4) break;
+    for (int k = 0; k < words && found < 16; k++) {
+        const uint32_t v = stack[k];
         if (v >= 0x401000 && v < 0xe10000) {
             used += snprintf(chain + used, sizeof chain - used, " %06x", (unsigned)v);
             found++;
