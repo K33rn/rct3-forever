@@ -14,10 +14,15 @@ extern "C" void *__stdcall Proxy_Direct3DCreate9(unsigned sdk);
 
 // The game's main window is titled RCT3 Forever: top-level windows the game makes with a title get ours instead.
 static decltype(&CreateWindowExA) g_real_create_window;
+static HWND g_game_window;       // (the game's main window and the thread that made it: watched for a freeze)
+static DWORD g_game_thread;
 static HWND WINAPI titled_create_window(DWORD ex, LPCSTR cls, LPCSTR title, DWORD style, int x, int y, int w, int h, HWND parent,
                                         HMENU menu, HINSTANCE inst, LPVOID param) {
-    if (!parent && title && *title && !(style & WS_CHILD)) title = "RCT3 Forever";
-    return g_real_create_window(ex, cls, title, style, x, y, w, h, parent, menu, inst, param);
+    const bool main_window = !parent && title && *title && !(style & WS_CHILD);
+    if (main_window) title = "RCT3 Forever";
+    HWND made = g_real_create_window(ex, cls, title, style, x, y, w, h, parent, menu, inst, param);
+    if (main_window && made && !g_game_window) g_game_window = made, g_game_thread = GetCurrentThreadId();
+    return made;
 }
 
 static HMODULE g_self;
@@ -63,6 +68,33 @@ static DWORD WINAPI reporter(void *) {
     }
 }
 
+// A frozen game: when its main window stops answering for 8 seconds, where its main thread is, noted in
+// RCT3Forever.log (the module and offset; in forever.dll, the rewrite nearest below), with the game addresses on its
+// stack. Noted again (up to three times) while it stays frozen, so a loop shows as the same places.
+static void where_note(const char *what, uintptr_t at, uintptr_t sp);
+static DWORD WINAPI freeze_watch(void *) {
+    int frozen = 0, noted = 0;
+    for (;;) {
+        Sleep(2000);
+        if (!g_game_window || !IsWindow(g_game_window)) continue;
+        DWORD_PTR r;
+        if (SendMessageTimeoutA(g_game_window, WM_NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 2000, &r)) {
+            frozen = 0;
+            continue;
+        }
+        if (++frozen < 4 || noted >= 3 || (frozen - 4) % 5) continue;   // (8 s frozen, then every 10 s)
+        HANDLE th = OpenThread(THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT, FALSE, g_game_thread);
+        if (!th) continue;
+        CONTEXT c = {};
+        c.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
+        if (SuspendThread(th) != (DWORD)-1) {
+            if (GetThreadContext(th, &c)) where_note("FREEZE", c.Eip, c.Esp), noted++;
+            ResumeThread(th);
+        }
+        CloseHandle(th);
+    }
+}
+
 // A crash, noted in RCT3Forever.log before the game goes down: what happened and where (the module and offset; in
 // forever.dll, the rewritten function whose code is nearest below), then the game addresses on the stack (the game
 // functions that led there, newest first). Only faults are noted, and only the first few (the game may handle one).
@@ -74,6 +106,14 @@ static LONG CALLBACK crash_note(EXCEPTION_POINTERS *e) {
     static volatile long noted;
     if (InterlockedIncrement(&noted) > 3) return EXCEPTION_CONTINUE_SEARCH;
     const uintptr_t at = (uintptr_t)e->ExceptionRecord->ExceptionAddress;
+    const uintptr_t what = e->ExceptionRecord->NumberParameters >= 2 ? e->ExceptionRecord->ExceptionInformation[1] : 0;
+    char head[64];
+    snprintf(head, sizeof head, "CRASH %08lx (address %08x)", code, (unsigned)what);
+    where_note(head, at, e->ContextRecord->Esp);
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
+static void where_note(const char *what, uintptr_t at, uintptr_t esp) {
     HMODULE mod = nullptr;
     char path[MAX_PATH] = "?";
     if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)at, &mod))
@@ -85,13 +125,12 @@ static LONG CALLBACK crash_note(EXCEPTION_POINTERS *e) {
         for (const rewrite::Entry *r = rewrite::list(); r; r = r->next)
             if ((uintptr_t)r->with <= at && (uintptr_t)r->with > best) best = (uintptr_t)r->with, near_rewrite = r->name;
     }
-    const uintptr_t what = e->ExceptionRecord->NumberParameters >= 2 ? e->ExceptionRecord->ExceptionInformation[1] : 0;
-    flog("CRASH %08lx at %08x (%s+0x%x)%s%s, address %08x", code, (unsigned)at, file, (unsigned)(at - (uintptr_t)mod),
-         *near_rewrite ? ", in or after the rewrite " : "", near_rewrite, (unsigned)what);
+    flog("%s at %08x (%s+0x%x)%s%s", what, (unsigned)at, file, (unsigned)(at - (uintptr_t)mod),
+         *near_rewrite ? ", in or after the rewrite " : "", near_rewrite);
     char chain[400] = "";
     size_t used = 0;
     int found = 0;
-    const uint32_t *sp = (const uint32_t *)(uintptr_t)e->ContextRecord->Esp;
+    const uint32_t *sp = (const uint32_t *)esp;
     for (int k = 0; k < 256 && found < 16; k++) {
         uint32_t v = 0;
         SIZE_T got = 0;
@@ -101,8 +140,7 @@ static LONG CALLBACK crash_note(EXCEPTION_POINTERS *e) {
             found++;
         }
     }
-    flog("CRASH game addresses on the stack:%s", chain);
-    return EXCEPTION_CONTINUE_SEARCH;
+    flog("%.6s game addresses on the stack:%s", what, chain);
 }
 
 BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
@@ -136,5 +174,6 @@ BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
     else flog("rewritten functions off (Rewrites=0): the game's own code runs");
     if (setting("Forever", "GameFixes", 1)) install_fixes();
     CloseHandle(CreateThread(nullptr, 0, reporter, nullptr, 0, nullptr));
+    CloseHandle(CreateThread(nullptr, 0, freeze_watch, nullptr, 0, nullptr));
     return TRUE;
 }
