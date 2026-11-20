@@ -405,6 +405,11 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 44: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = op.value; break;
         case 45: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = *(uint32_t *)(uintptr_t)op.value; break;
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;
+        case 106: *(uint32_t *)(self + op.off) += op.value; break;   // a constant added (a sub's negated)
+        case 107:   // a name given to the window: the member holds it now (none when it wasn't made), nothing lets it go
+            *(void **)(self + op.off) = name_built[op.value] ? names[op.value] : nullptr;
+            name_built[op.value] = false;
+            break;
         case 27: *(uint32_t *)(self + op.off) |= op.value; break;
         case 3:
             if (op.value >> 31) last = titled_call_edx(op.fn, self + op.off, self, op.count, args);
@@ -498,7 +503,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 8:
         case 9: {
             uint8_t *handle = op.kind == 8 ? ((uint8_t * (__cdecl *)())0x805750)()
-                                           : ((uint8_t * (__thiscall *)(void *))0x805700)(op.value ? (void *)(uintptr_t)given[op.value] : nullptr);
+                                           : ((uint8_t * (__thiscall *)(void *))0x805700)(op.value == 0x100 ? object : op.value ? (void *)(uintptr_t)given[op.value] : nullptr);
             *(uint8_t **)(self + op.off + 4) = handle;
             uint32_t *link = (uint32_t *)(self + op.off + 8), *head = *(uint32_t **)(handle + 0x20);
             link[0] = head[0];
@@ -576,6 +581,11 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 43: *(void **)(self + op.off) = aligned; break;
         case 98: ++*(volatile uint32_t *)(uintptr_t)args[0]; break;
         case 103: titled_hand(op.value, self, args); break;
+        case 105: {   // the report of a missing resource symbol (fn) on a slot holding the place of the temporary off
+            void *volatile holder = temps[op.off];
+            ((void(__thiscall *)(void *))(uintptr_t)op.fn)((void *)&holder);
+            break;
+        }
         case 104: {   // a constant into what the member at off's low half points to, at its high half (fn: 1 a byte, 4 a dword)
             uint8_t *const to = *(uint8_t *volatile *)(self + (op.off & 0xffff)) + (op.off >> 16);
             if (op.fn == 1) *(volatile uint8_t *)to = (uint8_t)op.value;

@@ -268,6 +268,29 @@ static void titled_tables_ready() {   // each slot the constructors call: its st
 static void *new_wide_block();
 // 0x9A0B90's hand-written loop: its count (0x53C790) from the case, 0 to 7; the name source's texts (0x53DD80: into the
 // place given, for the index) new each time
+// Report::MissingResourceSymbol (and its copies) on a slot holding a resource reference's place: the reference noted by what
+// it is, with what it resolved to (+8)
+static void __thiscall stub_missing_symbol(void **self) {
+    record(0xab, arg_value((uint32_t)(uintptr_t)*self));
+    record(0xab, *(void **)((uint8_t *)*self + 8));
+}
+// the calls giving a text back by value (titled_out_callees): given the place for it first; a new text put there, and the
+// place given back
+static void *__thiscall stub_text_out1(void *self, void **out) { record(0xac, self); *out = new_wide_block(); return out; }
+static void *__thiscall stub_text_out2(void *self, void **out, uint32_t a) {
+    record(0xac, self); record(0xac, arg_value(a)); *out = new_wide_block(); return out;
+}
+static void *__thiscall stub_text_out3(void *self, void **out, uint32_t a, uint32_t b) {
+    record(0xac, self); record(0xac, arg_value(a)); record(0xac, arg_value(b)); *out = new_wide_block(); return out;
+}
+static void *__thiscall stub_text_out4(void *self, void **out, uint32_t a, uint32_t b, uint32_t c) {
+    record(0xac, self); record(0xac, arg_value(a)); record(0xac, arg_value(b)); record(0xac, arg_value(c)); *out = new_wide_block(); return out;
+}
+static void *__thiscall stub_text_out5(void *self, void **out, uint32_t a, uint32_t b, uint32_t c, uint32_t e) {
+    record(0xac, self); record(0xac, arg_value(a)); record(0xac, arg_value(b)); record(0xac, arg_value(c)); record(0xac, arg_value(e));
+    *out = new_wide_block(); return out;
+}
+extern const uint32_t titled_out_callees[];
 static uint32_t __thiscall stub_titled_count8(void *self) { record(0xa9, self); return arena<uint32_t>(0x4c)[0] >> 3 & 7; }
 static void *__thiscall stub_titled_text_out(void *self, void **out, int32_t i) {
     record(0xaa, self); record(0xaa, (void *)(uintptr_t)i);
@@ -6566,7 +6589,9 @@ static std::vector<Test> tests() {
                                                          {0x4b7940, (void *)stub_text_assign2},
                                                          {0x6b1640, (void *)titled_layout}, {0xbeca40, (void *)stub_name_make},
                                                          {0xbecc10, (void *)stub_name_give}, {0xbec5e0, (void *)stub_name_free},
-                                                         {0x41cb90, (void *)stub_named_text_ref}, {0xbcf7d0, (void *)stub_class_wide_from}};
+                                                         {0x41cb90, (void *)stub_named_text_ref}, {0xbcf7d0, (void *)stub_class_wide_from},
+                                                         {0x431360, (void *)stub_missing_symbol}, {0x49b9f0, (void *)stub_missing_symbol},
+                                                         {0x696130, (void *)stub_missing_symbol}, {0x771570, (void *)stub_missing_symbol}};
         static void *const built_rect[5] = {(void *)stub_built0, (void *)stub_built_rect1, (void *)stub_built_rect2, (void *)stub_built_rect3, (void *)stub_built_rect4};
         static void *const built_edx[4] = {(void *)stub_built_edx0, (void *)stub_built_edx1, (void *)stub_built_edx2, (void *)stub_built_edx3};
         g_titled_single_global = g_titled_single_fn = 0;
@@ -6587,6 +6612,9 @@ static std::vector<Test> tests() {
                                                   : titled_callees[k + 1] & 0x100 ? built_edx[titled_callees[k + 1] & 0xff] : built[titled_callees[k + 1]]});
         static void *const fast_temp_stubs[4] = {(void *)stub_fast_temp0, (void *)stub_fast_temp1, (void *)stub_fast_temp2, (void *)stub_fast_temp3};
         for (int k = 0; titled_fast_temps[k]; k += 2) list.push_back({titled_fast_temps[k], fast_temp_stubs[titled_fast_temps[k + 1] & 3]});
+        static void *const out_stubs[5] = {(void *)stub_text_out1, (void *)stub_text_out2, (void *)stub_text_out3, (void *)stub_text_out4, (void *)stub_text_out5};
+        for (int k = 0; titled_out_callees[k]; k += 2)
+            if (titled_out_callees[k] != e->at) list.push_back({titled_out_callees[k], out_stubs[titled_out_callees[k + 1] - 1]});
         if (e->at == 0x9a0b90)   // (its hand-written loop: the count small, the texts made by the name source new each time)
             for (auto &x : list)
                 if (x.first == 0x53c790) x.second = (void *)stub_titled_count8;
