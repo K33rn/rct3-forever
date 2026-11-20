@@ -254,6 +254,18 @@ __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t 
 #undef X87
 #undef X87I
 
+// a test as the steps' blocks make it (kind 63's fn and value): whether the jump is taken (the block skipped)
+static bool titled_decides(uint32_t fn, uint32_t a, uint32_t value) {
+    if (fn >= 0x10) {
+        const uint32_t b = value;
+        const int32_t sa = (int32_t)a, sb = (int32_t)b;
+        const bool taken[10] = {a > b, a >= b, a < b, a <= b, sa > sb, sa >= sb, sa < sb, sa <= sb, a == b, a != b};
+        return taken[fn & 0xf];
+    }
+    // (fn 3: taken when the low byte isn't 0; fn 4 / 5: when the bits under the mask, value, are all 0 / aren't)
+    const bool zero = fn >= 4 ? (a & value) == 0 : fn >= 2 ? (a & 0xff) == 0 : a == 0;
+    return zero != (fn == 1 || fn == 3 || fn == 5);
+}
 static volatile long g_titled_constructs;
 // given[1..]: the constructor's arguments, (parent, text, ...)
 template <uintptr_t TITLE, uintptr_t BASE, const TitledExtra *EXTRAS, uint32_t EXTRA_COUNT, const TitledOp *OPS, uint32_t COUNT, uint32_t PARENT, uint32_t TEXT>
@@ -406,6 +418,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 45: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = *(uint32_t *)(uintptr_t)op.value; break;
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;
         case 106: *(uint32_t *)(self + op.off) += op.value; break;   // a constant added (a sub's negated)
+        case 113: scratch[op.off] = titled_decides(op.fn, args[0], op.value) ? args[1] : args[2]; break;   // one of two values, by a test
         case 107:   // a name given to the window: the member holds it now (none when it wasn't made), nothing lets it go
             *(void **)(self + op.off) = name_built[op.value] ? names[op.value] : nullptr;
             name_built[op.value] = false;
@@ -467,17 +480,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 63: {   // a block of off steps skipped when the value is 0 (fn 0) or when it isn't (fn 1); fn 2: when its low byte is 0;
                      // fn 0x10 | n: when the value compares with the constant (value) as the n-th of ja jae jb jbe jg jge jl jle je jne
             // (a second value: the decision's number, kept for the else that follows, kind 88)
-            bool skipped;
-            if (op.fn >= 0x10) {
-                const uint32_t a = args[0], b = op.value;
-                const int32_t sa = (int32_t)a, sb = (int32_t)b;
-                const bool skip[10] = {a > b, a >= b, a < b, a <= b, sa > sb, sa >= sb, sa < sb, sa <= sb, a == b, a != b};
-                skipped = skip[op.fn & 0xf];
-            } else {
-                // (fn 3: skipped when the low byte isn't 0; fn 4 / 5: when the bits under the mask, value, are all 0 / aren't)
-                const bool zero = op.fn >= 4 ? (args[0] & op.value) == 0 : op.fn >= 2 ? (args[0] & 0xff) == 0 : args[0] == 0;
-                skipped = zero != (op.fn == 1 || op.fn == 3 || op.fn == 5);
-            }
+            const bool skipped = titled_decides(op.fn, args[0], op.value);
             if (op.count > 1) block_ran[args[1] & 63] = !skipped;
             if (skipped) k += op.off;
             break;

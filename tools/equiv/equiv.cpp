@@ -627,7 +627,9 @@ extern const uint32_t titled_info[], titled_callees[], titled_nullable[], titled
 static uint32_t g_titled_text_saved[8], g_titled_read_saved[256];
 extern const uint32_t titled_read_globals[];
 static uint32_t g_titled_written_saved[16];
-static uint32_t g_titled_object_saved[16];
+static uint32_t g_titled_object_saved[32];
+// (the objects the globals called on hold: 32 of them in the arena, the first 16 at 0xD000, the rest at 0x11000)
+static uint32_t titled_object_place(uint32_t k) { return k < 16 ? 0xd000 + k * 0x100 : 0x11000 + (k - 16) * 0x100; }
 extern const uint32_t titled_singletons[];
 extern const uint32_t titled_list_globals[];
 extern const uint32_t titled_window_lists[];
@@ -6433,8 +6435,8 @@ static std::vector<Test> tests() {
                                   for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0x100 + off)[0] = value();
                                   for (uint32_t blk = 0; blk < 16; blk++)
                                       for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0xc000 + blk * 0x40 + (off & 0x3f))[0] = value();
-                                  for (uint32_t g = 0; g < 16; g++)   // (the objects game globals hold: floats too, as their rectangles are read)
-                                      for (uint32_t off = 4; off < 0x100; off += 4) arena<uint32_t>(0xd000 + g * 0x100 + off)[0] = value();
+                                  for (uint32_t g = 0; g < 32; g++)   // (the objects game globals hold: floats too, as their rectangles are read)
+                                      for (uint32_t off = 4; off < 0x100; off += 4) arena<uint32_t>(titled_object_place(g) + off)[0] = value();
                                   for (uint32_t blk = 0; blk < 16; blk++)   // (each what a member points to: an object, with the table of stand-ins)
                                       arena<uint32_t>(0xc000 + blk * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               }
@@ -6483,12 +6485,12 @@ static std::vector<Test> tests() {
                                       g[b] = arena<uint8_t>(0x4c)[b] ^ (uint8_t)k;
                                   }
                               }
-                              for (int k = 0; titled_object_globals[k] && k < 16; k++) {   // (the globals called on: objects of the arena's)
+                              for (int k = 0; titled_object_globals[k] && k < 32; k++) {   // (the globals called on: objects of the arena's)
                                   g_titled_object_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_object_globals[k];
-                                  *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = (uint32_t)(uintptr_t)arena<void>(0xd000 + k * 0x100);
-                                  arena<uint32_t>(0xd000 + k * 0x100)[0] = (uint32_t)(uintptr_t)titled_child_table;   // (its table: the stand-ins)
+                                  *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = (uint32_t)(uintptr_t)arena<void>(titled_object_place(k));
+                                  arena<uint32_t>(titled_object_place(k))[0] = (uint32_t)(uintptr_t)titled_child_table;   // (its table: the stand-ins)
                                   for (int q = 0x0b; q < 0x40; q++)   // (its members from +0x2C on point into the filled places, so a chain read through one lands)
-                                      arena<uint32_t>(0xd000 + k * 0x100)[q] = (uint32_t)(uintptr_t)arena<void>(0xc000 + ((q * 3 + k) % 16) * 0x40);
+                                      arena<uint32_t>(titled_object_place(k))[q] = (uint32_t)(uintptr_t)arena<void>(0xc000 + ((q * 3 + k) % 16) * 0x40);
                               }
                               for (int k = 0; titled_list_globals[k] && k < 8; k++) {   // (the lists a node is put first in: one node in each, or none)
                                   g_titled_list_saved[k] = *(volatile uint32_t *)(uintptr_t)titled_list_globals[k];
@@ -6540,7 +6542,7 @@ static std::vector<Test> tests() {
                               case 7: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6]); break;
                               default: made = ((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(self, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]); break;
                               }
-                              for (int k = 0; titled_object_globals[k] && k < 16; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
+                              for (int k = 0; titled_object_globals[k] && k < 32; k++) *(volatile uint32_t *)(uintptr_t)titled_object_globals[k] = g_titled_object_saved[k];
                               for (int k = 0; titled_list_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_list_globals[k] = g_titled_list_saved[k];
                               for (int k = 0; titled_text_globals[k] && k < 8; k++) *(volatile uint32_t *)(uintptr_t)titled_text_globals[k] = g_titled_text_saved[k];
                               for (int k = 0; titled_read_globals[k] && k < 256; k++) *(volatile uint32_t *)(uintptr_t)titled_read_globals[k] = g_titled_read_saved[k];
