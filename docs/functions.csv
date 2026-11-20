@@ -12343,7 +12343,7 @@ address,size,name,callers,status
 0x8cf340,64,,1,documented
 0x8cf3c0,30,DeletingDestructor,2,rewritten
 0x8cf3e0,187,MEMBER_DTOR,1,rewritten
-0x8cf4c0,2870,,1,documented
+0x8cf4c0,2870,Window::Titled,1,rewritten
 0x8d0010,23,,1,documented
 0x8d0030,30,DeletingDestructor,2,rewritten
 0x8d0050,203,MEMBER_DTOR,1,rewritten
@@ -14279,7 +14279,7 @@ address,size,name,callers,status
 0x9aac90,43,,1,documented
 0x9aacf0,30,DeletingDestructor,2,rewritten
 0x9aad10,181,Destructor::Steps,1,rewritten
-0x9aadd0,1265,,3,documented
+0x9aadd0,1265,Window::Titled,3,rewritten
 0x9ab320,30,DeletingDestructor,2,rewritten
 0x9ab340,113,Destructor::DeleteTwoMembers,1,rewritten
 0x9ab3d0,500,Window::Construct,0,rewritten

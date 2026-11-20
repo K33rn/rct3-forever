@@ -291,6 +291,20 @@ static void *__thiscall stub_text_out5(void *self, void **out, uint32_t a, uint3
     *out = new_wide_block(); return out;
 }
 extern const uint32_t titled_out_callees[];
+// Text::Copy (0xBD01C0) making a text temporary: the text the holder given holds noted, a new text put in the temporary
+static void *__thiscall stub_titled_text_copy(void **self, void **from) {
+    record(0xad, from ? *from : nullptr);
+    *self = new_wide_block();
+    return self;
+}
+// NamedTextRef's constructor naming the reference by a counted text (titled_text_refs_by_text): as the one naming it by a
+// literal (stub_named_text_ref), the text the holder given holds noted instead of the literal
+static void *__fastcall stub_named_text_ref(uint8_t *self, void *, const char *name, void *texts, uint32_t suffix);
+static void *__fastcall stub_named_text_ref_text(uint8_t *self, void *edx, void **holder, void *texts, uint32_t suffix) {
+    record(0xae, holder ? *holder : nullptr);
+    return stub_named_text_ref(self, edx, nullptr, texts, suffix);
+}
+extern const uint32_t titled_text_refs_by_text[];
 static uint32_t __thiscall stub_titled_count8(void *self) { record(0xa9, self); return arena<uint32_t>(0x4c)[0] >> 3 & 7; }
 static void *__thiscall stub_titled_text_out(void *self, void **out, int32_t i) {
     record(0xaa, self); record(0xaa, (void *)(uintptr_t)i);
@@ -6615,6 +6629,8 @@ static std::vector<Test> tests() {
         static void *const out_stubs[5] = {(void *)stub_text_out1, (void *)stub_text_out2, (void *)stub_text_out3, (void *)stub_text_out4, (void *)stub_text_out5};
         for (int k = 0; titled_out_callees[k]; k += 2)
             if (titled_out_callees[k] != e->at) list.push_back({titled_out_callees[k], out_stubs[titled_out_callees[k + 1] - 1]});
+        list.push_back({0xbd01c0, (void *)stub_titled_text_copy});
+        for (int k = 0; titled_text_refs_by_text[k]; k++) list.push_back({titled_text_refs_by_text[k], (void *)stub_named_text_ref_text});
         if (e->at == 0x9a0b90)   // (its hand-written loop: the count small, the texts made by the name source new each time)
             for (auto &x : list)
                 if (x.first == 0x53c790) x.second = (void *)stub_titled_count8;

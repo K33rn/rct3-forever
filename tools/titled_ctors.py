@@ -35,8 +35,11 @@ SEPARATOR = 0xf2738c
 # Report::MissingResourceSymbol and its copies: called on a stack slot holding a resource reference's place (step 105)
 MISSING_SYMBOLS = (0x431360, 0x49b9f0, 0x696130, 0x771570)
 # the functions the tester stands in for itself (its own stand-ins, which know what they make): never listed as plain callees
-TESTER_OWN = {0x403bb0, 0x403be0, 0x4040f0, 0x41c740, 0x41cb90, 0x6a39d0, 0x6b1640, 0x805700, 0x805750, 0xbcdfc0, 0xbcf7d0, 0xbcf850,
-              0xbd0490, 0xbd1880, 0xbec5e0, 0xbeca40, 0xbecc10, 0x4b7940}
+# NamedTextRef's constructor naming the reference by a counted text a holder holds (it and its copies, identical): the tester
+# stands in for them itself
+TEXT_REFS_BY_TEXT = {a for a, r in rows.items() if r['name'] == 'NamedTextRef::NamedTextRef(text)'}
+TESTER_OWN = {0x403bb0, 0x403be0, 0x4040f0, 0x41c740, 0x41cb90, 0x6a39d0, 0xbd01c0, 0x6b1640, 0x805700, 0x805750, 0xbcdfc0, 0xbcf7d0, 0xbcf850,
+              0xbd0490, 0xbd1880, 0xbec5e0, 0xbeca40, 0xbecc10, 0x4b7940} | TEXT_REFS_BY_TEXT
 CMP_CONDITIONS = ['ja', 'jae', 'jb', 'jbe', 'jg', 'jge', 'jl', 'jle', 'je', 'jne']   # (step 63, fn 0x10 | the index)
 LB = 0x200   # the x87 runs' locals buffer (titled.cpp loc[]): a stack place S below the entry is loc[(S + LB) / 4]; arguments' slots after
 VSLOTS = {0x20: 1}   # the virtual slots called (op 60) and how many values each takes (0x20: a child's size, the tester's own)
@@ -660,6 +663,16 @@ def tail(p):
         nscratch[0] += 1
         return ('scratch', nscratch[0] - 1)
 
+    def keep_tempats(kk_):   # (a temporary about to be destroyed: what registers read from it kept as scratch values, kind 79)
+        for r_ in list(R):
+            v_ = R.get(r_)
+            if v_ and v_[0] == 'tempat' and v_[1] == kk_ and v_[2] < 0x40 and ('temp', kk_) in built and nscratch[0] < 32:
+                ops.append((79, nscratch[0], 0, 0, [('tempat', kk_ | v_[2] << 8)]))
+                for r2_ in list(R):
+                    if R.get(r2_) == v_:
+                        R[r2_] = ('scratch', nscratch[0])
+                nscratch[0] += 1
+
     def scratch_of(reg):   # a register's value as a scratch value: one already, or the last call's result taken into one
         v_ = val(reg)
         if v_ and v_[0] == 'scratch':
@@ -719,10 +732,21 @@ def tail(p):
         node_reg = None
         done = []
         used = [k0]
+        deferred = []   # (outside a run: the next call's pushes of constants, and a local's place, set among the link's steps)
         q = k0 + 1
-        while q < len(t) and q < k0 + (28 if within_run else 12) and len(done) < 4:
+        while q < len(t) and q < k0 + (28 if within_run else 16) and len(done) < 4:
             u = t[q]
             if re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+|[a-d]l)', u):
+                q += 1
+                continue
+            if not within_run and ((zp_ := re.fullmatch(r'push (0x[0-9a-f]+|\d+|' + REG + ')', u)) and
+                                   (not zp_.group(2) or zp_.group(2) not in sym and zp_.group(2) not in (s_, node_reg) and
+                                    val(zp_.group(2)) and val(zp_.group(2))[0] in ('const', 'byte')) or
+                                   (zl_ := re.fullmatch(r'lea ' + REG + r', \[esp \+ (0x[0-9a-f]+|\d+)\]', u)) and
+                                   (zl_.group(1) not in sym or sym[zl_.group(1)] == 'F' and 'f1' in done) and zl_.group(1) not in (s_, node_reg)):
+                deferred.append(q)
+                if zl_ := re.fullmatch(r'lea ' + REG + r', .*', u):
+                    sym[zl_.group(1)] = 'X'   # (not one of the link's registers after this)
                 q += 1
                 continue
             if within_run and ins[q].mnemonic.startswith('f') and any(re.search(r'\b' + r_ + r'\b', u) for r_ in list(sym) + [s_] + ([node_reg] if node_reg else [])):
@@ -772,7 +796,7 @@ def tail(p):
             q += 1
         if len(done) != 4 or node is None:
             return None
-        return q, node, ('glob', val(s_)[1]) if val(s_)[0] == 'global' else ('field', val(s_)[1]), set(sym) | {s_}, used, s_, node_reg
+        return q, node, ('glob', val(s_)[1]) if val(s_)[0] == 'global' else ('field', val(s_)[1]), set(sym) | {s_}, used, s_, node_reg, deferred
 
     def arg_slot_written_before(slot_):   # was an argument's slot stored into before the tail (the runs' buffer can't know it)?
         return any((z_ := re.fullmatch(r'(?:mov|fstp?) dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\](?:, .*)?', t[q_])) and num(z_.group(1)) - depth_at[q_] == slot_
@@ -929,6 +953,16 @@ def tail(p):
             return None
         if b[12] == 'mov eax, dword ptr [eax + 0x10]' and b[13] == f'add {v_}, eax' and (l2v := ends(14, v_)) and                 v_ not in ('ecx', 'edx', 'eax') and zc.group(1) != v_ and zd.group(1) != v_:
             return l2v, v_, 1, base, num(zc.group(2)), {'eax', 'ecx', 'edx', v_, z1.group(1), zc.group(1), zd.group(1)}   # (into V itself)
+        if b[12] == 'mov eax, dword ptr [eax + 0x10]' and (zl_ := re.fullmatch(r'lea ' + REG + r', \[(?:eax \+ ' + v_ + '|' + v_ + r' \+ eax)\]', b[13])) and \
+                (l2d := ends(14, zl_.group(1))) and v_ not in ('ecx', 'edx', 'eax') and zc.group(1) != v_ and zd.group(1) != v_ and \
+                zl_.group(1) not in (v_, 'eax'):
+            # (into another register: lea D, [eax + V])
+            return l2d, zl_.group(1), 1, base, num(zc.group(2)), {'eax', 'ecx', 'edx', zl_.group(1), z1.group(1), zc.group(1), zd.group(1)}
+        if b[12] == 'mov eax, dword ptr [eax + 0x10]' and (zl_ := re.fullmatch(r'lea ' + REG + r', \[(?:eax \+ ' + v_ + '|' + v_ + r' \+ eax)\]', b[13])) and \
+                len(L) > 14 and l1 == L[14][0] and R.get(zl_.group(1)) in (('const', 0), ('byte', 0)) and v_ not in ('ecx', 'edx', 'eax') and \
+                zc.group(1) != v_ and zd.group(1) != v_ and zl_.group(1) not in (v_, 'eax', zc.group(1), zd.group(1), z1.group(1)):
+            # (into a register already holding 0, which the ways round it leave so: lea D, [eax + V]; L1)
+            return l1, zl_.group(1), 1, base, num(zc.group(2)), {'eax', 'ecx', 'edx', zl_.group(1), z1.group(1), zc.group(1), zd.group(1)}
         if b[12] != 'mov eax, dword ptr [eax + 0x10]' or b[13] != 'add eax, ' + v_:
             return None
         if (zt := re.fullmatch(r'jne (0x[0-9a-f]+)', b[14])) and l1 == L[15][0] and at.get(num(zt.group(1))) and at.get(num(zt.group(1))) > L[15][0] and \
@@ -1185,7 +1219,7 @@ def tail(p):
         z = re.fullmatch(r'dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', op_text)
         if z:
             slot_ = num(z.group(1)) - depth_at[q_] - (d - depth_at[k])   # (the static depths corrected by how far they drifted from the steps' own)
-            if slot_ >= 4 and slot_ % 4 == 0 and slot_ // 4 <= nargs:
+            if slot_ >= 4 and slot_ % 4 == 0 and slot_ // 4 <= nargs and slot_ not in slot_stored:
                 return None if slot_ in clobbered else base_code(('arg', slot_ // 4))
             v_ = S.get(slot_, stored(slot_, q_))
             return base_code(v_) if v_ else None
@@ -1232,9 +1266,13 @@ def tail(p):
             if b[5] == f'test {x_}, {x_}' and re.fullmatch(r'je (0x[0-9a-f]+)', b[6]) and b[6][3:] == jz.group(1):
                 i = 7
             value_ = place_value(m0.group(2), L[0][0])
+            name_ = None
+            zs_ = re.fullmatch(r'dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', m0.group(2))
+            sv_ = S.get(num(zs_.group(1)) - depth_at[L[0][0]] - (d - depth_at[k])) if zs_ else None
+            if sv_ and sv_[0] == 'name' and ('name', sv_[1]) in built:
+                value_, name_ = ('name',), sv_[1]   # (a name the steps made, kept in a stack slot: let go as the name, kind 57)
             if value_ is None or m0.group(2).startswith('dword ptr [' + a_):
                 return None
-            name_ = None
         else:
             mn = re.fullmatch(r'dword ptr \[' + REG + r'\]', m0.group(2))
             jz = re.fullmatch(r'jne (0x[0-9a-f]+)', b[3])
@@ -2040,8 +2078,16 @@ def tail(p):
         if not pushed and (ll_ := list_link(k)):
             ops.append((91, 0, 0, 0, [ll_[1], ll_[2]]))
             edx_live[0] = False   # (edx, if the link used it, was only the link's)
+            pre_ = dict(R)
             for r_ in ll_[3]:
                 R[r_] = None
+            for q_ in ll_[7]:   # (the next call's pushes and a local's place, set among the link's steps: as they were)
+                if (zp_ := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', t[q_])):
+                    pushed.append(num(zp_.group(1))); d += 4
+                elif (zp_ := re.fullmatch(r'push ' + REG, t[q_])):
+                    pushed.append(pre_[zp_.group(1)][1]); d += 4
+                elif (zl_ := re.fullmatch(r'lea ' + REG + r', \[esp \+ (0x[0-9a-f]+|\d+)\]', t[q_])):
+                    R[zl_.group(1)] = ('stack', num(zl_.group(2)) - d)
             k = ll_[0]
             flag = None
             continue
@@ -2409,8 +2455,8 @@ def tail(p):
                     ops.append((55, off, w[1], 0, []))
                 elif (dc := deref_code(w)):
                     ops.append((71, off, 0, 0, [dc]))   # (a dword inside what an argument points to, stored)
-                elif w[0] == 'tempat' and base_code(w):
-                    ops.append((71, off, 0, 0, [base_code(w)]))   # (what a temporary holds, read now)
+                elif w[0] in ('tempat', 'gfield', 'childval') and isinstance(base_code(w), tuple):
+                    ops.append((71, off, 0, 0, [base_code(w)]))   # (what a temporary holds, a dword of a global's or a child's object, read now)
                 elif w[0] == 'name' and ('name', w[1]) in built:
                     # a text made (a name) given to the window: the member holds it from now on, nothing lets it go here (kind 107)
                     ops.append((107, off, w[1], 0, []))
@@ -2460,6 +2506,7 @@ def tail(p):
             continue
         elif (m := re.fullmatch(r'mov (e[a-d]x|e[sd]i|ebp), dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', s)) and not pushed and                 num(m.group(2)) - d in temps and ('temp', temps[num(m.group(2)) - d]) in built and                 temps[num(m.group(2)) - d] in text_temps and                 (rel := plain_release(k, m.group(1), num(m.group(2)))):
             # a counted text made on the stack (0x6A39D0's) let go (kind 16)
+            keep_tempats(temps[num(m.group(2)) - d])
             ops.append((16, temps[num(m.group(2)) - d], 0, 0, []))
             built.discard(('temp', temps[num(m.group(2)) - d]))
             for r in rel[1]:
@@ -2563,6 +2610,12 @@ def tail(p):
             for r_ in list(R):   # (what holds it holds what the global now holds: read so, for the paths that join after)
                 if R[r_] == w_:
                     R[r_] = ('global', num(m.group(1)))
+        elif (m := re.fullmatch(r'test (byte|dword) ptr \[(0x1[0-9a-f]{6})\], (0x[0-9a-f]+|\d+)', s)) and num(m.group(3)) and \
+                (m.group(1) == 'dword' or num(m.group(3)) < 0x100):
+            # bits of a game global tested in place (a byte's: the low byte of its dword): the block that follows kept by them
+            flag = ('testmask', ('global', num(m.group(2))), num(m.group(3)))
+            k += 1
+            continue
         elif (m := re.fullmatch(r'(or|and) dword ptr \[(0x1[0-9a-f]{6})\], (0x[0-9a-f]+|\d+)', s)):
             # a game global or-ed / and-ed with a constant in place (kind 96)
             ops.append((96, 0, num(m.group(3)), num(m.group(2)), [int(m.group(1) == 'and')]))
@@ -2616,6 +2669,12 @@ def tail(p):
                 val(m.group(1))[0] in ('this', 'member') and num(m.group(2) or '0') < 0x10000:
             # a member of the window compared with a constant (read now)
             flag = ('cmpk', ('field', (0 if val(m.group(1)) == ('this',) else val(m.group(1))[1]) + num(m.group(2) or '0'), len(ops)), num(m.group(3)))
+        elif (m := re.fullmatch(r'cmp dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', s)) and (sv_ := (
+                ('arg', (num(m.group(1)) - d) // 4) if 4 <= num(m.group(1)) - d <= 4 * nargs and (num(m.group(1)) - d) % 4 == 0 and
+                num(m.group(1)) - d not in clobbered and num(m.group(1)) - d not in slot_stored else S.get(num(m.group(1)) - d))) and \
+                base_code(sv_) is not None:
+            # an argument (or a value kept on the stack) compared with a constant
+            flag = ('cmpk', sv_, num(m.group(2)))
         elif (m := re.fullmatch(r'(cmp|test) (dword|byte) ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (0x[0-9a-f]+|[1-9]\d*)', s)) and \
                 val(m.group(3)) and val(m.group(3))[0] == 'arg' and val(m.group(3))[1] not in clobbered_args() and \
                 num(m.group(4) or '0') < 0x1000000 and (m.group(1) == 'test' or m.group(2) == 'dword') and \
@@ -2874,6 +2933,7 @@ def tail(p):
                 slot = num(z.group(1)) - d
                 if slot not in temps or ('temp', temps[slot]) not in built or ret_args(num(z2.group(1))) != 0:
                     raise Reject('temporary destroyed')
+                keep_tempats(temps[slot])
                 ops.append((15, temps[slot], 0, num(z2.group(1)), []))
                 built.discard(('temp', temps[slot]))
             else:
@@ -2911,6 +2971,7 @@ def tail(p):
                     raise Reject('guarded release @%#x' % x.address)
                 slot = num(re.fullmatch(r'mov e[a-d]x, dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\]', body[0]).group(1)) - d
                 if slot in temps and ('temp', temps[slot]) in built:
+                    keep_tempats(temps[slot])
                     ops.append((16, temps[slot], 0, 0, []))
                     built.discard(('temp', temps[slot]))
                 elif S.get(slot) and S[slot][0] == 'name' and ('name', S[slot][1]) in built:
@@ -2970,6 +3031,9 @@ def tail(p):
                     R[r_] = ('name', nnames, None)
             pushed.append(('nameaddr', nnames)); d += 4
             nnames += 1
+        elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack' and \
+                val(m.group(1))[1] in temps and ('temp', temps[val(m.group(1))[1]]) in built and temps[val(m.group(1))[1]] in text_temps:
+            pushed.append(('temp', temps[val(m.group(1))[1]])); d += 4   # (a text temporary's place: what its making gave back)
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack':
             pushed.append(('rect', val(m.group(1))[1])); d += 4   # a local's address: only a layout's rectangle is understood
         elif (m := re.fullmatch(r'push ' + REG, s)) and still(val(m.group(1))):
@@ -3096,6 +3160,7 @@ def tail(p):
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack' and val('ecx')[1] in temps and \
                 ('temp', temps[val('ecx')[1]]) in built and not nulls and ret_args(num(m.group(1))) == 0:
             # a temporary made outside a new object's making, destroyed (kind 15)
+            keep_tempats(temps[val('ecx')[1]])
             ops.append((15, temps[val('ecx')[1]], 0, num(m.group(1)), []))
             built.discard(('temp', temps[val('ecx')[1]]))
             for r in ('eax', 'ecx', 'edx'):
@@ -3103,7 +3168,7 @@ def tail(p):
             flag = None
         elif (m := re.fullmatch(r'call (0x[0-9a-f]+)', s)) and val('ecx') and val('ecx')[0] == 'stack' and not nulls and \
                 ret_args(num(m.group(1))) is not None and 0 < ret_args(num(m.group(1))) <= min(4, len(pushed)) and \
-                num(m.group(1)) in (0x41cb90, 0x4040f0, 0xbd1940, 0x6a39d0, 0xbd1800):
+                (num(m.group(1)) in (0x41cb90, 0x4040f0, 0xbd1940, 0x6a39d0, 0xbd1800, 0xbd01c0) or num(m.group(1)) in TEXT_REFS_BY_TEXT):
             # a text reference made on the stack outside a new object's making: always (kind 20, value 1); or a child's text
             # (0x6A39D0, given a name's place, the window and a value)
             fn, slot = num(m.group(1)), val('ecx')[1]
@@ -3114,19 +3179,30 @@ def tail(p):
                 if any(not (isinstance(v, int) or v[0] in ('nameaddr', 'self', 'glob', 'given')) for v in targs) or \
                         any(not isinstance(v, int) and v[0] == 'nameaddr' and ('name', v[1]) not in built for v in targs):
                     raise Reject('child text values')
+            elif fn in TEXT_REFS_BY_TEXT:   # (a text reference named by a counted text a holder holds: a text temporary, a built name, an argument)
+                if isinstance(targs[0], int) or not (targs[0][0] == 'temp' and targs[0][1] in text_temps and ('temp', targs[0][1]) in built or
+                                                     targs[0][0] == 'nameaddr' and ('name', targs[0][1]) in built or targs[0][0] == 'given') or \
+                        any(not isinstance(v, int) for v in targs[1:]):
+                    raise Reject('text reference by text values')
+            elif fn == 0xbd01c0:   # (Text::Copy: a counted text copied from the one a holder holds: an argument's, a built name's, the window's)
+                if any(isinstance(v, int) or v[0] not in ('nameaddr', 'self', 'given') or v[0] == 'nameaddr' and ('name', v[1]) not in built
+                       for v in targs):
+                    raise Reject('text copy values')
             elif any(not (isinstance(v, int) or fn == 0xbd1800 and v[0] in ('scratch', 'glob')) for v in targs):   # (0xBD1800: a list copied from the one given)
                 raise Reject('text reference values')
             kk = len([o for o in ops if o[0] == 20])
             if kk >= 32 or slot in temps and ('temp', temps[slot]) in built:
                 raise Reject('temporaries kk=%d reuse=%s @%#x' % (kk, slot in temps, x.address))
             temps[slot] = kk
+            if slot > 0:   # (made in an argument's slot: the argument gone)
+                slot_stored.add(slot); clobbered.add(slot)
             ops.append((20, kk, 1, fn, targs))
             if fn == 0xbd1940:
                 pod_temps.add(kk)   # (a key combination: plain values, nothing to destroy)
             else:
                 built.add(('temp', kk))
             always_temps.add(kk)
-            if fn == 0x6a39d0:
+            if fn in (0x6a39d0, 0xbd01c0):
                 text_temps.add(kk)
             R['eax'] = ('temp', kk); R['ecx'] = None; R['edx'] = None
             flag = None
@@ -3634,6 +3710,9 @@ if __name__ == '__main__':
     bad_ = sorted(f_ for f_ in out_fns if f_ in noobj_uses or f_ in fast_uses or f_ not in callees or not 1 <= callees[f_] <= 5)
     if bad_:
         sys.exit('calls giving a text back by value, not as thiscalls taking 1 to 5 values: %s' % [hex(f_) for f_ in bad_])
+    out.append('// NamedTextRef\'s constructor naming the reference by a counted text (it and its copies): the tester\'s own stand-in')
+    out.append('extern const uint32_t titled_text_refs_by_text[];')
+    out.append('const uint32_t titled_text_refs_by_text[] = {' + ''.join(f'{f_:#x}, ' for f_ in sorted(TEXT_REFS_BY_TEXT)) + '0};')
     out.append('extern const uint32_t titled_out_callees[];')
     out.append('const uint32_t titled_out_callees[] = {' + ''.join(f'{f_:#x}, {callees[f_]}, ' for f_ in sorted(out_fns)) + '0};')
     callees = {f_: c_ for f_, c_ in callees.items() if f_ not in out_fns}
@@ -3800,7 +3879,7 @@ if __name__ == '__main__':
     out.append('// the x87 runs (op 59): each a count, then its steps {code, kind, value, local}')
     out.append('extern const uint32_t titled_fpu[];')
     out.append('const uint32_t titled_fpu[] = {' + ''.join(f'{c:#x}, {kd:#x}, {v:#x}, {lc:#x}, ' for c, kd, v, lc in FPU_PROGRAM) + '0};')
-    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740, 0xbd1940, 0x4b7940} - {f for f, _ in ftemps}   # (0xBD1940: the game's own runs; the fastcall ones: titled_fast_temps)
+    unknown_temps = temps_used - {0x4040f0, 0xbd1880, 0x6a39d0, 0x41cb90, 0x41c740, 0xbd1940, 0x4b7940, 0xbd01c0} - TEXT_REFS_BY_TEXT - {f for f, _ in ftemps}   # (0xBD1940: the game's own runs; the fastcall ones: titled_fast_temps)
     if unknown_temps:
         print('temporaries the tester has no stand-in for:', [hex(x) for x in sorted(unknown_temps)])
     # the game globals the steps read as plain values (stored, given to stand-ins, tested): the tester gives each a value of
