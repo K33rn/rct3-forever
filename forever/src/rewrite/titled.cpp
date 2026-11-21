@@ -418,6 +418,9 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 45: *(uint32_t *)(*(uint8_t **)(self + op.off) + op.args[0]) = *(uint32_t *)(uintptr_t)op.value; break;
         case 26: *(uint32_t *)(self + op.off) &= op.value; break;
         case 106: *(uint32_t *)(self + op.off) += op.value; break;   // a constant added (a sub's negated)
+        case 112:   // a value stored into what a value read before points to, at off (fn 1: only when there was memory)
+            if (!op.fn || memory) *(volatile uint32_t *)(uintptr_t)(args[0] + op.off) = args[1];
+            break;
         case 113: scratch[op.off] = titled_decides(op.fn, args[0], op.value) ? args[1] : args[2]; break;   // one of two values, by a test
         case 107:   // a name given to the window: the member holds it now (none when it wasn't made), nothing lets it go
             *(void **)(self + op.off) = name_built[op.value] ? names[op.value] : nullptr;

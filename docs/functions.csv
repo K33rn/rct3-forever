@@ -3740,7 +3740,7 @@ address,size,name,callers,status
 0x556160,30,DeletingDestructor,1,rewritten
 0x556180,82,Member::Destroy555D70,1,rewritten
 0x5561e0,51,ListNode::Unlink,1,rewritten
-0x556220,6203,,1,documented
+0x556220,6203,Window::Titled,1,rewritten
 0x557a60,30,DeletingDestructor,2,rewritten
 0x557ac0,48,QueryInterface,0,rewritten
 0x557b30,54,Reference::Interface,2,rewritten
@@ -19113,7 +19113,7 @@ address,size,name,callers,status
 0xb9f630,270,,1,documented
 0xb9f740,344,,1,documented
 0xb9f8a0,222,,3,documented
-0xb9f980,548,,2,documented
+0xb9f980,548,Window::Titled,2,rewritten
 0xb9fbd0,162,,4,documented
 0xb9fc80,67,Reference::Reference(object),0,rewritten
 0xb9fd20,293,StructArrayField<24>::Save,1,rewritten

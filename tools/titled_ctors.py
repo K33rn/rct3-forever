@@ -153,11 +153,9 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
 LEFT_OUT = {0xb94fd0: "dies in the tester: a built stand-in given an object read through a field the tester leaves random (two singletons in one copy; the tester keeps one)",
             0xa21b30: "dies in the tester: its child at +0x14C (0x6A07E0's) has a holder's place at +0x1C8, past what the tester gives it",
-            0xb9f980: "dies in the tester: a list put in through a game global's object, whose links the tester fills with floats",
+            0xa24fe0: "dies in the tester: a call through the class's table after calls",
             0xa38fd0: "dies in the tester: a dword read through a pointer a child holds, which the tester leaves random",
-            0xa24fe0: "dies in the tester: reads or calls through an object the tester leaves random",
-            0x872970: "dies in the tester: reads or calls through an object the tester leaves random",
-            0x556220: "dies in the tester: reads or calls through an object the tester leaves random",
+            0x872970: "dies in the tester: reads or stores through an object the tester leaves random",
             0x701590:"the original dies in the tester (a stand-in's object read through as something else): to look at",
             0x791670:"the original dies in the tester (a read of 0xC in 0xBCE978, from 0x403C8A: a text the stand-ins don't make?): to look at"}
 
@@ -619,7 +617,7 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90, 92, 93, 104, 113) or o[0] == 10 and o[3] == 0xbcf850 or
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90, 92, 93, 104, 112, 113) or o[0] == 10 and o[3] == 0xbcf850 or
                                                   o[0] == 20 and (o[3] in (0x41cb90, 0x4040f0, 0xbd1940, 0xbd14e0, 0xbd1880) or o[2] & 4) or o[0] == 24 and o[3] in (0xbd14e0, 0xbd1880) or o[0] == 75 and o[4][0][0] != 'self' or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71, 106, 107) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
@@ -650,7 +648,7 @@ def tail(p):
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86, 90, 92, 93, 106, 107, 113}   # (75 frees memory: not quiet)   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86, 90, 92, 93, 106, 107, 112, 113}   # (75 frees memory: not quiet)   # steps that call nothing
 
     taken = {}   # the results already taken into scratch values: the step that gave it -> its scratch number
 
@@ -2418,6 +2416,9 @@ def tail(p):
             elif w and w[0] in ('childor', 'childand') and w[1] == member and w[2] == inner and                     all(o[0] in QUIET and o[0] not in (44, 45, 47, 48, 74) for o in ops[w[3]:]):
                 # read from there, or-ed / and-ed, stored back with nothing between able to change it (kinds 47 / 48)
                 ops.append((47 if w[0] == 'childor' else 48, member, w[4], 0, [inner]))
+            elif w and w[0] == 'allocplace' and w[1] == cur and nulls and w[2] < 0x10000:
+                # (a place in the new memory being set up in line, only when there was memory: kind 112, fn 1)
+                ops.append((112, inner, 0, 1, [('field', member), ('newobj', 1 | w[2] << 8)]))
             elif w and w[0] in ('childval', 'gfield', 'tempat', 'scratch') and isinstance(base_code(w), tuple):
                 ops.append((74, member, inner, 0, [base_code(w)]))   # (a value read before, still as read)
             else:
@@ -3379,6 +3380,24 @@ def tail(p):
             ops.append((78, nscratch[0], num(m.group(3) or '0'), 0, [('gobj', (g_[1] - 0x1000000) | g_[2] << 24)]))
             R[m.group(1)] = ('scratch', nscratch[0])
             nscratch[0] += 1
+        elif (m := re.fullmatch(r'mov dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], ' + REG, s)) and \
+                val(m.group(1)) and val(m.group(1))[0] in ('scratch', 'childval', 'gfield') and num(m.group(2) or '0') < 0x10000 and \
+                isinstance(tc_ := (val(m.group(1)) if val(m.group(1))[0] == 'scratch' else base_code(val(m.group(1)))), tuple) and \
+                (bc_ := base_code(val(m.group(3))) if not (val(m.group(3)) and val(m.group(3))[0] in ('allocplace', 'alloc')) else
+                 ('newobj', 1) if val(m.group(3)) == ('alloc', cur) and nulls else
+                 ('newobj', 1 | val(m.group(3))[2] << 8) if val(m.group(3))[0] == 'allocplace' and val(m.group(3))[1] == cur and nulls and
+                 val(m.group(3))[2] < 0x10000 else None) is not None:
+            # a value stored into what a value read before points to (a scratch value, a child's dword, a global object's):
+            # kind 112 at off (fn 1: only when there was memory, made while making the new object; its place given)
+            ops.append((112, num(m.group(2) or '0'), 0, int(bool(nulls)), [tc_, bc_]))
+            flag = None
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] == 'const' and 0x1000000 <= val(m.group(2))[1] + num(m.group(3) or '0') < 0x1420000:
+            R[m.group(1)] = ('global', val(m.group(2))[1] + num(m.group(3) or '0'))   # (a game global read through its address held in a register)
+        elif (m := re.fullmatch(r'mov ' + REG + r', dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\]', s)) and val(m.group(2)) and \
+                val(m.group(2))[0] == 'fieldplus' and still(('field',) + val(m.group(2))[1:3]) and val(m.group(2))[3] + num(m.group(3) or '0') < 0x10000:
+            # a dword inside a child, at a place in it worked out before
+            R[m.group(1)] = ('childval', val(m.group(2))[1], val(m.group(2))[3] + num(m.group(3) or '0'), len(ops))
         elif (m := re.fullmatch(r'mov ([a-d])l, ([a-d])l', s)) and val('e' + m.group(2) + 'x') and \
                 val('e' + m.group(2) + 'x')[0] in ('global', 'byteglobal', 'const', 'byte'):
             # a register's low byte copied: a game global's (its first byte), or a constant's
@@ -3948,10 +3967,22 @@ if __name__ == '__main__':
     out.append('const uint32_t titled_child_arrays[] = {' + ''.join(f'{a:#x}, {i:#x}, {n}, {m:#x}, ' for (a, m, i), n in sorted(carr_.items())) + '0};')
     out.append('// the game globals whose objects are called on (op 62): the tester gives each an object of its own in the call')
     out.append('extern const uint32_t titled_object_globals[];')
-    objg = sorted({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73} |
+    # (the globals whose object is a list a node is put in through stores, kind 112: given a list head by the tester instead,
+    # a global read +4 into a scratch value then stored through, or a global's object stored through)
+    list_heads_ = set()
+    for a_ in info:
+        o_ = all_ops.get(a_[0], [])
+        if not any(p_[0] == 112 for p_ in o_):
+            continue
+        for p_ in o_:
+            if p_[0] == 79 and p_[4] and isinstance(p_[4][0], tuple) and p_[4][0][0] == 'glob':
+                list_heads_.add(p_[4][0][1])
+            if p_[0] == 112 and isinstance(p_[4][0], tuple) and p_[4][0][0] == 'gobj':
+                list_heads_.add(0x1000000 + (p_[4][0][1] & 0xffffff))
+    objg = sorted(({o[2] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 62} | {o[3] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 73} |
                   {o[1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 82} |
                   {0x1000000 + (st_[2] & 0xffffff) for st_ in FPU_PROGRAM if st_[1] == 7} |   # (and those x87 runs read inside: kind 7)
-                  {0x1000000 + (v_[1] & 0xffffff) for a_ in info for o in all_ops.get(a_[0], []) for v_ in o[4] if isinstance(v_, tuple) and v_[0] == 'gobj'})
+                  {0x1000000 + (v_[1] & 0xffffff) for a_ in info for o in all_ops.get(a_[0], []) for v_ in o[4] if isinstance(v_, tuple) and v_[0] == 'gobj'}) - list_heads_)
     out.append('const uint32_t titled_object_globals[] = {' + ''.join(f'{g:#x}, ' for g in objg) + '0};')
     # the singletons made on first use: a block on a global being 0 (op 63) that makes a new object (18, then its constructor,
     # 10), which keeps itself in that global. The tester leaves the global empty in some cases and has the constructor's
@@ -3964,7 +3995,7 @@ if __name__ == '__main__':
                     len(o_[i_ + 2][4]) <= 3 and o_[i_][3] == 1 and o_[i_ + 2][3] not in TESTER_OWN:
                 singles.append((a_[0], o_[i_][4][0][1], o_[i_ + 2][3]))
     # the game globals holding a list's head that a node is put first in (op 91): the tester gives each an empty list
-    lgl = sorted({o[4][1][1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 91 and o[4][1][0] == 'glob'})
+    lgl = sorted({o[4][1][1] for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 91 and o[4][1][0] == 'glob'} | list_heads_)
     # (and the window's members holding one: (copy, member) each, an empty list put there before the call)
     lwm = sorted({(a_[0], o[4][1][1]) for a_ in info for o in all_ops.get(a_[0], []) if o[0] == 91 and o[4][1][0] == 'field'})
     out.append('extern const uint32_t titled_window_lists[];')
