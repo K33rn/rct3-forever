@@ -3713,3 +3713,94 @@ static uint8_t __fastcall objects_any_near(const float *p) {
 }
 static const uint8_t objects_any_near_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Objects::AnyNear", 0x7a2180, objects_any_near_original, &objects_any_near, &g_any_nears);
+
+// ---- Box::ThinnestAxis(min, max) (0x80E090): which axis a box is thinnest along, as the game numbers them -------------------
+// dx (rounded), dy (unrounded) and dz (rounded) the sides: 2 when dx is below both others, 1 when dy is, else 0.
+static volatile long g_thinnest_axes;
+static uint32_t __fastcall box_thinnest_axis(const float *min, const float *max) {
+    g_thinnest_axes++;
+    const volatile float dx = (float)((long double)max[0] - min[0]);
+    const long double dy = (long double)max[1] - min[1];
+    const volatile float dz = (float)((long double)max[2] - min[2]);
+    if ((long double)dx < dy && (long double)dx < (long double)dz) return 2;
+    if (dy < (long double)dx && dy < (long double)dz) return 1;
+    return 0;
+}
+static const uint8_t box_thinnest_axis_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Box::ThinnestAxis", 0x80e090, box_thinnest_axis_original, &box_thinnest_axis, &g_thinnest_axes);
+
+// ---- Vector::Compare(a, b) (0xBFB2B0): a sort comparison of two vectors, x then y then z: -1, 0 or 1 ---------------------------
+// Below gives -1; not equal (a NaN too) 1.
+static volatile long g_vector_compares;
+static int32_t __thiscall vector_compare(const float *a, const float *b) {
+    g_vector_compares++;
+    for (int i = 0; i < 3; i++) {
+        if ((long double)a[i] < (long double)b[i]) return -1;
+        if (!((long double)a[i] == (long double)b[i])) return 1;
+    }
+    return 0;
+}
+static const uint8_t vector_compare_original[] = {0xd9, 0x01, 0x8b, 0x54, 0x24, 0x04, 0xd9, 0x02};
+REWRITE("Vector::Compare", 0xbfb2b0, vector_compare_original, &vector_compare, &g_vector_compares);
+
+// ---- SortedIndex::LowerBound(this, entry) (0x80E3A0): the place for an entry's +8 in an index sorted high to low ------------
+// Indices at +0x44 (count +0x48) of 0x1C-byte entries at +0x40: halving; a value above the key moves lo past the middle, a
+// value below moves hi before it, an equal value (or a NaN) ends the search; gives lo.
+static volatile long g_lower_bounds;
+static int32_t __thiscall sorted_index_lower_bound(const uint8_t *self, const float *entry) {
+    g_lower_bounds++;
+    const int32_t *const index = *(const int32_t *const *)(self + 0x44);
+    const uint8_t *const entries = *(const uint8_t *const *)(self + 0x40);
+    int32_t lo = 0, hi = *(const int32_t *)(self + 0x48) - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const long double v = *(const float *)(entries + index[mid] * 0x1c + 8), k = entry[2];
+        if (k < v)
+            lo = mid + 1;
+        else if (k > v)
+            hi = mid - 1;
+        else
+            break;
+    }
+    return lo;
+}
+static const uint8_t sorted_index_lower_bound_original[] = {0x51, 0x56, 0x57, 0x8b, 0x79, 0x48, 0x33, 0xf6};
+REWRITE("SortedIndex::LowerBound", 0x80e3a0, sorted_index_lower_bound_original, &sorted_index_lower_bound, &g_lower_bounds);
+
+// ---- Terrain::CellHeightRange(this, x, y, low, high) (0x8BCF80): the lowest and highest corner heights of a cell -----------
+// Cells of 24 bytes at +0x24, the grid's width (byte +4); the four heights from the cell's +0, through the FPU.
+static volatile long g_height_ranges;
+static void __thiscall terrain_cell_height_range(const uint8_t *self, uint32_t x, uint32_t y, float *low, float *high) {
+    g_height_ranges++;
+    const float *const h = (const float *)(*(const uint8_t *const *)(self + 0x24) + ((uint32_t)self[4] * (uint8_t)y + (uint8_t)x) * 24);
+    volatile float lo = (float)x87_load(&h[0]);
+    long double hi = x87_load(&h[0]);
+    for (int i = 1; i < 4; i++) {
+        const long double v = x87_load(&h[i]);
+        const volatile float vf = (float)v;
+        if (v < (long double)lo)
+            lo = (float)v;
+        if (v > hi)
+            hi = vf;
+    }
+    *(volatile float *)low = lo;
+    *(volatile float *)high = (float)hi;
+}
+static const uint8_t terrain_cell_height_range_original[] = {0x0f, 0xb6, 0x41, 0x04, 0x0f, 0xb6, 0x54, 0x24};
+REWRITE("Terrain::CellHeightRange", 0x8bcf80, terrain_cell_height_range_original, &terrain_cell_height_range, &g_height_ranges);
+
+// ---- SinTable::Sin(table, angle) (0xCD0660): the sine of an angle from a quarter-turn table (256 entries) -------------------
+// i = angle K (0xF6D450; fistp) & 0x3FF, lo = i & 0xFF: quadrant 0 t[lo], 1 t[255 - lo], 2 -t[lo], 3 -t[255 - lo].
+static long double __thiscall sin_table_sin(const float *table, float angle) {
+    g_sin_cos++;
+    const uint32_t i = (uint32_t)x87_whole((long double)angle * *(const float *)0xf6d450) & 0x3ff;
+    const uint32_t lo = i & 0xff;
+    switch (i & 0x300) {
+    case 0: return x87_load(&table[lo]);
+    case 0x100: return x87_load(&table[0xff - lo]);
+    case 0x200: return -x87_load(&table[lo]);
+    default: return -x87_load(&table[0xff - lo]);
+    }
+}
+static const uint8_t sin_table_sin_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x0c, 0xd8};
+REWRITE("SinTable::Sin", 0xcd0660, sin_table_sin_original, &sin_table_sin, &g_sin_cos);

@@ -1945,3 +1945,378 @@ static void __thiscall lists_remove(uint8_t *self, uint32_t item) {
 }
 static const uint8_t lists_remove_original[] = {0x53, 0x56, 0x8b, 0x71, 0x74, 0x33, 0xc0, 0x85};
 REWRITE("Lists::Remove", 0xa6bfd0, lists_remove_original, &lists_remove, &g_list_removes);
+
+// ---- Binary searches of sorted tables by an unsigned number ---------------------------------------------------------------
+// (key, table, count, place, -): *key looked for among the entries' first values (entries of the stride given), sorted
+// unsigned. Gives (in the low byte) 1 and the place when found, else 0 and where it would go (0 for an empty table).
+template <int Stride> static uint8_t sorted_table_find(const uint32_t *key, const uint8_t *table, int32_t count, int32_t *place) {
+    if (count < 1) {
+        *(volatile int32_t *)place = 0;
+        return 0;
+    }
+    const uint32_t k = *key;
+    int32_t lo = 0, hi = count - 1;
+    for (;;) {
+        const int32_t mid = (hi + lo) >> 1;
+        const uint32_t v = *(const uint32_t *)(table + mid * Stride);
+        if (v > k) {
+            if (mid > lo) {
+                hi = mid - 1;
+                continue;
+            }
+            *(volatile int32_t *)place = lo;
+            return 0;
+        }
+        if (v == k) {
+            *(volatile int32_t *)place = mid;
+            return 1;
+        }
+        if (mid < hi) {
+            lo = mid + 1;
+            continue;
+        }
+        *(volatile int32_t *)place = hi + 1;
+        return 0;
+    }
+}
+static volatile long g_table_finds;
+static uint8_t __fastcall sorted_table_find20(const uint32_t *key, const uint8_t *table, int32_t count, int32_t *place, uint32_t) {
+    g_table_finds++;
+    return sorted_table_find<20>(key, table, count, place);
+}
+static uint8_t __fastcall sorted_array_find(const uint32_t *key, const uint8_t *table, int32_t count, int32_t *place, uint32_t) {
+    g_table_finds++;
+    return sorted_table_find<4>(key, table, count, place);
+}
+static uint8_t __fastcall sorted_table_find8(const uint32_t *key, const uint8_t *table, int32_t count, int32_t *place, uint32_t) {
+    g_table_finds++;
+    return sorted_table_find<8>(key, table, count, place);
+}
+static const uint8_t sorted_table_find_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0x01, 0x7d};
+REWRITE("SortedTable::Find20", 0x90c5c0, sorted_table_find_original, &sorted_table_find20, &g_table_finds);
+REWRITE("SortedArray::Find", 0x801450, sorted_table_find_original, &sorted_array_find, &g_table_finds);
+REWRITE("SortedTable::Find8", 0x4453d0, sorted_table_find_original, &sorted_table_find8, &g_table_finds);
+
+// ---- SortedPointers::FindBy8(key, list, count, place, -) (0xA90980): the same search over objects by their +8 (unsigned) ---
+// The key is (*key)'s +8.
+static uint8_t __fastcall sorted_pointers_find_by8(const uint8_t *const *key, const uint8_t *const *list, int32_t count, int32_t *place, uint32_t) {
+    g_table_finds++;
+    if (count < 1) {
+        *(volatile int32_t *)place = 0;
+        return 0;
+    }
+    const uint32_t k = *(const uint32_t *)(*key + 8);
+    int32_t lo = 0, hi = count - 1;
+    for (;;) {
+        const int32_t mid = (hi + lo) >> 1;
+        const uint32_t v = *(const uint32_t *)(list[mid] + 8);
+        if (k < v) {
+            if (mid > lo) {
+                hi = mid - 1;
+                continue;
+            }
+            *(volatile int32_t *)place = lo;
+            return 0;
+        }
+        if (k == v) {
+            *(volatile int32_t *)place = mid;
+            return 1;
+        }
+        if (mid < hi) {
+            lo = mid + 1;
+            continue;
+        }
+        *(volatile int32_t *)place = hi + 1;
+        return 0;
+    }
+}
+static const uint8_t sorted_pointers_find_by8_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0x01, 0x7d};
+REWRITE("SortedPointers::FindBy8", 0xa90980, sorted_pointers_find_by8_original, &sorted_pointers_find_by8, &g_table_finds);
+
+// ---- SortedTable::Find64(this, key_lo, key_hi, place) (0x9F9130): binary search for a signed 64-bit key -------------------
+// Pointers to 64-bit values at +0x84 (count +0x8C). Gives (in the low byte) 1 and the place when found, else 0 and the
+// place it would go.
+static uint8_t __thiscall sorted_table_find64(const uint8_t *self, uint32_t key_lo, int32_t key_hi, int32_t *place) {
+    g_table_finds++;
+    const int64_t k = (int64_t)((uint64_t)(uint32_t)key_hi << 32 | key_lo);
+    const int64_t *const *const list = *(const int64_t *const *const *)(self + 0x84);
+    int32_t lo = 0, hi = *(const int32_t *)(self + 0x8c) - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const int64_t v = *list[mid];
+        if (k > v)
+            lo = mid + 1;
+        else if (k == v) {
+            *(volatile int32_t *)place = mid;
+            return 1;
+        } else
+            hi = mid - 1;
+    }
+    *(volatile int32_t *)place = lo;
+    return 0;
+}
+static const uint8_t sorted_table_find64_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0xb9, 0x8c, 0x00};
+REWRITE("SortedTable::Find64", 0x9f9130, sorted_table_find64_original, &sorted_table_find64, &g_table_finds);
+
+// ---- Pairs::FindSorted(list, a, b, count) (0xC22B60): a pair of numbers in a sorted list of pairs, or -1 -------------------
+// Steps from the highest power of two not above the count, halving: from lo (-1 at first), the place lo + step (when
+// inside) is taken when its pair is below (a, b) (signed); an equal pair gives its place.
+static int32_t __thiscall pairs_find_sorted(const int32_t *list, int32_t a, int32_t b, int32_t count) {
+    g_pair_finds++;
+    uint32_t step = (uint32_t)count;
+    step |= step >> 1, step |= step >> 2, step |= step >> 4, step |= step >> 8, step |= step >> 16;
+    step &= ~(step >> 1);
+    int32_t lo = -1;
+    for (; step; step >>= 1) {
+        const int32_t i = lo + (int32_t)step;
+        if (i >= count)
+            continue;
+        if (a > list[2 * i])
+            lo = i;
+        else if (a == list[2 * i]) {
+            if (b > list[2 * i + 1])
+                lo = i;
+            else if (b == list[2 * i + 1])
+                return i;
+        }
+    }
+    return -1;
+}
+static const uint8_t pairs_find_sorted_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x10, 0x8b, 0xd3, 0xd1};
+REWRITE("Pairs::FindSorted", 0xc22b60, pairs_find_sorted_original, &pairs_find_sorted, &g_pair_finds);
+
+// ---- SortedPointers::FindXY2 / Whirlpool::FindCell(this, x, y, place) (0x8FEDA0, 0x8FED20): the entry at (x, y) -----------
+// FindXY2: entries (pointers at +0x14, count +0x18) sorted by x (+0) then y (+4); FindCell: cells (+0x10, count +0x18)
+// sorted by row (+4) then column (+0). Gives the entry and its place, or null and where it would go (place when asked).
+template <bool RowFirst> static const int32_t *find_xy(const int32_t *const *list, int32_t count, int32_t x, int32_t y, int32_t *place) {
+    int32_t lo = 0, hi = count - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const int32_t *const e = list[mid];
+        const int32_t k1 = RowFirst ? y : x, v1 = RowFirst ? e[1] : e[0], k2 = RowFirst ? x : y, v2 = RowFirst ? e[0] : e[1];
+        if (k1 < v1 || (k1 == v1 && k2 < v2))
+            hi = mid - 1;
+        else if (k1 > v1 || k2 > v2)
+            lo = mid + 1;
+        else {
+            if (place)
+                *(volatile int32_t *)place = mid;
+            return e;
+        }
+    }
+    if (place)
+        *(volatile int32_t *)place = lo;
+    return nullptr;
+}
+static const int32_t *__thiscall sorted_pointers_find_xy2(const uint8_t *self, int32_t x, int32_t y, int32_t *place) {
+    g_xy_finds++;
+    return find_xy<false>(*(const int32_t *const *const *)(self + 0x14), *(const int32_t *)(self + 0x18), x, y, place);
+}
+static const int32_t *__thiscall whirlpool_find_cell(const uint8_t *self, int32_t column, int32_t row, int32_t *place) {
+    g_xy_finds++;
+    return find_xy<true>(*(const int32_t *const *const *)(self + 0x10), *(const int32_t *)(self + 0x18), column, row, place);
+}
+static const uint8_t sorted_pointers_find_xy2_original[] = {0x51, 0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x18};
+REWRITE("SortedPointers::FindXY2", 0x8feda0, sorted_pointers_find_xy2_original, &sorted_pointers_find_xy2, &g_xy_finds);
+REWRITE("Whirlpool::FindCell", 0x8fed20, sorted_pointers_find_xy2_original, &whirlpool_find_cell, &g_xy_finds);
+
+// ---- Frame::PickAxis(this, out, frame) (0x581530): one of a frame's axes copied: the first when +4 is set, else the second
+static volatile long g_axis_picks;
+static uint32_t *__thiscall frame_pick_axis(const uint8_t *self, uint32_t *out, const uint32_t *frame) {
+    g_axis_picks++;
+    const uint32_t *const axis = *(const uint32_t *)(self + 4) ? frame : frame + 4;
+    volatile uint32_t *const o = out;
+    o[0] = axis[0], o[1] = axis[1], o[2] = axis[2];
+    return out;
+}
+static const uint8_t frame_pick_axis_original[] = {0x56, 0x8b, 0x71, 0x04, 0x33, 0xc0, 0x33, 0xd2};
+REWRITE("Frame::PickAxis", 0x581530, frame_pick_axis_original, &frame_pick_axis, &g_axis_picks);
+
+// ---- Mesh::CountForId(this, id, vertices, indices) (0x95B610): the vertex and index counts of a mesh's parts with an id ----
+// Parts of 16 bytes at +0x14 (count +0x1C), id the word at +8: by the shape bits (byte +0xA & 0xE): 2, 4, 8 and 14 add 3 and
+// 3; 6, 10 and 12 add 4 and 6; 0 nothing.
+static volatile long g_mesh_counts;
+static void __thiscall mesh_count_for_id(const uint8_t *self, uint32_t id, int32_t *vertices, int32_t *indices) {
+    g_mesh_counts++;
+    volatile int32_t *const v = vertices, *const x = indices;
+    *v = 0;
+    *x = 0;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x1c); i++) {
+        const uint8_t *const part = *(const uint8_t *const *)(self + 0x14) + i * 16;
+        if (*(const uint16_t *)(part + 8) != id)
+            continue;
+        switch (part[0xa] & 0xe) {
+        case 2: case 4: case 8: case 14: *v = *v + 3, *x = *x + 3; break;
+        case 6: case 10: case 12: *v = *v + 4, *x = *x + 6; break;
+        default: break;
+        }
+    }
+}
+static const uint8_t mesh_count_for_id_original[] = {0x8b, 0x54, 0x24, 0x08, 0x55, 0x56, 0x8b, 0x74};
+REWRITE("Mesh::CountForId", 0x95b610, mesh_count_for_id_original, &mesh_count_for_id, &g_mesh_counts);
+
+// ---- Pairs::IndexOf(this, a, b) (0xBC2A30): the number of a pair of 16-bit ids -----------------------------------------------
+// For each id i (words at +0x24, count +8) equal to a: its slot (+0x18, four bytes: partner count, first partner) lists
+// partners (words at +0x28); the first equal to b gives the slot's first number plus its place. Not found: 0xFFFF in the
+// low half (the count's high half above it).
+static volatile long g_pair_indices;
+static uint32_t __thiscall pairs_index_of(const uint8_t *self, uint32_t a, uint32_t b) {
+    g_pair_indices++;
+    uint32_t i = 0;
+    for (; i < *(const volatile uint32_t *)(self + 8); i++) {
+        if ((*(const uint16_t *const *)(self + 0x24))[i] != (uint16_t)a)
+            continue;
+        const uint16_t *const slot = *(const uint16_t *const *)(self + 0x18) + 2 * i;
+        const int32_t n = slot[0];
+        const uint16_t *const partners = *(const uint16_t *const *)(self + 0x28) + slot[1];
+        for (int32_t j = 0; j < n; j++)
+            if (partners[j] == (uint16_t)b)
+                return (uint32_t)(*(const uint16_t *const *)(self + 0x18))[2 * i + 1] + (uint32_t)j;
+    }
+    return (*(const volatile uint32_t *)(self + 8) & 0xffff0000u) | 0xffff;
+}
+static const uint8_t pairs_index_of_original[] = {0x8b, 0x41, 0x08, 0x53, 0x55, 0x56, 0x57, 0x33};
+REWRITE("Pairs::IndexOf", 0xbc2a30, pairs_index_of_original, &pairs_index_of, &g_pair_indices);
+
+// ---- Lights::ColourFor(this, out, id) (0xA35440): the colour (4 values, the light's +0x7C) of the light with an id ----------
+// Ids inline at +0xF0 (count +0x108), lights at +0xD8; all 0 when none. Gives out.
+static volatile long g_light_colours;
+static uint32_t *__thiscall lights_colour_for(const uint8_t *self, uint32_t *out, uint32_t id) {
+    g_light_colours++;
+    volatile uint32_t *const o = out;
+    const int32_t n = *(const int32_t *)(self + 0x108);
+    for (int32_t i = 0; i < n; i++)
+        if (((const uint32_t *)(self + 0xf0))[i] == id) {
+            const uint32_t *const c = (const uint32_t *)(((const uint8_t *const *)(self + 0xd8))[i] + 0x7c);
+            o[0] = c[0], o[1] = c[1], o[2] = c[2], o[3] = c[3];
+            return out;
+        }
+    o[0] = 0, o[1] = 0, o[2] = 0, o[3] = 0;
+    return out;
+}
+static const uint8_t lights_colour_for_original[] = {0x56, 0x8b, 0xb1, 0x08, 0x01, 0x00, 0x00, 0x33};
+REWRITE("Lights::ColourFor", 0xa35440, lights_colour_for_original, &lights_colour_for, &g_light_colours);
+
+// ---- Keys::RemoveAt(this, n) (0xE042B0): entry n of a list of 12-byte entries (+0x10, count +0x14) joined with the next ----
+// Entry n's +8 grows by the next one's, its +4 becomes the next one's; the entries after the next move down and the
+// count drops by one.
+static volatile long g_key_removals;
+static void __thiscall keys_remove_at(uint8_t *self, int32_t n) {
+    g_key_removals++;
+    volatile uint32_t *e = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x10) + n * 12);
+    e[2] = e[2] + e[5];
+    e = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x10) + n * 12);
+    e[1] = e[4];
+    volatile int32_t *const count = (volatile int32_t *)(self + 0x14);
+    for (int32_t j = n + 1; j < *count - 1; j++) {
+        volatile uint32_t *const d = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x10) + j * 12);
+        d[0] = d[3], d[1] = d[4], d[2] = d[5];
+    }
+    *count = *count - 1;
+}
+static const uint8_t keys_remove_at_original[] = {0x8b, 0x51, 0x10, 0x53, 0x56, 0x8b, 0x74, 0x24};
+REWRITE("Keys::RemoveAt", 0xe042b0, keys_remove_at_original, &keys_remove_at, &g_key_removals);
+
+// ---- Settings::Downgrade(this) (0x5D13C0): values only a higher setting allows lowered, in a list of ten -------------------
+// 0 and 1: 7 to 3; 2: 8 to 4; 3 to 7: 2 to 0; 8: 2 to 1; 9: 3 to 2.
+static volatile long g_downgrades;
+static void __thiscall settings_downgrade(int32_t *self) {
+    g_downgrades++;
+    volatile int32_t *const s = self;
+    if (s[0] == 7) s[0] = 3;
+    if (s[1] == 7) s[1] = 3;
+    if (s[2] == 8) s[2] = 4;
+    for (int i = 3; i < 8; i++)
+        if (s[i] == 2) s[i] = 0;
+    if (s[8] == 2) s[8] = 1;
+    if (s[9] == 3) s[9] = 2;
+}
+static const uint8_t settings_downgrade_original[] = {0x83, 0x39, 0x07, 0x75, 0x06, 0xc7, 0x01, 0x03};
+REWRITE("Settings::Downgrade", 0x5d13c0, settings_downgrade_original, &settings_downgrade, &g_downgrades);
+
+// ---- Window::FirstFocusable(this) (0x6ADC50): the first child of the window's lists with bit 2 of its flags set, or null ---
+// The list at +0x64, then +0x4C (nodes: next +0, child +8, until a node whose next is null); flags at the child's +0x94.
+static volatile long g_focusables;
+static uint32_t __thiscall window_first_focusable(const uint8_t *self) {
+    g_focusables++;
+    static const uint8_t lists[] = {0x64, 0x4c};
+    for (const uint8_t at : lists) {
+        const uint32_t *node = *(const uint32_t *const *)(self + at);
+        while (*node && node) {
+            const uint8_t *const child = (const uint8_t *)(uintptr_t)node[2];
+            if (child && (*(const uint32_t *)(child + 0x94) >> 2) & 1 && node[2])
+                return node[2];
+            node = (const uint32_t *)(uintptr_t)*node;
+        }
+    }
+    return 0;
+}
+static const uint8_t window_first_focusable_original[] = {0x8b, 0x51, 0x64, 0x8b, 0x02, 0x56, 0x57, 0x33};
+REWRITE("Window::FirstFocusable", 0x6adc50, window_first_focusable_original, &window_first_focusable, &g_focusables);
+
+// ---- SortedPointers::FindInt(this, key, place) (0x8FD720): binary search of objects by their first value (signed) ----------
+// Pointers at +0, count +4. Gives the object and its place, or null and where it would go (place when asked).
+static const int32_t *__thiscall sorted_pointers_find_int(const uint8_t *self, int32_t key, int32_t *place) {
+    g_pointer_finds++;
+    const int32_t *const *const list = *(const int32_t *const *const *)self;
+    int32_t lo = 0, hi = *(const int32_t *)(self + 4) - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const int32_t *const o = list[mid];
+        if (key > *o)
+            lo = mid + 1;
+        else if (key < *o)
+            hi = mid - 1;
+        else {
+            if (place)
+                *(volatile int32_t *)place = mid;
+            return o;
+        }
+    }
+    if (place)
+        *(volatile int32_t *)place = lo;
+    return nullptr;
+}
+static const uint8_t sorted_pointers_find_int_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x04, 0x33};
+REWRITE("SortedPointers::FindInt", 0x8fd720, sorted_pointers_find_int_original, &sorted_pointers_find_int, &g_pointer_finds);
+
+// ---- Description::Compare(this, other) (0x713110): whether two descriptions match ------------------
+// 0 when they differ (byte +0, +4 to +0xC, the two values +0x14 points at, +0x24 to +0x2C); otherwise -1 when their
+// byte +1 differs, else 1.
+static volatile long g_description_compares;
+static int32_t __thiscall description_compare(const uint8_t *self, const uint8_t *other) {
+    g_description_compares++;
+    const uint32_t *const a = (const uint32_t *)self, *const b = (const uint32_t *)other;
+    if (self[0] != other[0] || a[1] != b[1] || a[2] != b[2] || a[3] != b[3]) return 0;
+    const uint32_t *const pa = (const uint32_t *)(uintptr_t)a[5], *const pb = (const uint32_t *)(uintptr_t)b[5];
+    if (pa[0] != pb[0] || pa[1] != pb[1]) return 0;
+    if (a[9] != b[9] || a[10] != b[10] || a[11] != b[11]) return 0;
+    return self[1] != other[1] ? -1 : 1;
+}
+static const uint8_t description_compare_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8a, 0x11, 0x3a, 0x10};
+REWRITE("Description::Compare", 0x713110, description_compare_original, &description_compare, &g_description_compares);
+
+// ---- Entries::FindByKey(this, mask, a, b, c, d) (0x4CC880): the value of the active entry matching a key, or 0 ------------
+// Entries of 0x2C bytes at +0x94, looked through until +0x9C active ones (byte +0) have been seen: one with flags (+4)
+// meeting the mask and +8 to +0x14 equal to a-d gives its +0x1C's +0xC.
+static volatile long g_key_entry_finds;
+static uint32_t __thiscall entries_find_by_key(const uint8_t *self, uint32_t mask, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    g_key_entry_finds++;
+    const int32_t n = *(const int32_t *)(self + 0x9c);
+    const uint8_t *const base = *(const uint8_t *const *)(self + 0x94);
+    if (n <= 0)
+        return 0;
+    int32_t active = 0;
+    for (const uint8_t *e = base;; e += 0x2c) {
+        const uint32_t *const v = (const uint32_t *)e;
+        if (e[0]) {
+            active++;
+            if ((v[1] & mask) && v[2] == a && v[3] == b && v[4] == c && v[5] == d)
+                return *(const uint32_t *)((const uint8_t *)(uintptr_t)v[7] + 0xc);
+        }
+        if (active >= n)
+            return 0;
+    }
+}
+static const uint8_t entries_find_by_key_original[] = {0x53, 0x55, 0x56, 0x8b, 0xb1, 0x9c, 0x00, 0x00};
+REWRITE("Entries::FindByKey", 0x4cc880, entries_find_by_key_original, &entries_find_by_key, &g_key_entry_finds);
