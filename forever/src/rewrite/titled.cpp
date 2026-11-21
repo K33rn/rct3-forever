@@ -160,7 +160,7 @@ static void *titled_call_edx(uintptr_t fn, void *self, void *window, uint32_t co
 extern const uint32_t titled_fpu[];
 #define X87(text) __asm__ volatile(".intel_syntax noprefix\n\t" text "\n\t.att_syntax prefix" : : "a"(p) : "memory")
 #define X87I(text) __asm__ volatile(".intel_syntax noprefix\n\t" text "\n\t.att_syntax prefix" : : : "memory")
-__attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t count, uint8_t *self, const uint32_t *given, uint32_t *loc) {
+__attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t count, uint8_t *self, const uint32_t *given, uint32_t *loc, const uint32_t *scratch) {
     uint8_t *size = nullptr;   // what a size query (code 25) gave: operand kind 6 reads through it
     for (uint32_t k = 0; k < count; k++, step += 4) {
         const uint32_t code = step[0], kind = step[1], v = step[2];
@@ -176,7 +176,8 @@ __attribute__((noinline)) static void titled_x87(const uint32_t *step, uint32_t 
                       : kind == 5 ? (uint32_t *)&given[v]
                       : kind == 6 ? (uint32_t *)(size + v)
                       : kind == 7 ? (uint32_t *)(*(uint8_t **)(uintptr_t)(0x1000000 + (v & 0xffffff)) + (v >> 24))   // (7: inside a global's object)
-                      : kind == 8 ? (uint32_t *)((uint8_t *)(uintptr_t)given[v & 0xff] + (v >> 8)) : nullptr;   // (8: inside an argument object)
+                      : kind == 8 ? (uint32_t *)((uint8_t *)(uintptr_t)given[v & 0xff] + (v >> 8))   // (8: inside an argument object)
+                      : kind == 9 ? (uint32_t *)((uint8_t *)(uintptr_t)scratch[v & 0xff] + (v >> 8)) : nullptr;   // (9: inside what a scratch value points to)
         switch (code) {
         case 1: X87("fld dword ptr [eax]"); break;
         case 21: X87("fild dword ptr [eax]"); break;
@@ -337,7 +338,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
     names[0] = start_name, name_built[0] = has_start_name;   // (the start text: name 0, let go by the steps)
     uint8_t *memory = nullptr;
     bool naming = false;
-    uint32_t scratch[32] = {};
+    uint32_t scratch[64] = {};   // (titled_ctors.py keeps to 64)
     bool block_ran[64] = {};   // (the if blocks' decisions, by number: whether each one's block ran)
     void *last = nullptr;   // what the last call (3, 24, 60, 61, 62) gave back
     uint32_t loc[0x90] = {};   // the x87 runs' locals (by place below the constructor's entry, as dwords; and the arguments' slots they reuse)
@@ -445,7 +446,7 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
         case 65: ((void(__cdecl *)(void *))(uintptr_t)op.fn)((void *)(uintptr_t)args[0]); break;   // memory freed
         case 59: {   // an x87 run (titled_fpu from value), then the call given what it built; on the window + off, or (off bit 24)
                      // what that member points to
-            titled_x87(&titled_fpu[op.value + 4], titled_fpu[op.value], self, given, loc);
+            titled_x87(&titled_fpu[op.value + 4], titled_fpu[op.value], self, given, loc, scratch);
             if (!op.fn) break;   // (a run that only stores: nothing called after it)
             uint8_t *on = op.off >> 24 ? *(uint8_t **)(self + (op.off & 0xffffff)) : self + op.off;
             titled_call(op.fn, on, op.count, args);

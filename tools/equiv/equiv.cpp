@@ -316,6 +316,16 @@ extern const uint32_t titled_child_holders[];
 static uint32_t g_child_holders[8], g_child_holder_count;   // (the copy being checked: places in its children that counted texts go into)
 static uint32_t g_child_arrays[4][3], g_child_array_count;   // (and arrays of counted texts in them: offset, elements)
 extern const uint32_t titled_child_arrays[];
+// one of 256 small blocks at 0x13000, picked by an object and a member, whose dwords point at the block itself (so reads
+// through it land, and a list there is a valid empty one)
+static void *titled_landing(void *self, uint32_t k) {
+    const uint32_t pick = ((uint32_t)(uintptr_t)self * 0x9e3779b1u + k * 0x85ebca6bu) >> 24;
+    uint32_t *block = arena<uint32_t>(0x13000 + pick * 0x20);
+    if (block[0] != (uint32_t)(uintptr_t)block && block[7] != 0x6c6f6f70u)
+        for (int q = 0; q < 7; q++) block[q] = (uint32_t)(uintptr_t)block;
+    block[7] = 0x6c6f6f70u;   // ("loop": made, so later builds leave what was written into it)
+    return block;
+}
 static void *built_result(void *self) {
     if (!g_built_other) return self;
     if (*(void **)self == titled_child_table)
@@ -324,14 +334,7 @@ static void *built_result(void *self) {
     *(void **)((uint8_t *)self + 8) = titled_child_table;
     // (its members told apart: each points at one of 256 small blocks at 0x13000, picked by the object and the member, whose
     // dwords point at the block itself, so a chain of reads through members lands, and a list there is a valid empty one)
-    for (int k = 1; k < 0x28; k++) {
-        const uint32_t pick = ((uint32_t)(uintptr_t)self * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu) >> 24;
-        uint32_t *block = arena<uint32_t>(0x13000 + pick * 0x20);
-        if (block[0] != (uint32_t)(uintptr_t)block && block[7] != 0x6c6f6f70u)
-            for (int q = 0; q < 7; q++) block[q] = (uint32_t)(uintptr_t)block;
-        block[7] = 0x6c6f6f70u;   // ("loop": made, so later builds leave what was written into it)
-        ((uint32_t *)self)[2 + k] = (uint32_t)(uintptr_t)block;
-    }
+    for (int k = 1; k < 0x28; k++) ((uint32_t *)self)[2 + k] = (uint32_t)(uintptr_t)titled_landing(self, (uint32_t)k);
     for (int k = 0; k < 5; k++) {   // (its rectangle, +0x7C..+0x8C as a window's: plain floats, each its own, so reads of it are told apart)
         const float f = (float)((uint32_t)(uintptr_t)self >> 4 & 0x3ff) * 0.25f + (float)k * 7.5f;
         memcpy((uint8_t *)self + 0x7c + 4 * k, &f, 4);
@@ -559,6 +562,8 @@ static void *__cdecl stub_plain_alloc(uint32_t size) {
     if (next < ALLOC_START) next = ALLOC_START;
     void *p = arena<void>(next);
     next += (size + 15) & ~15u;
+    if (g_built_other && size <= 0x4000)   // (the window test: what is handed out reads as places in the landing blocks, as built objects' members)
+        for (uint32_t q = 0; q < size / 4; q++) ((uint32_t *)p)[q] = (uint32_t)(uintptr_t)titled_landing(p, q);
     return p;
 }
 static void *__thiscall stub_name_text(uint32_t *self, const char *text) { record(0x6c, self); record(0x6c, (void *)text); self[0] = 1; self[3] = 0x1234; return self; }

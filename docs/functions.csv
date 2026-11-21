@@ -7692,7 +7692,7 @@ address,size,name,callers,status
 0x6e75c0,120,ObjectRef::AssignExtra,1,rewritten
 0x6e7660,151,WideText::CopyOf(this),1,rewritten
 0x6e7720,151,WideText::CopyOf(this),1,rewritten
-0x6e78c0,1356,,1,documented
+0x6e78c0,1356,Window::Titled,1,rewritten
 0x6e7e10,741,,1,documented
 0x6e8100,106,Factory::IntoField,1,rewritten
 0x6e8170,105,Factory::Create,1,rewritten
