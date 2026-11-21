@@ -320,10 +320,10 @@ extern const uint32_t titled_child_arrays[];
 // through it land, and a list there is a valid empty one)
 static void *titled_landing(void *self, uint32_t k) {
     const uint32_t pick = ((uint32_t)(uintptr_t)self * 0x9e3779b1u + k * 0x85ebca6bu) >> 24;
-    uint32_t *block = arena<uint32_t>(0x13000 + pick * 0x20);
-    if (block[0] != (uint32_t)(uintptr_t)block && block[7] != 0x6c6f6f70u)
-        for (int q = 0; q < 7; q++) block[q] = (uint32_t)(uintptr_t)block;
-    block[7] = 0x6c6f6f70u;   // ("loop": made, so later builds leave what was written into it)
+    uint32_t *block = arena<uint32_t>(0x13000 + pick * 0x20), *made = arena<uint32_t>(0x15000 + pick * 4);
+    if (*made != 0x6c6f6f70u + pick)   // ("loop", kept beside the blocks: made, so later builds leave what was written into it)
+        for (int q = 0; q < 8; q++) block[q] = (uint32_t)(uintptr_t)block;
+    *made = 0x6c6f6f70u + pick;
     return block;
 }
 static void *built_result(void *self) {
@@ -562,8 +562,11 @@ static void *__cdecl stub_plain_alloc(uint32_t size) {
     if (next < ALLOC_START) next = ALLOC_START;
     void *p = arena<void>(next);
     next += (size + 15) & ~15u;
-    if (g_built_other && size <= 0x4000)   // (the window test: what is handed out reads as places in the landing blocks, as built objects' members)
-        for (uint32_t q = 0; q < size / 4; q++) ((uint32_t *)p)[q] = (uint32_t)(uintptr_t)titled_landing(p, q);
+    if (g_built_other && size <= 0x4000) {   // (the window test: what is handed out reads as places in the landing blocks, as built
+                                             // objects' members; and 16 bytes past it, as the stand-ins give their objects 8 further)
+        next += 0x10;
+        for (uint32_t q = 0; q < (size + 0x10) / 4; q++) ((uint32_t *)p)[q] = (uint32_t)(uintptr_t)titled_landing(p, q);
+    }
     return p;
 }
 static void *__thiscall stub_name_text(uint32_t *self, const char *text) { record(0x6c, self); record(0x6c, (void *)text); self[0] = 1; self[3] = 0x1234; return self; }
@@ -815,7 +818,7 @@ static void *__thiscall stub_plain_value0(void *) {   // a plain function taken 
     record(0x84, nullptr);
     return (void *)(uintptr_t)((arena<uint32_t>(0x4c)[0] ^ n++ * 0x9e3779b1u) * 0x85ebca6bu);
 }
-static void *plain_result() { return built_result(stub_plain_alloc(0xb0)); }
+static void *plain_result() { return built_result(stub_plain_alloc(0x200)); }   // (0x200: room for members read far in)
 // the same for a fastcall (ecx and edx values, noted as values; what it gives back an object of its own)
 static void *__fastcall stub_fast0(uint32_t c, uint32_t d) { record(0x85, arg_value(c)); record(0x85, arg_value(d)); return plain_result(); }
 static void *__fastcall stub_fast1(uint32_t c, uint32_t d, uint32_t a) { record(0x85, arg_value(c)); record(0x85, arg_value(d)); record(0x85, arg_value(a)); return plain_result(); }

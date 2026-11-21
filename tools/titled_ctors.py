@@ -151,7 +151,7 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
-LEFT_OUT = {0x791670: "dies in the tester (reads or calls through what it leaves unset)", 0x7f1fc0: "dies in the tester (reads or calls through what it leaves unset)", 0xa21b30: "dies in the tester (reads or calls through what it leaves unset)", 0x9f0600: "dies in the tester: reads through a child's field into what the test leaves a plain block"}
+LEFT_OUT = {0x791670: "dies in the tester (reads or calls through what it leaves unset)", 0xa21b30: "differs in the tester: a value given through a stack place (0x0200001D in the original, 0 in the rewrite): to look at", }
 
 
 
@@ -611,7 +611,7 @@ def tail(p):
     d = depth_at[start]
 
     def still(v):       # a member's value read earlier (('field', off, steps then)): good while no later step can have changed it
-        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90, 92, 93, 104, 112, 113, 115) or o[0] == 10 and o[3] == 0xbcf850 or
+        return bool(v) and v[0] == 'field' and all(o[0] in (12, 18, 21, 31, 32, 33, 43, 44, 45, 57, 58, 63, 64, 65, 68, 72, 78, 79, 81, 86, 90, 92, 93, 104, 112, 113, 115, 117) or o[0] == 10 and o[3] == 0xbcf850 or
                                                   o[0] == 20 and (o[3] in (0x41cb90, 0x4040f0, 0xbd1940, 0xbd14e0, 0xbd1880) or o[2] & 4) or o[0] == 24 and o[3] in (0xbd14e0, 0xbd1880) or o[0] == 75 and o[4][0][0] != 'self' or o[0] in (0, 1, 2, 4, 5, 6, 7, 26, 27, 29, 30, 22, 55, 71, 106, 107) and
                                                   not (o[1] <= v[1] < o[1] + 4 or v[1] <= o[1] < v[1] + 4) for o in ops[v[2]:])
 
@@ -642,7 +642,7 @@ def tail(p):
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86, 90, 92, 93, 106, 107, 108, 112, 113, 115}   # (75 frees memory: not quiet)   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86, 90, 92, 93, 106, 107, 108, 112, 113, 115, 117}   # (75 frees memory: not quiet)   # steps that call nothing
 
     taken = {}   # the results already taken into scratch values: the step that gave it -> its scratch number
 
@@ -3470,6 +3470,13 @@ def tail(p):
                 val(m.group(2))[0] == 'fieldplus' and still(('field',) + val(m.group(2))[1:3]) and val(m.group(2))[3] + num(m.group(3) or '0') < 0x10000:
             # a dword inside a child, at a place in it worked out before
             R[m.group(1)] = ('childval', val(m.group(2))[1], val(m.group(2))[3] + num(m.group(3) or '0'), len(ops))
+        elif (m := re.fullmatch(r'(or|and) dword ptr \[' + REG + r'(?: \+ (0x[0-9a-f]+|\d+))?\], (' + REG + r'|0x[0-9a-f]+|\d+)', s)) and \
+                val(m.group(2)) and val(m.group(2))[0] in ('childval', 'gfield', 'scratch') and num(m.group(3) or '0') < 0x10000 and \
+                isinstance(tc_ := (val(m.group(2)) if val(m.group(2))[0] == 'scratch' else base_code(val(m.group(2)))), tuple) and \
+                (bc_ := (num(m.group(4)) if re.fullmatch(r'0x[0-9a-f]+|\d+', m.group(4)) else base_code(val(m.group(4))))) is not None:
+            # a dword inside what a value read before points to or-ed / and-ed with a value (kind 117: fn 0 or, 1 and)
+            ops.append((117, num(m.group(3) or '0'), 0, int(m.group(1) == 'and'), [tc_, bc_]))
+            flag = None
         elif (m := re.fullmatch(r'mov ([a-d])l, ([a-d])l', s)) and val('e' + m.group(2) + 'x') and \
                 val('e' + m.group(2) + 'x')[0] in ('global', 'byteglobal', 'const', 'byte'):
             # a register's low byte copied: a game global's (its first byte), or a constant's

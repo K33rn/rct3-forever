@@ -10201,7 +10201,7 @@ address,size,name,callers,status
 0x7f1280,1949,,1,documented
 0x7f1a20,1190,,1,documented
 0x7f1ed0,187,,1,documented
-0x7f1fc0,2561,,1,documented
+0x7f1fc0,2561,Window::Titled,1,rewritten
 0x7f2a50,933,,5,documented
 0x7f2e20,139,,1,documented
 0x7f2ed0,30,DeletingDestructor,2,rewritten
@@ -14962,7 +14962,7 @@ address,size,name,callers,status
 0x9f02d0,30,DeletingDestructor,2,rewritten
 0x9f02f0,721,,1,documented
 0x9f05d0,36,,1,documented
-0x9f0600,6401,,2,documented
+0x9f0600,6401,Window::Titled,2,rewritten
 0x9f1fa0,546,,3,documented
 0x9f21d0,3307,,2,documented
 0x9f2f20,2866,,1,documented
