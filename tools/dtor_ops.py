@@ -33,9 +33,13 @@ def read(a, n):
     for x in md.disasm(bytes(img[a - BASE:a - BASE + n + 24]), a):
         ins.append(x)
         if x.address + x.size >= a + n:
-            if x.mnemonic == 'ret' or x.address >= a + n + 16:
+            if x.mnemonic == 'ret' or x.address >= a + n + 16 or \
+                    x.mnemonic == 'jmp' and x.op_str.startswith('0x') and not a <= int(x.op_str, 16) < a + n:
                 break
-    if not ins or ins[-1].mnemonic != 'ret' or ins[-1].op_str:
+    # (or in a jump to another function: the base's destructor run last, on the object or a part of it, as a tail call)
+    tail = ins[-1].operands[0].imm if ins and ins[-1].mnemonic == 'jmp' and ins[-1].op_str.startswith('0x') and \
+        not a <= ins[-1].operands[0].imm < a + n else None
+    if not ins or tail is None and (ins[-1].mnemonic != 'ret' or ins[-1].op_str):
         raise Unknown('does not end in a plain ret')
     at = {x.address: k for k, x in enumerate(ins)}
     regs = {'ecx': ('this', 0)}        # register -> ('this', offset) | ('member', offset of the field it was read from) | ('global', address)
@@ -162,6 +166,15 @@ def read(a, n):
                     if member in ('eax', 'ecx', 'edx'):
                         member = None
                     i += 3
+                    continue
+                if c.mnemonic == 'call' and c.operands[0].type == x86.X86_OP_IMM and ins[i + 2].address >= end:
+                    # (the last step of a loop's body: the stack put right after the count is read again)
+                    out.append((CDECL, 0, 0, c.operands[0].imm, 0))
+                    frees[0] += 1
+                    for r in ('eax', 'ecx', 'edx'):
+                        regs[r] = None
+                    member = None
+                    i += 2
                     continue
                 raise Unknown('a member pushed for something else')
             # release a counted member: dec word [member + rc]; cmp word [member + rc], 0; jne skip; mov r, [member]; (push 1); call [r + slot]
@@ -301,6 +314,116 @@ def read(a, n):
             regs[r] = None
         return t, [(LOOP, clear_ | 2 * unsigned, len(inner), array_off, count_off)] + inner
 
+    def loop2(j, end, count_off, unsigned=False):
+        # (the other loops over a member array: records of `stride` bytes (a second register counting their offset, or the
+        # index scaled by 4 or 8), the pointer at `disp` in each, with or without a null check; the count read again at the
+        # end, as loop() has it. Steps as loop()'s (LOOP: a and b carry disp and stride in their high halves; count bit 2:
+        # no null check)
+        zero_now = {r for r, v in regs.items() if v == ('zero', 0)}
+        off_reg = None
+        def padding(x):
+            o = x.operands
+            return x.mnemonic == 'nop' or x.mnemonic == 'mov' and len(o) == 2 and o[0].type == x86.X86_OP_REG and o[1].type == x86.X86_OP_REG and o[0].reg == o[1].reg \
+                or x.mnemonic == 'lea' and not o[1].mem.index and o[1].mem.disp == 0 and o[1].mem.base == o[0].reg
+        while True:   # before the top: saved registers pushed, a register zeroed, the padding (and a jump over it)
+            x = ins[j]
+            if x.mnemonic == 'push' and x.operands[0].type == x86.X86_OP_REG and reg(x.operands[0]) in SAVED:
+                j += 1
+            elif x.mnemonic == 'xor' and x.operands[0].type == x86.X86_OP_REG and x.operands[1].type == x86.X86_OP_REG and \
+                    x.operands[0].reg == x.operands[1].reg and reg(x.operands[0]) in SAVED:
+                zero_now.add(reg(x.operands[0]))
+                j += 1
+            elif x.mnemonic == 'jmp' and x.operands[0].type == x86.X86_OP_IMM and x.operands[0].imm > x.address and \
+                    all(padding(ins[q]) for q in range(j + 1, at[x.operands[0].imm])):
+                j = at[x.operands[0].imm]
+            elif padding(x):
+                j += 1
+            else:
+                break
+        top = ins[j].address
+        x, y = ins[j], ins[j + 1]
+        if not (x.mnemonic == 'mov' and x.operands[0].type == x86.X86_OP_REG and is_mem(x.operands[1]) and this_off(x.operands[1]) is not None):
+            raise Unknown('a loop of another shape')
+        array_off, areg = this_off(x.operands[1]), reg(x.operands[0])
+        if not (y.mnemonic == 'mov' and y.operands[0].type == x86.X86_OP_REG and is_mem(y.operands[1])):
+            raise Unknown('a loop of another shape')
+        m, p = y.operands[1].mem, reg(y.operands[0])
+        b_, i_ = ins[0].reg_name(m.base) if m.base else None, ins[0].reg_name(m.index) if m.index else None
+        disp = m.disp
+        if b_ == areg and i_ and m.scale in (4, 8):
+            index, stride = i_, m.scale   # (the index scaled)
+        elif m.scale == 1 and areg in (b_, i_) and {b_, i_} - {areg}:
+            off_reg = ({b_, i_} - {areg}).pop()   # (a register counting the records' offset)
+            index, stride = None, None
+        else:
+            raise Unknown('a loop of another shape')
+        if not 0 <= disp < 0x10000 or off_reg is not None and off_reg not in zero_now:
+            raise Unknown('a loop of another shape')
+        k = j + 2
+        if is_null_check(ins[k], p) and ins[k + 1].mnemonic == 'je':
+            nxt = ins[k + 1].operands[0].imm
+            k += 2
+            checked = True
+        else:
+            checked = False
+            # (no null check: the steps run up to the end's count read, found by the jump back)
+            back = next((q for q in range(k, len(ins)) if ins[q].mnemonic in ('jl', 'jb') and ins[q].operands[0].imm == top), None)
+            if back is None:
+                raise Unknown('a loop of another shape')
+            q = back - 1
+            while q > k and not (ins[q].mnemonic == 'mov' and is_mem(ins[q].operands[1]) and this_off(ins[q].operands[1]) == count_off):
+                q -= 1
+            nxt = ins[q].address
+        saved_regs = dict(regs)
+        for r in ('eax', 'ecx', 'edx'):
+            regs[r] = None
+        regs[areg] = None
+        inner = block(k, nxt, p)
+        t = at[nxt]
+        # the end: mov c, [this + count]; (inc index; add offset, stride; add esp, n, in any order); cmp index, c; jl / jb top
+        c0 = ins[t]
+        if not (c0.mnemonic == 'mov' and c0.operands[0].type == x86.X86_OP_REG and is_mem(c0.operands[1]) and this_off(c0.operands[1]) == count_off):
+            raise Unknown('a loop that ends another way')
+        creg = reg(c0.operands[0])
+        t += 1
+        incs, adds = [], []
+        while ins[t].mnemonic in ('inc', 'add'):
+            u = ins[t]
+            if u.mnemonic == 'inc' and u.operands[0].type == x86.X86_OP_REG:
+                incs.append(reg(u.operands[0]))
+            elif u.mnemonic == 'add' and u.op_str.startswith('esp,'):
+                noise(u)
+            elif u.mnemonic == 'add' and u.operands[0].type == x86.X86_OP_REG and u.operands[1].type == x86.X86_OP_IMM:
+                adds.append((reg(u.operands[0]), u.operands[1].imm))
+            else:
+                break
+            t += 1
+        if len(incs) != 1:
+            raise Unknown('a loop that ends another way')
+        counter = incs[0]
+        if off_reg is not None:
+            if len(adds) != 1 or adds[0][0] != off_reg or not 0 < adds[0][1] < 0x10000 or counter == off_reg:
+                raise Unknown('a loop that ends another way')
+            stride = adds[0][1]
+        elif adds or counter != index:
+            raise Unknown('a loop that ends another way')
+        if counter not in zero_now or counter in (p, areg):
+            raise Unknown('a loop whose index is not a kept zero register')
+        q = ins[t:t + 2]
+        if not (q[0].mnemonic == 'cmp' and q[0].op_str == f'{counter}, {creg}' and q[1].mnemonic == ('jb' if unsigned else 'jl') and q[1].operands[0].imm == top):
+            raise Unknown('a loop that ends another way')
+        t += 2
+        while ins[t].address < end:
+            if ins[t].mnemonic != 'pop':
+                raise Unknown('a loop that ends another way')
+            regs[reg(ins[t].operands[0])] = None
+            t += 1
+        if ins[t].address != end or any(k_[0] == LOOP for k_ in inner) or len(inner) > 40 or stride == 4 and disp == 0 and checked:
+            raise Unknown('a loop that ends another way')
+        for r in ('eax', 'ecx', 'edx', counter, p, areg) + ((off_reg,) if off_reg else ()):
+            regs[r] = None
+        return t, [(LOOP, 2 * unsigned | 4 * (not checked), len(inner), array_off | disp << 16, count_off | (stride if stride != 4 else 0) << 16)] + inner
+
     def step(i):
         """one step at ins[i] outside any null check -> (next index, steps) or None"""
         x, o = ins[i], ins[i].operands
@@ -377,7 +500,14 @@ def read(a, n):
                                 and ins[k + 1].mnemonic in ('jle', 'jbe', 'push'):
                             k += 1
                         if ins[k].mnemonic in ('jle', 'jbe') and ins[k].operands[0].imm > ins[k].address:   # a count: a loop over a member array
-                            return loop(k + 1, ins[k].operands[0].imm, off, ins[k].mnemonic == 'jbe')   # (jbe: a count with no sign)
+                            saved_ = dict(regs)
+                            try:
+                                return loop(k + 1, ins[k].operands[0].imm, off, ins[k].mnemonic == 'jbe')   # (jbe: a count with no sign)
+                            except Unknown as e:
+                                if 'another shape' not in str(e):
+                                    raise
+                                regs.clear(); regs.update(saved_)
+                                return loop2(k + 1, ins[k].operands[0].imm, off, ins[k].mnemonic == 'jbe')
                         before = []
                         while ins[j].mnemonic == 'mov' or ins[j].mnemonic == 'pop' and reg(ins[j].operands[0]) != r:
                             if noise(ins[j]):   # (a saved register put back between the test and its jump: flags kept)
@@ -568,6 +698,11 @@ def read(a, n):
             started = True
         ops += s[1]
         i = s[0]
+    if tail is not None:
+        c = regs.get('ecx')
+        if not c or c[0] != 'this' or pending:
+            raise Unknown('a tail jump on something else')
+        ops.append((CALL, 0, 0, tail, c[1]))
     if not ops:
         raise Unknown('nothing in it')
     if len(ops) > 200:
@@ -582,7 +717,7 @@ def read(a, n):
     for k, c, small, x, y in ops:   # what the tester's stand-ins hold: table entries under 16, offsets inside its objects
         if k in (VCALL,) and not 0 <= small < 0x40 or k == REL and not (0 <= x < 0x40 and 0 <= small < 0x3c):
             raise Unknown('a table entry past the 16th or a far count')
-        if k in (MCALL,) and not 0 <= y < 0x7ff0 or k == IFNEG1 and not 0 <= x < 0x7ff0 or k == UNLINK and not 0 <= x < 0x7ff0 or k == IFB and not 0 <= x < 0x7ff0 or k == ARG and c == 1 and not 0 <= x < 0x7ff0 or k == LOOP and not (0 <= x < 0x7ff0 and 0 <= y < 0x7ff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0x7ff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0x7ff0) or k == CALL and not 0 <= y < 0x8000:
+        if k in (MCALL,) and not 0 <= y < 0x7ff0 or k == IFNEG1 and not 0 <= x < 0x7ff0 or k == UNLINK and not 0 <= x < 0x7ff0 or k == IFB and not 0 <= x < 0x7ff0 or k == ARG and c == 1 and not 0 <= x < 0x7ff0 or k == LOOP and not (0 <= x & 0xffff < 0x7ff0 and 0 <= y & 0xffff < 0x7ff0) or k in (SET, IF, FREEM, TEXTREL) and not 0 <= x < 0x7ff0 or k == VECDEL and not 0 < x < 0x10000 or k == SETM and not (0 <= x < 0x7f0 and small < 0x7ff0) or k == CALL and not 0 <= y < 0x8000:
             raise Unknown('a field past 0x7FF0')
     return ops
 

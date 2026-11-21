@@ -20,7 +20,8 @@
 //  13 LOOP     for each pointer in the array the member at a points to, while the index is under the count at b (read
 //              again each time round; nothing when it starts at 0 or less): one that is there is taken and the next
 //              `small` steps run on it. Count bit 0: each entry set to 0 after (there or not); bit 1: the count has no
-//              sign (nothing when it is 0)
+//              sign (nothing when it is 0); bit 2: each entry taken, there or not (no null check). The array may be of
+//              records: a's high half the pointer's place in each, b's high half their size (0: 4, plain pointers)
 //  14 GSET     the global a set to b (count: its size in bytes)
 //  15 IFB      the flag (a byte) at a looked at: when it is set (count 1) or clear (count 0) the next b steps are
 //              passed over
@@ -134,18 +135,20 @@ __attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorSt
             ((void(__stdcall *)(void *, uint32_t, int32_t, void *))0xddcf39)(member, s.a, *(volatile int32_t *)(member - 4), (void *)s.b);
             ((void(__cdecl *)(void *))0xbce010)(member - 4);
             break;
-        case 13:
-            if (s.count & 2 ? *(volatile uint32_t *)(self + s.b) != 0 : *(volatile int32_t *)(self + s.b) > 0) {
+        case 13: {
+            const uint32_t array_at = s.a & 0xffff, place = s.a >> 16, count_at = s.b & 0xffff, size = s.b >> 16 ? s.b >> 16 : 4;
+            if (s.count & 2 ? *(volatile uint32_t *)(self + count_at) != 0 : *(volatile int32_t *)(self + count_at) > 0) {
                 uint32_t index = 0;
                 do {
-                    uint8_t *item = (*(uint8_t **volatile *)(self + s.a))[index];
-                    if (item) dtor_run_range(self, STEPS, i + 1, i + 1 + s.small, item);
-                    if (s.count & 1) (*(uint8_t **volatile *)(self + s.a))[index] = nullptr;
+                    uint8_t *item = *(uint8_t *volatile *)(*(uint8_t *volatile *)(self + array_at) + index * size + place);
+                    if (item || s.count & 4) dtor_run_range(self, STEPS, i + 1, i + 1 + s.small, item);
+                    if (s.count & 1) *(uint8_t *volatile *)(*(uint8_t *volatile *)(self + array_at) + index * size + place) = nullptr;
                     index++;
-                } while (s.count & 2 ? index < *(volatile uint32_t *)(self + s.b) : (int32_t)index < *(volatile int32_t *)(self + s.b));
+                } while (s.count & 2 ? index < *(volatile uint32_t *)(self + count_at) : (int32_t)index < *(volatile int32_t *)(self + count_at));
             }
             i += s.small;
             break;
+        }
         case 14:
             if (s.count == 4) *(volatile uint32_t *)s.a = s.b;
             else if (s.count == 2) *(volatile uint16_t *)s.a = (uint16_t)s.b;

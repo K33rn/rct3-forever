@@ -7448,17 +7448,18 @@ static std::vector<Test> tests() {
                              for (uint32_t i = 0; i < n; i++) {
                                  const uint32_t *s = st + 5 * i, k = s[0];
                                  uint32_t reach = k == 0 || k == 1 || k == 8 || k == 9 || k == 15 || k == 19 || k == 22 ? s[3] : k == 4 || k == 20 ? s[4] : k == 6 ? s[2]
-                                                : k == 13 ? (s[3] > s[4] ? s[3] : s[4]) : k == 17 && s[1] ? s[3] : 0;
+                                                : k == 13 ? ((s[3] & 0xffff) > (s[4] & 0xffff) ? s[3] & 0xffff : s[4] & 0xffff) : k == 17 && s[1] ? s[3] : 0;
                                  if (reach > top) top = reach;
                              }
                              const uint32_t object_end = 0x1000 + ((top + 0x140) & ~0xffu) < 0x3000 ? 0x3000 : 0x1000 + ((top + 0x140) & ~0xffu);
                              for (uint32_t i = 0; i < (object_end - 0x1000) / 4; i++) arena<uint32_t>(0x1000)[i] = r.next();
                              // what each member needs, over all the steps: a call or count belongs to the member taken last
-                             struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken, array; uint32_t items_count_at; bool looped, no_sign; };
+                             struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken, array; uint32_t items_count_at; bool looped, no_sign;
+                                           uint32_t record, place; bool all_there; };
                              std::vector<Need> needs;
                              auto need = [&](uint32_t field) -> Need & {
                                  for (Need &x : needs) if (x.field == field) return x;
-                                 needs.push_back({field, 0x40, 0, 0, false, false, false, 0, false, false});
+                                 needs.push_back({field, 0x40, 0, 0, false, false, false, 0, false, false, 4, 0, false});
                                  return needs.back();
                              };
                              uint32_t current = 0;
@@ -7467,9 +7468,10 @@ static std::vector<Test> tests() {
                                  if (s[0] == 1) current = s[3], need(current).taken = true;
                                  if (s[0] == 21) current = 0x80000000u | s[3], need(current).taken = true;   // a global's object: kept under its address
                                  if (s[0] == 13) {   // a loop: what the steps need is each item's; kept under a made-up field past the object
-                                     current = 0x10000 + s[3];
+                                     current = 0x10000 + (s[3] & 0xffff);
                                      Need &x = need(current);
-                                     x.looped = true, x.items_count_at = s[4], x.no_sign = s[1] & 2;
+                                     x.looped = true, x.items_count_at = s[4] & 0xffff, x.no_sign = s[1] & 2;
+                                     x.record = s[4] >> 16 ? s[4] >> 16 : 4, x.place = s[3] >> 16, x.all_there = s[1] & 4;   // (records, the pointer's place)
                                  }
                                  if (s[0] == 2) need(current).arity = (int)s[1];
                                  if (s[0] == 7) need(current).arity = (int)s[1], need(current).count_at = s[2];
@@ -7483,11 +7485,13 @@ static std::vector<Test> tests() {
                                  if (x.looped) {   // an array of 0-3 pointers (the count sometimes below 0), each to an item or null
                                      const int32_t count = r.range(0, 5) || x.no_sign ? r.range(0, 3) : -r.range(1, 3);   // (a count with no sign: never below 0)
                                      *arena<int32_t>(0x1000 + x.items_count_at) = count;
-                                     uint32_t *list = arena<uint32_t>(next);
-                                     next += 0x10;
-                                     *arena<uint32_t>(0x1000 + (x.field - 0x10000)) = (uint32_t)(uintptr_t)list;
+                                     uint8_t *records = arena<uint8_t>(next);   // (4 records of the loop's size, the rest of each random)
+                                     for (uint32_t i = 0; i < x.record; i++) ((uint32_t *)records)[i] = r.next();
+                                     next += (4 * x.record + 15) & ~15u;
+                                     *arena<uint32_t>(0x1000 + (x.field - 0x10000)) = (uint32_t)(uintptr_t)records;
                                      for (int k = 0; k < 4; k++) {
-                                         if (r.range(0, 3) == 0) { list[k] = 0; continue; }
+                                         uint32_t *list = (uint32_t *)(records + k * x.record + x.place) - k;   // (list[k]: the pointer's place)
+                                         if (!x.all_there && r.range(0, 3) == 0) { list[k] = 0; continue; }   // (null only where the loop checks)
                                          uint32_t *block = arena<uint32_t>(next);
                                          for (uint32_t i = 0; i < x.size / 4; i++) block[i] = r.next();
                                          block[0] = (uint32_t)(uintptr_t)g_dtor_tables[x.arity];
