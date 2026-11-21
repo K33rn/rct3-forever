@@ -422,6 +422,10 @@ static void *titled_body(uint8_t *self, const uint32_t *given) {
             if (!op.fn || memory) *(volatile uint32_t *)(uintptr_t)(args[0] + op.off) = args[1];
             break;
         case 113: scratch[op.off] = titled_decides(op.fn, args[0], op.value) ? args[1] : args[2]; break;   // one of two values, by a test
+        case 115:   // a name's text kept as a scratch value, given away (the name no longer the steps' to let go)
+            scratch[op.off] = (uint32_t)(uintptr_t)names[op.value];
+            name_built[op.value] = false;
+            break;
         case 107:   // a name given to the window: the member holds it now (none when it wasn't made), nothing lets it go
             *(void **)(self + op.off) = name_built[op.value] ? names[op.value] : nullptr;
             name_built[op.value] = false;

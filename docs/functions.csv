@@ -7932,7 +7932,7 @@ address,size,name,callers,status
 0x700e10,108,,2,documented
 0x700e90,154,,2,documented
 0x700f90,1493,Window::Titled,1,rewritten
-0x701590,840,,1,documented
+0x701590,840,Window::Titled,1,rewritten
 0x7018e0,41,,1,documented
 0x701910,43,,1,documented
 0x701da0,163,Destructor::Steps,1,rewritten
@@ -11786,7 +11786,7 @@ address,size,name,callers,status
 0x8726a0,199,,2,documented
 0x872770,457,,0,documented
 0x872940,43,Listener::Construct872940,0,rewritten
-0x872970,6420,,1,documented
+0x872970,6420,Window::Titled,1,rewritten
 0x8742d0,976,,1,documented
 0x8746a0,407,,1,documented
 0x874840,407,,1,documented
@@ -18998,7 +18998,7 @@ address,size,name,callers,status
 0xb94c40,30,DeletingDestructor,2,rewritten
 0xb94e90,263,,1,documented
 0xb94fa0,46,,1,documented
-0xb94fd0,933,,1,documented
+0xb94fd0,933,Window::Titled,1,rewritten
 0xb953c0,48,QueryInterface,0,rewritten
 0xb956f0,126,ObjectRef::Assign,9,rewritten
 0xb95770,67,Reference::Reference(object),0,rewritten

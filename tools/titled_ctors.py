@@ -151,13 +151,7 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
-LEFT_OUT = {0xb94fd0: "dies in the tester: a built stand-in given an object read through a field the tester leaves random (two singletons in one copy; the tester keeps one)",
-            0xa21b30: "dies in the tester: its child at +0x14C (0x6A07E0's) has a holder's place at +0x1C8, past what the tester gives it",
-            0xa24fe0: "dies in the tester: a call through the class's table after calls",
-            0xa38fd0: "dies in the tester: a dword read through a pointer a child holds, which the tester leaves random",
-            0x872970: "dies in the tester: reads or stores through an object the tester leaves random",
-            0x701590:"the original dies in the tester (a stand-in's object read through as something else): to look at",
-            0x791670:"the original dies in the tester (a read of 0xC in 0xBCE978, from 0x403C8A: a text the stand-ins don't make?): to look at"}
+LEFT_OUT = {0xa24fe0: "dies in the tester (reads or calls through what it leaves unset)", 0xa38fd0: "dies in the tester (reads or calls through what it leaves unset)", 0x791670: "dies in the tester (reads or calls through what it leaves unset)", 0xa21b30: "dies in the tester (reads or calls through what it leaves unset)", }
 
 
 
@@ -648,7 +642,7 @@ def tail(p):
     pod_temps = set()      # temporaries with nothing to destroy (KeyCombination::Set's)   # temporaries made whatever happened (not only with a new object's memory)
     tempat_ops = {}   # a temporary's field read: the step it was read at (good while that temporary lives)
 
-    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86, 90, 92, 93, 106, 107, 112, 113}   # (75 frees memory: not quiet)   # steps that call nothing
+    QUIET = {0, 1, 2, 4, 5, 6, 7, 12, 22, 26, 27, 29, 30, 31, 32, 33, 43, 44, 45, 47, 48, 49, 51, 55, 72, 73, 74, 78, 79, 86, 90, 92, 93, 106, 107, 112, 113, 115}   # (75 frees memory: not quiet)   # steps that call nothing
 
     taken = {}   # the results already taken into scratch values: the step that gave it -> its scratch number
 
@@ -2372,6 +2366,24 @@ def tail(p):
             elif w and w[0] in ('const', 'global', 'arg', 'this', 'member'):
                 pushed[i] = w[1] if w[0] == 'const' else ('self', 0) if w[0] == 'this' else ('self', w[1]) if w[0] == 'member' else \
                     ('glob' if w[0] == 'global' else 'given', w[1])
+            elif w and w[0] == 'name' and ('name', w[1]) in built and nscratch[0] < 32:
+                # a text the steps made, given by value: the callee takes it (kind 115: the name's text into a scratch value,
+                # the name no longer the steps' to let go)
+                ops.append((115, nscratch[0], w[1], 0, []))
+                pushed[i] = ('scratch', nscratch[0])
+                nscratch[0] += 1
+                built.discard(('name', w[1]))
+            elif w and w[0] == 'obj' and w[1] == cur and w[2] == 'returned' and not nulls and last_text_object() and nnames < 48 and nscratch[0] < 32:
+                # the new object a text (0x10 bytes made with 0xBCF850, or none), given by value: kept as a name (kind 58),
+                # then handed over as above (kind 115)
+                ops.append((58, nnames, 0, 0, []))
+                ops.append((115, nscratch[0], nnames, 0, []))
+                pushed[i] = ('scratch', nscratch[0])
+                nscratch[0] += 1
+                for r_ in R:
+                    if R[r_] == w:
+                        R[r_] = None
+                nnames += 1
             else:
                 raise Reject('by-value store ' + s)
         elif (m := re.fullmatch(r'mov dword ptr \[esp \+ (0x[0-9a-f]+|\d+)\], esp', s)) and ((R.get('eax') or ('',))[0] == 'spslot' or pushed and pushed[-1] is None):

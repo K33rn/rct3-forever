@@ -322,7 +322,16 @@ static void *built_result(void *self) {
         return (uint8_t *)self + 8;   // (made already, or one the case filled: what was written into it since is kept, so it shows)
     *(void **)self = titled_child_table;
     *(void **)((uint8_t *)self + 8) = titled_child_table;
-    for (int k = 1; k < 0x28; k++) ((uint32_t *)self)[2 + k] = (uint32_t)(uintptr_t)self * 0x9e3779b1u + k;   // (its members told apart)
+    // (its members told apart: each points at one of 256 small blocks at 0x13000, picked by the object and the member, whose
+    // dwords point at the block itself, so a chain of reads through members lands, and a list there is a valid empty one)
+    for (int k = 1; k < 0x28; k++) {
+        const uint32_t pick = ((uint32_t)(uintptr_t)self * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu) >> 24;
+        uint32_t *block = arena<uint32_t>(0x13000 + pick * 0x20);
+        if (block[0] != (uint32_t)(uintptr_t)block && block[7] != 0x6c6f6f70u)
+            for (int q = 0; q < 7; q++) block[q] = (uint32_t)(uintptr_t)block;
+        block[7] = 0x6c6f6f70u;   // ("loop": made, so later builds leave what was written into it)
+        ((uint32_t *)self)[2 + k] = (uint32_t)(uintptr_t)block;
+    }
     for (int k = 0; k < 5; k++) {   // (its rectangle, +0x7C..+0x8C as a window's: plain floats, each its own, so reads of it are told apart)
         const float f = (float)((uint32_t)(uintptr_t)self >> 4 & 0x3ff) * 0.25f + (float)k * 7.5f;
         memcpy((uint8_t *)self + 0x7c + 4 * k, &f, 4);
