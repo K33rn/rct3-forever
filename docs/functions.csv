@@ -6691,7 +6691,7 @@ address,size,name,callers,status
 0x690b70,273,,8,documented
 0x690c90,539,Window::Titled,1,rewritten
 0x690ee0,26,,4,documented
-0x690f00,234,,0,documented
+0x690f00,234,Text::Layout690F00,0,rewritten
 0x691110,372,,3,documented
 0x691290,361,,1,documented
 0x6914a0,79,,2,documented
@@ -8326,7 +8326,7 @@ address,size,name,callers,status
 0x727380,450,,1,documented
 0x727550,461,,1,documented
 0x727720,238,,3,documented
-0x727890,198,,2,documented
+0x727890,198,TileCorners::Pack,2,rewritten
 0x727960,51,,4,documented
 0x7279a0,338,,0,documented
 0x727b00,164,,3,documented
@@ -9578,7 +9578,7 @@ address,size,name,callers,status
 0x7ad360,975,,1,documented
 0x7ad730,42,,1,documented
 0x7ad760,284,,1,documented
-0x7ad8a0,362,,1,documented
+0x7ad8a0,362,Ride::Case7AD8A0,1,rewritten
 0x7adb70,248,,1,documented
 0x7adc90,253,,2,documented
 0x7addb0,30,DeletingDestructor,2,rewritten
@@ -11843,7 +11843,7 @@ address,size,name,callers,status
 0x878360,7488,,3,documented
 0x87a130,408,,1,documented
 0x87a330,57,,0,documented
-0x87a370,354,,2,documented
+0x87a370,354,Scenery::Normal87A370,2,rewritten
 0x87a5d0,30,DeletingDestructor,0,rewritten
 0x87a620,26,OwnedPointer::Reset,0,rewritten
 0x87a640,130,Array<4>::SetCapacity,1,rewritten
@@ -12243,8 +12243,8 @@ address,size,name,callers,status
 0x8bd5b0,2509,,2,documented
 0x8bdf80,1199,,5,documented
 0x8be480,137,,4,documented
-0x8be510,253,,5,documented
-0x8be610,354,,4,documented
+0x8be510,253,Terrain::Fill8BE510,5,rewritten
+0x8be610,354,Terrain::Make8BE610,4,rewritten
 0x8be890,424,,1,documented
 0x8bea40,1158,,1,documented
 0x8beef0,1079,,4,documented
@@ -12925,7 +12925,7 @@ address,size,name,callers,status
 0x917540,71,,0,documented
 0x9177b0,3071,,3,documented
 0x9183b0,4224,,0,documented
-0x919430,202,,1,documented
+0x919430,202,Waterfall::Set919430,1,rewritten
 0x919500,1,,1,documented
 0x919510,81,,2,documented
 0x919570,76,,1,documented
@@ -13397,8 +13397,8 @@ address,size,name,callers,status
 0x95dc10,57,,1,documented
 0x95dc50,24,,3,documented
 0x95dc70,115,,1,documented
-0x95dd10,232,,5,documented
-0x95de00,314,,1,documented
+0x95dd10,232,Water::Fill95DD10,5,rewritten
+0x95de00,314,Water::Compare95DE00,1,rewritten
 0x95df40,543,Water::EdgeCut,9,rewritten
 0x95e160,612,Water::EdgeCutQuad,9,rewritten
 0x95e3d0,615,Water::EdgeCutQuad2,3,rewritten
@@ -14587,10 +14587,10 @@ address,size,name,callers,status
 0x9cd6f0,30,DeletingDestructor,2,rewritten
 0x9cd740,40,Text::Widen,0,rewritten
 0x9cd7c0,48,QueryInterface,0,rewritten
-0x9cd960,219,,1,documented
+0x9cd960,219,Record::Fill9CD960,1,rewritten
 0x9cdab0,7,SetTable,5,rewritten
 0x9cdac0,10,,1,documented
-0x9cdba0,268,,1,documented
+0x9cdba0,268,Particles::TransformC,1,rewritten
 0x9cdd40,43,IdMap::Free,2,rewritten
 0x9cdd70,628,IdMap::FindOrAdd,1,rewritten
 0x9ce240,26,OwnedPointer::Reset,2,rewritten
@@ -16050,7 +16050,7 @@ address,size,name,callers,status
 0xa5ece0,25,Pair::ConstructA5ECE0,4,rewritten
 0xa5ed60,7,SetTable,5,rewritten
 0xa5ed70,75,,6,documented
-0xa5edc0,207,,5,documented
+0xa5edc0,207,Animal::ClampA5EDC0,5,rewritten
 0xa5ee90,178,,3,documented
 0xa5ef50,127,,3,documented
 0xa5eff0,421,,4,documented
@@ -16517,7 +16517,7 @@ address,size,name,callers,status
 0xa91880,322,,1,documented
 0xa91a60,40,,0,documented
 0xa91a90,440,,1,documented
-0xa91c80,225,,1,documented
+0xa91c80,225,Fence::QuadA91C80,1,rewritten
 0xa91d70,246,,4,documented
 0xa91e70,1262,,4,documented
 0xa92360,435,,2,documented
@@ -19714,7 +19714,7 @@ address,size,name,callers,status
 0xbcbe10,1,,1,documented
 0xbcbe20,363,,2,documented
 0xbcbf90,249,Bezier::Point,4,rewritten
-0xbcc090,296,,2,documented
+0xbcc090,296,Vector::StepBCC090,2,rewritten
 0xbcc1c0,35,Arrays::Free8E7200,0,rewritten
 0xbcc1f0,705,,0,documented
 0xbcc4c0,405,,5,documented
@@ -20300,7 +20300,7 @@ address,size,name,callers,status
 0xbed820,323,Matrix::LookAlongY,7,rewritten
 0xbed970,323,Matrix::LookAlongZ,15,rewritten
 0xbedac0,318,Matrix::LookAlongZSide,222,rewritten
-0xbedc00,302,,0,documented
+0xbedc00,302,Vector::NormalBEDC00,0,rewritten
 0xbedd30,138,Matrix::TurnPairs,29,rewritten
 0xbeddc0,131,Matrix::TurnPairs,27,rewritten
 0xbede50,133,Matrix::TurnPairs,9,rewritten
@@ -20311,7 +20311,7 @@ address,size,name,callers,status
 0xbee1e0,154,,1,documented
 0xbee280,52,,0,documented
 0xbee2c0,411,,1,documented
-0xbee460,323,,19,documented
+0xbee460,323,Vector::NormalBEE460,19,rewritten
 0xbee5b0,167,,14,documented
 0xbee890,33,,5,documented
 0xbee8c0,1000,Matrices::Times,3,rewritten

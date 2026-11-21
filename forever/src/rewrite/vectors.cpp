@@ -859,3 +859,423 @@ static void __thiscall camera_set_from_height(uint8_t *self, float height, float
 }
 static const uint8_t camera_set_from_height_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Camera::SetFromHeight", 0x7455f0, camera_set_from_height_original, &camera_set_from_height, &g_camera_heights);
+
+// ---- Terrain::Fill8BE510 (0x8BE510) and Terrain::Make8BE610 (0x8BE610): a triangle / a quad of terrain vertices --------
+// Each vertex (0x20 bytes, at the buffer *vertices points to): its point (copied as it is), +0xC a, +0x10 0, +0x14 b,
+// +0x18 a colour, +0x1C (y - base) scale. Then the indices (16-bit, at *indices) from the running count: a triangle
+// takes n, n+1, n+2 (count + 3), a quad n, n+1, n+2, n+2, n+1, n+3 (count + 4); both pointers are moved on.
+static volatile long g_terrain_vertices;
+static void terrain_vertex(uint32_t *v, const uint32_t *p, uint32_t a, uint32_t b, uint32_t colour, float base, float scale) {
+    volatile uint32_t *const o = v;
+    o[0] = p[0], o[1] = p[1], o[2] = p[2];
+    o[5] = b, o[3] = a, o[6] = colour, o[4] = 0;
+    ((volatile float *)o)[7] = (float)(((long double)((const float *)p)[1] - base) * scale);
+}
+static void terrain_indices(uint16_t **indices, uint16_t *count, const uint8_t *steps, int n, int vertices) {
+    for (int i = 0; i < n; i++) ((volatile uint16_t *)*indices)[i] = (uint16_t)(*(volatile uint16_t *)count + steps[i]);
+    *indices += n;
+    *(volatile uint16_t *)count += (uint16_t)vertices;
+}
+static void __fastcall terrain_fill(const uint32_t *p0, const uint32_t *p1, const uint32_t *p2, uint32_t c0, uint32_t c1, uint32_t c2, uint32_t a, uint32_t b,
+                                    float base, float scale, uint32_t **vertices, uint16_t **indices, uint16_t *count) {
+    g_terrain_vertices++;
+    terrain_vertex(*vertices, p0, a, b, c0, base, scale);
+    terrain_vertex(*vertices + 8, p1, a, b, c1, base, scale);
+    terrain_vertex(*vertices + 16, p2, a, b, c2, base, scale);
+    *vertices += 24;
+    static const uint8_t steps[3] = {0, 1, 2};
+    terrain_indices(indices, count, steps, 3, 3);
+}
+static void __fastcall terrain_make(const uint32_t *p1, const uint32_t *p3, const uint32_t *p0, const uint32_t *p2, uint32_t c01, uint32_t c23, uint32_t a,
+                                    uint32_t b, float base, float scale, uint32_t **vertices, uint16_t **indices, uint16_t *count) {
+    g_terrain_vertices++;
+    terrain_vertex(*vertices, p0, a, b, c01, base, scale);
+    terrain_vertex(*vertices + 8, p1, a, b, c01, base, scale);
+    terrain_vertex(*vertices + 16, p2, a, b, c23, base, scale);
+    terrain_vertex(*vertices + 24, p3, a, b, c23, base, scale);
+    *vertices += 32;
+    static const uint8_t steps[6] = {0, 1, 2, 2, 1, 3};
+    terrain_indices(indices, count, steps, 6, 4);
+}
+static const uint8_t terrain_fill_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x1c, 0x56, 0x8b, 0x74};
+static const uint8_t terrain_make_original[] = {0x53, 0x55, 0x8b, 0x6c, 0x24, 0x20, 0x56, 0x8b};
+REWRITE("Terrain::Fill8BE510", 0x8be510, terrain_fill_original, &terrain_fill, &g_terrain_vertices);
+REWRITE("Terrain::Make8BE610", 0x8be610, terrain_make_original, &terrain_make, &g_terrain_vertices);
+
+// ---- Vector::StepBCC090(out, p0, p1, p2, p3, t) (0xBCC090): a cubic curve's direction at t -----------------------------
+// 3 ((s^2 (p1 - p0) + 2st (p2 - p1)) + t^2 (p3 - p2)), s = 1 - t, with the game's roundings: t t, 2st and s s stored;
+// each difference's z stored; of each weighted difference x and z stored (as are the partial sums of x, y and z), y of
+// the first two kept unrounded.
+static volatile long g_curve_steps;
+static void __fastcall vector_step_bcc090(float *out, const float *p0, const float *p1, const float *p2, const float *p3, float t_f) {
+    g_curve_steps++;
+    const long double t = t_f, s = (long double)*(const float *)0xf264dc - t, three = *(const float *)0xf2784c;
+    const long double d3x = (long double)p3[0] - p2[0], d3y = (long double)p3[1] - p2[1];
+    const volatile float d3z = (float)((long double)p3[2] - p2[2]);
+    const volatile float tt = (float)(t * t);
+    const volatile float a0 = (float)(d3x * tt);
+    const long double a1 = d3y * tt;
+    const volatile float a2 = (float)((long double)d3z * tt);
+    const long double d2x = (long double)p2[0] - p1[0], d2y = (long double)p2[1] - p1[1];
+    const volatile float d2z = (float)((long double)p2[2] - p1[2]);
+    const long double st = s * t;
+    const volatile float w = (float)(st + st);
+    const volatile float b0 = (float)(d2x * w);
+    const long double b1 = d2y * w, b2 = (long double)d2z * w;
+    const long double d1x = (long double)p1[0] - p0[0], d1y = (long double)p1[1] - p0[1];
+    const volatile float d1z = (float)((long double)p1[2] - p0[2]);
+    const volatile float ss = (float)(s * s);
+    const volatile float c0 = (float)(d1x * ss);
+    const long double c1 = d1y * ss;
+    const volatile float c2 = (float)((long double)d1z * ss);
+    const volatile float x1 = (float)((long double)c0 + b0), y1 = (float)(c1 + b1), z1 = (float)((long double)c2 + b2);
+    const volatile float x2 = (float)((long double)x1 + a0);
+    const long double y2 = (long double)y1 + a1, z2 = (long double)z1 + a2;
+    out[0] = (float)((long double)x2 * three);
+    out[1] = (float)(y2 * three);
+    out[2] = (float)(z2 * three);
+}
+static const uint8_t vector_step_bcc090_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::StepBCC090", 0xbcc090, vector_step_bcc090_original, &vector_step_bcc090, &g_curve_steps);
+
+// ---- Water::Compare95DE00(vertices, indices, count, a, b, c, d, sum, low) (0x95DE00): a water quad, its heights noted --
+// The four points go to the vertex buffer (12 bytes each, copied as they are), six 32-bit indices from the count (n,
+// n+2, n+1, n+1, n+2, n+3), the pointers and the count (+4) moved on. *sum gains ((b.y + d.y) + a.y) + c.y; *low becomes
+// the smallest of c.y, d.y, b.y, a.y and itself, taken in that order by fcomi / fcmov (NaNs as they fall).
+static volatile long g_water_quads;
+static void __fastcall water_compare(uint32_t **vertices, uint32_t **indices, uint32_t *count, const uint32_t *a, const uint32_t *b, const uint32_t *c,
+                                     const uint32_t *d, float *sum, float *low) {
+    g_water_quads++;
+    volatile uint32_t *const v = *vertices;
+    volatile uint32_t *const ix = *indices;
+    const uint32_t n = *count;
+    *vertices += 12, *indices += 6, *count += 4;
+    const uint32_t *const points[4] = {a, b, c, d};
+    for (int p = 0; p < 4; p++) v[3 * p] = points[p][0], v[3 * p + 1] = points[p][1], v[3 * p + 2] = points[p][2];
+    ix[0] = n, ix[1] = n + 2, ix[4] = n + 2, ix[2] = n + 1, ix[3] = n + 1, ix[5] = n + 3;
+    const float *const fa = (const float *)a, *const fb = (const float *)b, *const fc = (const float *)c, *const fd = (const float *)d;
+    *(volatile float *)sum = (float)(((((long double)fb[1] + fd[1]) + fa[1]) + fc[1]) + *(volatile float *)sum);
+    volatile float m = (float)x87_lesser(x87_load(&fc[1]), x87_load(&fd[1]));
+    m = (float)x87_lesser(x87_load(&fb[1]), x87_load((const float *)&m));
+    m = (float)x87_lesser(x87_load(&fa[1]), x87_load((const float *)&m));
+    *(volatile float *)low = (float)x87_lesser(x87_load(low), x87_load((const float *)&m));
+}
+static const uint8_t water_compare_original[] = {0x8b, 0x01, 0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55};
+REWRITE("Water::Compare95DE00", 0x95de00, water_compare_original, &water_compare, &g_water_quads);
+
+// ---- Text::Layout690F00(out, c0, w0, w1, c1, w2, c2, w3, c3) (0x690F00): four colours mixed and packed ----------------
+// Each channel (alpha +0xC, then +0, +4, +8): ((w0 c0 + w1 c1) + w2 c2) + w3 c3, times the game's 255 (0xF264C0),
+// rounded by fistp (low 32 bits); packed by shifting the running value left 8 and or-ing the next one in, unmasked.
+static volatile long g_text_mixes;
+static void __fastcall text_layout_690f00(uint32_t *out, const float *c0, float w0, float w1, const float *c1, float w2, const float *c2, float w3,
+                                          const float *c3) {
+    g_text_mixes++;
+    static const int channels[4] = {3, 0, 1, 2};
+    uint32_t packed = 0;
+    for (int i = 0; i < 4; i++) {
+        const int k = channels[i];
+        const long double mixed = (((long double)w0 * c0[k] + (long double)w1 * c1[k]) + (long double)w2 * c2[k]) + (long double)w3 * c3[k];
+        const uint32_t v = (uint32_t)x87_whole(mixed * *(const float *)0xf264c0);
+        packed = i ? (packed << 8) | v : v;
+    }
+    *(volatile uint32_t *)out = packed;
+}
+static const uint8_t text_layout_690f00_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x0c, 0x8b};
+REWRITE("Text::Layout690F00", 0x690f00, text_layout_690f00_original, &text_layout_690f00, &g_text_mixes);
+
+// ---- Water::Fill95DD10(vertices, indices, count, a, b, c, sum, low) (0x95DD10): a water triangle, its heights noted -----
+// As Water::Compare95DE00 with three points: indices n, n+1, n+2 (count + 3); *sum gains ((b.y + a.y) + c.y); *low
+// the smallest of b.y and c.y, then a.y, then itself.
+static void __fastcall water_fill(uint32_t **vertices, uint32_t **indices, uint32_t *count, const uint32_t *a, const uint32_t *b, const uint32_t *c,
+                                  float *sum, float *low) {
+    g_water_quads++;
+    volatile uint32_t *const v = *vertices;
+    volatile uint32_t *const ix = *indices;
+    const uint32_t n = *count;
+    *vertices += 9, *indices += 3, *count += 3;
+    const uint32_t *const points[3] = {a, b, c};
+    for (int p = 0; p < 3; p++) v[3 * p] = points[p][0], v[3 * p + 1] = points[p][1], v[3 * p + 2] = points[p][2];
+    ix[0] = n, ix[1] = n + 1, ix[2] = n + 2;
+    const float *const fa = (const float *)a, *const fb = (const float *)b, *const fc = (const float *)c;
+    *(volatile float *)sum = (float)((((long double)fb[1] + fa[1]) + fc[1]) + *(volatile float *)sum);
+    volatile float m = (float)x87_lesser(x87_load(&fb[1]), x87_load(&fc[1]));
+    m = (float)x87_lesser(x87_load(&fa[1]), x87_load((const float *)&m));
+    *(volatile float *)low = (float)x87_lesser(x87_load(low), x87_load((const float *)&m));
+}
+static const uint8_t water_fill_original[] = {0x8b, 0x01, 0x53, 0x55, 0x56, 0x8b, 0x74, 0x24};
+REWRITE("Water::Fill95DD10", 0x95dd10, water_fill_original, &water_fill, &g_water_quads);
+
+// ---- Fence::QuadA91C80(n, records, indices, colour, 20 values) (0xA91C80): quad n's record (0x60 bytes) and indices ----
+// Four vertices of six dwords: (x, y, z, colour, u, v) from the values given in order, copied as they are; six 16-bit
+// indices at word 6n: 4n, 4n+1, 4n+2, 4n+2, 4n+1, 4n+3.
+static volatile long g_fence_quads;
+static void __stdcall fence_quad(int32_t n, uint8_t *records, uint16_t *indices, uint32_t colour, uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3,
+                                 uint32_t a4, uint32_t a5, uint32_t a6, uint32_t a7, uint32_t a8, uint32_t a9, uint32_t a10, uint32_t a11, uint32_t a12,
+                                 uint32_t a13, uint32_t a14, uint32_t a15, uint32_t a16, uint32_t a17, uint32_t a18, uint32_t a19) {
+    g_fence_quads++;
+    const uint32_t values[20] = {a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19};
+    volatile uint32_t *const r = (volatile uint32_t *)(records + n * 0x60);
+    for (int v = 0; v < 4; v++) {
+        r[6 * v] = values[5 * v], r[6 * v + 1] = values[5 * v + 1], r[6 * v + 2] = values[5 * v + 2];
+        r[6 * v + 3] = colour, r[6 * v + 4] = values[5 * v + 3], r[6 * v + 5] = values[5 * v + 4];
+    }
+    volatile uint16_t *const ix = indices + n * 6;
+    const uint16_t d = (uint16_t)(n * 4);
+    ix[0] = d, ix[2] = (uint16_t)(d + 2), ix[3] = (uint16_t)(d + 2), ix[1] = (uint16_t)(d + 1), ix[4] = (uint16_t)(d + 1), ix[5] = (uint16_t)(d + 3);
+}
+static const uint8_t fence_quad_original[] = {0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x54, 0x24, 0x08};
+REWRITE("Fence::QuadA91C80", 0xa91c80, fence_quad_original, &fence_quad, &g_fence_quads);
+
+// ---- Record::Fill9CD960(this, point, rows, value) (0x9CD960): a record from a point and six rows ----------------------
+// +0 the point, +0x10 the value (copied as they are); for each of the six rows (32 bytes apart from +0x10 in rows): its
+// first value copied as it is, its second and third through the FPU (a signalling NaN comes out quiet), its fifth
+// negated; the record's rows 16 bytes apart from +0x20.
+static volatile long g_record_fills;
+static void __thiscall record_fill(uint32_t *self, const uint32_t *point, const uint8_t *rows, uint32_t value) {
+    g_record_fills++;
+    volatile uint32_t *const s = self;
+    s[0] = point[0], s[1] = point[1], s[2] = point[2];
+    s[4] = value;
+    for (int k = 0; k < 6; k++) {
+        const uint8_t *const row = rows + 0x10 + 0x20 * k;
+        const long double e = x87_load((const float *)(row + 0x10)), c = x87_load((const float *)(row + 8)), b = x87_load((const float *)(row + 4));
+        s[8 + 4 * k] = *(const uint32_t *)row;
+        ((volatile float *)s)[9 + 4 * k] = (float)b;
+        ((volatile float *)s)[10 + 4 * k] = (float)c;
+        ((volatile float *)s)[11 + 4 * k] = (float)-e;
+    }
+}
+static const uint8_t record_fill_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x11};
+REWRITE("Record::Fill9CD960", 0x9cd960, record_fill_original, &record_fill, &g_record_fills);
+
+// ---- Animal::ClampA5EDC0(this) (0xA5EDC0): three values kept within -1000 and 1000 ------------------------------------
+// Each: the smaller of it and 1000 (by fcomi / fcmov: a NaN gives 1000), then the larger of that and -1000.
+static volatile long g_animal_clamps;
+static void __thiscall animal_clamp(float *self) {
+    g_animal_clamps++;
+    static const uint32_t high_bits = 0x447a0000, low_bits = 0xc47a0000;
+    for (int k = 0; k < 3; k++) {
+        const volatile float t = (float)x87_lesser(x87_load(&self[k]), x87_load((const float *)&high_bits));
+        *(volatile float *)&self[k] = (float)x87_greater(x87_load((const float *)&t), x87_load((const float *)&low_bits));
+    }
+}
+static const uint8_t animal_clamp_original[] = {0x83, 0xec, 0x10, 0x8b, 0x01, 0xc7, 0x04, 0x24};
+REWRITE("Animal::ClampA5EDC0", 0xa5edc0, animal_clamp_original, &animal_clamp, &g_animal_clamps);
+
+// ---- Waterfall::Set919430(this, a, b, c, d, e) (0x919430): the waterfall's points ------------------------------------
+// +0xA0 a, +0xB0 b, +0xE0 e (copied as they are); +0xF0 and +0x100 the vectors at c + 0x10 and d + 0x10 (their x and y
+// through the FPU, a signalling NaN coming out quiet, their z copied); +0x300 set; +0x40 gains bits 2 and 3 (bit 2 stored
+// first).
+static volatile long g_waterfall_sets;
+static void __thiscall waterfall_set(uint8_t *self, const uint32_t *a, const uint32_t *b, const uint8_t *c, const uint8_t *d, const uint32_t *e) {
+    g_waterfall_sets++;
+    volatile uint32_t *const s = (volatile uint32_t *)self;
+    s[0xa0 / 4] = a[0], s[0xa4 / 4] = a[1], s[0xa8 / 4] = a[2];
+    s[0xb0 / 4] = b[0], s[0xb4 / 4] = b[1], s[0xb8 / 4] = b[2];
+    const uint8_t *const from[2] = {c, d};
+    for (int k = 0; k < 2; k++) {
+        const long double x = x87_load((const float *)(from[k] + 0x10)), y = x87_load((const float *)(from[k] + 0x14));
+        s[(0xf8 + 0x10 * k) / 4] = *(const uint32_t *)(from[k] + 0x18);
+        ((volatile float *)s)[(0xf0 + 0x10 * k) / 4] = (float)x;
+        ((volatile float *)s)[(0xf4 + 0x10 * k) / 4] = (float)y;
+    }
+    s[0xe0 / 4] = e[0], s[0xe4 / 4] = e[1], s[0xe8 / 4] = e[2];
+    *(volatile uint8_t *)(self + 0x300) = 1;
+    const uint32_t flags = s[0x40 / 4] | 4;
+    s[0x40 / 4] = flags;
+    s[0x40 / 4] = flags | 8;
+}
+static const uint8_t waterfall_set_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Waterfall::Set919430", 0x919430, waterfall_set_original, &waterfall_set, &g_waterfall_sets);
+
+// ---- TileCorners::Pack(this, c1..c8) (0x727890): eight two-bit corner values into +0x30, four looked-up nibbles into
+// +0x32 ---------------------------------------------------------------------------------------------------------------
+// +0x30 (16 bits): c3 c1 c6 c4 c2 c5 c8 c7, two bits each (shifted in that order, unmasked). +0x32: four entries of the
+// table at 0xF6A500, at (c3, c2, c8), (c1, c2, c7), (c6, c5, c8) and (c4, c5, c7) (each index the three two-bit values
+// read as 16-bit numbers and shifted together), each entry or-ed in after a shift of 4.
+static volatile long g_tile_packs;
+static void __thiscall tile_corners_pack(uint8_t *self, uint32_t c1, uint32_t c2, uint32_t c3, uint32_t c4, uint32_t c5, uint32_t c6, uint32_t c7, uint32_t c8) {
+    g_tile_packs++;
+    uint32_t s = c3 * 4 | c1;
+    s = (s << 2) | c6;
+    s = (s << 2) | c4;
+    s = (s << 2) | c2;
+    s = (s << 2) | c5;
+    s = (s << 2) | c8;
+    s = (s << 2) | c7;
+    *(volatile uint16_t *)(self + 0x30) = (uint16_t)s;
+    const uint16_t *const table = (const uint16_t *)0xf6a500;
+    auto index = [](uint32_t a, uint32_t b, uint32_t c) { return ((((a & 0xffff) << 2) | (b & 0xffff)) << 2) | (c & 0xffff); };
+    uint16_t packed = table[index(c3, c2, c8)];
+    packed = (uint16_t)((packed << 4) | table[index(c1, c2, c7)]);
+    packed = (uint16_t)((packed << 4) | table[index(c6, c5, c8)]);
+    packed = (uint16_t)((packed << 4) | table[index(c4, c5, c7)]);
+    *(volatile uint16_t *)(self + 0x32) = packed;
+}
+static const uint8_t tile_corners_pack_original[] = {0x8b, 0x44, 0x24, 0x10, 0x53, 0x8b, 0x5c, 0x24};
+REWRITE("TileCorners::Pack", 0x727890, tile_corners_pack_original, &tile_corners_pack, &g_tile_packs);
+
+// ---- Scenery::Normal87A370(out, a, b, t) (0x87A370): two scenery records (nine floats) blended by t ---------------------
+// The first three: a + (b - a) t (each difference's x and each step stored first). The next three likewise, kept
+// unrounded and made one long (sqrt((z z + y y) + x x)); a length of exactly 0 leaves x and y and makes z 1. +0x18 is
+// a's as it is; +0x1C and +0x20 are (b - a) t + a.
+static volatile long g_scenery_normals;
+static void __fastcall scenery_normal(float *out, const float *a, const float *b, float t_f) {
+    g_scenery_normals++;
+    const long double t = t_f;
+    long double r[6];
+    for (int part = 0; part < 2; part++) {
+        const float *const pa = a + 3 * part, *const pb = b + 3 * part;
+        const volatile float d0 = (float)((long double)pb[0] - pa[0]);
+        const long double d1 = (long double)pb[1] - pa[1], d2 = (long double)pb[2] - pa[2];
+        const volatile float e0 = (float)((long double)d0 * t), e1 = (float)(d1 * t), e2 = (float)(d2 * t);
+        r[3 * part] = (long double)pa[0] + e0;
+        r[3 * part + 1] = (long double)e1 + pa[1];
+        r[3 * part + 2] = (long double)e2 + pa[2];
+    }
+    volatile float *const o = out;
+    const volatile float z0 = (float)r[2];
+    o[2] = z0, o[0] = (float)r[0], o[1] = (float)r[1];
+    const long double x = r[3], y = r[4], z = r[5];
+    const long double length = x87_sqrt((z * z + y * y) + x * x);
+    if (length == 0.0L) {
+        *(volatile uint32_t *)&o[5] = 0x3f800000;
+        o[3] = (float)x, o[4] = (float)y;
+    } else {
+        const long double inverse = 1.0L / length;
+        const long double nx = x * inverse, ny = y * inverse;
+        o[5] = (float)(z * inverse);
+        o[3] = (float)nx, o[4] = (float)ny;
+    }
+    ((volatile uint32_t *)o)[6] = ((const uint32_t *)a)[6];
+    o[7] = (float)(((long double)b[7] - a[7]) * t + a[7]);
+    o[8] = (float)(((long double)b[8] - a[8]) * t + a[8]);
+}
+static const uint8_t scenery_normal_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Scenery::Normal87A370", 0x87a370, scenery_normal_original, &scenery_normal, &g_scenery_normals);
+
+// ---- Vector::NormalBEDC00(this) (0xBEDC00): a matrix's three rows (16 bytes apart) made upright again -----------------
+// Row 2 is made one long (sqrt((x x + y y) + z z); a length of exactly 0 leaves x and y and makes z 1). Row 0 becomes
+// row 1 x row 2 made one long (its y rounded before the length, x and z unrounded; length 0 the same way), and row 1
+// becomes row 2 x row 0, all from the stored values.
+static volatile long g_matrix_uprights;
+static float *__thiscall vector_normal_bedc00(float *m) {
+    g_matrix_uprights++;
+    volatile float *const r = m;
+    {
+        const long double x = r[8], y = r[9], z = r[10];
+        const long double length = x87_sqrt((x * x + y * y) + z * z);
+        if (length == 0.0L) {
+            *(volatile uint32_t *)&r[10] = 0x3f800000;
+        } else {
+            const long double inverse = 1.0L / length;
+            r[8] = (float)(inverse * r[8]);
+            r[9] = (float)(inverse * r[9]);
+            r[10] = (float)(inverse * r[10]);
+        }
+    }
+    const long double c0 = (long double)r[10] * r[5] - (long double)r[6] * r[9];
+    const volatile float c1 = (float)((long double)r[6] * r[8] - (long double)r[10] * r[4]);
+    r[1] = c1;
+    const long double c2 = (long double)r[4] * r[9] - (long double)r[8] * r[5];
+    r[0] = (float)c0;
+    r[2] = (float)c2;
+    const long double length = x87_sqrt((c2 * c2 + (long double)c1 * c1) + c0 * c0);
+    if (length == 0.0L) {
+        *(volatile uint32_t *)&r[2] = 0x3f800000;
+    } else {
+        const long double inverse = 1.0L / length;
+        r[0] = (float)(inverse * c0);
+        r[1] = (float)((long double)c1 * inverse);
+        r[2] = (float)(c2 * inverse);
+    }
+    const long double d0 = (long double)r[2] * r[9] - (long double)r[10] * r[1];
+    const long double d1 = (long double)r[10] * r[0] - (long double)r[2] * r[8];
+    const volatile float d2 = (float)((long double)r[1] * r[8] - (long double)r[9] * r[0]);
+    r[6] = d2;
+    r[4] = (float)d0;
+    r[5] = (float)d1;
+    return m;
+}
+static const uint8_t vector_normal_bedc00_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::NormalBEDC00", 0xbedc00, vector_normal_bedc00_original, &vector_normal_bedc00, &g_matrix_uprights);
+
+// ---- Particles::TransformC(this) (0x9CDBA0): a particle's point (+0x10) moved by the shared matrix, stored in its slot --
+// d = point - the shared origin (0x13415B0; d.y rounded, d.z rounded and kept unrounded), each result
+// ((dz m[j][2] + dy m[j][1]) + m[j][0] dx) + m[j][3] (the matrix at 0x1341580, rows of four; row 0 takes dz unrounded),
+// into entry n (+0x34) of the list at +0x30 (32 bytes each), the colour (+0x20, four dwords) beside it (+0x10). Then n
+// moves on (wrapping to 0 at the count, +4) and the fill count (+0x38) goes up, kept at most the count.
+static volatile long g_particle_transforms;
+static void __thiscall particles_transform_c(uint8_t *self) {
+    g_particle_transforms++;
+    const float *const p = (const float *)(self + 0x10), *const origin = (const float *)0x13415b0, *const m = (const float *)0x1341580;
+    const long double dx = (long double)p[0] - origin[0];
+    const volatile float dy = (float)((long double)p[1] - origin[1]);
+    const long double dz = (long double)p[2] - origin[2];
+    const volatile float dz_stored = (float)dz;
+    const long double x = ((dz * m[2] + (long double)dy * m[1]) + (long double)m[0] * dx) + m[3];
+    const long double y = (((long double)dz_stored * m[6] + (long double)dy * m[5]) + (long double)m[4] * dx) + m[7];
+    const volatile float z = (float)((((long double)dz_stored * m[10] + (long double)dy * m[9]) + (long double)m[8] * dx) + m[11]);
+    volatile uint32_t *const s = (volatile uint32_t *)self;
+    float *const out = (float *)(uintptr_t)(s[0x30 / 4] + (s[0x34 / 4] << 5));
+    out[2] = z;
+    out[0] = (float)x;
+    out[1] = (float)y;
+    volatile uint32_t *const colour = (volatile uint32_t *)(uintptr_t)(s[0x30 / 4] + (s[0x34 / 4] << 5) + 0x10);
+    for (int i = 0; i < 4; i++) colour[i] = s[0x20 / 4 + i];
+    const int32_t next = (int32_t)s[0x34 / 4] + 1;
+    s[0x34 / 4] = (uint32_t)next;
+    const int32_t count = (int32_t)s[1];
+    if (next >= count) s[0x34 / 4] = 0;
+    const int32_t filled = (int32_t)s[0x38 / 4] + 1;
+    s[0x38 / 4] = (uint32_t)filled;
+    if (filled > count) s[0x38 / 4] = (uint32_t)count;
+}
+static const uint8_t particles_transform_c_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Particles::TransformC", 0x9cdba0, particles_transform_c_original, &particles_transform_c, &g_particle_transforms);
+
+// ---- Vector::NormalBEE460(out, v) (0xBEE460): the rotation matrix (rows 16 bytes apart) about v by its length ----------
+// When v.v (as (x x + y y) + z z) is under the game's small value (0xF27C70): the identity. Else with a = |v| (rounded),
+// c and s its cosine and sine (fsincos, each rounded), k = 1 - c (rounded) and u = v / a (u.x from the unrounded 1 / a and rounded,
+// y and z from the rounded one): the usual u u^T k + c I + s [u]x, in the game's order and roundings.
+static volatile long g_axis_rotations;
+static inline void x87_sincos(long double v, long double *s, long double *c) {
+    long double cs, sn;
+    __asm__("fsincos" : "=t"(cs), "=u"(sn) : "0"(v));
+    *s = sn, *c = cs;
+}
+static float *__thiscall vector_normal_bee460(float *out, const float *v) {
+    g_axis_rotations++;
+    const long double q = ((long double)v[0] * v[0] + (long double)v[1] * v[1]) + (long double)v[2] * v[2];
+    volatile uint32_t *const o = (volatile uint32_t *)out;
+    if (q < (long double)*(const float *)0xf27c70) {
+        o[1] = 0, o[2] = 0, o[0] = 0x3f800000, o[4] = 0, o[6] = 0, o[5] = 0x3f800000, o[8] = 0, o[9] = 0, o[10] = 0x3f800000;
+        return out;
+    }
+    const volatile float a = (float)x87_sqrt(q);
+    long double sn, cs;
+    x87_sincos(a, &sn, &cs);
+    const volatile float c = (float)cs, s = (float)sn;
+    const long double one = *(const float *)0xf264dc;
+    const long double inverse_exact = one / a;
+    const volatile float inverse = (float)inverse_exact;
+    const volatile float ux = (float)(inverse_exact * v[0]);   // (the reciprocal before it is stored)
+    const long double uy = (long double)inverse * v[1], uz = (long double)inverse * v[2];
+    const volatile float k = (float)(one - c);
+    const long double a1 = (long double)ux * s, b1 = uy * s, c1 = uz * s;
+    const long double p = uy * ux * k;
+    const volatile float p2 = (float)(uz * ux * k), p3 = (float)(uz * uy * k);
+    volatile float *const f = out;
+    f[0] = (float)((long double)ux * ux * k + c);
+    f[1] = (float)(c1 + p);
+    f[2] = (float)((long double)p2 - b1);
+    f[4] = (float)(p - c1);
+    f[5] = (float)(uy * uy * k + c);
+    f[6] = (float)(a1 + p3);
+    f[8] = (float)(b1 + p2);
+    f[9] = (float)((long double)p3 - a1);
+    f[10] = (float)(uz * uz * k + c);
+    return out;
+}
+static const uint8_t vector_normal_bee460_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::NormalBEE460", 0xbee460, vector_normal_bee460_original, &vector_normal_bee460, &g_axis_rotations);
