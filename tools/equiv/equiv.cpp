@@ -312,6 +312,15 @@ static void *__thiscall stub_titled_text_out(void *self, void **out, int32_t i) 
     return out;
 }
 static void *__cdecl stub_plain_alloc(uint32_t size);
+// 0x423DE0 (an array sized: its place at +0, count at +4) for 0x61DA30's hand-written loop: the array made, filled with
+// marks, so the loop's stores show
+static void __thiscall stub_titled_sized(uint32_t *self, uint32_t n) {
+    record(0xac, self); record(0xac, (void *)(uintptr_t)n);
+    if (n > 0x40) n = 0x40;
+    uint32_t *array = (uint32_t *)stub_plain_alloc(4 * n);
+    for (uint32_t q = 0; q < n; q++) array[q] = 0x5a5a0000u + q;
+    self[0] = (uint32_t)(uintptr_t)array, self[1] = n;
+}
 extern const uint32_t titled_child_holders[];
 static uint32_t g_child_holders[8], g_child_holder_count;   // (the copy being checked: places in its children that counted texts go into)
 static uint32_t g_child_arrays[4][3], g_child_array_count;   // (and arrays of counted texts in them: offset, elements)
@@ -320,8 +329,12 @@ extern const uint32_t titled_child_arrays[];
 // through it land, and a list there is a valid empty one)
 static void *titled_landing(void *self, uint32_t k) {
     const uint32_t pick = ((uint32_t)(uintptr_t)self * 0x9e3779b1u + k * 0x85ebca6bu) >> 24;
-    uint32_t *block = arena<uint32_t>(0x13000 + pick * 0x20), *made = arena<uint32_t>(0x15000 + pick * 4);
-    if (*made != 0x6c6f6f70u + pick)   // ("loop", kept beside the blocks: made, so later builds leave what was written into it)
+    uint32_t *block = arena<uint32_t>(0x13000 + pick * 0x20), *made = arena<uint32_t>(0x12c00 + pick * 4);
+    // (past the last block, 2 KB of places in it: code reading a block further than its 0x20 bytes lands there)
+    uint32_t *after = arena<uint32_t>(0x15000), *last = arena<uint32_t>(0x13000 + 255 * 0x20);
+    if (after[0] != (uint32_t)(uintptr_t)last || after[0x1ff] != (uint32_t)(uintptr_t)last)
+        for (int q = 0; q < 0x200; q++) after[q] = (uint32_t)(uintptr_t)last;
+    if (*made != 0x6c6f6f70u + pick)   // ("loop", kept below the blocks: made, so later builds leave what was written into it)
         for (int q = 0; q < 8; q++) block[q] = (uint32_t)(uintptr_t)block;
     *made = 0x6c6f6f70u + pick;
     return block;
@@ -6453,7 +6466,10 @@ static std::vector<Test> tests() {
                                   for (uint32_t blk = 0; blk < 16; blk++)
                                       for (uint32_t off = 0x7c; off <= 0x8c; off += 4) arena<uint32_t>(0xc000 + blk * 0x40 + (off & 0x3f))[0] = value();
                                   for (uint32_t g = 0; g < 32; g++)   // (the objects game globals hold: floats too, as their rectangles are read)
-                                      for (uint32_t off = 4; off < 0x100; off += 4) arena<uint32_t>(titled_object_place(g) + off)[0] = value();
+                                      for (uint32_t off = 4; off < 0x100; off += 4) {   // (its first members places in the landing blocks, as a built object's)
+                                          const uint32_t f_ = value();
+                                          arena<uint32_t>(titled_object_place(g) + off)[0] = off < 0x2c ? (uint32_t)(uintptr_t)titled_landing(arena<void>(titled_object_place(g)), off / 4) : f_;
+                                      }
                                   for (uint32_t blk = 0; blk < 16; blk++)   // (each what a member points to: an object, with the table of stand-ins)
                                       arena<uint32_t>(0xc000 + blk * 0x40)[0] = (uint32_t)(uintptr_t)titled_child_table;
                               }
@@ -6533,6 +6549,8 @@ static std::vector<Test> tests() {
                                       a[k - 1] = (arena<uint32_t>(0x4c)[0] >> (2 * k)) % 3 | ((arena<uint32_t>(0x4c)[0] * 0x9e3779b1u + (uint32_t)k * 0x85ebca6bu) & 0xffffff00u);
                               for (int k = 2; k < 8; k++)
                                   if (g_titled_nullable >> k & 1 && (arena<uint32_t>(0x4c)[0] >> (3 * k)) % 3 == 0) a[k - 1] = 0;
+                              if (g_titled_at == 0x6e1e70 && a[2] >= (uint32_t)(uintptr_t)(g_arena + 0x100) && a[2] < (uint32_t)(uintptr_t)(g_arena + sizeof g_arena - 0x88))
+                                  *(uint32_t *)(uintptr_t)(a[2] + 0x84) = arena<uint32_t>(0x4c)[0] >> 3 & 7;   // (its loop's count, in the source it is given: 0 to 7)
                               for (uint32_t k = 1; k <= 8; k++) {   // (the arguments cast or called on, wherever the moves above put them: their tables)
                                   uint8_t *o = (uint8_t *)(uintptr_t)a[k - 1];
                                   if (o < g_arena + 0x100 || o >= g_arena + sizeof g_arena - 4 || (k == g_titled_text)) continue;
@@ -6654,6 +6672,10 @@ static std::vector<Test> tests() {
             for (auto &x : list)
                 if (x.first == 0x53c790) x.second = (void *)stub_titled_count8;
         if (e->at == 0x9a0b90) list.push_back({0x53dd80, (void *)stub_titled_text_out});
+        if (e->at == 0x6e1e70) list.push_back({0x6e1e40, (void *)stub_titled_text_out});
+        if (e->at == 0x61da30)   // (its hand-written loop's array: sized for real)
+            for (auto &x : list)
+                if (x.first == 0x423de0) x.second = (void *)stub_titled_sized;   // (its hand-written loop's texts: new each time)
         stubs_for_now(list);
         g_built_other = true;
     };

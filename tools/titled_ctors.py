@@ -189,11 +189,13 @@ def ebp_frame_args(t, ins):
 
 # Stretches of the tail written by hand in titled.cpp (step 103): the copy -> (first instruction's address, the address
 # reading goes on at, the function's name, the registers it is given). Mostly loops counted at run time.
-TITLED_HANDS = {0x9a0b90: [(0x9a2319, 0x9a23da, 'texts_listed_9a0b90', ['edi'])]}
-TITLED_HAND_NAMES = ['texts_listed_9a0b90']
+TITLED_HANDS = {0x9a0b90: [(0x9a2319, 0x9a23da, 'texts_listed_9a0b90', ['edi'])],
+                0x61da30: [(0x61dc46, 0x61dc60, 'array_cleared_61da30', [])],
+                0x6e1e70: [(0x6e2251, 0x6e22f2, 'texts_listed_6e1e70', ['edi', 'ebp'])]}
+TITLED_HAND_NAMES = ['texts_listed_9a0b90', 'array_cleared_61da30', 'texts_listed_6e1e70']
 # (the arrays of counted texts the hand-written stretches use in children: (the window's member holding the child, the
 # array's place in it, elements), for the test)
-TITLED_HAND_ARRAYS = {0x9a0b90: [(0x114, 0x2cc, 8)]}   # (their numbers, as titled.cpp's titled_hand switch has them)
+TITLED_HAND_ARRAYS = {0x9a0b90: [(0x114, 0x2cc, 8)], 0x6e1e70: [(0x11c, 0x2cc, 8)]}   # (their numbers, as titled.cpp's titled_hand switch has them)
 
 
 def parse(a, n):

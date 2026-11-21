@@ -5482,7 +5482,7 @@ address,size,name,callers,status
 0x61d310,837,,2,documented
 0x61d680,183,,1,documented
 0x61d7f0,574,,1,documented
-0x61da30,595,,1,documented
+0x61da30,595,Window::Titled,1,rewritten
 0x61dca0,87,,1,documented
 0x61dd20,30,DeletingDestructor,2,rewritten
 0x61dd40,144,MEMBER_DTOR,1,rewritten
@@ -7630,7 +7630,7 @@ address,size,name,callers,status
 0x6e1b30,607,,0,documented
 0x6e1da0,151,WideText::CopyOf(this),2,rewritten
 0x6e1e40,36,,2,documented
-0x6e1e70,1404,,1,documented
+0x6e1e70,1404,Window::Titled,1,rewritten
 0x6e23f0,368,ObjectiveCondition::Name,1,rewritten
 0x6e2560,748,,1,documented
 0x6e2850,106,Factory::IntoField,1,rewritten

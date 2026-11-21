@@ -109,9 +109,42 @@ static void texts_listed_9a0b90(uint8_t *self, const uint32_t *args) {
         text_let_go_titled(text);
     }
 }
+// 0x61DA30: every entry of the array at +0xE4 (its count at +0xE8, read again each time) set to 0.
+static void array_cleared_61da30(uint8_t *self, const uint32_t *args) {
+    for (int32_t i = 0; i < *(volatile int32_t *)(self + 0xe8); i++)
+        (*(uint32_t *volatile *)(self + 0xe4))[i] = 0;
+}
+// 0x6E1E70: for each of the count given, the text at that index of the source at +0x144 taken into a local (0x6E1E40
+// gives back where it put it); the list given (a child's list part) has its text array (+0x1C8) at the index replaced
+// by it unless the same (the old let go, checked for none; the new one's count raised); 0x6A0560 run on the list; the
+// local text let go.
+static void texts_listed_6e1e70(uint8_t *self, const uint32_t *args) {
+    uint8_t *const list = (uint8_t *)(uintptr_t)args[0];
+    const int32_t count = (int32_t)args[1];
+    for (int32_t i = 0; i < count; i++) {
+        uint32_t *text;
+        uint32_t *const *const got = ((uint32_t **(__thiscall *)(void *, uint32_t **, int32_t))0x6e1e40)(
+            *(void *volatile *)(self + 0x144), &text, i);
+        uint32_t *volatile *const slot = (uint32_t * volatile *)(*(uint8_t *volatile *)(list + 0x1c8)) + i;
+        if (*got != *slot) {
+            --**slot;
+            uint32_t *const old = *slot;
+            if (*(volatile uint32_t *)old == 0 && old) {
+                ((void(__cdecl *)(void *))0xbce010)((void *)(uintptr_t)old[3]);
+                ((void(__cdecl *)(void *))0xbce000)(old);
+            }
+            *slot = *got;
+            ++*(volatile uint32_t *)*got;
+        }
+        ((void(__thiscall *)(void *))0x6a0560)(list);
+        text_let_go_titled(text);
+    }
+}
 static void titled_hand(uint32_t number, uint8_t *self, const uint32_t *args) {
     switch (number) {
     case 0: texts_listed_9a0b90(self, args); break;
+    case 1: array_cleared_61da30(self, args); break;
+    case 2: texts_listed_6e1e70(self, args); break;
     default: break;
     }
 }
