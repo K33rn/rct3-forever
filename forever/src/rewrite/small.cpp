@@ -364,3 +364,169 @@ static uint32_t *__thiscall request_request(uint32_t *self, const uint8_t *owner
 }
 static const uint8_t request_request_original[] = {0x8b, 0x54, 0x24, 0x08, 0x8b, 0xc1, 0x89, 0x50};
 REWRITE("Request::Request", 0xc51870, request_request_original, &request_request, &g_requests);
+
+// ---- Record::Copy485690(this, from) (0x485690): a record copied, its shared part counted once more ----------------------
+// +0 the shared part (its count, its first value, raised), +0x10 to +0x58 copied as they are; given back.
+static volatile long g_record_copies;
+static uint32_t *__thiscall record_copy_485690(uint32_t *self, const uint32_t *from) {
+    g_record_copies++;
+    volatile uint32_t *const t = self;
+    t[0] = from[0];
+    (*(volatile uint32_t *)(uintptr_t)from[0])++;
+    for (int i = 4; i <= 0x58 / 4; i++) t[i] = from[i];
+    return self;
+}
+static const uint8_t record_copy_485690_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x11};
+REWRITE("Record::Copy485690", 0x485690, record_copy_485690_original, &record_copy_485690, &g_record_copies);
+
+// ---- Object3CC90::Object3CC90(this, owner, m) (0x58A6C0): the table 0xF3CC90, the owner, +8 cleared, a 4x4 matrix ----
+static volatile long g_object_3cc90s;
+static uint32_t *__thiscall object_3cc90(uint32_t *self, uint32_t owner, const uint32_t *m) {
+    g_object_3cc90s++;
+    volatile uint32_t *const t = self;
+    t[1] = owner;
+    t[0] = 0xf3cc90;
+    t[2] = 0;
+    for (int i = 0; i < 16; i++) t[4 + i] = m[i];
+    return self;
+}
+static const uint8_t object_3cc90_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x89, 0x48};
+REWRITE("Object3CC90::Object3CC90", 0x58a6c0, object_3cc90_original, &object_3cc90, &g_object_3cc90s);
+
+// ---- Object::SetMatrixAndMore(this, -, m, v) (0xBBD210): a 4x4 matrix into +0x10 and three more values into +0x50 -----
+static volatile long g_matrix_sets;
+static void __thiscall object_set_matrix_and_more(uint32_t *self, uint32_t, const uint32_t *m, const uint32_t *v) {
+    g_matrix_sets++;
+    volatile uint32_t *const t = self;
+    for (int i = 0; i < 16; i++) t[4 + i] = m[i];
+    t[0x50 / 4] = v[0], t[0x54 / 4] = v[1], t[0x58 / 4] = v[2];
+}
+static const uint8_t object_set_matrix_and_more_original[] = {0x8b, 0x44, 0x24, 0x08, 0x8b, 0x10, 0x89, 0x51};
+REWRITE("Object::SetMatrixAndMore", 0xbbd210, object_set_matrix_and_more_original, &object_set_matrix_and_more, &g_matrix_sets);
+
+// ---- Range::Clip(this, out, other) (0xC517A0): the overlap of two ranges {start, end} (signed) --------------------------
+// start = the larger start, end = the smaller end but not below start (an empty range at the start when they miss).
+static volatile long g_range_clips;
+static void __thiscall range_clip(const int32_t *self, int32_t *out, const int32_t *other) {
+    g_range_clips++;
+    const int32_t start = self[0] < other[0] ? other[0] : self[0];
+    const int32_t end0 = self[1] > other[1] ? other[1] : self[1];
+    const int32_t end = start < end0 ? end0 : start;
+    ((volatile int32_t *)out)[0] = start;
+    ((volatile int32_t *)out)[1] = end;
+}
+static const uint8_t range_clip_original[] = {0x83, 0xec, 0x10, 0x8b, 0x54, 0x24, 0x18, 0x8b};
+REWRITE("Range::Clip", 0xc517a0, range_clip_original, &range_clip, &g_range_clips);
+
+// ---- Footprint::RotateCell(add_x, add_y, x, y, x_out, y_out, turn, footprint) (0x8275D0): cell coordinates turned ------
+// Within the footprint (width +0x10, depth +0x14): turn 0 keeps (x, y), 1 gives (y, width - x - 1), 2 (width - x - 1,
+// depth - y - 1), 3 (depth - y - 1, x); then add_x and add_y are added to the outputs (for any other turn the outputs
+// are only added to).
+static volatile long g_footprint_turns;
+static void __fastcall footprint_rotate_cell(int32_t add_x, int32_t add_y, int32_t x, int32_t y, int32_t *x_out, int32_t *y_out, uint32_t turn,
+                                             const int32_t *footprint) {
+    g_footprint_turns++;
+    volatile int32_t *const ox = x_out, *const oy = y_out;
+    switch (turn) {
+    case 0: *ox = x, *oy = y; break;
+    case 1: *ox = y, *oy = footprint[4] - x - 1; break;
+    case 2: *ox = footprint[4] - x - 1, *oy = footprint[5] - y - 1; break;
+    case 3: *ox = footprint[5] - y - 1, *oy = x; break;
+    default: break;
+    }
+    *ox += add_x;
+    *oy += add_y;
+}
+static const uint8_t footprint_rotate_cell_original[] = {0x8b, 0x44, 0x24, 0x10, 0x53, 0x56, 0x8b, 0x74};
+REWRITE("Footprint::RotateCell", 0x8275d0, footprint_rotate_cell_original, &footprint_rotate_cell, &g_footprint_turns);
+
+// ---- Object::PartMatrix(this, out) (0xA637E0): the matrix of the object's part (+0xE0, its matrix at +0x60) copied out
+static volatile long g_part_matrices;
+static void __thiscall object_part_matrix(const uint8_t *self, uint32_t *out) {
+    g_part_matrices++;
+    const uint32_t *const m = (const uint32_t *)(*(const uint8_t *const *)(self + 0xe0) + 0x60);
+    for (int i = 0; i < 16; i++) ((volatile uint32_t *)out)[i] = m[i];
+}
+static const uint8_t object_part_matrix_original[] = {0x8b, 0x89, 0xe0, 0x00, 0x00, 0x00, 0x8b, 0x51};
+REWRITE("Object::PartMatrix", 0xa637e0, object_part_matrix_original, &object_part_matrix, &g_part_matrices);
+
+// ---- Window::PartFor(this, n) (0x619890): one of ten parts of a window by number, or null -------------------------------
+// The parts sit 8 bytes apart from +0x13C, but numbers 6, 7 and 8 take +0x174, +0x17C and +0x16C.
+static volatile long g_window_parts;
+static uint32_t __thiscall window_part_for(const uint8_t *self, uint32_t n) {
+    g_window_parts++;
+    static const uint16_t at[10] = {0x13c, 0x144, 0x14c, 0x154, 0x15c, 0x164, 0x174, 0x17c, 0x16c, 0x184};
+    return n <= 9 ? *(const uint32_t *)(self + at[n]) : 0;
+}
+static const uint8_t window_part_for_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0x09, 0x77};
+REWRITE("Window::PartFor", 0x619890, window_part_for_original, &window_part_for, &g_window_parts);
+
+// ---- Record::CopyCC6200(this, from) (0xCC6200): sixteen values copied into the record's part (+4) -----------------------
+static volatile long g_record_cc6200s;
+static void __thiscall record_copy_cc6200(const uint8_t *self, const uint32_t *from) {
+    g_record_cc6200s++;
+    volatile uint32_t *const to = *(volatile uint32_t *const *)(self + 4);
+    for (int i = 0; i < 16; i++) to[i] = from[i];
+}
+static const uint8_t record_copy_cc6200_original[] = {0x8b, 0x41, 0x04, 0x8b, 0x4c, 0x24, 0x04, 0x8b};
+REWRITE("Record::CopyCC6200", 0xcc6200, record_copy_cc6200_original, &record_copy_cc6200, &g_record_cc6200s);
+
+// ---- Heap::Swap(this, n) (0x49A740): entry n swapped with the last entry of a heap list ---------------------------------
+// The entries are 16 bytes in the shared table (*0x12F46DC's first value), each with its slot at +0xC. The list (+0x18)
+// holds entry numbers and the places (+0x14) are by slot; count at +0x10. The last entry's place and entry n's are
+// swapped, the last entry takes n's slot, the list at that slot gets the last entry, and the count drops by one.
+static volatile long g_heap_swaps;
+static void __thiscall heap_swap(uint8_t *self, uint32_t n) {
+    g_heap_swaps++;
+    uint8_t *const base = **(uint8_t *const *const *)0x12f46dc;
+    volatile uint32_t *const count = (volatile uint32_t *)(self + 0x10);
+    const uint32_t last = (*(volatile uint32_t *const *)(self + 0x18))[*count - 1];
+    volatile uint32_t *const entry_n = (volatile uint32_t *)(base + n * 16), *const entry_last = (volatile uint32_t *)(base + last * 16);
+    volatile uint32_t *const places = *(volatile uint32_t *const *)(self + 0x14);
+    volatile uint32_t *const at_n = &places[entry_n[3]];
+    const uint32_t saved = *at_n;
+    *at_n = places[entry_last[3]];
+    (*(volatile uint32_t *const *)(self + 0x14))[entry_last[3]] = saved;
+    entry_last[3] = entry_n[3];
+    (*(volatile uint32_t *const *)(self + 0x18))[entry_n[3]] = last;
+    *count = *count - 1;
+}
+static const uint8_t heap_swap_original[] = {0xa1, 0xdc, 0x46, 0x2f, 0x01, 0x8b, 0x51, 0x10};
+REWRITE("Heap::Swap", 0x49a740, heap_swap_original, &heap_swap, &g_heap_swaps);
+
+// ---- ResourceRefFA57D0 / ResourceRefFA5798 constructors (0xBEBEE0, 0xBEB9A0): a reference joining its owner's list -----
+// (this, owner, b, c, d, e, kind): +0 the table, +4 the word 1, +6 kind, +8 d, +0xC e, +0x10 c, +0x14 owner, +0x18 and
+// +0x20 cleared, +0x1C b, +0x2C itself; its link (+0x24: next, previous) put first in the list whose head the owner holds
+// at +0x244 (or +0x214).
+static inline uint32_t *resource_ref_construct(uint32_t *self, uint32_t table, uint32_t list_at, uint8_t *owner, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
+                                               uint16_t kind) {
+    volatile uint32_t *const t = self;
+    ((volatile uint16_t *)self)[3] = kind;
+    t[2] = d, t[3] = e;
+    t[5] = (uint32_t)(uintptr_t)owner;
+    t[4] = c;
+    t[7] = b;
+    ((volatile uint16_t *)self)[2] = 1;
+    t[0] = table;
+    t[6] = 0, t[8] = 0;
+    t[11] = (uint32_t)(uintptr_t)self;
+    volatile uint32_t *const list = *(volatile uint32_t *const *)((uint8_t *)(uintptr_t)t[5] + list_at);
+    volatile uint32_t *const link = t + 9;
+    link[0] = list[0];
+    ((volatile uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)link;
+    link[1] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)link;
+    return self;
+}
+static volatile long g_resource_refs;
+static uint32_t *__thiscall resource_ref_fa57d0(uint32_t *self, uint8_t *owner, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t kind) {
+    g_resource_refs++;
+    return resource_ref_construct(self, 0xfa57d0, 0x244, owner, b, c, d, e, (uint16_t)kind);
+}
+static uint32_t *__thiscall resource_ref_fa5798(uint32_t *self, uint8_t *owner, uint32_t b, uint32_t c, uint32_t d, uint32_t e, uint32_t kind) {
+    g_resource_refs++;
+    return resource_ref_construct(self, 0xfa5798, 0x214, owner, b, c, d, e, (uint16_t)kind);
+}
+static const uint8_t resource_ref_original[] = {0x8b, 0x54, 0x24, 0x10, 0x8b, 0xc1, 0x66, 0x8b};
+REWRITE("ResourceRefFA57D0::ResourceRefFA57D0", 0xbebee0, resource_ref_original, &resource_ref_fa57d0, &g_resource_refs);
+REWRITE("ResourceRefFA5798::ResourceRefFA5798", 0xbeb9a0, resource_ref_original, &resource_ref_fa5798, &g_resource_refs);

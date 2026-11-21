@@ -1780,3 +1780,486 @@ static void __thiscall window_arc(const uint8_t *self, float *out, float angle, 
 }
 static const uint8_t window_arc_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x18, 0x8b};
 REWRITE("Window::ArcA45670", 0xa45670, window_arc_original, &window_arc, &g_window_arcs);
+
+// A linear fade kept within 0 and 1 as the game does it: below 0 (ordered) gives 0, above 1 (ordered) gives 1, anything
+// else (a NaN too) itself, unrounded
+static inline long double fade_kept(long double v) {
+    if (v < (long double)*(const float *)0xf264e0) return *(const float *)0xf264e0;
+    if (v > (long double)*(const float *)0xf264dc) return *(const float *)0xf264dc;
+    return v;
+}
+
+// ---- Sound::DistanceFade(this) (0x47BD90): how loud a sound is from its distance to the listener ----------------------
+// The sound's place (its voice, +0xC, at +0x60) less the listener's (0x10F4620): d = sqrt((z z + y y) + x x); 1 - (d -
+// near) / (far - near) (+0x80, +0x84) kept within 0 and 1, given back unrounded on the FPU.
+static volatile long g_distance_fades;
+static long double __thiscall sound_distance_fade(const uint8_t *self) {
+    g_distance_fades++;
+    const float *const v = (const float *)(*(const uint8_t *const *)(self + 0xc) + 0x60), *const listener = (const float *)0x10f4620;
+    const long double x = (long double)v[0] - listener[0], y = (long double)v[1] - listener[1], z = (long double)v[2] - listener[2];
+    const long double d = x87_sqrt((z * z + y * y) + x * x);
+    const float inner = v[0x20 / 4], outer = v[0x24 / 4];
+    return fade_kept((long double)*(const float *)0xf264dc - (d - inner) / ((long double)outer - inner));
+}
+static const uint8_t sound_distance_fade_original[] = {0x8b, 0x41, 0x0c, 0xd9, 0x40, 0x60, 0x83, 0xc0};
+REWRITE("Sound::DistanceFade", 0x47bd90, sound_distance_fade_original, &sound_distance_fade, &g_distance_fades);
+
+// ---- Light::FadeAlpha(this, out, x, y) (0x959F30): an alpha for a point from its distance to a light ------------------
+// d = sqrt(dy dy + dx dx) from the light's centre (+0x3C, +0x40); (1 - (d - near) / (far - near)) times the strength
+// (+0x38), kept within 0 and 1, times 255 (fistp), in the top byte of *out (the rest 0).
+static volatile long g_light_fades;
+static void __thiscall light_fade_alpha(const uint8_t *self, uint32_t *out, float x, float y) {
+    g_light_fades++;
+    const float *const f = (const float *)self;
+    const long double dx = (long double)x - f[0x3c / 4], dy = (long double)y - f[0x40 / 4];
+    const long double d = x87_sqrt(dy * dy + dx * dx);
+    const long double v = fade_kept(((long double)*(const float *)0xf264dc - (d - f[0x44 / 4]) / ((long double)f[0x48 / 4] - f[0x44 / 4])) * f[0x38 / 4]);
+    *(volatile uint32_t *)out = (uint32_t)x87_whole((long double)*(const float *)0xf264c0 * v) << 24;
+}
+static const uint8_t light_fade_alpha_original[] = {0xd9, 0x44, 0x24, 0x08, 0x83, 0xec, 0x08, 0xd8};
+REWRITE("Light::FadeAlpha", 0x959f30, light_fade_alpha_original, &light_fade_alpha, &g_light_fades);
+
+// ---- Slider::SetValue(this, fraction) (0xCA6F90): the bound value (*(+4)) from a fraction -----------------------------
+// v = (max - min) fraction + min (+0xC, +8; rounded), kept at least min and at most max (fcomi / fcmov: a NaN gives min),
+// then rounded down to whole steps (+0x10): (v / step rounded down) step.
+static volatile long g_slider_sets;
+static void __thiscall slider_set_value(const uint8_t *self, float fraction) {
+    g_slider_sets++;
+    const float *const f = (const float *)self;
+    const volatile float v = (float)(((long double)f[3] - f[2]) * fraction + f[2]);
+    const volatile float t = (float)x87_greater(x87_load(&f[2]), x87_load((const float *)&v));
+    const volatile float u = (float)x87_lesser(x87_load(&f[3]), x87_load((const float *)&t));
+    const volatile float q = (float)((long double)u / f[4]);
+    const long double whole = x87_round(q);
+    const volatile float down = (float)(q < whole ? whole - 1.0L : whole);
+    **(volatile float *const *)(self + 4) = (float)((long double)down * f[4]);
+}
+static const uint8_t slider_set_value_original[] = {0x83, 0xec, 0x08, 0xd9, 0x41, 0x0c, 0x8b, 0x41};
+REWRITE("Slider::SetValue", 0xca6f90, slider_set_value_original, &slider_set_value, &g_slider_sets);
+
+// ---- Matrix::Copy3x4(from, to) (0xB1F750): the first twelve values of a matrix copied ---------------------------------
+// Each row's first two go through the FPU (a signalling NaN comes out quiet), the other two are copied as they are.
+static volatile long g_matrix_copies;
+static void __fastcall matrix_copy3x4(const uint32_t *from, uint32_t *to) {
+    g_matrix_copies++;
+    for (int row = 0; row < 3; row++) {
+        const uint32_t *const r = from + 4 * row;
+        const long double a = x87_load((const float *)&r[0]), b = x87_load((const float *)&r[1]);
+        const uint32_t c = r[2], d = r[3];
+        ((volatile float *)to)[4 * row] = (float)a;
+        ((volatile float *)to)[4 * row + 1] = (float)b;
+        ((volatile uint32_t *)to)[4 * row + 2] = c;
+        ((volatile uint32_t *)to)[4 * row + 3] = d;
+    }
+}
+static const uint8_t matrix_copy3x4_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Matrix::Copy3x4", 0xb1f750, matrix_copy3x4_original, &matrix_copy3x4, &g_matrix_copies);
+
+// log10 as the game takes it: fldlg2, then fyl2x
+static inline long double x87_log10(long double v) {
+    __asm__("fldlg2\n\tfxch %%st(1)\n\tfyl2x" : "+t"(v));
+    return v;
+}
+
+// ---- Curve::LogBlend(a, b, x) (0xCE4920): a value between two points' values at x, eased on a log scale ---------------
+// Points {value, position}. r = (x - the smaller position (b's unless a's is smaller)) 9 / |b.pos - a.pos|. When a's
+// position is the smaller: -log10(1 - r / 10); otherwise 1 - log10(r + 1); either times (b.value - a.value) plus
+// a.value, given back unrounded on the FPU.
+static volatile long g_log_blends;
+static long double __fastcall curve_log_blend(const float *a, const float *b, float x) {
+    g_log_blends++;
+    const bool a_first = (long double)a[1] < (long double)b[1];
+    const long double low = a_first ? a[1] : b[1];
+    const long double r = (((long double)x - low) * *(const float *)0xf27848) / x87_abs((long double)b[1] - a[1]);
+    const long double one = *(const float *)0xf264dc;
+    long double eased;
+    if (a_first)
+        eased = -x87_log10(one - r * *(const float *)0xf270b0);
+    else
+        eased = one - x87_log10(r + one);
+    return eased * ((long double)b[0] - a[0]) + a[0];
+}
+static const uint8_t curve_log_blend_original[] = {0xd9, 0x41, 0x04, 0xd8, 0x5a, 0x04, 0xdf, 0xe0};
+REWRITE("Curve::LogBlend", 0xce4920, curve_log_blend_original, &curve_log_blend, &g_log_blends);
+
+// ---- Columns::Hit(this, n, p) (0x884890): whether a point falls in column n of a list -----------------------------------
+// v = (p.x - 4) / ((+0x84 - +0x7C) - 8) times the scale (+0xDC), w = scale / ((+0x84 - +0x7C) - 8) times 3: 1 when
+// v - w <= column n (the floats at +0xFC) <= v + w, else (or for a NaN) 0.
+static volatile long g_column_hits;
+static uint32_t __thiscall columns_hit(const uint8_t *self, int32_t n, const float *p) {
+    g_column_hits++;
+    const float *const f = (const float *)self;
+    const long double span = ((long double)f[0x84 / 4] - f[0x7c / 4]) - *(const float *)0xf270e8;
+    const long double v = ((long double)p[0] - *(const float *)0xf793c8) / span * f[0xdc / 4];
+    const long double w = (long double)f[0xdc / 4] / (((long double)f[0x84 / 4] - f[0x7c / 4]) - *(const float *)0xf270e8) * *(const float *)0xf793c4;
+    const long double column = (*(const float *const *)(self + 0xfc))[n];
+    return v - w <= column && column <= w + v;
+}
+static const uint8_t columns_hit_original[] = {0x8b, 0x44, 0x24, 0x08, 0xd9, 0x00, 0x8b, 0x54};
+REWRITE("Columns::Hit", 0x884890, columns_hit_original, &columns_hit, &g_column_hits);
+
+// ---- Vector::NormaliseFast(v) (0x94CA00): a vector made one long with the fast inverse square root -----------------------
+// q = (x x + y y) + z z (rounded); nothing when q is at most the game's small value (0xF3312C) or a NaN; else
+// y0 = the float with bits 0x5F3759DF - (q's bits >> 1), r = (1.5 - y0 y0 q 0.5) y0 (one Newton step, unrounded), and
+// each part times r.
+static volatile long g_fast_normals;
+static void __thiscall vector_normalise_fast(float *v) {
+    g_fast_normals++;
+    const volatile float q = (float)(((long double)v[0] * v[0] + (long double)v[1] * v[1]) + (long double)v[2] * v[2]);
+    if (!((long double)q > (long double)*(const float *)0xf3312c))
+        return;
+    const uint32_t bits = 0x5f3759df - (uint32_t)(*(const volatile int32_t *)&q >> 1);
+    const volatile float y0 = *(const float *)&bits;
+    const long double r = ((long double)*(const float *)0xf26648 - (long double)y0 * y0 * q * *(const float *)0xf2651c) * y0;
+    volatile float *const o = v;
+    o[0] = (float)(r * o[0]);
+    o[1] = (float)(r * o[1]);
+    o[2] = (float)(r * o[2]);
+}
+static const uint8_t vector_normalise_fast_original[] = {0x83, 0xec, 0x08, 0xd9, 0x41, 0x08, 0xd9, 0x41};
+REWRITE("Vector::NormaliseFast", 0x94ca00, vector_normalise_fast_original, &vector_normalise_fast, &g_fast_normals);
+
+// ---- Ease::Out(t, total) (0x5D3970): a time eased over a total ---------------------------------------------------------
+// A total under 2 gives t back. Within the last 2 (total - 2 < t): ((total - 1) - (total - t)^2 / 4) / (total - 1)
+// total; otherwise t / (total - 1) total; unrounded on the FPU.
+static volatile long g_eases;
+static long double __stdcall ease_out(float t, float total) {
+    g_eases++;
+    const long double two = *(const float *)0xf2705c, one = *(const float *)0xf264dc;
+    if ((long double)total < two)
+        return t;
+    if ((long double)total - two < (long double)t) {
+        const long double a = (long double)total - t;
+        return (((long double)total - one) - a * a * *(const float *)0xf270b8) / ((long double)total - one) * total;
+    }
+    return (long double)t / ((long double)total - one) * total;
+}
+static const uint8_t ease_out_original[] = {0xd9, 0x44, 0x24, 0x08, 0xd8, 0x1d, 0x5c, 0x70};
+REWRITE("Ease::Out", 0x5d3970, ease_out_original, &ease_out, &g_eases);
+
+// ---- Colour::FromARGB(out, colour) (0x454850 and 0x435A40, the same code): 0xAARRGGBB as red, green, blue, alpha ------
+// Each byte times the game's 1/255 (0xF270F0); gives out back.
+static volatile long g_colour_unpacks;
+static float *__thiscall colour_from_argb(float *out, int32_t colour) {
+    g_colour_unpacks++;
+    const long double k = *(const float *)0xf270f0;
+    out[0] = (float)((long double)((colour >> 16) & 0xff) * k);
+    out[1] = (float)((long double)((colour >> 8) & 0xff) * k);
+    out[2] = (float)((long double)(colour & 0xff) * k);
+    out[3] = (float)((long double)((colour >> 24) & 0xff) * k);
+    return out;
+}
+static const uint8_t colour_from_argb_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0xc1, 0x8b, 0xca};
+REWRITE("Colour::FromARGB", 0x454850, colour_from_argb_original, &colour_from_argb, &g_colour_unpacks);
+REWRITE("Colour::FromARGB", 0x435a40, colour_from_argb_original, &colour_from_argb, &g_colour_unpacks);
+
+// ---- Segment::Middle2(this, out) (0x5BCE60): the point halfway between the first points of the parts at +0x2C and +0x28
+// (each part's +4); the x sum rounded first, y and z not ----------------------------------------------------------------
+static void __thiscall segment_middle2(const uint8_t *self, float *out) {
+    g_segment_middles++;
+    const float *const a = *(const float *const *)(*(const uint8_t *const *)(self + 0x2c) + 4);
+    const float *const b = *(const float *const *)(*(const uint8_t *const *)(self + 0x28) + 4);
+    const long double half = *(const float *)0xf2651c;
+    const volatile float sx = (float)((long double)b[0] + a[0]);
+    const long double sy = (long double)b[1] + a[1], sz = (long double)b[2] + a[2];
+    out[0] = (float)((long double)sx * half);
+    out[1] = (float)(sy * half);
+    out[2] = (float)(sz * half);
+}
+static const uint8_t segment_middle2_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Segment::Middle2", 0x5bce60, segment_middle2_original, &segment_middle2, &g_segment_middles);
+
+// ---- Colour::Blend(this, t, other) (0x5BC0B0): four whole numbers blended toward another four by t ----------------------
+// Each becomes this (1 - t) + other t, rounded by fistp (low 32 bits).
+static volatile long g_colour_blends;
+static void __thiscall colour_blend(int32_t *self, float t, const int32_t *other) {
+    g_colour_blends++;
+    const long double s = (long double)*(const float *)0xf264dc - t;
+    for (int i = 0; i < 4; i++) self[i] = (int32_t)(uint32_t)x87_whole((long double)self[i] * s + (long double)other[i] * t);
+}
+static const uint8_t colour_blend_original[] = {0x83, 0xec, 0x08, 0xd9, 0x05, 0xdc, 0x64, 0xf2};
+REWRITE("Colour::Blend", 0x5bc0b0, colour_blend_original, &colour_blend, &g_colour_blends);
+
+// ---- Curve::LinearBlend(a, b, x) (0xCE47B0): a value between two points' values at x, in a straight line --------------
+// Points {position, value}. f = (x - a.pos) / (b.pos - a.pos) (rounded), or 1 - f when a.value is not below b.value;
+// gives |b.value - a.value| f + the smaller value (fcomi / fcmov), unrounded on the FPU.
+static volatile long g_linear_blends;
+static long double __fastcall curve_linear_blend(const float *a, const float *b, float x) {
+    g_linear_blends++;
+    const long double f = ((long double)x - a[0]) / ((long double)b[0] - a[0]);
+    const volatile float g = (long double)a[1] < (long double)b[1] ? (float)f : (float)((long double)*(const float *)0xf264dc - f);
+    const volatile float low = (float)x87_lesser(x87_load(&a[1]), x87_load(&b[1]));
+    return x87_abs((long double)b[1] - a[1]) * g + low;
+}
+static const uint8_t curve_linear_blend_original[] = {0xd9, 0x44, 0x24, 0x04, 0x83, 0xec, 0x14, 0xd8};
+REWRITE("Curve::LinearBlend", 0xce47b0, curve_linear_blend_original, &curve_linear_blend, &g_linear_blends);
+
+// ---- Average::AddCell(this, cell) (0x7C32F0): a cell's place (bytes +0x88, +0x89) added to a running average ----------
+// With n = count (+0x1D0) + 1 and i = 1 / n (unrounded): each average (+0x1D4, +0x1D8) becomes value i + old count i
+// average; the count becomes n.
+static volatile long g_average_adds;
+static void __thiscall average_add_cell(uint8_t *self, const uint8_t *cell) {
+    g_average_adds++;
+    volatile float *const f = (volatile float *)self;
+    const long double n = (long double)f[0x1d0 / 4] + *(const float *)0xf264dc;
+    const long double i = (long double)*(const float *)0xf264dc / n;
+    const long double kept = i * f[0x1d0 / 4];
+    f[0x1d0 / 4] = (float)n;
+    f[0x1d4 / 4] = (float)((long double)cell[0x88] * i + kept * f[0x1d4 / 4]);
+    f[0x1d8 / 4] = (float)((long double)cell[0x89] * i + kept * f[0x1d8 / 4]);
+}
+static const uint8_t average_add_cell_original[] = {0xd9, 0x81, 0xd0, 0x01, 0x00, 0x00, 0x8b, 0x44};
+REWRITE("Average::AddCell", 0x7c32f0, average_add_cell_original, &average_add_cell, &g_average_adds);
+
+// ---- IntSlider::SetValue(this, fraction) (0xCA77B0): the bound whole number (*(+4)) from a fraction ---------------------
+// v = (max - min, taken unsigned: 2^32 added when it is negative) fraction (fistp, low 32 bits) + min (+8, +0xC); kept
+// at least min and at most max, compared unsigned.
+static volatile long g_int_slider_sets;
+static void __thiscall int_slider_set_value(const uint8_t *self, float fraction) {
+    g_int_slider_sets++;
+    const uint32_t min = *(const uint32_t *)(self + 8), max = *(const uint32_t *)(self + 0xc);
+    const int32_t range = (int32_t)(max - min);
+    long double span = (long double)range;
+    if (range < 0) span += *(const float *)0xf285f8;
+    const uint32_t v = (uint32_t)x87_whole(span * fraction) + min;
+    const uint32_t t = min < v ? v : min;
+    **(volatile uint32_t *const *)(self + 4) = max > t ? t : max;
+}
+static const uint8_t int_slider_set_value_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x41, 0x08, 0x8b, 0x51};
+REWRITE("IntSlider::SetValue", 0xca77b0, int_slider_set_value_original, &int_slider_set_value, &g_int_slider_sets);
+
+// ---- IntSlider::SetValue2(this, fraction) (0xCA7620): the same, signed ------------------------------------------------
+// v = (max - min) fraction + min (fistp, low 32 bits), kept at least min and at most max, compared signed.
+static volatile long g_int_slider_sets2;
+static void __thiscall int_slider_set_value2(const uint8_t *self, float fraction) {
+    g_int_slider_sets2++;
+    const int32_t min = *(const int32_t *)(self + 8), max = *(const int32_t *)(self + 0xc);
+    const int32_t v = (int32_t)(uint32_t)x87_whole((long double)(int32_t)((uint32_t)max - (uint32_t)min) * fraction + (long double)min);
+    const int32_t t = min < v ? v : min;
+    **(volatile int32_t *const *)(self + 4) = max > t ? t : max;
+}
+static const uint8_t int_slider_set_value2_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x41, 0x08, 0x8b, 0x51};
+REWRITE("IntSlider::SetValue2", 0xca7620, int_slider_set_value2_original, &int_slider_set_value2, &g_int_slider_sets2);
+
+// A float rounded down as the game does it (frndint, then one less when that went up)
+static inline float x87_floor_float(float q) {
+    const long double whole = x87_round(q);
+    const volatile float down = (float)((long double)q < whole ? whole - 1.0L : whole);
+    return down;
+}
+
+// ---- Vector2::SnapToGrid(out, p, spacing) (0x617290): a 2D point snapped down to a grid --------------------------------
+// i = 1 / spacing (rounded); each coordinate becomes floor(i value (rounded)) spacing; y is worked out first.
+static void __fastcall vector2_snap_to_grid(float *out, const float *p, float spacing) {
+    g_grid_snaps++;
+    const volatile float inv = (float)((long double)*(const float *)0xf264dc / spacing);
+    const volatile float qy = (float)((long double)inv * p[1]);
+    const float dy = x87_floor_float(qy);
+    const volatile float qx = (float)((long double)inv * p[0]);
+    const float dx = x87_floor_float(qx);
+    ((volatile float *)out)[0] = (float)((long double)dx * spacing);
+    ((volatile float *)out)[1] = (float)((long double)dy * spacing);
+}
+static const uint8_t vector2_snap_to_grid_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x05, 0xdc, 0x64, 0xf2};
+REWRITE("Vector2::SnapToGrid", 0x617290, vector2_snap_to_grid_original, &vector2_snap_to_grid, &g_grid_snaps);
+
+// ---- Vector::LerpPoint(out, a, b, t) (0x4259F0): the point between two points by t, with 1 as its fourth value ---------
+// Each part (1 - t) a + t b (1 - t unrounded); all three worked out before out is written.
+static volatile long g_lerp_points;
+static void __fastcall vector_lerp_point(float *out, const float *a, const float *b, float t) {
+    g_lerp_points++;
+    const long double s = (long double)*(const float *)0xf264dc - t;
+    const volatile float x = (float)(s * a[0] + (long double)t * b[0]);
+    const volatile float y = (float)(s * a[1] + (long double)t * b[1]);
+    const volatile float z = (float)(s * a[2] + (long double)t * b[2]);
+    volatile uint32_t *const o = (volatile uint32_t *)out;
+    o[0] = *(const volatile uint32_t *)&x;
+    o[1] = *(const volatile uint32_t *)&y;
+    o[2] = *(const volatile uint32_t *)&z;
+    o[3] = 0x3f800000;
+}
+static const uint8_t vector_lerp_point_original[] = {0x83, 0xec, 0x10, 0xd9, 0x05, 0xdc, 0x64, 0xf2};
+REWRITE("Vector::LerpPoint", 0x4259f0, vector_lerp_point_original, &vector_lerp_point, &g_lerp_points);
+
+// ---- Sound::SetLevels(this, a, b) (0x47DD10): two levels (+0x5C, +0x60), each kept between 0 and 1 ---------------------
+// fcomi / fcmov: a NaN level stays itself (quiet).
+static volatile long g_sound_levels;
+static void __thiscall sound_set_levels(uint8_t *self, float a, float b) {
+    g_sound_levels++;
+    *(volatile float *)(self + 0x5c) = (float)x87_lesser(x87_greater(x87_load(&a), 0.0L), 1.0L);
+    *(volatile float *)(self + 0x60) = (float)x87_lesser(x87_greater(x87_load(&b), 0.0L), 1.0L);
+}
+static const uint8_t sound_set_levels_original[] = {0x83, 0xec, 0x0c, 0xc7, 0x04, 0x24, 0x00, 0x00};
+REWRITE("Sound::SetLevels", 0x47dd10, sound_set_levels_original, &sound_set_levels, &g_sound_levels);
+
+// ---- Matrix::ScaleOffset2D(this, origin, scale) (0x4668D0): a matrix scaling x and y and moving by -origin scale --------
+// All cleared; +0 and +0x24 the scales as they are; +0x30, +0x34 -(origin scale); +0x3C 1.
+static volatile long g_scale_offsets;
+static void __fastcall matrix_scale_offset_2d(uint32_t *m, const float *origin, const float *scale) {
+    g_scale_offsets++;
+    volatile uint32_t *const t = m;
+    for (int i = 0; i < 16; i++) t[i] = 0;
+    t[0] = *(const uint32_t *)&scale[0];
+    t[9] = *(const uint32_t *)&scale[1];
+    ((volatile float *)m)[12] = (float)-((long double)origin[0] * scale[0]);
+    t[15] = 0x3f800000;
+    ((volatile float *)m)[13] = (float)-((long double)origin[1] * scale[1]);
+}
+static const uint8_t matrix_scale_offset_2d_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Matrix::ScaleOffset2D", 0x4668d0, matrix_scale_offset_2d_original, &matrix_scale_offset_2d, &g_scale_offsets);
+
+// ---- VerletPoint::SetVelocity(this, v) (0xA6B2A0): the previous position (+0x20) set to the position less v dt ---------
+// The position (+0x10) is copied first; then each part less v dt (the time step 0xF8F954; x's product rounded, y's and
+// z's not).
+static volatile long g_verlet_velocity_sets;
+static void __thiscall verlet_point_set_velocity(uint8_t *self, const float *v) {
+    g_verlet_velocity_sets++;
+    volatile uint32_t *const bits = (volatile uint32_t *)self;
+    bits[8] = bits[4], bits[9] = bits[5], bits[10] = bits[6];
+    const long double dt = *(const float *)0xf8f954;
+    const volatile float px = (float)((long double)v[0] * dt);
+    const long double py = (long double)v[1] * dt, pz = (long double)v[2] * dt;
+    volatile float *const prev = (volatile float *)(self + 0x20);
+    prev[0] = (float)((long double)prev[0] - px);
+    prev[1] = (float)((long double)prev[1] - py);
+    prev[2] = (float)((long double)prev[2] - pz);
+}
+static const uint8_t verlet_point_set_velocity_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("VerletPoint::SetVelocity", 0xa6b2a0, verlet_point_set_velocity_original, &verlet_point_set_velocity, &g_verlet_velocity_sets);
+
+// ---- Vector::TransformPointInPlace(p, m) (0x4BB400): a point times a 4x4 matrix in place, translation included --------
+// x = ((m4 y + m8 z) + x m0) + m12, y = ((m5 y + m1 x) + m9 z) + m13, z = ((m6 y + m2 x) + m10 z) + m14; written
+// after all three are worked out.
+static volatile long g_in_place_transforms;
+static void __fastcall vector_transform_point_in_place(float *p, const float *m) {
+    g_in_place_transforms++;
+    const long double x = p[0], y = p[1], z = p[2];
+    const long double nx = ((m[4] * y + m[8] * z) + x * m[0]) + m[12];
+    const long double ny = ((m[5] * y + m[1] * x) + m[9] * z) + m[13];
+    const long double nz = ((m[6] * y + m[2] * x) + m[10] * z) + m[14];
+    volatile float *const o = p;
+    o[2] = (float)nz;
+    o[0] = (float)nx;
+    o[1] = (float)ny;
+}
+static const uint8_t vector_transform_point_in_place_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::TransformPointInPlace", 0x4bb400, vector_transform_point_in_place_original, &vector_transform_point_in_place, &g_in_place_transforms);
+
+// ---- Vector::Lerp(out, a, b, t) (0xCE16B0, and Vector::Lerp2 0x466A60, the same code): a + (b - a) t -------------------
+// The x difference is rounded, the y and z ones not; the x and y products are rounded, z's not; written z, x, y.
+static volatile long g_lerps;
+static void __fastcall vector_lerp(float *out, const float *a, const float *b, float t) {
+    g_lerps++;
+    const volatile float dx = (float)((long double)b[0] - a[0]);
+    const long double dy = (long double)b[1] - a[1], dz = (long double)b[2] - a[2];
+    const volatile float px = (float)((long double)dx * t), py = (float)(dy * t);
+    const long double pz = dz * t;
+    const long double x = (long double)px + a[0], y = (long double)py + a[1], z = pz + a[2];
+    volatile float *const o = out;
+    o[2] = (float)z;
+    o[0] = (float)x;
+    o[1] = (float)y;
+}
+static const uint8_t vector_lerp_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::Lerp", 0xce16b0, vector_lerp_original, &vector_lerp, &g_lerps);
+REWRITE("Vector::Lerp2", 0x466a60, vector_lerp_original, &vector_lerp, &g_lerps);
+
+// ---- Vector::LerpMarked(out, a, b, t) (0xA67E40): a + (b - a) t, with out's fifth value set to all ones (a NaN) --------
+// The z difference is rounded, x and y not; the x and y products are rounded, z's not; written +0x10, z, x, y.
+static volatile long g_marked_lerps;
+static void __thiscall vector_lerp_marked(float *out, const float *a, const float *b, float t) {
+    g_marked_lerps++;
+    const long double dx = (long double)b[0] - a[0], dy = (long double)b[1] - a[1];
+    const volatile float dz = (float)((long double)b[2] - a[2]);
+    const volatile float px = (float)(dx * t), py = (float)(dy * t);
+    const long double pz = (long double)dz * t;
+    const long double x = (long double)px + a[0], y = (long double)py + a[1], z = pz + a[2];
+    volatile float *const o = out;
+    ((volatile uint32_t *)out)[4] = 0xffffffff;
+    o[2] = (float)z;
+    o[0] = (float)x;
+    o[1] = (float)y;
+}
+static const uint8_t vector_lerp_marked_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::LerpMarked", 0xa67e40, vector_lerp_marked_original, &vector_lerp_marked, &g_marked_lerps);
+
+// ---- VerletPoint::Interpolated(this, out) (0xA67EE0): between the previous (+0x20) and current (+0x10) positions --------
+// By the global fraction 0x13429E0: previous + (current - previous) f; the z difference rounded, x and y not; the x and
+// y products rounded, z's not.
+static volatile long g_verlet_interpolations;
+static void __thiscall verlet_point_interpolated(const uint8_t *self, float *out) {
+    g_verlet_interpolations++;
+    const float *const p = (const float *)self;
+    const long double f = *(const float *)0x13429e0;
+    const long double dx = (long double)p[4] - p[8], dy = (long double)p[5] - p[9];
+    const volatile float dz = (float)((long double)p[6] - p[10]);
+    const volatile float ax = (float)(f * dx), ay = (float)(f * dy);
+    const long double z = f * dz + p[10], y = (long double)ay + p[9], x = (long double)ax + p[8];
+    volatile float *const o = out;
+    o[0] = (float)x;
+    o[1] = (float)y;
+    o[2] = (float)z;
+}
+static const uint8_t verlet_point_interpolated_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("VerletPoint::Interpolated", 0xa67ee0, verlet_point_interpolated_original, &verlet_point_interpolated, &g_verlet_interpolations);
+
+// ---- Motion::DistanceAt(t, v0, v1, T) (0xA88680): the distance covered by whole time t ---------------------------------
+// Speeding steadily from v0 to v1 over T, then going on at v1: with s = the lesser of t and T (fcomi / fcmov),
+// (v1 - v0) s s / (T + T) + s v0, plus (t - T) v1 when t is past T; unrounded on the FPU.
+static volatile long g_motion_distances;
+static long double __stdcall motion_distance_at(int32_t t, float v0, float v1, float T) {
+    g_motion_distances++;
+    const volatile float tf = (float)t;
+    const volatile float s = (float)x87_lesser(tf, x87_load(&T));
+    long double d = ((long double)v1 - v0) * s * s / ((long double)T + T) + (long double)s * v0;
+    if ((long double)tf > (long double)T)
+        d = ((long double)tf - T) * v1 + d;
+    return d;
+}
+static const uint8_t motion_distance_at_original[] = {0x83, 0xec, 0x08, 0xdb, 0x44, 0x24, 0x0c, 0xd9};
+REWRITE("Motion::DistanceAt", 0xa88680, motion_distance_at_original, &motion_distance_at, &g_motion_distances);
+
+// ---- Terrain::CornerPosition(this, out, x, y, corner) (0x8C0100): the world position of a terrain cell's corner --------
+// Bytes x and y, a signed byte corner: out.x = (x + (corner & 1)) width (+0x14) + origin x (+0xC); out.y the height as
+// it is, the cell data (+0x24) at ((row length (byte +4) y + x) 6 + corner); out.z = (y + ((corner >> 1) & 1)) depth
+// (+0x18) + origin z (+0x10).
+static volatile long g_terrain_corners;
+static void __thiscall terrain_corner_position(const uint8_t *self, float *out, uint32_t x_arg, uint32_t y_arg, uint32_t corner_arg) {
+    g_terrain_corners++;
+    const int32_t corner = (int8_t)corner_arg, x = (uint8_t)x_arg, y = (uint8_t)y_arg;
+    const float *const f = (const float *)self;
+    volatile uint32_t *const o = (volatile uint32_t *)out;
+    ((volatile float *)out)[0] = (float)((long double)((corner & 1) + x) * f[0x14 / 4] + f[0xc / 4]);
+    o[1] = (*(const uint32_t *const *)(self + 0x24))[(uint32_t)(((int32_t)self[4] * y + x) * 6 + corner)];
+    ((volatile float *)out)[2] = (float)((long double)(((corner >> 1) & 1) + y) * f[0x18 / 4] + f[0x10 / 4]);
+}
+static const uint8_t terrain_corner_position_original[] = {0x0f, 0xbe, 0x44, 0x24, 0x10, 0x53, 0x0f, 0xb6};
+REWRITE("Terrain::CornerPosition", 0x8c0100, terrain_corner_position_original, &terrain_corner_position, &g_terrain_corners);
+
+// ---- Ease::In(t, total) (0x5D3900): a time eased over a total --------------------------------------------------------
+// A total under 2 gives t back. t under 2: t t / 4 / (total - 1) total; otherwise (t - 1) / (total - 1) total; unrounded.
+static long double __stdcall ease_in(float t, float total) {
+    g_eases++;
+    const long double two = *(const float *)0xf2705c, one = *(const float *)0xf264dc;
+    if ((long double)total < two)
+        return t;
+    if ((long double)t < two)
+        return (long double)t * t * *(const float *)0xf270b8 / ((long double)total - one) * total;
+    return ((long double)t - one) / ((long double)total - one) * total;
+}
+static const uint8_t ease_in_original[] = {0xd9, 0x44, 0x24, 0x08, 0xd8, 0x1d, 0x5c, 0x70};
+REWRITE("Ease::In", 0x5d3900, ease_in_original, &ease_in, &g_eases);
+
+// ---- Colour::Pack(this, c) (0x9E84E0): a colour of four values from 0 to 1 packed at +8 --------------------------------
+// Each times 255 (fistp, low 32 bits, not masked), joined alpha, red, green, blue: ((a << 8 | r) << 8 | g) << 8 | b.
+static volatile long g_colour_packs;
+static void __thiscall colour_pack(uint8_t *self, const float *c) {
+    g_colour_packs++;
+    const long double k = *(const float *)0xf264c0;
+    uint32_t v = (uint32_t)x87_whole(c[3] * k) << 8;
+    v = (v | (uint32_t)x87_whole(c[0] * k)) << 8;
+    v = (v | (uint32_t)x87_whole(c[1] * k)) << 8;
+    *(volatile uint32_t *)(self + 8) = v | (uint32_t)x87_whole(c[2] * k);
+}
+static const uint8_t colour_pack_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0xd9};
+REWRITE("Colour::Pack", 0x9e84e0, colour_pack_original, &colour_pack, &g_colour_packs);
