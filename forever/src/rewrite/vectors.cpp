@@ -400,3 +400,462 @@ static void __thiscall water_normal(uint8_t *self, const uint32_t *v) {
 }
 static const uint8_t water_normal_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Water::Normal8E6150", 0x8e6150, water_normal_original, &water_normal, &g_water_normals);
+
+// A float loaded onto the FPU as the game does it (fld: a signalling NaN comes back quiet), for the rewrites that only
+// move or compare floats (the compiler would copy them as they are)
+static inline long double x87_load(const float *p) {
+    long double v;
+    __asm__("flds %1" : "=t"(v) : "m"(*p));
+    return v;
+}
+// fcomi b, a then fcmovnbe a (the smaller, a NaN keeping b) / fcmovb a (the larger, a NaN taking a)
+static inline long double x87_lesser(long double a, long double b) { return b > a ? a : b; }
+static inline long double x87_greater(long double a, long double b) { return !(b >= a) ? a : b; }
+
+// ---- Rect::Union / Intersect (0xBE7690 / 0xBE7520) and UnionInto / IntersectInto (0xBE75E0 / 0xBE7470) ----------------
+// Rectangles {left, top, right, bottom}. Union takes the smaller left and top and the larger right and bottom of this
+// one and another (the second argument; the first is out), Intersect the other way round; the plain ones write the
+// answer into this one (each side stored before the next is read) and copy it to out, the Into ones write it into out
+// only.
+static volatile long g_rects;
+static void rect_combine(float *into, const float *self, const float *other, bool unite) {
+    for (int i = 0; i < 4; i++) {
+        const long double a = x87_load(&self[i]), b = x87_load(&other[i]);
+        *(volatile float *)&into[i] = (float)(unite == (i < 2) ? x87_lesser(a, b) : x87_greater(a, b));
+    }
+}
+static void __thiscall rect_union(float *self, uint32_t *out, const float *other) {
+    g_rects++;
+    rect_combine(self, self, other, true);
+    for (int i = 0; i < 4; i++) out[i] = ((volatile uint32_t *)self)[i];
+}
+static void __thiscall rect_intersect(float *self, uint32_t *out, const float *other) {
+    g_rects++;
+    rect_combine(self, self, other, false);
+    for (int i = 0; i < 4; i++) out[i] = ((volatile uint32_t *)self)[i];
+}
+static void __thiscall rect_union_into(const float *self, float *out, const float *other) {
+    g_rects++;
+    float r[4];
+    rect_combine(r, self, other, true);
+    for (int i = 0; i < 4; i++) ((volatile uint32_t *)out)[i] = ((volatile uint32_t *)r)[i];
+}
+static void __thiscall rect_intersect_into(const float *self, float *out, const float *other) {
+    g_rects++;
+    float r[4];
+    rect_combine(r, self, other, false);
+    for (int i = 0; i < 4; i++) ((volatile uint32_t *)out)[i] = ((volatile uint32_t *)r)[i];
+}
+static const uint8_t rect_union_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x10, 0x8b};
+static const uint8_t rect_union_into_original[] = {0x83, 0xec, 0x14, 0x8b, 0x44, 0x24, 0x1c, 0x8b};
+REWRITE("Rect::Union", 0xbe7690, rect_union_original, &rect_union, &g_rects);
+REWRITE("Rect::Intersect", 0xbe7520, rect_union_original, &rect_intersect, &g_rects);
+REWRITE("Rect::UnionInto", 0xbe75e0, rect_union_into_original, &rect_union_into, &g_rects);
+REWRITE("Rect::IntersectInto", 0xbe7470, rect_union_into_original, &rect_intersect_into, &g_rects);
+
+// ---- Matrix::Transpose / Transpose2 (0xC73730 / 0xC73680): a 4x4 matrix's transpose written into another ------------
+// Everything is read first. Seven of the entries go through the FPU on the way (out 9 to 15: a signalling NaN comes out
+// quiet), the rest are copied as they are.
+static volatile long g_matrix_transposes;
+static void __thiscall matrix_transpose(const uint32_t *in, uint32_t *out) {
+    g_matrix_transposes++;
+    uint32_t t[16];
+    long double f[16];
+    for (int i = 0; i < 16; i++) t[i] = in[(i & 3) * 4 + (i >> 2)];
+    for (int i = 9; i < 16; i++) f[i] = x87_load((const float *)&in[(i & 3) * 4 + (i >> 2)]);
+    for (int i = 0; i < 9; i++) ((volatile uint32_t *)out)[i] = t[i];
+    for (int i = 9; i < 16; i++) ((volatile float *)out)[i] = (float)f[i];
+}
+static const uint8_t matrix_transpose_original[] = {0x83, 0xec, 0x20, 0x8b, 0x41, 0x08, 0xd9, 0x41};
+REWRITE("Matrix::Transpose", 0xc73730, matrix_transpose_original, &matrix_transpose, &g_matrix_transposes);
+REWRITE("Matrix::Transpose2", 0xc73680, matrix_transpose_original, &matrix_transpose, &g_matrix_transposes);
+
+// ---- Matrix::From4x3(in, out) (0x856550): four rows of three made a 4x4 matrix, the last column 0, 0, 0, 1 ------------
+// The first row's three values go through the FPU (a signalling NaN comes out quiet); the rest are copied as they are.
+static volatile long g_matrix_expands;
+static void __thiscall matrix_from_4x3(const uint32_t *in, uint32_t *out) {
+    g_matrix_expands++;
+    uint32_t t[12];
+    for (int i = 0; i < 12; i++) t[i] = in[i];
+    const long double a = x87_load((const float *)&in[0]), b = x87_load((const float *)&in[1]), c = x87_load((const float *)&in[2]);
+    volatile uint32_t *const o = out;
+    ((volatile float *)o)[0] = (float)a, ((volatile float *)o)[1] = (float)b, ((volatile float *)o)[2] = (float)c;
+    for (int row = 1; row < 4; row++)
+        for (int k = 0; k < 3; k++) o[row * 4 + k] = t[row * 3 + k];
+    o[3] = 0, o[7] = 0, o[11] = 0, o[15] = 0x3f800000;
+}
+static const uint8_t matrix_from_4x3_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Matrix::From4x3", 0x856550, matrix_from_4x3_original, &matrix_from_4x3, &g_matrix_expands);
+
+// ---- Quaternion::ToMatrix(q, out) (0xB00C00): a rotation quaternion (x, y, z, w) as a matrix's rotation rows -----------
+// With x2 = x + x and so on: 2xx, 2yx and 2zw stay unrounded, the other products (2xz, 2xw, 2yy, 2yw, 2zy, 2zz) are
+// stored first; rows at 0, 4 and 8 (their fourth values left alone).
+static volatile long g_quaternion_matrices;
+static void __thiscall quaternion_to_matrix(const float *q, float *out) {
+    g_quaternion_matrices++;
+    const long double x = q[0], y = q[1], z = q[2], w = q[3], one = *(const float *)0xf264dc;
+    const long double x2 = x + x, y2 = y + y, z2 = z + z;
+    const long double xx = x2 * x;
+    const volatile float xz = (float)(x2 * z), xw = (float)(x2 * w);
+    const long double yx = y2 * x;
+    const volatile float yy = (float)(y2 * y), yw = (float)(y2 * w);
+    const volatile float zy = (float)(z2 * y), zz = (float)(z2 * z);
+    const long double zw = z2 * w;
+    out[0] = (float)((one - yy) - zz);
+    out[1] = (float)(zw + yx);
+    out[2] = (float)((long double)xz - yw);
+    out[4] = (float)(yx - zw);
+    out[5] = (float)(((one - xx) - zz));
+    out[6] = (float)((long double)zy + xw);
+    out[8] = (float)((long double)yw + xz);
+    out[9] = (float)((long double)zy - xw);
+    out[10] = (float)((one - xx) - yy);
+}
+static const uint8_t quaternion_to_matrix_original[] = {0x83, 0xec, 0x18, 0xd9, 0x01, 0x8b, 0x44, 0x24};
+REWRITE("Quaternion::ToMatrix", 0xb00c00, quaternion_to_matrix_original, &quaternion_to_matrix, &g_quaternion_matrices);
+
+// ---- CameraAngles::Clamp(this) (0xA61B90): the two tilts (+0x30, +0x34) kept within +-1.5677, the turn (+0x38) within
+// a whole turn ------------------------------------------------------------------------------------------------------------
+// Each tilt: the smaller of it and 1.5677 (a NaN kept), then the larger of that and -1.5677 (a NaN kept). The turn has
+// its whole turns taken off: t / (2 pi) (as a float) rounded down, times 2 pi, taken from t.
+static volatile long g_camera_clamps;
+static void __thiscall camera_angles_clamp(uint8_t *self) {
+    g_camera_clamps++;
+    static const uint32_t limit_bits = 0x3fc8a8ea, low_bits = 0xbfc8a8ea;
+    const long double limit = x87_load((const float *)&limit_bits), low = x87_load((const float *)&low_bits);
+    for (int k = 0; k < 2; k++) {
+        float *const a = (float *)(self + 0x30 + 4 * k);
+        const volatile float t = (float)x87_lesser(limit, x87_load(a));
+        *(volatile float *)a = (float)x87_greater(x87_load((const float *)&t), low);
+    }
+    float *const turn = (float *)(self + 0x38);
+    const volatile float turns = (float)((long double)*(volatile float *)turn * (long double)*(const float *)0xf36ee4);
+    const long double whole = x87_round(turns);
+    const volatile float down = (float)(turns < whole ? whole - 1.0L : whole);
+    *(volatile float *)turn = (float)((long double)*(volatile float *)turn - down * (long double)*(const float *)0xf268dc);
+}
+static const uint8_t camera_angles_clamp_original[] = {0x83, 0xec, 0x10, 0x8b, 0x41, 0x30, 0xc7, 0x04};
+REWRITE("CameraAngles::Clamp", 0xa61b90, camera_angles_clamp_original, &camera_angles_clamp, &g_camera_clamps);
+
+// ---- Vector::TransformPoint(out, p, m) (0x481360) and TransformPoint2(m, out, p) (0xBB6050): a point times a 4x4 ------
+// matrix with its translation: out[j] = ((m[8 + j] p2 + m[4 + j] p1) + m[j] p0) + m[12 + j], all read first.
+static volatile long g_point_transforms;
+static void transform_point(float *out, const float *p, const float *m) {
+    const long double p0 = p[0], p1 = p[1], p2 = p[2];
+    long double r[3];
+    for (int j = 0; j < 3; j++) r[j] = (((long double)m[8 + j] * p2 + (long double)m[4 + j] * p1) + (long double)m[j] * p0) + m[12 + j];
+    for (int j = 0; j < 3; j++) out[j] = (float)r[j];
+}
+static void __fastcall vector_transform_point(float *out, const float *p, const float *m) {
+    g_point_transforms++;
+    transform_point(out, p, m);
+}
+static void __thiscall vector_transform_point2(const float *m, float *out, const float *p) {
+    g_point_transforms++;
+    transform_point(out, p, m);
+}
+static const uint8_t vector_transform_point_original[] = {0x83, 0xec, 0x1c, 0xd9, 0x02, 0x56, 0x8b, 0x74};
+static const uint8_t vector_transform_point2_original[] = {0x83, 0xec, 0x1c, 0x8b, 0x44, 0x24, 0x24, 0xd9};
+REWRITE("Vector::TransformPoint", 0x481360, vector_transform_point_original, &vector_transform_point, &g_point_transforms);
+REWRITE("Vector::TransformPoint2", 0xbb6050, vector_transform_point2_original, &vector_transform_point2, &g_point_transforms);
+
+// ---- Quad::EdgeMiddles(quad, out0..out4) (0x727DE0): five points from a quad's corners (16 bytes apart) ----------------
+// With A = (x0 + x1) / 2 and B = (z0 + z2) / 2 (each rounded once) and the y's halved sums of two corners: out0 = (x0,
+// (y2 + y0) / 2, B), out1 = (x1, (y3 + y1) / 2, B), out2 = (A, (y1 + y0) / 2, z0), out3 = (A, (y3 + y2) / 2, z2), out4 =
+// (A, (y2 + y1) / 2, B). x0 and the last B are copied as they are, x1, z0 and z2 go through the FPU (quieting a
+// signalling NaN).
+static volatile long g_quad_middles;
+static void __fastcall quad_edge_middles(const float *q, float *out0, float *out1, float *out2, float *out3, float *out4) {
+    g_quad_middles++;
+    const long double half = *(const float *)0xf2651c;
+    const long double x1 = x87_load(&q[4]), z0 = x87_load(&q[2]), z2 = x87_load(&q[10]);
+    const uint32_t x0_bits = *(const uint32_t *)&q[0];
+    const volatile float a = (float)(((long double)q[0] + q[4]) * half);
+    const volatile float b = (float)(((long double)q[2] + q[10]) * half);
+    *(volatile uint32_t *)&out0[0] = x0_bits;
+    out0[1] = (float)(((long double)q[9] + q[1]) * half);
+    out0[2] = b;
+    out1[0] = (float)x1;
+    out1[1] = (float)(((long double)q[13] + q[5]) * half);
+    out1[2] = b;
+    out2[0] = a;
+    out2[1] = (float)(((long double)q[5] + q[1]) * half);
+    out2[2] = (float)z0;
+    out3[0] = a;
+    out3[1] = (float)(((long double)q[13] + q[9]) * half);
+    out3[2] = (float)z2;
+    out4[0] = a;
+    *(volatile uint32_t *)&out4[2] = *(const volatile uint32_t *)&b;
+    out4[1] = (float)(((long double)q[9] + q[5]) * half);
+}
+static const uint8_t quad_edge_middles_original[] = {0x83, 0xec, 0x08, 0xd9, 0x41, 0x10, 0x8b, 0x01};
+REWRITE("Quad::EdgeMiddles", 0x727de0, quad_edge_middles_original, &quad_edge_middles, &g_quad_middles);
+
+// ---- Spline::SegmentPoints(this, n, p0, p1, p2, p3) (0x4240B0): the four control points of segment n ------------------
+// The spline's points (0x24 bytes each, at the pointer at +0x44): p0 is point n, p3 point n + 1 (both through the FPU:
+// a signalling NaN comes out quiet), p1 = p0 + point n's out-handle (+0x18), p2 = p3 + point n + 1's in-handle (+0xC),
+// each sum from the copies just written.
+static volatile long g_spline_segments;
+static void __thiscall spline_segment_points(const uint8_t *self, int32_t n, float *p0, float *p1, float *p2, float *p3) {
+    g_spline_segments++;
+    const float *const a = (const float *)(*(uint8_t *const volatile *)(self + 0x44) + n * 0x24);
+    for (int i = 0; i < 3; i++) *(volatile float *)&p0[i] = (float)x87_load(&a[i]);
+    const float *const b = (const float *)(*(uint8_t *const volatile *)(self + 0x44) + n * 0x24 + 0x24);
+    for (int i = 0; i < 3; i++) *(volatile float *)&p3[i] = (float)x87_load(&b[i]);
+    const float *const out_handle = (const float *)(*(uint8_t *const volatile *)(self + 0x44) + n * 0x24 + 0x18);
+    long double s[3];
+    for (int i = 0; i < 3; i++) s[i] = (long double)out_handle[i] + *(volatile float *)&p0[i];
+    for (int i = 0; i < 3; i++) p1[i] = (float)s[i];
+    const float *const in_handle = (const float *)(*(uint8_t *const volatile *)(self + 0x44) + n * 0x24 + 0x30);
+    for (int i = 0; i < 3; i++) s[i] = (long double)in_handle[i] + *(volatile float *)&p3[i];
+    for (int i = 0; i < 3; i++) p2[i] = (float)s[i];
+}
+static const uint8_t spline_segment_points_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Spline::SegmentPoints", 0x4240b0, spline_segment_points_original, &spline_segment_points, &g_spline_segments);
+
+// ---- Points::UpdateDepth(this, n) (0x42FF50): point n's depth and its moved place --------------------------------------
+// Of point n (0x70 bytes each, in the list this points to), with u its first vector (+0) and v its second (+0x10):
+// its depth (+0x24) is ((u + v).z m38 + (u + v).y m28) + (u + v).x m18, plus m48 (this's view values, the sums kept
+// unrounded); its place at +0x40 is u + v k (k the game's constant at 0xF283D8, each v k rounded first); +0x28 is set.
+static volatile long g_point_depths;
+static void __thiscall points_update_depth(const uint8_t *self, int32_t n) {
+    g_point_depths++;
+    uint8_t *const p = *(uint8_t *const volatile *)self + n * 0x70;
+    const float *const f = (const float *)p, *const m = (const float *)self;
+    const long double s0 = (long double)f[4] + f[0], s1 = (long double)f[5] + f[1], s2 = (long double)f[6] + f[2];
+    *(volatile float *)(p + 0x24) = (float)(((s2 * m[0x38 / 4] + s1 * m[0x28 / 4]) + s0 * m[0x18 / 4]) + m[0x48 / 4]);
+    const long double k = *(const float *)0xf283d8;
+    const volatile float t0 = (float)((long double)f[4] * k), t1 = (float)((long double)f[5] * k), t2 = (float)((long double)f[6] * k);
+    const long double r0 = (long double)f[0] + t0, r1 = (long double)t1 + f[1];
+    const volatile float r2 = (float)((long double)t2 + f[2]);
+    float *const out = (float *)(p + 0x40);
+    out[2] = r2;
+    out[0] = (float)r0;
+    out[1] = (float)r1;
+    *(volatile uint8_t *)(*(uint8_t *const volatile *)self + n * 0x70 + 0x28) = 1;
+}
+static const uint8_t points_update_depth_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Points::UpdateDepth", 0x42ff50, points_update_depth_original, &points_update_depth, &g_point_depths);
+
+// ---- Bits::PackScaled(v) (0xC197D0): v times the game's constant (0xFAFE84, as a float) rounded down, packed -----------
+// The whole number w (its low 32 bits) goes into three fields: bits 20-29 hold w's low 10 bits, 10-18 and 0-8 its low 9.
+static volatile long g_bit_packs;
+static uint32_t __stdcall bits_pack_scaled(int32_t v) {
+    g_bit_packs++;
+    const volatile float f = (float)((long double)v * *(const float *)0xfafe84);
+    const long double whole = x87_round(f);
+    const volatile float down = (float)(f < whole ? whole - 1.0L : whole);
+    const uint32_t w = (uint32_t)x87_whole(down);
+    return ((((w & 0x3ff) << 10) | (w & 0x1ff)) << 10) | (w & 0x1ff);
+}
+static const uint8_t bits_pack_scaled_original[] = {0x83, 0xec, 0x14, 0xdb, 0x44, 0x24, 0x18, 0xd8};
+REWRITE("Bits::PackScaled", 0xc197d0, bits_pack_scaled_original, &bits_pack_scaled, &g_bit_packs);
+
+// ---- Vector::SideDirection(this, out) (0x4262F0): the ground-plane direction across the vector at +0x3F0 ---------------
+// With t = y 0 (rounded): (z - t, x 0 - z 0, t - x), made one long; when its length is exactly 0 the first two are
+// given unscaled and the last is 1.
+static volatile long g_side_directions;
+static void __thiscall vector_side_direction(const uint8_t *self, float *out) {
+    g_side_directions++;
+    const float *const v = (const float *)(self + 0x3f0);
+    const long double zero = *(const float *)0xf264e0;
+    const volatile float t = (float)((long double)v[1] * zero);
+    const long double a = (long double)v[2] - t;
+    const long double b = (long double)v[0] * zero - (long double)v[2] * zero;
+    const long double c = (long double)t - v[0];
+    const long double length = x87_sqrt((c * c + b * b) + a * a);
+    if (length == 0.0L) {
+        out[0] = (float)a;
+        out[1] = (float)b;
+        out[2] = *(const float *)0xf264dc;
+        return;
+    }
+    const long double inverse = 1.0L / length;
+    out[0] = (float)(a * inverse);
+    out[1] = (float)(b * inverse);
+    out[2] = (float)(c * inverse);
+}
+static const uint8_t vector_side_direction_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::SideDirection", 0x4262f0, vector_side_direction_original, &vector_side_direction, &g_side_directions);
+
+// ---- Segment::Direction(this, out) (0x5BE7F0): the unit direction from one part's point to another's -----------------
+// From the point of the part at +0x2C to the point of the part at +0x28 (each part's +4): d = b - a, its x rounded
+// (stored), made one long (the length sqrt((z z + y y) + x x)); when the length is exactly 0, (0, 0, 1).
+static volatile long g_segment_directions;
+static void __thiscall segment_direction(const uint8_t *self, float *out) {
+    g_segment_directions++;
+    const float *const a = *(const float *const *)(*(const uint8_t *const *)(self + 0x2c) + 4);
+    const float *const b = *(const float *const *)(*(const uint8_t *const *)(self + 0x28) + 4);
+    const volatile float dx = (float)((long double)b[0] - a[0]);
+    const long double dy = (long double)b[1] - a[1], dz = (long double)b[2] - a[2];
+    const long double length = x87_sqrt((dz * dz + dy * dy) + (long double)dx * dx);
+    if (length == 0.0L) {
+        volatile uint32_t *const o = (volatile uint32_t *)out;
+        o[0] = 0, o[1] = 0, o[2] = 0x3f800000;
+        return;
+    }
+    const long double inverse = 1.0L / length;
+    out[0] = (float)(dx * inverse);
+    out[1] = (float)(dy * inverse);
+    out[2] = (float)(dz * inverse);
+}
+static const uint8_t segment_direction_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Segment::Direction", 0x5be7f0, segment_direction_original, &segment_direction, &g_segment_directions);
+
+// ---- Lerp::Current(this) (0xC219D0): the point now along a blend, into this (+0), given back ---------------------------
+// From the start (+0x20) to the end (+0x10) by the amount t (+0x30): once t is at least 1, the end as it is; else
+// start (1 - t) + end t, each product rounded (stored) except end.z t.
+static volatile long g_lerp_currents;
+static float *__thiscall lerp_current(float *self) {
+    g_lerp_currents++;
+    const long double t = self[0x30 / 4];
+    if (!(t < (long double)*(const float *)0xf264dc) && t == t) {   // (at least 1; a NaN blends)
+        volatile uint32_t *const s = (volatile uint32_t *)self;
+        s[0] = s[4], s[1] = s[5], s[2] = s[6];
+        return self;
+    }
+    const volatile float ex = (float)(t * self[4]), ey = (float)(t * self[5]);
+    const long double ez = t * self[6];
+    const long double s = (long double)*(const float *)0xf264dc - self[0x30 / 4];
+    const volatile float sx = (float)(s * self[8]), sy = (float)(s * self[9]), sz = (float)(s * self[10]);
+    const long double x = (long double)sx + ex, y = (long double)sy + ey;
+    const volatile float z = (float)((long double)sz + ez);
+    self[2] = z;
+    self[0] = (float)x;
+    self[1] = (float)y;
+    return self;
+}
+static const uint8_t lerp_current_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Lerp::Current", 0xc219d0, lerp_current_original, &lerp_current, &g_lerp_currents);
+
+// ---- Math::Round(this, a, b) (0xCDB7B0): two values scaled, added to and split into whole and fraction -----------------
+// For a (and b likewise into +0xC..+0x14): f = a k + this[2] (k the game's constant at 0xF27370, f rounded as stored),
+// w = f rounded down; this[0] = a as given, this[1] = w as a whole number (its low 32 bits), this[2] = f - w.
+static volatile long g_math_rounds;
+static void __thiscall math_round(uint32_t *self, float a, float b) {
+    g_math_rounds++;
+    const float args[2] = {a, b};
+    for (int k = 0; k < 2; k++) {
+        uint32_t *const s = self + 3 * k;
+        const volatile float f = (float)((long double)args[k] * *(const float *)0xf27370 + *(volatile float *)&s[2]);
+        const long double whole = x87_round(f);
+        const volatile float down = (float)(f < whole ? whole - 1.0L : whole);
+        const uint32_t w = (uint32_t)x87_whole(down);
+        ((volatile uint32_t *)s)[0] = *(const uint32_t *)&args[k];
+        ((volatile uint32_t *)s)[1] = w;
+        *(volatile float *)&s[2] = (float)((long double)f - down);
+    }
+}
+static const uint8_t math_round_original[] = {0x83, 0xec, 0x10, 0xd9, 0x44, 0x24, 0x14, 0xd8};
+REWRITE("Math::Round", 0xcdb7b0, math_round_original, &math_round, &g_math_rounds);
+
+// ---- VerletPoint::Init(this, position, velocity, owner) (0xA6B190): a moving point for Verlet steps --------------------
+// +0 the owner given, +0x10 the position, +0x20 the previous position (the position less the velocity times the time
+// step 0xF8F980; the x product rounded first), +0x2C the largest float, +0x30 a damping of 0.99, +0x34 a weight of 1,
+// +0x40 no force.
+static volatile long g_verlet_inits;
+static void __thiscall verlet_point_init(uint32_t *self, const uint32_t *position, const float *velocity, uint32_t owner) {
+    g_verlet_inits++;
+    volatile uint32_t *const s = self;
+    s[0] = owner;
+    s[4] = position[0], s[5] = position[1], s[6] = position[2];
+    s[0x2c / 4] = 0x7f7fffff, s[0x30 / 4] = 0x3f7d70a4, s[0x34 / 4] = 0x3f800000;
+    s[0x40 / 4] = 0, s[0x44 / 4] = 0, s[0x48 / 4] = 0;
+    const long double step = *(const float *)0xf8f980;
+    s[8] = s[4], s[9] = s[5], s[10] = s[6];
+    const volatile float vx = (float)((long double)velocity[0] * step);
+    const long double vy = (long double)velocity[1] * step, vz = (long double)velocity[2] * step;
+    volatile float *const f = (volatile float *)self;
+    f[8] = (float)((long double)f[8] - vx);
+    f[9] = (float)((long double)f[9] - vy);
+    f[10] = (float)((long double)f[10] - vz);
+}
+static const uint8_t verlet_point_init_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("VerletPoint::Init", 0xa6b190, verlet_point_init_original, &verlet_point_init, &g_verlet_inits);
+
+// ---- Particle::SetColours(this, first, second) (0x9C6210): two 0xRRGGBB colours as parts from 0 to 1 -----------------
+// Each byte times the game's 1/255 (0xF270F0): first's red, green, blue at +0xAC, +0xB0, +0xB4, second's at +0xB8 on.
+static volatile long g_particle_colours;
+static void __thiscall particle_set_colours(uint8_t *self, int32_t first, int32_t second) {
+    g_particle_colours++;
+    const long double k = *(const float *)0xf270f0;
+    const int32_t colours[2] = {first, second};
+    for (int c = 0; c < 2; c++)
+        for (int part = 0; part < 3; part++)
+            *(volatile float *)(self + 0xac + c * 12 + part * 4) = (float)((long double)((colours[c] >> (16 - 8 * part)) & 0xff) * k);
+}
+static const uint8_t particle_set_colours_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0xd0, 0xc1, 0xfa};
+REWRITE("Particle::SetColours", 0x9c6210, particle_set_colours_original, &particle_set_colours, &g_particle_colours);
+
+// ---- Grid::SnapIndex(flag, v, size, scale, tolerance) (0xBC4FF0): the nearest whole step for v ------------------------
+// n = ((size / 2 + v) scale) (as a float) rounded down; when |v - n size| is within the tolerance, *flag = 0 and n is
+// given; otherwise (or for a NaN) *flag = 1 and the step v lies in, (v scale) rounded down. (Low 32 bits of each.)
+static volatile long g_grid_snaps;
+static int32_t __thiscall grid_snap_index(uint8_t *flag, float v, float size, float scale, float tolerance) {
+    g_grid_snaps++;
+    const volatile float f = (float)(((long double)size * *(const float *)0xf2651c + v) * scale);
+    const long double whole = x87_round(f);
+    const volatile float down = (float)(f < whole ? whole - 1.0L : whole);
+    const int32_t n = (int32_t)(uint32_t)x87_whole(down);
+    if (x87_abs((long double)v - (long double)n * size) <= tolerance) {
+        *(volatile uint8_t *)flag = 0;
+        return n;
+    }
+    *(volatile uint8_t *)flag = 1;
+    const volatile float g = (float)((long double)v * scale);
+    const long double whole2 = x87_round(g);
+    const volatile float down2 = (float)(g < whole2 ? whole2 - 1.0L : whole2);
+    return (int32_t)(uint32_t)x87_whole(down2);
+}
+static const uint8_t grid_snap_index_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x44, 0x24, 0x14, 0xd8};
+REWRITE("Grid::SnapIndex", 0xbc4ff0, grid_snap_index_original, &grid_snap_index, &g_grid_snaps);
+
+// ---- Progress::Advance(this, time) (0xB34EF0): a progress value moved on, with a second one following it --------------
+// a = (time k + this[0x134]) (k at 0xF270B4) kept at most 1; the second value (+0x150) gains (a - the old value) times
+// the count at +0xD8 times k, kept at most 1. Gives whether a is past the threshold at 0xF3B794 (a NaN: no).
+static volatile long g_progress_advances;
+static int32_t __thiscall progress_advance(uint8_t *self, float time) {
+    g_progress_advances++;
+    static const uint32_t one_bits = 0x3f800000;
+    const long double one = x87_load((const float *)&one_bits), k = *(const float *)0xf270b4;
+    volatile float *const p = (volatile float *)(self + 0x134), *const q = (volatile float *)(self + 0x150);
+    const volatile float sum = (float)((long double)time * k + *p);
+    const volatile float a = (float)x87_lesser(one, x87_load((const float *)&sum));
+    const long double old = *p;
+    *(volatile uint32_t *)p = *(const volatile uint32_t *)&a;
+    const volatile float s = (float)((long double)*(const int32_t *)(self + 0xd8) * k * ((long double)a - old) + *q);
+    *q = s;
+    *q = (float)x87_lesser(one, x87_load((const float *)&s));
+    return (long double)a > (long double)*(const float *)0xf3b794;
+}
+static const uint8_t progress_advance_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x44, 0x24, 0x10, 0xc7};
+REWRITE("Progress::Advance", 0xb34ef0, progress_advance_original, &progress_advance, &g_progress_advances);
+
+// ---- Camera::SetFromHeight(this, height, lift) (0x7455F0): the camera's offset from a height and its field of view -----
+// d = -(height / 2 + c) / tan(fov / 2) (c at 0xF270B0, fov at +0x290; tan by fptan), d rounded as stored and kept
+// unrounded too: the offset (+0x260) is (d dx, D dy + lift + c, D dz) with D the rounded d and (dx, dy, dz) the
+// direction at +0x240 (D dy rounded first); then marked changed (+0x2A4 bit 1, and bit 0 when +0x2A7 is set).
+static volatile long g_camera_heights;
+static inline long double x87_tan(long double v) {
+    __asm__("fptan\n\tfstp %%st(0)" : "+t"(v));
+    return v;
+}
+static void __thiscall camera_set_from_height(uint8_t *self, float height, float lift) {
+    g_camera_heights++;
+    const long double half = *(const float *)0xf2651c, c = *(const float *)0xf270b0;
+    const float *const dir = (const float *)(self + 0x240);
+    const long double q = (long double)height * half + c;
+    const long double t = x87_tan((long double)*(const float *)(self + 0x290) * half);
+    const long double d = -(q / t);
+    const volatile float d_stored = (float)d;
+    const long double x = d * dir[0];
+    const volatile float y = (float)((long double)d_stored * dir[1]);
+    const long double z = (long double)d_stored * dir[2];
+    float *const offset = (float *)(self + 0x260);
+    offset[0] = (float)x;
+    offset[1] = (float)(((long double)y + lift) + c);
+    offset[2] = (float)z;
+    *(volatile uint8_t *)(self + 0x2a4) |= *(const volatile uint8_t *)(self + 0x2a7) ? 3 : 2;
+}
+static const uint8_t camera_set_from_height_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Camera::SetFromHeight", 0x7455f0, camera_set_from_height_original, &camera_set_from_height, &g_camera_heights);

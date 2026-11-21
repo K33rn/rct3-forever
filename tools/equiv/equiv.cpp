@@ -5789,6 +5789,214 @@ static std::vector<Test> tests() {
                       },
                       [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x10)); return Result{}; }};
     quick(water_normal);
+    // Rect::Union / Intersect / UnionInto / IntersectInto(this, out, other): two rectangles, sides sometimes equal,
+    // sometimes any bits at all (NaNs, signalling ones: they come out quiet where the game loads them)
+    auto rect_case = [=](Rng &r) {
+        for (int i = 0; i < 8; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-100, 100) : geo_pick(r);
+        for (int i = 0; i < 4; i++) if (r.range(0, 5) == 0) arena<float>(0x110)[i] = arena<float>(0x100)[i];
+        if (r.range(0, 4) == 0) arena<uint32_t>(0x100)[r.range(0, 7)] = r.next();
+        if (r.range(0, 6) == 0) arena<uint32_t>(0x100)[r.range(0, 7)] = 0x7f800001u + (uint32_t)r.range(0, 0x3fffff);   // (signalling)
+        for (int i = 0; i < 4; i++) arena<uint32_t>(0x200)[i] = r.next();
+    };
+    auto rect_call = [](void *fn) { ((void(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x110)); return Result{}; };
+    Test rect_union{0xbe7690, rect_case, rect_call};
+    quick(rect_union);
+    Test rect_intersect{0xbe7520, rect_case, rect_call};
+    quick(rect_intersect);
+    Test rect_union_into{0xbe75e0, rect_case, rect_call};
+    quick(rect_union_into);
+    Test rect_intersect_into{0xbe7470, rect_case, rect_call};
+    quick(rect_intersect_into);
+    // Matrix::Transpose / Transpose2 and Matrix::From4x3(in, out): any bits, signalling NaNs among them
+    auto bits_case = [=](Rng &r) {
+        for (int i = 0; i < 16; i++) arena<float>(0x100)[i] = r.real(-9, 9);
+        for (int i = 0; i < 16; i++) if (r.range(0, 3) == 0) arena<uint32_t>(0x100)[i] = r.next();
+        if (r.range(0, 3) == 0) arena<uint32_t>(0x100)[r.range(0, 15)] = 0x7f800001u + (uint32_t)r.range(0, 0x3fffff);
+        for (int i = 0; i < 16; i++) arena<uint32_t>(0x200)[i] = r.next();
+    };
+    auto two_call = [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; };
+    Test matrix_transpose{0xc73730, bits_case, two_call};
+    quick(matrix_transpose);
+    Test matrix_transpose2{0xc73680, bits_case, two_call};
+    quick(matrix_transpose2);
+    Test matrix_from_4x3{0x856550, bits_case, two_call};
+    quick(matrix_from_4x3);
+    // Quaternion::ToMatrix(q, out): unit quaternions mostly, sometimes any values
+    Test quaternion_to_matrix{0xb00c00,
+                              [=](Rng &r) {
+                                  float q[4], n = 0;
+                                  for (int i = 0; i < 4; i++) q[i] = r.real(-1, 1), n += q[i] * q[i];
+                                  n = n > 0 ? sqrtf(n) : 1;
+                                  for (int i = 0; i < 4; i++) arena<float>(0x100)[i] = r.range(0, 7) ? q[i] / n : geo_pick(r);
+                                  for (int i = 0; i < 12; i++) arena<uint32_t>(0x200)[i] = r.next();
+                              },
+                              two_call};
+    quick(quaternion_to_matrix);
+    // CameraAngles::Clamp(this): tilts inside, outside and at the limits, NaNs; turns of any size
+    Test camera_angles_clamp{0xa61b90,
+                             [=](Rng &r) {
+                                 for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                 for (int k = 0; k < 2; k++) {
+                                     const int pick = r.range(0, 6);
+                                     arena<float>(0x130)[k] = pick < 3 ? r.real(-3, 3) : pick == 3 ? 1.5677f : pick == 4 ? -1.5677f : geo_pick(r);
+                                     if (pick == 6) arena<uint32_t>(0x130)[k] = r.range(0, 1) ? 0x7f800001u + r.range(0, 99) : r.next();
+                                 }
+                                 arena<float>(0x138)[0] = r.range(0, 5) ? r.real(-40, 40) : geo_pick(r);
+                             },
+                             [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(camera_angles_clamp);
+    // Vector::TransformPoint(out, p, m) and TransformPoint2(m, out, p): out apart from p, or the same place
+    auto transform_case = [=](Rng &r) {
+        for (int i = 0; i < 3; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-50, 50) : geo_pick(r);
+        for (int i = 0; i < 16; i++) arena<float>(0x200)[i] = r.range(0, 9) ? r.real(-2, 2) : geo_pick(r);
+        for (int i = 0; i < 4; i++) arena<uint32_t>(0x140)[i] = r.next();
+        arena<uint32_t>(0x10)[0] = r.range(0, 3) == 0;
+    };
+    Test vector_transform_point{0x481360, transform_case,
+                                [](void *fn) {
+                                    ((void(__fastcall *)(void *, void *, void *))fn)(arena<void>(arena<uint32_t>(0x10)[0] ? 0x100 : 0x140), arena<void>(0x100), arena<void>(0x200));
+                                    return Result{};
+                                }};
+    quick(vector_transform_point);
+    Test vector_transform_point2{0xbb6050, transform_case,
+                                 [](void *fn) {
+                                     ((void(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x200), arena<void>(arena<uint32_t>(0x10)[0] ? 0x100 : 0x140), arena<void>(0x100));
+                                     return Result{};
+                                 }};
+    quick(vector_transform_point2);
+    // Quad::EdgeMiddles(quad, out0..out4): four corners, now and then a signalling NaN among them
+    Test quad_edge_middles{0x727de0,
+                           [=](Rng &r) {
+                               for (int i = 0; i < 16; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-60, 60) : geo_pick(r);
+                               if (r.range(0, 4) == 0) arena<uint32_t>(0x100)[r.range(0, 15)] = 0x7f800001u + (uint32_t)r.range(0, 0x3fffff);
+                               for (int i = 0; i < 20; i++) arena<uint32_t>(0x200)[i] = r.next();
+                           },
+                           [](void *fn) {
+                               ((void(__fastcall *)(void *, void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x210),
+                                                                                                       arena<void>(0x220), arena<void>(0x230), arena<void>(0x240));
+                               return Result{};
+                           }};
+    quick(quad_edge_middles);
+    // Spline::SegmentPoints(this, n, p0, p1, p2, p3): four spline points (0x24 bytes each), segment 0, 1 or 2
+    Test spline_segment_points{0x4240b0,
+                               [=](Rng &r) {
+                                   arena<uint32_t>(0x144)[0] = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                   for (int i = 0; i < 36; i++) arena<float>(0x400)[i] = r.range(0, 9) ? r.real(-80, 80) : geo_pick(r);
+                                   if (r.range(0, 4) == 0) arena<uint32_t>(0x400)[r.range(0, 35)] = 0x7f800001u + (uint32_t)r.range(0, 0x3fffff);
+                                   for (int i = 0; i < 16; i++) arena<uint32_t>(0x200)[i] = r.next();
+                                   arena<int32_t>(0x10)[0] = r.range(0, 2);
+                               },
+                               [](void *fn) {
+                                   ((void(__thiscall *)(void *, int32_t, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<void>(0x200),
+                                                                                                           arena<void>(0x210), arena<void>(0x220), arena<void>(0x230));
+                                   return Result{};
+                               }};
+    quick(spline_segment_points);
+    // Points::UpdateDepth(this, n): the view values in this (+0x18 to +0x48), a list of three points (0x70 bytes each)
+    Test points_update_depth{0x42ff50,
+                             [=](Rng &r) {
+                                 for (int i = 0; i < 0x20; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-3, 3) : geo_pick(r);
+                                 arena<uint32_t>(0x100)[0] = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 for (int i = 0; i < 0x54; i++) arena<float>(0x400)[i] = r.range(0, 9) ? r.real(-90, 90) : geo_pick(r);
+                                 arena<int32_t>(0x10)[0] = r.range(0, 2);
+                             },
+                             [](void *fn) { ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0]); return Result{}; }};
+    quick(points_update_depth);
+    // Bits::PackScaled(v): small and huge whole numbers
+    Test bits_pack_scaled{0xc197d0,
+                          [=](Rng &r) { arena<int32_t>(0x10)[0] = r.range(0, 3) ? r.range(-100000, 100000) : (int32_t)r.next(); },
+                          [](void *fn) { return Result{((uint32_t(__stdcall *)(int32_t))fn)(arena<int32_t>(0x10)[0])}; }};
+    quick(bits_pack_scaled);
+    // Vector::SideDirection(this, out): the vector at +0x3F0, sometimes flat on the ground's other axis (length 0)
+    Test vector_side_direction{0x4262f0,
+                               [=](Rng &r) {
+                                   for (int i = 0; i < 3; i++) arena<float>(0x4f0)[i] = r.range(0, 9) ? r.real(-5, 5) : geo_pick(r);
+                                   if (r.range(0, 4) == 0) arena<float>(0x4f0)[0] = arena<float>(0x4f0)[2] = 0.0f;
+                                   for (int i = 0; i < 4; i++) arena<uint32_t>(0x200)[i] = r.next();
+                               },
+                               [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
+    quick(vector_side_direction);
+    // Segment::Direction(this, out): two parts (+0x2C, +0x28) whose +4 points at a point; sometimes the same point
+    Test segment_direction{0x5be7f0,
+                           [=](Rng &r) {
+                               arena<uint32_t>(0x12c)[0] = (uint32_t)(uintptr_t)arena<void>(0x300), arena<uint32_t>(0x128)[0] = (uint32_t)(uintptr_t)arena<void>(0x340);
+                               arena<uint32_t>(0x304)[0] = (uint32_t)(uintptr_t)arena<void>(0x380), arena<uint32_t>(0x344)[0] = (uint32_t)(uintptr_t)arena<void>(r.range(0, 4) ? 0x3a0 : 0x380);
+                               for (int i = 0; i < 12; i++) arena<float>(0x380)[i] = r.range(0, 9) ? r.real(-50, 50) : geo_pick(r);
+                               for (int i = 0; i < 4; i++) arena<uint32_t>(0x200)[i] = r.next();
+                           },
+                           [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
+    quick(segment_direction);
+    // Lerp::Current(this): an amount below 1, at 1, above, or odd
+    Test lerp_current{0xc219d0,
+                      [=](Rng &r) {
+                          for (int i = 0; i < 12; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-70, 70) : geo_pick(r);
+                          const int k = r.range(0, 5);
+                          arena<float>(0x130)[0] = k < 3 ? r.real(0, 1) : k == 3 ? 1.0f : k == 4 ? r.real(1, 3) : geo_pick(r);
+                      },
+                      [](void *fn) { return Result{(uint32_t)(((float *(__thiscall *)(void *))fn)(arena<void>(0x100)) == arena<float>(0x100))}; }};
+    quick(lerp_current);
+    // Math::Round(this, a, b): two values and the fractions kept in this
+    Test math_round{0xcdb7b0,
+                    [=](Rng &r) {
+                        for (int i = 0; i < 6; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-5, 5) : geo_pick(r);
+                        arena<float>(0x10)[0] = r.range(0, 9) ? r.real(-300, 300) : geo_pick(r), arena<float>(0x10)[1] = r.range(0, 9) ? r.real(-300, 300) : geo_pick(r);
+                    },
+                    [](void *fn) { ((void(__thiscall *)(void *, float, float))fn)(arena<void>(0x100), arena<float>(0x10)[0], arena<float>(0x10)[1]); return Result{}; }};
+    quick(math_round);
+    // VerletPoint::Init(this, position, velocity, owner)
+    Test verlet_point_init{0xa6b190,
+                           [=](Rng &r) {
+                               for (int i = 0; i < 0x14; i++) arena<uint32_t>(0x100)[i] = r.next();
+                               for (int i = 0; i < 6; i++) arena<float>(0x200)[i] = r.range(0, 9) ? r.real(-60, 60) : geo_pick(r);
+                               arena<uint32_t>(0x10)[0] = r.next();
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(void *, void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x210), arena<uint32_t>(0x10)[0]);
+                               return Result{};
+                           }};
+    quick(verlet_point_init);
+    // Particle::SetColours(this, first, second)
+    Test particle_set_colours{0x9c6210,
+                              [=](Rng &r) { for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x100)[i] = r.next(); arena<uint32_t>(0x10)[0] = r.next(), arena<uint32_t>(0x10)[1] = r.next(); },
+                              [](void *fn) { ((void(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1]); return Result{}; }};
+    quick(particle_set_colours);
+    // Grid::SnapIndex(flag, v, size, scale, tolerance): values on and between steps, tolerances small and large
+    Test grid_snap_index{0xbc4ff0,
+                         [=](Rng &r) {
+                             const float size = r.range(0, 5) ? r.real(0.5f, 8) : geo_pick(r);
+                             const int k = r.range(-20, 20);
+                             arena<float>(0x10)[0] = r.range(0, 2) ? k * size + r.real(-0.2f, 0.2f) : r.real(-200, 200);
+                             arena<float>(0x10)[1] = size, arena<float>(0x10)[2] = r.range(0, 5) && size != 0 ? 1.0f / size : geo_pick(r);
+                             arena<float>(0x10)[3] = r.range(0, 4) ? r.real(0, 0.3f) : geo_pick(r);
+                             arena<uint32_t>(0x100)[0] = r.next();
+                         },
+                         [](void *fn) {
+                             const float *a = arena<float>(0x10);
+                             return Result{(uint32_t)((int32_t(__thiscall *)(void *, float, float, float, float))fn)(arena<void>(0x100), a[0], a[1], a[2], a[3])};
+                         }};
+    quick(grid_snap_index);
+    // Progress::Advance(this, time): progress values below 1 and near it, counts, times
+    Test progress_advance{0xb34ef0,
+                          [=](Rng &r) {
+                              for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x100)[i] = r.next();
+                              arena<float>(0x234)[0] = r.range(0, 9) ? r.real(0, 1.1f) : geo_pick(r);
+                              arena<float>(0x250)[0] = r.range(0, 9) ? r.real(0, 1.1f) : geo_pick(r);
+                              arena<int32_t>(0x1d8)[0] = r.range(-5, 40);
+                              arena<float>(0x10)[0] = r.range(0, 9) ? r.real(0, 3) : geo_pick(r);
+                          },
+                          [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x10)[0])}; }};
+    quick(progress_advance);
+    // Camera::SetFromHeight(this, height, lift): a field of view, a direction, the flag that adds bit 0
+    Test camera_set_from_height{0x7455f0,
+                                [=](Rng &r) {
+                                    for (int i = 0; i < 0xb0; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                    for (int i = 0; i < 3; i++) arena<float>(0x340)[i] = r.real(-1, 1);
+                                    arena<float>(0x390)[0] = r.range(0, 9) ? r.real(0.2f, 2.5f) : geo_pick(r);
+                                    arena<uint8_t>(0x3a7)[0] = (uint8_t)r.range(0, 1);
+                                    arena<float>(0x10)[0] = r.range(0, 9) ? r.real(1, 300) : geo_pick(r), arena<float>(0x10)[1] = r.real(-20, 20);
+                                },
+                                [](void *fn) { ((void(__thiscall *)(void *, float, float))fn)(arena<void>(0x100), arena<float>(0x10)[0], arena<float>(0x10)[1]); return Result{}; }};
+    quick(camera_set_from_height);
     // CrashDump::ExceptionName (the code in eax) and Device::ErrorText (in ecx): each code they know, its neighbours, and
     // any other; the text's place is the result
     static const uint32_t exception_codes[] = {0x40010005, 0x40010008, 0x80000002, 0x80000003, 0xc0000005, 0xc0000006, 0xc0000017, 0xc000001d,
