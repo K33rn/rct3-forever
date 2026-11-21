@@ -635,7 +635,7 @@ address,size,name,callers,status
 0x42eb40,33,,6,documented
 0x42ed20,4,,1,documented
 0x42ee50,606,Matrix::Multiply,0,rewritten
-0x42f0b0,305,,0,documented
+0x42f0b0,305,Matrix::Transform,0,rewritten
 0x42f270,21,,0,documented
 0x42f320,353,SceneryRenderer::QuadVertices,10,rewritten
 0x42f4e0,12,,2,documented
@@ -4677,7 +4677,7 @@ address,size,name,callers,status
 0x5bc050,91,,1,documented
 0x5bc0b0,114,,3,documented
 0x5bc150,103,,1,documented
-0x5bc210,252,,1,documented
+0x5bc210,252,TrackPiece::Lerp5BC210,1,rewritten
 0x5bc310,146,Record::SetFields,6,rewritten
 0x5bc3b0,423,,1,documented
 0x5bc5a0,97,,4,documented
@@ -12554,15 +12554,15 @@ address,size,name,callers,status
 0x8e5df0,562,Window::Titled,3,rewritten
 0x8e6030,30,DeletingDestructor,2,rewritten
 0x8e6130,27,GlobalCleanup,1,rewritten
-0x8e6150,298,,8,documented
+0x8e6150,298,Water::Normal8E6150,8,rewritten
 0x8e62b0,61,Rows::Copy8E62B0,1,rewritten
 0x8e62f0,61,Rows::Copy8E62B0,1,rewritten
 0x8e6330,1319,,2,documented
 0x8e6860,25,,2,documented
 0x8e6880,254,,1,documented
 0x8e6980,651,Water::BoxSpan,6,rewritten
-0x8e6c10,270,,4,documented
-0x8e6d20,227,,6,documented
+0x8e6c10,270,Water::Scale8E6C10,4,rewritten
+0x8e6d20,227,Water::Point8E6D20,6,rewritten
 0x8e6e10,539,Water::BoxPlanes,1,rewritten
 0x8e7130,134,,4,documented
 0x8e7200,35,Arrays::Free8E7200,0,rewritten
@@ -16493,7 +16493,7 @@ address,size,name,callers,status
 0xa90530,30,DeletingDestructor,2,rewritten
 0xa90560,7,SetTable,2,rewritten
 0xa905d0,18,,2,documented
-0xa905f0,205,,2,documented
+0xa905f0,205,Fence::CrossA905F0,2,rewritten
 0xa906c0,188,,4,documented
 0xa907e0,26,OwnedPointer::Reset,0,rewritten
 0xa90800,61,Array<4>::Allocate,0,rewritten
@@ -19713,7 +19713,7 @@ address,size,name,callers,status
 0xbcbb70,609,,1,documented
 0xbcbe10,1,,1,documented
 0xbcbe20,363,,2,documented
-0xbcbf90,249,,4,documented
+0xbcbf90,249,Bezier::Point,4,rewritten
 0xbcc090,296,,2,documented
 0xbcc1c0,35,Arrays::Free8E7200,0,rewritten
 0xbcc1f0,705,,0,documented
@@ -20307,7 +20307,7 @@ address,size,name,callers,status
 0xbedee0,138,Matrix::TurnPairs,2,rewritten
 0xbedf70,131,Matrix::TurnPairs,12,rewritten
 0xbee000,133,Matrix::TurnPairs,1,rewritten
-0xbee0c0,277,,2,documented
+0xbee0c0,277,Matrix::Invert3,2,rewritten
 0xbee1e0,154,,1,documented
 0xbee280,52,,0,documented
 0xbee2c0,411,,1,documented
@@ -20437,8 +20437,8 @@ address,size,name,callers,status
 0xbfac90,30,DeletingDestructor,1,rewritten
 0xbfacb0,207,,26,documented
 0xbfad80,706,,1,documented
-0xbfb0b0,266,,69,documented
-0xbfb1c0,240,,78,documented
+0xbfb0b0,266,Vector::RotateAround,69,rewritten
+0xbfb1c0,240,Vector::RotateAroundSinCos,78,rewritten
 0xbfb2b0,111,,1,documented
 0xbfb340,370,,1,documented
 0xbfb4c0,7,SetTable,1,rewritten
@@ -22049,7 +22049,7 @@ address,size,name,callers,status
 0xc9b570,30,DeletingDestructor,1,rewritten
 0xc9b590,104,,1,documented
 0xc9b600,706,,1,documented
-0xc9b970,225,,12,documented
+0xc9b970,225,Plane::FromPointsC9B970,12,rewritten
 0xc9bab0,8,,3,documented
 0xc9bcb0,11,,2,documented
 0xc9bcc0,150,PointerArray::Resize,1,rewritten
@@ -22910,7 +22910,7 @@ address,size,name,callers,status
 0xcdc420,96,,1,documented
 0xcdc480,1502,,4,documented
 0xcdca90,898,,0,documented
-0xcdce20,235,,3,documented
+0xcdce20,235,Plane::FromPoints,3,rewritten
 0xcdcf10,64,Owned::FreeAll811820,2,rewritten
 0xcdcf50,4667,,3,documented
 0xcde1a0,1191,,2,documented

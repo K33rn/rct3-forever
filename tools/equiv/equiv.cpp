@@ -5658,6 +5658,137 @@ static std::vector<Test> tests() {
                          return Result{};
                      }};
     quick(quad_normal);
+    // Matrix::Invert3: rows 16 bytes apart (the fourth float of each random), sometimes singular, sometimes odd values
+    Test matrix_invert3{0xbee0c0,
+                        [=](Rng &r) {
+                            for (int i = 0; i < 12; i++) arena<float>(0x100)[i] = (i & 3) == 3 ? r.real(-5, 5) : r.range(0, 9) ? r.real(-3, 3) : geo_pick(r);
+                            if (r.range(0, 5) == 0)   // (a row twice: no inverse)
+                                for (int i = 0; i < 3; i++) arena<float>(0x100)[8 + i] = arena<float>(0x100)[r.range(0, 1) * 4 + i];
+                        },
+                        [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(matrix_invert3);
+    // Matrix::Transform(out, v, m): out apart from v, or the same place
+    Test matrix_transform{0x42f0b0,
+                          [=](Rng &r) {
+                              for (int i = 0; i < 4; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-50, 50) : geo_pick(r);
+                              for (int i = 0; i < 16; i++) arena<float>(0x200)[i] = r.range(0, 9) ? r.real(-2, 2) : geo_pick(r);
+                              for (int i = 0; i < 4; i++) arena<uint32_t>(0x140)[i] = r.next();
+                              arena<uint32_t>(0x10)[0] = r.range(0, 3) == 0;
+                          },
+                          [](void *fn) {
+                              ((void(__fastcall *)(void *, void *, void *))fn)(arena<void>(arena<uint32_t>(0x10)[0] ? 0x100 : 0x140), arena<void>(0x100), arena<void>(0x200));
+                              return Result{};
+                          }};
+    quick(matrix_transform);
+    // Vector::RotateAround(v, axis, angle) and RotateAroundSinCos(v, axis, sin, cos): a unit axis (or not quite), any
+    // angle (some large)
+    auto rotation_case = [=](Rng &r) {
+        float a[3], len = 0;
+        for (int i = 0; i < 3; i++) a[i] = r.real(-1, 1), len += a[i] * a[i];
+        len = len > 0 ? sqrtf(len) : 1;
+        for (int i = 0; i < 3; i++) arena<float>(0x100)[i] = r.range(0, 7) ? a[i] / len : geo_pick(r);
+        for (int i = 0; i < 3; i++) arena<float>(0x110)[i] = r.range(0, 9) ? r.real(-30, 30) : geo_pick(r);
+        const float angle = r.range(0, 7) ? r.real(-7, 7) : r.real(-1e6f, 1e6f);
+        arena<float>(0x120)[0] = angle, arena<float>(0x120)[1] = sinf(angle), arena<float>(0x120)[2] = r.range(0, 4) ? cosf(angle) : r.real(-1, 1);
+    };
+    Test vector_rotate_around{0xbfb0b0, rotation_case,
+                              [](void *fn) { ((void(__thiscall *)(void *, void *, float))fn)(arena<void>(0x110), arena<void>(0x100), arena<float>(0x120)[0]); return Result{}; }};
+    quick(vector_rotate_around);
+    Test vector_rotate_around_sin_cos{0xbfb1c0, rotation_case,
+                                      [](void *fn) {
+                                          ((void(__thiscall *)(void *, void *, float, float))fn)(arena<void>(0x110), arena<void>(0x100), arena<float>(0x120)[1], arena<float>(0x120)[2]);
+                                          return Result{};
+                                      }};
+    quick(vector_rotate_around_sin_cos);
+    // Bezier::Point(out, p0, p1, p2, p3, t): t mostly within [0, 1], sometimes outside
+    Test bezier_point{0xbcbf90,
+                      [=](Rng &r) {
+                          for (int i = 0; i < 16; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-100, 100) : geo_pick(r);
+                          arena<float>(0x10)[0] = r.range(0, 5) ? r.real(0, 1) : r.range(0, 1) ? r.real(-3, 3) : geo_pick(r);
+                      },
+                      [](void *fn) {
+                          ((void(__fastcall *)(void *, void *, void *, void *, void *, float))fn)(arena<void>(0x200), arena<void>(0x100), arena<void>(0x110),
+                                                                                                  arena<void>(0x120), arena<void>(0x130), arena<float>(0x10)[0]);
+                          return Result{};
+                      }};
+    quick(bezier_point);
+    // Plane::FromPoints(a, b, c, normal, d) and Plane::FromPointsC9B970(plane, a, b, c): three points, sometimes on one
+    // line or two the same (no normal: its z set to 1)
+    auto plane_case = [=](Rng &r) {
+        for (int i = 0; i < 12; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-40, 40) : geo_pick(r);
+        const int k = r.range(0, 5);
+        if (k == 0) for (int i = 0; i < 3; i++) arena<float>(0x120)[i] = arena<float>(0x100)[i];   // (c on a)
+        if (k == 1) for (int i = 0; i < 3; i++) arena<float>(0x120)[i] = arena<float>(0x100)[i] + 2 * (arena<float>(0x110)[i] - arena<float>(0x100)[i]);
+        for (int i = 0; i < 8; i++) arena<uint32_t>(0x200)[i] = r.next();
+    };
+    Test plane_from_points{0xcdce20, plane_case,
+                           [](void *fn) {
+                               ((void(__stdcall *)(void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x120), arena<void>(0x200), arena<void>(0x210));
+                               return Result{};
+                           }};
+    quick(plane_from_points);
+    Test plane_from_points_c9b970{0xc9b970, plane_case,
+                                  [](void *fn) {
+                                      ((void(__thiscall *)(void *, void *, void *, void *))fn)(arena<void>(0x200), arena<void>(0x100), arena<void>(0x110), arena<void>(0x120));
+                                      return Result{};
+                                  }};
+    quick(plane_from_points_c9b970);
+    // TrackPiece::Lerp5BC210(a, t, b): ten whole numbers each, t mostly within [0, 1] (some halves, so rounding decides)
+    Test track_piece_lerp{0x5bc210,
+                          [=](Rng &r) {
+                              for (int i = 0; i < 20; i++) arena<int32_t>(0x100)[i] = r.range(0, 5) ? r.range(-5000, 5000) : (int32_t)r.next();
+                              arena<float>(0x10)[0] = r.range(0, 3) == 0 ? 0.5f : r.range(0, 5) ? r.real(0, 1) : geo_pick(r);
+                          },
+                          [](void *fn) { ((void(__thiscall *)(void *, float, void *))fn)(arena<void>(0x100), arena<float>(0x10)[0], arena<void>(0x128)); return Result{}; }};
+    quick(track_piece_lerp);
+    // Fence::CrossA905F0(out, p1..p8): two lines, sometimes parallel or nearly so
+    Test fence_cross{0xa905f0,
+                     [=](Rng &r) {
+                         for (int i = 0; i < 8; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-50, 50) : geo_pick(r);
+                         if (r.range(0, 4) == 0) arena<float>(0x100)[3] = arena<float>(0x100)[2] * arena<float>(0x100)[7] / arena<float>(0x100)[6];   // (det near 0)
+                     },
+                     [](void *fn) {
+                         const float *p = arena<float>(0x100);
+                         float *got = ((float *(__thiscall *)(void *, float, float, float, float, float, float, float, float))fn)(arena<void>(0x200), p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
+                         return Result{(uint32_t)(got == arena<float>(0x200))};
+                     }};
+    quick(fence_cross);
+    // Water::Scale8E6C10(this, p, s1, s2, out, -): the water's three vectors (+0xE0, +0xF0, +0x100), a point, two scales
+    Test water_scale{0x8e6c10,
+                     [=](Rng &r) {
+                         for (int i = 0; i < 0x50; i++) arena<float>(0x100)[i] = r.range(0, 9) ? r.real(-60, 60) : geo_pick(r);
+                         for (int i = 0; i < 12; i++) arena<uint32_t>(0x300)[i] = r.next();
+                         arena<float>(0x10)[0] = r.real(-3, 3), arena<float>(0x10)[1] = r.range(0, 9) ? r.real(-3, 3) : geo_pick(r);
+                     },
+                     [](void *fn) {
+                         ((void(__thiscall *)(void *, void *, float, float, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x2c0), arena<float>(0x10)[0],
+                                                                                                 arena<float>(0x10)[1], arena<void>(0x300), 0);
+                         return Result{};
+                     }};
+    quick(water_scale);
+    // Water::Point8E6D20(this, m, h, low, high): a matrix's rows, the water's vector at +0xE0, a scale; zeros and odd values
+    Test water_point{0x8e6d20,
+                     [=](Rng &r) {
+                         for (int i = 0; i < 0x50; i++) arena<float>(0x100)[i] = r.range(0, 7) ? r.real(-60, 60) : r.range(0, 1) ? 0.0f : geo_pick(r);
+                         for (int i = 0; i < 12; i++) arena<float>(0x2c0)[i] = r.range(0, 7) ? r.real(-60, 60) : r.range(0, 1) ? -0.0f : geo_pick(r);
+                         if (r.range(0, 3) == 0) arena<uint32_t>(0x2c0)[r.range(0, 11)] = 0x7fc00000u | (r.range(0, 1) << 31);   // (a NaN term: to the low side)
+                         for (int i = 0; i < 8; i++) arena<uint32_t>(0x300)[i] = r.next();
+                         arena<float>(0x10)[0] = r.range(0, 9) ? r.real(-3, 3) : geo_pick(r);
+                     },
+                     [](void *fn) {
+                         ((void(__thiscall *)(void *, void *, float, void *, void *))fn)(arena<void>(0x100), arena<void>(0x2c0), arena<float>(0x10)[0], arena<void>(0x300), arena<void>(0x310));
+                         return Result{};
+                     }};
+    quick(water_point);
+    // Water::Normal8E6150(this, v): a direction, sometimes straight up or down (nothing flat: the fixed answer)
+    Test water_normal{0x8e6150,
+                      [=](Rng &r) {
+                          for (int i = 0; i < 0x50; i++) arena<uint32_t>(0x100)[i] = r.next();
+                          for (int i = 0; i < 3; i++) arena<float>(0x10)[i] = r.range(0, 9) ? r.real(-2, 2) : geo_pick(r);
+                          if (r.range(0, 4) == 0) arena<float>(0x10)[0] = arena<float>(0x10)[2] = r.range(0, 1) ? 0.0f : r.real(-1e-3f, 1e-3f);
+                      },
+                      [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x10)); return Result{}; }};
+    quick(water_normal);
     // CrashDump::ExceptionName (the code in eax) and Device::ErrorText (in ecx): each code they know, its neighbours, and
     // any other; the text's place is the result
     static const uint32_t exception_codes[] = {0x40010005, 0x40010008, 0x80000002, 0x80000003, 0xc0000005, 0xc0000006, 0xc0000017, 0xc000001d,
