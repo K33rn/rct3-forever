@@ -9159,6 +9159,90 @@ static std::vector<Test> tests() {
                        },
                        [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
     quick(ride_in_range);
+    // Cell::StepInside(this, x, y, direction): directions 0-5, cells at the edges (and wrapping bytes)
+    Test cell_step_inside{0x71bf70,
+                          [=](Rng &r) {
+                              arena<uint8_t>(0x15c)[0] = (uint8_t)r.range(0, 9), arena<uint8_t>(0x15d)[0] = (uint8_t)r.range(0, 9);
+                              arena<uint8_t>(0x20)[0] = (uint8_t)r.range(0, 10), arena<uint8_t>(0x24)[0] = (uint8_t)r.range(0, 10);
+                              arena<uint32_t>(0x10)[0] = r.range(0, 5) | (r.next() & 0xffffff00u);
+                          },
+                          [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x20), arena<void>(0x24), arena<uint32_t>(0x10)[0])}; }};
+    quick(cell_step_inside);
+    // Tree::UpdateUp(node): a chain of 0-3 parents, first or second or third child
+    Test tree_update_up{0xbe7a90,
+                        [=](Rng &r) {
+                            const int depth = r.range(0, 3);
+                            for (int i = 0; i < 4; i++) for (int j = 0; j < 10; j++) arena<uint32_t>(0x400 + 0x40 * i)[j] = r.next();
+                            for (int i = 0; i < 4; i++) {
+                                uint32_t *n = arena<uint32_t>(0x400 + 0x40 * i);
+                                n[1] = i < depth ? (uint32_t)(uintptr_t)arena<void>(0x400 + 0x40 * (i + 1)) : 0;
+                                if (i < depth) {
+                                    uint32_t *p = arena<uint32_t>(0x400 + 0x40 * (i + 1));
+                                    const int k = r.range(0, 2);
+                                    p[4] = k == 0 ? (uint32_t)(uintptr_t)n : 0, p[7] = k == 1 ? (uint32_t)(uintptr_t)n : 0;
+                                }
+                            }
+                        },
+                        [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x400)); return Result{}; }};
+    quick(tree_update_up);
+    // Pairs::InsertionSort(this): 0-7 pairs, values with repeats
+    Test pairs_insertion_sort{0xcb2a00,
+                              [=](Rng &r) {
+                                  arena<uint32_t>(0x100)[0] = r.range(0, 7), arena<uint32_t>(0x10c)[0] = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  for (int i = 0; i < 8; i++) arena<uint32_t>(0x400)[2 * i] = r.next(), arena<uint32_t>(0x404)[2 * i] = r.range(0, 4) | (r.next() & 0xffff0000u);
+                              },
+                              [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(pairs_insertion_sort);
+    // Lists::ClearMarks(this): 0-4 entries in each list
+    Test lists_clear_marks{0x9e2e60,
+                           [=](Rng &r) {
+                               for (int i = 0; i < 0x14; i++) arena<uint32_t>(0x100)[i] = r.next();
+                               arena<uint32_t>(0x120)[0] = (uint32_t)(uintptr_t)arena<void>(0x400), arena<int32_t>(0x128)[0] = r.range(-1, 4);
+                               arena<uint32_t>(0x12c)[0] = (uint32_t)(uintptr_t)arena<void>(0x800), arena<int32_t>(0x134)[0] = r.range(-1, 4);
+                               for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x400)[i] = r.next(), arena<uint32_t>(0x800)[i] = r.next();
+                           },
+                           [](void *fn) { ((void(__thiscall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(lists_clear_marks);
+    // List::MoveIn(this, entry): an entry linked, half-linked or loose, moved into a list of one node
+    Test list_move_in{0x73ee30,
+                      [=](Rng &r) {
+                          uint32_t *link = arena<uint32_t>(0x20c), *a = arena<uint32_t>(0x300), *b = arena<uint32_t>(0x340);
+                          link[0] = r.range(0, 5) ? (uint32_t)(uintptr_t)a : 0, link[1] = r.range(0, 5) ? (uint32_t)(uintptr_t)b : 0;
+                          a[1] = r.range(0, 3) ? (uint32_t)(uintptr_t)link : 0, b[0] = r.range(0, 3) ? (uint32_t)(uintptr_t)link : 0;
+                          arena<uint32_t>(0x404)[0] = (uint32_t)(uintptr_t)arena<void>(0x500);
+                          arena<uint32_t>(0x500)[0] = (uint32_t)(uintptr_t)arena<void>(0x540), arena<uint32_t>(0x500)[1] = (uint32_t)(uintptr_t)arena<void>(0x540);
+                          arena<uint32_t>(0x540)[0] = (uint32_t)(uintptr_t)arena<void>(0x500), arena<uint32_t>(0x540)[1] = (uint32_t)(uintptr_t)arena<void>(0x500);
+                      },
+                      [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
+    quick(list_move_in);
+    // Memory::Move(to, from, n): overlapping either way and apart
+    Test memory_move{0xdfe1a0,
+                     [=](Rng &r) {
+                         for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x400)[i] = r.next();
+                         arena<int32_t>(0x10)[0] = r.range(0, 0x60), arena<int32_t>(0x10)[1] = r.range(0, 0x60), arena<uint32_t>(0x10)[2] = r.range(0, 0x50);
+                     },
+                     [](void *fn) {
+                         const int32_t *a = arena<int32_t>(0x10);
+                         return Result{(uint32_t)(((void *(__stdcall *)(void *, void *, uint32_t))fn)(arena<uint8_t>(0x400) + a[0], arena<uint8_t>(0x400) + a[1], (uint32_t)a[2]) == arena<uint8_t>(0x400) + a[0])};
+                     }};
+    quick(memory_move);
+    // Ranges::FindFrom(this, n, kind, v): eight entries chained forward, kinds 0-2
+    Test ranges_find_from{0x8bff50,
+                          [=](Rng &r) {
+                              arena<uint32_t>(0x100)[0] = (uint32_t)(uintptr_t)arena<void>(0x400), arena<uint32_t>(0x104)[0] = r.range(0, 8);
+                              for (int i = 0; i < 8; i++) {
+                                  uint8_t *e = arena<uint8_t>(0x400 + 16 * i);
+                                  e[1] = (uint8_t)r.range(0, 2), *(uint32_t *)(e + 4) = r.range(0, 2) ? i + 1 + r.range(0, 1) : 0xffffffffu;
+                                  const float lo = (float)r.range(0, 9);
+                                  *(float *)(e + 8) = lo, *(float *)(e + 0xc) = lo + (float)r.range(0, 3);
+                              }
+                              arena<uint32_t>(0x10)[0] = r.range(0, 9), arena<uint32_t>(0x14)[0] = r.range(0, 2) | (r.next() & 0xffffff00u);
+                              arena<float>(0x18)[0] = r.range(0, 9) ? (float)r.range(0, 12) : geo_pick(r);
+                          },
+                          [](void *fn) {
+                              return Result{(uint32_t)((uint8_t(__thiscall *)(void *, uint32_t, uint32_t, float))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x14)[0], arena<float>(0x18)[0])};
+                          }};
+    quick(ranges_find_from);
     // CrashDump::ExceptionName (the code in eax) and Device::ErrorText (in ecx): each code they know, its neighbours, and
     // any other; the text's place is the result
     static const uint32_t exception_codes[] = {0x40010005, 0x40010008, 0x80000002, 0x80000003, 0xc0000005, 0xc0000006, 0xc0000017, 0xc000001d,

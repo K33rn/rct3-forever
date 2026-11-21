@@ -2799,3 +2799,121 @@ static void __thiscall ride_count_585aa0(uint8_t *self, int32_t n) {
 }
 static const uint8_t ride_count_585aa0_original[] = {0x8b, 0x91, 0x90, 0x00, 0x00, 0x00, 0x8b, 0x41};
 REWRITE("Ride::Count585AA0", 0x585aa0, ride_count_585aa0_original, &ride_count_585aa0, &g_ride_counts);
+
+// ---- Cell::StepInside(this, x, y, direction) (0x71BF70): a byte cell position moved one step, still inside the grid? -------
+// Direction 0: x - 1, 1: x + 1, 2: y - 1, 3: y + 1 (bytes); 1 when x is at most +0x5C and y at most +0x5D, else 0; any
+// other direction 0 and no move.
+static volatile long g_cell_steps;
+static uint32_t __thiscall cell_step_inside(const uint8_t *self, uint8_t *x, uint8_t *y, uint32_t direction) {
+    g_cell_steps++;
+    volatile uint8_t *const px = x, *const py = y;
+    switch ((uint8_t)direction) {
+    case 0: *px = (uint8_t)(*px - 1); break;
+    case 1: *px = (uint8_t)(*px + 1); break;
+    case 2: *py = (uint8_t)(*py - 1); break;
+    case 3: *py = (uint8_t)(*py + 1); break;
+    default: return 0;
+    }
+    return *px <= self[0x5c] && *py <= self[0x5d];
+}
+static const uint8_t cell_step_inside_original[] = {0x0f, 0xb6, 0x44, 0x24, 0x0c, 0x83, 0xf8, 0x03};
+REWRITE("Cell::StepInside", 0x71bf70, cell_step_inside_original, &cell_step_inside, &g_cell_steps);
+
+// ---- Tree::UpdateUp(node) (0xBE7A90): a node's values (+8, +0xC) copied up its parents (+4) ----------------------------------
+// While the node is its parent's first child (+0x10) the parent takes the values and becomes the node; then the parent
+// it is the second child of (+0x1C) gets them at +0x14, and otherwise at +0x20.
+static volatile long g_tree_updates;
+static void __thiscall tree_update_up(const uint32_t *node) {
+    g_tree_updates++;
+    for (;;) {
+        volatile uint32_t *const p = (volatile uint32_t *)(uintptr_t)node[1];
+        if (!p)
+            return;
+        if (p[4] == (uint32_t)(uintptr_t)node) {
+            p[2] = node[2];
+            p[3] = node[3];
+            node = (const uint32_t *)(uintptr_t)node[1];
+            continue;
+        }
+        if (p[7] == (uint32_t)(uintptr_t)node)
+            p[5] = node[2], p[6] = node[3];
+        else
+            p[8] = node[2], p[9] = node[3];
+        return;
+    }
+}
+static const uint8_t tree_update_up_original[] = {0x8b, 0x41, 0x04, 0x85, 0xc0, 0x74, 0x48, 0x39};
+REWRITE("Tree::UpdateUp", 0xbe7a90, tree_update_up_original, &tree_update_up, &g_tree_updates);
+
+// ---- Pairs::InsertionSort(this) (0xCB2A00): pairs of 8 bytes (+0xC, count +0) sorted by their second value's low 16 bits ---
+// Each pair moves down past the ones whose value is not below its own.
+static volatile long g_insertion_sorts;
+static void __thiscall pairs_insertion_sort(const uint32_t *self) {
+    g_insertion_sorts++;
+    for (uint32_t i = 1; i < *(const volatile uint32_t *)self; i++) {
+        volatile uint32_t *const l = (volatile uint32_t *)(uintptr_t)self[3];
+        const uint32_t a = l[2 * i], b = l[2 * i + 1];
+        uint32_t j = i;
+        while (j && !((uint16_t)b > (uint16_t)l[2 * j - 1])) {
+            l[2 * j] = l[2 * j - 2];
+            l[2 * j + 1] = l[2 * j - 1];
+            j--;
+        }
+        l[2 * j] = a;
+        l[2 * j + 1] = b;
+    }
+}
+static const uint8_t pairs_insertion_sort_original[] = {0x8b, 0x01, 0xba, 0x01, 0x00, 0x00, 0x00, 0x3b};
+REWRITE("Pairs::InsertionSort", 0xcb2a00, pairs_insertion_sort_original, &pairs_insertion_sort, &g_insertion_sorts);
+
+// ---- Lists::ClearMarks(this) (0x9E2E60): the marks of two lists' entries cleared, and the lists emptied --------------------
+// 0x30-byte entries at +0x20 (count +0x28; mark +0x2C) and 0x20-byte ones at +0x2C (count +0x34; mark +0x1C); then +0x28,
+// +0x34, +0x38 and +0x40 cleared.
+static volatile long g_mark_clears;
+static void __thiscall lists_clear_marks(uint8_t *self) {
+    g_mark_clears++;
+    volatile int32_t *const t = (volatile int32_t *)self;
+    for (int32_t i = 0; i < t[0x28 / 4]; i++) *(volatile uint32_t *)((uint8_t *)(uintptr_t)t[0x20 / 4] + i * 0x30 + 0x2c) = 0;
+    for (int32_t i = 0; i < t[0x34 / 4]; i++) *(volatile uint32_t *)((uint8_t *)(uintptr_t)t[0x2c / 4] + i * 0x20 + 0x1c) = 0;
+    t[0x28 / 4] = 0, t[0x34 / 4] = 0, t[0x38 / 4] = 0, t[0x40 / 4] = 0;
+}
+static const uint8_t lists_clear_marks_original[] = {0x8b, 0x51, 0x28, 0x56, 0x33, 0xf6, 0x33, 0xc0};
+REWRITE("Lists::ClearMarks", 0x9e2e60, lists_clear_marks_original, &lists_clear_marks, &g_mark_clears);
+
+// ---- List::MoveIn(this, entry) (0x73EE30): an entry's link (+0xC) taken out of its list and put last in this's (+0x304) ----
+// It is taken out only when properly linked (both neighbours set and pointing back).
+static volatile long g_move_ins;
+static void __thiscall list_move_in(const uint8_t *self, uint8_t *entry) {
+    g_move_ins++;
+    volatile uint32_t *const link = (volatile uint32_t *)(entry + 0xc);
+    if (link) {
+        const uint32_t prev = link[1], next = link[0];
+        if (prev && next && ((volatile uint32_t *)(uintptr_t)next)[1] == (uint32_t)(uintptr_t)link && *(volatile uint32_t *)(uintptr_t)prev == (uint32_t)(uintptr_t)link) {
+            ((volatile uint32_t *)(uintptr_t)next)[1] = prev;
+            *(volatile uint32_t *)(uintptr_t)link[1] = link[0];
+            link[0] = 0;
+            link[1] = 0;
+        }
+    }
+    volatile uint32_t *const head = *(volatile uint32_t *const *)(self + 0x304);
+    link[1] = head[1];
+    *(volatile uint32_t *)(uintptr_t)head[1] = (uint32_t)(uintptr_t)link;
+    link[0] = (uint32_t)(uintptr_t)head;
+    head[1] = (uint32_t)(uintptr_t)link;
+}
+static const uint8_t list_move_in_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xc0, 0x0c, 0x74};
+REWRITE("List::MoveIn", 0x73ee30, list_move_in_original, &list_move_in, &g_move_ins);
+
+// ---- Memory::Move(to, from, n) (0xDFE1A0): bytes copied between places that may overlap; gives to -------------------------
+static volatile long g_memory_moves;
+static uint8_t *__stdcall memory_move(uint8_t *to, const uint8_t *from, uint32_t n) {
+    g_memory_moves++;
+    volatile uint8_t *const t = to;
+    if (to > from && to < from + n)
+        for (uint32_t i = n; i--;) t[i] = from[i];
+    else
+        for (uint32_t i = 0; i < n; i++) t[i] = from[i];
+    return to;
+}
+static const uint8_t memory_move_original[] = {0x55, 0x8b, 0xec, 0x8b, 0x45, 0x08, 0x8b, 0x4d};
+REWRITE("Memory::Move", 0xdfe1a0, memory_move_original, &memory_move, &g_memory_moves);

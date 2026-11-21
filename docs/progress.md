@@ -12,8 +12,8 @@ Understood   ██████████████████████�
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 12,424 | 2,078,934 bytes | 25.00% |
-| Documented, not rewritten yet | 13,295 | 6,237,815 bytes | 75.00% |
+| Rewritten | 12,431 | 2,079,499 bytes | 25.00% |
+| Documented, not rewritten yet | 13,288 | 6,237,250 bytes | 75.00% |
 | To do | 0 | 0 bytes | 0.00% |
 | **Game total** | **25,719** | **8,316,749 bytes** | |
 | Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |
@@ -3801,6 +3801,7 @@ Understood   ██████████████████████�
 | `0x71a900` | 48 | QueryInterface | 4 |
 | `0x71ab60` | 48 | QueryInterface | 0 |
 | `0x71abc0` | 105 | Factory::Lazy | 4 |
+| `0x71bf70` | 81 | Cell::StepInside | 2 |
 | `0x71bfe0` | 92 | Rect::AddCell | 3 |
 | `0x71cb30` | 30 | DeletingDestructor | 1 |
 | `0x71cb50` | 7 | BaseClass::SetClass | 1 |
@@ -3967,6 +3968,7 @@ Understood   ██████████████████████�
 | `0x73ec80` | 212 | ReferenceField::Load | 1 |
 | `0x73edc0` | 61 | Reference::Reference | 2 |
 | `0x73ee00` | 39 | Owner::Delete73EE00 | 1 |
+| `0x73ee30` | 81 | List::MoveIn | 4 |
 | `0x7404f0` | 120 | OBJECT_CONSTRUCT | 1 |
 | `0x740570` | 48 | ObjectArray::Free | 2 |
 | `0x7405a0` | 258 | ObjectArray::SetCapacity | 2 |
@@ -5540,6 +5542,7 @@ Understood   ██████████████████████�
 | `0x8bfd70` | 26 | OwnedPointer::Reset | 2 |
 | `0x8bfd90` | 157 | Array<16>::SetCapacity | 1 |
 | `0x8bfef0` | 93 | FreeList::Release | 2 |
+| `0x8bff50` | 80 | Ranges::FindFrom | 1 |
 | `0x8c0080` | 113 | Destructor::Steps | 4 |
 | `0x8c0100` | 99 | Terrain::CornerPosition | 71 |
 | `0x8c5340` | 30 | DeletingDestructor | 1 |
@@ -6620,6 +6623,7 @@ Understood   ██████████████████████�
 | `0x9e1ec0` | 153 | Blocks::Reset462FC0 | 1 |
 | `0x9e1f60` | 258 | ObjectArray::SetCapacity | 1 |
 | `0x9e2620` | 30 | DeletingDestructor | 1 |
+| `0x9e2e60` | 81 | Lists::ClearMarks | 3 |
 | `0x9e4740` | 69 | Part::Destroy6A5A80 | 3 |
 | `0x9e47a0` | 30 | DeletingDestructor | 0 |
 | `0x9e4920` | 30 | DeletingDestructor | 1 |
@@ -9014,6 +9018,7 @@ Understood   ██████████████████████�
 | `0xbe75e0` | 162 | Rect::UnionInto | 0 |
 | `0xbe7690` | 184 | Rect::Union | 2 |
 | `0xbe7840` | 7 | SetTable | 2 |
+| `0xbe7a90` | 80 | Tree::UpdateUp | 4 |
 | `0xbe8790` | 30 | DeletingDestructor | 1 |
 | `0xbe8900` | 7 | SetTable | 1 |
 | `0xbe8940` | 25 | FreeList::AddBE8940 | 1 |
@@ -9849,6 +9854,7 @@ Understood   ██████████████████████�
 | `0xcb28e0` | 91 | Array::Reserve | 5 |
 | `0xcb2940` | 91 | Array::Reserve | 5 |
 | `0xcb29a0` | 91 | Array::Reserve | 3 |
+| `0xcb2a00` | 81 | Pairs::InsertionSort | 2 |
 | `0xcb2a60` | 16 | Object::AllocStore | 1 |
 | `0xcb2a70` | 101 | Destructor::Steps | 1 |
 | `0xcb2b00` | 32 | Object::ArrayPush | 0 |
@@ -10148,6 +10154,7 @@ Understood   ██████████████████████�
 | `0xdf9fa0` | 30 | DeletingDestructor | 1 |
 | `0xdfb900` | 30 | DeletingDestructor | 1 |
 | `0xdfc120` | 30 | DeletingDestructor | 1 |
+| `0xdfe1a0` | 81 | Memory::Move | 0 |
 | `0xdff0c0` | 34 | Inner::DeleteDFF0C0 | 1 |
 | `0xdff1b0` | 100 | Com::QueryDFF1B0 | 11 |
 | `0xdff220` | 100 | Com::QueryDFF1B0 | 14 |
@@ -16842,7 +16849,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x71bb40` | 296 | - | 1 |
 | `0x71bce0` | 107 | - | 1 |
 | `0x71be20` | 322 | - | 9 |
-| `0x71bf70` | 81 | - | 2 |
 | `0x71c040` | 481 | - | 2 |
 | `0x71c230` | 562 | - | 2 |
 | `0x71c470` | 492 | - | 4 |
@@ -17069,7 +17075,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x73e600` | 168 | - | 2 |
 | `0x73e6b0` | 199 | - | 4 |
 | `0x73e790` | 481 | - | 1 |
-| `0x73ee30` | 81 | - | 4 |
 | `0x73ee90` | 2,991 | - | 2 |
 | `0x73fa60` | 1,904 | - | 1 |
 | `0x740390` | 79 | - | 1 |
@@ -19161,7 +19166,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x8bfb10` | 419 | - | 2 |
 | `0x8bfe50` | 94 | - | 3 |
 | `0x8bfeb0` | 64 | - | 0 |
-| `0x8bff50` | 80 | - | 1 |
 | `0x8bffa0` | 132 | - | 2 |
 | `0x8c0030` | 67 | - | 1 |
 | `0x8c0170` | 925 | - | 2 |
@@ -20664,7 +20668,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x9e2a60` | 583 | - | 1 |
 | `0x9e2cb0` | 380 | - | 0 |
 | `0x9e2e30` | 41 | - | 0 |
-| `0x9e2e60` | 81 | - | 3 |
 | `0x9e2ec0` | 78 | - | 1 |
 | `0x9e2f10` | 202 | - | 1 |
 | `0x9e2fe0` | 185 | - | 2 |
@@ -23605,7 +23608,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xbe7950` | 50 | - | 3 |
 | `0xbe79b0` | 75 | - | 41 |
 | `0xbe7a00` | 133 | - | 5 |
-| `0xbe7a90` | 80 | - | 4 |
 | `0xbe7b00` | 673 | - | 1 |
 | `0xbe7db0` | 75 | - | 5 |
 | `0xbe7e00` | 645 | - | 1 |
@@ -24975,7 +24977,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xcb2660` | 154 | - | 3 |
 | `0xcb2700` | 180 | - | 1 |
 | `0xcb27c0` | 284 | - | 2 |
-| `0xcb2a00` | 81 | - | 2 |
 | `0xcb2ba0` | 154 | - | 1 |
 | `0xcb2c60` | 599 | - | 1 |
 | `0xcb3080` | 662 | - | 4 |
@@ -25658,7 +25659,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xdfdfd0` | 55 | - | 2 |
 | `0xdfe010` | 59 | - | 2 |
 | `0xdfe0c0` | 18 | - | 3 |
-| `0xdfe1a0` | 81 | - | 0 |
 | `0xdfe200` | 810 | - | 1 |
 | `0xdfe530` | 493 | - | 0 |
 | `0xdfe780` | 86 | - | 1 |

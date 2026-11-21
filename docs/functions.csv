@@ -8171,7 +8171,7 @@ address,size,name,callers,status
 0x71bb40,296,,1,documented
 0x71bce0,107,,1,documented
 0x71be20,322,,9,documented
-0x71bf70,81,,2,documented
+0x71bf70,81,Cell::StepInside,2,rewritten
 0x71bfe0,92,Rect::AddCell,3,rewritten
 0x71c040,481,,2,documented
 0x71c230,562,,2,documented
@@ -8591,7 +8591,7 @@ address,size,name,callers,status
 0x73ec80,212,ReferenceField::Load,1,rewritten
 0x73edc0,61,Reference::Reference,2,rewritten
 0x73ee00,39,Owner::Delete73EE00,1,rewritten
-0x73ee30,81,,4,documented
+0x73ee30,81,List::MoveIn,4,rewritten
 0x73ee90,2991,,2,documented
 0x73fa60,1904,,1,documented
 0x740390,79,,1,documented
@@ -12256,7 +12256,7 @@ address,size,name,callers,status
 0x8bfe50,94,,3,documented
 0x8bfeb0,64,,0,documented
 0x8bfef0,93,FreeList::Release,2,rewritten
-0x8bff50,80,,1,documented
+0x8bff50,80,Ranges::FindFrom,1,rewritten
 0x8bffa0,132,,2,documented
 0x8c0030,67,,1,documented
 0x8c0080,113,Destructor::Steps,4,rewritten
@@ -14839,7 +14839,7 @@ address,size,name,callers,status
 0x9e2a60,583,,1,documented
 0x9e2cb0,380,,0,documented
 0x9e2e30,41,,0,documented
-0x9e2e60,81,,3,documented
+0x9e2e60,81,Lists::ClearMarks,3,rewritten
 0x9e2ec0,78,,1,documented
 0x9e2f10,202,,1,documented
 0x9e2fe0,185,,2,documented
@@ -20174,7 +20174,7 @@ address,size,name,callers,status
 0xbe7950,50,,3,documented
 0xbe79b0,75,,41,documented
 0xbe7a00,133,,5,documented
-0xbe7a90,80,,4,documented
+0xbe7a90,80,Tree::UpdateUp,4,rewritten
 0xbe7b00,673,,1,documented
 0xbe7db0,75,,5,documented
 0xbe7e00,645,,1,documented
@@ -22379,7 +22379,7 @@ address,size,name,callers,status
 0xcb28e0,91,Array::Reserve,5,rewritten
 0xcb2940,91,Array::Reserve,5,rewritten
 0xcb29a0,91,Array::Reserve,3,rewritten
-0xcb2a00,81,,2,documented
+0xcb2a00,81,Pairs::InsertionSort,2,rewritten
 0xcb2a60,16,Object::AllocStore,1,rewritten
 0xcb2a70,101,Destructor::Steps,1,rewritten
 0xcb2b00,32,Object::ArrayPush,0,rewritten
@@ -26206,7 +26206,7 @@ address,size,name,callers,status
 0xdfdfd0,55,,2,documented
 0xdfe010,59,,2,documented
 0xdfe0c0,18,,3,documented
-0xdfe1a0,81,,0,documented
+0xdfe1a0,81,Memory::Move,0,rewritten
 0xdfe200,810,,1,documented
 0xdfe530,493,,0,documented
 0xdfe780,86,,1,documented

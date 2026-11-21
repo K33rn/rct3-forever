@@ -4014,3 +4014,22 @@ static void __thiscall ride_in_range(uint8_t *self, const uint8_t *other) {
 }
 static const uint8_t ride_in_range_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8a, 0x42, 0x20, 0x84};
 REWRITE("Ride::InRange", 0x55f940, ride_in_range_original, &ride_in_range, &g_in_ranges);
+
+// ---- Ranges::FindFrom(this, n, kind, v) (0x8BFF50): from entry n along the chain, an entry of a kind whose range holds v ----
+// Entries of 16 bytes at +0 (count +4): kind byte +1, next +4, range +8 to +0xC (ends included). Gives 1 in the low byte
+// when found, else 0.
+static volatile long g_range_finds;
+static uint8_t __thiscall ranges_find_from(const uint32_t *self, uint32_t n, uint32_t kind, float v) {
+    g_range_finds++;
+    const uint32_t count = self[1];
+    const uint8_t *const entries = (const uint8_t *)(uintptr_t)self[0];
+    for (uint32_t i = n; i < count;) {
+        const uint8_t *const e = entries + i * 16;
+        if (e[1] == (uint8_t)kind && (long double)v >= (long double)*(const float *)(e + 8) && (long double)v <= (long double)*(const float *)(e + 0xc))
+            return 1;
+        i = *(const uint32_t *)(e + 4);
+    }
+    return 0;
+}
+static const uint8_t ranges_find_from_original[] = {0x8b, 0x44, 0x24, 0x04, 0x53, 0x56, 0x8b, 0x71};
+REWRITE("Ranges::FindFrom", 0x8bff50, ranges_find_from_original, &ranges_find_from, &g_range_finds);
