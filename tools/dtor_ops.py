@@ -15,7 +15,7 @@ pe = pefile.PE(sys.argv[1], fast_load=True); img = pe.get_memory_mapped_image();
 md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
 md.detail = True
 SAVED = ('ebx', 'esi', 'edi', 'ebp')
-SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET, IFB, GMOVE, ARG, GCALL, UNLINK, MCALL, GIF, IFNEG1 = range(23)   # the step kinds (dtor_ops.cpp)
+SET, IF, VCALL, CDECL, CALL, GCOPY, SETM, REL, FREEM, TEXTREL, SETP, CALLP, VECDEL, LOOP, GSET, IFB, GMOVE, ARG, GCALL, UNLINK, MCALL, GIF, IFNEG1, REL1 = range(24)   # the step kinds (dtor_ops.cpp)
 FREE_ALIGNED, FREE, VEC_DTOR = 0xbce010, 0xbce000, 0xddcf39
 
 
@@ -177,6 +177,27 @@ def read(a, n):
                     i += 2
                     continue
                 raise Unknown('a member pushed for something else')
+            # release a counted member whose count is checked first: mov eax, [member + rc]; cmp eax, 1; jne X; mov r, [member];
+            # push 1; call [r + slot]; jmp J; X: dec eax; mov [member + rc], eax; J (kind 23: at 1 deleted, else counted down)
+            q = ins[i:i + 9]
+            if len(q) == 9 and x.mnemonic == 'mov' and o[0].type == x86.X86_OP_REG and is_mem(o[1]) and not o[1].mem.index and \
+                    ins[0].reg_name(o[1].mem.base) == member and 0 < o[1].mem.disp < 0x100:
+                cr, rc = reg(o[0]), o[1].mem.disp
+                t_ = q[3].operands[0].reg if q[3].mnemonic == 'mov' and q[3].operands[0].type == x86.X86_OP_REG else None
+                tn = ins[0].reg_name(t_) if t_ else None
+                if q[1].mnemonic == 'cmp' and q[1].op_str == f'{cr}, 1' and q[2].mnemonic == 'jne' and \
+                        tn and q[3].op_str == f'{tn}, dword ptr [{member}]' and q[4].mnemonic == 'push' and q[4].op_str in ('1', cr) and \
+                        q[5].mnemonic == 'call' and is_mem(q[5].operands[0]) and ins[0].reg_name(q[5].operands[0].mem.base) == tn and \
+                        not q[5].operands[0].mem.index and 0 <= q[5].operands[0].mem.disp < 0x40 and \
+                        q[6].mnemonic == 'jmp' and q[2].operands[0].imm == q[7].address and \
+                        q[7].mnemonic == 'dec' and q[7].op_str == cr and q[8].mnemonic == 'mov' and is_mem(q[8].operands[0]) and not q[8].operands[0].mem.index and ins[0].reg_name(q[8].operands[0].mem.base) == member and q[8].operands[0].mem.disp == rc and q[8].operands[1].type == x86.X86_OP_REG and reg(q[8].operands[1]) == cr and \
+                        q[6].operands[0].imm == q[8].address + q[8].size and member not in (cr, tn):
+                    out.append((REL1, 0, rc, q[5].operands[0].mem.disp, 0))
+                    for r in ('eax', 'ecx', 'edx', cr, tn):
+                        regs[r] = None
+                    member = None
+                    i += 9
+                    continue
             # release a counted member: dec word [member + rc]; cmp word [member + rc], 0; jne skip; mov r, [member]; (push 1); call [r + slot]
             if x.mnemonic == 'dec' and is_mem(o[0]) and o[0].size == 2 and ins[0].reg_name(o[0].mem.base) == member and member == 'ecx':
                 c, j = ins[i + 1], ins[i + 2]

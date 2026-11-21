@@ -35,6 +35,8 @@
 //  20 MCALL    the function a called on the object the member at b points to, whatever it is (count arguments, as CALL)
 //  21 GIF      the object the global a points to taken if there is one, else the next b steps are passed over
 //  22 IFNEG1   when the object's value at a is -1 the next b steps are passed over
+//  23 REL1     the taken member's count (a dword at its + `small`) looked at first: at 1 its table entry at a is called
+//              with 1 (the count left as it is), else the count is taken down by one
 // The exception frame the game keeps while it does this isn't rebuilt (as in the other rewrites of destructors).
 #include "rewrite.h"
 
@@ -73,6 +75,13 @@ __attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorSt
             member = *(uint8_t *volatile *)s.a;
             if (!member) i += s.b;
             break;
+        case 23: {
+            volatile uint32_t *const count = (volatile uint32_t *)(member + s.small);
+            const uint32_t now = *count;
+            if (now == 1) ((void(__thiscall *)(void *, uint32_t))(*(void ***)member)[s.a / 4])(member, 1);
+            else *count = now - 1;
+            break;
+        }
         case 22:
             if (*(volatile int32_t *)(self + s.a) == -1) i += s.b;
             break;

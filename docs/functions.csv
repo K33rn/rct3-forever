@@ -1062,7 +1062,7 @@ address,size,name,callers,status
 0x456d10,56,,0,documented
 0x456e60,116,,1,documented
 0x456f60,99,Factory::Global,1,rewritten
-0x456fd0,296,,1,documented
+0x456fd0,296,CrashDump::ExceptionName,1,rewritten
 0x4571b0,6,,3,documented
 0x457210,102,,2,documented
 0x457290,68,,1,documented
@@ -1612,7 +1612,7 @@ address,size,name,callers,status
 0x482860,22,,1,documented
 0x482880,46,,0,documented
 0x4828b0,24,,4,documented
-0x482950,136,,1,documented
+0x482950,136,Destructor::Steps,1,rewritten
 0x482a00,61,,0,documented
 0x482a40,294,,1,documented
 0x482b70,458,,1,documented
@@ -1935,7 +1935,7 @@ address,size,name,callers,status
 0x499e90,101,Factory::GlobalWith,1,rewritten
 0x499f00,210,,1,documented
 0x499fe0,30,DeletingDestructor,2,rewritten
-0x49a060,77,,3,documented
+0x49a060,77,Destructor::Steps,3,rewritten
 0x49a0c0,36,OwnedPair::Free,2,rewritten
 0x49a120,43,IdMap::Free,7,rewritten
 0x49a150,628,IdMap::FindOrAdd,2,rewritten
@@ -8334,7 +8334,7 @@ address,size,name,callers,status
 0x727cc0,111,,2,documented
 0x727d30,170,,8,documented
 0x727de0,183,,2,documented
-0x727ea0,631,,2,documented
+0x727ea0,631,Quad::Normal,2,rewritten
 0x728120,1470,,4,documented
 0x7286f0,729,,3,documented
 0x7289d0,100,,3,documented
@@ -13355,7 +13355,7 @@ address,size,name,callers,status
 0x9589a0,26,OwnedPointer::Reset,2,rewritten
 0x9589c0,61,Array<4>::Allocate,0,rewritten
 0x958a00,130,Array<4>::SetCapacity,2,rewritten
-0x958a90,173,,3,documented
+0x958a90,173,Destructor::Steps,3,rewritten
 0x958b40,258,,4,documented
 0x958c50,55,,1,documented
 0x958c90,290,,1,documented
@@ -14317,7 +14317,7 @@ address,size,name,callers,status
 0x9b0ca0,4249,,1,documented
 0x9b1d50,654,,1,documented
 0x9b1fe0,436,,1,documented
-0x9b21a0,297,,1,documented
+0x9b21a0,297,Destructor::Steps,1,rewritten
 0x9b22e0,30,DeletingDestructor,2,rewritten
 0x9b2340,533,Window::Titled,4,rewritten
 0x9b25a0,117,Text::Create,1,rewritten
@@ -21635,7 +21635,7 @@ address,size,name,callers,status
 0xc59f00,114,Maker::MakeC59F00,1,rewritten
 0xc5a0e0,259,,0,documented
 0xc5a1f0,929,Quaternion::Slerp,10,rewritten
-0xc5a5a0,660,,0,documented
+0xc5a5a0,660,Vector::AngleBetween,0,rewritten
 0xc5a860,88,,0,documented
 0xc5a8f0,19,,2,documented
 0xc5abc0,817,,2,documented
@@ -23031,7 +23031,7 @@ address,size,name,callers,status
 0xce5f00,7,SetTable,1,rewritten
 0xce5f10,351,ResourceType::ResourceType,1,rewritten
 0xce6070,30,DeletingDestructor,1,rewritten
-0xce6090,345,,2,documented
+0xce6090,345,Device::ErrorText,2,rewritten
 0xce6290,110,,7,documented
 0xce6300,26,,4,documented
 0xce6320,40,,1,documented

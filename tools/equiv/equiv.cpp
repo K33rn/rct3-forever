@@ -5625,6 +5625,63 @@ static std::vector<Test> tests() {
                         },
                         [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
     quick(corner_offsets);
+    // Vector::AngleBetween(before, a, b, c): four vectors, some of them 0 (a length of 0 is passed over), some short or
+    // long so the angle lands outside a turn either way, some odd values (signed zeros, NaNs, huge ones)
+    Test vector_angle_between{0xc5a5a0,
+                              [=](Rng &r) {
+                                  for (int v = 0; v < 4; v++) {
+                                      const int kind = r.range(0, 5);
+                                      const float scale = kind == 0 ? 0.0f : kind == 1 ? r.real(0, 0.5f) : kind == 2 ? r.real(5, 60) : 1.0f;
+                                      for (int i = 0; i < 3; i++) arena<float>(0x100 + v * 0x10)[i] = kind == 4 ? geo_pick(r) : scale * r.real(-1, 1);
+                                  }
+                              },
+                              [](void *fn) {
+                                  ((void(__fastcall *)(void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x120), arena<void>(0x130));
+                                  return Result{};
+                              }};
+    quick(vector_angle_between);
+    // Quad::Normal(corners, five outputs): four corner normals (16 bytes apart), sometimes one the other's opposite so a
+    // sum is 0 (its z set to 1), sometimes odd values
+    Test quad_normal{0x727ea0,
+                     [=](Rng &r) {
+                         for (int v = 0; v < 4; v++)
+                             for (int i = 0; i < 4; i++) arena<float>(0x100 + v * 0x10)[i] = r.range(0, 7) ? r.real(-1, 1) : geo_pick(r);
+                         if (r.range(0, 2) == 0) {   // (two corners that cancel)
+                             const int a = r.range(0, 3), b = (a + 1 + r.range(0, 2)) % 4;
+                             for (int i = 0; i < 3; i++) arena<float>(0x100 + b * 0x10)[i] = -arena<float>(0x100 + a * 0x10)[i];
+                         }
+                         for (int i = 0; i < 20; i++) arena<uint32_t>(0x200)[i] = r.next();
+                     },
+                     [](void *fn) {
+                         ((void(__fastcall *)(void *, void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x210),
+                                                                                                 arena<void>(0x220), arena<void>(0x230), arena<void>(0x240));
+                         return Result{};
+                     }};
+    quick(quad_normal);
+    // CrashDump::ExceptionName (the code in eax) and Device::ErrorText (in ecx): each code they know, its neighbours, and
+    // any other; the text's place is the result
+    static const uint32_t exception_codes[] = {0x40010005, 0x40010008, 0x80000002, 0x80000003, 0xc0000005, 0xc0000006, 0xc0000017, 0xc000001d,
+                                               0xc0000025, 0xc0000026, 0xc000008c, 0xc000008d, 0xc000008e, 0xc000008f, 0xc0000090, 0xc0000091,
+                                               0xc0000092, 0xc0000093, 0xc0000094, 0xc0000095, 0xc0000096, 0xc00000fd, 0xc0000142, 0xe06d7363};
+    static const uint32_t sound_codes[] = {0x00000000, 0x0878000a, 0x80004001, 0x80004002, 0x80004003, 0x80004005, 0x80040110, 0x80070005,
+                                           0x8007000e, 0x80070057, 0x8878000a, 0x8878001e, 0x88780032, 0x88780046, 0x88780064, 0x88780078,
+                                           0x88780082, 0x88780096, 0x887800a0, 0x887800aa, 0x887800b4, 0x887800be, 0x88781161};
+    Test crash_exception_name{0x456fd0,
+                              [](Rng &r) {
+                                  const uint32_t k = exception_codes[r.range(0, 23)];
+                                  arena<uint32_t>(0x10)[0] = r.range(0, 3) == 0 ? r.next() : k + (uint32_t)r.range(-2, 2) * (uint32_t)(r.range(0, 1) ? 1 : 0x10);
+                              },
+                              [](void *fn) {
+                                  return Result{(uint32_t)(uintptr_t)((const char *(__attribute__((regparm(1))) *)(uint32_t))fn)(arena<uint32_t>(0x10)[0])};
+                              }};
+    quick(crash_exception_name);
+    Test device_error_text{0xce6090,
+                           [](Rng &r) {
+                               const uint32_t k = sound_codes[r.range(0, 22)];
+                               arena<uint32_t>(0x10)[0] = r.range(0, 3) == 0 ? r.next() : k + (uint32_t)r.range(-2, 2) * (uint32_t)(r.range(0, 1) ? 1 : 0xa);
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((const char *(__fastcall *)(uint32_t))fn)(arena<uint32_t>(0x10)[0])}; }};
+    quick(device_error_text);
     // QuadTree::CullPlanes and CullBox: the three walks are stand-ins; the tree's box against planes or a box
     auto quad_cull_setup = [=](Rng &r) {
         uint32_t *tree = arena<uint32_t>(0x100);
@@ -7455,11 +7512,11 @@ static std::vector<Test> tests() {
                              for (uint32_t i = 0; i < (object_end - 0x1000) / 4; i++) arena<uint32_t>(0x1000)[i] = r.next();
                              // what each member needs, over all the steps: a call or count belongs to the member taken last
                              struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken, array; uint32_t items_count_at; bool looped, no_sign;
-                                           uint32_t record, place; bool all_there; };
+                                           uint32_t record, place; bool all_there, count32; };
                              std::vector<Need> needs;
                              auto need = [&](uint32_t field) -> Need & {
                                  for (Need &x : needs) if (x.field == field) return x;
-                                 needs.push_back({field, 0x40, 0, 0, false, false, false, 0, false, false, 4, 0, false});
+                                 needs.push_back({field, 0x40, 0, 0, false, false, false, 0, false, false, 4, 0, false, false});
                                  return needs.back();
                              };
                              uint32_t current = 0;
@@ -7475,6 +7532,7 @@ static std::vector<Test> tests() {
                                  }
                                  if (s[0] == 2) need(current).arity = (int)s[1];
                                  if (s[0] == 7) need(current).arity = (int)s[1], need(current).count_at = s[2];
+                                 if (s[0] == 23) need(current).arity = 1, need(current).count_at = s[2], need(current).count32 = true;   // (a dword count)
                                  if (s[0] == 9) need(s[3]).text = true;
                                  if (s[0] == 12) need(current).array = true;
                                  if (s[0] == 10) { Need &x = need(current); if (x.size < ((s[3] + 0x43) & ~0x3fu)) x.size = (s[3] + 0x43) & ~0x3fu; }
@@ -7495,7 +7553,7 @@ static std::vector<Test> tests() {
                                          uint32_t *block = arena<uint32_t>(next);
                                          for (uint32_t i = 0; i < x.size / 4; i++) block[i] = r.next();
                                          block[0] = (uint32_t)(uintptr_t)g_dtor_tables[x.arity];
-                                         if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
+                                         if (x.count_at && x.count32) *(uint32_t *)((uint8_t *)block + x.count_at) = (uint32_t)r.range(1, 2); else if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
                                          list[k] = (uint32_t)(uintptr_t)block;
                                          next += (x.size + 15) & ~15u;
                                      }
@@ -7513,7 +7571,7 @@ static std::vector<Test> tests() {
                                  uint32_t *block = arena<uint32_t>(next);
                                  for (uint32_t i = 0; i < x.size / 4; i++) block[i] = r.next();
                                  block[0] = x.text ? (uint32_t)r.range(1, 2) : (uint32_t)(uintptr_t)g_dtor_tables[x.arity];
-                                 if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
+                                 if (x.count_at && x.count32) *(uint32_t *)((uint8_t *)block + x.count_at) = (uint32_t)r.range(1, 2); else if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
                                  *arena<uint32_t>(0x1000 + x.field) = (uint32_t)(uintptr_t)block;
                                  if (x.array) {   // an array of records: its count just before the items
                                      block[3] = (uint32_t)r.range(0, 5);
@@ -7546,7 +7604,7 @@ static std::vector<Test> tests() {
                                              uint32_t *block = arena<uint32_t>(next);
                                              for (uint32_t k = 0; k < x.size / 4; k++) block[k] = r.next();
                                              block[0] = (uint32_t)(uintptr_t)g_dtor_tables[x.arity];
-                                             if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
+                                             if (x.count_at && x.count32) *(uint32_t *)((uint8_t *)block + x.count_at) = (uint32_t)r.range(1, 2); else if (x.count_at) *(uint16_t *)((uint8_t *)block + x.count_at) = (uint16_t)r.range(1, 2);
                                              if (x.array) block[3] = (uint32_t)r.range(0, 5);
                                              arena<uint32_t>(0x40)[i] = (uint32_t)(uintptr_t)(x.array ? block + 4 : block);
                                              next += (x.size + 15) & ~15u;
