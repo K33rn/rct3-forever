@@ -99,3 +99,268 @@ static uint32_t __fastcall ride_case(uint32_t code) {
 }
 static const uint8_t ride_case_original[] = {0x8d, 0x81, 0x7c, 0xff, 0xff, 0xff, 0x83, 0xf8};
 REWRITE("Ride::Case7AD8A0", 0x7ad8a0, ride_case_original, &ride_case, &g_ride_cases);
+
+// A 4x4 identity matrix written as the game writes it (whole dwords)
+static void identity_matrix(uint32_t *out) {
+    volatile uint32_t *const o = out;
+    for (int i = 0; i < 16; i++) o[i] = (i % 5 == 0) ? 0x3f800000 : 0;
+}
+
+// ---- Matrices::Get(this, out, n) (0xCEEFB0): matrix n (64 bytes each, at +0x30; count +0x2C) copied out, or the
+// identity when n is outside the list --------------------------------------------------------------------------------
+static volatile long g_matrix_gets;
+static void __thiscall matrices_get(const uint8_t *self, uint32_t *out, int32_t n) {
+    g_matrix_gets++;
+    if (n < 0 || n >= *(const int32_t *)(self + 0x2c)) {
+        identity_matrix(out);
+        return;
+    }
+    const uint32_t *const m = (const uint32_t *)(*(const uint8_t *const *)(self + 0x30) + n * 64);
+    for (int i = 0; i < 16; i++) ((volatile uint32_t *)out)[i] = m[i];
+}
+static const uint8_t matrices_get_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Matrices::Get", 0xceefb0, matrices_get_original, &matrices_get, &g_matrix_gets);
+
+// ---- Object::Matrix(this, out) (0x4CC210): the matrix of the object's part (+0x41C, its matrix at +0x60) copied out,
+// or the identity when it has none ---------------------------------------------------------------------------------------
+static volatile long g_object_matrices;
+static void __thiscall object_matrix(const uint8_t *self, uint32_t *out) {
+    g_object_matrices++;
+    const uint8_t *const part = *(const uint8_t *const *)(self + 0x41c);
+    if (!part) {
+        identity_matrix(out);
+        return;
+    }
+    for (int i = 0; i < 16; i++) ((volatile uint32_t *)out)[i] = ((const uint32_t *)(part + 0x60))[i];
+}
+static const uint8_t object_matrix_original[] = {0x8b, 0x81, 0x1c, 0x04, 0x00, 0x00, 0x33, 0xc9};
+REWRITE("Object::Matrix", 0x4cc210, object_matrix_original, &object_matrix, &g_object_matrices);
+
+// ---- HandleRef::FromRef(this, from) (0x98AC70): this made a copy of another handle record -----------------------------
+// Two references (+0 and +0x1C: the reference base 0xF26AE0, a pointer to themselves at +0x10 of each, the object
+// referred to with its count (+8) raised, and their list node put first in that object's list (its +0x20)); +0x14 and
+// the counted value at +0x18 (its count raised); the rest (+0x30 to +0x54, a byte at +0x40) copied.
+static volatile long g_handle_refs;
+static void handle_ref_link(uint32_t *ref, uint32_t *object) {
+    volatile uint32_t *const r = ref;
+    ((volatile uint32_t *)object)[2]++;
+    r[1] = (uint32_t)(uintptr_t)object;
+    volatile uint32_t *const list = (volatile uint32_t *)(uintptr_t)object[8];
+    r[2] = list[0];
+    ((volatile uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)&ref[2];
+    r[3] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)&ref[2];
+}
+static uint32_t *__thiscall handle_ref_from_ref(uint32_t *self, const uint32_t *from) {
+    g_handle_refs++;
+    volatile uint32_t *const t = self;
+    t[0] = 0xf26ae0;
+    t[4] = (uint32_t)(uintptr_t)self;
+    handle_ref_link(self, (uint32_t *)(uintptr_t)from[1]);
+    t[5] = from[5];
+    t[6] = from[6];
+    (*(volatile uint32_t *)(uintptr_t)from[6])++;
+    t[7] = 0xf26ae0;
+    t[11] = (uint32_t)(uintptr_t)&self[7];
+    handle_ref_link(self + 7, (uint32_t *)(uintptr_t)from[8]);
+    for (int i = 12; i < 16; i++) t[i] = from[i];
+    ((volatile uint8_t *)self)[0x40] = ((const uint8_t *)from)[0x40];
+    for (int i = 17; i < 22; i++) t[i] = from[i];
+    return self;
+}
+static const uint8_t handle_ref_from_ref_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0xc7, 0x00};
+REWRITE("HandleRef::FromRef", 0x98ac70, handle_ref_from_ref_original, &handle_ref_from_ref, &g_handle_refs);
+
+// ---- TrackImporter::MapPieceCode(code, other) (0xA3FAB0): an imported piece code (0-9) mapped to the game's ------------
+// By one of two tables, the second when the flag (a byte) is set.
+static volatile long g_piece_codes;
+static int32_t __stdcall track_importer_map_piece_code(int32_t code, uint32_t other) {
+    g_piece_codes++;
+    static const int32_t tables[20] = {0, 1, 2, 3, 4, 5, 6, 7, 3, 6, 0, 1, 1, 2, 4, 4, 5, 7, 3, 6};
+    return tables[code + ((other & 0xff) ? 10 : 0)];
+}
+static const uint8_t track_importer_map_piece_code_original[] = {0x83, 0xec, 0x50, 0xb9, 0x04, 0x00, 0x00, 0x00};
+REWRITE("TrackImporter::MapPieceCode", 0xa3fab0, track_importer_map_piece_code_original, &track_importer_map_piece_code, &g_piece_codes);
+
+// ---- Object59F270::Object59F270(this, m, a, b, c, point, flag) (0x59F270): a record from a matrix and values ----------
+// The table 0xF3DC68; +0x10 row 0's first two values, +0x20, +0x30, +0x40 rows 1-3's first three; +0x50 a, b, c; +0x60
+// the point; +0x70 the flag and a cleared byte; an empty list at +0x74 (its head +0x80 pointing at itself through +0x74,
+// +0x84 back to it); +0x8C cleared.
+static volatile long g_object_59f270s;
+static uint32_t *__thiscall object_59f270(uint32_t *self, const uint32_t *m, uint32_t a, uint32_t b, uint32_t c, const uint32_t *point, uint32_t flag) {
+    g_object_59f270s++;
+    volatile uint32_t *const t = self;
+    t[0] = 0xf3dc68;
+    t[4] = m[0], t[5] = m[1];
+    for (int row = 1; row < 4; row++)
+        for (int k = 0; k < 3; k++) t[4 + 4 * row + k] = m[4 * row + k];
+    t[0x50 / 4] = a, t[0x54 / 4] = b, t[0x58 / 4] = c;
+    t[0x60 / 4] = point[0], t[0x64 / 4] = point[1], t[0x68 / 4] = point[2];
+    ((volatile uint8_t *)self)[0x70] = (uint8_t)flag;
+    ((volatile uint8_t *)self)[0x71] = 0;
+    t[0x7c / 4] = 0, t[0x88 / 4] = 0, t[0x78 / 4] = 0, t[0x80 / 4] = 0;
+    t[0x74 / 4] = (uint32_t)(uintptr_t)(self + 0x80 / 4);
+    t[0x84 / 4] = (uint32_t)(uintptr_t)(self + 0x74 / 4);
+    t[0x8c / 4] = 0;
+    return self;
+}
+static const uint8_t object_59f270_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0xc7, 0x00};
+REWRITE("Object59F270::Object59F270", 0x59f270, object_59f270_original, &object_59f270, &g_object_59f270s);
+
+// ---- Rect::SideCell(this, n, x, y) (0xBAD250): the cell beside place n along one side of a rectangle -------------------
+// When n is under the side's length (+0x1EC) and the side (+0x1E4) is 0-3: from the corner (+0x1DC, +0x1E0, bytes)
+// side 0 gives (x + 1, y + n), 1 (x + n, y - 1), 2 (x - 1, y + n), 3 (x + n, y + 1); otherwise nothing is written.
+static volatile long g_side_cells;
+static void __thiscall rect_side_cell(const uint8_t *self, int32_t n, uint8_t *x, uint8_t *y) {
+    g_side_cells++;
+    if (n >= *(const int32_t *)(self + 0x1ec) || *(const uint32_t *)(self + 0x1e4) > 3)
+        return;
+    const uint8_t cx = self[0x1dc], cy = self[0x1e0];
+    switch (*(const uint32_t *)(self + 0x1e4)) {
+    case 0: *(volatile uint8_t *)x = (uint8_t)(cx + 1), *(volatile uint8_t *)y = (uint8_t)(cy + n); break;
+    case 1: *(volatile uint8_t *)x = (uint8_t)(cx + n), *(volatile uint8_t *)y = (uint8_t)(cy - 1); break;
+    case 2: *(volatile uint8_t *)x = (uint8_t)(cx - 1), *(volatile uint8_t *)y = (uint8_t)(cy + n); break;
+    default: *(volatile uint8_t *)x = (uint8_t)(cx + n), *(volatile uint8_t *)y = (uint8_t)(cy + 1); break;
+    }
+}
+static const uint8_t rect_side_cell_original[] = {0x8b, 0x44, 0x24, 0x04, 0x3b, 0x81, 0xec, 0x01};
+REWRITE("Rect::SideCell", 0xbad250, rect_side_cell_original, &rect_side_cell, &g_side_cells);
+
+// ---- Object::SetHeld(this, on) (0xC5E9F0): a held mode (+0x110) switched -----------------------------------------------
+// The byte is set to the value given; when that differs from what it was, nothing more. Otherwise, on: the flags (+0x1C) are kept at +0x120 and become (flags without bits 0-1) | 0x180;
+// the values at +0xD8, +0xF0, +0xF4 are kept at +0x114 to +0x11C; the partner's (+0x104) +0xD8 and this one's are
+// cleared. Off: all of it put back (the partner's +0xD8 too).
+static volatile long g_held_switches;
+static void __thiscall object_set_held(uint8_t *self, uint32_t on_arg) {
+    g_held_switches++;
+    volatile uint32_t *const s = (volatile uint32_t *)self;
+    const uint8_t on = (uint8_t)on_arg, old = self[0x110];
+    ((volatile uint8_t *)self)[0x110] = on;
+    if (on != old)   // (as the game has it: a change does nothing more; the same value given again does the switch)
+        return;
+    if (on) {
+        const uint32_t flags = s[0x1c / 4];
+        s[0x120 / 4] = flags;
+        s[0x1c / 4] = (flags & 0xfffffffc) | 0x180;
+        s[0x114 / 4] = s[0xd8 / 4];
+        const uint32_t f0 = s[0xf0 / 4], f4 = s[0xf4 / 4];
+        s[0x118 / 4] = f0;
+        s[0x11c / 4] = f4;
+        ((volatile uint32_t *)(uintptr_t)s[0x104 / 4])[0xd8 / 4] = 0;
+        s[0xd8 / 4] = 0;
+    } else {
+        s[0x1c / 4] = s[0x120 / 4];
+        ((volatile uint32_t *)(uintptr_t)s[0x104 / 4])[0xd8 / 4] = s[0x114 / 4];
+        s[0xd8 / 4] = s[0x114 / 4];
+        s[0xf0 / 4] = s[0x118 / 4];
+        s[0xf4 / 4] = s[0x11c / 4];
+    }
+}
+static const uint8_t object_set_held_original[] = {0x8a, 0x91, 0x10, 0x01, 0x00, 0x00, 0x8a, 0x44};
+REWRITE("Object::SetHeld", 0xc5e9f0, object_set_held_original, &object_set_held, &g_held_switches);
+
+// ---- Grid::RotateCoords(this, x, y, x_out, y_out) (0x838C00): a cell's coordinates turned by the grid's rotation -------
+// With a grid (+0x16C; width +0x10, height +0x14) and a rotation (+0x17C) of 0-3: 0 keeps (x, y), 1 gives
+// (y, width - x - 1), 2 (width - x - 1, height - y - 1), 3 (height - y - 1, x); otherwise nothing is written.
+static volatile long g_grid_rotations;
+static void __thiscall grid_rotate_coords(const uint8_t *self, int32_t x, int32_t y, int32_t *x_out, int32_t *y_out) {
+    g_grid_rotations++;
+    const int32_t *const grid = *(const int32_t *const *)(self + 0x16c);
+    if (!grid || *(const uint32_t *)(self + 0x17c) > 3)
+        return;
+    volatile int32_t *const ox = x_out, *const oy = y_out;
+    switch (*(const uint32_t *)(self + 0x17c)) {
+    case 0: *ox = x, *oy = y; break;
+    case 1: *ox = y, *oy = grid[4] - x - 1; break;
+    case 2: *ox = grid[4] - x - 1, *oy = grid[5] - y - 1; break;
+    default: *ox = grid[5] - y - 1, *oy = x; break;
+    }
+}
+static const uint8_t grid_rotate_coords_original[] = {0x8b, 0x91, 0x6c, 0x01, 0x00, 0x00, 0x85, 0xd2};
+REWRITE("Grid::RotateCoords", 0x838c00, grid_rotate_coords_original, &grid_rotate_coords, &g_grid_rotations);
+
+// ---- Matrix::FacingRotation(out, facing) (0x585870): the 4x4 matrix for one of four facings ----------------------------
+// Quarter turns about the vertical: facing 1 puts (0, 0, 1 / -1, 0, 0) in the first and third rows' x and z, 2 negates
+// both, 3 is 1's opposite; 0 (or anything over 3) is the identity.
+static volatile long g_facing_rotations;
+static void __stdcall matrix_facing_rotation(uint32_t *out, uint32_t facing) {
+    g_facing_rotations++;
+    const uint32_t one = 0x3f800000, minus = 0xbf800000;
+    uint32_t xx = one, xz = 0, zx = 0, zz = one;
+    if (facing == 1) xx = 0, xz = one, zx = minus, zz = 0;
+    if (facing == 2) xx = minus, zz = minus;
+    if (facing == 3) xx = 0, xz = minus, zx = one, zz = 0;
+    volatile uint32_t *const o = out;
+    for (int i = 0; i < 16; i++) o[i] = (i == 5 || i == 15) ? one : 0;
+    o[0] = xx, o[2] = xz, o[8] = zx, o[10] = zz;
+}
+static const uint8_t matrix_facing_rotation_original[] = {0x8b, 0x44, 0x24, 0x08, 0x83, 0xf8, 0x03, 0x77};
+REWRITE("Matrix::FacingRotation", 0x585870, matrix_facing_rotation_original, &matrix_facing_rotation, &g_facing_rotations);
+
+// ---- Table::Map16(n, flag) (0xA3FB60): a number (0-7) through one of two fixed eight-entry tables ---------------------
+// The second when the flag (a byte) is set.
+static volatile long g_map16s;
+static int32_t __stdcall table_map16(int32_t n, uint32_t flag) {
+    g_map16s++;
+    static const int32_t tables[16] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 2, 3, 8, 5, 6, 9, 7};
+    return tables[n + ((flag & 0xff) ? 8 : 0)];
+}
+static const uint8_t table_map16_original[] = {0x83, 0xec, 0x40, 0xb9, 0x06, 0x00, 0x00, 0x00};
+REWRITE("Table::Map16", 0xa3fb60, table_map16_original, &table_map16, &g_map16s);
+
+// ---- Grid3::Rotate / RotateBack(x, y, rotation, x_out, y_out) (0x8750C0 / 0x875020): a place in a 3x3 grid turned -----
+// Rotate: 0 keeps (x, y), 1 gives (2 - y, x), 2 (2 - x, 2 - y), 3 (y, 2 - x); RotateBack turns the other way (1 and 3
+// swapped). Any other rotation writes nothing.
+static volatile long g_grid3_rotations;
+static void grid3_turn(int32_t x, int32_t y, uint32_t rotation, int32_t *x_out, int32_t *y_out) {
+    volatile int32_t *const ox = x_out, *const oy = y_out;
+    switch (rotation) {
+    case 0: *ox = x, *oy = y; break;
+    case 1: *ox = 2 - y, *oy = x; break;
+    case 2: *ox = 2 - x, *oy = 2 - y; break;
+    case 3: *ox = y, *oy = 2 - x; break;
+    default: break;
+    }
+}
+static void __stdcall grid3_rotate(int32_t x, int32_t y, uint32_t rotation, int32_t *x_out, int32_t *y_out) {
+    g_grid3_rotations++;
+    grid3_turn(x, y, rotation, x_out, y_out);
+}
+static void __stdcall grid3_rotate_back(int32_t x, int32_t y, uint32_t rotation, int32_t *x_out, int32_t *y_out) {
+    g_grid3_rotations++;
+    grid3_turn(x, y, rotation == 1 ? 3 : rotation == 3 ? 1 : rotation, x_out, y_out);
+}
+static const uint8_t grid3_rotate_original[] = {0x8b, 0x44, 0x24, 0x0c, 0x83, 0xf8, 0x03, 0x77};
+REWRITE("Grid3::Rotate", 0x8750c0, grid3_rotate_original, &grid3_rotate, &g_grid3_rotations);
+REWRITE("Grid3::RotateBack", 0x875020, grid3_rotate_original, &grid3_rotate_back, &g_grid3_rotations);
+
+// ---- Request::Request(this, owner, a, b, c, flag, value, d, e) (0xC51870): a request record ----------------------------
+// Put first in its owner's list (the list head the owner's +0x10 points to; next at +0, previous at +4); +8 itself, +0x10
+// cleared, +0x14 a, +0x18 c and +0x1C c + b, +0x20 e, +0x24 the flag, +0x28 *value, +0x2C d; +0xC the next number of the
+// game's request count (0x13E6C94; 0 is skipped: it wraps to 1).
+static volatile long g_requests;
+static uint32_t *__thiscall request_request(uint32_t *self, const uint8_t *owner, uint32_t a, uint32_t b, uint32_t c, uint32_t flag, const uint32_t *value,
+                                            uint32_t d, uint32_t e) {
+    g_requests++;
+    volatile uint32_t *const t = self;
+    t[5] = a;
+    t[2] = (uint32_t)(uintptr_t)self;
+    t[4] = 0, t[6] = 0, t[7] = 0;
+    t[8] = e;
+    ((volatile uint8_t *)self)[0x24] = (uint8_t)flag;
+    t[10] = *value;
+    t[11] = d;
+    volatile uint32_t *const list = *(volatile uint32_t *const *)(owner + 0x10);
+    t[0] = list[0];
+    ((volatile uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)self;
+    t[1] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)self;
+    t[6] = c, t[7] = c;
+    t[7] = t[7] + b;
+    volatile uint32_t *const count = (volatile uint32_t *)0x13e6c94;
+    if (++*count == 0) *count = 1;
+    t[3] = *count;
+    return self;
+}
+static const uint8_t request_request_original[] = {0x8b, 0x54, 0x24, 0x08, 0x8b, 0xc1, 0x89, 0x50};
+REWRITE("Request::Request", 0xc51870, request_request_original, &request_request, &g_requests);
