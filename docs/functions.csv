@@ -15503,7 +15503,7 @@ address,size,name,callers,status
 0xa217a0,617,Window::Titled,1,rewritten
 0xa21a40,71,,0,documented
 0xa21ab0,125,Three::Destroy623BC0,1,rewritten
-0xa21b30,6142,,1,documented
+0xa21b30,6142,Window::Titled,1,rewritten
 0xa23330,460,,7,documented
 0xa236b0,1852,Window::Titled,1,rewritten
 0xa23df0,30,DeletingDestructor,2,rewritten

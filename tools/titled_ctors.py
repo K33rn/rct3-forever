@@ -151,7 +151,7 @@ FRONT_CALLS = ['0xbcdfc0', '0xbcf850', '0xbd0490', '0x403be0', '0x403bb0'] + ['0
 
 
 # constructors left out by hand, with why (the generator reads them, but the tester can't yet run their original)
-LEFT_OUT = {0x791670: "dies in the tester (reads or calls through what it leaves unset)", 0xa21b30: "differs in the tester: a value given through a stack place (0x0200001D in the original, 0 in the rewrite): to look at", }
+LEFT_OUT = {0x791670: "dies in the tester (reads or calls through what it leaves unset)", 0x1: "differs in the tester: a value given through a stack place (0x0200001D in the original, 0 in the rewrite): to look at", }
 
 
 
@@ -3019,6 +3019,24 @@ def tail(p):
             conds.append((at[int(x.op_str, 0)], len(ops) - 1, dict(R), dict(S), d, set(built)))
             flag = None
         elif x.mnemonic in CMP_CONDITIONS and flag and flag[0] in ('cmpk', 'test', 'testmask') and base_code(flag[1]) is not None and \
+                (x.mnemonic in ('je', 'jne') or flag[0] == 'cmpk') and not nulls and nscratch[0] < 64 and \
+                re.fullmatch(r'0x[0-9a-f]+', x.op_str) and (l_ := at.get(int(x.op_str, 0))) and l_ > k + 3 and \
+                (za_ := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', t[k + 1])) and re.fullmatch(r'call 0x[0-9a-f]+', t[k + 2]) and \
+                all(re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', t[q_]) for q_ in range(k + 3, l_ - 1)) and \
+                (zj_ := re.fullmatch(r'jmp (0x[0-9a-f]+)', t[l_ - 1])) and (zb_ := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', t[l_])) and \
+                t[l_ + 1] == t[k + 2] and (j2_ := at.get(int(zj_.group(1), 0))) is not None and j2_ >= l_ + 2 and                 all(re.fullmatch(r'mov byte ptr \[esp \+ (0x[0-9a-f]+|\d+)\], (0x[0-9a-f]+|\d+)', t[q_]) for q_ in range(l_ + 2, j2_)):
+            # the same call either way, given a value chosen by the test: jcc L; push A; call F; jmp J; L: push B; call F; J
+            # (kind 113 as below, then the call read once, the second way's)
+            fn_ = 0x10 | CMP_CONDITIONS.index(x.mnemonic) if flag[0] == 'cmpk' else \
+                  (int(x.mnemonic == 'jne') if flag[0] == 'test' else 4 + int(x.mnemonic == 'jne'))
+            k_ = flag[2] & 0xffffffff if flag[0] in ('cmpk', 'testmask') else 0
+            ops.append((113, nscratch[0], k_, fn_, [base_code(flag[1]), num(zb_.group(1)), num(za_.group(1))]))
+            pushed.append(('scratch', nscratch[0])); d += 4
+            nscratch[0] += 1
+            flag = None
+            k = l_ + 1
+            continue
+        elif x.mnemonic in CMP_CONDITIONS and flag and flag[0] in ('cmpk', 'test', 'testmask') and base_code(flag[1]) is not None and \
                 (x.mnemonic in ('je', 'jne') or flag[0] == 'cmpk') and not nulls and \
                 re.fullmatch(r'0x[0-9a-f]+', x.op_str) and k + 4 < len(t) and at.get(int(x.op_str, 0)) == k + 3 and \
                 (za_ := re.fullmatch(r'push (0x[0-9a-f]+|\d+)', t[k + 1])) and (zj_ := re.fullmatch(r'jmp (0x[0-9a-f]+)', t[k + 2])) and \
@@ -3179,7 +3197,7 @@ def tail(p):
             pushed.append(('nameaddr', nnames)); d += 4
             nnames += 1
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack' and \
-                val(m.group(1))[1] in temps and ('temp', temps[val(m.group(1))[1]]) in built and temps[val(m.group(1))[1]] in text_temps:
+                val(m.group(1))[1] in temps and (('temp', temps[val(m.group(1))[1]]) in built and temps[val(m.group(1))[1]] in text_temps or temps[val(m.group(1))[1]] in pod_temps):
             pushed.append(('temp', temps[val(m.group(1))[1]])); d += 4   # (a text temporary's place: what its making gave back)
         elif (m := re.fullmatch(r'push ' + REG, s)) and val(m.group(1)) and val(m.group(1))[0] == 'stack':
             pushed.append(('rect', val(m.group(1))[1])); d += 4   # a local's address: only a layout's rectangle is understood
@@ -3335,7 +3353,7 @@ def tail(p):
                 if any(isinstance(v, int) or v[0] not in ('nameaddr', 'self', 'given') or v[0] == 'nameaddr' and ('name', v[1]) not in built
                        for v in targs):
                     raise Reject('text copy values')
-            elif any(not (isinstance(v, int) or fn == 0xbd1800 and v[0] in ('scratch', 'glob')) for v in targs):   # (0xBD1800: a list copied from the one given)
+            elif any(not (isinstance(v, int) or fn == 0xbd1800 and v[0] in ('scratch', 'glob') or fn in (0x41cb90, 0x4040f0) and v[0] == 'scratch') for v in targs):   # (0xBD1800: a list copied from the one given)
                 raise Reject('text reference values')
             kk = len([o for o in ops if o[0] == 20])
             if kk >= 32 or slot in temps and ('temp', temps[slot]) in built:
