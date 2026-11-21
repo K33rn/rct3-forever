@@ -2263,3 +2263,750 @@ static void __thiscall colour_pack(uint8_t *self, const float *c) {
 }
 static const uint8_t colour_pack_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0xd9};
 REWRITE("Colour::Pack", 0x9e84e0, colour_pack_original, &colour_pack, &g_colour_packs);
+
+// ---- Tile::EdgePoint(out, x, y, direction) (0xABC300): the middle of a tile's edge, or its centre ----------------------
+// (x + 0.5, y + 0.5), moved 0.2 toward the edge: direction 1 adds to x, 2 takes from y, 4 takes from x, 8 adds to y;
+// any other direction leaves the centre.
+static volatile long g_tile_edge_points;
+static void __fastcall tile_edge_point(float *out, int32_t x, int32_t y, uint32_t direction) {
+    g_tile_edge_points++;
+    const long double half = *(const float *)0xf2651c, step = *(const float *)0xf283d8;
+    long double px = (long double)x + half, py = (long double)y + half;
+    switch (direction) {
+    case 1: px = px + step; break;
+    case 2: py = py - step; break;
+    case 4: px = px - step; break;
+    case 8: py = py + step; break;
+    default: break;
+    }
+    ((volatile float *)out)[0] = (float)px;
+    ((volatile float *)out)[1] = (float)py;
+}
+static const uint8_t tile_edge_point_original[] = {0x51, 0x89, 0x14, 0x24, 0xdb, 0x04, 0x24, 0x8b};
+REWRITE("Tile::EdgePoint", 0xabc300, tile_edge_point_original, &tile_edge_point, &g_tile_edge_points);
+
+// ---- WildAnimal::ClampB42390(this) (0xB42390): when flagged (bit 2 of +0xEC), a value at +0x148 from three others -----
+// The greatest of +0x1E0, +0x1E4 and +0x1E8 (fcomi / fcmov, in that order: a NaN met first is kept), times 0.3423,
+// plus 0.2148.
+static volatile long g_wild_clamps;
+static void __thiscall wild_animal_clamp_b42390(uint8_t *self) {
+    g_wild_clamps++;
+    if (!(self[0xec] & 4))
+        return;
+    const float *const f = (const float *)self;
+    const volatile float t = (float)x87_greater(x87_load(&f[0x1e0 / 4]), x87_load(&f[0x1e4 / 4]));
+    const volatile float u = (float)x87_greater(x87_load((const float *)&t), x87_load(&f[0x1e8 / 4]));
+    *(volatile float *)(self + 0x148) = (float)((long double)u * *(const float *)0xf99824 + *(const float *)0xf99820);
+}
+static const uint8_t wild_animal_clamp_b42390_original[] = {0x8a, 0x81, 0xec, 0x00, 0x00, 0x00, 0x83, 0xec};
+REWRITE("WildAnimal::ClampB42390", 0xb42390, wild_animal_clamp_b42390_original, &wild_animal_clamp_b42390, &g_wild_clamps);
+
+// ---- Counts::AddByKind(this, thing, level) (0x5BC150): one added to the count for a thing's kind (+0x10) ----------------
+// Kinds 1 and 2: +0x24; 4: +0x1C; 0x15-0x17: +0x18; 0x23: +0x20; 0x24: +8; 0x25: +0x10; 0x27: +0, only when the level
+// is at least 11.1; 0x28: +4; 0x29: +0xC; 0x2A: +0x14; any other kind: nothing.
+static volatile long g_kind_counts;
+static void __thiscall counts_add_by_kind(uint8_t *self, const uint8_t *thing, float level) {
+    g_kind_counts++;
+    int at;
+    switch (*(const uint32_t *)(thing + 0x10)) {
+    case 1: case 2: at = 0x24; break;
+    case 4: at = 0x1c; break;
+    case 0x15: case 0x16: case 0x17: at = 0x18; break;
+    case 0x23: at = 0x20; break;
+    case 0x24: at = 8; break;
+    case 0x25: at = 0x10; break;
+    case 0x27:
+        if (!((long double)level >= (long double)*(const float *)0xf3ef80))
+            return;
+        at = 0;
+        break;
+    case 0x28: at = 4; break;
+    case 0x29: at = 0xc; break;
+    case 0x2a: at = 0x14; break;
+    default: return;
+    }
+    ++*(volatile uint32_t *)(self + at);
+}
+static const uint8_t counts_add_by_kind_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x40, 0x10, 0x48};
+REWRITE("Counts::AddByKind", 0x5bc150, counts_add_by_kind_original, &counts_add_by_kind, &g_kind_counts);
+
+// ---- Guest::EntryRemaining(this, n) (0xB9AB80): the part still left of entry n of the table at +0x74 -------------------
+// Entries 184 bytes from +0x20: when in use (byte +0) with a positive total (+0xC): 1 - used (+0x14) / total (rounded),
+// at least 0; 1 otherwise.
+static volatile long g_entry_remainings;
+static long double __thiscall guest_entry_remaining(const uint8_t *self, int32_t n) {
+    g_entry_remainings++;
+    const uint8_t *const e = *(const uint8_t *const *)(self + 0x74) + n * 0xb8 + 0x20;
+    const int32_t total = *(const int32_t *)(e + 0xc);
+    if (!e[0] || total <= 0)
+        return *(const float *)0xf264dc;
+    const volatile float v = (float)((long double)*(const float *)0xf264dc - (long double)*(const int32_t *)(e + 0x14) / (long double)total);
+    const volatile float kept = (float)x87_greater(0.0L, v);
+    return kept;
+}
+static const uint8_t guest_entry_remaining_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x49, 0x74, 0x69};
+REWRITE("Guest::EntryRemaining", 0xb9ab80, guest_entry_remaining_original, &guest_entry_remaining, &g_entry_remainings);
+
+// ---- Path::Case7289D0(this, a_out, b_out) (0x7289D0): two values from +0xA4 by a kind (byte +0x60) ----------------------
+// a = v and b = v + 3; kind 1: b + 2; 2: a = v - 2; 4: b + 1; 5: a = v - 1. a_out = a times 1, b_out = b times 1 less 0.1.
+static volatile long g_path_cases;
+static void __thiscall path_case_7289d0(const uint8_t *self, float *a_out, float *b_out) {
+    g_path_cases++;
+    const int32_t v = *(const int32_t *)(self + 0xa4);
+    int32_t a = v, b = v + 3;
+    switch (self[0x60]) {
+    case 1: b += 2; break;
+    case 2: a = v - 2; break;
+    case 4: b += 1; break;
+    case 5: a = v - 1; break;
+    default: break;
+    }
+    const long double one = *(const float *)0xf29428;
+    *(volatile float *)a_out = (float)((long double)a * one);
+    *(volatile float *)b_out = (float)((long double)b * one - *(const float *)0xf270b0);
+}
+static const uint8_t path_case_7289d0_original[] = {0x83, 0xec, 0x08, 0x8b, 0x81, 0xa4, 0x00, 0x00};
+REWRITE("Path::Case7289D0", 0x7289d0, path_case_7289d0_original, &path_case_7289d0, &g_path_cases);
+
+// ---- WaterDrops::EmitterCount(this, n) (0x94E000): how many drops emitter n gives -----------------------------------------
+// Emitters 208 bytes at *(+0x1A4): 0 when the interval (+0xC) is at most 0; otherwise +0x10 / interval (rounded),
+// rounded up (frndint, then one more when that went down; NaN stays), as a whole number (fistp).
+static volatile long g_emitter_counts;
+static uint32_t __thiscall water_drops_emitter_count(const uint8_t *self, int32_t n) {
+    g_emitter_counts++;
+    const float *const e = (const float *)(*(const uint8_t *const *)(self + 0x1a4) + n * 0xd0);
+    const long double interval = e[3];
+    if (interval < (long double)*(const float *)0xf264e0 || interval == (long double)*(const float *)0xf264e0)
+        return 0;
+    const volatile float q = (float)((long double)e[4] / e[3]);
+    const long double whole = x87_round(q);
+    const volatile float up = (float)(!((long double)q > whole) ? whole : whole + 1.0L);
+    return (uint32_t)x87_whole(up);
+}
+static const uint8_t water_drops_emitter_count_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0x81, 0xa4, 0x01};
+REWRITE("WaterDrops::EmitterCount", 0x94e000, water_drops_emitter_count_original, &water_drops_emitter_count, &g_emitter_counts);
+
+// ---- Water::Entry94DD40(this, n, level, v, w) (0x94DD40): entry n (208 bytes at *(+0x1A4)) given a new place ----------
+// In mode 1 (+0x60) the old place (+0x30) is kept at +0x40 first; then +0xC4 = w, +0x30 = v's three values, and +0x14 =
+// the level when it is at least 0.
+static volatile long g_water_entries;
+static void __thiscall water_entry_94dd40(const uint8_t *self, int32_t n, float level, const uint32_t *v, uint32_t w) {
+    g_water_entries++;
+    volatile uint32_t *const e = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x1a4) + n * 0xd0);
+    if (e[0x60 / 4] == 1)
+        e[0x40 / 4] = e[0x30 / 4], e[0x44 / 4] = e[0x34 / 4], e[0x48 / 4] = e[0x38 / 4];
+    e[0xc4 / 4] = w;
+    e[0x30 / 4] = v[0], e[0x34 / 4] = v[1], e[0x38 / 4] = v[2];
+    if (!((long double)level < (long double)*(const float *)0xf264e0) && level == level)
+        e[0x14 / 4] = *(const uint32_t *)&level;
+}
+static const uint8_t water_entry_94dd40_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0x81, 0xa4, 0x01};
+REWRITE("Water::Entry94DD40", 0x94dd40, water_entry_94dd40_original, &water_entry_94dd40, &g_water_entries);
+
+// ---- Effect::Fraction466470(this, near, far, angle, aspect) (0x466470): a perspective matrix ----------------------------
+// r = far / (far - near) and c = 1 / tan(angle / 2) (both unrounded); all cleared but +0 = c, +0x14 = c aspect,
+// +0x28 = r, +0x2C = 1, +0x38 = -(r near).
+static volatile long g_effect_perspectives;
+static void __thiscall effect_fraction_466470(uint8_t *self, float n, float f, float angle, float aspect) {
+    g_effect_perspectives++;
+    const long double r = (long double)f / ((long double)f - n);
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    static const int8_t cleared[] = {0xf, 0xd, 0xc, 9, 8, 7, 6, 4, 3, 2, 1};
+    for (const int8_t i : cleared) t[i] = 0;
+    t[0xb] = 0x3f800000;
+    const long double c = (long double)*(const float *)0xf264dc / x87_tan((long double)angle * *(const float *)0xf2651c);
+    volatile float *const m = (volatile float *)self;
+    m[0] = (float)c;
+    m[5] = (float)(c * aspect);
+    m[10] = (float)r;
+    m[14] = (float)-(r * n);
+}
+static const uint8_t effect_fraction_466470_original[] = {0xd9, 0x44, 0x24, 0x08, 0x33, 0xc0, 0xd8, 0x64};
+REWRITE("Effect::Fraction466470", 0x466470, effect_fraction_466470_original, &effect_fraction_466470, &g_effect_perspectives);
+
+// ---- Animations::Set(this, n, a, b, count, rate) (0x94DEC0): animation n (208 bytes at *(+0x1A4)) set up ---------------
+// +0xA4 a, +0xA8 b, +0xAC count, +0xB0 rate, +0x10 the frame time (count - 1) / rate, +0x60 mode 4, +0x30 to +0x38
+// cleared.
+static volatile long g_animation_sets;
+static void __thiscall animations_set(const uint8_t *self, int32_t n, uint32_t a, uint32_t b, int32_t count, float rate) {
+    g_animation_sets++;
+    volatile uint32_t *const e = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x1a4) + n * 0xd0);
+    e[0xa4 / 4] = a;
+    e[0xac / 4] = (uint32_t)count;
+    e[0xa8 / 4] = b;
+    const long double frame = (long double)(int32_t)((uint32_t)count - 1) / rate;
+    e[0x60 / 4] = 4;
+    e[0xb0 / 4] = *(const uint32_t *)&rate;
+    ((volatile float *)e)[0x10 / 4] = (float)frame;
+    e[0x30 / 4] = 0, e[0x34 / 4] = 0, e[0x38 / 4] = 0;
+}
+static const uint8_t animations_set_original[] = {0x8b, 0x91, 0xa4, 0x01, 0x00, 0x00, 0x8b, 0x44};
+REWRITE("Animations::Set", 0x94dec0, animations_set_original, &animations_set, &g_animation_sets);
+
+// ---- Tracker::SetVelocity(this, p) (0x8B5230): a velocity (+0xC) from the move from the last position (+0x1C) to p -----
+// (p - last) times 2/3 (0xF2A8C4); the y and z differences rounded, x's not; z's product rounded and written first.
+// The update count (+0x2C) goes up by one.
+static volatile long g_tracker_velocities;
+static void __thiscall tracker_set_velocity(uint8_t *self, const float *p) {
+    g_tracker_velocities++;
+    const float *const f = (const float *)self;
+    const long double k = *(const float *)0xf2a8c4;
+    const long double dx = (long double)p[0] - f[0x1c / 4];
+    const volatile float dy = (float)((long double)p[1] - f[0x20 / 4]), dz = (float)((long double)p[2] - f[0x24 / 4]);
+    const long double vx = dx * k, vy = (long double)dy * k;
+    const volatile float vz = (float)((long double)dz * k);
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    t[0x14 / 4] = *(const volatile uint32_t *)&vz;
+    ((volatile float *)self)[0xc / 4] = (float)vx;
+    ((volatile float *)self)[0x10 / 4] = (float)vy;
+    t[0x2c / 4] = t[0x2c / 4] + 1;
+}
+static const uint8_t tracker_set_velocity_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Tracker::SetVelocity", 0x8b5230, tracker_set_velocity_original, &tracker_set_velocity, &g_tracker_velocities);
+
+// ---- VerletPoint::Velocity(this, out) (0xA6B240): (position (+0x10) - previous (+0x20)) times 60 (0xF8F980) -------------
+// The x and z differences rounded, y's not; x's product rounded, y's and z's not.
+static volatile long g_verlet_velocities;
+static void __thiscall verlet_point_velocity(const uint8_t *self, float *out) {
+    g_verlet_velocities++;
+    const float *const f = (const float *)self;
+    const long double k = *(const float *)0xf8f980;
+    const volatile float dx = (float)((long double)f[4] - f[8]);
+    const long double dy = (long double)f[5] - f[9];
+    const volatile float dz = (float)((long double)f[6] - f[10]);
+    const volatile float vx = (float)((long double)dx * k);
+    const long double vy = dy * k, vz = (long double)dz * k;
+    volatile float *const o = out;
+    o[0] = vx;
+    o[1] = (float)vy;
+    o[2] = (float)vz;
+}
+static const uint8_t verlet_point_velocity_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("VerletPoint::Velocity", 0xa6b240, verlet_point_velocity_original, &verlet_point_velocity, &g_verlet_velocities);
+
+// ---- PoolComplex::ValueAAE350(this, flag) (0xAAE350): a quarter-turn angle by a mode (+0x130) ----------------------------
+// v = the turn at +0x124 when the flag byte is set, else 2; mode 1 adds 2, mode 2 adds 1, mode 8 adds 3; (v & 3) times
+// pi/2 (0xF35D50), unrounded on the FPU.
+static volatile long g_pool_values;
+static long double __thiscall pool_complex_value_aae350(const uint8_t *self, uint32_t flag) {
+    g_pool_values++;
+    int32_t v = (uint8_t)flag ? *(const int32_t *)(self + 0x124) : 2;
+    switch (*(const uint32_t *)(self + 0x130)) {
+    case 1: v += 2; break;
+    case 2: v += 1; break;
+    case 8: v += 3; break;
+    default: break;
+    }
+    return (long double)(v & 3) * *(const float *)0xf35d50;
+}
+static const uint8_t pool_complex_value_aae350_original[] = {0x8a, 0x44, 0x24, 0x04, 0x84, 0xc0, 0x74, 0x08};
+REWRITE("PoolComplex::ValueAAE350", 0xaae350, pool_complex_value_aae350_original, &pool_complex_value_aae350, &g_pool_values);
+
+// ---- Vector::LerpInto(a, b, t, out) (0xB47A30): a + (b - a) t into out --------------------------------------------------
+// The z difference rounded, x and y not; x's and z's products rounded, y's not; x's sum rounded before the writes.
+static void __fastcall vector_lerp_into(const float *a, const float *b, float t, float *out) {
+    g_lerps++;
+    const long double dx = (long double)b[0] - a[0], dy = (long double)b[1] - a[1];
+    const volatile float dz = (float)((long double)b[2] - a[2]);
+    const volatile float px = (float)(dx * t);
+    const long double py = dy * t;
+    const volatile float pz = (float)((long double)dz * t);
+    const volatile float x = (float)((long double)px + a[0]);
+    const long double y = py + a[1], z = (long double)pz + a[2];
+    volatile float *const o = out;
+    o[0] = x;
+    o[1] = (float)y;
+    o[2] = (float)z;
+}
+static const uint8_t vector_lerp_into_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::LerpInto", 0xb47a30, vector_lerp_into_original, &vector_lerp_into, &g_lerps);
+
+// ---- Progress::Advance2(this, dt) (0xB34FA0): a tenth of dt added to a progress value (+0x138), at most 1 ---------------
+// Gives 1 when the new value is past the threshold 0xF3B794, else (or for a NaN) 0.
+static uint32_t __thiscall progress_advance2(uint8_t *self, float dt) {
+    g_progress_advances++;
+    const volatile float v = (float)((long double)dt * *(const float *)0xf270b0 + *(const float *)(self + 0x138));
+    const volatile float u = (float)x87_lesser(1.0L, x87_load((const float *)&v));
+    *(volatile uint32_t *)(self + 0x138) = *(const volatile uint32_t *)&u;
+    return (long double)u > (long double)*(const float *)0xf3b794;
+}
+static const uint8_t progress_advance2_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x0c, 0xc7};
+REWRITE("Progress::Advance2", 0xb34fa0, progress_advance2_original, &progress_advance2, &g_progress_advances);
+
+// ---- Vector4::Add(this, v) (0xCC4890): v added to this, part by part; gives this ----------------------------------------
+static volatile long g_vector4_adds;
+static float *__thiscall vector4_add(float *self, const float *v) {
+    g_vector4_adds++;
+    volatile float *const t = self;
+    for (int i = 0; i < 4; i++) t[i] = (float)((long double)t[i] + v[i]);
+    return self;
+}
+static const uint8_t vector4_add_original[] = {0x55, 0x8b, 0xec, 0x51, 0xc7, 0x45, 0xfc, 0xcc};
+REWRITE("Vector4::Add", 0xcc4890, vector4_add_original, &vector4_add, &g_vector4_adds);
+
+// ---- Fireworks::AddTime9E0D70(this, n) (0x9E0D70): 100 n added to a time (+0x3C), kept between 0 and the game's limit ----
+// (0x10F0E80, signed); then +0x58 = (+0x28 / time) ((+0x14 / +0x5C) 2).
+static volatile long g_firework_times;
+static void __thiscall fireworks_add_time_9e0d70(uint8_t *self, int32_t n) {
+    g_firework_times++;
+    volatile int32_t *const time = (volatile int32_t *)(self + 0x3c);
+    const int32_t v = (int32_t)((uint32_t)*time + (uint32_t)n * 100);
+    *time = v;
+    const int32_t limit = *(const volatile int32_t *)0x10f0e80;
+    int32_t c = v < 0 ? 0 : v;
+    c = c > limit ? limit : c;
+    *time = c;
+    const float *const f = (const float *)self;
+    const long double q = (long double)f[0x14 / 4] / f[0x5c / 4];
+    *(volatile float *)(self + 0x58) = (float)((long double)*(const int32_t *)(self + 0x28) / (long double)c * (q + q));
+}
+static const uint8_t fireworks_add_time_9e0d70_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0x8b};
+REWRITE("Fireworks::AddTime9E0D70", 0x9e0d70, fireworks_add_time_9e0d70_original, &fireworks_add_time_9e0d70, &g_firework_times);
+
+// ---- Colour::ToARGB(out, r, g, b, a) (0x402C40): four values from 0 to 1 packed as 0xAARRGGBB; gives out --------------
+// Each times 255 (fistp, low 32 bits, not masked): ((a << 8 | r) << 8 | g) << 8 | b.
+static uint32_t *__thiscall colour_to_argb(uint32_t *out, float r, float g, float b, float a) {
+    g_colour_packs++;
+    const long double k = *(const float *)0xf264c0;
+    uint32_t v = (uint32_t)x87_whole(a * k) << 8;
+    v = (v | (uint32_t)x87_whole(r * k)) << 8;
+    v = (v | (uint32_t)x87_whole(g * k)) << 8;
+    *(volatile uint32_t *)out = v | (uint32_t)x87_whole(b * k);
+    return out;
+}
+static const uint8_t colour_to_argb_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x18, 0x8b};
+REWRITE("Colour::ToARGB", 0x402c40, colour_to_argb_original, &colour_to_argb, &g_colour_packs);
+
+// ---- Screen::ToUnit(this, out, p) (0x483F40): a screen position as -1 to 1 across the GUI area --------------------------
+// w = +0x84 - +0x7C and h = +0x88 - +0x80 (rounded): ((2 x - w) (rounded) / w, (2 y - h) / h).
+static volatile long g_screen_units;
+static void __thiscall screen_to_unit(const uint8_t *self, float *out, const float *p) {
+    g_screen_units++;
+    const float *const f = (const float *)self;
+    const long double x2 = (long double)p[0] + p[0], y2 = (long double)p[1] + p[1];
+    const volatile float w = (float)((long double)f[0x84 / 4] - f[0x7c / 4]), h = (float)((long double)f[0x88 / 4] - f[0x80 / 4]);
+    const volatile float x = (float)(x2 - w);
+    const long double y = y2 - h;
+    const volatile float ux = (float)((long double)x / w);
+    const long double uy = y / h;
+    ((volatile float *)out)[0] = ux;
+    ((volatile float *)out)[1] = (float)uy;
+}
+static const uint8_t screen_to_unit_original[] = {0x83, 0xec, 0x10, 0x8b, 0x44, 0x24, 0x18, 0xd9};
+REWRITE("Screen::ToUnit", 0x483f40, screen_to_unit_original, &screen_to_unit, &g_screen_units);
+
+// ---- FloatSlider::SetValue, SetValue4 and SetValue8 (0xCA7A30, 0xCA7C00, 0xCA7DD0): the bound decimal number -------------
+// v = (max - min) fraction + min (+0xC, +8; rounded), kept at least min and at most max (fcomi / fcmov: a NaN gives
+// min), into the bound value (*(+4)), or the bound object's +4 or +8.
+static inline void float_slider_set(const uint8_t *self, float fraction, int at) {
+    const float *const f = (const float *)self;
+    const volatile float v = (float)(((long double)f[3] - f[2]) * fraction + f[2]);
+    const volatile float t = (float)x87_greater(x87_load(&f[2]), x87_load((const float *)&v));
+    const volatile float u = (float)x87_lesser(x87_load(&f[3]), x87_load((const float *)&t));
+    *(volatile uint32_t *)(*(uint8_t *const *)(self + 4) + at) = *(const volatile uint32_t *)&u;
+}
+static volatile long g_float_slider_sets;
+static void __thiscall float_slider_set_value(const uint8_t *self, float fraction) { g_float_slider_sets++, float_slider_set(self, fraction, 0); }
+static void __thiscall float_slider_set_value4(const uint8_t *self, float fraction) { g_float_slider_sets++, float_slider_set(self, fraction, 4); }
+static void __thiscall float_slider_set_value8(const uint8_t *self, float fraction) { g_float_slider_sets++, float_slider_set(self, fraction, 8); }
+static const uint8_t float_slider_set_original[] = {0x83, 0xec, 0x08, 0xd9, 0x41, 0x0c, 0x8b, 0x41};
+REWRITE("FloatSlider::SetValue", 0xca7a30, float_slider_set_original, &float_slider_set_value, &g_float_slider_sets);
+REWRITE("FloatSlider::SetValue4", 0xca7c00, float_slider_set_original, &float_slider_set_value4, &g_float_slider_sets);
+REWRITE("FloatSlider::SetValue8", 0xca7dd0, float_slider_set_original, &float_slider_set_value8, &g_float_slider_sets);
+
+// ---- Colour::PackArgs(-, r, g, b, a) (0xB96F90): four values from 0 to 1 packed as 0xAARRGGBB, given back -------------
+// Each times 255 (fistp, low 32 bits, not masked): ((a << 8 | r) << 8 | g) << 8 | b. (The value is also stored at *ecx.)
+static uint32_t __thiscall colour_pack_args(uint32_t *out, float r, float g, float b, float a) {
+    g_colour_packs++;
+    const long double k = *(const float *)0xf264c0;
+    uint32_t v = (uint32_t)x87_whole(a * k) << 8;
+    v = (v | (uint32_t)x87_whole(r * k)) << 8;
+    v = (v | (uint32_t)x87_whole(g * k)) << 8;
+    v |= (uint32_t)x87_whole(b * k);
+    *(volatile uint32_t *)out = v;
+    return v;
+}
+static const uint8_t colour_pack_args_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x18, 0xd8};
+REWRITE("Colour::PackArgs", 0xb96f90, colour_pack_args_original, &colour_pack_args, &g_colour_packs);
+
+// ---- Colour::PackTo(c, out) (0x425700): a colour of four values from 0 to 1 packed into *out; gives out ------------------
+static uint32_t *__thiscall colour_pack_to(const float *c, uint32_t *out) {
+    g_colour_packs++;
+    const long double k = *(const float *)0xf264c0;
+    uint32_t v = (uint32_t)x87_whole(c[3] * k) << 8;
+    v = (v | (uint32_t)x87_whole(c[0] * k)) << 8;
+    v = (v | (uint32_t)x87_whole(c[1] * k)) << 8;
+    *(volatile uint32_t *)out = v | (uint32_t)x87_whole(c[2] * k);
+    return out;
+}
+static const uint8_t colour_pack_to_original[] = {0x83, 0xec, 0x08, 0xd9, 0x41, 0x0c, 0xd8, 0x0d};
+REWRITE("Colour::PackTo", 0x425700, colour_pack_to_original, &colour_pack_to, &g_colour_packs);
+
+// ---- Spring::Constants(this, a_out, b_out, c_out) (0x912C20): a spring's constants from its length ----------------------
+// L = +4 - +0xC and k = C / L (C at 0xF71CB0; both unrounded): a_out = k, b_out = (D - k L) (2 / (L L)) (D at
+// 0xF355E4); when c_out is given, 1 / ((L - E) / 4 + E) (E at 0xF275F4).
+static volatile long g_spring_constants;
+static void __thiscall spring_constants(const uint8_t *self, float *a_out, float *b_out, float *c_out) {
+    g_spring_constants++;
+    const float *const f = (const float *)self;
+    const long double L = (long double)f[1] - f[3];
+    const long double k = (long double)*(const float *)0xf71cb0 / L;
+    *(volatile float *)a_out = (float)k;
+    *(volatile float *)b_out = (float)(((long double)*(const float *)0xf355e4 - k * L) * ((long double)*(const float *)0xf2705c / (L * L)));
+    if (c_out) {
+        const long double e = *(const float *)0xf275f4;
+        *(volatile float *)c_out = (float)((long double)*(const float *)0xf264dc / ((L - e) * *(const float *)0xf270b8 + e));
+    }
+}
+static const uint8_t spring_constants_original[] = {0xd9, 0x41, 0x04, 0x8b, 0x44, 0x24, 0x04, 0xd8};
+REWRITE("Spring::Constants", 0x912c20, spring_constants_original, &spring_constants, &g_spring_constants);
+
+// ---- Vector::Lerp3(out, a, b, -, t) (0xC5A860): a + (b - a) t ------------------------------------------------------------
+// The z difference rounded, x and y not; x's and y's products rounded, z's not.
+static void __thiscall vector_lerp3(float *out, const float *a, const float *b, uint32_t, float t) {
+    g_lerps++;
+    const long double dx = (long double)b[0] - a[0], dy = (long double)b[1] - a[1];
+    const volatile float dz = (float)((long double)b[2] - a[2]);
+    const volatile float px = (float)(dx * t), py = (float)(dy * t);
+    const long double z = (long double)dz * t + a[2], y = (long double)py + a[1], x = (long double)px + a[0];
+    volatile float *const o = out;
+    o[0] = (float)x;
+    o[1] = (float)y;
+    o[2] = (float)z;
+}
+static const uint8_t vector_lerp3_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Vector::Lerp3", 0xc5a860, vector_lerp3_original, &vector_lerp3, &g_lerps);
+
+// ---- Particle::Launch(this, p, flag, a, b, h) (0xA17520): a particle started at p raised by h --------------------------
+// +0x40 p.x (through the FPU), +0x44 p.y + h, +0x48 p.z as it is; +0x58 a, +0x5C b, +0x60 h; +0x50 1, +0x54 0, byte
+// +0x90 the flag.
+static volatile long g_particle_launches;
+static void __thiscall particle_launch(uint8_t *self, const float *p, uint32_t flag, uint32_t a, uint32_t b, float h) {
+    g_particle_launches++;
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    const long double x = x87_load(&p[0]);
+    const long double y = (long double)h + p[1];
+    const uint32_t z = *(const uint32_t *)&p[2];
+    ((volatile float *)self)[0x40 / 4] = (float)x;
+    t[0x48 / 4] = z;
+    ((volatile float *)self)[0x44 / 4] = (float)y;
+    t[0x58 / 4] = a;
+    t[0x5c / 4] = b;
+    t[0x50 / 4] = 1;
+    t[0x54 / 4] = 0;
+    t[0x60 / 4] = *(const uint32_t *)&h;
+    ((volatile uint8_t *)self)[0x90] = (uint8_t)flag;
+}
+static const uint8_t particle_launch_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Particle::Launch", 0xa17520, particle_launch_original, &particle_launch, &g_particle_launches);
+
+// ---- Contact::Make(out, a, b, v, pair) (0xAF8E30, and Contact::Make2 0xAF75D0, the same code): a contact record --------
+// +0 a (through the FPU), +0xC b's first two (through the FPU) and its third as it is, +0x18 v, +0x1C the pair.
+static volatile long g_contacts;
+static void __stdcall contact_make(uint32_t *out, const float *a, const float *b, uint32_t v, const uint32_t *pair) {
+    g_contacts++;
+    volatile float *const o = (volatile float *)out;
+    const long double a0 = x87_load(&a[0]), a1 = x87_load(&a[1]), a2 = x87_load(&a[2]);
+    o[0] = (float)a0, o[1] = (float)a1, o[2] = (float)a2;
+    const long double b0 = x87_load(&b[0]), b1 = x87_load(&b[1]);
+    const uint32_t b2 = *(const uint32_t *)&b[2];
+    o[3] = (float)b0, o[4] = (float)b1;
+    volatile uint32_t *const t = out;
+    t[5] = b2, t[6] = v, t[7] = pair[0], t[8] = pair[1];
+}
+static const uint8_t contact_make_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x44, 0x24, 0x14, 0xd9};
+REWRITE("Contact::Make", 0xaf8e30, contact_make_original, &contact_make, &g_contacts);
+REWRITE("Contact::Make2", 0xaf75d0, contact_make_original, &contact_make, &g_contacts);
+
+// ---- Path::Cell704A50(this) (0x704A50): a cell (+0x1A8, or +0x1B4 when byte +0x1B0 is set) scaled into +0x1BC -----------
+// Each whole number times 1/1440 (0xF68B5C).
+static volatile long g_path_cells;
+static void __thiscall path_cell_704a50(uint8_t *self) {
+    g_path_cells++;
+    const int32_t *const c = (const int32_t *)(self + (self[0x1b0] ? 0x1b4 : 0x1a8));
+    const long double k = *(const float *)0xf68b5c;
+    *(volatile float *)(self + 0x1bc) = (float)((long double)c[0] * k);
+    *(volatile float *)(self + 0x1c0) = (float)((long double)c[1] * k);
+}
+static const uint8_t path_cell_704a50_original[] = {0x83, 0xec, 0x08, 0x8b, 0x81, 0xa8, 0x01, 0x00};
+REWRITE("Path::Cell704A50", 0x704a50, path_cell_704a50_original, &path_cell_704a50, &g_path_cells);
+
+// ---- Blink::Advance(this, dt) (0x6B60A0): a looping time (+0x6010) moved on by *dt and kept below 1 ---------------------
+// The sum is stored; when it (unrounded) is past 1, its whole part (rounded down, as a float) is taken off again.
+static void __thiscall blink_advance(uint8_t *self, const float *dt) {
+    g_blinks++;
+    volatile float *const time = (volatile float *)(self + 0x6010);
+    const long double v = (long double)dt[0] + *time;
+    *time = (float)v;
+    if (!(v > (long double)*(const float *)0xf264dc))
+        return;
+    const volatile float q = (float)v;
+    const long double whole = x87_round(q);
+    const volatile float down = (float)((long double)q < whole ? whole - 1.0L : whole);
+    *time = (float)((long double)*time - down);
+}
+static const uint8_t blink_advance_original[] = {0x51, 0x8b, 0x44, 0x24, 0x08, 0xd9, 0x00, 0xd8};
+REWRITE("Blink::Advance", 0x6b60a0, blink_advance_original, &blink_advance, &g_blinks);
+
+// ---- Particle::FirstColour / SecondColour(this, out) (0x9C62D0, 0x9C6330): a colour (+0xAC or +0xB8) packed opaque ------
+// Each times 255 (fistp, low 32 bits): ((r | 0xFFFFFF00) << 8 | g) << 8 | b into *out; gives out.
+static inline uint32_t *particle_colour(const uint8_t *self, int at, uint32_t *out) {
+    const float *const c = (const float *)(self + at);
+    const long double k = *(const float *)0xf264c0;
+    uint32_t v = ((uint32_t)x87_whole(c[0] * k) | 0xffffff00u) << 8;
+    v = (v | (uint32_t)x87_whole(c[1] * k)) << 8;
+    *(volatile uint32_t *)out = v | (uint32_t)x87_whole(c[2] * k);
+    return out;
+}
+static uint32_t *__thiscall particle_first_colour(const uint8_t *self, uint32_t *out) { g_colour_packs++; return particle_colour(self, 0xac, out); }
+static uint32_t *__thiscall particle_second_colour(const uint8_t *self, uint32_t *out) { g_colour_packs++; return particle_colour(self, 0xb8, out); }
+static const uint8_t particle_first_colour_original[] = {0x83, 0xec, 0x08, 0xd9, 0x81, 0xac, 0x00, 0x00};
+static const uint8_t particle_second_colour_original[] = {0x83, 0xec, 0x08, 0xd9, 0x81, 0xb8, 0x00, 0x00};
+REWRITE("Particle::FirstColour", 0x9c62d0, particle_first_colour_original, &particle_first_colour, &g_colour_packs);
+REWRITE("Particle::SecondColour", 0x9c6330, particle_second_colour_original, &particle_second_colour, &g_colour_packs);
+
+// ---- Object::Position(this, out) (0x548B40): the position (+0x90) of the object's part (+0x41C, else +0x418) ------------
+// x copied as it is, y and z through the FPU.
+static volatile long g_object_positions;
+static void __thiscall object_position(const uint8_t *self, float *out) {
+    g_object_positions++;
+    const uint8_t *part = *(const uint8_t *const *)(self + 0x41c);
+    if (!part)
+        part = *(const uint8_t *const *)(self + 0x418);
+    const float *const p = (const float *)(part + 0x90);
+    const long double z = x87_load(&p[2]);
+    const uint32_t x = *(const uint32_t *)&p[0];
+    const long double y = x87_load(&p[1]);
+    ((volatile float *)out)[1] = (float)y;
+    ((volatile uint32_t *)out)[0] = x;
+    ((volatile float *)out)[2] = (float)z;
+}
+static const uint8_t object_position_original[] = {0x8b, 0x81, 0x1c, 0x04, 0x00, 0x00, 0x85, 0xc0};
+REWRITE("Object::Position", 0x548b40, object_position_original, &object_position, &g_object_positions);
+
+// ---- ByteSlider::SetValue / CharSlider::SetValue(this, fraction) (0xCA81B0, 0xCA80A0): the bound byte ---------------------
+// v = the low byte of (max - min) fraction + min (fistp; min +8, max +9, bytes); kept at least min and at most max,
+// compared unsigned (ByteSlider) or signed (CharSlider).
+static volatile long g_byte_slider_sets;
+static void __thiscall byte_slider_set_value(const uint8_t *self, float fraction) {
+    g_byte_slider_sets++;
+    const uint8_t min = self[8], max = self[9];
+    const uint8_t v = (uint8_t)x87_whole((long double)(int32_t)(max - min) * fraction + (long double)(int32_t)min);
+    const uint8_t t = min > v ? min : v;
+    **(volatile uint8_t *const *)(self + 4) = max >= t ? t : max;
+}
+static void __thiscall char_slider_set_value(const uint8_t *self, float fraction) {
+    g_byte_slider_sets++;
+    const int8_t min = (int8_t)self[8], max = (int8_t)self[9];
+    const int8_t v = (int8_t)(uint8_t)x87_whole((long double)(int32_t)(max - min) * fraction + (long double)(int32_t)min);
+    const int8_t t = min > v ? min : v;
+    **(volatile int8_t *const *)(self + 4) = max >= t ? t : max;
+}
+static const uint8_t byte_slider_set_value_original[] = {0x83, 0xec, 0x0c, 0x8a, 0x41, 0x08, 0x8a, 0x51};
+REWRITE("ByteSlider::SetValue", 0xca81b0, byte_slider_set_value_original, &byte_slider_set_value, &g_byte_slider_sets);
+REWRITE("CharSlider::SetValue", 0xca80a0, byte_slider_set_value_original, &char_slider_set_value, &g_byte_slider_sets);
+
+// ---- Window::FadeC5E410(this, v) (0xC5E410): +0x9C cleared, +0xE0 set from v -----------------------------------------
+// r = 1 - +0xDC (unrounded): r when v is past it; otherwise 0 when v is below 0, else v as it is.
+static volatile long g_window_fades;
+static void __thiscall window_fade_c5e410(uint8_t *self, float v) {
+    g_window_fades++;
+    const long double r = (long double)*(const float *)0xf264dc - *(const float *)(self + 0xdc);
+    ((volatile uint8_t *)self)[0x9c] = 0;
+    if ((long double)v > r)
+        *(volatile float *)(self + 0xe0) = (float)r;
+    else if ((long double)v < (long double)*(const float *)0xf264e0)
+        *(volatile uint32_t *)(self + 0xe0) = 0;
+    else
+        *(volatile uint32_t *)(self + 0xe0) = *(const uint32_t *)&v;
+}
+static const uint8_t window_fade_c5e410_original[] = {0xd9, 0x05, 0xdc, 0x64, 0xf2, 0x00, 0x33, 0xd2};
+REWRITE("Window::FadeC5E410", 0xc5e410, window_fade_c5e410_original, &window_fade_c5e410, &g_window_fades);
+
+// ---- Bar::Fill(this) (0x436D70): a bar's value (+0x2E8) over the game's maximum (0x10EDA7C), kept between 0 and 1 --------
+// fcomi / fcmov: a NaN gives 0.
+static volatile long g_bar_fills;
+static long double __thiscall bar_fill(const uint8_t *self) {
+    g_bar_fills++;
+    const volatile float q = (float)((long double)*(const float *)(self + 0x2e8) / *(const volatile float *)0x10eda7c);
+    const volatile float t = (float)x87_greater(0.0L, x87_load((const float *)&q));
+    const volatile float u = (float)x87_lesser(x87_load((const float *)&t), 1.0L);
+    return u;
+}
+static const uint8_t bar_fill_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x81, 0xe8, 0x02, 0x00};
+REWRITE("Bar::Fill", 0x436d70, bar_fill_original, &bar_fill, &g_bar_fills);
+
+// ---- Angle::Sector(angle) (0xBC4F90): which sector an angle falls in ------------------------------------------------------
+// v = angle + the offset 0xFA0DEC (unrounded), less a turn (0xF268DC) when not below it; v times the scale 0xF9B168
+// (rounded), rounded down, as a whole number (fistp).
+static volatile long g_angle_sectors;
+static uint32_t __stdcall angle_sector(float angle) {
+    g_angle_sectors++;
+    long double v = (long double)angle + *(const float *)0xfa0dec;
+    if (!(v < (long double)*(const float *)0xf268dc) && v == v)
+        v = v - *(const float *)0xf268dc;
+    const volatile float q = (float)(v * *(const float *)0xf9b168);
+    const long double whole = x87_round(q);
+    const volatile float down = (float)((long double)q < whole ? whole - 1.0L : whole);
+    return (uint32_t)x87_whole(down);
+}
+static const uint8_t angle_sector_original[] = {0xd9, 0x44, 0x24, 0x04, 0x83, 0xec, 0x08, 0xd8};
+REWRITE("Angle::Sector", 0xbc4f90, angle_sector_original, &angle_sector, &g_angle_sectors);
+
+// ---- Counter::AddFraction(this, rate) (0xCDB720): a rate kept (+0) and added, scaled, to a running fraction ------------
+// s = rate K (0xF27370) + the rest (+8), rounded; its whole part (rounded down) as a whole number at +4, the rest
+// s - whole at +8.
+static volatile long g_counter_fractions;
+static void __thiscall counter_add_fraction(uint8_t *self, float rate) {
+    g_counter_fractions++;
+    const volatile float s = (float)((long double)rate * *(const float *)0xf27370 + *(const float *)(self + 8));
+    const long double whole = x87_round(s);
+    const volatile float down = (float)((long double)s < whole ? whole - 1.0L : whole);
+    const uint32_t n = (uint32_t)x87_whole(down);
+    *(volatile uint32_t *)self = *(const uint32_t *)&rate;
+    *(volatile uint32_t *)(self + 4) = n;
+    *(volatile float *)(self + 8) = (float)((long double)s - down);
+}
+static const uint8_t counter_add_fraction_original[] = {0x83, 0xec, 0x10, 0xd9, 0x44, 0x24, 0x14, 0xd8};
+REWRITE("Counter::AddFraction", 0xcdb720, counter_add_fraction_original, &counter_add_fraction, &g_counter_fractions);
+
+// ---- Vector4::Scale(this, k) (0xCC48F0): each of four values times k; gives this -----------------------------------------
+static float *__thiscall vector4_scale(float *self, float k) {
+    g_vector4_adds++;
+    volatile float *const t = self;
+    for (int i = 0; i < 4; i++) t[i] = (float)((long double)k * t[i]);
+    return self;
+}
+static const uint8_t vector4_scale_original[] = {0x55, 0x8b, 0xec, 0x51, 0xc7, 0x45, 0xfc, 0xcc};
+REWRITE("Vector4::Scale", 0xcc48f0, vector4_scale_original, &vector4_scale, &g_vector4_adds);
+
+// ---- WAS_PlayWithItem::AddProgress(this, d) (0xB23990): d added to the play progress (+0x130), kept between 0 and 1 ------
+// The sum is stored first, then kept (fcomi / fcmov: a NaN stays).
+static void __thiscall was_play_with_item_add_progress(uint8_t *self, float d) {
+    g_progress_advances++;
+    volatile float *const p = (volatile float *)(self + 0x130);
+    const volatile float v = (float)((long double)d + *p);
+    *p = v;
+    const long double t = x87_greater(v, 0.0L);
+    *p = (float)x87_lesser(t, 1.0L);
+}
+static const uint8_t was_play_with_item_add_progress_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x44, 0x24, 0x10, 0xc7};
+REWRITE("WAS_PlayWithItem::AddProgress", 0xb23990, was_play_with_item_add_progress_original, &was_play_with_item_add_progress, &g_progress_advances);
+
+// ---- ScrollBar::SetPageSize(this, size) (0xC5E3C0): a page size (+0xDC, at most 1), the position (+0xE0) kept in ---------
+// When page + position is past 1, the position becomes 1 - page.
+static volatile long g_page_sizes;
+static void __thiscall scroll_bar_set_page_size(uint8_t *self, float size) {
+    g_page_sizes++;
+    const volatile float page = (float)x87_lesser(1.0L, x87_load(&size));
+    const long double sum = (long double)page + *(const float *)(self + 0xe0);
+    *(volatile uint32_t *)(self + 0xdc) = *(const volatile uint32_t *)&page;
+    if (sum > (long double)*(const float *)0xf264dc)
+        *(volatile float *)(self + 0xe0) = (float)((long double)*(const float *)0xf264dc - page);
+}
+static const uint8_t scroll_bar_set_page_size_original[] = {0x83, 0xec, 0x08, 0xc7, 0x44, 0x24, 0x04, 0x00};
+REWRITE("ScrollBar::SetPageSize", 0xc5e3c0, scroll_bar_set_page_size_original, &scroll_bar_set_page_size, &g_page_sizes);
+
+// ---- Points::Within(a, b, d) (0x925D20): whether two points are closer than d ---------------------------------------------
+// |sqrt((dz dz + dx dx) + dy dy)| < d (unrounded), as a byte.
+static volatile long g_points_within;
+static uint8_t __stdcall points_within(const float *a, const float *b, float d) {
+    g_points_within++;
+    const long double dx = (long double)a[0] - b[0], dy = (long double)a[1] - b[1], dz = (long double)a[2] - b[2];
+    return x87_abs(x87_sqrt((dz * dz + dx * dx) + dy * dy)) < (long double)d;
+}
+static const uint8_t points_within_original[] = {0x55, 0x8b, 0xec, 0x8b, 0x45, 0x08, 0x8b, 0x4d};
+REWRITE("Points::Within", 0x925d20, points_within_original, &points_within, &g_points_within);
+
+// ---- Angle::Octant(this) (0x4412C0): which of eight directions an angle (+0x48 less +0x54) points in ---------------------
+// q = (+0x48 - +0x54) K (0xF28CF8, rounded), rounded down, as a whole number (fistp); (q / 4) % 8, signed as C divides.
+static uint32_t __thiscall angle_octant(const uint8_t *self) {
+    g_angle_sectors++;
+    const float *const f = (const float *)self;
+    const volatile float q = (float)(((long double)f[0x48 / 4] - f[0x54 / 4]) * *(const float *)0xf28cf8);
+    const long double whole = x87_round(q);
+    const volatile float down = (float)((long double)q < whole ? whole - 1.0L : whole);
+    const int32_t n = (int32_t)(uint32_t)x87_whole(down);
+    return (uint32_t)((n / 4) % 8);
+}
+static const uint8_t angle_octant_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x41, 0x48, 0xd8, 0x61};
+REWRITE("Angle::Octant", 0x4412c0, angle_octant_original, &angle_octant, &g_angle_sectors);
+
+// ---- Window::CaseA45110(n) (0xA45110): one of six of the game's numbers by case, or 0 --------------------------------------
+static volatile long g_window_cases;
+static long double __stdcall window_case_a45110(uint32_t n) {
+    g_window_cases++;
+    static const uint32_t at[6] = {0xa450c4, 0xf27380, 0xf8db68, 0xf8db64, 0xf79714, 0xf4c75c};
+    return *(const float *)(uintptr_t)(n <= 5 ? at[n] : 0xf264e0);
+}
+static const uint8_t window_case_a45110_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0x05, 0x77};
+REWRITE("Window::CaseA45110", 0xa45110, window_case_a45110_original, &window_case_a45110, &g_window_cases);
+
+// ---- Graph::PointFor(this, out, v, below) (0x99D300): a point of a graph from a value pair --------------------------------
+// y = |v.y| (negated when the byte below is set); out.y = (y + 1) (+0x88 - +0x80) / 2; with s = the scale record at
+// +0xDC: out.x = s's +0xDC v.x + s's +0x8C.
+static volatile long g_graph_points;
+static void __thiscall graph_point_for(const uint8_t *self, float *out, const float *v, uint32_t below) {
+    g_graph_points++;
+    long double y = x87_abs(v[1]);
+    if ((uint8_t)below)
+        y = -y;
+    const float *const f = (const float *)self;
+    const long double h = (long double)f[0x88 / 4] - f[0x80 / 4];
+    const float *const s = *(const float *const *)(self + 0xdc);
+    const long double py = h * (y + *(const float *)0xf264dc) * *(const float *)0xf2651c;
+    const long double px = (long double)s[0xdc / 4] * v[0] + s[0x8c / 4];
+    ((volatile float *)out)[0] = (float)px;
+    ((volatile float *)out)[1] = (float)py;
+}
+static const uint8_t graph_point_for_original[] = {0x8b, 0x44, 0x24, 0x08, 0xd9, 0x40, 0x04, 0x8a};
+REWRITE("Graph::PointFor", 0x99d300, graph_point_for_original, &graph_point_for, &g_graph_points);
+
+// ---- Ride::Flip548A90(this) (0x548A90): six values negated through the FPU ------------------------------------------------
+// +0x20 to +0x28 (written +0x28, +0x20, +0x24), then +0 to +8 (written +8, +0, +4).
+static volatile long g_ride_flips;
+static void __thiscall ride_flip_548a90(float *self) {
+    g_ride_flips++;
+    volatile float *const t = self;
+    static const int8_t bases[] = {8, 0};
+    for (const int8_t base : bases) {
+        const long double a = -x87_load(&self[base]), b = -x87_load(&self[base + 1]), c = -x87_load(&self[base + 2]);
+        t[base + 2] = (float)c;
+        t[base] = (float)a;
+        t[base + 1] = (float)b;
+    }
+}
+static const uint8_t ride_flip_548a90_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Ride::Flip548A90", 0x548a90, ride_flip_548a90_original, &ride_flip_548a90, &g_ride_flips);
+
+// ---- Colour::ToRGB(out, r, g, b) (0x402BF0): three values from 0 to 1 packed as an opaque 0xFFRRGGBB; gives out ----------
+static uint32_t *__thiscall colour_to_rgb(uint32_t *out, float r, float g, float b) {
+    g_colour_packs++;
+    const long double k = *(const float *)0xf264c0;
+    uint32_t v = ((uint32_t)x87_whole(r * k) | 0xffffff00u) << 8;
+    v = (v | (uint32_t)x87_whole(g * k)) << 8;
+    *(volatile uint32_t *)out = v | (uint32_t)x87_whole(b * k);
+    return out;
+}
+static const uint8_t colour_to_rgb_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x0c, 0x8b};
+REWRITE("Colour::ToRGB", 0x402bf0, colour_to_rgb_original, &colour_to_rgb, &g_colour_packs);
+
+// ---- Park::Copy9E0DD0(this, from) (0x9E0DD0): a point copied, and its offset from the game's origin (0x14002C0) ----------
+// +0 and +4 copied as they are, +8 through the FPU; +0x10 the point less the origin (z's rounded and written first).
+static volatile long g_park_copies;
+static void __thiscall park_copy_9e0dd0(uint8_t *self, const uint32_t *from) {
+    g_park_copies++;
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    t[0] = from[0], t[1] = from[1];
+    const long double z = x87_load((const float *)&from[2]);
+    ((volatile float *)self)[2] = (float)z;
+    const float *const origin = (const float *)0x14002c0;
+    const long double dx = (long double)((const volatile float *)self)[0] - origin[0];
+    const long double dy = (long double)((const volatile float *)self)[1] - origin[1];
+    const volatile float dz = (float)(z - origin[2]);
+    t[6] = *(const volatile uint32_t *)&dz;
+    ((volatile float *)self)[4] = (float)dx;
+    ((volatile float *)self)[5] = (float)dy;
+}
+static const uint8_t park_copy_9e0dd0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Park::Copy9E0DD0", 0x9e0dd0, park_copy_9e0dd0_original, &park_copy_9e0dd0, &g_park_copies);

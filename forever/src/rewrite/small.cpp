@@ -530,3 +530,395 @@ static uint32_t *__thiscall resource_ref_fa5798(uint32_t *self, uint8_t *owner, 
 static const uint8_t resource_ref_original[] = {0x8b, 0x54, 0x24, 0x10, 0x8b, 0xc1, 0x66, 0x8b};
 REWRITE("ResourceRefFA57D0::ResourceRefFA57D0", 0xbebee0, resource_ref_original, &resource_ref_fa57d0, &g_resource_refs);
 REWRITE("ResourceRefFA5798::ResourceRefFA5798", 0xbeb9a0, resource_ref_original, &resource_ref_fa5798, &g_resource_refs);
+
+// ---- Object::KindCode(this) (0xAAD7F0): a code for the object's kind (+0x120) -------------------------------------------
+// Kinds 2 and 3: the value at +0x124 plus 0x10, at most 0x30 (signed); 5: 0x30; 6, 8 and 9: 0x2F; 7: 0x2E; others 0x10.
+static volatile long g_kind_codes;
+static uint32_t __thiscall object_kind_code(const uint8_t *self) {
+    g_kind_codes++;
+    switch (*(const uint32_t *)(self + 0x120)) {
+    case 2: case 3: {
+        const int32_t v = *(const int32_t *)(self + 0x124) + 0x10;
+        return 0x30 > v ? (uint32_t)v : 0x30;
+    }
+    case 5: return 0x30;
+    case 6: case 8: case 9: return 0x2f;
+    case 7: return 0x2e;
+    default: return 0x10;
+    }
+}
+static const uint8_t object_kind_code_original[] = {0x8b, 0x81, 0x20, 0x01, 0x00, 0x00, 0x83, 0xc0};
+REWRITE("Object::KindCode", 0xaad7f0, object_kind_code_original, &object_kind_code, &g_kind_codes);
+
+// ---- Object::SetKind(this, kind) (0xA93990): a kind (+0x144) and from it a group (+0x140) --------------------------------
+// -1: 1; 0 and 1: 2; 5: 4; 2 to 4 and 6 to 9: 3; anything else 0.
+static volatile long g_kind_sets;
+static void __thiscall object_set_kind(uint8_t *self, int32_t kind) {
+    g_kind_sets++;
+    *(volatile int32_t *)(self + 0x144) = kind;
+    uint32_t group;
+    switch (kind) {
+    case -1: group = 1; break;
+    case 0: case 1: group = 2; break;
+    case 5: group = 4; break;
+    case 2: case 3: case 4: case 6: case 7: case 8: case 9: group = 3; break;
+    default: group = 0; break;
+    }
+    *(volatile uint32_t *)(self + 0x140) = group;
+}
+static const uint8_t object_set_kind_original[] = {0x8b, 0x44, 0x24, 0x04, 0x89, 0x81, 0x44, 0x01};
+REWRITE("Object::SetKind", 0xa93990, object_set_kind_original, &object_set_kind, &g_kind_sets);
+
+// ---- Mesh::PointAndNormal(this, point, position, normal) (0x489A10): a mesh point's position and normal ------------------
+// Nothing without a mesh (*this) or when the point's +0xC is negative. The point's number (+0x10): part in the high half
+// (28-byte parts at the mesh's +8, their points at +0x18), point in the low half (32 bytes each: position, then normal).
+static volatile long g_mesh_points;
+static void __thiscall mesh_point_and_normal(const uint8_t *const *self, const uint8_t *point, uint32_t *position, uint32_t *normal) {
+    g_mesh_points++;
+    const uint8_t *const mesh = *self;
+    if (!mesh || *(const int32_t *)(point + 0xc) < 0)
+        return;
+    const uint32_t id = *(const uint32_t *)(point + 0x10);
+    const uint8_t *const parts = *(const uint8_t *const *)(mesh + 8);
+    const uint32_t *const p = (const uint32_t *)(*(const uint8_t *const *)(parts + (id >> 16) * 0x1c + 0x18) + (id & 0xffff) * 32);
+    ((volatile uint32_t *)position)[0] = p[0], ((volatile uint32_t *)position)[1] = p[1], ((volatile uint32_t *)position)[2] = p[2];
+    ((volatile uint32_t *)normal)[0] = p[3], ((volatile uint32_t *)normal)[1] = p[4], ((volatile uint32_t *)normal)[2] = p[5];
+}
+static const uint8_t mesh_point_and_normal_original[] = {0x8b, 0x09, 0x85, 0xc9, 0x74, 0x59, 0x8b, 0x44};
+REWRITE("Mesh::PointAndNormal", 0x489a10, mesh_point_and_normal_original, &mesh_point_and_normal, &g_mesh_points);
+
+// ---- Animations::SetMove(this, n, from, to, w) (0x94DE60): animation n (208 bytes at *(+0x1A4)) moving between points ---
+// +0x60 mode 3, +0x70 from, +0x90 to (three values each), +0xA0 w.
+static volatile long g_animation_moves;
+static void __thiscall animations_set_move(const uint8_t *self, int32_t n, const uint32_t *from, const uint32_t *to, uint32_t w) {
+    g_animation_moves++;
+    volatile uint32_t *const e = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x1a4) + n * 0xd0);
+    e[0x60 / 4] = 3;
+    e[0x70 / 4] = from[0], e[0x74 / 4] = from[1], e[0x78 / 4] = from[2];
+    e[0x90 / 4] = to[0], e[0x94 / 4] = to[1], e[0x98 / 4] = to[2];
+    e[0xa0 / 4] = w;
+}
+static const uint8_t animations_set_move_original[] = {0x8b, 0x91, 0xa4, 0x01, 0x00, 0x00, 0x8b, 0x44};
+REWRITE("Animations::SetMove", 0x94de60, animations_set_move_original, &animations_set_move, &g_animation_moves);
+
+// ---- Request::CopyFrom(this, owner, from) (0xC51260): a request record made from another --------------------------------
+// +8 itself, +0x10 cleared, +0xC and +0x14 to +0x2C copied (+0x24 a byte); put first in the owner's list (+0x10).
+static uint32_t *__thiscall request_copy_from(uint32_t *self, const uint8_t *owner, const uint32_t *from) {
+    g_requests++;
+    volatile uint32_t *const t = self;
+    t[2] = (uint32_t)(uintptr_t)self;
+    t[3] = from[3];
+    t[4] = 0;
+    t[5] = from[5], t[6] = from[6], t[7] = from[7], t[8] = from[8];
+    ((volatile uint8_t *)self)[0x24] = ((const uint8_t *)from)[0x24];
+    t[10] = from[10], t[11] = from[11];
+    volatile uint32_t *const list = *(volatile uint32_t *const *)(owner + 0x10);
+    t[0] = list[0];
+    ((volatile uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)self;
+    t[1] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)self;
+    return self;
+}
+static const uint8_t request_copy_from_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x08, 0x89, 0x40};
+REWRITE("Request::CopyFrom", 0xc51260, request_copy_from_original, &request_copy_from, &g_requests);
+
+// ---- Object::CopyArea(this, other) (0xAAE2D0): another object's area (+0x148 to +0x154) copied when it has one -----------
+// The flag byte +0x144 is set to 1 when there is one (and copied), else 0.
+static volatile long g_area_copies;
+static void __thiscall object_copy_area(uint8_t *self, const uint8_t *other) {
+    g_area_copies++;
+    if (!other || !other[0x144]) {
+        ((volatile uint8_t *)self)[0x144] = 0;
+        return;
+    }
+    ((volatile uint8_t *)self)[0x144] = 1;
+    for (int i = 0; i < 4; i++) ((volatile uint32_t *)(self + 0x148))[i] = ((const uint32_t *)(other + 0x148))[i];
+}
+static const uint8_t object_copy_area_original[] = {0x8b, 0x44, 0x24, 0x04, 0x85, 0xc0, 0x74, 0x44};
+REWRITE("Object::CopyArea", 0xaae2d0, object_copy_area_original, &object_copy_area, &g_area_copies);
+
+// ---- ResourceRefFA5D28::ResourceRefFA5D28(this, owner, value, kind) (0xBFF8D0): a reference joining its owner's list ----
+// +0 the table, +4 the word 1, +6 kind, +8 value, +0x14 and +0x30 itself, +0x1C owner, +0x18, +0x20, +0x24 cleared; its
+// link (+0x28) put first in the list whose head the owner holds at +0xC4.
+static uint32_t *__thiscall resource_ref_fa5d28(uint32_t *self, uint8_t *owner, uint32_t value, uint32_t kind) {
+    g_resource_refs++;
+    volatile uint32_t *const t = self;
+    ((volatile uint16_t *)self)[3] = (uint16_t)kind;
+    t[2] = value;
+    ((volatile uint16_t *)self)[2] = 1;
+    t[5] = (uint32_t)(uintptr_t)self;
+    t[7] = (uint32_t)(uintptr_t)owner;
+    t[0] = 0xfa5d28;
+    t[6] = 0, t[8] = 0, t[9] = 0;
+    t[12] = (uint32_t)(uintptr_t)self;
+    volatile uint32_t *const list = *(volatile uint32_t *const *)((uint8_t *)(uintptr_t)t[7] + 0xc4);
+    volatile uint32_t *const link = t + 10;
+    link[0] = list[0];
+    ((volatile uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)link;
+    link[1] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)link;
+    return self;
+}
+static const uint8_t resource_ref_fa5d28_original[] = {0x8b, 0x54, 0x24, 0x08, 0x8b, 0xc1, 0x66, 0x8b};
+REWRITE("ResourceRefFA5D28::ResourceRefFA5D28", 0xbff8d0, resource_ref_fa5d28_original, &resource_ref_fa5d28, &g_resource_refs);
+
+// ---- AdMenu::ScaleLevel(a, b) (0x45E430): a level for the ad media from 8 a / b (signed division) ------------------------
+// 1: 6, 2: 5, 4: 4, 16: 2, 32: 1, 64: 0, anything else 3.
+static volatile long g_ad_levels;
+static uint32_t __stdcall ad_menu_scale_level(int32_t a, int32_t b) {
+    g_ad_levels++;
+    switch ((int32_t)((uint32_t)a << 3) / b) {
+    case 1: return 6;
+    case 2: return 5;
+    case 4: return 4;
+    case 16: return 2;
+    case 32: return 1;
+    case 64: return 0;
+    default: return 3;
+    }
+}
+static const uint8_t ad_menu_scale_level_original[] = {0x8b, 0x44, 0x24, 0x04, 0xc1, 0xe0, 0x03, 0x99};
+REWRITE("AdMenu::ScaleLevel", 0x45e430, ad_menu_scale_level_original, &ad_menu_scale_level, &g_ad_levels);
+
+// ---- ResourceRefFA5CF0::ResourceRefFA5CF0(this, owner, value, kind) (0xBFF2B0): the same as ResourceRefFA5D28, joining
+// the list whose head the owner holds at +0x94 ------------------------------------------------------------------------
+static uint32_t *__thiscall resource_ref_fa5cf0(uint32_t *self, uint8_t *owner, uint32_t value, uint32_t kind) {
+    g_resource_refs++;
+    volatile uint32_t *const t = self;
+    ((volatile uint16_t *)self)[3] = (uint16_t)kind;
+    t[2] = value;
+    ((volatile uint16_t *)self)[2] = 1;
+    t[5] = (uint32_t)(uintptr_t)self;
+    t[7] = (uint32_t)(uintptr_t)owner;
+    t[0] = 0xfa5cf0;
+    t[6] = 0, t[8] = 0, t[9] = 0;
+    t[12] = (uint32_t)(uintptr_t)self;
+    volatile uint32_t *const list = *(volatile uint32_t *const *)(owner + 0x94);
+    volatile uint32_t *const link = t + 10;
+    link[0] = list[0];
+    ((volatile uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)link;
+    link[1] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)link;
+    return self;
+}
+static const uint8_t resource_ref_fa5cf0_original[] = {0x8b, 0x54, 0x24, 0x08, 0x8b, 0xc1, 0x66, 0x8b};
+REWRITE("ResourceRefFA5CF0::ResourceRefFA5CF0", 0xbff2b0, resource_ref_fa5cf0_original, &resource_ref_fa5cf0, &g_resource_refs);
+
+// ---- PackedSlots::Set(this, id, v, a, b, c, d) (0x9CEDB0): the values of a slot found by a packed number ----------------
+// Block id >> 20 (signed; its slots at *(this + (block + 12) 16)), slot id & 0xFFFFF (64 bytes each): +0x10 v's three
+// values, +0x20 a, +0x24 b, +0x28 c, +0x2C d.
+static volatile long g_packed_slot_sets;
+static void __thiscall packed_slots_set(const uint8_t *self, int32_t id, const uint32_t *v, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    g_packed_slot_sets++;
+    uint8_t *const base = *(uint8_t *const *)(self + (uint32_t)((id >> 20) + 0xc) * 16);
+    volatile uint32_t *const s = (volatile uint32_t *)(base + ((uint32_t)id & 0xfffff) * 64);
+    s[4] = v[0], s[5] = v[1], s[6] = v[2];
+    s[8] = a, s[9] = b, s[10] = c, s[11] = d;
+}
+static const uint8_t packed_slots_set_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0xd0, 0xc1, 0xfa};
+REWRITE("PackedSlots::Set", 0x9cedb0, packed_slots_set_original, &packed_slots_set, &g_packed_slot_sets);
+
+// ---- Walker::Step(w) (0x713650): a position (+4, +8) moved one cell in its direction (+0x28), its height (+0x2C) by
+// its slope kind (+0x24) ------------------------------------------------------------------------------------------------
+// Direction 0: x - 1, 1: x + 1, 2: y - 1, 3: y + 1. Slope 1: height + 2, 2: - 2, 4: + 1, 5: - 1.
+static volatile long g_walker_steps;
+static void __stdcall walker_step(uint8_t *w) {
+    g_walker_steps++;
+    volatile int32_t *const t = (volatile int32_t *)w;
+    switch (t[0x28 / 4]) {
+    case 0: t[1] = t[1] - 1; break;
+    case 1: t[1] = t[1] + 1; break;
+    case 2: t[2] = t[2] - 1; break;
+    case 3: t[2] = t[2] + 1; break;
+    default: break;
+    }
+    switch (t[0x24 / 4]) {
+    case 1: t[0x2c / 4] = t[0x2c / 4] + 2; break;
+    case 2: t[0x2c / 4] = t[0x2c / 4] - 2; break;
+    case 4: t[0x2c / 4] = t[0x2c / 4] + 1; break;
+    case 5: t[0x2c / 4] = t[0x2c / 4] - 1; break;
+    default: break;
+    }
+}
+static const uint8_t walker_step_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x48, 0x28, 0x83};
+REWRITE("Walker::Step", 0x713650, walker_step_original, &walker_step, &g_walker_steps);
+
+// ---- Record::Init633B30(this, v) (0x633B30): a record set up and joined to the game's list (0x10F0D70) -----------------
+// An empty list at +4 (its +0x10 and +0x14 pointing back), +0x24 itself, +0x28 v; its link (+0x1C) put last in the
+// game's circular list (next at +0, previous at +4); the table 0xF47F0C, then 0xF48054.
+static volatile long g_record_633b30s;
+static uint32_t *__thiscall record_init_633b30(uint32_t *self, uint32_t v) {
+    g_record_633b30s++;
+    volatile uint32_t *const t = self;
+    volatile uint32_t *const c = t + 1;
+    c[2] = 0, c[5] = 0, c[1] = 0, c[3] = 0;
+    c[4] = (uint32_t)(uintptr_t)c;
+    c[0] = (uint32_t)(uintptr_t)(c + 3);
+    t[0] = 0xf47f0c;
+    t[9] = (uint32_t)(uintptr_t)self;
+    volatile uint32_t *const list = *(volatile uint32_t *const *)0x10f0d70;
+    volatile uint32_t *const link = t + 7;
+    link[1] = list[1];
+    *(volatile uint32_t *)(uintptr_t)list[1] = (uint32_t)(uintptr_t)link;
+    link[0] = (uint32_t)(uintptr_t)list;
+    list[1] = (uint32_t)(uintptr_t)link;
+    t[0] = 0xf48054;
+    t[10] = v;
+    return self;
+}
+static const uint8_t record_init_633b30_original[] = {0x8b, 0xc1, 0x8d, 0x48, 0x04, 0x56, 0x33, 0xf6};
+REWRITE("Record::Init633B30", 0x633b30, record_init_633b30_original, &record_init_633b30, &g_record_633b30s);
+
+// ---- Ride::Offset(this, out) (0x5061B0): the ride's offset (+0x1E0) for kinds 2 and 3 (+0x1C8), or none ----------------
+static volatile long g_ride_offsets;
+static void __thiscall ride_offset(const uint8_t *self, uint32_t *out) {
+    g_ride_offsets++;
+    const uint32_t kind = *(const uint32_t *)(self + 0x1c8);
+    static const uint32_t none[3] = {0, 0, 0};
+    const uint32_t *const from = kind == 2 || kind == 3 ? (const uint32_t *)(self + 0x1e0) : none;
+    ((volatile uint32_t *)out)[0] = from[0], ((volatile uint32_t *)out)[1] = from[1], ((volatile uint32_t *)out)[2] = from[2];
+}
+static const uint8_t ride_offset_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Ride::Offset", 0x5061b0, ride_offset_original, &ride_offset, &g_ride_offsets);
+
+// ---- Object7FC84::Object7FC84(this, owner, p, v, f1, f2, f3) (0x9883D0): table 0xF7FC84, size 0xF0 -----------------------
+// +0xC owner, +8 cleared, +0x10 the point's three values, +0x20 v, bytes +0x24 to +0x26 the flags.
+static volatile long g_object_7fc84s;
+static uint32_t *__thiscall object_7fc84(uint32_t *self, uint32_t owner, const uint32_t *p, uint32_t v, uint32_t f1, uint32_t f2, uint32_t f3) {
+    g_object_7fc84s++;
+    volatile uint32_t *const t = self;
+    t[3] = owner;
+    t[1] = 0xf0;
+    t[2] = 0;
+    t[0] = 0xf7fc84;
+    t[4] = p[0], t[5] = p[1], t[6] = p[2];
+    t[8] = v;
+    ((volatile uint8_t *)self)[0x24] = (uint8_t)f1, ((volatile uint8_t *)self)[0x25] = (uint8_t)f2, ((volatile uint8_t *)self)[0x26] = (uint8_t)f3;
+    return self;
+}
+static const uint8_t object_7fc84_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x89, 0x48};
+REWRITE("Object7FC84::Object7FC84", 0x9883d0, object_7fc84_original, &object_7fc84, &g_object_7fc84s);
+
+// ---- HandleRef::FromRefBit(this, other, n) (0x7A7040): a reference (table 0xF26AE0) to another's handle, with bit n ----
+// +0x10 itself, +4 the handle (other's +4; its count +8 raised), its link (+8) put first in the handle's list (its +0x20
+// points at the head), +0x14 1 << n, and the 0x37 values from +0x18 cleared.
+static volatile long g_handle_ref_bits;
+static uint32_t *__thiscall handle_ref_from_ref_bit(uint32_t *self, const uint32_t *other, uint32_t n) {
+    g_handle_ref_bits++;
+    volatile uint32_t *const t = self;
+    t[0] = 0xf26ae0;
+    t[4] = (uint32_t)(uintptr_t)self;
+    volatile uint32_t *const h = (volatile uint32_t *)(uintptr_t)other[1];
+    h[2] = h[2] + 1;
+    t[1] = (uint32_t)(uintptr_t)h;
+    volatile uint32_t *const list = (volatile uint32_t *)(uintptr_t)h[8];
+    volatile uint32_t *const link = t + 2;
+    link[0] = list[0];
+    ((volatile uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)link;
+    link[1] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)link;
+    t[5] = 1u << (n & 31);
+    for (int i = 0; i < 0x37; i++) t[6 + i] = 0;
+    return self;
+}
+static const uint8_t handle_ref_from_ref_bit_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0xd1, 0xc7, 0x02};
+REWRITE("HandleRef::FromRefBit", 0x7a7040, handle_ref_from_ref_bit_original, &handle_ref_from_ref_bit, &g_handle_ref_bits);
+
+// ---- Batches::InitC9C3C0(this, owner) (0xC9C3C0): a record set up and joined to its owner's list -----------------------
+// +0 owner, +0xC itself, an empty list at +0x90 (its +0x10 back to it, +0 to its +0xC), +0xA8 cleared; its link (+4) put
+// first in the list whose head the owner holds at +0x14; the owner's count (+0x60) goes up by one.
+static volatile long g_batch_inits;
+static uint32_t *__thiscall batches_init_c9c3c0(uint32_t *self, uint8_t *owner) {
+    g_batch_inits++;
+    volatile uint32_t *const t = self;
+    t[0] = (uint32_t)(uintptr_t)owner;
+    t[3] = (uint32_t)(uintptr_t)self;
+    volatile uint32_t *const c = t + 0x90 / 4;
+    c[2] = 0, c[5] = 0, c[1] = 0;
+    c[4] = (uint32_t)(uintptr_t)c;
+    c[3] = 0;
+    c[0] = (uint32_t)(uintptr_t)(c + 3);
+    t[0xa8 / 4] = 0;
+    volatile uint32_t *const list = *(volatile uint32_t *const *)(owner + 0x14);
+    volatile uint32_t *const link = t + 1;
+    link[0] = list[0];
+    ((volatile uint32_t *)(uintptr_t)list[0])[1] = (uint32_t)(uintptr_t)link;
+    link[1] = (uint32_t)(uintptr_t)list;
+    list[0] = (uint32_t)(uintptr_t)link;
+    volatile uint32_t *const count = (volatile uint32_t *)(owner + 0x60);
+    *count = *count + 1;
+    return self;
+}
+static const uint8_t batches_init_c9c3c0_original[] = {0x8b, 0xc1, 0x56, 0x8b, 0x74, 0x24, 0x08, 0x89};
+REWRITE("Batches::InitC9C3C0", 0xc9c3c0, batches_init_c9c3c0_original, &batches_init_c9c3c0, &g_batch_inits);
+
+// ---- Segment3D::Segment3D(this, a, b, p, q) (0xC46E20): two values (+4, +8) and two points (+0xC, +0x18) ----------------
+// The table 0xFB7158, then 0xFB715C.
+static volatile long g_segment3ds;
+static uint32_t *__thiscall segment3d(uint32_t *self, uint32_t a, uint32_t b, const uint32_t *p, const uint32_t *q) {
+    g_segment3ds++;
+    volatile uint32_t *const t = self;
+    t[1] = a, t[2] = b;
+    t[0] = 0xfb7158;
+    t[3] = p[0], t[4] = p[1], t[5] = p[2];
+    t[6] = q[0], t[7] = q[1], t[8] = q[2];
+    t[0] = 0xfb715c;
+    return self;
+}
+static const uint8_t segment3d_original[] = {0x8b, 0x54, 0x24, 0x08, 0x8b, 0xc1, 0x8b, 0x4c};
+REWRITE("Segment3D::Segment3D", 0xc46e20, segment3d_original, &segment3d, &g_segment3ds);
+
+// ---- Water::Entry94DE10(this, n, a, b) (0x94DE10): entry n (208 bytes at *(+0x1A4)) set to kind 2 with two points -------
+static void __thiscall water_entry_94de10(const uint8_t *self, int32_t n, const uint32_t *a, const uint32_t *b) {
+    g_animation_moves++;
+    volatile uint32_t *const e = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x1a4) + n * 0xd0);
+    e[0x60 / 4] = 2;
+    e[0x70 / 4] = a[0], e[0x74 / 4] = a[1], e[0x78 / 4] = a[2];
+    e[0x80 / 4] = b[0], e[0x84 / 4] = b[1], e[0x88 / 4] = b[2];
+}
+static const uint8_t water_entry_94de10_original[] = {0x8b, 0x91, 0xa4, 0x01, 0x00, 0x00, 0x8b, 0x44};
+REWRITE("Water::Entry94DE10", 0x94de10, water_entry_94de10_original, &water_entry_94de10, &g_animation_moves);
+
+// ---- Guest::Take758590(this, n, kind) (0x758590): n taken from a count (+0) when there is enough (signed) ---------------
+// Gives (in the low byte) 0 when n is more than the count; otherwise the count drops by n, +0x18 and the total for the
+// kind (0: +0x10, 1: +4, 2: +8, 3: +0xC, 4: +0x14; none for others) rise by n, and 1.
+static volatile long g_guest_takes;
+static uint8_t __thiscall guest_take_758590(int32_t *self, int32_t n, uint32_t kind) {
+    g_guest_takes++;
+    volatile int32_t *const t = self;
+    const int32_t count = t[0];
+    if (n > count)
+        return 0;
+    t[0] = count - n;
+    t[6] = t[6] + n;
+    static const int8_t at[5] = {4, 1, 2, 3, 5};
+    if (kind <= 4)
+        t[at[kind]] = t[at[kind]] + n;
+    return 1;
+}
+static const uint8_t guest_take_758590_original[] = {0x8b, 0x11, 0x8b, 0x44, 0x24, 0x04, 0x3b, 0xc2};
+REWRITE("Guest::Take758590", 0x758590, guest_take_758590_original, &guest_take_758590, &g_guest_takes);
+
+// ---- Window::Init65FB30(this, v) (0x65FB30): the same set-up as Record::Init633B30, table 0xF4DE64, +0x1C v, its link at
+// +0x20 put last in the game's circular list at 0x10EECB0, +0x28 itself -----------------------------------------------
+static volatile long g_window_65fb30s;
+static void __thiscall window_init_65fb30(uint32_t *self, uint32_t v) {
+    g_window_65fb30s++;
+    volatile uint32_t *const t = self;
+    volatile uint32_t *const c = t + 1;
+    c[2] = 0, c[5] = 0, c[1] = 0;
+    c[4] = (uint32_t)(uintptr_t)c;
+    c[3] = 0;
+    c[0] = (uint32_t)(uintptr_t)(c + 3);
+    t[7] = v;
+    t[0] = 0xf4de64;
+    t[10] = (uint32_t)(uintptr_t)self;
+    volatile uint32_t *const list = *(volatile uint32_t *const *)0x10eecb0;
+    volatile uint32_t *const link = t + 8;
+    link[1] = list[1];
+    *(volatile uint32_t *)(uintptr_t)list[1] = (uint32_t)(uintptr_t)link;
+    link[0] = (uint32_t)(uintptr_t)list;
+    list[1] = (uint32_t)(uintptr_t)link;
+}
+static const uint8_t window_init_65fb30_original[] = {0x8b, 0xc1, 0x8d, 0x48, 0x04, 0x56, 0x33, 0xf6};
+REWRITE("Window::Init65FB30", 0x65fb30, window_init_65fb30_original, &window_init_65fb30, &g_window_65fb30s);
