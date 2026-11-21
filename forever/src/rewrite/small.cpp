@@ -1528,3 +1528,420 @@ static void __thiscall vertex_layout_add(uint8_t *self, uint32_t element) {
 }
 static const uint8_t vertex_layout_add_original[] = {0x8b, 0x51, 0x20, 0x83, 0xfa, 0x10, 0x0f, 0x83};
 REWRITE("VertexLayout::Add", 0x413e40, vertex_layout_add_original, &vertex_layout_add, &g_layout_adds);
+
+// ---- Path::Bounds71DC50(this, x, y, grow) (0x71DC50): byte bounds (+0x9C: min x, min y, max x, max y) and a cell --------
+// Growing: each bound widened to take in (x, y) (unsigned bytes). Otherwise: +0xA0 set to 1 when the cell lies on any
+// of the four bounds.
+static volatile long g_path_bounds;
+static void __thiscall path_bounds_71dc50(uint8_t *self, uint32_t x_arg, uint32_t y_arg, uint32_t grow) {
+    g_path_bounds++;
+    const uint8_t x = (uint8_t)x_arg, y = (uint8_t)y_arg;
+    volatile uint8_t *const b = self + 0x9c;
+    if ((uint8_t)grow) {
+        b[0] = x < b[0] ? x : b[0];
+        b[1] = y < b[1] ? y : b[1];
+        b[2] = x > b[2] ? x : b[2];
+        b[3] = y > b[3] ? y : b[3];
+        return;
+    }
+    if (x == b[0] || y == b[1] || x == b[2] || y == b[3])
+        b[4] = 1;
+}
+static const uint8_t path_bounds_71dc50_original[] = {0x8a, 0x44, 0x24, 0x0c, 0x84, 0xc0, 0x53, 0x74};
+REWRITE("Path::Bounds71DC50", 0x71dc50, path_bounds_71dc50_original, &path_bounds_71dc50, &g_path_bounds);
+
+// ---- Nodes::MarkChain(this, n, force) (0xCC75A0): node n and the nodes it leads to marked with bit 0x800 ----------------
+// Nodes of 0x60 bytes at +0x10 (flags +0x54, next +0x50). Nothing when node n is marked already. Forced: n is marked,
+// then each next node (while the next is above 0 and not yet marked). Not forced: n must be able to start a chain
+// (its low flag byte at most 1 with bit 8, or bit 10); n itself is left and its next nodes are marked.
+static volatile long g_chain_marks;
+static void __thiscall nodes_mark_chain(const uint8_t *self, int32_t n, uint32_t force) {
+    g_chain_marks++;
+    uint8_t *const nodes = *(uint8_t *const *)(self + 0x10);
+    volatile uint32_t *flags = (volatile uint32_t *)(nodes + n * 0x60 + 0x54);
+    if (*flags & 0x800)
+        return;
+    int32_t i = n;
+    if (!(uint8_t)force) {
+        const uint32_t f = *flags;
+        const bool starts = ((int32_t)(f & 0xff) <= 1 && (f >> 8) & 1) || (f >> 10) & 1;
+        if (!starts)
+            return;
+        i = *(const int32_t *)(nodes + n * 0x60 + 0x50);
+        if (i <= 0 || *(const uint32_t *)(nodes + i * 0x60 + 0x54) & 0x800)
+            return;
+    }
+    for (;;) {
+        uint8_t *const node = *(uint8_t *const *)(self + 0x10) + i * 0x60;
+        *(volatile uint32_t *)(node + 0x54) = *(volatile uint32_t *)(node + 0x54) | 0x800;
+        const int32_t next = *(const int32_t *)(*(uint8_t *const *)(self + 0x10) + i * 0x60 + 0x50);
+        if (next <= 0)
+            return;
+        i = next;
+        if (*(const uint32_t *)(*(uint8_t *const *)(self + 0x10) + i * 0x60 + 0x54) & 0x800)
+            return;
+    }
+}
+static const uint8_t nodes_mark_chain_original[] = {0x8b, 0x44, 0x24, 0x04, 0x57, 0x8b, 0xf9, 0x8b};
+REWRITE("Nodes::MarkChain", 0xcc75a0, nodes_mark_chain_original, &nodes_mark_chain, &g_chain_marks);
+
+// ---- String::CompareRaw(a, b) (0xCD5750): two plain texts compared character by character (unsigned): -1, 0 or 1 --------
+// A missing text counts as empty.
+static volatile long g_raw_compares;
+static int32_t __stdcall string_compare_raw(const uint8_t *a, const uint8_t *b) {
+    g_raw_compares++;
+    static const uint8_t empty = 0;
+    if (!a) a = &empty;
+    if (!b) b = &empty;
+    for (;; a++, b++) {
+        if (*a != *b)
+            return *a < *b ? -1 : 1;
+        if (!*a)
+            return 0;
+    }
+}
+static const uint8_t string_compare_raw_original[] = {0x8b, 0x44, 0x24, 0x04, 0x85, 0xc0, 0x8b, 0x4c};
+REWRITE("String::CompareRaw", 0xcd5750, string_compare_raw_original, &string_compare_raw, &g_raw_compares);
+
+// ---- Key::FromSmallList(list, n) (0x9F8430): a short list sorted and packed into a 64-bit key ----------------------------
+// The list sorted in place (each place swapped with any later smaller number, signed); then the key: the first number
+// plus 1 (sign-extended to 64 bits), or'd with the second plus 1 (sign-extended) shifted up 16, the third plus 1 into the
+// high word, and the fourth plus 1 shifted up 16 into the high word.
+static volatile long g_small_list_keys;
+static uint64_t __stdcall key_from_small_list(int32_t *list, int32_t n) {
+    g_small_list_keys++;
+    volatile int32_t *const l = list;
+    for (int32_t i = 0; i < n - 1; i++)
+        for (int32_t j = i + 1; j < n; j++)
+            if (l[i] > l[j]) {
+                const int32_t t = l[i];
+                l[i] = l[j];
+                l[j] = t;
+            }
+    uint64_t key = 0;
+    if (n > 0) key = (uint64_t)((int64_t)l[0] + 1);
+    if (n > 1) key |= (uint64_t)(int64_t)(int32_t)((uint32_t)l[1] + 1) << 16;
+    if (n > 2) key |= (uint64_t)(uint32_t)((uint32_t)l[2] + 1) << 32;
+    if (n > 3) key |= (uint64_t)(uint32_t)(((uint32_t)l[3] + 1) << 16) << 32;
+    return key;
+}
+static const uint8_t key_from_small_list_original[] = {0x55, 0x8b, 0x6c, 0x24, 0x0c, 0x56, 0x8d, 0x45};
+REWRITE("Key::FromSmallList", 0x9f8430, key_from_small_list_original, &key_from_small_list, &g_small_list_keys);
+
+// ---- GridMarks::MarkRect0(this, x0, y0, x1, y1) (0x874CF0): byte 0 of each cell of a rectangle set, and the bounds grown --
+// The rectangle kept within 0 and the grid's size (+0x48, +0x4C); cells of 0x34 bytes at +0x50. When it is not empty,
+// the marked bounds (+0x54 to +0x60) grow to take it in.
+static volatile long g_rect_marks;
+static void __thiscall grid_marks_mark_rect0(uint8_t *self, int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
+    g_rect_marks++;
+    volatile int32_t *const t = (volatile int32_t *)self;
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > t[0x48 / 4]) x1 = t[0x48 / 4];
+    if (y1 > t[0x4c / 4]) y1 = t[0x4c / 4];
+    if (x0 >= x1 || y0 >= y1)
+        return;
+    for (int32_t y = y0; y < y1; y++)
+        for (int32_t x = x0; x < x1; x++) ((volatile uint8_t *)(uintptr_t)t[0x50 / 4])[(t[0x48 / 4] * y + x) * 0x34] = 1;
+    if (x0 < t[0x54 / 4]) t[0x54 / 4] = x0;
+    if (y0 < t[0x58 / 4]) t[0x58 / 4] = y0;
+    if (x1 > t[0x5c / 4]) t[0x5c / 4] = x1;
+    if (y1 > t[0x60 / 4]) t[0x60 / 4] = y1;
+}
+static const uint8_t grid_marks_mark_rect0_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x85, 0xdb, 0x56};
+REWRITE("GridMarks::MarkRect0", 0x874cf0, grid_marks_mark_rect0_original, &grid_marks_mark_rect0, &g_rect_marks);
+
+// ---- Key::Compare(a, b) (0x9731C0): two keys of six values (passed by value) compared: -1, 0 or 1 ----------------------
+// The first two unsigned; the third points at three signed values compared in turn; the last three signed.
+static volatile long g_key_compares;
+static int32_t __stdcall key_compare(uint32_t a0, uint32_t a1, const int32_t *a2, int32_t a3, int32_t a4, int32_t a5, uint32_t b0, uint32_t b1, const int32_t *b2, int32_t b3,
+                                     int32_t b4, int32_t b5) {
+    g_key_compares++;
+    if (a0 != b0) return a0 > b0 ? 1 : -1;
+    if (a1 != b1) return a1 > b1 ? 1 : -1;
+    for (int i = 0; i < 3; i++)
+        if (a2[i] != b2[i]) return a2[i] > b2[i] ? 1 : -1;
+    if (a3 != b3) return a3 > b3 ? 1 : -1;
+    if (a4 != b4) return a4 > b4 ? 1 : -1;
+    if (a5 != b5) return a5 > b5 ? 1 : -1;
+    return 0;
+}
+static const uint8_t key_compare_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x4c, 0x24, 0x1c};
+REWRITE("Key::Compare", 0x9731c0, key_compare_original, &key_compare, &g_key_compares);
+
+// ---- Vertex::SizeFromFormat(format) (0xBD4060): the size in bytes of a vertex from its format bits --------------------------
+// Position (bits 0-1: 1 gives 12, 2 gives 16), 12 each for bits 2 and 3, bits 4-5 (0x10: 12, 0x20: 16), bits 6-8 (0x40,
+// 0x80, 0xC0: 4; 0x100: 8), 4 each for bits 9 and 10, 8 per texture coordinate (bits 12-15), 4 each for bits 16 and 17.
+static volatile long g_vertex_sizes;
+static uint32_t __fastcall vertex_size_from_format(uint32_t format) {
+    g_vertex_sizes++;
+    uint32_t size = (format & 3) == 1 ? 12 : (format & 3) == 2 ? 16 : 0;
+    if (format & 4) size += 12;
+    if (format & 8) size += 12;
+    if ((format & 0x30) == 0x10) size += 12;
+    else if ((format & 0x30) == 0x20) size += 16;
+    const uint32_t mid = format & 0x1c0;
+    if (mid == 0x40 || mid == 0x80 || mid == 0xc0) size += 4;
+    else if (mid == 0x100) size += 8;
+    if (format & 0x200) size += 4;
+    if (format & 0x400) size += 4;
+    size += ((format >> 12) & 0xf) * 8;
+    if (format & 0x10000) size += 4;
+    if (format & 0x20000) size += 4;
+    return size;
+}
+static const uint8_t vertex_size_from_format_original[] = {0x8b, 0xd1, 0x83, 0xe2, 0x03, 0x33, 0xc0, 0x4a};
+REWRITE("Vertex::SizeFromFormat", 0xbd4060, vertex_size_from_format_original, &vertex_size_from_format, &g_vertex_sizes);
+
+// ---- PairMap::Find(this, a, b) (0xCA45C0): the value stored for a pair of numbers, or -1 ---------------------------------
+// Entries {a, b, value} of 12 bytes at +0x20 (count +0x14), sorted by a then b (signed). Steps of halving size from the
+// power of two that reaches half the count: from place lo, the place lo + step is taken when its pair is below; an equal
+// pair is the answer. Finally the pair at lo is checked.
+static volatile long g_pair_finds;
+static uint32_t __thiscall pair_map_find(const uint8_t *self, int32_t a, int32_t b) {
+    g_pair_finds++;
+    const int32_t count = *(const int32_t *)(self + 0x14);
+    int32_t step = 1;
+    if (count > 2) {
+        int32_t s = 2;
+        do step = s, s = step + step;
+        while (s < count);
+    }
+    int32_t lo = 0;
+    for (; step; step >>= 1) {
+        const int32_t i = lo + step;
+        if (i >= count)
+            continue;
+        const int32_t *const e = (const int32_t *)(*(const uint8_t *const *)(self + 0x20) + i * 12);
+        if (e[0] > a)
+            continue;
+        if (e[0] < a || e[1] < b) {
+            lo = i;
+            continue;
+        }
+        if (e[1] != b)
+            continue;
+        return (uint32_t)e[2];
+    }
+    if (lo < count) {
+        const int32_t *const e = (const int32_t *)(*(const uint8_t *const *)(self + 0x20) + lo * 12);
+        if (e[0] == a && e[1] == b)
+            return (uint32_t)e[2];
+    }
+    return 0xffffffff;
+}
+static const uint8_t pair_map_find_original[] = {0x51, 0x53, 0x55, 0x8b, 0xd1, 0x8b, 0x6a, 0x14};
+REWRITE("PairMap::Find", 0xca45c0, pair_map_find_original, &pair_map_find, &g_pair_finds);
+
+// ---- Slots::Reserve(this) (0xA517C0): how many of the first slots to keep, the empty ones among them marked ---------------
+// Slots of 8 bytes at +0xC (count +0x10), kind first. keep = (6, or 3 when +0x14 is above -1) + the slots of kinds 3, 4
+// and 5, at most count - 2; count - 1 when the kinds 4 and 5 alone reach count - 2; count when kind 5 alone reaches
+// count - 1. The first `keep` slots of kind 0 become kind 1.
+static volatile long g_slot_reserves;
+static void __thiscall slots_reserve(const uint8_t *self) {
+    g_slot_reserves++;
+    const int32_t base = *(const int32_t *)(self + 0x14) > -1 ? 3 : 6;
+    const int32_t count = *(const int32_t *)(self + 0x10);
+    const int32_t *const slots = *(const int32_t *const *)(self + 0xc);
+    int32_t n3 = 0, n4 = 0, n5 = 0;
+    for (int32_t i = 0; i < count; i++) {
+        n3 += slots[2 * i] == 3;
+        n4 += slots[2 * i] == 4;
+        n5 += slots[2 * i] == 5;
+    }
+    int32_t keep = (n4 + n5) + n3 + base;
+    if (keep > count - 2) keep = count - 2;
+    if (n4 + n5 >= count - 2) keep = count - 1;
+    if (n5 >= count - 1) keep = count;
+    for (int32_t i = 0; i < keep; i++) {
+        volatile int32_t *const s = (volatile int32_t *)(*(uint8_t *const *)(self + 0xc) + i * 8);
+        if (!*s)
+            *s = 1;
+    }
+}
+static const uint8_t slots_reserve_original[] = {0x51, 0x83, 0x79, 0x14, 0xff, 0xc7, 0x04, 0x24};
+REWRITE("Slots::Reserve", 0xa517c0, slots_reserve_original, &slots_reserve, &g_slot_reserves);
+
+// ---- WideString::CompareRaw(a, b) (0xCD60E0): a wide string (its record *a: length +4, text +0xC) and a wide text -------
+// Compared character by character (unsigned): -1, 0 or 1; a missing one counts as empty.
+static int32_t __stdcall wide_string_compare_raw(const uint8_t *const *a, const uint16_t *b) {
+    g_raw_compares++;
+    if (!a)
+        return !b || !*b ? 0 : -1;
+    const uint8_t *const s = *a;
+    const uint32_t len = *(const uint32_t *)(s + 4);
+    if (!b)
+        return len ? 1 : 0;
+    const uint16_t *const text = *(const uint16_t *const *)(s + 0xc);
+    uint32_t i = 0;
+    for (; i < len; i++) {
+        const uint16_t c = b[i];
+        if (!c)
+            break;
+        if (text[i] != c)
+            return text[i] < c ? -1 : 1;
+    }
+    if (i < len)
+        return 1;
+    return b[i] ? -1 : 0;
+}
+static const uint8_t wide_string_compare_raw_original[] = {0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x44, 0x24, 0x08};
+REWRITE("WideString::CompareRaw", 0xcd60e0, wide_string_compare_raw_original, &wide_string_compare_raw, &g_raw_compares);
+
+// ---- Grid::SpiralStep(grid, cx, cy, dx, dy) (0xB35000): one step along a square spiral out from a cell --------------------
+// With (x, y) = (*dx, *dy) the offset so far and the grid's width (byte +4) and height (byte +5): when x + y > 0, x + 1
+// while y > x and cx + x is below width - 1 (else y = -y), or y - 1 while y <= x and cy + y is above 0 (else x = -x);
+// otherwise x - 1 while x > y and cx + x is above 0 (else y = 1 - y), or y + 1 while x <= y and cy + y is below
+// height - 1 (else x = 1 - x). Gives 1 when the new cell lies in the grid.
+static volatile long g_spiral_steps;
+static uint32_t __fastcall grid_spiral_step(const uint8_t *grid, int32_t cx, int32_t cy, int32_t *dx, int32_t *dy) {
+    g_spiral_steps++;
+    volatile int32_t *const px = dx, *const py = dy;
+    const int32_t y = *py, x = *px;
+    if (y + x > 0) {
+        if (y > x) {
+            if (x + cx < grid[4] - 1) *px = x + 1;
+            else *py = -y;
+        } else {
+            if (y + cy > 0) *py = y - 1;
+            else *px = -x;
+        }
+    } else {
+        if (x > y) {
+            if (x + cx > 0) *px = x - 1;
+            else *py = 1 - y;
+        } else {
+            if (cy + y < grid[5] - 1) *py = y + 1;
+            else *px = 1 - x;
+        }
+    }
+    const int32_t nx = *px + cx;
+    if (nx < 0 || nx >= grid[4]) return 0;
+    const int32_t ny = *py + cy;
+    if (ny < 0 || ny >= grid[5]) return 0;
+    return 1;
+}
+static const uint8_t grid_spiral_step_original[] = {0x51, 0x53, 0x8b, 0x5c, 0x24, 0x14, 0x55, 0x56};
+REWRITE("Grid::SpiralStep", 0xb35000, grid_spiral_step_original, &grid_spiral_step, &g_spiral_steps);
+
+// ---- Mesh::SetPrimitiveCount(this, n) (0xBE8BA0): a mesh part's vertex count and number of primitives -----------------------
+// n = 0x40000000 takes the count from the buffers (+0x1C's +8; else, when +0x4C is set, +0x30's +0x10; else 0); others
+// keep their low 28 bits. +8 = n (and without +0x1C, +0xC = 0 and +0x10 = n). By the type (word +6): 0 points n, 1 lines
+// n / 2, 2 a line strip n - 1, 3 triangles n / 3, 4 and 5 a strip or fan n - 2, others 0; at least 0, into +0x48.
+static volatile long g_primitive_counts;
+static void __thiscall mesh_set_primitive_count(uint8_t *self, uint32_t n) {
+    g_primitive_counts++;
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    if (n == 0x40000000) {
+        if (t[0x1c / 4]) n = *(const uint32_t *)((uint8_t *)(uintptr_t)t[0x1c / 4] + 8);
+        else if (t[0x4c / 4]) n = *(const uint32_t *)((uint8_t *)(uintptr_t)t[0x30 / 4] + 0x10);
+        else n = 0;
+    } else
+        n &= 0x0fffffff;
+    t[2] = n;
+    if (!t[0x1c / 4]) {
+        t[3] = 0;
+        t[4] = n;
+    }
+    const int32_t v = (int32_t)n;
+    int32_t p;
+    switch (*(const uint16_t *)(self + 6)) {
+    case 0: p = v; break;
+    case 1: p = v / 2; break;
+    case 2: p = v - 1; break;
+    case 3: p = v / 3; break;
+    case 4: case 5: p = v - 2; break;
+    default: p = 0; break;
+    }
+    t[0x48 / 4] = (uint32_t)(0 < p ? p : 0);
+}
+static const uint8_t mesh_set_primitive_count_original[] = {0x51, 0x8b, 0x54, 0x24, 0x08, 0x81, 0xfa, 0x00};
+REWRITE("Mesh::SetPrimitiveCount", 0xbe8ba0, mesh_set_primitive_count_original, &mesh_set_primitive_count, &g_primitive_counts);
+
+// ---- TileCorners::Count(this, a, b, c) (0x727B00): a tile counted into one of three 16-bit totals --------------------------
+// A flagged tile (byte +0x34) counts into c. By the packed corners (word +0x32): 0, 0x1111, 0x2222, 0x3333 count into a;
+// 0x4444 to 0x7777 into b; anything else corner by corner (each nibble's low three bits): below 4 into a, else b.
+static volatile long g_tile_counts;
+static void __thiscall tile_corners_count(const uint8_t *self, uint16_t *a, uint16_t *b, uint16_t *c) {
+    g_tile_counts++;
+    if (self[0x34]) {
+        ++*(volatile uint16_t *)c;
+        return;
+    }
+    const uint16_t v = *(const uint16_t *)(self + 0x32);
+    switch (v) {
+    case 0: case 0x1111: case 0x2222: case 0x3333: ++*(volatile uint16_t *)a; return;
+    case 0x4444: case 0x5555: case 0x6666: case 0x7777: ++*(volatile uint16_t *)b; return;
+    default: break;
+    }
+    for (int shift = 0; shift < 16; shift += 4) {
+        if (((*(const uint16_t *)(self + 0x32) >> shift) & 7) < 4) ++*(volatile uint16_t *)a;
+        else ++*(volatile uint16_t *)b;
+    }
+}
+static const uint8_t tile_corners_count_original[] = {0x57, 0x8b, 0xf9, 0x8a, 0x47, 0x34, 0x84, 0xc0};
+REWRITE("TileCorners::Count", 0x727b00, tile_corners_count_original, &tile_corners_count, &g_tile_counts);
+
+// ---- Entry::Compare(a, b) (0x84D2D0): a sort comparison of two entries: -1, 0 or 1 ------------------------------------------
+// By kind (+8, signed) first. Kind 0: by the first value (unsigned) and nothing more. Kind 1: by the first value
+// (unsigned), then a set +0x18 flag first; kind 2: by +4 (unsigned). Then by +0xC, +0x14 (reversed) and +0x10 (signed).
+static volatile long g_entry_compares;
+static int32_t __stdcall entry_compare(const int32_t *a, const int32_t *b) {
+    g_entry_compares++;
+    if (a[2] != b[2]) return a[2] < b[2] ? -1 : 1;
+    switch (a[2]) {
+    case 0: return (uint32_t)b[0] > (uint32_t)a[0] ? -1 : (uint32_t)b[0] < (uint32_t)a[0] ? 1 : 0;
+    case 1: {
+        if (a[0] != b[0]) return (uint32_t)a[0] < (uint32_t)b[0] ? -1 : 1;
+        const uint8_t fa = ((const uint8_t *)a)[0x18], fb = ((const uint8_t *)b)[0x18];
+        if (fa && !fb) return 1;
+        if (!fa && fb) return -1;
+        break;
+    }
+    case 2:
+        if (a[1] != b[1]) return (uint32_t)a[1] < (uint32_t)b[1] ? -1 : 1;
+        break;
+    default: break;
+    }
+    if (a[3] != b[3]) return a[3] > b[3] ? 1 : -1;
+    if (a[5] != b[5]) return a[5] < b[5] ? 1 : -1;
+    if (a[4] != b[4]) return a[4] > b[4] ? 1 : -1;
+    return 0;
+}
+static const uint8_t entry_compare_original[] = {0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x44, 0x24, 0x08};
+REWRITE("Entry::Compare", 0x84d2d0, entry_compare_original, &entry_compare, &g_entry_compares);
+
+// ---- Lists::Remove(this, item) (0xA6BFD0): an item taken out of the first list it is in, keeping the order ---------------
+// The first list at +0x6C (count +0x74); else the second, 8-byte entries keyed by their first value, at +0x78 (count +0x80).
+static volatile long g_list_removes;
+static void __thiscall lists_remove(uint8_t *self, uint32_t item) {
+    g_list_removes++;
+    volatile int32_t *const count1 = (volatile int32_t *)(self + 0x74);
+    const int32_t n1 = *count1;
+    int32_t i = 0;
+    if (n1 > 0)
+        while ((*(const uint32_t *const *)(self + 0x6c))[i] != item && ++i < *count1) {}
+    if (i < n1) {
+        for (int32_t j = i; j < n1 - 1 && j < *count1 - 1; j++) {
+            volatile uint32_t *const l = *(volatile uint32_t *const *)(self + 0x6c);
+            l[j] = l[j + 1];
+        }
+        *count1 = *count1 - 1;
+        return;
+    }
+    volatile int32_t *const count2 = (volatile int32_t *)(self + 0x80);
+    const int32_t n2 = *count2;
+    i = 0;
+    if (n2 > 0)
+        while ((*(const uint32_t *const *)(self + 0x78))[2 * i] != item && ++i < *count2) {}
+    if (i >= n2)
+        return;
+    for (int32_t j = i; j < n2 - 1 && j < *count2 - 1; j++) {
+        volatile uint32_t *const l = *(volatile uint32_t *const *)(self + 0x78);
+        l[2 * j] = l[2 * j + 2];
+        l[2 * j + 1] = l[2 * j + 3];
+    }
+    *count2 = *count2 - 1;
+}
+static const uint8_t lists_remove_original[] = {0x53, 0x56, 0x8b, 0x71, 0x74, 0x33, 0xc0, 0x85};
+REWRITE("Lists::Remove", 0xa6bfd0, lists_remove_original, &lists_remove, &g_list_removes);

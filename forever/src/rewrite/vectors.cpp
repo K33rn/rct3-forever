@@ -3258,3 +3258,458 @@ static void __thiscall pairs_sort_once(uint8_t *self) {
 }
 static const uint8_t pairs_sort_once_original[] = {0x51, 0x8a, 0x41, 0x0c, 0x84, 0xc0, 0x75, 0x79};
 REWRITE("Pairs::SortOnce", 0x940ae0, pairs_sort_once_original, &pairs_sort_once, &g_pair_sorts);
+
+// ---- FrameTime::Smooth(this, dt) (0x4141E0): the frame time *dt smoothed ---------------------------------------------------
+// With a cap (+0x11C not 0): *dt doubled, and the cap when past it. Without: once the average is set (byte +0x110), *dt
+// becomes it (+0x118); before that the frames are counted (+0x10C) and added up (+0x114), and past 100 the average is
+// the total times 0xF2704C and marked set.
+static volatile long g_frame_smooths;
+static void __thiscall frame_time_smooth(uint8_t *self, float *dt) {
+    g_frame_smooths++;
+    const float cap = *(const float *)(self + 0x11c);
+    if (!((long double)*(const float *)0xf264e0 == (long double)cap)) {
+        const long double v = (long double)*dt + *dt;
+        *(volatile float *)dt = (float)v;
+        if (v > (long double)cap)
+            *(volatile uint32_t *)dt = *(const uint32_t *)&cap;
+        return;
+    }
+    if (self[0x110]) {
+        *(volatile uint32_t *)dt = *(const uint32_t *)(self + 0x118);
+        return;
+    }
+    volatile int32_t *const frames = (volatile int32_t *)(self + 0x10c);
+    const int32_t n = *frames + 1;
+    *frames = n;
+    volatile float *const total = (volatile float *)(self + 0x114);
+    *total = (float)((long double)*dt + *total);
+    if (n > 100) {
+        ((volatile uint8_t *)self)[0x110] = 1;
+        *(volatile float *)(self + 0x118) = (float)((long double)*total * *(const float *)0xf2704c);
+    }
+}
+static const uint8_t frame_time_smooth_original[] = {0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00, 0xd9, 0x81};
+REWRITE("FrameTime::Smooth", 0x4141e0, frame_time_smooth_original, &frame_time_smooth, &g_frame_smooths);
+
+// ---- Grid::Contains(this, p) (0x493930): whether a point falls in a cell of a grid ----------------------------------------
+// Column floor((x - +0xC) / +0x14) and row floor((y - +0x10) / +0x18) (each quotient rounded, rounded down, made whole
+// by fistp and cut to its low byte): 1 when below the width (byte +4) and height (byte +5).
+static volatile long g_grid_contains;
+static uint32_t __thiscall grid_contains(const uint8_t *self, const float *p) {
+    g_grid_contains++;
+    const float *const f = (const float *)self;
+    const volatile float qx = (float)(((long double)p[0] - f[3]) / f[5]);
+    long double whole = x87_round(qx);
+    const volatile float fx = (float)((long double)qx < whole ? whole - 1.0L : whole);
+    const volatile float qy = (float)(((long double)p[1] - f[4]) / f[6]);
+    whole = x87_round(qy);
+    const volatile float fy = (float)((long double)qy < whole ? whole - 1.0L : whole);
+    const uint32_t row = (uint8_t)x87_whole(fy), column = (uint8_t)x87_whole(fx);
+    return column < self[4] && row < self[5];
+}
+static const uint8_t grid_contains_original[] = {0x83, 0xec, 0x10, 0x8b, 0x44, 0x24, 0x14, 0xd9};
+REWRITE("Grid::Contains", 0x493930, grid_contains_original, &grid_contains, &g_grid_contains);
+
+// ---- Terrain::LodDistance(this) (0x8F35B0): a terrain patch's distance for detail -----------------------------------------
+// With the patch (*this): a = width (byte +4) times the cell width (+0x14), b = depth (byte +5) times the cell depth
+// (+0x18), both rounded; m = the smaller cell side (the depth unless the width is below it) times (1 << level (+4) - 1),
+// at most 0xF27370; gives the smaller of a and b (b unless a is below it) halved, plus m, unrounded.
+static volatile long g_lod_distances;
+static long double __thiscall terrain_lod_distance(const uint32_t *self) {
+    g_lod_distances++;
+    const uint8_t *const patch = (const uint8_t *)(uintptr_t)self[0];
+    const float cw = *(const float *)(patch + 0x14), cd = *(const float *)(patch + 0x18);
+    const volatile float a = (float)((long double)patch[4] * cw), b = (float)((long double)patch[5] * cd);
+    long double m = (long double)cw < (long double)cd ? (long double)cw : (long double)cd;
+    m = m * (long double)(int32_t)((1u << (self[1] & 31)) - 1);
+    if (m > (long double)*(const float *)0xf27370)
+        m = *(const float *)0xf27370;
+    const long double half = *(const float *)0xf2651c;
+    return (long double)a < (long double)b ? m + (long double)a * half : m + (long double)b * half;
+}
+static const uint8_t terrain_lod_distance_original[] = {0x83, 0xec, 0x14, 0x8b, 0x01, 0x8b, 0x50, 0x18};
+REWRITE("Terrain::LodDistance", 0x8f35b0, terrain_lod_distance_original, &terrain_lod_distance, &g_lod_distances);
+
+// ---- Condition::Test(this, v) (0xBB5880): a value tested against a condition's number (+8) by its operator (+0) --------
+// 2: equal, 3: not equal, 4: less, 5: at most, 6: more, 7: at least (a NaN passes only "not equal"); 1 or 0. Any other
+// operator gives the operator less 2 with its low byte cleared.
+static volatile long g_condition_tests;
+static uint32_t __thiscall condition_test(const uint8_t *self, float v) {
+    g_condition_tests++;
+    const uint32_t op = *(const uint32_t *)self - 2;
+    const long double x = v, n = *(const float *)(self + 8);
+    switch (op) {
+    case 0: return x == n;
+    case 1: return !(x == n);
+    case 2: return x < n;
+    case 3: return x <= n;
+    case 4: return x > n;
+    case 5: return x >= n;
+    default: return op & 0xffffff00u;
+    }
+}
+static const uint8_t condition_test_original[] = {0x8b, 0x01, 0x83, 0xc0, 0xfe, 0x83, 0xf8, 0x05};
+REWRITE("Condition::Test", 0xbb5880, condition_test_original, &condition_test, &g_condition_tests);
+
+// ---- PhysicsWorld::AtRest(this) (0xA6EF50): whether every particle of a body is at rest --------------------------------
+// For each particle (pointers at +0xC, count +0x10): (position (+0x10) - previous (+0x20)) times 60 (0xF8F980): the x
+// difference rounded, y's and z's not; x's and y's products rounded, z's not; vz vz + vx vx + vy vy at most the game's
+// limit (0x13C2A04), or a NaN. Gives the answer in the low byte.
+static volatile long g_rest_checks;
+static uint8_t __thiscall physics_world_at_rest(const uint8_t *self) {
+    g_rest_checks++;
+    const int32_t n = *(const int32_t *)(self + 0x10);
+    const float *const *const parts = *(const float *const *const *)(self + 0xc);
+    const long double k = *(const float *)0xf8f980;
+    for (int32_t i = 0; i < n; i++) {
+        const float *const p = parts[i];
+        const volatile float dx = (float)((long double)p[4] - p[8]);
+        const long double dy = (long double)p[5] - p[9], dz = (long double)p[6] - p[10];
+        const volatile float vx = (float)((long double)dx * k), vy = (float)(dy * k);
+        const long double vz = dz * k;
+        const long double s = (vz * vz + (long double)vx * vx) + (long double)vy * vy;
+        if (s > (long double)*(const volatile float *)0x13c2a04)
+            return 0;
+    }
+    return 1;
+}
+static const uint8_t physics_world_at_rest_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("PhysicsWorld::AtRest", 0xa6ef50, physics_world_at_rest_original, &physics_world_at_rest, &g_rest_checks);
+
+// ---- Terrain::CellColourAt(this, x, y, h, out) (0xAFA0E0): the colour for a terrain cell at a height -------------------
+// *out = 0xFF333333 first. Cells of the grid (width +0x30, depth +0x2C) are layers of 0x2C bytes at +0x14; when the
+// cell's layer is flagged (bit 0 of +0x10), the chain (next at +0xC, -1 ends) is walked: the first layer whose bottom
+// (+0) is at most h and top (+4) at least h gives its colour (+0x24). Gives (in the low byte) bit 1 of the last layer
+// looked at, or 0 outside the grid or for an unflagged cell.
+static volatile long g_cell_colours;
+static uint8_t __thiscall terrain_cell_colour_at(const uint8_t *self, int32_t x, int32_t y, float h, uint32_t *out) {
+    g_cell_colours++;
+    *(volatile uint32_t *)out = 0xff333333;
+    const int32_t width = *(const int32_t *)(self + 0x30);
+    if (x < 0 || y < 0 || x >= width || y >= *(const int32_t *)(self + 0x2c))
+        return 0;
+    const uint8_t *const layers = *(const uint8_t *const *)(self + 0x14);
+    int32_t i = width * y + x;
+    if (!(layers[i * 0x2c + 0x10] & 1))
+        return 0;
+    uint8_t bit = 0;
+    while (i != -1) {
+        const uint8_t *const e = layers + i * 0x2c;
+        bit = (*(const uint32_t *)(e + 0x10) >> 1) & 1;
+        if ((long double)*(const float *)e <= (long double)h && (long double)*(const float *)(e + 4) >= (long double)h) {
+            *(volatile uint32_t *)out = *(const uint32_t *)(e + 0x24);
+            return bit;
+        }
+        i = *(const int32_t *)(e + 0xc);
+    }
+    return bit;
+}
+static const uint8_t terrain_cell_colour_at_original[] = {0x8b, 0x44, 0x24, 0x04, 0x85, 0xc0, 0x53, 0x8b};
+REWRITE("Terrain::CellColourAt", 0xafa0e0, terrain_cell_colour_at_original, &terrain_cell_colour_at, &g_cell_colours);
+
+// ---- Segment::Middle(this, out) (0xBC6140): the point halfway between an object's two end points --------------------------
+// With the object flagged 0x400000 (+0x18) and at least two stations (+0xE4): the first points of the ends at +0x110 and
+// +0x10C (each's +4); the x sum rounded first, y and z not.
+static void __thiscall segment_middle(const uint8_t *self, float *out) {
+    g_segment_middles++;
+    const bool has = (*(const uint32_t *)(self + 0x18) & 0x400000) && *(const int32_t *)(self + 0xe4) >= 2;
+    const uint8_t *const end_a = has ? *(const uint8_t *const *)(self + 0x110) : nullptr;
+    const float *const a = *(const float *const *)(end_a + 4);
+    const uint8_t *const end_b = has ? *(const uint8_t *const *)(self + 0x10c) : nullptr;
+    const float *const b = *(const float *const *)(end_b + 4);
+    const long double half = *(const float *)0xf2651c;
+    const volatile float sx = (float)((long double)b[0] + a[0]);
+    const long double sy = (long double)b[1] + a[1], sz = (long double)b[2] + a[2];
+    out[0] = (float)((long double)sx * half);
+    out[1] = (float)(sy * half);
+    out[2] = (float)(sz * half);
+}
+static const uint8_t segment_middle_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Segment::Middle", 0xbc6140, segment_middle_original, &segment_middle, &g_segment_middles);
+
+// ---- Screen::AreaScale(out) (0x6ACB30): the GUI area's (0x12F83F0) width and height over the screen's; gives out ---------
+// (1, 1) without an area or when either side (+0x84 - +0x7C, +0x88 - +0x80, rounded) is not above 0. The screen's
+// (*0x12F4618) width (+4) and height (+8) are taken unsigned.
+static volatile long g_area_scales;
+static float *__fastcall screen_area_scale(float *out) {
+    g_area_scales++;
+    const float *const area = *(const float *const *)0x12f83f0;
+    if (area) {
+        const volatile float w = (float)((long double)area[0x84 / 4] - area[0x7c / 4]), h = (float)((long double)area[0x88 / 4] - area[0x80 / 4]);
+        if ((long double)w > (long double)*(const float *)0xf264e0 && (long double)h > (long double)*(const float *)0xf264e0) {
+            const uint8_t *const screen = *(const uint8_t *const *)0x12f4618;
+            const int32_t sw = *(const int32_t *)(screen + 4), sh = *(const int32_t *)(screen + 8);
+            long double a = sw;
+            if (sw < 0) a += *(const float *)0xf285f8;
+            ((volatile float *)out)[0] = (float)((long double)w / a);
+            long double b = sh;
+            if (sh < 0) b += *(const float *)0xf285f8;
+            ((volatile float *)out)[1] = (float)((long double)h / b);
+            return out;
+        }
+    }
+    ((volatile uint32_t *)out)[0] = 0x3f800000;
+    ((volatile uint32_t *)out)[1] = 0x3f800000;
+    return out;
+}
+static const uint8_t screen_area_scale_original[] = {0xa1, 0xf0, 0x83, 0x2f, 0x01, 0x83, 0xec, 0x0c};
+REWRITE("Screen::AreaScale", 0x6acb30, screen_area_scale_original, &screen_area_scale, &g_area_scales);
+
+// ---- Particles::SetCount(this, f) (0x9CBBB0): the number of particles to draw (+0xBC) and their spacing (+0xC0) ----------
+// n = +0x64, times the detail setting (the float at *(+0xA4) + 0x90; fistp) when +0x68 is set. With a fade g (+0xB8,
+// at most 1) above 0: n ((1 - g) + g f) (fistp), but n itself when n is at most 1 and that came out below it; otherwise
+// n. The spacing is +0xA8 over the count.
+static volatile long g_particle_counts;
+static void __thiscall particles_set_count(uint8_t *self, float f) {
+    g_particle_counts++;
+    int32_t n = *(const int32_t *)(self + 0x64);
+    if (*(const uint32_t *)(self + 0x68))
+        n = (int32_t)(uint32_t)x87_whole((long double)n * *(const float *)(*(const uint8_t *const *)(self + 0xa4) + 0x90));
+    volatile int32_t *const count = (volatile int32_t *)(self + 0xbc);
+    const float fade = *(const float *)(self + 0xb8);
+    if ((long double)fade > (long double)*(const float *)0xf264e0) {
+        const long double one = *(const float *)0xf264dc;
+        const long double g = (long double)fade > one ? one : (long double)fade;
+        const int32_t m = (int32_t)(uint32_t)x87_whole(((one - g) + g * f) * (long double)n);
+        *count = m;
+        if (!(n > 1) && m < n)
+            *count = n;
+    } else
+        *count = n;
+    *(volatile float *)(self + 0xc0) = (float)((long double)*(const float *)(self + 0xa8) / (long double)*count);
+}
+static const uint8_t particles_set_count_original[] = {0x83, 0xec, 0x08, 0x8b, 0x41, 0x68, 0x85, 0xc0};
+REWRITE("Particles::SetCount", 0x9cbbb0, particles_set_count_original, &particles_set_count, &g_particle_counts);
+
+// ---- Ease::InOut(t, total) (0x5D3850): a time eased over a total, slow at both ends ------------------------------------------
+// A total under 2 gives t back. t under 2: t t / 4 / (total - 2) total; within the last 2 (t past total - 2):
+// ((total - 2) - (total - t)^2 / 4) / (total - 2) total; otherwise (t - 1) / (total - 2) total; unrounded.
+static long double __stdcall ease_in_out(float t, float total) {
+    g_eases++;
+    const long double two = *(const float *)0xf2705c, one = *(const float *)0xf264dc, quarter = *(const float *)0xf270b8;
+    if ((long double)total < two)
+        return t;
+    if ((long double)t < two)
+        return (long double)t * t * quarter / ((long double)total - two) * total;
+    const long double e = (long double)total - two;
+    if ((long double)t > e) {
+        const long double a = (long double)total - t;
+        return (e - a * a * quarter) / ((long double)total - two) * total;
+    }
+    return ((long double)t - one) / ((long double)total - two) * total;
+}
+static const uint8_t ease_in_out_original[] = {0xd9, 0x44, 0x24, 0x08, 0xd8, 0x1d, 0x5c, 0x70};
+REWRITE("Ease::InOut", 0x5d3850, ease_in_out_original, &ease_in_out, &g_eases);
+
+// ---- SinCos::Lookup(table, angle, a, b) (0x7C4690): sine and cosine from a quarter-turn table of 256 values --------------
+// i = angle K (0xF6D450; fistp) & 0x3FF, lo = i & 0xFF, hi = 255 - lo. Quadrant 0: (t[lo], t[hi]); 1: (t[hi], -t[lo]);
+// 2: (-t[lo], -t[hi]); 3: (-t[hi], t[lo]). Values copied as they are, negated ones through the FPU.
+static volatile long g_sin_cos;
+static void __thiscall sin_cos_lookup(const uint32_t *table, float angle, uint32_t *a, uint32_t *b) {
+    g_sin_cos++;
+    const uint32_t i = (uint32_t)x87_whole((long double)angle * *(const float *)0xf6d450) & 0x3ff;
+    const uint32_t lo = i & 0xff, hi = 0xff - lo;
+    switch (i & 0x300) {
+    case 0: *(volatile uint32_t *)a = table[lo], *(volatile uint32_t *)b = table[hi]; break;
+    case 0x100:
+        *(volatile uint32_t *)a = table[hi];
+        *(volatile float *)b = (float)-x87_load((const float *)&table[lo]);
+        break;
+    case 0x200:
+        *(volatile float *)a = (float)-x87_load((const float *)&table[lo]);
+        *(volatile float *)b = (float)-x87_load((const float *)&table[hi]);
+        break;
+    default:
+        *(volatile float *)a = (float)-x87_load((const float *)&table[hi]);
+        *(volatile uint32_t *)b = table[lo];
+        break;
+    }
+}
+static const uint8_t sin_cos_lookup_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x0c, 0x56};
+REWRITE("SinCos::Lookup", 0x7c4690, sin_cos_lookup_original, &sin_cos_lookup, &g_sin_cos);
+
+// ---- Entries::CountNegative(this) (0x46C6C0): how many entries have a value below 0 at +0x40 -----------------------------
+// Entries of 0x50 bytes at +0x6C, count +0x70 (a NaN does not count).
+static volatile long g_negative_counts;
+static uint32_t __thiscall entries_count_negative(const uint8_t *self) {
+    g_negative_counts++;
+    const int32_t n = *(const int32_t *)(self + 0x70);
+    const uint8_t *const e = *(const uint8_t *const *)(self + 0x6c);
+    uint32_t count = 0;
+    for (int32_t i = 0; i < n; i++)
+        if ((long double)*(const float *)(e + i * 0x50 + 0x40) < (long double)*(const float *)0xf264e0)
+            count++;
+    return count;
+}
+static const uint8_t entries_count_negative_original[] = {0x53, 0x55, 0x57, 0x8b, 0x79, 0x70, 0x33, 0xed};
+REWRITE("Entries::CountNegative", 0x46c6c0, entries_count_negative_original, &entries_count_negative, &g_negative_counts);
+
+// ---- Box::ClosestPoint(out, min, max, p) (0x88CFD0): the point of a box nearest p; gives out ---------------------------------
+// Each coordinate (z, then y, then x): max's when p is above it, else min's when p is below it, else p's (through the FPU).
+static volatile long g_closest_points;
+static float *__fastcall box_closest_point(float *out, const float *min, const float *max, const float *p) {
+    g_closest_points++;
+    long double c[3];
+    for (int i = 2; i >= 0; i--)
+        c[i] = (long double)p[i] > (long double)max[i] ? x87_load(&max[i]) : (long double)p[i] < (long double)min[i] ? x87_load(&min[i]) : x87_load(&p[i]);
+    ((volatile float *)out)[0] = (float)c[0];
+    ((volatile float *)out)[1] = (float)c[1];
+    ((volatile float *)out)[2] = (float)c[2];
+    return out;
+}
+static const uint8_t box_closest_point_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Box::ClosestPoint", 0x88cfd0, box_closest_point_original, &box_closest_point, &g_closest_points);
+
+// ---- Angle::TurnToward(this, target, step, tolerance) (0x7C28A0): an angle (+0x110) turned toward the target ------------
+// d = target - angle (unrounded), brought into -pi to pi (a turn added below 0xF37CFC, taken off above pi). Within the
+// tolerance: nothing, 0 (in the low byte). Past +step: the angle moves by +step; below -step: by -step; then 1 unless d
+// is exactly 0. Otherwise the angle takes d and 0.
+static volatile long g_turn_towards;
+static uint8_t __thiscall angle_turn_toward(uint8_t *self, float target, float step, float tolerance) {
+    g_turn_towards++;
+    volatile float *const angle = (volatile float *)(self + 0x110);
+    long double d = (long double)target - *angle;
+    if (d < (long double)*(const float *)0xf37cfc)
+        d = d + *(const float *)0xf268dc;
+    else if (d > (long double)*(const float *)0xf285f0)
+        d = d - *(const float *)0xf268dc;
+    if (!(x87_abs(d) > (long double)tolerance) && tolerance == tolerance && d == d)
+        return 0;
+    if (d > (long double)step)
+        *angle = (float)((long double)step + *angle);
+    else if (d < -(long double)step)
+        *angle = (float)((long double)*angle - step);
+    else {
+        *angle = (float)(d + *angle);
+        return 0;
+    }
+    return !((long double)*(const float *)0xf264e0 == d);
+}
+static const uint8_t angle_turn_toward_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0xa1, 0x10, 0x01};
+REWRITE("Angle::TurnToward", 0x7c28a0, angle_turn_toward_original, &angle_turn_toward, &g_turn_towards);
+
+// ---- Box::Overshoot2D(out, p, min, max) (0x9F8340): how far a point lies outside a box ------------------------------------
+// Each part: p - min when below the minimum, p - max when above the maximum, else 0 (x and y rounded, z not).
+static volatile long g_overshoots;
+static void __stdcall box_overshoot_2d(float *out, const float *p, const float *min, const float *max) {
+    g_overshoots++;
+    long double o[3];
+    for (int i = 0; i < 3; i++) {
+        if ((long double)p[i] < (long double)min[i]) o[i] = (long double)p[i] - min[i];
+        else if ((long double)p[i] > (long double)max[i]) o[i] = (long double)p[i] - max[i];
+        else o[i] = *(const float *)0xf264e0;
+    }
+    const volatile float ox = (float)o[0], oy = (float)o[1];
+    ((volatile float *)out)[0] = ox;
+    ((volatile uint32_t *)out)[1] = *(const volatile uint32_t *)&oy;
+    ((volatile float *)out)[2] = (float)o[2];
+}
+static const uint8_t box_overshoot_2d_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Box::Overshoot2D", 0x9f8340, box_overshoot_2d_original, &box_overshoot_2d, &g_overshoots);
+
+// ---- Ticker::Update(this) (0x7EA210): a tick counted (+0x410) and a timer (+0x4D8) run down ------------------------------
+// Above 0.5 the timer drops by 0.5; below 0.25, +0x4DC drops by a quarter of a step by kind (+0x414): 1: 0.9, 2: 0.7,
+// 3: 0.3, others 1.
+static volatile long g_ticker_updates;
+static void __thiscall ticker_update(uint8_t *self) {
+    g_ticker_updates++;
+    const long double t = *(const float *)(self + 0x4d8);
+    *(volatile int32_t *)(self + 0x410) = *(const int32_t *)(self + 0x410) + 1;
+    const long double half = *(const float *)0xf2651c, quarter = *(const float *)0xf270b8;
+    if (t > half) {
+        *(volatile float *)(self + 0x4d8) = (float)(t - half);
+        return;
+    }
+    if (!(t < quarter))
+        return;
+    uint32_t at;
+    switch (*(const uint32_t *)(self + 0x414)) {
+    case 1: at = 0xf29640; break;
+    case 2: at = 0xf27ca4; break;
+    case 3: at = 0xf27ca8; break;
+    default: at = 0xf264dc; break;
+    }
+    volatile float *const v = (volatile float *)(self + 0x4dc);
+    *v = (float)((long double)*v - (long double)*(const float *)(uintptr_t)at * quarter);
+}
+static const uint8_t ticker_update_original[] = {0xd9, 0x81, 0xd8, 0x04, 0x00, 0x00, 0x8b, 0x81};
+REWRITE("Ticker::Update", 0x7ea210, ticker_update_original, &ticker_update, &g_ticker_updates);
+
+// ---- Polygon::Area(this) (0x90C170): the area of a polygon by the shoelace sum -------------------------------------------
+// Points of 8 bytes (x, y) at +0x24, count +0x28: the sum over i of ((y[i-1] + y[i]) / 2) (x[i] - x[i-1]), made positive.
+static volatile long g_polygon_areas;
+static long double __thiscall polygon_area(const uint8_t *self) {
+    g_polygon_areas++;
+    const int32_t n = *(const int32_t *)(self + 0x28);
+    const float *const p = *(const float *const *)(self + 0x24);
+    long double sum = *(const float *)0xf264e0;
+    for (int32_t i = 1; i < n; i++)
+        sum = sum + ((long double)p[2 * i - 1] + p[2 * i + 1]) * *(const float *)0xf2651c * ((long double)p[2 * i] - p[2 * i - 2]);
+    return x87_abs(sum);
+}
+static const uint8_t polygon_area_original[] = {0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00, 0x56, 0x8b};
+REWRITE("Polygon::Area", 0x90c170, polygon_area_original, &polygon_area, &g_polygon_areas);
+
+// ---- Entries::Highest(this) (0xC35E50): the entry whose second value is the largest, or null --------------------------------
+// Entries of 12 bytes at +0xA0 (count +0xB4); the first of equal ones is kept, a NaN never wins after the first.
+static volatile long g_highest;
+static const uint8_t *__thiscall entries_highest(const uint8_t *self) {
+    g_highest++;
+    const int32_t n = *(const int32_t *)(self + 0xb4);
+    const uint8_t *const e = *(const uint8_t *const *)(self + 0xa0);
+    const uint8_t *best = nullptr;
+    for (int32_t i = 0; i < n; i++)
+        if (!best || (long double)*(const float *)(e + i * 12 + 4) > (long double)*(const float *)(best + 4))
+            best = e + i * 12;
+    return best;
+}
+static const uint8_t entries_highest_original[] = {0x53, 0x8b, 0x99, 0xb4, 0x00, 0x00, 0x00, 0x55};
+REWRITE("Entries::Highest", 0xc35e50, entries_highest_original, &entries_highest, &g_highest);
+
+// ---- VerletPoints::AllSettled(this, speed) (0xA6EFF0): whether every point of a set is nearly still ----------------------
+// As PhysicsWorld::AtRest (the squared speed vz vz + vx vx + vy vy against the game's limit 0x13C2A04), but the first
+// point past the limit has its squared speed put in *speed (0 in the low byte); 1 when none is.
+static uint8_t __thiscall verlet_points_all_settled(const uint8_t *self, float *speed) {
+    g_rest_checks++;
+    const int32_t n = *(const int32_t *)(self + 0x10);
+    const float *const *const parts = *(const float *const *const *)(self + 0xc);
+    const long double k = *(const float *)0xf8f980;
+    for (int32_t i = 0; i < n; i++) {
+        const float *const p = parts[i];
+        const volatile float dx = (float)((long double)p[4] - p[8]);
+        const long double dy = (long double)p[5] - p[9], dz = (long double)p[6] - p[10];
+        const volatile float vx = (float)((long double)dx * k), vy = (float)(dy * k);
+        const long double vz = dz * k;
+        const long double s = (vz * vz + (long double)vx * vx) + (long double)vy * vy;
+        if (s > (long double)*(const volatile float *)0x13c2a04) {
+            *(volatile float *)speed = (float)s;
+            return 0;
+        }
+    }
+    return 1;
+}
+static const uint8_t verlet_points_all_settled_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("VerletPoints::AllSettled", 0xa6eff0, verlet_points_all_settled_original, &verlet_points_all_settled, &g_rest_checks);
+
+// ---- Objects::AnyNear(p) (0x7A2180): whether any object of the game's list (0x10EFB90) is closer than 0xF28218 to p ------
+// Nodes (next +0, object +8) from the list's first, while the node's next is not null; the object's place at +0x80:
+// sqrt((dz dz + dy dy) + dx dx) with the x difference rounded. Gives the answer in the low byte.
+static volatile long g_any_nears;
+static uint8_t __fastcall objects_any_near(const float *p) {
+    g_any_nears++;
+    const uint32_t *node = *(const uint32_t *const *)0x10efb90;
+    if (!*node || !node)
+        return 0;
+    for (;;) {
+        const float *const o = (const float *)((const uint8_t *)(uintptr_t)node[2] + 0x80);
+        const volatile float dx = (float)((long double)o[0] - p[0]);
+        const long double dy = (long double)o[1] - p[1], dz = (long double)o[2] - p[2];
+        if (x87_sqrt((dz * dz + dy * dy) + (long double)dx * dx) < (long double)*(const float *)0xf28218)
+            return 1;
+        node = (const uint32_t *)(uintptr_t)*node;
+        if (!*node || !node)
+            return 0;
+    }
+}
+static const uint8_t objects_any_near_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Objects::AnyNear", 0x7a2180, objects_any_near_original, &objects_any_near, &g_any_nears);

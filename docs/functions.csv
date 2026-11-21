@@ -296,7 +296,7 @@ address,size,name,callers,status
 0x413e40,144,VertexLayout::Add,4,rewritten
 0x413f00,627,,0,documented
 0x4141a0,41,,0,documented
-0x4141e0,144,,1,documented
+0x4141e0,144,FrameTime::Smooth,1,rewritten
 0x414270,173,Wobble::Update,1,rewritten
 0x414320,263,,0,documented
 0x414470,445,,1,documented
@@ -1299,7 +1299,7 @@ address,size,name,callers,status
 0x46c500,130,Array<4>::SetCapacity,4,rewritten
 0x46c5b0,26,OwnedPointer::Reset,2,rewritten
 0x46c5d0,179,MEMBER_DTOR,1,rewritten
-0x46c6c0,168,,1,documented
+0x46c6c0,168,Entries::CountNegative,1,rewritten
 0x46c770,48,,1,documented
 0x46c7a0,24,,2,documented
 0x46c7c0,672,,1,documented
@@ -1814,7 +1814,7 @@ address,size,name,callers,status
 0x492f40,694,,1,documented
 0x493200,1557,,28,documented
 0x493860,132,Array<2>::SetCapacity,12,rewritten
-0x493930,151,,8,documented
+0x493930,151,Grid::Contains,8,rewritten
 0x493a30,30,DeletingDestructor,1,rewritten
 0x493a50,30,DeletingDestructor,1,rewritten
 0x493a70,30,DeletingDestructor,1,rewritten
@@ -4941,7 +4941,7 @@ address,size,name,callers,status
 0x5d37d0,19,,3,documented
 0x5d37f0,32,Slot::Return5D37F0,0,rewritten
 0x5d3810,49,,1,documented
-0x5d3850,169,,1,documented
+0x5d3850,169,Ease::InOut,1,rewritten
 0x5d3900,99,Ease::In,1,rewritten
 0x5d3970,119,Ease::Out,1,rewritten
 0x5d3b50,26,OwnedPointer::Reset,2,rewritten
@@ -6966,7 +6966,7 @@ address,size,name,callers,status
 0x6ac730,508,Window::Construct,6,rewritten
 0x6acac0,7,,1,documented
 0x6acad0,13,,4,documented
-0x6acb30,156,,2,documented
+0x6acb30,156,Screen::AreaScale,2,rewritten
 0x6acbd0,132,,2,documented
 0x6acc60,260,,1,documented
 0x6acd70,43,,18,documented
@@ -8203,7 +8203,7 @@ address,size,name,callers,status
 0x71d900,196,,1,documented
 0x71d9d0,163,,3,documented
 0x71da80,442,,9,documented
-0x71dc50,144,,2,documented
+0x71dc50,144,Path::Bounds71DC50,2,rewritten
 0x71dce0,104,,2,documented
 0x71ded0,121,,0,documented
 0x71df50,83,CachedInterface,4,rewritten
@@ -8329,7 +8329,7 @@ address,size,name,callers,status
 0x727890,198,TileCorners::Pack,2,rewritten
 0x727960,51,,4,documented
 0x7279a0,338,,0,documented
-0x727b00,164,,3,documented
+0x727b00,164,TileCorners::Count,3,rewritten
 0x727bb0,264,,1,documented
 0x727cc0,111,,2,documented
 0x727d30,170,,8,documented
@@ -9480,7 +9480,7 @@ address,size,name,callers,status
 0x7a2080,7,SetTable,2,rewritten
 0x7a2090,204,,3,documented
 0x7a2160,30,DeletingDestructor,1,rewritten
-0x7a2180,164,,1,documented
+0x7a2180,164,Objects::AnyNear,1,rewritten
 0x7a2230,1247,,5,documented
 0x7a2710,1395,,0,documented
 0x7a2cf0,122,SortedTable::FindVersion,7,rewritten
@@ -9828,7 +9828,7 @@ address,size,name,callers,status
 0x7c24b0,611,,4,documented
 0x7c2740,121,,2,documented
 0x7c27d0,199,,13,documented
-0x7c28a0,166,,2,documented
+0x7c28a0,166,Angle::TurnToward,2,rewritten
 0x7c2950,17,,2,documented
 0x7c2970,335,,9,documented
 0x7c2ac0,629,,5,documented
@@ -9864,7 +9864,7 @@ address,size,name,callers,status
 0x7c44a0,46,,1,documented
 0x7c44f0,72,QueryInterface::OrReport,0,rewritten
 0x7c4670,28,Object::FreeField,0,rewritten
-0x7c4690,167,,0,documented
+0x7c4690,167,SinCos::Lookup,0,rewritten
 0x7c4750,30,DeletingDestructor,1,rewritten
 0x7c4770,30,DeletingDestructor,1,rewritten
 0x7c4790,30,DeletingDestructor,1,rewritten
@@ -10124,7 +10124,7 @@ address,size,name,callers,status
 0x7ea170,30,DeletingDestructor,0,rewritten
 0x7ea190,43,,1,documented
 0x7ea1e0,46,,1,documented
-0x7ea210,179,,2,documented
+0x7ea210,179,Ticker::Update,2,rewritten
 0x7ea2d0,74,,2,documented
 0x7ea320,441,,1,documented
 0x7ea4e0,494,,1,documented
@@ -11386,7 +11386,7 @@ address,size,name,callers,status
 0x84d100,30,DeletingDestructor,3,rewritten
 0x84d200,30,DeletingDestructor,0,rewritten
 0x84d220,109,Record::Assign47E120,5,rewritten
-0x84d2d0,165,,1,documented
+0x84d2d0,165,Entry::Compare,1,rewritten
 0x84d3a0,193,,3,documented
 0x84d470,88,,3,documented
 0x84d510,93,,8,documented
@@ -11795,7 +11795,7 @@ address,size,name,callers,status
 0x874aa0,40,Text::Widen,0,rewritten
 0x874c30,27,GlobalCleanup,1,rewritten
 0x874c60,128,Destructor::Steps,1,rewritten
-0x874cf0,155,,8,documented
+0x874cf0,155,GridMarks::MarkRect0,8,rewritten
 0x874d90,161,Grid::Mark874D90,1,rewritten
 0x874e40,161,Grid::Mark874D90,2,rewritten
 0x874f20,234,,1,documented
@@ -12007,7 +12007,7 @@ address,size,name,callers,status
 0x88c920,1051,Window::Titled,1,rewritten
 0x88cd90,107,Factory::CreateFromFields,0,rewritten
 0x88ce00,30,,1,documented
-0x88cfd0,177,,0,documented
+0x88cfd0,177,Box::ClosestPoint,0,rewritten
 0x88d120,30,DeletingDestructor,0,rewritten
 0x88d160,767,Record::CopyAndSet,12,rewritten
 0x88d460,672,,2,documented
@@ -12638,7 +12638,7 @@ address,size,name,callers,status
 0x8f3340,170,,1,documented
 0x8f33f0,144,,2,documented
 0x8f34a0,261,,1,documented
-0x8f35b0,151,,1,documented
+0x8f35b0,151,Terrain::LodDistance,1,rewritten
 0x8f3650,202,,1,documented
 0x8f3720,39,,1,documented
 0x8f3750,958,,2,documented
@@ -12818,7 +12818,7 @@ address,size,name,callers,status
 0x90b7e0,559,,1,documented
 0x90ba10,1388,,1,documented
 0x90c060,266,,0,documented
-0x90c170,193,,1,documented
+0x90c170,193,Polygon::Area,1,rewritten
 0x90c240,34,,20,documented
 0x90c2a0,143,,12,documented
 0x90c330,27,,1,documented
@@ -13654,7 +13654,7 @@ address,size,name,callers,status
 0x972d70,63,,0,documented
 0x973040,207,,1,documented
 0x973140,127,Stamp::Compare88F750,1,rewritten
-0x9731c0,155,,1,documented
+0x9731c0,155,Key::Compare,1,rewritten
 0x9732b0,313,,0,documented
 0x9733f0,165,,0,documented
 0x9734a0,84,,1,documented
@@ -14571,7 +14571,7 @@ address,size,name,callers,status
 0x9cbb70,11,,2,documented
 0x9cbb80,21,,2,documented
 0x9cbba0,11,,1,documented
-0x9cbbb0,158,,1,documented
+0x9cbbb0,158,Particles::SetCount,1,rewritten
 0x9cbc50,25,,5,documented
 0x9cbdf0,3066,,2,documented
 0x9cc9f0,54,,1,documented
@@ -15039,8 +15039,8 @@ address,size,name,callers,status
 0x9f8290,48,,2,documented
 0x9f82c0,63,Pool::Take,0,rewritten
 0x9f8300,64,,1,documented
-0x9f8340,186,,1,documented
-0x9f8430,152,,1,documented
+0x9f8340,186,Box::Overshoot2D,1,rewritten
+0x9f8430,152,Key::FromSmallList,1,rewritten
 0x9f84e0,304,,3,documented
 0x9f8680,228,,0,documented
 0x9f8770,239,,0,documented
@@ -15892,7 +15892,7 @@ address,size,name,callers,status
 0xa51740,26,OwnedPointer::Reset,0,rewritten
 0xa51760,61,Array<4>::Allocate,0,rewritten
 0xa517a0,32,,4,documented
-0xa517c0,174,,2,documented
+0xa517c0,174,Slots::Reserve,2,rewritten
 0xa51870,123,,1,documented
 0xa518f0,45,,1,documented
 0xa51a00,30,DeletingDestructor,1,rewritten
@@ -16182,7 +16182,7 @@ address,size,name,callers,status
 0xa6be20,85,,0,documented
 0xa6bed0,92,,2,documented
 0xa6bf80,76,,1,documented
-0xa6bfd0,167,,1,documented
+0xa6bfd0,167,Lists::Remove,1,rewritten
 0xa6c080,74,,1,documented
 0xa6c0e0,691,,1,documented
 0xa6c3a0,300,,1,documented
@@ -16195,8 +16195,8 @@ address,size,name,callers,status
 0xa6ca10,3454,,2,documented
 0xa6d7b0,5493,,6,documented
 0xa6ed40,513,,4,documented
-0xa6ef50,152,,1,documented
-0xa6eff0,161,,0,documented
+0xa6ef50,152,PhysicsWorld::AtRest,1,rewritten
+0xa6eff0,161,VerletPoints::AllSettled,0,rewritten
 0xa6f0a0,754,,1,documented
 0xa6f3a0,1306,,9,documented
 0xa6f930,445,,1,documented
@@ -17450,7 +17450,7 @@ address,size,name,callers,status
 0xaf9dd0,290,,1,documented
 0xaf9f00,26,OwnedPointer::Reset,2,rewritten
 0xafa080,94,,4,documented
-0xafa0e0,153,,4,documented
+0xafa0e0,153,Terrain::CellColourAt,4,rewritten
 0xafa180,344,,2,documented
 0xafa2e0,418,,1,documented
 0xafa490,168,,2,documented
@@ -18020,7 +18020,7 @@ address,size,name,callers,status
 0xb34e60,132,,2,documented
 0xb34ef0,171,Progress::Advance,2,rewritten
 0xb34fa0,93,Progress::Advance2,1,rewritten
-0xb35000,184,,1,documented
+0xb35000,184,Grid::SpiralStep,1,rewritten
 0xb35330,176,,3,documented
 0xb353e0,30,DeletingDestructor,1,rewritten
 0xb35450,61,,5,documented
@@ -19391,7 +19391,7 @@ address,size,name,callers,status
 0xbb5310,302,Values::Map,1,rewritten
 0xbb5470,312,,0,documented
 0xbb5600,235,Values::Map,1,rewritten
-0xbb5880,151,,1,documented
+0xbb5880,151,Condition::Test,1,rewritten
 0xbb5940,36,,3,documented
 0xbb5970,43,,2,documented
 0xbb59a0,26,,2,documented
@@ -19618,7 +19618,7 @@ address,size,name,callers,status
 0xbc5eb0,95,,5,documented
 0xbc5fd0,187,,2,documented
 0xbc60c0,22,,1,documented
-0xbc6140,155,,0,documented
+0xbc6140,155,Segment::Middle,0,rewritten
 0xbc61e0,181,,0,documented
 0xbc62a0,270,,0,documented
 0xbc63b0,293,,0,documented
@@ -19909,7 +19909,7 @@ address,size,name,callers,status
 0xbd3dc0,293,Values::Map,7,rewritten
 0xbd3fc0,14,,2,documented
 0xbd3fd0,17,,2,documented
-0xbd4060,155,,11,documented
+0xbd4060,155,Vertex::SizeFromFormat,11,rewritten
 0xbd41d0,231,,4,documented
 0xbd4490,25,,3,documented
 0xbd44b0,17,,7,documented
@@ -20202,7 +20202,7 @@ address,size,name,callers,status
 0xbe8a50,45,Device::SetCachedBE8960,0,rewritten
 0xbe8aa0,84,,1,documented
 0xbe8b10,142,,1,documented
-0xbe8ba0,170,,2,documented
+0xbe8ba0,170,Mesh::SetPrimitiveCount,2,rewritten
 0xbe8cd0,131,,1,documented
 0xbe8d60,76,,0,documented
 0xbe8db0,135,,4,documented
@@ -21192,7 +21192,7 @@ address,size,name,callers,status
 0xc35c20,109,,3,documented
 0xc35dd0,30,DeletingDestructor,0,rewritten
 0xc35df0,8,,1,documented
-0xc35e50,188,,1,documented
+0xc35e50,188,Entries::Highest,1,rewritten
 0xc35f10,69,,1,documented
 0xc361c0,30,DeletingDestructor,0,rewritten
 0xc361e0,76,,1,documented
@@ -22170,7 +22170,7 @@ address,size,name,callers,status
 0xca4460,30,DeletingDestructor,0,rewritten
 0xca4480,100,,1,documented
 0xca45a0,30,DeletingDestructor,0,rewritten
-0xca45c0,170,,1,documented
+0xca45c0,170,PairMap::Find,1,rewritten
 0xca4670,8,,1,documented
 0xca4680,8,,1,documented
 0xca46a0,8,,1,documented
@@ -22730,7 +22730,7 @@ address,size,name,callers,status
 0xcc73a0,18,,2,documented
 0xcc73c0,359,,1,documented
 0xcc7530,106,,2,documented
-0xcc75a0,146,,1,documented
+0xcc75a0,146,Nodes::MarkChain,1,rewritten
 0xcc7640,125,,3,documented
 0xcc76c0,2972,,2,documented
 0xcc82b0,110,,0,documented
@@ -22846,8 +22846,8 @@ address,size,name,callers,status
 0xcd5260,262,,2,documented
 0xcd5370,214,,49,documented
 0xcd5640,263,,39,documented
-0xcd5750,146,,2,documented
-0xcd60e0,181,,1,documented
+0xcd5750,146,String::CompareRaw,2,rewritten
+0xcd60e0,181,WideString::CompareRaw,1,rewritten
 0xcd63a0,203,,98,documented
 0xcd6470,3,,1,documented
 0xcd6480,4,,74,documented
