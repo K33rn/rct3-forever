@@ -3010,3 +3010,251 @@ static void __thiscall park_copy_9e0dd0(uint8_t *self, const uint32_t *from) {
 }
 static const uint8_t park_copy_9e0dd0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Park::Copy9E0DD0", 0x9e0dd0, park_copy_9e0dd0_original, &park_copy_9e0dd0, &g_park_copies);
+
+// ---- Value::MoveToward(value, rate, target, dt) (0x9E85F0): a value moved toward a target by rate dt ------------------
+// Gives (in the low byte) 1 straight away when it already equals the target. Nothing (0) when the distance is at most
+// 1e-8 (or a NaN). Otherwise the step is added (target above) or taken off (not above) and stored; when that passes the
+// target (unrounded) the value becomes the target and 1, else 0.
+static volatile long g_move_towards;
+static uint8_t __thiscall value_move_toward(float *value, float rate, float target, float dt) {
+    g_move_towards++;
+    volatile float *const v = value;
+    if ((long double)*v == (long double)target)
+        return 1;
+    const long double step = (long double)rate * dt;
+    const long double d = (long double)target - *v;
+    if (!(x87_abs(d) > (long double)*(const float *)0xf2a9bc))
+        return 0;
+    if (d > (long double)*(const float *)0xf264e0) {
+        const long double n = step + *v;
+        *v = (float)n;
+        if (!(n > (long double)target))
+            return 0;
+    } else {
+        const long double n = (long double)*v - step;
+        *v = (float)n;
+        if (!(n < (long double)target))
+            return 0;
+    }
+    *(volatile uint32_t *)value = *(const uint32_t *)&target;
+    return 1;
+}
+static const uint8_t value_move_toward_original[] = {0xd9, 0x44, 0x24, 0x08, 0xd9, 0x01, 0xda, 0xe9};
+REWRITE("Value::MoveToward", 0x9e85f0, value_move_toward_original, &value_move_toward, &g_move_towards);
+
+// ---- Keys::Find / Find2(this, t) (0xE02670, 0xE025F0): the key a time falls in ------------------------------------------
+// Keys of 16 bytes, time first (at +0x10, count +0xC; Find2: +8, +4): 0 unless t is past the first key's time; the last
+// when t is at least the last's; otherwise by halving: lo = 0, hi = last; while lo < hi - 1 the middle (lo + (hi - lo)
+// / 2) becomes hi when t is at most its time (or a NaN), else lo; gives lo.
+static inline uint32_t keys_find(const float *keys, int32_t count, float t) {
+    if (!((long double)t > (long double)keys[0]) && (long double)t == (long double)t)
+        return 0;
+    int32_t lo = 0, hi = count - 1;
+    if (!((long double)t < (long double)keys[4 * (count - 1)]) && (long double)t == (long double)t)
+        return (uint32_t)hi;
+    while (lo < hi - 1) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        if ((long double)t > (long double)keys[4 * mid])
+            lo = mid;
+        else
+            hi = mid;
+    }
+    return (uint32_t)lo;
+}
+static volatile long g_key_finds;
+static uint32_t __thiscall keys_find_10(const uint8_t *self, float t) {
+    g_key_finds++;
+    return keys_find(*(const float *const *)(self + 0x10), *(const int32_t *)(self + 0xc), t);
+}
+static uint32_t __thiscall keys_find_8(const uint8_t *self, float t) {
+    g_key_finds++;
+    return keys_find(*(const float *const *)(self + 8), *(const int32_t *)(self + 4), t);
+}
+static const uint8_t keys_find_10_original[] = {0xd9, 0x44, 0x24, 0x04, 0x8b, 0x51, 0x0c, 0x53};
+static const uint8_t keys_find_8_original[] = {0xd9, 0x44, 0x24, 0x04, 0x8b, 0x51, 0x04, 0x53};
+REWRITE("Keys::Find", 0xe02670, keys_find_10_original, &keys_find_10, &g_key_finds);
+REWRITE("Keys::Find2", 0xe025f0, keys_find_8_original, &keys_find_8, &g_key_finds);
+
+// ---- Value::Band2(v) (0x7C3080): which band a value falls in, by fixed limits ------------------------------------------
+// 1 when K1 <= v <= K2, 2 when K2 <= v <= K3, 0 when K3 <= v <= K4 (0xF27050, 0xF27058, 0xF71CAC, 0xF71CA8), else 3 (a
+// NaN too); in the low byte.
+static volatile long g_value_bands;
+static uint8_t __stdcall value_band2(float v) {
+    g_value_bands++;
+    const long double x = v;
+    const float *const k1 = (const float *)0xf27050, *const k2 = (const float *)0xf27058, *const k3 = (const float *)0xf71cac, *const k4 = (const float *)0xf71ca8;
+    if (x >= (long double)*k1 && x <= (long double)*k2) return 1;
+    if (x >= (long double)*k2 && x <= (long double)*k3) return 2;
+    if (x >= (long double)*k3 && x <= (long double)*k4) return 0;
+    return 3;
+}
+static const uint8_t value_band2_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x1d, 0x50, 0x70};
+REWRITE("Value::Band2", 0x7c3080, value_band2_original, &value_band2, &g_value_bands);
+
+// ---- Entries::FindMatching(object, list, out) (0xB78630): the entry whose +0xC and +0x10 match the object's ---------------
+// Entries of 0x70 bytes (*list, count list[2]); the first match's first value goes to *out (through the FPU) and 1 is
+// given (in the low byte), else 0.
+static volatile long g_matching_finds;
+static uint8_t __stdcall entries_find_matching(const uint8_t *object, const uint32_t *list, float *out) {
+    g_matching_finds++;
+    const uint8_t *const base = (const uint8_t *)(uintptr_t)list[0];
+    const int32_t count = (int32_t)list[2];
+    for (int32_t i = 0; i < count; i++) {
+        const uint8_t *const e = base + i * 0x70;
+        if (*(const uint32_t *)(object + 0x10) == *(const uint32_t *)(e + 0x10) && *(const uint32_t *)(object + 0xc) == *(const uint32_t *)(e + 0xc)) {
+            *(volatile float *)out = (float)x87_load((const float *)e);
+            return 1;
+        }
+    }
+    return 0;
+}
+static const uint8_t entries_find_matching_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
+REWRITE("Entries::FindMatching", 0xb78630, entries_find_matching_original, &entries_find_matching, &g_matching_finds);
+
+// ---- Sizes::Pick(base, scale) (0x9D9C40): a size in pixels: one of three bases times one of three scales -----------------
+// Bases 0, 1, 2: 0xF6C844, 0xF851C4, 0xF851C8 (others 0); scales 1: 0.5, 2: 0xF28420, others 1; fistp, low 32 bits.
+static volatile long g_size_picks;
+static uint32_t __fastcall sizes_pick(uint32_t base, uint32_t scale) {
+    g_size_picks++;
+    const long double b = base == 0 ? *(const float *)0xf6c844 : base == 1 ? *(const float *)0xf851c4 : base == 2 ? *(const float *)0xf851c8 : *(const float *)0xf264e0;
+    const long double s = scale == 1 ? *(const float *)0xf2651c : scale == 2 ? *(const float *)0xf28420 : *(const float *)0xf264dc;
+    return (uint32_t)x87_whole(s * b);
+}
+static const uint8_t sizes_pick_original[] = {0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00, 0x8b, 0xc1};
+REWRITE("Sizes::Pick", 0x9d9c40, sizes_pick_original, &sizes_pick, &g_size_picks);
+
+// ---- Guest::AddValue759690(this, a, b) (0x759690): a added to +0x40C and b to +0x41C, each kept between 0 and 1 ----------
+// The sum is stored; past 1 (unrounded) it becomes 1, below 0 it becomes 0 (a NaN stays).
+static volatile long g_guest_values;
+static inline void guest_add_kept(volatile float *v, float d) {
+    const long double s = (long double)d + *v;
+    *v = (float)s;
+    if (s > (long double)*(const float *)0xf264dc)
+        *(volatile uint32_t *)v = 0x3f800000;
+    else if (s < (long double)*(const float *)0xf264e0)
+        *(volatile uint32_t *)v = 0;
+}
+static void __thiscall guest_add_value_759690(uint8_t *self, float a, float b) {
+    g_guest_values++;
+    guest_add_kept((volatile float *)(self + 0x40c), a);
+    guest_add_kept((volatile float *)(self + 0x41c), b);
+}
+static const uint8_t guest_add_value_759690_original[] = {0xd9, 0x44, 0x24, 0x04, 0x33, 0xd2, 0xd8, 0x81};
+REWRITE("Guest::AddValue759690", 0x759690, guest_add_value_759690_original, &guest_add_value_759690, &g_guest_values);
+
+// ---- Vertices::Gather / Gather2(positions, normals, n, out, source, offset) (0xCCF9F0, 0xCCF970): n vertices of 32 bytes --
+// For each source entry (12 bytes: two 16-bit indices, u, v): the position at positions + 16 i0 and the normal at
+// normals + 16 i1 (three values each, as they are), then u + offset[0] and v + offset[1]. (n is at least 1.)
+static volatile long g_vertex_gathers;
+static void __fastcall vertices_gather(const uint8_t *positions, const uint8_t *normals, uint32_t n, uint32_t *out, const uint8_t *source, const float *offset) {
+    g_vertex_gathers++;
+    const long double ou = x87_load(&offset[0]), ov = x87_load(&offset[1]);
+    do {
+        volatile uint32_t *const o = out;
+        const uint32_t *const p = (const uint32_t *)(positions + *(const uint16_t *)source * 16);
+        o[0] = p[0], o[1] = p[1], o[2] = p[2];
+        const uint32_t *const q = (const uint32_t *)(normals + *(const uint16_t *)(source + 2) * 16);
+        o[3] = q[0], o[4] = q[1], o[5] = q[2];
+        const long double u = (long double)*(const float *)(source + 4) + ou;
+        const long double v = (long double)*(const float *)(source + 8) + ov;
+        ((volatile float *)out)[6] = (float)u;
+        ((volatile float *)out)[7] = (float)v;
+        source += 12, out += 8;
+    } while (--n);
+}
+static const uint8_t vertices_gather_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0x53, 0x56};
+REWRITE("Vertices::Gather", 0xccf9f0, vertices_gather_original, &vertices_gather, &g_vertex_gathers);
+REWRITE("Vertices::Gather2", 0xccf970, vertices_gather_original, &vertices_gather, &g_vertex_gathers);
+
+// ---- Curve::Falloff(kind, -, v, limit) (0x8AE2F0): a value past a limit, eased back by its kind -------------------------
+// d = v - limit. Kind 0: v when below the limit, else limit - d / 2; 1: v when below, else limit - d; 2: limit - d d;
+// 3: limit - d (d / limit); others 0. Unrounded on the FPU.
+static volatile long g_falloffs;
+static long double __fastcall curve_falloff(uint32_t kind, uint32_t, float v, float limit) {
+    g_falloffs++;
+    const long double d = (long double)v - limit;
+    switch (kind) {
+    case 0: return (long double)v < (long double)limit ? (long double)v : (long double)limit - d * *(const float *)0xf2651c;
+    case 1: return (long double)v < (long double)limit ? (long double)v : (long double)limit - d;
+    case 2: return (long double)limit - d * d;
+    case 3: return (long double)limit - d * (d / limit);
+    default: return *(const float *)0xf264e0;
+    }
+}
+static const uint8_t curve_falloff_original[] = {0x83, 0xf9, 0x03, 0x77, 0x7a, 0xff, 0x24, 0x8d};
+REWRITE("Curve::Falloff", 0x8ae2f0, curve_falloff_original, &curve_falloff, &g_falloffs);
+
+// ---- Guest::Band(v) (0xA883A0): which band a value falls in once divided by the game's unit (0x13CDF20) -----------------
+// q = v / unit: below 1 (unrounded) 0; then, rounded, below 2: 1, below 3: 2, below 4: 3, below 5: 4; otherwise (a NaN
+// too) 5.
+static volatile long g_guest_bands;
+static uint32_t __stdcall guest_band(float v) {
+    g_guest_bands++;
+    const long double q = (long double)v / *(const volatile float *)0x13cdf20;
+    if (q < (long double)*(const float *)0xf264dc) return 0;
+    const volatile float qf = (float)q;
+    if ((long double)qf < (long double)*(const float *)0xf2705c) return 1;
+    if ((long double)qf < (long double)*(const float *)0xf2784c) return 2;
+    if ((long double)qf < (long double)*(const float *)0xf2669c) return 3;
+    if ((long double)qf < (long double)*(const float *)0xf28214) return 4;
+    return 5;
+}
+static const uint8_t guest_band_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x35, 0x20, 0xdf};
+REWRITE("Guest::Band", 0xa883a0, guest_band_original, &guest_band, &g_guest_bands);
+
+// ---- Bird::ClampA0A340(this) (0xA0A340): three values (+0xB0 to +0xB8) cleared when outside fixed bounds ----------------
+// Cleared when below 0xF6FD64 (or a NaN) or above 0xF6FD60.
+static volatile long g_bird_clamps;
+static void __thiscall bird_clamp_a0a340(uint8_t *self) {
+    g_bird_clamps++;
+    for (int i = 0; i < 3; i++) {
+        volatile float *const v = (volatile float *)(self + 0xb0) + i;
+        if (!((long double)*v >= (long double)*(const float *)0xf6fd64) || (long double)*v > (long double)*(const float *)0xf6fd60)
+            *(volatile uint32_t *)v = 0;
+    }
+}
+static const uint8_t bird_clamp_a0a340_original[] = {0xd9, 0x81, 0xb0, 0x00, 0x00, 0x00, 0x33, 0xd2};
+REWRITE("Bird::ClampA0A340", 0xa0a340, bird_clamp_a0a340_original, &bird_clamp_a0a340, &g_bird_clamps);
+
+// ---- Car::Angle5294A0(a, b, c, out) (0x5294A0): two angle differences from c, compared ------------------------------------
+// d1 = a - c and d2 = b - c, each less a turn when past half a turn (unrounded); *out = d1. Gives (in the low byte) 1 when
+// |d1| is below 0xF37A78, else whether d1 and d2 differ in being at least 0 (a NaN counts as not).
+static volatile long g_car_angles;
+static uint8_t __stdcall car_angle_5294a0(float a, float b, float c, float *out) {
+    g_car_angles++;
+    const long double half = *(const float *)0xf285f0, turn = *(const float *)0xf268dc;
+    long double d1 = (long double)a - c;
+    if (d1 > half) d1 = d1 - turn;
+    *(volatile float *)out = (float)d1;
+    if (x87_abs(d1) < (long double)*(const float *)0xf37a78)
+        return 1;
+    long double d2 = (long double)b - c;
+    if (d2 > half) d2 = d2 - turn;
+    const bool s2 = d2 >= (long double)*(const float *)0xf264e0, s1 = d1 >= (long double)*(const float *)0xf264e0;
+    return s1 != s2;
+}
+static const uint8_t car_angle_5294a0_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x64, 0x24, 0x0c};
+REWRITE("Car::Angle5294A0", 0x5294a0, car_angle_5294a0_original, &car_angle_5294a0, &g_car_angles);
+
+// ---- Pairs::SortOnce(this) (0x940AE0): a list of pairs (8 bytes, at +0, count +8) sorted by their second value, once -----
+// Marked sorted at byte +0xC first. For each place i, each later pair whose value is below i's (ordered) is swapped in.
+static volatile long g_pair_sorts;
+static void __thiscall pairs_sort_once(uint8_t *self) {
+    g_pair_sorts++;
+    if (self[0xc])
+        return;
+    ((volatile uint8_t *)self)[0xc] = 1;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 8); i++)
+        for (int32_t j = i + 1; j < *(const volatile int32_t *)(self + 8); j++) {
+            volatile uint32_t *const p = *(volatile uint32_t *const *)self;
+            if ((long double)((const volatile float *)p)[2 * i + 1] > (long double)((const volatile float *)p)[2 * j + 1]) {
+                const uint32_t a = p[2 * i], v = p[2 * i + 1];
+                p[2 * i] = p[2 * j];
+                p[2 * i + 1] = p[2 * j + 1];
+                p[2 * j] = a;
+                p[2 * j + 1] = v;
+            }
+        }
+}
+static const uint8_t pairs_sort_once_original[] = {0x51, 0x8a, 0x41, 0x0c, 0x84, 0xc0, 0x75, 0x79};
+REWRITE("Pairs::SortOnce", 0x940ae0, pairs_sort_once_original, &pairs_sort_once, &g_pair_sorts);

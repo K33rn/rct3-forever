@@ -922,3 +922,609 @@ static void __thiscall window_init_65fb30(uint32_t *self, uint32_t v) {
 }
 static const uint8_t window_init_65fb30_original[] = {0x8b, 0xc1, 0x8d, 0x48, 0x04, 0x56, 0x33, 0xf6};
 REWRITE("Window::Init65FB30", 0x65fb30, window_init_65fb30_original, &window_init_65fb30, &g_window_65fb30s);
+
+// ---- Style::ColourFor(this, state, highlighted) (0x58FD30): one of six colours of a style (+0x1CC) ----------------------
+// State 0: +0xC highlighted, else +0x18; 1: +0x10 or +0x1C; 2: +0x14 or +0x20; any other state 5.
+static volatile long g_style_colours;
+static uint32_t __thiscall style_colour_for(const uint8_t *self, uint32_t state, uint32_t highlighted) {
+    g_style_colours++;
+    if (state > 2)
+        return 5;
+    const uint8_t *const style = *(const uint8_t *const *)(self + 0x1cc);
+    return *(const uint32_t *)(style + (highlighted ? 0xc : 0x18) + 4 * state);
+}
+static const uint8_t style_colour_for_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xe8, 0x00, 0x74};
+REWRITE("Style::ColourFor", 0x58fd30, style_colour_for_original, &style_colour_for, &g_style_colours);
+
+// ---- SortedInts::Find(key, list, count, place, -) (0x7FB9C0): binary search of a sorted list of signed numbers ---------
+// Gives (in the low byte) 1 and the place when *key is found; otherwise 0 and where it would go (0 for an empty list).
+static volatile long g_sorted_int_finds;
+static uint8_t __fastcall sorted_ints_find(const int32_t *key, const int32_t *list, int32_t count, int32_t *place, uint32_t) {
+    g_sorted_int_finds++;
+    if (count < 1) {
+        *(volatile int32_t *)place = 0;
+        return 0;
+    }
+    const int32_t k = *key;
+    int32_t lo = 0, hi = count - 1;
+    for (;;) {
+        const int32_t mid = (hi + lo) >> 1;
+        const int32_t v = list[mid];
+        if (k < v) {
+            if (mid > lo) {
+                hi = mid - 1;
+                continue;
+            }
+            *(volatile int32_t *)place = lo;
+            return 0;
+        }
+        if (k == v) {
+            *(volatile int32_t *)place = mid;
+            return 1;
+        }
+        if (mid < hi) {
+            lo = mid + 1;
+            continue;
+        }
+        *(volatile int32_t *)place = hi + 1;
+        return 0;
+    }
+}
+static const uint8_t sorted_ints_find_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0x01, 0x7d};
+REWRITE("SortedInts::Find", 0x7fb9c0, sorted_ints_find_original, &sorted_ints_find, &g_sorted_int_finds);
+
+// ---- FlagSlots::Get / Set(this, flag[, value]) (0x5D11C0, 0x5D10F0): the slot of a flag (1, 2, 4, ... 0x200: slots 0-9) --
+// Get gives -1 for any other flag; Set ignores it.
+static inline int flag_slot(int32_t flag) {
+    switch (flag) {
+    case 1: return 0;
+    case 2: return 1;
+    case 4: return 2;
+    case 8: return 3;
+    case 0x10: return 4;
+    case 0x20: return 5;
+    case 0x40: return 6;
+    case 0x80: return 7;
+    case 0x100: return 8;
+    case 0x200: return 9;
+    default: return -1;
+    }
+}
+static volatile long g_flag_slots;
+static uint32_t __thiscall flag_slots_get(const uint32_t *self, int32_t flag) {
+    g_flag_slots++;
+    const int slot = flag_slot(flag);
+    return slot < 0 ? 0xffffffffu : self[slot];
+}
+static void __thiscall flag_slots_set(uint32_t *self, int32_t flag, uint32_t value) {
+    g_flag_slots++;
+    const int slot = flag_slot(flag);
+    if (slot >= 0)
+        ((volatile uint32_t *)self)[slot] = value;
+}
+static const uint8_t flag_slots_get_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0x20, 0x7f};
+REWRITE("FlagSlots::Get", 0x5d11c0, flag_slots_get_original, &flag_slots_get, &g_flag_slots);
+REWRITE("FlagSlots::Set", 0x5d10f0, flag_slots_get_original, &flag_slots_set, &g_flag_slots);
+
+// ---- Bits::AllSet(this, start, end) (0xC16660): whether every block of a range has its bit set --------------------------
+// Blocks of the size at +4 (signed division): from start / size up to (end + size - 1) / size; block i's bit is bit
+// i % 32 of word i / 32 of the list at +0xC (signed, as C divides); a word outside the list (+0x10 words) counts as
+// unset. Gives the answer in the low byte (1 for an empty range).
+static volatile long g_bits_all_set;
+static uint8_t __thiscall bits_all_set(const uint8_t *self, int32_t start, int32_t end) {
+    g_bits_all_set++;
+    const int32_t size = *(const int32_t *)(self + 4);
+    const int32_t last = (size + end - 1) / size;
+    for (int32_t i = start / size; i < last; i++) {
+        const int32_t word = i / 32;
+        if (word < 0 || word >= *(const int32_t *)(self + 0x10))
+            return 0;
+        if (!((*(const uint32_t *const *)(self + 0xc))[word] & (1u << ((i % 32) & 31))))
+            return 0;
+    }
+    return 1;
+}
+static const uint8_t bits_all_set_original[] = {0x8b, 0x44, 0x24, 0x08, 0x53, 0x55, 0x56, 0x57};
+REWRITE("Bits::AllSet", 0xc16660, bits_all_set_original, &bits_all_set, &g_bits_all_set);
+
+// ---- SortedTable::FindVersion(this, key, place) (0x7A2CF0): binary search for a 64-bit key -------------------------------
+// Entries of 24 bytes at +8 (count +4), each pointing (+4) at a signed 64-bit value; the key's at +0x20. Gives (in the
+// low byte) 1 and the place when found, else 0 and where it would go.
+static volatile long g_version_finds;
+static uint8_t __thiscall sorted_table_find_version(const uint8_t *self, const uint8_t *key, int32_t *place) {
+    g_version_finds++;
+    const int64_t k = *(const int64_t *)(key + 0x20);
+    const uint8_t *const entries = *(const uint8_t *const *)(self + 8);
+    int32_t lo = 0, hi = *(const int32_t *)(self + 4);
+    while (hi > lo) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const int64_t v = **(const int64_t *const *)(entries + mid * 24 + 4);
+        if (v < k)
+            lo = mid + 1;
+        else if (v > k)
+            hi = mid;
+        else {
+            *(volatile int32_t *)place = mid;
+            return 1;
+        }
+    }
+    *(volatile int32_t *)place = lo;
+    return 0;
+}
+static const uint8_t sorted_table_find_version_original[] = {0x51, 0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x04};
+REWRITE("SortedTable::FindVersion", 0x7a2cf0, sorted_table_find_version_original, &sorted_table_find_version, &g_version_finds);
+
+// ---- Lod::LevelFor(this, n, fallback) (0xBC0B00): the detail level to use for number n --------------------------------------
+// -1 without levels (+0x44). With levels (byte +4) less held back (byte +5) still above n and the object not ready (bit 1
+// of the word at +2 when its bit 0 is set, else +0x40 set): levels - held when the fallback byte is set and some are held
+// back, else -1. Otherwise n kept within 0 and levels - 1.
+static volatile long g_lod_levels;
+static int32_t __thiscall lod_level_for(const uint8_t *self, int32_t n, uint32_t fallback) {
+    g_lod_levels++;
+    if (!*(const uint32_t *)(self + 0x44))
+        return -1;
+    const int32_t levels = self[4], held = self[5];
+    const int32_t usable = levels - held;
+    if (n < usable) {
+        const uint8_t flags = self[2];
+        const bool ready = flags & 1 ? (flags >> 1) & 1 : *(const uint32_t *)(self + 0x40) != 0;
+        if (!ready) {
+            if ((uint8_t)fallback && usable < levels)
+                return usable;
+            return -1;
+        }
+    }
+    if (n >= levels)
+        return levels - 1;
+    return n > 0 ? n : 0;
+}
+static const uint8_t lod_level_for_original[] = {0x8b, 0x41, 0x44, 0x85, 0xc0, 0x75, 0x06, 0x83};
+REWRITE("Lod::LevelFor", 0xbc0b00, lod_level_for_original, &lod_level_for, &g_lod_levels);
+
+// ---- SortedPointers::FindXY(this, x, y, flagged_only, place) (0x8FEF80): binary search for the entry at (x, y) -------------
+// Entries (pointers at +0x30, count +0x34) sorted by y (+4) then x (+0). With flagged_only, an unflagged entry (byte +8)
+// sends the search lower; without it, a flagged one sends it higher. Gives the entry (and its place when asked) or null.
+static volatile long g_xy_finds;
+static const uint8_t *__thiscall sorted_pointers_find_xy(const uint8_t *self, int32_t x, int32_t y, uint32_t flagged_only, int32_t *place) {
+    g_xy_finds++;
+    const uint8_t *const *const list = *(const uint8_t *const *const *)(self + 0x30);
+    int32_t lo = 0, hi = *(const int32_t *)(self + 0x34) - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const uint8_t *const e = list[mid];
+        const uint8_t flagged = e[8];
+        const int32_t ex = *(const int32_t *)e, ey = *(const int32_t *)(e + 4);
+        bool lower;
+        if ((uint8_t)flagged_only && !flagged)
+            lower = true;
+        else if (!(uint8_t)flagged_only && flagged)
+            lower = false;
+        else if (y != ey)
+            lower = y < ey;
+        else if (x != ex)
+            lower = x < ex;
+        else {
+            if (place)
+                *(volatile int32_t *)place = mid;
+            return e;
+        }
+        if (lower)
+            hi = mid - 1;
+        else
+            lo = mid + 1;
+    }
+    return nullptr;
+}
+static const uint8_t sorted_pointers_find_xy_original[] = {0x51, 0x53, 0x55, 0x8b, 0x69, 0x34, 0x56, 0x33};
+REWRITE("SortedPointers::FindXY", 0x8fef80, sorted_pointers_find_xy_original, &sorted_pointers_find_xy, &g_xy_finds);
+
+// ---- Refs20::Refs20(this, owner) (0xC09FE0): the table 0xFAF9B4, the owner, and 24 references copied from it -----------
+// Each copied to +8 on; a non-null one has its 16-bit use count (at its +0) raised.
+static volatile long g_refs20s;
+static uint32_t *__thiscall refs20(uint32_t *self, const uint32_t *owner) {
+    g_refs20s++;
+    volatile uint32_t *const t = self;
+    t[0] = 0xfaf9b4;
+    t[1] = (uint32_t)(uintptr_t)owner;
+    for (int i = 0; i < 24; i++) {
+        const uint32_t r = owner[i];
+        t[2 + i] = r;
+        if (r)
+            ++*(volatile uint16_t *)(uintptr_t)r;
+    }
+    return self;
+}
+static const uint8_t refs20_original[] = {0x53, 0x56, 0x8b, 0xc1, 0x57, 0x8b, 0x7c, 0x24};
+REWRITE("Refs20::Refs20", 0xc09fe0, refs20_original, &refs20, &g_refs20s);
+
+// ---- Gate::SetState(gate, action) (0x4EE3A0): a gate's two state values (+0x20, +0x24) for an action ------------------
+// 0: (1, 2); 1: (0, and 2 becomes 0); 2: (1, 0); 3: (0, and 2 becomes 1); 4: (1, 1); others nothing.
+static volatile long g_gate_states;
+static void __stdcall gate_set_state(uint8_t *gate, uint32_t action) {
+    g_gate_states++;
+    volatile uint32_t *const s = (volatile uint32_t *)(gate + 0x20);
+    switch (action) {
+    case 0: s[0] = 1, s[1] = 2; break;
+    case 1: s[0] = 0; if (s[1] == 2) s[1] = 0; break;
+    case 2: s[0] = 1, s[1] = 0; break;
+    case 3: s[0] = 0; if (s[1] == 2) s[1] = 1; break;
+    case 4: s[0] = 1, s[1] = 1; break;
+    default: break;
+    }
+}
+static const uint8_t gate_set_state_original[] = {0x8b, 0x44, 0x24, 0x08, 0x83, 0xf8, 0x04, 0x77};
+REWRITE("Gate::SetState", 0x4ee3a0, gate_set_state_original, &gate_set_state, &g_gate_states);
+
+// ---- Quad::UpdateCounts(this) (0x8FDB30): vertex and index counts (+0x18, +0x1C) and the game's totals ------------------
+// The old counts come off the totals (0x133A028, 0x133A02C); 4 and 6 when all four corners (+8 to +0x14) are set, else 0;
+// the new counts go back on.
+static volatile long g_quad_counts;
+static void __thiscall quad_update_counts(uint8_t *self) {
+    g_quad_counts++;
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    volatile uint32_t *const vertices = (volatile uint32_t *)0x133a028, *const indices = (volatile uint32_t *)0x133a02c;
+    *vertices = *vertices - t[6];
+    *indices = *indices - t[7];
+    const bool whole = t[2] && t[3] && t[4] && t[5];
+    t[6] = whole ? 4 : 0;
+    t[7] = whole ? 6 : 0;
+    *vertices = *vertices + t[6];
+    *indices = *indices + t[7];
+}
+static const uint8_t quad_update_counts_original[] = {0x8b, 0x41, 0x18, 0x8b, 0x15, 0x28, 0xa0, 0x33};
+REWRITE("Quad::UpdateCounts", 0x8fdb30, quad_update_counts_original, &quad_update_counts, &g_quad_counts);
+
+// ---- String::Find(this, text, from) (0xBCF460): the place of a text inside a string from a place, or -1 -----------------
+// The string record (*this): its text at +0xC, length +4. Tries each place p from `from` while p + the text's length is
+// within the string; an empty text is found at once.
+static volatile long g_string_finds;
+static int32_t __thiscall string_find(const uint8_t *const *self, const char *text, uint32_t from) {
+    g_string_finds++;
+    const uint8_t *const s = *self;
+    const char *const data = *(const char *const *)(s + 0xc);
+    const uint32_t len = *(const uint32_t *)(s + 4);
+    uint32_t tlen = 0;
+    while (text[tlen]) tlen++;
+    const uintptr_t last = (uintptr_t)data + len - tlen;
+    for (uintptr_t p = (uintptr_t)data + from; p <= last; p++) {
+        uint32_t i = 0;
+        while (text[i] && text[i] == ((const char *)p)[i]) i++;
+        if (!text[i])
+            return (int32_t)(p - (uintptr_t)data);
+    }
+    return -1;
+}
+static const uint8_t string_find_original[] = {0x51, 0x8b, 0x09, 0x8b, 0x44, 0x24, 0x0c, 0x53};
+REWRITE("String::Find", 0xbcf460, string_find_original, &string_find, &g_string_finds);
+
+// ---- String::FindLast(this, text, from) (0xBCF600): the last place of a text, searching backwards, or -1 ----------------
+// From `from` (the last character when -1; at most the last), down to the start: a place matches when the text's first
+// character equals it (an empty text so matches a NUL there) and the rest follow.
+static int32_t __thiscall string_find_last(const uint8_t *const *self, const char *text, uint32_t from) {
+    g_string_finds++;
+    const uint8_t *const s = *self;
+    const uint32_t len = *(const uint32_t *)(s + 4);
+    uint32_t start = len - 1;
+    if (from != 0xffffffffu && !(from > start))
+        start = from;
+    const uintptr_t data = *(const uintptr_t *)(s + 0xc);
+    for (uintptr_t p = data + start; p >= data; p--) {
+        if (text[0] != *(const char *)p)
+            continue;
+        uint32_t i = 0;
+        while (text[i] && text[i] == ((const char *)p)[i]) i++;
+        if (!text[i])
+            return (int32_t)(p - data);
+        if (p == 0)
+            break;
+    }
+    return -1;
+}
+static const uint8_t string_find_last_original[] = {0x8b, 0x44, 0x24, 0x08, 0x83, 0xec, 0x08, 0x83};
+REWRITE("String::FindLast", 0xbcf600, string_find_last_original, &string_find_last, &g_string_finds);
+
+// ---- Refs20::CopyFrom(this, other) (0xC0A060): the table 0xFAF9B4, other's +4, and its 24 references from +8 ------------
+static uint32_t *__thiscall refs20_copy_from(uint32_t *self, const uint32_t *other) {
+    g_refs20s++;
+    volatile uint32_t *const t = self;
+    t[0] = 0xfaf9b4;
+    t[1] = other[1];
+    for (int i = 0; i < 24; i++) {
+        const uint32_t r = other[2 + i];
+        t[2 + i] = r;
+        if (r)
+            ++*(volatile uint16_t *)(uintptr_t)r;
+    }
+    return self;
+}
+static const uint8_t refs20_copy_from_original[] = {0x53, 0x8b, 0xc1, 0x56, 0x57, 0x8b, 0x7c, 0x24};
+REWRITE("Refs20::CopyFrom", 0xc0a060, refs20_copy_from_original, &refs20_copy_from, &g_refs20s);
+
+// ---- Buckets::ClearLists(this, n) (0xC1AEA0): the list of each entry in bucket n emptied (every bucket when n < 0) -------
+// Buckets at +0x10 (count +4, unsigned); each points at its first node; nodes run (next at +0) until one whose next is
+// null; each node's entry (+8) gets an empty list (+0x14 cleared, +0x18 pointing at it).
+static volatile long g_bucket_clears;
+static inline void bucket_clear(const uint8_t *self, uint32_t b) {
+    const uint32_t *node = *(const uint32_t *const *)((*(const uint32_t *const *)(self + 0x10))[b]);
+    while (*node && node) {
+        volatile uint32_t *const e = (volatile uint32_t *)(uintptr_t)node[2];
+        e[5] = 0;
+        e[6] = (uint32_t)(uintptr_t)&e[5];
+        node = (const uint32_t *)(uintptr_t)*node;
+    }
+}
+static void __thiscall buckets_clear_lists(const uint8_t *self, int32_t n) {
+    g_bucket_clears++;
+    if (n >= 0) {
+        if ((uint32_t)n < *(const uint32_t *)(self + 4))
+            bucket_clear(self, (uint32_t)n);
+        return;
+    }
+    for (uint32_t b = 0; b < *(const volatile uint32_t *)(self + 4); b++) bucket_clear(self, b);
+}
+static const uint8_t buckets_clear_lists_original[] = {0x8b, 0x44, 0x24, 0x04, 0x85, 0xc0, 0x57, 0x7d};
+REWRITE("Buckets::ClearLists", 0xc1aea0, buckets_clear_lists_original, &buckets_clear_lists, &g_bucket_clears);
+
+// ---- Nodes::MatrixFor(this, n, shared) (0xCC68C0): the 64-byte matrix for node n, and which list it came from ------------
+// Nodes of 0x60 bytes in the record's (*this) +0x10; with f = the node's flags (+0x54) and k = its low byte: shared when
+// (k <= 1, signed, and bit 8) or (k == 0 and bit 11) or bit 10. Shared: this's +4 list; else the record's +0x18; the
+// node's +0x58 picks the matrix.
+static volatile long g_node_matrices;
+static const uint8_t *__thiscall nodes_matrix_for(const uint8_t *const *self, int32_t n, uint8_t *shared) {
+    g_node_matrices++;
+    const uint8_t *const record = self[0];
+    const uint32_t f = *(const uint32_t *)(*(const uint8_t *const *)(record + 0x10) + n * 0x60 + 0x54);
+    const int32_t k = (int32_t)(f & 0xff);
+    const bool is_shared = (k <= 1 && (f >> 8) & 1) || (k == 0 && (f >> 11) & 1) || (f >> 10) & 1;
+    *(volatile uint8_t *)shared = is_shared;
+    const uint32_t index = *(const uint32_t *)(*(const uint8_t *const *)(self[0] + 0x10) + n * 0x60 + 0x58);
+    const uint8_t *const base = is_shared ? self[1] : *(const uint8_t *const *)(self[0] + 0x18);
+    return base + (index << 6);
+}
+static const uint8_t nodes_matrix_for_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x11, 0x8b, 0x52};
+REWRITE("Nodes::MatrixFor", 0xcc68c0, nodes_matrix_for_original, &nodes_matrix_for, &g_node_matrices);
+
+// ---- Filter::Accepts(this, item) (0x758880): whether an item passes a filter by its kind (+0x120) and option (+0x121) -----
+// The item's flags (+0x2C) are tested with: kind 0: 1, or 2 with the option; 1: 4 or 8; 2: 0x10 or 0x20; others all bits.
+static volatile long g_filter_accepts;
+static uint8_t __thiscall filter_accepts(const uint8_t *self, const uint8_t *item) {
+    g_filter_accepts++;
+    const bool option = self[0x121] != 0;
+    uint32_t mask;
+    switch (self[0x120]) {
+    case 0: mask = option ? 2 : 1; break;
+    case 1: mask = option ? 8 : 4; break;
+    case 2: mask = option ? 0x20 : 0x10; break;
+    default: mask = 0xffffffff; break;
+    }
+    return (*(const uint32_t *)(item + 0x2c) & mask) != 0;
+}
+static const uint8_t filter_accepts_original[] = {0x0f, 0xb6, 0x81, 0x20, 0x01, 0x00, 0x00, 0x83};
+REWRITE("Filter::Accepts", 0x758880, filter_accepts_original, &filter_accepts, &g_filter_accepts);
+
+// ---- List::FindSelected(this, id, -) (0x9F6490): the owner's selected value from the list entry with the id -------------
+// Goes through the whole list (*(+0xE4); nodes: next +0, entry +8, until a node whose next is null): each entry whose
+// first value is the id has its second value put in the owner's (+0xDC) +0x15C. The owner's +0x160 is then cleared.
+static volatile long g_selected_finds;
+static void __thiscall list_find_selected(const uint8_t *self, uint32_t id, uint32_t) {
+    g_selected_finds++;
+    const uint32_t *node = *(const uint32_t *const *)(self + 0xe4);
+    if (*node && node) {
+        do {
+            const uint32_t *const e = (const uint32_t *)(uintptr_t)node[2];
+            if (e[0] == id)
+                *(volatile uint32_t *)(*(uint8_t *const *)(self + 0xdc) + 0x15c) = e[1];
+            node = (const uint32_t *)(uintptr_t)*node;
+        } while (*node && node);
+    }
+    *(volatile uint32_t *)(*(uint8_t *const *)(self + 0xdc) + 0x160) = 0;
+}
+static const uint8_t list_find_selected_original[] = {0x8b, 0x81, 0xe4, 0x00, 0x00, 0x00, 0x8b, 0x10};
+REWRITE("List::FindSelected", 0x9f6490, list_find_selected_original, &list_find_selected, &g_selected_finds);
+
+// ---- Bounds::Grow(this, min_x, min_y, max_x, max_y, v) (0x8E7130): a box (+0x190 to +0x19C) grown to take in another -----
+// Each minimum replaced when below it, each maximum when above (as they are); +0x1A0 = v.
+static volatile long g_bounds_grows;
+static void __thiscall bounds_grow(uint8_t *self, float min_x, float min_y, float max_x, float max_y, uint32_t v) {
+    g_bounds_grows++;
+    volatile uint32_t *const b = (volatile uint32_t *)(self + 0x190);
+    const float *const f = (const float *)(self + 0x190);
+    if ((long double)min_x < (long double)((const volatile float *)f)[0]) b[0] = *(const uint32_t *)&min_x;
+    if ((long double)min_y < (long double)((const volatile float *)f)[1]) b[1] = *(const uint32_t *)&min_y;
+    if ((long double)max_x > (long double)((const volatile float *)f)[2]) b[2] = *(const uint32_t *)&max_x;
+    if ((long double)max_y > (long double)((const volatile float *)f)[3]) b[3] = *(const uint32_t *)&max_y;
+    b[4] = v;
+}
+static const uint8_t bounds_grow_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x99, 0x90, 0x01};
+REWRITE("Bounds::Grow", 0x8e7130, bounds_grow_original, &bounds_grow, &g_bounds_grows);
+
+// ---- Indices::CopyOffset(to, from, count, offset) (0xBEECB0): 16-bit indices copied, the offset added when given --------
+// Without an offset: count * 2 bytes copied. With one: worked a 32-bit word (two indices) at a time with offset << 16 |
+// offset added (a carry from the low index reaches the high one): count / 4 pairs of words, then one more word when bit 1
+// of count is set (an odd last index is left).
+static volatile long g_index_copies;
+static void __fastcall indices_copy_offset(uint8_t *to, const uint8_t *from, uint32_t count, uint32_t offset) {
+    g_index_copies++;
+    if (!offset) {
+        for (uint32_t i = 0; i < count * 2; i++) ((volatile uint8_t *)to)[i] = from[i];
+        return;
+    }
+    const uint32_t add = offset << 16 | offset;
+    const uint32_t words = (count >> 2) * 2 + ((count & 2) ? 1 : 0);
+    for (uint32_t i = 0; i < words; i++) ((volatile uint32_t *)to)[i] = ((const uint32_t *)from)[i] + add;
+}
+static const uint8_t indices_copy_offset_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0x8b, 0x45};
+REWRITE("Indices::CopyOffset", 0xbeecb0, indices_copy_offset_original, &indices_copy_offset, &g_index_copies);
+
+// ---- Scenery::Turn827530(this, x, y, x_out, y_out) (0x827530): a cell turned within a footprint, and whether it is in ---
+// (dx, dy) = (x, y) less the corner (+4, +8); by the turn (+0x10), with the footprint's (*this) width +0x10 and depth
+// +0x14: 0 (dx, dy); 1 (width - dy - 1, dx); 2 (width - dx - 1, depth - dy - 1); 3 (dy, depth - dx - 1); others leave
+// the outputs. Gives (in the low byte) whether the outputs lie inside the footprint (signed).
+static volatile long g_scenery_turns;
+static uint8_t __thiscall scenery_turn_827530(const int32_t *self, int32_t x, int32_t y, int32_t *x_out, int32_t *y_out) {
+    g_scenery_turns++;
+    const int32_t dx = x - self[1], dy = y - self[2];
+    const int32_t *const f = (const int32_t *)(uintptr_t)self[0];
+    volatile int32_t *const ox = x_out, *const oy = y_out;
+    switch ((uint32_t)self[4]) {
+    case 0: *ox = dx, *oy = dy; break;
+    case 1: *ox = f[4] - dy - 1, *oy = dx; break;
+    case 2: *ox = f[4] - dx - 1, *oy = f[5] - dy - 1; break;
+    case 3: *ox = dy, *oy = f[5] - dx - 1; break;
+    default: break;
+    }
+    const int32_t *const g = (const int32_t *)(uintptr_t)self[0];
+    const int32_t cx = *ox;
+    if (cx < 0 || cx >= g[4]) return 0;
+    const int32_t cy = *oy;
+    return cy >= 0 && cy < g[5];
+}
+static const uint8_t scenery_turn_827530_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x54, 0x24, 0x08};
+REWRITE("Scenery::Turn827530", 0x827530, scenery_turn_827530_original, &scenery_turn_827530, &g_scenery_turns);
+
+// ---- SortedPointers::Find(this, list, count, place, -) (0x87A6D0): binary search of objects by +4 (unsigned) then +0xC --
+// The key is *this; gives (in the low byte) 1 and the place when found, else 0 and where it would go (0 for an empty
+// list).
+static volatile long g_pointer_finds;
+static uint8_t __fastcall sorted_pointers_find(const uint8_t *const *self, const uint8_t *const *list, int32_t count, int32_t *place, uint32_t) {
+    g_pointer_finds++;
+    if (count < 1) {
+        *(volatile int32_t *)place = 0;
+        return 0;
+    }
+    const uint8_t *const key = *self;
+    const uint32_t k1 = *(const uint32_t *)(key + 4);
+    int32_t lo = 0, hi = count - 1;
+    for (;;) {
+        const int32_t mid = (hi + lo) >> 1;
+        const uint8_t *const e = list[mid];
+        const uint32_t e1 = *(const uint32_t *)(e + 4);
+        bool lower;
+        if (k1 != e1)
+            lower = k1 < e1;
+        else {
+            const int32_t k2 = *(const int32_t *)(key + 0xc), e2 = *(const int32_t *)(e + 0xc);
+            if (k2 == e2) {
+                *(volatile int32_t *)place = mid;
+                return 1;
+            }
+            lower = k2 < e2;
+        }
+        if (lower) {
+            if (mid > lo) {
+                hi = mid - 1;
+                continue;
+            }
+            *(volatile int32_t *)place = lo;
+            return 0;
+        }
+        if (mid < hi) {
+            lo = mid + 1;
+            continue;
+        }
+        *(volatile int32_t *)place = hi + 1;
+        return 0;
+    }
+}
+static const uint8_t sorted_pointers_find_original[] = {0x51, 0x8b, 0x44, 0x24, 0x08, 0x83, 0xf8, 0x01};
+REWRITE("SortedPointers::Find", 0x87a6d0, sorted_pointers_find_original, &sorted_pointers_find, &g_pointer_finds);
+
+// ---- SceneryItem::RemoveLink(this, object) (0x83FBC0): an object taken out of two lists, the later ones moved down ------
+// The lists at +0x54 (count +0x58) and +0x60 (count +0x64): the first place holding the object is closed up and the
+// count drops by one.
+static volatile long g_link_removals;
+static inline void remove_from(uint8_t *self, int at, uint32_t object) {
+    volatile int32_t *const count = (volatile int32_t *)(self + at + 4);
+    const int32_t n = *count;
+    for (int32_t i = 0; i < *count; i++) {
+        if ((*(const uint32_t *const *)(self + at))[i] != object)
+            continue;
+        for (int32_t j = i; j < n - 1 && j < *count - 1; j++) {
+            volatile uint32_t *const list = *(volatile uint32_t *const *)(self + at);
+            list[j] = list[j + 1];
+        }
+        *count = *count - 1;
+        return;
+    }
+}
+static void __thiscall scenery_item_remove_link(uint8_t *self, uint32_t object) {
+    g_link_removals++;
+    remove_from(self, 0x54, object);
+    remove_from(self, 0x60, object);
+}
+static const uint8_t scenery_item_remove_link_original[] = {0x53, 0x56, 0x8b, 0x71, 0x58, 0x33, 0xc0, 0x85};
+REWRITE("SceneryItem::RemoveLink", 0x83fbc0, scenery_item_remove_link_original, &scenery_item_remove_link, &g_link_removals);
+
+// ---- WideString::Find(this, text, from) (0xBCEDC0): the place of a wide text inside a wide string, or -1 ----------------
+// As String::Find, in 16-bit characters.
+static int32_t __thiscall wide_string_find(const uint8_t *const *self, const uint16_t *text, uint32_t from) {
+    g_string_finds++;
+    const uint8_t *const s = *self;
+    const uintptr_t data = *(const uintptr_t *)(s + 0xc);
+    const uint32_t len = *(const uint32_t *)(s + 4);
+    uint32_t tlen = 0;
+    while (text[tlen]) tlen++;
+    const uintptr_t last = data + (uintptr_t)(len - tlen) * 2;
+    for (uintptr_t p = data + (uintptr_t)from * 2; p <= last; p += 2) {
+        uint32_t i = 0;
+        while (text[i] && text[i] == ((const uint16_t *)p)[i]) i++;
+        if (!text[i])
+            return (int32_t)(p - data) >> 1;
+    }
+    return -1;
+}
+static const uint8_t wide_string_find_original[] = {0x51, 0x8b, 0x09, 0x8b, 0x44, 0x24, 0x0c, 0x8b};
+REWRITE("WideString::Find", 0xbcedc0, wide_string_find_original, &wide_string_find, &g_string_finds);
+
+// ---- Buffer::LayOut(this) (0xCB78E0): a buffer's parts laid out one after another -----------------------------------------
+// From the owner's (+0x14) start (+0x40) rounded up to the alignment (+4, unsigned): each part (0x28 bytes at +0x30, count
+// +8) gets the place (+4), and the place moves past its size (+8), rounded up again. The count (+8) then becomes the
+// number of parts of kind (byte +1) 1 or 2, bit 1 of +0 is cleared, and 1 is given (in the low byte).
+static volatile long g_buffer_layouts;
+static inline uint32_t round_up(uint32_t v, uint32_t align) {
+    const uint32_t r = v % align;
+    return r ? v + (align - r) : v;
+}
+static uint8_t __thiscall buffer_lay_out(uint32_t *self) {
+    g_buffer_layouts++;
+    volatile uint32_t *const t = self;
+    uint32_t place = round_up(*(const uint32_t *)((uint8_t *)(uintptr_t)t[5] + 0x40), t[1]);
+    uint32_t kinds = 0;
+    for (uint32_t i = 0; i < t[2]; i++) {
+        uint8_t *const part = (uint8_t *)(uintptr_t)t[12] + i * 0x28;
+        *(volatile uint32_t *)(part + 4) = place;
+        place = round_up(*(const uint32_t *)((uint8_t *)(uintptr_t)t[12] + i * 0x28 + 8) + place, t[1]);
+        const uint8_t kind = part[1];
+        if (kind >= 1 && kind <= 2)
+            kinds++;
+    }
+    t[0] = t[0] & 0xfffffffd;
+    t[2] = kinds;
+    return 1;
+}
+static const uint8_t buffer_lay_out_original[] = {0x8b, 0x41, 0x14, 0x83, 0xec, 0x08, 0x55, 0x56};
+REWRITE("Buffer::LayOut", 0xcb78e0, buffer_lay_out_original, &buffer_lay_out, &g_buffer_layouts);
+
+// ---- VertexLayout::Add(this, element) (0x413E40): an element added to a vertex layout (up to 16, count +0x20) ----------
+// The 16-bit element is stored; the size (+0x24) grows by: high byte 0: the type's size (the table 0x10F2BA8 by the low
+// byte); 1: 16; above 0x7F: (high - 0x7F) times the type's size, plus 4; otherwise 0.
+static volatile long g_layout_adds;
+static void __thiscall vertex_layout_add(uint8_t *self, uint32_t element) {
+    g_layout_adds++;
+    volatile uint32_t *const count = (volatile uint32_t *)(self + 0x20), *const size = (volatile uint32_t *)(self + 0x24);
+    const uint32_t n = *count;
+    if (n >= 16)
+        return;
+    ((volatile uint16_t *)self)[n] = (uint16_t)element;
+    const uint8_t type = (uint8_t)element, high = (uint8_t)(element >> 8);
+    const uint32_t *const sizes = (const uint32_t *)0x10f2ba8;
+    uint32_t grow;
+    if (high == 0) grow = sizes[type];
+    else if (high == 1) grow = 0x10;
+    else if (high > 0x7f) grow = (uint32_t)(high - 0x7f) * sizes[type] + 4;
+    else grow = 0;
+    *size = *size + grow;
+    *count = *count + 1;
+}
+static const uint8_t vertex_layout_add_original[] = {0x8b, 0x51, 0x20, 0x83, 0xfa, 0x10, 0x0f, 0x83};
+REWRITE("VertexLayout::Add", 0x413e40, vertex_layout_add_original, &vertex_layout_add, &g_layout_adds);
