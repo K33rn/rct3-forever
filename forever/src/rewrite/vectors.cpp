@@ -3804,3 +3804,213 @@ static long double __thiscall sin_table_sin(const float *table, float angle) {
 }
 static const uint8_t sin_table_sin_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x0c, 0xd8};
 REWRITE("SinTable::Sin", 0xcd0660, sin_table_sin_original, &sin_table_sin, &g_sin_cos);
+
+// ---- Matrix::Ortho(this, a, b, w, h) (0x4664E0): an orthographic projection -------------------------------------------------
+// +0 2 / w, +0x14 2 / h, r = 1 / (b - a): +0x28 r and +0x38 r a (r unrounded); +0x3C 1; the rest cleared.
+static volatile long g_orthos;
+static void __thiscall matrix_ortho(uint8_t *self, float a, float b, float w, float h) {
+    g_orthos++;
+    const long double two = *(const float *)0xf2705c;
+    const long double sx = two / w;
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    static const int8_t cleared[] = {0xd, 0xc, 0xb, 9, 8, 7, 6, 4, 3, 2, 1};
+    for (const int8_t i : cleared) t[i] = 0;
+    t[0xf] = 0x3f800000;
+    volatile float *const m = (volatile float *)self;
+    m[0] = (float)sx;
+    m[5] = (float)(two / h);
+    const long double r = (long double)*(const float *)0xf264dc / ((long double)b - a);
+    m[10] = (float)r;
+    m[14] = (float)(r * a);
+}
+static const uint8_t matrix_ortho_original[] = {0xd9, 0x05, 0x5c, 0x70, 0xf2, 0x00, 0x33, 0xc0};
+REWRITE("Matrix::Ortho", 0x4664e0, matrix_ortho_original, &matrix_ortho, &g_orthos);
+
+// ---- ProgramInfo::MinSize(this, out) (0x621370): the program info window's size (+0xF8, +0xFC), at least 530 by 200 --------
+// fcomi / fcmov: a NaN gives the minimum. The width goes out through the FPU, the height as it is.
+static volatile long g_min_sizes;
+static void __thiscall program_info_min_size(const uint8_t *self, float *out) {
+    g_min_sizes++;
+    const volatile float w = (float)x87_greater(530.0L, x87_load((const float *)(self + 0xf8)));
+    const volatile float h = (float)x87_greater(200.0L, x87_load((const float *)(self + 0xfc)));
+    ((volatile float *)out)[0] = (float)x87_load((const float *)&w);
+    ((volatile uint32_t *)out)[1] = *(const volatile uint32_t *)&h;
+}
+static const uint8_t program_info_min_size_original[] = {0x83, 0xec, 0x10, 0x8b, 0x81, 0xf8, 0x00, 0x00};
+REWRITE("ProgramInfo::MinSize", 0x621370, program_info_min_size_original, &program_info_min_size, &g_min_sizes);
+
+// ---- Damping::For(speed) (0x5BADA0): a damping amount for a speed -----------------------------------------------------------
+// s = speed times the game's scale (0x12F55CC): at least 0xF275F4 (unrounded) gives speed / 2; above 0 (rounded):
+// (0.9 - s 0xF3EF64) speed; otherwise speed 0xF3EF60. Unrounded on the FPU.
+static volatile long g_dampings;
+static long double __stdcall damping_for(float speed) {
+    g_dampings++;
+    const long double s = (long double)*(const volatile float *)0x12f55cc * speed;
+    const volatile float sf = (float)s;
+    if (s >= (long double)*(const float *)0xf275f4)
+        return (long double)speed * *(const float *)0xf2651c;
+    if ((long double)sf > (long double)*(const float *)0xf264e0)
+        return ((long double)*(const float *)0xf29640 - (long double)sf * *(const float *)0xf3ef64) * speed;
+    return (long double)speed * *(const float *)0xf3ef60;
+}
+static const uint8_t damping_for_original[] = {0x51, 0xd9, 0x05, 0xcc, 0x55, 0x2f, 0x01, 0xd8};
+REWRITE("Damping::For", 0x5bada0, damping_for_original, &damping_for, &g_dampings);
+
+// ---- Counts::AddByLevel(this, v) (0x5BC050): one added to the count of the highest of four levels a value reaches ----------
+// At least 0xF3EF7C: +0xC; 0xF3EF78: +8; 0xF3EF74: +4; 0xF3EF70: +0; below all (or a NaN) nothing.
+static void __thiscall counts_add_by_level(uint8_t *self, float v) {
+    g_kind_counts++;
+    static const uint32_t levels[4] = {0xf3ef7c, 0xf3ef78, 0xf3ef74, 0xf3ef70};
+    for (int i = 0; i < 4; i++)
+        if ((long double)v >= (long double)*(const float *)(uintptr_t)levels[i]) {
+            volatile int32_t *const c = (volatile int32_t *)(self + 4 * (3 - i));
+            *c = *c + 1;
+            return;
+        }
+}
+static const uint8_t counts_add_by_level_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x1d, 0x7c, 0xef};
+REWRITE("Counts::AddByLevel", 0x5bc050, counts_add_by_level_original, &counts_add_by_level, &g_kind_counts);
+
+// ---- Lower-bound searches over float keys sorted low to high --------------------------------------------------------------
+// Halving: a value below the key moves lo past the middle, one above moves hi before it, an equal value (or a NaN) ends
+// the search; gives lo. Value(i) reads the i-th value.
+template <class Value> static int32_t float_lower_bound(int32_t count, float key, Value value) {
+    int32_t lo = 0, hi = count - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const long double v = value(mid);
+        if ((long double)key > v)
+            lo = mid + 1;
+        else if ((long double)key < v)
+            hi = mid - 1;
+        else
+            break;
+    }
+    return lo;
+}
+// SortedIndex::LowerBound2(this, key) (0x80E200): indices at +0xC into objects at +8 (count +0x10), by their +8
+static int32_t __thiscall sorted_index_lower_bound2(const uint8_t *self, float key) {
+    g_lower_bounds++;
+    const int32_t *const index = *(const int32_t *const *)(self + 0xc);
+    const uint8_t *const *const objects = *(const uint8_t *const *const *)(self + 8);
+    return float_lower_bound(*(const int32_t *)(self + 0x10), key, [&](int32_t i) { return (long double)*(const float *)(objects[index[i]] + 8); });
+}
+// SortedTable::LowerBound1C(this, entry) (0x80E340): entries of 0x1C bytes at +0x40 (count +0x48) by their first value
+static int32_t __thiscall sorted_table_lower_bound1c(const uint8_t *self, const float *entry) {
+    g_lower_bounds++;
+    const uint8_t *const table = *(const uint8_t *const *)(self + 0x40);
+    return float_lower_bound(*(const int32_t *)(self + 0x48), entry[0], [&](int32_t i) { return (long double)*(const float *)(table + i * 0x1c); });
+}
+// SortedPointers::LowerBound8(this, key) (0x80E1A0): objects at +8 (count +0x10) by their +8
+static int32_t __thiscall sorted_pointers_lower_bound8(const uint8_t *self, float key) {
+    g_lower_bounds++;
+    const uint8_t *const *const objects = *(const uint8_t *const *const *)(self + 8);
+    return float_lower_bound(*(const int32_t *)(self + 0x10), key, [&](int32_t i) { return (long double)*(const float *)(objects[i] + 8); });
+}
+static const uint8_t sorted_index_lower_bound2_original[] = {0x56, 0x57, 0x8b, 0x79, 0x10, 0x33, 0xf6, 0x4f};
+static const uint8_t sorted_table_lower_bound1c_original[] = {0x56, 0x57, 0x8b, 0x79, 0x48, 0x33, 0xf6, 0x4f};
+REWRITE("SortedIndex::LowerBound2", 0x80e200, sorted_index_lower_bound2_original, &sorted_index_lower_bound2, &g_lower_bounds);
+REWRITE("SortedTable::LowerBound1C", 0x80e340, sorted_table_lower_bound1c_original, &sorted_table_lower_bound1c, &g_lower_bounds);
+REWRITE("SortedPointers::LowerBound8", 0x80e1a0, sorted_index_lower_bound2_original, &sorted_pointers_lower_bound8, &g_lower_bounds);
+
+// ---- Items::SizeAt(this, n) (0xC637C0): the width or height of item n of the list at +0xB0, or 0 ------------------------------
+// Nodes (next +0, item +8, until a node whose next is null); +0xD0 when bit 2 of +0x1C is set, else +0xD4.
+static volatile long g_item_sizes;
+static long double __thiscall items_size_at(const uint8_t *self, int32_t n) {
+    g_item_sizes++;
+    const uint32_t *node = *(const uint32_t *const *)(self + 0xb0);
+    if (!*node || !node)
+        return *(const float *)0xf264e0;
+    while (n) {
+        node = (const uint32_t *)(uintptr_t)*node;
+        n--;
+        if (!*node || !node)
+            return *(const float *)0xf264e0;
+    }
+    const uint8_t *const item = (const uint8_t *)(uintptr_t)node[2];
+    if (!item)
+        return *(const float *)0xf264e0;
+    return x87_load((const float *)(item + (self[0x1c] & 4 ? 0xd0 : 0xd4)));
+}
+static const uint8_t items_size_at_original[] = {0x8b, 0x81, 0xb0, 0x00, 0x00, 0x00, 0x8b, 0x54};
+REWRITE("Items::SizeAt", 0xc637c0, items_size_at_original, &items_size_at, &g_item_sizes);
+
+// ---- Keys::FindTime(this, t) (0x988F60): the key a time falls in, by halving; -1 when there are none ------------------------
+// Keys of 32 bytes, time first, at +0x40 (count +0x4C): lo = 0, hi = count; while they are more than 1 apart the middle
+// ((hi + lo) / 2) becomes lo when t is past its time, else hi (a NaN too); gives lo.
+static int32_t __thiscall keys_find_time(const uint8_t *self, float t) {
+    g_key_finds++;
+    int32_t hi = *(const int32_t *)(self + 0x4c);
+    if (!hi)
+        return -1;
+    const uint8_t *const keys = *(const uint8_t *const *)(self + 0x40);
+    int32_t lo = 0;
+    while ((hi - lo < 0 ? lo - hi : hi - lo) > 1) {
+        const int32_t mid = (hi + lo) / 2;
+        if ((long double)t > (long double)*(const float *)(keys + mid * 32))
+            lo = mid;
+        else
+            hi = mid;
+    }
+    return lo;
+}
+static const uint8_t keys_find_time_original[] = {0x56, 0x8b, 0x71, 0x4c, 0x85, 0xf6, 0x75, 0x07};
+REWRITE("Keys::FindTime", 0x988f60, keys_find_time_original, &keys_find_time, &g_key_finds);
+
+// ---- Attraction::SpeedScale(this) (0x55FBB0): a speed scale for some attraction kinds (+0x60) ---------------------------------
+// Kinds 0x2E to 0x31 and 0x44: the game's scale (0x10EE8F4) times +0x184 (unrounded), at least 0xF268F0 and at most 1;
+// other kinds 0.
+static volatile long g_attraction_speeds;
+static long double __thiscall attraction_speed_scale(const uint8_t *self) {
+    g_attraction_speeds++;
+    const uint32_t kind = *(const uint32_t *)(self + 0x60);
+    if (!((kind >= 0x2e && kind <= 0x31) || kind == 0x44))
+        return *(const float *)0xf264e0;
+    const long double v = (long double)*(const volatile float *)0x10ee8f4 * *(const float *)(self + 0x184);
+    if (v < (long double)*(const float *)0xf268f0) return *(const float *)0xf268f0;
+    if (v > (long double)*(const float *)0xf264dc) return *(const float *)0xf264dc;
+    return v;
+}
+static const uint8_t attraction_speed_scale_original[] = {0x8b, 0x41, 0x60, 0x83, 0xf8, 0x2e, 0x74, 0x1b};
+REWRITE("Attraction::SpeedScale", 0x55fbb0, attraction_speed_scale_original, &attraction_speed_scale, &g_attraction_speeds);
+
+// ---- Firework::SetFade(this, level) (0x9F7110): a fade value (+0xC) from a level kept between 0 and 1 ------------------------
+// u = the level kept (fcomi / fcmov); (u K + 0.5) u + D (K 0xF86BDC, D 0xF355E4).
+static volatile long g_firework_fades;
+static void __thiscall firework_set_fade(uint8_t *self, float level) {
+    g_firework_fades++;
+    const volatile float t = (float)x87_greater(0.0L, x87_load(&level));
+    const volatile float u = (float)x87_lesser(1.0L, x87_load((const float *)&t));
+    *(volatile float *)(self + 0xc) = (float)(((long double)u * *(const float *)0xf86bdc + *(const float *)0xf2651c) * u + *(const float *)0xf355e4);
+}
+static const uint8_t firework_set_fade_original[] = {0x83, 0xec, 0x08, 0xc7, 0x04, 0x24, 0x00, 0x00};
+REWRITE("Firework::SetFade", 0x9f7110, firework_set_fade_original, &firework_set_fade, &g_firework_fades);
+
+// ---- Values::SumFirst(this, n) (0x884680): the sum of the first n values of the list at +0xC, unrounded ---------------------
+static volatile long g_value_sums;
+static long double __thiscall values_sum_first(const uint8_t *self, int32_t n) {
+    g_value_sums++;
+    long double sum = *(const float *)0xf264e0;
+    const float *const v = *(const float *const *)(self + 0xc);
+    for (int32_t i = 0; i < n; i++) sum = sum + v[i];
+    return sum;
+}
+static const uint8_t values_sum_first_original[] = {0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00, 0x56, 0x8b};
+REWRITE("Values::SumFirst", 0x884680, values_sum_first_original, &values_sum_first, &g_value_sums);
+
+// ---- Ride::InRange(this, other) (0x55F940): a flag (byte +0x7C) for a value between two limits ------------------------------
+// Without other's flag (byte +0x20) the flag is cleared. Otherwise it is set when other's value (+0x24) lies between
+// other's +0x18 and this's +0x70 (either way round, ends included); else left as it is.
+static volatile long g_in_ranges;
+static void __thiscall ride_in_range(uint8_t *self, const uint8_t *other) {
+    g_in_ranges++;
+    if (!other[0x20]) {
+        ((volatile uint8_t *)self)[0x7c] = 0;
+        return;
+    }
+    const long double v = *(const float *)(other + 0x24), a = *(const float *)(other + 0x18), b = *(const float *)(self + 0x70);
+    if ((v >= a && v <= b) || (v >= b && v <= a))
+        ((volatile uint8_t *)self)[0x7c] = 1;
+}
+static const uint8_t ride_in_range_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8a, 0x42, 0x20, 0x84};
+REWRITE("Ride::InRange", 0x55f940, ride_in_range_original, &ride_in_range, &g_in_ranges);

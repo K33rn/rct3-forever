@@ -1433,8 +1433,8 @@ REWRITE("SortedPointers::Find", 0x87a6d0, sorted_pointers_find_original, &sorted
 // The lists at +0x54 (count +0x58) and +0x60 (count +0x64): the first place holding the object is closed up and the
 // count drops by one.
 static volatile long g_link_removals;
-static inline void remove_from(uint8_t *self, int at, uint32_t object) {
-    volatile int32_t *const count = (volatile int32_t *)(self + at + 4);
+static inline void remove_from(uint8_t *self, int at, uint32_t object, int count_at = 4) {
+    volatile int32_t *const count = (volatile int32_t *)(self + at + count_at);
     const int32_t n = *count;
     for (int32_t i = 0; i < *count; i++) {
         if ((*(const uint32_t *const *)(self + at))[i] != object)
@@ -2320,3 +2320,482 @@ static uint32_t __thiscall entries_find_by_key(const uint8_t *self, uint32_t mas
 }
 static const uint8_t entries_find_by_key_original[] = {0x53, 0x55, 0x56, 0x8b, 0xb1, 0x9c, 0x00, 0x00};
 REWRITE("Entries::FindByKey", 0x4cc880, entries_find_by_key_original, &entries_find_by_key, &g_key_entry_finds);
+
+// ---- Math::IntSqrt(n) (0xDF88F0): the whole-number square root of a number ------------------------------------------------
+// 0x8000 above 2^30; 0 for 0. A first guess c: the first power of two whose square reaches n; then three Newton steps
+// c = (c c + n) / (2 c) (signed), stopping early on a negative one.
+static volatile long g_int_sqrts;
+static int32_t __cdecl math_int_sqrt(int32_t n) {
+    g_int_sqrts++;
+    if (n > 0x40000000)
+        return 0x8000;
+    int32_t c = 1;
+    if (n > 1)
+        do c += c;
+        while (c * c < n);
+    if (!n)
+        return 0;
+    for (int step = 0; step < 3; step++) {
+        c = (c * c + n) / (c + c);
+        if (c < 0)
+            break;
+    }
+    return c;
+}
+static const uint8_t math_int_sqrt_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x81, 0xfe, 0x00};
+REWRITE("Math::IntSqrt", 0xdf88f0, math_int_sqrt_original, &math_int_sqrt, &g_int_sqrts);
+
+// ---- ListNode::IsLinked(node) (0xCC21F0): whether a list node is properly in a list (in the low byte) -----------------------
+// Not null, both neighbours (next +0, previous +4) set, and each pointing back at it.
+static volatile long g_link_checks;
+static uint8_t __thiscall list_node_is_linked(const uint32_t *node) {
+    g_link_checks++;
+    return node && node[1] && node[0] && ((const uint32_t *)(uintptr_t)node[0])[1] == (uint32_t)(uintptr_t)node &&
+           ((const uint32_t *)(uintptr_t)node[1])[0] == (uint32_t)(uintptr_t)node;
+}
+static const uint8_t list_node_is_linked_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0xc7, 0x45};
+REWRITE("ListNode::IsLinked", 0xcc21f0, list_node_is_linked_original, &list_node_is_linked, &g_link_checks);
+
+// ---- Rect::AddCell(this, x, y) (0x71BFE0): a byte rectangle (+0x92: min x, min y, max x, max y) grown to take in a cell ---
+static void __thiscall rect_add_cell(uint8_t *self, uint32_t x_arg, uint32_t y_arg) {
+    g_path_bounds++;
+    const uint8_t x = (uint8_t)x_arg, y = (uint8_t)y_arg;
+    volatile uint8_t *const b = self + 0x92;
+    b[0] = x < b[0] ? x : b[0];
+    b[1] = y < b[1] ? y : b[1];
+    b[2] = x > b[2] ? x : b[2];
+    b[3] = y > b[3] ? y : b[3];
+}
+static const uint8_t rect_add_cell_original[] = {0x8a, 0x81, 0x92, 0x00, 0x00, 0x00, 0x53, 0x8a};
+REWRITE("Rect::AddCell", 0x71bfe0, rect_add_cell_original, &rect_add_cell, &g_path_bounds);
+
+// ---- Rect::GrowByOne(this, x0, y0, x1, y1) (0x8BCFF0): a byte rectangle grown by one cell each way, kept in the grid ------
+// The low corner moves down to no less than 0, the high one up to no more than the grid's width and height (bytes +4, +5)
+// less 1.
+static void __thiscall rect_grow_by_one(const uint8_t *self, uint8_t *x0, uint8_t *y0, uint8_t *x1, uint8_t *y1) {
+    g_path_bounds++;
+    *(volatile uint8_t *)x0 = *x0 ? (uint8_t)(*x0 - 1) : 0;
+    *(volatile uint8_t *)y0 = *y0 ? (uint8_t)(*y0 - 1) : 0;
+    if ((int32_t)*x1 < (int32_t)self[4] - 1) *(volatile uint8_t *)x1 = (uint8_t)(*x1 + 1);
+    else *(volatile uint8_t *)x1 = *x1;
+    if ((int32_t)*y1 < (int32_t)self[5] - 1) *(volatile uint8_t *)y1 = (uint8_t)(*y1 + 1);
+    else *(volatile uint8_t *)y1 = *y1;
+}
+static const uint8_t rect_grow_by_one_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8a, 0x02, 0x84, 0xc0};
+REWRITE("Rect::GrowByOne", 0x8bcff0, rect_grow_by_one_original, &rect_grow_by_one, &g_path_bounds);
+
+// ---- PointerArray::RemoveSwap(this, value) (0x80EE80): a value taken out of an array (+0x8C, count +0x94) by moving the ---
+// last entry (as the count was) into its place; the count drops by one.
+static volatile long g_swap_removes;
+static void __thiscall pointer_array_remove_swap(uint8_t *self, uint32_t value) {
+    g_swap_removes++;
+    volatile int32_t *const count = (volatile int32_t *)(self + 0x94);
+    const int32_t n = *count;
+    volatile uint32_t *const list = *(volatile uint32_t *const *)(self + 0x8c);
+    for (int32_t i = 0; i < n && i < *count; i++)
+        if (list[i] == value) {
+            list[i] = list[n - 1];
+            *count = *count - 1;
+            return;
+        }
+}
+static const uint8_t pointer_array_remove_swap_original[] = {0x57, 0x8b, 0xb9, 0x94, 0x00, 0x00, 0x00, 0x33};
+REWRITE("PointerArray::RemoveSwap", 0x80ee80, pointer_array_remove_swap_original, &pointer_array_remove_swap, &g_swap_removes);
+
+// ---- ParticleBaseDesc::RemoveLink(this, value) (0x9CEB20): a value taken out of the array at +0x70 (count +0x78), the -----
+// later entries moved down
+static void __thiscall particle_base_desc_remove_link(uint8_t *self, uint32_t value) {
+    g_link_removals++;
+    remove_from(self, 0x70, value, 8);
+}
+static const uint8_t particle_base_desc_remove_link_original[] = {0x56, 0x8b, 0x71, 0x78, 0x33, 0xc0, 0x85, 0xf6};
+REWRITE("ParticleBaseDesc::RemoveLink", 0x9ceb20, particle_base_desc_remove_link_original, &particle_base_desc_remove_link, &g_link_removals);
+
+// ---- Queue::HasId(this, id) (0x9465E0): whether a queue holds an active entry with an id (in the low byte) -----------------
+// Nothing when +0x68 equals +0x74; otherwise the entries (pointers at +0x64) from +0x7C up to +0x80: one with its id
+// (+0x3C) and active (+0x38 set).
+static volatile long g_queue_ids;
+static uint8_t __thiscall queue_has_id(const uint8_t *self, uint32_t id) {
+    g_queue_ids++;
+    const uint32_t *const t = (const uint32_t *)self;
+    if (t[0x68 / 4] == t[0x74 / 4])
+        return 0;
+    const uint32_t *const base = (const uint32_t *)(uintptr_t)t[0x64 / 4];
+    for (const uint32_t *p = base + t[0x7c / 4]; p < base + t[0x80 / 4]; p++) {
+        const uint8_t *const e = (const uint8_t *)(uintptr_t)*p;
+        if (e && *(const uint32_t *)(e + 0x3c) == id && *(const uint32_t *)(e + 0x38))
+            return 1;
+    }
+    return 0;
+}
+static const uint8_t queue_has_id_original[] = {0x8b, 0x41, 0x68, 0x2b, 0x41, 0x74, 0x56, 0x57};
+REWRITE("Queue::HasId", 0x9465e0, queue_has_id_original, &queue_has_id, &g_queue_ids);
+
+// ---- WideString::Compare(this, other) (0xBCE970): two wide strings compared: the first difference of their characters ------
+// (this's less other's), else this's length less other's.
+static int32_t __thiscall wide_string_compare(const uint8_t *const *self, const uint8_t *const *other) {
+    g_raw_compares++;
+    const uint8_t *const a = *self, *const b = *other;
+    const uint16_t *const ta = *(const uint16_t *const *)(a + 0xc), *const tb = *(const uint16_t *const *)(b + 0xc);
+    const uint32_t la = *(const uint32_t *)(a + 4), lb = *(const uint32_t *)(b + 4);
+    const uint32_t m = lb < la ? lb : la;
+    for (uint32_t i = 0; i < m; i++)
+        if (const int32_t d = (int32_t)ta[i] - (int32_t)tb[i])
+            return d;
+    return (int32_t)(la - lb);
+}
+static const uint8_t wide_string_compare_original[] = {0x8b, 0x01, 0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x09};
+REWRITE("WideString::Compare", 0xbce970, wide_string_compare_original, &wide_string_compare, &g_raw_compares);
+
+// ---- Vertices::SetSecond(this) (0x8EF180): a list of values (+0x10) copied into the second value of each 16-byte vertex ---
+// (+0x14); (+8 + +0xC) twice over.
+static volatile long g_second_sets;
+static void __thiscall vertices_set_second(const uint8_t *self) {
+    g_second_sets++;
+    const int32_t n = (*(const int32_t *)(self + 0xc) + *(const int32_t *)(self + 8)) * 2;
+    const uint32_t *const from = *(const uint32_t *const *)(self + 0x10);
+    volatile uint32_t *const to = *(volatile uint32_t *const *)(self + 0x14);
+    for (int32_t i = 0; i < n; i++) to[4 * i + 1] = from[i];
+}
+static const uint8_t vertices_set_second_original[] = {0x8b, 0x51, 0x14, 0x8b, 0x41, 0x10, 0x56, 0x8b};
+REWRITE("Vertices::SetSecond", 0x8ef180, vertices_set_second_original, &vertices_set_second, &g_second_sets);
+
+// ---- Pieces::PairAllowed(a, b) (0xBC5EB0): whether two pieces make an allowed pair ------------------------------------------
+// One of kind (+0x10) 0x4A or 0x4C with the other of kind 0 and type (+8) 1, 2, 4 or 5.
+static volatile long g_pair_checks;
+static inline bool piece_end(int32_t kind) { return kind == 0x4a || kind == 0x4c; }
+static inline bool piece_type(int32_t type) { return type == 2 || type == 5 || type == 1 || type == 4; }
+static uint32_t __fastcall pieces_pair_allowed(const int32_t *a, const int32_t *b) {
+    g_pair_checks++;
+    if (piece_end(a[4]) && !b[4] && piece_type(b[2])) return 1;
+    if (piece_end(b[4]) && !a[4] && piece_type(a[2])) return 1;
+    return 0;
+}
+static const uint8_t pieces_pair_allowed_original[] = {0x8b, 0x41, 0x10, 0x83, 0xf8, 0x4a, 0x56, 0x74};
+REWRITE("Pieces::PairAllowed", 0xbc5eb0, pieces_pair_allowed_original, &pieces_pair_allowed, &g_pair_checks);
+
+// ---- TerrainLayers::SetFlag(this, list, flag, value) (0xAFA080): the value (+0x24) and flag (bit 1 of +0x10) of layers ----
+// The layers named by the list (its start +0 and count +4 into the indices at +8; layers of 0x2C bytes at +0x14); then
+// byte +0x34 = 1.
+static volatile long g_layer_flags;
+static void __thiscall terrain_layers_set_flag(uint8_t *self, const int32_t *list, uint32_t flag, uint32_t value) {
+    g_layer_flags++;
+    for (int32_t i = 0; i < ((const volatile int32_t *)list)[1]; i++) {
+        const int32_t index = (*(const int32_t *const *)(self + 8))[list[0] + i];
+        uint8_t *const e = *(uint8_t *const *)(self + 0x14) + index * 0x2c;
+        *(volatile uint32_t *)(e + 0x24) = value;
+        volatile uint32_t *const f = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x14) + index * 0x2c + 0x10);
+        *f = (uint8_t)flag ? *f | 2 : *f & 0xfffffffd;
+    }
+    ((volatile uint8_t *)self)[0x34] = 1;
+}
+static const uint8_t terrain_layers_set_flag_original[] = {0x56, 0x57, 0x8b, 0x7c, 0x24, 0x0c, 0x8b, 0x47};
+REWRITE("TerrainLayers::SetFlag", 0xafa080, terrain_layers_set_flag_original, &terrain_layers_set_flag, &g_layer_flags);
+
+// ---- Area::Move(this, dx, dy) (0x7339B0): an area's rectangles (+0x40, +0x48, +0x58) and items (+0x64) moved by an offset --
+static volatile long g_area_moves;
+static void __thiscall area_move(uint8_t *self, int32_t dx, int32_t dy) {
+    g_area_moves++;
+    volatile int32_t *const t = (volatile int32_t *)self;
+    const int32_t a48 = t[0x48 / 4], a44 = t[0x44 / 4];
+    t[0x48 / 4] = a48 + dx;
+    const int32_t a4c = t[0x4c / 4];
+    t[0x40 / 4] = t[0x40 / 4] + dx;
+    t[0x4c / 4] = a4c + dy;
+    t[0x44 / 4] = a44 + dy;
+    const int32_t a58 = t[0x58 / 4], a5c = t[0x5c / 4];
+    t[0x5c / 4] = a5c + dy;
+    t[0x58 / 4] = a58 + dx;
+    for (int32_t i = 0; i < t[0x68 / 4]; i++) {
+        volatile int32_t *const item = (volatile int32_t *)(uintptr_t)t[0x64 / 4] + 2 * i;
+        item[0] = item[0] + dx;
+        item[1] = item[1] + dy;
+    }
+}
+static const uint8_t area_move_original[] = {0x8b, 0x51, 0x48, 0x8b, 0x41, 0x44, 0x56, 0x8b};
+REWRITE("Area::Move", 0x7339b0, area_move_original, &area_move, &g_area_moves);
+
+// ---- FreeList::Release(this, head, n) (0x8BFEF0): entry n taken out of a chain and put on the free list --------------------
+// Entries of 16 bytes at +0 (count +4), next at +4; the chain starts at *head and runs while below the count. n's
+// neighbour (or *head) is joined past it; then n's next is the free list (+8) and the free list starts at n.
+static volatile long g_free_releases;
+static void __thiscall free_list_release(uint32_t *self, uint32_t *head, uint32_t n) {
+    g_free_releases++;
+    volatile uint32_t *const t = self;
+    const uint32_t count = t[1];
+    uint32_t prev = 0xffffffff, cur = *head;
+    while (cur < count) {
+        const uint32_t next = ((const uint32_t *)(uintptr_t)t[0])[cur * 4 + 1];
+        if (cur == n) {
+            if (prev < count) ((volatile uint32_t *)(uintptr_t)t[0])[prev * 4 + 1] = next;
+            else *(volatile uint32_t *)head = next;
+            break;
+        }
+        if (!(next < t[1]))
+            break;
+        prev = cur;
+        cur = next;
+    }
+    ((volatile uint32_t *)(uintptr_t)t[0])[n * 4 + 1] = t[2];
+    t[2] = n;
+}
+static const uint8_t free_list_release_original[] = {0x53, 0x8b, 0x59, 0x04, 0x55, 0x8b, 0x6c, 0x24};
+REWRITE("FreeList::Release", 0x8bfef0, free_list_release_original, &free_list_release, &g_free_releases);
+
+// ---- Timers::Tick55(this) (0x7A9150): 55 flagged timers of each object of a list counted down --------------------------------
+// The list at +0x50C (nodes: next +0, object +8, until a node whose next is null). Timer c (+0x18 on) counts when bit
+// c & 31 of +0x14 is set; one that goes below 0 is set to 0 and its bit cleared.
+static volatile long g_timer_ticks;
+static void __thiscall timers_tick55(const uint8_t *self) {
+    g_timer_ticks++;
+    const uint32_t *node = *(const uint32_t *const *)(self + 0x50c);
+    if (!*node || !node)
+        return;
+    do {
+        uint8_t *const o = (uint8_t *)(uintptr_t)node[2];
+        volatile uint32_t *const flags = (volatile uint32_t *)(o + 0x14);
+        volatile int32_t *const timers = (volatile int32_t *)(o + 0x18);
+        for (int c = 0; c < 0x37; c++) {
+            const uint32_t bit = 1u << (c & 31);
+            if (!(*flags & bit))
+                continue;
+            const int32_t t = timers[c] - 1;
+            timers[c] = t;
+            if (t < 0) {
+                *flags = *flags & ~bit;
+                timers[c] = 0;
+            }
+        }
+        node = (const uint32_t *)(uintptr_t)*node;
+    } while (*node && node);
+}
+static const uint8_t timers_tick55_original[] = {0x8b, 0x81, 0x0c, 0x05, 0x00, 0x00, 0x83, 0x38};
+REWRITE("Timers::Tick55", 0x7a9150, timers_tick55_original, &timers_tick55, &g_timer_ticks);
+
+// ---- Grid::ContainsId(this, id, x0, y0, x1, y1) (0x9375C0): whether a rectangle of a grid of 16-bit ids holds an id ---------
+// Ids at +0x38 (width +0x30); the rectangle inclusive, signed. Gives the answer in the low byte.
+static volatile long g_grid_ids;
+static uint8_t __thiscall grid_contains_id(const uint8_t *self, uint32_t id, int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
+    g_grid_ids++;
+    const uint16_t *const ids = *(const uint16_t *const *)(self + 0x38);
+    const int32_t w = *(const int32_t *)(self + 0x30);
+    for (int32_t y = y0; y <= y1; y++)
+        for (int32_t x = x0; x <= x1; x++)
+            if (ids[w * y + x] == (uint16_t)id)
+                return 1;
+    return 0;
+}
+static const uint8_t grid_contains_id_original[] = {0x8b, 0x44, 0x24, 0x0c, 0x3b, 0x44, 0x24, 0x14};
+REWRITE("Grid::ContainsId", 0x9375c0, grid_contains_id_original, &grid_contains_id, &g_grid_ids);
+
+// ---- Bytes3List::Equal(this, list, n) (0xC44360): whether a list of three-byte values (4 apart) matches one given ----------
+// Its count (+8) must be n and +4 clear; then each value's three bytes. Gives the answer in the low byte.
+static volatile long g_bytes3_compares;
+static uint8_t __thiscall bytes3_list_equal(const uint32_t *self, const uint8_t *list, uint32_t n) {
+    g_bytes3_compares++;
+    if (self[2] != n || self[1])
+        return 0;
+    const uint8_t *const own = (const uint8_t *)(uintptr_t)self[0];
+    for (uint32_t i = 0; i < n; i++)
+        if (own[4 * i] != list[4 * i] || own[4 * i + 1] != list[4 * i + 1] || own[4 * i + 2] != list[4 * i + 2])
+            return 0;
+    return 1;
+}
+static const uint8_t bytes3_list_equal_original[] = {0x8b, 0x41, 0x08, 0x57, 0x8b, 0x7c, 0x24, 0x0c};
+REWRITE("Bytes3List::Equal", 0xc44360, bytes3_list_equal_original, &bytes3_list_equal, &g_bytes3_compares);
+
+// ---- Bytes3::Equal(this, other) (0xCC4A30): whether two three-byte values are the same (in the low byte) --------------------
+static uint8_t __thiscall bytes3_equal(const uint8_t *self, const uint8_t *other) {
+    g_bytes3_compares++;
+    return self[2] == other[2] && self[1] == other[1] && self[0] == other[0];
+}
+static const uint8_t bytes3_equal_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0xc7, 0x45};
+REWRITE("Bytes3::Equal", 0xcc4a30, bytes3_equal_original, &bytes3_equal, &g_bytes3_compares);
+
+// ---- Objects::HasWithBit(this, object, bit) (0x7A8F30): whether the list at +0x50C holds an object with the same id --------
+// Nodes (next +0, object +8, until a node whose next is null); same id (+4) and, when a bit is given, bit & 31 of its
+// flags (+0x14) set. Gives the answer in the low byte.
+static volatile long g_bit_finds;
+static uint8_t __thiscall objects_has_with_bit(const uint8_t *self, const uint8_t *object, uint32_t bit) {
+    g_bit_finds++;
+    const uint32_t *node = *(const uint32_t *const *)(self + 0x50c);
+    if (!*node || !node)
+        return 0;
+    const uint32_t id = *(const uint32_t *)(object + 4);
+    do {
+        const uint8_t *const o = (const uint8_t *)(uintptr_t)node[2];
+        if (id == *(const uint32_t *)(o + 4) && (!bit || (*(const uint32_t *)(o + 0x14) & (1u << (bit & 31)))))
+            return 1;
+        node = (const uint32_t *)(uintptr_t)*node;
+    } while (*node && node);
+    return 0;
+}
+static const uint8_t objects_has_with_bit_original[] = {0x8b, 0x81, 0x0c, 0x05, 0x00, 0x00, 0x83, 0x38};
+REWRITE("Objects::HasWithBit", 0x7a8f30, objects_has_with_bit_original, &objects_has_with_bit, &g_bit_finds);
+
+// ---- Cars::TotalLoad(this) (0x9892A0): the sum of each car's load over 10 --------------------------------------------------
+// Cars of 0x58 bytes at +0x104 (count +0x108): through the car's +0x48 and that's +0xCC, the load at +0xC4 (signed / 10).
+static volatile long g_car_loads;
+static int32_t __thiscall cars_total_load(const uint8_t *self) {
+    g_car_loads++;
+    int32_t sum = 0;
+    const int32_t n = *(const int32_t *)(self + 0x108);
+    const uint8_t *const cars = *(const uint8_t *const *)(self + 0x104);
+    for (int32_t i = 0; i < n; i++) {
+        const uint8_t *const p = *(const uint8_t *const *)(cars + i * 0x58 + 0x48);
+        if (!p)
+            continue;
+        const uint8_t *const q = *(const uint8_t *const *)(p + 0xcc);
+        if (q)
+            sum += *(const int32_t *)(q + 0xc4) / 10;
+    }
+    return sum;
+}
+static const uint8_t cars_total_load_original[] = {0x8b, 0x81, 0x08, 0x01, 0x00, 0x00, 0x57, 0x33};
+REWRITE("Cars::TotalLoad", 0x9892a0, cars_total_load_original, &cars_total_load, &g_car_loads);
+
+// ---- String::Compare(this, other) (0xBCF040): two strings compared: the first difference of their characters (signed bytes,
+// this's less other's), else this's length less other's -------------------------------------------------------------------
+static int32_t __thiscall string_compare(const uint8_t *const *self, const uint8_t *const *other) {
+    g_raw_compares++;
+    const uint8_t *const a = *self, *const b = *other;
+    const int8_t *const ta = *(const int8_t *const *)(a + 0xc), *const tb = *(const int8_t *const *)(b + 0xc);
+    const uint32_t la = *(const uint32_t *)(a + 4), lb = *(const uint32_t *)(b + 4);
+    const uint32_t m = lb < la ? lb : la;
+    for (uint32_t i = 0; i < m; i++)
+        if (const int32_t d = (int32_t)ta[i] - (int32_t)tb[i])
+            return d;
+    return (int32_t)(la - lb);
+}
+static const uint8_t string_compare_original[] = {0x8b, 0x01, 0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x09};
+REWRITE("String::Compare", 0xbcf040, string_compare_original, &string_compare, &g_raw_compares);
+
+// ---- Window::AllowedMoves(this, moves) (0xC5F510): the moves a window's flags (+0x1C) allow --------------------------------
+// For style 3 (low two bits) without bit 0x40: bit 7 takes off 5, bit 8 0xA, bit 14 1, bit 12 4, bit 11 2, bit 13 8.
+// Any other window allows none of the low four.
+static volatile long g_allowed_moves;
+static uint32_t __thiscall window_allowed_moves(const uint8_t *self, uint32_t moves) {
+    g_allowed_moves++;
+    const uint32_t f = *(const uint32_t *)(self + 0x1c);
+    if ((f & 3) != 3 || (f & 0x40))
+        return moves & 0xfffffff0;
+    if (f & 0x80) moves &= ~5u;
+    if (f & 0x100) moves &= ~0xau;
+    if (f & 0x4000) moves &= ~1u;
+    if (f & 0x1000) moves &= ~4u;
+    if (f & 0x800) moves &= ~2u;
+    if (f & 0x2000) moves &= ~8u;
+    return moves;
+}
+static const uint8_t window_allowed_moves_original[] = {0x8b, 0x49, 0x1c, 0x8b, 0x44, 0x24, 0x04, 0x8b};
+REWRITE("Window::AllowedMoves", 0xc5f510, window_allowed_moves_original, &window_allowed_moves, &g_allowed_moves);
+
+// ---- SortedPointers::FindFirst / FindFirst2(this, key, place) (0x9734A0, 0x84F1A0): objects searched by their first value --
+// FindFirst: pointers at +0xC (count +0x10), signed; FindFirst2: at +0 (count +4), unsigned. Gives (in the low byte) 1 and
+// the place when found, else 0 and where it would go.
+template <class T> static uint8_t find_first(const T *const *list, int32_t count, T key, int32_t *place) {
+    int32_t lo = 0, hi = count - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const T v = *list[mid];
+        if (key > v)
+            lo = mid + 1;
+        else if (key == v) {
+            *(volatile int32_t *)place = mid;
+            return 1;
+        } else
+            hi = mid - 1;
+    }
+    *(volatile int32_t *)place = lo;
+    return 0;
+}
+static uint8_t __thiscall sorted_pointers_find_first(const uint8_t *self, int32_t key, int32_t *place) {
+    g_pointer_finds++;
+    return find_first<int32_t>(*(const int32_t *const *const *)(self + 0xc), *(const int32_t *)(self + 0x10), key, place);
+}
+static uint8_t __thiscall sorted_pointers_find_first2(const uint8_t *self, uint32_t key, int32_t *place) {
+    g_pointer_finds++;
+    return find_first<uint32_t>(*(const uint32_t *const *const *)self, *(const int32_t *)(self + 4), key, place);
+}
+static const uint8_t sorted_pointers_find_first_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x10, 0x33};
+static const uint8_t sorted_pointers_find_first2_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x04, 0x33};
+REWRITE("SortedPointers::FindFirst", 0x9734a0, sorted_pointers_find_first_original, &sorted_pointers_find_first, &g_pointer_finds);
+REWRITE("SortedPointers::FindFirst2", 0x84f1a0, sorted_pointers_find_first2_original, &sorted_pointers_find_first2, &g_pointer_finds);
+
+// ---- RefList::Find(this, a, b) (0xBBCCE0): the entry of a circular list with two values, counted one more use ---------------
+// Nodes (next +0, entry +8) from *this round to the sentinel at +0xC; an entry with +4 = b and +8 = a has its count (+0)
+// raised and gives its value (+0xC); 0 when none.
+static volatile long g_ref_finds;
+static uint32_t __thiscall ref_list_find(const uint8_t *self, uint32_t a, uint32_t b) {
+    g_ref_finds++;
+    const uint8_t *const sentinel = self + 0xc;
+    const uint32_t *node = *(const uint32_t *const *)self;
+    if ((const uint8_t *)node == sentinel)
+        return 0;
+    for (;;) {
+        volatile uint32_t *const e = (volatile uint32_t *)(uintptr_t)node[2];
+        if (e[1] == b && e[2] == a) {
+            e[0] = e[0] + 1;
+            return e[3];
+        }
+        if ((const uint8_t *)node == sentinel)
+            return 0;
+        node = (const uint32_t *)(uintptr_t)*node;
+        if ((const uint8_t *)node == sentinel)
+            return 0;
+    }
+}
+static const uint8_t ref_list_find_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x11, 0x56, 0x8d, 0x71};
+REWRITE("RefList::Find", 0xbbcce0, ref_list_find_original, &ref_list_find, &g_ref_finds);
+
+// ---- Drag::Offset(this, out) (0x682910): the drag's offset (+0x25C) while dragging (byte +0x258), otherwise (0, 0) --------
+static volatile long g_drag_offsets;
+static void __thiscall drag_offset(const uint8_t *self, uint32_t *out) {
+    g_drag_offsets++;
+    const uint32_t *const o = (const uint32_t *)(self + 0x25c);
+    ((volatile uint32_t *)out)[0] = self[0x258] ? o[0] : 0;
+    ((volatile uint32_t *)out)[1] = self[0x258] ? o[1] : 0;
+}
+static const uint8_t drag_offset_original[] = {0x8a, 0x81, 0x58, 0x02, 0x00, 0x00, 0x83, 0xec};
+REWRITE("Drag::Offset", 0x682910, drag_offset_original, &drag_offset, &g_drag_offsets);
+
+// ---- KeyCombination::Set(this, k1, k2, k3, k4) (0xBD1940): a key combination from up to four keys -------------------------
+// The non-zero keys kept in order, their count at +0x10.
+static volatile long g_key_combinations;
+static void __thiscall key_combination_set(uint32_t *self, uint32_t k1, uint32_t k2, uint32_t k3, uint32_t k4) {
+    g_key_combinations++;
+    volatile uint32_t *const t = self;
+    t[4] = 0;
+    const uint32_t keys[4] = {k1, k2, k3, k4};
+    for (const uint32_t k : keys)
+        if (k) {
+            t[t[4]] = k;
+            t[4] = t[4] + 1;
+        }
+}
+static const uint8_t key_combination_set_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x85, 0xc9};
+REWRITE("KeyCombination::Set", 0xbd1940, key_combination_set_original, &key_combination_set, &g_key_combinations);
+
+// ---- PhysicsWorld::RemoveBody(this, body) (0xA6BF80): a body taken out of the world's list (+0x60, count +0x68) -------------
+static void __thiscall physics_world_remove_body(uint8_t *self, uint32_t body) {
+    g_link_removals++;
+    remove_from(self, 0x60, body, 8);
+}
+static const uint8_t physics_world_remove_body_original[] = {0x56, 0x8b, 0x71, 0x68, 0x33, 0xc0, 0x85, 0xf6};
+REWRITE("PhysicsWorld::RemoveBody", 0xa6bf80, physics_world_remove_body_original, &physics_world_remove_body, &g_link_removals);
+
+// ---- Ride::Count585AA0(this, n) (0x585AA0): counts (+0x90, +0x74) raised, n added to a total (+0x1F4) ----------------------
+// and a running average (+0x1F8) becomes (average 19 + n) / 20 (signed).
+static volatile long g_ride_counts;
+static void __thiscall ride_count_585aa0(uint8_t *self, int32_t n) {
+    g_ride_counts++;
+    volatile int32_t *const t = (volatile int32_t *)self;
+    const int32_t c = t[0x90 / 4] + 1, d = t[0x74 / 4] + 1;
+    t[0x90 / 4] = c;
+    const int32_t total = t[0x1f4 / 4];
+    t[0x74 / 4] = d;
+    t[0x1f4 / 4] = (int32_t)((uint32_t)total + (uint32_t)n);
+    t[0x1f8 / 4] = (int32_t)((uint32_t)t[0x1f8 / 4] * 19u + (uint32_t)n) / 20;
+}
+static const uint8_t ride_count_585aa0_original[] = {0x8b, 0x91, 0x90, 0x00, 0x00, 0x00, 0x8b, 0x41};
+REWRITE("Ride::Count585AA0", 0x585aa0, ride_count_585aa0_original, &ride_count_585aa0, &g_ride_counts);
