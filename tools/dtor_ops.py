@@ -239,7 +239,7 @@ def read(a, n):
             and x.operands[1].type == x86.X86_OP_REG and regs.get(reg(x.operands[1])) == ('zero', 0)
         return x.mnemonic == 'test' and x.op_str == f'{r}, {r}' or zero
 
-    def loop(j, end, count_off):
+    def loop(j, end, count_off, unsigned=False):
         """for each pointer in a member array (while the index is under the count at count_off): the steps on each one that is there.
         (push saved;) top: mov a, [this + array]; mov p, [a + index*4]; null check; je next; steps; next: mov c, [this + count]; inc index;
         cmp index, c; jl top; (pop saved;) end:"""
@@ -248,6 +248,12 @@ def read(a, n):
         def padding(x):   # what the compiler puts before a loop's top to line it up
             o = x.operands
             return x.mnemonic == 'nop' or x.mnemonic == 'mov' and len(o) == 2 and o[0].type == x86.X86_OP_REG and o[1].type == x86.X86_OP_REG and o[0].reg == o[1].reg                 or x.mnemonic == 'lea' and not o[1].mem.index and o[1].mem.disp == 0 and o[1].mem.base == o[0].reg
+        if ins[j].mnemonic == 'jmp' and ins[j].operands[0].type == x86.X86_OP_IMM and ins[j].operands[0].imm > ins[j].address:
+            # (a jump over the padding that lines the loop's top up)
+            to_ = at[ins[j].operands[0].imm]
+            if not all(padding(ins[q]) for q in range(j + 1, to_)):
+                raise Unknown('a loop of another shape')
+            j = to_
         while padding(ins[j]):
             j += 1
         top = ins[j].address
@@ -269,11 +275,19 @@ def read(a, n):
         regs[areg] = None
         inner = block(k + 2, nxt, p)
         t = at[nxt]
+        clear_ = 0
+        c0, c1 = ins[t], ins[t + 1]
+        if c0.mnemonic == 'mov' and c0.operands[0].type == x86.X86_OP_REG and is_mem(c0.operands[1]) and this_off(c0.operands[1]) == array_off \
+                and c1.mnemonic == 'mov' and is_mem(c1.operands[0]) and c1.operands[1].type == x86.X86_OP_REG and regs.get(reg(c1.operands[1])) == ('zero', 0) \
+                and ins[0].reg_name(c1.operands[0].mem.base) == reg(c0.operands[0]) and ins[0].reg_name(c1.operands[0].mem.index) == index \
+                and c1.operands[0].mem.scale == 4 and c1.operands[0].mem.disp == 0:
+            clear_ = 1   # (each entry set to 0 after, whether it was there or not)
+            t += 2
         q = ins[t:t + 4]
         if not (q[0].mnemonic == 'mov' and q[0].operands[0].type == x86.X86_OP_REG and is_mem(q[0].operands[1]) and this_off(q[0].operands[1]) == count_off
                 and q[1].mnemonic == 'inc' and q[1].op_str == index
                 and q[2].mnemonic == 'cmp' and q[2].op_str == f'{index}, {reg(q[0].operands[0])}'
-                and q[3].mnemonic == 'jl' and q[3].operands[0].imm == top):
+                and q[3].mnemonic == ('jb' if unsigned else 'jl') and q[3].operands[0].imm == top):
             raise Unknown('a loop that ends another way')
         t += 4
         while ins[t].address < end:
@@ -285,7 +299,7 @@ def read(a, n):
             raise Unknown('a loop that ends another way')
         for r in ('eax', 'ecx', 'edx', index, p):
             regs[r] = None
-        return t, [(LOOP, 0, len(inner), array_off, count_off)] + inner
+        return t, [(LOOP, clear_ | 2 * unsigned, len(inner), array_off, count_off)] + inner
 
     def step(i):
         """one step at ins[i] outside any null check -> (next index, steps) or None"""
@@ -358,17 +372,19 @@ def read(a, n):
                     if ins[j].mnemonic == 'test' and ins[j].op_str == f'{r}, {r}' or zero:
                         j += 1
                         k = j
-                        while noise(ins[k]):
+                        # (a saved register pushed between the count's test and its jump: kept for the loop, flags untouched)
+                        while noise(ins[k]) or ins[k].mnemonic == 'push' and ins[k].operands[0].type == x86.X86_OP_REG and reg(ins[k].operands[0]) in SAVED \
+                                and ins[k + 1].mnemonic in ('jle', 'jbe', 'push'):
                             k += 1
-                        if ins[k].mnemonic == 'jle' and ins[k].operands[0].imm > ins[k].address:   # a count: a loop over a member array
-                            return loop(k + 1, ins[k].operands[0].imm, off)
+                        if ins[k].mnemonic in ('jle', 'jbe') and ins[k].operands[0].imm > ins[k].address:   # a count: a loop over a member array
+                            return loop(k + 1, ins[k].operands[0].imm, off, ins[k].mnemonic == 'jbe')   # (jbe: a count with no sign)
                         before = []
-                        while ins[j].mnemonic == 'mov':
-                            if noise(ins[j]):
+                        while ins[j].mnemonic == 'mov' or ins[j].mnemonic == 'pop' and reg(ins[j].operands[0]) != r:
+                            if noise(ins[j]):   # (a saved register put back between the test and its jump: flags kept)
                                 j += 1
                                 continue
                             s = step(j)
-                            if not s or any(k[0] != SET for k in s[1]):
+                            if not s or any(k[0] not in (SET, GSET) for k in s[1]):   # (stores to the object or a global: flags kept)
                                 break
                             before += s[1]
                             j = s[0]
@@ -445,7 +461,9 @@ def read(a, n):
                 regs[reg(o[0])] = ('this', b[1] + o[1].mem.disp)
                 return i + 1, []
             return None
-        if m == 'test' and o[0].type == x86.X86_OP_REG and o[1].type == x86.X86_OP_REG and o[0].reg == o[1].reg \
+        zr_ = next((r_ for r_, v_ in regs.items() if v_ == ('zero', 0)), None)   # (a register holding 0, compared with instead of a test)
+        if (m == 'test' and o[0].type == x86.X86_OP_REG and o[1].type == x86.X86_OP_REG and o[0].reg == o[1].reg or
+                m == 'cmp' and o[0].type == x86.X86_OP_REG and o[1].type == x86.X86_OP_REG and zr_ and reg(o[1]) == zr_) \
                 and (regs.get(reg(o[0])) or ('', 0))[0] == 'this':
             # a list node in the object taken out of its list: the node {next, previous} at this + off, checked against its
             # neighbours; a node that isn't linked both ways runs into a breakpoint (int3), as in the game
@@ -460,12 +478,15 @@ def read(a, n):
                 regs[reg(q[1].operands[0])] = ('this', off + q[1].operands[1].mem.disp)
                 return j + 4, []
             j, before = i + 1, []
-            while ins[j].mnemonic == 'mov':
+            while ins[j].mnemonic == 'mov' or ins[j].mnemonic == 'push' and ins[j].operands[0].type == x86.X86_OP_REG and reg(ins[j].operands[0]) in SAVED:
+                if ins[j].mnemonic == 'push':   # (a saved register pushed between the test and its jump: flags kept)
+                    j += 1
+                    continue
                 if noise(ins[j]):
                     j += 1
                     continue
                 st = step(j)
-                if not st or any(k[0] != SET for k in st[1]):
+                if not st or any(k[0] not in (SET, GSET) for k in st[1]):
                     break
                 before += st[1]
                 j = st[0]
@@ -477,12 +498,25 @@ def read(a, n):
                         ('test', f'{a}, {a}'), ('je', None), ('cmp', f'dword ptr [{a} + 4], {n}'), ('jne', None), ('cmp', f'dword ptr [{b}], {n}'), ('jne', None),
                         ('mov', f'dword ptr [{a} + 4], {b}'), ('mov', f'{a}, dword ptr [{n} + 4]'), ('mov', f'{b}, dword ptr [{n}]'), ('mov', f'dword ptr [{a}], {b}'),
                         ('mov', f'dword ptr [{n}], 0'), ('mov', f'dword ptr [{n} + 4], 0'), ('jmp', None), ('int3', '')]
-                ok = all(x.mnemonic == m_ and (t is None and x.operands[0].imm == (end if m_ != 'jmp' else q[18].address + 1) or t is not None and x.op_str == t)
+                # (the same with the zero register: compared with it instead of tested, and stored instead of 0)
+                z_ = zr_ if zr_ not in (a, b, n) else None
+                alt_ = {f'test {b}, {b}': f'cmp {b}, {z_}', f'test {a}, {a}': f'cmp {a}, {z_}',
+                        f'mov dword ptr [{n}], 0': f'mov dword ptr [{n}], {z_}', f'mov dword ptr [{n} + 4], 0': f'mov dword ptr [{n} + 4], {z_}'} if z_ else {}
+                ok = all(t is None and x.mnemonic == m_ and x.operands[0].imm == (end if m_ != 'jmp' else q[18].address + 1) or
+                         t is not None and (x.mnemonic == m_ and x.op_str == t or f'{x.mnemonic} {x.op_str}' == alt_.get(f'{m_} {t}'))
                          for x, (m_, t) in zip(q, want))
                 if ok and q[18].address == end and len({a, b, n}) == 3:
                     for r in (a, b, n):
                         regs[r] = None
                     return at[end + 1], before + [(UNLINK, 0, 0, off, 0)]
+                # (quiet: a node not linked both ways left as it is, with no breakpoint; the steps end at the join)
+                ok = all(t is None and x.mnemonic == m_ and x.operands[0].imm == end or
+                         t is not None and (x.mnemonic == m_ and x.op_str == t or f'{x.mnemonic} {x.op_str}' == alt_.get(f'{m_} {t}'))
+                         for x, (m_, t) in zip(q[:17], want[:17]))
+                if ok and q[17].address == end and len({a, b, n}) == 3:
+                    for r in (a, b, n):
+                        regs[r] = None
+                    return at[end], before + [(UNLINK, 1, 0, off, 0)]
             raise Unknown('a list node taken out another way')
         if m == 'push':
             if o[0].type == x86.X86_OP_IMM:

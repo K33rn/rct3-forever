@@ -19,7 +19,8 @@
 //              destructor b run (VecDtor), then the block (from the count on) freed
 //  13 LOOP     for each pointer in the array the member at a points to, while the index is under the count at b (read
 //              again each time round; nothing when it starts at 0 or less): one that is there is taken and the next
-//              `small` steps run on it
+//              `small` steps run on it. Count bit 0: each entry set to 0 after (there or not); bit 1: the count has no
+//              sign (nothing when it is 0)
 //  14 GSET     the global a set to b (count: its size in bytes)
 //  15 IFB      the flag (a byte) at a looked at: when it is set (count 1) or clear (count 0) the next b steps are
 //              passed over
@@ -28,7 +29,8 @@
 //  18 GCALL    the function a called on the object the global b points to (count arguments, as CALL)
 //  19 UNLINK   the list node {next, previous} in the object at a taken out of its list: when both neighbours are there
 //              and point back at it, next's previous becomes previous, previous's next becomes next, and the node's two
-//              links are cleared; otherwise a breakpoint (int3), as the game has there
+//              links are cleared; otherwise a breakpoint (int3), as the game has there (count 1: nothing, as the
+//              game's quiet copies do)
 //  20 MCALL    the function a called on the object the member at b points to, whatever it is (count arguments, as CALL)
 //  21 GIF      the object the global a points to taken if there is one, else the next b steps are passed over
 //  22 IFNEG1   when the object's value at a is -1 the next b steps are passed over
@@ -92,7 +94,7 @@ __attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorSt
                 *(volatile uint32_t *)(uintptr_t)node[1] = node[0];
                 node[0] = 0;
                 node[1] = 0;
-            } else {
+            } else if (!s.count) {   // (count 1: a node not linked both ways left as it is)
                 __asm__ volatile("int3");
             }
             break;
@@ -133,13 +135,14 @@ __attribute__((noinline)) static void dtor_run_range(uint8_t *self, const DtorSt
             ((void(__cdecl *)(void *))0xbce010)(member - 4);
             break;
         case 13:
-            if (*(volatile int32_t *)(self + s.b) > 0) {
-                int32_t index = 0;
+            if (s.count & 2 ? *(volatile uint32_t *)(self + s.b) != 0 : *(volatile int32_t *)(self + s.b) > 0) {
+                uint32_t index = 0;
                 do {
                     uint8_t *item = (*(uint8_t **volatile *)(self + s.a))[index];
                     if (item) dtor_run_range(self, STEPS, i + 1, i + 1 + s.small, item);
+                    if (s.count & 1) (*(uint8_t **volatile *)(self + s.a))[index] = nullptr;
                     index++;
-                } while (index < *(volatile int32_t *)(self + s.b));
+                } while (s.count & 2 ? index < *(volatile uint32_t *)(self + s.b) : (int32_t)index < *(volatile int32_t *)(self + s.b));
             }
             i += s.small;
             break;

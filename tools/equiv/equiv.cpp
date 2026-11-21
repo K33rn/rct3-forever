@@ -7454,11 +7454,11 @@ static std::vector<Test> tests() {
                              const uint32_t object_end = 0x1000 + ((top + 0x140) & ~0xffu) < 0x3000 ? 0x3000 : 0x1000 + ((top + 0x140) & ~0xffu);
                              for (uint32_t i = 0; i < (object_end - 0x1000) / 4; i++) arena<uint32_t>(0x1000)[i] = r.next();
                              // what each member needs, over all the steps: a call or count belongs to the member taken last
-                             struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken, array; uint32_t items_count_at; bool looped; };
+                             struct Need { uint32_t field, size; int arity; uint32_t count_at; bool text, taken, array; uint32_t items_count_at; bool looped, no_sign; };
                              std::vector<Need> needs;
                              auto need = [&](uint32_t field) -> Need & {
                                  for (Need &x : needs) if (x.field == field) return x;
-                                 needs.push_back({field, 0x40, 0, 0, false, false, false, 0, false});
+                                 needs.push_back({field, 0x40, 0, 0, false, false, false, 0, false, false});
                                  return needs.back();
                              };
                              uint32_t current = 0;
@@ -7469,7 +7469,7 @@ static std::vector<Test> tests() {
                                  if (s[0] == 13) {   // a loop: what the steps need is each item's; kept under a made-up field past the object
                                      current = 0x10000 + s[3];
                                      Need &x = need(current);
-                                     x.looped = true, x.items_count_at = s[4];
+                                     x.looped = true, x.items_count_at = s[4], x.no_sign = s[1] & 2;
                                  }
                                  if (s[0] == 2) need(current).arity = (int)s[1];
                                  if (s[0] == 7) need(current).arity = (int)s[1], need(current).count_at = s[2];
@@ -7481,7 +7481,7 @@ static std::vector<Test> tests() {
                              uint32_t next = object_end;
                              for (const Need &x : needs) {
                                  if (x.looped) {   // an array of 0-3 pointers (the count sometimes below 0), each to an item or null
-                                     const int32_t count = r.range(0, 5) ? r.range(0, 3) : -r.range(1, 3);
+                                     const int32_t count = r.range(0, 5) || x.no_sign ? r.range(0, 3) : -r.range(1, 3);   // (a count with no sign: never below 0)
                                      *arena<int32_t>(0x1000 + x.items_count_at) = count;
                                      uint32_t *list = arena<uint32_t>(next);
                                      next += 0x10;
@@ -7523,6 +7523,10 @@ static std::vector<Test> tests() {
                                      for (int k = 0; k < 8; k++) a[k] = r.next();
                                      node[0] = (uint32_t)(uintptr_t)a, node[1] = (uint32_t)(uintptr_t)b;
                                      a[1] = b[0] = (uint32_t)(uintptr_t)node;
+                                     if (st[5 * i + 1] == 1 && r.range(0, 2) == 0) {   // (a quiet one: sometimes a node not linked both ways)
+                                         const uint32_t how = r.range(0, 3);
+                                         if (how == 0) node[0] = 0; else if (how == 1) node[1] = 0; else if (how == 2) a[1] = 0; else b[0] = 0;
+                                     }
                                      next += 0x20;
                                  }
                              for (uint32_t i = 0; i < n; i++)   // a field checked against -1: -1 or 0 now and then
