@@ -34,12 +34,26 @@ void log(const char *fmt, ...) {
     fclose(f);
 }
 
-// RCT3Forever.ini beside forever.dll
-void settings_path(char *out) {
-    GetModuleFileNameA(g_self, out, MAX_PATH);
-    char *s = strrchr(out, '\\');
-    strcpy(s ? s + 1 : out, "RCT3Forever.ini");
+// Settings and logs go beside forever.dll when an RCT3Forever.ini is there (the zip, or a copy kept anywhere), otherwise
+// in %APPDATA%\RCT3 Forever (an installed copy: Program Files can't be written to). RCT3Forever.exe follows the same rule.
+static void data_path(char *out, const char *name) {
+    char dir[MAX_PATH], ini[MAX_PATH];
+    GetModuleFileNameA(g_self, dir, MAX_PATH);
+    char *s = strrchr(dir, '\\');
+    if (s) *s = 0;
+    snprintf(ini, MAX_PATH, "%s\\RCT3Forever.ini", dir);
+    if (GetFileAttributesA(ini) == INVALID_FILE_ATTRIBUTES) {
+        char app[MAX_PATH];
+        DWORD n = GetEnvironmentVariableA("APPDATA", app, MAX_PATH);
+        if (n && n < MAX_PATH) {
+            snprintf(dir, MAX_PATH, "%s\\RCT3 Forever", app);
+            CreateDirectoryA(dir, nullptr);
+        }
+    }
+    snprintf(out, MAX_PATH, "%s\\%s", dir, name);
 }
+
+void settings_path(char *out) { data_path(out, "RCT3Forever.ini"); }
 
 // A [CheatsMenu] setting; a settings file from before the rename keeps working (its [PeepEditor] section is read
 // when [CheatsMenu] doesn't have the key).
@@ -463,9 +477,7 @@ extern "C" IDirect3D9 *WINAPI Proxy_Direct3DCreate9(UINT sdk) {
 static void attach(HINSTANCE h) {
     g_self = h;
     InitializeCriticalSection(&g_vt_lock);
-    GetModuleFileNameA(h, g_log_path, MAX_PATH);
-    char *s = strrchr(g_log_path, '\\');
-    strcpy(s ? s + 1 : g_log_path, "CheatsMenu.log");
+    data_path(g_log_path, "CheatsMenu.log");
     DeleteFileA(g_log_path);
     log("Cheats Menu loaded into pid %lu", GetCurrentProcessId());
     game::start_scanner();

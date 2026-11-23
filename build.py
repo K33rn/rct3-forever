@@ -1,9 +1,10 @@
 """Build RCT3 Forever: forever.dll (with the Cheats Menu built in) and RCT3Forever.exe (32-bit, Zig's C++
-compiler), then dist/RCT3Forever-<version>.zip.
+compiler), then dist/RCT3Forever-<version>.zip and the installer dist/RCT3Forever-<version>-setup.exe.
 
 usage: uv run --no-project --with ziglang --with pefile python build.py
        uv run --no-project --with ziglang --with pefile python build.py test ["<game folder>"]
-Dear ImGui is downloaded into third_party/ on the first build (MIT licence, shipped in the zip's licence file).
+Dear ImGui is downloaded into third_party/ on the first build (MIT licence, shipped in the zip's licence file), and
+so is NSIS (the installer maker; zlib licence, only used to build, checked against NSIS_SHA256).
 `test` builds tools/equiv and checks every rewritten function against the game's own (see tools/equiv/equiv.cpp);
 the game folder defaults to the one in out/RCT3Forever.ini.
 """
@@ -19,6 +20,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 VERSION = '0.1'
 IMGUI_VER = '1.91.9'
 IMGUI = os.path.join(HERE, 'third_party', 'imgui')
+NSIS_VER = '3.10'
+NSIS_URL = f'https://downloads.sourceforge.net/project/nsis/NSIS%203/{NSIS_VER}/nsis-{NSIS_VER}.zip'
+NSIS_SHA256 = 'fcdce3229717a2a148e7cda0ab5bdb667f39d8fb33ede1da8dabc336bd5ad110'
+NSIS = os.path.join(HERE, 'third_party', 'nsis')
 OUT = os.path.join(HERE, 'out')
 DIST = os.path.join(HERE, 'dist')
 # -march=i686 (no SSE): float maths on the x87 FPU like the game (Visual C++ 2003), so rewrites round as it does
@@ -42,6 +47,53 @@ def fetch_imgui():
             open(p, 'wb').write(z.read(n))
 
 
+def fetch_nsis():
+    makensis = os.path.join(NSIS, 'makensis.exe')
+    if os.path.exists(makensis):
+        return makensis
+    import hashlib
+    print('downloading', NSIS_URL)
+    data = urllib.request.urlopen(urllib.request.Request(NSIS_URL, headers={'User-Agent': 'Wget/1.21'}), timeout=300).read()
+    got = hashlib.sha256(data).hexdigest()
+    if got != NSIS_SHA256:
+        sys.exit(f'the NSIS download is not the expected file (sha256 {got})')
+    z = zipfile.ZipFile(io.BytesIO(data))
+    root = f'nsis-{NSIS_VER}/'
+    for n in z.namelist():
+        if n.startswith(root) and not n.endswith('/'):
+            p = os.path.join(NSIS, n[len(root):])
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            open(p, 'wb').write(z.read(n))
+    return makensis
+
+
+def licences():
+    return (open(os.path.join(HERE, 'LICENSE')).read() + '\n\n---- Dear ImGui ' + IMGUI_VER +
+            ' (https://github.com/ocornut/imgui)\n\n' + open(os.path.join(IMGUI, 'LICENSE.txt')).read())
+
+
+def build_installer(dll, exe, per_user=False, out_dir=DIST):
+    """The installer, from the files staged in out/installer; per_user makes the no-administrator one the tests use."""
+    import shutil
+    makensis = fetch_nsis()
+    stage = os.path.join(OUT, 'installer')
+    os.makedirs(stage, exist_ok=True)
+    shutil.copy(exe, os.path.join(stage, 'RCT3Forever.exe'))
+    shutil.copy(dll, os.path.join(stage, 'forever.dll'))
+    shutil.copy(os.path.join(HERE, 'forever', 'RCT3Forever.ini'), os.path.join(stage, 'RCT3Forever.default.ini'))
+    shutil.copy(os.path.join(HERE, 'README.md'), os.path.join(stage, 'README.md'))
+    open(os.path.join(stage, 'LICENSES.txt'), 'w', newline='\r\n').write(licences())
+    os.makedirs(out_dir, exist_ok=True)
+    cmd = [makensis, '/V2', f'/DVERSION={VERSION}', f'/DOUT={out_dir}', f'/DFILES={stage}']
+    if per_user:
+        cmd.append('/DPERUSER')
+    cmd.append(os.path.join(HERE, 'installer', 'RCT3Forever.nsi'))
+    subprocess.check_call(cmd)
+    setup = os.path.join(out_dir, f'RCT3Forever-{VERSION}-setup.exe')
+    print('wrote', setup, os.path.getsize(setup), 'bytes')
+    return setup
+
+
 def build_dll():
     peep = os.path.join(HERE, 'cheatsmenu', 'src')
     src = glob.glob(os.path.join(HERE, 'forever', 'src', '*.cpp'))
@@ -61,7 +113,7 @@ def build_dll():
 def build_exe():
     exe = os.path.join(OUT, 'RCT3Forever.exe')
     cmd = ZIG + ['-o', exe, os.path.join(HERE, 'launcher', 'launcher.cpp'), '-Wl,--subsystem,windows',
-                 '-luser32', '-lshell32', '-lole32', '-ladvapi32', '-lkernel32']
+                 '-luser32', '-lshell32', '-lole32', '-luuid', '-ladvapi32', '-lkernel32']
     print('compiling RCT3Forever.exe')
     subprocess.check_call(cmd)
     return exe
@@ -84,9 +136,7 @@ def package(dll, exe):
         z.write(dll, 'RCT3Forever/forever.dll')
         z.write(os.path.join(HERE, 'forever', 'RCT3Forever.ini'), 'RCT3Forever/RCT3Forever.ini')
         z.write(os.path.join(HERE, 'README.md'), 'RCT3Forever/README.md')
-        z.writestr('RCT3Forever/LICENSES.txt', open(os.path.join(HERE, 'LICENSE')).read() +
-                   '\n\n---- Dear ImGui ' + IMGUI_VER + ' (https://github.com/ocornut/imgui)\n\n' +
-                   open(os.path.join(IMGUI, 'LICENSE.txt')).read())
+        z.writestr('RCT3Forever/LICENSES.txt', licences())
     print('wrote', zpath, os.path.getsize(zpath), 'bytes')
 
 
@@ -129,3 +179,4 @@ if __name__ == '__main__':
     check(d, e)
     if os.path.exists(os.path.join(HERE, 'README.md')):
         package(d, e)
+        build_installer(d, e)

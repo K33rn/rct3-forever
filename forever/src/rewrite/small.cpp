@@ -900,9 +900,9 @@ static const uint8_t guest_take_758590_original[] = {0x8b, 0x11, 0x8b, 0x44, 0x2
 REWRITE("Guest::Take758590", 0x758590, guest_take_758590_original, &guest_take_758590, &g_guest_takes);
 
 // ---- Window::Init65FB30(this, v) (0x65FB30): the same set-up as Record::Init633B30, table 0xF4DE64, +0x1C v, its link at
-// +0x20 put last in the game's circular list at 0x10EECB0, +0x28 itself -----------------------------------------------
+// +0x20 put last in the game's circular list at 0x10EECB0, +0x28 itself; gives this----------------------------------------
 static volatile long g_window_65fb30s;
-static void __thiscall window_init_65fb30(uint32_t *self, uint32_t v) {
+static uint32_t *__thiscall window_init_65fb30(uint32_t *self, uint32_t v) {
     g_window_65fb30s++;
     volatile uint32_t *const t = self;
     volatile uint32_t *const c = t + 1;
@@ -919,6 +919,7 @@ static void __thiscall window_init_65fb30(uint32_t *self, uint32_t v) {
     *(volatile uint32_t *)(uintptr_t)list[1] = (uint32_t)(uintptr_t)link;
     link[0] = (uint32_t)(uintptr_t)list;
     list[1] = (uint32_t)(uintptr_t)link;
+    return self;
 }
 static const uint8_t window_init_65fb30_original[] = {0x8b, 0xc1, 0x8d, 0x48, 0x04, 0x56, 0x33, 0xf6};
 REWRITE("Window::Init65FB30", 0x65fb30, window_init_65fb30_original, &window_init_65fb30, &g_window_65fb30s);
@@ -2760,9 +2761,9 @@ static const uint8_t drag_offset_original[] = {0x8a, 0x81, 0x58, 0x02, 0x00, 0x0
 REWRITE("Drag::Offset", 0x682910, drag_offset_original, &drag_offset, &g_drag_offsets);
 
 // ---- KeyCombination::Set(this, k1, k2, k3, k4) (0xBD1940): a key combination from up to four keys -------------------------
-// The non-zero keys kept in order, their count at +0x10.
+// The non-zero keys kept in order, their count at +0x10; gives this.
 static volatile long g_key_combinations;
-static void __thiscall key_combination_set(uint32_t *self, uint32_t k1, uint32_t k2, uint32_t k3, uint32_t k4) {
+static uint32_t *__thiscall key_combination_set(uint32_t *self, uint32_t k1, uint32_t k2, uint32_t k3, uint32_t k4) {
     g_key_combinations++;
     volatile uint32_t *const t = self;
     t[4] = 0;
@@ -2772,6 +2773,7 @@ static void __thiscall key_combination_set(uint32_t *self, uint32_t k1, uint32_t
             t[t[4]] = k;
             t[4] = t[4] + 1;
         }
+    return self;
 }
 static const uint8_t key_combination_set_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x85, 0xc9};
 REWRITE("KeyCombination::Set", 0xbd1940, key_combination_set_original, &key_combination_set, &g_key_combinations);

@@ -57,14 +57,20 @@ Details: [docs/progress.md](docs/progress.md).
 
 ## Install and play
 
-1. Download `RCT3Forever-0.1.zip` and unzip it anywhere, e.g. `Documents\RCT3Forever`. Keep the three files
-   (`RCT3Forever.exe`, `forever.dll`, `RCT3Forever.ini`) together.
-2. Double-click **`RCT3Forever.exe`**. The first time, it looks for the game in your Steam libraries. If it can't
-   find it, it asks you to pick the folder that has `RCT3plus.exe`, and remembers your choice in `RCT3Forever.ini`.
+1. Download **`RCT3Forever-0.1-setup.exe`** and run it. It installs RCT3 Forever into `Program Files`, with Start
+   Menu shortcuts (and a desktop one if you tick it) and an uninstaller in Windows' *Apps* list.
+2. Start **RCT3 Forever** from the Start Menu (or the last page of the installer). The first time, it looks for the
+   game in your Steam libraries. If it can't find it, it asks you to select the folder that has `RCT3plus.exe`, and
+   remembers your choice.
 3. The game starts. In a park, the top-left corner shows "RCT3 Forever - Cheats Menu: press F9 in a park".
 
-Start RCT3 through `RCT3Forever.exe` whenever you want Forever. Starting the game from Steam as usual gives you the
-plain game.
+Start RCT3 through RCT3 Forever whenever you want Forever. Starting the game from Steam as usual gives you the plain
+game. To pick a different game folder later, hold **Shift** while starting RCT3 Forever, or use the Start Menu's
+*RCT3 Forever (choose the game folder)*.
+
+**Without installing:** `RCT3Forever-0.1.zip` has the same program. Unzip it anywhere and double-click
+`RCT3Forever.exe`. Keep its files together: with the `RCT3Forever.ini` it comes with, that copy keeps its settings and
+logs in its own folder.
 
 **Supported game:** `RCT3plus.exe` from RollerCoaster Tycoon 3 Platinum / Gold, the version with Soaked! and Wild!
 (Steam app 2700, or the disc), unpatched. Edits made by mod tools that leave the program's code alone (such as a
@@ -72,6 +78,10 @@ changed front-screen menu) are fine. *RollerCoaster Tycoon 3: Complete Edition* 
 isn't supported.
 
 ## Settings (`RCT3Forever.ini`)
+
+An installed copy keeps its settings in `%APPDATA%\RCT3 Forever\RCT3Forever.ini` (paste that into Explorer's address
+bar), made from the defaults on the first start. The zip's copy uses the `RCT3Forever.ini` next to it. Uninstalling
+leaves the settings file, so a reinstall remembers them.
 
 | Setting | Default | Meaning |
 |---|---|---|
@@ -85,7 +95,7 @@ isn't supported.
 A settings file from before the menu's rename still works: its `[Forever] PeepEditor` and `[PeepEditor]` settings
 are read when the new names aren't there.
 
-`RCT3Forever.log` (next to `forever.dll`) shows what Forever did: the version check, each rewritten function put in
+`RCT3Forever.log` (in the same folder as the settings) shows what Forever did: the version check, each rewritten function put in
 place, and how often each one has run. `CheatsMenu.log` is the menu's own log.
 
 ## If something goes wrong
@@ -116,15 +126,17 @@ Windows, with [uv](https://docs.astral.sh/uv/) (it fetches Python and Zig's C++ 
 uv run --no-project --with ziglang --with pefile python build.py
 ```
 
-This makes `out/forever.dll`, `out/RCT3Forever.exe` and `dist/RCT3Forever-0.1.zip`.
+This makes `out/forever.dll`, `out/RCT3Forever.exe`, `dist/RCT3Forever-0.1.zip` and the installer
+`dist/RCT3Forever-0.1-setup.exe` (made with [NSIS](https://nsis.sourceforge.io) from `installer/RCT3Forever.nsi`).
 `python build.py test` (same `uv run` prefix) checks every rewritten function against the game's own one, using
-your RCT3plus.exe (see [docs/rewriting.md](docs/rewriting.md)). Dear ImGui is downloaded into
-`third_party/` on the first build. To try a build, copy `forever/RCT3Forever.ini` into `out/` and run
+your RCT3plus.exe (see [docs/rewriting.md](docs/rewriting.md)). Dear ImGui and NSIS are downloaded into
+`third_party/` on the first build (NSIS is checked against its known SHA-256). To try a build, copy `forever/RCT3Forever.ini` into `out/` and run
 `out/RCT3Forever.exe`.
 
 | Folder | Contents |
 |---|---|
 | `launcher/` | The launcher |
+| `installer/` | The installer script (NSIS) |
 | `forever/src/` | `forever.dll`: start-up, version check, function replacement |
 | `forever/src/rewrite/` | The rewritten game functions, one file per part of the game |
 | `cheatsmenu/` | The Cheats Menu (built into `forever.dll`) |

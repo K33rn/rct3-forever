@@ -1,6 +1,6 @@
 // forever.dll: RCT3 Forever inside the game. The launcher loads it into RCT3plus.exe before the game's own code
 // starts. It checks the exe is the version it knows, turns on the built-in Cheats Menu and puts the
-// rewritten game functions in place. Settings: RCT3Forever.ini beside this file; log: RCT3Forever.log.
+// rewritten game functions in place. Settings: RCT3Forever.ini; log: RCT3Forever.log (where: see data_path).
 #include "forever.h"
 #include "exe.h"
 #include "rewrite/rewrite.h"
@@ -28,10 +28,24 @@ static HWND WINAPI titled_create_window(DWORD ex, LPCSTR cls, LPCSTR title, DWOR
 static HMODULE g_self;
 static char g_log[MAX_PATH], g_ini[MAX_PATH];
 
-static void beside_self(char *out, const char *name) {
-    GetModuleFileNameA(g_self, out, MAX_PATH);
-    char *s = strrchr(out, '\\');
-    strcpy(s ? s + 1 : out, name);
+// Settings and logs go beside forever.dll when an RCT3Forever.ini is there (the zip, or a copy kept anywhere), otherwise
+// in %APPDATA%\RCT3 Forever (an installed copy: Program Files can't be written to). RCT3Forever.exe follows the same rule.
+
+static void data_path(char *out, const char *name) {
+    char dir[MAX_PATH], ini[MAX_PATH];
+    GetModuleFileNameA(g_self, dir, MAX_PATH);
+    char *s = strrchr(dir, '\\');
+    if (s) *s = 0;
+    snprintf(ini, MAX_PATH, "%s\\RCT3Forever.ini", dir);
+    if (GetFileAttributesA(ini) == INVALID_FILE_ATTRIBUTES) {
+        char app[MAX_PATH];
+        DWORD n = GetEnvironmentVariableA("APPDATA", app, MAX_PATH);
+        if (n && n < MAX_PATH) {
+            snprintf(dir, MAX_PATH, "%s\\RCT3 Forever", app);
+            CreateDirectoryA(dir, nullptr);
+        }
+    }
+    snprintf(out, MAX_PATH, "%s\\%s", dir, name);
 }
 
 void flog(const char *fmt, ...) {
@@ -169,8 +183,8 @@ BOOL WINAPI DllMain(HINSTANCE h, DWORD why, LPVOID) {
     if (why != DLL_PROCESS_ATTACH) return TRUE;
     g_self = h;
     DisableThreadLibraryCalls(h);
-    beside_self(g_log, "RCT3Forever.log");
-    beside_self(g_ini, "RCT3Forever.ini");
+    data_path(g_log, "RCT3Forever.log");
+    data_path(g_ini, "RCT3Forever.ini");
     DeleteFileA(g_log);
     flog("RCT3 Forever %s in pid %lu", FOREVER_VERSION, GetCurrentProcessId());
     if (!known_exe()) return TRUE;

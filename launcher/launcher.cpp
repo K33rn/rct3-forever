@@ -1,14 +1,20 @@
-// RCT3Forever.exe: starts RollerCoaster Tycoon 3 with RCT3 Forever. It finds the game (RCT3Forever.ini, Steam, or
-// asks), checks RCT3plus.exe is the version Forever knows, starts it paused at its entry point, loads forever.dll
-// into it and lets it run. Nothing in the game folder is changed.
+// RCT3Forever.exe: starts RollerCoaster Tycoon 3 with RCT3 Forever. It finds the game (RCT3Forever.ini, the Steam
+// libraries, or asks), checks RCT3plus.exe is the version Forever knows, starts it paused at its entry point, loads
+// forever.dll into it and lets it run. Nothing in the game folder is changed.
+//
+// Settings (RCT3Forever.ini) and logs live beside the program when an RCT3Forever.ini is there (the zip, or a copy
+// kept anywhere you like), otherwise in %APPDATA%\RCT3 Forever (an installed copy: Program Files can't be written to).
+// Hold Shift while starting, or start with --choose-game, to pick the game folder again.
 #include <windows.h>
 #include <shlobj.h>
+#include <shobjidl.h>
 #include <stdio.h>
+#include <string.h>
 #include <wchar.h>
 
 static const DWORD KNOWN_TIMESTAMP = 0x434e4089;   // forever/src/exe.h
 static const wchar_t *TITLE = L"RCT3 Forever";
-static wchar_t g_dir[MAX_PATH], g_ini[MAX_PATH];
+static wchar_t g_dir[MAX_PATH], g_data[MAX_PATH], g_ini[MAX_PATH];
 
 static void fail(const wchar_t *msg) { MessageBoxW(nullptr, msg, TITLE, MB_ICONERROR); }
 
@@ -36,28 +42,104 @@ static bool read_exe(const wchar_t *path, DWORD *stamp, DWORD *entry) {
     return true;
 }
 
+// The folder settings and logs go in (see the top of this file); the defaults are copied in on the first start
+static void data_folder() {
+    if (exists(g_dir, L"RCT3Forever.ini")) {
+        wcscpy(g_data, g_dir);
+    } else {
+        wchar_t app[MAX_PATH];
+        DWORD n = GetEnvironmentVariableW(L"APPDATA", app, MAX_PATH);
+        if (n && n < MAX_PATH) {
+            swprintf(g_data, MAX_PATH, L"%ls\\RCT3 Forever", app);
+            CreateDirectoryW(g_data, nullptr);
+        } else {
+            wcscpy(g_data, g_dir);
+        }
+    }
+    swprintf(g_ini, MAX_PATH, L"%ls\\RCT3Forever.ini", g_data);
+    if (GetFileAttributesW(g_ini) == INVALID_FILE_ATTRIBUTES) {
+        wchar_t defaults[MAX_PATH];
+        swprintf(defaults, MAX_PATH, L"%ls\\RCT3Forever.default.ini", g_dir);
+        CopyFileW(defaults, g_ini, TRUE);
+    }
+}
+
 // A Steam library's common folder holding RCT3plus.exe one level down
-static bool find_in_steam(wchar_t *out) {
-    wchar_t steam[MAX_PATH];
-    DWORD n = sizeof steam;
-    if (RegGetValueW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam", L"SteamPath", RRF_RT_REG_SZ, nullptr, steam, &n))
-        return false;
+static bool find_in_library(const wchar_t *library, wchar_t *out) {
     wchar_t pat[MAX_PATH];
-    swprintf(pat, MAX_PATH, L"%ls\\steamapps\\common\\*", steam);
+    swprintf(pat, MAX_PATH, L"%ls\\steamapps\\common\\*", library);
     WIN32_FIND_DATAW fd;
     HANDLE h = FindFirstFileW(pat, &fd);
     if (h == INVALID_HANDLE_VALUE) return false;
     bool found = false;
     do {
         if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || fd.cFileName[0] == L'.') continue;
-        swprintf(out, MAX_PATH, L"%ls\\steamapps\\common\\%ls", steam, fd.cFileName);
+        swprintf(out, MAX_PATH, L"%ls\\steamapps\\common\\%ls", library, fd.cFileName);
         found = exists(out, L"RCT3plus.exe");
     } while (!found && FindNextFileW(h, &fd));
     FindClose(h);
     return found;
 }
 
+// Steam's own library, then the others listed in steamapps\libraryfolders.vdf ("path"  "D:\\SteamLibrary")
+static bool find_in_steam(wchar_t *out) {
+    wchar_t steam[MAX_PATH];
+    DWORD n = sizeof steam;
+    if (RegGetValueW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam", L"SteamPath", RRF_RT_REG_SZ, nullptr, steam, &n))
+        return false;
+    for (wchar_t *c = steam; *c; c++)
+        if (*c == L'/') *c = L'\\';   // the registry has c:/program files (x86)/steam
+    if (find_in_library(steam, out)) return true;
+    wchar_t vdf[MAX_PATH];
+    swprintf(vdf, MAX_PATH, L"%ls\\steamapps\\libraryfolders.vdf", steam);
+    HANDLE f = CreateFileW(vdf, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+    if (f == INVALID_HANDLE_VALUE) return false;
+    static char text[65536];
+    DWORD got = 0;
+    ReadFile(f, text, sizeof text - 1, &got, nullptr);
+    CloseHandle(f);
+    text[got] = 0;
+    for (char *at = strstr(text, "\"path\""); at; at = strstr(at + 6, "\"path\"")) {
+        char *open = strchr(at + 6, '"');
+        if (!open) break;
+        char path[MAX_PATH];
+        int len = 0;
+        for (char *c = open + 1; *c && *c != '"' && len < MAX_PATH - 1; c++) {
+            if (*c == '\\' && c[1] == '\\') c++;   // the file doubles its backslashes
+            path[len++] = *c;
+        }
+        path[len] = 0;
+        wchar_t library[MAX_PATH];
+        if (!MultiByteToWideChar(CP_UTF8, 0, path, -1, library, MAX_PATH)) continue;
+        if (find_in_library(library, out)) return true;
+    }
+    return false;
+}
+
+// The Explorer folder picker (the older tree dialog where that isn't available)
 static bool ask_folder(wchar_t *out) {
+    IFileOpenDialog *d = nullptr;
+    if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, (void **)&d))) {
+        DWORD options = 0;
+        d->GetOptions(&options);
+        d->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM | FOS_PATHMUSTEXIST);
+        d->SetTitle(L"Select your RollerCoaster Tycoon 3 folder (the one with RCT3plus.exe)");
+        d->SetOkButtonLabel(L"Select folder");
+        bool ok = false;
+        IShellItem *item = nullptr;
+        if (SUCCEEDED(d->Show(nullptr)) && SUCCEEDED(d->GetResult(&item))) {
+            PWSTR path = nullptr;
+            if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &path))) {
+                wcsncpy(out, path, MAX_PATH - 1);
+                out[MAX_PATH - 1] = 0;
+                CoTaskMemFree(path);
+                ok = true;
+            }
+            item->Release();
+        }
+        d->Release();
+        return ok;
+    }
     BROWSEINFOW bi = {};
     bi.lpszTitle = L"Pick the RollerCoaster Tycoon 3 folder (the one with RCT3plus.exe)";
     bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
@@ -68,15 +150,44 @@ static bool ask_folder(wchar_t *out) {
     return ok;
 }
 
-static bool game_folder(wchar_t *out) {
+static const wchar_t *WRONG_VERSION =
+    L"This RCT3plus.exe isn't the version RCT3 Forever supports: RollerCoaster Tycoon 3 Platinum / Gold with Soaked! "
+    L"and Wild!, unpatched. (Complete Edition is a different program.)";
+
+// Whether a folder holds the supported RCT3plus.exe; why not, when it doesn't
+static bool good_game(const wchar_t *folder, const wchar_t **why) {
+    wchar_t exe[MAX_PATH];
+    swprintf(exe, MAX_PATH, L"%ls\\RCT3plus.exe", folder);
+    DWORD stamp, entry;
+    if (GetFileAttributesW(exe) == INVALID_FILE_ATTRIBUTES)
+        *why = L"There's no RCT3plus.exe in that folder. Pick the folder RollerCoaster Tycoon 3 is installed in.";
+    else if (!read_exe(exe, &stamp, &entry))
+        *why = L"RCT3plus.exe couldn't be read.";
+    else if (stamp != KNOWN_TIMESTAMP)
+        *why = WRONG_VERSION;
+    else
+        return true;
+    return false;
+}
+
+// The game folder: the one saved, else Steam's, else asked for (explained first); `choose` asks straight away
+static bool game_folder(wchar_t *out, bool choose) {
+    const wchar_t *why;
     GetPrivateProfileStringW(L"Game", L"Folder", L"", out, MAX_PATH, g_ini);
-    if (out[0] && exists(out, L"RCT3plus.exe")) return true;
-    if (!find_in_steam(out)) {
+    if (!choose && out[0] && exists(out, L"RCT3plus.exe")) return true;
+    if (choose || !find_in_steam(out)) {
+        if (!choose &&
+            MessageBoxW(nullptr,
+                        L"RCT3 Forever needs RollerCoaster Tycoon 3 Platinum / Gold (with Soaked! and Wild!), and it "
+                        L"couldn't find it in your Steam libraries.\n\nPlease select the folder the game is installed "
+                        L"in: the one with RCT3plus.exe.",
+                        TITLE, MB_OKCANCEL | MB_ICONINFORMATION) != IDOK)
+            return false;
         CoInitialize(nullptr);
         for (;;) {
             if (!ask_folder(out)) return false;
-            if (exists(out, L"RCT3plus.exe")) break;
-            fail(L"There's no RCT3plus.exe in that folder. Pick the folder RollerCoaster Tycoon 3 is installed in.");
+            if (good_game(out, &why)) break;
+            fail(why);
         }
     }
     WritePrivateProfileStringW(L"Game", L"Folder", out, g_ini);
@@ -126,35 +237,44 @@ static bool load_forever(HANDLE p, const wchar_t *dll) {
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     GetModuleFileNameW(nullptr, g_dir, MAX_PATH);
     *wcsrchr(g_dir, L'\\') = 0;
-    swprintf(g_ini, MAX_PATH, L"%ls\\RCT3Forever.ini", g_dir);
+    data_folder();
     wchar_t dll[MAX_PATH];
     swprintf(dll, MAX_PATH, L"%ls\\forever.dll", g_dir);
     if (GetFileAttributesW(dll) == INVALID_FILE_ATTRIBUTES) {
-        fail(L"forever.dll is missing. Keep RCT3Forever.exe, forever.dll and RCT3Forever.ini together.");
+        fail(L"forever.dll is missing. Keep RCT3Forever.exe and forever.dll together (reinstall RCT3 Forever if you "
+             L"installed it).");
         return 1;
     }
 
+    // the game's command line is passed on: RCT3Forever.exe <args> -> RCT3plus.exe <args>, less --choose-game
+    wchar_t *args = GetCommandLineW();
+    if (*args == L'"') args = wcschr(args + 1, L'"') ? wcschr(args + 1, L'"') + 1 : args + wcslen(args);
+    else while (*args && *args != L' ') args++;
+    static wchar_t rest[4096];
+    wcsncpy(rest, args, 4095);
+    bool choose = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+    if (wchar_t *flag = wcsstr(rest, L" --choose-game")) {
+        choose = true;
+        wmemmove(flag, flag + 14, wcslen(flag + 14) + 1);
+    }
+
     wchar_t game[MAX_PATH];
-    if (!game_folder(game)) return 1;
+    if (!game_folder(game, choose)) return 1;
     wchar_t exe[MAX_PATH];
     swprintf(exe, MAX_PATH, L"%ls\\RCT3plus.exe", game);
     DWORD stamp, entry;
     if (!read_exe(exe, &stamp, &entry)) {
-        fail(L"RCT3plus.exe couldn't be read.");
+        fail(L"RCT3plus.exe couldn't be read. Hold Shift while starting RCT3 Forever to pick another folder.");
         return 1;
     }
     if (stamp != KNOWN_TIMESTAMP) {
-        fail(L"This RCT3plus.exe isn't the version RCT3 Forever supports: RollerCoaster Tycoon 3 Platinum / Gold "
-             L"with Soaked! and Wild!, unpatched. (Complete Edition is a different program.)");
+        wchar_t msg[512];
+        swprintf(msg, 512, L"%ls\n\nHold Shift while starting RCT3 Forever to pick another folder.", WRONG_VERSION);
+        fail(msg);
         return 1;
     }
-
-    // the game's command line is passed on: RCT3Forever.exe <args> -> RCT3plus.exe <args>
-    wchar_t *args = GetCommandLineW();
-    if (*args == L'"') args = wcschr(args + 1, L'"') ? wcschr(args + 1, L'"') + 1 : args + wcslen(args);
-    else while (*args && *args != L' ') args++;
     static wchar_t cmd[4096];
-    swprintf(cmd, 4096, L"\"%ls\"%ls", exe, args);
+    swprintf(cmd, 4096, L"\"%ls\"%ls", exe, rest);
 
     STARTUPINFOW si = {sizeof si};
     PROCESS_INFORMATION pi;

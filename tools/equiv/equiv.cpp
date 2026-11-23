@@ -7607,9 +7607,9 @@ static std::vector<Test> tests() {
                             [](void *fn) {
                                 window_list_saved = *(volatile uint32_t *)0x10eecb0;
                                 *(volatile uint32_t *)0x10eecb0 = (uint32_t)(uintptr_t)arena<void>(0x300);
-                                ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0]);
+                                void *got = ((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0]);
                                 *(volatile uint32_t *)0x10eecb0 = window_list_saved;
-                                return Result{};
+                                return Result{(uint32_t)(got == arena<void>(0x100))};
                             }};
     quick(window_init_65fb30);
     // Style::ColourFor(this, state, highlighted)
@@ -9115,8 +9115,7 @@ static std::vector<Test> tests() {
                              [=](Rng &r) { for (int i = 0; i < 5; i++) arena<uint32_t>(0x100)[i] = r.next(); for (int i = 0; i < 4; i++) arena<uint32_t>(0x10)[i] = r.range(0, 1) ? 0 : r.next(); },
                              [](void *fn) {
                                  const uint32_t *k = arena<uint32_t>(0x10);
-                                 ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), k[0], k[1], k[2], k[3]);
-                                 return Result{};
+                                 return Result{(uint32_t)(((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), k[0], k[1], k[2], k[3]) == arena<void>(0x100))};
                              }};
     quick(key_combination_set);
     // PhysicsWorld::RemoveBody(this, body): 0-5 bodies with repeats
