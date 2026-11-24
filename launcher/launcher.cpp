@@ -1,5 +1,5 @@
-// RCT3Forever.exe: starts RollerCoaster Tycoon 3 with RCT3 Forever. It finds the game (RCT3Forever.ini, the Steam
-// libraries, or asks), checks RCT3plus.exe is the version Forever knows, starts it paused at its entry point, loads
+// RCT3Forever.exe: starts RollerCoaster Tycoon 3 with RCT3 Forever. It finds the game (RCT3Forever.ini, or asks on the
+// first start, opening at the game in the Steam libraries), checks RCT3plus.exe is the version Forever knows, starts it paused at its entry point, loads
 // forever.dll into it and lets it run. Nothing in the game folder is changed.
 //
 // Settings (RCT3Forever.ini) and logs live beside the program when an RCT3Forever.ini is there (the zip, or a copy
@@ -116,8 +116,8 @@ static bool find_in_steam(wchar_t *out) {
     return false;
 }
 
-// The Explorer folder picker (the older tree dialog where that isn't available)
-static bool ask_folder(wchar_t *out) {
+// The Explorer folder picker, opened at `start` when given (the older tree dialog where that isn't available)
+static bool ask_folder(wchar_t *out, const wchar_t *start) {
     IFileOpenDialog *d = nullptr;
     if (SUCCEEDED(CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, (void **)&d))) {
         DWORD options = 0;
@@ -125,6 +125,11 @@ static bool ask_folder(wchar_t *out) {
         d->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM | FOS_PATHMUSTEXIST);
         d->SetTitle(L"Select your RollerCoaster Tycoon 3 folder (the one with RCT3plus.exe)");
         d->SetOkButtonLabel(L"Select folder");
+        IShellItem *at = nullptr;
+        if (start && SUCCEEDED(SHCreateItemFromParsingName(start, nullptr, IID_IShellItem, (void **)&at))) {
+            d->SetFolder(at);
+            at->Release();
+        }
         bool ok = false;
         IShellItem *item = nullptr;
         if (SUCCEEDED(d->Show(nullptr)) && SUCCEEDED(d->GetResult(&item))) {
@@ -170,25 +175,33 @@ static bool good_game(const wchar_t *folder, const wchar_t **why) {
     return false;
 }
 
-// The game folder: the one saved, else Steam's, else asked for (explained first); `choose` asks straight away
+// The game folder: the one saved, else asked for. The first start always asks (explained first), with the picker
+// opened at the game in the Steam libraries when it's there; `choose` asks straight away
 static bool game_folder(wchar_t *out, bool choose) {
     const wchar_t *why;
     GetPrivateProfileStringW(L"Game", L"Folder", L"", out, MAX_PATH, g_ini);
     if (!choose && out[0] && exists(out, L"RCT3plus.exe")) return true;
-    if (choose || !find_in_steam(out)) {
-        if (!choose &&
-            MessageBoxW(nullptr,
-                        L"RCT3 Forever needs RollerCoaster Tycoon 3 Platinum / Gold (with Soaked! and Wild!), and it "
-                        L"couldn't find it in your Steam libraries.\n\nPlease select the folder the game is installed "
-                        L"in: the one with RCT3plus.exe.",
-                        TITLE, MB_OKCANCEL | MB_ICONINFORMATION) != IDOK)
-            return false;
-        CoInitialize(nullptr);
-        for (;;) {
-            if (!ask_folder(out)) return false;
-            if (good_game(out, &why)) break;
-            fail(why);
-        }
+    wchar_t found[MAX_PATH] = L"";
+    bool steam = find_in_steam(found);
+    if (!choose) {
+        wchar_t msg[1024];
+        if (steam)
+            swprintf(msg, 1024,
+                     L"Welcome to RCT3 Forever! Please select your RollerCoaster Tycoon 3 Platinum / Gold folder (with "
+                     L"Soaked! and Wild!): the one with RCT3plus.exe.\n\nThe game was found in your Steam library, and "
+                     L"the picker opens there:\n%ls\n\nPress Select folder to use it, or pick another.",
+                     found);
+        else
+            swprintf(msg, 1024,
+                     L"Welcome to RCT3 Forever! Please select your RollerCoaster Tycoon 3 Platinum / Gold folder (with "
+                     L"Soaked! and Wild!): the one with RCT3plus.exe.\n\nIt wasn't found in your Steam libraries.");
+        if (MessageBoxW(nullptr, msg, TITLE, MB_OKCANCEL | MB_ICONINFORMATION) != IDOK) return false;
+    }
+    CoInitialize(nullptr);
+    for (;;) {
+        if (!ask_folder(out, steam ? found : nullptr)) return false;
+        if (good_game(out, &why)) break;
+        fail(why);
     }
     WritePrivateProfileStringW(L"Game", L"Folder", out, g_ini);
     return true;

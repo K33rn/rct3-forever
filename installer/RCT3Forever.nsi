@@ -37,7 +37,7 @@ VIAddVersionKey "ProductVersion" "${VERSION}"
 VIAddVersionKey "LegalCopyright" "MIT licence"
 
 !define MUI_ABORTWARNING
-!define MUI_WELCOMEPAGE_TEXT "This installs ${APP} ${VERSION}, which runs RollerCoaster Tycoon 3 with its rewritten code and the Cheats Menu.$\r$\n$\r$\nYou need RollerCoaster Tycoon 3 Platinum / Gold (with Soaked! and Wild!) installed. The first time ${APP} starts it finds the game in your Steam libraries, or asks you to select its folder.$\r$\n$\r$\nNothing in the game's own folder is changed."
+!define MUI_WELCOMEPAGE_TEXT "This installs ${APP} ${VERSION}, which runs RollerCoaster Tycoon 3 with its rewritten code and the Cheats Menu.$\r$\n$\r$\nYou need RollerCoaster Tycoon 3 Platinum / Gold (with Soaked! and Wild!) installed. The first time ${APP} starts it asks you to select the game folder (it opens at the game in your Steam libraries when it finds it there).$\r$\n$\r$\nNothing in the game's own folder is changed."
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${FILES}\LICENSES.txt"
 !insertmacro MUI_PAGE_COMPONENTS

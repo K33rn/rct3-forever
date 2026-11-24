@@ -23,7 +23,7 @@ game's own developer tools.
 
 | Part | What it does |
 |---|---|
-| `RCT3Forever.exe` (launcher) | Finds the game (Steam, or asks once), checks it's the supported version, starts it with Forever loaded before any of the game's own code runs |
+| `RCT3Forever.exe` (launcher) | Asks for the game folder once (opening at the Steam copy when there is one), checks it's the supported version, starts it with Forever loaded before any of the game's own code runs |
 | `forever.dll` | Runs inside the game: checks the version again, turns on the Cheats Menu, puts the rewritten functions in place |
 | Cheats Menu | The in-game menu (F9) for guests and the park, on by default |
 | Rewritten functions | 5,205 so far: every deleting destructor, interface lookup (also cached), start-up module global, struct-array load, global clean-up, reference constructor, object-array free and table setter that has the template's exact shape (templates checked on each of their 4,002 copies), the game's random number generator, the park's statistics graphs, park entrances, guests' taste for intense rides, parts of how they choose rides, growable arrays of every item size, references between objects and reading them from save files, saving arrays of structs (with the save file's checksum), object pools, and the memory and list helpers the compiler copied hundreds of times. Each one is proven bit-for-bit identical to the original by the equivalence test. See [the rewrite list](docs/rewriting.md#rewritten-so-far) |
@@ -59,9 +59,9 @@ Details: [docs/progress.md](docs/progress.md).
 
 1. Download **`RCT3Forever-0.1-setup.exe`** and run it. It installs RCT3 Forever into `Program Files`, with Start
    Menu shortcuts (and a desktop one if you tick it) and an uninstaller in Windows' *Apps* list.
-2. Start **RCT3 Forever** from the Start Menu (or the last page of the installer). The first time, it looks for the
-   game in your Steam libraries. If it can't find it, it asks you to select the folder that has `RCT3plus.exe`, and
-   remembers your choice.
+2. Start **RCT3 Forever** from the Start Menu (or the last page of the installer). The first time, it asks you to select
+   the game folder (the one with `RCT3plus.exe`). If the game is in your Steam libraries, the picker opens there, so
+   you only need to press *Select folder*. Your choice is remembered.
 3. The game starts. In a park, the top-left corner shows "RCT3 Forever - Cheats Menu: press F9 in a park".
 
 Start RCT3 through RCT3 Forever whenever you want Forever. Starting the game from Steam as usual gives you the plain
@@ -85,7 +85,7 @@ leaves the settings file, so a reinstall remembers them.
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `[Game] Folder` | found on the first start | The game folder |
+| `[Game] Folder` | chosen on the first start | The game folder |
 | `[Forever] CheatsMenu` | `1` | `0` turns the Cheats Menu off |
 | `[Forever] Rewrites` | `1` | `0` runs the game's original code instead of every rewritten function, for comparing |
 | `[CheatsMenu] ToggleKey` | `F9` | Key that opens the menu: F1–F12, Insert, Home, End, Delete, PageUp, PageDown, Pause, ScrollLock |
