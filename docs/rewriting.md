@@ -84,6 +84,21 @@ last bit, and the equivalence test will catch it.
 A rewrite calls other game functions through their addresses (for example
 `(float(__cdecl *)())0x475180`), so it uses whichever version is in place: the game's or Forever's.
 
+**Registers the callers count on.** The game was built with whole-program optimisation, so its callers lean on what
+the compiler knew about each function, beyond the convention:
+
+- *ecx and edx.* Where a function leaves `ecx` or `edx` alone, callers keep values in them across the call (0x7CE52D
+  keeps `ecx` across `Value::Band2`; changing it made a guest in a sandbox park crash). `tools/kept_regs.py` lists every
+  rewritten function whose original keeps one or both (`forever/src/rewrite/kept_regs.inc`), and Forever calls those
+  rewrites through a small stub that keeps them. Run it again after adding rewrites (`uv run --no-project --with
+  pefile --with capstone python tools/kept_regs.py`); the equivalence test calls rewrites through the same stubs.
+- *eax.* What a function leaves in `eax` can be used even when it has no obvious result: `mov eax, ecx` at the start
+  (giving `this` back), or the result of a call it ends with. Declare the rewrite to give back the same, and have its
+  test compare the result, or callers break in ways the arena comparison doesn't see.
+
+Load a park in the game once after a batch of rewrites (a sandbox park with guests walking is quick): these
+mistakes only show there.
+
 ## Rewritten so far
 
 Template rewrites (`forever/src/rewrite/templates.cpp`) cover functions the compiler made hundreds of times that

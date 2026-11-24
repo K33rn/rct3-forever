@@ -12,9 +12,13 @@ struct Entry {
     void *with;
     volatile long *calls;      // counted by the rewrite, for the log
     Entry *next;
+    mutable void *kept = nullptr;   // the stub keeping ecx/edx in front of `with`, once made (see callable)
     Entry(const char *name, uintptr_t at, const uint8_t *original, size_t len, void *with, volatile long *calls);
 };
 const Entry *list();
+// What the game's calls go to: `with`, or, when the original leaves ecx or edx as they were (callers in the game may
+// count on that), a stub that keeps them around `with`. tools/equiv tests through this too.
+void *callable(const Entry *e);
 const uint32_t *cached_constants(uintptr_t at);
 const uint32_t *load_constants(uintptr_t at);
 const uint32_t *start_constants(uintptr_t at);   // {at, constants...} of a Start:: initialiser copy

@@ -13,7 +13,8 @@ What it does, in order:
   4. Fetches and rebases onto origin/main. A conflict only in generated lines (functions.csv, progress.md,
      notes/rewritten.md, the progress block of README.md, the progress lines of ROADMAP.md) is settled by itself; a
      conflict anywhere else stops here with the rebase undone and your commit kept.
-  5. Makes the generated files again (tools/rewritten_notes.py, tools/progress.py) and puts them in your commit.
+  5. Makes the generated files again (tools/rewritten_notes.py, tools/progress.py, tools/kept_regs.py) and puts them
+     in your commit.
   6. Runs the full equivalence test (it must say "0 different, 0 without a test").
   7. Pushes. If someone pushed first, back to 4 (the test runs again only if their commits changed code).
 "@P@" in the message becomes the rewritten percentage.
@@ -28,7 +29,7 @@ sys.path.insert(0, os.path.join(HERE, 'tools'))
 import claim  # noqa: E402
 
 UPSTREAM = claim.UPSTREAM
-GENERATED = ['docs/functions.csv', 'docs/progress.md', 'docs/notes/rewritten.md']
+GENERATED = ['docs/functions.csv', 'docs/progress.md', 'docs/notes/rewritten.md', 'forever/src/rewrite/kept_regs.inc']
 GENERATED_LINES = {   # files only partly generated: where a conflict may be (README: inside its progress block)
     'README.md': 'block',
     'ROADMAP.md': re.compile(r'^(.*(% of the game|% of it also rewritten).*|\s*)$'),
@@ -132,6 +133,7 @@ def regenerate():
     exe = run(UV + ['python', 'tools/gamepath.py'], 'finding the game').strip()
     run(UV + TOOLS + ['python', 'tools/rewritten_notes.py', exe], 'tools/rewritten_notes.py')
     run(UV + ['--with', 'pefile', 'python', 'tools/progress.py'], 'tools/progress.py')
+    run(UV + TOOLS + ['python', 'tools/kept_regs.py'], 'tools/kept_regs.py')   # (from functions.csv: after the notes)
     m = re.search(r"\*\*([0-9.]+%) (?:of the game's code is )?rewritten\*\*", open(os.path.join(HERE, 'README.md'), encoding='utf-8').read())
     return m.group(1) if m else '?'
 

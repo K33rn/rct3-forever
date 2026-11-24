@@ -182,7 +182,7 @@ static bool check_copy(const rewrite::Entry *e, const Test &t, int iterations, u
             if (t.data) memcpy((void *)DATA, g_data0.data(), DATA_SIZE);
             memcpy(g_arena, g_arena0.data(), sizeof g_arena);
             g_testing_which = "rewrite";
-            Result b = t.call(e->with);
+            Result b = t.call(rewrite::callable(e));   // as the game calls it (through the stub keeping ecx/edx)
             static uint8_t g_arena_rewrite[sizeof g_arena];
             memcpy(g_arena_rewrite, g_arena, sizeof g_arena);
             bool same = a == b && (!t.data || !memcmp(g_data1.data(), (void *)DATA, DATA_SIZE)) &&
@@ -487,6 +487,11 @@ static void __fastcall stub_fastcall2(void *ecx, void *edx) { record(0x42, ecx);
 static void *__fastcall stub_next(void *n) { record(0x41, n); return *(void **)n; }
 static void __thiscall stub_thiscall2(void *self, uint32_t a0, uint32_t a1) { record(0x20, self); record(0x20, (void *)(uintptr_t)a0); record(0x20, (void *)(uintptr_t)a1); }
 static void __thiscall stub_thiscall1(void *self, void *arg) { record(0x21, self); record(0x21, arg); }
+// as stub_thiscall2, and gives back a value made from its arguments (for a function that passes its callee's result on)
+static uint32_t __thiscall stub_thiscall2_value(void *self, uint32_t a0, uint32_t a1) {
+    stub_thiscall2(self, a0, a1);
+    return (uint32_t)(uintptr_t)self ^ a0 * 0x9e3779b9u ^ a1;
+}
 static void *__fastcall stub_alloc_ecx(void *ecx) { record(0x22, ecx); return (void *)0x30001234; }
 static void __thiscall stub_shared_free(void *pool, void *item) { record(0x60, pool); record(0x60, item); }
 static void *__thiscall stub_shared_convert(void *value, uint32_t kind) {

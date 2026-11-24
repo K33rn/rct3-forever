@@ -960,10 +960,10 @@
                              *(uint32_t *)(arena<uint8_t>(0x1000) + w3b_own_at) = (uint32_t)r.range(0, 1);
                              arena<uint32_t>(0x24)[0] = (uint32_t)r.range(0, 1);
                          },
-                         [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x24)[0]); return Result{}; }};
+                         [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x24)[0])}; }};
     w3b_notify_test.prepare = [](const rewrite::Entry *e) {
         w3b_own_at = *(uint32_t *)(e->at + 0x16);
-        stubs_for_now({{0x4d7e70, (void *)stub_thiscall1}, {(uintptr_t)(e->at + 0x28 + 5 + *(int32_t *)(e->at + 0x29)), (void *)stub_thiscall2}});
+        stubs_for_now({{0x4d7e70, (void *)stub_thiscall1}, {(uintptr_t)(e->at + 0x28 + 5 + *(int32_t *)(e->at + 0x29)), (void *)stub_thiscall2_value}});
     };
     w3b_notify_test.finish = [](const rewrite::Entry *) { unstub_many(); };
     quick(w3b_notify_test);

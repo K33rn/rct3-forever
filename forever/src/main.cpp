@@ -143,6 +143,19 @@ static LONG CALLBACK crash_note(EXCEPTION_POINTERS *e) {
         if (!ReadProcessMemory(GetCurrentProcess(), (const uint32_t *)(uintptr_t)e->ContextRecord->Esp + words, stack + words, 4, &n) || n != 4) break;
     }
     where_note(head, at, stack, words);
+    // the registers, and the first bytes where each one points (when readable): what the faulting code was working on
+    const CONTEXT *c = e->ContextRecord;
+    const struct { const char *name; DWORD value; } regs[] = {{"eax", c->Eax}, {"ebx", c->Ebx}, {"ecx", c->Ecx}, {"edx", c->Edx},
+                                                             {"esi", c->Esi}, {"edi", c->Edi}, {"ebp", c->Ebp}, {"esp", c->Esp}};
+    for (const auto &r : regs) {
+        uint32_t words8[8];
+        SIZE_T n = 0;
+        char line[160];
+        int used = snprintf(line, sizeof line, "CRASH  %s %08lx", r.name, r.value);
+        if (r.value >= 0x10000 && ReadProcessMemory(GetCurrentProcess(), (const void *)(uintptr_t)r.value, words8, sizeof words8, &n) && n == sizeof words8)
+            for (uint32_t w : words8) used += snprintf(line + used, sizeof line - used, " %08x", w);
+        flog("%s", line);
+    }
     return EXCEPTION_CONTINUE_SEARCH;
 }
 

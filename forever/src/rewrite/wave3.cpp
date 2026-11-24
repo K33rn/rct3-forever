@@ -1132,12 +1132,13 @@ REWRITE("Message::Post7B9D30", 0xb5f370, w3b_post_original, (&w3b_post<0xb5b840,
 REWRITE("Message::Post7B9D30", 0xb75670, w3b_post_original, (&w3b_post<0xb6bc70, 0xb74fb0>), &g_w3b_post);
 
 // ---- Actor::Notify: passes a fixed note to the actor, and when the value is this object's own, signals event 10 -----------
+// What it leaves in eax is given back: the value, or (when it signals) what the signal gave.
 static volatile long g_w3b_notify;
-template <uint32_t ACTOR, uint32_t OWN, uint32_t LIST, uintptr_t SIGNAL> static void __thiscall w3b_notify(uint8_t *self, uint32_t value) {
+template <uint32_t ACTOR, uint32_t OWN, uint32_t LIST, uintptr_t SIGNAL> static uint32_t __thiscall w3b_notify(uint8_t *self, uint32_t value) {
     g_w3b_notify++;
     ((void(__thiscall *)(void *, uint32_t))0x4d7e70)(*(void **)(self + ACTOR), 0xf264ad);
-    if (value == *(uint32_t *)(self + OWN))
-        ((void(__thiscall *)(void *, uint32_t, void *))SIGNAL)(*(void **)(self + LIST), 10, self - 0xd8);
+    if (value != *(uint32_t *)(self + OWN)) return value;
+    return ((uint32_t(__thiscall *)(void *, uint32_t, void *))SIGNAL)(*(void **)(self + LIST), 10, self - 0xd8);
 }
 static const uint8_t w3b_notify_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e};
 REWRITE("Actor::Notify710020", 0x710020, w3b_notify_original, (&w3b_notify<0x44, 0x170, 0x20, 0x717840>), &g_w3b_notify);
