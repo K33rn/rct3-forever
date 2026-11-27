@@ -8097,3 +8097,231 @@ static uint32_t __thiscall entries_differs(const uint8_t *self, uint32_t a, uint
 }
 static const uint8_t entries_differs_original[] = {0x53, 0x55, 0x56, 0x8b, 0xb1, 0x98, 0x00, 0x00, 0x00};
 REWRITE("Entries::Differs", 0x557e70, entries_differs_original, &entries_differs, &g_entry_differs);
+
+// ---- List::LoopA1CE30(list) (0xA1CE30): takes each item's own node (+8 in the item) out of its ring -------------------
+// For each node of the list (to the end node, next 0), the item's ring node {next, back} is unlinked when both its
+// neighbours point back at it, and cleared.
+static volatile long g_ring_unlinks;
+static void __stdcall list_loop_a1ce30(uint32_t *const *list) {
+    g_ring_unlinks++;
+    const uint32_t *p = *list;
+    if (!p[0] || !p) return;
+    for (;;) {
+        uint32_t *const n = (uint32_t *)(uintptr_t)(p[2] + 8);
+        if (n) {
+            uint32_t *const back = (uint32_t *)(uintptr_t)n[1], *const next = (uint32_t *)(uintptr_t)n[0];
+            if (back && next && next[1] == (uint32_t)(uintptr_t)n && back[0] == (uint32_t)(uintptr_t)n) {
+                next[1] = (uint32_t)(uintptr_t)back;
+                ((uint32_t *)(uintptr_t)n[1])[0] = n[0];
+                n[0] = 0, n[1] = 0;
+            }
+        }
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return;
+    }
+}
+static const uint8_t list_loop_a1ce30_original[] = {0x8b, 0x44, 0x24, 0x04, 0x56, 0x8b, 0x30, 0x83, 0x3e, 0x00};
+REWRITE("List::LoopA1CE30", 0xa1ce30, list_loop_a1ce30_original, &list_loop_a1ce30, &g_ring_unlinks);
+
+// ---- Effects::Set47C4E0(k in ecx, v) (0x47C4E0): the game's level k (floats at 0x10EDD40) = v, then each effect on list
+// k (0x10EDD60, 24 bytes each) gets its sound's +0x58 = its volume (+0x14) times its kind's (+0x18) level, or 0 when that
+// kind is muted (0x12F0168) -------------------------------------------------------------------------------------------
+static volatile long g_effect_levels;
+static void __thiscall effects_set_47c4e0(uintptr_t k, float v) {
+    g_effect_levels++;
+    volatile float *const level = (volatile float *)0x10edd40;
+    level[k] = v;
+    const uint32_t *p = *(const uint32_t *const volatile *)(0x10edd60 + k * 24);
+    if (!p[0] || !p) return;
+    for (;;) {
+        uint8_t *const e = (uint8_t *)(uintptr_t)p[2];
+        const int32_t kind = *(const int32_t *)(e + 0x18);
+        fpu_copy_h2(e + 0x14, e + 0x14);
+        const long double r = ((const volatile uint32_t *)0x12f0168)[kind] ? (long double)*(const float *)0xf264e0 : (long double)*(const float *)(e + 0x14) * level[kind];
+        *(volatile float *)(*(uint8_t *const *)(e + 0xc) + 0x58) = (float)r;
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return;
+    }
+}
+static const uint8_t effects_set_47c4e0_original[] = {0xd9, 0x44, 0x24, 0x04, 0x8d, 0x04, 0x49, 0x8b, 0x14, 0xc5, 0x60, 0xdd, 0x0e, 0x01};
+REWRITE("Effects::Set47C4E0", 0x47c4e0, effects_set_47c4e0_original, &effects_set_47c4e0, &g_effect_levels);
+
+// ---- List678::Remove(v) (0x4277E0): takes the first v out of the list at +0x678 (count +0x680), the later ones moving down
+static volatile long g_list678_removes;
+static void __thiscall list678_remove(uint8_t *self, uint32_t v) {
+    g_list678_removes++;
+    const int32_t n = *(const int32_t *)(self + 0x680);
+    int32_t i = 0;
+    if (n > 0)
+        while (i < *(const volatile int32_t *)(self + 0x680) && (*(const uint32_t *const *)(self + 0x678))[i] != v) i++;
+    if (i >= n) return;
+    if (i < n - 1)
+        for (; i < *(const volatile int32_t *)(self + 0x680) - 1; i++) (*(uint32_t *const *)(self + 0x678))[i] = (*(uint32_t *const *)(self + 0x678))[i + 1];
+    *(int32_t *)(self + 0x680) -= 1;
+}
+static const uint8_t list678_remove_original[] = {0x56, 0x8b, 0xb1, 0x80, 0x06, 0x00, 0x00, 0x33, 0xc0};
+REWRITE("List678::Remove", 0x4277e0, list678_remove_original, &list678_remove, &g_list678_removes);
+
+// ---- Bits::SetRange(from, to) (0xC166E0): sets the bit of every block (size +4) from from / size to (to + size - 1) /
+// size (as C divides) as Bits::TestC165F0 does --------------------------------------------------------------------------
+static volatile long g_bit_ranges;
+static void __thiscall bits_set_range(uint8_t *self, int32_t from, int32_t to) {
+    g_bit_ranges++;
+    const int32_t size = *(const int32_t *)(self + 4);
+    const int32_t hi = (to + size - 1) / size;
+    for (int32_t i = from / size; i < hi; i++) {
+        const int32_t w = i / 32;
+        if (w < 0 || w >= *(const int32_t *)(self + 0x10)) continue;
+        uint32_t *const word = *(uint32_t *const *)(self + 0xc) + w;
+        const uint32_t mask = 1u << (i % 32 & 31);
+        if (!(*word & mask)) *(int32_t *)(self + 0x14) += 1;
+        *word |= mask;
+    }
+}
+static const uint8_t bits_set_range_original[] = {0x8b, 0x44, 0x24, 0x08, 0x53, 0x56, 0x57, 0x8b, 0xf9};
+REWRITE("Bits::SetRange", 0xc166e0, bits_set_range_original, &bits_set_range, &g_bit_ranges);
+
+// ---- Object::Scale2, Object::Scale (0xBC3EB0: +0xFC, defaults 0x10F2B20 / 0x10F2B24; 0xBC3F20: +0x100, 0x10F2B28 /
+// 0x10F2B2C) ---------------------------------------------------------------------------------------------------------
+// The default is the first with flag 0x400000 (+0x18) and at least two ends (+0xE4), else the second. With the flag and
+// more than one end a nonzero value is given as is when above 0, else as -(default value); otherwise the default.
+static volatile long g_object_scales;
+template <uint32_t Value, uintptr_t Defaults> static long double __thiscall object_scale(const uint8_t *self) {
+    g_object_scales++;
+    const bool flag = *(const uint32_t *)(self + 0x18) & 0x400000;
+    const int32_t ends = *(const int32_t *)(self + 0xe4);
+    const long double d = ((const volatile float *)Defaults)[flag && ends >= 2 ? 0 : 1];
+    if (!flag || ends <= 1) return d;
+    const float v = *(const float *)(self + Value);
+    if (v == *(const float *)0xf264e0) return d;
+    if (v > *(const float *)0xf264e0) return v;
+    return -(d * v);
+}
+static const uint8_t object_scale2_original[] = {0x8b, 0x41, 0x18, 0x25, 0x00, 0x00, 0x40, 0x00, 0x74, 0x09};
+REWRITE("Object::Scale2", 0xbc3eb0, object_scale2_original, (&object_scale<0xfc, 0x10f2b20>), &g_object_scales);
+REWRITE("Object::Scale", 0xbc3f20, object_scale2_original, (&object_scale<0x100, 0x10f2b28>), &g_object_scales);
+
+// ---- SortedPointers::FindFlagged(n, flagged, out) (0xCE7260): binary search of items {number, flag byte} (+0x18, count
+// +0x1C) sorted by number, then unflagged first: 1 (only al) and out = the place when found, else 0 and out = where it
+// would go ---------------------------------------------------------------------------------------------------------------
+static volatile long g_flagged_finds;
+static uint8_t __thiscall sorted_pointers_find_flagged(const uint8_t *self, uint32_t n, uint32_t flagged, int32_t *out) {
+    g_flagged_finds++;
+    int32_t lo = 0, hi = *(const int32_t *)(self + 0x1c) - 1;
+    const uint32_t *const *const list = *(const uint32_t *const *const *)(self + 0x18);
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const uint32_t *const e = list[mid];
+        const bool f = *(const uint8_t *)(e + 1) != 0;
+        bool up;
+        if (n != e[0]) up = n > e[0];
+        else if ((uint8_t)flagged ? f : !f) {
+            *out = mid;
+            return 1;
+        } else
+            up = (uint8_t)flagged != 0;
+        if (up) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    *out = lo;
+    return 0;
+}
+static const uint8_t sorted_pointers_find_flagged_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x1c, 0x33, 0xf6};
+REWRITE("SortedPointers::FindFlagged", 0xce7260, sorted_pointers_find_flagged_original, &sorted_pointers_find_flagged, &g_flagged_finds);
+
+// ---- List::SortBy34 (0x80EDC0): bubble-sorts the objects (+0x5C, count +0x64 read again each time) by +0x34, largest
+// first (a pair swaps only when the first is below the second) ------------------------------------------------------------
+static volatile long g_list_sorts;
+static void __thiscall list_sort_by34(const uint8_t *self) {
+    g_list_sorts++;
+    for (int32_t pass = 0; pass < *(const volatile int32_t *)(self + 0x64) - 1; pass++)
+        for (int32_t j = 0; j < *(const volatile int32_t *)(self + 0x64) - 1; j++) {
+            uint32_t *const l = *(uint32_t *const *)(self + 0x5c);
+            const float a = *(const float *)(uintptr_t)(l[j] + 0x34), b = *(const float *)(uintptr_t)(l[j + 1] + 0x34);
+            if (a < b) {
+                const uint32_t t = l[j];
+                l[j] = l[j + 1];
+                l[j + 1] = t;
+            }
+        }
+}
+static const uint8_t list_sort_by34_original[] = {0x8b, 0x41, 0x64, 0x53, 0x33, 0xdb, 0x48, 0x85, 0xc0};
+REWRITE("List::SortBy34", 0x80edc0, list_sort_by34_original, &list_sort_by34, &g_list_sorts);
+
+// ---- Grid::Range(min, max) (0x8386A0): the smallest first value (+4) and largest second value (+8) of the cells (0x14
+// bytes at +0x18) of a +0x10 by +0x14 grid (signed; both counts read again each time) -----------------------------------
+static volatile long g_grid_ranges;
+static void __thiscall grid_range(const uint8_t *self, int32_t *min, int32_t *max) {
+    g_grid_ranges++;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x10); i++)
+        for (int32_t j = 0; j < *(const volatile int32_t *)(self + 0x14); j++) {
+            const int32_t *const c = (const int32_t *)(*(const uint8_t *const *)(self + 0x18) + (*(const int32_t *)(self + 0x10) * j + i) * 0x14);
+            if (!i && !j) {
+                *min = c[1];
+                *max = c[2];
+                continue;
+            }
+            if (c[1] < *min) *min = c[1];
+            if (c[2] > *max) *max = c[2];
+        }
+}
+static const uint8_t grid_range_original[] = {0x8b, 0x41, 0x10, 0x56, 0x33, 0xf6, 0x85, 0xc0, 0x7e, 0x5b};
+REWRITE("Grid::Range", 0x8386a0, grid_range_original, &grid_range, &g_grid_ranges);
+
+// ---- SortedPointers::FindXY3(x, y, out) (0x8FF150): binary search of entries (+0x3C, count +0x40) sorted by y then x
+// (signed): the entry, with out (when given) = its place; 0 when none ----------------------------------------------------
+static volatile long g_xy_finds;
+static const int32_t *__thiscall sorted_pointers_find_xy3(const uint8_t *self, int32_t x, int32_t y, int32_t *out) {
+    g_xy_finds++;
+    int32_t lo = 0, hi = *(const int32_t *)(self + 0x40) - 1;
+    const int32_t *const *const list = *(const int32_t *const *const *)(self + 0x3c);
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const int32_t *const e = list[mid];
+        if (y < e[1] || (y == e[1] && x < e[0])) hi = mid - 1;
+        else if (y > e[1] || x > e[0]) lo = mid + 1;
+        else {
+            if (out) *out = mid;
+            return e;
+        }
+    }
+    return nullptr;
+}
+static const uint8_t sorted_pointers_find_xy3_original[] = {0x51, 0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x40, 0x33, 0xf6};
+REWRITE("SortedPointers::FindXY3", 0x8ff150, sorted_pointers_find_xy3_original, &sorted_pointers_find_xy3, &g_xy_finds);
+
+// ---- Vector::DeadZone (0xA17470): clears each part not within -999999.875..999999.875 (0xF6FD64, 0xF6FD60; NaNs too) ---
+static volatile long g_dead_zones;
+static void __thiscall vector_dead_zone(float *self) {
+    g_dead_zones++;
+    const float lo = *(const float *)0xf6fd64, hi = *(const float *)0xf6fd60;
+    for (int k = 0; k < 3; k++)
+        if (!(self[k] >= lo && self[k] <= hi)) *(volatile uint32_t *)&self[k] = 0;
+}
+static const uint8_t vector_dead_zone_original[] = {0xd9, 0x01, 0x33, 0xd2, 0xd8, 0x1d, 0x64, 0xfd, 0xf6, 0x00};
+REWRITE("Vector::DeadZone", 0xa17470, vector_dead_zone_original, &vector_dead_zone, &g_dead_zones);
+
+// ---- VertexDeclaration::FindBDD180(texts) (0xBDD180): 1 (only al) when both of two texts fit their slots ------------------
+// Slot k (+0x18 + 4k: {word a, word b, bytes}) and text k (*texts[k]: bytes with its length at +0x20): with no slot the
+// text must be empty; with one its length must be within a - b .. a and its bytes the slot's.
+static volatile long g_declaration_fits;
+static uint8_t __thiscall vertex_declaration_find_bdd180(const uint8_t *self, const uint8_t *const *const *texts) {
+    g_declaration_fits++;
+    for (int k = 0; k < 2; k++) {
+        const uint8_t *const slot = *(const uint8_t *const *)(self + 0x18 + k * 4);
+        const uint8_t *const text = *texts[k];
+        const uint32_t len = *(const uint32_t *)(text + 0x20);
+        if (!slot) {
+            if (len) return 0;
+            continue;
+        }
+        const uint16_t a = *(const uint16_t *)slot;
+        if (len > a || len < (uint16_t)(a - *(const uint16_t *)(slot + 2))) return 0;
+        const uint8_t *const bytes = *(const uint8_t *const *)(slot + 4);
+        for (uint32_t i = 0; i < len; i++)
+            if (text[i] != bytes[i]) return 0;
+    }
+    return 1;
+}
+static const uint8_t vertex_declaration_find_bdd180_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x56, 0x57, 0x33, 0xd2};
+REWRITE("VertexDeclaration::FindBDD180", 0xbdd180, vertex_declaration_find_bdd180_original, &vertex_declaration_find_bdd180, &g_declaration_fits);

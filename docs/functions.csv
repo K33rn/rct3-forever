@@ -523,7 +523,7 @@ address,size,name,callers,status
 0x426de0,307,,1,documented
 0x426f40,2087,,13,documented
 0x427790,70,Words::Push427790,0,rewritten
-0x4277e0,101,,2,documented
+0x4277e0,101,List678::Remove,2,rewritten
 0x427890,30,DeletingDestructor,1,rewritten
 0x4278b0,81,,2,documented
 0x427910,19,,1,documented
@@ -1541,7 +1541,7 @@ address,size,name,callers,status
 0x47c240,428,,1,documented
 0x47c3f0,124,,1,documented
 0x47c470,111,,2,documented
-0x47c4e0,100,,6,documented
+0x47c4e0,100,Effects::Set47C4E0,6,rewritten
 0x47c550,398,,2,documented
 0x47c6e0,350,,1,documented
 0x47c840,266,,1,documented
@@ -10631,7 +10631,7 @@ address,size,name,callers,status
 0x80ecf0,59,,0,documented
 0x80ed30,52,Array::Push80ED30,0,rewritten
 0x80ed70,65,PointerArray::RemoveSwap2,2,rewritten
-0x80edc0,105,,1,documented
+0x80edc0,105,List::SortBy34,1,rewritten
 0x80ee30,70,Words::Push427790,1,rewritten
 0x80ee80,84,PointerArray::RemoveSwap,2,rewritten
 0x80eee0,105,,1,documented
@@ -11129,7 +11129,7 @@ address,size,name,callers,status
 0x837df0,550,,0,documented
 0x8383b0,319,,0,documented
 0x838530,358,,0,documented
-0x8386a0,105,,3,documented
+0x8386a0,105,Grid::Range,3,rewritten
 0x838710,84,,2,documented
 0x8387c0,28,Items::Pass8387C0,1,rewritten
 0x8387e0,28,Items::Pass8387C0,1,rewritten
@@ -12727,7 +12727,7 @@ address,size,name,callers,status
 0x8fee20,345,,2,documented
 0x8fef80,124,SortedPointers::FindXY,2,rewritten
 0x8ff000,329,,1,documented
-0x8ff150,105,,1,documented
+0x8ff150,105,SortedPointers::FindXY3,1,rewritten
 0x8ff1c0,615,,8,documented
 0x8ff430,552,,8,documented
 0x8ff690,16,Object::SetFields,1,rewritten
@@ -15371,7 +15371,7 @@ address,size,name,callers,status
 0xa16f30,1140,,3,documented
 0xa173e0,30,DeletingDestructor,3,rewritten
 0xa17420,18,Destructor::TablesThenBase,2,rewritten
-0xa17470,105,,4,documented
+0xa17470,105,Vector::DeadZone,4,rewritten
 0xa174e0,31,,1,documented
 0xa17500,18,Destructor::TablesThenBase,1,rewritten
 0xa17520,87,Particle::Launch,3,rewritten
@@ -15426,7 +15426,7 @@ address,size,name,callers,status
 0xa1c6b0,1770,,2,documented
 0xa1cda0,73,Bird::ClearA1CDA0,5,rewritten
 0xa1cdf0,57,,1,documented
-0xa1ce30,86,,2,documented
+0xa1ce30,86,List::LoopA1CE30,2,rewritten
 0xa1ce90,114,,7,documented
 0xa1cf10,467,,13,documented
 0xa1d0f0,289,,3,documented
@@ -19572,8 +19572,8 @@ address,size,name,callers,status
 0xbc3bf0,351,ResourceType::ResourceType,1,rewritten
 0xbc3d50,30,DeletingDestructor,1,rewritten
 0xbc3dc0,19,,3,documented
-0xbc3eb0,104,,6,documented
-0xbc3f20,104,,2,documented
+0xbc3eb0,104,Object::Scale2,6,rewritten
+0xbc3f20,104,Object::Scale,2,rewritten
 0xbc3f90,78,Track::NearBC3F90,0,rewritten
 0xbc3fe0,125,,2,documented
 0xbc40a0,99,,8,documented
@@ -20038,7 +20038,7 @@ address,size,name,callers,status
 0xbdd020,85,,0,documented
 0xbdd0d0,88,PackedRef::Resolve,15,rewritten
 0xbdd150,47,Pair::DeleteBDD150,0,rewritten
-0xbdd180,105,,1,documented
+0xbdd180,105,VertexDeclaration::FindBDD180,1,rewritten
 0xbdd210,85,Hash::FindBDD210,3,rewritten
 0xbdd290,85,Hash::FindBDD210,2,rewritten
 0xbdd440,32,TaggedValue::Set87B650,1,rewritten
@@ -20888,7 +20888,7 @@ address,size,name,callers,status
 0xc165f0,66,Bits::TestC165F0,0,rewritten
 0xc16640,27,,0,documented
 0xc16660,124,Bits::AllSet,2,rewritten
-0xc166e0,102,,1,documented
+0xc166e0,102,Bits::SetRange,1,rewritten
 0xc16750,77,,1,documented
 0xc167c0,158,,8,documented
 0xc16860,47,,0,documented
@@ -23050,7 +23050,7 @@ address,size,name,callers,status
 0xce7110,157,Array<16>::SetCapacity,1,rewritten
 0xce71b0,26,OwnedPointer::Reset,1,rewritten
 0xce71d0,130,Array<4>::SetCapacity,1,rewritten
-0xce7260,102,,2,documented
+0xce7260,102,SortedPointers::FindFlagged,2,rewritten
 0xce7300,105,,4,documented
 0xce7370,121,,3,documented
 0xce7430,30,DeletingDestructor,0,rewritten

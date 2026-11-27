@@ -5067,4 +5067,195 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                              return Result{((uint32_t(__thiscall *)(const void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), a[0], a[1], a[2], a[3])};
                          }};
     quick(entries_differs);
+    // List::LoopA1CE30: lists of 0-4 items whose ring nodes are alone, in a ring of 2-3 or broken
+    Test list_loop_a1ce30{0xa1ce30,
+                          [=](Rng &r) {
+                              arena<uint32_t>(0x40)[0] = node_list_h2(r, 0x200, r.range(0, 4), 0x400);
+                              for (int k = 0; k < 4; k++) {
+                                  uint32_t *n = arena<uint32_t>(0x400 + k * 0x40 + 8);
+                                  const int shape = r.range(0, 3);
+                                  uint32_t *o = arena<uint32_t>(0x800 + k * 0x20), *q = arena<uint32_t>(0x810 + k * 0x20);
+                                  if (shape == 0) n[0] = n[1] = (uint32_t)(uintptr_t)n;
+                                  if (shape == 1) n[0] = n[1] = (uint32_t)(uintptr_t)o, o[0] = o[1] = (uint32_t)(uintptr_t)n;
+                                  if (shape == 2) n[0] = (uint32_t)(uintptr_t)o, n[1] = (uint32_t)(uintptr_t)q, o[1] = (uint32_t)(uintptr_t)n, q[0] = (uint32_t)(uintptr_t)n, o[0] = (uint32_t)(uintptr_t)q, q[1] = (uint32_t)(uintptr_t)o;
+                                  if (shape == 3) n[0] = r.range(0, 1) ? 0 : (uint32_t)(uintptr_t)o, n[1] = (uint32_t)(uintptr_t)q, o[1] = r.next(), q[0] = r.next();
+                              }
+                          },
+                          [](void *fn) {
+                              ((void(__stdcall *)(const void *))fn)(arena<void>(0x40));
+                              return Result{0};
+                          }};
+    quick(list_loop_a1ce30);
+    // Effects::Set47C4E0: levels 0-3, lists of 0-3 effects of kinds 0-3, kinds muted or not (the game's tables compared,
+    // all put back after)
+    {
+        static uint32_t saved_levels[4], saved_lists[24], saved_muted[4];
+        Test x{0x47c4e0,
+               [=](Rng &r) {
+                   for (int k = 0; k < 4; k++) {
+                       ((float *)0x10edd40)[k] = r.real(0, 2), ((uint32_t *)0x12f0168)[k] = r.range(0, 2) ? 0 : 1;
+                       *(uint32_t *)(0x10edd60 + k * 24) = node_list_h2(r, 0x200 + k * 0x200, r.range(0, 3), 0x1000 + k * 0x200);
+                       for (int j = 0; j < 3; j++) {
+                           uint8_t *e = arena<uint8_t>(0x1000 + k * 0x200 + j * 0x40);
+                           *(int32_t *)(e + 0x18) = r.range(0, 3), *(float *)(e + 0x14) = r.real(-2, 2);
+                           *(uint32_t *)(e + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x2000 + (k * 3 + j) * 0x60);
+                       }
+                   }
+                   arena<uint32_t>(0x40)[0] = r.range(0, 3), arena<float>(0x40)[1] = r.real(0, 3);
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(uintptr_t, float))fn)(arena<uint32_t>(0x40)[0], arena<float>(0x40)[1]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { memcpy(saved_levels, (void *)0x10edd40, 16), memcpy(saved_lists, (void *)0x10edd60, 96), memcpy(saved_muted, (void *)0x12f0168, 16); };
+        x.finish = [](const rewrite::Entry *) { memcpy((void *)0x10edd40, saved_levels, 16), memcpy((void *)0x10edd60, saved_lists, 96), memcpy((void *)0x12f0168, saved_muted, 16); };
+        t.push_back(x);
+    }
+    // List678::Remove: 0-6 values from a few, v there (once or twice) or not
+    Test list678_remove{0x4277e0,
+                        [=](Rng &r) {
+                            uint8_t *self = arena<uint8_t>(0x100);
+                            *(uint32_t *)(self + 0x678) = (uint32_t)(uintptr_t)arena<void>(0x800);
+                            *(int32_t *)(self + 0x680) = r.range(0, 9) ? r.range(0, 6) : -1;
+                            for (int i = 0; i < 8; i++) arena<uint32_t>(0x800)[i] = r.range(0, 4);
+                            arena<uint32_t>(0x40)[0] = r.range(0, 5);
+                        },
+                        [](void *fn) {
+                            ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0]);
+                            return Result{0};
+                        }};
+    quick(list678_remove);
+    // Bits::SetRange: block sizes 1-8, ranges of either sign over 0-6 words
+    Test bits_set_range{0xc166e0,
+                        [=](Rng &r) {
+                            uint8_t *self = arena<uint8_t>(0x100);
+                            *(int32_t *)(self + 4) = r.range(1, 8), *(int32_t *)(self + 0x10) = r.range(0, 6), *(uint32_t *)(self + 0x14) = r.next();
+                            *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                            for (int i = 0; i < 8; i++) arena<uint32_t>(0x200)[i] = r.next() & r.next();
+                            const int a = r.range(-40, 300);
+                            arena<int32_t>(0x40)[0] = a, arena<int32_t>(0x40)[1] = a + r.range(-5, 60);
+                        },
+                        [](void *fn) {
+                            ((void(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1]);
+                            return Result{0};
+                        }};
+    quick(bits_set_range);
+    // Object::Scale2 / Scale: flags, end counts and values either side of 0
+    for (uintptr_t at : {(uintptr_t)0xbc3eb0, (uintptr_t)0xbc3f20}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   *(uint32_t *)(self + 0x18) = r.next();
+                   *(int32_t *)(self + 0xe4) = r.range(0, 3);
+                   *(float *)(self + 0xfc) = r.range(0, 3) ? r.real(-3, 3) : 0.0f, *(float *)(self + 0x100) = r.range(0, 3) ? r.real(-3, 3) : 0.0f;
+               },
+               [](void *fn) {
+                   Result x;
+                   x.f = ((long double(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                   return x;
+               }};
+        quick(x);
+    }
+    // SortedPointers::FindFlagged: 0-8 sorted items (both flags for a number at times), numbers there and between
+    Test sorted_pointers_find_flagged{0xce7260,
+                                      [=](Rng &r) {
+                                          uint8_t *self = arena<uint8_t>(0x100);
+                                          const int n = r.range(0, 8);
+                                          *(int32_t *)(self + 0x1c) = n, *(uint32_t *)(self + 0x18) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                          uint32_t v = 0;
+                                          bool f = true;
+                                          for (int k = 0; k < n; k++) {
+                                              if (f || r.range(0, 1)) v += r.range(1, 2), f = r.range(0, 1);
+                                              else f = true;
+                                              arena<uint32_t>(0x200)[k] = (uint32_t)(uintptr_t)arena<void>(0x300 + k * 8);
+                                              arena<uint32_t>(0x300 + k * 8)[0] = v, arena<uint32_t>(0x300 + k * 8)[1] = f ? (r.next() | 1) & 0xff : 0;
+                                          }
+                                          arena<uint32_t>(0x40)[0] = r.range(0, 18), arena<uint32_t>(0x40)[1] = (r.next() & ~0xffu) | (r.range(0, 1) ? r.range(1, 255) : 0), arena<uint32_t>(0x40)[2] = r.next();
+                                      },
+                                      [](void *fn) {
+                                          return Result{((uint32_t(__thiscall *)(const void *, uint32_t, uint32_t, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1], arena<void>(0x48)) & 0xff};
+                                      }};
+    quick(sorted_pointers_find_flagged);
+    // List::SortBy34: 0-7 objects with values from a few (ties at times)
+    Test list_sort_by34{0x80edc0,
+                        [=](Rng &r) {
+                            uint8_t *self = arena<uint8_t>(0x100);
+                            const int n = r.range(0, 7);
+                            *(int32_t *)(self + 0x64) = n, *(uint32_t *)(self + 0x5c) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                            for (int k = 0; k < 7; k++) {
+                                arena<uint32_t>(0x200)[k] = (uint32_t)(uintptr_t)arena<void>(0x300 + k * 0x40);
+                                *(float *)arena<uint8_t>(0x334 + k * 0x40) = r.range(0, 1) ? (float)r.range(0, 3) : r.real(-5, 5);
+                            }
+                        },
+                        [](void *fn) {
+                            ((void(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                            return Result{0};
+                        }};
+    quick(list_sort_by34);
+    // Grid::Range: grids of 0-4 by 0-4 cells of random values
+    Test grid_range{0x8386a0,
+                    [=](Rng &r) {
+                        uint8_t *self = arena<uint8_t>(0x100);
+                        *(int32_t *)(self + 0x10) = r.range(0, 4), *(int32_t *)(self + 0x14) = r.range(0, 4);
+                        *(uint32_t *)(self + 0x18) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                        for (int i = 0; i < 16 * 5; i++) arena<int32_t>(0x400)[i] = r.range(-100, 100);
+                        arena<int32_t>(0x40)[0] = r.range(-100, 100), arena<int32_t>(0x40)[1] = r.range(-100, 100);
+                    },
+                    [](void *fn) {
+                        ((void(__thiscall *)(const void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x40), arena<void>(0x44));
+                        return Result{0};
+                    }};
+    quick(grid_range);
+    // SortedPointers::FindXY3: 0-8 entries sorted by y then x, places there and between, out given or not
+    Test sorted_pointers_find_xy3{0x8ff150,
+                                  [=](Rng &r) {
+                                      uint8_t *self = arena<uint8_t>(0x100);
+                                      const int n = r.range(0, 8);
+                                      *(int32_t *)(self + 0x40) = n, *(uint32_t *)(self + 0x3c) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                      int32_t x = -3, y = -3;
+                                      for (int k = 0; k < n; k++) {
+                                          if (r.range(0, 1)) y += r.range(1, 2), x = r.range(-3, 0);
+                                          else x += r.range(1, 2);
+                                          arena<uint32_t>(0x200)[k] = (uint32_t)(uintptr_t)arena<void>(0x300 + k * 8);
+                                          arena<int32_t>(0x300 + k * 8)[0] = x, arena<int32_t>(0x300 + k * 8)[1] = y;
+                                      }
+                                      arena<int32_t>(0x40)[0] = r.range(-3, 8), arena<int32_t>(0x40)[1] = r.range(-3, 10);
+                                      arena<uint32_t>(0x40)[2] = r.range(0, 4) ? (uint32_t)(uintptr_t)arena<void>(0x60) : 0;
+                                      arena<uint32_t>(0x60)[0] = r.next();
+                                  },
+                                  [](void *fn) {
+                                      return Result{(uint32_t)(uintptr_t)((const void *(__thiscall *)(const void *, int32_t, int32_t, void *))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1], (void *)(uintptr_t)arena<uint32_t>(0x40)[2])};
+                                  }};
+    quick(sorted_pointers_find_xy3);
+    // Vector::DeadZone: parts within and past the limits (and infinities)
+    Test vector_dead_zone{0xa17470,
+                          [=](Rng &r) {
+                              for (int c = 0; c < 3; c++) {
+                                  const int k = r.range(0, 5);
+                                  arena<float>(0x100)[c] = k == 0 ? 2e6f : k == 1 ? -2e6f : k == 2 ? 999999.875f : k == 3 ? __builtin_inff() : r.real(-1000, 1000);
+                              }
+                          },
+                          [](void *fn) {
+                              ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                              return Result{0};
+                          }};
+    quick(vector_dead_zone);
+    // VertexDeclaration::FindBDD180: two slots (or none) and texts that fit or not (length or bytes off)
+    Test vertex_declaration_find_bdd180{0xbdd180,
+                                        [=](Rng &r) {
+                                            for (int k = 0; k < 2; k++) {
+                                                uint8_t *slot = arena<uint8_t>(0x200 + k * 0x20), *text = arena<uint8_t>(0x400 + k * 0x40);
+                                                *(uint32_t *)arena<uint8_t>(0x118 + k * 4) = r.range(0, 5) ? (uint32_t)(uintptr_t)slot : 0;
+                                                const uint16_t a = (uint16_t)r.range(0, 8);
+                                                *(uint16_t *)slot = a, *(uint16_t *)(slot + 2) = (uint16_t)r.range(0, a);
+                                                *(uint32_t *)(slot + 4) = (uint32_t)(uintptr_t)arena<void>(0x600 + k * 0x20);
+                                                for (int i = 0; i < 16; i++) arena<uint8_t>(0x600 + k * 0x20)[i] = text[i] = (uint8_t)r.range(0, 1);
+                                                if (r.range(0, 4) == 0) text[r.range(0, 7)] ^= 1;
+                                                *(uint32_t *)(text + 0x20) = r.range(0, 9);
+                                                arena<uint32_t>(0x300)[k] = (uint32_t)(uintptr_t)arena<void>(0x380 + k * 4);
+                                                arena<uint32_t>(0x380)[k] = (uint32_t)(uintptr_t)text;
+                                            }
+                                        },
+                                        [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x300)) & 0xff}; }};
+    quick(vertex_declaration_find_bdd180);
 #endif
