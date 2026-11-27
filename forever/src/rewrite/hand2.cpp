@@ -8634,3 +8634,189 @@ static int32_t __fastcall key_compare_masked(uint32_t ma, uint32_t mb, int32_t a
 }
 static const uint8_t key_compare_masked_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0xc7, 0x45, 0xf8, 0xcc, 0xcc, 0xcc, 0xcc};
 REWRITE("Key::CompareMasked", 0xcc4aa0, key_compare_masked_original, &key_compare_masked, &g_key_compares);
+
+// ---- Value::Band(v) (0x4FF3A0): which of seven bands v is in: the first of the six limits (0xF36898, 0xF36894, 0xF36890,
+// 0xF3688C, 0xF36888, 0xF28218) it is below, else 6 (a NaN is below none) ------------------------------------------------
+static volatile long g_value_bands;
+static uint32_t __stdcall value_band(float v) {
+    g_value_bands++;
+    static const uintptr_t limits[6] = {0xf36898, 0xf36894, 0xf36890, 0xf3688c, 0xf36888, 0xf28218};
+    for (uint32_t k = 0; k < 6; k++)
+        if (v < *(const float *)limits[k]) return k;
+    return 6;
+}
+static const uint8_t value_band_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x1d, 0x98, 0x68, 0xf3, 0x00};
+REWRITE("Value::Band", 0x4ff3a0, value_band_original, &value_band, &g_value_bands);
+
+// ---- Bits::MergeLowest(cost in edi, new cost in si, fields in ecx, new fields) (0x8E30C0) ------------------------------
+// Below the best cost (a signed word) 1. Above it: the cost and the fields byte are replaced, 0. Equal: each two-bit field
+// takes the new one unless the old is lower; 1 when any old one was lower (the last one ends it at once), else 0. Only al.
+static volatile long g_cost_merges;
+extern "C" uint8_t __stdcall forever_merge_lowest(int16_t *cost, uint32_t new_in, uint8_t *fields, uint32_t new_fields) {
+    g_cost_merges++;
+    const int16_t c = (int16_t)new_in;
+    const uint8_t nf = (uint8_t)new_fields;
+    if (*cost < c) return 1;
+    if (*cost > c) {
+        *cost = c;
+        *fields = nf;
+        return 0;
+    }
+    uint8_t kept = 0;
+    for (int k = 0; k < 3; k++) {
+        const uint8_t m = (uint8_t)(3 << (2 * k));
+        if ((*fields & m) < (nf & m)) kept = 1;
+        else *fields = (uint8_t)((*fields & ~m) | (nf & m));
+    }
+    if ((*fields & 0xc0) < (nf & 0xc0)) return 1;
+    *fields = (uint8_t)((*fields & 0x3f) | (nf & 0xc0));
+    return kept;
+}
+extern "C" __attribute__((naked)) void forever_merge_lowest_regs() {   // cost edi, new cost si, fields ecx; new fields on the stack
+    __asm__("pushl 4(%esp)\n\tpushl %ecx\n\tpushl %esi\n\tpushl %edi\n\tcalll _forever_merge_lowest@16\n\tret $4");
+}
+static const uint8_t bits_merge_lowest_original[] = {0x51, 0x66, 0x8b, 0x17, 0x66, 0x3b, 0xd6, 0x8a, 0x44, 0x24, 0x08};
+REWRITE("Bits::MergeLowest", 0x8e30c0, bits_merge_lowest_original, (void *)&forever_merge_lowest_regs, &g_cost_merges);
+
+// ---- TileQuarter::Corners(out in ecx, packed in dx, q) (0x727D30): the four corners of quarter q of a tile --------------
+// With the game's tile size S (0x1306390) and base B (0x13063A4) and the four bits n of quarter q (packed >> 4 q):
+// x = ((n bit 1 ? 2 S : 0) + (q bit 1 ? S : 0)) + B, y = ((n bit 2 ? 0 : 2 S) + (q bit 2 ? S : 0)) + B (unrounded); corner i
+// is {x (+ S for i bit 1), y (+ S for i bit 2)} as floats.
+static volatile long g_quarter_corners2;
+static void __fastcall tile_quarter_corners_727d30(float *out, uint32_t packed, uint32_t q_in) {
+    g_quarter_corners2++;
+    const uint8_t q = (uint8_t)q_in;
+    const uint32_t n = ((packed & 0xffff) >> ((q << 2) & 31)) & 0xf;
+    const volatile float *const s = (const volatile float *)0x1306390;
+    const float b = *(const volatile float *)0x13063a4, zero = *(const float *)0xf264e0;
+    auto two_s = [&] {
+        const long double v = s[0];
+        return v + v;
+    };
+    const long double x = ((n & 1 ? two_s() : (long double)zero) + (q & 1 ? (long double)s[0] : (long double)zero)) + b;
+    const long double y = ((n & 2 ? (long double)zero : two_s()) + (q & 2 ? (long double)s[0] : (long double)zero)) + b;
+    volatile float *const o = out;
+    for (int i = 0; i < 4; i++) {
+        o[2 * i] = (float)(i & 1 ? (long double)s[0] + x : x);
+        o[2 * i + 1] = (float)(i & 2 ? (long double)s[0] + y : y);
+    }
+}
+static const uint8_t tile_quarter_corners_727d30_original[] = {0x8a, 0x44, 0x24, 0x04, 0x56, 0x8b, 0xf1, 0x8a, 0xc8};
+REWRITE("TileQuarter::Corners", 0x727d30, tile_quarter_corners_727d30_original, &tile_quarter_corners_727d30, &g_quarter_corners2);
+
+// ---- HeightPatch::Flatten(r) (0x8DB7A0): one height at all four corners of each cell of r's rectangle --------------------
+// r: {.., x0 +4, y0 +5, x1 +6, y1 +7 (bytes), cells +8 (16 bytes each, row by row), source +0x10 (its height +4)}. With a
+// step count (+8, above 0) the height is rounded to steps: k = steps K (K 0xF29428), floor(h / k + 0.5) k (floats).
+static volatile long g_patch_flattens;
+static void __thiscall height_patch_flatten(const uint8_t *self, const uint8_t *r) {
+    g_patch_flattens++;
+    uint32_t h = *(const uint32_t *)(*(const uint8_t *const *)(r + 0x10) + 4);
+    const int32_t steps = *(const int32_t *)(self + 8);
+    if (steps > 0) {
+        volatile float k = (float)((long double)steps * *(const float *)0xf29428);
+        volatile float q = (float)((long double)*(const float *)&h / k + *(const float *)0xf2651c);
+        volatile float fl = (float)floor_h2(q);
+        volatile float v = (float)((long double)fl * k);
+        h = *(volatile uint32_t *)&v;
+    }
+    uint32_t *out = *(uint32_t *const *)(r + 8);
+    for (uint8_t y = r[5]; y <= r[7]; y++)
+        if (r[4] <= r[6])
+            for (uint8_t x = r[4]; x <= r[6]; x++, out += 4) out[0] = out[1] = out[2] = out[3] = h;
+}
+static const uint8_t height_patch_flatten_original[] = {0x83, 0xec, 0x08, 0x8b, 0x54, 0x24, 0x0c, 0x8b, 0x42, 0x10};
+REWRITE("HeightPatch::Flatten", 0x8db7a0, height_patch_flatten_original, &height_patch_flatten, &g_patch_flattens);
+
+// ---- HeightPatch::Average(r) (0x8DC0C0): each cell of r's rectangle gets the average of the terrain's four heights there -
+// The terrain (r +0: width byte +4, heights +0x24, six per cell); each height times 1/4 (0xF270B8) summed from 0 in order.
+static volatile long g_patch_averages;
+static void __thiscall height_patch_average(const void *, const uint8_t *r) {
+    g_patch_averages++;
+    const uint8_t *const terrain = *(const uint8_t *const *)r;
+    uint32_t *out = *(uint32_t *const *)(r + 8);
+    for (uint8_t y = r[5]; y <= r[7]; y++)
+        if (r[4] <= r[6])
+            for (uint8_t x = r[4]; x <= r[6]; x++, out += 4) {
+                const float *const hs = *(const float *const *)(terrain + 0x24) + ((uint32_t)terrain[4] * y + x) * 6;
+                long double sum = *(const float *)0xf264e0;
+                for (int j = 0; j < 4; j++) sum = sum + (long double)hs[j] * *(const float *)0xf270b8;
+                volatile float a = (float)sum;
+                out[0] = out[1] = out[2] = out[3] = *(volatile uint32_t *)&a;
+            }
+}
+static const uint8_t height_patch_average_original[] = {0x83, 0xec, 0x0c, 0x57, 0x8b, 0x7c, 0x24, 0x14, 0x8b, 0x47, 0x08};
+REWRITE("HeightPatch::Average", 0x8dc0c0, height_patch_average_original, &height_patch_average, &g_patch_averages);
+
+// ---- Timers::Advance(dt) (0x90C710) --------------------------------------------------------------------------------
+// Each timer (32 bytes at +0x40, count +0x48 read again each time) gets +0x18 += dt (a float); one not below its end
+// (+0x10) takes the last one's +0..+8 and +0x10..+0x18 and the count goes down (the moved one is done again). Then each
+// entry of the second list (+0x4C, count +0x54) gets +0x18 += dt 30 (unrounded).
+static volatile long g_timer_advances;
+static void __thiscall timers_advance(uint8_t *self, float dt) {
+    g_timer_advances++;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x48); i++) {
+        float *const e = (float *)(*(uint8_t *const *)(self + 0x40) + i * 32);
+        *(volatile float *)(e + 6) = (float)((long double)dt + e[6]);
+        if (e[6] < e[4] || e[6] != e[6] || e[4] != e[4]) continue;
+        const uint32_t *const last = (const uint32_t *)(*(uint8_t *const *)(self + 0x40) + *(const int32_t *)(self + 0x48) * 32 - 32);
+        uint32_t *const u = (uint32_t *)e;
+        u[0] = last[0], u[1] = last[1], u[2] = last[2], u[4] = last[4], u[5] = last[5], u[6] = last[6];
+        *(int32_t *)(self + 0x48) -= 1;
+        i--;
+    }
+    const int32_t n = *(const int32_t *)(self + 0x54);
+    if (n <= 0) return;
+    const long double d = (long double)dt * *(const float *)0xf28218;
+    for (int32_t j = 0; j < *(const volatile int32_t *)(self + 0x54); j++) {
+        volatile float *const t = (volatile float *)(*(uint8_t *const *)(self + 0x4c) + j * 32 + 0x18);
+        *t = (float)(d + *t);
+    }
+}
+static const uint8_t timers_advance_original[] = {0x8b, 0x41, 0x48, 0x56, 0x57, 0x33, 0xff, 0x85, 0xc0};
+REWRITE("Timers::Advance", 0x90c710, timers_advance_original, &timers_advance, &g_timer_advances);
+
+// ---- Keys::FindFrom, FindFrom2(t, guess) (0xE02530: keys +0x10, count +0xC; 0xE02470: keys +8, count +4) -----------------
+// Keys of 16 bytes, time first. From the guess: past the last key the last; the guess when t is below the next key's time,
+// the one after when below the one after that (or past the end); the last when t is not below the last key's time; else a
+// binary search between them for the key with the last time below t.
+static volatile long g_key_finds;
+template <uint32_t Keys, uint32_t Count> static int32_t __thiscall keys_find_from(const uint8_t *self, float t, int32_t g) {
+    g_key_finds++;
+    const int32_t n = *(const int32_t *)(self + Count), last = n - 1;
+    if (g >= last) return last;
+    const uint8_t *const k = *(const uint8_t *const *)(self + Keys);
+    auto time = [&](int32_t i) { return *(const float *)(k + i * 16); };
+    if (t < time(g + 1)) return g;
+    int32_t lo = g + 2;
+    if (lo >= n || t < time(lo)) return g + 1;
+    int32_t hi = *(const int32_t *)(self + Count) - 1;
+    if (!(t < time(hi) || t != t)) return last;
+    while (lo < hi - 1) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        if (t > time(mid)) lo = mid;
+        else hi = mid;
+    }
+    return lo;
+}
+static const uint8_t keys_find_from_original[] = {0x8b, 0x54, 0x24, 0x08, 0x55, 0x57, 0x8b, 0x79, 0x0c, 0x8d, 0x6f, 0xff};
+REWRITE("Keys::FindFrom", 0xe02530, keys_find_from_original, (&keys_find_from<0x10, 0xc>), &g_key_finds);
+static const uint8_t keys_find_from2_original[] = {0x8b, 0x54, 0x24, 0x08, 0x55, 0x57, 0x8b, 0x79, 0x04, 0x8d, 0x6f, 0xff};
+REWRITE("Keys::FindFrom2", 0xe02470, keys_find_from2_original, (&keys_find_from<8, 4>), &g_key_finds);
+
+// ---- Plane::BoxCornerDistance(a, b, d, out) (0xC1E7E0) ---------------------------------------------------------------
+// The plane: normal n (+0), distance +0x10. With s = d . n (z, y, x order): 0 when |s| is below E (0xF3312C). Else the
+// corner c takes each part from a where n's is above 0, else from b; out = ((c.z n.z + c.x n.x) + c.y n.y - dist)
+// (-1 / s), and 1 when s is above 0, else -1.
+static volatile long g_box_corners;
+static int32_t __thiscall plane_box_corner_distance(const float *self, const float *a, const float *b, const float *d, float *out) {
+    g_box_corners++;
+    const long double s = ((long double)d[2] * self[2] + (long double)d[1] * self[1]) + (long double)d[0] * self[0];
+    if (__builtin_fabsl(s) < *(const float *)0xf3312c) return 0;
+    const float zero = *(const float *)0xf264e0;
+    const float cx = self[0] > zero ? a[0] : b[0], cy = self[1] > zero ? a[1] : b[1], cz = self[2] > zero ? a[2] : b[2];
+    const long double dist = ((long double)cz * self[2] + (long double)cx * self[0]) + (long double)cy * self[1] - self[4];
+    *(volatile float *)out = (float)(dist * ((long double)*(const float *)0xf268f0 / s));
+    return s > zero ? 1 : -1;
+}
+static const uint8_t plane_box_corner_distance_original[] = {0x8b, 0x44, 0x24, 0x0c, 0xd9, 0x40, 0x08, 0xd8, 0x49, 0x08};
+REWRITE("Plane::BoxCornerDistance", 0xc1e7e0, plane_box_corner_distance_original, &plane_box_corner_distance, &g_box_corners);

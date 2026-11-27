@@ -2990,7 +2990,7 @@ address,size,name,callers,status
 0x4feeb0,268,,1,documented
 0x4fefc0,804,,1,documented
 0x4ff2f0,165,,1,documented
-0x4ff3a0,152,,1,documented
+0x4ff3a0,152,Value::Band,1,rewritten
 0x4ff440,57,Values::Map,1,rewritten
 0x4ff4a0,20,,4,documented
 0x4ff550,41,,1,documented
@@ -8332,7 +8332,7 @@ address,size,name,callers,status
 0x727b00,164,TileCorners::Count,3,rewritten
 0x727bb0,264,,1,documented
 0x727cc0,111,Tile::QuarterCorners,2,rewritten
-0x727d30,170,,8,documented
+0x727d30,170,TileQuarter::Corners,8,rewritten
 0x727de0,183,Quad::EdgeMiddles,2,rewritten
 0x727ea0,631,Quad::Normal,2,rewritten
 0x728120,1470,,4,documented
@@ -12431,7 +12431,7 @@ address,size,name,callers,status
 0x8db750,7,SetTable,2,rewritten
 0x8db760,30,DeletingDestructor,1,rewritten
 0x8db780,26,,3,documented
-0x8db7a0,173,,1,documented
+0x8db7a0,173,HeightPatch::Flatten,1,rewritten
 0x8db850,7,SetTable,4,rewritten
 0x8db860,30,DeletingDestructor,1,rewritten
 0x8db880,17,Object::SetFields,1,rewritten
@@ -12444,7 +12444,7 @@ address,size,name,callers,status
 0x8dba90,578,,6,documented
 0x8dbce0,30,DeletingDestructor,1,rewritten
 0x8dbd00,948,,1,documented
-0x8dc0c0,174,,1,documented
+0x8dc0c0,174,HeightPatch::Average,1,rewritten
 0x8dc170,1508,,1,documented
 0x8dc760,386,,21,documented
 0x8dc990,22,,1,documented
@@ -12520,7 +12520,7 @@ address,size,name,callers,status
 0x8e2bd0,121,,1,documented
 0x8e2c50,966,,1,documented
 0x8e3040,27,GlobalCleanup,1,rewritten
-0x8e30c0,160,,1,documented
+0x8e30c0,160,Bits::MergeLowest,1,rewritten
 0x8e3190,26,OwnedPointer::Reset,2,rewritten
 0x8e31e0,88,Block::Destroy86F7B0,1,rewritten
 0x8e3250,132,Array::Remake967360,4,rewritten
@@ -12830,7 +12830,7 @@ address,size,name,callers,status
 0x90c5c0,117,SortedTable::Find20,2,rewritten
 0x90c6d0,44,,1,documented
 0x90c700,7,,2,documented
-0x90c710,180,,1,documented
+0x90c710,180,Timers::Advance,1,rewritten
 0x90c7d0,777,,3,documented
 0x90cae0,970,,3,documented
 0x90ceb0,67,,12,documented
@@ -20988,7 +20988,7 @@ address,size,name,callers,status
 0xc1d460,889,,1,documented
 0xc1d7e0,2579,,1,documented
 0xc1e790,73,Vector::StepC1E790,6,rewritten
-0xc1e7e0,187,,1,documented
+0xc1e7e0,187,Plane::BoxCornerDistance,1,rewritten
 0xc1e970,1340,,2,documented
 0xc1ef70,572,,2,documented
 0xc1f1b0,1957,,2,documented
@@ -26269,8 +26269,8 @@ address,size,name,callers,status
 0xe01e30,122,,2,documented
 0xe01eb0,83,,0,documented
 0xe02040,28,,1,documented
-0xe02470,186,,1,documented
-0xe02530,186,,1,documented
+0xe02470,186,Keys::FindFrom2,1,rewritten
+0xe02530,186,Keys::FindFrom,1,rewritten
 0xe025f0,121,Keys::Find2,3,rewritten
 0xe02670,121,Keys::Find,3,rewritten
 0xe02830,13,,1,documented

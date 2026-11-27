@@ -10,8 +10,8 @@
 | ✅ | `forever.dll`: runs inside the game, puts the rewritten functions in place, leaves the game folder untouched | Done |
 | ✅ | Equivalence tester: checks every rewritten function against the original before it is used | Done |
 | ✅ | Cheats Menu: Guests and Park tabs, built in and on by default | Done |
-| ✅ | Understanding and documenting the game's code (`docs/notes`) | **Done**: 100% of the game's code is documented in `docs/notes` (25.83% of it also rewritten; `tools/rewritten_notes.py` keeps notes for the rewritten copies). Many rows are "In outline:" descriptions to revisit before rewriting |
-| 🔨 | Rewriting the game, one function at a time | **In progress**: 12843 functions, 25.83% of the game's code |
+| ✅ | Understanding and documenting the game's code (`docs/notes`) | **Done**: 100% of the game's code is documented in `docs/notes` (25.85% of it also rewritten; `tools/rewritten_notes.py` keeps notes for the rewritten copies). Many rows are "In outline:" descriptions to revisit before rewriting |
+| 🔨 | Rewriting the game, one function at a time | **In progress**: 12852 functions, 25.85% of the game's code |
 | ⬜ | Cheats Menu: a third tab, **Debug**, with the game's own developer tools | Next |
 | ⬜ | Smooth frame rates: full 60 and 120 fps | After the game is fully rewritten |
 

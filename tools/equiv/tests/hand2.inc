@@ -5493,4 +5493,132 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 return Result{(uint32_t)((int32_t(__fastcall *)(uint32_t, uint32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t))fn)(arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1], a[0], a[1], a[2], a[3], a[4], a[5])};
                             }};
     quick(key_compare_masked);
+    // Value::Band: values around each of the six limits (on them at times)
+    Test value_band{0x4ff3a0,
+                    [=](Rng &r) {
+                        static const uintptr_t limits[6] = {0xf36898, 0xf36894, 0xf36890, 0xf3688c, 0xf36888, 0xf28218};
+                        const float l = *(const float *)limits[r.range(0, 5)];
+                        arena<float>(0x40)[0] = r.range(0, 3) ? l + r.real(-2, 2) * (l ? l : 1) * 0.1f : l;
+                    },
+                    [](void *fn) { return Result{((uint32_t(__stdcall *)(float))fn)(arena<float>(0x40)[0])}; }};
+    quick(value_band);
+    // Bits::MergeLowest: costs below, equal to and above the best (signed words), fields of any bits (cost in edi, new cost
+    // in si, fields in ecx)
+    Test bits_merge_lowest{0x8e30c0,
+                           [=](Rng &r) {
+                               *arena<int16_t>(0x100) = (int16_t)r.range(-3, 3);
+                               arena<uint8_t>(0x110)[0] = (uint8_t)r.next();
+                               arena<uint32_t>(0x40)[0] = (r.next() & ~0xffffu) | (uint16_t)(int16_t)r.range(-3, 3);
+                               arena<uint32_t>(0x40)[1] = r.next();
+                           },
+                           [](void *fn) {
+                               uint32_t stack[1] = {arena<uint32_t>(0x40)[1]};
+                               uint32_t *ps = stack;
+                               void *cost = arena<void>(0x100), *fields = arena<void>(0x110);
+                               uint32_t a = 0, si = arena<uint32_t>(0x40)[0];
+                               __asm__ volatile("pushl (%%edx)\n\tcall *%%ebx" : "+a"(a), "+d"(ps), "+D"(cost), "+S"(si), "+c"(fields) : "b"(fn) : "memory", "cc");
+                               return Result{a & 0xff};
+                           }};
+    quick(bits_merge_lowest);
+    // TileQuarter::Corners: the game's tile size and base set (put back after), quarters 0-3 of any packed bits (out in
+    // ecx, packed in dx)
+    {
+        static uint32_t saved_size, saved_base;
+        Test x{0x727d30,
+               [=](Rng &r) {
+                   *(float *)0x1306390 = r.real(0.5f, 8), *(float *)0x13063a4 = r.range(0, 4) ? r.real(-500, 500) : -0.0f;
+                   for (int i = 0; i < 8; i++) arena<uint32_t>(0x100)[i] = r.next();
+                   arena<uint32_t>(0x40)[0] = r.next(), arena<uint32_t>(0x40)[1] = (r.next() & ~0xffu) | r.range(0, 3);
+               },
+               [](void *fn) {
+                   ((void(__fastcall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_size = *(uint32_t *)0x1306390, saved_base = *(uint32_t *)0x13063a4; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x1306390 = saved_size, *(uint32_t *)0x13063a4 = saved_base; };
+        quick(x);
+    }
+    // HeightPatch::Flatten: rectangles of 0-4 by 0-4 cells (empty ones at times), steps 0-6, heights of either sign
+    Test height_patch_flatten{0x8db7a0,
+                              [=](Rng &r) {
+                                  *(int32_t *)arena<uint8_t>(0x108) = r.range(0, 2) ? r.range(1, 6) : r.range(-1, 0);
+                                  uint8_t *p = arena<uint8_t>(0x200);
+                                  p[4] = (uint8_t)r.range(1, 10), p[5] = (uint8_t)r.range(1, 10);   // (from 1: an end one below a start of 0 would wrap to 255)
+                                  p[6] = (uint8_t)(p[4] + r.range(-1, 3)), p[7] = (uint8_t)(p[5] + r.range(-1, 3));
+                                  *(uint32_t *)(p + 8) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  *(uint32_t *)(p + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                  arena<float>(0x300)[1] = r.real(-40, 40);
+                                  for (int i = 0; i < 64; i++) arena<uint32_t>(0x400)[i] = r.next();
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x200));
+                                  return Result{0};
+                              }};
+    quick(height_patch_flatten);
+    // HeightPatch::Average: rectangles of 0-4 by 0-4 cells over a terrain 8 cells wide of random heights
+    Test height_patch_average{0x8dc0c0,
+                              [=](Rng &r) {
+                                  uint8_t *p = arena<uint8_t>(0x200), *terrain = arena<uint8_t>(0x300);
+                                  *(uint32_t *)p = (uint32_t)(uintptr_t)terrain;
+                                  terrain[4] = 8;
+                                  *(uint32_t *)(terrain + 0x24) = (uint32_t)(uintptr_t)arena<void>(0x1000);
+                                  for (int i = 0; i < 8 * 8 * 6; i++) arena<float>(0x1000)[i] = r.real(-30, 30);
+                                  p[4] = (uint8_t)r.range(1, 4), p[5] = (uint8_t)r.range(1, 4);   // (from 1, as above)
+                                  p[6] = (uint8_t)(p[4] + r.range(-1, 3)), p[7] = (uint8_t)(p[5] + r.range(-1, 3));
+                                  *(uint32_t *)(p + 8) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  for (int i = 0; i < 64; i++) arena<uint32_t>(0x400)[i] = r.next();
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x200));
+                                  return Result{0};
+                              }};
+    quick(height_patch_average);
+    // Timers::Advance: 0-6 timers near their ends and a second list of 0-3
+    Test timers_advance{0x90c710,
+                        [=](Rng &r) {
+                            uint8_t *self = arena<uint8_t>(0x100);
+                            *(int32_t *)(self + 0x48) = r.range(0, 9) ? r.range(0, 6) : -1, *(int32_t *)(self + 0x54) = r.range(0, 9) ? r.range(0, 3) : -1;
+                            *(uint32_t *)(self + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                            *(uint32_t *)(self + 0x4c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                            for (int i = 0; i < 6 * 8; i++) arena<uint32_t>(0x200)[i] = r.next();
+                            for (int k = 0; k < 6; k++) arena<float>(0x200 + k * 32)[4] = r.real(0, 5), arena<float>(0x200 + k * 32)[6] = r.real(0, 5);
+                            for (int k = 0; k < 3; k++) arena<float>(0x400 + k * 32)[6] = r.real(-50, 50);
+                            arena<float>(0x40)[0] = r.real(0, 2);
+                        },
+                        [](void *fn) {
+                            ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                            return Result{0};
+                        }};
+    quick(timers_advance);
+    // Keys::FindFrom / FindFrom2: 1-12 keys of rising times (equal ones at times), guesses anywhere, times around the keys
+    for (uintptr_t at : {(uintptr_t)0xe02530, (uintptr_t)0xe02470}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   const int n = r.range(1, 12);
+                   const bool first = at == 0xe02530;
+                   *(int32_t *)(self + (first ? 0xc : 4)) = n;
+                   *(uint32_t *)(self + (first ? 0x10 : 8)) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                   float v = r.real(-2, 2);
+                   for (int k = 0; k < 12; k++) arena<float>(0x200 + k * 16)[0] = v, v += r.range(0, 4) ? r.real(0.1f, 2) : 0.0f;
+                   arena<int32_t>(0x40)[0] = r.range(0, n + 1);
+                   arena<float>(0x40)[1] = r.range(0, 3) ? r.real(-3, 25) : arena<float>(0x200 + r.range(0, n - 1) * 16)[0];
+               },
+               [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(const void *, float, int32_t))fn)(arena<void>(0x100), arena<float>(0x40)[1], arena<int32_t>(0x40)[0])}; }};
+        quick(x);
+    }
+    // Plane::BoxCornerDistance: random planes, boxes and directions (along the plane at times)
+    Test plane_box_corner_distance{0xc1e7e0,
+                                   [=](Rng &r) {
+                                       float *p = arena<float>(0x100);
+                                       for (int c = 0; c < 3; c++) p[c] = r.range(0, 5) ? r.real(-1, 1) : 0.0f;
+                                       p[4] = r.real(-10, 10);
+                                       for (int c = 0; c < 3; c++) arena<float>(0x200)[c] = r.real(-10, 0), arena<float>(0x210)[c] = r.real(0, 10), arena<float>(0x220)[c] = r.real(-1, 1);
+                                       if (r.range(0, 5) == 0) arena<float>(0x220)[0] = p[1], arena<float>(0x220)[1] = -p[0], arena<float>(0x220)[2] = 0;
+                                       arena<uint32_t>(0x240)[0] = r.next();
+                                   },
+                                   [](void *fn) {
+                                       return Result{(uint32_t)((int32_t(__thiscall *)(const void *, const void *, const void *, const void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x210), arena<void>(0x220), arena<void>(0x240))};
+                                   }};
+    quick(plane_box_corner_distance);
 #endif
