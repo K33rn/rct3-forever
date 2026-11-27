@@ -6557,3 +6557,278 @@ static void __stdcall camera_shared_ce1670() {
 }
 static const uint8_t camera_shared_ce1670_original[] = {0xa1, 0x1c, 0x08, 0x40, 0x01, 0x56, 0x33, 0xf6};
 REWRITE("Camera::SharedCE1670", 0xce1670, camera_shared_ce1670_original, &camera_shared_ce1670, &g_camera_copies);
+
+// ---- Park::Pass884B50, Pass8852D0(v) (0x884B50: floats at +0xFC, count +0xF4; 0x8852D0: pairs at +0x100, count +0xF8) --
+// The first value above v, or +0xDC when there is none.
+static volatile long g_park_steps;
+template <uint32_t List, uint32_t Count, uint32_t Stride> static long double __thiscall park_first_above(const uint8_t *self, float v) {
+    g_park_steps++;
+    const int32_t n = *(const int32_t *)(self + Count);
+    const uint8_t *const list = *(const uint8_t *const *)(self + List);
+    for (int32_t i = 0; i < n; i++) {
+        const float e = *(const float *)(list + i * Stride);
+        if (e > v) return e;
+    }
+    return *(const float *)(self + 0xdc);
+}
+static const uint8_t park_pass_884b50_original[] = {0x53, 0x56, 0x8b, 0xb1, 0xf4, 0x00, 0x00, 0x00, 0x33, 0xd2};
+REWRITE("Park::Pass884B50", 0x884b50, park_pass_884b50_original, (&park_first_above<0xfc, 0xf4, 4>), &g_park_steps);
+static const uint8_t park_pass_8852d0_original[] = {0x53, 0x56, 0x8b, 0xb1, 0xf8, 0x00, 0x00, 0x00, 0x33, 0xd2};
+REWRITE("Park::Pass8852D0", 0x8852d0, park_pass_8852d0_original, (&park_first_above<0x100, 0xf8, 8>), &g_park_steps);
+
+// ---- Person::Pass7F0300(v) (0x7F0300): moves v to the front of its 12 recent values (+0x17C) ---------------------------
+// When v is there at i, the ones before it move up by one and v goes first; 0 then, 12 when it is not there.
+static volatile long g_person_recents;
+static uint32_t __thiscall person_pass_7f0300(uint8_t *self, uint32_t v) {
+    g_person_recents++;
+    uint32_t *const a = (uint32_t *)(self + 0x17c);
+    int32_t i = 0;
+    while (i < 12 && a[i] != v) i++;
+    if (i == 12) return 12;
+    for (; i > 0; i--) a[i] = a[i - 1];
+    a[0] = v;
+    return 0;
+}
+static const uint8_t person_pass_7f0300_original[] = {0x56, 0x8d, 0xb1, 0x7c, 0x01, 0x00, 0x00, 0x57};
+REWRITE("Person::Pass7F0300", 0x7f0300, person_pass_7f0300_original, &person_pass_7f0300, &g_person_recents);
+
+// ---- Engine::Pass40C490 (0x40C490): a new version (+0x3C) -----------------------------------------------------------
+// Up by one; past 0x40000000 it starts again at 1 and every entry (0x24 bytes at +0x2C, count +0x38 read again each
+// time) whose byte +0 is set gets +0x18 = 0.
+static volatile long g_engine_versions;
+static void __thiscall engine_pass_40c490(uint8_t *self) {
+    g_engine_versions++;
+    int32_t *const version = (int32_t *)(self + 0x3c);
+    if (*version <= 0x40000000) {
+        *version += 1;
+        return;
+    }
+    *version = 1;
+    for (int32_t i = 0; i < *(volatile int32_t *)(self + 0x38); i++) {
+        uint8_t *const e = *(uint8_t *const *)(self + 0x2c) + i * 0x24;
+        if (*e) *(uint32_t *)(e + 0x18) = 0;
+    }
+}
+static const uint8_t engine_pass_40c490_original[] = {0x8b, 0x41, 0x3c, 0x3d, 0x00, 0x00, 0x00, 0x40, 0x7e, 0x34};
+REWRITE("Engine::Pass40C490", 0x40c490, engine_pass_40c490_original, &engine_pass_40c490, &g_engine_versions);
+
+// ---- Window::FindA5B920(n) (0xA5B920): item n over groups {items, count} (+0x60, count +0x64); 0x1F past the end ------
+// (signed: a group is passed while n is not below its count)
+static volatile long g_window_finds;
+static uint32_t __thiscall window_find_a5b920(const uint8_t *self, int32_t n) {
+    g_window_finds++;
+    const int32_t groups = *(const int32_t *)(self + 0x64);
+    const uint32_t *const g = *(const uint32_t *const *)(self + 0x60);
+    int32_t i = 0;
+    for (; i < groups; i++) {
+        if (n < (int32_t)g[i * 2 + 1]) break;
+        n -= (int32_t)g[i * 2 + 1];
+    }
+    if (i >= groups) return 0x1f;
+    return ((const uint32_t *)(uintptr_t)g[i * 2])[n];
+}
+static const uint8_t window_find_a5b920_original[] = {0x53, 0x8b, 0x59, 0x64, 0x33, 0xc0, 0x85, 0xdb, 0x56};
+REWRITE("Window::FindA5B920", 0xa5b920, window_find_a5b920_original, &window_find_a5b920, &g_window_finds);
+
+// ---- Resource::FindC35F10(a, b) (0xC35F10): the first entry (12 bytes at +0xA0, count +0xB4) with +0 = a, +8 = b, or 0 -
+static volatile long g_resource_finds;
+static const uint32_t *__thiscall resource_find_c35f10(const uint8_t *self, uint32_t a, uint32_t b) {
+    g_resource_finds++;
+    const uint32_t n = *(const uint32_t *)(self + 0xb4);
+    const uint32_t *const list = *(const uint32_t *const *)(self + 0xa0);
+    for (uint32_t i = 0; i < n; i++)
+        if (list[i * 3] == a && list[i * 3 + 2] == b) return list + i * 3;
+    return nullptr;
+}
+static const uint8_t resource_find_c35f10_original[] = {0x53, 0x56, 0x8b, 0xb1, 0xb4, 0x00, 0x00, 0x00, 0x33, 0xd2};
+REWRITE("Resource::FindC35F10", 0xc35f10, resource_find_c35f10_original, &resource_find_c35f10, &g_resource_finds);
+
+// ---- Labels::Part475610(a, b, c) (0x475610): the part's (+0x44) word +2, dword +4 and word +0xE into those given -------
+// 0 with no part, else 1 (only al).
+static volatile long g_label_parts;
+static uint8_t __thiscall labels_part_475610(const uint8_t *self, uint32_t *a, uint32_t *b, uint32_t *c) {
+    g_label_parts++;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0x44);
+    if (!p) return 0;
+    if (a) *a = *(const uint16_t *)(p + 2);
+    if (b) *b = *(const uint32_t *)(p + 4);
+    if (c) *c = *(const uint16_t *)(p + 0xe);
+    return 1;
+}
+static const uint8_t labels_part_475610_original[] = {0x8b, 0x41, 0x44, 0x85, 0xc0, 0x74, 0x34};
+REWRITE("Labels::Part475610", 0x475610, labels_part_475610_original, &labels_part_475610, &g_label_parts);
+
+// ---- Regions::Merge417010(other) (0x417010) ------------------------------------------------------------------------
+// +0xC += other's - 1; the bounds +0x38, +0x40 take the smaller, +0x3C, +0x44 the larger (signed).
+static volatile long g_region_merges;
+static void __thiscall regions_merge_417010(int32_t *self, const int32_t *other) {
+    g_region_merges++;
+    self[3] += other[3] - 1;
+    if (other[14] < self[14]) self[14] = other[14];
+    if (other[16] < self[16]) self[16] = other[16];
+    if (other[15] > self[15]) self[15] = other[15];
+    if (other[17] > self[17]) self[17] = other[17];
+}
+static const uint8_t regions_merge_417010_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x50, 0x0c, 0x56, 0x8b, 0x71, 0x0c};
+REWRITE("Regions::Merge417010", 0x417010, regions_merge_417010_original, &regions_merge_417010, &g_region_merges);
+
+// ---- Static::Reset4984C0 (0x4984C0): the byte +0x70 = 1, and in each of its four tables (+0x60..) every entry (0x18
+// bytes at +0x18, count +0x24 read again each time) whose byte +0 is set gets its byte +8 = 1 ----------------------------
+static volatile long g_static_resets;
+static void __thiscall static_reset_4984c0(uint8_t *self) {
+    g_static_resets++;
+    self[0x70] = 1;
+    for (int k = 0; k < 4; k++) {
+        const uint8_t *const t = *(const uint8_t *const *)(self + 0x60 + k * 4);
+        for (int32_t i = 0; i < *(const volatile int32_t *)(t + 0x24); i++) {
+            uint8_t *const e = *(uint8_t *const *)(t + 0x18) + i * 0x18;
+            if (*e) e[8] = 1;
+        }
+    }
+}
+static const uint8_t static_reset_4984c0_original[] = {0x53, 0x55, 0x56, 0xb3, 0x01, 0x57, 0x88, 0x59, 0x70};
+REWRITE("Static::Reset4984C0", 0x4984c0, static_reset_4984c0_original, &static_reset_4984c0, &g_static_resets);
+
+// ---- Window::Count6C80C0(n) (0x6C80C0): packs row n's eight slots (+0x30 + 0x20 n) to the front ----------------------
+// Each slot in use that moves down to place j is cleared where it was and gets its row (+0x4C) and place (+0x50).
+static volatile long g_slot_packs;
+static void __thiscall window_count_6c80c0(uint8_t *self, int32_t n) {
+    g_slot_packs++;
+    uint32_t *const slot = (uint32_t *)(self + 0x30 + n * 0x20);
+    int32_t j = 0;
+    for (int32_t i = 0; i < 8; i++) {
+        const uint32_t v = slot[i];
+        if (!v) continue;
+        if (j != i) {
+            slot[j] = v;
+            slot[i] = 0;
+            uint8_t *const w = (uint8_t *)(uintptr_t)slot[j];
+            *(int32_t *)(w + 0x4c) = n;
+            *(int32_t *)(w + 0x50) = j;
+        }
+        j++;
+    }
+}
+static const uint8_t window_count_6c80c0_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x57, 0x8b, 0xd3};
+REWRITE("Window::Count6C80C0", 0x6c80c0, window_count_6c80c0_original, &window_count_6c80c0, &g_slot_packs);
+
+// ---- Fireworks::Time9E0E20 (0x9E0E20): with the game's flag (byte 0x10F0E89) set, +0 = the game's 0x14002C0 + +0x10 --
+static volatile long g_firework_offsets;
+static void __thiscall fireworks_time_9e0e20(uint8_t *self) {
+    g_firework_offsets++;
+    if (!*(const volatile uint8_t *)0x10f0e89) return;
+    const volatile float *const g = (const volatile float *)0x14002c0;
+    volatile float *const f = (volatile float *)self;
+    const long double x = (long double)g[0] + f[4], y = (long double)g[1] + f[5];
+    f[2] = (float)((long double)g[2] + f[6]);
+    f[0] = (float)x;
+    f[1] = (float)y;
+}
+static const uint8_t fireworks_time_9e0e20_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0xa0, 0x89, 0x0e, 0x0f, 0x01};
+REWRITE("Fireworks::Time9E0E20", 0x9e0e20, fireworks_time_9e0e20_original, &fireworks_time_9e0e20, &g_firework_offsets);
+
+// ---- Animal::SetAD78F0(v) (0xAD78F0): a new scale (+0x48); when on (byte +0x50) each entry's (0x20 bytes at +0x40,
+// count +0x4C read again each time) first float is scaled by new / old (a float) ---------------------------------------
+static volatile long g_animal_rescales;
+static void __thiscall animal_set_ad78f0(uint8_t *self, float v) {
+    g_animal_rescales++;
+    volatile float r = (float)((long double)v / *(const float *)(self + 0x48));
+    *(float *)(self + 0x48) = v;
+    if (!self[0x50]) return;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x4c); i++) {
+        volatile float *const e = (volatile float *)(*(uint8_t *const *)(self + 0x40) + i * 0x20);
+        *e = (float)((long double)r * *e);
+    }
+}
+static const uint8_t animal_set_ad78f0_original[] = {0x51, 0xd9, 0x44, 0x24, 0x08, 0x8b, 0x44, 0x24, 0x08, 0xd8, 0x71, 0x48};
+REWRITE("Animal::SetAD78F0", 0xad78f0, animal_set_ad78f0_original, &animal_set_ad78f0, &g_animal_rescales);
+
+// ---- Scenery::Time8B0470(dt) (0x8B0470): an angle (+0x14) -= dt K1 K2, kept within K2..K3 (unrounded checks) ----------
+// (K1 0xF2CF10, K2 0xF3B7FC, K3 0xF7A3D4)
+static volatile long g_scenery_times;
+static void __thiscall scenery_time_8b0470(uint8_t *self, float dt) {
+    g_scenery_times++;
+    volatile float *const a = (volatile float *)(self + 0x14);
+    const long double v = *a - (long double)dt * *(const float *)0xf2cf10 * *(const float *)0xf3b7fc;
+    *a = (float)v;
+    if (v > *(const float *)0xf7a3d4) *(volatile uint32_t *)a = 0x400cbe4c;
+    else if (v <= *(const float *)0xf3b7fc) *(volatile uint32_t *)a = 0x3f20d97c;
+}
+static const uint8_t scenery_time_8b0470_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x0d, 0x10, 0xcf, 0xf2, 0x00};
+REWRITE("Scenery::Time8B0470", 0x8b0470, scenery_time_8b0470_original, &scenery_time_8b0470, &g_scenery_times);
+
+// ---- Water::Entry94DCC0(n, flag) (0x94DCC0): entry n's (0x60 bytes at +0x1B4) byte +0x54 = flag; when it changed, each
+// of its children (+0x38, count +0x3C read again each time) gets it too -------------------------------------------------
+static volatile long g_water_flags;
+static void __thiscall water_entry_94dcc0(const uint8_t *self, int32_t n, uint32_t flag) {
+    g_water_flags++;
+    uint8_t *const e = *(uint8_t *const *)(self + 0x1b4) + n * 0x60;
+    const uint8_t f = (uint8_t)flag, old = e[0x54];
+    e[0x54] = f;
+    if (old == f) return;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(e + 0x3c); i++) (*(uint8_t *const *)(e + 0x38))[i * 0x60 + 0x54] = f;
+}
+static const uint8_t water_entry_94dcc0_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8a, 0x54, 0x24, 0x08, 0x8d, 0x04, 0x40};
+REWRITE("Water::Entry94DCC0", 0x94dcc0, water_entry_94dcc0_original, &water_entry_94dcc0, &g_water_flags);
+
+// ---- Fence::StepABC2B0(x0, y0, x1, y1) (0xABC2B0): grows a box (+0x64..+0x70) to take in another (signed) ------------
+static volatile long g_fence_boxes;
+static void __thiscall fence_step_abc2b0(int32_t *self, int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
+    g_fence_boxes++;
+    int32_t *const b = self + 0x64 / 4;
+    if (x0 < b[0]) b[0] = x0;
+    if (y0 < b[1]) b[1] = y0;
+    if (x1 > b[2]) b[2] = x1;
+    if (y1 > b[3]) b[3] = y1;
+}
+static const uint8_t fence_step_abc2b0_original[] = {0x8b, 0x41, 0x64, 0x8b, 0x54, 0x24, 0x04, 0x3b, 0xd0};
+REWRITE("Fence::StepABC2B0", 0xabc2b0, fence_step_abc2b0_original, &fence_step_abc2b0, &g_fence_boxes);
+
+// ---- Shader::EntryCC4840(n) (0xCC4840): entry (indexes +0x18)[n] of the 0x1C-byte records at +0x20; 0 past +0x14 -----
+static volatile long g_shader_entries;
+static uint8_t *__thiscall shader_entry_cc4840(const uint8_t *self, uint32_t n) {
+    g_shader_entries++;
+    if (n >= *(const uint32_t *)(self + 0x14)) return nullptr;
+    return *(uint8_t *const *)(self + 0x20) + (*(const uint32_t *const *)(self + 0x18))[n] * 0x1c;
+}
+static const uint8_t shader_entry_cc4840_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0xc7, 0x45, 0xf8, 0xcc, 0xcc, 0xcc, 0xcc};
+REWRITE("Shader::EntryCC4840", 0xcc4840, shader_entry_cc4840_original, &shader_entry_cc4840, &g_shader_entries);
+
+// ---- Labels::Set475720(v) (0x475720): +0x20 = v, or (when off and the weight +0x70 is above 0) the blend
+// ((+0x1C - w) v + +0x20 w) / +0x1C, the weight becoming +0x1C ---------------------------------------------------------
+static volatile long g_label_sets;
+static void __thiscall labels_set_475720(uint8_t *self, float v) {
+    g_label_sets++;
+    float *const f = (float *)self;
+    if (self[0x6d] || !(f[0x70 / 4] > *(const float *)0xf264e0)) {
+        f[0x20 / 4] = v;
+        return;
+    }
+    const long double a = ((long double)f[0x1c / 4] - f[0x70 / 4]) * v;
+    const long double b = (long double)f[0x20 / 4] * f[0x70 / 4];
+    *(uint32_t *)(self + 0x70) = *(const uint32_t *)(self + 0x1c);
+    *(volatile float *)(self + 0x20) = (float)((a + b) / f[0x1c / 4]);
+}
+static const uint8_t labels_set_475720_original[] = {0x8a, 0x41, 0x6d, 0x84, 0xc0, 0x75, 0x31};
+REWRITE("Labels::Set475720", 0x475720, labels_set_475720_original, &labels_set_475720, &g_label_sets);
+
+// ---- Labels::Count475DA0(on in cl) (0x475DA0): the game's count (0x12F0140) up or down by one, not below 0; then every
+// label on the game's list (0x10Eca14; {next, .., label +8}, up to the end node whose next is 0) gets byte +0x50 = on ------
+static volatile long g_label_counts;
+static void __fastcall labels_count_475da0(uint32_t on) {
+    g_label_counts++;
+    const uint8_t b = (uint8_t)on;
+    volatile int32_t *const count = (volatile int32_t *)0x12f0140;
+    const int32_t c = *count + (b ? 1 : -1);
+    *count = c;
+    if (c < 0) *count = 0;
+    const uint32_t *node = *(const uint32_t *const volatile *)0x10eca14;
+    if (!node[0] || !node) return;
+    while (node) {
+        const uint32_t *const next = (const uint32_t *)(uintptr_t)node[0];
+        ((uint8_t *)(uintptr_t)node[2])[0x50] = b;
+        node = next[0] ? next : nullptr;
+    }
+}
+static const uint8_t labels_count_475da0_original[] = {0x8b, 0x15, 0x40, 0x01, 0x2f, 0x01, 0x33, 0xc0, 0x84, 0xc9};
+REWRITE("Labels::Count475DA0", 0x475da0, labels_count_475da0_original, &labels_count_475da0, &g_label_counts);
