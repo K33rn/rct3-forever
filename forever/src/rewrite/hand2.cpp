@@ -5357,3 +5357,404 @@ static long double __thiscall car_speed_factor(const uint8_t *self, int32_t n) {
 }
 static const uint8_t car_speed_factor_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x84, 0x81, 0x54, 0x01, 0x00, 0x00};
 REWRITE("Car::SpeedFactor", 0x4e4a00, car_speed_factor_original, &car_speed_factor, &g_car_speed_factors);
+
+// ---- Park::Copy8EECF0 / 8EED40 / 8EED90 / 8EEDE0(a, b, c) (0x8EECF0 +z, 0x8EED40 -z, 0x8EED90 +x, 0x8EEDE0 -x) ---------
+// A record facing one of four ways: +0 = a's first three dwords; the direction (+0xC..+0x14) is the axis (z first, x
+// last) with its sign; +0x18 = c.x times the distance along it (+z: a.z - b.y, -z: b.y - a.z, +x: b.x - a.x, -x:
+// a.x - b.x) and +0x1C = c.y a.y (floats).
+static volatile long g_park_facings;
+template <bool X, bool Neg> static void __thiscall park_copy_facing(uint32_t *self, const float *a, const float *b, const float *c) {
+    g_park_facings++;
+    const uint32_t *const au = (const uint32_t *)a;
+    self[0] = au[0], self[1] = au[1], self[2] = au[2];
+    const uint32_t one = Neg ? 0xbf800000u : 0x3f800000u;
+    self[3] = X ? 0 : one, self[4] = 0, self[5] = X ? one : 0;
+    const long double d = X ? (Neg ? (long double)a[0] - b[0] : (long double)b[0] - a[0]) : (Neg ? (long double)b[1] - a[2] : (long double)a[2] - b[1]);
+    volatile float *const f = (volatile float *)self;
+    f[6] = (float)(d * c[0]);
+    f[7] = (float)((long double)c[1] * a[1]);
+}
+static const uint8_t park_copy_8eecf0_original[] = {0x55, 0x8b, 0xec, 0x8b, 0x45, 0x08, 0x8b, 0x10, 0x89, 0x11, 0x8b, 0x50, 0x04};
+REWRITE("Park::Copy8EECF0", 0x8eecf0, park_copy_8eecf0_original, (&park_copy_facing<false, false>), &g_park_facings);
+REWRITE("Park::Copy8EED40", 0x8eed40, park_copy_8eecf0_original, (&park_copy_facing<false, true>), &g_park_facings);
+REWRITE("Park::Copy8EED90", 0x8eed90, park_copy_8eecf0_original, (&park_copy_facing<true, false>), &g_park_facings);
+REWRITE("Park::Copy8EEDE0", 0x8eede0, park_copy_8eecf0_original, (&park_copy_facing<true, true>), &g_park_facings);
+
+// ---- Options::SetFloat(n in ecx, v) (0x4796F0) ---------------------------------------------------------------------
+// Number option n (0x10ED860, 20 bytes each: value, .., min +8, max +0xC) = v kept within min..max: v when min is
+// below it (or either is a NaN), else min; then that when max is above it, else max.
+static volatile long g_option_floats;
+static void __thiscall options_set_float(uintptr_t n, float v) {
+    g_option_floats++;
+    uint8_t *const e = (uint8_t *)0x10ed860 + n * 20;
+    const long double lo = *(const float *)(e + 8), hi = *(const float *)(e + 0xc);
+    const long double t = lo < v || lo != lo || v != v ? (long double)v : lo;
+    *(volatile float *)e = (float)(hi > t ? t : hi);
+}
+static const uint8_t options_set_float_original[] = {0x83, 0xec, 0x0c, 0x8d, 0x04, 0x89, 0x8b, 0x0c, 0x85, 0x6c, 0xd8, 0x0e, 0x01};
+REWRITE("Options::SetFloat", 0x4796f0, options_set_float_original, &options_set_float, &g_option_floats);
+
+// ---- Options::SetInt(n in ecx, v in edx) (0x479630) ----------------------------------------------------------------
+// Whole-number option n (0x10ED668, 20 bytes each: value, .., min +8, max +0xC) = v kept within min..max (signed).
+static volatile long g_option_ints;
+static void __fastcall options_set_int(uintptr_t n, int32_t v) {
+    g_option_ints++;
+    int32_t *const e = (int32_t *)((uint8_t *)0x10ed668 + n * 20);
+    if (v < e[2]) v = e[2];
+    if (v > e[3]) v = e[3];
+    e[0] = v;
+}
+static const uint8_t options_set_int_original[] = {0x83, 0xec, 0x10, 0x8d, 0x0c, 0x89, 0x8b, 0x04, 0x8d, 0x74, 0xd6, 0x0e, 0x01};
+REWRITE("Options::SetInt", 0x479630, options_set_int_original, &options_set_int, &g_option_ints);
+
+// ---- Effect::Entry408700(n, w, h), Entry408750(n, w, v) (0x408700, 0x408750): a centred rectangle into an entry ---------
+// The entry: group n >> 16 (signed) of the list at +0 (each a record whose +0xC is its entries), entry n & 0xFFFF (0x70
+// bytes), +0x20. 408700: {-w/2, -h/2, w/2, h/2}; 408750: {-w/2, 0, w/2, v}. Both give the place.
+static volatile long g_effect_rects;
+static inline float *effect_rect_place(const uint8_t *self, int32_t n) {
+    const uint8_t *const group = (*(const uint8_t *const *const *)self)[n >> 16];
+    return (float *)(*(uint8_t *const *)(group + 0xc) + (n & 0xffff) * 0x70 + 0x20);
+}
+static float *__thiscall effect_entry_408700(const uint8_t *self, int32_t n, float w, float h) {
+    g_effect_rects++;
+    const float half = *(const float *)0xf2651c;
+    const long double hw = (long double)w * half, hh = (long double)h * half;
+    volatile float *const p = effect_rect_place(self, n);
+    p[0] = (float)-hw, p[1] = (float)-hh, p[2] = (float)hw, p[3] = (float)hh;
+    return (float *)p;
+}
+static float *__thiscall effect_entry_408750(const uint8_t *self, int32_t n, float w, uint32_t v) {
+    g_effect_rects++;
+    const long double hw = (long double)w * *(const float *)0xf2651c;
+    volatile float *const p = effect_rect_place(self, n);
+    ((volatile uint32_t *)p)[1] = 0, ((volatile uint32_t *)p)[3] = v;
+    p[0] = (float)-hw, p[2] = (float)hw;
+    return (float *)p;
+}
+static const uint8_t effect_entry_408700_original[] = {0x8b, 0x44, 0x24, 0x04, 0xd9, 0x44, 0x24, 0x08, 0xd8, 0x0d, 0x1c, 0x65, 0xf2, 0x00};
+REWRITE("Effect::Entry408700", 0x408700, effect_entry_408700_original, &effect_entry_408700, &g_effect_rects);
+static const uint8_t effect_entry_408750_original[] = {0x8b, 0x44, 0x24, 0x04, 0xd9, 0x44, 0x24, 0x08, 0x8b, 0x09};
+REWRITE("Effect::Entry408750", 0x408750, effect_entry_408750_original, &effect_entry_408750, &g_effect_rects);
+
+// ---- Effect::Round441270, Ride::Round5F97A0 (0x441270 by 4, 0x5F97A0 by 32) -----------------------------------------
+// floor((+0x48 - +0x54) K) (K 0xF28CF8; a float first), divided by 4 or 32 (as C divides).
+static volatile long g_round_steps;
+template <int32_t Div> static int32_t __thiscall round_step(const uint8_t *self) {
+    g_round_steps++;
+    volatile float d = (float)(((long double)*(const float *)(self + 0x48) - *(const float *)(self + 0x54)) * *(const float *)0xf28cf8);
+    volatile float fl = (float)floor_h2(d);
+    return (int32_t)x87_fistp64_h2(fl) / Div;
+}
+static const uint8_t round_step_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x41, 0x48, 0xd8, 0x61, 0x54, 0xd8, 0x0d, 0xf8, 0x8c, 0xf2, 0x00};
+REWRITE("Effect::Round441270", 0x441270, round_step_original, &round_step<4>, &g_round_steps);
+REWRITE("Ride::Round5F97A0", 0x5f97a0, round_step_original, &round_step<32>, &g_round_steps);
+
+// ---- Window::ScaleA45620(p), ScaleA455D0(out, p) (0xA45620 in place, 0xA455D0 into out) ------------------------------
+// x by the width ((+0x84 - +0x7C) / 1024) and y by the height ((+0x88 - +0x80) K, K 0xF28568; a float in A455D0).
+static volatile long g_window_scales;
+static void __thiscall window_scale_a45620(const uint8_t *self, float *p) {
+    g_window_scales++;
+    auto at = [&](uint32_t o) { return *(const float *)(self + o); };
+    volatile float x = (float)(((long double)at(0x84) - at(0x7c)) * *(const float *)0xf2856c * p[0]);
+    volatile float y = (float)(((long double)at(0x88) - at(0x80)) * *(const float *)0xf28568 * p[1]);
+    volatile float *const o = p;
+    o[0] = x;
+    o[1] = y;
+}
+static float *__thiscall window_scale_a455d0(const uint8_t *self, float *out, const float *p) {
+    g_window_scales++;
+    auto at = [&](uint32_t o) { return *(const float *)(self + o); };
+    const long double y = p[1];
+    const long double w = ((long double)at(0x84) - at(0x7c)) * *(const float *)0xf2856c;
+    volatile float h = (float)(((long double)at(0x88) - at(0x80)) * *(const float *)0xf28568);
+    volatile float *const o = out;
+    o[0] = (float)(w * p[0]);
+    o[1] = (float)((long double)h * y);
+    return out;
+}
+static const uint8_t window_scale_a45620_original[] = {0x83, 0xec, 0x08, 0xd9, 0x81, 0x84, 0x00, 0x00, 0x00, 0x8b, 0x44, 0x24, 0x0c};
+REWRITE("Window::ScaleA45620", 0xa45620, window_scale_a45620_original, &window_scale_a45620, &g_window_scales);
+static const uint8_t window_scale_a455d0_original[] = {0x8b, 0x44, 0x24, 0x08, 0xd9, 0x40, 0x04, 0xd9, 0x81, 0x84, 0x00, 0x00, 0x00};
+REWRITE("Window::ScaleA455D0", 0xa455d0, window_scale_a455d0_original, &window_scale_a455d0, &g_window_scales);
+
+// ---- Waterfall::Line917540(p) (0x917540): a plane's value at a point --------------------------------------------------
+// With the normal n (+0x10) and base b (+0): ((((n.z p.z + n.y p.y) - n.z b.z) - n.y b.y) - n.x b.x) + n.x p.x.
+static volatile long g_waterfall_lines;
+static long double __thiscall waterfall_line_917540(const float *self, const float *p) {
+    g_waterfall_lines++;
+    const long double a = self[4], b = self[5], c = self[6];
+    long double r = (long double)self[6] * p[2] + (long double)self[5] * p[1];
+    r = r + -c * self[2];
+    r = r + -b * self[1];
+    r = r + -a * self[0];
+    return r + (long double)self[4] * p[0];
+}
+static const uint8_t waterfall_line_917540_original[] = {0x55, 0x8b, 0xec, 0xd9, 0x41, 0x10, 0x8b, 0x45, 0x08, 0xd9, 0xe0};
+REWRITE("Waterfall::Line917540", 0x917540, waterfall_line_917540_original, &waterfall_line_917540, &g_waterfall_lines);
+
+// ---- Terrain::Untotal8FDA10 (0x8FDA10) -----------------------------------------------------------------------------
+// Takes its two counts (+0x14, +0x18) out of the game's totals (0x133A028, 0x133A02C), sets them from the size n of its
+// part (+0xC: +0xC: +0): 2 n and 6 n - 6, and adds them back in.
+static volatile long g_terrain_untotals;
+static void __thiscall terrain_untotal_8fda10(uint8_t *self) {
+    g_terrain_untotals++;
+    volatile int32_t *const total = (volatile int32_t *)0x133a028;
+    int32_t *const c = (int32_t *)(self + 0x14);
+    total[0] -= c[0];
+    total[1] -= c[1];
+    const int32_t n = **(const int32_t *const *)(*(const uint8_t *const *)(self + 0xc) + 0xc);
+    c[1] = 6 * n - 6;
+    c[0] = 2 * n;
+    total[0] += c[0];
+    total[1] += c[1];
+}
+static const uint8_t terrain_untotal_8fda10_original[] = {0x8b, 0x41, 0x14, 0x8b, 0x15, 0x28, 0xa0, 0x33, 0x01};
+REWRITE("Terrain::Untotal8FDA10", 0x8fda10, terrain_untotal_8fda10_original, &terrain_untotal_8fda10, &g_terrain_untotals);
+
+// ---- WildAnimal::SetPointB2F0C0(p) (0xB2F0C0) ----------------------------------------------------------------------
+// The point goes to +0x90; the heading (+0x80) = atan2(x, z) (fpatan), 2 pi (a float) added when below 0.
+static volatile long g_animal_headings;
+static inline long double x87_atan2_h2(long double y, long double x) {
+    long double r;
+    __asm__("fpatan" : "=t"(r) : "0"(x), "u"(y) : "st(1)");
+    return r;
+}
+static void __thiscall wild_animal_set_point_b2f0c0(uint8_t *self, const uint32_t *p) {
+    g_animal_headings++;
+    uint32_t *const u = (uint32_t *)(self + 0x90);
+    u[0] = p[0], u[1] = p[1], u[2] = p[2];
+    long double a = x87_atan2_h2(*(const float *)(self + 0x90), *(const float *)(self + 0x98));
+    if (a < *(const float *)0xf264e0) a = a + *(const float *)0xf268dc;
+    *(volatile float *)(self + 0x80) = (float)a;
+}
+static const uint8_t wild_animal_set_point_b2f0c0_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x10, 0x89, 0x91, 0x90, 0x00, 0x00, 0x00};
+REWRITE("WildAnimal::SetPointB2F0C0", 0xb2f0c0, wild_animal_set_point_b2f0c0_original, &wild_animal_set_point_b2f0c0, &g_animal_headings);
+
+// ---- Window::SetPointC5DED0(w, h, p) (0xC5DED0) --------------------------------------------------------------------
+// The point goes to +0xD0, and its parts over w and h (whole numbers) to +0x194, +0x198.
+static volatile long g_window_points;
+static void __thiscall window_set_point_c5ded0(uint8_t *self, int32_t w, int32_t h, const float *p) {
+    g_window_points++;
+    uint32_t *const u = (uint32_t *)(self + 0xd0);
+    u[0] = ((const uint32_t *)p)[0], u[1] = ((const uint32_t *)p)[1];
+    *(volatile float *)(self + 0x194) = (float)(p[0] / (long double)w);
+    *(volatile float *)(self + 0x198) = (float)(p[1] / (long double)h);
+}
+static const uint8_t window_set_point_c5ded0_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x14, 0xdb, 0x44, 0x24, 0x0c};
+REWRITE("Window::SetPointC5DED0", 0xc5ded0, window_set_point_c5ded0_original, &window_set_point_c5ded0, &g_window_points);
+
+// ---- Lighting::DownwardDirection(out) (0x4261F0) -------------------------------------------------------------------
+// The vector at +0x120 with its y negated when it is above 0. Gives out.
+static volatile long g_light_downs;
+static float *__thiscall lighting_downward_direction(const uint8_t *self, float *out) {
+    g_light_downs++;
+    const float *const v = (const float *)(self + 0x120);
+    long double y = v[1];
+    if (y > *(const float *)0xf264e0) y = -y;
+    volatile float *const o = out;
+    o[0] = v[0], o[1] = (float)y, o[2] = v[2];
+    return out;
+}
+static const uint8_t lighting_downward_direction_original[] = {0x55, 0x8b, 0xec, 0xd9, 0x81, 0x20, 0x01, 0x00, 0x00};
+REWRITE("Lighting::DownwardDirection", 0x4261f0, lighting_downward_direction_original, &lighting_downward_direction, &g_light_downs);
+
+// ---- CustomPersistingSpline::EndDirection(out, -) (0x424D50) -------------------------------------------------------
+// The last point's (36 bytes each at +4, count +8) vector at +0xC, reversed. Gives out.
+static volatile long g_spline_ends;
+static float *__thiscall spline_end_direction(const uint8_t *self, float *out, uint32_t) {
+    g_spline_ends++;
+    const float *const v = (const float *)(*(const uint8_t *const *)(self + 4) + *(const int32_t *)(self + 8) * 36 - 0x18);
+    volatile float *const o = out;
+    o[0] = (float)-(long double)v[0], o[1] = (float)-(long double)v[1], o[2] = (float)-(long double)v[2];
+    return out;
+}
+static const uint8_t spline_end_direction_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0x8b, 0x41, 0x08};
+REWRITE("CustomPersistingSpline::EndDirection", 0x424d50, spline_end_direction_original, &spline_end_direction, &g_spline_ends);
+
+// ---- Rect::Contains(p) (0xBE7780) ----------------------------------------------------------------------------------
+// Whether left <= x <= right and top <= y <= bottom (the rect {left, top, right, bottom}; a NaN gives 0).
+static volatile long g_rect_contains;
+static uint32_t __thiscall rect_contains(const float *self, const float *p) {
+    g_rect_contains++;
+    return self[0] <= p[0] && self[2] >= p[0] && self[1] <= p[1] && self[3] >= p[1] ? 1 : 0;
+}
+static const uint8_t rect_contains_original[] = {0xd9, 0x01, 0x8b, 0x54, 0x24, 0x04, 0xd8, 0x1a, 0xdf, 0xe0};
+REWRITE("Rect::Contains", 0xbe7780, rect_contains_original, &rect_contains, &g_rect_contains);
+
+// ---- HashTable::FindBD65D0(key) (0xBD65D0) -------------------------------------------------------------------------
+// The key's first dword k; its bucket k % +4 (unsigned) runs from buckets[b] to buckets[b + 1] (+0xC); entry i (dwords
+// at +0x10) equal to k gives +0x14 + 2 i, none 0.
+static volatile long g_hash_finds;
+static uint16_t *__thiscall hash_table_find_bd65d0(const uint8_t *self, const uint32_t *key) {
+    g_hash_finds++;
+    const uint32_t k = key[0];
+    const uint32_t *const bucket = *(const uint32_t *const *)(self + 0xc) + k % *(const uint32_t *)(self + 4);
+    const uint32_t *const keys = *(const uint32_t *const *)(self + 0x10);
+    for (uint32_t i = bucket[0]; i < bucket[1]; i++)
+        if (keys[i] == k) return (uint16_t *)(*(uint8_t *const *)(self + 0x14) + i * 2);
+    return nullptr;
+}
+static const uint8_t hash_table_find_bd65d0_original[] = {0x8b, 0x44, 0x24, 0x04, 0x56, 0x57, 0x8b, 0x38, 0x33, 0xd2};
+REWRITE("HashTable::FindBD65D0", 0xbd65d0, hash_table_find_bd65d0_original, &hash_table_find_bd65d0, &g_hash_finds);
+
+// ---- PointerArray::RemoveSwap2(v) (0x80ED70) -----------------------------------------------------------------------
+// The first entry equal to v (array +0x5C, count +0x64 read again each time) gets the last one (by the count as first
+// read), and the count goes down by one.
+static volatile long g_pointer_removes;
+static void __thiscall pointer_array_remove_swap2(uint8_t *self, uint32_t v) {
+    g_pointer_removes++;
+    const int32_t count = *(const int32_t *)(self + 0x64);
+    uint32_t *const a = *(uint32_t *const *)(self + 0x5c);
+    for (int32_t i = 0; i < *(volatile int32_t *)(self + 0x64); i++)
+        if (a[i] == v) {
+            a[i] = a[count - 1];
+            *(int32_t *)(self + 0x64) -= 1;
+            return;
+        }
+}
+static const uint8_t pointer_array_remove_swap2_original[] = {0x57, 0x8b, 0x79, 0x64, 0x33, 0xc0, 0x85, 0xff};
+REWRITE("PointerArray::RemoveSwap2", 0x80ed70, pointer_array_remove_swap2_original, &pointer_array_remove_swap2, &g_pointer_removes);
+
+// ---- Record::InitC212D0(p, v) (0xC212D0) ---------------------------------------------------------------------------
+// +0xC, +0x1C, +0x2C = the largest float, +0x38 = v, +0x3C = 0, +0 = p's three dwords (zeros with no p). Gives it.
+static volatile long g_record_inits;
+static uint32_t *__thiscall record_init_c212d0(uint32_t *self, const uint32_t *p, uint32_t v) {
+    g_record_inits++;
+    self[3] = self[7] = self[11] = 0x7f7fffff;
+    self[14] = v;
+    self[15] = 0;
+    if (p) self[0] = p[0], self[1] = p[1], self[2] = p[2];
+    else self[0] = self[1] = self[2] = 0;
+    return self;
+}
+static const uint8_t record_init_c212d0_original[] = {0x8b, 0xc1, 0xb9, 0xff, 0xff, 0x7f, 0x7f, 0x89, 0x48, 0x0c};
+REWRITE("Record::InitC212D0", 0xc212d0, record_init_c212d0_original, &record_init_c212d0, &g_record_inits);
+
+// ---- Animal::ScaleB16D60 (0xB16D60) --------------------------------------------------------------------------------
+// t = +0x10 K (K 0xF85E78, a float) kept within 0..1.5 the FPU's way: t when 0 is below it (or t is a NaN), else 0;
+// then that when 1.5 is above it, else 1.5 (so a NaN gives 1.5).
+static volatile long g_animal_scales;
+static long double __thiscall animal_scale_b16d60(const uint8_t *self) {
+    g_animal_scales++;
+    volatile float t = (float)((long double)*(const float *)(self + 0x10) * *(const float *)0xf85e78);
+    const long double lo = 0.0L, hi = 1.5L;
+    const long double m = lo < t || t != t ? (long double)t : lo;
+    volatile float r = (float)(hi > m ? m : hi);
+    return r;
+}
+static const uint8_t animal_scale_b16d60_original[] = {0x83, 0xec, 0x10, 0xd9, 0x41, 0x10, 0xc7, 0x04, 0x24, 0x00, 0x00, 0xc0, 0x3f};
+REWRITE("Animal::ScaleB16D60", 0xb16d60, animal_scale_b16d60_original, &animal_scale_b16d60, &g_animal_scales);
+
+// ---- Window::Width670620 (0x670620) --------------------------------------------------------------------------------
+// The part's width ((+0x134: +0x84 - +0x7C) plus the +0x108 part's +0x84, a float), at least 290 (290 for a NaN).
+static volatile long g_window_widths;
+static long double __thiscall window_width_670620(const uint8_t *self) {
+    g_window_widths++;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0x134), *const q = *(const uint8_t *const *)(self + 0x108);
+    volatile float w = (float)(((long double)*(const float *)(p + 0x84) - *(const float *)(p + 0x7c)) + *(const float *)(q + 0x84));
+    volatile float r = w < 290.0f || w != w ? 290.0f : (float)w;
+    return r;
+}
+static const uint8_t window_width_670620_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x81, 0x34, 0x01, 0x00, 0x00, 0xd9, 0x80, 0x84, 0x00, 0x00, 0x00};
+REWRITE("Window::Width670620", 0x670620, window_width_670620_original, &window_width_670620, &g_window_widths);
+
+// ---- Shader::TakeCC2C30(out, -) (0xCC2C30): one more taken (+0x1000), out cleared. Gives the shader. -----------------
+static volatile long g_shader_takes;
+static uint8_t *__thiscall shader_take_cc2c30(uint8_t *self, uint32_t *out, uint32_t) {
+    g_shader_takes++;
+    *(int32_t *)(self + 0x1000) += 1;
+    *out = 0;
+    return self;
+}
+static const uint8_t shader_take_cc2c30_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0xc7, 0x45, 0xf8, 0xcc, 0xcc, 0xcc, 0xcc};
+REWRITE("Shader::TakeCC2C30", 0xcc2c30, shader_take_cc2c30_original, &shader_take_cc2c30, &g_shader_takes);
+
+// ---- Bits::ResetE04110 (0xE04110): a new version of a bit set --------------------------------------------------------
+// The version (+8) goes up by one; past 0x40000000 it starts again at 1 and the words (+0xC, count +0 read again each
+// time) are cleared. +0x14 = 0 either way.
+static volatile long g_bit_resets;
+static void __thiscall bits_reset_e04110(uint8_t *self) {
+    g_bit_resets++;
+    int32_t *const version = (int32_t *)(self + 8);
+    if (*version > 0x40000000) {
+        *version = 1;
+        for (int32_t i = 0; i < *(volatile int32_t *)self; i++) (*(uint32_t *const *)(self + 0xc))[i] = 0;
+    } else
+        *version += 1;
+    *(uint32_t *)(self + 0x14) = 0;
+}
+static const uint8_t bits_reset_e04110_original[] = {0x8b, 0x41, 0x08, 0x3d, 0x00, 0x00, 0x00, 0x40, 0x7e, 0x28};
+REWRITE("Bits::ResetE04110", 0xe04110, bits_reset_e04110_original, &bits_reset_e04110, &g_bit_resets);
+
+// ---- Bits::TestC165F0(n) (0xC165F0): sets bit n, counting it (+0x14) when it was clear --------------------------------
+// Word n / 32 and bit n % 32 (as C divides); nothing outside the words (+0xC, count +0x10). Gives the word index when
+// outside, else the bit's mask.
+static volatile long g_bit_sets;
+static uint32_t __thiscall bits_test_c165f0(uint8_t *self, int32_t n) {
+    g_bit_sets++;
+    const int32_t w = n / 32, b = n % 32;
+    if (w < 0 || w >= *(const int32_t *)(self + 0x10)) return (uint32_t)w;
+    uint32_t *const word = *(uint32_t *const *)(self + 0xc) + w;
+    const uint32_t mask = 1u << (b & 31);
+    if (!(*word & mask)) *(int32_t *)(self + 0x14) += 1;
+    *word |= mask;
+    return mask;
+}
+static const uint8_t bits_test_c165f0_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4c, 0x24, 0x08, 0x8b, 0xc1, 0x99};
+REWRITE("Bits::TestC165F0", 0xc165f0, bits_test_c165f0_original, &bits_test_c165f0, &g_bit_sets);
+
+// ---- Bits::SizeBB65A0(words in ecx, n in edx) (0xBB65A0): the first n bits set ----------------------------------------
+// The whole words to 0xFFFFFFFF, then the bits of the last part one by one. Gives n.
+static volatile long g_bit_fills;
+static uint32_t __fastcall bits_size_bb65a0(uint32_t *words, uint32_t n) {
+    g_bit_fills++;
+    const uint32_t whole = n >> 5;
+    for (uint32_t i = 0; i < whole; i++) words[i] = 0xffffffff;
+    for (uint32_t i = whole << 5; i < n; i++) words[i >> 5] |= 1u << (i & 31);
+    return n;
+}
+static const uint8_t bits_size_bb65a0_original[] = {0x53, 0x56, 0x8b, 0xd9, 0x8b, 0xf2, 0xc1, 0xee, 0x05, 0x57};
+REWRITE("Bits::SizeBB65A0", 0xbb65a0, bits_size_bb65a0_original, &bits_size_bb65a0, &g_bit_fills);
+
+// ---- Text::CopyBFC290(from) (0xBFC290) -----------------------------------------------------------------------------
+// from's +0x10 into +0x5C and +0x74; the mode (+0x7C) 0 when it is 0, else 6 (7 when the game's byte 0x13D3175 is
+// clear), with 8 added when from's byte +0x18 is set. Gives from.
+static volatile long g_text_copies;
+static const uint8_t *__thiscall text_copy_bfc290(uint8_t *self, const uint8_t *from) {
+    g_text_copies++;
+    uint32_t *const u = (uint32_t *)self;
+    const uint32_t v = *(const uint32_t *)(from + 0x10);
+    u[0x5c / 4] = v, u[0x74 / 4] = v;
+    if (!v) {
+        u[0x7c / 4] = 0;
+        return from;
+    }
+    u[0x7c / 4] = *(const volatile uint8_t *)0x13d3175 ? 6 : 7;
+    if (from[0x18]) u[0x7c / 4] |= 8;
+    return from;
+}
+static const uint8_t text_copy_bfc290_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x50, 0x10, 0x89, 0x51, 0x5c};
+REWRITE("Text::CopyBFC290", 0xbfc290, text_copy_bfc290_original, &text_copy_bfc290, &g_text_copies);
+
+// ---- Window::Init6AF710(owner, list) (0x6AF710) --------------------------------------------------------------------
+// +8 and +0x14 point at itself, +0x18 = owner, +0x1C = list; its node at +0xC goes in at the front of the list's
+// (+0x14) nodes, and itself at the front of the owner's (+0x34) (nodes {next, back}). Gives it.
+static volatile long g_window_inits;
+static uint32_t *__thiscall window_init_6af710(uint32_t *self, const uint8_t *owner, const uint8_t *list) {
+    g_window_inits++;
+    self[2] = (uint32_t)(uintptr_t)self;
+    self[5] = (uint32_t)(uintptr_t)self;
+    self[6] = (uint32_t)(uintptr_t)owner;
+    self[7] = (uint32_t)(uintptr_t)list;
+    auto push_front = [](uint32_t *head, uint32_t *node) {
+        node[0] = head[0];
+        ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)node;
+        node[1] = (uint32_t)(uintptr_t)head;
+        head[0] = (uint32_t)(uintptr_t)node;
+    };
+    push_front(*(uint32_t *const *)(list + 0x14), self + 3);
+    push_front(*(uint32_t *const *)((const uint8_t *)(uintptr_t)self[6] + 0x34), self);
+    return self;
+}
+static const uint8_t window_init_6af710_original[] = {0x8b, 0x54, 0x24, 0x08, 0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04};
+REWRITE("Window::Init6AF710", 0x6af710, window_init_6af710_original, &window_init_6af710, &g_window_inits);

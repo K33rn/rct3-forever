@@ -74,8 +74,8 @@ address,size,name,callers,status
 0x408550,91,Record::CopyAndSet,0,rewritten
 0x4085f0,25,Owned::DeleteHeld4085F0,1,rewritten
 0x408630,52,,3,documented
-0x408700,73,,1,documented
-0x408750,65,,4,documented
+0x408700,73,Effect::Entry408700,1,rewritten
+0x408750,65,Effect::Entry408750,4,rewritten
 0x4087c0,42,,3,documented
 0x408890,510,,0,documented
 0x408a90,2262,,2,documented
@@ -481,7 +481,7 @@ address,size,name,callers,status
 0x424540,262,Slots::Resize424540,1,rewritten
 0x424650,1354,Class::Construct,3,rewritten
 0x424d10,57,,1,documented
-0x424d50,67,,1,documented
+0x424d50,67,CustomPersistingSpline::EndDirection,1,rewritten
 0x424da0,198,,1,documented
 0x424e70,78,,1,documented
 0x424ec0,405,,1,documented
@@ -508,7 +508,7 @@ address,size,name,callers,status
 0x4261a0,33,Object::DerefChain,1,rewritten
 0x4261d0,7,,10,documented
 0x4261e0,7,,10,documented
-0x4261f0,64,,13,documented
+0x4261f0,64,Lighting::DownwardDirection,13,rewritten
 0x4262f0,172,Vector::SideDirection,3,rewritten
 0x4263a0,435,Settings::Copy,2,rewritten
 0x426560,315,,3,documented
@@ -818,7 +818,7 @@ address,size,name,callers,status
 0x4410c0,46,Registered::Create441030,1,rewritten
 0x4411f0,4,,2,documented
 0x441230,59,,0,documented
-0x441270,68,,0,documented
+0x441270,68,Effect::Round441270,0,rewritten
 0x4412c0,80,Angle::Octant,0,rewritten
 0x441350,98,,1,documented
 0x4413d0,215,,3,documented
@@ -1512,9 +1512,9 @@ address,size,name,callers,status
 0x478a30,1805,,1,documented
 0x479170,40,Text::Widen,0,rewritten
 0x479530,245,,0,documented
-0x479630,68,,21,documented
+0x479630,68,Options::SetInt,21,rewritten
 0x4796b0,52,Preset::Apply4796B0,1,rewritten
-0x4796f0,73,,29,documented
+0x4796f0,73,Options::SetFloat,29,rewritten
 0x479740,48,,2,documented
 0x479770,52,Preset::Apply4796B0,1,rewritten
 0x4797b0,15,,58,documented
@@ -5294,7 +5294,7 @@ address,size,name,callers,status
 0x5f9220,491,,1,documented
 0x5f9660,162,,9,documented
 0x5f9740,30,DeletingDestructor,2,rewritten
-0x5f97a0,68,,0,documented
+0x5f97a0,68,Ride::Round5F97A0,0,rewritten
 0x5f99b0,130,Destructor::Steps,1,rewritten
 0x5fa1b0,75,,1,documented
 0x5fa250,2452,,1,documented
@@ -6299,7 +6299,7 @@ address,size,name,callers,status
 0x670230,230,,1,documented
 0x670380,526,Window::Titled,4,rewritten
 0x6705c0,30,DeletingDestructor,2,rewritten
-0x670620,68,,0,documented
+0x670620,68,Window::Width670620,0,rewritten
 0x670670,66,Child::DropBoth63A180,1,rewritten
 0x6706d0,54,Child::Drop63B4E0,1,rewritten
 0x670730,15,,22,documented
@@ -7015,7 +7015,7 @@ address,size,name,callers,status
 0x6af540,184,List::DeleteAll6AF540,10,rewritten
 0x6af600,184,List::DeleteAll6AF540,0,rewritten
 0x6af6c0,56,Record::Fields,55,rewritten
-0x6af710,67,,116,documented
+0x6af710,67,Window::Init6AF710,116,rewritten
 0x6af760,113,,284,documented
 0x6af7e0,764,,277,documented
 0x6afaf0,299,,1330,documented
@@ -10630,7 +10630,7 @@ address,size,name,callers,status
 0x80eca0,26,OwnedPointer::Reset,0,rewritten
 0x80ecf0,59,,0,documented
 0x80ed30,52,Array::Push80ED30,0,rewritten
-0x80ed70,65,,2,documented
+0x80ed70,65,PointerArray::RemoveSwap2,2,rewritten
 0x80edc0,105,,1,documented
 0x80ee30,70,Words::Push427790,1,rewritten
 0x80ee80,84,PointerArray::RemoveSwap,2,rewritten
@@ -12619,10 +12619,10 @@ address,size,name,callers,status
 0x8ee400,851,,1,documented
 0x8ee760,592,,2,documented
 0x8ee9c0,537,,1,documented
-0x8eecf0,72,,0,documented
-0x8eed40,72,,0,documented
-0x8eed90,70,,0,documented
-0x8eede0,70,,0,documented
+0x8eecf0,72,Park::Copy8EECF0,0,rewritten
+0x8eed40,72,Park::Copy8EED40,0,rewritten
+0x8eed90,70,Park::Copy8EED90,0,rewritten
+0x8eede0,70,Park::Copy8EEDE0,0,rewritten
 0x8eee50,35,Arrays::Free8E7200,2,rewritten
 0x8eef10,622,,1,documented
 0x8ef180,96,Vertices::SetSecond,1,rewritten
@@ -12700,7 +12700,7 @@ address,size,name,callers,status
 0x8fd690,140,,3,documented
 0x8fd720,109,SortedPointers::FindInt,7,rewritten
 0x8fd870,147,,3,documented
-0x8fda10,72,,2,documented
+0x8fda10,72,Terrain::Untotal8FDA10,2,rewritten
 0x8fdb30,127,Quad::UpdateCounts,2,rewritten
 0x8fdc80,36,OwnedPair::Free,2,rewritten
 0x8fde70,121,Record::CopyFields,1,rewritten
@@ -12922,7 +12922,7 @@ address,size,name,callers,status
 0x916b40,1715,,1,documented
 0x917210,527,Window::Titled,1,rewritten
 0x9174a0,78,,1,documented
-0x917540,71,,0,documented
+0x917540,71,Waterfall::Line917540,0,rewritten
 0x9177b0,3071,,3,documented
 0x9183b0,4224,,0,documented
 0x919430,202,Waterfall::Set919430,1,rewritten
@@ -15822,8 +15822,8 @@ address,size,name,callers,status
 0xa45310,55,,32,documented
 0xa45370,97,,1,documented
 0xa45570,57,,5,documented
-0xa455d0,66,,14,documented
-0xa45620,70,,0,documented
+0xa455d0,66,Window::ScaleA455D0,14,rewritten
+0xa45620,70,Window::ScaleA45620,0,rewritten
 0xa45670,133,Window::ArcA45670,5,rewritten
 0xa45700,159,,35,documented
 0xa457a0,145,,36,documented
@@ -17698,7 +17698,7 @@ address,size,name,callers,status
 0xb16890,243,Kind::NameB16890,1,rewritten
 0xb169a0,40,,6,documented
 0xb169d0,876,,1,documented
-0xb16d60,66,,3,documented
+0xb16d60,66,Animal::ScaleB16D60,3,rewritten
 0xb16e00,48,QueryInterface,0,rewritten
 0xb17170,30,DeletingDestructor,1,rewritten
 0xb17190,7,BaseClass::SetClass,1,rewritten
@@ -17921,7 +17921,7 @@ address,size,name,callers,status
 0xb2eda0,30,DeletingDestructor,2,rewritten
 0xb2edd0,657,Class::Construct,2,rewritten
 0xb2f090,30,DeletingDestructor,2,rewritten
-0xb2f0c0,72,,2,documented
+0xb2f0c0,72,WildAnimal::SetPointB2F0C0,2,rewritten
 0xb2f110,175,,2,documented
 0xb2f1c0,105,Factory::Create,1,rewritten
 0xb2f230,105,Factory::Create,1,rewritten
@@ -19404,7 +19404,7 @@ address,size,name,callers,status
 0xbb6030,30,DeletingDestructor,1,rewritten
 0xbb6050,174,Vector::TransformPoint2,0,rewritten
 0xbb6560,31,,0,documented
-0xbb65a0,67,,1,documented
+0xbb65a0,67,Bits::SizeBB65A0,1,rewritten
 0xbb6620,37,Block::Delete72F200,0,rewritten
 0xbb6880,175,,1,documented
 0xbb6970,109,,0,documented
@@ -19935,7 +19935,7 @@ address,size,name,callers,status
 0xbd6410,183,,1,documented
 0xbd6510,35,Arrays::Free8E7200,3,rewritten
 0xbd6540,138,,3,documented
-0xbd65d0,66,,2,documented
+0xbd65d0,66,HashTable::FindBD65D0,2,rewritten
 0xbd6620,76,Prime::After,2,rewritten
 0xbd66b0,11,,2,documented
 0xbd6700,11,,2,documented
@@ -20168,7 +20168,7 @@ address,size,name,callers,status
 0xbe7520,184,Rect::Intersect,1,rewritten
 0xbe75e0,162,Rect::UnionInto,0,rewritten
 0xbe7690,184,Rect::Union,2,rewritten
-0xbe7780,66,,40,documented
+0xbe7780,66,Rect::Contains,40,rewritten
 0xbe7840,7,SetTable,2,rewritten
 0xbe7880,138,,4,documented
 0xbe7950,50,,3,documented
@@ -20456,7 +20456,7 @@ address,size,name,callers,status
 0xbfc150,74,,1,documented
 0xbfc1b0,49,,1,documented
 0xbfc1f0,138,,3,documented
-0xbfc290,71,,1,documented
+0xbfc290,71,Text::CopyBFC290,1,rewritten
 0xbfc350,87,,2,documented
 0xbfc3c0,58,Task::ReleaseBFC3C0,2,rewritten
 0xbfc400,50,Lookup::ForgetBFC400,2,rewritten
@@ -20885,7 +20885,7 @@ address,size,name,callers,status
 0xc161e0,155,Big::RunC161E0,2,rewritten
 0xc16280,155,Big::RunC161E0,3,rewritten
 0xc163d0,13,,9,documented
-0xc165f0,66,,0,documented
+0xc165f0,66,Bits::TestC165F0,0,rewritten
 0xc16640,27,,0,documented
 0xc16660,124,Bits::AllSet,2,rewritten
 0xc166e0,102,,1,documented
@@ -21017,7 +21017,7 @@ address,size,name,callers,status
 0xc211c0,97,,8,documented
 0xc21230,54,,8,documented
 0xc21270,77,,1,documented
-0xc212d0,66,,2,documented
+0xc212d0,66,Record::InitC212D0,2,rewritten
 0xc21320,48,,5,documented
 0xc21380,40,,24,documented
 0xc213b0,325,Curves::StepC213B0,5,rewritten
@@ -21675,7 +21675,7 @@ address,size,name,callers,status
 0xc5d840,167,,5,documented
 0xc5d920,441,,3,documented
 0xc5dae0,198,,4,documented
-0xc5ded0,69,,0,documented
+0xc5ded0,69,Window::SetPointC5DED0,0,rewritten
 0xc5df60,782,,1,documented
 0xc5e270,130,,7,documented
 0xc5e300,164,,6,documented
@@ -22623,7 +22623,7 @@ address,size,name,callers,status
 0xcc2ae0,65,,1,documented
 0xcc2b30,18,~CDataBoundProperty,1,library
 0xcc2b50,213,,0,documented
-0xcc2c30,65,,0,documented
+0xcc2c30,65,Shader::TakeCC2C30,0,rewritten
 0xcc2c80,61,`scalar_deleting_destructor',1,library
 0xcc2cc0,30,Cell::ClearCC2CC0,1,rewritten
 0xcc2ce0,22,Object::DbgSingleton,2,rewritten
@@ -26290,7 +26290,7 @@ address,size,name,callers,status
 0xe03ff0,142,,1,documented
 0xe04080,85,,1,documented
 0xe040e0,33,Destructor::Steps,7,rewritten
-0xe04110,62,,1,documented
+0xe04110,62,Bits::ResetE04110,1,rewritten
 0xe041d0,216,,3,documented
 0xe042b0,113,Keys::RemoveAt,1,rewritten
 0xe04330,24,,1,documented
