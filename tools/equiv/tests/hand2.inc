@@ -1409,4 +1409,132 @@ static int __cdecl h2_lower(int c) { return c >= 'A' && c <= 'Z' ? c + 32 : c ^ 
                               },
                               [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
     quick(mesh_compute_normals);
+    // Vector::LengthBED120 / BED2B0: axes along each part (either sign), random, tied parts and zero
+    auto frame_about_test = [&](uintptr_t at) {
+        Test x{at,
+               [=](Rng &r) {
+                   for (int i = 0; i < 12; i++) arena<uint32_t>(0x100)[i] = r.next();
+                   const int how = r.range(0, 5);
+                   for (int k = 0; k < 3; k++) arena<float>(0x200)[k] = how == 0 ? (float)r.range(-1, 1) : how == 1 ? (k == r.range(0, 2) ? r.real(-3, 3) : r.real(-0.1f, 0.1f)) : r.real(-3, 3);
+                   if (r.range(0, 7) == 0) arena<float>(0x200)[r.range(0, 2)] = arena<float>(0x200)[r.range(0, 2)];
+               },
+               [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
+        quick(x);
+    };
+    frame_about_test(0xbed120), frame_about_test(0xbed2b0);
+    // RideCarSpinningPart::TrackMotion: states 0-3, frame times at, below and above 0, random positions
+    Test spinning_part_track_motion{0x52bae0,
+                                    [=](Rng &r) {
+                                        for (int i = 0; i < 0x80; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                        uint8_t *self = arena<uint8_t>(0x100);
+                                        for (uint32_t at = 0x1d0; at < 0x1fc; at += 4) *(float *)(self + at) = r.real(-10, 10);
+                                        *(uint32_t *)(self + 0x1c8) = r.range(0, 3), *(uint32_t *)(self + 0xf4) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                        for (int k = 0; k < 3; k++) arena<float>(0x490)[k] = r.real(-10, 10);
+                                        arena<float>(0x10)[0] = r.range(0, 5) ? r.real(0.001f, 0.1f) : (float)r.range(-1, 0);
+                                    },
+                                    [](void *fn) { ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x10)[0]); return Result{}; }};
+    quick(spinning_part_track_motion);
+    // Plane::BelowCDB0E0 and Water::Below93D140: random triangles and rays, half aimed inside the triangle (some at its
+    // edges or away), flat triangles at times
+    auto ray_triangle_setup = [=](Rng &r) {
+        float *v0 = arena<float>(0x100), *e1 = arena<float>(0x110), *e2 = arena<float>(0x120), *o = arena<float>(0x130), *d = arena<float>(0x140);
+        for (int k = 0; k < 3; k++) v0[k] = r.real(-3, 3), e1[k] = r.real(-3, 3), e2[k] = r.real(-3, 3), o[k] = r.real(-6, 6);
+        if (r.range(0, 7) == 0) for (int k = 0; k < 3; k++) e2[k] = 2 * e1[k];
+        const int how = r.range(0, 3);
+        if (how == 0) {
+            for (int k = 0; k < 3; k++) d[k] = r.real(-3, 3);
+        } else {
+            const float a = how == 1 ? r.real(0, 0.5f) : (float)r.range(0, 1), b = how == 1 ? r.real(0, 0.5f) : r.real(-0.2f, 1.2f);
+            for (int k = 0; k < 3; k++) d[k] = (v0[k] + a * e1[k] + b * e2[k] - o[k]) * (r.range(0, 4) ? 1.0f : -1.0f);
+        }
+        arena<uint32_t>(0x150)[0] = r.next();
+    };
+    Test plane_below_cdb0e0{0xcdb0e0, ray_triangle_setup, [](void *fn) {
+                                return Result{((uint8_t(__fastcall *)(void *, void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x120), arena<void>(0x130), arena<void>(0x140), arena<void>(0x150))};
+                            }};
+    quick(plane_below_cdb0e0);
+    Test water_below_93d140{0x93d140, ray_triangle_setup, [](void *fn) {
+                                uint32_t stack[2] = {(uint32_t)(uintptr_t)arena<void>(0x110), (uint32_t)(uintptr_t)arena<void>(0x150)};
+                                uint32_t *ps = stack;
+                                uint32_t eax = (uint32_t)(uintptr_t)arena<void>(0x130);
+                                void *v0 = arena<void>(0x100), *e2 = arena<void>(0x120), *d = arena<void>(0x140);
+                                __asm__ volatile("pushl 4(%%edx)\n\tpushl (%%edx)\n\tcall *%%ebx"
+                                                 : "+a"(eax), "+c"(e2), "+d"(ps), "+D"(v0), "+S"(d)
+                                                 : "b"(fn)
+                                                 : "memory", "cc");
+                                return Result{(uint32_t)(uint8_t)eax};
+                            }};
+    quick(water_below_93d140);
+    // Terrain::Below8BBB60: the same rays and triangles, the normal written out too
+    Test terrain_below_8bbb60{0x8bbb60, ray_triangle_setup, [](void *fn) {
+                                  return Result{((uint8_t(__fastcall *)(void *, void *, void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x120), arena<void>(0x130), arena<void>(0x140), arena<void>(0x160), arena<void>(0x150))};
+                              }};
+    quick(terrain_below_8bbb60);
+    // Terrain::Below8BBD40: the same rays and triangles with the normal given (the true one, or off at times)
+    Test terrain_below_8bbd40{0x8bbd40,
+                              [=](Rng &r) {
+                                  ray_triangle_setup(r);
+                                  const float *e1 = arena<float>(0x110), *e2 = arena<float>(0x120);
+                                  float *n = arena<float>(0x160);
+                                  n[0] = e1[1] * e2[2] - e2[1] * e1[2], n[1] = e2[0] * e1[2] - e1[0] * e2[2], n[2] = e2[1] * e1[0] - e1[1] * e2[0];
+                                  if (r.range(0, 4) == 0) n[r.range(0, 2)] += r.real(-1, 1);
+                              },
+                              [](void *fn) {
+                                  return Result{((uint8_t(__fastcall *)(void *, void *, void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x120), arena<void>(0x130), arena<void>(0x140), arena<void>(0x160), arena<void>(0x150))};
+                              }};
+    quick(terrain_below_8bbd40);
+    // Path::Below71C470: the same rays and triangles, the nearest t so far large, small or between
+    Test path_below_71c470{0x71c470,
+                           [=](Rng &r) {
+                               ray_triangle_setup(r);
+                               arena<float>(0x150)[0] = r.range(0, 2) ? 1e30f : r.real(0, 2);
+                           },
+                           [](void *fn) {
+                               return Result{((uint8_t(__fastcall *)(void *, void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x120), arena<void>(0x130), arena<void>(0x140), arena<void>(0x150))};
+                           }};
+    quick(path_below_71c470);
+    // Water::Length94CA80: unit normals either way, directions of any size, ratios near 1 (so both branches happen)
+    Test water_bend{0x94ca80,
+                    [=](Rng &r) {
+                        float *n = arena<float>(0x100), *v = arena<float>(0x110);
+                        for (int k = 0; k < 3; k++) n[k] = r.real(-1, 1), v[k] = r.real(-2, 2);
+                        if (r.range(0, 6) == 0) for (int k = 0; k < 3; k++) v[k] = n[k] * r.real(-2, 2);
+                        arena<float>(0x10)[0] = r.range(0, 3) ? r.real(0.5f, 1.5f) : r.real(0.05f, 0.5f);
+                        for (int i = 0; i < 3; i++) arena<uint32_t>(0x120)[i] = r.next();
+                    },
+                    [](void *fn) {
+                        uint32_t eax;
+                        void *n = arena<void>(0x100), *v = arena<void>(0x110), *out = arena<void>(0x120);
+                        const uint32_t ratio = arena<uint32_t>(0x10)[0];
+                        __asm__ volatile("pushl %[r]\n\tcall *%[f]"
+                                         : "=a"(eax), "+c"(n), "+d"(v), "+S"(out)
+                                         : [r] "m"(ratio), [f] "b"(fn)
+                                         : "memory", "cc");
+                        return Result{eax};
+                    }};
+    quick(water_bend);
+    // Sound::Direction: listeners before, beside and past segments (of no length at times)
+    Test sound_direction{0xce55d0,
+                         [=](Rng &r) {
+                             for (int i = 0; i < 0x30; i++) arena<uint32_t>(0x100)[i] = r.next();
+                             for (int k = 0; k < 3; k++) arena<float>(0x190)[k] = r.real(-4, 4), arena<float>(0x1a0)[k] = r.real(-4, 4), ((volatile float *)0x10f4620)[k] = r.real(-6, 6);
+                             if (r.range(0, 5) == 0) for (int k = 0; k < 3; k++) arena<float>(0x1a0)[k] = arena<float>(0x190)[k];
+                             for (int i = 0; i < 3; i++) arena<uint32_t>(0x20)[i] = r.next();
+                         },
+                         [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x20)); return Result{}; }};
+    t.push_back(sound_direction);
+    // Vector::SameC5D1C0: pairs close or not in each part (exact, tiny and large differences), either order
+    Test vector_same_c5d1c0{0xc5d1c0,
+                            [=](Rng &r) {
+                                for (int k = 0; k < 4; k++) {
+                                    const float v = r.real(-5, 5);
+                                    const int how = r.range(0, 2);
+                                    arena<float>(0x100)[k] = v, arena<float>(0x110)[k] = how == 0 ? v : how == 1 ? v + r.real(-1e-4f, 1e-4f) : r.real(-5, 5);
+                                }
+                                for (int i = 0; i < 4; i++) arena<uint32_t>(0x120)[i] = r.next();
+                            },
+                            [](void *fn) {
+                                return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *))fn)(arena<void>(0x120), arena<void>(0x100), arena<void>(0x110))};
+                            }};
+    quick(vector_same_c5d1c0);
 #endif

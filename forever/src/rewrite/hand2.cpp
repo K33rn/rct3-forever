@@ -2898,3 +2898,400 @@ static void __fastcall mesh_compute_normals(const uint8_t *self) {
 }
 static const uint8_t mesh_compute_normals_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x64, 0x8b, 0x01, 0x53};
 REWRITE("Mesh::ComputeNormals", 0x95faa0, mesh_compute_normals_original, &mesh_compute_normals, &g_mesh_normals);
+
+// ---- Vector::LengthBED120 / BED2B0(this, v) (0xBED120, 0xBED2B0): a 3x3 frame (rows 16 bytes) around a given axis ----
+// Row A takes v made unit length (unit_in_place_h2). Its main part M is compared (by size) with part F, then part S:
+// when bigger than both, k is K1, else K2. Row B = e_k - A_k A (each part a float: 1 - A_k^2 or -(A_k A_j)), made unit
+// length; row C = B x A (each part one float). LengthBED120: A row 1, B row 2, C row 0, M = y, F = z, S = x, K1 = z,
+// K2 = y. LengthBED2B0: A row 2, B row 0, C row 1, M = z, F = x, S = y, K1 = x, K2 = z.
+static volatile long g_frames_about;
+template <int AR, int BR, int CR, int M, int F, int S, int K1, int K2> static void __thiscall frame_about(uint8_t *self, const uint32_t *v) {
+    g_frames_about++;
+    float *const a = (float *)(self + 16 * AR), *const b = (float *)(self + 16 * BR), *const c = (float *)(self + 16 * CR);
+    volatile uint32_t *const ai = (volatile uint32_t *)a;
+    ai[0] = v[0], ai[1] = v[1], ai[2] = v[2];
+    unit_in_place_h2(a);
+    const volatile float *const va = a;
+    const float am = va[M] < 0 ? -va[M] : va[M], af = va[F] < 0 ? -va[F] : va[F], as = va[S] < 0 ? -va[S] : va[S];
+    const int k = (am > af && am > as) ? K1 : K2;
+    volatile float *const vb = b;
+    const long double ak = va[k];
+    for (int j = 0; j < 3; j++) vb[j] = j == k ? (float)((long double)*(const float *)0xf264dc - ak * ak) : (float)-(ak * va[j]);
+    unit_in_place_h2(b);
+    const long double ax = va[0], ay = va[1], az = va[2], bx = vb[0], by = vb[1], bz = vb[2];
+    volatile float cz = (float)(bx * ay - by * ax);
+    volatile float *const vc = c;
+    *(volatile uint32_t *)(c + 2) = *(volatile uint32_t *)&cz;
+    vc[0] = (float)(by * az - bz * ay);
+    vc[1] = (float)(bz * ax - bx * az);
+}
+static const uint8_t frame_about_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0x8b, 0x45, 0x08};
+REWRITE("Vector::LengthBED120", 0xbed120, frame_about_original, (&frame_about<1, 2, 0, 1, 2, 0, 2, 1>), &g_frames_about);
+REWRITE("Vector::LengthBED2B0", 0xbed2b0, frame_about_original, (&frame_about<2, 0, 1, 2, 0, 1, 0, 2>), &g_frames_about);
+
+// ---- RideCarSpinningPart::TrackMotion(this, dt) (0x52BAE0): a part's velocity and acceleration from its position ----
+// Nothing unless dt is above the game's 0 (a NaN goes on). i = 1 / dt (a float). The position is the part's (+0xF4)
+// +0x90. First call (+0x1C8 = 0): it is kept at +0x1D0. Second: the velocity (position - kept) i goes to +0x1E0 (x kept
+// on the FPU until stored, y and z differences floats). Later: also the acceleration (velocity - kept velocity) i to
+// +0x1F0, x on the FPU, y and z differences floats. The state counts up to 3.
+static volatile long g_spin_motions;
+static void __thiscall spinning_part_track_motion(uint8_t *self, float dt) {
+    g_spin_motions++;
+    if (dt <= *(const float *)0xf264e0) return;
+    volatile float inv = (float)((long double)*(const float *)0xf264dc / dt);
+    const uint8_t *const part = *(const uint8_t *const *)(self + 0xf4);
+    volatile float px = *(const float *)(part + 0x90);
+    const uint32_t py = *(const uint32_t *)(part + 0x94), pz = *(const uint32_t *)(part + 0x98);
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    volatile float *const f = (volatile float *)self;
+    if (!t[0x1c8 / 4]) {
+        f[0x1d0 / 4] = px;
+        t[0x1d4 / 4] = py, t[0x1d8 / 4] = pz;
+        t[0x1c8 / 4] = 1;
+        return;
+    }
+    auto as_float = [](uint32_t bits) {
+        float v;
+        __builtin_memcpy(&v, &bits, 4);
+        return v;
+    };
+    const long double dx = (long double)px - f[0x1d0 / 4];
+    volatile float dy = (float)((long double)as_float(py) - f[0x1d4 / 4]);
+    volatile float dz = (float)((long double)as_float(pz) - f[0x1d8 / 4]);
+    t[0x1d0 / 4] = *(volatile uint32_t *)&px, t[0x1d4 / 4] = py, t[0x1d8 / 4] = pz;
+    const uint32_t state = t[0x1c8 / 4];
+    const long double vx = dx * inv;
+    volatile float vy = (float)((long double)dy * inv), vz = (float)((long double)dz * inv);
+    if (state == 1) {
+        f[0x1e0 / 4] = (float)vx;
+        t[0x1e4 / 4] = *(volatile uint32_t *)&vy, t[0x1e8 / 4] = *(volatile uint32_t *)&vz;
+        t[0x1c8 / 4] = 2;
+        return;
+    }
+    const long double ax = vx - f[0x1e0 / 4];
+    volatile float ay = (float)((long double)vy - f[0x1e4 / 4]), az = (float)((long double)vz - f[0x1e8 / 4]);
+    const long double ax2 = ax * inv, ay2 = (long double)ay * inv;
+    volatile float az2 = (float)((long double)az * inv);
+    t[0x1f8 / 4] = *(volatile uint32_t *)&az2;
+    f[0x1f0 / 4] = (float)ax2;
+    f[0x1f4 / 4] = (float)ay2;
+    t[0x1e4 / 4] = *(volatile uint32_t *)&vy, t[0x1e8 / 4] = *(volatile uint32_t *)&vz;
+    f[0x1e0 / 4] = (float)vx;
+    t[0x1c8 / 4] = 3;
+}
+static const uint8_t spinning_part_track_motion_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0xd9, 0x45, 0x08};
+REWRITE("RideCarSpinningPart::TrackMotion", 0x52bae0, spinning_part_track_motion_original, &spinning_part_track_motion, &g_spin_motions);
+
+// ---- Plane::BelowCDB0E0(v0, e1, e2, origin, direction, t out) (0xCDB0E0): whether a ray meets a triangle ----------------
+// fastcall v0 and e1. w = v0 - origin (y and z floats); n = e1 x e2; t = (w . n) / (n . direction), written out (a
+// float); none when t is below the game's 0. The point's offset r = w - t direction (t dy, t dz floats); with a1 = r . e1
+// (a float), a2 = r . e2 and the Gram terms e11, e12 and e22 (a float), u = (e12 a2 - e22 a1) / det and v = (e12 a1 -
+// e11 a2) / det, det = e22 e11 - e12^2: it meets when u and v are above the game's epsilon (0xF6A450) and u + v is below
+// 0xF6A44C. Sums in the game's orders.
+static volatile long g_ray_triangles;
+extern "C" uint8_t __stdcall forever_ray_triangle(const float *v0, const float *e1, const float *e2, const float *origin, const float *d, float *t_out) {
+    g_ray_triangles++;
+    const long double w0 = (long double)v0[0] - origin[0];
+    volatile float w1 = (float)((long double)v0[1] - origin[1]), w2 = (float)((long double)v0[2] - origin[2]);
+    const long double c0 = (long double)e1[1] * e2[2] - (long double)e2[1] * e1[2];
+    const long double c1 = (long double)e1[2] * e2[0] - (long double)e1[0] * e2[2];
+    const long double c2 = (long double)e2[1] * e1[0] - (long double)e1[1] * e2[0];
+    const long double num = ((long double)w2 * c2 + c1 * w1) + c0 * w0;
+    const long double den = (c2 * d[2] + c1 * d[1]) + c0 * d[0];
+    const long double t = num / den;
+    *(volatile float *)t_out = (float)t;
+    if (t < *(const float *)0xf264e0 || t != t) return 0;
+    const long double q0 = t * d[0];
+    volatile float q1 = (float)(t * d[1]), q2 = (float)(t * d[2]);
+    const long double r0 = w0 - q0, r1 = (long double)w1 - q1, r2 = (long double)w2 - q2;
+    volatile float a1 = (float)((r1 * e1[1] + r2 * e1[2]) + r0 * e1[0]);
+    const long double a2 = (r1 * e2[1] + r0 * e2[0]) + r2 * e2[2];
+    const long double e11 = ((long double)e1[1] * e1[1] + (long double)e1[2] * e1[2]) + (long double)e1[0] * e1[0];
+    const long double e12 = ((long double)e1[0] * e2[0] + (long double)e1[2] * e2[2]) + (long double)e1[1] * e2[1];
+    volatile float e22 = (float)(((long double)e2[1] * e2[1] + (long double)e2[2] * e2[2]) + (long double)e2[0] * e2[0]);
+    const long double det = (long double)e22 * e11 - e12 * e12;
+    const long double inv = (long double)*(const float *)0xf264dc / det;
+    volatile float u = (float)((e12 * a2 - (long double)e22 * a1) * inv);
+    volatile float v = (float)((e12 * a1 - e11 * a2) * inv);
+    const float eps = *(const float *)0xf6a450;
+    if (!(u > eps)) return 0;
+    if (!(v > eps)) return 0;
+    return (long double)v + u < *(const float *)0xf6a44c;
+}
+static uint8_t __fastcall plane_below_cdb0e0(const float *v0, const float *e1, const float *e2, const float *origin, const float *d, float *t_out) {
+    return forever_ray_triangle(v0, e1, e2, origin, d, t_out);
+}
+// Water::Below93D140 (0x93D140) is the same test with v0 in edi, the origin in eax, e2 in ecx and the direction in esi;
+// e1 and t out on the stack
+extern "C" __attribute__((naked)) void forever_water_below_regs() {
+    __asm__("pushl 8(%esp)\n\tpushl %esi\n\tpushl %eax\n\tpushl %ecx\n\tpushl 20(%esp)\n\tpushl %edi\n\tcalll _forever_ray_triangle@24\n\tret $8");
+}
+static const uint8_t water_below_93d140_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0xd9, 0x07, 0x8b};
+REWRITE("Water::Below93D140", 0x93d140, water_below_93d140_original, (void *)&forever_water_below_regs, &g_ray_triangles);
+static const uint8_t plane_below_cdb0e0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x8b, 0x45, 0x0c};
+REWRITE("Plane::BelowCDB0E0", 0xcdb0e0, plane_below_cdb0e0_original, &plane_below_cdb0e0, &g_ray_triangles);
+
+// ---- Terrain::Below8BBB60(v0, e1, e2, origin, direction, n out, t out) (0x8BBB60): the ray-triangle test, terrain's copy --
+// As forever_ray_triangle, with these differences: the normal e1 x e2 is written out (floats); a NaN t goes on (only a t
+// below 0 fails); a1 = (r0 e1x + r1 e1y) + r2 e1z; e12 = (e1z e2z + e1y e2y) + e1x e2x; the result is the whole eax.
+static uint32_t __fastcall terrain_below_8bbb60(const float *v0, const float *e1, const float *e2, const float *origin, const float *d, float *n_out, float *t_out) {
+    g_ray_triangles++;
+    const long double w0 = (long double)v0[0] - origin[0];
+    volatile float w1 = (float)((long double)v0[1] - origin[1]), w2 = (float)((long double)v0[2] - origin[2]);
+    const long double c0 = (long double)e1[1] * e2[2] - (long double)e2[1] * e1[2];
+    const long double c1 = (long double)e2[0] * e1[2] - (long double)e1[0] * e2[2];
+    const long double c2 = (long double)e2[1] * e1[0] - (long double)e1[1] * e2[0];
+    volatile float *const n = n_out;
+    n[0] = (float)c0, n[1] = (float)c1, n[2] = (float)c2;
+    const long double num = ((long double)w2 * c2 + c1 * w1) + c0 * w0;
+    const long double den = (c2 * d[2] + c1 * d[1]) + c0 * d[0];
+    const long double t = num / den;
+    *(volatile float *)t_out = (float)t;
+    if (t < *(const float *)0xf264e0) return 0;
+    const long double q0 = t * d[0];
+    volatile float q1 = (float)(t * d[1]), q2 = (float)(t * d[2]);
+    const long double r0 = w0 - q0, r1 = (long double)w1 - q1, r2 = (long double)w2 - q2;
+    volatile float a1 = (float)((r0 * e1[0] + r1 * e1[1]) + r2 * e1[2]);
+    const long double a2 = (r1 * e2[1] + r0 * e2[0]) + r2 * e2[2];
+    const long double e11 = ((long double)e1[1] * e1[1] + (long double)e1[2] * e1[2]) + (long double)e1[0] * e1[0];
+    const long double e12 = ((long double)e1[2] * e2[2] + (long double)e1[1] * e2[1]) + (long double)e1[0] * e2[0];
+    volatile float e22 = (float)(((long double)e2[1] * e2[1] + (long double)e2[2] * e2[2]) + (long double)e2[0] * e2[0]);
+    const long double det = (long double)e22 * e11 - e12 * e12;
+    const long double inv = (long double)*(const float *)0xf264dc / det;
+    volatile float u = (float)((e12 * a2 - (long double)e22 * a1) * inv);
+    volatile float v = (float)((e12 * a1 - e11 * a2) * inv);
+    const float eps = *(const float *)0xf6a450;
+    if (!(u > eps)) return 0;
+    if (!(v > eps)) return 0;
+    return (long double)v + u < *(const float *)0xf6a44c;
+}
+static const uint8_t terrain_below_8bbb60_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0xd9, 0x01, 0x8b};
+REWRITE("Terrain::Below8BBB60", 0x8bbb60, terrain_below_8bbb60_original, &terrain_below_8bbb60, &g_ray_triangles);
+
+// ---- Terrain::Below8BBD40(v0, e1, e2, origin, direction, n, t out) (0x8BBD40): the ray-triangle test with a given normal --
+// As Terrain::Below8BBB60 but the normal n is given: t = ((w2 n2 + w1 n1) + w0 n0) / ((d0 n0 + n2 d2) + n1 d1);
+// a1 = (r0 e1x + r2 e1z) + r1 e1y; a2 = (r0 e2x + r2 e2z) + r1 e2y; e11 and e22 = (x x + y y) + z z; e12 = (e2z e1z +
+// e2y e1y) + e1x e2x.
+static uint32_t __fastcall terrain_below_8bbd40(const float *v0, const float *e1, const float *e2, const float *origin, const float *d, const float *n, float *t_out) {
+    g_ray_triangles++;
+    const long double w0 = (long double)v0[0] - origin[0];
+    volatile float w1 = (float)((long double)v0[1] - origin[1]), w2 = (float)((long double)v0[2] - origin[2]);
+    const long double num = ((long double)w2 * n[2] + (long double)w1 * n[1]) + w0 * n[0];
+    const long double den = ((long double)d[0] * n[0] + (long double)n[2] * d[2]) + (long double)n[1] * d[1];
+    const long double t = num / den;
+    *(volatile float *)t_out = (float)t;
+    if (t < *(const float *)0xf264e0) return 0;
+    const long double q0 = t * d[0];
+    volatile float q1 = (float)(t * d[1]), q2 = (float)(t * d[2]);
+    const long double r0 = w0 - q0, r1 = (long double)w1 - q1, r2 = (long double)w2 - q2;
+    volatile float a1 = (float)((r0 * e1[0] + r2 * e1[2]) + r1 * e1[1]);
+    const long double a2 = (r0 * e2[0] + r2 * e2[2]) + r1 * e2[1];
+    const long double e11 = ((long double)e1[0] * e1[0] + (long double)e1[1] * e1[1]) + (long double)e1[2] * e1[2];
+    const long double e12 = ((long double)e2[2] * e1[2] + (long double)e2[1] * e1[1]) + (long double)e1[0] * e2[0];
+    volatile float e22 = (float)(((long double)e2[0] * e2[0] + (long double)e2[1] * e2[1]) + (long double)e2[2] * e2[2]);
+    const long double det = (long double)e22 * e11 - e12 * e12;
+    const long double inv = (long double)*(const float *)0xf264dc / det;
+    volatile float u = (float)((e12 * a2 - (long double)e22 * a1) * inv);
+    volatile float v = (float)((e12 * a1 - e11 * a2) * inv);
+    const float eps = *(const float *)0xf6a450;
+    if (!(u > eps)) return 0;
+    if (!(v > eps)) return 0;
+    return (long double)v + u < *(const float *)0xf6a44c;
+}
+static const uint8_t terrain_below_8bbd40_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8b, 0x45, 0x0c};
+REWRITE("Terrain::Below8BBD40", 0x8bbd40, terrain_below_8bbd40_original, &terrain_below_8bbd40, &g_ray_triangles);
+
+// ---- Path::Below71C470(v0, e1, e2, origin, direction, nearest) (0x71C470): the ray-triangle test, keeping the nearest t --
+// As forever_ray_triangle but w is all floats; t (rounded to a float) must not be below 0 (unrounded; a NaN fails) and
+// must be below *nearest; the point's offset uses the float t (r0 a float, r2 from a float t dz); a1 = (r1 e1y + r0 e1x)
+// + r2 e1z, a2 = (r1 e2y + r0 e2x) + r2 e2z. On a hit *nearest becomes t; gives 1 (low byte), else 0.
+static uint8_t __fastcall path_below_71c470(const float *v0, const float *e1, const float *e2, const float *origin, const float *d, float *nearest) {
+    g_ray_triangles++;
+    volatile float w0 = (float)((long double)v0[0] - origin[0]), w1 = (float)((long double)v0[1] - origin[1]), w2 = (float)((long double)v0[2] - origin[2]);
+    const long double c0 = (long double)e1[1] * e2[2] - (long double)e2[1] * e1[2];
+    const long double c1 = (long double)e1[2] * e2[0] - (long double)e1[0] * e2[2];
+    const long double c2 = (long double)e2[1] * e1[0] - (long double)e1[1] * e2[0];
+    const long double num = ((long double)w2 * c2 + c1 * w1) + c0 * w0;
+    const long double den = (c2 * d[2] + c1 * d[1]) + c0 * d[0];
+    const long double t = num / den;
+    volatile float tf = (float)t;
+    if (t < *(const float *)0xf264e0 || t != t) return 0;
+    if (!(tf < *nearest)) return 0;
+    const long double q0 = (long double)tf * d[0], q1 = (long double)tf * d[1];
+    volatile float q2 = (float)((long double)tf * d[2]);
+    volatile float r0 = (float)((long double)w0 - q0);
+    const long double r1 = (long double)w1 - q1;
+    const long double r2 = (long double)w2 - q2;
+    volatile float a1 = (float)((r1 * e1[1] + (long double)r0 * e1[0]) + r2 * e1[2]);
+    const long double a2 = (r1 * e2[1] + (long double)r0 * e2[0]) + r2 * e2[2];
+    const long double e11 = ((long double)e1[1] * e1[1] + (long double)e1[2] * e1[2]) + (long double)e1[0] * e1[0];
+    const long double e12 = ((long double)e1[0] * e2[0] + (long double)e1[2] * e2[2]) + (long double)e1[1] * e2[1];
+    volatile float e22 = (float)(((long double)e2[1] * e2[1] + (long double)e2[2] * e2[2]) + (long double)e2[0] * e2[0]);
+    const long double det = (long double)e22 * e11 - e12 * e12;
+    const long double inv = (long double)*(const float *)0xf264dc / det;
+    volatile float u = (float)((e12 * a2 - (long double)e22 * a1) * inv);
+    volatile float v = (float)((e12 * a1 - e11 * a2) * inv);
+    const float eps = *(const float *)0xf6a450;
+    if (!(u > eps)) return 0;
+    if (!(v > eps)) return 0;
+    if (!((long double)v + u < *(const float *)0xf6a44c)) return 0;
+    *(volatile uint32_t *)nearest = *(volatile uint32_t *)&tf;
+    return 1;
+}
+static const uint8_t path_below_71c470_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x38, 0x8b, 0x45, 0x0c};
+REWRITE("Path::Below71C470", 0x71c470, path_below_71c470_original, &path_below_71c470, &g_ray_triangles);
+
+// ---- Water::Length94CA80(n in ecx, v in edx, out in esi, ratio) (0x94CA80): a direction bent through a water surface ---
+// S = v . n ((v1 n1 + n2 v2) + (v0 n0 as a float)); t = v - S n (S n as floats; t1 a float) made unit length (a zero
+// length leaves t0 and t1 and sets t2 to 1; t0 stays on the FPU). s = (t . v) / ratio (a float; the test of it unrounded). Below 1: c = sqrt(1 -
+// s^2), negated (times 0xF268F0) when S is below 0, and out = c n + s t; otherwise out = n times the game's 0 plus t. Then
+// out is made unit length (a zero length sets z to 1). Floats where the game rounds; gives out.
+static volatile long g_water_bends;
+extern "C" float *__stdcall forever_water_bend(const float *n, const float *v, float *out, float ratio) {
+    g_water_bends++;
+    const float one = *(const float *)0xf264dc, zero = *(const float *)0xf264e0;
+    volatile float d1 = (float)((long double)v[0] * n[0]);
+    const long double s0 = ((long double)v[1] * n[1] + (long double)n[2] * v[2]) + d1;
+    volatile float p0 = (float)(s0 * n[0]), p1 = (float)(s0 * n[1]), p2 = (float)(s0 * n[2]);
+    long double t0 = (long double)v[0] - p0;
+    volatile float t1 = (float)((long double)v[1] - p1);
+    const long double t2l = (long double)v[2] - p2;
+    volatile float t2;
+    const long double len = x87_sqrt_h2((t2l * t2l + (long double)t1 * t1) + t0 * t0);
+    if (len == zero) {
+        t2 = 1.0f;
+    } else {
+        const long double inv = (long double)one / len;
+        t0 = t0 * inv;
+        t1 = (float)((long double)t1 * inv);
+        t2 = (float)(t2l * inv);
+    }
+    const long double sl = ((t0 * v[0] + (long double)t2 * v[2]) + (long double)t1 * v[1]) / ratio;
+    volatile float s = (float)sl;
+    long double r0;
+    volatile float q0, q1, q2, r1, r2;
+    if (sl < one) {
+        long double c = x87_sqrt_h2((long double)one - (long double)s * s);
+        if (((long double)v[1] * n[1] + (long double)n[2] * v[2]) + d1 < zero) c = c * *(const float *)0xf268f0;
+        q0 = (float)(c * n[0]), q1 = (float)(c * n[1]), q2 = (float)(c * n[2]);
+        r0 = t0 * s;
+        r1 = (float)((long double)t1 * s), r2 = (float)((long double)t2 * s);
+    } else {
+        q0 = (float)((long double)n[0] * zero);
+        r1 = t1;
+        q1 = (float)((long double)n[1] * zero);
+        q2 = (float)((long double)n[2] * zero);
+        r2 = t2;
+        r0 = t0;
+    }
+    const long double o0 = r0 + q0;
+    volatile float o1 = (float)((long double)r1 + q1), o2 = (float)((long double)r2 + q2);
+    const long double len2 = x87_sqrt_h2(((long double)o2 * o2 + (long double)o1 * o1) + o0 * o0);
+    volatile float *const o = out;
+    if (len2 == zero) {
+        o[2] = 1.0f;
+        o[0] = (float)o0;
+        o[1] = o1;
+        return out;
+    }
+    const long double inv = (long double)one / len2;
+    o[2] = (float)((long double)o2 * inv);
+    o[0] = (float)(o0 * inv);
+    o[1] = (float)((long double)o1 * inv);
+    return out;
+}
+extern "C" __attribute__((naked)) void forever_water_bend_regs() {   // n in ecx, v in edx, out in esi; ratio on the stack
+    __asm__("pushl 4(%esp)\n\tpushl %esi\n\tpushl %edx\n\tpushl %ecx\n\tcalll _forever_water_bend@16\n\tret $4");
+}
+static const uint8_t water_bend_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0xd9, 0x02, 0xd8, 0x09};
+REWRITE("Water::Length94CA80", 0x94ca80, water_bend_original, (void *)&forever_water_bend_regs, &g_water_bends);
+
+// ---- Sound::Direction(this, out) (0xCE55D0): the point of a sound's segment nearest the listener ------------------------
+// The segment runs from a (+0x90) to b (+0xA0); the listener is at 0x10F4620. d = b - a (floats; L = |d| with the z
+// square as the unrounded z times the float); n = d / L (x, y floats, z on the FPU; (0, 0, 1) when L is exactly 0).
+// Before a (n . (p - a) < 0, summed in the game's order): a. Past b (n . (b - p) < 0): b. Otherwise a + n s, s =
+// sqrt(|p - a|^2 - perp^2) (|p - a|^2 as a float there) and perp^2 from (h^2 - (h . d)^2 / L^2) with h = |p - a| as a
+// float. NaNs go on.
+static volatile long g_sound_directions;
+static void __thiscall sound_direction(const uint8_t *self, float *out) {
+    g_sound_directions++;
+    const float *const a = (const float *)(self + 0x90), *const b = (const float *)(self + 0xa0), *const p = (const float *)0x10f4620;
+    const float a0 = a[0], a1 = a[1], a2 = a[2], b0 = b[0], b1 = b[1], b2 = b[2];
+    const float p0 = p[0], p1 = p[1], p2 = p[2];
+    volatile float d0 = (float)((long double)b0 - a0), d1 = (float)((long double)b1 - a1);
+    const long double d2l = (long double)b2 - a2;
+    volatile float d2 = (float)d2l;
+    const long double len = x87_sqrt_h2((d2l * d2 + (long double)d1 * d1) + (long double)d0 * d0);
+    volatile float lf = (float)len;
+    volatile float n0, n1;
+    long double n2;
+    if (len == *(const float *)0xf264e0) {
+        n0 = 0.0f, n1 = 0.0f, n2 = *(const float *)0xf264dc;
+    } else {
+        const long double inv = (long double)*(const float *)0xf264dc / len;
+        n0 = (float)((long double)d0 * inv), n1 = (float)((long double)d1 * inv), n2 = inv * d2;
+    }
+    const long double m0 = -(long double)n0, m1 = -(long double)n1;
+    volatile float mf1 = (float)m1, mf2 = (float)-n2;
+    volatile float *const o = out;
+    const long double s1 = ((((long double)p2 * n2 + (long double)p1 * n1) + -n2 * a2) + m1 * a1) + (long double)n0 * p0;
+    if (s1 + m0 * a0 < 0) {
+        *(volatile uint32_t *)(out + 2) = *(const uint32_t *)&a2;
+        o[0] = a0, o[1] = a1;
+        return;
+    }
+    const long double t1 = (((long double)p2 * mf2 + (long double)mf1 * p1) + n2 * b2) + (long double)n1 * b1;
+    if ((t1 + m0 * p0) + (long double)n0 * b0 < 0) {
+        o[0] = b0;
+        *(volatile uint32_t *)(out + 1) = *(const uint32_t *)&b1, *(volatile uint32_t *)(out + 2) = *(const uint32_t *)&b2;
+        return;
+    }
+    const long double h0 = (long double)p0 - a0, h1 = (long double)p1 - a1, h2 = (long double)p2 - a2;
+    const long double q = (h2 * h2 + h1 * h1) + h0 * h0;
+    volatile float qf = (float)q;
+    volatile float hf = (float)x87_sqrt_h2(q);
+    const long double dot = (h2 * d2 + h1 * d1) + h0 * d0;
+    const long double perp = x87_sqrt_h2((long double)hf * hf - dot * dot / ((long double)lf * lf));
+    const long double along = x87_sqrt_h2((long double)qf - perp * perp);
+    const long double x = (long double)n0 * along;
+    volatile float y = (float)((long double)n1 * along), z = (float)(n2 * along);
+    o[0] = (float)(x + a0);
+    o[1] = (float)((long double)y + a1);
+    o[2] = (float)((long double)z + a2);
+}
+static const uint8_t sound_direction_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x60, 0x8b, 0x81, 0x90};
+REWRITE("Sound::Direction", 0xce55d0, sound_direction_original, &sound_direction, &g_sound_directions);
+
+// ---- Vector::SameC5D1C0(out, p, q) (0xC5D1C0): two near-equal segments joined into one -------------------------------
+// fastcall out and p (four floats each, q given). "Close" is a difference below the game's epsilon (0xF27F4C; a NaN is
+// not close). x and z close: y close gives {p0, lo(p3, q3), p2, hi(p3, q3)}, else {p0, lo(p1, q1), p2, hi(p1, q1)};
+// only x close: {lo(p2, q2), p1, hi(p2, q2), p3}; x not close: {lo(p0, q0), p1, hi(p0, q0), p3}. hi(b, a) is b when a is
+// below b (or they are unordered), else a; lo(b, a) is b when a is above b, else a. Gives out.
+static volatile long g_segment_joins;
+static float *__fastcall vector_same_c5d1c0(float *out, const float *p, const float *q) {
+    g_segment_joins++;
+    const float eps = *(const float *)0xf27f4c;
+    auto close = [&](int k) {
+        const long double d = (long double)p[k] - q[k];
+        return (d < 0 ? -d : d) < eps;
+    };
+    auto hi = [](float b, float a) { return a < b || a != a || b != b ? b : a; };
+    auto lo = [](float b, float a) { return a > b ? b : a; };
+    volatile uint32_t *const o = (volatile uint32_t *)out;
+    volatile float *const of = out;
+    const uint32_t *const pi = (const uint32_t *)p;
+    int pick, keep0, keep1;   // the pair joined (into out[a] and out[b]) and the two parts kept from p
+    if (close(0) && close(2)) {
+        pick = close(1) ? 3 : 1;
+        const float h = hi(p[pick], q[pick]), l = lo(p[pick], q[pick]);
+        of[1] = l, o[0] = pi[0], of[3] = h, o[2] = pi[2];
+        return out;
+    }
+    pick = close(0) ? 2 : 0;
+    keep0 = 1, keep1 = 3;
+    const float h = hi(p[pick], q[pick]), l = lo(p[pick], q[pick]);
+    of[0] = l, o[keep0] = pi[keep0], of[2] = h, o[keep1] = pi[keep1];
+    return out;
+}
+static const uint8_t vector_same_c5d1c0_original[] = {0xd9, 0x02, 0x83, 0xec, 0x14, 0x56, 0x8b, 0x74, 0x24, 0x1c};
+REWRITE("Vector::SameC5D1C0", 0xc5d1c0, vector_same_c5d1c0_original, &vector_same_c5d1c0, &g_segment_joins);

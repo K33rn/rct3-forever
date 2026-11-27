@@ -3320,7 +3320,7 @@ address,size,name,callers,status
 0x52ba00,11,,1,documented
 0x52ba10,11,,1,documented
 0x52ba20,190,,2,documented
-0x52bae0,394,,2,documented
+0x52bae0,394,RideCarSpinningPart::TrackMotion,2,rewritten
 0x52bc80,63,Record::SetFields,3,rewritten
 0x52bd00,1204,Class::Construct,3,rewritten
 0x52c240,119,,7,documented
@@ -8175,7 +8175,7 @@ address,size,name,callers,status
 0x71bfe0,92,Rect::AddCell,3,rewritten
 0x71c040,481,,2,documented
 0x71c230,562,Path::Update71C230,2,rewritten
-0x71c470,492,,4,documented
+0x71c470,492,Path::Below71C470,4,rewritten
 0x71c670,156,,4,documented
 0x71c730,257,,5,documented
 0x71cb30,30,DeletingDestructor,1,rewritten
@@ -12227,8 +12227,8 @@ address,size,name,callers,status
 0x8bb210,113,BEHAVIOUR_CREATE,1,rewritten
 0x8bb290,30,DeletingDestructor,2,rewritten
 0x8bb960,17,,1,documented
-0x8bbb60,469,,2,documented
-0x8bbd40,419,,6,documented
+0x8bbb60,469,Terrain::Below8BBB60,2,rewritten
+0x8bbd40,419,Terrain::Below8BBD40,6,rewritten
 0x8bbef0,1059,,6,documented
 0x8bc450,37,,13,documented
 0x8bc480,32,,8,documented
@@ -13181,7 +13181,7 @@ address,size,name,callers,status
 0x93cdf0,33,,0,documented
 0x93ce50,20,,0,documented
 0x93d080,35,Record::Fields,1,rewritten
-0x93d140,437,,2,documented
+0x93d140,437,Water::Below93D140,2,rewritten
 0x93d340,287,,1,documented
 0x93d580,196,,1,documented
 0x93d650,30,DeletingDestructor,0,rewritten
@@ -13299,7 +13299,7 @@ address,size,name,callers,status
 0x94c930,40,,0,documented
 0x94c960,37,,0,documented
 0x94ca00,119,Vector::NormaliseFast,0,rewritten
-0x94ca80,498,,0,documented
+0x94ca80,498,Water::Length94CA80,0,rewritten
 0x94ccd0,175,Record::CopyFields,4,rewritten
 0x94cd80,132,,2,documented
 0x94ce10,2189,,1,documented
@@ -20292,8 +20292,8 @@ address,size,name,callers,status
 0xbecf30,57,,1,documented
 0xbecf70,30,DeletingDestructor,1,rewritten
 0xbecfa0,382,,0,documented
-0xbed120,395,,1,documented
-0xbed2b0,389,,0,documented
+0xbed120,395,Vector::LengthBED120,1,rewritten
+0xbed2b0,389,Vector::LengthBED2B0,0,rewritten
 0xbed440,321,Matrix::LookAlongXUp,3,rewritten
 0xbed590,321,Matrix::LookAlongX,3,rewritten
 0xbed6e0,318,Matrix::LookAlongYSide,39,rewritten
@@ -21666,7 +21666,7 @@ address,size,name,callers,status
 0xc5cc00,111,,6,documented
 0xc5cc70,216,,6,documented
 0xc5d070,44,Counted::AssignC425E0,0,rewritten
-0xc5d1c0,523,,1,documented
+0xc5d1c0,523,Vector::SameC5D1C0,1,rewritten
 0xc5d3d0,8,,1,documented
 0xc5d650,51,,10,documented
 0xc5d6c0,35,,9,documented
@@ -22884,7 +22884,7 @@ address,size,name,callers,status
 0xcd9730,260,,0,documented
 0xcd9840,4005,,6,documented
 0xcda7f0,2093,,26,documented
-0xcdb0e0,446,,5,documented
+0xcdb0e0,446,Plane::BelowCDB0E0,5,rewritten
 0xcdb2a0,227,,1,documented
 0xcdb390,587,Vector::DistanceToLine,2,rewritten
 0xcdb5e0,27,,6,documented
@@ -23017,7 +23017,7 @@ address,size,name,callers,status
 0xce4c70,68,,3,documented
 0xce4cc0,1375,,1,documented
 0xce5230,878,,2,documented
-0xce55d0,626,,1,documented
+0xce55d0,626,Sound::Direction,1,rewritten
 0xce5850,87,,1,documented
 0xce5960,74,,1,documented
 0xce59b0,205,,2,documented
