@@ -727,7 +727,7 @@ address,size,name,callers,status
 0x436770,118,Singleton::Get,99,rewritten
 0x436840,52,,0,documented
 0x436880,36,,0,documented
-0x4368b0,295,,3,documented
+0x4368b0,295,Labels::Screen4368B0,3,rewritten
 0x4369f0,54,,0,documented
 0x436a30,116,,1,documented
 0x436ac0,30,DeletingDestructor,0,rewritten
@@ -11618,7 +11618,7 @@ address,size,name,callers,status
 0x85cc50,738,,9,documented
 0x85cfd0,536,,3,documented
 0x85d200,228,Scenery::Round85D200,0,rewritten
-0x85d2f0,551,,3,documented
+0x85d2f0,551,Box::Transform,3,rewritten
 0x85d520,1457,,1,documented
 0x85db30,2942,,20,documented
 0x85e7b0,1579,,5,documented
@@ -12250,7 +12250,7 @@ address,size,name,callers,status
 0x8beef0,1079,,4,documented
 0x8bf330,1294,,1,documented
 0x8bfa60,166,,2,documented
-0x8bfb10,419,,2,documented
+0x8bfb10,419,Terrain::Length8BFB10,2,rewritten
 0x8bfd70,26,OwnedPointer::Reset,2,rewritten
 0x8bfd90,157,Array<16>::SetCapacity,1,rewritten
 0x8bfe50,94,,3,documented
@@ -13411,7 +13411,7 @@ address,size,name,callers,status
 0x95f650,613,,1,documented
 0x95f910,327,,0,documented
 0x95fa60,62,,2,documented
-0x95faa0,570,,2,documented
+0x95faa0,570,Mesh::ComputeNormals,2,rewritten
 0x95fce0,1870,,1,documented
 0x960480,229,,1,documented
 0x960570,651,,2,documented
@@ -18625,7 +18625,7 @@ address,size,name,callers,status
 0xb788a0,388,,1,documented
 0xb78c20,166,,0,documented
 0xb78d20,29,Object::CondCallSet,0,rewritten
-0xb78ea0,309,,0,documented
+0xb78ea0,309,Entries::SortB78EA0,0,rewritten
 0xb78fe0,90,,1,documented
 0xb79040,43,Record::Fields,1,rewritten
 0xb790d0,56,Table::FreeB0E090,1,rewritten
@@ -19420,7 +19420,7 @@ address,size,name,callers,status
 0xbb7660,10,,1,documented
 0xbb7670,36,,3,documented
 0xbb76b0,324,,0,documented
-0xbb7800,404,,0,documented
+0xbb7800,404,Vector::StepBB7800,0,rewritten
 0xbb7a20,25,,1,documented
 0xbb7a80,327,,3,documented
 0xbb7bd0,142,,2,documented
@@ -21047,7 +21047,7 @@ address,size,name,callers,status
 0xc258a0,124,,2,documented
 0xc25920,149,,1,documented
 0xc259c0,75,,1,documented
-0xc25a10,314,,1,documented
+0xc25a10,314,List::PassC25A10,1,rewritten
 0xc25b50,1219,,0,documented
 0xc26020,3770,,2,documented
 0xc26ef0,3711,,3,documented
@@ -22216,7 +22216,7 @@ address,size,name,callers,status
 0xca68b0,22,,1,documented
 0xca68d0,15,,1,documented
 0xca6900,314,Table::FreeCA6900,3,rewritten
-0xca6a50,356,,3,documented
+0xca6a50,356,Memory::CopyCA6A50,3,rewritten
 0xca6bc0,251,,1,documented
 0xca6cc0,563,,3,documented
 0xca6f00,16,,3,documented
@@ -22858,7 +22858,7 @@ address,size,name,callers,status
 0xcd69c0,3064,,15,documented
 0xcd75c0,729,,95,documented
 0xcd78a0,273,,22,documented
-0xcd79c0,487,,55,documented
+0xcd79c0,487,Camera::ScreenRay,55,rewritten
 0xcd7bb0,322,,23,documented
 0xcd7d00,187,,5,documented
 0xcd7dc0,334,,10,documented
@@ -22886,7 +22886,7 @@ address,size,name,callers,status
 0xcda7f0,2093,,26,documented
 0xcdb0e0,446,,5,documented
 0xcdb2a0,227,,1,documented
-0xcdb390,587,,2,documented
+0xcdb390,587,Vector::DistanceToLine,2,rewritten
 0xcdb5e0,27,,6,documented
 0xcdb600,256,,12,documented
 0xcdb720,81,Counter::AddFraction,0,rewritten
@@ -22933,7 +22933,7 @@ address,size,name,callers,status
 0xcdf3f0,26,Object::FreeTwoFields,12,rewritten
 0xcdf410,38,Slot::ResetCDF3C0,1,rewritten
 0xcdf440,26,Object::FreeTwoFields,3,rewritten
-0xcdf4c0,457,,2,documented
+0xcdf4c0,457,Loop::StepCDF4C0,2,rewritten
 0xcdf690,198,,12,documented
 0xcdf760,200,,0,documented
 0xcdf840,1667,,0,documented

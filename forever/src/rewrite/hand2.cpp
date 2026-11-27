@@ -2443,3 +2443,458 @@ static void __thiscall list_step_bcbe20(const uint32_t *self, int32_t n, float *
 }
 static const uint8_t list_step_bcbe20_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x14, 0x8b, 0x11, 0x8b};
 REWRITE("List::StepBCBE20", 0xbcbe20, list_step_bcbe20_original, &list_step_bcbe20, &g_curve_steps);
+
+// The fields of a 0x70-byte entry that the game copies (as Entries::UpdateMatching): +0 to +0x1C, the byte +0x20, +0x24
+// to +0x34, +0x40, +0x44, +0x48, +0x50, +0x54 and the byte +0x58.
+static void entry_fields_copy(uint8_t *to, const uint8_t *from) {
+    auto copy = [&](uint32_t at) { *(volatile uint32_t *)(to + at) = *(const volatile uint32_t *)(from + at); };
+    for (uint32_t at = 0; at <= 0x1c; at += 4) copy(at);
+    *(volatile uint8_t *)(to + 0x20) = *(const volatile uint8_t *)(from + 0x20);
+    for (uint32_t at = 0x24; at <= 0x34; at += 4) copy(at);
+    copy(0x40), copy(0x44), copy(0x48), copy(0x50), copy(0x54);
+    *(volatile uint8_t *)(to + 0x58) = *(const volatile uint8_t *)(from + 0x58);
+}
+
+// ---- Entries::SortB78EA0(this, out, extra) (0xB78EA0): the first entry of a heap taken off -----------------------------
+// Entries of 0x70 bytes at +0 (count +8). 0 when empty; otherwise out gets the first entry's fields, the count goes
+// down, and when entries are left the last one's fields move to the front and Entries::SortB782A0 (0, count, extra)
+// puts it in place. Gives 1.
+static volatile long g_entry_pops;
+static uint8_t __thiscall entries_sort_b78ea0(uint8_t *self, uint8_t *out, uint32_t extra) {
+    g_entry_pops++;
+    if (!*(const uint32_t *)(self + 8)) return 0;
+    uint8_t *const first = *(uint8_t *const *)self;
+    entry_fields_copy(out, first);
+    const uint32_t n = *(const uint32_t *)(self + 8) - 1;
+    *(volatile uint32_t *)(self + 8) = n;
+    if (n) {
+        entry_fields_copy(*(uint8_t *const *)self, *(uint8_t *const *)self + 0x70 * n);
+        ((void(__thiscall *)(uint8_t *, uint32_t, uint32_t, uint32_t))0xb782a0)(self, 0, n, extra);
+    }
+    return 1;
+}
+static const uint8_t entries_sort_b78ea0_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x08, 0x85, 0xc0};
+REWRITE("Entries::SortB78EA0", 0xb78ea0, entries_sort_b78ea0_original, &entries_sort_b78ea0, &g_entry_pops);
+
+// ---- Memory::CopyCA6A50(this, buffer, size) (0xCA6A50): a block table set up in a buffer, or moved to a bigger one -------
+// this: the table's head (+0, at the buffer's end), the buffer (+4), the table's count (+8, 16 bits; 8 bytes each). No
+// buffer: all cleared, 1. A first buffer (at least 0x40 bytes) gets a two-entry table at its end: entry 0 in use over
+// the whole buffer (its size less 0x14), entry 1 free, with their ring links in the buffer set (1, 1 and 0, 0); 1 (0
+// when too small). Otherwise the old buffer's contents (up to the table's end) are copied over (the game's memcpy), the
+// table is moved by the room gained (when any) and entry 0's size grows by it, its ring links moved with it; 1 (0 when
+// the new buffer is smaller).
+static volatile long g_table_moves;
+static uint8_t __thiscall memory_copy_ca6a50(uint8_t *self, uint8_t *buffer, uint32_t size) {
+    g_table_moves++;
+    typedef void *(__cdecl *Copy)(void *, const void *, uint32_t);
+    const Copy copy = (Copy)0xddf260;
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    volatile uint16_t *const count = (volatile uint16_t *)(self + 8);
+    if (!buffer) {
+        t[1] = 0, t[0] = 0, count[0] = 0, count[1] = 0;
+        return 1;
+    }
+    auto link = [&](uint32_t place, uint32_t at) -> volatile uint16_t & { return *(volatile uint16_t *)(uintptr_t)((place & ~1u) + t[1] + at); };
+    const uint32_t old = t[1];
+    if (!old) {
+        if (size < 0x40) return 0;
+        volatile uint32_t *const h = (volatile uint32_t *)(buffer + size - 0x10);
+        t[0] = (uint32_t)(uintptr_t)h, t[1] = (uint32_t)(uintptr_t)buffer, count[0] = 2;
+        h[0] = size - 0x14;
+        auto head = [&]() { return (volatile uint32_t *)(uintptr_t)t[0]; };
+        head()[0] |= 1;
+        ((volatile uint16_t *)head())[2] = 1;
+        ((volatile uint16_t *)head())[3] = 1;
+        link(head()[0], 2) = 1;
+        link(head()[0], 0) = 1;
+        head()[2] = 0;
+        ((volatile uint16_t *)head())[6] = 0;
+        ((volatile uint16_t *)head())[7] = 0;
+        link(head()[2], 2) = 0;
+        link(head()[2], 0) = 0;
+        return 1;
+    }
+    const uint32_t entries = (uint32_t)count[0] * 8;
+    const int32_t gained = (int32_t)(old - entries - t[0] + size);
+    if (gained < 0) return 0;
+    copy(buffer, (const void *)(uintptr_t)old, entries - old + t[0]);
+    t[0] = t[0] + ((uint32_t)(uintptr_t)buffer - t[1]);
+    t[1] = (uint32_t)(uintptr_t)buffer;
+    if (gained) {
+        uint8_t *const moved = (uint8_t *)(uintptr_t)t[0] + gained;
+        copy(moved, (const void *)(uintptr_t)t[0], (uint32_t)count[0] * 8);
+        t[0] = (uint32_t)(uintptr_t)moved;
+        volatile uint32_t *const h = (volatile uint32_t *)moved;
+        const uint32_t place = h[0];
+        const uint16_t l0 = link(place, 0), l2 = link(place, 2);
+        h[0] = place + (uint32_t)gained;
+        link(((volatile uint32_t *)(uintptr_t)t[0])[0], 0) = l0;
+        link(((volatile uint32_t *)(uintptr_t)t[0])[0], 2) = l2;
+    }
+    return 1;
+}
+static const uint8_t memory_copy_ca6a50_original[] = {0x56, 0x57, 0x8b, 0x7c, 0x24, 0x0c, 0x33, 0xd2};
+REWRITE("Memory::CopyCA6A50", 0xca6a50, memory_copy_ca6a50_original, &memory_copy_ca6a50, &g_table_moves);
+
+// ---- List::PassC25A10(this) (0xC25A10): each listed object's cached frame brought up to date ------------------------
+// Objects at +0x10 (count +0xC; empty slots skipped), flags at +0x50. Flag 8: the direction (+0x70) and place (+0) are
+// copied to +0x110 and +0x150, with 1 and 0 at +0x130/+0x134 and +0x170/+0x174, and flag 0x100 set. Else flag 0x100:
+// a frame is made from the direction by Vector::NormalBEE460 (into a 4x4 whose last column starts at FLT_MAX), its
+// three rows copied to +0x10, +0x20 and +0x30, the place to +0x40, and flag 0x100 cleared.
+static volatile long g_frame_passes;
+static void __fastcall list_pass_c25a10(const uint8_t *self) {
+    g_frame_passes++;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0xc); i++) {
+        if ((uint32_t)i >= *(const volatile uint32_t *)(self + 0xc)) continue;
+        uint8_t *const o = (*(uint8_t *const *const *)(self + 0x10))[i];
+        if (!o) continue;
+        volatile uint32_t *const v = (volatile uint32_t *)o;
+        const uint32_t flags = v[0x50 / 4];
+        if (flags & 8) {
+            v[0x110 / 4] = v[0x70 / 4], v[0x114 / 4] = v[0x74 / 4], v[0x118 / 4] = v[0x78 / 4];
+            v[0x134 / 4] = 0, v[0x130 / 4] = 0x3f800000;
+            v[0x150 / 4] = v[0], v[0x154 / 4] = v[1], v[0x158 / 4] = v[2];
+            v[0x170 / 4] = 0x3f800000, v[0x174 / 4] = 0;
+            v[0x50 / 4] = v[0x50 / 4] | 0x100;
+        } else if (flags & 0x100) {
+            alignas(16) uint32_t m[16];
+            m[3] = m[7] = m[11] = 0x7f7fffff;
+            ((void(__thiscall *)(uint32_t *, const void *))0xbee460)(m, o + 0x70);
+            v[4] = m[0], v[6] = m[2], v[5] = m[1];
+            v[8] = m[4], v[10] = m[6], v[9] = m[5];
+            v[12] = m[8], v[14] = m[10], v[13] = m[9];
+            v[0x10] = v[0], v[0x11] = v[1], v[0x12] = v[2];
+            v[0x50 / 4] = v[0x50 / 4] & 0xfffffeffu;
+        }
+    }
+}
+static const uint8_t list_pass_c25a10_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0x53, 0x8b, 0xd9};
+REWRITE("List::PassC25A10", 0xc25a10, list_pass_c25a10_original, &list_pass_c25a10, &g_frame_passes);
+
+// ---- Loop::StepCDF4C0(i, n, list, points, direction) (0xCDF4C0): entry i of a heap of n moved down into place --------
+// fastcall i and n. Entries are 32 bytes (six values used: +0 to +8 and +0x10 to +0x18), ordered by
+// Vector::CompareCDF200 (a, b, points, direction): a child goes up when the comparison says 1. Each step takes the left
+// child when it compares 1 against the right one (else the right), and moves it up while it compares 1 against the
+// moving entry; the moving entry goes where it stops.
+static volatile long g_triangle_sifts;
+static uint32_t __fastcall loop_step_cdf4c0(int32_t i, int32_t n, uint8_t *list, uint32_t points, uint32_t direction) {
+    g_triangle_sifts++;
+    typedef int32_t(__fastcall *Compare)(const void *, const void *, uint32_t, uint32_t);
+    const Compare compare = (Compare)0xcdf200;
+    uint32_t v[8];
+    auto fields = [](volatile uint32_t *to, const uint32_t *from) {
+        to[0] = from[0], to[1] = from[1], to[2] = from[2], to[4] = from[4], to[5] = from[5], to[6] = from[6];
+    };
+    fields(v, (const uint32_t *)(list + 32 * i));
+    auto at = [&](int32_t k) { return (uint32_t *)(list + 32 * k); };
+    int32_t c = 2 * i + 1;
+    for (; c + 1 < n; c = 2 * i + 1) {
+        const int32_t pick = compare(at(c), at(c + 1), points, direction) == 1 ? c : c + 1;
+        if (compare(at(pick), v, points, direction) != 1) {
+            fields(at(i), v);
+            return v[5];
+        }
+        fields(at(i), at(pick));
+        i = pick;
+    }
+    if (c < n && compare(at(c), v, points, direction) == 1) {
+        fields(at(i), at(c));
+        i = c;
+    }
+    fields(at(i), v);
+    return v[5];
+}
+static const uint8_t loop_step_cdf4c0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0x53, 0x8b, 0xd9};
+REWRITE("Loop::StepCDF4C0", 0xcdf4c0, loop_step_cdf4c0_original, &loop_step_cdf4c0, &g_triangle_sifts);
+
+// ---- Labels::Screen4368B0(this) (0x4368B0): two view records sized from the GUI root -------------------------------
+// With the root (0x12F83F0): w and h its width and height (+0x84 - +0x7C, +0x88 - +0x80; floats). P = w K1, Q = h K2
+// (K1 0xF2856C, K2 0xF28568) and R = P K3 (0xF28564) stay on the FPU; x = R (a float) and y = (1 - (w - R) / w) (Q / P) h.
+// Both records (+0x1C, +0x20) get {x, y, w, h, 0, 1, 1, 0}.
+static volatile long g_label_screens;
+static void __fastcall labels_screen(const uint8_t *self) {
+    g_label_screens++;
+    const uint8_t *const root = *(const uint8_t *const volatile *)0x12f83f0;
+    if (!root) return;
+    auto f = [&](uint32_t at) { return *(const float *)(root + at); };
+    volatile float w = (float)((long double)f(0x84) - f(0x7c));
+    volatile float h = (float)((long double)f(0x88) - f(0x80));
+    volatile uint32_t *const a = *(volatile uint32_t *const *)(self + 0x1c);
+    a[2] = *(volatile uint32_t *)&w, a[3] = *(volatile uint32_t *)&h;
+    const long double p = (long double)w * *(const float *)0xf2856c;
+    const long double q = (long double)h * *(const float *)0xf28568;
+    const long double r = p * *(const float *)0xf28564;
+    volatile float x = (float)r;
+    a[0] = *(volatile uint32_t *)&x;
+    const long double s = (long double)*(const float *)0xf264dc - ((long double)w - r) / w;
+    volatile float y = (float)(s * (q / p) * h);
+    a[1] = *(volatile uint32_t *)&y;
+    volatile uint32_t *const a2 = *(volatile uint32_t *const *)(self + 0x1c);
+    a2[4] = 0, a2[5] = 0x3f800000, a2[6] = 0x3f800000, a2[7] = 0;
+    volatile uint32_t *const b = *(volatile uint32_t *const *)(self + 0x20);
+    b[0] = *(volatile uint32_t *)&x, b[1] = *(volatile uint32_t *)&y, b[2] = *(volatile uint32_t *)&w, b[3] = *(volatile uint32_t *)&h;
+    b[4] = 0, b[5] = 0x3f800000, b[6] = 0x3f800000, b[7] = 0;
+}
+static const uint8_t labels_screen_original[] = {0xa1, 0xf0, 0x83, 0x2f, 0x01, 0x83, 0xec, 0x10};
+REWRITE("Labels::Screen4368B0", 0x4368b0, labels_screen_original, &labels_screen, &g_label_screens);
+
+#include <xmmintrin.h>
+
+// ---- Vector::StepBB7800(out, a, b) (0xBB7800): out = a times b (4x4, rows 16 bytes; a's last column taken as 0,0,0,1) --
+// fastcall out and a. With the SSE flag (0x13D07FC) each output row is ((a0 b0 + a1 b1) + a2 b2) in four lanes, plus b's
+// last row for the last one, all rows worked out before any is written (rows aligned to 16). Without it, on the FPU,
+// row by row (each written before the next is read): the same sums for three columns, unrounded until stored, with 0 in
+// the fourth (1 in the last row's).
+static volatile long g_matrix_products;
+__attribute__((target("sse"))) static void matrix_product_sse(float *out, const float *a, const float *b) {
+    const __m128 b0 = _mm_load_ps(b), b1 = _mm_load_ps(b + 4), b2 = _mm_load_ps(b + 8), b3 = _mm_load_ps(b + 12);
+    __m128 r[4];
+    for (int i = 0; i < 4; i++) {
+        __m128 x = _mm_mul_ps(_mm_set1_ps(a[4 * i]), b0);
+        x = _mm_add_ps(x, _mm_mul_ps(_mm_set1_ps(a[4 * i + 1]), b1));
+        x = _mm_add_ps(x, _mm_mul_ps(_mm_set1_ps(a[4 * i + 2]), b2));
+        r[i] = x;
+    }
+    r[3] = _mm_add_ps(r[3], b3);
+    for (int i = 0; i < 4; i++) _mm_store_ps(out + 4 * i, r[i]);
+}
+static void __fastcall matrix_product_bb7800(float *out, const float *a, const float *b) {
+    g_matrix_products++;
+    if (*(const volatile uint8_t *)0x13d07fc) {
+        matrix_product_sse(out, a, b);
+        return;
+    }
+    const volatile float *const va = a, *const vb = b;
+    volatile float *const o = out;
+    for (int i = 0; i < 4; i++) {
+        const float x = va[4 * i], y = va[4 * i + 1], z = va[4 * i + 2];
+        long double s[3];
+        for (int j = 0; j < 3; j++) s[j] = ((long double)x * vb[j] + (long double)y * vb[4 + j]) + (long double)z * vb[8 + j];
+        if (i < 3) {
+            o[4 * i] = (float)s[0], o[4 * i + 1] = (float)s[1], o[4 * i + 2] = (float)s[2];
+            *(volatile uint32_t *)(out + 4 * i + 3) = 0;
+        } else {
+            const long double t0 = s[0] + vb[12], t1 = s[1] + vb[13], t2 = s[2] + vb[14];
+            o[12] = (float)t0, o[13] = (float)t1, o[14] = (float)t2, o[15] = 1.0f;
+        }
+    }
+}
+static const uint8_t matrix_product_bb7800_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0xa0, 0xfc, 0x07, 0x3d, 0x01};
+REWRITE("Vector::StepBB7800", 0xbb7800, matrix_product_bb7800_original, &matrix_product_bb7800, &g_matrix_products);
+
+// Three floats in place scaled to length 1 (by C1 / length, C1 0xF264DC; the length's sum ((x x + y y) + z z) on the
+// FPU); when the length is exactly the game's 0 (0xF264E0) only z is set, to 1.
+static void unit_in_place_h2(float *v) {
+    volatile float *const p = v;
+    const float x = p[0], y = p[1], z = p[2];
+    const long double len = x87_sqrt_h2(((long double)x * x + (long double)y * y) + (long double)z * z);
+    if (len == *(const float *)0xf264e0) {
+        p[2] = 1.0f;
+        return;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    p[0] = (float)(inv * p[0]);
+    p[1] = (float)(inv * p[1]);
+    p[2] = (float)(inv * p[2]);
+}
+
+// ---- Terrain::Length8BFB10(this) (0x8BFB10): a terrain piece's side direction and its scaled version --------------
+// up (+0xA0) = (0, 1, 0); +0xB0 = up x the direction (+0x90), made unit length; +0xC0 = that over the piece's size
+// (+0x14 for x, +0x18 for z; y 0), made unit length.
+static volatile long g_terrain_sides;
+static void __fastcall terrain_length_8bfb10(uint8_t *self) {
+    g_terrain_sides++;
+    volatile float *const f = (volatile float *)self;
+    f[0xa4 / 4] = 1.0f, *(volatile uint32_t *)(self + 0xa0) = 0, *(volatile uint32_t *)(self + 0xa8) = 0;
+    const long double ux = f[0xa0 / 4], uy = f[0xa4 / 4], uz = f[0xa8 / 4];
+    const long double vx = f[0x90 / 4], vy = f[0x94 / 4], vz = f[0x98 / 4];
+    const long double x = uy * vz - vy * uz;
+    const long double y = vx * uz - ux * vz;
+    volatile float z = (float)(vy * ux - uy * vx);
+    *(volatile uint32_t *)(self + 0xb8) = *(volatile uint32_t *)&z;
+    f[0xb0 / 4] = (float)x;
+    f[0xb4 / 4] = (float)y;
+    unit_in_place_h2((float *)(self + 0xb0));
+    *(volatile uint32_t *)(self + 0xc4) = 0;
+    f[0xc0 / 4] = (float)((long double)f[0xb0 / 4] / f[0x14 / 4]);
+    f[0xc8 / 4] = (float)((long double)f[0xb8 / 4] / f[0x18 / 4]);
+    unit_in_place_h2((float *)(self + 0xc0));
+}
+static const uint8_t terrain_length_8bfb10_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0xc7, 0x81, 0xa4};
+REWRITE("Terrain::Length8BFB10", 0x8bfb10, terrain_length_8bfb10_original, &terrain_length_8bfb10, &g_terrain_sides);
+
+static inline long double x87_tan_h2(long double v) {
+    __asm__("fptan\n\tfstp %%st(0)" : "+t"(v));
+    return v;
+}
+
+// ---- Camera::ScreenRay(this, x, y, origin, direction) (0xCD79C0): a ray through a screen point ------------------------
+// t = tan(field of view (+0x190) K) (K 0xF2651C, fptan). The camera's right (+0x120), up (+0x130), forward (+0x140) and
+// place (+0x160). Flat (+0x1A6 set): a = t (+0x198) and b = a / (+0x194) y; origin = place + a x right + b up, direction
+// = forward. Otherwise b = t / (+0x194) y and c = t x: origin = place, direction = forward + c right + b up made unit
+// length ((d.z d.z + d.y d.y) + d.x d.x; a zero length leaves (d.x, d.y, 1)). Roundings as the game's.
+static volatile long g_screen_rays;
+static void __thiscall camera_screen_ray(const uint8_t *self, float x, float y, float *origin, float *direction) {
+    g_screen_rays++;
+    auto m = [&](uint32_t at) { return *(const float *)(self + at); };
+    const long double t = x87_tan_h2((long double)m(0x190) * *(const float *)0xf2651c);
+    volatile float *const o = origin, *const d = direction;
+    if (self[0x1a6]) {
+        const long double a = t * m(0x198);
+        const long double b = a / m(0x194) * y;
+        volatile float u0 = (float)(b * m(0x130)), u1 = (float)(b * m(0x134)), u2 = (float)(b * m(0x138));
+        const long double c = a * x;
+        const long double r0 = c * m(0x120);
+        volatile float r1 = (float)(c * m(0x124)), r2 = (float)(c * m(0x128));
+        const long double q0 = r0 + m(0x160);
+        volatile float q1 = (float)((long double)r1 + m(0x164)), q2 = (float)((long double)r2 + m(0x168));
+        o[0] = (float)(q0 + u0);
+        o[1] = (float)((long double)q1 + u1);
+        o[2] = (float)((long double)q2 + u2);
+        volatile uint32_t *const di = (volatile uint32_t *)direction;
+        const uint32_t *const f = (const uint32_t *)(self + 0x140);
+        di[0] = f[0], di[1] = f[1], di[2] = f[2];
+        return;
+    }
+    {
+        volatile uint32_t *const oi = (volatile uint32_t *)origin;
+        const uint32_t *const p = (const uint32_t *)(self + 0x160);
+        oi[0] = p[0], oi[1] = p[1], oi[2] = p[2];
+    }
+    const long double b = t / m(0x194) * y;
+    volatile float u0 = (float)(b * m(0x130)), u1 = (float)(b * m(0x134)), u2 = (float)(b * m(0x138));
+    const long double c = t * x;
+    const long double r0 = c * m(0x120);
+    volatile float r1 = (float)(c * m(0x124)), r2 = (float)(c * m(0x128));
+    const long double q0 = r0 + m(0x140);
+    volatile float q1 = (float)((long double)r1 + m(0x144)), q2 = (float)((long double)r2 + m(0x148));
+    const long double d0 = q0 + u0, d1 = (long double)q1 + u1, d2 = (long double)q2 + u2;
+    const long double len = x87_sqrt_h2((d2 * d2 + d1 * d1) + d0 * d0);
+    if (len == *(const float *)0xf264e0) {
+        d[0] = (float)d0, d[1] = (float)d1, d[2] = *(const float *)0xf264dc;
+        return;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    d[0] = (float)(d0 * inv), d[1] = (float)(d1 * inv), d[2] = (float)(d2 * inv);
+}
+static const uint8_t camera_screen_ray_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0xd9, 0x81, 0x90};
+REWRITE("Camera::ScreenRay", 0xcd79c0, camera_screen_ray_original, &camera_screen_ray, &g_screen_rays);
+
+// ---- Vector::DistanceToLine(p, a, b) (0xCDB390): a point's distance from the segment a-b, on the FPU ----------------
+// fastcall p and a. d = b - a (floats); L = |d| (its z square taken as the unrounded z times the float); n = d / L by
+// the float 1 / L (or (0, 0, 1) when L is exactly the game's 0). Before a (n . (p - a) < 0, summed in the game's
+// order): |a - p|. Past b (n . (b - p) < 0): |b - p|. Otherwise sqrt(h^2 - (h . d)^2 / L^2) with h = |p - a| rounded to a
+// float. NaNs go on to the last case.
+static volatile long g_line_distances;
+static long double __fastcall vector_distance_to_line(const float *p, const float *a, const float *b) {
+    g_line_distances++;
+    const float a0 = a[0], a1 = a[1], a2 = a[2], b0 = b[0], b1 = b[1], b2 = b[2];
+    volatile float d0 = (float)((long double)b0 - a0), d1 = (float)((long double)b1 - a1);
+    const long double d2l = (long double)b2 - a2;
+    volatile float d2 = (float)d2l;
+    const long double len = x87_sqrt_h2((d2l * d2 + (long double)d1 * d1) + (long double)d0 * d0);
+    volatile float lf = (float)len;
+    long double n0, n1, n2;
+    if (len == *(const float *)0xf264e0) {
+        n0 = *(const float *)0xf264e0, n1 = *(const float *)0xf264e0, n2 = *(const float *)0xf264dc;
+    } else {
+        volatile float inv = (float)((long double)*(const float *)0xf264dc / len);
+        n0 = (long double)inv * d0, n1 = (long double)d1 * inv, n2 = (long double)d2 * inv;
+    }
+    const float p0 = p[0], p1 = p[1], p2 = p[2];
+    volatile float m1 = (float)-n1, m2 = (float)-n2;
+    const long double s = ((((p2 * n2 + p1 * n1) + (long double)m2 * a2) + -n1 * a1) + n0 * p0) + -n0 * a0;
+    if (s < 0) {
+        const long double e0 = (long double)a0 - p0, e1 = (long double)a1 - p1, e2 = (long double)a2 - p2;
+        return x87_sqrt_h2((e2 * e2 + e1 * e1) + e0 * e0);
+    }
+    const long double t = (((((long double)p2 * m2 + (long double)m1 * p1) + n2 * b2) + n1 * b1) + -n0 * p0) + n0 * b0;
+    if (t < 0) {
+        const long double g0 = (long double)b0 - p0, g1 = (long double)b1 - p1, g2 = (long double)b2 - p2;
+        return x87_sqrt_h2((g2 * g2 + g1 * g1) + g0 * g0);
+    }
+    const long double h0 = (long double)p0 - a0, h1 = (long double)p1 - a1, h2 = (long double)p2 - a2;
+    volatile float hf = (float)x87_sqrt_h2((h2 * h2 + h1 * h1) + h0 * h0);
+    const long double dot = (h2 * d2 + h1 * d1) + h0 * d0;
+    const long double q = (long double)hf * hf;
+    return x87_sqrt_h2(q - dot * dot / ((long double)lf * lf));
+}
+static const uint8_t vector_distance_to_line_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x60, 0x8b, 0x02, 0x89};
+REWRITE("Vector::DistanceToLine", 0xcdb390, vector_distance_to_line_original, &vector_distance_to_line, &g_line_distances);
+
+// ---- Box::Transform(lo, hi, m, out lo, out hi) (0x85D2F0): the box around a box moved by a matrix ---------------------
+// fastcall lo and hi. Both outputs start at m's translation (+0x30); nothing more when hi.y is below lo.y. Then for each
+// output part j and input part k: a = lo[k] m[k][j] (kept on the FPU) and b = hi[k] m[k][j] (a float); the smaller goes
+// on the low corner and the larger on the high one (a NaN or a tie: b low, a high), each sum rounded to a float.
+static volatile long g_box_transforms;
+static void __fastcall box_transform(const float *lo, const float *hi, const float *m, float *out_lo, float *out_hi) {
+    g_box_transforms++;
+    volatile float *const ol = out_lo, *const oh = out_hi;
+    for (int j = 0; j < 3; j++) {
+        *(volatile uint32_t *)(out_lo + j) = *(const uint32_t *)(m + 12 + j);
+        *(volatile uint32_t *)(out_hi + j) = *(const uint32_t *)(m + 12 + j);
+    }
+    if (hi[1] < lo[1]) return;
+    for (int j = 0; j < 3; j++)
+        for (int k = 0; k < 3; k++) {
+            const float e = m[4 * k + j];
+            const long double a = (long double)lo[k] * e;
+            volatile float b = (float)((long double)hi[k] * e);
+            if (a < b) {
+                ol[j] = (float)(a + ol[j]);
+                oh[j] = (float)((long double)b + oh[j]);
+            } else {
+                ol[j] = (float)((long double)b + ol[j]);
+                oh[j] = (float)(a + oh[j]);
+            }
+        }
+}
+static const uint8_t box_transform_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x8b, 0x43, 0x30};
+REWRITE("Box::Transform", 0x85d2f0, box_transform_original, &box_transform, &g_box_transforms);
+
+// ---- Mesh::ComputeNormals(this) (0x95FAA0): a mesh's vertex normals from its triangles -------------------------------
+// this: vertex count +0, positions +4 and normals +8 (16 bytes each), triangles +0xC (three numbers) and their count
+// +0x10. The normals are cleared; each triangle's normal ((p1 - p0) x (p2 - p0), heights scaled by K 0xF355E4, the
+// differences floats) made unit length (its x and y kept on the FPU, z rounded; a zero length gives (x, y, 1)) is added
+// to its three corners; then each normal is made unit length (unit_in_place_h2).
+static volatile long g_mesh_normals;
+static void __fastcall mesh_compute_normals(const uint8_t *self) {
+    g_mesh_normals++;
+    const int32_t n = *(const int32_t *)self;
+    for (int32_t i = 0; i < n && i < *(const volatile int32_t *)self; i++) {
+        volatile uint32_t *const v = (volatile uint32_t *)(*(uint8_t *const *)(self + 8) + 16 * i);
+        v[0] = 0, v[1] = 0, v[2] = 0;
+    }
+    const float k = *(const float *)0xf355e4;
+    for (int32_t t = 0; t < *(const volatile int32_t *)(self + 0x10); t++) {
+        const uint32_t *const tri = (const uint32_t *)(*(const uint8_t *const *)(self + 0xc) + 12 * t);
+        const uint32_t i0 = tri[0], i1 = tri[1], i2 = tri[2];
+        const float *const pos = *(const float *const *)(self + 4);
+        const float *const p0 = pos + 4 * i0, *const p1 = pos + 4 * i1, *const p2 = pos + 4 * i2;
+        volatile float z0 = (float)((long double)p0[2] * k), z1 = (float)((long double)p1[2] * k), z2 = (float)((long double)p2[2] * k);
+        volatile float v0 = (float)((long double)p2[0] - p0[0]), v1 = (float)((long double)p2[1] - p0[1]), v2 = (float)((long double)z2 - z0);
+        volatile float u0 = (float)((long double)p1[0] - p0[0]), u1 = (float)((long double)p1[1] - p0[1]), u2 = (float)((long double)z1 - z0);
+        long double nx = (long double)u1 * v2 - (long double)u2 * v1;
+        long double ny = (long double)u2 * v0 - (long double)v2 * u0;
+        const long double nz = (long double)v1 * u0 - (long double)u1 * v0;
+        const long double len = x87_sqrt_h2((nz * nz + ny * ny) + nx * nx);
+        volatile float z;
+        if (len == *(const float *)0xf264e0) {
+            z = 1.0f;
+        } else {
+            const long double inv = (long double)*(const float *)0xf264dc / len;
+            nx = nx * inv, ny = ny * inv;
+            z = (float)(nz * inv);
+        }
+        const uint32_t corner[3] = {i0, i1, i2};
+        for (int c = 0; c < 3; c++) {
+            volatile float *const m = (volatile float *)(*(uint8_t *const *)(self + 8) + 16 * corner[c]);
+            m[0] = (float)(nx + m[0]);
+            m[1] = (float)(ny + m[1]);
+            m[2] = (float)((long double)z + m[2]);
+        }
+    }
+    for (int32_t i = 0; i < *(const volatile int32_t *)self; i++) unit_in_place_h2((float *)(*(uint8_t *const *)(self + 8) + 16 * i));
+}
+static const uint8_t mesh_compute_normals_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x64, 0x8b, 0x01, 0x53};
+REWRITE("Mesh::ComputeNormals", 0x95faa0, mesh_compute_normals_original, &mesh_compute_normals, &g_mesh_normals);

@@ -1248,4 +1248,165 @@ static int __cdecl h2_lower(int c) { return c >= 'A' && c <= 'Z' ? c + 32 : c ^ 
                               return Result{};
                           }};
     quick(list_step_bcbe20);
+    // Entries::SortB78EA0: heaps of 0-4 entries with random keys
+    Test entries_sort_b78ea0{0xb78ea0,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(uint32_t *)self = (uint32_t)(uintptr_t)arena<void>(0x400), *(uint32_t *)(self + 8) = r.range(0, 4);
+                                 for (int i = 0; i < 0x70; i++) arena<uint32_t>(0x400)[i] = r.range(0, 1) ? r.next() : r.range(0, 9);
+                                 for (int i = 0; i < 0x1c; i++) arena<uint32_t>(0x200)[i] = r.next();
+                                 arena<uint32_t>(0x10)[0] = r.next();
+                             },
+                             [](void *fn) { return Result{((uint8_t(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x200), arena<uint32_t>(0x10)[0])}; }};
+    quick(entries_sort_b78ea0);
+    // Memory::CopyCA6A50: no buffer; a first buffer of 0x30-0x80 bytes; a table of 1-3 entries moved to a buffer smaller,
+    // the same size or larger
+    Test memory_copy_ca6a50{0xca6a50,
+                            [=](Rng &r) {
+                                uint32_t *self = arena<uint32_t>(0x100);
+                                for (int i = 0; i < 0x400; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                                const int how = r.range(0, 5);
+                                uint32_t buffer = (uint32_t)(uintptr_t)arena<void>(0x2000), size = r.range(0x30, 0x80) & ~3u;
+                                if (how == 0) {
+                                    buffer = 0;
+                                    self[0] = r.next(), self[1] = r.next(), self[2] = r.next();
+                                } else if (how == 1) {
+                                    self[0] = r.next(), self[1] = 0, self[2] = r.next();
+                                } else {
+                                    const uint32_t old = (uint32_t)(uintptr_t)arena<void>(0x1000), used = 4 * r.range(8, 24), n = r.range(1, 3);
+                                    self[1] = old, self[0] = old + used, self[2] = n | (r.next() & 0xffff0000u);
+                                    for (uint32_t k = 0; k < n; k++) arena<uint32_t>(0x1000 + used + 8 * k)[0] = 4 * r.range(0, 6) | r.range(0, 1);
+                                    size = used + 8 * n + 4 * r.range(-2, 12);
+                                }
+                                arena<uint32_t>(0x10)[0] = buffer, arena<uint32_t>(0x10)[1] = size;
+                            },
+                            [](void *fn) {
+                                return Result{((uint8_t(__thiscall *)(void *, void *, uint32_t))fn)(arena<void>(0x100), (void *)(uintptr_t)arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1])};
+                            }};
+    quick(memory_copy_ca6a50);
+    // List::PassC25A10: 0-3 objects (a slot empty at times) with flags 8, 0x100, both or neither, directions of any size
+    Test list_pass_c25a10{0xc25a10,
+                          [=](Rng &r) {
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              *(int32_t *)(self + 0xc) = r.range(0, 3), *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                              for (int i = 0; i < 3; i++) {
+                                  arena<uint32_t>(0x200)[i] = r.range(0, 5) ? (uint32_t)(uintptr_t)arena<void>(0x400 + 0x200 * i) : 0;
+                                  for (int k = 0; k < 0x60; k++) arena<uint32_t>(0x400 + 0x200 * i)[k] = r.next();
+                                  for (int k = 0; k < 3; k++) arena<float>(0x470 + 0x200 * i)[k] = r.range(0, 5) ? r.real(-3, 3) : 0.0f;
+                                  arena<uint32_t>(0x450 + 0x200 * i)[0] = (r.next() & ~0x108u) | (r.range(0, 1) ? 8 : 0) | (r.range(0, 1) ? 0x100 : 0);
+                              }
+                          },
+                          [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(list_pass_c25a10);
+    // Loop::StepCDF4C0: heaps of 0-9 triangles over 8 points, any start, a random direction
+    Test loop_step_cdf4c0{0xcdf4c0,
+                          [=](Rng &r) {
+                              for (int i = 0; i < 10; i++) {
+                                  uint32_t *e = arena<uint32_t>(0x400 + 32 * i);
+                                  for (int k = 0; k < 8; k++) e[k] = r.next();
+                                  e[0] = r.range(0, 7), e[1] = r.range(0, 7), e[2] = r.range(0, 7);
+                              }
+                              for (int i = 0; i < 32; i++) arena<float>(0x200)[i] = r.real(-5, 5);
+                              for (int k = 0; k < 3; k++) arena<float>(0x300)[k] = r.real(-1, 1);
+                              const int n = r.range(0, 9);
+                              arena<int32_t>(0x10)[0] = r.range(0, n > 0 ? n - 1 : 0), arena<int32_t>(0x10)[1] = n;
+                          },
+                          [](void *fn) {
+                              return Result{((uint32_t(__fastcall *)(int32_t, int32_t, void *, uint32_t, uint32_t))fn)(arena<int32_t>(0x10)[0], arena<int32_t>(0x10)[1], arena<void>(0x400),
+                                                                                                                      (uint32_t)(uintptr_t)arena<void>(0x200), (uint32_t)(uintptr_t)arena<void>(0x300))};
+                          }};
+    quick(loop_step_cdf4c0);
+    // Labels::Screen4368B0: with or without the GUI root, screen sizes from 0 to 2000 (equal corners at times)
+    Test labels_screen{0x4368b0,
+                       [=](Rng &r) {
+                           *(volatile uint32_t *)0x12f83f0 = r.range(0, 5) ? (uint32_t)(uintptr_t)arena<void>(0x200) : 0;
+                           for (int k = 0; k < 4; k++) *(float *)arena<uint8_t>(0x27c + 4 * k) = r.range(0, 5) ? (float)r.range(0, 2000) : 0.0f;
+                           *(uint32_t *)arena<uint8_t>(0x11c) = (uint32_t)(uintptr_t)arena<void>(0x400), *(uint32_t *)arena<uint8_t>(0x120) = (uint32_t)(uintptr_t)arena<void>(0x440);
+                           for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x400)[i] = r.next();
+                       },
+                       [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    t.push_back(labels_screen);
+    // Vector::StepBB7800: SSE flag on or off, random matrices, out apart from a and b or the same as either
+    Test matrix_product_bb7800{0xbb7800,
+                               [=](Rng &r) {
+                                   for (int i = 0; i < 16; i++) arena<float>(0x100)[i] = r.real(-4, 4), arena<float>(0x140)[i] = r.real(-4, 4), arena<uint32_t>(0x180)[i] = r.next();
+                                   *(volatile uint8_t *)0x13d07fc = (uint8_t)(r.range(0, 1) ? r.range(1, 255) : 0);
+                                   const int where = r.range(0, 3);
+                                   arena<uint32_t>(0x10)[0] = where == 1 ? 0x100 : where == 2 ? 0x140 : 0x180;
+                               },
+                               [](void *fn) {
+                                   ((void(__fastcall *)(void *, void *, void *))fn)(arena<void>(arena<uint32_t>(0x10)[0]), arena<void>(0x100), arena<void>(0x140));
+                                   return Result{};
+                               }};
+    t.push_back(matrix_product_bb7800);
+    // Terrain::Length8BFB10: directions of any length (straight up or none at times), piece sizes 0.5-4
+    Test terrain_length_8bfb10{0x8bfb10,
+                               [=](Rng &r) {
+                                   for (int i = 0; i < 0x34; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                   const int how = r.range(0, 5);
+                                   for (int k = 0; k < 3; k++) arena<float>(0x190)[k] = how == 0 ? (k == 1 ? r.real(0.1f, 3) : 0.0f) : how == 1 ? 0.0f : r.real(-3, 3);
+                                   arena<float>(0x114)[0] = r.real(0.5f, 4), arena<float>(0x118)[0] = r.real(0.5f, 4);
+                               },
+                               [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(terrain_length_8bfb10);
+    // Camera::ScreenRay: flat or not, fields of view 0.2-2.5, screen points across the view (and the centre)
+    Test camera_screen_ray{0xcd79c0,
+                           [=](Rng &r) {
+                               for (int i = 0; i < 0x70; i++) arena<uint32_t>(0x100)[i] = r.next();
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               for (uint32_t at = 0x120; at < 0x16c; at += 4) *(float *)(self + at) = r.real(-2, 2);
+                               *(float *)(self + 0x190) = r.real(0.2f, 2.5f), *(float *)(self + 0x194) = r.real(0.5f, 2), *(float *)(self + 0x198) = r.real(1, 50);
+                               self[0x1a6] = (uint8_t)(r.range(0, 2) ? 0 : r.range(1, 255));
+                               if (r.range(0, 5) == 0) for (uint32_t at = 0x120; at < 0x14c; at += 4) *(float *)(self + at) = 0.0f;
+                               arena<float>(0x10)[0] = r.range(0, 5) ? r.real(-1, 1) : 0.0f, arena<float>(0x10)[1] = r.range(0, 5) ? r.real(-1, 1) : 0.0f;
+                               for (int i = 0; i < 6; i++) arena<uint32_t>(0x20)[i] = r.next();
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(void *, float, float, void *, void *))fn)(arena<void>(0x100), arena<float>(0x10)[0], arena<float>(0x10)[1], arena<void>(0x20), arena<void>(0x2c));
+                               return Result{};
+                           }};
+    quick(camera_screen_ray);
+    // Vector::DistanceToLine: points before, beside and past segments (of no length at times)
+    Test vector_distance_to_line{0xcdb390,
+                                 [=](Rng &r) {
+                                     for (int k = 0; k < 3; k++) arena<float>(0x100)[k] = r.real(-6, 6), arena<float>(0x110)[k] = r.real(-4, 4), arena<float>(0x120)[k] = r.real(-4, 4);
+                                     if (r.range(0, 5) == 0) for (int k = 0; k < 3; k++) arena<float>(0x120)[k] = arena<float>(0x110)[k];
+                                     if (r.range(0, 5) == 0) for (int k = 0; k < 3; k++) arena<float>(0x100)[k] = arena<float>(0x110)[k];
+                                 },
+                                 [](void *fn) {
+                                     Result x;
+                                     x.f = ((long double(__fastcall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x120));
+                                     return x;
+                                 }};
+    quick(vector_distance_to_line);
+    // Box::Transform: boxes the right way round, flat or turned over, random matrices (zeros and negatives)
+    Test box_transform{0x85d2f0,
+                       [=](Rng &r) {
+                           for (int k = 0; k < 3; k++) {
+                               const float a = r.real(-5, 5), b = r.real(-5, 5);
+                               arena<float>(0x100)[k] = a < b ? a : b, arena<float>(0x110)[k] = a < b ? b : a;
+                           }
+                           if (r.range(0, 5) == 0) { const float t = arena<float>(0x104)[0]; arena<float>(0x104)[0] = arena<float>(0x114)[0], arena<float>(0x114)[0] = t; }
+                           if (r.range(0, 5) == 0) arena<float>(0x114)[0] = arena<float>(0x104)[0];
+                           for (int i = 0; i < 16; i++) arena<float>(0x200)[i] = r.range(0, 4) ? r.real(-2, 2) : (float)r.range(-1, 1);
+                           for (int i = 0; i < 6; i++) arena<uint32_t>(0x300)[i] = r.next();
+                       },
+                       [](void *fn) {
+                           ((void(__fastcall *)(void *, void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x200), arena<void>(0x300), arena<void>(0x30c));
+                           return Result{};
+                       }};
+    quick(box_transform);
+    // Mesh::ComputeNormals: 0-6 vertices, 0-5 triangles over them (flat or repeated corners at times)
+    Test mesh_compute_normals{0x95faa0,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100);
+                                  const int n = r.range(0, 6);
+                                  *(int32_t *)self = n, *(int32_t *)(self + 0x10) = n ? r.range(0, 5) : 0;
+                                  *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)arena<void>(0x200), *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                  *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  for (int i = 0; i < 24; i++) arena<float>(0x200)[i] = r.range(0, 5) ? r.real(-3, 3) : 0.0f, arena<uint32_t>(0x300)[i] = r.next();
+                                  for (int i = 0; i < 15; i++) arena<uint32_t>(0x400)[i] = n ? r.range(0, n - 1) : 0;
+                              },
+                              [](void *fn) { ((void(__fastcall *)(void *))fn)(arena<void>(0x100)); return Result{}; }};
+    quick(mesh_compute_normals);
 #endif
