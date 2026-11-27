@@ -979,3 +979,660 @@ static uint32_t __thiscall text_sum_bd70b0(const uint8_t *self, const uint32_t *
 }
 static const uint8_t text_sum_bd70b0_original[] = {0x83, 0xec, 0x10, 0x53, 0x8b, 0xd9, 0x8b, 0x4c};
 REWRITE("Text::SumBD70B0", 0xbd70b0, text_sum_bd70b0_original, &text_sum_bd70b0, &g_text_sums);
+
+// ---- ShaderFile::FindC47500(this, key) (0xC47500): an entry found by a hash of its key ------------------------------
+// A key is four values (+0 to +0xC; the last holds the data's byte count in its high 16 bits) and data (+0x10) of that
+// many bytes / 4 values. The hash, all of them xored, picks a bucket (modulo +4) whose entries run from +0xC's [bucket] up
+// to [bucket + 1]; entries are 20 bytes at +0x10: the four values and a pointer to their data. Gives the matching entry's
+// 16-bit slot in +0x14, or null.
+static volatile long g_shader_file_finds;
+static uint8_t *__thiscall shader_file_find(const uint8_t *self, const uint32_t *key) {
+    g_shader_file_finds++;
+    const uint16_t words = (uint16_t)(*(const uint16_t *)((const uint8_t *)key + 0xe) >> 2);
+    const uint32_t *const data = (const uint32_t *)(uintptr_t)key[4];
+    uint32_t hash = key[0] ^ key[1] ^ key[2] ^ key[3];
+    for (uint32_t i = 0; i < words; i++) hash ^= data[i];
+    const uint32_t *const bucket = *(const uint32_t *const *)(self + 0xc) + hash % *(const uint32_t *)(self + 4);
+    const uint32_t end = bucket[1];
+    for (uint32_t i = bucket[0]; i < end; i++) {
+        const uint32_t *const e = (const uint32_t *)(*(const uint8_t *const *)(self + 0x10) + 20 * i);
+        if (e[0] != key[0] || e[1] != key[1] || e[2] != key[2] || e[3] != key[3]) continue;
+        const uint32_t *const other = (const uint32_t *)(uintptr_t)e[4];
+        uint16_t k = 0;
+        while (k < words && data[k] == other[k]) k++;
+        if (k == words) return *(uint8_t *const *)(self + 0x14) + 2 * i;
+    }
+    return nullptr;
+}
+static const uint8_t shader_file_find_original[] = {0x83, 0xec, 0x18, 0x8b, 0x54, 0x24, 0x1c, 0x8b};
+REWRITE("ShaderFile::FindC47500", 0xc47500, shader_file_find_original, &shader_file_find, &g_shader_file_finds);
+
+// ---- Stream::StepC50390(this) (0xC50390): a stream started over ------------------------------------------------------
+// When it has a part (+0xF0), each of the 32 streams (0x13E6BB8) on the same part gets bit 30 of its +0x10 set. Then bits
+// 11 and 12 of +0x10 are cleared, +0x64 takes +0x60, +0x5C and the byte +0x4C are cleared and +0x68 is counted up (1
+// after wrapping to 0; the count before that fix is given back).
+static volatile long g_stream_steps;
+static uint32_t __fastcall stream_step_c50390(uint8_t *self) {
+    g_stream_steps++;
+    volatile uint32_t *const t = (volatile uint32_t *)self;
+    if (t[0xf0 / 4])
+        for (uint32_t d = 0; d < 32; d++) {
+            volatile uint32_t *const s = (volatile uint32_t *)(uintptr_t)((const volatile uint32_t *)0x13e6bb8)[d];
+            if (s[0xec / 4] == t[0xf0 / 4]) s[4] |= 0x40000000;
+        }
+    t[4] &= 0xffffe7ffu;
+    t[0x64 / 4] = t[0x60 / 4];
+    const uint32_t count = t[0x68 / 4] + 1;
+    t[0x5c / 4] = 0;
+    self[0x4c] = 0;
+    t[0x68 / 4] = count;
+    if (!count) t[0x68 / 4] = 1;
+    return count;
+}
+static const uint8_t stream_step_c50390_original[] = {0x8b, 0x81, 0xf0, 0x00, 0x00, 0x00, 0x85, 0xc0};
+REWRITE("Stream::StepC50390", 0xc50390, stream_step_c50390_original, &stream_step_c50390, &g_stream_steps);
+
+// ---- OverlayFile::FindStreamedItem(this, id, value) (0xC3B2C0): a streamed item by id and 16-bit value --------------
+// The table (+0x4C, count +0x48) holds 20-byte entries sorted by id (signed, +0) and then by value (+4, 16 bits). A binary
+// search finds an entry with the id; if its value's low 16 bits are the ones given it is the one; otherwise the run of
+// entries with that id is searched by value (0xFFFF counting as -1, compared with the whole value given). Null when
+// there is none.
+static volatile long g_streamed_finds;
+static uint8_t *__thiscall overlay_find_streamed(const uint8_t *self, int32_t id, int32_t value) {
+    g_streamed_finds++;
+    const uint32_t count = *(const uint32_t *)(self + 0x48);
+    if (!count) return nullptr;
+    uint8_t *const table = *(uint8_t *const *)(self + 0x4c);
+    auto id_of = [&](uint32_t i) { return *(const int32_t *)(table + 20 * i); };
+    uint32_t lo = 0, hi = count - 1, mid;
+    for (;;) {
+        mid = (hi + lo) >> 1;
+        const int32_t k = id_of(mid);
+        if (id < k) {
+            if (lo >= mid) return nullptr;
+            hi = mid - 1;
+        } else if (id > k) {
+            if (hi <= mid) return nullptr;
+            lo = mid + 1;
+        } else {
+            break;
+        }
+    }
+    if (*(const uint16_t *)(table + 20 * mid + 4) == (uint16_t)value) return table + 20 * mid;
+    int32_t first = (int32_t)mid, last = (int32_t)mid;
+    if ((int32_t)mid - 1 >= 0)
+        do {
+            if (id_of((uint32_t)first - 1) != id) break;
+            first--;
+        } while (first >= 1);
+    for (uint32_t i = mid + 1; i < count && id_of(i) == id; i++) last++;
+    for (;;) {
+        const int32_t m = (last + first) / 2;
+        const uint16_t v = *(const uint16_t *)(table + 20 * m + 4);
+        const int32_t c = v == 0xffff ? -1 : (int32_t)v;
+        if (value < c) {
+            if ((uint32_t)first >= (uint32_t)m) return nullptr;
+            last = m - 1;
+        } else if (value > c) {
+            if ((uint32_t)last <= (uint32_t)m) return nullptr;
+            first = m + 1;
+        } else {
+            return table + 20 * m;
+        }
+    }
+}
+static const uint8_t overlay_find_streamed_original[] = {0x51, 0x55, 0x8b, 0x69, 0x48, 0x85, 0xed, 0x75};
+REWRITE("OverlayFile::FindStreamedItem", 0xc3b2c0, overlay_find_streamed_original, &overlay_find_streamed, &g_streamed_finds);
+
+// ---- Window::Flags6F0D80(this, flag, n) (0x6F0D80): whether a flag is the window's n-th one, in the game's order -----
+// 0 unless the window (+0xD0) has the flag. The flags are counted in the order 0x80, 4, 8, 0x10, (again 0x10), 1, 0x20,
+// 0x40, 2, 0x100, 0x200, 0x400, counting only those the window has (from 1): when the flag is met as number n it gives
+// 1, or 2 when met at the repeat; 0 when the list ends.
+static volatile long g_window_flag_orders;
+static uint32_t __thiscall window_flags_6f0d80(const uint8_t *self, uint32_t flag, int32_t n) {
+    g_window_flag_orders++;
+    static const uint32_t order[] = {0x80, 4, 8, 0x10, 0xffffffffu, 1, 0x20, 0x40, 2, 0x100, 0x200, 0x400, 0};
+    const uint32_t has = *(const uint32_t *)(self + 0xd0);
+    if (!(flag & has)) return 0;
+    int32_t number = 1;
+    for (const uint32_t *p = order; *p; p++) {
+        const uint32_t c = *p == 0xffffffffu ? p[-1] : *p;
+        if (flag == c && number == n) return *p == 0xffffffffu ? 2 : 1;
+        if (c & has) number++;
+    }
+    return 0;
+}
+static const uint8_t window_flags_6f0d80_original[] = {0x83, 0xec, 0x34, 0x53, 0x8b, 0x99, 0xd0, 0x00};
+REWRITE("Window::Flags6F0D80", 0x6f0d80, window_flags_6f0d80_original, &window_flags_6f0d80, &g_window_flag_orders);
+
+// ---- Toolbar::Next79CB60() (0x79CB60): the next shared item looked at, its "new" mark cleared when no window shows it --
+// Only when 0x1306BCC and 0x1306BD8 differ. The index 0x1306BB8 is kept within the list (entries 0x1306BE0 up to
+// 0x1306BE4 of 0x1306BC8; else 0); an item there marked 1 at +0xA8 has the mark cleared unless an open window of kind 0xE
+// (list 0x10EF9D0) or 0xD (list 0x10EF794) shows it (window +0x190 the kind, its +0x1C0's +0xC the item); then the index
+// moves on by one.
+static volatile long g_toolbar_nexts;
+static void toolbar_next_79cb60() {
+    g_toolbar_nexts++;
+    volatile int32_t *const index = (volatile int32_t *)0x1306bb8;
+    if (*(volatile int32_t *)0x1306bcc == *(volatile int32_t *)0x1306bd8) return;
+    const int32_t begin = *(volatile int32_t *)0x1306be0;
+    int32_t i = *index;
+    if (i < 0 || i >= (int32_t)((uint32_t)(*(volatile int32_t *)0x1306be4 - begin) << 2) >> 2) {
+        i = 0;
+        *index = 0;
+    }
+    uint8_t *const item = (*(uint8_t *const *const volatile *)0x1306bc8)[begin + i];
+    if (item && *(const uint32_t *)(item + 0xa8) == 1) {
+        auto shown = [&](uintptr_t list, uint32_t kind) {
+            const uint32_t *node = *(const uint32_t *const volatile *)list;
+            if (!*node || !node) return false;
+            for (;;) {
+                const uint8_t *const w = (const uint8_t *)(uintptr_t)node[2];
+                if (w && *(const uint32_t *)(w + 0x190) == kind && *(const uint32_t *)(*(const uint8_t *const *)(w + 0x1c0) + 0xc) == (uint32_t)(uintptr_t)item) return true;
+                node = (const uint32_t *)(uintptr_t)*node;
+                if (!*node || !node) return false;
+            }
+        };
+        if (shown(0x10ef9d0, 0xe) || shown(0x10ef794, 0xd)) {
+            *index = i + 1;
+            return;
+        }
+        *(volatile uint32_t *)(item + 0xa8) = 0;
+        i = *index;
+    }
+    *index = i + 1;
+}
+static const uint8_t toolbar_next_79cb60_original[] = {0xa1, 0xcc, 0x6b, 0x30, 0x01, 0x2b, 0x05, 0xd8};
+REWRITE("Toolbar::Next79CB60", 0x79cb60, toolbar_next_79cb60_original, &toolbar_next_79cb60, &g_toolbar_nexts);
+
+// ---- List::Pass42D400(this, dx, dy) (0x42D400): the boxes of the entries in use moved, kept within 0 to 255 -----------
+// Entries are 16 bytes at +0, in use when their first byte is not 0; a box is the bytes +4 to +7 (left, top, right,
+// bottom): left and top moved and kept at least 0, right and bottom moved and kept at most 255 (the bytes written are the
+// low ones). It goes on until it has moved as many boxes as the count (+8), however many entries that passes.
+static volatile long g_list_passes;
+static void __thiscall list_pass_42d400(const uint8_t *self, int32_t dx, int32_t dy) {
+    g_list_passes++;
+    int32_t moved = 0;
+    if (*(const volatile int32_t *)(self + 8) <= 0) return;
+    for (uint32_t at = 0;; at += 0x10) {
+        volatile uint8_t *const e = *(uint8_t *const *)self + at;
+        if (e[0]) {
+            const int32_t l = e[4] + dx, t = e[5] + dy, r = e[6] + dx, b = e[7] + dy;
+            moved++;
+            e[4] = (uint8_t)(l > 0 ? l : 0);
+            e[5] = (uint8_t)(t > 0 ? t : 0);
+            e[6] = (uint8_t)(r < 0xff ? r : 0xff);
+            e[7] = (uint8_t)(b < 0xff ? b : 0xff);
+        }
+        if (moved >= *(const volatile int32_t *)(self + 8)) return;
+    }
+}
+static const uint8_t list_pass_42d400_original[] = {0x8b, 0x41, 0x08, 0x83, 0xec, 0x18, 0x53, 0x33};
+REWRITE("List::Pass42D400", 0x42d400, list_pass_42d400_original, &list_pass_42d400, &g_list_passes);
+
+// ---- Ride::Part4FE690(this, flag, a, b) (0x4FE690): a ride's tallies counted by its mode (+0x100) --------------------
+// Mode 0: without the flag, +0x128 when +0xD8 is b, else +0x12C when a is +0xD4; with the flag, +0x11C when +0xD8 is
+// above b, +0x120 when it is b, else +0x124 when a is +0xD4. Mode 1 (a not above +0xD4): +0x16C, and +0x164 when a is
+// within 1 of +0xD8. Mode 2: +0x158 when a is 0 to 2 above +0xD8. Signed.
+static volatile long g_ride_tallies;
+static void __thiscall ride_part_4fe690(uint8_t *self, uint32_t flag, int32_t a, int32_t b) {
+    g_ride_tallies++;
+    volatile int32_t *const t = (volatile int32_t *)self;
+    const int32_t mode = t[0x100 / 4];
+    if (mode == 0) {
+        const int32_t e = t[0xd8 / 4];
+        if (!(uint8_t)flag) {
+            if (e == b) t[0x128 / 4]++;
+            else if (a == t[0xd4 / 4]) t[0x12c / 4]++;
+            return;
+        }
+        if (e > b) t[0x11c / 4]++;
+        if (e == b) t[0x120 / 4]++;
+        else if (a == t[0xd4 / 4]) t[0x124 / 4]++;
+    } else if (mode == 1) {
+        if (a > t[0xd4 / 4]) return;
+        const int32_t d = (int32_t)((uint32_t)a - (uint32_t)t[0xd8 / 4]);
+        t[0x16c / 4] = t[0x16c / 4] + 1;
+        if ((d < 0 ? (int32_t)(0u - (uint32_t)d) : d) <= 1) t[0x164 / 4]++;
+    } else if (mode == 2) {
+        const int32_t d = (int32_t)((uint32_t)a - (uint32_t)t[0xd8 / 4]);
+        if (d >= 0 && d <= 2) t[0x158 / 4]++;
+    }
+}
+static const uint8_t ride_part_4fe690_original[] = {0x8b, 0x81, 0x00, 0x01, 0x00, 0x00, 0x85, 0xc0};
+REWRITE("Ride::Part4FE690", 0x4fe690, ride_part_4fe690_original, &ride_part_4fe690, &g_ride_tallies);
+
+// ---- Water::Step973040(a, b) (0x973040): two keys given by value compared: 1, -1 or 0 --------------------------------
+// A key is 32 bytes: two unsigned values, a pointer to three signed ones, a signed value, a flag byte, two signed values
+// and a flag byte, compared in that order (a set flag above a clear one).
+namespace {
+struct WaterKey {
+    uint32_t a, b;
+    const int32_t *three;
+    int32_t c;
+    uint32_t flag1;
+    int32_t d, e;
+    uint32_t flag2;
+};
+}
+static volatile long g_water_key_compares;
+static int32_t __stdcall water_key_compare(WaterKey x, WaterKey y) {
+    g_water_key_compares++;
+    if (x.a != y.a) return x.a > y.a ? 1 : -1;
+    if (x.b != y.b) return x.b > y.b ? 1 : -1;
+    for (int i = 0; i < 3; i++)
+        if (x.three[i] != y.three[i]) return x.three[i] > y.three[i] ? 1 : -1;
+    if (x.c != y.c) return x.c > y.c ? 1 : -1;
+    const bool f1 = (uint8_t)x.flag1, g1 = (uint8_t)y.flag1;
+    if (f1 != g1) return f1 ? 1 : -1;
+    if (x.d != y.d) return x.d > y.d ? 1 : -1;
+    if (x.e != y.e) return x.e > y.e ? 1 : -1;
+    const bool f2 = (uint8_t)x.flag2, g2 = (uint8_t)y.flag2;
+    if (f2 != g2) return f2 ? 1 : -1;
+    return 0;
+}
+static const uint8_t water_key_compare_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x4c, 0x24, 0x24};
+REWRITE("Water::Step973040", 0x973040, water_key_compare_original, &water_key_compare, &g_water_key_compares);
+
+// ---- Water::Cell93DBF0(this, x, y, out value, out both) (0x93DBF0): the object filling both halves of a water cell ---
+// Cells of 0x30 bytes (+0x5C; width +0x58, height +0x59, bytes; signed checks), each two halves of 0x18 bytes with an
+// object (+4) and flags (+0x14, low 3 bits). When both halves hold the same object and both have flags: it is given,
+// with its +0x30 written out and "both" set when both halves have all three flags (else cleared). Otherwise 0.
+static volatile long g_water_cells;
+static uint8_t *__thiscall water_cell_93dbf0(const uint8_t *self, int32_t x, int32_t y, uint32_t *value, uint8_t *both) {
+    g_water_cells++;
+    if (y < 0 || y >= self[0x59] || x < 0 || x >= self[0x58]) return nullptr;
+    const uint8_t *const a = *(const uint8_t *const *)(self + 0x5c) + 0x30 * ((uint32_t)(uint8_t)y * self[0x58] + (uint8_t)x), *const b = a + 0x18;
+    uint8_t *const object = *(uint8_t *const *)(a + 4);
+    if (!object || !*(const uint32_t *)(b + 4) || object != *(uint8_t *const *)(b + 4)) return nullptr;
+    const uint32_t fa = *(const uint32_t *)(a + 0x14) & 7, fb = *(const uint32_t *)(b + 0x14) & 7;
+    if (fa == 7 && fb == 7) {
+        *(volatile uint8_t *)both = 1;
+    } else {
+        if (!fa || !fb) return nullptr;
+        *(volatile uint8_t *)both = 0;
+    }
+    *(volatile uint32_t *)value = *(const uint32_t *)(object + 0x30);
+    return object;
+}
+static const uint8_t water_cell_93dbf0_original[] = {0x8b, 0x54, 0x24, 0x08, 0x85, 0xd2, 0x57, 0x0f};
+REWRITE("Water::Cell93DBF0", 0x93dbf0, water_cell_93dbf0_original, &water_cell_93dbf0, &g_water_cells);
+
+// ---- Shader::ScanCC4C50(bytes, size, count) (0xCC4C50): which of three byte ranges a block's bytes fall in ----------
+// Over size * count bytes (stopping once all three are seen): bit 1 for a byte 1 to 0x55, 2 for 0x56 to 0xAA, 4 for 0xAB
+// and up (0 counts for none).
+static volatile long g_shader_scans;
+static uint32_t __fastcall shader_scan_cc4c50(const uint8_t *bytes, uint32_t size, uint32_t count) {
+    g_shader_scans++;
+    const uint32_t n = size * count;
+    uint32_t seen = 0;
+    for (uint32_t i = 0; i < n && seen != 7; i++) {
+        const uint8_t c = *bytes++;
+        if (c >= 1 && c < 0x56) seen |= 1;
+        if (c >= 0x56 && c < 0xab) seen |= 2;
+        if (c >= 0xab) seen |= 4;
+    }
+    return seen;
+}
+static const uint8_t shader_scan_cc4c50_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x18, 0xb8, 0xcc};
+REWRITE("Shader::ScanCC4C50", 0xcc4c50, shader_scan_cc4c50_original, &shader_scan_cc4c50, &g_shader_scans);
+
+// ---- Stream::StepC52120(this, out, range) (0xC52120): a request record for the part of a range the stream holds -----
+// The stream holds +0x14 less +0x10 (its start) up to +0x18; the range is {from, to} (signed). out gets 8 values: a
+// zero byte (the next three bytes are left: the game copies stack bytes there), +4, 0, 0, then the later start less
+// the stream's, the later start less the range's from, the later of that start and the earlier end less the range's
+// from, and +0x1C. Gives out.
+static volatile long g_stream_requests;
+static uint32_t *__thiscall stream_step_c52120(const uint8_t *self, uint32_t *out, const int32_t *range) {
+    g_stream_requests++;
+    const int32_t s = (int32_t)(*(const uint32_t *)(self + 0x14) - *(const uint32_t *)(self + 0x10));
+    const int32_t e = *(const int32_t *)(self + 0x18);
+    const int32_t lo = s < range[0] ? range[0] : s;
+    const int32_t hi0 = e > range[1] ? range[1] : e;
+    const int32_t hi = lo < hi0 ? hi0 : lo;
+    volatile uint32_t *const o = out;
+    *(volatile uint8_t *)out = 0;
+    o[1] = *(const uint32_t *)(self + 4), o[2] = 0, o[3] = 0;
+    o[4] = (uint32_t)(lo - s), o[5] = (uint32_t)(lo - range[0]), o[6] = (uint32_t)(hi - range[0]);
+    o[7] = *(const uint32_t *)(self + 0x1c);
+    return out;
+}
+static const uint8_t stream_step_c52120_original[] = {0x83, 0xec, 0x34, 0x33, 0xc0, 0x88, 0x44, 0x24};
+REWRITE("Stream::StepC52120", 0xc52120, stream_step_c52120_original, &stream_step_c52120, &g_stream_requests);
+
+// ---- Animal::EntryA6FAF0(this, a, b, i) (0xA6FAF0): the first triangle edge from triangle i on joining a and b -------
+// Triangles are three points each at +0x48 (count of points +0x4C, so a third as many triangles). Edge 3t is the
+// triangle's second and third points, 3t + 1 its third and first, 3t + 2 its first and second, either way round. -1
+// when none.
+static volatile long g_animal_edges;
+static int32_t __thiscall animal_entry_a6faf0(const uint8_t *self, uint32_t a, uint32_t b, int32_t i) {
+    g_animal_edges++;
+    const int32_t triangles = *(const int32_t *)(self + 0x4c) / 3;
+    for (; i < triangles; i++) {
+        const uint32_t *const t = *(const uint32_t *const *)(self + 0x48) + 3 * i;
+        const uint32_t p0 = t[0], p1 = t[1], p2 = t[2];
+        if ((p1 == a && p2 == b) || (p1 == b && p2 == a)) return 3 * i;
+        if ((p2 == a && p0 == b) || (p2 == b && p0 == a)) return 3 * i + 1;
+        if ((p0 == a && p1 == b) || (p0 == b && p1 == a)) return 3 * i + 2;
+    }
+    return -1;
+}
+static const uint8_t animal_entry_a6faf0_original[] = {0x51, 0x8b, 0x51, 0x4c, 0xb8, 0x56, 0x55, 0x55};
+REWRITE("Animal::EntryA6FAF0", 0xa6faf0, animal_entry_a6faf0_original, &animal_entry_a6faf0, &g_animal_edges);
+
+// ---- Key::MatchesPattern(this, pattern) (0xBB2220): whether a key matches a pattern ----------------------------------
+// Three 16-byte parts (+0, +0x10, +0x2C) must each be equal unless the pattern's is the wildcard (0xF9EBB4); a wildcard
+// third part matches the rest too, otherwise the byte counts (+0x40) must be equal and their bytes (+0x44) too.
+static volatile long g_key_matches;
+static uint32_t __thiscall key_matches_pattern(const uint8_t *self, const uint8_t *pattern) {
+    g_key_matches++;
+    const void *const wildcard = (const void *)0xf9ebb4;
+    auto same = [](const void *a, const void *b) {
+        for (int i = 0; i < 4; i++)
+            if (((const uint32_t *)a)[i] != ((const uint32_t *)b)[i]) return false;
+        return true;
+    };
+    for (uint32_t at = 0; at <= 0x10; at += 0x10)
+        if (!same(pattern + at, wildcard) && !same(self + at, pattern + at)) return 0;
+    if (same(pattern + 0x2c, wildcard)) return 1;
+    if (!same(self + 0x2c, pattern + 0x2c)) return 0;
+    const uint32_t n = *(const uint32_t *)(self + 0x40);
+    if (n != *(const uint32_t *)(pattern + 0x40)) return 0;
+    if (!n) return 1;
+    const uint8_t *const x = *(const uint8_t *const *)(self + 0x44), *const y = *(const uint8_t *const *)(pattern + 0x44);
+    for (uint32_t i = 0; i < n; i++)
+        if (x[i] != y[i]) return 0;
+    return 1;
+}
+static const uint8_t key_matches_pattern_original[] = {0x8b, 0x44, 0x24, 0x04, 0x53, 0x55, 0x56, 0x57};
+REWRITE("Key::MatchesPattern", 0xbb2220, key_matches_pattern_original, &key_matches_pattern, &g_key_matches);
+
+// ---- GroupedList::MoveAcross(this, in) (0xBF4910): an object moved across the start of its group ---------------------
+// The owner (+4) lists objects (+0x94, count +0x8C) in six groups, each with a start (+0x4C) and end (+0x50), 12 bytes
+// apart. Found from the end of the list, in the first group whose end it is before: when it is before the group's start
+// and not `in`, the start moves back by one and the object swaps places with the one there; when it is at or after the
+// start and `in`, it swaps places with the one at the start and the start moves on by one. An object in no group is
+// looked for further back.
+static volatile long g_group_moves;
+static void __thiscall grouped_move_across(uint8_t *self, uint32_t in) {
+    g_group_moves++;
+    auto owner = [&]() { return *(uint8_t *const *)(self + 4); };
+    auto list = [&]() { return *(uint32_t *const *)(owner() + 0x94); };
+    auto start = [&](int32_t g) -> volatile int32_t & { return *(volatile int32_t *)(owner() + 0x4c + 12 * g); };
+    for (int32_t i = *(const int32_t *)(owner() + 0x8c) - 1; i >= 0; i--) {
+        if (list()[i] != (uint32_t)(uintptr_t)self) continue;
+        int32_t g = 0;
+        while (g < 6 && !(i < *(const int32_t *)(owner() + 0x50 + 12 * g))) g++;
+        if (g == 6) continue;
+        if (i < start(g)) {
+            if ((uint8_t)in) return;
+            start(g) = start(g) - 1;
+            volatile uint32_t *const p = list() + start(g);
+            const uint32_t other = *p;
+            *p = (uint32_t)(uintptr_t)self;
+            ((volatile uint32_t *)list())[i] = other;
+        } else {
+            if (!(uint8_t)in) return;
+            volatile uint32_t *const p = list() + start(g);
+            const uint32_t other = *p;
+            *p = (uint32_t)(uintptr_t)self;
+            ((volatile uint32_t *)list())[i] = other;
+            start(g) = start(g) + 1;
+        }
+        return;
+    }
+}
+static const uint8_t grouped_move_across_original[] = {0x57, 0x8b, 0x79, 0x04, 0x8b, 0x97, 0x8c, 0x00};
+REWRITE("GroupedList::MoveAcross", 0xbf4910, grouped_move_across_original, &grouped_move_across, &g_group_moves);
+
+// ---- Resource::BinarySearch(this, at) (0xC3B130): where a place falls, by two binary searches ------------------------
+// Nine 0x18-byte ranges at +0x6C ({count, -, -, parts, start +0x10, size +0x14}, sorted) and, in the one holding at,
+// its 16-byte parts ({size, start, base, -}, sorted): the part's base plus at less its start, or 0 when at falls in
+// none (or the part has no base). Unsigned.
+static volatile long g_resource_searches;
+static uint32_t __thiscall resource_binary_search(const uint8_t *self, uint32_t at) {
+    g_resource_searches++;
+    const uint8_t *const table = *(const uint8_t *const *)(self + 0x6c);
+    uint32_t lo = 0, hi = 8, mid;
+    for (;;) {
+        mid = (hi + lo) >> 1;
+        const uint32_t s = *(const uint32_t *)(table + 0x18 * mid + 0x10);
+        if (at < s) {
+            if (lo >= mid) return 0;
+            hi = mid - 1;
+        } else if (at >= *(const uint32_t *)(table + 0x18 * mid + 0x14) + s) {
+            if (mid >= hi) return 0;
+            lo = mid + 1;
+        } else {
+            break;
+        }
+    }
+    const uint8_t *const range = *(const uint8_t *const *)(self + 0x6c) + 0x18 * mid;
+    const uint32_t count = *(const uint32_t *)range;
+    if (!count) return 0;
+    const uint8_t *const parts = *(const uint8_t *const *)(range + 0xc);
+    lo = 0, hi = count - 1;
+    for (;;) {
+        mid = (hi + lo) >> 1;
+        const uint32_t s = *(const uint32_t *)(parts + 16 * mid + 4);
+        if (at < s) {
+            if (lo >= mid) return 0;
+            hi = mid - 1;
+        } else if (at >= *(const uint32_t *)(parts + 16 * mid) + s) {
+            if (mid >= hi) return 0;
+            lo = mid + 1;
+        } else {
+            break;
+        }
+    }
+    const uint8_t *const part = *(const uint8_t *const *)(range + 0xc) + 16 * mid;
+    const uint32_t base = *(const uint32_t *)(part + 8);
+    if (!base) return 0;
+    return base - *(const uint32_t *)(part + 4) + at;
+}
+static const uint8_t resource_binary_search_original[] = {0x51, 0x53, 0x55, 0x8b, 0x6c, 0x24, 0x10, 0x56};
+REWRITE("Resource::BinarySearch", 0xc3b130, resource_binary_search_original, &resource_binary_search, &g_resource_searches);
+
+// ---- SortedTable::Find(a, b, three, c, out) (0xE03CD0): a six-part key looked for in the sorted table ----------------
+// The table (0x141DCE4, count 0x141DCDC) has 32-byte entries sorted by a and b (unsigned), then the three values given
+// by pointer and c (signed). Gives 1 with the entry's place, or 0 with the place it would go.
+static volatile long g_sorted_finds;
+static uint8_t __fastcall sorted_table_find(uint32_t a, uint32_t b, const int32_t *three, int32_t c, int32_t *out) {
+    g_sorted_finds++;
+    int32_t lo = 0, hi = *(const volatile int32_t *)0x141dcdc - 1;
+    while (lo <= hi) {
+        const int32_t mid = lo + (hi - lo) / 2;
+        const uint32_t *const e = (const uint32_t *)(*(const uint8_t *const volatile *)0x141dce4 + 32 * mid);
+        int order;
+        if (a != e[0]) order = a > e[0] ? 1 : -1;
+        else if (b != e[1]) order = b > e[1] ? 1 : -1;
+        else if (three[0] != (int32_t)e[2]) order = three[0] > (int32_t)e[2] ? 1 : -1;
+        else if (three[1] != (int32_t)e[3]) order = three[1] > (int32_t)e[3] ? 1 : -1;
+        else if (three[2] != (int32_t)e[4]) order = three[2] > (int32_t)e[4] ? 1 : -1;
+        else if (c != (int32_t)e[5]) order = c > (int32_t)e[5] ? 1 : -1;
+        else {
+            *out = mid;
+            return 1;
+        }
+        if (order > 0) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    *out = lo;
+    return 0;
+}
+static const uint8_t sorted_table_find_original[] = {0x83, 0xec, 0x0c, 0x53, 0x55, 0x8b, 0xe9, 0x8b};
+REWRITE("SortedTable::Find", 0xe03cd0, sorted_table_find_original, &sorted_table_find, &g_sorted_finds);
+
+// ---- Entries::UpdateMatching(record, list) (0xB786B0): a record copied over each list entry with the same keys -------
+// The list {entries, -, count} holds 0x70-byte entries; one whose +0x10 and +0xC equal the record's takes its values
+// +0 to +0x1C, the byte +0x20, +0x24 to +0x34, +0x40, +0x44, +0x48, +0x50, +0x54 and the byte +0x58. Gives the count.
+static volatile long g_entry_updates;
+static int32_t __stdcall entries_update_matching(const uint8_t *record, const uint8_t *list) {
+    g_entry_updates++;
+    int32_t n = *(const volatile int32_t *)(list + 8);
+    for (int32_t i = 0; i < n; i++, n = *(const volatile int32_t *)(list + 8)) {
+        uint8_t *const e = *(uint8_t *const *)list + 0x70 * i;
+        if (*(const uint32_t *)(record + 0x10) != *(const uint32_t *)(e + 0x10) || *(const uint32_t *)(record + 0xc) != *(const uint32_t *)(e + 0xc)) continue;
+        auto copy = [&](uint32_t at) { *(volatile uint32_t *)(e + at) = *(const uint32_t *)(record + at); };
+        for (uint32_t at = 0; at <= 0x1c; at += 4) copy(at);
+        *(volatile uint8_t *)(e + 0x20) = record[0x20];
+        for (uint32_t at = 0x24; at <= 0x34; at += 4) copy(at);
+        copy(0x40), copy(0x44), copy(0x48), copy(0x50), copy(0x54);
+        *(volatile uint8_t *)(e + 0x58) = record[0x58];
+    }
+    return n;
+}
+static const uint8_t entries_update_matching_original[] = {0x55, 0x57, 0x8b, 0x7c, 0x24, 0x10, 0x8b, 0x47};
+REWRITE("Entries::UpdateMatching", 0xb786b0, entries_update_matching_original, &entries_update_matching, &g_entry_updates);
+
+// ---- Span::Clip(this, out, range) (0xC52060): a span record for the part of this range inside the range given --------
+// This range runs from +0x14 less +0x10 for +0xC; the range given is {from, to} (signed). out gets 8 values: a zero byte
+// (the next three bytes are left: the game copies stack bytes there), +4, 0, 0, the later start less this start, the
+// later start, the later of that start and the earlier end, and +0x1C. Gives out.
+static volatile long g_span_clips;
+static uint32_t *__thiscall span_clip(const uint8_t *self, uint32_t *out, const int32_t *range) {
+    g_span_clips++;
+    const int32_t s = (int32_t)(*(const uint32_t *)(self + 0x14) - *(const uint32_t *)(self + 0x10));
+    const int32_t e = (int32_t)(*(const uint32_t *)(self + 0xc) + (uint32_t)s);
+    const int32_t lo = s < range[0] ? range[0] : s;
+    const int32_t hi0 = e > range[1] ? range[1] : e;
+    const int32_t hi = lo < hi0 ? hi0 : lo;
+    volatile uint32_t *const o = out;
+    *(volatile uint8_t *)out = 0;
+    o[1] = *(const uint32_t *)(self + 4), o[2] = 0, o[3] = 0;
+    o[4] = (uint32_t)(lo - s), o[5] = (uint32_t)lo, o[6] = (uint32_t)hi, o[7] = *(const uint32_t *)(self + 0x1c);
+    return out;
+}
+static const uint8_t span_clip_original[] = {0x83, 0xec, 0x34, 0x8b, 0x51, 0x14, 0x53, 0x8b};
+REWRITE("Span::Clip", 0xc52060, span_clip_original, &span_clip, &g_span_clips);
+
+// ---- PairIds::Get(a, b) (0x466970): the number of an unordered pair of numbers --------------------------------------
+// Rows of 0x14C bytes at 0x111EFE0, one per smaller number: a count, then up to 40 larger numbers (+4) and their pair
+// numbers (+0xA4). A pair not there yet gets the next number (0x12DFFE8, counted up) and a 16-byte record at 0x1106E90
+// {smaller, larger, -1, 0 byte}, and is added to the row. Signed.
+static volatile long g_pair_ids;
+static uint32_t __fastcall pair_ids_get(int32_t a, int32_t b) {
+    g_pair_ids++;
+    const int32_t lo = a > b ? b : a, hi = a < b ? b : a;
+    volatile int32_t *const row = (volatile int32_t *)(0x111efe0 + 0x14c * lo);
+    const int32_t n = row[0];
+    for (int32_t i = 0; i < row[0]; i++)
+        if (row[1 + i] == hi) return (uint32_t)row[0x29 + i];
+    volatile int32_t *const count = (volatile int32_t *)0x12dffe8;
+    volatile int32_t *const rec = (volatile int32_t *)(0x1106e90 + 16 * *count);
+    rec[0] = lo, rec[1] = hi;
+    *(volatile uint8_t *)(rec + 3) = 0;
+    rec[2] = -1;
+    row[1 + n] = hi;
+    row[0x29 + row[0]] = *count;
+    row[0] = row[0] + 1;
+    const int32_t number = *count;
+    *count = number + 1;
+    return (uint32_t)number;
+}
+static const uint8_t pair_ids_get_original[] = {0x83, 0xec, 0x10, 0x53, 0x55, 0x56, 0x57, 0x89};
+REWRITE("PairIds::Get", 0x466970, pair_ids_get_original, &pair_ids_get, &g_pair_ids);
+
+// ---- Grid::QueueCell(this, x, y, -) (0xBA30B0): a grid cell's flagged objects moved to the queue -------------------------
+// Cells of 0x18 bytes (+0x6C, width +0x64, height +0x68; skipped outside or with a negative first value) list objects
+// (+0xC, count +0x10). Each with its byte +0x60 set has its link (+0x4C) taken out of its list (when properly linked) and
+// put last in the list at +0x8C, and its +0x58 set to 1.0.
+static volatile long g_cell_queues;
+static void __thiscall grid_queue_cell(const uint8_t *self, int32_t x, int32_t y, uint32_t) {
+    g_cell_queues++;
+    if (x < 0 || y < 0 || x >= *(const int32_t *)(self + 0x64) || y >= *(const int32_t *)(self + 0x68)) return;
+    const uint8_t *const cell = *(const uint8_t *const *)(self + 0x6c) + 0x18 * (*(const int32_t *)(self + 0x64) * y + x);
+    if (*(const int32_t *)cell < 0) return;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(cell + 0x10); i++) {
+        uint8_t *const obj = (*(uint8_t *const *const *)(cell + 0xc))[i];
+        if (!obj[0x60]) continue;
+        volatile uint32_t *const link = (volatile uint32_t *)(obj + 0x4c);
+        if (link) {
+            const uint32_t next = link[1], prev = link[0];
+            if (next && prev && ((volatile uint32_t *)(uintptr_t)prev)[1] == (uint32_t)(uintptr_t)link && *(volatile uint32_t *)(uintptr_t)next == (uint32_t)(uintptr_t)link) {
+                ((volatile uint32_t *)(uintptr_t)prev)[1] = next;
+                *(volatile uint32_t *)(uintptr_t)link[1] = link[0];
+                link[0] = 0;
+                link[1] = 0;
+            }
+        }
+        volatile uint32_t *const head = *(volatile uint32_t *const *)(self + 0x8c);
+        link[1] = head[1];
+        *(volatile uint32_t *)(uintptr_t)head[1] = (uint32_t)(uintptr_t)link;
+        link[0] = (uint32_t)(uintptr_t)head;
+        head[1] = (uint32_t)(uintptr_t)link;
+        *(volatile uint32_t *)((*(uint8_t *const *const *)(cell + 0xc))[i] + 0x58) = 0x3f800000;
+    }
+}
+static const uint8_t grid_queue_cell_original[] = {0x8b, 0x54, 0x24, 0x04, 0x55, 0x8b, 0xe9, 0x33};
+REWRITE("Grid::QueueCell", 0xba30b0, grid_queue_cell_original, &grid_queue_cell, &g_cell_queues);
+
+// ---- Grid::MarkRectForOwner(this, owner, x0, y0, x1, y1) (0x71CB80): a rectangle marked in an owner's layers --------
+// The corners are bytes, divided by 16. Each layer (32 bytes at +0x68, count +0x70) whose +4's +0xC is the owner has
+// byte +0x18 of every cell (0x4C bytes at the layer's +0x14, rows of +0x60) in the rectangle set to 1.
+static volatile long g_rect_marks;
+static void __thiscall grid_mark_rect(const uint8_t *self, uint32_t owner, uint32_t x0_in, uint32_t y0_in, uint32_t x1_in, uint32_t y1_in) {
+    g_rect_marks++;
+    const int32_t x0 = (uint8_t)x0_in >> 4, y0 = (uint8_t)y0_in >> 4, x1 = (uint8_t)x1_in >> 4, y1 = (uint8_t)y1_in >> 4;
+    if (*(const int32_t *)(self + 0x70) <= 0) return;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x70); i++) {
+        const uint8_t *const layer = *(const uint8_t *const *)(self + 0x68) + 32 * i;
+        if (*(const uint32_t *)(*(const uint8_t *const *)(layer + 4) + 0xc) != owner) continue;
+        for (int32_t y = y0; y <= y1; y++) {
+            volatile uint8_t *p = *(uint8_t *const *)(layer + 0x14) + 0x4c * (*(const int32_t *)(self + 0x60) * y + x0) + 0x18;
+            for (int32_t x = x0; x <= x1; x++, p += 0x4c) *p = 1;
+        }
+    }
+}
+static const uint8_t grid_mark_rect_original[] = {0x0f, 0xb6, 0x44, 0x24, 0x0c, 0x0f, 0xb6, 0x54};
+REWRITE("Grid::MarkRectForOwner", 0x71cb80, grid_mark_rect_original, &grid_mark_rect, &g_rect_marks);
+
+// ---- Ride::Clamp4944D0(this, x0, y0, x1, y1) (0x4944D0): a rectangle of a grid's 16-bit cells cleared ----------------
+// The grid: width +8, height +0xC, cells +0x10. The rectangle (ends included, signed) is first kept to the grid.
+static volatile long g_ride_clears;
+static void __thiscall ride_clamp_4944d0(const uint8_t *self, int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
+    g_ride_clears++;
+    const int32_t w = *(const int32_t *)(self + 8), h = *(const int32_t *)(self + 0xc);
+    const int32_t a = x0 > 0 ? x0 : 0, b = y0 > 0 ? y0 : 0;
+    const int32_t c = w - 1 > x1 ? x1 : w - 1, d = h - 1 > y1 ? y1 : h - 1;
+    for (int32_t y = b; y <= d; y++)
+        for (int32_t x = a; x <= c; x++)
+            if (x >= 0 && x < *(const int32_t *)(self + 8) && y >= 0 && y < *(const int32_t *)(self + 0xc))
+                *(volatile uint16_t *)(*(uint8_t *const *)(self + 0x10) + 2 * (*(const int32_t *)(self + 8) * y + x)) = 0;
+}
+static const uint8_t ride_clamp_4944d0_original[] = {0x83, 0xec, 0x0c, 0x56, 0xb8, 0x00, 0x00, 0x00};
+REWRITE("Ride::Clamp4944D0", 0x4944d0, ride_clamp_4944d0_original, &ride_clamp_4944d0, &g_ride_clears);
+
+// ---- Mask::ToPixels(this, image, stride) (0x7AEB50): a bit mask's rows written into an image ------------------------
+// Rows from the byte +0x14 to +0x15, each with its first and last column (bytes +0x16 + row and +0x116 + row) and 256
+// bits at +0x228 + 32 * row: a pixel (4 bytes, rows of stride pixels) is 0x7FFFFFFF where the bit is set, else 0xFFFFFF.
+static volatile long g_mask_pixels;
+static void __thiscall mask_to_pixels(const uint8_t *self, uint32_t *image, int32_t stride) {
+    g_mask_pixels++;
+    for (int32_t row = self[0x14]; row <= *(const volatile uint8_t *)(self + 0x15); row++) {
+        const uint32_t *const bits = (const uint32_t *)(self + 0x228 + 32 * row);
+        const int32_t last = self[0x116 + row];
+        for (int32_t x = self[0x16 + row]; x <= last; x++)
+            ((volatile uint32_t *)image)[row * stride + x] = (bits[x >> 5] & (1u << (x & 31))) ? 0x7fffffffu : 0xffffffu;
+    }
+}
+static const uint8_t mask_to_pixels_original[] = {0x83, 0xec, 0x08, 0x0f, 0xb6, 0x41, 0x15, 0x57};
+REWRITE("Mask::ToPixels", 0x7aeb50, mask_to_pixels_original, &mask_to_pixels, &g_mask_pixels);
+
+// ---- Description::Differs(a, b) (0x970C80): whether two descriptions differ --------------------------------------------
+// 1 when a is missing, or their kinds (+0) or +0xB8 differ; kinds 1 and 2 then compare +0xBC, +0xC0, +8 and +0xC, and
+// kind 1 also +0x54 and the byte +0x60.
+static volatile long g_description_differs;
+static uint8_t __stdcall description_differs(const uint8_t *a, const uint8_t *b) {
+    g_description_differs++;
+    if (!a) return 1;
+    auto v = [](const uint8_t *p, uint32_t at) { return *(const uint32_t *)(p + at); };
+    if (v(b, 0) != v(a, 0) || v(b, 0xb8) != v(a, 0xb8)) return 1;
+    const uint32_t kind = v(a, 0);
+    if (kind != 1 && kind != 2) return 0;
+    if (v(b, 0xbc) != v(a, 0xbc) || v(b, 0xc0) != v(a, 0xc0) || v(b, 8) != v(a, 8) || v(b, 0xc) != v(a, 0xc)) return 1;
+    if (kind == 2) return 0;
+    return v(b, 0x54) != v(a, 0x54) || b[0x60] != a[0x60];
+}
+static const uint8_t description_differs_original[] = {0x8b, 0x44, 0x24, 0x04, 0x85, 0xc0, 0x0f, 0x84};
+REWRITE("Description::Differs", 0x970c80, description_differs_original, &description_differs, &g_description_differs);

@@ -439,4 +439,446 @@
                              return Result{((uint32_t(__thiscall *)(void *, void *, uint32_t, void *))fn)(arena<void>(0x100), arena<void>(0x10), arena<uint32_t>(0x30)[0], out)};
                          }};
     quick(text_sum_bd70b0);
+    // ShaderFile::FindC47500: 1-4 buckets of entries, keys that match one fully, in part, or not at all
+    Test shader_file_find{0xc47500,
+                          [=](Rng &r) {
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              const uint32_t buckets = r.range(1, 4);
+                              *(uint32_t *)(self + 4) = buckets;
+                              *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                              *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                              *(uint32_t *)(self + 0x14) = (uint32_t)(uintptr_t)arena<void>(0x800);
+                              uint32_t at = 0;
+                              for (uint32_t b = 0; b <= buckets; b++) arena<uint32_t>(0x200)[b] = at, at += r.range(0, 3);
+                              // entries: four values from a small set, data of 0-3 values from a small set
+                              for (int i = 0; i < 16; i++) {
+                                  uint32_t *e = arena<uint32_t>(0x400 + 20 * i);
+                                  const uint32_t words = r.range(0, 3);
+                                  e[0] = r.range(0, 1), e[1] = r.range(0, 1), e[2] = 7, e[3] = words << 18 | r.range(0, 1);
+                                  e[4] = (uint32_t)(uintptr_t)arena<void>(0xa00 + 0x10 * i);
+                                  for (int k = 0; k < 4; k++) arena<uint32_t>(0xa00 + 0x10 * i)[k] = r.range(0, 1);
+                              }
+                              uint32_t *key = arena<uint32_t>(0x20);
+                              const int pick = r.range(0, 15);
+                              for (int k = 0; k < 5; k++) key[k] = arena<uint32_t>(0x400 + 20 * pick)[k];
+                              key[4] = (uint32_t)(uintptr_t)arena<void>(0x40);
+                              for (int k = 0; k < 4; k++) arena<uint32_t>(0x40)[k] = arena<uint32_t>(0xa00 + 0x10 * pick)[k] ^ (r.range(0, 5) ? 0 : 1);
+                              if (r.range(0, 3) == 0) key[r.range(0, 3)] ^= 1;
+                          },
+                          [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x20))}; }};
+    quick(shader_file_find);
+    // Stream::StepC50390: with or without a part, the 32 streams on it or not, the count about to wrap or not
+    Test stream_step_c50390{0xc50390,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                *(uint32_t *)(self + 0xf0) = r.range(0, 4) ? r.range(1, 3) : 0;
+                                *(uint32_t *)(self + 0x68) = r.range(0, 4) ? r.next() : 0xffffffffu;
+                                for (int d = 0; d < 32; d++) {
+                                    ((volatile uint32_t *)0x13e6bb8)[d] = (uint32_t)(uintptr_t)arena<void>(0x1000 + 0x100 * d);
+                                    arena<uint32_t>(0x1000 + 0x100 * d)[4] = r.next(), arena<uint32_t>(0x10ec + 0x100 * d)[0] = r.range(0, 3);
+                                }
+                            },
+                            [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+    t.push_back(stream_step_c50390);
+    // OverlayFile::FindStreamedItem: 0-12 entries sorted by id then value (0xFFFF among them), ids and values that are
+    // there or not, values with high bits
+    Test overlay_find_streamed{0xc3b2c0,
+                               [=](Rng &r) {
+                                   uint8_t *self = arena<uint8_t>(0x100);
+                                   const int n = r.range(0, 12);
+                                   *(uint32_t *)(self + 0x48) = n, *(uint32_t *)(self + 0x4c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                   int32_t id = r.range(-3, 2);
+                                   int32_t v = -1;
+                                   for (int i = 0; i < 12; i++) {
+                                       uint8_t *e = arena<uint8_t>(0x400 + 20 * i);
+                                       if (r.range(0, 2) == 0) id += r.range(1, 2), v = r.range(-1, 2);
+                                       else v += r.range(1, 2);
+                                       *(int32_t *)e = id, *(uint16_t *)(e + 4) = (uint16_t)v, *(uint16_t *)(e + 6) = (uint16_t)r.next();
+                                   }
+                                   arena<int32_t>(0x10)[0] = r.range(-4, 14);
+                                   const int32_t value = r.range(-2, 12);
+                                   arena<int32_t>(0x10)[1] = r.range(0, 4) ? value : (int32_t)((uint32_t)value | 0x10000u);
+                               },
+                               [](void *fn) {
+                                   return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<int32_t>(0x10)[1])};
+                               }};
+    quick(overlay_find_streamed);
+    // Window::Flags6F0D80: windows with random flags, each listed flag (and others) at positions 0-12
+    Test window_flags_6f0d80{0x6f0d80,
+                             [=](Rng &r) {
+                                 static const uint32_t flags[] = {0x80, 4, 8, 0x10, 1, 0x20, 0x40, 2, 0x100, 0x200, 0x400, 0x800, 0x18};
+                                 *(uint32_t *)arena<uint8_t>(0x1d0) = r.next() & 0xfff;
+                                 arena<uint32_t>(0x10)[0] = flags[r.range(0, 12)], arena<int32_t>(0x10)[1] = r.range(0, 12);
+                             },
+                             [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t, int32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<int32_t>(0x10)[1])}; }};
+    quick(window_flags_6f0d80);
+    // Toolbar::Next79CB60: the two shared values equal or not, indexes in and out of range, items marked or not, shown in
+    // windows of kind 0xE or 0xD (lists of 0-3 windows) or not
+    Test toolbar_next_79cb60{0x79cb60,
+                             [=](Rng &r) {
+                                 *(volatile int32_t *)0x1306bcc = r.range(0, 1), *(volatile int32_t *)0x1306bd8 = r.range(0, 4) ? 0 : 1;
+                                 const int32_t begin = r.range(0, 3);
+                                 *(volatile int32_t *)0x1306be0 = begin, *(volatile int32_t *)0x1306be4 = begin + r.range(0, 5);
+                                 *(volatile int32_t *)0x1306bb8 = r.range(-1, 6);
+                                 *(volatile uint32_t *)0x1306bc8 = (uint32_t)(uintptr_t)arena<void>(0x100);
+                                 for (int i = 0; i < 12; i++) {
+                                     arena<uint32_t>(0x100)[i] = r.range(0, 5) ? (uint32_t)(uintptr_t)arena<void>(0x400 + 0x100 * i) : 0;
+                                     arena<uint32_t>(0x4a8 + 0x100 * i)[0] = r.range(0, 3) ? 1 : r.range(0, 2);
+                                 }
+                                 // two lists of nodes {next, -, window}, ending at a node whose first value is 0
+                                 for (int l = 0; l < 2; l++) {
+                                     const int n = r.range(0, 3);
+                                     const uint32_t list = l ? 0x10ef794 : 0x10ef9d0;
+                                     *(volatile uint32_t *)list = (uint32_t)(uintptr_t)arena<void>(0x1800 + 0x100 * l);
+                                     for (int k = 0; k <= n; k++) {
+                                         uint32_t *node = arena<uint32_t>(0x1800 + 0x100 * l + 0x10 * k);
+                                         node[0] = k < n ? (uint32_t)(uintptr_t)(node + 4) : 0;
+                                         uint8_t *w = arena<uint8_t>(0x2000 + 0x400 * (2 * l + (k & 1)));
+                                         node[2] = r.range(0, 4) ? (uint32_t)(uintptr_t)w : 0;
+                                         *(uint32_t *)(w + 0x190) = r.range(0, 1) ? (l ? 0xd : 0xe) : 0xc;
+                                         *(uint32_t *)(w + 0x1c0) = (uint32_t)(uintptr_t)(w + 0x200);
+                                         *(uint32_t *)(w + 0x20c) = arena<uint32_t>(0x100)[r.range(0, 11)];
+                                     }
+                                 }
+                             },
+                             [](void *fn) { ((void (*)())fn)(); return Result{}; }};
+    t.push_back(toolbar_next_79cb60);
+    // List::Pass42D400: 0-4 boxes to move among up to 10 entries (some not in use), moves of -40 to 40
+    Test list_pass_42d400{0x42d400,
+                          [=](Rng &r) {
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              *(uint32_t *)self = (uint32_t)(uintptr_t)arena<void>(0x400);
+                              int in_use = 0;
+                              for (int i = 0; i < 12; i++) {
+                                  uint8_t *e = arena<uint8_t>(0x400 + 0x10 * i);
+                                  for (int k = 0; k < 16; k++) e[k] = (uint8_t)r.next();
+                                  e[0] = (uint8_t)(r.range(0, 2) ? r.range(1, 255) : 0);
+                                  if (e[0]) in_use++;
+                              }
+                              arena<uint8_t>(0x4b0)[0] = 1;
+                              *(int32_t *)(self + 8) = r.range(-1, in_use < 4 ? in_use : 4);
+                              arena<int32_t>(0x10)[0] = r.range(-40, 40), arena<int32_t>(0x10)[1] = r.range(-40, 40);
+                          },
+                          [](void *fn) {
+                              ((void(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<int32_t>(0x10)[1]);
+                              return Result{};
+                          }};
+    quick(list_pass_42d400);
+    // Ride::Part4FE690: modes 0-3, flag or not, values near each other
+    Test ride_part_4fe690{0x4fe690,
+                          [=](Rng &r) {
+                              for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x100)[i] = r.next();
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              *(int32_t *)(self + 0x100) = r.range(0, 3);
+                              *(int32_t *)(self + 0xd8) = r.range(-2, 3), *(int32_t *)(self + 0xd4) = r.range(-2, 3);
+                              arena<uint32_t>(0x10)[0] = r.range(0, 1) * r.range(1, 255) | (r.next() & 0xffffff00u);
+                              arena<int32_t>(0x10)[1] = r.range(0, 9) ? r.range(-3, 5) : (int32_t)r.next(), arena<int32_t>(0x10)[2] = r.range(-3, 5);
+                          },
+                          [](void *fn) {
+                              ((void(__thiscall *)(void *, uint32_t, int32_t, int32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<int32_t>(0x10)[1], arena<int32_t>(0x10)[2]);
+                              return Result{};
+                          }};
+    quick(ride_part_4fe690);
+    // Water::Step973040: keys equal up to a random part, then differing there (each way), flags with high bits
+    Test water_key_compare{0x973040,
+                           [=](Rng &r) {
+                               uint32_t *x = arena<uint32_t>(0x100), *y = arena<uint32_t>(0x120);
+                               for (int i = 0; i < 8; i++) x[i] = y[i] = r.next();
+                               x[2] = (uint32_t)(uintptr_t)arena<void>(0x200), y[2] = (uint32_t)(uintptr_t)arena<void>(0x210);
+                               for (int i = 0; i < 3; i++) arena<uint32_t>(0x200)[i] = arena<uint32_t>(0x210)[i] = r.next();
+                               x[4] = r.range(0, 1) * 0x10 | (r.next() & 0xffffff00u), y[4] = (x[4] & 0xff) | (r.next() & 0xffffff00u);
+                               x[7] = r.range(0, 1) * 0x10 | (r.next() & 0xffffff00u), y[7] = (x[7] & 0xff) | (r.next() & 0xffffff00u);
+                               const int part = r.range(0, 10);
+                               uint32_t *slot = part < 2 ? x + part : part < 5 ? arena<uint32_t>(0x200) + (part - 2) : part == 5 ? x + 3 : part == 6 ? x + 4 : part < 9 ? x + part - 2 : part == 9 ? x + 7 : nullptr;
+                               if (slot) {
+                                   if (part == 6 || part == 9) *slot ^= 0x10;
+                                   else *slot += r.range(0, 1) ? 1 : 0x80000000u;
+                               }
+                           },
+                           [](void *fn) {
+                               uint32_t *x = arena<uint32_t>(0x100);
+                               uint32_t eax;
+                               __asm__ volatile("movl $16, %%ecx\n1:\n\tpushl 60(%%esi)\n\tsubl $4, %%esi\n\tdecl %%ecx\n\tjnz 1b\n\tcall *%%ebx"
+                                                : "=a"(eax), "+S"(x)
+                                                : "b"(fn)
+                                                : "ecx", "edx", "edi", "memory", "cc");
+                               return Result{eax};
+                           }};
+    quick(water_key_compare);
+    // Water::Cell93DBF0: cells inside and outside a grid of up to 4 by 4, halves with the same object or not, flags 0-7
+    Test water_cell_93dbf0{0x93dbf0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               self[0x58] = (uint8_t)r.range(1, 4), self[0x59] = (uint8_t)r.range(1, 4);
+                               *(uint32_t *)(self + 0x5c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int i = 0; i < 16; i++) {
+                                   uint32_t *a = arena<uint32_t>(0x400 + 0x30 * i), *b = a + 6;
+                                   const uint32_t obj = (uint32_t)(uintptr_t)arena<void>(0x1000 + 0x40 * r.range(0, 1));
+                                   a[1] = r.range(0, 5) ? obj : 0, b[1] = r.range(0, 3) ? a[1] : r.range(0, 1) ? 0 : (uint32_t)(uintptr_t)arena<void>(0x1080);
+                                   a[5] = r.range(0, 2) ? 7 | (r.next() & ~7u) : r.next(), b[5] = r.range(0, 2) ? 7 | (r.next() & ~7u) : r.next();
+                               }
+                               for (int i = 0; i < 0x30; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                               arena<int32_t>(0x10)[0] = r.range(-1, 4), arena<int32_t>(0x10)[1] = r.range(-1, 4);
+                               arena<uint32_t>(0x20)[0] = r.next(), arena<uint32_t>(0x24)[0] = r.next();
+                           },
+                           [](void *fn) {
+                               return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t, int32_t, void *, void *))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<int32_t>(0x10)[1], arena<void>(0x20), arena<void>(0x24))};
+                           }};
+    quick(water_cell_93dbf0);
+    // Shader::ScanCC4C50: 0-40 bytes from one, two or all three ranges (and zeros)
+    Test shader_scan_cc4c50{0xcc4c50,
+                            [=](Rng &r) {
+                                const int which = r.range(0, 7);
+                                for (int i = 0; i < 0x40; i++) {
+                                    const int k = r.range(0, 3);
+                                    arena<uint8_t>(0x400)[i] = (uint8_t)(k == 3 || !(which & (1 << k)) ? 0 : k == 0 ? r.range(1, 0x55) : k == 1 ? r.range(0x56, 0xaa) : r.range(0xab, 0xff));
+                                }
+                                arena<uint32_t>(0x10)[0] = r.range(0, 8), arena<uint32_t>(0x10)[1] = r.range(0, 5);
+                            },
+                            [](void *fn) { return Result{((uint32_t(__fastcall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x400), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1])}; }};
+    quick(shader_scan_cc4c50);
+    // Stream::StepC52120: ranges before, across, inside and past what the stream holds
+    Test stream_step_c52120{0xc52120,
+                            [=](Rng &r) {
+                                for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x100)[i] = r.next(), arena<uint32_t>(0x200)[i] = r.next();
+                                uint32_t *self = arena<uint32_t>(0x100);
+                                self[4] = r.range(0, 0x40), self[5] = self[4] + r.range(0, 0x40), self[6] = r.range(0, 0x100);
+                                arena<int32_t>(0x20)[0] = r.range(-0x20, 0x100), arena<int32_t>(0x20)[1] = r.range(-0x20, 0x120);
+                            },
+                            [](void *fn) {
+                                const uint32_t out = (uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x20));
+                                for (int i = 1; i < 4; i++) arena<uint8_t>(0x200)[i] = 0;   // the stack bytes the game copies
+                                return Result{out};
+                            }};
+    quick(stream_step_c52120);
+    // Animal::EntryA6FAF0: 0-6 triangles over points 0-4, edges looked for from any triangle on, either way round
+    Test animal_entry_a6faf0{0xa6faf0,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(int32_t *)(self + 0x4c) = r.range(0, 20), *(uint32_t *)(self + 0x48) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 for (int i = 0; i < 24; i++) arena<uint32_t>(0x400)[i] = r.range(0, 4);
+                                 arena<uint32_t>(0x10)[0] = r.range(0, 4), arena<uint32_t>(0x10)[1] = r.range(0, 4), arena<int32_t>(0x10)[2] = r.range(-1, 6);
+                             },
+                             [](void *fn) {
+                                 return Result{(uint32_t)((int32_t(__thiscall *)(void *, uint32_t, uint32_t, int32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0], arena<uint32_t>(0x10)[1], arena<int32_t>(0x10)[2])};
+                             }};
+    quick(animal_entry_a6faf0);
+    // Key::MatchesPattern: each part of the pattern the wildcard, the key's own, or one value off; byte runs of 0-5 equal
+    // or one byte off
+    Test key_matches_pattern{0xbb2220,
+                             [=](Rng &r) {
+                                 uint8_t *key = arena<uint8_t>(0x100), *pat = arena<uint8_t>(0x200);
+                                 for (int i = 0; i < 0x14; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                 for (uint32_t at = 0; at <= 0x2c; at += at ? 0x1c : 0x10) {
+                                     const int how = r.range(0, 3);
+                                     for (int i = 0; i < 16; i++) pat[at + i] = how == 0 ? ((const uint8_t *)0xf9ebb4)[i] : key[at + i];
+                                     if (how == 3) pat[at + r.range(0, 15)] ^= 1;
+                                 }
+                                 const uint32_t n = r.range(0, 5);
+                                 *(uint32_t *)(key + 0x40) = n, *(uint32_t *)(pat + 0x40) = r.range(0, 4) ? n : r.range(0, 5);
+                                 *(uint32_t *)(key + 0x44) = (uint32_t)(uintptr_t)arena<void>(0x300), *(uint32_t *)(pat + 0x44) = (uint32_t)(uintptr_t)arena<void>(0x310);
+                                 for (int i = 0; i < 8; i++) arena<uint8_t>(0x300)[i] = arena<uint8_t>(0x310)[i] = (uint8_t)r.next();
+                                 if (r.range(0, 2) == 0) arena<uint8_t>(0x310)[r.range(0, 5)] ^= 1;
+                             },
+                             [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200))}; }};
+    quick(key_matches_pattern);
+    // GroupedList::MoveAcross: an object once or twice in a list of 0-10 among six groups (starts and ends at random),
+    // in or out
+    Test grouped_move_across{0xbf4910,
+                             [=](Rng &r) {
+                                 uint8_t *owner = arena<uint8_t>(0x200);
+                                 *(uint32_t *)arena<uint8_t>(0x104) = (uint32_t)(uintptr_t)owner;
+                                 const int n = r.range(0, 10);
+                                 *(int32_t *)(owner + 0x8c) = n, *(uint32_t *)(owner + 0x94) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 for (int i = 0; i < 12; i++) arena<uint32_t>(0x400)[i] = r.range(0, 3) ? r.next() : (uint32_t)(uintptr_t)arena<void>(0x100);
+                                 int32_t edge = 0;
+                                 for (int g = 0; g < 6; g++) {
+                                     const int32_t s = edge + r.range(0, 2), e = s + r.range(0, 3);
+                                     *(int32_t *)(owner + 0x4c + 12 * g) = s, *(int32_t *)(owner + 0x50 + 12 * g) = e, edge = e;
+                                 }
+                                 arena<uint32_t>(0x10)[0] = r.range(0, 1) * r.range(1, 255) | (r.next() & 0xffffff00u);
+                             },
+                             [](void *fn) { ((void(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0]); return Result{}; }};
+    quick(grouped_move_across);
+    // Resource::BinarySearch: nine sorted ranges with 0-4 sorted parts each (gaps between), places inside, between and
+    // outside, parts with and without a base
+    Test resource_binary_search{0xc3b130,
+                                [=](Rng &r) {
+                                    *(uint32_t *)arena<uint8_t>(0x16c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                    uint32_t at = r.range(0, 0x20);
+                                    for (int k = 0; k < 9; k++) {
+                                        uint32_t *e = arena<uint32_t>(0x400 + 0x18 * k);
+                                        const uint32_t start = at, size = r.range(1, 0x40);
+                                        e[4] = start, e[5] = size, at = start + size + r.range(0, 0x10);
+                                        const uint32_t parts = r.range(0, 4);
+                                        e[0] = parts, e[1] = r.next(), e[2] = r.next(), e[3] = (uint32_t)(uintptr_t)arena<void>(0x800 + 0x40 * k);
+                                        uint32_t p = start;
+                                        for (uint32_t j = 0; j < 4; j++) {
+                                            uint32_t *f = arena<uint32_t>(0x800 + 0x40 * k + 0x10 * j);
+                                            p += r.range(0, 4);
+                                            f[1] = p, f[0] = r.range(1, 8), f[2] = r.range(0, 4) ? r.next() : 0, f[3] = r.next();
+                                            p += f[0];
+                                        }
+                                    }
+                                    arena<uint32_t>(0x10)[0] = r.range(0, (int)at + 0x10);
+                                },
+                                [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
+    quick(resource_binary_search);
+    // SortedTable::Find: 0-12 sorted entries over small values, keys that are there or fall between
+    Test sorted_table_find{0xe03cd0,
+                           [=](Rng &r) {
+                               const int n = r.range(0, 12);
+                               *(volatile int32_t *)0x141dcdc = n, *(volatile uint32_t *)0x141dce4 = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               uint32_t k[6] = {0, 0, (uint32_t)-1, (uint32_t)-1, (uint32_t)-1, (uint32_t)-1};
+                               for (int i = 0; i < 12; i++) {
+                                   const int part = r.range(0, 5);
+                                   k[part] += r.range(1, 2);
+                                   for (int j = part + 1; j < 6; j++) k[j] = j < 2 ? r.range(0, 2) : (uint32_t)r.range(-2, 2);
+                                   for (int j = 0; j < 6; j++) arena<uint32_t>(0x400 + 32 * i)[j] = k[j];
+                                   arena<uint32_t>(0x400 + 32 * i)[6] = r.next(), arena<uint32_t>(0x400 + 32 * i)[7] = r.next();
+                               }
+                               uint32_t *key = arena<uint32_t>(0x20);
+                               if (n && r.range(0, 1)) {
+                                   for (int j = 0; j < 6; j++) key[j] = arena<uint32_t>(0x400 + 32 * r.range(0, n - 1))[j];
+                               } else {
+                                   for (int j = 0; j < 6; j++) key[j] = j < 2 ? r.range(0, 12) : (uint32_t)r.range(-3, 3);
+                               }
+                               arena<uint32_t>(0x40)[0] = r.next();
+                           },
+                           [](void *fn) {
+                               const uint32_t *k = arena<uint32_t>(0x20);
+                               return Result{((uint8_t(__fastcall *)(uint32_t, uint32_t, const void *, int32_t, void *))fn)(k[0], k[1], k + 2, (int32_t)k[5], arena<void>(0x40))};
+                           }};
+    t.push_back(sorted_table_find);
+    // Entries::UpdateMatching: 0-5 entries (a negative count too), keys matching the record's or not
+    Test entries_update_matching{0xb786b0,
+                                 [=](Rng &r) {
+                                     for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                     for (int i = 0; i < 0xc0; i++) arena<uint32_t>(0x400)[i] = r.next();
+                                     arena<uint32_t>(0x100)[3] = r.range(0, 1), arena<uint32_t>(0x100)[4] = r.range(0, 1);
+                                     for (int i = 0; i < 6; i++) arena<uint32_t>(0x40c + 0x70 * i)[0] = r.range(0, 1), arena<uint32_t>(0x410 + 0x70 * i)[0] = r.range(0, 1);
+                                     arena<uint32_t>(0x200)[0] = (uint32_t)(uintptr_t)arena<void>(0x400), arena<int32_t>(0x200)[2] = r.range(-1, 5);
+                                 },
+                                 [](void *fn) { return Result{(uint32_t)((int32_t(__stdcall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200))}; }};
+    quick(entries_update_matching);
+    // Span::Clip: ranges before, across, inside and past this one
+    Test span_clip{0xc52060,
+                   [=](Rng &r) {
+                       for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x100)[i] = r.next(), arena<uint32_t>(0x200)[i] = r.next();
+                       uint32_t *self = arena<uint32_t>(0x100);
+                       self[4] = r.range(0, 0x40), self[5] = self[4] + r.range(0, 0x40), self[3] = r.range(0, 0x100);
+                       arena<int32_t>(0x20)[0] = r.range(-0x20, 0x100), arena<int32_t>(0x20)[1] = r.range(-0x20, 0x120);
+                   },
+                   [](void *fn) {
+                       const uint32_t out = (uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x20));
+                       for (int i = 1; i < 4; i++) arena<uint8_t>(0x200)[i] = 0;   // the stack bytes the game copies
+                       return Result{out};
+                   }};
+    quick(span_clip);
+    // PairIds::Get: pairs of 0-3 either way round, rows holding 0-5 pairs already (the pair among them or not)
+    Test pair_ids_get{0x466970,
+                      [=](Rng &r) {
+                          for (int row = 0; row < 4; row++) {
+                              volatile int32_t *p = (volatile int32_t *)(0x111efe0 + 0x14c * row);
+                              p[0] = r.range(0, 5);
+                              for (int i = 0; i < 40; i++) p[1 + i] = r.range(0, 6), p[0x29 + i] = (int32_t)r.next();
+                          }
+                          *(volatile int32_t *)0x12dffe8 = r.range(0, 20);
+                          for (int i = 0; i < 0x60; i++) ((volatile uint32_t *)0x1106e90)[i] = r.next();
+                          arena<int32_t>(0x10)[0] = r.range(0, 3), arena<int32_t>(0x10)[1] = r.range(0, 3);
+                      },
+                      [](void *fn) { return Result{((uint32_t(__fastcall *)(int32_t, int32_t))fn)(arena<int32_t>(0x10)[0], arena<int32_t>(0x10)[1])}; }};
+    t.push_back(pair_ids_get);
+    // Grid::QueueCell: cells inside and outside a 3 by 3 grid, 0-4 objects flagged or not, linked, half-linked or loose
+    Test grid_queue_cell{0xba30b0,
+                         [=](Rng &r) {
+                             uint8_t *self = arena<uint8_t>(0x100);
+                             *(int32_t *)(self + 0x64) = 3, *(int32_t *)(self + 0x68) = 3;
+                             *(uint32_t *)(self + 0x6c) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                             for (int c = 0; c < 9; c++) {
+                                 uint32_t *cell = arena<uint32_t>(0x200 + 0x18 * c);
+                                 cell[0] = r.range(0, 4) ? r.range(0, 3) : (uint32_t)-1;
+                                 cell[3] = (uint32_t)(uintptr_t)arena<void>(0x400), cell[4] = r.range(0, 4);
+                             }
+                             for (int i = 0; i < 4; i++) {
+                                 uint8_t *obj = arena<uint8_t>(0x800 + 0x100 * i);
+                                 arena<uint32_t>(0x400)[i] = (uint32_t)(uintptr_t)obj;
+                                 obj[0x60] = (uint8_t)(r.range(0, 2) ? r.range(1, 255) : 0);
+                                 *(uint32_t *)(obj + 0x58) = r.next();
+                                 uint32_t *link = (uint32_t *)(obj + 0x4c), *a = arena<uint32_t>(0xd00 + 0x10 * i), *b = arena<uint32_t>(0xd80 + 0x10 * i);
+                                 link[0] = r.range(0, 5) ? (uint32_t)(uintptr_t)a : 0, link[1] = r.range(0, 5) ? (uint32_t)(uintptr_t)b : 0;
+                                 a[1] = r.range(0, 3) ? (uint32_t)(uintptr_t)link : 0, b[0] = r.range(0, 3) ? (uint32_t)(uintptr_t)link : 0;
+                             }
+                             *(uint32_t *)(self + 0x8c) = (uint32_t)(uintptr_t)arena<void>(0xe00);
+                             arena<uint32_t>(0xe00)[0] = arena<uint32_t>(0xe00)[1] = (uint32_t)(uintptr_t)arena<void>(0xe00);
+                             arena<int32_t>(0x10)[0] = r.range(-1, 3), arena<int32_t>(0x10)[1] = r.range(-1, 3);
+                         },
+                         [](void *fn) {
+                             ((void(__thiscall *)(void *, int32_t, int32_t, uint32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0], arena<int32_t>(0x10)[1], 0);
+                             return Result{};
+                         }};
+    quick(grid_queue_cell);
+    // Grid::MarkRectForOwner: 0-3 layers of two owners, rectangles inside a 6-wide grid of cells
+    Test grid_mark_rect{0x71cb80,
+                        [=](Rng &r) {
+                            uint8_t *self = arena<uint8_t>(0x100);
+                            *(int32_t *)(self + 0x70) = r.range(-1, 3), *(int32_t *)(self + 0x60) = 6;
+                            *(uint32_t *)(self + 0x68) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                            for (int i = 0; i < 3; i++) {
+                                uint32_t *layer = arena<uint32_t>(0x200 + 32 * i);
+                                layer[1] = (uint32_t)(uintptr_t)arena<void>(0x300 + 0x10 * i), arena<uint32_t>(0x30c + 0x10 * i)[0] = r.range(1, 2);
+                                layer[5] = (uint32_t)(uintptr_t)arena<void>(0x1000 + 0x1000 * i);
+                            }
+                            for (int i = 0; i < 0xc00; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                            arena<uint32_t>(0x10)[0] = r.range(1, 2);
+                            for (int k = 1; k < 5; k++) arena<uint32_t>(0x10)[k] = (uint32_t)r.range(0, 5) << 4 | r.range(0, 15) | (r.next() & 0xffffff00u);
+                        },
+                        [](void *fn) {
+                            const uint32_t *a = arena<uint32_t>(0x10);
+                            ((void(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), a[0], a[1], a[2], a[3], a[4]);
+                            return Result{};
+                        }};
+    quick(grid_mark_rect);
+    // Ride::Clamp4944D0: grids of 0-6 by 0-6, rectangles partly or wholly outside, reversed
+    Test ride_clamp_4944d0{0x4944d0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(int32_t *)(self + 8) = r.range(0, 6), *(int32_t *)(self + 0xc) = r.range(0, 6);
+                               *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x400)[i] = r.next();
+                               for (int k = 0; k < 4; k++) arena<int32_t>(0x10)[k] = r.range(-3, 8);
+                           },
+                           [](void *fn) {
+                               const int32_t *a = arena<int32_t>(0x10);
+                               ((void(__thiscall *)(void *, int32_t, int32_t, int32_t, int32_t))fn)(arena<void>(0x100), a[0], a[1], a[2], a[3]);
+                               return Result{};
+                           }};
+    quick(ride_clamp_4944d0);
+    // Mask::ToPixels: rows 0-5 (or none), columns within 0-40, bits at random, image strides 40-48
+    Test mask_to_pixels{0x7aeb50,
+                        [=](Rng &r) {
+                            uint8_t *self = arena<uint8_t>(0x100);
+                            self[0x14] = (uint8_t)r.range(0, 4), self[0x15] = (uint8_t)r.range(0, 5);
+                            for (int row = 0; row < 6; row++) {
+                                self[0x16 + row] = (uint8_t)r.range(0, 40), self[0x116 + row] = (uint8_t)r.range(0, 40);
+                                for (int k = 0; k < 8; k++) *(uint32_t *)(self + 0x228 + 32 * row + 4 * k) = r.next();
+                            }
+                            arena<int32_t>(0x10)[0] = r.range(40, 48);
+                            for (int i = 0; i < 0x200; i++) arena<uint32_t>(0x1000)[i] = r.next();
+                        },
+                        [](void *fn) { ((void(__thiscall *)(void *, void *, int32_t))fn)(arena<void>(0x100), arena<void>(0x1000), arena<int32_t>(0x10)[0]); return Result{}; }};
+    quick(mask_to_pixels);
+    // Description::Differs: kinds 0-3, missing first, each compared value the same or not
+    Test description_differs{0x970c80,
+                             [=](Rng &r) {
+                                 uint32_t *a = arena<uint32_t>(0x100), *b = arena<uint32_t>(0x200);
+                                 for (int i = 0; i < 0x40; i++) a[i] = b[i] = r.next();
+                                 a[0] = b[0] = r.range(0, 3);
+                                 static const uint32_t at[] = {0, 0xb8, 0xbc, 0xc0, 8, 0xc, 0x54, 0x60};
+                                 if (r.range(0, 1)) ((uint8_t *)b)[at[r.range(0, 7)]] ^= 1;
+                                 arena<uint32_t>(0x10)[0] = r.range(0, 7) ? (uint32_t)(uintptr_t)a : 0;
+                             },
+                             [](void *fn) { return Result{((uint8_t(__stdcall *)(void *, void *))fn)((void *)(uintptr_t)arena<uint32_t>(0x10)[0], arena<void>(0x200))}; }};
+    quick(description_differs);
 #endif
