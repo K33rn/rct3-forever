@@ -8991,3 +8991,191 @@ static float *__thiscall track_length_bc64e0(const uint8_t *self, float *out) {
 }
 static const uint8_t track_length_bc64e0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x8b, 0x51, 0x18};
 REWRITE("Track::LengthBC64E0", 0xbc64e0, track_length_bc64e0_original, &track_length_bc64e0, &g_track_directions);
+
+// ---- Scenery::Cell88F3F0(level, x, y, lo, hi) (0x88F3F0): grows the bounds of a cell on every level from level up -------
+// Grids (+0x390, count +0x394: {width, .., cells of 64 bytes +8}); x and y halve (signed) from level to level. A cell in
+// use (count +0x30 above 0) counts one more and takes the smaller lo (+0x10..) and larger hi (+0x20..) parts; else it
+// starts with count 1 and lo, hi.
+static volatile long g_scenery_cells;
+static void __thiscall scenery_cell_88f3f0(const uint8_t *self, int32_t level, int32_t x, int32_t y, const float *lo, const float *hi) {
+    g_scenery_cells++;
+    for (;;) {
+        const uint32_t *const grid = (*(const uint32_t *const *const *)(self + 0x390))[level];
+        uint8_t *const cell = (uint8_t *)(uintptr_t)grid[2] + ((int32_t)grid[0] * y + x) * 64;
+        float *const c = (float *)cell;
+        int32_t *const count = (int32_t *)(cell + 0x30);
+        if (*count > 0) {
+            *count += 1;
+            for (int k = 0; k < 3; k++)
+                if (lo[k] < c[4 + k]) *(uint32_t *)&c[4 + k] = *(const uint32_t *)&lo[k];
+            for (int k = 0; k < 3; k++)
+                if (hi[k] > c[8 + k]) *(uint32_t *)&c[8 + k] = *(const uint32_t *)&hi[k];
+        } else {
+            *count = 1;
+            for (int k = 0; k < 3; k++) *(uint32_t *)&c[4 + k] = *(const uint32_t *)&lo[k];
+            for (int k = 0; k < 3; k++) *(uint32_t *)&c[8 + k] = *(const uint32_t *)&hi[k];
+        }
+        if (level + 1 >= *(const int32_t *)(self + 0x394)) return;
+        y >>= 1, x >>= 1;
+        level++;
+    }
+}
+static const uint8_t scenery_cell_88f3f0_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x8b, 0x6c, 0x24, 0x14, 0x56};
+REWRITE("Scenery::Cell88F3F0", 0x88f3f0, scenery_cell_88f3f0_original, &scenery_cell_88f3f0, &g_scenery_cells);
+
+// ---- Particles::Pass9E16E0(dt) (0x9E16E0): moves the particles (0x30 bytes at +0x14, count +0x1C) when on (+0x10) -------
+// Each: age (+0x20) += dt; velocity y (+0x14) += G dt (G the game's 0x10F0E8C, unrounded); position (+0) += velocity
+// (+0x10) dt (x, y unrounded, z a float). One past the game's lifetime (0x10F0E90) takes the last one's values and the
+// count goes down (the moved one is done again). With none left the particles are off.
+static volatile long g_particle_steps;
+static void __thiscall particles_pass_9e16e0(uint8_t *self, float dt) {
+    g_particle_steps++;
+    if (!self[0x10]) return;
+    int32_t *const count = (int32_t *)(self + 0x1c);
+    if (*count > 0) {
+        const long double g = (long double)*(const volatile float *)0x10f0e8c * dt;
+        for (int32_t i = 0; i < *count; i++) {
+            volatile float *const e = (volatile float *)(*(uint8_t *const *)(self + 0x14) + i * 0x30);
+            e[8] = (float)((long double)dt + e[8]);
+            e[5] = (float)(g + e[5]);
+            const long double a = (long double)dt * e[4], b = (long double)dt * e[5];
+            volatile float c = (float)((long double)dt * e[6]);
+            e[0] = (float)(a + e[0]);
+            e[1] = (float)(b + e[1]);
+            e[2] = (float)((long double)c + e[2]);
+            if (!(e[8] > *(const volatile float *)0x10f0e90)) continue;
+            *count -= 1;
+            uint32_t *const u = (uint32_t *)e;
+            const uint32_t *const last = (const uint32_t *)(*(uint8_t *const *)(self + 0x14) + *count * 0x30);
+            u[0] = last[0], u[1] = last[1], u[2] = last[2], u[4] = last[4], u[5] = last[5], u[6] = last[6], u[8] = last[8];
+            i--;
+        }
+    }
+    if (!*count) self[0x10] = 0;
+}
+static const uint8_t particles_pass_9e16e0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x14, 0x8a, 0x41, 0x10};
+REWRITE("Particles::Pass9E16E0", 0x9e16e0, particles_pass_9e16e0_original, &particles_pass_9e16e0, &g_particle_steps);
+
+// ---- Toolbar::Find79C0A0(point in ecx, counts in edx, r) (0x79C0A0): how many of the game's toolbar items lie within r --
+// counts (when given) is cleared (6 dwords) and gets one more for each such item's kind (+0xA4). The items as
+// Toolbar::Find79C050 walks them (none when 0x1306BCC equals 0x1306BD8); an item's place is its +0xAC's +0x30's +0x90;
+// d = (dz^2 + dy^2) + dx^2 (dx a float) against r^2 (a float).
+static volatile long g_toolbar_nears;
+static uint32_t __fastcall toolbar_find_79c0a0(const float *point, uint32_t *counts, float r) {
+    g_toolbar_nears++;
+    volatile float r2 = (float)((long double)r * r);
+    uint32_t n = 0;
+    if (counts)
+        for (int k = 0; k < 6; k++) counts[k] = 0;
+    const volatile uint32_t *const g = (const volatile uint32_t *)0x1306bc8;
+    if (g[1] == g[4]) return 0;
+    for (const uint32_t *p = (const uint32_t *)(uintptr_t)(g[0] + g[6] * 4); p < (const uint32_t *)(uintptr_t)(g[0] + g[7] * 4); p++) {
+        if (!*p) continue;
+        const uint8_t *const item = (const uint8_t *)(uintptr_t)*p;
+        const float *const pos = (const float *)(*(const uint8_t *const *)(*(const uint8_t *const *)(item + 0xac) + 0x30) + 0x90);
+        volatile float dx = (float)((long double)pos[0] - point[0]);
+        const long double dy = (long double)pos[1] - point[1], dz = (long double)pos[2] - point[2];
+        if (!((dz * dz + dy * dy) + (long double)dx * dx <= r2)) continue;
+        n++;
+        if (counts) counts[*(const int32_t *)(item + 0xa4)]++;
+    }
+    return n;
+}
+static const uint8_t toolbar_find_79c0a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0xd9, 0x45, 0x08};
+REWRITE("Toolbar::Find79C0A0", 0x79c0a0, toolbar_find_79c0a0_original, &toolbar_find_79c0a0, &g_toolbar_nears);
+
+// ---- QuadTree::FindNode(start in ecx, limit in edx, corner, size, box corner, box size) (0xCDB600) ----------------------
+// From node start (whose corner and size are given), while the box is no bigger than a quarter of the node in x and
+// then y, steps to child 4 i + 1 (+1 for the upper x half, +2 for the upper y half, by where the box's middle (a float)
+// lies against the child's corner plus its half size) and moves the corner by 3/4 or 1/4 of the halved size; stops when
+// the child number reaches the limit. Gives the node.
+static volatile long g_quad_finds;
+static int32_t __fastcall quad_tree_find_node(int32_t node, int32_t limit, const float *corner, const float *size, const float *box, const float *box_size) {
+    g_quad_finds++;
+    const float half = *(const float *)0xf2651c, quarter = *(const float *)0xf270b8, three = *(const float *)0xf27c74;
+    long double a0 = corner[0], a1 = corner[1], b0 = size[0], b1 = size[1];
+    const float s0 = box_size[0];
+    volatile float m0 = (float)((long double)box_size[0] * half + box[0]);
+    volatile float m1 = (float)((long double)box_size[1] * half + box[1]);
+    if (!(b0 * quarter >= s0)) return node;
+    for (;;) {
+        if (!((long double)quarter * b1 >= box_size[1])) return node;
+        const int32_t c = node * 4 + 1;
+        if (c >= limit) return node;
+        node = c;
+        b0 = b0 * half;
+        b1 = b1 * half;
+        if (a0 + b0 < m0) {
+            a0 = a0 + b0 * three;
+            node = c + 1;
+        } else
+            a0 = a0 + b0 * quarter;
+        if (a1 + b1 < m1) {
+            a1 = a1 + (long double)three * b1;
+            node += 2;
+        } else
+            a1 = a1 + (long double)quarter * b1;
+        if (!(b0 * quarter >= s0)) return node;
+    }
+}
+static const uint8_t quad_tree_find_node_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0xd9, 0x00, 0x57};
+REWRITE("QuadTree::FindNode", 0xcdb600, quad_tree_find_node_original, &quad_tree_find_node, &g_quad_finds);
+
+// ---- Water::Time8E6880(out) (0x8E6880): a colour for the time of day --------------------------------------------------
+// f = (now - start) / (end - start) of the game's day (0x1103B6C: +0x110, +0x20, +0x200), kept within 0..1; k = f 128
+// rounded by the FPU, at most 128 (signed). The colour starts 0x7F7F7F7F with 255 - k in byte 2, 1 or 0 by mode +0x180
+// (0, 1, 2; other modes none), then k + 127 in byte 2, 1 or 0 by mode +0x184. Gives out.
+static volatile long g_water_day_colours;
+static uint32_t *__thiscall water_time_8e6880(const uint8_t *self, uint32_t *out) {
+    g_water_day_colours++;
+    const float *const day = *(const float *const volatile *)0x1103b6c;
+    long double f = ((long double)day[0x110 / 4] - day[0x20 / 4]) / ((long double)day[0x200 / 4] - day[0x20 / 4]);
+    if (f > *(const float *)0xf264dc) f = *(const float *)0xf264dc;
+    else if (f < *(const float *)0xf264e0) f = *(const float *)0xf264e0;
+    int32_t k = (int32_t)x87_fistp64_h2((long double)*(const float *)0xf61410 * f);
+    if (k > 0x80) k = 0x80;
+    const uint32_t a = (uint32_t)(0x80 - k) + 0x7f, b = (uint32_t)k + 0x7f;
+    uint32_t c = 0x7f7f7f7f;
+    switch (*(const int32_t *)(self + 0x180)) {
+    case 0: c = a << 16 | 0x7f007f7f; break;
+    case 1: c = a << 8 | 0x7f7f007f; break;
+    case 2: c = a | 0x7f7f7f00; break;
+    }
+    switch (*(const int32_t *)(self + 0x184)) {
+    case 0: c = (c & 0xff00ffff) | b << 16; break;
+    case 1: c = (c & 0xffff00ff) | b << 8; break;
+    case 2: c = (c & 0xffffff00) | b; break;
+    }
+    *out = c;
+    return out;
+}
+static const uint8_t water_time_8e6880_original[] = {0xa1, 0x6c, 0x3b, 0x10, 0x01, 0xd9, 0x80, 0x10, 0x01, 0x00, 0x00};
+REWRITE("Water::Time8E6880", 0x8e6880, water_time_8e6880_original, &water_time_8e6880, &g_water_day_colours);
+
+// ---- Track::LastBC65D0(out) (0xBC65D0): the direction from the last point of one end list to the last of the other ----
+// As Track::LengthBC64E0 with each list's last point (36 bytes each) and from +0x10C's to +0x110's. Gives out.
+static volatile long g_track_end_directions;
+static float *__thiscall track_last_bc65d0(const uint8_t *self, float *out) {
+    g_track_end_directions++;
+    const bool there = (*(const uint32_t *)(self + 0x18) & 0x400000) && *(const int32_t *)(self + 0xe4) >= 2;
+    const uint32_t *const volatile la = there ? *(const uint32_t *const *)(self + 0x10c) : nullptr;
+    const float *const p = (const float *)((const uint8_t *)(uintptr_t)la[1] + la[0] * 36 - 36);
+    const uint32_t *const volatile lb = there ? *(const uint32_t *const *)(self + 0x110) : nullptr;
+    const float *const q = (const float *)((const uint8_t *)(uintptr_t)lb[1] + lb[0] * 36 - 36);
+    volatile float dx = (float)((long double)q[0] - p[0]);
+    volatile float dy = (float)((long double)q[1] - p[1]);
+    const long double dz = (long double)q[2] - p[2];
+    const long double len = x87_sqrt_h2((dz * dz + (long double)dy * dy) + (long double)dx * dx);
+    volatile float *const o = out;
+    if (len == *(const float *)0xf264e0) {
+        ((volatile uint32_t *)o)[0] = 0, ((volatile uint32_t *)o)[1] = 0, ((volatile uint32_t *)o)[2] = 0x3f800000;
+        return out;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    o[0] = (float)((long double)dx * inv);
+    o[1] = (float)((long double)dy * inv);
+    o[2] = (float)(dz * inv);
+    return out;
+}
+static const uint8_t track_last_bc65d0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x56, 0x8b, 0x71, 0x18};
+REWRITE("Track::LastBC65D0", 0xbc65d0, track_last_bc65d0_original, &track_last_bc65d0, &g_track_end_directions);

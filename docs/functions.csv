@@ -9416,7 +9416,7 @@ address,size,name,callers,status
 0x79bfd0,56,Queue::DeleteAll79BFD0,2,rewritten
 0x79c010,56,Queue::DeleteAll79BFD0,1,rewritten
 0x79c050,73,Toolbar::Find79C050,1,rewritten
-0x79c0a0,256,,4,documented
+0x79c0a0,256,Toolbar::Find79C0A0,4,rewritten
 0x79c1a0,314,,2,documented
 0x79c2e0,1641,,3,documented
 0x79c950,525,,1,documented
@@ -12019,7 +12019,7 @@ address,size,name,callers,status
 0x88e7b0,2058,,2,documented
 0x88efe0,499,,7,documented
 0x88f1e0,516,,7,documented
-0x88f3f0,241,,2,documented
+0x88f3f0,241,Scenery::Cell88F3F0,2,rewritten
 0x88f4f0,555,,2,documented
 0x88f750,127,Stamp::Compare88F750,1,rewritten
 0x88f7d0,63,,2,documented
@@ -12559,7 +12559,7 @@ address,size,name,callers,status
 0x8e62f0,61,Rows::Copy8E62B0,1,rewritten
 0x8e6330,1319,,2,documented
 0x8e6860,25,,2,documented
-0x8e6880,254,,1,documented
+0x8e6880,254,Water::Time8E6880,1,rewritten
 0x8e6980,651,Water::BoxSpan,6,rewritten
 0x8e6c10,270,Water::Scale8E6C10,4,rewritten
 0x8e6d20,227,Water::Point8E6D20,6,rewritten
@@ -14820,7 +14820,7 @@ address,size,name,callers,status
 0x9e1340,109,STRUCT_COPY44,1,rewritten
 0x9e13b0,586,,2,documented
 0x9e1600,99,,1,documented
-0x9e16e0,247,,1,documented
+0x9e16e0,247,Particles::Pass9E16E0,1,rewritten
 0x9e17e0,576,Array::ResizeRecords,2,rewritten
 0x9e1a20,132,Array::Size9D1120,1,rewritten
 0x9e1ab0,223,Array::Resize430690,2,rewritten
@@ -19623,7 +19623,7 @@ address,size,name,callers,status
 0xbc62a0,270,,0,documented
 0xbc63b0,293,,0,documented
 0xbc64e0,235,Track::LengthBC64E0,0,rewritten
-0xbc65d0,258,,0,documented
+0xbc65d0,258,Track::LastBC65D0,0,rewritten
 0xbc67b0,178,,1,documented
 0xbc6940,169,,0,documented
 0xbc6aa0,562,,2,documented
@@ -22888,7 +22888,7 @@ address,size,name,callers,status
 0xcdb2a0,227,Vector::NearCDB2A0,1,rewritten
 0xcdb390,587,Vector::DistanceToLine,2,rewritten
 0xcdb5e0,27,,6,documented
-0xcdb600,256,,12,documented
+0xcdb600,256,QuadTree::FindNode,12,rewritten
 0xcdb720,81,Counter::AddFraction,0,rewritten
 0xcdb780,35,Record::SetFields,23,rewritten
 0xcdb7b0,157,Math::Round,20,rewritten

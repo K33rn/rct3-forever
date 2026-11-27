@@ -5730,4 +5730,128 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                              },
                              [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60))}; }};
     quick(track_length_bc64e0);
+    // Scenery::Cell88F3F0: three levels of grids (8, 4, 2 wide), cells in use or not, any start level, bounds either side
+    Test scenery_cell_88f3f0{0x88f3f0,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(uint32_t *)(self + 0x390) = (uint32_t)(uintptr_t)arena<void>(0x500);
+                                 *(int32_t *)(self + 0x394) = 3;
+                                 for (int l = 0; l < 3; l++) {
+                                     uint32_t *g = arena<uint32_t>(0x540 + l * 0x10);
+                                     arena<uint32_t>(0x500)[l] = (uint32_t)(uintptr_t)g;
+                                     g[0] = 8 >> l, g[2] = (uint32_t)(uintptr_t)arena<void>(0x1000 + l * 0x1000);
+                                     for (int c = 0; c < 64 >> (2 * l); c++) {
+                                         float *cell = arena<float>(0x1000 + l * 0x1000 + c * 64);
+                                         for (int k = 0; k < 12; k++) cell[k] = r.real(-10, 10);
+                                         *(int32_t *)(cell + 12) = r.range(-1, 3);
+                                     }
+                                 }
+                                 for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = r.real(-12, 12), arena<float>(0x50)[k] = r.real(-12, 12);
+                                 arena<int32_t>(0x60)[0] = r.range(0, 2), arena<int32_t>(0x60)[1] = r.range(0, 7) >> arena<int32_t>(0x60)[0], arena<int32_t>(0x60)[2] = r.range(0, 7) >> arena<int32_t>(0x60)[0];
+                             },
+                             [](void *fn) {
+                                 const int32_t *a = arena<int32_t>(0x60);
+                                 ((void(__thiscall *)(const void *, int32_t, int32_t, int32_t, const void *, const void *))fn)(arena<void>(0x100), a[0], a[1], a[2], arena<void>(0x40), arena<void>(0x50));
+                                 return Result{0};
+                             }};
+    quick(scenery_cell_88f3f0);
+    // Particles::Pass9E16E0: the game's pull and lifetime set (put back after), on or off, 0-6 particles of any age
+    {
+        static uint32_t saved_pull, saved_life;
+        Test x{0x9e16e0,
+               [=](Rng &r) {
+                   *(float *)0x10f0e8c = r.real(-10, 0), *(float *)0x10f0e90 = r.real(1, 3);
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   self[0x10] = r.range(0, 4) ? 1 : 0;
+                   *(int32_t *)(self + 0x1c) = r.range(0, 9) ? r.range(0, 6) : -1;
+                   *(uint32_t *)(self + 0x14) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   for (int i = 0; i < 6 * 12; i++) arena<float>(0x400)[i] = r.real(-5, 5);
+                   for (int k = 0; k < 6; k++) arena<float>(0x400 + k * 0x30)[8] = r.real(0, 3);
+                   arena<float>(0x40)[0] = r.real(0, 0.5f);
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_pull = *(uint32_t *)0x10f0e8c, saved_life = *(uint32_t *)0x10f0e90; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10f0e8c = saved_pull, *(uint32_t *)0x10f0e90 = saved_life; };
+        quick(x);
+    }
+    // Toolbar::Find79C0A0: the game's toolbar (put back after): 0-8 items near and far, kinds 0-5, counts given or not
+    // (point in ecx, counts in edx)
+    {
+        static uint32_t saved[8];
+        Test x{0x79c0a0,
+               [=](Rng &r) {
+                   uint32_t *g = (uint32_t *)0x1306bc8;
+                   g[0] = (uint32_t)(uintptr_t)arena<void>(0x200);
+                   g[1] = r.range(0, 4) ? 1 : 0, g[4] = 0;
+                   g[6] = r.range(0, 3), g[7] = g[6] + r.range(0, 5);
+                   for (int k = 0; k < 8; k++) {
+                       arena<uint32_t>(0x200)[k] = r.range(0, 4) ? (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0xc0) : 0;
+                       uint8_t *item = arena<uint8_t>(0x400 + k * 0xc0);
+                       *(int32_t *)(item + 0xa4) = r.range(0, 5);
+                       *(uint32_t *)(item + 0xac) = (uint32_t)(uintptr_t)arena<void>(0x1000 + k * 0x40);
+                       *(uint32_t *)arena<uint8_t>(0x1030 + k * 0x40) = (uint32_t)(uintptr_t)arena<void>(0x1400 + k * 0x100);
+                       for (int c = 0; c < 3; c++) arena<float>(0x1490 + k * 0x100)[c] = r.real(-10, 10);
+                   }
+                   for (int c = 0; c < 3; c++) arena<float>(0x40)[c] = r.real(-10, 10);
+                   for (int i = 0; i < 6; i++) arena<uint32_t>(0x60)[i] = r.next();
+                   arena<uint32_t>(0x50)[0] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x60) : 0;
+                   arena<float>(0x50)[1] = r.real(0, 15);
+               },
+               [](void *fn) { return Result{((uint32_t(__fastcall *)(const void *, void *, float))fn)(arena<void>(0x40), (void *)(uintptr_t)arena<uint32_t>(0x50)[0], arena<float>(0x50)[1])}; }};
+        x.prepare = [](const rewrite::Entry *) { memcpy(saved, (void *)0x1306bc8, 32); };
+        x.finish = [](const rewrite::Entry *) { memcpy((void *)0x1306bc8, saved, 32); };
+        quick(x);
+    }
+    // QuadTree::FindNode: square roots of 64-1024 and boxes of every size within them (start in ecx, limit in edx)
+    Test quad_tree_find_node{0xcdb600,
+                             [=](Rng &r) {
+                                 const float side = (float)(64 << r.range(0, 4));
+                                 float *a = arena<float>(0x100);
+                                 a[0] = r.real(-500, 0), a[1] = r.real(-500, 0), a[2] = side, a[3] = side;   // corner, size
+                                 const float s = side / (float)(1 << r.range(0, 7)) * r.real(0.3f, 1.2f);
+                                 a[6] = s, a[7] = r.range(0, 1) ? s : s * r.real(0.3f, 2);   // box size
+                                 a[4] = a[0] + r.real(0, side - s), a[5] = a[1] + r.real(0, side - a[7]);   // box corner
+                                 arena<int32_t>(0x40)[0] = 0, arena<int32_t>(0x40)[1] = r.range(0, 3) ? 1365 : r.range(1, 100);
+                             },
+                             [](void *fn) {
+                                 const float *a = arena<float>(0x100);
+                                 return Result{(uint32_t)((int32_t(__fastcall *)(int32_t, int32_t, const void *, const void *, const void *, const void *))fn)(arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1], a, a + 2, a + 4, a + 6)};
+                             }};
+    quick(quad_tree_find_node);
+    // Water::Time8E6880: the game's day pointer set (put back after) to times before, in and past the day, modes 0-3
+    {
+        static uint32_t saved_day;
+        Test x{0x8e6880,
+               [=](Rng &r) {
+                   *(uint32_t *)0x1103b6c = (uint32_t)(uintptr_t)arena<void>(0x1000);
+                   float *d = arena<float>(0x1000);
+                   d[0x20 / 4] = r.real(0, 100), d[0x200 / 4] = d[0x20 / 4] + r.real(1, 500);
+                   d[0x110 / 4] = d[0x20 / 4] + r.real(-50, 600);
+                   *(int32_t *)arena<uint8_t>(0x280) = r.range(0, 3), *(int32_t *)arena<uint8_t>(0x284) = r.range(0, 3);
+                   arena<uint32_t>(0x40)[0] = r.next();
+               },
+               [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+        x.prepare = [](const rewrite::Entry *) { saved_day = *(uint32_t *)0x1103b6c; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x1103b6c = saved_day; };
+        quick(x);
+    }
+    // Track::LastBC65D0: two end lists of 1-4 points, their last points (the same at times)
+    Test track_last_bc65d0{0xbc65d0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(uint32_t *)(self + 0x18) = r.next() | 0x400000, *(int32_t *)(self + 0xe4) = r.range(2, 4);
+                               *(uint32_t *)(self + 0x10c) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                               *(uint32_t *)(self + 0x110) = (uint32_t)(uintptr_t)arena<void>(0x320);
+                               arena<uint32_t>(0x300)[0] = r.range(1, 4), arena<uint32_t>(0x300)[1] = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               arena<uint32_t>(0x320)[0] = r.range(1, 4), arena<uint32_t>(0x320)[1] = (uint32_t)(uintptr_t)arena<void>(0x600);
+                               for (int i = 0; i < 36; i++) arena<float>(0x400)[i] = r.real(-30, 30), arena<float>(0x600)[i] = r.range(0, 5) ? r.real(-30, 30) : arena<float>(0x400)[i];
+                               if (r.range(0, 5) == 0)
+                                   for (int c = 0; c < 3; c++) arena<float>(0x600 + (arena<uint32_t>(0x320)[0] - 1) * 36)[c] = arena<float>(0x400 + (arena<uint32_t>(0x300)[0] - 1) * 36)[c];
+                               for (int c = 0; c < 3; c++) arena<uint32_t>(0x60)[c] = r.next();
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60))}; }};
+    quick(track_last_bc65d0);
 #endif
