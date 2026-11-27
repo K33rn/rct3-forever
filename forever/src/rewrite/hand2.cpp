@@ -9740,3 +9740,190 @@ static uint32_t __thiscall window_mode_6a7df0(const uint8_t *self) {
 }
 static const uint8_t window_mode_6a7df0_original[] = {0x8b, 0x81, 0xf0, 0x00, 0x00, 0x00, 0x48, 0x53, 0x55, 0x56};
 REWRITE("Window::Mode6A7DF0", 0x6a7df0, window_mode_6a7df0_original, &window_mode_6a7df0, &g_spinner_greys);
+
+// ---- Vector::AxisBFB340(out) (0xBFB340): a direction of length 1 at right angles to the vector --------------------------
+// By the largest size (|x| unrounded against |y|, |z| as floats; ties go to x, then y): x gives (-z, 0, x), y gives (y,
+// -x, 0), z gives (0, z, -y), each over its length (sqrt of the two squares); a length of 0 gives {0, 0, 1}. Gives out.
+static volatile long g_vector_normals;
+static float *__thiscall vector_axis_bfb340(const float *v, float *out) {
+    g_vector_normals++;
+    const long double zero = *(const float *)0xf264e0, one = *(const float *)0xf264dc;
+    const long double ax = __builtin_fabsl((long double)v[0]);
+    volatile float ay = (float)__builtin_fabsl((long double)v[1]), az = (float)__builtin_fabsl((long double)v[2]);
+    volatile float *const o = out;
+    auto none = [&] { ((volatile uint32_t *)o)[0] = 0, ((volatile uint32_t *)o)[1] = 0, ((volatile uint32_t *)o)[2] = 0x3f800000; };
+    if (!(ax < ay) && !(ax < az)) {
+        const long double a = -(long double)v[2], b = v[0];
+        const long double len = x87_sqrt_h2(b * b + a * a);
+        if (len == zero) return none(), out;
+        const long double inv = one / len;
+        o[0] = (float)(inv * a);
+        o[1] = (float)(zero * inv);
+        o[2] = (float)(b * inv);
+        return out;
+    }
+    if (!(ay < az)) {
+        const long double b = v[1];
+        volatile float a = (float)-(long double)v[0];
+        const long double len = x87_sqrt_h2((long double)a * a + b * b);
+        if (len == zero) return none(), out;
+        const long double inv = one / len;
+        o[0] = (float)(inv * b);
+        o[1] = (float)((long double)a * inv);
+        o[2] = (float)(inv * zero);
+        return out;
+    }
+    const long double b = v[2], a = -(long double)v[1];
+    const long double len = x87_sqrt_h2(a * a + b * b);
+    if (len == zero) return none(), out;
+    const long double inv = one / len;
+    o[0] = (float)(zero * inv);
+    o[1] = (float)(b * inv);
+    o[2] = (float)(a * inv);
+    return out;
+}
+static const uint8_t vector_axis_bfb340_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x20, 0xd9, 0x01, 0xd9, 0xe1};
+REWRITE("Vector::AxisBFB340", 0xbfb340, vector_axis_bfb340_original, &vector_axis_bfb340, &g_vector_normals);
+
+// ---- Shop::Round4BB620(x, y) (0x4BB620): the height at a point from its cell's four corners -----------------------------
+// As Grid::Round435EA0, with the corners read from the cell's +0x14 heights when it has them.
+static volatile long g_shop_heights;
+static long double __thiscall shop_round_4bb620(const uint8_t *self, float x, float y) {
+    g_shop_heights++;
+    auto at = [&](uint32_t o) { return *(const float *)(self + o); };
+    volatile float u = (float)(((long double)x - at(0xc)) * at(0x1c));
+    volatile float v = (float)(((long double)y - at(0x10)) * at(0x20));
+    volatile float fu = (float)floor_h2(u), fv = (float)floor_h2(v);
+    const int32_t i = (int32_t)x87_fistp64_h2(fu), j = (int32_t)x87_fistp64_h2(fv);
+    if (i < 0 || j < 0 || i >= self[4] || j >= self[5]) return *(const float *)0xf28530;
+    const uint8_t *const cell = *(const uint8_t *const *)(self + 0x24) + ((uint32_t)self[4] * j + i) * 24;
+    const float *const h = *(const float *const *)(cell + 0x14) ? *(const float *const *)(cell + 0x14) : (const float *)cell;
+    const long double dv = (long double)v - fv, du = (long double)u - fu, s = du + dv;
+    const long double one = *(const float *)0xf264dc;
+    if (s > one) return ((one - du) * h[2] + (one - dv) * h[1]) + (s - one) * h[3];
+    return ((one - s) * h[0] + du * h[1]) + dv * h[2];
+}
+static const uint8_t shop_round_4bb620_original[] = {0x83, 0xec, 0x10, 0xd9, 0x44, 0x24, 0x14, 0x56, 0xd8, 0x61, 0x0c};
+REWRITE("Shop::Round4BB620", 0x4bb620, shop_round_4bb620_original, &shop_round_4bb620, &g_shop_heights);
+
+// ---- Person::Values4FEEB0(out) (0x4FEEB0): three values from the +0xB8 record's +0x600 group ----------------------------
+// None (0, only al) without the record or its +0x66C. With v = +0x600: s = min(v, C) K1 (a float) + +0x604 K4, b = min(v,
+// C2) K2 and c = min(v, C) K3; each of +0x60C, +0x610 above 0 adds E1 to s and E2 to c. out = ((min(+0x608, 11) K5 + s)
+// K6, b K7, c K8) (the game's constants at 0xF27370, 0xF36810-0xF36824, 0xF348BC, 0xF283D8, 0xF33750, 0xF27060).
+static volatile long g_person_values_a;
+static uint8_t __thiscall person_values_4feeb0(const uint8_t *self, float *out) {
+    g_person_values_a++;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0xb8);
+    if (!p || !*(const uint32_t *)(p + 0x66c)) return 0;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(p + at); };
+    auto least = [&](uint32_t c) { return m(0x600) < k(c) ? m(0x600) : k(c); };
+    volatile float s0 = (float)(least(0xf27370) * k(0xf36824));
+    const long double b = least(0xf36820) * k(0xf3681c);
+    long double c = least(0xf27370) * k(0xf348bc);
+    long double s = m(0x604) * k(0xf36818) + s0;
+    if (*(const int32_t *)(p + 0x60c) > 0) s = s + k(0xf283d8), c = c + k(0xf33750);
+    if (*(const int32_t *)(p + 0x610) > 0) s = s + k(0xf283d8), c = c + k(0xf33750);
+    int32_t n = *(const int32_t *)(p + 0x608);
+    if (n >= 11) n = 11;
+    volatile float *const o = out;
+    o[0] = (float)(((long double)n * k(0xf36814) + s) * k(0xf36810));
+    o[1] = (float)(b * k(0xf27060));
+    o[2] = (float)(c * k(0xf3680c));
+    return 1;
+}
+static const uint8_t person_values_4feeb0_original[] = {0x51, 0x8b, 0x89, 0xb8, 0x00, 0x00, 0x00, 0x85, 0xc9};
+REWRITE("Person::Values4FEEB0", 0x4feeb0, person_values_4feeb0_original, &person_values_4feeb0, &g_person_values_a);
+
+// ---- Person::Values4FE8F0(out) (0x4FE8F0): three values from the +0xB8 record's +0x5E0 group ----------------------------
+// None (0, only al) without the record or its +0x66C. With g the game's 0x12F5034: a = g +0x5E0 / 2, b = g +0x5E4 K (a
+// float), c = g +0x5E8 / 2 (a float). x0 = K1 a - max(b, K4) K5 (a float) + min(c, K7) K8; x1 = K2 a (a float) - (b -
+// 1) K2; x2 = a K3 (a float) - (b - 1, a float) K6. c above K9 adds K10 to x1 and K11 to x2; above K12 also K13 and K12,
+// and halves x0. out = (x0 K14, (c + x1) K15, (c K16 + x2) K17) (the game's constants at 0xF36770-0xF36790 and others).
+static volatile long g_person_values_b;
+static uint8_t __thiscall person_values_4fe8f0(const uint8_t *self, float *out) {
+    g_person_values_b++;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0xb8);
+    if (!p || !*(const uint32_t *)(p + 0x66c)) return 0;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(p + at); };
+    const long double g = *(const volatile float *)0x12f5034;
+    const long double a = g * m(0x5e0) * k(0xf2651c);
+    volatile float bf = (float)(g * m(0x5e4) * k(0xf27ca8));
+    volatile float cf = (float)(g * m(0x5e8) * k(0xf2651c));
+    volatile float s8 = (float)(k(0xf36790) * a), sc = (float)(k(0xf28420) * a), s10 = (float)(a * k(0xf3678c));
+    const long double t = bf > k(0xf36788) ? (long double)bf : k(0xf36788);
+    s8 = (float)((long double)s8 - t * k(0xf36784));
+    const long double bm1 = (long double)bf - k(0xf264dc);
+    bf = (float)bm1;
+    long double x1 = (long double)sc - bm1 * k(0xf28420);
+    long double x2 = (long double)s10 - (long double)bf * k(0xf36780);
+    const long double u = cf < k(0xf26648) ? (long double)cf : k(0xf26648);
+    long double x0 = u * k(0xf355e4) + s8;
+    if (cf > k(0xf26680)) x1 = x1 + k(0xf30600), x2 = x2 + k(0xf2705c);
+    if (cf > k(0xf2669c)) {
+        x1 = x1 + k(0xf3677c), x2 = x2 + k(0xf2669c);
+        x0 = x0 * k(0xf2651c);
+    }
+    volatile float *const o = out;
+    o[0] = (float)(x0 * k(0xf36778));
+    o[1] = (float)(((long double)cf + x1) * k(0xf36774));
+    o[2] = (float)(((long double)cf * k(0xf27060) + x2) * k(0xf36770));
+    return 1;
+}
+static const uint8_t person_values_4fe8f0_original[] = {0x8b, 0x81, 0xb8, 0x00, 0x00, 0x00, 0x83, 0xec, 0x14, 0x85, 0xc0};
+REWRITE("Person::Values4FE8F0", 0x4fe8f0, person_values_4fe8f0_original, &person_values_4fe8f0, &g_person_values_b);
+
+// ---- Terrain::Scale8F2480(origin, size) (0x8F2480): the points around a grid's edge -----------------------------------
+// With nx, ny = +8, +0xC and steps sx = size.x / nx, sy = size.y / ny (floats), the far corner e = origin + size (floats):
+// points (16 bytes at +0x14; x and z written) go along the near x edge (origin.x + i sx, origin.y), up the far side (e.x,
+// origin.y + i sy), back along the far edge (e.x - i sx, e.y) and down the near side (origin.x, e.y - i sy).
+static volatile long g_terrain_edges;
+static void __thiscall terrain_scale_8f2480(const uint8_t *self, const float *origin, const float *size) {
+    g_terrain_edges++;
+    const int32_t nx = *(const int32_t *)(self + 8), ny = *(const int32_t *)(self + 0xc);
+    volatile float sx = (float)((long double)size[0] / nx), sy = (float)((long double)size[1] / ny);
+    volatile float ex = (float)((long double)origin[0] + size[0]), ey = (float)((long double)origin[1] + size[1]);
+    volatile float *p = *(float *const *)(self + 0x14);
+    for (int32_t i = 0; i < nx; i++, p += 4) {
+        p[0] = (float)((long double)i * sx + origin[0]);
+        ((volatile uint32_t *)p)[2] = *(const uint32_t *)&origin[1];
+    }
+    for (int32_t i = 0; i < ny; i++, p += 4) {
+        ((volatile uint32_t *)p)[0] = *(const volatile uint32_t *)&ex;
+        p[2] = (float)((long double)i * sy + origin[1]);
+    }
+    for (int32_t i = 0; i < nx; i++, p += 4) {
+        ((volatile uint32_t *)p)[2] = *(const volatile uint32_t *)&ey;
+        p[0] = (float)((long double)ex - (long double)i * sx);
+    }
+    for (int32_t i = 0; i < ny; i++, p += 4) {
+        ((volatile uint32_t *)p)[0] = *(const uint32_t *)&origin[0];
+        p[2] = (float)((long double)ey - (long double)i * sy);
+    }
+}
+static const uint8_t terrain_scale_8f2480_original[] = {0x83, 0xec, 0x10, 0x56, 0x8b, 0x74, 0x24, 0x1c, 0x57, 0x8b, 0x79, 0x08};
+REWRITE("Terrain::Scale8F2480", 0x8f2480, terrain_scale_8f2480_original, &terrain_scale_8f2480, &g_terrain_edges);
+
+// ---- Person::Values4FEDF0(out) (0x4FEDF0): three values from the +0xB8 record's +0x5F0 group ----------------------------
+// None (0, only al) without the record or its +0x66C. With n = +0x5F0 and w = +0x5F4: out = ((w K7 + min(n, 9) K1) K8,
+// (min(n, 12) K2 + w K3) K4, (min(n, 12) K5 + w K6) / 2) (the game's constants at 0xF367F0-0xF36808 and 0xF270B0).
+static volatile long g_person_values_c;
+static uint8_t __thiscall person_values_4fedf0(const uint8_t *self, float *out) {
+    g_person_values_c++;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0xb8);
+    if (!p || !*(const uint32_t *)(p + 0x66c)) return 0;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    const int32_t n = *(const int32_t *)(p + 0x5f0);
+    const long double w = *(const float *)(p + 0x5f4);
+    const long double a = (long double)(n >= 9 ? 9 : n) * k(0xf36808);
+    const long double b = ((long double)(n >= 12 ? 12 : n) * k(0xf36804) + w * k(0xf36800)) * k(0xf367fc);
+    const long double c = ((long double)(n >= 12 ? 12 : n) * k(0xf270b0) + w * k(0xf367f8)) * k(0xf2651c);
+    volatile float *const o = out;
+    o[0] = (float)((w * k(0xf367f4) + a) * k(0xf367f0));
+    o[1] = (float)b;
+    o[2] = (float)c;
+    return 1;
+}
+static const uint8_t person_values_4fedf0_original[] = {0x51, 0x8b, 0x89, 0xb8, 0x00, 0x00, 0x00, 0x85, 0xc9};
+REWRITE("Person::Values4FEDF0", 0x4fedf0, person_values_4fedf0_original, &person_values_4fedf0, &g_person_values_c);

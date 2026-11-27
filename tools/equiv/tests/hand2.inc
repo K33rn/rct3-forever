@@ -6191,4 +6191,97 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                             },
                             [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *))fn)(arena<void>(0x100))}; }};
     quick(window_mode_6a7df0);
+    // Vector::AxisBFB340: random vectors, vectors with ties in size and zero parts, the zero vector
+    Test vector_axis_bfb340{0xbfb340,
+                            [=](Rng &r) {
+                                float *v = arena<float>(0x40);
+                                const bool whole = r.range(0, 2) == 0;
+                                for (int k = 0; k < 3; k++) v[k] = whole ? (float)r.range(-2, 2) : r.real(-10, 10);
+                                for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                            },
+                            [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x40), arena<void>(0x60))}; }};
+    quick(vector_axis_bfb340);
+    // Shop::Round4BB620: grids of 1-6 by 1-6 cells, some with their own heights, points in every cell and outside
+    Test shop_round_4bb620{0x4bb620,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               self[4] = (uint8_t)r.range(1, 6), self[5] = (uint8_t)r.range(1, 6);
+                               *(float *)(self + 0xc) = r.real(-50, 50), *(float *)(self + 0x10) = r.real(-50, 50);
+                               *(float *)(self + 0x1c) = r.real(0.2f, 2), *(float *)(self + 0x20) = r.real(0.2f, 2);
+                               *(uint32_t *)(self + 0x24) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int c = 0; c < 36; c++) {
+                                   float *cell = arena<float>(0x400 + c * 24);
+                                   for (int k = 0; k < 4; k++) cell[k] = r.real(-20, 20);
+                                   *(uint32_t *)(cell + 5) = r.range(0, 2) ? 0 : (uint32_t)(uintptr_t)arena<void>(0x800 + c * 16);
+                                   for (int k = 0; k < 4; k++) arena<float>(0x800 + c * 16)[k] = r.real(-20, 20);
+                               }
+                               arena<float>(0x40)[0] = *(float *)(self + 0xc) + r.real(-1, 7) / *(float *)(self + 0x1c);
+                               arena<float>(0x40)[1] = *(float *)(self + 0x10) + r.real(-1, 7) / *(float *)(self + 0x20);
+                           },
+                           [](void *fn) {
+                               Result x;
+                               x.f = ((long double(__thiscall *)(const void *, float, float))fn)(arena<void>(0x100), arena<float>(0x40)[0], arena<float>(0x40)[1]);
+                               return x;
+                           }};
+    quick(shop_round_4bb620);
+    // Person::Values4FEEB0: with and without the record (and its +0x66C), values either side of the 1000 and 2000 caps,
+    // counts below and above 11, flags either way
+    Test person_values_4feeb0{0x4feeb0,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100), *p = arena<uint8_t>(0x400);
+                                  *(uint32_t *)(self + 0xb8) = r.range(0, 7) ? (uint32_t)(uintptr_t)p : 0;
+                                  *(uint32_t *)(p + 0x66c) = r.range(0, 7) ? r.next() | 1 : 0;
+                                  *(float *)(p + 0x600) = r.range(0, 4) ? r.real(0, 3000) : (float)(1000 * r.range(1, 2));
+                                  *(float *)(p + 0x604) = r.real(-50, 50);
+                                  *(int32_t *)(p + 0x608) = r.range(-2, 15), *(int32_t *)(p + 0x60c) = r.range(-1, 1), *(int32_t *)(p + 0x610) = r.range(-1, 1);
+                                  for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                              },
+                              [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60)) & 0xff}; }};
+    quick(person_values_4feeb0);
+    // Person::Values4FE8F0: the game's 0x12F5034 set (put back after); with and without the record, values either side
+    // of every threshold
+    {
+        static uint32_t saved_scale;
+        Test x{0x4fe8f0,
+               [=](Rng &r) {
+                   *(float *)0x12f5034 = r.range(0, 3) ? r.real(0.5f, 2) : 1.0f;
+                   uint8_t *self = arena<uint8_t>(0x100), *p = arena<uint8_t>(0x400);
+                   *(uint32_t *)(self + 0xb8) = r.range(0, 7) ? (uint32_t)(uintptr_t)p : 0;
+                   *(uint32_t *)(p + 0x66c) = r.range(0, 7) ? r.next() | 1 : 0;
+                   *(float *)(p + 0x5e0) = r.real(-20, 20);
+                   *(float *)(p + 0x5e4) = r.range(0, 4) ? r.real(-30, 30) : -2.5f / 0.3f;
+                   *(float *)(p + 0x5e8) = r.range(0, 4) ? r.real(-2, 12) : (float)r.range(3, 8);
+                   for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+               },
+               [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60)) & 0xff}; }};
+        x.prepare = [](const rewrite::Entry *) { saved_scale = *(uint32_t *)0x12f5034; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x12f5034 = saved_scale; };
+        quick(x);
+    }
+    // Terrain::Scale8F2480: grids of 0-5 by 0-5 steps, random origins and sizes
+    Test terrain_scale_8f2480{0x8f2480,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100);
+                                  *(int32_t *)(self + 8) = r.range(0, 5), *(int32_t *)(self + 0xc) = r.range(0, 5);
+                                  *(uint32_t *)(self + 0x14) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  for (int k = 0; k < 80; k++) arena<uint32_t>(0x400)[k] = r.next();
+                                  arena<float>(0x40)[0] = r.real(-100, 100), arena<float>(0x40)[1] = r.real(-100, 100);
+                                  arena<float>(0x48)[0] = r.real(1, 300), arena<float>(0x48)[1] = r.real(1, 300);
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(const void *, const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40), arena<void>(0x48));
+                                  return Result{0};
+                              }};
+    quick(terrain_scale_8f2480);
+    // Person::Values4FEDF0: with and without the record (and its +0x66C), counts either side of 9 and 12
+    Test person_values_4fedf0{0x4fedf0,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100), *p = arena<uint8_t>(0x400);
+                                  *(uint32_t *)(self + 0xb8) = r.range(0, 7) ? (uint32_t)(uintptr_t)p : 0;
+                                  *(uint32_t *)(p + 0x66c) = r.range(0, 7) ? r.next() | 1 : 0;
+                                  *(int32_t *)(p + 0x5f0) = r.range(-2, 16), *(float *)(p + 0x5f4) = r.real(-20, 20);
+                                  for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                              },
+                              [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60)) & 0xff}; }};
+    quick(person_values_4fedf0);
 #endif

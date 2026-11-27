@@ -2305,7 +2305,7 @@ address,size,name,callers,status
 0x4bb400,104,Vector::TransformPointInPlace,0,rewritten
 0x4bb4c0,64,Ride::Point4BB4C0,0,rewritten
 0x4bb540,54,,3,documented
-0x4bb620,297,,0,documented
+0x4bb620,297,Shop::Round4BB620,0,rewritten
 0x4bb7b0,306,Destructor::Steps,1,rewritten
 0x4bb920,104,,4,documented
 0x4bb990,335,,2,documented
@@ -2984,10 +2984,10 @@ address,size,name,callers,status
 0x4fe610,123,,1,documented
 0x4fe690,207,Ride::Part4FE690,1,rewritten
 0x4fe790,282,,5,documented
-0x4fe8f0,380,,1,documented
+0x4fe8f0,380,Person::Values4FE8F0,1,rewritten
 0x4fea70,894,,1,documented
-0x4fedf0,182,,1,documented
-0x4feeb0,268,,1,documented
+0x4fedf0,182,Person::Values4FEDF0,1,rewritten
+0x4feeb0,268,Person::Values4FEEB0,1,rewritten
 0x4fefc0,804,,1,documented
 0x4ff2f0,165,,1,documented
 0x4ff3a0,152,Value::Band,1,rewritten
@@ -12631,7 +12631,7 @@ address,size,name,callers,status
 0x8f0d30,800,Terrain::Indices8F0D30,1,rewritten
 0x8f1060,4896,,2,documented
 0x8f2380,253,Terrain::Near8F2380,1,rewritten
-0x8f2480,256,,1,documented
+0x8f2480,256,Terrain::Scale8F2480,1,rewritten
 0x8f2580,372,,2,documented
 0x8f2780,298,,1,documented
 0x8f28b0,2689,,1,documented
@@ -20440,7 +20440,7 @@ address,size,name,callers,status
 0xbfb0b0,266,Vector::RotateAround,69,rewritten
 0xbfb1c0,240,Vector::RotateAroundSinCos,78,rewritten
 0xbfb2b0,111,Vector::Compare,1,rewritten
-0xbfb340,370,,1,documented
+0xbfb340,370,Vector::AxisBFB340,1,rewritten
 0xbfb4c0,7,SetTable,1,rewritten
 0xbfb610,49,Sound::LengthBF9D70,1,rewritten
 0xbfb680,298,,5,documented
