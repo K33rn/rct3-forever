@@ -1636,3 +1636,286 @@ static uint8_t __stdcall description_differs(const uint8_t *a, const uint8_t *b)
 }
 static const uint8_t description_differs_original[] = {0x8b, 0x44, 0x24, 0x04, 0x85, 0xc0, 0x0f, 0x84};
 REWRITE("Description::Differs", 0x970c80, description_differs_original, &description_differs, &g_description_differs);
+
+// ---- Text::Find* (0xCD3070 to 0xCD3BB0, ten copies): two places in texts compared without case, from there on ------
+// fastcall (a, b). Each side is either a text place {text holder (text: length +4, characters +0xC), position} or a
+// pointer to characters ending at 0, and its characters are bytes (sign-extended) or 16-bit; the copies differ only in
+// that (TEXT8 etc. below). A side is at its end when it has no text (or pointer) or its position is past the length
+// (or its character is 0). While neither is at its end, the characters (0 past a text's length) go through the game's
+// _tolower (0xDDE005) and the first difference gives -1 or 1 (signed); both sides move on. Then: 1 when a has more,
+// else -1 when b has more, else 0.
+namespace {
+enum { TEXT8, TEXT16, CHARS8, CHARS16 };
+template <int K> struct TextSide {
+    uint32_t *at;
+    bool none() const { return !at[0]; }
+    bool end() const {
+        if (K == TEXT8 || K == TEXT16) return !at[0] || at[1] >= *(const uint32_t *)(**(uint8_t *const *const *)at + 4);
+        return !at[0] || (K == CHARS8 ? !*(const uint8_t *)(uintptr_t)at[0] : !*(const uint16_t *)(uintptr_t)at[0]);
+    }
+    int32_t get() const {
+        if (K == CHARS8) return *(const int8_t *)(uintptr_t)at[0];
+        if (K == CHARS16) return *(const uint16_t *)(uintptr_t)at[0];
+        const uint8_t *const text = **(uint8_t *const *const *)at;
+        if (at[1] >= *(const uint32_t *)(text + 4)) return 0;
+        const uint8_t *const c = *(const uint8_t *const *)(text + 0xc);
+        return K == TEXT8 ? (int32_t)((const int8_t *)c)[at[1]] : (int32_t)((const uint16_t *)c)[at[1]];
+    }
+    void next() {
+        if (K == TEXT8 || K == TEXT16) ((volatile uint32_t *)at)[1]++;
+        else *(volatile uint32_t *)at += K == CHARS8 ? 1 : 2;
+    }
+};
+}
+static volatile long g_text_place_compares;
+template <int A, int B> static int32_t __fastcall text_places_compare(uint32_t *a_at, uint32_t *b_at) {
+    g_text_place_compares++;
+    TextSide<A> a{a_at};
+    TextSide<B> b{b_at};
+    if (a.none() || b.none()) {
+        if (!a.end()) return 1;
+        return b.end() ? 0 : -1;
+    }
+    int (__cdecl *const lower)(int) = (int(__cdecl *)(int))0xdde005;
+    while (!a.end() && !b.end()) {
+        const int32_t x = lower(a.get());
+        const int32_t y = lower(b.get());
+        if (x < y) return -1;
+        if (x > y) return 1;
+        a.next(), b.next();
+    }
+    if (!a.end()) return 1;
+    return b.end() ? 0 : -1;
+}
+static const uint8_t text_places_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8b, 0x07, 0x85, 0xc0};
+static const uint8_t text_places_620_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x06, 0x85, 0xc0};
+REWRITE("Text::FindCD3700", 0xcd3700, text_places_original, (&text_places_compare<TEXT8, TEXT8>), &g_text_place_compares);
+REWRITE("Text::FindCD3800", 0xcd3800, text_places_original, (&text_places_compare<TEXT8, TEXT16>), &g_text_place_compares);
+REWRITE("Text::FindCD3AB0", 0xcd3ab0, text_places_original, (&text_places_compare<TEXT16, TEXT8>), &g_text_place_compares);
+REWRITE("Text::FindCD3BB0", 0xcd3bb0, text_places_original, (&text_places_compare<TEXT16, TEXT16>), &g_text_place_compares);
+REWRITE("Text::FindCD3070", 0xcd3070, text_places_original, (&text_places_compare<CHARS8, TEXT8>), &g_text_place_compares);
+REWRITE("Text::FindCD3150", 0xcd3150, text_places_original, (&text_places_compare<CHARS8, TEXT16>), &g_text_place_compares);
+REWRITE("Text::FindCD3390", 0xcd3390, text_places_original, (&text_places_compare<CHARS16, TEXT8>), &g_text_place_compares);
+REWRITE("Text::FindCD3470", 0xcd3470, text_places_original, (&text_places_compare<CHARS16, TEXT16>), &g_text_place_compares);
+REWRITE("Text::FindCD3620", 0xcd3620, text_places_620_original, (&text_places_compare<TEXT8, CHARS16>), &g_text_place_compares);
+REWRITE("Text::FindCD39D0", 0xcd39d0, text_places_620_original, (&text_places_compare<TEXT16, CHARS16>), &g_text_place_compares);
+
+// ---- Text::CompareCD5150 / CD5260 / CD5640 / CD5370(a, b) (stdcall): two whole texts compared without case ---------
+// The same comparison from the start of each: a and b are text holders (or, for CD5370, b points to bytes ending at 0);
+// characters bytes or 16-bit as in each copy's name below. The places are its own, not written back.
+template <int A, int B> static int32_t __stdcall text_whole_compare(uint32_t a, uint32_t b) {
+    uint32_t pa[2] = {a, 0}, pb[2] = {b, 0};
+    return text_places_compare<A, B>(pa, pb);
+}
+static const uint8_t text_whole_original[] = {0x8b, 0x54, 0x24, 0x08, 0x55, 0x8b, 0x6c, 0x24};
+static const uint8_t text_whole_370_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x0c, 0x55, 0x8b, 0x6c};
+REWRITE("Text::CompareCD5150", 0xcd5150, text_whole_original, (&text_whole_compare<TEXT8, TEXT8>), &g_text_place_compares);
+REWRITE("Text::CompareCD5260", 0xcd5260, text_whole_original, (&text_whole_compare<TEXT8, TEXT16>), &g_text_place_compares);
+REWRITE("Text::CompareCD5640", 0xcd5640, text_whole_original, (&text_whole_compare<TEXT16, TEXT16>), &g_text_place_compares);
+REWRITE("Text::CompareCD5370", 0xcd5370, text_whole_370_original, (&text_whole_compare<TEXT16, CHARS8>), &g_text_place_compares);
+
+// ---- Water::Range93DCD0(this, x, y, reach) (0x93DCD0): the nearest fully watered cell, ring by ring ------------------
+// x and y are given by pointer. For each ring r = 0 up to reach (none when reach is negative) the cells on its square
+// are tried with Water::Cell93DBF0: first the left and right columns (x - r and x + r) from y - r down to y + r, then
+// the top and bottom rows (y - r and y + r) between them; a cell whose two halves are both full counts, and the
+// nearest (squared distance, ties to the first) wins. At the end of the first ring with one, its place is written back
+// and 1 given; else 0. The two pointers are read again for each ring's bounds.
+static volatile long g_water_ranges;
+static uint8_t __thiscall water_range_93dcd0(uint8_t *self, int32_t *px, int32_t *py, int32_t reach) {
+    g_water_ranges++;
+    typedef void *(__thiscall *Cell)(void *, int32_t, int32_t, uint32_t *, uint8_t *);
+    const Cell cell = (Cell)0x93dbf0;
+    if (reach < 0) return 0;
+    const int32_t x = *px, y = *py;
+    int32_t best = 100000000, bx = 0, by = 0;
+    bool found = false;
+    auto look = [&](int32_t cx, int32_t cy, int32_t d1, int32_t d2) {
+        uint32_t value;
+        volatile uint8_t both = 0;
+        cell(self, cx, cy, &value, (uint8_t *)&both);
+        if (!both) return;
+        const int32_t d = (int32_t)((uint32_t)d1 * (uint32_t)d1 + (uint32_t)d2 * (uint32_t)d2);
+        if (d < best) best = d, by = cy, bx = cx, found = true;
+    };
+    for (int32_t r = 0; r <= reach; r++) {
+        int32_t k = r;
+        for (int32_t cy = y - r; cy < *py + r + 1; cy++, k--) {
+            look(x - r, cy, r, k);
+            look(x + r, cy, -r, k);
+        }
+        k = r - 1;
+        for (int32_t cx = x + 1 - r; cx < *px + r && x + 1 - r < x + r; cx++, k--) {
+            look(cx, y - r, r, k);
+            look(cx, y + r, -r, k);
+        }
+        if (found) {
+            *py = by;
+            *px = bx;
+            return 1;
+        }
+    }
+    return 0;
+}
+static const uint8_t water_range_93dcd0_original[] = {0x83, 0xec, 0x48, 0x8b, 0x44, 0x24, 0x54, 0x53};
+REWRITE("Water::Range93DCD0", 0x93dcd0, water_range_93dcd0_original, &water_range_93dcd0, &g_water_ranges);
+
+// ---- Water::Find90D380(this, key) (0x90D380): an entry taken out of a sorted table, its parts packed up behind it -----
+// The table (+0x78, count +0x80) has 20-byte entries {key, first record, record count, first index, index count}; the
+// place is SortedTable::Find20's (found or not). Each later entry moves down one, its records (16 bytes at +0x84, the
+// first 12 copied) and 16-bit indexes (+0x90, each less the distance its records moved) moved down to follow the ones
+// before; the next free record and index (+0x8C, +0x98) are where they end, and the count goes down by one (given).
+static volatile long g_water_finds;
+static int32_t __thiscall water_find_90d380(uint8_t *self, uint32_t key) {
+    g_water_finds++;
+    typedef uint8_t(__fastcall *Find)(const uint32_t *, const uint8_t *, int32_t, int32_t *, int32_t *);
+    uint32_t k[5] = {key};
+    int32_t place, unused;
+    ((Find)0x90c5c0)(k, *(const uint8_t *const *)(self + 0x78), *(const int32_t *)(self + 0x80), &place, &unused);
+    auto entry = [&](int32_t i) { return (volatile uint32_t *)(*(uint8_t *const *)(self + 0x78) + 20 * i); };
+    uint32_t records = entry(place)[1], indexes = entry(place)[3];
+    for (int32_t i = place; i < *(const volatile int32_t *)(self + 0x80) - 1; i++) {
+        volatile uint32_t *const e = entry(i);
+        for (int w = 0; w < 5; w++) e[w] = e[5 + w];
+        const uint32_t moved = e[1] - records;
+        for (int32_t j = 0; j < (int32_t)e[2]; j++) {
+            volatile uint32_t *const to = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x84) + 16 * (records + j));
+            const uint32_t *const from = (const uint32_t *)(*(uint8_t *const *)(self + 0x84) + 16 * (e[1] + j));
+            to[0] = from[0], to[1] = from[1], to[2] = from[2];
+        }
+        for (int32_t j = 0; j < (int32_t)e[4]; j++) {
+            volatile uint16_t *const list = *(uint16_t *const *)(self + 0x90);
+            list[indexes + j] = (uint16_t)(list[e[3] + j] - (uint16_t)moved);
+        }
+        const uint32_t count = e[2], index_count = e[4];
+        e[1] = records, records += count;
+        e[3] = indexes, indexes += index_count;
+    }
+    const int32_t n = *(const volatile int32_t *)(self + 0x80) - 1;
+    *(volatile uint32_t *)(self + 0x8c) = records;
+    *(volatile uint32_t *)(self + 0x98) = indexes;
+    *(volatile int32_t *)(self + 0x80) = n;
+    return n;
+}
+static const uint8_t water_find_90d380_original[] = {0x83, 0xec, 0x24, 0x8b, 0x44, 0x24, 0x28, 0x53};
+REWRITE("Water::Find90D380", 0x90d380, water_find_90d380_original, &water_find_90d380, &g_water_finds);
+
+// ---- Animal::AverageAE0890(this, out) (0xAE0890): the bounds of a list of points ------------------------------------
+// Points are {x, y} floats at +0x40 (count +0x50). out gets {least x, least y, most x, most y}, each starting at 0: a
+// point's value replaces the least unless it is above it, and the most unless it is below it (so a NaN always replaces
+// the least and never the most).
+static volatile long g_animal_bounds;
+static void __thiscall animal_bounds(const uint8_t *self, float *out) {
+    g_animal_bounds++;
+    volatile float lx = 0.0f, ly = 0.0f, mx = 0.0f, my = 0.0f;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x50); i++) {
+        const float *const p = *(const float *const *)(self + 0x40) + 2 * i;
+        const float x = p[0], y = p[1];
+        lx = x > lx ? (float)lx : x;
+        ly = y > ly ? (float)ly : y;
+        mx = !(x >= mx) ? (float)mx : x;
+        my = !(y >= my) ? (float)my : y;
+    }
+    volatile float *const o = out;
+    o[0] = lx, o[1] = ly, o[2] = mx, o[3] = my;
+}
+static const uint8_t animal_bounds_original[] = {0x83, 0xec, 0x24, 0x8b, 0x51, 0x50, 0x33, 0xc0};
+REWRITE("Animal::AverageAE0890", 0xae0890, animal_bounds_original, &animal_bounds, &g_animal_bounds);
+
+// ---- PhysicsWorld::Integrate(this) (0xA6C3A0): one Verlet step for each particle (+0x40, count +0x48) -------------
+// position (+0x10) += damping (+0x30) x (position - previous (+0x20)) + force (+0x40) x the particle's +0 x the step
+// factor (0x13429F0); the old position becomes the previous one. As the game rounds: d px, d qx, d qz, the factor k m,
+// k m fx, fy (k m), fz (k m), the x and y differences and the three added steps go through floats; d py, d pz and d qy,
+// the z difference and the x step sum stay on the FPU.
+static volatile long g_physics_steps;
+static void __fastcall physics_integrate(const uint8_t *self) {
+    g_physics_steps++;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x48); i++) {
+        float *const p = (*(float *const *const *)(self + 0x40))[i];
+        const float px = p[4], py = p[5], pz = p[6], qx = p[8], qy = p[9], qz = p[10], d = p[12];
+        volatile float t10 = (float)((long double)d * px);
+        const long double e = (long double)py * d, f = (long double)pz * d;
+        volatile float t30 = (float)((long double)d * qx);
+        const long double h = (long double)qy * d;
+        volatile float t38 = (float)((long double)qz * d);
+        const long double k = (long double)*(const volatile float *)0x13429f0 * p[0];
+        volatile float tc = (float)k;
+        volatile float t20 = (float)(k * p[16]);
+        volatile float t24 = (float)((long double)p[17] * tc);
+        volatile float t28 = (float)((long double)p[18] * tc);
+        t10 = (float)((long double)t10 - t30);
+        volatile float t14 = (float)(e - h);
+        const long double l = f - t38;
+        const long double m = (long double)t20 + t10;
+        t14 = (float)((long double)t24 + t14);
+        volatile float t18 = (float)((long double)t28 + l);
+        volatile float *const v = p;
+        v[4] = (float)(m + px);
+        v[5] = (float)((long double)t14 + v[5]);
+        v[6] = (float)((long double)t18 + v[6]);
+        *(volatile uint32_t *)(p + 10) = *(const uint32_t *)&pz;
+        v[8] = px;
+        v[9] = py;
+    }
+}
+static const uint8_t physics_integrate_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x4c, 0x8b, 0x41, 0x48};
+REWRITE("PhysicsWorld::Integrate", 0xa6c3a0, physics_integrate_original, &physics_integrate, &g_physics_steps);
+
+// ---- Cell::Quad(this, out, terrain) (0x729530): the four corner points of a terrain cell -----------------------------
+// The cell's place is the bytes +0x88 (x) and +0x89 (y); the terrain gives the cell size (+0x14, +0x18), its origin
+// (+0xC, +0x10), its width (+4 byte) and its cells (+0x24, 0x18 bytes each, the four corner heights first). out gets four
+// 16-byte points {x, height, y}: (x0, y0), (x1, y0), (x0, y1), (x1, y1), x1 and y1 one size on. x0, x1 and y0 stay on the
+// FPU until stored; y1 is rounded once and copied. Gives the last height's bits.
+static volatile long g_cell_quads;
+static uint32_t __thiscall cell_quad(const uint8_t *self, uint8_t *out, const uint8_t *terrain) {
+    g_cell_quads++;
+    const float sx = *(const float *)(terrain + 0x14), sy = *(const float *)(terrain + 0x18);
+    const long double x0 = (long double)(int32_t)self[0x88] * sx + *(const float *)(terrain + 0xc);
+    const long double x1 = x0 + sx;
+    const long double y0 = (long double)(int32_t)self[0x89] * sy + *(const float *)(terrain + 0x10);
+    volatile float y1 = (float)(y0 + sy);
+    volatile float *const o = (volatile float *)out;
+    o[0] = (float)x0;
+    *(volatile uint32_t *)(out + 0x28) = *(volatile uint32_t *)&y1;
+    *(volatile uint32_t *)(out + 0x38) = *(volatile uint32_t *)&y1;
+    o[2] = (float)y0;
+    o[4] = (float)x1;
+    o[6] = (float)y0;
+    o[8] = (float)x0;
+    o[12] = (float)x1;
+    uint32_t h = 0;
+    for (int k = 0; k < 4; k++) {
+        const uint32_t i = (uint32_t)terrain[4] * self[0x89] + self[0x88];
+        h = *(const uint32_t *)(*(const uint8_t *const *)(terrain + 0x24) + 0x18 * i + 4 * k);
+        *(volatile uint32_t *)(out + 4 + 0x10 * k) = h;
+    }
+    return h;
+}
+static const uint8_t cell_quad_original[] = {0x0f, 0xb6, 0x81, 0x88, 0x00, 0x00, 0x00, 0x8b};
+REWRITE("Cell::Quad", 0x729530, cell_quad_original, &cell_quad, &g_cell_quads);
+
+// ---- Model::BlendCCF530(n, m, t, from, to, out) (0xCCF530): n byte colours blended and turned by a 3x3 matrix -------
+// fastcall n and m. a = t K and b = (1 - t) K (floats; K 0xFC344C, the 1 at 0xF264DC); each of the n three-byte
+// colours is {to a + from b + c} per part (c 0xFC3450; kept on the FPU), and out gets (16 bytes apart) its product with
+// the matrix's columns (rows 16 bytes apart): x m0 + y m4 + z m8, and so on.
+static volatile long g_model_blends;
+static uint32_t __fastcall model_blend_ccf530(int32_t n, const float *m, float t, const uint8_t *from, const uint8_t *to, float *out) {
+    g_model_blends++;
+    const float k = *(const float *)0xfc344c;
+    volatile float a = (float)((long double)t * k);
+    volatile float b = (float)(((long double)*(const float *)0xf264dc - t) * k);
+    const long double c = *(const float *)0xfc3450;
+    const long double la = a, lb = b;
+    do {
+        const long double z = ((long double)(int32_t)to[2] * la + (long double)(int32_t)from[2] * lb) + c;
+        const long double y = ((long double)(int32_t)to[1] * la + (long double)(int32_t)from[1] * lb) + c;
+        const long double x = ((long double)(int32_t)to[0] * la + (long double)(int32_t)from[0] * lb) + c;
+        volatile float *const o = out;
+        o[0] = (float)((x * m[0] + y * m[4]) + z * m[8]);
+        o[1] = (float)((x * m[1] + y * m[5]) + z * m[9]);
+        o[2] = (float)((x * m[2] + y * m[6]) + z * m[10]);
+        from += 3, to += 3, out += 4;
+    } while (--n);
+    return 0;
+}
+static const uint8_t model_blend_ccf530_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x14, 0xd9, 0x45, 0x08};
+REWRITE("Model::BlendCCF530", 0xccf530, model_blend_ccf530_original, &model_blend_ccf530, &g_model_blends);
