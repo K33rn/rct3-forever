@@ -5338,4 +5338,159 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                    },
                                    [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1]) & 0xff}; }};
     quick(materials_compare_opacity);
+    // Tile::QuarterCorners: the game's tile size and base set (put back after), all four bit pairs (out in ecx, bits in
+    // dl)
+    {
+        static uint32_t saved_size, saved_base;
+        Test x{0x727cc0,
+               [=](Rng &r) {
+                   *(float *)0x1306390 = r.real(0.5f, 8), *(float *)0x13063a4 = r.range(0, 4) ? r.real(-500, 500) : -0.0f;
+                   for (int i = 0; i < 8; i++) arena<uint32_t>(0x100)[i] = r.next();
+                   arena<uint32_t>(0x40)[0] = r.next();
+               },
+               [](void *fn) {
+                   ((void(__fastcall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_size = *(uint32_t *)0x1306390, saved_base = *(uint32_t *)0x13063a4; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x1306390 = saved_size, *(uint32_t *)0x13063a4 = saved_base; };
+        quick(x);
+    }
+    // Shape::SameAs: shapes of 0-4 points copied from each other, then one part changed at times
+    Test shape_same_as{0xae0980,
+                       [=](Rng &r) {
+                           uint8_t *a = arena<uint8_t>(0x100), *b = arena<uint8_t>(0x200);
+                           const int n = r.range(0, 4);
+                           *(int32_t *)(a + 0x50) = n, *(int32_t *)(b + 0x50) = n;
+                           *(float *)(a + 0x54) = *(float *)(b + 0x54) = r.real(-5, 5);
+                           *(uint32_t *)(a + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x300), *(uint32_t *)(b + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x380);
+                           for (int i = 0; i < 8; i++) arena<float>(0x300)[i] = arena<float>(0x380)[i] = (float)r.range(-3, 3);
+                           switch (r.range(0, 5)) {
+                           case 0: *(int32_t *)(b + 0x50) = r.range(0, 4); break;
+                           case 1: *(float *)(b + 0x54) += 1; break;
+                           case 2: arena<float>(0x380)[r.range(0, 7)] += 1; break;
+                           case 3: *(float *)(a + 0x54) = -0.0f, *(float *)(b + 0x54) = 0.0f; break;
+                           default: break;
+                           }
+                       },
+                       [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x200)) & 0xff}; }};
+    quick(shape_same_as);
+    // List::MoveAllTo: lists of 0-4 items whose ring nodes are alone, in rings or broken, moved to a ring of 1-2 nodes
+    Test list_move_all_to{0xa1ce90,
+                          [=](Rng &r) {
+                              arena<uint32_t>(0x40)[0] = node_list_h2(r, 0x200, r.range(0, 4), 0x400);
+                              uint32_t *head = arena<uint32_t>(0xa00), *other = arena<uint32_t>(0xa10);
+                              *(uint32_t *)arena<uint8_t>(0x188) = (uint32_t)(uintptr_t)head;
+                              if (r.range(0, 1)) head[0] = head[1] = (uint32_t)(uintptr_t)head;
+                              else head[0] = head[1] = (uint32_t)(uintptr_t)other, other[0] = other[1] = (uint32_t)(uintptr_t)head;
+                              for (int k = 0; k < 4; k++) {
+                                  uint32_t *n = arena<uint32_t>(0x400 + k * 0x40 + 8);
+                                  uint32_t *o = arena<uint32_t>(0x800 + k * 0x20), *q = arena<uint32_t>(0x810 + k * 0x20);
+                                  const int shape = r.range(0, 2);
+                                  if (shape == 0) n[0] = n[1] = (uint32_t)(uintptr_t)n;
+                                  if (shape == 1) n[0] = n[1] = (uint32_t)(uintptr_t)o, o[0] = o[1] = (uint32_t)(uintptr_t)n;
+                                  if (shape == 2) n[0] = 0, n[1] = (uint32_t)(uintptr_t)q, q[0] = r.next();
+                              }
+                          },
+                          [](void *fn) {
+                              ((void(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40));
+                              return Result{0};
+                          }};
+    quick(list_move_all_to);
+    // Pools::ResetCounts: two lists of 0-3 pools with uses either side of 3/4 of their sizes
+    Test pools_reset_counts{0xbfef90,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                for (int i = 0; i < 0x28; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                *(uint32_t *)(self + 0x24) = node_list_h2(r, 0x200, r.range(0, 3), 0x400);
+                                *(uint32_t *)(self + 0x84) = node_list_h2(r, 0x600, r.range(0, 3), 0x800);
+                                for (int k = 0; k < 3; k++) {
+                                    int32_t *a = arena<int32_t>(0x400 + k * 0x40), *b = arena<int32_t>(0x800 + k * 0x40);
+                                    for (int i = 0; i < 10; i++) a[i] = (int32_t)r.next(), b[i] = (int32_t)r.next();
+                                    a[2] = r.range(1, 20), a[7] = r.range(0, 25);
+                                }
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                                return Result{0};
+                            }};
+    quick(pools_reset_counts);
+    // Scenery::Count8606E0: 0-4 entries of kinds 0-4 over parts of 0-3 pieces with flags from a few
+    Test scenery_count_8606e0{0x8606e0,
+                              [=](Rng &r) {
+                                  *(uint32_t *)arena<uint8_t>(0x10c) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                  *(int32_t *)arena<uint8_t>(0x214) = r.range(0, 4);
+                                  *(uint32_t *)arena<uint8_t>(0x218) = (uint32_t)(uintptr_t)arena<void>(0x240);
+                                  for (int k = 0; k < 4; k++) {
+                                      arena<uint32_t>(0x240)[k] = (uint32_t)(uintptr_t)arena<void>(0x300 + k * 0x20);
+                                      uint32_t *e = arena<uint32_t>(0x300 + k * 0x20);
+                                      e[0] = r.range(0, 4), e[2] = e[4] = (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0x40);
+                                      *(int32_t *)arena<uint8_t>(0x424 + k * 0x40) = r.range(0, 3);
+                                      *(uint32_t *)arena<uint8_t>(0x428 + k * 0x40) = (uint32_t)(uintptr_t)arena<void>(0x600 + k * 0x10);
+                                      for (int j = 0; j < 3; j++) {
+                                          arena<uint32_t>(0x600 + k * 0x10)[j] = (uint32_t)(uintptr_t)arena<void>(0x800 + (k * 3 + j) * 0x20);
+                                          arena<uint8_t>(0x810 + (k * 3 + j) * 0x20)[0] = r.range(0, 2) ? (uint8_t)(r.next() & 0xf5) : (uint8_t)r.next();
+                                      }
+                                  }
+                              },
+                              [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *))fn)(arena<void>(0x100)) & 0xff}; }};
+    quick(scenery_count_8606e0);
+    // NamedList::Find: lists of 0-4 items with names from a few, the name there, not there or none
+    Test named_list_find{0xc32c60,
+                         [=](Rng &r) {
+                             static const char *const names[] = {"", "a", "ab", "abc", "b"};
+                             char *pool = arena<char>(0x800);
+                             for (int i = 0; i < 5; i++) {
+                                 int k = 0;
+                                 for (; names[i][k]; k++) pool[i * 8 + k] = names[i][k];
+                                 pool[i * 8 + k] = 0;
+                             }
+                             *(uint32_t *)arena<uint8_t>(0x104) = node_list_h2(r, 0x200, r.range(0, 4), 0x400);
+                             for (int k = 0; k < 4; k++) arena<uint32_t>(0x400 + k * 0x40)[1] = (uint32_t)(uintptr_t)(pool + r.range(0, 4) * 8);
+                             arena<uint32_t>(0x40)[0] = r.range(0, 5) ? (uint32_t)(uintptr_t)(pool + r.range(0, 4) * 8) : 0;
+                         },
+                         [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const char *))fn)(arena<void>(0x100), (const char *)(uintptr_t)arena<uint32_t>(0x40)[0])}; }};
+    quick(named_list_find);
+    // Window::SumA51870: 0-8 entries of kinds 2-6 (a count of 0 or below at times)
+    Test window_sum_a51870{0xa51870,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(int32_t *)(self + 0x10) = r.range(0, 9) ? r.range(0, 8) : -1;
+                               *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                               for (int i = 0; i < 8; i++) arena<int32_t>(0x200)[i * 2] = r.range(2, 6), arena<uint32_t>(0x200)[i * 2 + 1] = r.next();
+                           },
+                           [](void *fn) {
+                               Result x;
+                               x.f = ((long double(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                               return x;
+                           }};
+    quick(window_sum_a51870);
+    // SceneryRenderer::SiftDown: heaps of 1-12 items with values from a few (ties), any start
+    Test scenery_renderer_sift_down{0x42fe40,
+                                    [=](Rng &r) {
+                                        uint8_t *self = arena<uint8_t>(0x100);
+                                        const int n = r.range(1, 12);
+                                        *(int32_t *)(self + 0x6c) = n, *(uint32_t *)(self + 0x64) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                        for (int k = 0; k < 12; k++) {
+                                            arena<uint32_t>(0x200)[k] = (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0x40);
+                                            *(float *)arena<uint8_t>(0x424 + k * 0x40) = (float)r.range(0, 5);
+                                        }
+                                        arena<int32_t>(0x40)[0] = r.range(0, n - 1);
+                                    },
+                                    [](void *fn) {
+                                        ((void(__thiscall *)(const void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0]);
+                                        return Result{0};
+                                    }};
+    quick(scenery_renderer_sift_down);
+    // Key::CompareMasked: masks 0-7 (in ecx and edx), parts from a few
+    Test key_compare_masked{0xcc4aa0,
+                            [=](Rng &r) {
+                                arena<uint32_t>(0x40)[0] = r.range(0, 7), arena<uint32_t>(0x40)[1] = r.range(0, 7);
+                                for (int i = 0; i < 6; i++) arena<int32_t>(0x50)[i] = r.range(-1, 1);
+                            },
+                            [](void *fn) {
+                                const int32_t *a = arena<int32_t>(0x50);
+                                return Result{(uint32_t)((int32_t(__fastcall *)(uint32_t, uint32_t, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t))fn)(arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1], a[0], a[1], a[2], a[3], a[4], a[5])};
+                            }};
+    quick(key_compare_masked);
 #endif

@@ -652,7 +652,7 @@ address,size,name,callers,status
 0x42fb10,282,Planes::TestBox,0,rewritten
 0x42fd80,105,OwnedPair::FreeFields,2,rewritten
 0x42fdf0,69,,1,documented
-0x42fe40,148,,2,documented
+0x42fe40,148,SceneryRenderer::SiftDown,2,rewritten
 0x42ff00,46,,0,documented
 0x42ff30,28,Object::FreeField,2,rewritten
 0x42ff50,187,Points::UpdateDepth,1,rewritten
@@ -8331,7 +8331,7 @@ address,size,name,callers,status
 0x7279a0,338,,0,documented
 0x727b00,164,TileCorners::Count,3,rewritten
 0x727bb0,264,,1,documented
-0x727cc0,111,,2,documented
+0x727cc0,111,Tile::QuarterCorners,2,rewritten
 0x727d30,170,,8,documented
 0x727de0,183,Quad::EdgeMiddles,2,rewritten
 0x727ea0,631,Quad::Normal,2,rewritten
@@ -11640,7 +11640,7 @@ address,size,name,callers,status
 0x860550,147,,2,documented
 0x8605f0,92,Scenery::Value8605F0,4,rewritten
 0x8606a0,58,,6,documented
-0x8606e0,118,,1,documented
+0x8606e0,118,Scenery::Count8606E0,1,rewritten
 0x860760,46,,4,documented
 0x860790,389,,9,documented
 0x860920,33,,1,documented
@@ -15427,7 +15427,7 @@ address,size,name,callers,status
 0xa1cda0,73,Bird::ClearA1CDA0,5,rewritten
 0xa1cdf0,57,,1,documented
 0xa1ce30,86,List::LoopA1CE30,2,rewritten
-0xa1ce90,114,,7,documented
+0xa1ce90,114,List::MoveAllTo,7,rewritten
 0xa1cf10,467,,13,documented
 0xa1d0f0,289,,3,documented
 0xa1d220,17,,0,documented
@@ -15893,7 +15893,7 @@ address,size,name,callers,status
 0xa51760,61,Array<4>::Allocate,0,rewritten
 0xa517a0,32,,4,documented
 0xa517c0,174,Slots::Reserve,2,rewritten
-0xa51870,123,,1,documented
+0xa51870,123,Window::SumA51870,1,rewritten
 0xa518f0,45,,1,documented
 0xa51a00,30,DeletingDestructor,1,rewritten
 0xa51a80,721,,3,documented
@@ -17234,7 +17234,7 @@ address,size,name,callers,status
 0xae0130,48,QueryInterface,0,rewritten
 0xae0480,1004,Class::Construct,3,rewritten
 0xae0890,235,Animal::AverageAE0890,1,rewritten
-0xae0980,112,,2,documented
+0xae0980,112,Shape::SameAs,2,rewritten
 0xae09f0,217,Animal::CheckAE09F0,1,rewritten
 0xae0f90,30,DeletingDestructor,1,rewritten
 0xae0fc0,30,DeletingDestructor,1,rewritten
@@ -20522,7 +20522,7 @@ address,size,name,callers,status
 0xbfec60,273,,2,documented
 0xbfed80,176,,1,documented
 0xbfee90,251,,1,documented
-0xbfef90,115,,1,documented
+0xbfef90,115,Pools::ResetCounts,1,rewritten
 0xbff010,157,,1,documented
 0xbff0b0,45,Recycled::Delete,1,rewritten
 0xbff0e0,178,,1,documented
@@ -21153,7 +21153,7 @@ address,size,name,callers,status
 0xc32b40,81,,1,documented
 0xc32ba0,66,,1,documented
 0xc32c00,79,Destructor::Steps,1,rewritten
-0xc32c60,121,,1,documented
+0xc32c60,121,NamedList::Find,1,rewritten
 0xc32e80,82,,6,documented
 0xc32ee0,30,Object::CountList,2,rewritten
 0xc32f60,513,,1,documented
@@ -22673,7 +22673,7 @@ address,size,name,callers,status
 0xcc49d0,36,Debug::Forward,1,rewritten
 0xcc4a00,36,Debug::Forward,1,rewritten
 0xcc4a30,100,Bytes3::Equal,1,rewritten
-0xcc4aa0,151,,4,documented
+0xcc4aa0,151,Key::CompareMasked,4,rewritten
 0xcc4b40,140,,0,documented
 0xcc4bd0,121,,3,documented
 0xcc4c50,204,Shader::ScanCC4C50,0,rewritten

@@ -8443,3 +8443,194 @@ static uint8_t __thiscall materials_compare_opacity(const uint8_t *self, int32_t
 }
 static const uint8_t materials_compare_opacity_original[] = {0x8b, 0x51, 0x7c, 0x8b, 0x44, 0x24, 0x04, 0x56, 0x8b, 0x31};
 REWRITE("Materials::CompareOpacity", 0xceb590, materials_compare_opacity_original, &materials_compare_opacity, &g_opacity_compares);
+
+// ---- Tile::QuarterCorners(out in ecx, bits in dl) (0x727CC0): the four corners of a tile half -------------------------
+// With the game's tile size S (0x1306390) and base B (0x13063A4): x = (bit 1 ? 2 S : 0) + B, y = (bit 2 ? 0 : 2 S) + B
+// (unrounded); corner i is {x (+ 2 S for i bit 1), y (+ 2 S for i bit 2)} as floats.
+static volatile long g_quarter_corners;
+static void __fastcall tile_quarter_corners(float *out, uint32_t bits) {
+    g_quarter_corners++;
+    const volatile float *const g = (const volatile float *)0x1306390;
+    const float b = *(const volatile float *)0x13063a4, zero = *(const float *)0xf264e0;
+    auto two_s = [&] {
+        const long double s = g[0];
+        return s + s;
+    };
+    const long double x = (bits & 1 ? two_s() : (long double)zero) + b;
+    const long double y = (bits & 2 ? (long double)zero : two_s()) + b;
+    volatile float *const o = out;
+    for (int i = 0; i < 4; i++) {
+        o[2 * i] = (float)(i & 1 ? two_s() + x : x);
+        o[2 * i + 1] = (float)(i & 2 ? two_s() + y : y);
+    }
+}
+static const uint8_t tile_quarter_corners_original[] = {0xf6, 0xc2, 0x01, 0x74, 0x0a, 0xd9, 0x05, 0x90, 0x63, 0x30, 0x01};
+REWRITE("Tile::QuarterCorners", 0x727cc0, tile_quarter_corners_original, &tile_quarter_corners, &g_quarter_corners);
+
+// ---- Shape::SameAs(other) (0xAE0980): 1 (only al) when the point counts (+0x50), the values +0x54 and every point (+0x40,
+// x and y floats) are equal (a NaN never is) ----------------------------------------------------------------------------
+static volatile long g_shape_sames;
+static uint8_t __thiscall shape_same_as(const uint8_t *self, const uint8_t *other) {
+    g_shape_sames++;
+    const int32_t n = *(const int32_t *)(self + 0x50);
+    if (*(const int32_t *)(other + 0x50) != n || !(*(const float *)(self + 0x54) == *(const float *)(other + 0x54))) return 0;
+    const float *const a = *(const float *const *)(self + 0x40), *const b = *(const float *const *)(other + 0x40);
+    for (int32_t i = 0; i < n; i++)
+        if (!(a[2 * i] == b[2 * i]) || !(a[2 * i + 1] == b[2 * i + 1])) return 0;
+    return 1;
+}
+static const uint8_t shape_same_as_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0x42, 0x50, 0x57, 0x8b, 0x79, 0x50};
+REWRITE("Shape::SameAs", 0xae0980, shape_same_as_original, &shape_same_as, &g_shape_sames);
+
+// ---- List::MoveAllTo(list) (0xA1CE90): every item of the list has its ring node (+8 in the item) taken out of its ring
+// (as List::LoopA1CE30) and put at the back of the ring at +0x88 ----------------------------------------------------------
+static volatile long g_ring_moves;
+static void __thiscall list_move_all_to(const uint8_t *self, uint32_t *const *list) {
+    g_ring_moves++;
+    const uint32_t *p = *list;
+    if (!p[0] || !p) return;
+    for (;;) {
+        uint32_t *const n = (uint32_t *)(uintptr_t)(p[2] + 8);
+        if (n) {
+            uint32_t *const back = (uint32_t *)(uintptr_t)n[1], *const next = (uint32_t *)(uintptr_t)n[0];
+            if (back && next && next[1] == (uint32_t)(uintptr_t)n && back[0] == (uint32_t)(uintptr_t)n) {
+                next[1] = (uint32_t)(uintptr_t)back;
+                ((uint32_t *)(uintptr_t)n[1])[0] = n[0];
+                n[0] = 0, n[1] = 0;
+            }
+        }
+        uint32_t *const head = *(uint32_t *const *)(self + 0x88);
+        n[1] = head[1];
+        ((uint32_t *)(uintptr_t)head[1])[0] = (uint32_t)(uintptr_t)n;
+        n[0] = (uint32_t)(uintptr_t)head;
+        head[1] = (uint32_t)(uintptr_t)n;
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return;
+    }
+}
+static const uint8_t list_move_all_to_original[] = {0x8b, 0x44, 0x24, 0x04, 0x56, 0x8b, 0x30, 0x83, 0x3e, 0x00};
+REWRITE("List::MoveAllTo", 0xa1ce90, list_move_all_to_original, &list_move_all_to, &g_ring_moves);
+
+// ---- Pools::ResetCounts (0xBFEF90) -------------------------------------------------------------------------------------
+// Each pool on the list at +0x24 whose use (+0x1C) over its size (+8) is above 3/4 (0xFA5C88) gets +0x1C and +0x20 back to
+// its size; every one gets +0x24 = 0. Each pool on the list at +0x84 gets +0x20 = 0. Then +0x14..+0x20 are 0.
+static volatile long g_pool_resets;
+static void __thiscall pools_reset_counts(uint8_t *self) {
+    g_pool_resets++;
+    const uint32_t *p = *(const uint32_t *const *)(self + 0x24);
+    if (p[0] && p)
+        for (;;) {
+            int32_t *const pool = (int32_t *)(uintptr_t)p[2];
+            if ((long double)pool[7] / (long double)pool[2] > *(const float *)0xfa5c88) pool[7] = pool[2], pool[8] = pool[2];
+            pool[9] = 0;
+            p = (const uint32_t *)(uintptr_t)p[0];
+            if (!p[0] || !p) break;
+        }
+    p = *(const uint32_t *const *)(self + 0x84);
+    if (p[0] && p)
+        for (;;) {
+            ((int32_t *)(uintptr_t)p[2])[8] = 0;
+            p = (const uint32_t *)(uintptr_t)p[0];
+            if (!p[0] || !p) break;
+        }
+    uint32_t *const u = (uint32_t *)self;
+    u[5] = 0, u[7] = 0, u[8] = 0, u[6] = 0;
+}
+static const uint8_t pools_reset_counts_original[] = {0x51, 0x53, 0x56, 0x8b, 0x71, 0x24, 0x8b, 0x06, 0x33, 0xdb};
+REWRITE("Pools::ResetCounts", 0xbfef90, pools_reset_counts_original, &pools_reset_counts, &g_pool_resets);
+
+// ---- Scenery::Count8606E0 (0x8606E0): 1 (only al) when any entry (the +0xC part's list +0x18, count +0x14) of kind 0
+// (its part +8) or 3 (its part +0x10) has a piece (the part's list +0x28, count +0x24) with flag 2 or 8 (+0x10); else 0 --
+static volatile long g_scenery_flagged;
+static uint8_t __thiscall scenery_count_8606e0(const uint8_t *self) {
+    g_scenery_flagged++;
+    const uint8_t *const part = *(const uint8_t *const *)(self + 0xc);
+    const int32_t n = *(const int32_t *)(part + 0x14);
+    for (int32_t i = 0; i < n; i++) {
+        const uint32_t *const e = (*(const uint32_t *const *const *)(part + 0x18))[i];
+        const uint8_t *sub;
+        if (e[0] == 0) sub = (const uint8_t *)(uintptr_t)e[2];
+        else if (e[0] == 3) sub = (const uint8_t *)(uintptr_t)e[4];
+        else continue;
+        const int32_t m = *(const int32_t *)(sub + 0x24);
+        for (int32_t j = 0; j < m; j++)
+            if ((*(const uint8_t *const *const *)(sub + 0x28))[j][0x10] & 0xa) return 1;
+    }
+    return 0;
+}
+static const uint8_t scenery_count_8606e0_original[] = {0x8b, 0x41, 0x0c, 0x53, 0x8b, 0x58, 0x14, 0x55, 0x56, 0x57};
+REWRITE("Scenery::Count8606E0", 0x8606e0, scenery_count_8606e0_original, &scenery_count_8606e0, &g_scenery_flagged);
+
+// ---- NamedList::Find(name) (0xC32C60): the first item of the list at +4 whose name (+4) is name ("" for none), or 0 -----
+static volatile long g_named_finds2;
+static uint32_t __thiscall named_list_find(const uint8_t *self, const char *name) {
+    g_named_finds2++;
+    if (!name) name = (const char *)0xf264ad;
+    const uint32_t *p = *(const uint32_t *const *)(self + 4);
+    if (!p[0] || !p) return 0;
+    for (;;) {
+        const uint32_t *const item = (const uint32_t *)(uintptr_t)p[2];
+        const char *a = name, *b = (const char *)(uintptr_t)item[1];
+        while (*a == *b && *a) a++, b++;
+        if (*a == *b) return p[2];
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return 0;
+    }
+}
+static const uint8_t named_list_find_original[] = {0x53, 0x55, 0x8b, 0x6c, 0x24, 0x0c, 0x85, 0xed, 0x56, 0x57};
+REWRITE("NamedList::Find", 0xc32c60, named_list_find_original, &named_list_find, &g_named_finds2);
+
+// ---- Window::SumA51870 (0xA51870): a weighted count of the entries (8 bytes at +0xC, count +0x10) of kinds 3, 4 and 5:
+// (n3 + 3 n5 + 2 n4) / (count 3) 100 (whole numbers loaded as such) ---------------------------------------------------
+static volatile long g_window_sums;
+static long double __thiscall window_sum_a51870(const uint8_t *self) {
+    g_window_sums++;
+    const int32_t n = *(const int32_t *)(self + 0x10);
+    const int32_t *const e = *(const int32_t *const *)(self + 0xc);
+    int32_t c3 = 0, c4 = 0, c5 = 0;
+    for (int32_t i = 0; i < n; i++) c3 += e[i * 2] == 3;
+    for (int32_t i = 0; i < n; i++) c4 += e[i * 2] == 4;
+    for (int32_t i = 0; i < n; i++) c5 += e[i * 2] == 5;
+    const int32_t v = c5 + c3 + c5 * 2 + c4 * 2;
+    return (long double)v / ((long double)n * *(const float *)0xf2784c) * *(const float *)0xf27604;
+}
+static const uint8_t window_sum_a51870_original[] = {0x83, 0xec, 0x08, 0x8b, 0x41, 0x10, 0x53, 0x56, 0x33, 0xdb};
+REWRITE("Window::SumA51870", 0xa51870, window_sum_a51870_original, &window_sum_a51870, &g_window_sums);
+
+// ---- SceneryRenderer::SiftDown(i) (0x42FE40): moves item i down the max-heap (+0x64, count +0x6C read again) by +0x24 ---
+// The larger child (the right one only when the left is below it) moves up while the item is below it.
+static volatile long g_heap_sifts;
+static void __thiscall scenery_renderer_sift_down(const uint8_t *self, int32_t i) {
+    g_heap_sifts++;
+    uint32_t *const h = *(uint32_t *const *)(self + 0x64);
+    const uint32_t v = h[i];
+    auto key = [](uint32_t item) { return *(const float *)(uintptr_t)(item + 0x24); };
+    while (i < *(const volatile int32_t *)(self + 0x6c) / 2) {
+        const int32_t l = 2 * i + 1;
+        int32_t c = l + 1;
+        if (c >= *(const volatile int32_t *)(self + 0x6c) || !(key(h[l]) < key(h[c]))) c = l;
+        if (!(key(v) < key(h[c]))) break;
+        h[i] = h[c];
+        i = c;
+    }
+    h[i] = v;
+}
+static const uint8_t scenery_renderer_sift_down_original[] = {0x8b, 0x41, 0x64, 0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55};
+REWRITE("SceneryRenderer::SiftDown", 0x42fe40, scenery_renderer_sift_down_original, &scenery_renderer_sift_down, &g_heap_sifts);
+
+// ---- Key::CompareMasked(mask a in ecx, mask b in edx, a0, a1, a2, b0, b1, b2) (0xCC4AA0): -1, 0 or 1 over the parts both
+// masks have (bits 1, 2, 4 for parts 0, 1, 2), the first that differs deciding (signed) ----------------------------------
+static volatile long g_key_compares;
+static int32_t __fastcall key_compare_masked(uint32_t ma, uint32_t mb, int32_t a0, int32_t a1, int32_t a2, int32_t b0, int32_t b1, int32_t b2) {
+    g_key_compares++;
+    const uint32_t m = ma & mb;
+    const int32_t a[3] = {a0, a1, a2}, b[3] = {b0, b1, b2};
+    for (int k = 0; k < 3; k++)
+        if (m & (1u << k)) {
+            if (a[k] < b[k]) return -1;
+            if (a[k] > b[k]) return 1;
+        }
+    return 0;
+}
+static const uint8_t key_compare_masked_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x08, 0xc7, 0x45, 0xf8, 0xcc, 0xcc, 0xcc, 0xcc};
+REWRITE("Key::CompareMasked", 0xcc4aa0, key_compare_masked_original, &key_compare_masked, &g_key_compares);
