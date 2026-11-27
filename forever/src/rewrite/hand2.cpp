@@ -9554,3 +9554,189 @@ static int32_t __fastcall vector_compare_cdf200(const uint32_t *a, const uint32_
 }
 static const uint8_t vector_compare_cdf200_original[] = {0x8b, 0x01, 0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x8b, 0x74, 0x24, 0x10};
 REWRITE("Vector::CompareCDF200", 0xcdf200, vector_compare_cdf200_original, &vector_compare_cdf200, &g_triangle_compares);
+
+// ---- Person::Points7E6C20(items) (0x7E6C20): takes the top off the heap ------------------------------------------------
+// The count (+8) goes down; with any left, the last takes the top place and sifts down as Person::Loop7E6750 does.
+static volatile long g_person_heap_pops;
+static void __thiscall person_points_7e6c20(uint32_t *self, const uint8_t *const *items) {
+    g_person_heap_pops++;
+    const int32_t n = (int32_t)--self[2];
+    if (!n) return;
+    uint32_t *const heap = (uint32_t *)(uintptr_t)self[0];
+    heap[0] = heap[n];
+    auto key = [&](uint32_t item) { return *(const float *)(*items + item * 20 + 8); };
+    const uint32_t v = heap[0];
+    int32_t hole = 0, c = 1;
+    for (; c + 1 < n; c = 2 * hole + 1) {
+        const int32_t pick = key(heap[c]) < key(heap[c + 1]) ? c : c + 1;
+        if (!(key(heap[pick]) < key(v))) goto done;
+        heap[hole] = heap[pick];
+        hole = pick;
+    }
+    if (c < n && key(heap[c]) < key(v)) {
+        heap[hole] = heap[c];
+        hole = c;
+    }
+done:
+    heap[hole] = v;
+}
+static const uint8_t person_points_7e6c20_original[] = {0x83, 0xec, 0x18, 0x8b, 0xd1, 0x8b, 0x42, 0x08, 0x48};
+REWRITE("Person::Points7E6C20", 0x7e6c20, person_points_7e6c20_original, &person_points_7e6c20, &g_person_heap_pops);
+
+// ---- Terrain::Cell8BCE50(out, x, y, corner) (0x8BCE50): the heights of the cells meeting at a grid point ---------------
+// The point: x +0x14 + +0xC (unrounded; one step more with corner bit 0) and y +0x18 + +0x10 (a float; one step more
+// with bit 1, the sum a float). The cells x - (bit 0 clear), +1 and y - (bit 1 clear), +1 that lie in the grid (bytes
+// +4, +5; cells of 24 bytes at +0x24) each add {x, height, y} (16 bytes) to out, height the cell's corner 3 - 2 k - j
+// (j, k the steps in x, y). Gives how many.
+static volatile long g_terrain_point_cells;
+static int32_t __thiscall terrain_cell_8bce50(const uint8_t *self, float *out, uint8_t x, uint8_t y, uint8_t corner) {
+    g_terrain_point_cells++;
+    auto m = [&](uint32_t at) { return *(const float *)(self + at); };
+    long double px = (long double)x * m(0x14) + m(0xc);
+    volatile float fy = (float)((long double)y * m(0x18) + m(0x10));
+    const int32_t x0 = (int32_t)x - (~corner & 1), y0 = (int32_t)y - (~(corner >> 1) & 1);
+    if (corner & 1) px = px + m(0x14);
+    const long double py = (corner & 2) ? (long double)fy + m(0x18) : (long double)fy;
+    int32_t count = 0;
+    for (int32_t j = 0; j < 2; j++) {
+        const int32_t xi = x0 + j;
+        if (xi < 0 || xi >= self[4]) continue;
+        for (int32_t k = 0; k < 2; k++) {
+            const int32_t yi = y0 + k;
+            if (yi < 0 || yi >= self[5]) continue;
+            const uint32_t *const cell = (const uint32_t *)(*(const uint8_t *const *)(self + 0x24) + (self[4] * yi + xi) * 24);
+            volatile float *const e = out + count * 4;
+            e[0] = (float)px;
+            e[2] = (float)py;
+            ((volatile uint32_t *)e)[1] = cell[(int8_t)(3 - 2 * k - j)];
+            count++;
+        }
+    }
+    return count;
+}
+static const uint8_t terrain_cell_8bce50_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x24, 0x0f, 0xb6, 0x45, 0x0c};
+REWRITE("Terrain::Cell8BCE50", 0x8bce50, terrain_cell_8bce50_original, &terrain_cell_8bce50, &g_terrain_point_cells);
+
+// ---- Water::Value9061C0(x, y, n) (0x9061C0): a column's total over n rows ----------------------------------------------
+// Rows of width +4. The sum of n values of +0x48 down from (x, y), then for the n - 1 rows from y + 1 each +0x50 value
+// in and +0x4C value out (the sub first), all unrounded.
+static volatile long g_water_column_sums;
+static long double __thiscall water_value_9061c0(const uint8_t *self, int32_t x, int32_t y, int32_t n) {
+    g_water_column_sums++;
+    const int32_t w = *(const int32_t *)(self + 4);
+    const float *const a = *(const float *const *)(self + 0x48), *const b = *(const float *const *)(self + 0x4c), *const c = *(const float *const *)(self + 0x50);
+    long double s = *(const float *)0xf264e0;
+    for (int32_t k = 0, i = w * y + x; k < n; k++, i += w) s = s + a[i];
+    if (n > 1)
+        for (int32_t k = 0, i = (y + 1) * w + x; k < n - 1; k++, i += w) {
+            s = s - b[i];
+            s = s + c[i];
+        }
+    return s;
+}
+static const uint8_t water_value_9061c0_original[] = {0x51, 0x8b, 0x41, 0x04, 0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00};
+REWRITE("Water::Value9061C0", 0x9061c0, water_value_9061c0_original, &water_value_9061c0, &g_water_column_sums);
+
+// ---- Water::Range95F910(pixels in ecx, width in edx, x0, x1, y0, y1) (0x95F910): fades a box of pixels to its edges ---
+// hx = (x1 - x0) / 2, hy = (y1 - y0) / 2 (floats). For pixel (i, j) of the box: dx = (i + 0.5 - hx) / hx (by 1 / hx), dy
+// = (j + 0.5 - hy) / hy; f = 1 - (dx^2 + dy^2), at least 0; the pixel's top byte becomes its value times f, rounded by the
+// FPU.
+static volatile long g_water_box_fades;
+static void __fastcall water_range_95f910(uint32_t *pixels, int32_t width, int32_t x0, int32_t x1, int32_t y0, int32_t y1) {
+    g_water_box_fades++;
+    const long double half = *(const float *)0xf2651c, one = *(const float *)0xf264dc, zero = *(const float *)0xf264e0;
+    volatile float hx = (float)((long double)(x1 - x0) * half);
+    volatile float hy = (float)((long double)(y1 - y0) * half);
+    if (y0 >= y1) return;
+    uint32_t *row = pixels + (width * y0 + x0);
+    for (int32_t j = 0, rows = y1 - y0; rows; j++, rows--, row += width) {
+        if (x0 >= x1) continue;
+        const long double inv = one / hx;
+        const long double dy = (((long double)j + half) - hy) / hy;
+        const long double dy2 = dy * dy;
+        uint32_t *p = row;
+        for (int32_t i = 0, cols = x1 - x0; cols; i++, cols--, p++) {
+            const long double dx = (((long double)i + half) - hx) * inv;
+            long double f = one - (dx * dx + dy2);
+            if (f < zero) f = zero;
+            const uint32_t v = *p;
+            *p = (uint32_t)x87_fistp64_h2((long double)(int32_t)(v >> 24) * f) << 24 | (v & 0xffffff);
+        }
+    }
+}
+static const uint8_t water_range_95f910_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf8, 0x83, 0xec, 0x24, 0x8b, 0x45, 0x08};
+REWRITE("Water::Range95F910", 0x95f910, water_range_95f910_original, &water_range_95f910, &g_water_box_fades);
+
+// ---- Colour::Value6B5B90(colour) (0x6B5B90): a colour's hue, 0 to 1 -----------------------------------------------------
+// r, g, b = the bytes 2, 1, 0 over 255 (unrounded, and as floats). By which is largest, middle and least (the game's
+// compares and ties) it takes a sixth k (1, 3, 5, 7, 9, 11) and t = 2 (mid - least) / (largest - least) - 1 (negated in
+// the odd sixths); (k + t) / 12, or k / 12 when all match.
+static volatile long g_colour_hues;
+static long double __stdcall colour_value_6b5b90(uint32_t c) {
+    g_colour_hues++;
+    const long double s = *(const float *)0xf270f0;
+    const long double R = (long double)(int32_t)((c >> 16) & 0xff) * s;
+    volatile float rf = (float)R;
+    volatile float gf = (float)((long double)(int32_t)((c >> 8) & 0xff) * s);
+    const long double B = (long double)(int32_t)(c & 0xff) * s;
+    volatile float bf = (float)B;
+    long double top, mid, least, k;
+    bool flip;
+    if (R > gf) {
+        if (B > R) top = bf, mid = rf, least = gf, k = 9, flip = false;
+        else if (B < gf) top = R, mid = gf, least = bf, k = 1, flip = false;
+        else top = R, mid = bf, least = gf, k = 11, flip = true;
+    } else if (B < R) top = gf, mid = rf, least = bf, k = 3, flip = true;
+    else if (bf > gf) top = bf, mid = gf, least = rf, k = 7, flip = true;
+    else top = gf, mid = bf, least = rf, k = 5, flip = false;
+    volatile float kf = (float)k;
+    const long double d = top - least;
+    if (!(d > *(const float *)0xf264e0)) return ((long double)*(const float *)0xf264e0 + kf) * *(const float *)0xf3b798;
+    long double t = (mid - least) / d;
+    t = t + t;
+    t = t - *(const float *)0xf264dc;
+    if (flip) t = -t;
+    return (t + kf) * *(const float *)0xf3b798;
+}
+static const uint8_t colour_value_6b5b90_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x44, 0x24, 0x10, 0x8b, 0xc8, 0xc1, 0xf9, 0x10};
+REWRITE("Colour::Value6B5B90", 0x6b5b90, colour_value_6b5b90_original, &colour_value_6b5b90, &g_colour_hues);
+
+// ---- Window::Mode6A7DF0() (0x6A7DF0): greys out a spinner's down and up buttons by its value -----------------------------
+// The value (+0xF4) by mode (+0xF0): 1 a float, 2 a whole number, 3 a byte (with byte step, least, most at +0xFA, +0xF8,
+// +0xF9; else +0x100, +0xF8, +0xFC). The up button (+0xDC) gets flag 0x400000 (+0x94) when value + step is past the
+// most, else loses it; the down button (+0xE0) gets it when value - step is below the least (a float compare in mode
+// 1), else loses it. No value or another mode clears both. Gives the down button's new flags.
+static volatile long g_spinner_greys;
+static uint32_t __thiscall window_mode_6a7df0(const uint8_t *self) {
+    g_spinner_greys++;
+    bool down_ok = true, up_off = false;
+    const void *const p = *(const void *const *)(self + 0xf4);
+    switch (*(const int32_t *)(self + 0xf0)) {
+    case 1:
+        if (!p) break;
+        if ((long double)*(const float *)p - *(const float *)(self + 0x100) < *(const float *)(self + 0xf8)) down_ok = false;
+        up_off = (long double)*(const float *)(self + 0x100) + *(const float *)p > *(const float *)(self + 0xfc);
+        break;
+    case 2: {
+        if (!p) break;
+        const int32_t v = *(const int32_t *)p, step = *(const int32_t *)(self + 0x100);
+        if (v - step < *(const int32_t *)(self + 0xf8)) down_ok = false;
+        up_off = v + step > *(const int32_t *)(self + 0xfc);
+        break;
+    }
+    case 3: {
+        if (!p) break;
+        const int32_t v = *(const uint8_t *)p, step = self[0xfa];
+        if (v - step < self[0xf8]) down_ok = false;
+        up_off = v + step > self[0xf9];
+        break;
+    }
+    }
+    uint32_t *const a = (uint32_t *)(*(uint8_t *const *)(self + 0xdc) + 0x94);
+    *a = up_off ? *a | 0x400000 : *a & 0xffbfffff;
+    uint32_t *const b = (uint32_t *)(*(uint8_t *const *)(self + 0xe0) + 0x94);
+    *b = down_ok ? *b & 0xffbfffff : *b | 0x400000;
+    return *b;
+}
+static const uint8_t window_mode_6a7df0_original[] = {0x8b, 0x81, 0xf0, 0x00, 0x00, 0x00, 0x48, 0x53, 0x55, 0x56};
+REWRITE("Window::Mode6A7DF0", 0x6a7df0, window_mode_6a7df0_original, &window_mode_6a7df0, &g_spinner_greys);

@@ -6084,4 +6084,111 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                },
                                [](void *fn) { return Result{(uint32_t)((int32_t(__fastcall *)(const void *, const void *, const void *, const void *))fn)(arena<void>(0x60), arena<void>(0x6c), arena<void>(0x200), arena<void>(0x40))}; }};
     quick(vector_compare_cdf200);
+    // Person::Points7E6C20: heaps of 1-12 item numbers over 12 items with small whole keys (ties)
+    Test person_points_7e6c20{0x7e6c20,
+                              [=](Rng &r) {
+                                  uint32_t *self = arena<uint32_t>(0x100);
+                                  self[0] = (uint32_t)(uintptr_t)arena<void>(0x200), self[2] = r.range(1, 12);
+                                  *arena<uint32_t>(0x110) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  for (int j = 0; j < 12; j++) {
+                                      arena<uint32_t>(0x200)[j] = r.range(0, 11);
+                                      arena<float>(0x408 + j * 20)[0] = r.range(0, 1) ? (float)r.range(0, 4) : r.real(0, 4);
+                                  }
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x110));
+                                  return Result{0};
+                              }};
+    quick(person_points_7e6c20);
+    // Terrain::Cell8BCE50: grids of 1-5 by 1-5 cells, points on every edge and inside, all four corners
+    Test terrain_cell_8bce50{0x8bce50,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 self[4] = (uint8_t)r.range(1, 5), self[5] = (uint8_t)r.range(1, 5);
+                                 for (int k = 0; k < 4; k++) *(float *)(self + 0xc + k * 4) = r.real(-50, 50);
+                                 *(float *)(self + 0x14) = r.real(0.5f, 8), *(float *)(self + 0x18) = r.real(0.5f, 8);
+                                 *(uint32_t *)(self + 0x24) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 for (int k = 0; k < 25 * 6; k++) arena<uint32_t>(0x400)[k] = r.next();
+                                 for (int k = 0; k < 16; k++) arena<uint32_t>(0x200)[k] = r.next();
+                                 arena<uint32_t>(0x40)[0] = r.range(0, self[4] + 1), arena<uint32_t>(0x40)[1] = r.range(0, self[5] + 1);
+                                 arena<uint32_t>(0x40)[2] = r.range(0, 3) | (r.next() & 0xfc);
+                             },
+                             [](void *fn) {
+                                 const uint32_t *a = arena<uint32_t>(0x40);
+                                 return Result{(uint32_t)((int32_t(__thiscall *)(const void *, void *, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<void>(0x200), a[0], a[1], a[2])};
+                             }};
+    quick(terrain_cell_8bce50);
+    // Water::Value9061C0: grids 4-8 wide of random values, columns of 0-6 rows from any place
+    Test water_value_9061c0{0x9061c0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                const int w = r.range(4, 8);
+                                *(int32_t *)(self + 4) = w;
+                                *(uint32_t *)(self + 0x48) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                *(uint32_t *)(self + 0x4c) = (uint32_t)(uintptr_t)arena<void>(0x600);
+                                *(uint32_t *)(self + 0x50) = (uint32_t)(uintptr_t)arena<void>(0x800);
+                                for (int k = 0; k < 0x80; k++) arena<float>(0x400)[k] = r.real(-10, 10);
+                                arena<int32_t>(0x40)[0] = r.range(0, w - 1), arena<int32_t>(0x40)[1] = r.range(0, 2), arena<int32_t>(0x40)[2] = r.range(-1, 6);
+                            },
+                            [](void *fn) {
+                                const int32_t *a = arena<int32_t>(0x40);
+                                Result x;
+                                x.f = ((long double(__thiscall *)(const void *, int32_t, int32_t, int32_t))fn)(arena<void>(0x100), a[0], a[1], a[2]);
+                                return x;
+                            }};
+    quick(water_value_9061c0);
+    // Water::Range95F910: boxes of 0-7 by 0-7 pixels (empty or backwards at times) in a 10-wide image of random pixels
+    // (pixels in ecx, width in edx)
+    Test water_range_95f910{0x95f910,
+                            [=](Rng &r) {
+                                for (int k = 0; k < 100; k++) arena<uint32_t>(0x400)[k] = r.next();
+                                int32_t *a = arena<int32_t>(0x40);
+                                a[0] = r.range(0, 3), a[1] = a[0] + r.range(-1, 7), a[2] = r.range(0, 2), a[3] = a[2] + r.range(-1, 7);
+                            },
+                            [](void *fn) {
+                                const int32_t *a = arena<int32_t>(0x40);
+                                ((void(__fastcall *)(void *, int32_t, int32_t, int32_t, int32_t, int32_t))fn)(arena<void>(0x400), 10, a[0], a[1], a[2], a[3]);
+                                return Result{0};
+                            }};
+    quick(water_range_95f910);
+    // Colour::Value6B5B90: random colours, greys and colours with two parts the same
+    Test colour_value_6b5b90{0x6b5b90,
+                             [=](Rng &r) {
+                                 uint32_t c = r.next();
+                                 const int kind = r.range(0, 5);
+                                 const uint32_t v = c & 0xff;
+                                 if (kind == 0) c = (c & 0xff000000) | v << 16 | v << 8 | v;
+                                 else if (kind == 1) c = (c & 0xff00ffff) | v << 16;
+                                 else if (kind == 2) c = (c & 0xffff00ff) | v << 8;
+                                 else if (kind == 3) c = (c & 0xff00ffff) | (c & 0xff00) << 8;
+                                 arena<uint32_t>(0x40)[0] = c;
+                             },
+                             [](void *fn) {
+                                 Result x;
+                                 x.f = ((long double(__stdcall *)(uint32_t))fn)(arena<uint32_t>(0x40)[0]);
+                                 return x;
+                             }};
+    quick(colour_value_6b5b90);
+    // Window::Mode6A7DF0: modes 0-4, values below, at and past the ends by small steps, value missing at times
+    Test window_mode_6a7df0{0x6a7df0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                *(int32_t *)(self + 0xf0) = r.range(0, 4);
+                                *(uint32_t *)(self + 0xf4) = r.range(0, 7) ? (uint32_t)(uintptr_t)arena<void>(0x40) : 0;
+                                *(uint32_t *)(self + 0xdc) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                *(uint32_t *)(self + 0xe0) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                *(uint32_t *)arena<uint8_t>(0x394) = r.next(), *(uint32_t *)arena<uint8_t>(0x494) = r.next();
+                                const int lo = r.range(0, 10), hi = lo + r.range(0, 20), step = r.range(0, 4), v = r.range(lo - 3, hi + 3);
+                                if (*(int32_t *)(self + 0xf0) == 1) {
+                                    *(float *)(self + 0xf8) = (float)lo, *(float *)(self + 0xfc) = (float)hi;
+                                    *(float *)(self + 0x100) = r.range(0, 1) ? (float)step : r.real(0, 4);
+                                    arena<float>(0x40)[0] = r.range(0, 1) ? (float)v : r.real(lo - 3, hi + 3);
+                                } else {
+                                    *(int32_t *)(self + 0xf8) = lo, *(int32_t *)(self + 0xfc) = hi, *(int32_t *)(self + 0x100) = step;
+                                    if (*(int32_t *)(self + 0xf0) == 3) self[0xf9] = (uint8_t)hi, self[0xfa] = (uint8_t)step;
+                                    arena<int32_t>(0x40)[0] = v < 0 ? v + 3 : v;
+                                }
+                            },
+                            [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *))fn)(arena<void>(0x100))}; }};
+    quick(window_mode_6a7df0);
 #endif

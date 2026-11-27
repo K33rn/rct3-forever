@@ -6909,7 +6909,7 @@ address,size,name,callers,status
 0x6a7c70,50,Flags::SetVisible6A7C70,4,rewritten
 0x6a7cb0,50,Flags::SetVisible6A7C70,3,rewritten
 0x6a7da0,72,Window::Mode6A7DA0,4,rewritten
-0x6a7df0,282,,5,documented
+0x6a7df0,282,Window::Mode6A7DF0,5,rewritten
 0x6a7fc0,387,,2,documented
 0x6a8160,30,DeletingDestructor,2,rewritten
 0x6a8180,74,Shared::AssignAt615D70,1,rewritten
@@ -7113,7 +7113,7 @@ address,size,name,callers,status
 0x6b58c0,29,,3,documented
 0x6b5920,48,QueryInterface,3,rewritten
 0x6b5a60,146,Destructor::Steps,1,rewritten
-0x6b5b90,375,,2,documented
+0x6b5b90,375,Colour::Value6B5B90,2,rewritten
 0x6b5d10,425,Colour::Make6B5D10,2,rewritten
 0x6b5f40,66,,0,documented
 0x6b5fb0,227,,0,documented
@@ -10087,7 +10087,7 @@ address,size,name,callers,status
 0x7e69c0,115,,0,documented
 0x7e6a40,308,,3,documented
 0x7e6b80,29,Object::CondCallSet,0,rewritten
-0x7e6c20,331,,0,documented
+0x7e6c20,331,Person::Points7E6C20,0,rewritten
 0x7e6d70,87,Holder::Construct7E6D70,1,rewritten
 0x7e6dd0,204,,0,documented
 0x7e6ea0,96,,24,documented
@@ -12236,7 +12236,7 @@ address,size,name,callers,status
 0x8bc700,789,,3,documented
 0x8bca20,610,,1,documented
 0x8bcc90,261,Grid::CellAt,236,rewritten
-0x8bce50,287,,2,documented
+0x8bce50,287,Terrain::Cell8BCE50,2,rewritten
 0x8bcf80,109,Terrain::CellHeightRange,43,rewritten
 0x8bcff0,83,Rect::GrowByOne,11,rewritten
 0x8bd050,1365,,0,documented
@@ -12780,7 +12780,7 @@ address,size,name,callers,status
 0x905fe0,26,OwnedPointer::Reset,1,rewritten
 0x906000,164,Array<20>::SetCapacity,1,rewritten
 0x9060f0,204,Water::Value9060F0,1,rewritten
-0x9061c0,306,,1,documented
+0x9061c0,306,Water::Value9061C0,1,rewritten
 0x906300,1603,,1,documented
 0x906950,2759,,1,documented
 0x907440,447,Water::Range907440,1,rewritten
@@ -13409,7 +13409,7 @@ address,size,name,callers,status
 0x95f3d0,184,,2,documented
 0x95f550,26,Object::FreeTwoFields,0,rewritten
 0x95f650,613,,1,documented
-0x95f910,327,,0,documented
+0x95f910,327,Water::Range95F910,0,rewritten
 0x95fa60,62,,2,documented
 0x95faa0,570,Mesh::ComputeNormals,2,rewritten
 0x95fce0,1870,,1,documented
