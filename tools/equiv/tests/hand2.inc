@@ -3964,4 +3964,186 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
         x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10eca14 = saved_list, *(uint32_t *)0x12f0140 = saved_count; };
         t.push_back(x);   // (its writes are game globals: the data section is compared)
     }
+    // Rides::Pass50EDB0: 0-5 entries, the part's byte +9 0, 1 or more
+    Test rides_pass_50edb0{0x50edb0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x1000);
+                               *(int32_t *)(self + 0x8c0) = r.range(0, 9) ? r.range(0, 5) : -1;
+                               *(uint32_t *)(self + 0x8c4) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               *(uint32_t *)(self + 0x414) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                               for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x400)[i] = r.next();
+                               arena<uint8_t>(0x200)[9] = (uint8_t)r.range(0, 3);
+                               *(uint32_t *)arena<uint8_t>(0x30c) = r.next();
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(const void *))fn)(arena<void>(0x1000));
+                               return Result{0};
+                           }};
+    quick(rides_pass_50edb0);
+    // Park::Pass7575E0: 0-5 entries with keys from a few (counts 1-4), n of either sign
+    Test park_pass_7575e0{0x7575e0,
+                          [=](Rng &r) {
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              *(int32_t *)(self + 0xa4) = r.range(0, 9) ? r.range(0, 5) : -1;
+                              *(uint32_t *)(self + 0xa8) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                              for (int k = 0; k < 5; k++) {
+                                  uint32_t *e = arena<uint32_t>(0x200 + k * 12);
+                                  e[0] = r.range(0, 4), e[1] = r.range(1, 4), e[2] = (uint32_t)(uintptr_t)arena<void>(0x300 + k * 0x10);
+                              }
+                              for (int i = 0; i < 20; i++) arena<uint32_t>(0x300)[i] = r.next();
+                              arena<uint32_t>(0x40)[0] = r.range(0, 5), arena<int32_t>(0x40)[1] = r.range(-20, 20);
+                          },
+                          [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, uint32_t, int32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<int32_t>(0x40)[1])}; }};
+    quick(park_pass_7575e0);
+    // Rides::Pass4CC830: 0-4 entries in use among 8 (the count never more than are in use)
+    Test rides_pass_4cc830{0x4cc830,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(uint32_t *)(self + 0x94) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               int used = 0;
+                               for (int i = 0; i < 8 * 11; i++) arena<uint32_t>(0x400)[i] = r.next();
+                               for (int k = 0; k < 8; k++) {
+                                   const bool on = r.range(0, 1);
+                                   arena<uint8_t>(0x400 + k * 0x2c)[0] = on ? (uint8_t)r.range(1, 255) : 0;
+                                   used += on;
+                               }
+                               *(int32_t *)(self + 0x9c) = r.range(0, 9) ? r.range(0, used) : -1;
+                               arena<int32_t>(0x40)[0] = r.range(-50, 50), arena<int32_t>(0x40)[1] = r.range(-50, 50);
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(const void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1]);
+                               return Result{0};
+                           }};
+    quick(rides_pass_4cc830);
+    // Table::StepCA84A0: signed bounds (crossed at times), fractions past both ends
+    Test table_step_ca84a0{0xca84a0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)arena<void>(0x140);
+                               *(int32_t *)(self + 8) = r.range(0, 2) ? r.range(-500, 500) : (int32_t)r.next() >> 2;
+                               *(int32_t *)(self + 0xc) = r.range(0, 2) ? r.range(-500, 500) : (int32_t)r.next() >> 2;
+                               arena<uint32_t>(0x140)[0] = r.next();
+                               arena<float>(0x40)[0] = r.real(-0.3f, 1.3f);
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(const void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                               return Result{0};
+                           }};
+    quick(table_step_ca84a0);
+    // Effect::Pass412EA0: 32 slots (some empty) with keys from a few, the key there or not
+    Test effect_pass_412ea0{0x412ea0,
+                            [=](Rng &r) {
+                                *(uint32_t *)arena<uint8_t>(0x104) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                for (int k = 0; k < 32; k++) {
+                                    arena<uint32_t>(0x200)[k] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0x60) : 0;
+                                    uint8_t *e = arena<uint8_t>(0x400 + k * 0x60);
+                                    *(uint32_t *)(e + 0x50) = r.range(0, 40);
+                                    *(uint32_t *)(e + 0x30) = (uint32_t)(uintptr_t)arena<void>(0x1400 + k * 0x20);
+                                    uint32_t *head = arena<uint32_t>(0x1400 + k * 0x20);
+                                    head[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)(head + 4) : (uint32_t)(uintptr_t)head;
+                                    head[1] = r.next(), head[4] = r.next(), head[5] = r.next();
+                                }
+                                for (int i = 0; i < 4; i++) arena<uint32_t>(0x60)[i] = r.next();
+                                arena<uint32_t>(0x40)[0] = r.range(0, 40);
+                            },
+                            [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x60), arena<uint32_t>(0x40)[0])}; }};
+    quick(effect_pass_412ea0);
+    // Animals::PassA5B970: 0-4 groups of 0-4 items (bits 0-40, past 31 at times)
+    Test animals_pass_a5b970{0xa5b970,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(int32_t *)(self + 0x64) = r.range(0, 9) ? r.range(0, 4) : -1;
+                                 *(uint32_t *)(self + 0x68) = r.next();
+                                 *(uint32_t *)(self + 0x60) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                 for (int g = 0; g < 4; g++) {
+                                     arena<uint32_t>(0x200)[g * 2] = (uint32_t)(uintptr_t)arena<void>(0x300 + g * 0x10);
+                                     arena<uint32_t>(0x200)[g * 2 + 1] = r.range(0, 4);
+                                 }
+                                 for (int i = 0; i < 16; i++) arena<uint32_t>(0x300)[i] = r.range(0, 40);
+                             },
+                             [](void *fn) {
+                                 ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                                 return Result{0};
+                             }};
+    quick(animals_pass_a5b970);
+    // Scenery::Count880F60: counts reaching 0 or not, a part with +0x64 set or not, or none; the game's list set (and its
+    // value), put back after
+    {
+        static uint32_t saved_value, saved_list;
+        Test x{0x880f60,
+               [=](Rng &r) {
+                   *(uint32_t *)0x10f0a28 = r.next();
+                   uint32_t *head = arena<uint32_t>(0x300), *first = arena<uint32_t>(0x340);
+                   *(uint32_t *)0x10f0a44 = (uint32_t)(uintptr_t)head;
+                   head[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)first : (uint32_t)(uintptr_t)head;
+                   head[1] = r.next(), first[0] = r.next(), first[1] = r.next();
+                   uint8_t *self = arena<uint8_t>(0x1000);
+                   for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x1000 + 0xc0)[i] = r.next();
+                   *(int32_t *)(self + 0xe0) = r.range(0, 2);
+                   *(uint32_t *)(self + 0xcc) = r.range(0, 4) ? (uint32_t)(uintptr_t)arena<void>(0x200) : 0;
+                   *(uint32_t *)arena<uint8_t>(0x264) = r.range(0, 3) ? r.next() | 1 : 0;
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *))fn)(arena<void>(0x1000));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_value = *(uint32_t *)0x10f0a28, saved_list = *(uint32_t *)0x10f0a44; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10f0a28 = saved_value, *(uint32_t *)0x10f0a44 = saved_list; };
+        quick(x);
+    }
+    // Resource::CheckC3ACE0: n from -3 to past the count, random bits, the byte 0 or not
+    Test resource_check_c3ace0{0xc3ace0,
+                               [=](Rng &r) {
+                                   uint8_t *self = arena<uint8_t>(0x100);
+                                   *(int32_t *)(self + 0x2c) = r.range(0, 70);
+                                   *(uint32_t *)(self + 0x88) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                   self[0xa0] = r.range(0, 1) ? 0 : (uint8_t)r.range(1, 255);
+                                   for (int i = 0; i < 3; i++) arena<uint32_t>(0x200)[i] = r.next();
+                                   arena<int32_t>(0x40)[0] = r.range(-3, 75);
+                               },
+                               [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0]) & 0xff}; }};
+    quick(resource_check_c3ace0);
+    // Car::Mode50AF10: modes 2-4
+    Test car_mode_50af10{0x50af10,
+                         [=](Rng &r) {
+                             *(int32_t *)arena<uint8_t>(0x1c8 + 0x100) = r.range(2, 4);
+                             for (int i = 0; i < 3; i++) arena<uint32_t>(0x1f0 + 0x100)[i] = r.next(), arena<uint32_t>(0x40)[i] = r.next();
+                         },
+                         [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    quick(car_mode_50af10);
+    // Window::Flag6809F0: values either side, modes 0-4
+    Test window_flag_6809f0{0x6809f0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x1000);
+                                *(float *)(self + 0x358) = r.real(-5, 5), *(int32_t *)(self + 0x354) = r.range(0, 4);
+                                *(uint32_t *)arena<uint8_t>(0x294) = r.next();
+                                arena<float>(0x40)[0] = r.real(-5, 5);
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, void *, float))fn)(arena<void>(0x1000), arena<void>(0x200), arena<float>(0x40)[0]);
+                                return Result{0};
+                            }};
+    quick(window_flag_6809f0);
+    // Device::SharedC08890: the game's once bit set or not (the shared list compared, all put back after)
+    {
+        static uint32_t saved[7];
+        Test x{0xc08890,
+               [=](Rng &r) { for (int i = 0; i < 7; i++) ((uint32_t *)0x13d3280)[i] = r.next(); },
+               [](void *fn) { return Result{((uint32_t(__stdcall *)())fn)()}; }};
+        x.prepare = [](const rewrite::Entry *) { memcpy(saved, (void *)0x13d3280, 28); };
+        x.finish = [](const rewrite::Entry *) { memcpy((void *)0x13d3280, saved, 28); };
+        t.push_back(x);
+    }
+    // Text::ParseC099A0: texts of 0-40 bytes appended at any place
+    Test text_parse_c099a0{0xc099a0,
+                           [=](Rng &r) {
+                               *(uint32_t *)arena<uint8_t>(0x1000 + 0x1010) = r.range(0, 0x100);
+                               for (int i = 0; i < 0x50; i++) arena<uint32_t>(0x1010)[i] = r.next();
+                               const int n = r.range(0, 40);
+                               char *s = arena<char>(0x200);
+                               for (int i = 0; i < n; i++) s[i] = (char)r.range(1, 255);
+                               s[n] = 0;
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const char *))fn)(arena<void>(0x1000), arena<char>(0x200))}; }};
+    quick(text_parse_c099a0);
 #endif

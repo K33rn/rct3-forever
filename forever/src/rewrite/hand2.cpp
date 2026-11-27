@@ -6832,3 +6832,194 @@ static void __fastcall labels_count_475da0(uint32_t on) {
 }
 static const uint8_t labels_count_475da0_original[] = {0x8b, 0x15, 0x40, 0x01, 0x2f, 0x01, 0x33, 0xc0, 0x84, 0xc9};
 REWRITE("Labels::Count475DA0", 0x475da0, labels_count_475da0_original, &labels_count_475da0, &g_label_counts);
+
+// ---- Rides::Pass50EDB0 (0x50EDB0): each entry's (0x14 bytes at +0x8C4, count +0x8C0 read again each time) +0x10 = the
+// part's (+0x414) +0x10C, or 0 when its byte +9 is 0 or 1 -----------------------------------------------------------------
+static volatile long g_ride_fills;
+static void __thiscall rides_pass_50edb0(const uint8_t *self) {
+    g_ride_fills++;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x8c0); i++) {
+        const uint8_t *const p = *(const uint8_t *const *)(self + 0x414);
+        const uint32_t v = p[9] <= 1 ? 0 : *(const uint32_t *)(p + 0x10c);
+        *(uint32_t *)(*(uint8_t *const *)(self + 0x8c4) + i * 0x14 + 0x10) = v;
+    }
+}
+static const uint8_t rides_pass_50edb0_original[] = {0x8b, 0x81, 0xc0, 0x08, 0x00, 0x00, 0x56, 0x33, 0xf6};
+REWRITE("Rides::Pass50EDB0", 0x50edb0, rides_pass_50edb0_original, &rides_pass_50edb0, &g_ride_fills);
+
+// ---- Park::Pass7575E0(key, n) (0x7575E0): the entry (12 bytes at +0xA8, count +0xA4) with key: its list's (+8) item
+// n % its count (+4; signed), or 0 when there is none -------------------------------------------------------------------
+static volatile long g_park_cycles;
+static uint32_t __thiscall park_pass_7575e0(const uint8_t *self, uint32_t key, int32_t n) {
+    g_park_cycles++;
+    const int32_t count = *(const int32_t *)(self + 0xa4);
+    const uint32_t *const list = *(const uint32_t *const *)(self + 0xa8);
+    for (int32_t i = 0; i < count; i++) {
+        const uint32_t *const e = list + i * 3;
+        if (e[0] == key) return ((const uint32_t *)(uintptr_t)e[2])[n % (int32_t)e[1]];
+    }
+    return 0;
+}
+static const uint8_t park_pass_7575e0_original[] = {0x56, 0x8b, 0xb1, 0xa4, 0x00, 0x00, 0x00, 0x33, 0xc0};
+REWRITE("Park::Pass7575E0", 0x7575e0, park_pass_7575e0_original, &park_pass_7575e0, &g_park_cycles);
+
+// ---- Rides::Pass4CC830(a, b) (0x4CC830): moves the entries in use by a, b ---------------------------------------------
+// Entries of 0x2C bytes (+0x94), used when their byte +0 is set; +0x9C (read again each time) of them get +8 += a and
+// +0xC += b (the game goes on until it has found that many).
+static volatile long g_ride_shifts;
+static void __thiscall rides_pass_4cc830(const uint8_t *self, int32_t a, int32_t b) {
+    g_ride_shifts++;
+    if (*(const int32_t *)(self + 0x9c) <= 0) return;
+    int32_t found = 0;
+    for (uint32_t off = 0; found < *(const volatile int32_t *)(self + 0x9c); off += 0x2c) {
+        uint8_t *const e = *(uint8_t *const *)(self + 0x94) + off;
+        if (!*e) continue;
+        *(int32_t *)(e + 8) += a;
+        *(int32_t *)(e + 0xc) += b;
+        found++;
+    }
+}
+static const uint8_t rides_pass_4cc830_original[] = {0x8b, 0x81, 0x9c, 0x00, 0x00, 0x00, 0x56, 0x33, 0xf6};
+REWRITE("Rides::Pass4CC830", 0x4cc830, rides_pass_4cc830_original, &rides_pass_4cc830, &g_ride_shifts);
+
+// ---- Table::StepCA84A0(f) (0xCA84A0): as the slider setters for a signed whole number: (max - min) f + min rounded by
+// the FPU, kept within min (+8)..max (+0xC), into +4's number ------------------------------------------------------------
+static volatile long g_int_sliders;
+static void __thiscall table_step_ca84a0(const uint8_t *self, float f) {
+    g_int_sliders++;
+    const int32_t lo = *(const int32_t *)(self + 8), hi = *(const int32_t *)(self + 0xc);
+    int32_t v = (int32_t)x87_fistp64_h2((long double)(int32_t)((uint32_t)hi - (uint32_t)lo) * f + (long double)lo);
+    if (lo > v) v = lo;
+    **(int32_t *const *)(self + 4) = hi < v ? hi : v;
+}
+static const uint8_t table_step_ca84a0_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x51, 0x0c, 0x8b, 0x41, 0x08, 0x56};
+REWRITE("Table::StepCA84A0", 0xca84a0, table_step_ca84a0_original, &table_step_ca84a0, &g_int_sliders);
+
+// ---- Effect::Pass412EA0(to, key) (0x412EA0): ties to to the first of 32 effects (+4) whose +0x50 is key -----------------
+// to's node (+8) goes at the front of the effect's list (+0x30) and to's +4 = the effect; gives the node, or 32 when
+// none has the key.
+static volatile long g_effect_ties;
+static uint32_t __thiscall effect_pass_412ea0(const uint8_t *self, uint32_t *to, uint32_t key) {
+    g_effect_ties++;
+    const uint32_t *const slots = *(const uint32_t *const *)(self + 4);
+    int32_t i = 0;
+    for (; i < 32; i++)
+        if (slots[i] && *(const uint32_t *)(uintptr_t)(slots[i] + 0x50) == key) break;
+    if (i == 32) return 32;
+    const uint32_t e = slots[i];
+    uint32_t *const head = *(uint32_t *const *)(uintptr_t)(e + 0x30), *const node = to + 2;
+    node[0] = head[0];
+    ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)node;
+    node[1] = (uint32_t)(uintptr_t)head;
+    head[0] = (uint32_t)(uintptr_t)node;
+    to[1] = e;
+    return (uint32_t)(uintptr_t)node;
+}
+static const uint8_t effect_pass_412ea0_original[] = {0x56, 0x8b, 0x71, 0x04, 0x57, 0x8b, 0x7c, 0x24, 0x10};
+REWRITE("Effect::Pass412EA0", 0x412ea0, effect_pass_412ea0_original, &effect_pass_412ea0, &g_effect_ties);
+
+// ---- Animals::PassA5B970 (0xA5B970): +0x68 = the bits (1 << each) of every item of every group {items, count} (+0x60,
+// count +0x64; counts read again each time) ------------------------------------------------------------------------------
+static volatile long g_animal_masks;
+static void __thiscall animals_pass_a5b970(uint8_t *self) {
+    g_animal_masks++;
+    volatile uint32_t *const mask = (volatile uint32_t *)(self + 0x68);
+    *mask = 0;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 0x64); i++)
+        for (int32_t j = 0; j < (int32_t)(*(const uint32_t *const volatile *)(self + 0x60))[i * 2 + 1]; j++)
+            *mask |= 1u << (((const uint32_t *)(uintptr_t)(*(const uint32_t *const *)(self + 0x60))[i * 2])[j] & 31);
+}
+static const uint8_t animals_pass_a5b970_original[] = {0x8b, 0xc1, 0x8b, 0x48, 0x64, 0x56, 0x33, 0xf6, 0x3b, 0xce};
+REWRITE("Animals::PassA5B970", 0xa5b970, animals_pass_a5b970_original, &animals_pass_a5b970, &g_animal_masks);
+
+// ---- Scenery::Count880F60 (0x880F60): as WildAnimal::CountB33390 with the count +0xE0, part +0xCC (its +0x64), the
+// game's 0x10F0A28 into +0xE4 and the node +0xE8 put at the front of the game's list 0x10F0A44 ---------------------------
+static volatile long g_scenery_counts;
+static void __thiscall scenery_count_880f60(uint8_t *self) {
+    g_scenery_counts++;
+    const int32_t c = --*(int32_t *)(self + 0xe0);
+    const uint8_t *const part = *(const uint8_t *const *)(self + 0xcc);
+    if (!part || !*(const uint32_t *)(part + 0x64) || c) return;
+    *(uint32_t *)(self + 0xe4) = *(const volatile uint32_t *)0x10f0a28;
+    uint32_t *const node = (uint32_t *)(self + 0xe8), *const head = *(uint32_t *const volatile *)0x10f0a44;
+    node[0] = head[0];
+    ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)node;
+    node[1] = (uint32_t)(uintptr_t)head;
+    head[0] = (uint32_t)(uintptr_t)node;
+}
+static const uint8_t scenery_count_880f60_original[] = {0x8b, 0x81, 0xe0, 0x00, 0x00, 0x00, 0x48, 0x89, 0x81, 0xe0, 0x00, 0x00, 0x00};
+REWRITE("Scenery::Count880F60", 0x880f60, scenery_count_880f60_original, &scenery_count_880f60, &g_scenery_counts);
+
+// ---- Resource::CheckC3ACE0(n) (0xC3ACE0) ---------------------------------------------------------------------------
+// 0 (only al) for -1; for 0..+0x2C - 1 bit n of the words at +0x88 (as 0 or 1); otherwise 1 when byte +0xA0 is 0
+// (only al).
+static volatile long g_resource_checks;
+static uint32_t __thiscall resource_check_c3ace0(const uint8_t *self, int32_t n) {
+    g_resource_checks++;
+    if (n == -1) return 0;
+    if (n > -1 && n < *(const int32_t *)(self + 0x2c))
+        return ((*(const uint32_t *const *)(self + 0x88))[n >> 5] >> (n & 31)) & 1;
+    return self[0xa0] == 0;
+}
+static const uint8_t resource_check_c3ace0_original[] = {0x8b, 0x44, 0x24, 0x04, 0x83, 0xf8, 0xff, 0x75, 0x05};
+REWRITE("Resource::CheckC3ACE0", 0xc3ace0, resource_check_c3ace0_original, &resource_check_c3ace0, &g_resource_checks);
+
+// ---- Car::Mode50AF10(out) (0x50AF10): +0x1F0's three dwords in mode 3 (+0x1C8), else zeros. Gives out. ----------------
+static volatile long g_car_modes;
+static uint32_t *__thiscall car_mode_50af10(const uint8_t *self, uint32_t *out) {
+    g_car_modes++;
+    if (*(const int32_t *)(self + 0x1c8) == 3) {
+        const uint32_t *const v = (const uint32_t *)(self + 0x1f0);
+        out[0] = v[0], out[1] = v[1], out[2] = v[2];
+    } else
+        out[0] = out[1] = out[2] = 0;
+    return out;
+}
+static const uint8_t car_mode_50af10_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0x83, 0xb9, 0xc8, 0x01, 0x00, 0x00, 0x03};
+REWRITE("Car::Mode50AF10", 0x50af10, car_mode_50af10_original, &car_mode_50af10, &g_car_modes);
+
+// ---- Window::Flag6809F0(part, v) (0x6809F0): part's +0x94 gets 0x80000; +0x358 = v when below it; a mode (+0x354) of
+// 0 or 3 becomes 1 ---------------------------------------------------------------------------------------------------
+static volatile long g_window_flags;
+static void __thiscall window_flag_6809f0(uint8_t *self, uint8_t *part, float v) {
+    g_window_flags++;
+    *(uint32_t *)(part + 0x94) |= 0x80000;
+    if (*(const float *)(self + 0x358) < v) *(float *)(self + 0x358) = v;
+    int32_t *const mode = (int32_t *)(self + 0x354);
+    if (*mode == 0 || *mode == 3) *mode = 1;
+}
+static const uint8_t window_flag_6809f0_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x90, 0x94, 0x00, 0x00, 0x00};
+REWRITE("Window::Flag6809F0", 0x6809f0, window_flag_6809f0_original, &window_flag_6809f0, &g_window_flags);
+
+// ---- Device::SharedC08890 (0xC08890): the game's shared list at 0x13D3280, set up once (bit 0 of 0x13D3298) ------------
+// {first = its end node 0x13D328C, 0, .., end {0, ..}, place = the list, 0}. Gives the list.
+static volatile long g_device_shareds;
+static uint32_t __stdcall device_shared_c08890() {
+    g_device_shareds++;
+    volatile uint32_t *const g = (volatile uint32_t *)0x13d3280;   // g[6] is 0x13D3298
+    if (!(g[6] & 1)) {
+        g[6] |= 1;
+        g[2] = 0, g[5] = 0, g[1] = 0;
+        g[0] = 0x13d328c;
+        g[4] = 0x13d3280;
+        g[3] = 0;
+    }
+    return 0x13d3280;
+}
+static const uint8_t device_shared_c08890_original[] = {0x8a, 0x0d, 0x98, 0x32, 0x3d, 0x01, 0xb8, 0x01, 0x00, 0x00, 0x00};
+REWRITE("Device::SharedC08890", 0xc08890, device_shared_c08890_original, &device_shared_c08890, &g_device_shareds);
+
+// ---- Text::ParseC099A0(s) (0xC099A0): appends s with its 0 to the buffer (+0x10, used +0x1010). Gives where it went. ---
+static volatile long g_text_appends;
+static uint8_t *__thiscall text_parse_c099a0(uint8_t *self, const char *s) {
+    g_text_appends++;
+    uint32_t n = 0;
+    while (s[n]) n++;
+    n++;
+    uint8_t *const to = self + 0x10 + *(const uint32_t *)(self + 0x1010);
+    for (uint32_t i = 0; i < n; i++) to[i] = (uint8_t)s[i];
+    *(uint32_t *)(self + 0x1010) += n;
+    return to;
+}
+static const uint8_t text_parse_c099a0_original[] = {0x53, 0x55, 0x56, 0x8b, 0x74, 0x24, 0x10, 0x8b, 0xc6, 0x57};
+REWRITE("Text::ParseC099A0", 0xc099a0, text_parse_c099a0_original, &text_parse_c099a0, &g_text_appends);

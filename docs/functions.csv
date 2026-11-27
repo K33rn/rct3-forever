@@ -282,7 +282,7 @@ address,size,name,callers,status
 0x410d50,244,,32,documented
 0x410ed0,8107,Cheats::Init,1,rewritten
 0x412e80,30,DeletingDestructor,1,rewritten
-0x412ea0,76,,1,documented
+0x412ea0,76,Effect::Pass412EA0,1,rewritten
 0x412ef0,1747,,2,documented
 0x413650,46,,27,documented
 0x413680,59,Listener::~Listener(quiet),57,rewritten
@@ -2535,7 +2535,7 @@ address,size,name,callers,status
 0x4cc5d0,26,OwnedPointer::Reset,1,rewritten
 0x4cc5f0,130,Array<4>::SetCapacity,1,rewritten
 0x4cc710,262,,1,documented
-0x4cc830,75,,4,documented
+0x4cc830,75,Rides::Pass4CC830,4,rewritten
 0x4cc880,108,Entries::FindByKey,12,rewritten
 0x4cc8f0,41,,1,documented
 0x4cc919,342,,1,documented
@@ -3089,7 +3089,7 @@ address,size,name,callers,status
 0x50aba0,48,QueryInterface,0,rewritten
 0x50ade0,48,QueryInterface,7,rewritten
 0x50aeb0,48,QueryInterface,0,rewritten
-0x50af10,77,Record::Fields,0,documented
+0x50af10,77,Car::Mode50AF10,0,rewritten
 0x50b010,48,QueryInterface,0,rewritten
 0x50b040,48,QueryInterface,1,rewritten
 0x50b130,152,,0,documented
@@ -3152,7 +3152,7 @@ address,size,name,callers,status
 0x50e730,584,,1,documented
 0x50e980,428,,5,documented
 0x50eb50,475,,1,documented
-0x50edb0,74,,1,documented
+0x50edb0,74,Rides::Pass50EDB0,1,rewritten
 0x50ee00,30,DeletingDestructor,0,rewritten
 0x50ee20,59,Pair::Release50C090,5,rewritten
 0x50f0d0,51,ListNode::Unlink,1,rewritten
@@ -6493,7 +6493,7 @@ address,size,name,callers,status
 0x680890,27,GlobalCleanup,1,rewritten
 0x6808f0,162,,1,documented
 0x6809a0,68,,2,documented
-0x6809f0,77,,2,documented
+0x6809f0,77,Window::Flag6809F0,2,rewritten
 0x680a40,32,,1,documented
 0x680a90,29,,2,documented
 0x680ab0,63,Window::Ring680AB0,8,rewritten
@@ -8829,7 +8829,7 @@ address,size,name,callers,status
 0x757520,59,Listener::~Listener(quiet),6,rewritten
 0x757560,30,DeletingDestructor,3,rewritten
 0x757580,91,,1,documented
-0x7575e0,74,,1,documented
+0x7575e0,74,Park::Pass7575E0,1,rewritten
 0x757670,86,Named::Dtor757670,1,rewritten
 0x7576d0,60,Destructor::Steps,2,rewritten
 0x757710,18,Constructor::BaseAndTable,0,rewritten
@@ -11909,7 +11909,7 @@ address,size,name,callers,status
 0x87f8c0,132,Shared::Destroy87F8C0,1,rewritten
 0x87f950,965,Class::Construct,2,rewritten
 0x87fd50,4612,,1,documented
-0x880f60,76,,37,documented
+0x880f60,76,Scenery::Count880F60,37,rewritten
 0x880fb0,2370,,2,documented
 0x881900,630,,2,documented
 0x881b80,211,,1,documented
@@ -16003,7 +16003,7 @@ address,size,name,callers,status
 0xa5b830,194,Item::Enlist6203A0,2,rewritten
 0xa5b900,25,,2,documented
 0xa5b920,67,Window::FindA5B920,2,rewritten
-0xa5b970,76,,2,documented
+0xa5b970,76,Animals::PassA5B970,2,rewritten
 0xa5b9d0,30,DeletingDestructor,1,rewritten
 0xa5b9f0,62,,1,documented
 0xa5bcd0,237,StructArrayLoad,1,rewritten
@@ -20666,7 +20666,7 @@ address,size,name,callers,status
 0xc081e0,152,,0,documented
 0xc08310,688,,1,documented
 0xc08680,267,,1,documented
-0xc08890,77,,3,documented
+0xc08890,77,Device::SharedC08890,3,rewritten
 0xc089a0,252,,0,documented
 0xc08ba0,295,,0,documented
 0xc08dc0,596,,1,documented
@@ -20683,7 +20683,7 @@ address,size,name,callers,status
 0xc09670,148,,1,documented
 0xc09740,85,Scanner::FlushC09740,2,rewritten
 0xc097a0,26,,11,documented
-0xc099a0,77,,0,documented
+0xc099a0,77,Text::ParseC099A0,0,rewritten
 0xc09a20,161,,1,documented
 0xc09ae0,198,,0,documented
 0xc09bb0,18,,10,documented
@@ -21275,7 +21275,7 @@ address,size,name,callers,status
 0xc3abe0,4,,2,documented
 0xc3abf0,4,,9,documented
 0xc3ac00,206,,1,documented
-0xc3ace0,76,,5,documented
+0xc3ace0,76,Resource::CheckC3ACE0,5,rewritten
 0xc3ad30,56,,4,documented
 0xc3ad70,636,,2,documented
 0xc3aff0,179,,1,documented
@@ -22254,7 +22254,7 @@ address,size,name,callers,status
 0xca81b0,83,ByteSlider::SetValue,1,rewritten
 0xca82c0,88,ShortSlider::SetValue,1,rewritten
 0xca83d0,88,UShortSlider::SetValue,1,rewritten
-0xca84a0,75,,1,documented
+0xca84a0,75,Table::StepCA84A0,1,rewritten
 0xca8560,97,UIntSlider::SetValue,1,rewritten
 0xca8610,18,,2,documented
 0xca8630,39,Quad::ConstructCA8000,2,rewritten
