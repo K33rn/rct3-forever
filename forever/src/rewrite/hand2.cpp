@@ -8325,3 +8325,121 @@ static uint8_t __thiscall vertex_declaration_find_bdd180(const uint8_t *self, co
 }
 static const uint8_t vertex_declaration_find_bdd180_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x56, 0x57, 0x33, 0xd2};
 REWRITE("VertexDeclaration::FindBDD180", 0xbdd180, vertex_declaration_find_bdd180_original, &vertex_declaration_find_bdd180, &g_declaration_fits);
+
+// ---- TrackPiece::Compare5BF4A0(a, b) (0x5BF4A0): 1 (only al) when an item of the list at +0x304 that is on (byte +8)
+// has its value (+4) within a..b (put in order first); else 0 -----------------------------------------------------------
+static volatile long g_piece_ranges;
+static uint8_t __thiscall track_piece_compare_5bf4a0(const uint8_t *self, float a, float b) {
+    g_piece_ranges++;
+    if (a > b) {
+        const float t = b;
+        volatile float s = a;
+        b = s, a = t;
+    }
+    const uint32_t *p = *(const uint32_t *const *)(self + 0x304);
+    if (!p[0] || !p) return 0;
+    for (;;) {
+        const uint8_t *const item = (const uint8_t *)(uintptr_t)p[2];
+        const float v = *(const float *)(item + 4);
+        if (item[8] && v >= a && v <= b) return 1;
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return 0;
+    }
+}
+static const uint8_t track_piece_compare_5bf4a0_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x5c, 0x24, 0x08, 0xdf, 0xe0};
+REWRITE("TrackPiece::Compare5BF4A0", 0x5bf4a0, track_piece_compare_5bf4a0_original, &track_piece_compare_5bf4a0, &g_piece_ranges);
+
+// ---- Terrain::Inside7AE680(x, y) (0x7AE680): 1 (only al) when the byte cell x, y lies in the area {x0 +4, y0 +5, w +6,
+// h +7} (byte sums) and its byte in the rows at +8 (the last row first) is set; else 0 --------------------------------------
+static volatile long g_terrain_insides;
+static uint8_t __thiscall terrain_inside_7ae680(const uint8_t *self, uint32_t x_in, uint32_t y_in) {
+    g_terrain_insides++;
+    const uint8_t x = (uint8_t)x_in, y = (uint8_t)y_in, x0 = self[4], y0 = self[5], w = self[6];
+    const uint8_t ymax = (uint8_t)(self[7] + y0 - 1), xmax = (uint8_t)(w + x0 - 1);
+    if (x < x0 || x > xmax || y < y0 || y > ymax) return 0;
+    const uint8_t *const rows = *(const uint8_t *const *)(self + 8);
+    return rows[(uint32_t)(ymax - y) * w - x0 + x] ? 1 : 0;
+}
+static const uint8_t terrain_inside_7ae680_original[] = {0x51, 0x8a, 0x41, 0x07, 0x8a, 0x51, 0x04, 0x53, 0x8a, 0x59, 0x05};
+REWRITE("Terrain::Inside7AE680", 0x7ae680, terrain_inside_7ae680_original, &terrain_inside_7ae680, &g_terrain_insides);
+
+// ---- SortedShorts::Find(list, n) (0xBB6970): the place after the last number not above the key (+0x38) in a sorted list
+// of n words, searched from a guess (n times +0x2C, rounded by the FPU); a number equal to the key gives the place after
+// it (the game spins when the key is not below the last number) ---------------------------------------------------------
+static volatile long g_short_finds;
+static uint32_t __thiscall sorted_shorts_find(const uint8_t *self, const uint16_t *list, uint32_t n) {
+    g_short_finds++;
+    const uint16_t key = *(const uint16_t *)(self + 0x38);
+    uint32_t lo = 0, hi = n;
+    uint32_t i = (uint32_t)x87_fistp64_h2(fild_u32_h2(n) * *(const float *)(self + 0x2c));
+    for (;;) {
+        __asm__ volatile("" ::: "memory");
+        const uint16_t d = list[i];
+        if (d > key) {
+            if (!i || list[i - 1] <= key) return i;
+            hi = i;
+        } else if (d == key)
+            return i + 1;
+        else
+            lo = i;
+        i = (lo + hi) >> 1;
+    }
+}
+static const uint8_t sorted_shorts_find_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x10, 0x53, 0x56, 0x57};
+REWRITE("SortedShorts::Find", 0xbb6970, sorted_shorts_find_original, &sorted_shorts_find, &g_short_finds);
+
+// ---- Sound::MuteKind, Sound::UnmuteKind(kind in ecx, flag in dl) (0x47C3F0, 0x47C470) -----------------------------------
+// Mute counts one more mute on the kind (0x12F0168), 10000 with flag; Unmute one less, 0 with flag or below 0. Then each
+// sound on the kind's list (0x10EDD60) gets its volume again as Effects::Set47C4E0 gives it.
+static volatile long g_sound_mutes;
+static void sound_volumes_h2(uintptr_t k) {
+    const volatile float *const level = (const volatile float *)0x10edd40;
+    const uint32_t *p = *(const uint32_t *const volatile *)(0x10edd60 + k * 24);
+    if (!p[0] || !p) return;
+    for (;;) {
+        uint8_t *const e = (uint8_t *)(uintptr_t)p[2];
+        const int32_t kind = *(const int32_t *)(e + 0x18);
+        fpu_copy_h2(e + 0x14, e + 0x14);
+        const long double r = ((const volatile uint32_t *)0x12f0168)[kind] ? (long double)*(const float *)0xf264e0 : (long double)*(const float *)(e + 0x14) * level[kind];
+        *(volatile float *)(*(uint8_t *const *)(e + 0xc) + 0x58) = (float)r;
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return;
+    }
+}
+static void __fastcall sound_mute_kind(uintptr_t k, uint32_t flag) {
+    g_sound_mutes++;
+    volatile int32_t *const muted = (volatile int32_t *)0x12f0168;
+    muted[k] = muted[k] + 1;
+    if ((uint8_t)flag) muted[k] = 10000;
+    sound_volumes_h2(k);
+}
+static void __fastcall sound_unmute_kind(uintptr_t k, uint32_t flag) {
+    g_sound_mutes++;
+    volatile int32_t *const muted = (volatile int32_t *)0x12f0168;
+    const int32_t m = muted[k] - 1;
+    muted[k] = m;
+    if (m < 0 || (uint8_t)flag) muted[k] = 0;
+    sound_volumes_h2(k);
+}
+static const uint8_t sound_mute_kind_original[] = {0x8b, 0x04, 0x8d, 0x68, 0x01, 0x2f, 0x01, 0x40, 0x84, 0xd2};
+REWRITE("Sound::MuteKind", 0x47c3f0, sound_mute_kind_original, &sound_mute_kind, &g_sound_mutes);
+static const uint8_t sound_unmute_kind_original[] = {0xff, 0x0c, 0x8d, 0x68, 0x01, 0x2f, 0x01, 0x78, 0x04};
+REWRITE("Sound::UnmuteKind", 0x47c470, sound_unmute_kind_original, &sound_unmute_kind, &g_sound_mutes);
+
+// ---- Materials::CompareOpacity(i, j) (0xCEB590): 1 (only al) when part i's material is more opaque than part j's ---------
+// Parts i, j index entries (12 bytes at +0x7C) whose first dword picks a 0x70-byte material at +0; a material without
+// +0x58 gives 0 for i, 1 for j; opacity is +0x54 when byte +0x50 is set, else 1.
+static volatile long g_opacity_compares;
+static uint8_t __thiscall materials_compare_opacity(const uint8_t *self, int32_t i, int32_t j) {
+    g_opacity_compares++;
+    const uint32_t *const parts = *(const uint32_t *const *)(self + 0x7c);
+    const uint8_t *const base = *(const uint8_t *const *)self;
+    const uint8_t *const a = base + parts[i * 3] * 0x70, *const b = base + parts[j * 3] * 0x70;
+    if (!a[0x58]) return 0;
+    if (!b[0x58]) return 1;
+    const float one = *(const float *)0xf264dc;
+    const float oa = a[0x50] ? *(const float *)(a + 0x54) : one, ob = b[0x50] ? *(const float *)(b + 0x54) : one;
+    return oa > ob ? 1 : 0;
+}
+static const uint8_t materials_compare_opacity_original[] = {0x8b, 0x51, 0x7c, 0x8b, 0x44, 0x24, 0x04, 0x56, 0x8b, 0x31};
+REWRITE("Materials::CompareOpacity", 0xceb590, materials_compare_opacity_original, &materials_compare_opacity, &g_opacity_compares);

@@ -12,8 +12,8 @@ Understood   ██████████████████████�
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 12,828 | 2,146,149 bytes | 25.81% |
-| Documented, not rewritten yet | 12,891 | 6,170,600 bytes | 74.19% |
+| Rewritten | 12,834 | 2,146,818 bytes | 25.81% |
+| Documented, not rewritten yet | 12,885 | 6,169,931 bytes | 74.19% |
 | To do | 0 | 0 bytes | 0.00% |
 | **Game total** | **25,719** | **8,316,749 bytes** | |
 | Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |
@@ -811,6 +811,8 @@ Understood   ██████████████████████�
 | `0x47ae70` | 36 | SharedBuffer::Release | 3 |
 | `0x47bd90` | 130 | Sound::DistanceFade | 2 |
 | `0x47be70` | 110 | Destructor::Steps | 1 |
+| `0x47c3f0` | 124 | Sound::MuteKind | 1 |
+| `0x47c470` | 111 | Sound::UnmuteKind | 2 |
 | `0x47c4e0` | 100 | Effects::Set47C4E0 | 6 |
 | `0x47c950` | 30 | DeletingDestructor | 1 |
 | `0x47ca60` | 24 | Three::Each47CA60 | 2 |
@@ -2186,6 +2188,7 @@ Understood   ██████████████████████�
 | `0x5bf320` | 30 | DeletingDestructor | 1 |
 | `0x5bf340` | 30 | Flagged::Copy581120 | 6 |
 | `0x5bf3c0` | 30 | Flagged::Copy581120 | 2 |
+| `0x5bf4a0` | 107 | TrackPiece::Compare5BF4A0 | 2 |
 | `0x5bfdf0` | 30 | DeletingDestructor | 1 |
 | `0x5bfe10` | 7 | BaseClass::SetClass | 1 |
 | `0x5bfe20` | 30 | DeletingDestructor | 1 |
@@ -4500,6 +4503,7 @@ Understood   ██████████████████████�
 | `0x7ad1f0` | 354 | Attraction::First | 1 |
 | `0x7ad8a0` | 362 | Ride::Case7AD8A0 | 1 |
 | `0x7addb0` | 30 | DeletingDestructor | 2 |
+| `0x7ae680` | 107 | Terrain::Inside7AE680 | 12 |
 | `0x7ae6f0` | 358 | Terrain::Range7AE6F0 | 1 |
 | `0x7ae900` | 117 | Destructor::Steps | 1 |
 | `0x7ae9b0` | 30 | DeletingDestructor | 2 |
@@ -9017,6 +9021,7 @@ Understood   ██████████████████████�
 | `0xbb6050` | 174 | Vector::TransformPoint2 | 0 |
 | `0xbb65a0` | 67 | Bits::SizeBB65A0 | 1 |
 | `0xbb6620` | 37 | Block::Delete72F200 | 0 |
+| `0xbb6970` | 109 | SortedShorts::Find | 0 |
 | `0xbb6b10` | 459 | Animal::StepBB6B10 | 0 |
 | `0xbb7030` | 269 | Track::PointBB7030 | 0 |
 | `0xbb7800` | 404 | Vector::StepBB7800 | 0 |
@@ -10507,6 +10512,7 @@ Understood   ██████████████████████�
 | `0xceab50` | 912 | Pairs::Insert | 1 |
 | `0xceb030` | 157 | Record::CopyFields | 1 |
 | `0xceb3c0` | 73 | Weights::Ensure40C160 | 1 |
+| `0xceb590` | 111 | Materials::CompareOpacity | 1 |
 | `0xcebdd0` | 58 | Vector::FreePair | 1 |
 | `0xcebe40` | 310 | ObjectArray::Grow | 2 |
 | `0xcebf80` | 118 | Record::SetFields | 1 |
@@ -13604,8 +13610,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x47be30` | 61 | - | 1 |
 | `0x47c200` | 62 | - | 1 |
 | `0x47c240` | 428 | - | 1 |
-| `0x47c3f0` | 124 | - | 1 |
-| `0x47c470` | 111 | - | 2 |
 | `0x47c550` | 398 | - | 2 |
 | `0x47c6e0` | 350 | - | 1 |
 | `0x47c840` | 266 | - | 1 |
@@ -15430,7 +15434,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x5bf240` | 42 | - | 1 |
 | `0x5bf360` | 86 | - | 3 |
 | `0x5bf3e0` | 53 | - | 3 |
-| `0x5bf4a0` | 107 | - | 2 |
 | `0x5bf510` | 295 | - | 4 |
 | `0x5c0120` | 214 | - | 13 |
 | `0x5c0200` | 1,297 | - | 3 |
@@ -17936,7 +17939,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x7ae300` | 49 | - | 1 |
 | `0x7ae350` | 581 | - | 2 |
 | `0x7ae5a0` | 212 | - | 1 |
-| `0x7ae680` | 107 | - | 12 |
 | `0x7ae890` | 89 | - | 1 |
 | `0x7ae980` | 27 | - | 0 |
 | `0x7ae9d0` | 41 | - | 1 |
@@ -23239,7 +23241,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xbb5e00` | 1 | - | 1 |
 | `0xbb6560` | 31 | - | 0 |
 | `0xbb6880` | 175 | - | 1 |
-| `0xbb6970` | 109 | - | 0 |
 | `0xbb69e0` | 293 | - | 9 |
 | `0xbb6ce0` | 843 | - | 0 |
 | `0xbb7140` | 801 | - | 1 |
@@ -25437,7 +25438,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xceb140` | 72 | - | 2 |
 | `0xceb190` | 556 | - | 4 |
 | `0xceb410` | 370 | - | 1 |
-| `0xceb590` | 111 | - | 1 |
 | `0xceb670` | 692 | - | 1 |
 | `0xceb930` | 71 | - | 1 |
 | `0xceb980` | 403 | - | 1 |

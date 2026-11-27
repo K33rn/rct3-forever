@@ -5258,4 +5258,84 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                         },
                                         [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x300)) & 0xff}; }};
     quick(vertex_declaration_find_bdd180);
+    // TrackPiece::Compare5BF4A0: ranges either way round, lists of 0-4 items on or off with values in and out
+    Test track_piece_compare_5bf4a0{0x5bf4a0,
+                                    [=](Rng &r) {
+                                        *(uint32_t *)arena<uint8_t>(0x404) = node_list_h2(r, 0x200, r.range(0, 4), 0x600);
+                                        for (int k = 0; k < 4; k++) {
+                                            uint8_t *item = arena<uint8_t>(0x600 + k * 0x40);
+                                            *(float *)(item + 4) = (float)r.range(0, 6), item[8] = r.range(0, 3) ? (uint8_t)r.range(1, 255) : 0;
+                                        }
+                                        arena<float>(0x40)[0] = (float)r.range(0, 6), arena<float>(0x40)[1] = r.range(0, 1) ? (float)r.range(0, 6) : r.real(0, 6);
+                                    },
+                                    [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, float, float))fn)(arena<void>(0x100), arena<float>(0x40)[0], arena<float>(0x40)[1]) & 0xff}; }};
+    quick(track_piece_compare_5bf4a0);
+    // Terrain::Inside7AE680: areas of 1-6 by 1-6 cells anywhere (wrapping past 255 at times), cells in and around them
+    Test terrain_inside_7ae680{0x7ae680,
+                               [=](Rng &r) {
+                                   uint8_t *self = arena<uint8_t>(0x100);
+                                   self[4] = (uint8_t)(r.range(0, 4) ? r.range(0, 20) : r.range(250, 255)), self[5] = (uint8_t)r.range(0, 20);
+                                   self[6] = (uint8_t)r.range(1, 6), self[7] = (uint8_t)r.range(1, 6);
+                                   *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                   for (int i = 0; i < 0x40; i++) arena<uint8_t>(0x400)[i] = r.range(0, 1) ? (uint8_t)r.next() : 0;
+                                   arena<uint32_t>(0x40)[0] = (r.next() & ~0xffu) | (uint8_t)(self[4] + r.range(-1, 6));
+                                   arena<uint32_t>(0x40)[1] = (r.next() & ~0xffu) | (uint8_t)(self[5] + r.range(-1, 6));
+                               },
+                               [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1]) & 0xff}; }};
+    quick(terrain_inside_7ae680);
+    // SortedShorts::Find: sorted lists of 2-20 words (repeats at times), keys below the last, guesses anywhere in the list
+    Test sorted_shorts_find{0xbb6970,
+                            [=](Rng &r) {
+                                const int n = r.range(2, 20);
+                                uint16_t v = (uint16_t)r.range(0, 3);
+                                for (int i = 0; i < n; i++) arena<uint16_t>(0x400)[i] = v, v = (uint16_t)(v + r.range(0, 3));
+                                const uint16_t last = arena<uint16_t>(0x400)[n - 1];
+                                *(uint16_t *)arena<uint8_t>(0x138) = last ? (uint16_t)r.range(0, last - 1) : 0;
+                                if (!last) arena<uint16_t>(0x400)[n - 1] = 1;
+                                *(float *)arena<uint8_t>(0x12c) = r.real(0, (n - 0.6f) / n);   // (a guess rounding to n would read past the list)
+                                arena<uint32_t>(0x40)[0] = n;
+                            },
+                            [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x400), arena<uint32_t>(0x40)[0])}; }};
+    quick(sorted_shorts_find);
+    // Sound::MuteKind / UnmuteKind: kinds 0-3 (in ecx), flag or not (in dl), mute counts from -1, lists of 0-3 sounds (the
+    // game's tables compared, all put back after)
+    for (uintptr_t at : {(uintptr_t)0x47c3f0, (uintptr_t)0x47c470}) {
+        static uint32_t saved_levels[4], saved_lists[24], saved_muted[4];
+        Test x{at,
+               [=](Rng &r) {
+                   for (int k = 0; k < 4; k++) {
+                       ((float *)0x10edd40)[k] = r.real(0, 2), ((int32_t *)0x12f0168)[k] = r.range(-1, 2);
+                       *(uint32_t *)(0x10edd60 + k * 24) = node_list_h2(r, 0x200 + k * 0x200, r.range(0, 3), 0x1000 + k * 0x200);
+                       for (int j = 0; j < 3; j++) {
+                           uint8_t *e = arena<uint8_t>(0x1000 + k * 0x200 + j * 0x40);
+                           *(int32_t *)(e + 0x18) = r.range(0, 3), *(float *)(e + 0x14) = r.real(-2, 2);
+                           *(uint32_t *)(e + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x2000 + (k * 3 + j) * 0x60);
+                       }
+                   }
+                   arena<uint32_t>(0x40)[0] = r.range(0, 3), arena<uint32_t>(0x40)[1] = (r.next() & ~0xffu) | (r.range(0, 2) ? 0u : 1u);
+               },
+               [](void *fn) {
+                   ((void(__fastcall *)(uintptr_t, uint32_t))fn)(arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { memcpy(saved_levels, (void *)0x10edd40, 16), memcpy(saved_lists, (void *)0x10edd60, 96), memcpy(saved_muted, (void *)0x12f0168, 16); };
+        x.finish = [](const rewrite::Entry *) { memcpy((void *)0x10edd40, saved_levels, 16), memcpy((void *)0x10edd60, saved_lists, 96), memcpy((void *)0x12f0168, saved_muted, 16); };
+        t.push_back(x);
+    }
+    // Materials::CompareOpacity: parts over 4 materials with and without +0x58, opacity set or not
+    Test materials_compare_opacity{0xceb590,
+                                   [=](Rng &r) {
+                                       uint8_t *self = arena<uint8_t>(0x100);
+                                       *(uint32_t *)self = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                       *(uint32_t *)(self + 0x7c) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                       for (int p = 0; p < 4; p++) arena<uint32_t>(0x200)[p * 3] = r.range(0, 3);
+                                       for (int m = 0; m < 4; m++) {
+                                           uint8_t *mat = arena<uint8_t>(0x400 + m * 0x70);
+                                           mat[0x58] = r.range(0, 4) ? 1 : 0, mat[0x50] = r.range(0, 1) ? 1 : 0;
+                                           *(float *)(mat + 0x54) = r.range(0, 1) ? 1.0f : r.real(0, 1.5f);
+                                       }
+                                       arena<int32_t>(0x40)[0] = r.range(0, 3), arena<int32_t>(0x40)[1] = r.range(0, 3);
+                                   },
+                                   [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1]) & 0xff}; }};
+    quick(materials_compare_opacity);
 #endif
