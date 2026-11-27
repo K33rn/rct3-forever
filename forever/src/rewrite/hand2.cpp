@@ -3295,3 +3295,115 @@ static float *__fastcall vector_same_c5d1c0(float *out, const float *p, const fl
 }
 static const uint8_t vector_same_c5d1c0_original[] = {0xd9, 0x02, 0x83, 0xec, 0x14, 0x56, 0x8b, 0x74, 0x24, 0x1c};
 REWRITE("Vector::SameC5D1C0", 0xc5d1c0, vector_same_c5d1c0_original, &vector_same_c5d1c0, &g_segment_joins);
+
+// ---- Window::PointToScreen and its copies (0xAC7FB0 and ten more): a point in a window turned into a screen place -----
+// The window is this interface + D (each copy's own D). out = (window +0x8C + p.x, window +0x90 + p.y) (floats) plus
+// Window::ScreenPosition (0x6AD560) of the window, each sum rounded to a float; gives out.
+static volatile long g_points_to_screen;
+template <int D> static float *__thiscall window_point_to_screen(uint8_t *self, float *out, const float *p) {
+    g_points_to_screen++;
+    uint8_t *const window = self + D;
+    volatile float x = (float)((long double)*(const float *)(window + 0x8c) + p[0]);
+    volatile float y = (float)((long double)*(const float *)(window + 0x90) + p[1]);
+    float place[2];
+    const float *const r = ((const float *(__thiscall *)(uint8_t *, float *))0x6ad560)(window, place);
+    const long double sy = (long double)y + r[1];
+    const long double sx = (long double)x + r[0];
+    volatile float *const o = out;
+    o[0] = (float)sx;
+    o[1] = (float)sy;
+    return out;
+}
+static const uint8_t window_point_to_screen_d4_original[] = {0x83, 0xec, 0x10, 0x8b, 0x44, 0x24, 0x18, 0xd9, 0x41, 0xb8};
+static const uint8_t window_point_to_screen_dc_original[] = {0x83, 0xec, 0x10, 0x8b, 0x44, 0x24, 0x18, 0xd9, 0x41, 0xb0};
+static const uint8_t window_point_to_screen_ec_original[] = {0x83, 0xec, 0x10, 0x8b, 0x44, 0x24, 0x18, 0xd9, 0x41, 0xa0};
+static const uint8_t window_point_to_screen_114_original[] = {0x83, 0xec, 0x10, 0x8b, 0x44, 0x24, 0x18, 0xd9, 0x81, 0x78};
+static const uint8_t window_point_to_screen_13c_original[] = {0x83, 0xec, 0x10, 0x8b, 0x44, 0x24, 0x18, 0xd9, 0x81, 0x50};
+REWRITE("Window::PointToScreen", 0xac7fb0, window_point_to_screen_d4_original, &window_point_to_screen<-0xd4>, &g_points_to_screen);
+REWRITE("Window::PointToScreen2", 0x99b2b0, window_point_to_screen_d4_original, &window_point_to_screen<-0xd4>, &g_points_to_screen);
+REWRITE("Window::PointToScreenB8", 0x9b9cd0, window_point_to_screen_d4_original, &window_point_to_screen<-0xd4>, &g_points_to_screen);
+REWRITE("Window::PointToScreenB8", 0xa213a0, window_point_to_screen_d4_original, &window_point_to_screen<-0xd4>, &g_points_to_screen);
+REWRITE("Window::PointToScreenB8", 0xa21a40, window_point_to_screen_d4_original, &window_point_to_screen<-0xd4>, &g_points_to_screen);
+REWRITE("Window::PointToScreenB8", 0xaccb40, window_point_to_screen_d4_original, &window_point_to_screen<-0xd4>, &g_points_to_screen);
+REWRITE("Window::PointToScreenB0", 0x67d320, window_point_to_screen_dc_original, &window_point_to_screen<-0xdc>, &g_points_to_screen);
+REWRITE("Window::PointToScreenB0", 0xae2090, window_point_to_screen_dc_original, &window_point_to_screen<-0xdc>, &g_points_to_screen);
+REWRITE("Window::PointToScreenA0", 0x9973d0, window_point_to_screen_ec_original, &window_point_to_screen<-0xec>, &g_points_to_screen);
+REWRITE("Window::PointToScreen78", 0x67f300, window_point_to_screen_114_original, &window_point_to_screen<-0x114>, &g_points_to_screen);
+REWRITE("Window::PointToScreen50", 0x996680, window_point_to_screen_13c_original, &window_point_to_screen<-0x13c>, &g_points_to_screen);
+
+// ---- Math::ScaleC198C0 / C19910 / C19960(n) (stdcall): a bit field from n times a scale --------------------------------
+// n (whole) times the copy's scale K, as a float, rounded down (the game's frndint floor) to a whole number by fistp;
+// its low bits (mask M) shifted up by S. C198C0: K 0xFAFE8C, M 0x1FF, S 10; C19910: K 0xFAFE90, M 0x3FF, S 20;
+// C19960: K 0xFAFE94, M 0x1FF, S 10.
+static volatile long g_scale_fields;
+template <uint32_t K, uint32_t M, int S> static uint32_t __stdcall math_scale_field(int32_t n) {
+    g_scale_fields++;
+    volatile float v = (float)((long double)n * *(const float *)(uintptr_t)K);
+    volatile float f = (float)floor_h2(v);
+    return ((uint32_t)x87_fistp64_h2(f) & M) << S;
+}
+static const uint8_t math_scale_field_original[] = {0x83, 0xec, 0x08, 0xdb, 0x44, 0x24, 0x0c, 0xd8, 0x0d};
+REWRITE("Math::ScaleC198C0", 0xc198c0, math_scale_field_original, (&math_scale_field<0xfafe8c, 0x1ff, 10>), &g_scale_fields);
+REWRITE("Math::ScaleC19910", 0xc19910, math_scale_field_original, (&math_scale_field<0xfafe90, 0x3ff, 20>), &g_scale_fields);
+REWRITE("Math::ScaleC19960", 0xc19960, math_scale_field_original, (&math_scale_field<0xfafe94, 0x1ff, 10>), &g_scale_fields);
+
+// ---- Window::RectFromSize and its copies (0x490000, 0x448380, 0xA1FAF0, 0xA1FB70): a part sized like this window ------
+// The rectangle {0, 0, width (+0x84 - +0x7C), height (+0x88 - +0x80)} (floats) given to Window::UpdateRect (0x6AFAF0)
+// of the part at +P (0xD4 or 0xF4); gives what that gives.
+static volatile long g_rects_from_size;
+template <uint32_t P> static uint32_t __fastcall window_rect_from_size(const uint8_t *self) {
+    g_rects_from_size++;
+    float rect[4];
+    *(volatile uint32_t *)&rect[0] = 0, *(volatile uint32_t *)&rect[1] = 0;
+    *(volatile float *)&rect[2] = (float)((long double)*(const float *)(self + 0x84) - *(const float *)(self + 0x7c));
+    *(volatile float *)&rect[3] = (float)((long double)*(const float *)(self + 0x88) - *(const float *)(self + 0x80));
+    return ((uint32_t(__thiscall *)(void *, float *))0x6afaf0)(*(void *const *)(self + P), rect);
+}
+static const uint8_t window_rect_from_size_original[] = {0x83, 0xec, 0x10, 0xd9, 0x81, 0x84, 0x00, 0x00, 0x00};
+REWRITE("Window::RectFromSize", 0x490000, window_rect_from_size_original, &window_rect_from_size<0xd4>, &g_rects_from_size);
+REWRITE("Effect::Width448380", 0x448380, window_rect_from_size_original, &window_rect_from_size<0xf4>, &g_rects_from_size);
+REWRITE("Window::WidthA1FAF0", 0xa1faf0, window_rect_from_size_original, &window_rect_from_size<0xf4>, &g_rects_from_size);
+REWRITE("Window::WidthA1FB70", 0xa1fb70, window_rect_from_size_original, &window_rect_from_size<0xf4>, &g_rects_from_size);
+
+// ---- Effect::Hit488A00 and its copies (0x488A00, 0x7B3580, 0xB5BB70, 0xB6BFF0): whether a short ray hits ------------
+// this, a, b, c: the ray runs from (a.x, c.y, a.y) to (a.x + b.x, c.z, a.y + b.y) (the sums floats) and is given, with a
+// place for the result, to 0xCDA7F0 (fastcall this +0 and +4); 1 when that says so (its low byte), else 0.
+static volatile long g_short_ray_hits;
+static uint32_t __thiscall effect_hit_488a00(const uint32_t *self, const float *c, const float *a, const float *b) {
+    g_short_ray_hits++;
+    float from[3], to[3], result;
+    volatile float *const f = from, *const t = to;
+    t[0] = (float)((long double)a[0] + b[0]);
+    t[2] = (float)((long double)b[1] + a[1]);
+    *(volatile uint32_t *)&from[0] = *(const uint32_t *)&a[0];
+    *(volatile uint32_t *)&from[1] = *(const uint32_t *)&c[1];
+    *(volatile uint32_t *)&from[2] = *(const uint32_t *)&a[1];
+    *(volatile uint32_t *)&to[1] = *(const uint32_t *)&c[2];
+    (void)f;
+    typedef uint8_t(__fastcall *Hit)(uint32_t, uint32_t, float *, float *, float *);
+    return ((Hit)0xcda7f0)(self[0], self[1], from, to, &result) != 0;
+}
+static const uint8_t effect_hit_488a00_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28, 0x8b, 0x45, 0x0c};
+REWRITE("Effect::Hit488A00", 0x488a00, effect_hit_488a00_original, &effect_hit_488a00, &g_short_ray_hits);
+REWRITE("Effect::Hit7B3580", 0x7b3580, effect_hit_488a00_original, &effect_hit_488a00, &g_short_ray_hits);
+REWRITE("Effect::HitB5BB70", 0xb5bb70, effect_hit_488a00_original, &effect_hit_488a00, &g_short_ray_hits);
+REWRITE("Effect::HitB6BFF0", 0xb6bff0, effect_hit_488a00_original, &effect_hit_488a00, &g_short_ray_hits);
+
+// ---- WildAnimal::InterfaceB35450 and its copies (0xB35450 to 0xB35670): a value of the animal's current size class ---
+// The animal's interface (0xB44970 on this) has a record (+0x54) holding four entries (+0x18 to +0x24); the one for the
+// animal's class (+0xA4: 0, 1, 2, anything else) gives its float at +F (each copy's own F), on the FPU.
+static volatile long g_animal_class_values;
+template <uint32_t F> static long double __thiscall wild_animal_class_value(uint8_t *self) {
+    g_animal_class_values++;
+    const int32_t kind = *(const int32_t *)(self + 0xa4);
+    const uint8_t *const iface = ((const uint8_t *(__thiscall *)(uint8_t *))0xb44970)(self);
+    const uint8_t *const rec = *(const uint8_t *const *)(iface + 0x54);
+    const uint32_t at = kind == 0 ? 0x18 : kind == 1 ? 0x1c : kind == 2 ? 0x20 : 0x24;
+    return *(const float *)(*(const uint8_t *const *)(rec + at) + F);
+}
+static const uint8_t wild_animal_class_value_original[] = {0x56, 0x8b, 0xb1, 0xa4, 0x00, 0x00, 0x00, 0xe8};
+REWRITE("WildAnimal::InterfaceB35450", 0xb35450, wild_animal_class_value_original, &wild_animal_class_value<0x18>, &g_animal_class_values);
+REWRITE("WildAnimal::InterfaceB355B0", 0xb355b0, wild_animal_class_value_original, &wild_animal_class_value<0x34>, &g_animal_class_values);
+REWRITE("WildAnimal::InterfaceB355F0", 0xb355f0, wild_animal_class_value_original, &wild_animal_class_value<0x38>, &g_animal_class_values);
+REWRITE("WildAnimal::InterfaceB35630", 0xb35630, wild_animal_class_value_original, &wild_animal_class_value<0x3c>, &g_animal_class_values);
+REWRITE("WildAnimal::InterfaceB35670", 0xb35670, wild_animal_class_value_original, &wild_animal_class_value<0x40>, &g_animal_class_values);

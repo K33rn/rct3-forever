@@ -2,6 +2,26 @@
 #if EQUIV_PART == 1
 // a stand-in for the game's _tolower (0xDDE005), which needs the C library's per-thread data the tester doesn't have
 static int __cdecl h2_lower(int c) { return c >= 'A' && c <= 'Z' ? c + 32 : c ^ (c >> 8 & 0x55); }
+// a stand-in for Window::UpdateRect (0x6AFAF0): notes the part and the rectangle at arena 0x40
+static uint32_t __thiscall h2_update_rect(void *part, const float *rect) {
+    uint32_t *log = arena<uint32_t>(0x40);
+    log[1] = (uint32_t)(uintptr_t)part;
+    for (int k = 0; k < 4; k++) memcpy(&log[2 + k], &rect[k], 4);
+    log[0]++;
+    return log[0] * 7 + 3;
+}
+// a stand-in for the collision call 0xCDA7F0: notes its two objects and both points at arena 0x60, answers by them
+static uint8_t __fastcall h2_hit(uint32_t a, uint32_t b, const float *from, const float *to, float *out) {
+    uint32_t *log = arena<uint32_t>(0x60);
+    log[0] = a, log[1] = b;
+    for (int k = 0; k < 3; k++) memcpy(&log[2 + k], &from[k], 4), memcpy(&log[5 + k], &to[k], 4);
+    uint32_t h = a ^ b;
+    for (int k = 2; k < 8; k++) h = h * 31 + log[k];
+    *out = 1.0f;
+    return (uint8_t)(h >> 7);
+}
+// a stand-in for the animal interface getter 0xB44970: the object at arena 0x600
+static void *__thiscall h2_animal_iface(void *) { return arena<void>(0x600); }
 #else
     // Inflate::BuildHuffmanTable: complete, incomplete, all-zero and random code lengths for bit-length codes (s 19),
     // literals (s 257) and distances (s 0); sometimes little room left
@@ -1537,4 +1557,70 @@ static int __cdecl h2_lower(int c) { return c >= 'A' && c <= 'Z' ? c + 32 : c ^ 
                                 return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *))fn)(arena<void>(0x120), arena<void>(0x100), arena<void>(0x110))};
                             }};
     quick(vector_same_c5d1c0);
+    // Window::PointToScreen and its copies: windows with no parent or a chain of one or two (scroll flag on or off)
+    auto point_to_screen_test = [&](uintptr_t at, int d) {
+        Test x{at,
+               [=](Rng &r) {
+                   for (int i = 0; i < 0x180; i++) arena<float>(0x200)[i] = r.real(-500, 500);
+                   uint8_t *window = arena<uint8_t>(0x400 + d);
+                   const int parents = r.range(0, 2);
+                   *(uint32_t *)(window + 0x3c) = parents ? (uint32_t)(uintptr_t)arena<void>(0x800) : 0;
+                   *(uint32_t *)arena<uint8_t>(0x83c) = parents > 1 ? (uint32_t)(uintptr_t)arena<void>(0x900) : 0;
+                   *(uint32_t *)arena<uint8_t>(0x93c) = 0;
+                   *(uint32_t *)(window + 0x94) = r.next(), *(uint32_t *)arena<uint8_t>(0x894) = r.next();
+                   for (uint32_t at2 : {0x7cu, 0x80u, 0x8cu, 0x90u}) *(float *)arena<uint8_t>(0x800 + at2) = r.real(-500, 500), *(float *)arena<uint8_t>(0x900 + at2) = r.real(-500, 500);
+                   arena<float>(0x10)[0] = r.real(-100, 100), arena<float>(0x10)[1] = r.real(-100, 100);
+                   arena<uint32_t>(0x20)[0] = r.next(), arena<uint32_t>(0x20)[1] = r.next();
+               },
+               [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x400), arena<void>(0x20), arena<void>(0x10))}; }};
+        quick(x);
+    };
+    for (uintptr_t at : {0xac7fb0u, 0x99b2b0u, 0x9b9cd0u, 0xa213a0u, 0xa21a40u, 0xaccb40u}) point_to_screen_test(at, -0xd4);
+    point_to_screen_test(0x67d320, -0xdc), point_to_screen_test(0xae2090, -0xdc), point_to_screen_test(0x9973d0, -0xec);
+    point_to_screen_test(0x67f300, -0x114), point_to_screen_test(0x996680, -0x13c);
+    // Math::ScaleC198C0 / C19910 / C19960: n from -2000 to 2000 (and wider at times)
+    for (uintptr_t at : {0xc198c0u, 0xc19910u, 0xc19960u}) {
+        Test x{at, [=](Rng &r) { arena<int32_t>(0x10)[0] = r.range(0, 5) ? r.range(-2000, 2000) : (int32_t)r.next(); },
+               [](void *fn) { return Result{((uint32_t(__stdcall *)(int32_t))fn)(arena<int32_t>(0x10)[0])}; }};
+        quick(x);
+    }
+    // Window::RectFromSize and its copies: random sizes; Window::UpdateRect stood in for (it notes the part and the rectangle)
+    for (uintptr_t at : {0x490000u, 0x448380u, 0xa1faf0u, 0xa1fb70u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   for (int i = 0; i < 0x40; i++) arena<uint32_t>(0x100)[i] = r.next();
+                   for (int k = 0; k < 4; k++) arena<float>(0x17c)[k] = r.real(-500, 500);
+                   arena<uint32_t>(0x40)[0] = 0;
+               },
+               [](void *fn) { return Result{((uint32_t(__fastcall *)(void *))fn)(arena<void>(0x100))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6afaf0, (void *)h2_update_rect}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Effect::Hit488A00 and its copies: random points; the collision call stood in for
+    for (uintptr_t at : {0x488a00u, 0x7b3580u, 0xb5bb70u, 0xb6bff0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   arena<uint32_t>(0x100)[0] = r.next(), arena<uint32_t>(0x100)[1] = r.next();
+                   for (int k = 0; k < 3; k++) arena<float>(0x110)[k] = r.real(-50, 50), arena<float>(0x120)[k] = r.real(-50, 50), arena<float>(0x130)[k] = r.real(-50, 50);
+               },
+               [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x110), arena<void>(0x120), arena<void>(0x130))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xcda7f0, (void *)h2_hit}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // WildAnimal::InterfaceB35450 and its copies: classes -1 to 4; the interface getter stood in for
+    for (uintptr_t at : {0xb35450u, 0xb355b0u, 0xb355f0u, 0xb35630u, 0xb35670u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   *(int32_t *)arena<uint8_t>(0x1a4) = r.range(-1, 4);
+                   *(uint32_t *)arena<uint8_t>(0x654) = (uint32_t)(uintptr_t)arena<void>(0x700);
+                   for (int k = 0; k < 4; k++) arena<uint32_t>(0x718)[k] = (uint32_t)(uintptr_t)arena<void>(0x800 + 0x80 * k);
+                   for (int i = 0; i < 0x80; i++) arena<float>(0x800)[i] = r.real(-100, 100);
+               },
+               [](void *fn) { Result x; x.f = ((long double(__thiscall *)(void *))fn)(arena<void>(0x100)); return x; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb44970, (void *)h2_animal_iface}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
 #endif
