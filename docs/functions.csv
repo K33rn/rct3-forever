@@ -8174,7 +8174,7 @@ address,size,name,callers,status
 0x71bf70,81,Cell::StepInside,2,rewritten
 0x71bfe0,92,Rect::AddCell,3,rewritten
 0x71c040,481,,2,documented
-0x71c230,562,,2,documented
+0x71c230,562,Path::Update71C230,2,rewritten
 0x71c470,492,,4,documented
 0x71c670,156,,4,documented
 0x71c730,257,,5,documented
@@ -9588,7 +9588,7 @@ address,size,name,callers,status
 0x7ae350,581,,2,documented
 0x7ae5a0,212,,1,documented
 0x7ae680,107,,12,documented
-0x7ae6f0,358,,1,documented
+0x7ae6f0,358,Terrain::Range7AE6F0,1,rewritten
 0x7ae890,89,,1,documented
 0x7ae900,117,Destructor::Steps,1,rewritten
 0x7ae980,27,,0,documented
@@ -11594,7 +11594,7 @@ address,size,name,callers,status
 0x85a560,84,,1,documented
 0x85a5e0,61,Six::Free85A5E0,2,rewritten
 0x85a620,912,Pairs::Insert,1,rewritten
-0x85a9c0,265,,1,documented
+0x85a9c0,265,Scenery::Pop85A9C0,1,rewritten
 0x85aad0,155,,1,documented
 0x85abc0,30,DeletingDestructor,2,rewritten
 0x85abe0,191,Destructor::Steps,2,rewritten
@@ -11645,7 +11645,7 @@ address,size,name,callers,status
 0x860790,389,,9,documented
 0x860920,33,,1,documented
 0x8609a0,101,,7,documented
-0x860a20,383,,2,documented
+0x860a20,383,Options::ApplyKeys,2,rewritten
 0x860cd0,26,OwnedPointer::Reset,3,rewritten
 0x860cf0,151,Array<12>::SetCapacity,1,rewritten
 0x860d90,26,OwnedPointer::Reset,3,rewritten
@@ -12393,7 +12393,7 @@ address,size,name,callers,status
 0x8d63a0,776,Class::Construct,215,rewritten
 0x8d66b0,30,DeletingDestructor,3,rewritten
 0x8d66d0,105,Factory::Create,1,rewritten
-0x8d67a0,320,,8,documented
+0x8d67a0,320,Terrain::Loop8D67A0,8,rewritten
 0x8d68e0,1440,,0,documented
 0x8d6e90,303,,10,documented
 0x8d6fc0,1469,,1,documented
@@ -12585,7 +12585,7 @@ address,size,name,callers,status
 0x8e8870,106,,2,documented
 0x8e88e0,313,,4,documented
 0x8e8a20,701,,0,documented
-0x8e8d80,379,,2,documented
+0x8e8d80,379,Water::Loop8E8D80,2,rewritten
 0x8e8f00,86,,1,documented
 0x8e90e0,229,,3,documented
 0x8e92b0,61,Vector::FreeBoth735AE0,2,rewritten
@@ -12628,7 +12628,7 @@ address,size,name,callers,status
 0x8ef180,96,Vertices::SetSecond,1,rewritten
 0x8ef1e0,2869,,1,documented
 0x8efd20,4104,,1,documented
-0x8f0d30,800,,1,documented
+0x8f0d30,800,Terrain::Indices8F0D30,1,rewritten
 0x8f1060,4896,,2,documented
 0x8f2380,253,,1,documented
 0x8f2480,256,,1,documented
@@ -13753,7 +13753,7 @@ address,size,name,callers,status
 0x97bce0,1540,,1,documented
 0x97c2f0,401,,1,documented
 0x97c4c0,40,Text::Widen,0,rewritten
-0x97c630,284,,5,documented
+0x97c630,284,Water::Alpha97C630,5,rewritten
 0x97c770,127,Five::Destroy6CC840,1,rewritten
 0x97c980,200,,1,documented
 0x97ca50,139,,1,documented
@@ -19068,7 +19068,7 @@ address,size,name,callers,status
 0xb9abf0,39,,2,documented
 0xb9ac20,864,,3,documented
 0xb9afb0,209,,3,documented
-0xb9b090,335,,2,documented
+0xb9b090,335,PathGrid::InsideB9B090,2,rewritten
 0xb9ba00,30,DeletingDestructor,1,rewritten
 0xb9ba30,30,DeletingDestructor,1,rewritten
 0xb9ba60,30,DeletingDestructor,1,rewritten
@@ -19955,7 +19955,7 @@ address,size,name,callers,status
 0xbd6f10,151,,2,documented
 0xbd6fb0,44,Block::DeleteBD6FB0,1,rewritten
 0xbd6fe0,203,Destructor::Steps,4,rewritten
-0xbd70b0,254,,6,documented
+0xbd70b0,254,Text::SumBD70B0,6,rewritten
 0xbd7220,678,,0,documented
 0xbd74d0,107,,2,documented
 0xbd7580,91,Array::Reserve,5,rewritten
@@ -20057,7 +20057,7 @@ address,size,name,callers,status
 0xbde5e0,624,VertexDeclaration::FillBDE5E0,2,rewritten
 0xbde860,609,,1,documented
 0xbdead0,118,,3,documented
-0xbdeb50,425,,1,documented
+0xbdeb50,425,Text::FindBDEB50,1,rewritten
 0xbded00,30,DeletingDestructor,0,rewritten
 0xbded20,1021,,2,documented
 0xbdf160,27,Map::ValueBDF160,92,rewritten
@@ -20549,7 +20549,7 @@ address,size,name,callers,status
 0xc008d0,158,,1,documented
 0xc00970,59,,2,documented
 0xc009b0,708,,1,documented
-0xc00c80,294,,1,documented
+0xc00c80,294,Device::VersionC00C80,1,rewritten
 0xc01020,174,,1,documented
 0xc01120,488,,1,documented
 0xc01520,7,,1,documented
@@ -21535,7 +21535,7 @@ address,size,name,callers,status
 0xc51950,438,,19,documented
 0xc51b10,355,,4,documented
 0xc51c80,379,,13,documented
-0xc51e00,415,,6,documented
+0xc51e00,415,Stream::ReadC51E00,6,rewritten
 0xc52060,189,,1,documented
 0xc52120,203,,1,documented
 0xc521f0,11,Destructor::Steps,1,rewritten
@@ -22215,7 +22215,7 @@ address,size,name,callers,status
 0xca6620,152,Path::TailCA64C0,0,rewritten
 0xca68b0,22,,1,documented
 0xca68d0,15,,1,documented
-0xca6900,314,,3,documented
+0xca6900,314,Table::FreeCA6900,3,rewritten
 0xca6a50,356,,3,documented
 0xca6bc0,251,,1,documented
 0xca6cc0,563,,3,documented
@@ -22402,7 +22402,7 @@ address,size,name,callers,status
 0xcb5900,22,,2,documented
 0xcb5a20,40,,0,documented
 0xcb5a50,86,,0,documented
-0xcb5be0,283,,2,documented
+0xcb5be0,283,Shader::SetCB5BE0,2,rewritten
 0xcb5d30,34,,0,documented
 0xcb5dc0,61,Array<4>::Allocate,0,rewritten
 0xcb5e60,83,,2,documented
@@ -22724,7 +22724,7 @@ address,size,name,callers,status
 0xcc68c0,127,Nodes::MatrixFor,2,rewritten
 0xcc69a0,1375,,0,documented
 0xcc6f00,761,,3,documented
-0xcc7200,294,,1,documented
+0xcc7200,294,Model::FindCC7200,1,rewritten
 0xcc7360,30,DeletingDestructor,0,rewritten
 0xcc7380,30,DeletingDestructor,0,rewritten
 0xcc73a0,18,,2,documented
