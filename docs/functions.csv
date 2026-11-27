@@ -6448,7 +6448,7 @@ address,size,name,callers,status
 0x67cb40,30,DeletingDestructor,2,rewritten
 0x67cbd0,420,,8,documented
 0x67cd80,76,,8,documented
-0x67cdd0,452,,23,documented
+0x67cdd0,452,Window::Value67CDD0,23,rewritten
 0x67d000,53,,24,documented
 0x67d040,30,DeletingDestructor,1,rewritten
 0x67d060,644,Window::Titled,1,rewritten
@@ -12787,7 +12787,7 @@ address,size,name,callers,status
 0x907600,1298,,1,documented
 0x907bb0,270,Water::Cell907BB0,3,rewritten
 0x907cc0,920,,1,documented
-0x908060,481,,1,documented
+0x908060,481,Water::Cell908060,1,rewritten
 0x908250,522,,1,documented
 0x908470,74,,8,documented
 0x9084e0,1109,,1,documented
@@ -16504,7 +16504,7 @@ address,size,name,callers,status
 0xa90a10,26,OwnedPointer::Reset,4,rewritten
 0xa90a30,148,,3,documented
 0xa90b00,79,,7,documented
-0xa90b50,431,,2,documented
+0xa90b50,431,Fence::CountA90B50,2,rewritten
 0xa90d00,272,Fence::DistanceA90D00,1,rewritten
 0xa90e10,84,,1,documented
 0xa90e70,308,Fence::NearA90E70,1,rewritten

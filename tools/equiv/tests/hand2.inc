@@ -6781,4 +6781,54 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                  return Result{0};
                              }};
     quick(window_count_6cf4b0);
+    // Fence::CountA90B50: shapes of 0-7 corners on small whole places (corners on the point's line often), points anywhere
+    Test fence_count_a90b50{0xa90b50,
+                            [=](Rng &r) {
+                                const int n = r.range(0, 7);
+                                arena<uint32_t>(0x100)[0] = (uint32_t)(uintptr_t)arena<void>(0x200), arena<uint32_t>(0x100)[1] = n;
+                                const bool whole = r.range(0, 2) != 0;
+                                for (int k = 0; k < 16; k++) arena<float>(0x200)[k] = whole ? (float)r.range(-3, 3) : r.real(-3, 3);
+                                arena<float>(0x40)[0] = whole ? (float)r.range(-3, 3) + (r.range(0, 1) ? 0.5f : 0.0f) : r.real(-3, 3);
+                                arena<float>(0x40)[1] = r.real(-3, 3);
+                                arena<float>(0x40)[2] = whole ? (float)r.range(-3, 3) : r.real(-3, 3);
+                            },
+                            [](void *fn) { return Result{((uint32_t(__stdcall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    quick(fence_count_a90b50);
+    // Window::Value67CDD0: 0-7 rising key times in 0..1 (whole steps at times), looping or not, t before, on, between and
+    // past the keys (and outside 0..1)
+    Test window_value_67cdd0{0x67cdd0,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 const int n = r.range(0, 7);
+                                 *(int32_t *)(self + 0xc) = n, self[0x10] = r.range(0, 1) ? (uint8_t)r.range(1, 255) : 0;
+                                 *(uint32_t *)self = (uint32_t)(uintptr_t)arena<void>(0x200), *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                 float tm = r.real(0, 0.2f);
+                                 for (int i = 0; i < 8; i++) arena<float>(0x200)[i] = tm, tm += r.real(0.01f, 0.15f), arena<float>(0x300)[i] = r.real(-10, 10);
+                                 arena<float>(0x40)[0] = (n && r.range(0, 3) == 0) ? arena<float>(0x200)[r.range(0, n - 1)] : r.real(-1.5f, 2.5f);
+                             },
+                             [](void *fn) {
+                                 Result x;
+                                 x.f = ((long double(__thiscall *)(const void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                                 return x;
+                             }};
+    quick(window_value_67cdd0);
+    // Water::Cell908060: grids 1-6 wide (rows to width + 1), every flag mix, rows -2..width + 1, column ranges across the
+    // edges
+    Test water_cell_908060{0x908060,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               const int w = r.range(1, 6);
+                               *(int32_t *)self = w, *(uint32_t *)(self + 0x20) = r.next() & 0xc, *(float *)(self + 0x38) = r.real(0, 2);
+                               *(uint32_t *)(self + 0x44) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int k = 0; k < 8 * 8; k++) arena<float>(0x400)[k] = r.real(-10, 10);
+                               int32_t *a = arena<int32_t>(0x40);
+                               a[0] = r.range(-2, w + 1), a[1] = a[0] + r.range(-1, 5), a[2] = r.range(-2, w + 1);
+                               arena<float>(0x40)[3] = r.real(-3, 3);
+                           },
+                           [](void *fn) {
+                               const int32_t *a = arena<int32_t>(0x40);
+                               ((void(__thiscall *)(const void *, int32_t, int32_t, int32_t, float))fn)(arena<void>(0x100), a[0], a[1], a[2], arena<float>(0x40)[3]);
+                               return Result{0};
+                           }};
+    quick(water_cell_908060);
 #endif

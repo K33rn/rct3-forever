@@ -10969,3 +10969,101 @@ static void __stdcall window_count_6cf4b0(const uint8_t *ring, uint32_t *least, 
 }
 static const uint8_t window_count_6cf4b0_original[] = {0x8b, 0x4c, 0x24, 0x04, 0x53, 0x8b, 0x5c, 0x24, 0x10, 0x56, 0x57};
 REWRITE("Window::Count6CF4B0", 0x6cf4b0, window_count_6cf4b0_original, &window_count_6cf4b0, &g_ring_ranges);
+
+// ---- Fence::CountA90B50(shape, point) (0xA90B50): whether a point (x, z at +0, +8) is inside a flat shape ---------------
+// The shape: n (+4) corners {x, z} (8 bytes at +0). Counts the sides crossing the point's line to its right: a corner on
+// the line and right of the point counts when its neighbours lie on opposite sides; a side from one side to the other
+// counts when it meets the line at ((cx - nx) pz - nz cx + nx cz) / (cz - nz) past the point. Gives the count's lowest
+// bit.
+static volatile long g_fence_insides;
+static uint32_t __stdcall fence_count_a90b50(const uint32_t *shape, const float *p) {
+    g_fence_insides++;
+    const int32_t n = (int32_t)shape[1];
+    const float *const pts = (const float *)(uintptr_t)shape[0];
+    const float px = p[0], pz = p[2];
+    uint32_t count = 0;
+    for (int32_t i = 0; i < n; i++) {
+        const float *const c = pts + 2 * i, *const nx = pts + 2 * (i + 1 < n ? i + 1 : 0), *const pv = pts + 2 * (i > 0 ? i - 1 : n - 1);
+        const float cx = c[0], cz = c[1], ncx = nx[0], ncz = nx[1], pcz = pv[1];
+        if (cz == pz) {
+            if (!(cx > px)) continue;
+            if (pcz < cz && ncz > cz) {
+                count++;
+                continue;
+            }
+            if (pcz > cz && ncz < cz) count++;
+            continue;
+        }
+        if (!((cz < pz && ncz > pz) || (cz > pz && ncz < pz))) continue;
+        const long double x = ((((long double)cx - ncx) * pz - (long double)ncz * cx) + (long double)ncx * cz) / ((long double)cz - ncz);
+        if (x > px) count++;
+    }
+    return count & 1;
+}
+static const uint8_t fence_count_a90b50_original[] = {0x83, 0xec, 0x1c, 0x8b, 0x44, 0x24, 0x20, 0x53, 0x8b, 0x58, 0x04};
+REWRITE("Fence::CountA90B50", 0xa90b50, fence_count_a90b50_original, &fence_count_a90b50, &g_fence_insides);
+
+// ---- Window::Value67CDD0(t) (0x67CDD0): a curve's value at t (key times +0, values +8, count +0xC, looping +0x10) -------
+// No keys gives 0, one gives its value. Not looping: before or at the first time the first value, at or past the last
+// the last; else the two keys around t (a binary search) and (1 - f) a + f b with f = (t - ta) / (tb - ta). Looping: t
+// brought into 0..1 (by one step), then outside the times the last key and the first (its time + 1, t + 1 when before
+// the first) are the pair.
+static volatile long g_curve_values;
+static long double __thiscall window_value_67cdd0(const uint8_t *self, float tf) {
+    g_curve_values++;
+    const int32_t n = *(const int32_t *)(self + 0xc);
+    const float *const k = *(const float *const *)self, *const v = *(const float *const *)(self + 8);
+    const long double zero = *(const float *)0xf264e0, one = *(const float *)0xf264dc;
+    if (n <= 0) return zero;
+    if (n == 1) return v[0];
+    auto search = [&](long double t) {
+        int32_t lo = 0, hi = n - 1, at = 0;
+        while (hi > lo + 1) {
+            const int32_t mid = lo + (hi - lo) / 2;
+            if (!(t >= k[mid])) hi = mid;
+            else lo = mid, at = mid;
+        }
+        return at;
+    };
+    auto mix = [&](long double f, int32_t a, int32_t b) { return (one - f) * v[a] + f * v[b]; };
+    if (!self[0x10]) {
+        const long double t = tf;
+        if (t <= k[0]) return v[0];
+        if (t >= k[n - 1]) return v[n - 1];
+        const int32_t a = search(t);
+        return mix((t - k[a]) / ((long double)k[a + 1] - k[a]), a, a + 1);
+    }
+    long double t = tf;
+    if (t < zero) t = t + one;
+    else if (t >= one) t = t - one;
+    const int32_t a = (t < k[0] || t > k[n - 1]) ? n - 1 : search(t);
+    if (a + 1 < n) return mix((t - k[a]) / ((long double)k[a + 1] - k[a]), a, a + 1);
+    const long double next = (long double)k[0] + one;
+    if (t < k[a]) t = t + one;
+    return mix((t - k[a]) / (next - k[a]), a, 0);
+}
+static const uint8_t window_value_67cdd0_original[] = {0x51, 0x8b, 0xd1, 0x8b, 0x4a, 0x0c, 0x85, 0xc9, 0x89, 0x14, 0x24};
+REWRITE("Window::Value67CDD0", 0x67cdd0, window_value_67cdd0_original, &window_value_67cdd0, &g_curve_values);
+
+// ---- Water::Cell908060(x0, x1, j, amount) (0x908060): moves water from row j to row j + 1 over columns x0..x1 ------------
+// Grid width +0, values +0x44. Nothing for j outside -1..width or columns outside the grid; the columns kept inside. d =
+// amount +0x38 (a float). Row j loses d when j lies in (flag 8 clear (+0x20): 1, else 0) .. (flag 4: width, else width -
+// 1); row j + 1 gains d when j lies in (flag 8: -1, else 0) .. (flag 4: width - 1, else width - 2).
+static volatile long g_water_row_moves;
+static void __thiscall water_cell_908060(const uint8_t *self, int32_t x0, int32_t x1, int32_t j, float amount) {
+    g_water_row_moves++;
+    const int32_t w = *(const int32_t *)self;
+    if (j < -1 || j > w || x1 < 0 || x0 >= w) return;
+    if (x0 < 0) x0 = 0;
+    if (x1 >= w) x1 = w - 1;
+    volatile float d = (float)((long double)amount * *(const float *)(self + 0x38));
+    const uint32_t f = *(const uint32_t *)(self + 0x20);
+    const bool b2 = (f >> 2) & 1, b3 = (f >> 3) & 1;
+    auto at = [&](int32_t row, int32_t i) { return *(float *const *)(self + 0x44) + *(const int32_t *)self * row + i; };
+    if (j >= (b3 ? 0 : 1) && j <= (b2 ? w : w - 1))
+        for (int32_t i = x0; i <= x1; i++) *at(j, i) = (float)((long double)*at(j, i) - d);
+    if (j >= (b3 ? -1 : 0) && j <= (b2 ? w - 1 : w - 2))
+        for (int32_t i = x0; i <= x1; i++) *at(j + 1, i) = (float)((long double)d + *at(j + 1, i));
+}
+static const uint8_t water_cell_908060_original[] = {0x56, 0x8b, 0x74, 0x24, 0x10, 0x83, 0xfe, 0xff, 0x0f, 0x8c};
+REWRITE("Water::Cell908060", 0x908060, water_cell_908060_original, &water_cell_908060, &g_water_row_moves);
