@@ -3880,3 +3880,582 @@ static void __thiscall water_entry_94ef60(uint8_t *self, int32_t n) {
 }
 static const uint8_t water_entry_94ef60_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0x69, 0xc0, 0xd0};
 REWRITE("Water::Entry94EF60", 0x94ef60, water_entry_94ef60_original, &water_entry_94ef60, &g_water_entries);
+
+// ---- Grid::CellAt(this, x, z, column out, row out) (0x8BCC90): the grid cell (bytes) a position is in, kept inside --------
+// Each part (x - origin) / size (origin +0xC/+0x10, size +0x14/+0x18), as a float, rounded down (the game's floor); below
+// 0 it is 0, above the last cell (width +4 byte - 1, height +5 byte - 1) it is that; each written as the low byte of its
+// fistp. Gives the column's place (left in eax).
+static volatile long g_cells_at;
+static uint8_t *__thiscall grid_cell_at(const uint8_t *self, float x, float z, uint8_t *column, uint8_t *row) {
+    g_cells_at++;
+    auto f = [&](uint32_t at) { return *(const float *)(self + at); };
+    volatile float cx = (float)(((long double)x - f(0xc)) / f(0x14));
+    volatile float fx = (float)floor_h2(cx);
+    volatile float cz = (float)(((long double)z - f(0x10)) / f(0x18));
+    volatile float fz = (float)floor_h2(cz);
+    volatile float col = fx;
+    const float zero = *(const float *)0xf264e0;
+    if (fx < zero) {
+        *(volatile uint32_t *)&col = 0;
+    } else {
+        const long double w = (long double)(int32_t)(self[4] - 1);
+        if ((long double)fx > w) col = (float)w;
+    }
+    long double rw;
+    if (fz < zero) {
+        rw = zero;
+    } else {
+        volatile float h = (float)(int32_t)(self[5] - 1);
+        rw = fz > h ? (long double)h : (long double)fz;
+    }
+    *(volatile uint8_t *)column = (uint8_t)x87_fistp64_h2(col);
+    *(volatile uint8_t *)row = (uint8_t)x87_fistp64_h2(rw);
+    return column;
+}
+static const uint8_t grid_cell_at_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x44, 0x24, 0x10, 0x8b, 0x41, 0x10};
+REWRITE("Grid::CellAt", 0x8bcc90, grid_cell_at_original, &grid_cell_at, &g_cells_at);
+
+// ---- Matrix::NearestAxis(v, m) (0x8A08E0): which axis of a matrix (rows 16 bytes) a vector lines up with best ----------
+// fastcall. d0 = v . row 0 (on the FPU), d1 = (v . row 1) / 2 and d2 = v . row 2 (floats), their sizes as floats. The
+// first not smaller than both others wins (ties to the earlier): 3, 4 or 5 when its d is not below 0, else 0, 1 or 2
+// (a NaN counts as below).
+static volatile long g_nearest_axes;
+static uint32_t __fastcall matrix_nearest_axis(const float *v, const float *m) {
+    g_nearest_axes++;
+    const long double d0 = ((long double)m[2] * v[2] + (long double)m[1] * v[1]) + (long double)v[0] * m[0];
+    volatile float d2 = (float)(((long double)m[8] * v[0] + (long double)m[10] * v[2]) + (long double)m[9] * v[1]);
+    volatile float d1 = (float)((((long double)m[4] * v[0] + (long double)m[6] * v[2]) + (long double)m[5] * v[1]) * *(const float *)0xf2651c);
+    volatile float a0 = (float)(d0 < 0 ? -d0 : d0);
+    const float g1 = d1, g2 = d2;
+    volatile float a1 = g1 < 0 ? -g1 : g1, a2 = g2 < 0 ? -g2 : g2;
+    const float zero = *(const float *)0xf264e0;
+    auto below = [](long double a, float b) { return a < b || a != a || b != b; };
+    if (!below(a0, a1) && !below(a0, a2)) return below(d0, zero) ? 0 : 3;
+    if (!below(a1, a0) && !below(a1, a2)) return below(d1, zero) ? 1 : 4;
+    return below(d2, zero) ? 2 : 5;
+}
+static const uint8_t matrix_nearest_axis_original[] = {0x83, 0xec, 0x14, 0xd9, 0x42, 0x08, 0xd8, 0x49, 0x08};
+REWRITE("Matrix::NearestAxis", 0x8a08e0, matrix_nearest_axis_original, &matrix_nearest_axis, &g_nearest_axes);
+
+// ---- Vector::OntoC5A0E0(out, p, v) (0xC5A0E0): v rescaled so a point's place along it wraps within a range ------------
+// fastcall out and p. L = |v| ((x x + y y) + z z, a float); out = v when L is exactly 0. i = 1 / L (a float); t = (L -
+// (p . v) i) + K (0xF285F0). When t is from 0 up to below R (0xF268DC) out = v; otherwise (below 0 or from R on) w =
+// (L - floor(t K3) R) i (K3 0xF36EE4; the floor the game's, of a float) and out = v w (x and y by w as a float, z by w
+// unrounded). Gives out.
+static volatile long g_wraps_onto;
+static float *__fastcall vector_onto_c5a0e0(float *out, const float *p, const float *v) {
+    g_wraps_onto++;
+    volatile float l = (float)x87_sqrt_h2(((long double)v[0] * v[0] + (long double)v[1] * v[1]) + (long double)v[2] * v[2]);
+    volatile uint32_t *const oi = (volatile uint32_t *)out;
+    const uint32_t *const vi = (const uint32_t *)v;
+    if (l == *(const float *)0xf264e0) {
+        oi[0] = vi[0], oi[1] = vi[1], oi[2] = vi[2];
+        return out;
+    }
+    volatile float inv = (float)((long double)*(const float *)0xf264dc / l);
+    const long double s = (((long double)p[2] * v[2] + (long double)p[1] * v[1]) + (long double)p[0] * v[0]) * inv;
+    const long double t = ((long double)l - s) + *(const float *)0xf285f0;
+    const float range = *(const float *)0xf268dc;
+    if (!(t < *(const float *)0xf264e0) && (t < range || t != t)) {
+        oi[0] = vi[0], oi[1] = vi[1], oi[2] = vi[2];
+        return out;
+    }
+    volatile float u = (float)(t * *(const float *)0xf36ee4);
+    volatile float fl = (float)floor_h2(u);
+    const long double w = ((long double)l - (long double)fl * range) * inv;
+    volatile float wf = (float)w;
+    volatile float *const o = out;
+    o[0] = (float)((long double)wf * v[0]);
+    o[1] = (float)((long double)wf * v[1]);
+    o[2] = (float)(w * v[2]);
+    return out;
+}
+static const uint8_t vector_onto_c5a0e0_original[] = {0x83, 0xec, 0x0c, 0x56, 0x8b, 0x74, 0x24, 0x14, 0xd9, 0x46, 0x08};
+REWRITE("Vector::OntoC5A0E0", 0xc5a0e0, vector_onto_c5a0e0_original, &vector_onto_c5a0e0, &g_wraps_onto);
+
+// ---- Water::Cell907BB0(this, x, z) (0x907BB0): the water height at a place, blended from the four nearest samples ------
+// The grid covers +8..+0x10 by +0xC..+0x14 with n (+0) samples a side (heights +0x40). The place scaled to the samples
+// (floats) is rounded down; outside 0..n-2 the height is +0x1C + +0x18. Otherwise the four samples are blended by the
+// parts past the whole (x first along each row, then the rows by z), times +0x2C plus +0x18; given on the FPU.
+static volatile long g_water_heights;
+static long double __thiscall water_cell_907bb0(const uint8_t *self, float x, float z) {
+    g_water_heights++;
+    auto f = [&](uint32_t at) { return *(const float *)(self + at); };
+    const int32_t n = *(const int32_t *)self;
+    const long double scale = (long double)(n - 1);
+    volatile float sx = (float)(((long double)x - f(8)) / ((long double)f(0x10) - f(8)) * scale);
+    volatile float sz = (float)(((long double)z - f(0xc)) / ((long double)f(0x14) - f(0xc)) * scale);
+    volatile float fx = (float)floor_h2(sx), fz = (float)floor_h2(sz);
+    const int32_t ix = (int32_t)x87_fistp64_h2(fx), iz = (int32_t)x87_fistp64_h2(fz);
+    if (ix < 0 || ix >= n - 1 || iz < 0 || iz >= n - 1) return (long double)f(0x1c) + f(0x18);
+    const float *const h = *(const float *const *)(self + 0x40);
+    const int32_t i = n * iz + ix;
+    const long double a = (long double)sx - fx, b = (long double)*(const float *)0xf264dc - a, c = (long double)sz - fz;
+    const long double r0 = a * h[i + 1] + b * h[i];
+    const long double p = r0 * ((long double)*(const float *)0xf264dc - c);
+    const long double r1 = a * h[i + n + 1] + b * h[i + n];
+    return (p + r1 * c) * f(0x2c) + f(0x18);
+}
+static const uint8_t water_cell_907bb0_original[] = {0x83, 0xec, 0x10, 0x8b, 0x01, 0x48, 0x89, 0x44, 0x24, 0x04};
+REWRITE("Water::Cell907BB0", 0x907bb0, water_cell_907bb0_original, &water_cell_907bb0, &g_water_heights);
+
+// ---- Vector::ConeCD9730 (0xCD9730): where a line meets a cone (or cylinder) around an axis -----------------------------
+// a in eax, b in ecx, d in esi, out in edi; c and k on the stack. n = a x b the game's way (on the FPU); nc = n . c and
+// q = |n|^2 k (floats). When nc nc is below q: out = 0 and 1. Otherwise with e = n . d (on the FPU): when nc e is not
+// below 0, 0; else out = (sqrt(q) s - nc) / e (s 1, or K (0xF268F0) when nc is below 0) and 1 when out is below 1, else
+// 0. (Only the low byte of the result is set on the first two ways out, as in the game.)
+static volatile long g_cones;
+extern "C" uint32_t __stdcall forever_cone(const float *a, const float *b, const float *c, float k, const float *d, float *out) {
+    g_cones++;
+    const long double x = (long double)a[2] * b[1] - (long double)b[2] * a[1];
+    const long double y = (long double)b[2] * a[0] - (long double)b[0] * a[2];
+    const long double z = (long double)b[0] * a[1] - (long double)a[0] * b[1];
+    volatile float nc = (float)((z * c[2] + y * c[1]) + x * c[0]);
+    volatile float q = (float)(((x * x + z * z) + y * y) * k);
+    if ((long double)nc * nc < q) {
+        *(volatile uint32_t *)out = 0;
+        return 1;
+    }
+    const long double e = (z * d[2] + y * d[1]) + x * d[0];
+    const long double ne = (long double)nc * e;
+    if (!(ne < *(const float *)0xf264e0 || ne != ne)) return 0;
+    const long double s = nc < *(const float *)0xf264e0 ? *(const float *)0xf268f0 : *(const float *)0xf264dc;
+    const long double r = (x87_sqrt_h2(q) * s - nc) / e;
+    volatile float *const o = out;
+    *o = (float)r;
+    return r < *(const float *)0xf264dc ? 1 : 0;
+}
+extern "C" __attribute__((naked)) void forever_cone_regs() {   // a eax, b ecx, d esi, out edi; c, k on the stack
+    __asm__("pushl %edi\n\tpushl %esi\n\tpushl 16(%esp)\n\tpushl 16(%esp)\n\tpushl %ecx\n\tpushl %eax\n\tcalll _forever_cone@24\n\tret $8");
+}
+static const uint8_t vector_cone_cd9730_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0xd9, 0x40, 0x08};
+REWRITE("Vector::ConeCD9730", 0xcd9730, vector_cone_cd9730_original, (void *)&forever_cone_regs, &g_cones);
+
+// ---- Fence::DistanceA90D00(list, px, py, qx, qy, i) (0xA90D00): where a line crosses one edge of a closed outline ----
+// The edge runs from point i of the list {points (x, y floats), count} to the next (wrapping). E = edge (x a float, y on
+// the FPU), D = q - p (floats); den = Ex Dy - Dx Ey, 0 giving K (0xF268F0). s = ((px - x0) Dy - (py - y0) Dx) / den and
+// t = ((y0 - py) Ex - (x0 - px) Ey) / den (floats, by den's inverse). t when s and t are both within 0..1, else K.
+static volatile long g_edge_crossings;
+static long double __stdcall fence_distance_a90d00(const uint32_t *list, float px, float py, float qx, float qy, int32_t i) {
+    g_edge_crossings++;
+    const float *const pts = (const float *)(uintptr_t)list[0];
+    const int32_t count = (int32_t)list[1];
+    const int32_t j = i + 1 < count ? i + 1 : i - count + 1;
+    const long double x0 = pts[2 * i], y0 = pts[2 * i + 1];
+    volatile float dy = (float)((long double)qy - py);
+    volatile float ex = (float)((long double)pts[2 * j] - x0);
+    const long double ey = (long double)pts[2 * j + 1] - y0;
+    volatile float dx = (float)((long double)qx - px);
+    const long double den = (long double)ex * dy - (long double)dx * ey;
+    const float none = *(const float *)0xf268f0;
+    if (den == *(const float *)0xf264e0) return none;
+    const long double inv = (long double)*(const float *)0xf264dc / den;
+    volatile float s = (float)((((long double)px - x0) * dy - ((long double)py - y0) * dx) * inv);
+    volatile float t = (float)(((y0 - py) * ex - (x0 - px) * ey) * inv);
+    const float zero = *(const float *)0xf264e0, one = *(const float *)0xf264dc;
+    if (s < zero || s != s || s > one) return none;
+    if (t < zero || t != t || t > one) return none;
+    return t;
+}
+static const uint8_t fence_distance_a90d00_original[] = {0x51, 0x8b, 0x54, 0x24, 0x08, 0x8b, 0x44, 0x24, 0x1c, 0x8b, 0x0a};
+REWRITE("Fence::DistanceA90D00", 0xa90d00, fence_distance_a90d00_original, &fence_distance_a90d00, &g_edge_crossings);
+
+// ---- Person::SwimToward(target, step, stop) (0x7C2970) ----------------------------------------------------------------
+// D = target - position (+0x80; floats, z kept unrounded for its square too), d = |D| (z^2 + y^2 + x^2). When d is above
+// E (0xF3312C) the direction is D / d (floats), else the facing (+0x70). v = d - stop, kept within -step..step (a NaN
+// kept); the position moves by direction v (x unrounded, y and z as floats). 1 when |v| is not below step (or NaN), else 0.
+static volatile long g_swims;
+static uint32_t __thiscall person_swim_toward(uint8_t *self, const float *target, float step, float stop) {
+    g_swims++;
+    volatile float *const pos = (volatile float *)(self + 0x80);
+    const float px = pos[0], py = pos[1], pz = pos[2];
+    volatile float dx = (float)((long double)target[0] - px);
+    volatile float dy = (float)((long double)target[1] - py);
+    const long double dzx = (long double)target[2] - pz;
+    volatile float dz = (float)dzx;
+    const long double d = x87_sqrt_h2((dzx * dz + (long double)dy * dy) + (long double)dx * dx);
+    if (d > *(const float *)0xf3312c) {
+        const long double inv = (long double)*(const float *)0xf264dc / d;
+        dx = (float)(dx * inv);
+        dy = (float)(dy * inv);
+        dz = (float)(dz * inv);
+    } else {
+        const volatile float *const facing = (const volatile float *)(self + 0x70);
+        dx = facing[0], dy = facing[1], dz = facing[2];
+    }
+    long double v = d - stop;
+    if (v > step) v = step;
+    else {
+        volatile float neg = (float)-(long double)step;
+        if (v < neg) v = neg;
+    }
+    const long double mx = dx * v;
+    volatile float my = (float)(dy * v);
+    volatile float mz = (float)(dz * v);
+    pos[2] = (float)((long double)mz + pz);
+    pos[0] = (float)(mx + px);
+    pos[1] = (float)((long double)my + py);
+    const long double a = __builtin_fabsl(v);
+    return a < step || a != a ? 0 : 1;
+}
+static const uint8_t person_swim_toward_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0x81, 0x80, 0x00, 0x00, 0x00};
+REWRITE("Person::SwimToward", 0x7c2970, person_swim_toward_original, &person_swim_toward, &g_swims);
+
+// ---- Curves::StepC213B0(point, n, w) (0xC213B0): a running blend of points ------------------------------------------
+// Self: newest point +0x10, older +0x20, weight +0x30, count +0x34. When n is past the count: the older point becomes
+// the newest blended in by the weight (each part w a + (1 - w) b, z keeping w a unrounded; a plain copy when the weight is
+// not below 1), then the point and w become the newest and the weight. Otherwise, when w is above 0: the weight grows by
+// w, r = w / weight (unrounded), and the newest becomes r point + (1 - r) newest (z keeping (1 - r) newest unrounded).
+// The count becomes n either way.
+static volatile long g_point_blends;
+static void __thiscall curves_step_c213b0(uint8_t *self, const uint32_t *point, int32_t n, float w) {
+    g_point_blends++;
+    volatile float *const f = (volatile float *)self;   // f[4..6] newest, f[8..10] older, f[12] weight
+    const float one = *(const float *)0xf264dc;
+    if (n > *(int32_t *)(self + 0x34)) {
+        if (f[12] < one || f[12] != f[12]) {
+            const long double k = f[12];
+            volatile float a = (float)(k * f[4]);
+            volatile float b = (float)(k * f[5]);
+            const long double c = k * f[6];
+            const long double om = (long double)one - f[12];
+            volatile float e = (float)(om * f[8]);
+            volatile float g = (float)(om * f[9]);
+            volatile float h = (float)(om * f[10]);
+            const long double x = (long double)e + a, y = (long double)g + b;
+            volatile float z = (float)((long double)h + c);
+            f[8] = (float)x;
+            f[9] = (float)y;
+            f[10] = z;
+        } else {
+            uint32_t *const u = (uint32_t *)self;
+            u[8] = u[4], u[9] = u[5], u[10] = u[6];
+        }
+        *(volatile float *)(self + 0x30) = w;
+        uint32_t *const u = (uint32_t *)self;
+        u[4] = point[0], u[5] = point[1], u[6] = point[2];
+    } else if (w > *(const float *)0xf264e0) {
+        const float *const p = (const float *)point;
+        const long double s = (long double)w + f[12];
+        f[12] = (float)s;
+        const long double r = w / s;
+        volatile float a = (float)(r * p[0]);
+        volatile float b = (float)(r * p[1]);
+        volatile float c = (float)(r * p[2]);
+        const long double om = (long double)one - r;
+        volatile float e = (float)(om * f[4]);
+        volatile float g = (float)(om * f[5]);
+        const long double h = om * f[6];
+        const long double x = (long double)e + a, y = (long double)g + b;
+        volatile float z = (float)(h + c);
+        f[4] = (float)x;
+        f[5] = (float)y;
+        f[6] = z;
+    }
+    *(int32_t *)(self + 0x34) = n;
+}
+static const uint8_t curves_step_c213b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x8b, 0x55, 0x0c, 0x3b, 0x51, 0x34};
+REWRITE("Curves::StepC213B0", 0xc213b0, curves_step_c213b0_original, &curves_step_c213b0, &g_point_blends);
+
+// ---- Effect::Length414630 (0x414630): each triangle's normal, made of length 1 ---------------------------------------
+// Entries of 0x20 bytes (+0x94, count +0x98, read again each time): points a, b, c (pointers) and the normal at +0x10.
+// U = b - a (x unrounded), V = c - a (floats); the normal is V x U the game's way, stored, then each part negated, then
+// divided by its length (z^2 + x^2 + y^2); a length of 0 sets z to 1 and leaves x and y.
+static volatile long g_effect_normals;
+static void __thiscall effect_length_414630(uint8_t *self) {
+    g_effect_normals++;
+    for (int32_t i = 0; i < *(volatile int32_t *)(self + 0x98); i++) {
+        uint8_t *const e = *(uint8_t *const volatile *)(self + 0x94) + i * 0x20;
+        const float *const a = *(const float *const *)e, *const b = *(const float *const *)(e + 4), *const c = *(const float *const *)(e + 8);
+        const long double ux = (long double)b[0] - a[0];
+        volatile float uy = (float)((long double)b[1] - a[1]);
+        volatile float uz = (float)((long double)b[2] - a[2]);
+        volatile float vx = (float)((long double)c[0] - a[0]);
+        volatile float vy = (float)((long double)c[1] - a[1]);
+        volatile float vz = (float)((long double)c[2] - a[2]);
+        const long double nx = (long double)vy * uz - (long double)vz * uy;
+        const long double ny = (long double)vz * ux - (long double)uz * vx;
+        const long double nz = (long double)uy * vx - (long double)vy * ux;
+        volatile float *const n = (volatile float *)(e + 0x10);
+        n[2] = (float)nz;
+        n[0] = (float)nx;
+        n[1] = (float)ny;
+        for (int k = 0; k < 3; k++) n[k] = (float)-(long double)n[k];
+        const long double z = n[2], y = n[1], x = n[0];
+        const long double len = x87_sqrt_h2((z * z + x * x) + y * y);
+        if (len == *(const float *)0xf264e0) {
+            *(volatile uint32_t *)(e + 0x18) = 0x3f800000;
+            continue;
+        }
+        const long double inv = (long double)*(const float *)0xf264dc / len;
+        n[0] = (float)(inv * n[0]);
+        n[1] = (float)(inv * n[1]);
+        n[2] = (float)(inv * n[2]);
+    }
+}
+static const uint8_t effect_length_414630_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0x8b, 0x81, 0x98, 0x00, 0x00, 0x00};
+REWRITE("Effect::Length414630", 0x414630, effect_length_414630_original, &effect_length_414630, &g_effect_normals);
+
+// ---- Effect::Pass414320(unused, p, k) (0x414320): pushes points nearer p than k out to k -------------------------------
+// Entries of 0x50 bytes (+0x14, count +0x20, read again each time), a point first. D = point - p (x and z unrounded, y a
+// float), L = |D| (z^2 + y^2 + x^2). The direction is D / L (x and y floats, z unrounded), or (x, y, 1) when L is 0.
+// When L (as a float) is below k the point becomes p + k direction (z unrounded).
+static volatile long g_effect_pushes;
+static void __thiscall effect_pass_414320(uint8_t *self, uint32_t, const float *p, float k) {
+    g_effect_pushes++;
+    for (int32_t i = 0; i < *(volatile int32_t *)(self + 0x20); i++) {
+        volatile float *const e = (volatile float *)(*(uint8_t *const volatile *)(self + 0x14) + i * 0x50);
+        const long double dx = (long double)e[0] - p[0];
+        volatile float dy = (float)((long double)e[1] - p[1]);
+        const long double dz = (long double)e[2] - p[2];
+        volatile float x = (float)dx, y = dy;
+        const long double len = x87_sqrt_h2((dz * dz + (long double)dy * dy) + dx * dx);
+        volatile float lf = (float)len;
+        long double z;
+        if (len == *(const float *)0xf264e0) z = *(const float *)0xf264dc;
+        else {
+            const long double inv = (long double)*(const float *)0xf264dc / len;
+            x = (float)(inv * dx);
+            y = (float)(dy * inv);
+            z = dz * inv;
+        }
+        if (!(lf < k)) continue;
+        volatile float xk = (float)(x * (long double)k);
+        volatile float yk = (float)(y * (long double)k);
+        const long double zk = z * k;
+        e[2] = (float)(zk + p[2]);
+        e[0] = (float)((long double)xk + p[0]);
+        e[1] = (float)((long double)yk + p[1]);
+    }
+}
+static const uint8_t effect_pass_414320_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0x8b, 0x41, 0x20, 0x53, 0x56, 0x33, 0xdb};
+REWRITE("Effect::Pass414320", 0x414320, effect_pass_414320_original, &effect_pass_414320, &g_effect_pushes);
+
+// ---- Fence::NearA90E70(out, list, px, py, i) (0xA90E70): the nearest point to p on one edge of an outline -------------
+// The edge from point i of the list {points (x, y floats), count} to the next (wrapping). A = x0 - x1, B = y0 - y1
+// (unrounded). When A^2 + B^2 is not above E (0xF2CF34) out is point i. Otherwise t = ((y0 - py) B + (x0 - px) A) /
+// (B^2 + A^2) (B as a float, t rounded to one): above 1 out is point i + 1, below 0 point i, else (with a NaN too) out is
+// x1 t + x0 (1 - t), y1 t + y0 (1 - t) (the x product and both t products floats). Gives out.
+static volatile long g_fence_nears;
+static float *__stdcall fence_near_a90e70(float *out, const uint32_t *list, float px, float py, int32_t i) {
+    g_fence_nears++;
+    const float *const pts = (const float *)(uintptr_t)list[0];
+    const int32_t count = (int32_t)list[1];
+    const int32_t j = i + 1 < count ? i + 1 : i - count + 1;
+    const float x0 = pts[2 * i], y0 = pts[2 * i + 1], x1 = pts[2 * j], y1 = pts[2 * j + 1];
+    const long double a = (long double)x0 - x1;
+    const long double b = (long double)y0 - y1;
+    volatile float bf = (float)b;
+    if (!(a * a + b * b > *(const float *)0xf2cf34)) {
+        volatile float *const o = out;
+        o[0] = x0, o[1] = y0;
+        return out;
+    }
+    const long double num = ((long double)y0 - py) * bf + ((long double)x0 - px) * a;
+    volatile float t = (float)(num / ((long double)bf * bf + a * a));
+    volatile float *const o = out;
+    if (t > *(const float *)0xf264dc) {
+        o[0] = x1, o[1] = y1;
+        return out;
+    }
+    if (t < *(const float *)0xf264e0) {
+        o[0] = x0, o[1] = y0;
+        return out;
+    }
+    volatile float tx = (float)((long double)x1 * t);
+    volatile float ty = (float)((long double)y1 * t);
+    const long double om = (long double)*(const float *)0xf264dc - t;
+    volatile float sx = (float)(x0 * om);
+    const long double sy = y0 * om;
+    o[0] = (float)((long double)sx + tx);
+    o[1] = (float)(sy + ty);
+    return out;
+}
+static const uint8_t fence_near_a90e70_original[] = {0x83, 0xec, 0x10, 0x8b, 0x54, 0x24, 0x18, 0x8b, 0x0a, 0x8b, 0x44, 0x24, 0x24};
+REWRITE("Fence::NearA90E70", 0xa90e70, fence_near_a90e70_original, &fence_near_a90e70, &g_fence_nears);
+
+// ---- Terrain::Near8F2380(p, r0, r1) (0x8F2380): a fade by distance into each grid entry's top byte --------------------
+// (+8 + +0xC) x 2 entries of 0x10 bytes (+0x14; x at +0, z at +8) and as many words (+0x1C). d = (x - px)^2 + (z - pz)^2
+// (a float). Within r0^2 (a float) the top byte is 0xFF; from r1^2 (a float) on (or NaN) 0; between, 0xFF less
+// floor((d - r0^2) 255 / (r1^2 - r0^2) + 0.5) (the scale a float, r1^2 unrounded under it).
+static volatile long g_terrain_fades;
+static void __thiscall terrain_near_8f2380(const uint8_t *self, const float *p, float r0, float r1) {
+    g_terrain_fades++;
+    volatile float in2 = (float)((long double)r0 * r0);
+    const long double out2x = (long double)r1 * r1;
+    volatile float out2 = (float)out2x;
+    volatile float scale = (float)(*(const float *)0xf264c0 / (out2x - in2));
+    const int32_t n = (*(const int32_t *)(self + 0xc) + *(const int32_t *)(self + 8)) * 2;
+    if (n <= 0) return;
+    const float *e = *(const float *const *)(self + 0x14);
+    uint32_t *w = *(uint32_t *const *)(self + 0x1c);
+    for (int32_t k = 0; k < n; k++, e += 4, w++) {
+        const long double dx = (long double)e[0] - p[0];
+        const long double dz = (long double)e[2] - p[1];
+        volatile float d = (float)(dz * dz + dx * dx);
+        uint32_t v;
+        if (d <= in2) v = 0xff;
+        else if (!(d < out2 || d != d)) v = 0;
+        else {
+            volatile float u = (float)(((long double)d - in2) * scale + *(const float *)0xf2651c);
+            volatile float fl = (float)floor_h2(u);
+            v = 0xff - (uint32_t)x87_fistp64_h2(fl);
+        }
+        *w = (*w & 0xffffff) | v << 24;
+    }
+}
+static const uint8_t terrain_near_8f2380_original[] = {0x83, 0xec, 0x10, 0xd9, 0x44, 0x24, 0x18, 0x8b, 0x41, 0x0c, 0xd8, 0x4c, 0x24, 0x18};
+REWRITE("Terrain::Near8F2380", 0x8f2380, terrain_near_8f2380_original, &terrain_near_8f2380, &g_terrain_fades);
+
+// ---- Vector::NearCDB2A0 (0xCDB2A0): where a ray from a first meets a sphere ---------------------------------------
+// The start a in ecx, the direction d in edx; the centre c, the radius r and out on the stack. P = a - c (x a float, y
+// and z unrounded); b = 2 (P . d) (z, y, x order), disc = b b' - 4 ((z^2 + x^2 + y^2) - r^2) (b' = b as a float). With
+// disc below 0 (or NaN) 0. Else out = (-b' - sqrt disc) / 2, and 1 when that is not below 0; else out = (sqrt disc -
+// b') / 2 and 1 when that is not below 0, else 0. (Only the low byte is set on the first two ways out, as in the game.)
+static volatile long g_sphere_hits;
+extern "C" uint32_t __stdcall forever_sphere_hit(const float *a, const float *d, const float *c, float r, float *out) {
+    g_sphere_hits++;
+    volatile float px = (float)((long double)a[0] - c[0]);
+    const long double py = (long double)a[1] - c[1];
+    const long double pz = (long double)a[2] - c[2];
+    const long double dot = (pz * d[2] + py * d[1]) + (long double)px * d[0];
+    const long double b = dot + dot;
+    volatile float bf = (float)b;
+    const long double s2 = (pz * pz + (long double)px * px) + py * py;
+    const long double disc = b * bf - (s2 - (long double)r * r) * *(const float *)0xf2669c;
+    if (disc < *(const float *)0xf264e0 || disc != disc) return 0;
+    const long double s = x87_sqrt_h2(disc);
+    const long double nb = -(long double)bf;
+    const float half = *(const float *)0xf2651c;
+    volatile float *const o = out;
+    const long double t1 = (nb - s) * half;
+    *o = (float)t1;
+    if (!(t1 < *(const float *)0xf264e0 || t1 != t1)) return 1;
+    const long double t2 = (s + nb) * half;
+    *o = (float)t2;
+    return t2 < *(const float *)0xf264e0 || t2 != t2 ? 0 : 1;
+}
+extern "C" __attribute__((naked)) void forever_sphere_hit_regs() {   // a ecx, d edx; c, r, out on the stack
+    __asm__("pushl 12(%esp)\n\tpushl 12(%esp)\n\tpushl 12(%esp)\n\tpushl %edx\n\tpushl %ecx\n\tcalll _forever_sphere_hit@20\n\tret $12");
+}
+static const uint8_t vector_near_cdb2a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x20, 0x8b, 0x41, 0x08, 0xd9, 0x01};
+REWRITE("Vector::NearCDB2A0", 0xcdb2a0, vector_near_cdb2a0_original, (void *)&forever_sphere_hit_regs, &g_sphere_hits);
+
+// ---- Animal::DirectionA60E40 (0xA60E40): a step from one point toward another, by a square-root rule -----------------
+// out in ecx, to in edx; from, a and k on the stack. D = to - from (floats; z kept unrounded for its square), L = |D|
+// (z^2 + x^2 + y^2), also kept as a float L'. The step m = sqrt(L') a k; when L is above 0, m is below L' and q = m / L'
+// is below Q (0xF37CF8), out = from + q D (the x product unrounded, y and z products floats).
+// Otherwise out is to (copied).
+static volatile long g_animal_steps;
+extern "C" void __stdcall forever_animal_direction(float *out, const float *to, const float *from, float a, float k) {
+    g_animal_steps++;
+    volatile float dx = (float)((long double)to[0] - from[0]);
+    volatile float dy = (float)((long double)to[1] - from[1]);
+    const long double dzx = (long double)to[2] - from[2];
+    volatile float dz = (float)dzx;
+    const long double len = x87_sqrt_h2((dzx * dz + (long double)dx * dx) + (long double)dy * dy);
+    volatile float lf = (float)len;
+    if (len > *(const float *)0xf264e0) {
+        const long double m = x87_sqrt_h2(lf) * a * k;
+        if (m < lf) {
+            const long double q = m / lf;
+            if (q < *(const float *)0xf37cf8) {
+                const long double mx = dx * q;
+                volatile float my = (float)(dy * q);
+                volatile float mz = (float)(dz * q);
+                volatile float *const o = out;
+                o[2] = (float)((long double)mz + from[2]);
+                o[0] = (float)(mx + from[0]);
+                o[1] = (float)((long double)my + from[1]);
+                return;
+            }
+        }
+    }
+    uint32_t *const o = (uint32_t *)out;
+    const uint32_t *const t = (const uint32_t *)to;
+    o[0] = t[0], o[1] = t[1], o[2] = t[2];
+}
+extern "C" __attribute__((naked)) void forever_animal_direction_regs() {   // out ecx, to edx; from, a, k on the stack
+    __asm__("pushl 12(%esp)\n\tpushl 12(%esp)\n\tpushl 12(%esp)\n\tpushl %edx\n\tpushl %ecx\n\tcalll _forever_animal_direction@20\n\tret $12");
+}
+static const uint8_t animal_direction_a60e40_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0xd9, 0x02, 0x56};
+REWRITE("Animal::DirectionA60E40", 0xa60e40, animal_direction_a60e40_original, (void *)&forever_animal_direction_regs, &g_animal_steps);
+
+// ---- Effect::Normalise7B3B20 (0x7B3B20): scales a centre by one over a weight, and a spread from it -----------------
+// When the weight (+0x44) is above 0: i = 1 / weight; the centre (+0x10) is scaled by i (x by i unrounded, y and z by i
+// as a float). For each of the points (+0x50, 0x10 bytes each, count +0x4C read again each time), with A = point - base
+// (+0) and B = point - centre (unrounded but B's z, a float), +0x48 += (B.z^2 + B.y^2 + B.x^2) / (A.z^2 + A.x^2 + A.y^2).
+// Then +0x48 = sqrt(i +0x48).
+static volatile long g_effect_spreads;
+static void __thiscall effect_normalise_7b3b20(uint8_t *self) {
+    g_effect_spreads++;
+    volatile float *const f = (volatile float *)self;
+    if (!(f[0x44 / 4] > *(const float *)0xf264e0)) return;
+    const long double inv = (long double)*(const float *)0xf264dc / f[0x44 / 4];
+    volatile float invf = (float)inv;
+    f[4] = (float)(inv * f[4]);
+    f[5] = (float)((long double)invf * f[5]);
+    f[6] = (float)((long double)invf * f[6]);
+    for (int32_t i = 0; i < *(volatile int32_t *)(self + 0x4c); i++) {
+        const float *const p = *(const float *const *)(self + 0x50) + i * 4;
+        const long double ax = (long double)p[0] - f[0], ay = (long double)p[1] - f[1], az = (long double)p[2] - f[2];
+        const long double bx = (long double)p[0] - f[4], by = (long double)p[1] - f[5];
+        volatile float bz = (float)((long double)p[2] - f[6]);
+        const long double w = (long double)*(const float *)0xf264dc / ((az * az + ax * ax) + ay * ay);
+        const long double t = ((long double)bz * bz + by * by) + bx * bx;
+        f[0x48 / 4] = (float)(w * t + f[0x48 / 4]);
+    }
+    f[0x48 / 4] = (float)x87_sqrt_h2((long double)invf * f[0x48 / 4]);
+}
+static const uint8_t effect_normalise_7b3b20_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x1c, 0xd9, 0x41, 0x44, 0x56};
+REWRITE("Effect::Normalise7B3B20", 0x7b3b20, effect_normalise_7b3b20_original, &effect_normalise_7b3b20, &g_effect_spreads);
+
+// ---- Grid::SnapToRow(out, p) (0x99C2A0) ----------------------------------------------------------------------------
+// H = the row height (0x13413B0). y = floor(p.y / H) H (the quotient a float, the product as a float y'): below 0 it is
+// 0; above the last row ((+0x108 - 1) H, unrounded) it is that; else y'. out = {p.x but at least M (0xF2E17C), y}.
+static volatile long g_row_snaps;
+static float *__thiscall grid_snap_to_row(const uint8_t *self, float *out, const float *p) {
+    g_row_snaps++;
+    const volatile float *const h = (const volatile float *)0x13413b0;
+    volatile float q = (float)((long double)p[1] / *h);
+    volatile float fl = (float)floor_h2(q);
+    const int32_t i = (int32_t)x87_fistp64_h2(fl);
+    volatile float yf = (float)((long double)i * *h);
+    long double y;
+    if (yf < *(const float *)0xf264e0) y = *(const float *)0xf264e0;
+    else {
+        const long double top = (long double)(*(const int32_t *)(self + 0x108) - 1) * *h;
+        y = yf > top ? top : (long double)yf;
+    }
+    volatile float *const o = out;
+    const float m = *(const float *)0xf2e17c;
+    o[0] = p[0] < m ? m : p[0];
+    o[1] = (float)y;
+    return out;
+}
+static const uint8_t grid_snap_to_row_original[] = {0x83, 0xec, 0x08, 0x8b, 0x54, 0x24, 0x10, 0xd9, 0x42, 0x04, 0xd8, 0x35, 0xb0, 0x13, 0x34, 0x01};
+REWRITE("Grid::SnapToRow", 0x99c2a0, grid_snap_to_row_original, &grid_snap_to_row, &g_row_snaps);
+
+// ---- Segment::MiddleOfEnds(out) (0xBC61E0) -------------------------------------------------------------------------
+// The lists (+0x10C, +0x110: {count, points of 0x24 bytes}) are only there with flag 0x400000 (+0x18) and at least two
+// ends (+0xE4): the game reads through 0 otherwise. out = (last of +0x10C + last of +0x110) / 2, x's sum as a float.
+static volatile long g_segment_middles;
+static float *__thiscall segment_middle_of_ends(const uint8_t *self, float *out) {
+    g_segment_middles++;
+    const bool there = (*(const uint32_t *)(self + 0x18) & 0x400000) && *(const int32_t *)(self + 0xe4) >= 2;
+    const uint32_t *const volatile l2 = there ? *(const uint32_t *const *)(self + 0x110) : nullptr;
+    const uint32_t *const volatile l1 = there ? *(const uint32_t *const *)(self + 0x10c) : nullptr;
+    const float *const b = (const float *)((const uint8_t *)(uintptr_t)l2[1] + l2[0] * 0x24 - 0x24);
+    const float *const a = (const float *)((const uint8_t *)(uintptr_t)l1[1] + l1[0] * 0x24 - 0x24);
+    volatile float sx = (float)((long double)a[0] + b[0]);
+    const long double sy = (long double)a[1] + b[1];
+    const long double sz = (long double)a[2] + b[2];
+    const float half = *(const float *)0xf2651c;
+    volatile float *const o = out;
+    o[0] = (float)((long double)sx * half);
+    o[1] = (float)(sy * half);
+    o[2] = (float)(sz * half);
+    return out;
+}
+static const uint8_t segment_middle_of_ends_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x3c, 0x56, 0x8b, 0x71, 0x18};
+REWRITE("Segment::MiddleOfEnds", 0xbc61e0, segment_middle_of_ends_original, &segment_middle_of_ends, &g_segment_middles);

@@ -298,9 +298,9 @@ address,size,name,callers,status
 0x4141a0,41,,0,documented
 0x4141e0,144,FrameTime::Smooth,1,rewritten
 0x414270,173,Wobble::Update,1,rewritten
-0x414320,263,,0,documented
+0x414320,263,Effect::Pass414320,0,rewritten
 0x414470,445,,1,documented
-0x414630,311,,1,documented
+0x414630,311,Effect::Length414630,1,rewritten
 0x414770,1289,,1,documented
 0x414d20,1270,,4,documented
 0x415240,21,,1,documented
@@ -9662,7 +9662,7 @@ address,size,name,callers,status
 0x7b3a50,136,,0,documented
 0x7b3ae0,28,Object::FreeField,1,rewritten
 0x7b3b00,31,Record::SetFields,1,rewritten
-0x7b3b20,207,,1,documented
+0x7b3b20,207,Effect::Normalise7B3B20,1,rewritten
 0x7b3bf0,288,,0,documented
 0x7b3d10,28,Object::FreeField,1,rewritten
 0x7b3d30,26,OwnedPointer::Reset,1,rewritten
@@ -9830,7 +9830,7 @@ address,size,name,callers,status
 0x7c27d0,199,,13,documented
 0x7c28a0,166,Angle::TurnToward,2,rewritten
 0x7c2950,17,,2,documented
-0x7c2970,335,,9,documented
+0x7c2970,335,Person::SwimToward,9,rewritten
 0x7c2ac0,629,,5,documented
 0x7c2d40,494,,2,documented
 0x7c2f40,75,,25,documented
@@ -12075,7 +12075,7 @@ address,size,name,callers,status
 0x8a0710,403,,1,documented
 0x8a08b0,30,DeletingDestructor,1,rewritten
 0x8a08d0,3,,2,documented
-0x8a08e0,259,,12,documented
+0x8a08e0,259,Matrix::NearestAxis,12,rewritten
 0x8a09f0,199,,0,documented
 0x8a0ac0,190,,0,documented
 0x8a0b90,1866,,7,documented
@@ -12235,7 +12235,7 @@ address,size,name,callers,status
 0x8bc4a0,594,,1,documented
 0x8bc700,789,,3,documented
 0x8bca20,610,,1,documented
-0x8bcc90,261,,236,documented
+0x8bcc90,261,Grid::CellAt,236,rewritten
 0x8bce50,287,,2,documented
 0x8bcf80,109,Terrain::CellHeightRange,43,rewritten
 0x8bcff0,83,Rect::GrowByOne,11,rewritten
@@ -12630,7 +12630,7 @@ address,size,name,callers,status
 0x8efd20,4104,,1,documented
 0x8f0d30,800,Terrain::Indices8F0D30,1,rewritten
 0x8f1060,4896,,2,documented
-0x8f2380,253,,1,documented
+0x8f2380,253,Terrain::Near8F2380,1,rewritten
 0x8f2480,256,,1,documented
 0x8f2580,372,,2,documented
 0x8f2780,298,,1,documented
@@ -12785,7 +12785,7 @@ address,size,name,callers,status
 0x906950,2759,,1,documented
 0x907440,447,,1,documented
 0x907600,1298,,1,documented
-0x907bb0,270,,3,documented
+0x907bb0,270,Water::Cell907BB0,3,rewritten
 0x907cc0,920,,1,documented
 0x908060,481,,1,documented
 0x908250,522,,1,documented
@@ -14142,7 +14142,7 @@ address,size,name,callers,status
 0x99c160,30,DeletingDestructor,4,rewritten
 0x99c180,30,DeletingDestructor,4,rewritten
 0x99c1a0,249,,2,documented
-0x99c2a0,184,,4,documented
+0x99c2a0,184,Grid::SnapToRow,4,rewritten
 0x99c360,402,,3,documented
 0x99c500,344,,1,documented
 0x99c660,202,,1,documented
@@ -16081,7 +16081,7 @@ address,size,name,callers,status
 0xa609d0,287,,3,documented
 0xa60af0,277,,6,documented
 0xa60c10,549,,3,documented
-0xa60e40,218,,2,documented
+0xa60e40,218,Animal::DirectionA60E40,2,rewritten
 0xa60f20,127,,1,documented
 0xa60fd0,287,,1,documented
 0xa610f0,97,,1,documented
@@ -16505,9 +16505,9 @@ address,size,name,callers,status
 0xa90a30,148,,3,documented
 0xa90b00,79,,7,documented
 0xa90b50,431,,2,documented
-0xa90d00,272,,1,documented
+0xa90d00,272,Fence::DistanceA90D00,1,rewritten
 0xa90e10,84,,1,documented
-0xa90e70,308,,1,documented
+0xa90e70,308,Fence::NearA90E70,1,rewritten
 0xa90fb0,373,,1,documented
 0xa91160,30,DeletingDestructor,1,rewritten
 0xa91180,186,,2,documented
@@ -19619,7 +19619,7 @@ address,size,name,callers,status
 0xbc5fd0,187,,2,documented
 0xbc60c0,22,,1,documented
 0xbc6140,155,Segment::Middle,0,rewritten
-0xbc61e0,181,,0,documented
+0xbc61e0,181,Segment::MiddleOfEnds,0,rewritten
 0xbc62a0,270,,0,documented
 0xbc63b0,293,,0,documented
 0xbc64e0,235,,0,documented
@@ -21020,7 +21020,7 @@ address,size,name,callers,status
 0xc212d0,66,,2,documented
 0xc21320,48,,5,documented
 0xc21380,40,,24,documented
-0xc213b0,325,,5,documented
+0xc213b0,325,Curves::StepC213B0,5,rewritten
 0xc21520,205,,9,documented
 0xc21610,349,Matrix::InverseTransform,0,rewritten
 0xc21770,525,Matrix::TransformRows,0,rewritten
@@ -21633,7 +21633,7 @@ address,size,name,callers,status
 0xc59e30,30,DeletingDestructor,1,rewritten
 0xc59e50,176,Destructor::Steps,1,rewritten
 0xc59f00,114,Maker::MakeC59F00,1,rewritten
-0xc5a0e0,259,,0,documented
+0xc5a0e0,259,Vector::OntoC5A0E0,0,rewritten
 0xc5a1f0,929,Quaternion::Slerp,10,rewritten
 0xc5a5a0,660,Vector::AngleBetween,0,rewritten
 0xc5a860,88,Vector::Lerp3,0,rewritten
@@ -22881,11 +22881,11 @@ address,size,name,callers,status
 0xcd90e0,110,,3,documented
 0xcd9150,15,,2,documented
 0xcd93a0,31,,2,documented
-0xcd9730,260,,0,documented
+0xcd9730,260,Vector::ConeCD9730,0,rewritten
 0xcd9840,4005,,6,documented
 0xcda7f0,2093,,26,documented
 0xcdb0e0,446,Plane::BelowCDB0E0,5,rewritten
-0xcdb2a0,227,,1,documented
+0xcdb2a0,227,Vector::NearCDB2A0,1,rewritten
 0xcdb390,587,Vector::DistanceToLine,2,rewritten
 0xcdb5e0,27,,6,documented
 0xcdb600,256,,12,documented

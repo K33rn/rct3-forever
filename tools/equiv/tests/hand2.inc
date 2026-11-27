@@ -1824,4 +1824,323 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                             },
                             [](void *fn) { ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x10)[0]); return Result{}; }};
     quick(water_entry_94ef60);
+    // Grid::CellAt: grids of 1-20 by 1-20 cells, positions inside, on edges and outside either way
+    Test grid_cell_at{0x8bcc90,
+                      [=](Rng &r) {
+                          uint8_t *self = arena<uint8_t>(0x100);
+                          self[4] = (uint8_t)r.range(1, 20), self[5] = (uint8_t)r.range(1, 20);
+                          *(float *)(self + 0xc) = r.real(-50, 50), *(float *)(self + 0x10) = r.real(-50, 50);
+                          *(float *)(self + 0x14) = r.range(0, 3) ? 4.0f : r.real(0.5f, 8), *(float *)(self + 0x18) = r.range(0, 3) ? 4.0f : r.real(0.5f, 8);
+                          arena<float>(0x10)[0] = *(float *)(self + 0xc) + (r.range(0, 4) ? r.real(-10, 100) : 4.0f * r.range(-2, 22));
+                          arena<float>(0x10)[1] = *(float *)(self + 0x10) + (r.range(0, 4) ? r.real(-10, 100) : 4.0f * r.range(-2, 22));
+                          arena<uint32_t>(0x20)[0] = r.next();
+                      },
+                      [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, float, float, void *, void *))fn)(arena<void>(0x100), arena<float>(0x10)[0], arena<float>(0x10)[1], arena<void>(0x20), arena<void>(0x21))}; }};
+    quick(grid_cell_at);
+    // Matrix::NearestAxis: random and axis-aligned vectors and matrices (ties at times)
+    Test matrix_nearest_axis{0x8a08e0,
+                             [=](Rng &r) {
+                                 for (int i = 0; i < 12; i++) arena<float>(0x100)[i] = r.range(0, 3) ? r.real(-1, 1) : (float)r.range(-1, 1);
+                                 for (int k = 0; k < 3; k++) arena<float>(0x200)[k] = r.range(0, 3) ? r.real(-2, 2) : (float)r.range(-1, 1);
+                             },
+                             [](void *fn) { return Result{((uint32_t(__fastcall *)(void *, void *))fn)(arena<void>(0x200), arena<void>(0x100))}; }};
+    quick(matrix_nearest_axis);
+    // Vector::OntoC5A0E0: random points and directions (none at times), places that wrap either way or not
+    Test vector_onto_c5a0e0{0xc5a0e0,
+                            [=](Rng &r) {
+                                for (int k = 0; k < 3; k++) arena<float>(0x100)[k] = r.real(-50, 50), arena<float>(0x110)[k] = r.range(0, 9) ? r.real(-3, 3) : 0.0f;
+                                for (int i = 0; i < 3; i++) arena<uint32_t>(0x120)[i] = r.next();
+                            },
+                            [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *))fn)(arena<void>(0x120), arena<void>(0x100), arena<void>(0x110))}; }};
+    quick(vector_onto_c5a0e0);
+    // Water::Cell907BB0: grids of 2-6 samples a side, places inside, on edges and outside
+    Test water_cell_907bb0{0x907bb0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               const int n = r.range(2, 6);
+                               *(int32_t *)self = n;
+                               *(float *)(self + 8) = r.real(-20, 0), *(float *)(self + 0xc) = r.real(-20, 0), *(float *)(self + 0x10) = r.real(1, 20), *(float *)(self + 0x14) = r.real(1, 20);
+                               *(float *)(self + 0x18) = r.real(-5, 5), *(float *)(self + 0x1c) = r.real(-5, 5), *(float *)(self + 0x2c) = r.real(-2, 2);
+                               *(uint32_t *)(self + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int i = 0; i < 36; i++) arena<float>(0x400)[i] = r.real(-3, 3);
+                               arena<float>(0x10)[0] = r.real(-25, 25), arena<float>(0x10)[1] = r.real(-25, 25);
+                           },
+                           [](void *fn) { Result x; x.f = ((long double(__thiscall *)(void *, float, float))fn)(arena<void>(0x100), arena<float>(0x10)[0], arena<float>(0x10)[1]); return x; }};
+    quick(water_cell_907bb0);
+    // Vector::ConeCD9730: random lines, cone points and axes (k of 0 at times, axes along a or b at times), the registers
+    // set as the game passes them; only the low byte of the result is the game's
+    Test vector_cone_cd9730{0xcd9730,
+                            [=](Rng &r) {
+                                float *v = arena<float>(0x100);   // a 0x100, b 0x110, c 0x120, d 0x130
+                                for (int i = 0; i < 16; i++) v[i] = r.real(-4, 4);
+                                const int shape = r.range(0, 9);
+                                if (shape == 0) for (int c = 0; c < 3; c++) v[4 + c] = v[c] * 2;      // b along a: n = 0
+                                if (shape == 1) for (int c = 0; c < 3; c++) v[12 + c] = v[8 + c];     // d = c
+                                if (shape == 2) for (int c = 0; c < 3; c++) v[12 + c] = -v[8 + c];    // d = -c
+                                arena<float>(0x140)[0] = r.range(0, 5) == 0 ? 0.0f : r.real(0, r.range(0, 1) ? 0.05f : 20.0f);
+                                arena<uint32_t>(0x150)[0] = r.next();
+                            },
+                            [](void *fn) {
+                                uint32_t stack[2] = {(uint32_t)(uintptr_t)arena<void>(0x120), arena<uint32_t>(0x140)[0]};
+                                uint32_t *ps = stack;
+                                void *b = arena<void>(0x110), *d = arena<void>(0x130), *o = arena<void>(0x150);
+                                uint32_t a = (uint32_t)(uintptr_t)arena<void>(0x100);
+                                __asm__ volatile("pushl 4(%%edx)\n\tpushl (%%edx)\n\tcall *%%ebx"
+                                                 : "+a"(a), "+c"(b), "+S"(d), "+D"(o), "+d"(ps)
+                                                 : "b"(fn)
+                                                 : "memory", "cc");
+                                return Result{a & 0xff};
+                            }};
+    quick(vector_cone_cd9730);
+    // Fence::DistanceA90D00: outlines of 2-8 points, every edge (the last wrapping), lines through, along and past the
+    // edge, and lines of no length at times
+    Test fence_distance_a90d00{0xa90d00,
+                               [=](Rng &r) {
+                                   const int n = r.range(2, 8);
+                                   uint32_t *list = arena<uint32_t>(0x100);
+                                   list[0] = (uint32_t)(uintptr_t)arena<void>(0x200), list[1] = (uint32_t)n;
+                                   float *pt = arena<float>(0x200);
+                                   for (int k = 0; k < 2 * n; k++) pt[k] = r.real(-10, 10);
+                                   const int i = r.range(0, n - 1), j = i + 1 < n ? i + 1 : 0;
+                                   float *a = arena<float>(0x40);   // px py qx qy, then i
+                                   for (int k = 0; k < 4; k++) a[k] = r.real(-12, 12);
+                                   const int shape = r.range(0, 7);
+                                   if (shape == 0) a[2] = a[0], a[3] = a[1];                                            // q = p
+                                   if (shape == 1) a[2] = a[0] + (pt[2 * j] - pt[2 * i]), a[3] = a[1] + (pt[2 * j + 1] - pt[2 * i + 1]);   // along
+                                   if (shape == 2) a[0] = pt[2 * i], a[1] = pt[2 * i + 1];                              // from the edge's start
+                                   if (shape == 3) a[2] = pt[2 * j], a[3] = pt[2 * j + 1];                              // to the edge's end
+                                   arena<int32_t>(0x50)[0] = i;
+                               },
+                               [](void *fn) {
+                                   const float *a = arena<float>(0x40);
+                                   Result x;
+                                   x.f = ((long double(__stdcall *)(void *, float, float, float, float, int32_t))fn)(arena<void>(0x100), a[0], a[1], a[2], a[3], arena<int32_t>(0x50)[0]);
+                                   return x;
+                               }};
+    quick(fence_distance_a90d00);
+    // Person::SwimToward: targets near and far (on the person at times, so the facing is used), steps and stops either
+    // side of the distance
+    Test person_swim_toward{0x7c2970,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                for (int i = 0; i < 0x30; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                float *pos = (float *)(self + 0x80), *face = (float *)(self + 0x70), *t = arena<float>(0x40);
+                                for (int c = 0; c < 3; c++) pos[c] = r.real(-30, 30), face[c] = r.real(-1, 1);
+                                const int shape = r.range(0, 5);
+                                const float sc = shape == 0 ? 0.0f : shape == 1 ? 0.001f : r.real(0.1f, 20);
+                                for (int c = 0; c < 3; c++) t[c] = pos[c] + r.real(-1, 1) * sc;
+                                t[3] = r.real(0, r.range(0, 1) ? 0.5f : 10);   // step
+                                t[4] = r.range(0, 3) == 0 ? 0.0f : r.real(-2, 12);   // stop
+                            },
+                            [](void *fn) {
+                                const float *t = arena<float>(0x40);
+                                return Result{((uint32_t(__thiscall *)(void *, const void *, float, float))fn)(arena<void>(0x100), t, t[3], t[4])};
+                            }};
+    quick(person_swim_toward);
+    // Curves::StepC213B0: counts below, at and past the stored one, weights below and past 1, w of 0 or less at times
+    Test curves_step_c213b0{0xc213b0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                float *f = (float *)self;
+                                for (int i = 4; i <= 10; i++) f[i] = r.real(-50, 50);
+                                f[12] = r.range(0, 4) == 0 ? r.real(1, 3) : r.real(0, 1);
+                                *(int32_t *)(self + 0x34) = r.range(-3, 6);
+                                for (int c = 0; c < 3; c++) arena<float>(0x40)[c] = r.real(-50, 50);
+                                arena<int32_t>(0x50)[0] = r.range(-3, 6);
+                                arena<float>(0x50)[1] = r.range(0, 4) == 0 ? -r.real(0, 1) * r.range(0, 1) : r.real(0, 3);
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, const void *, int32_t, float))fn)(arena<void>(0x100), arena<void>(0x40), arena<int32_t>(0x50)[0], arena<float>(0x50)[1]);
+                                return Result{0};
+                            }};
+    quick(curves_step_c213b0);
+    // Effect::Length414630: 0-5 triangles from a pool of 6 points (repeated points at times: normals of no length)
+    Test effect_length_414630{0x414630,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100);
+                                  const int n = r.range(0, 5);
+                                  *(uint32_t *)(self + 0x94) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                  *(int32_t *)(self + 0x98) = r.range(0, 9) ? n : -r.range(0, 3);
+                                  float *pts = arena<float>(0x400);
+                                  for (int i = 0; i < 18; i++) pts[i] = r.real(-10, 10);
+                                  for (int i = 0; i < n; i++) {
+                                      uint32_t *e = arena<uint32_t>(0x200 + i * 0x20);
+                                      for (int k = 0; k < 3; k++) e[k] = (uint32_t)(uintptr_t)(pts + 3 * r.range(0, r.range(0, 3) ? 5 : 1));
+                                      for (int k = 3; k < 8; k++) e[k] = r.next();
+                                  }
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                                  return Result{0};
+                              }};
+    quick(effect_length_414630);
+    // Effect::Pass414320: 0-6 points near p (on it at times), k either side of their distances
+    Test effect_pass_414320{0x414320,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                const int n = r.range(0, 6);
+                                *(uint32_t *)(self + 0x14) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                *(int32_t *)(self + 0x20) = r.range(0, 9) ? n : -r.range(0, 3);
+                                float *p = arena<float>(0x40);
+                                for (int c = 0; c < 3; c++) p[c] = r.real(-20, 20);
+                                for (int i = 0; i < n; i++) {
+                                    float *e = arena<float>(0x200 + i * 0x50);
+                                    for (int k = 0; k < 20; k++) arena<uint32_t>(0x200 + i * 0x50)[k] = r.next();
+                                    const float s = r.range(0, 6) == 0 ? 0.0f : r.real(0, 8);
+                                    for (int c = 0; c < 3; c++) e[c] = p[c] + r.real(-1, 1) * s;
+                                }
+                                p[3] = r.real(0, 10);
+                            },
+                            [](void *fn) {
+                                const float *p = arena<float>(0x40);
+                                ((void(__thiscall *)(void *, uint32_t, const void *, float))fn)(arena<void>(0x100), 0, p, p[3]);
+                                return Result{0};
+                            }};
+    quick(effect_pass_414320);
+    // Fence::NearA90E70: outlines of 2-8 points (an edge of no length at times), every edge, points beside, before and past it
+    Test fence_near_a90e70{0xa90e70,
+                           [=](Rng &r) {
+                               const int n = r.range(2, 8);
+                               uint32_t *list = arena<uint32_t>(0x100);
+                               list[0] = (uint32_t)(uintptr_t)arena<void>(0x200), list[1] = (uint32_t)n;
+                               float *pt = arena<float>(0x200);
+                               for (int k = 0; k < 2 * n; k++) pt[k] = r.real(-10, 10);
+                               const int i = r.range(0, n - 1), j = i + 1 < n ? i + 1 : 0;
+                               if (r.range(0, 6) == 0) pt[2 * j] = pt[2 * i], pt[2 * j + 1] = pt[2 * i + 1] + (r.range(0, 1) ? 0.0f : 1e-5f);
+                               float *a = arena<float>(0x40);
+                               const float t = r.real(-0.5f, 1.5f);
+                               a[0] = pt[2 * i] + t * (pt[2 * j] - pt[2 * i]) + r.real(-3, 3);
+                               a[1] = pt[2 * i + 1] + t * (pt[2 * j + 1] - pt[2 * i + 1]) + r.real(-3, 3);
+                               arena<int32_t>(0x50)[0] = i;
+                               arena<uint32_t>(0x60)[0] = r.next(), arena<uint32_t>(0x60)[1] = r.next();
+                           },
+                           [](void *fn) {
+                               const float *a = arena<float>(0x40);
+                               return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *, void *, float, float, int32_t))fn)(arena<void>(0x60), arena<void>(0x100), a[0], a[1], arena<int32_t>(0x50)[0])};
+                           }};
+    quick(fence_near_a90e70);
+    // Terrain::Near8F2380: grids of 0-12 entries around p, inner and outer radii (equal or crossed at times)
+    Test terrain_near_8f2380{0x8f2380,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 for (int i = 0; i < 8; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                 *(int32_t *)(self + 8) = r.range(-1, 3), *(int32_t *)(self + 0xc) = r.range(0, 3);
+                                 *(uint32_t *)(self + 0x14) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                 *(uint32_t *)(self + 0x1c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 float *p = arena<float>(0x40);
+                                 p[0] = r.real(-20, 20), p[1] = r.real(-20, 20);
+                                 for (int k = 0; k < 12; k++) {
+                                     float *e = arena<float>(0x200 + k * 0x10);
+                                     for (int c = 0; c < 4; c++) arena<uint32_t>(0x200 + k * 0x10)[c] = r.next();
+                                     e[0] = p[0] + r.real(-12, 12), e[2] = p[1] + r.real(-12, 12);
+                                     arena<uint32_t>(0x400)[k] = r.next();
+                                 }
+                                 p[2] = r.real(0, 6);
+                                 const int shape = r.range(0, 7);
+                                 p[3] = shape == 0 ? p[2] : shape == 1 ? r.real(0, p[2]) : p[2] + r.real(0, 10);
+                             },
+                             [](void *fn) {
+                                 const float *p = arena<float>(0x40);
+                                 ((void(__thiscall *)(void *, const void *, float, float))fn)(arena<void>(0x100), p, p[2], p[3]);
+                                 return Result{0};
+                             }};
+    quick(terrain_near_8f2380);
+    // Vector::NearCDB2A0: rays from inside, outside and past spheres (aimed at the centre at times), the registers set as
+    // the game passes them; only the low byte of the result is the game's
+    Test vector_near_cdb2a0{0xcdb2a0,
+                            [=](Rng &r) {
+                                float *v = arena<float>(0x100);   // a 0x100, d 0x110, c 0x120, r 0x130, out 0x140
+                                for (int i = 0; i < 12; i++) v[i] = r.real(-10, 10);
+
+                                for (int c = 0; c < 3; c++) v[4 + c] = r.real(-1, 1);
+                                if (r.range(0, 3) == 0)
+                                    for (int c = 0; c < 3; c++) v[4 + c] = v[8 + c] - v[c];
+                                v[12] = r.real(0, 12);
+                                arena<uint32_t>(0x140)[0] = r.next();
+                            },
+                            [](void *fn) {
+                                uint32_t stack[3] = {(uint32_t)(uintptr_t)arena<void>(0x120), arena<uint32_t>(0x130)[0], (uint32_t)(uintptr_t)arena<void>(0x140)};
+                                uint32_t *ps = stack;
+                                void *a = arena<void>(0x100), *d = arena<void>(0x110);
+                                __asm__ volatile("pushl 8(%%eax)\n\tpushl 4(%%eax)\n\tpushl (%%eax)\n\tcall *%%ebx"
+                                                 : "+a"(ps), "+c"(a), "+d"(d)
+                                                 : "b"(fn)
+                                                 : "memory", "cc");
+                                return Result{(uint32_t)(uintptr_t)ps & 0xff};
+                            }};
+    quick(vector_near_cdb2a0);
+    // Animal::DirectionA60E40: points near and far apart (the same at times), steps either side of the distance
+    Test animal_direction_a60e40{0xa60e40,
+                                 [=](Rng &r) {
+                                     float *v = arena<float>(0x100);   // out 0x100, to 0x110, from 0x120, a k 0x130
+                                     for (int i = 0; i < 4; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                     for (int c = 0; c < 3; c++) v[8 + c] = r.real(-20, 20);
+                                     const float s = r.range(0, 6) == 0 ? 0.0f : r.real(0, r.range(0, 1) ? 1.0f : 30.0f);
+                                     for (int c = 0; c < 3; c++) v[4 + c] = v[8 + c] + r.real(-1, 1) * s;
+                                     v[12] = r.real(0, 2), v[13] = r.range(0, 5) == 0 ? -r.real(0, 1) : r.real(0, 3);
+                                 },
+                                 [](void *fn) {
+                                     uint32_t stack[3] = {(uint32_t)(uintptr_t)arena<void>(0x120), arena<uint32_t>(0x130)[0], arena<uint32_t>(0x130)[1]};
+                                     uint32_t *ps = stack;
+                                     void *o = arena<void>(0x100), *t = arena<void>(0x110);
+                                     __asm__ volatile("pushl 8(%%eax)\n\tpushl 4(%%eax)\n\tpushl (%%eax)\n\tcall *%%ebx"
+                                                      : "+a"(ps), "+c"(o), "+d"(t)
+                                                      : "b"(fn)
+                                                      : "memory", "cc");
+                                     return Result{0};
+                                 }};
+    quick(animal_direction_a60e40);
+    // Effect::Normalise7B3B20: weights either side of 0, 0-6 points around the base and centre
+    Test effect_normalise_7b3b20{0x7b3b20,
+                                 [=](Rng &r) {
+                                     uint8_t *self = arena<uint8_t>(0x100);
+                                     float *f = (float *)self;
+                                     for (int i = 0; i < 0x18; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                     for (int i = 0; i < 7; i++) f[i] = r.real(-10, 10);
+                                     f[0x44 / 4] = r.range(0, 5) == 0 ? -r.real(0, 2) * r.range(0, 1) : r.real(0.1f, 5);
+                                     f[0x48 / 4] = r.real(0, 3);
+                                     const int n = r.range(0, 6);
+                                     *(int32_t *)(self + 0x4c) = r.range(0, 9) ? n : -1;
+                                     *(uint32_t *)(self + 0x50) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                     for (int i = 0; i < n * 4; i++) arena<float>(0x200)[i] = r.real(-12, 12);
+                                 },
+                                 [](void *fn) {
+                                     ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                                     return Result{0};
+                                 }};
+    quick(effect_normalise_7b3b20);
+    // Grid::SnapToRow: row heights of 0.5-4 (set in the game's global, put back after), heights below 0, inside and
+    // past the last row, first values either side of the minimum
+    {
+        static uint32_t saved_row_height;
+        Test x{0x99c2a0,
+               [=](Rng &r) {
+                   *(float *)0x13413b0 = r.real(0.5f, 4);
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   *(int32_t *)(self + 0x108) = r.range(0, 40);
+                   float *p = arena<float>(0x40);
+                   p[0] = r.real(-60, 60), p[1] = r.real(-20, 150);
+                   arena<uint32_t>(0x60)[0] = r.next(), arena<uint32_t>(0x60)[1] = r.next();
+               },
+               [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, const void *))fn)(arena<void>(0x100), arena<void>(0x60), arena<void>(0x40))}; }};
+        x.prepare = [](const rewrite::Entry *) { saved_row_height = *(uint32_t *)0x13413b0; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x13413b0 = saved_row_height; };
+        quick(x);
+    }
+    // Segment::MiddleOfEnds: two lists of 1-4 points each (their last points used)
+    Test segment_middle_of_ends{0xbc61e0,
+                                [=](Rng &r) {
+                                    uint8_t *self = arena<uint8_t>(0x100);
+                                    *(uint32_t *)(self + 0x18) = r.next() | 0x400000;
+                                    *(int32_t *)(self + 0xe4) = r.range(2, 5);
+                                    uint32_t *l1 = arena<uint32_t>(0x40), *l2 = arena<uint32_t>(0x50);
+                                    *(uint32_t *)(self + 0x10c) = (uint32_t)(uintptr_t)l1, *(uint32_t *)(self + 0x110) = (uint32_t)(uintptr_t)l2;
+                                    l1[0] = r.range(1, 4), l1[1] = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                    l2[0] = r.range(1, 4), l2[1] = (uint32_t)(uintptr_t)arena<void>(0x600);
+                                    for (int i = 0; i < 36; i++) arena<float>(0x400)[i] = r.real(-50, 50), arena<float>(0x600)[i] = r.real(-50, 50);
+                                    arena<uint32_t>(0x60)[0] = r.next();
+                                },
+                                [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x60))}; }};
+    quick(segment_middle_of_ends);
 #endif
