@@ -9927,3 +9927,195 @@ static uint8_t __thiscall person_values_4fedf0(const uint8_t *self, float *out) 
 }
 static const uint8_t person_values_4fedf0_original[] = {0x51, 0x8b, 0x89, 0xb8, 0x00, 0x00, 0x00, 0x85, 0xc9};
 REWRITE("Person::Values4FEDF0", 0x4fedf0, person_values_4fedf0_original, &person_values_4fedf0, &g_person_values_c);
+
+// ---- Person::Values500780(out) (0x500780): a total over the +0x180 list -----------------------------------------------
+// None (0) without +0xB8. For each entry (item +8: {kind, count +4, f +8}): t = kind's +0x3C K1 K2 / 2 times g = max(1 -
+// (max(f, F) - F) 0.05, 0); times K4 with a count above 1, K5 above 2, and K6 instead above 3 (the game's constants at
+// 0xF27090, 0xF2CF10, 0xF27630, 0xF27068, 0xF29658, 0xF32894). out = (the total, 0, 0); gives 1.
+static volatile long g_person_values_d;
+static uint8_t __thiscall person_values_500780(const uint8_t *self, float *out) {
+    g_person_values_d++;
+    if (!*(const uint32_t *)(self + 0xb8)) return 0;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    long double s = k(0xf264e0);
+    for (const uint32_t *p = *(const uint32_t *const *)(self + 0x180); p[0] && p; p = (const uint32_t *)(uintptr_t)p[0]) {
+        __asm__ volatile("" ::: "memory");
+        const uint8_t *const item = (const uint8_t *)(uintptr_t)p[2];
+        const uint8_t *const kind = *(const uint8_t *const *)item;
+        long double t = (long double)*(const int32_t *)(kind + 0x3c) * k(0xf27090);
+        t = t * k(0xf2cf10);
+        t = t * k(0xf2651c);
+        const float f = *(const float *)(item + 8);
+        const long double fm = f > *(const float *)0xf27630 ? (long double)f : k(0xf27630);
+        long double g = k(0xf264dc) - (fm - k(0xf27630)) * k(0xf270b4);
+        if (k(0xf264e0) > g) g = k(0xf264e0);
+        long double v = t * g;
+        const int32_t c = *(const int32_t *)(item + 4);
+        if (c > 1) v = v * k(0xf27068);
+        if (c > 2) v = v * k(0xf29658);
+        if (c > 3) v = k(0xf32894);
+        s = s + v;
+    }
+    volatile float *const o = out;
+    o[0] = (float)s;
+    ((volatile uint32_t *)o)[1] = 0, ((volatile uint32_t *)o)[2] = 0;
+    return 1;
+}
+static const uint8_t person_values_500780_original[] = {0x8b, 0x81, 0xb8, 0x00, 0x00, 0x00, 0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00};
+REWRITE("Person::Values500780", 0x500780, person_values_500780_original, &person_values_500780, &g_person_values_d);
+
+// ---- Person::Scale4FF2F0(x, y) (0x4FF2F0): x halved for each of the game's levels y reaches -----------------------------
+// Five levels (doubles at 0xF36880, 0xF36878, 0xF36870, 0xF36868, 0xF36860): each one y is at or past takes v - v / 2;
+// at or past 0xF27630 (a float) v is then scaled by 0xF270B0.
+static volatile long g_person_scales;
+static long double __stdcall person_scale_4ff2f0(float x, float y) {
+    g_person_scales++;
+    const long double h = *(const float *)0xf2651c;
+    long double v = x;
+    if (y >= *(const double *)0xf36880) v = (long double)x - (long double)x * h;
+    if (y >= *(const double *)0xf36878) v = v - h * v;
+    if (y >= *(const double *)0xf36870) v = v - h * v;
+    if (y >= *(const double *)0xf36868) v = v - h * v;
+    if (y >= *(const double *)0xf36860) v = v - h * v;
+    if (y >= *(const float *)0xf27630) v = v * *(const float *)0xf270b0;
+    return v;
+}
+static const uint8_t person_scale_4ff2f0_original[] = {0xd9, 0x44, 0x24, 0x08, 0xdc, 0x1d, 0x80, 0x68, 0xf3, 0x00};
+REWRITE("Person::Scale4FF2F0", 0x4ff2f0, person_scale_4ff2f0_original, &person_scale_4ff2f0, &g_person_scales);
+
+// ---- Ride::Compare59A1E0(a, b, c, d) (0x59A1E0): whether d lies on the way from a to b, going c's way --------------------
+// c above 0: with b at or past a, a <= d <= b; else a <= d or d <= b. c below 0: with b at or below a, b <= d <= a; else
+// b <= d or d <= a. c 0 gives 0 (only al).
+static volatile long g_ride_arcs;
+static uint8_t __stdcall ride_compare_59a1e0(float a, float b, float c, float d) {
+    g_ride_arcs++;
+    if (c > *(const float *)0xf264e0) {
+        if (!(b < a || __builtin_isunordered(b, a))) return a <= d && d <= b;
+        return a <= d || d <= b;
+    }
+    if (!(c < *(const float *)0xf264e0)) return 0;
+    if (b <= a) return b <= d && d <= a;
+    return b <= d || d <= a;
+}
+static const uint8_t ride_compare_59a1e0_original[] = {0xd9, 0x44, 0x24, 0x0c, 0xd8, 0x1d, 0xe0, 0x64, 0xf2, 0x00};
+REWRITE("Ride::Compare59A1E0", 0x59a1e0, ride_compare_59a1e0_original, &ride_compare_59a1e0, &g_ride_arcs);
+
+// ---- Terrain::Range8F47F0(grid) (0x8F47F0): the heights around a grid's edge -------------------------------------------
+// Into +0x10, for a grid of w x h cells (bytes +4, +5; cells of 24 bytes at +0x24 with corner heights 0-3) and W = w - 1,
+// H = h - 1 (bytes): the first cell's corner 0, then along the near row (c(i)[0] + c(i - 1)[1]) / 2 for i = 1..W and the
+// last cell's corner 1; up the far column (c(j, W)[1] + c(j - 1, W)[3]) / 2 for j = 1..H and its corner 3; back along
+// the far row (c(H, i)[3] + c(H, i + 1)[2]) / 2 down to i = 0 and its corner 2; down the near column (c(j, 0)[2] + c(j +
+// 1, 0)[0]) / 2 down to j = 0.
+static volatile long g_terrain_edge_heights;
+static void __thiscall terrain_range_8f47f0(const uint8_t *self, const uint8_t *grid) {
+    g_terrain_edge_heights++;
+    const long double half = *(const float *)0xf2651c;
+    volatile float *o = *(float *const *)(self + 0x10);
+    const uint8_t W = (uint8_t)(grid[4] - 1), H = (uint8_t)(grid[5] - 1);
+    auto c = [&](uint32_t cell) { return (const float *)(*(const uint8_t *const *)(grid + 0x24) + cell * 24); };
+    auto raw = [&](const float *f) { *(volatile uint32_t *)o++ = *(const uint32_t *)f; };
+    raw(c(0));
+    for (uint32_t i = 1; i <= W; i++) *o++ = (float)(((long double)c(i)[0] + c(i - 1)[1]) * half);
+    raw(c(W) + 1);
+    for (uint32_t j = 1; j <= H; j++) *o++ = (float)(((long double)c(j * grid[4] + W)[1] + c((j - 1) * grid[4] + W)[3]) * half);
+    raw(c(H * grid[4] + W) + 3);
+    for (uint32_t i = W; i-- > 0;) *o++ = (float)(((long double)c(H * grid[4] + i)[3] + c(H * grid[4] + i + 1)[2]) * half);
+    raw(c(H * grid[4]) + 2);
+    for (uint32_t j = H; j-- > 0;) *o++ = (float)(((long double)c(j * grid[4])[2] + c((j + 1) * grid[4])[0]) * half);
+}
+static const uint8_t terrain_range_8f47f0_original[] = {0x83, 0xec, 0x08, 0x8b, 0x41, 0x10, 0x53, 0x55, 0x56};
+REWRITE("Terrain::Range8F47F0", 0x8f47f0, terrain_range_8f47f0_original, &terrain_range_8f47f0, &g_terrain_edge_heights);
+
+// ---- Fireworks::Count99C360(n, t, show, out) (0x99C360): moves a show's start time clear of the others in slot n --------
+// out = t. The show's timing (show +4's +0x18C: start +0x7C, end +0x84); going up when its start is past t. While out
+// stays at or below the show's start going up (at or above going down), each other show (+0xE8 list of +0xEC, each's
+// +4) not unset (-1) or of the same group (+0x194), in slot floor(+0x80 / the game's 0x13413B0) = n and overlapping
+// ((length + out) - 2 past its start + 2, out + 2 before its end - 2) moves out (to its end - 4 going up, else its
+// start - length + 4) and the search starts over.
+// Gives 1 when nothing was moved, else 0 (only al).
+static volatile long g_firework_slots;
+static uint8_t __thiscall fireworks_count_99c360(const uint8_t *self, int32_t n, float t, const uint8_t *show, float *out) {
+    g_firework_slots++;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    *out = t;
+    const uint8_t *const s0 = *(const uint8_t *const *)(*(const uint8_t *const *)(show + 4) + 0x18c);
+    const bool up = *(const float *)(s0 + 0x7c) > t;
+    uint8_t moved_none = 1;
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0xec); i++) {
+        __asm__ volatile("" ::: "memory");
+        const uint8_t *const sp = *(const uint8_t *const *)(show + 4);
+        const uint8_t *const s = *(const uint8_t *const *)(sp + 0x18c);
+        const float v = *out;
+        if (up ? !(v <= *(const float *)(s + 0x7c)) : !(v >= *(const float *)(s + 0x7c))) break;
+        const uint8_t *const other = *(const uint8_t *const *)(*(const uint8_t *const *)(*(const uint8_t *const *)(self + 0xe8) + i * 4) + 4);
+        const int32_t group = *(const int32_t *)(other + 0x194);
+        if (group == -1 || group == *(const int32_t *)(sp + 0x194)) continue;
+        const uint8_t *const o = *(const uint8_t *const *)(other + 0x18c);
+        volatile float q = (float)((long double)*(const float *)(o + 0x80) / *(const volatile float *)0x13413b0);
+        volatile float f = (float)floor_h2(q);
+        if ((int32_t)x87_fistp64_h2(f) != n) continue;
+        const long double e = k(0xf2705c);
+        const long double len = (long double)*(const float *)(s + 0x84) - *(const float *)(s + 0x7c);
+        if (!((len + *out) - e > (long double)*(const float *)(o + 0x7c) + e)) continue;
+        if (!((long double)*out + e < (long double)*(const float *)(o + 0x84) - e)) continue;
+        moved_none = 0;
+        i = -1;
+        if (up) *(volatile float *)out = (float)((long double)*(const float *)(o + 0x84) - k(0xf2669c));
+        else *(volatile float *)out = (float)(((long double)*(const float *)(o + 0x7c) - len) + k(0xf2669c));
+    }
+    return moved_none;
+}
+static const uint8_t fireworks_count_99c360_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x44, 0x24, 0x14, 0x53, 0x8b, 0x5c, 0x24, 0x20};
+REWRITE("Fireworks::Count99C360", 0x99c360, fireworks_count_99c360_original, &fireworks_count_99c360, &g_firework_slots);
+
+// ---- Fireworks::Height9E0B90(point, keep_height) (0x9E0B90): wraps a point back into the game's box ----------------------
+// Box middle (0x14002C0..C8) and half sizes (+0x10 and +0x18 plus the game's margin 0x10F0E94, and +0x14). Past one side
+// a part comes back in from the other by as much (x with the high side and the overshoot floats, z with the high side a
+// float, y (only without keep_height) with both sides floats and the result unrounded). When anything changed the point
+// takes the new values, +0x44 counts one more and gives 1; else 0 (only al).
+static volatile long g_firework_wraps;
+static uint8_t __thiscall fireworks_height_9e0b90(uint8_t *self, float *point, uint8_t keep_height) {
+    g_firework_wraps++;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    auto g = [](uint32_t at) { return (long double)*(const volatile float *)at; };
+    volatile float px = point[0], pz = point[2];
+    long double py = point[1];
+    const long double a = g(0x10f0e94) + m(0x10);
+    volatile float bz = (float)(g(0x10f0e94) + m(0x18));
+    {
+        volatile float hi = (float)(a + g(0x14002c0));
+        volatile float d1 = (float)((long double)px - hi);
+        const long double lo = g(0x14002c0) - a;
+        volatile float d2 = (float)((long double)px - lo);
+        if (d1 > *(const float *)0xf264e0) px = (float)(lo + d1);
+        else if (d2 < *(const float *)0xf264e0) px = (float)((long double)hi + d2);
+    }
+    {
+        volatile float hi = (float)(g(0x14002c8) + bz);
+        const long double d1 = (long double)pz - hi;
+        const long double lo = g(0x14002c8) - bz;
+        volatile float d2 = (float)((long double)pz - lo);
+        if (d1 > *(const float *)0xf264e0) pz = (float)(lo + d1);
+        else if (d2 < *(const float *)0xf264e0) pz = (float)((long double)hi + d2);
+    }
+    {
+        const long double hi = g(0x14002c4) + m(0x14);
+        volatile float hif = (float)hi;
+        volatile float d1 = (float)(py - hi);
+        const long double lo = g(0x14002c4) - m(0x14);
+        volatile float lof = (float)lo;
+        volatile float d2 = (float)(py - lo);
+        if (!keep_height) {
+            if (d1 > *(const float *)0xf264e0) py = (long double)lof + d1;
+            else if (d2 < *(const float *)0xf264e0) py = (long double)hif + d2;
+        }
+    }
+    if (px == point[0] && py == point[1] && pz == point[2]) return 0;
+    *(volatile uint32_t *)&point[0] = *(const volatile uint32_t *)&px;
+    *(volatile float *)&point[1] = (float)py;
+    *(volatile uint32_t *)&point[2] = *(const volatile uint32_t *)&pz;
+    (*(int32_t *)(self + 0x44))++;
+    return 1;
+}
+static const uint8_t fireworks_height_9e0b90_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0x55, 0x08};
+REWRITE("Fireworks::Height9E0B90", 0x9e0b90, fireworks_height_9e0b90_original, &fireworks_height_9e0b90, &g_firework_wraps);

@@ -2989,7 +2989,7 @@ address,size,name,callers,status
 0x4fedf0,182,Person::Values4FEDF0,1,rewritten
 0x4feeb0,268,Person::Values4FEEB0,1,rewritten
 0x4fefc0,804,,1,documented
-0x4ff2f0,165,,1,documented
+0x4ff2f0,165,Person::Scale4FF2F0,1,rewritten
 0x4ff3a0,152,Value::Band,1,rewritten
 0x4ff440,57,Values::Map,1,rewritten
 0x4ff4a0,20,,4,documented
@@ -3002,7 +3002,7 @@ address,size,name,callers,status
 0x500160,232,,1,documented
 0x500250,346,,0,documented
 0x5003f0,890,,1,documented
-0x500780,221,,1,documented
+0x500780,221,Person::Values500780,1,rewritten
 0x500860,204,,3,documented
 0x500940,148,,1,documented
 0x5009e0,195,,1,documented
@@ -4332,7 +4332,7 @@ address,size,name,callers,status
 0x59a190,27,Counter::Next59A170,1,rewritten
 0x59a1b0,27,Counter::Next59A170,1,rewritten
 0x59a1d0,14,,3,documented
-0x59a1e0,172,,27,documented
+0x59a1e0,172,Ride::Compare59A1E0,27,rewritten
 0x59a290,33,Values::Map,10,rewritten
 0x59a2d0,33,Kind::Lookup59A2D0,41,rewritten
 0x59a390,30,DeletingDestructor,0,rewritten
@@ -12643,7 +12643,7 @@ address,size,name,callers,status
 0x8f3720,39,,1,documented
 0x8f3750,958,,2,documented
 0x8f3b30,91,,1,documented
-0x8f47f0,416,,1,documented
+0x8f47f0,416,Terrain::Range8F47F0,1,rewritten
 0x8f49a0,149,,1,documented
 0x8f4a40,260,,11,documented
 0x8f4b50,672,,1,documented
@@ -14143,7 +14143,7 @@ address,size,name,callers,status
 0x99c180,30,DeletingDestructor,4,rewritten
 0x99c1a0,249,,2,documented
 0x99c2a0,184,Grid::SnapToRow,4,rewritten
-0x99c360,402,,3,documented
+0x99c360,402,Fireworks::Count99C360,3,rewritten
 0x99c500,344,,1,documented
 0x99c660,202,Fireworks::Step99C660,1,rewritten
 0x99c730,202,Fireworks::Step99C730,1,rewritten
@@ -14805,7 +14805,7 @@ address,size,name,callers,status
 0x9dfa30,161,MEMBER_DTOR,1,rewritten
 0x9dfb80,30,DeletingDestructor,2,rewritten
 0x9dfba0,3651,,1,documented
-0x9e0b90,435,,4,documented
+0x9e0b90,435,Fireworks::Height9E0B90,4,rewritten
 0x9e0d50,23,,1,documented
 0x9e0d70,92,Fireworks::AddTime9E0D70,2,rewritten
 0x9e0dd0,76,Park::Copy9E0DD0,0,rewritten
