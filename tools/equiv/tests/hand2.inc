@@ -3570,4 +3570,147 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                return Result{0};
                            }};
     quick(animal_set_b9a1c0);
+    // AttractionInstance::RecentTotal: counts of either sign (large ones at times)
+    Test attraction_recent_total{0x4bfa20,
+                                 [=](Rng &r) {
+                                     *(uint32_t *)arena<uint8_t>(0x19c) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                     for (int i = 0; i < 30; i++) arena<int32_t>(0x200)[i] = r.range(0, 3) ? r.range(-50, 400) : (int32_t)r.next();
+                                 },
+                                 [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(const void *))fn)(arena<void>(0x100))}; }};
+    quick(attraction_recent_total);
+    // Guest::Init756BC0: a guest whose list is empty (its own back) or not, or none
+    Test guest_init_756bc0{0x756bc0,
+                           [=](Rng &r) {
+                               for (int i = 0; i < 8; i++) arena<uint32_t>(0x100)[i] = r.next();
+                               uint32_t *list = arena<uint32_t>(0x300), *last = arena<uint32_t>(0x340);
+                               *(uint32_t *)arena<uint8_t>(0x200 + 0x518) = (uint32_t)(uintptr_t)list;
+                               list[0] = r.next(), list[1] = r.range(0, 1) ? (uint32_t)(uintptr_t)last : (uint32_t)(uintptr_t)list;
+                               last[0] = r.next(), last[1] = r.next();
+                               arena<uint32_t>(0x40)[0] = r.range(0, 4) ? (uint32_t)(uintptr_t)arena<void>(0x200) : 0;
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), (const void *)(uintptr_t)arena<uint32_t>(0x40)[0])}; }};
+    quick(guest_init_756bc0);
+    // TrackPiece::Index5D1670: small and random values
+    Test track_piece_index_5d1670{0x5d1670,
+                                  [=](Rng &r) { for (int i = 0; i < 10; i++) arena<int32_t>(0x100)[i] = r.range(0, 3) ? r.range(0, 6) : (int32_t)r.next(); },
+                                  [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(const void *))fn)(arena<void>(0x100))}; }};
+    quick(track_piece_index_5d1670);
+    // Guest::Check73BAB0: modes 0-3, values alike or not
+    Test guest_check_73bab0{0x73bab0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                *(uint32_t *)(self + 0x51c) = r.range(0, 2), *(int32_t *)(self + 0x520) = r.range(0, 3);
+                                arena<uint32_t>(0x40)[0] = r.range(0, 2), arena<uint32_t>(0x40)[1] = r.next();
+                            },
+                            [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1])}; }};
+    quick(guest_check_73bab0);
+    // Person::Time7F8620: times at or below 0, and sums inside and past 1
+    Test person_time_7f8620{0x7f8620,
+                            [=](Rng &r) {
+                                *(float *)arena<uint8_t>(0x100 + 0x5b0) = r.range(0, 4) ? r.real(-0.5f, 1.2f) : 0.0f;
+                                arena<float>(0x40)[0] = r.real(-0.5f, 0.8f);
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                                return Result{0};
+                            }};
+    quick(person_time_7f8620);
+    // Animal::SetA5FE20: random positions and points
+    Test animal_set_a5fe20{0xa5fe20,
+                           [=](Rng &r) {
+                               for (int i = 0; i < 0x14; i++) arena<float>(0x100)[i] = r.real(-100, 100);
+                               for (int c = 0; c < 3; c++) arena<float>(0x40)[c] = r.real(-100, 100);
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40));
+                               return Result{0};
+                           }};
+    quick(animal_set_a5fe20);
+    // D3DResource::GetDesc: a buffer or none
+    Test d3d_resource_get_desc{0x41fa20,
+                               [=](Rng &r) {
+                                   for (int i = 0; i < 12; i++) arena<uint32_t>(0x100)[i] = r.next(), arena<uint32_t>(0x200)[i] = r.next();
+                                   arena<uint32_t>(0x40)[0] = r.range(0, 4) ? (uint32_t)(uintptr_t)arena<void>(0x200) : 0;
+                               },
+                               [](void *fn) { return Result{((uint32_t(__stdcall *)(const void *, void *))fn)(arena<void>(0x100), (void *)(uintptr_t)arena<uint32_t>(0x40)[0])}; }};
+    quick(d3d_resource_get_desc);
+    // WildAnimal::CountB33390: counts reaching 0 or not, a part with +0x14 set or not, or none; the game's list set (and
+    // its value), put back after
+    {
+        static uint32_t saved_value, saved_list;
+        Test x{0xb33390,
+               [=](Rng &r) {
+                   *(uint32_t *)0x10f2780 = r.next();
+                   uint32_t *head = arena<uint32_t>(0x300), *first = arena<uint32_t>(0x340);
+                   *(uint32_t *)0x10f2794 = (uint32_t)(uintptr_t)head;
+                   head[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)first : (uint32_t)(uintptr_t)head;
+                   head[1] = r.next(), first[0] = r.next(), first[1] = r.next();
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int i = 0; i < 0x20; i++) arena<uint32_t>(0x100)[i] = r.next();
+                   *(int32_t *)(self + 0x68) = r.range(0, 2);
+                   *(uint32_t *)(self + 0x54) = r.range(0, 4) ? (uint32_t)(uintptr_t)arena<void>(0x200) : 0;
+                   *(uint32_t *)arena<uint8_t>(0x214) = r.range(0, 3) ? r.next() | 1 : 0;
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_value = *(uint32_t *)0x10f2780, saved_list = *(uint32_t *)0x10f2794; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10f2780 = saved_value, *(uint32_t *)0x10f2794 = saved_list; };
+        quick(x);
+    }
+    // Animals::PassB83A20: 0-6 entries with keys from a few, the key there or not
+    Test animals_pass_b83a20{0xb83a20,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                 *(int32_t *)(self + 8) = r.range(0, 9) ? r.range(0, 6) : -1;
+                                 for (int i = 0; i < 6; i++) arena<uint32_t>(0x200 + i * 0x14)[0] = r.range(0, 5), arena<float>(0x200 + i * 0x14)[1] = r.real(-5, 5);
+                                 arena<uint32_t>(0x40)[0] = r.range(0, 6);
+                             },
+                             [](void *fn) {
+                                 Result x;
+                                 x.f = ((long double(__thiscall *)(const void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0]);
+                                 return x;
+                             }};
+    quick(animals_pass_b83a20);
+    // Car::Check50B970: on or off, values either side of both limits
+    Test car_check_50b970{0x50b970,
+                          [=](Rng &r) {
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              self[0x2c0] = r.range(0, 3) ? (uint8_t)r.range(1, 255) : 0;
+                              *(float *)(self + 0x2a4) = r.range(0, 5) == 0 ? 10.0f : r.real(5, 15);
+                              arena<float>(0x40)[0] = r.range(0, 5) == 0 ? 12.0f : r.real(6, 18);
+                          },
+                          [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]) & 0xff}; }};
+    quick(car_check_50b970);
+    // Park::Pass91C1D0: 0-6 entries of pairs from a few
+    Test park_pass_91c1d0{0x91c1d0,
+                          [=](Rng &r) {
+                              uint8_t *self = arena<uint8_t>(0x100);
+                              *(uint32_t *)(self + 0x110) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                              *(int32_t *)(self + 0x118) = r.range(0, 9) ? r.range(0, 6) : -1;
+                              for (int i = 0; i < 6 * 7; i++) arena<uint32_t>(0x400)[i] = r.range(0, 2);
+                              arena<uint32_t>(0x40)[0] = r.range(0, 2), arena<uint32_t>(0x40)[1] = r.range(0, 2);
+                          },
+                          [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1]) & 0xff}; }};
+    quick(park_pass_91c1d0);
+    // Camera::SharedCE1670: the game's two point lists and count set (put back after), 0-6 points
+    {
+        static uint32_t saved[4];
+        Test x{0xce1670,
+               [=](Rng &r) {
+                   *(uint32_t *)0x1400810 = (uint32_t)(uintptr_t)arena<void>(0x200);
+                   *(uint32_t *)0x1400818 = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(int32_t *)0x140081c = r.range(0, 9) ? r.range(0, 6) : -1;
+                   for (int i = 0; i < 24; i++) arena<uint32_t>(0x200)[i] = r.next(), arena<uint32_t>(0x400)[i] = r.next();
+               },
+               [](void *fn) {
+                   ((void(__stdcall *)())fn)();
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { memcpy(saved, (void *)0x1400810, 16); };
+        x.finish = [](const rewrite::Entry *) { memcpy((void *)0x1400810, saved, 16); };
+        quick(x);
+    }
 #endif

@@ -448,7 +448,7 @@ address,size,name,callers,status
 0x41f9c0,8,,2,documented
 0x41f9e0,5,,2,documented
 0x41f9f0,1,__break,2,library
-0x41fa20,60,,1,documented
+0x41fa20,60,D3DResource::GetDesc,1,rewritten
 0x41fca0,2280,,1,documented
 0x420590,88,,1,documented
 0x420630,464,,1,documented
@@ -2367,7 +2367,7 @@ address,size,name,callers,status
 0x4bf970,28,,40,documented
 0x4bf990,31,,2,documented
 0x4bf9e0,55,,4,documented
-0x4bfa20,60,,8,documented
+0x4bfa20,60,AttractionInstance::RecentTotal,8,rewritten
 0x4bfaa0,109,,7,documented
 0x4bfb10,233,,2,documented
 0x4bfc00,37,Ride::LogScorePart,15,rewritten
@@ -3106,7 +3106,7 @@ address,size,name,callers,status
 0x50b610,49,,1,documented
 0x50b690,302,,1,documented
 0x50b7e0,376,,1,documented
-0x50b970,63,,1,documented
+0x50b970,63,Car::Check50B970,1,rewritten
 0x50b9b0,374,,2,documented
 0x50bb90,70,,7,documented
 0x50bbe0,234,,15,documented
@@ -4909,7 +4909,7 @@ address,size,name,callers,status
 0x5d15d0,23,,1,documented
 0x5d15f0,8,,2,documented
 0x5d1600,32,Values::Map,2,rewritten
-0x5d1670,61,,4,documented
+0x5d1670,61,TrackPiece::Index5D1670,4,rewritten
 0x5d16b0,6,,1,documented
 0x5d16c0,6,,1,documented
 0x5d1840,723,,6,documented
@@ -8562,7 +8562,7 @@ address,size,name,callers,status
 0x73b800,30,DeletingDestructor,3,rewritten
 0x73b8c0,48,QueryInterface,3,rewritten
 0x73ba10,90,,2,documented
-0x73bab0,61,,1,documented
+0x73bab0,61,Guest::Check73BAB0,1,rewritten
 0x73bbd0,582,,2,documented
 0x73c1a0,36,,1,documented
 0x73c240,205,,2,documented
@@ -8818,7 +8818,7 @@ address,size,name,callers,status
 0x756790,793,,1,documented
 0x756ab0,74,,1,documented
 0x756b00,153,Mode::Handle756B00,1,rewritten
-0x756bc0,60,,2,documented
+0x756bc0,60,Guest::Init756BC0,2,rewritten
 0x756c40,105,Factory::Create,1,rewritten
 0x756cb0,159,,1,documented
 0x756d60,1253,,1,documented
@@ -10252,7 +10252,7 @@ address,size,name,callers,status
 0x7f85e0,13,,1,documented
 0x7f85f0,5,,2,documented
 0x7f8600,29,,0,documented
-0x7f8620,61,,1,documented
+0x7f8620,61,Person::Time7F8620,1,rewritten
 0x7f8660,81,,4,documented
 0x7f86c0,13,,3,documented
 0x7f86d0,55,,2,documented
@@ -12961,7 +12961,7 @@ address,size,name,callers,status
 0x91bf90,172,,4,documented
 0x91c040,148,,3,documented
 0x91c0e0,222,,1,documented
-0x91c1d0,63,,2,documented
+0x91c1d0,63,Park::Pass91C1D0,2,rewritten
 0x91c210,128,,1,documented
 0x91c290,136,,1,documented
 0x91c4e0,230,StructArrayLoad,1,rewritten
@@ -16071,7 +16071,7 @@ address,size,name,callers,status
 0xa5fab0,331,,1,documented
 0xa5fc30,348,,1,documented
 0xa5fd90,141,Speed::Scale,1,rewritten
-0xa5fe20,61,,1,documented
+0xa5fe20,61,Animal::SetA5FE20,1,rewritten
 0xa5fe60,30,DeletingDestructor,1,rewritten
 0xa5fe80,1275,,1,documented
 0xa60380,314,,1,documented
@@ -17972,7 +17972,7 @@ address,size,name,callers,status
 0xb32f30,132,Shared::Destroy87F8C0,1,rewritten
 0xb32fc0,627,Class::Construct,2,rewritten
 0xb33290,256,,1,documented
-0xb33390,61,,3,documented
+0xb33390,61,WildAnimal::CountB33390,3,rewritten
 0xb333d0,3,,1,documented
 0xb333e0,428,,1,documented
 0xb33590,205,,3,documented
@@ -18778,7 +18778,7 @@ address,size,name,callers,status
 0xb83350,33,,2,documented
 0xb83380,390,,2,documented
 0xb83510,1294,,7,documented
-0xb83a20,61,,6,documented
+0xb83a20,61,Animals::PassB83A20,6,rewritten
 0xb83aa0,20,,15,documented
 0xb83ac0,20,,20,documented
 0xb83ae0,1036,,9,documented
@@ -22943,7 +22943,7 @@ address,size,name,callers,status
 0xce0d10,1652,,0,documented
 0xce1390,650,,7,documented
 0xce1640,34,,1,documented
-0xce1670,64,,1,documented
+0xce1670,64,Camera::SharedCE1670,1,rewritten
 0xce16b0,103,Vector::Lerp,0,rewritten
 0xce1720,640,,4,documented
 0xce19f0,302,,5,documented

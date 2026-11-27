@@ -6378,3 +6378,182 @@ static void __thiscall animal_set_b9a1c0(uint8_t *self) {
 }
 static const uint8_t animal_set_b9a1c0_original[] = {0x8b, 0x81, 0xac, 0x00, 0x00, 0x00, 0x33, 0xd2, 0x3b, 0xc2};
 REWRITE("Animal::SetB9A1C0", 0xb9a1c0, animal_set_b9a1c0_original, &animal_set_b9a1c0, &g_animal_slot_frees);
+
+// ---- AttractionInstance::RecentTotal (0x4BFA20): the history's ten counts (12 bytes apart at +0x9C) times 90 / 300 ------
+static volatile long g_recent_totals;
+static int32_t __thiscall attraction_recent_total(const uint8_t *self) {
+    g_recent_totals++;
+    const int32_t *const h = *(const int32_t *const *)(self + 0x9c);
+    uint32_t sum = 0;
+    for (int k = 0; k < 10; k++) sum += (uint32_t)h[k * 3];
+    return (int32_t)(sum * 90) / 300;
+}
+static const uint8_t attraction_recent_total_original[] = {0x8b, 0x89, 0x9c, 0x00, 0x00, 0x00, 0x8b, 0x51, 0x60};
+REWRITE("AttractionInstance::RecentTotal", 0x4bfa20, attraction_recent_total_original, &attraction_recent_total, &g_recent_totals);
+
+// ---- Guest::Init756BC0(guest) (0x756BC0) ---------------------------------------------------------------------------
+// Table 0xF6C374, +0xC pointing at itself; its node (+4: {next, back}) goes at the back of the guest's list (+0x518),
+// or is {0, 0} with no guest. Gives it.
+static volatile long g_guest_links;
+static uint32_t *__thiscall guest_init_756bc0(uint32_t *self, const uint8_t *guest) {
+    g_guest_links++;
+    self[0] = 0xf6c374;
+    self[3] = (uint32_t)(uintptr_t)self;
+    if (!guest) {
+        self[1] = 0, self[2] = 0;
+        return self;
+    }
+    uint32_t *const list = *(uint32_t *const *)(guest + 0x518), *const node = self + 1;
+    node[1] = list[1];
+    *(uint32_t *)(uintptr_t)list[1] = (uint32_t)(uintptr_t)node;
+    node[0] = (uint32_t)(uintptr_t)list;
+    list[1] = (uint32_t)(uintptr_t)node;
+    return self;
+}
+static const uint8_t guest_init_756bc0_original[] = {0x8b, 0x54, 0x24, 0x04, 0x8b, 0xc1, 0x33, 0xc9, 0x3b, 0xd1};
+REWRITE("Guest::Init756BC0", 0x756bc0, guest_init_756bc0_original, &guest_init_756bc0, &g_guest_links);
+
+// ---- TrackPiece::Index5D1670 (0x5D1670): its ten values as a mixed-base number -------------------------------------
+// Bits from +0x24 down to +0xC (base 2), then +8 (base 8), +4 and +0 (base 7).
+static volatile long g_piece_indexes;
+static int32_t __thiscall track_piece_index_5d1670(const int32_t *self) {
+    g_piece_indexes++;
+    uint32_t h = (uint32_t)self[9];
+    for (int k = 8; k >= 3; k--) h = (uint32_t)self[k] + h * 2;
+    h = (uint32_t)self[2] + h * 8;
+    h = h * 7 + (uint32_t)self[1];
+    return (int32_t)(h * 7 + (uint32_t)self[0]);
+}
+static const uint8_t track_piece_index_5d1670_original[] = {0x8b, 0x51, 0x20, 0x8b, 0x41, 0x24, 0x8d, 0x04, 0x42};
+REWRITE("TrackPiece::Index5D1670", 0x5d1670, track_piece_index_5d1670_original, &track_piece_index_5d1670, &g_piece_indexes);
+
+// ---- Guest::Check73BAB0(a, b) (0x73BAB0) ---------------------------------------------------------------------------
+// By the mode (+0x520): 0 gives 3 when +0x51C differs from a, else 4; 1 gives 0 when it differs, else b; others 0.
+static volatile long g_guest_checks;
+static uint32_t __thiscall guest_check_73bab0(const uint8_t *self, uint32_t a, uint32_t b) {
+    g_guest_checks++;
+    const bool differs = *(const uint32_t *)(self + 0x51c) != a;
+    switch (*(const int32_t *)(self + 0x520)) {
+    case 0: return differs ? 3 : 4;
+    case 1: return differs ? 0 : b;
+    default: return 0;
+    }
+}
+static const uint8_t guest_check_73bab0_original[] = {0x8b, 0x81, 0x1c, 0x05, 0x00, 0x00, 0x8b, 0x54, 0x24, 0x04};
+REWRITE("Guest::Check73BAB0", 0x73bab0, guest_check_73bab0_original, &guest_check_73bab0, &g_guest_checks);
+
+// ---- Person::Time7F8620(dt) (0x7F8620): a running time (+0x5B0, when above 0) += dt, at most 1 (unrounded check) ------
+static volatile long g_person_times;
+static void __thiscall person_time_7f8620(uint8_t *self, float dt) {
+    g_person_times++;
+    volatile float *const t = (volatile float *)(self + 0x5b0);
+    if (!(*t > *(const float *)0xf264e0)) return;
+    const long double v = (long double)dt + *t;
+    *t = (float)v;
+    if (v > *(const float *)0xf264dc) *(volatile uint32_t *)t = 0x3f800000;
+}
+static const uint8_t person_time_7f8620_original[] = {0xd9, 0x81, 0xb0, 0x05, 0x00, 0x00, 0xd8, 0x1d, 0xe0, 0x64, 0xf2, 0x00};
+REWRITE("Person::Time7F8620", 0x7f8620, person_time_7f8620_original, &person_time_7f8620, &g_person_times);
+
+// ---- Animal::SetA5FE20(p) (0xA5FE20): +0x40 = 1 and +0x30 = p - the position (+0x10), as floats -----------------------
+static volatile long g_animal_aims;
+static void __thiscall animal_set_a5fe20(uint8_t *self, const float *p) {
+    g_animal_aims++;
+    volatile float *const f = (volatile float *)self;
+    *(volatile uint32_t *)(self + 0x40) = 0x3f800000;
+    const long double dx = (long double)p[0] - f[4], dy = (long double)p[1] - f[5];
+    f[14] = (float)((long double)p[2] - f[6]);
+    f[12] = (float)dx;
+    f[13] = (float)dy;
+}
+static const uint8_t animal_set_a5fe20_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0x8b, 0x45, 0x08};
+REWRITE("Animal::SetA5FE20", 0xa5fe20, animal_set_a5fe20_original, &animal_set_a5fe20, &g_animal_aims);
+
+// ---- D3DResource::GetDesc(this, out) (0x41FA20): the 32-byte description (+8) into out; D3DERR_INVALIDCALL with no out --
+// (The game reads from address 0 when this is 0.)
+static volatile long g_resource_descs;
+static uint32_t __stdcall d3d_resource_get_desc(const uint8_t *self, uint32_t *out) {
+    g_resource_descs++;
+    if (!out) return 0x8876086c;
+    const uint32_t *const from = (const uint32_t *)(self + 8);
+    for (int k = 0; k < 8; k++) out[k] = from[k];
+    return 0;
+}
+static const uint8_t d3d_resource_get_desc_original[] = {0x57, 0x8b, 0x7c, 0x24, 0x0c, 0x85, 0xff, 0x75, 0x09};
+REWRITE("D3DResource::GetDesc", 0x41fa20, d3d_resource_get_desc_original, &d3d_resource_get_desc, &g_resource_descs);
+
+// ---- WildAnimal::CountB33390 (0xB33390) ----------------------------------------------------------------------------
+// The count (+0x68) goes down by one; when it reaches 0 with a part (+0x54) whose +0x14 is set: +0x6C = the game's
+// 0x10F2780 and its node (+0x70: {next, back}) goes in at the front of the game's list (0x10F2794).
+static volatile long g_animal_counts;
+static void __thiscall wild_animal_count_b33390(uint8_t *self) {
+    g_animal_counts++;
+    const int32_t c = --*(int32_t *)(self + 0x68);
+    const uint8_t *const part = *(const uint8_t *const *)(self + 0x54);
+    if (!part || !*(const uint32_t *)(part + 0x14) || c) return;
+    *(uint32_t *)(self + 0x6c) = *(const volatile uint32_t *)0x10f2780;
+    uint32_t *const node = (uint32_t *)(self + 0x70), *const head = *(uint32_t *const volatile *)0x10f2794;
+    node[0] = head[0];
+    ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)node;
+    node[1] = (uint32_t)(uintptr_t)head;
+    head[0] = (uint32_t)(uintptr_t)node;
+}
+static const uint8_t wild_animal_count_b33390_original[] = {0x8b, 0x41, 0x68, 0x48, 0x89, 0x41, 0x68, 0x8b, 0xd0};
+REWRITE("WildAnimal::CountB33390", 0xb33390, wild_animal_count_b33390_original, &wild_animal_count_b33390, &g_animal_counts);
+
+// ---- Animals::PassB83A20(key) (0xB83A20): the float +4 of the first entry (0x14 bytes at +4, count +8) with key, else 0 -
+static volatile long g_animal_finds;
+static long double __thiscall animals_pass_b83a20(const uint8_t *self, uint32_t key) {
+    g_animal_finds++;
+    const uint8_t *const list = *(const uint8_t *const *)(self + 4);
+    const int32_t n = *(const int32_t *)(self + 8);
+    for (int32_t i = 0; i < n; i++) {
+        const uint8_t *const e = list + i * 0x14;
+        if (*(const uint32_t *)e != key) continue;
+        if (!e) break;
+        return *(const float *)(e + 4);
+    }
+    return *(const float *)0xf264e0;
+}
+static const uint8_t animals_pass_b83a20_original[] = {0x8b, 0x51, 0x08, 0x56, 0x33, 0xc0, 0x85, 0xd2, 0x57};
+REWRITE("Animals::PassB83A20", 0xb83a20, animals_pass_b83a20_original, &animals_pass_b83a20, &g_animal_finds);
+
+// ---- Car::Check50B970(x) (0x50B970): 1 when on (byte +0x2C0), +0x2A4 is above 10 and x above 12, else 0 (only al) ------
+static volatile long g_car_checks;
+static uint8_t __thiscall car_check_50b970(const uint8_t *self, float x) {
+    g_car_checks++;
+    if (!self[0x2c0]) return 0;
+    return *(const float *)(self + 0x2a4) > *(const float *)0xf275f4 && x > *(const float *)0xf2706c ? 1 : 0;
+}
+static const uint8_t car_check_50b970_original[] = {0x8a, 0x81, 0xc0, 0x02, 0x00, 0x00, 0x84, 0xc0, 0x74, 0x30};
+REWRITE("Car::Check50B970", 0x50b970, car_check_50b970_original, &car_check_50b970, &g_car_checks);
+
+// ---- Park::Pass91C1D0(a, b) (0x91C1D0): 1 when an entry (0x1C bytes at +0x110, count +0x118) has +4 = a, +8 = b ------
+// (only al)
+static volatile long g_park_pairs;
+static uint8_t __thiscall park_pass_91c1d0(const uint8_t *self, uint32_t a, uint32_t b) {
+    g_park_pairs++;
+    const int32_t n = *(const int32_t *)(self + 0x118);
+    const uint8_t *const list = *(const uint8_t *const *)(self + 0x110);
+    for (int32_t i = 0; i < n; i++) {
+        const uint32_t *const e = (const uint32_t *)(list + i * 0x1c);
+        if (e[1] == a && e[2] == b) return 1;
+    }
+    return 0;
+}
+static const uint8_t park_pass_91c1d0_original[] = {0x56, 0x8b, 0xb1, 0x18, 0x01, 0x00, 0x00, 0x33, 0xd2};
+REWRITE("Park::Pass91C1D0", 0x91c1d0, park_pass_91c1d0_original, &park_pass_91c1d0, &g_park_pairs);
+
+// ---- Camera::SharedCE1670 (0xCE1670): copies the game's points (0x1400810, 16 bytes each) to 0x1400818 ------------------
+// The first three dwords of each, the count 0x140081C read again each time.
+static volatile long g_camera_copies;
+static void __stdcall camera_shared_ce1670() {
+    g_camera_copies++;
+    for (int32_t i = 0; i < *(const volatile int32_t *)0x140081c; i++) {
+        const uint32_t *const from = (const uint32_t *)(*(const volatile uint32_t *)0x1400810 + i * 16);
+        uint32_t *const to = (uint32_t *)(*(const volatile uint32_t *)0x1400818 + i * 16);
+        to[0] = from[0], to[1] = from[1], to[2] = from[2];
+    }
+}
+static const uint8_t camera_shared_ce1670_original[] = {0xa1, 0x1c, 0x08, 0x40, 0x01, 0x56, 0x33, 0xf6};
+REWRITE("Camera::SharedCE1670", 0xce1670, camera_shared_ce1670_original, &camera_shared_ce1670, &g_camera_copies);
