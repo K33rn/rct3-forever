@@ -1568,7 +1568,7 @@ address,size,name,callers,status
 0x47dcb0,85,Single::Get42DF90,6,rewritten
 0x47dd10,109,Sound::SetLevels,1,rewritten
 0x47dd80,58,,0,documented
-0x47ddc0,61,,0,documented
+0x47ddc0,61,Labels::Value47DDC0,0,rewritten
 0x47de90,53,Record::CopyRanges,1,rewritten
 0x47df10,410,,1,documented
 0x47e0d0,59,,2,documented
@@ -1676,7 +1676,7 @@ address,size,name,callers,status
 0x488130,25,,0,documented
 0x4881c0,101,,0,documented
 0x488260,28,,1,documented
-0x488290,62,,58,documented
+0x488290,62,Effect::Init488290,58,rewritten
 0x4882d0,32,,176,documented
 0x488320,53,Grid::MarkUp,5,rewritten
 0x4883c0,79,Slots::Free,2,rewritten
@@ -2360,7 +2360,7 @@ address,size,name,callers,status
 0x4bf3f0,73,,1,documented
 0x4bf480,126,,9,documented
 0x4bf500,116,,9,documented
-0x4bf580,61,,8,documented
+0x4bf580,61,Ride::Clear4BF580,8,rewritten
 0x4bf710,26,OwnedPointer::Reset,2,rewritten
 0x4bf730,151,Array<12>::SetCapacity,4,rewritten
 0x4bf810,26,OwnedPointer::Reset,12,rewritten
@@ -3022,7 +3022,7 @@ address,size,name,callers,status
 0x501f80,43,,9,documented
 0x501fb0,11,,9,documented
 0x501fc0,162,,1,documented
-0x502070,64,,3,documented
+0x502070,64,Car::Time502070,3,rewritten
 0x5020d0,26,OwnedPointer::Reset,18,rewritten
 0x5020f0,130,Array<4>::SetCapacity,3,rewritten
 0x5021b0,573,,1,documented
@@ -6496,7 +6496,7 @@ address,size,name,callers,status
 0x6809f0,77,,2,documented
 0x680a40,32,,1,documented
 0x680a90,29,,2,documented
-0x680ab0,63,,8,documented
+0x680ab0,63,Window::Ring680AB0,8,rewritten
 0x680b50,138,,0,documented
 0x680be0,268,Destructor::Steps,4,rewritten
 0x680d20,163,,2,documented
@@ -6855,7 +6855,7 @@ address,size,name,callers,status
 0x6a3540,528,Window::Titled,71,rewritten
 0x6a3750,545,Window::Titled,1,rewritten
 0x6a39d0,399,,607,documented
-0x6a3b60,60,,7,documented
+0x6a3b60,60,Window::Init6A3B60,7,rewritten
 0x6a3bf0,1,,9,documented
 0x6a3c00,407,,10,documented
 0x6a3df0,129,MEMBER_DTOR,39,rewritten
@@ -7827,7 +7827,7 @@ address,size,name,callers,status
 0x6f22f0,181,,11,documented
 0x6f23b0,90,CachedInterface,2,rewritten
 0x6f2410,126,,3,documented
-0x6f2490,68,,1,documented
+0x6f2490,68,Window::Step6F2490,1,rewritten
 0x6f24e0,351,,0,documented
 0x6f2640,96,Shared::Dtor6F21F0,3,rewritten
 0x6f26a0,30,DeletingDestructor,1,rewritten
@@ -8460,7 +8460,7 @@ address,size,name,callers,status
 0x733820,26,OwnedPointer::Reset,2,rewritten
 0x733840,61,Array<4>::Allocate,0,rewritten
 0x733880,73,IntArray::Assign,1,rewritten
-0x7338d0,66,,3,documented
+0x7338d0,66,Path::Entry7338D0,3,rewritten
 0x733920,136,,1,documented
 0x7339b0,94,Area::Move,1,rewritten
 0x733a50,50,,1,documented
@@ -9935,7 +9935,7 @@ address,size,name,callers,status
 0x7cce80,212,ReferenceField::Load,0,rewritten
 0x7ccf60,212,ReferenceField::Load,0,rewritten
 0x7cd040,212,ReferenceField::Load,0,rewritten
-0x7cd120,94,,11,documented
+0x7cd120,94,Record::Make7CD120,11,rewritten
 0x7cd180,74,Watched::Destroy7CD180,7,rewritten
 0x7cd1d0,74,Watched::Destroy7CD180,3,rewritten
 0x7cd220,346,,227,documented
@@ -10860,7 +10860,7 @@ address,size,name,callers,status
 0x820540,86,,3,documented
 0x820740,849,,1,documented
 0x820aa0,167,,1,documented
-0x820b50,76,,2,documented
+0x820b50,76,SceneryBehaviour::Init820B50,2,rewritten
 0x820ba0,954,,2,documented
 0x820f70,162,ObjectRef::CallWith,1,rewritten
 0x821020,451,,6,documented
@@ -11145,7 +11145,7 @@ address,size,name,callers,status
 0x838c00,166,Grid::RotateCoords,3,rewritten
 0x838cc0,311,,0,documented
 0x838e00,558,,1,documented
-0x839120,77,,1,documented
+0x839120,77,Scenery::WrapAngle839120,1,rewritten
 0x839170,23,,3,documented
 0x839190,13,,4,documented
 0x8391a0,65,,0,documented
@@ -11638,7 +11638,7 @@ address,size,name,callers,status
 0x860530,13,,52,documented
 0x860540,13,,3,documented
 0x860550,147,,2,documented
-0x8605f0,92,,4,documented
+0x8605f0,92,Scenery::Value8605F0,4,rewritten
 0x8606a0,58,,6,documented
 0x8606e0,118,,1,documented
 0x860760,46,,4,documented
@@ -12714,7 +12714,7 @@ address,size,name,callers,status
 0x8fe100,61,Array<4>::Allocate,0,rewritten
 0x8fe140,26,OwnedPointer::Reset,0,rewritten
 0x8fe1c0,26,OwnedPointer::Reset,2,rewritten
-0x8fe1e0,60,,1,documented
+0x8fe1e0,60,Terrain::Entry8FE1E0,1,rewritten
 0x8fe220,23,,1,documented
 0x8fe240,91,Water::Entry8FE240,1,rewritten
 0x8fe2a0,30,,2,documented
@@ -12737,7 +12737,7 @@ address,size,name,callers,status
 0x8ffa60,296,Pool::Grow8FFA60,3,rewritten
 0x8ffb90,256,,2,documented
 0x8ffc90,830,,1,documented
-0x8fffe0,64,,6,documented
+0x8fffe0,64,Terrain::Clear8FFFE0,6,rewritten
 0x900020,2178,,3,documented
 0x9008b0,651,,5,documented
 0x900b40,599,,2,documented
@@ -13312,7 +13312,7 @@ address,size,name,callers,status
 0x94dac0,48,Record::SetFields,1,rewritten
 0x94dbc0,105,OwnedPair::FreeFields,1,rewritten
 0x94dc30,67,,1,documented
-0x94dc80,63,,2,documented
+0x94dc80,63,Water::Entry94DC80,2,rewritten
 0x94dcc0,71,,2,documented
 0x94dd40,100,Water::Entry94DD40,3,rewritten
 0x94ddb0,30,,1,documented
@@ -14878,7 +14878,7 @@ address,size,name,callers,status
 0x9e84e0,98,Colour::Pack,1,rewritten
 0x9e85f0,120,Value::MoveToward,24,rewritten
 0x9e8670,265,,1,documented
-0x9e8790,77,,2,documented
+0x9e8790,77,Fireworks::Point9E8790,2,rewritten
 0x9e87e0,184,,2,documented
 0x9e88b0,199,,1,documented
 0x9e89a0,1021,,1,documented
@@ -19053,7 +19053,7 @@ address,size,name,callers,status
 0xb99d60,66,,2,documented
 0xb99db0,181,,1,documented
 0xb99e70,376,,0,documented
-0xb9a1c0,68,,1,documented
+0xb9a1c0,68,Animal::SetB9A1C0,1,rewritten
 0xb9a210,777,,1,documented
 0xb9a520,401,,2,documented
 0xb9a6c0,157,,0,documented
@@ -19574,7 +19574,7 @@ address,size,name,callers,status
 0xbc3dc0,19,,3,documented
 0xbc3eb0,104,,6,documented
 0xbc3f20,104,,2,documented
-0xbc3f90,78,,0,documented
+0xbc3f90,78,Track::NearBC3F90,0,rewritten
 0xbc3fe0,125,,2,documented
 0xbc40a0,99,,8,documented
 0xbc4150,63,Names::Of8BC4150,1,rewritten
@@ -19787,7 +19787,7 @@ address,size,name,callers,status
 0xbce410,1160,,2,documented
 0xbce970,89,WideString::Compare,357,rewritten
 0xbce9d0,125,,15,documented
-0xbcea50,78,,1,documented
+0xbcea50,78,WideString::CompareNarrow,1,rewritten
 0xbceaa0,130,,0,documented
 0xbceba0,142,,0,documented
 0xbcec90,139,,7,documented
@@ -19799,7 +19799,7 @@ address,size,name,callers,status
 0xbcef20,96,WideString::FindLast,11,rewritten
 0xbcf040,87,String::Compare,34,rewritten
 0xbcf0a0,123,,0,documented
-0xbcf120,78,,1,documented
+0xbcf120,78,String::CompareWide,1,rewritten
 0xbcf170,115,,1,documented
 0xbcf260,137,,0,documented
 0xbcf3e0,64,,1,documented
@@ -19860,7 +19860,7 @@ address,size,name,callers,status
 0xbd1880,124,,2418,documented
 0xbd1900,30,DeletingDestructor,0,rewritten
 0xbd1940,76,KeyCombination::Set,371,rewritten
-0xbd19c0,61,,2,documented
+0xbd19c0,61,Record::SameBD19C0,2,rewritten
 0xbd1bd0,49,,1,documented
 0xbd1f60,26,OwnedPointer::Reset,2,rewritten
 0xbd1f80,61,Array<4>::Allocate,0,rewritten
@@ -21016,7 +21016,7 @@ address,size,name,callers,status
 0xc21100,119,,5,documented
 0xc211c0,97,,8,documented
 0xc21230,54,,8,documented
-0xc21270,77,,1,documented
+0xc21270,77,Record::CompareC21270,1,rewritten
 0xc212d0,66,Record::InitC212D0,2,rewritten
 0xc21320,48,,5,documented
 0xc21380,40,,24,documented
@@ -21116,7 +21116,7 @@ address,size,name,callers,status
 0xc30710,141,,1,documented
 0xc307d0,82,,1,documented
 0xc30830,51,,0,documented
-0xc30890,66,,1,documented
+0xc30890,66,Resource::EntryC30890,1,rewritten
 0xc30b60,9,,4,documented
 0xc30b70,7,,4,documented
 0xc30c80,61,,12,documented
@@ -22862,7 +22862,7 @@ address,size,name,callers,status
 0xcd7bb0,322,,23,documented
 0xcd7d00,187,,5,documented
 0xcd7dc0,334,,10,documented
-0xcd7f60,62,,0,documented
+0xcd7f60,62,Camera::PartCD7F60,0,rewritten
 0xcd8010,14,,1,documented
 0xcd8060,228,Camera::PassCD8060,1,rewritten
 0xcd8150,13,,1,documented

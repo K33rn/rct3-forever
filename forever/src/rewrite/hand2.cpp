@@ -6022,3 +6022,359 @@ static long double __thiscall water_value_92e870(const uint8_t *self, int32_t n,
 }
 static const uint8_t water_value_92e870_original[] = {0x8a, 0x44, 0x24, 0x08, 0x84, 0xc0, 0x75, 0x21};
 REWRITE("Water::Value92E870", 0x92e870, water_value_92e870_original, &water_value_92e870, &g_water_values);
+
+// ---- Record::SameBD19C0(other) (0xBD19C0): 1 when the counts (+0x10) match and the first count dwords do, else 0 -------
+// (only al is set)
+static volatile long g_record_sames;
+static uint8_t __thiscall record_same_bd19c0(const int32_t *self, const int32_t *other) {
+    g_record_sames++;
+    const int32_t n = self[4];
+    if (n != other[4]) return 0;
+    for (int32_t i = 0; i < n; i++)
+        if (self[i] != other[i]) return 0;
+    return 1;
+}
+static const uint8_t record_same_bd19c0_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x8b, 0x56, 0x10, 0x8b, 0xc1};
+REWRITE("Record::SameBD19C0", 0xbd19c0, record_same_bd19c0_original, &record_same_bd19c0, &g_record_sames);
+
+// ---- Track::NearBC3F90(r) (0xBC3F90): whether two points (ecx, eax) are within r -------------------------------------
+// (dx^2 + dz^2) + dy^2 not above r r (unrounded; a NaN gives 0).
+static volatile long g_track_nears;
+extern "C" uint32_t __stdcall forever_track_near(const float *a, const float *b, float r) {
+    g_track_nears++;
+    const long double dx = (long double)a[0] - b[0], dy = (long double)a[1] - b[1], dz = (long double)a[2] - b[2];
+    return (dx * dx + dz * dz) + dy * dy <= (long double)r * r ? 1 : 0;
+}
+extern "C" __attribute__((naked)) void forever_track_near_regs() {   // a ecx, b eax; r on the stack
+    __asm__("pushl 4(%esp)\n\tpushl %eax\n\tpushl %ecx\n\tcalll _forever_track_near@12\n\tret $4");
+}
+static const uint8_t track_near_bc3f90_original[] = {0x55, 0x8b, 0xec, 0xd9, 0x01, 0x83, 0xe4, 0xf0, 0xd8, 0x20};
+REWRITE("Track::NearBC3F90", 0xbc3f90, track_near_bc3f90_original, (void *)&forever_track_near_regs, &g_track_nears);
+
+// ---- WideString::CompareNarrow(other), String::CompareWide(other) (0xBCEA50, 0xBCF120) -------------------------------
+// Texts {.., length +4, characters +0xC} (behind +0): over the shorter length (unsigned), the first difference of
+// this text's character less the other's (wide characters unsigned, narrow ones signed); else the difference in length.
+static volatile long g_mixed_compares;
+template <class A, class B> static int32_t __thiscall mixed_compare(const uint8_t *const *self, const uint8_t *const *other) {
+    g_mixed_compares++;
+    const uint8_t *const a = *self, *const b = *other;
+    const uint32_t la = *(const uint32_t *)(a + 4), lb = *(const uint32_t *)(b + 4);
+    const A *const ca = *(const A *const *)(a + 0xc);
+    const B *const cb = *(const B *const *)(b + 0xc);
+    const uint32_t n = lb < la ? lb : la;
+    for (uint32_t i = 0; i < n; i++) {
+        const int32_t d = (int32_t)ca[i] - (int32_t)cb[i];
+        if (d) return d;
+    }
+    return (int32_t)(la - lb);
+}
+static const uint8_t wide_compare_narrow_original[] = {0x8b, 0x01, 0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x09, 0x53, 0x8b, 0x59, 0x0c};
+REWRITE("WideString::CompareNarrow", 0xbcea50, wide_compare_narrow_original, (&mixed_compare<uint16_t, int8_t>), &g_mixed_compares);
+REWRITE("String::CompareWide", 0xbcf120, wide_compare_narrow_original, (&mixed_compare<int8_t, uint16_t>), &g_mixed_compares);
+
+// ---- Scenery::WrapAngle839120(a) (0x839120): +0xF8 = a wrapped into 0..2 pi by whole turns (unrounded steps) ----------
+static volatile long g_scenery_wraps;
+static void __thiscall scenery_wrap_angle_839120(uint8_t *self, float a) {
+    g_scenery_wraps++;
+    const float turn = *(const float *)0xf268dc;
+    long double x = a;
+    while (!(x < turn || x != x)) x = x - turn;
+    while (x < *(const float *)0xf264e0) x = x + turn;
+    *(volatile float *)(self + 0xf8) = (float)x;
+}
+static const uint8_t scenery_wrap_angle_839120_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x15, 0xdc, 0x68, 0xf2, 0x00};
+REWRITE("Scenery::WrapAngle839120", 0x839120, scenery_wrap_angle_839120_original, &scenery_wrap_angle_839120, &g_scenery_wraps);
+
+// ---- Record::CompareC21270(other) (0xC21270): -1, 0 or 1 by the first float, then the second ------------------------
+// A NaN in either compares as greater (1).
+static volatile long g_record_compares;
+static int32_t __thiscall record_compare_c21270(const float *self, const float *other) {
+    g_record_compares++;
+    if (self[0] < other[0]) return -1;
+    if (!(self[0] == other[0])) return 1;
+    if (self[1] < other[1]) return -1;
+    return self[1] == other[1] ? 0 : 1;
+}
+static const uint8_t record_compare_c21270_original[] = {0xd9, 0x01, 0x8b, 0x54, 0x24, 0x04, 0xd8, 0x1a, 0xdf, 0xe0};
+REWRITE("Record::CompareC21270", 0xc21270, record_compare_c21270_original, &record_compare_c21270, &g_record_compares);
+
+// ---- Fireworks::Point9E8790(out, n, k) (0x9E8790) ------------------------------------------------------------------
+// Row n of the game's table at 0x10F1CF8 (20 bytes: x, z, y, w): out = {shape[k].x + x, y, z, w, n}, the shape being
+// the +0x58'th of the list at 0x10F1CD0 (0x20 bytes a point). Gives the row's w.
+static volatile long g_firework_points;
+static uint32_t __thiscall fireworks_point_9e8790(const uint8_t *self, uint32_t *out, int32_t n, int32_t k) {
+    g_firework_points++;
+    const float *const shape = ((const float *const *)0x10f1cd0)[*(const int32_t *)(self + 0x58)];
+    const uint32_t *const row = (const uint32_t *)(0x10f1cf8 + n * 20);
+    *(volatile float *)out = (float)((long double)*(const float *)((const uint8_t *)shape + k * 0x20) + *(const float *)row);
+    out[1] = row[2], out[2] = row[1], out[3] = row[3], out[4] = (uint32_t)n;
+    return row[3];
+}
+static const uint8_t fireworks_point_9e8790_original[] = {0x8b, 0x49, 0x58, 0x8b, 0x0c, 0x8d, 0xd0, 0x1c, 0x0f, 0x01};
+REWRITE("Fireworks::Point9E8790", 0x9e8790, fireworks_point_9e8790_original, &fireworks_point_9e8790, &g_firework_points);
+
+// ---- Scenery::Value8605F0(i) (0x8605F0) ----------------------------------------------------------------------------
+// The part (+0xC) list's (+0x18) entry i, its +0x38 v; k = +0x10. a = v A[k] S (A at 0x10F087C, S 0x10F093C). For the
+// last entry (+0x14 count) a; else b = v B[k] T (B at 0x10F07C0, T 0x10F0938) as a float when below a, else a.
+static volatile long g_scenery_values;
+static long double __thiscall scenery_value_8605f0(const uint8_t *self, int32_t i) {
+    g_scenery_values++;
+    const uint8_t *const part = *(const uint8_t *const *)(self + 0xc);
+    const int32_t k = *(const int32_t *)(self + 0x10);
+    const float v = *(const float *)((*(const uint8_t *const *const *)(part + 0x18))[i] + 0x38);
+    const long double a = (long double)v * ((const float *)0x10f087c)[k] * *(const volatile float *)0x10f093c;
+    if (i == *(const int32_t *)(part + 0x14) - 1) return a;
+    const long double bx = (long double)v * ((const float *)0x10f07c0)[k] * *(const volatile float *)0x10f0938;
+    volatile float b = (float)bx;
+    return bx < a ? (long double)b : a;   // (compared unrounded, given as a float)
+}
+static const uint8_t scenery_value_8605f0_original[] = {0x8b, 0x51, 0x0c, 0x8b, 0x41, 0x10, 0x56, 0x8b, 0x74, 0x24, 0x08};
+REWRITE("Scenery::Value8605F0", 0x8605f0, scenery_value_8605f0_original, &scenery_value_8605f0, &g_scenery_values);
+
+// ---- Record::Make7CD120(from), SceneryBehaviour::Init820B50(from) (0x7CD120, 0x820B50): handle copies ----------------
+// A handle (table 0xF26AE0, then its own) taking a reference to from's object (its count +8 goes up) and joining the
+// object's list (+0x20) at the front (nodes {next, back}); its +0x10 points at itself; then a few of from's values.
+static volatile long g_handle_copies;
+static inline void handle_join(uint32_t *h, uint32_t *object) {
+    object[2]++;
+    h[1] = (uint32_t)(uintptr_t)object;
+    uint32_t *const head = (uint32_t *)(uintptr_t)object[8], *const node = h + 2;
+    node[0] = head[0];
+    ((uint32_t *)(uintptr_t)head[0])[1] = (uint32_t)(uintptr_t)node;
+    node[1] = (uint32_t)(uintptr_t)head;
+    head[0] = (uint32_t)(uintptr_t)node;
+}
+static uint32_t *__thiscall record_make_7cd120(uint32_t *self, const uint8_t *from) {
+    g_handle_copies++;
+    self[0] = 0xf70de0;
+    uint32_t *const h = self + 1;
+    h[0] = 0xf26ae0;
+    h[4] = (uint32_t)(uintptr_t)h;
+    handle_join(h, *(uint32_t *const *)(from + 8));
+    h[0] = 0xf72040;
+    h[5] = *(const uint32_t *)(from + 0x18);
+    *(uint8_t *)(h + 6) = from[0x1c];
+    ((uint8_t *)self)[0x20] = from[0x20];
+    ((uint8_t *)self)[0x21] = from[0x21];
+    return self;
+}
+static const uint8_t record_make_7cd120_original[] = {0x8b, 0xc1, 0xc7, 0x00, 0xe0, 0x0d, 0xf7, 0x00};
+REWRITE("Record::Make7CD120", 0x7cd120, record_make_7cd120_original, &record_make_7cd120, &g_handle_copies);
+static uint32_t *__thiscall scenery_behaviour_init_820b50(uint32_t *self, const uint8_t *from) {
+    g_handle_copies++;
+    self[0] = 0xf26ae0;
+    self[4] = (uint32_t)(uintptr_t)self;
+    handle_join(self, *(uint32_t *const *)(from + 4));
+    self[0] = 0xf75b08;
+    self[5] = *(const uint32_t *)(from + 0x14);
+    *(uint8_t *)(self + 6) = from[0x18];
+    self[7] = *(const uint32_t *)(from + 0x1c);
+    return self;
+}
+static const uint8_t scenery_behaviour_init_820b50_original[] = {0x8b, 0xc1, 0xc7, 0x00, 0xe0, 0x6a, 0xf2, 0x00};
+REWRITE("SceneryBehaviour::Init820B50", 0x820b50, scenery_behaviour_init_820b50_original, &scenery_behaviour_init_820b50, &g_handle_copies);
+
+// ---- Effect::Init488290(a, b, p, q) (0x488290): {table 0xF2E308, -, p (two dwords), q (two), 0, a, b}. Gives it. ------
+static volatile long g_effect_inits;
+static uint32_t *__thiscall effect_init_488290(uint32_t *self, uint32_t a, uint32_t b, const uint32_t *p, const uint32_t *q) {
+    g_effect_inits++;
+    self[0] = 0xf2e308;
+    self[2] = p[0], self[3] = p[1], self[4] = q[0], self[5] = q[1];
+    self[6] = 0, self[7] = a, self[8] = b;
+    return self;
+}
+static const uint8_t effect_init_488290_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x0c, 0xc7, 0x00, 0x08, 0xe3, 0xf2, 0x00};
+REWRITE("Effect::Init488290", 0x488290, effect_init_488290_original, &effect_init_488290, &g_effect_inits);
+
+// ---- Window::Init6A3B60(p, q, v) (0x6A3B60): {p (two dwords), q (two), 0, 0, 1, 1, v}. Gives it. -----------------------
+static volatile long g_window_rect_inits;
+static uint32_t *__thiscall window_init_6a3b60(uint32_t *self, const uint32_t *p, const uint32_t *q, uint32_t v) {
+    g_window_rect_inits++;
+    self[0] = p[0], self[1] = p[1], self[2] = q[0], self[3] = q[1];
+    self[4] = 0, self[5] = 0, self[6] = 0x3f800000, self[7] = 0x3f800000, self[8] = v;
+    return self;
+}
+static const uint8_t window_init_6a3b60_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x11, 0x89, 0x10};
+REWRITE("Window::Init6A3B60", 0x6a3b60, window_init_6a3b60_original, &window_init_6a3b60, &g_window_rect_inits);
+
+// ---- Window::Ring680AB0(item) (0x680AB0): puts a 12-byte item at the back of a ring --------------------------------------
+// Entries +0, room +4, front +8, count +0xC (unsigned): 0 when full, else the item goes to (front + count) % room, the
+// count goes up and 1 (only al).
+static volatile long g_ring_pushes;
+static uint8_t __thiscall window_ring_680ab0(uint32_t *self, const uint32_t *item) {
+    g_ring_pushes++;
+    if (self[3] >= self[1]) return 0;
+    uint32_t *const e = (uint32_t *)(uintptr_t)self[0] + (self[2] + self[3]) % self[1] * 3;
+    e[0] = item[0], e[1] = item[1], e[2] = item[2];
+    self[3]++;
+    return 1;
+}
+static const uint8_t window_ring_680ab0_original[] = {0x8b, 0x51, 0x0c, 0x56, 0x8b, 0x71, 0x04, 0x3b, 0xd6};
+REWRITE("Window::Ring680AB0", 0x680ab0, window_ring_680ab0_original, &window_ring_680ab0, &g_ring_pushes);
+
+// ---- Water::Entry94DC80(n, p, q) (0x94DC80): entry n (0x60 bytes at +0x1B4) +0x10 = p and +0x20 = q. Gives it. --------
+static volatile long g_water_entry_sets;
+static uint32_t *__thiscall water_entry_94dc80(const uint8_t *self, int32_t n, const uint32_t *p, const uint32_t *q) {
+    g_water_entry_sets++;
+    uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(self + 0x1b4) + n * 0x60);
+    e[4] = p[0], e[5] = p[1], e[6] = p[2];
+    e[8] = q[0], e[9] = q[1], e[10] = q[2];
+    return e;
+}
+static const uint8_t water_entry_94dc80_original[] = {0x8b, 0x91, 0xb4, 0x01, 0x00, 0x00, 0x8b, 0x44, 0x24, 0x04};
+REWRITE("Water::Entry94DC80", 0x94dc80, water_entry_94dc80_original, &water_entry_94dc80, &g_water_entry_sets);
+
+// ---- Terrain::Clear8FFFE0(n) (0x8FFFE0): frees entry n (0x60 bytes at +0xA8) when its byte +0 is on --------------------
+// The byte is cleared and n goes on the free list: slot (+0xB4 - +0xB0) of +0xAC, then +0xB0 goes down by one.
+static volatile long g_terrain_frees;
+static void __thiscall terrain_clear_8fffe0(uint8_t *self, int32_t n) {
+    g_terrain_frees++;
+    uint8_t *const e = *(uint8_t *const *)(self + 0xa8) + n * 0x60;
+    if (!*e) return;
+    *e = 0;
+    int32_t *const used = (int32_t *)(self + 0xb0);
+    (*(int32_t *const *)(self + 0xac))[*(const int32_t *)(self + 0xb4) - *used] = n;
+    *used -= 1;
+}
+static const uint8_t terrain_clear_8fffe0_original[] = {0x8b, 0x44, 0x24, 0x04, 0x53, 0x8d, 0x14, 0x40, 0x56};
+REWRITE("Terrain::Clear8FFFE0", 0x8fffe0, terrain_clear_8fffe0_original, &terrain_clear_8fffe0, &g_terrain_frees);
+
+// ---- Terrain::Entry8FE1E0(n, x, z) (0x8FE1E0): entry n moves to x, z, keeping how far it moved ------------------------
+// Entry n (0x60 bytes at +0xA8): +0x30 = x - +0x10 and +0x34 = z - +0x18 (floats), then +0x10 = x, +0x18 = z. Gives it.
+static volatile long g_terrain_moves;
+static uint8_t *__thiscall terrain_entry_8fe1e0(const uint8_t *self, int32_t n, float x, float z) {
+    g_terrain_moves++;
+    uint8_t *const e = *(uint8_t *const *)(self + 0xa8) + n * 0x60;
+    const long double oz = *(const float *)(e + 0x18);
+    *(volatile float *)(e + 0x30) = (float)((long double)x - *(const float *)(e + 0x10));
+    *(volatile float *)(e + 0x34) = (float)((long double)z - oz);
+    *(float *)(e + 0x10) = x;
+    *(float *)(e + 0x18) = z;
+    return e;
+}
+static const uint8_t terrain_entry_8fe1e0_original[] = {0x8b, 0x91, 0xa8, 0x00, 0x00, 0x00, 0x8b, 0x44, 0x24, 0x04};
+REWRITE("Terrain::Entry8FE1E0", 0x8fe1e0, terrain_entry_8fe1e0_original, &terrain_entry_8fe1e0, &g_terrain_moves);
+
+// ---- Labels::Value47DDC0(v) (0x47DDC0): +0x80 = v kept within 0..1 the FPU's way (a NaN gives 1) ---------------------
+static volatile long g_label_values;
+static void __thiscall labels_value_47ddc0(uint8_t *self, float v) {
+    g_label_values++;
+    const long double m = 0.0L < v || v != v ? (long double)v : 0.0L;
+    *(volatile float *)(self + 0x80) = (float)(1.0L > m ? m : 1.0L);
+}
+static const uint8_t labels_value_47ddc0_original[] = {0x83, 0xec, 0x0c, 0xc7, 0x04, 0x24, 0x00, 0x00, 0x80, 0x3f};
+REWRITE("Labels::Value47DDC0", 0x47ddc0, labels_value_47ddc0_original, &labels_value_47ddc0, &g_label_values);
+
+// ---- Ride::Clear4BF580(-, m) (0x4BF580): m becomes the 4 x 4 identity. Gives m. ------------------------------------
+static volatile long g_ride_identities;
+static uint32_t *__thiscall ride_clear_4bf580(const void *, uint32_t, uint32_t *m) {
+    g_ride_identities++;
+    for (int i = 0; i < 16; i++) m[i] = i % 5 ? 0 : 0x3f800000;
+    return m;
+}
+static const uint8_t ride_clear_4bf580_original[] = {0x8b, 0x44, 0x24, 0x08, 0x33, 0xc9, 0x89, 0x48, 0x38};
+REWRITE("Ride::Clear4BF580", 0x4bf580, ride_clear_4bf580_original, &ride_clear_4bf580, &g_ride_identities);
+
+// ---- Camera::PartCD7F60(out) (0xCD7F60): the part's (+8) point (its +0x10), or zeros with no part. Gives out. ---------
+static volatile long g_camera_parts;
+static float *__thiscall camera_part_cd7f60(const uint8_t *self, float *out) {
+    g_camera_parts++;
+    const uint8_t *const part = *(const uint8_t *const *)(self + 8);
+    volatile float *const o = out;
+    if (!part) {
+        ((volatile uint32_t *)o)[0] = 0, ((volatile uint32_t *)o)[1] = 0, ((volatile uint32_t *)o)[2] = 0;
+        return out;
+    }
+    const float *const v = *(const float *const *)(part + 0x10);
+    o[0] = v[0], o[1] = v[1], o[2] = v[2];
+    return out;
+}
+static const uint8_t camera_part_cd7f60_original[] = {0x55, 0x8b, 0xec, 0x8b, 0x41, 0x08, 0x33, 0xc9, 0x83, 0xe4, 0xf0};
+REWRITE("Camera::PartCD7F60", 0xcd7f60, camera_part_cd7f60_original, &camera_part_cd7f60, &g_camera_parts);
+
+// ---- Car::Time502070(dt) (0x502070): +0x28 -= dt K (K 0xF368C8), 0 when below 0 and 4 pi when past it (unrounded) ----
+static volatile long g_car_times;
+static void __thiscall car_time_502070(uint8_t *self, float dt) {
+    g_car_times++;
+    volatile float *const t = (volatile float *)(self + 0x28);
+    const long double v = *t - (long double)dt * *(const float *)0xf368c8;
+    *t = (float)v;
+    if (v < *(const float *)0xf368c4) *(volatile uint32_t *)t = 0;
+    else if (v > *(const float *)0xf368c0) *(volatile uint32_t *)t = 0x41490fdb;
+}
+static const uint8_t car_time_502070_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x0d, 0xc8, 0x68, 0xf3, 0x00};
+REWRITE("Car::Time502070", 0x502070, car_time_502070_original, &car_time_502070, &g_car_times);
+
+// ---- Path::Entry7338D0(out, n) (0x7338D0): entry n's (0x98 bytes at +0xC) two dwords +0x58, or -1s ---------------------
+// (-1s too for n below 0 or an entry whose byte +0 is clear). Gives out.
+static volatile long g_path_entries;
+static uint32_t *__thiscall path_entry_7338d0(const uint8_t *self, uint32_t *out, int32_t n) {
+    g_path_entries++;
+    if (n >= 0) {
+        const uint8_t *const e = *(const uint8_t *const *)(self + 0xc) + n * 0x98;
+        if (*e) {
+            out[0] = *(const uint32_t *)(e + 0x58), out[1] = *(const uint32_t *)(e + 0x5c);
+            return out;
+        }
+    }
+    out[0] = 0xffffffff, out[1] = 0xffffffff;
+    return out;
+}
+static const uint8_t path_entry_7338d0_original[] = {0x8b, 0x44, 0x24, 0x08, 0x85, 0xc0, 0x7c, 0x26};
+REWRITE("Path::Entry7338D0", 0x7338d0, path_entry_7338d0_original, &path_entry_7338d0, &g_path_entries);
+
+// ---- Resource::EntryC30890(n) (0xC30890): frees a chain of entries -------------------------------------------------
+// From n (nothing for n below 0) along the next links (+0xC; 16-byte entries at +0x20) to the last (link below 0): each
+// one's +4 cleared and the count +0x2C down by one; the last links to the free list (+0x24), whose head becomes n.
+static volatile long g_resource_frees;
+static void __thiscall resource_entry_c30890(uint8_t *self, int32_t n) {
+    g_resource_frees++;
+    if (n < 0) return;
+    int32_t i = n, last;
+    do {
+        uint8_t *const e = *(uint8_t *const *)(self + 0x20) + i * 16;
+        *(uint32_t *)(e + 4) = 0;
+        *(int32_t *)(self + 0x2c) -= 1;
+        last = i;
+        i = *(const int32_t *)(*(uint8_t *const *)(self + 0x20) + i * 16 + 0xc);
+    } while (i >= 0);
+    *(int32_t *)(*(uint8_t *const *)(self + 0x20) + last * 16 + 0xc) = *(const int32_t *)(self + 0x24);
+    *(int32_t *)(self + 0x24) = n;
+}
+static const uint8_t resource_entry_c30890_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x85, 0xdb, 0x7c, 0x35};
+REWRITE("Resource::EntryC30890", 0xc30890, resource_entry_c30890_original, &resource_entry_c30890, &g_resource_frees);
+
+// ---- Window::Step6F2490(k, p, ref, a, b) (0x6F2490) ----------------------------------------------------------------
+// {table 0xF67034, a reference to *ref (its count +0 up), .., p at +0x10, k^2 (a float) at +0x20, a, b}. Gives it.
+static volatile long g_window_steps;
+static uint32_t *__thiscall window_step_6f2490(uint32_t *self, float k, const uint32_t *p, uint32_t *const *ref, uint32_t a, uint32_t b) {
+    g_window_steps++;
+    self[0] = 0xf67034;
+    uint32_t *const r = *ref;
+    self[1] = (uint32_t)(uintptr_t)r;
+    r[0]++;
+    self[4] = p[0], self[5] = p[1], self[6] = p[2];
+    *(volatile float *)(self + 8) = (float)((long double)k * k);
+    self[9] = a, self[10] = b;
+    return self;
+}
+static const uint8_t window_step_6f2490_original[] = {0xd9, 0x44, 0x24, 0x04, 0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x0c};
+REWRITE("Window::Step6F2490", 0x6f2490, window_step_6f2490_original, &window_step_6f2490, &g_window_steps);
+
+// ---- Animal::SetB9A1C0 (0xB9A1C0): lets go of its slot ---------------------------------------------------------------
+// With a slot (+0xAC, not below 0): that entry's (0xB8 bytes at +0x74) byte +0x79 = 1; +0x7C, +0x80 = 0; the slot -1;
+// +0x84 = +0x64 - 1 and +0x88 = +0x68 - 1.
+static volatile long g_animal_slot_frees;
+static void __thiscall animal_set_b9a1c0(uint8_t *self) {
+    g_animal_slot_frees++;
+    int32_t *const u = (int32_t *)self;
+    const int32_t s = u[0xac / 4];
+    if (s < 0) return;
+    (*(uint8_t *const *)(self + 0x74))[s * 0xb8 + 0x79] = 1;
+    u[0x7c / 4] = 0, u[0x80 / 4] = 0;
+    u[0xac / 4] = -1;
+    u[0x84 / 4] = u[0x64 / 4] - 1;
+    u[0x88 / 4] = u[0x68 / 4] - 1;
+}
+static const uint8_t animal_set_b9a1c0_original[] = {0x8b, 0x81, 0xac, 0x00, 0x00, 0x00, 0x33, 0xd2, 0x3b, 0xc2};
+REWRITE("Animal::SetB9A1C0", 0xb9a1c0, animal_set_b9a1c0_original, &animal_set_b9a1c0, &g_animal_slot_frees);

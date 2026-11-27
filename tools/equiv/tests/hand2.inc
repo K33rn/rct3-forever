@@ -3302,4 +3302,272 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 return x;
                             }};
     quick(water_value_92e870);
+    // Record::SameBD19C0: counts 0-5 equal or not, dwords from a few
+    Test record_same_bd19c0{0xbd19c0,
+                            [=](Rng &r) {
+                                int32_t *a = arena<int32_t>(0x100), *b = arena<int32_t>(0x140);
+                                for (int i = 0; i < 4; i++) a[i] = r.range(0, 2), b[i] = r.range(0, 3) ? a[i] : r.range(0, 2);
+                                a[4] = r.range(-1, 4), b[4] = r.range(0, 3) ? a[4] : r.range(-1, 4);
+                            },
+                            [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x140)) & 0xff}; }};
+    quick(record_same_bd19c0);
+    // Track::NearBC3F90: points near and far, radii either side (the points in ecx and eax)
+    Test track_near_bc3f90{0xbc3f90,
+                           [=](Rng &r) {
+                               float *a = arena<float>(0x100), *b = arena<float>(0x110);
+                               for (int c = 0; c < 3; c++) a[c] = r.real(-20, 20), b[c] = a[c] + r.real(-3, 3);
+                               arena<float>(0x40)[0] = r.real(-1, 6);
+                           },
+                           [](void *fn) {
+                               uint32_t stack[1] = {arena<uint32_t>(0x40)[0]};
+                               uint32_t *ps = stack;
+                               void *a = arena<void>(0x100);
+                               uint32_t b = (uint32_t)(uintptr_t)arena<void>(0x110);
+                               __asm__ volatile("pushl (%%edx)\n\tcall *%%ebx" : "+a"(b), "+c"(a), "+d"(ps) : "b"(fn) : "memory", "cc");
+                               return Result{b};
+                           }};
+    quick(track_near_bc3f90);
+    // WideString::CompareNarrow / String::CompareWide: texts of 0-8 characters alike or not (high bytes at times)
+    for (uintptr_t at : {(uintptr_t)0xbcea50, (uintptr_t)0xbcf120}) {
+        Test x{at,
+               [=](Rng &r) {
+                   const bool wide_first = at == 0xbcea50;
+                   uint32_t *ta = arena<uint32_t>(0x140), *tb = arena<uint32_t>(0x180);
+                   arena<uint32_t>(0x100)[0] = (uint32_t)(uintptr_t)ta, arena<uint32_t>(0x104)[0] = (uint32_t)(uintptr_t)tb;
+                   ta[1] = r.range(0, 8), tb[1] = r.range(0, 3) ? ta[1] : r.range(0, 8);
+                   ta[3] = (uint32_t)(uintptr_t)arena<void>(0x200), tb[3] = (uint32_t)(uintptr_t)arena<void>(0x300);
+                   for (int i = 0; i < 8; i++) {
+                       const uint8_t c = (uint8_t)(r.range(0, 7) ? 0x41 + r.range(0, 3) : r.next());
+                       const uint8_t d = r.range(0, 4) ? c : (uint8_t)(0x41 + r.range(0, 3));
+                       if (wide_first) arena<uint16_t>(0x200)[i] = r.range(0, 9) ? c : (uint16_t)r.next(), arena<uint8_t>(0x300)[i] = d;
+                       else arena<uint8_t>(0x200)[i] = c, arena<uint16_t>(0x300)[i] = r.range(0, 9) ? d : (uint16_t)r.next();
+                   }
+               },
+               [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x104))}; }};
+        quick(x);
+    }
+    // Scenery::WrapAngle839120: angles from -5 turns to 5, whole turns and 0 at times
+    Test scenery_wrap_angle_839120{0x839120,
+                                   [=](Rng &r) {
+                                       const int k = r.range(0, 5);
+                                       arena<float>(0x40)[0] = k == 0 ? 6.2831854820251465f * r.range(-3, 3) : k == 1 ? -0.0f : r.real(-32, 32);
+                                   },
+                                   [](void *fn) {
+                                       ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                                       return Result{0};
+                                   }};
+    quick(scenery_wrap_angle_839120);
+    // Record::CompareC21270: pairs from a few values (ties on either part)
+    Test record_compare_c21270{0xc21270,
+                               [=](Rng &r) {
+                                   for (int i = 0; i < 2; i++) arena<float>(0x100)[i] = (float)r.range(-2, 2), arena<float>(0x140)[i] = (float)r.range(-2, 2);
+                                   if (r.range(0, 4) == 0) arena<float>(0x100)[r.range(0, 1)] = r.real(-2, 2);
+                               },
+                               [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x140))}; }};
+    quick(record_compare_c21270);
+    // Fireworks::Point9E8790: shapes 0-3 of the game's table, points 0-3, rows 0-3
+    Test fireworks_point_9e8790{0x9e8790,
+                                [=](Rng &r) {
+                                    *(int32_t *)arena<uint8_t>(0x158) = r.range(0, 3);
+                                    for (int i = 0; i < 6; i++) arena<uint32_t>(0x40)[i] = r.next();
+                                    arena<int32_t>(0x60)[0] = r.range(0, 3), arena<int32_t>(0x60)[1] = r.range(0, 3);
+                                },
+                                [](void *fn) {
+                                    return Result{((uint32_t(__thiscall *)(const void *, void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<void>(0x40), arena<int32_t>(0x60)[0], arena<int32_t>(0x60)[1])};
+                                }};
+    quick(fireworks_point_9e8790);
+    // Scenery::Value8605F0: 1-4 entries, the last or not, kinds 0-7 of the game's tables
+    Test scenery_value_8605f0{0x8605f0,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100), *part = arena<uint8_t>(0x200);
+                                  *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)part;
+                                  *(int32_t *)(self + 0x10) = r.range(0, 7);
+                                  const int n = r.range(1, 4);
+                                  *(int32_t *)(part + 0x14) = n;
+                                  *(uint32_t *)(part + 0x18) = (uint32_t)(uintptr_t)arena<void>(0x240);
+                                  for (int k = 0; k < 4; k++) {
+                                      arena<uint32_t>(0x240)[k] = (uint32_t)(uintptr_t)arena<void>(0x300 + k * 0x40);
+                                      *(float *)arena<uint8_t>(0x338 + k * 0x40) = r.real(-5, 5);
+                                  }
+                                  arena<int32_t>(0x40)[0] = r.range(0, n - 1);
+                              },
+                              [](void *fn) {
+                                  Result x;
+                                  x.f = ((long double(__thiscall *)(const void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0]);
+                                  return x;
+                              }};
+    quick(scenery_value_8605f0);
+    // Record::Make7CD120 / SceneryBehaviour::Init820B50: from records over an object whose list is empty or not
+    for (uintptr_t at : {(uintptr_t)0x7cd120, (uintptr_t)0x820b50}) {
+        Test x{at,
+               [=](Rng &r) {
+                   for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x100)[i] = r.next(), arena<uint32_t>(0x200)[i] = r.next();
+                   uint32_t *object = arena<uint32_t>(0x300), *head = arena<uint32_t>(0x380), *first = arena<uint32_t>(0x3c0);
+                   for (int i = 0; i < 0x10; i++) object[i] = r.next();
+                   object[8] = (uint32_t)(uintptr_t)head;
+                   head[0] = r.range(0, 1) ? (uint32_t)(uintptr_t)first : (uint32_t)(uintptr_t)head;
+                   head[1] = r.next(), first[0] = r.next(), first[1] = r.next();
+                   arena<uint32_t>(0x200)[at == 0x7cd120 ? 2 : 1] = (uint32_t)(uintptr_t)object;
+               },
+               [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x200))}; }};
+        quick(x);
+    }
+    // Effect::Init488290 / Window::Init6A3B60: random values
+    Test effect_init_488290{0x488290,
+                            [=](Rng &r) {
+                                for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                for (int i = 0; i < 8; i++) arena<uint32_t>(0x40)[i] = r.next();
+                            },
+                            [](void *fn) {
+                                const uint32_t *a = arena<uint32_t>(0x40);
+                                return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t, uint32_t, const void *, const void *))fn)(arena<void>(0x100), a[0], a[1], a + 2, a + 4)};
+                            }};
+    quick(effect_init_488290);
+    Test window_init_6a3b60{0x6a3b60,
+                            [=](Rng &r) {
+                                for (int i = 0; i < 0x10; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                for (int i = 0; i < 8; i++) arena<uint32_t>(0x40)[i] = r.next();
+                            },
+                            [](void *fn) {
+                                const uint32_t *a = arena<uint32_t>(0x40);
+                                return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *, const void *, uint32_t))fn)(arena<void>(0x100), a, a + 2, a[4])};
+                            }};
+    quick(window_init_6a3b60);
+    // Window::Ring680AB0: rings of room 1-6, any front, counts up to full
+    Test window_ring_680ab0{0x680ab0,
+                            [=](Rng &r) {
+                                uint32_t *self = arena<uint32_t>(0x100);
+                                self[0] = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                self[1] = r.range(1, 6), self[2] = r.range(0, 20), self[3] = r.range(0, self[1]);
+                                for (int i = 0; i < 18; i++) arena<uint32_t>(0x200)[i] = r.next();
+                                for (int i = 0; i < 3; i++) arena<uint32_t>(0x40)[i] = r.next();
+                            },
+                            [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40)) & 0xff}; }};
+    quick(window_ring_680ab0);
+    // Water::Entry94DC80: entries 0-3, random values
+    Test water_entry_94dc80{0x94dc80,
+                            [=](Rng &r) {
+                                *(uint32_t *)arena<uint8_t>(0x2b4) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x400)[i] = r.next();
+                                for (int i = 0; i < 6; i++) arena<uint32_t>(0x40)[i] = r.next();
+                                arena<int32_t>(0x60)[0] = r.range(0, 3);
+                            },
+                            [](void *fn) {
+                                return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, int32_t, const void *, const void *))fn)(arena<void>(0x100), arena<int32_t>(0x60)[0], arena<void>(0x40), arena<void>(0x4c))};
+                            }};
+    quick(water_entry_94dc80);
+    // Terrain::Clear8FFFE0: entries 0-3 on or off, free lists of 8
+    Test terrain_clear_8fffe0{0x8fffe0,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100);
+                                  *(uint32_t *)(self + 0xa8) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  for (int i = 0; i < 0x60; i++) arena<uint32_t>(0x400)[i] = r.next();
+                                  for (int k = 0; k < 4; k++) arena<uint8_t>(0x400 + k * 0x60)[0] = r.range(0, 1) ? (uint8_t)r.range(1, 255) : 0;
+                                  *(uint32_t *)(self + 0xac) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                  *(int32_t *)(self + 0xb4) = 8, *(int32_t *)(self + 0xb0) = r.range(1, 8);
+                                  for (int i = 0; i < 9; i++) arena<uint32_t>(0x200)[i] = r.next();
+                                  arena<int32_t>(0x40)[0] = r.range(0, 3);
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0]);
+                                  return Result{0};
+                              }};
+    quick(terrain_clear_8fffe0);
+    // Terrain::Entry8FE1E0: entries 0-3, random places
+    Test terrain_entry_8fe1e0{0x8fe1e0,
+                              [=](Rng &r) {
+                                  *(uint32_t *)arena<uint8_t>(0x1a8) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  for (int i = 0; i < 0x60; i++) arena<float>(0x400)[i] = r.real(-100, 100);
+                                  arena<int32_t>(0x40)[0] = r.range(0, 3), arena<float>(0x40)[1] = r.real(-100, 100), arena<float>(0x40)[2] = r.real(-100, 100);
+                              },
+                              [](void *fn) {
+                                  return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, int32_t, float, float))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<float>(0x40)[1], arena<float>(0x40)[2])};
+                              }};
+    quick(terrain_entry_8fe1e0);
+    // Labels::Value47DDC0: values below 0, inside and past 1
+    Test labels_value_47ddc0{0x47ddc0,
+                             [=](Rng &r) { arena<float>(0x40)[0] = r.range(0, 5) == 0 ? -0.0f : r.real(-1, 2); },
+                             [](void *fn) {
+                                 ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                                 return Result{0};
+                             }};
+    quick(labels_value_47ddc0);
+    // Ride::Clear4BF580: a random matrix's room
+    Test ride_clear_4bf580{0x4bf580,
+                           [=](Rng &r) { for (int i = 0; i < 16; i++) arena<uint32_t>(0x200)[i] = r.next(); },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, uint32_t, void *))fn)(arena<void>(0x100), 7, arena<void>(0x200))}; }};
+    quick(ride_clear_4bf580);
+    // Camera::PartCD7F60: a part or none
+    Test camera_part_cd7f60{0xcd7f60,
+                            [=](Rng &r) {
+                                *(uint32_t *)arena<uint8_t>(0x108) = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x200) : 0;
+                                *(uint32_t *)arena<uint8_t>(0x210) = (uint32_t)(uintptr_t)arena<void>(0x240);
+                                for (int c = 0; c < 3; c++) arena<float>(0x240)[c] = r.real(-50, 50), arena<uint32_t>(0x40)[c] = r.next();
+                            },
+                            [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    quick(camera_part_cd7f60);
+    // Car::Time502070: times that end below 0, inside and past 4 pi
+    Test car_time_502070{0x502070,
+                         [=](Rng &r) { *(float *)arena<uint8_t>(0x128) = r.real(-1, 14), arena<float>(0x40)[0] = r.real(-3000, 3000); },
+                         [](void *fn) {
+                             ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                             return Result{0};
+                         }};
+    quick(car_time_502070);
+    // Path::Entry7338D0: entries -1..3, on or off
+    Test path_entry_7338d0{0x7338d0,
+                           [=](Rng &r) {
+                               *(uint32_t *)arena<uint8_t>(0x10c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int i = 0; i < 4 * 0x98 / 4; i++) arena<uint32_t>(0x400)[i] = r.next();
+                               for (int k = 0; k < 4; k++) arena<uint8_t>(0x400 + k * 0x98)[0] = r.range(0, 1) ? (uint8_t)r.range(1, 255) : 0;
+                               arena<int32_t>(0x40)[0] = r.range(-1, 3);
+                               arena<uint32_t>(0x60)[0] = r.next(), arena<uint32_t>(0x60)[1] = r.next();
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *, int32_t))fn)(arena<void>(0x100), arena<void>(0x60), arena<int32_t>(0x40)[0])}; }};
+    quick(path_entry_7338d0);
+    // Resource::EntryC30890: chains of 1-4 entries through 8 (n -1 at times)
+    Test resource_entry_c30890{0xc30890,
+                               [=](Rng &r) {
+                                   uint8_t *self = arena<uint8_t>(0x100);
+                                   *(uint32_t *)(self + 0x20) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                   *(int32_t *)(self + 0x24) = r.range(-1, 7), *(int32_t *)(self + 0x2c) = r.range(0, 20);
+                                   for (int i = 0; i < 32; i++) arena<uint32_t>(0x200)[i] = r.next();
+                                   int order[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+                                   for (int i = 7; i > 0; i--) { const int j = r.range(0, i), t = order[i]; order[i] = order[j], order[j] = t; }
+                                   const int len = r.range(1, 4);
+                                   for (int i = 0; i < len; i++) arena<int32_t>(0x200 + order[i] * 16)[3] = i + 1 < len ? order[i + 1] : -r.range(1, 5);
+                                   arena<int32_t>(0x40)[0] = r.range(0, 7) ? order[0] : -1;
+                               },
+                               [](void *fn) {
+                                   ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0]);
+                                   return Result{0};
+                               }};
+    quick(resource_entry_c30890);
+    // Window::Step6F2490: random values and a reference with any count
+    Test window_step_6f2490{0x6f2490,
+                            [=](Rng &r) {
+                                for (int i = 0; i < 12; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                for (int c = 0; c < 3; c++) arena<uint32_t>(0x40)[c] = r.next();
+                                arena<uint32_t>(0x50)[0] = (uint32_t)(uintptr_t)arena<void>(0x60);
+                                arena<uint32_t>(0x60)[0] = r.next();
+                                arena<float>(0x70)[0] = r.real(-30, 30), arena<uint32_t>(0x70)[1] = r.next(), arena<uint32_t>(0x70)[2] = r.next();
+                            },
+                            [](void *fn) {
+                                return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, float, const void *, const void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<float>(0x70)[0], arena<void>(0x40), arena<void>(0x50), arena<uint32_t>(0x70)[1], arena<uint32_t>(0x70)[2])};
+                            }};
+    quick(window_step_6f2490);
+    // Animal::SetB9A1C0: slots -1..3
+    Test animal_set_b9a1c0{0xb9a1c0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               for (int i = 0; i < 0x2c; i++) arena<uint32_t>(0x100)[i] = r.next();
+                               *(int32_t *)(self + 0xac) = r.range(-1, 3);
+                               *(uint32_t *)(self + 0x74) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int i = 0; i < 4 * 0xb8 / 4; i++) arena<uint32_t>(0x400)[i] = r.next();
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                               return Result{0};
+                           }};
+    quick(animal_set_b9a1c0);
 #endif
