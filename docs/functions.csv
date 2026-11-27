@@ -1152,7 +1152,7 @@ address,size,name,callers,status
 0x45ee10,62,,1,documented
 0x45ee50,17,,3,documented
 0x45ee70,48,,3,documented
-0x45eea0,96,,5,documented
+0x45eea0,96,List::Find45EEA0,5,rewritten
 0x45ef10,73,Table::Entry45EF10,10,rewritten
 0x45efb0,247,,3,documented
 0x45f1e0,30,DeletingDestructor,2,rewritten
@@ -3148,7 +3148,7 @@ address,size,name,callers,status
 0x50e210,881,,2,documented
 0x50e630,106,,12,documented
 0x50e6a0,39,,4,documented
-0x50e6d0,95,,36,documented
+0x50e6d0,95,Car::Kind50E6D0,36,rewritten
 0x50e730,584,,1,documented
 0x50e980,428,,5,documented
 0x50eb50,475,,1,documented
@@ -3753,7 +3753,7 @@ address,size,name,callers,status
 0x557ce0,59,Array<16>::Allocate,0,rewritten
 0x557d20,157,Array<16>::SetCapacity,1,rewritten
 0x557dc0,168,,4,documented
-0x557e70,99,,1,documented
+0x557e70,99,Entries::Differs,1,rewritten
 0x557ee0,1043,,2,documented
 0x558380,2554,,1,documented
 0x558da0,376,,1,documented
@@ -9031,7 +9031,7 @@ address,size,name,callers,status
 0x7727b0,40,Text::Widen,0,rewritten
 0x7728d0,92,Single::Get4779C0,0,rewritten
 0x772960,48,QueryInterface,0,rewritten
-0x772990,95,,1,documented
+0x772990,95,Slots::ValueFor,1,rewritten
 0x7729f0,178,,1,documented
 0x772ab0,78,Destructor::MemberThenBaseNullSafe,4,rewritten
 0x772b50,63,,19,documented
@@ -9681,7 +9681,7 @@ address,size,name,callers,status
 0x7b4f10,133,MEMBER_DTOR,2,rewritten
 0x7b4fa0,97,Slots::Detach7B4FA0,1,rewritten
 0x7b5010,90,,38,documented
-0x7b5070,95,,1,documented
+0x7b5070,95,Effect::Next7B5070,1,rewritten
 0x7b50d0,42,,6,documented
 0x7b5100,136,,1,documented
 0x7b5190,104,,1,documented
@@ -10964,7 +10964,7 @@ address,size,name,callers,status
 0x827d00,72,Scenery::Part827D00,1,rewritten
 0x827da0,19,,1,documented
 0x827db3,74,,1,documented
-0x827e00,97,,1,documented
+0x827e00,97,Entries::EarlierSame,1,rewritten
 0x827eb0,59,Reference::Interface,10,rewritten
 0x827ef0,70,,1,documented
 0x827f40,264,,3,documented
@@ -12025,8 +12025,8 @@ address,size,name,callers,status
 0x88f7d0,63,,2,documented
 0x88f830,101,,8,documented
 0x88f900,32,Object::FreeTwoTable,0,rewritten
-0x88f9a0,98,,2,documented
-0x88fa10,103,,3,documented
+0x88f9a0,98,SortedTable::LowerBoundKind,2,rewritten
+0x88fa10,103,SortedTable::FindKind,3,rewritten
 0x88fa80,578,,0,documented
 0x88fcd0,617,,0,documented
 0x890510,189,,1,documented
@@ -16180,7 +16180,7 @@ address,size,name,callers,status
 0xa6bda0,52,Array::Push80ED30,0,rewritten
 0xa6bde0,52,Array::Push80ED30,1,rewritten
 0xa6be20,85,,0,documented
-0xa6bed0,92,,2,documented
+0xa6bed0,92,Animal::EntryA6BED0,2,rewritten
 0xa6bf80,76,PhysicsWorld::RemoveBody,1,rewritten
 0xa6bfd0,167,Lists::Remove,1,rewritten
 0xa6c080,74,,1,documented
@@ -19628,7 +19628,7 @@ address,size,name,callers,status
 0xbc6940,169,,0,documented
 0xbc6aa0,562,,2,documented
 0xbc6ce0,27,,2,documented
-0xbc6d00,96,,2,documented
+0xbc6d00,96,Track::CheckBC6D00,2,rewritten
 0xbc6d60,344,,0,documented
 0xbc6ec0,56,,7,documented
 0xbc6f00,1093,,4,documented
@@ -19875,7 +19875,7 @@ address,size,name,callers,status
 0xbd23a0,145,,1,documented
 0xbd2440,219,,1,documented
 0xbd2740,64,Record::SetFields,30,rewritten
-0xbd2780,94,,1,documented
+0xbd2780,94,TypeLists::Contains,1,rewritten
 0xbd2850,69,,2,documented
 0xbd28a0,145,,4,documented
 0xbd2960,78,,3,documented
@@ -19920,7 +19920,7 @@ address,size,name,callers,status
 0xbd4e20,448,,5,documented
 0xbd4fe0,145,,5,documented
 0xbd5090,125,,1,documented
-0xbd5110,97,,3,documented
+0xbd5110,97,NamedList::Find2,3,rewritten
 0xbd5180,52,,1,documented
 0xbd51c0,64,,2,documented
 0xbd5200,77,,1,documented
@@ -21769,7 +21769,7 @@ address,size,name,callers,status
 0xc647a0,7,SetTable,1,rewritten
 0xc64840,639,,1,documented
 0xc64c90,77,,1,documented
-0xc64ce0,96,,3,documented
+0xc64ce0,96,Items::SetValueAt,3,rewritten
 0xc64d40,245,,6,documented
 0xc64e40,357,,2,documented
 0xc64fb0,11,,1,documented
@@ -22907,7 +22907,7 @@ address,size,name,callers,status
 0xcdc280,30,DeletingDestructor,0,rewritten
 0xcdc2a0,266,,1,documented
 0xcdc3b0,107,,1,documented
-0xcdc420,96,,1,documented
+0xcdc420,96,SortedPointers::Find64,1,rewritten
 0xcdc480,1502,,4,documented
 0xcdca90,898,,0,documented
 0xcdce20,235,Plane::FromPoints,3,rewritten
@@ -22986,10 +22986,10 @@ address,size,name,callers,status
 0xce2f80,26,OwnedPointer::Reset,2,rewritten
 0xce2fa0,151,Array<12>::SetCapacity,1,rewritten
 0xce3040,185,,2,documented
-0xce3100,92,,2,documented
+0xce3100,92,Table::RemoveCE3100,2,rewritten
 0xce3160,168,,8,documented
 0xce3210,61,,1,documented
-0xce3250,93,,1,documented
+0xce3250,93,Table::RemoveCE3250,1,rewritten
 0xce32b0,269,,3,documented
 0xce33e0,26,OwnedPointer::Reset,3,rewritten
 0xce3400,80,,0,documented

@@ -7809,3 +7809,291 @@ static void __thiscall values4_snap(uint32_t *self, float tolerance) {
 }
 static const uint8_t values4_snap_original[] = {0x83, 0xec, 0x10, 0x8b, 0x01, 0x56, 0x57, 0x89, 0x44, 0x24, 0x08};
 REWRITE("Values4::Snap", 0x8e0c30, values4_snap_original, &values4_snap, &g_value_snaps);
+
+// ---- Animal::EntryA6BED0(o) (0xA6BED0): takes o out of its list --------------------------------------------------------
+// The list is o's +0x14'th (counting from 1) of the 12-byte {values, count} lists at +0x4C; the first o found is removed,
+// the later values moving down by one.
+static volatile long g_animal_list_removes;
+static void __thiscall animal_entry_a6bed0(const uint8_t *self, const uint8_t *o) {
+    g_animal_list_removes++;
+    uint32_t *const list = (uint32_t *)(*(uint8_t *const *)(self + 0x4c) + *(const int32_t *)(o + 0x14) * 12 - 0xc);
+    const int32_t n = (int32_t)list[1];
+    int32_t i = 0;
+    if (n > 0)
+        while (i < (int32_t)list[1] && ((const uint32_t *)(uintptr_t)list[0])[i] != (uint32_t)(uintptr_t)o) i++;
+    if (i >= n) return;
+    if (i < n - 1)
+        for (; i < (int32_t)list[1] - 1; i++) ((uint32_t *)(uintptr_t)list[0])[i] = ((uint32_t *)(uintptr_t)list[0])[i + 1];
+    list[1]--;
+}
+static const uint8_t animal_entry_a6bed0_original[] = {0x8b, 0x49, 0x4c, 0x56, 0x57, 0x8b, 0x7c, 0x24, 0x0c};
+REWRITE("Animal::EntryA6BED0", 0xa6bed0, animal_entry_a6bed0_original, &animal_entry_a6bed0, &g_animal_list_removes);
+
+// ---- Table::RemoveCE3100, RemoveCE3250(a, b) (0xCE3100: index +8, edges of 16 at +0x14; 0xCE3250: index +0xC, edges of
+// 12 at +0x38): the first edge on a's chain that touches b ------------------------------------------------------------
+// From index[a] along edges {p, q, .., next for p +8, next for q +0xA} (words): stops at an edge with p or q = b and
+// gives its index; otherwise goes on by the link of the end that is a. 0xFFFF at the chain's end.
+static volatile long g_table_edges;
+template <uint32_t Index, uint32_t Edges, uint32_t Size> static uint32_t __thiscall table_edge_find(const uint8_t *self, uint32_t a_in, uint32_t b_in) {
+    g_table_edges++;
+    const uint16_t a = (uint16_t)a_in, b = (uint16_t)b_in;
+    uint16_t i = (*(const uint16_t *const *)(self + Index))[a];
+    while (i != 0xffff) {
+        __asm__ volatile("" ::: "memory");   // (the game spins on an edge touching neither a nor b)
+        const uint16_t *const e = (const uint16_t *)(*(const uint8_t *const *)(self + Edges) + i * Size);
+        if (e[0] == b || e[1] == b) break;
+        if (e[0] == a) i = e[4];
+        else if (e[1] == a) i = e[5];
+    }
+    return i;
+}
+static const uint8_t table_remove_ce3100_original[] = {0x8b, 0x51, 0x08, 0x55, 0x66, 0x8b, 0x6c, 0x24, 0x08};
+REWRITE("Table::RemoveCE3100", 0xce3100, table_remove_ce3100_original, (&table_edge_find<8, 0x14, 16>), &g_table_edges);
+static const uint8_t table_remove_ce3250_original[] = {0x8b, 0x51, 0x0c, 0x55, 0x66, 0x8b, 0x6c, 0x24, 0x08};
+REWRITE("Table::RemoveCE3250", 0xce3250, table_remove_ce3250_original, (&table_edge_find<0xc, 0x38, 12>), &g_table_edges);
+
+// ---- TypeLists::Contains(t) (0xBD2780): 1 (only al) when an item of the list at +0x14 has t's count (+0x10) and values ---
+static volatile long g_type_list_has;
+static uint8_t __thiscall type_lists_contains(const uint8_t *self, const uint32_t *t) {
+    g_type_list_has++;
+    const uint32_t *p = *(const uint32_t *const *)(self + 0x14);
+    if (!p[0] || !p) return 0;
+    for (;;) {
+        const uint32_t *const item = (const uint32_t *)(uintptr_t)p[2];
+        const int32_t n = (int32_t)item[4];
+        if ((uint32_t)n == t[4]) {
+            int32_t k = 0;
+            while (k < n && item[k] == t[k]) k++;
+            if (k >= n) return 1;
+        }
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return 0;
+    }
+}
+static const uint8_t type_lists_contains_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x14, 0x83, 0x3f, 0x00};
+REWRITE("TypeLists::Contains", 0xbd2780, type_lists_contains_original, &type_lists_contains, &g_type_list_has);
+
+// ---- Car::Kind50E6D0 (0x50E6D0) --------------------------------------------------------------------------------------
+// With a count at +0x7B4: 3 (4 when +0x8C0 is above 0) when flag bit 3 of +0x39C is set, else 2. Without: with the flag
+// 1 when +0x72C or +0x730 is below 0, else 3; without the flag 0.
+static volatile long g_car_kinds;
+static uint32_t __thiscall car_kind_50e6d0(const uint8_t *self) {
+    g_car_kinds++;
+    const bool flag = *(const uint32_t *)(self + 0x39c) >> 3 & 1;
+    if (*(const int32_t *)(self + 0x7b4) > 0) return flag ? 3 + (*(const int32_t *)(self + 0x8c0) > 0) : 2;
+    if (!flag) return 0;
+    return *(const int32_t *)(self + 0x72c) < 0 || *(const int32_t *)(self + 0x730) < 0 ? 1 : 3;
+}
+static const uint8_t car_kind_50e6d0_original[] = {0x8b, 0x81, 0xb4, 0x07, 0x00, 0x00, 0x85, 0xc0, 0x7f, 0x30};
+REWRITE("Car::Kind50E6D0", 0x50e6d0, car_kind_50e6d0_original, &car_kind_50e6d0, &g_car_kinds);
+
+// ---- Slots::ValueFor(o) (0x772990): the value for o's id (+0x20, +0x24) among three slots (+0xAC, +0xC0, +0xD4: each an
+// id pair; values +0x9C, +0xA0, +0xA4), or the default (+0x78) ---------------------------------------------------------
+static volatile long g_slot_values;
+static long double __thiscall slots_value_for(const uint8_t *self, const uint8_t *o) {
+    g_slot_values++;
+    const uint32_t a = *(const uint32_t *)(o + 0x20), b = *(const uint32_t *)(o + 0x24);
+    for (int k = 0; k < 3; k++) {
+        const uint32_t *const id = *(const uint32_t *const *)(self + 0xac + k * 0x14);
+        if (id[0] == a && id[1] == b) return *(const float *)(self + 0x9c + k * 4);
+    }
+    return *(const float *)(self + 0x78);
+}
+static const uint8_t slots_value_for_original[] = {0x8b, 0x54, 0x24, 0x04, 0xd9, 0x41, 0x78, 0x8b, 0x42, 0x20};
+REWRITE("Slots::ValueFor", 0x772990, slots_value_for_original, &slots_value_for, &g_slot_values);
+
+// ---- Effect::Next7B5070 (0x7B5070): in mode 1 (+0x3C) and with +0x20 not +0x2C, each item in places +0x34 ..
+// +0x38 of the list at +0x1C (read again each time) gets +0xBC = 0 and its frame (+0xB8) one on, from 0 to 347 ----------
+static volatile long g_effect_frames;
+static void __thiscall effect_next_7b5070(const uint8_t *self) {
+    g_effect_frames++;
+    if (*(const int32_t *)(self + 0x3c) != 1 || *(const uint32_t *)(self + 0x20) == *(const uint32_t *)(self + 0x2c)) return;
+    for (uintptr_t p = *(const uint32_t *)(self + 0x1c) + *(const int32_t *)(self + 0x34) * 4;
+         p < *(const volatile uint32_t *)(self + 0x1c) + *(const volatile int32_t *)(self + 0x38) * 4; p += 4) {
+        uint8_t *const e = *(uint8_t *const *)p;
+        if (!e) continue;
+        *(uint32_t *)(e + 0xbc) = 0;
+        *(int32_t *)(e + 0xb8) = (*(const int32_t *)(e + 0xb8) + 1) % 0x15c;
+    }
+}
+static const uint8_t effect_next_7b5070_original[] = {0x83, 0x79, 0x3c, 0x01, 0x75, 0x58, 0x8b, 0x41, 0x20};
+REWRITE("Effect::Next7B5070", 0x7b5070, effect_next_7b5070_original, &effect_next_7b5070, &g_effect_frames);
+
+// ---- List::Find45EEA0(v) (0x45EEA0): where v is: the row i (rows of 8 at +4, count +8; v among a row's 7 values after
+// its first) or 0x10000 + k for place k of the list at +0xC (count +0x10); -1 when nowhere -----------------------------
+static volatile long g_list_finds2;
+static int32_t __thiscall list_find_45eea0(const uint8_t *self, uint32_t v) {
+    g_list_finds2++;
+    const int32_t rows = *(const int32_t *)(self + 8);
+    const uint32_t *const r = *(const uint32_t *const *)(self + 4);
+    for (int32_t i = 0; i < rows; i++)
+        for (int j = 0; j < 7; j++)
+            if (r[i * 8 + 1 + j] == v) return i;
+    const int32_t n = *(const int32_t *)(self + 0x10);
+    const uint32_t *const l = *(const uint32_t *const *)(self + 0xc);
+    for (int32_t k = 0; k < n; k++)
+        if (l[k] == v) return k + 0x10000;
+    return -1;
+}
+static const uint8_t list_find_45eea0_original[] = {0x53, 0x8b, 0x59, 0x08, 0x55, 0x8b, 0x6c, 0x24, 0x0c, 0x56};
+REWRITE("List::Find45EEA0", 0x45eea0, list_find_45eea0_original, &list_find_45eea0, &g_list_finds2);
+
+// ---- Track::CheckBC6D00(flag) (0xBC6D00): the ride in eax, another in esi -------------------------------------------
+// 0 (only al) unless the ride has flag 0x400000 (+0x18), at least two ends (+0xE4) and both end lists (+0x10C, +0x110).
+// Then with flag (a byte): bit 29 of the other's +0x18 when the ride has 0x10000000, else 1; without: bit 27 when it has
+// 0x4000000, else 1.
+static volatile long g_track_checks;
+extern "C" uint8_t __stdcall forever_track_check(const uint8_t *ride, const uint8_t *other, uint32_t flag) {
+    g_track_checks++;
+    const uint32_t f = *(const uint32_t *)(ride + 0x18);
+    if (!(f & 0x400000) || *(const int32_t *)(ride + 0xe4) < 2 || !*(const uint32_t *)(ride + 0x10c) || !*(const uint32_t *)(ride + 0x110)) return 0;
+    if ((uint8_t)flag) return f & 0x10000000 ? *(const uint32_t *)(other + 0x18) >> 29 & 1 : 1;
+    return f & 0x4000000 ? *(const uint32_t *)(other + 0x18) >> 27 & 1 : 1;
+}
+extern "C" __attribute__((naked)) void forever_track_check_regs() {   // ride eax, other esi; flag on the stack
+    __asm__("pushl 4(%esp)\n\tpushl %esi\n\tpushl %eax\n\tcalll _forever_track_check@12\n\tret $4");
+}
+static const uint8_t track_check_bc6d00_original[] = {0x8b, 0x50, 0x18, 0xf7, 0xc2, 0x00, 0x00, 0x40, 0x00};
+REWRITE("Track::CheckBC6D00", 0xbc6d00, track_check_bc6d00_original, (void *)&forever_track_check_regs, &g_track_checks);
+
+// ---- Items::SetValueAt(n, v) (0xC64CE0): item n of the owner's (+0xF0) list (+0xB0) gets +0xD0 = v; +0x9C = 0 --------
+// (The game writes through 0 past the list's end.)
+static volatile long g_item_sets;
+static void __thiscall items_set_value_at(uint8_t *self, int32_t n, uint32_t v) {
+    g_item_sets++;
+    self[0x9c] = 0;
+    const uint32_t *p = *(const uint32_t *const *)(*(const uint8_t *const *)(self + 0xf0) + 0xb0);
+    uint8_t *item = nullptr;
+    if (p[0] && p) {
+        for (;;) {
+            if (!n) {
+                item = (uint8_t *)(uintptr_t)p[2];
+                break;
+            }
+            p = (const uint32_t *)(uintptr_t)p[0];
+            n--;
+            if (!p[0] || !p) break;
+        }
+    }
+    *(volatile uint32_t *)(item + 0xd0) = v;
+}
+static const uint8_t items_set_value_at_original[] = {0x8b, 0x81, 0xf0, 0x00, 0x00, 0x00, 0x8b, 0x54, 0x24, 0x04};
+REWRITE("Items::SetValueAt", 0xc64ce0, items_set_value_at_original, &items_set_value_at, &g_item_sets);
+
+// ---- SortedPointers::Find64(a, b, out) (0xCDC420): binary search of objects (+0, count +4) sorted by their first two
+// dwords (unsigned): 1 (only al) and out = the place when found, else 0 and out = where it would go -----------------------
+static volatile long g_sorted_pair_finds;
+static uint8_t __thiscall sorted_pointers_find64(const uint32_t *self, uint32_t a, uint32_t b, int32_t *out) {
+    g_sorted_pair_finds++;
+    int32_t lo = 0, hi = (int32_t)self[1] - 1;
+    const uint32_t *const *const list = (const uint32_t *const *)(uintptr_t)self[0];
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const uint32_t *const e = list[mid];
+        if (a > e[0] || (a == e[0] && b > e[1])) lo = mid + 1;
+        else if (a < e[0] || b < e[1]) hi = mid - 1;
+        else {
+            *out = mid;
+            return 1;
+        }
+    }
+    *out = lo;
+    return 0;
+}
+static const uint8_t sorted_pointers_find64_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x04, 0x33, 0xf6};
+REWRITE("SortedPointers::Find64", 0xcdc420, sorted_pointers_find64_original, &sorted_pointers_find64, &g_sorted_pair_finds);
+
+// ---- Entries::EarlierSame(n) (0x827E00): 1 (only al) when an entry before n (0x58 bytes at the +0x9C part's +0x38) has
+// n's id (+0x54) and either of its two bits set in +0x134; 0 otherwise or with no part --------------------------------
+static volatile long g_earlier_sames;
+static uint8_t __thiscall entries_earlier_same(const uint8_t *self, int32_t n) {
+    g_earlier_sames++;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0x9c);
+    if (!p) return 0;
+    const uint8_t *const list = *(const uint8_t *const *)(p + 0x38);
+    const uint32_t id = *(const uint32_t *)(list + n * 0x58 + 0x54), mask = *(const uint32_t *)(self + 0x134);
+    for (int32_t i = 0; i < n; i++)
+        if (*(const uint32_t *)(list + i * 0x58 + 0x54) == id && mask & (3u << (2 * i & 31))) return 1;
+    return 0;
+}
+static const uint8_t entries_earlier_same_original[] = {0x53, 0x8b, 0xd9, 0x8b, 0x83, 0x9c, 0x00, 0x00, 0x00};
+REWRITE("Entries::EarlierSame", 0x827e00, entries_earlier_same_original, &entries_earlier_same, &g_earlier_sames);
+
+// ---- NamedList::Find2(name) (0xBD5110): the first entry (from +0x204, next +0x30) whose name (+0x24) is name, or 0 ------
+static volatile long g_named_finds;
+static uint8_t *__thiscall named_list_find2(const uint8_t *self, const char *name) {
+    g_named_finds++;
+    for (uint8_t *e = *(uint8_t *const *)(self + 0x204); e; e = *(uint8_t *const *)(e + 0x30)) {
+        const char *a = name, *b = *(const char *const *)(e + 0x24);
+        while (*a == *b && *a) a++, b++;
+        if (*a == *b) return e;
+    }
+    return nullptr;
+}
+static const uint8_t named_list_find2_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0xb9, 0x04, 0x02, 0x00, 0x00};
+REWRITE("NamedList::Find2", 0xbd5110, named_list_find2_original, &named_list_find2, &g_named_finds);
+
+// ---- SortedTable::LowerBoundKind(n, kind) (0x88F9A0), SortedTable::FindKind(n, kind, out) (0x88FA10) --------------------
+// Binary searches of tables sorted by kind (0 first), then number (unsigned). LowerBoundKind: entries of 0x150 bytes at
+// +0x14 (count +0x18; kind the low bit of byte +0, number +0xC); gives the place after the last not above. FindKind:
+// entries of 12 at +0x50 (count +0x54; kind byte +4, number +0); 1 (only al) and out = the place when found, else 0
+// and out = where it would go. The kind given is compared as a whole byte; a nonzero one goes up when it differs.
+static volatile long g_kind_searches;
+static int32_t __thiscall sorted_table_lower_bound_kind(const uint8_t *self, uint32_t n, uint32_t kind_in) {
+    g_kind_searches++;
+    const uint8_t kind = (uint8_t)kind_in;
+    int32_t lo = 0, hi = *(const int32_t *)(self + 0x18) - 1;
+    const uint8_t *const t = *(const uint8_t *const *)(self + 0x14);
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const uint8_t *const e = t + mid * 0x150;
+        const bool up = kind == (e[0] & 1) ? !(n < *(const uint32_t *)(e + 0xc)) : kind != 0;
+        if (up) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return lo;
+}
+static const uint8_t sorted_table_lower_bound_kind_original[] = {0x51, 0x56, 0x57, 0x8b, 0x79, 0x18, 0x33, 0xf6, 0x4f};
+REWRITE("SortedTable::LowerBoundKind", 0x88f9a0, sorted_table_lower_bound_kind_original, &sorted_table_lower_bound_kind, &g_kind_searches);
+static uint8_t __thiscall sorted_table_find_kind(const uint8_t *self, uint32_t n, uint32_t kind_in, int32_t *out) {
+    g_kind_searches++;
+    const uint8_t kind = (uint8_t)kind_in;
+    int32_t lo = 0, hi = *(const int32_t *)(self + 0x54) - 1;
+    const uint8_t *const t = *(const uint8_t *const *)(self + 0x50);
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const uint8_t *const e = t + mid * 12;
+        bool up;
+        if (kind == e[4]) {
+            const uint32_t v = *(const uint32_t *)e;
+            if (n == v) {
+                *out = mid;
+                return 1;
+            }
+            up = n > v;
+        } else
+            up = kind != 0;
+        if (up) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    *out = lo;
+    return 0;
+}
+static const uint8_t sorted_table_find_kind_original[] = {0x53, 0x55, 0x56, 0x57, 0x8b, 0x79, 0x54, 0x33, 0xf6, 0x4f};
+REWRITE("SortedTable::FindKind", 0x88fa10, sorted_table_find_kind_original, &sorted_table_find_kind, &g_kind_searches);
+
+// ---- Entries::Differs(a, b, c, d) (0x557E70): for the entry (16 bytes at +0x94, count +0x98) {a, b, x, d}, whether x
+// is not c (0 or 1); with none, c with its low byte made c != 0 (as the game leaves it) ------------------------------------
+static volatile long g_entry_differs;
+static uint32_t __thiscall entries_differs(const uint8_t *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    g_entry_differs++;
+    const int32_t n = *(const int32_t *)(self + 0x98);
+    const uint32_t *const list = *(const uint32_t *const *)(self + 0x94);
+    for (int32_t i = 0; i < n; i++) {
+        const uint32_t *const e = list + i * 4;
+        if (e[0] == a && e[1] == b && e[3] == d) return c != e[2];
+    }
+    return (c & ~0xffu) | (c != 0);
+}
+static const uint8_t entries_differs_original[] = {0x53, 0x55, 0x56, 0x8b, 0xb1, 0x98, 0x00, 0x00, 0x00};
+REWRITE("Entries::Differs", 0x557e70, entries_differs_original, &entries_differs, &g_entry_differs);
