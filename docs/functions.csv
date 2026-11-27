@@ -7947,7 +7947,7 @@ address,size,name,callers,status
 0x702ca0,536,Window::Titled,1,rewritten
 0x702f80,27,GlobalCleanup,1,rewritten
 0x702fa0,424,,1,documented
-0x703170,101,,0,documented
+0x703170,101,Grid::GrowChanged,0,rewritten
 0x7031e0,65,,1,documented
 0x703280,30,DeletingDestructor,0,rewritten
 0x703320,175,,0,documented
@@ -10062,7 +10062,7 @@ address,size,name,callers,status
 0x7e4ce0,226,,2,documented
 0x7e4e00,30,DeletingDestructor,2,rewritten
 0x7e4e20,97,,1,documented
-0x7e5050,119,,1,documented
+0x7e5050,119,Key::Matches,1,rewritten
 0x7e50e0,19,,21,documented
 0x7e5100,10,,49,documented
 0x7e5110,126,,20,documented
@@ -12791,7 +12791,7 @@ address,size,name,callers,status
 0x908250,522,,1,documented
 0x908470,74,,8,documented
 0x9084e0,1109,,1,documented
-0x908940,699,,1,documented
+0x908940,699,Water::Colours908940,1,rewritten
 0x908c00,2478,,1,documented
 0x9095b0,1410,,1,documented
 0x909b40,16,Object::SetFields,1,rewritten
@@ -14756,7 +14756,7 @@ address,size,name,callers,status
 0x9dab90,10,,1,documented
 0x9daba0,52,,1,documented
 0x9dabe0,89,,1,documented
-0x9dac40,133,,4,documented
+0x9dac40,133,Window::Match9DAC40,4,rewritten
 0x9dacd0,88,,3,documented
 0x9dad30,83,,1,documented
 0x9dad90,273,Class::Construct,2,rewritten
@@ -19668,7 +19668,7 @@ address,size,name,callers,status
 0xbc9c20,30,DeletingDestructor,1,rewritten
 0xbc9c40,7,SetTable,1,rewritten
 0xbc9c50,30,DeletingDestructor,1,rewritten
-0xbc9c70,692,,2,documented
+0xbc9c70,692,Model::BuildBC9C70,2,rewritten
 0xbc9f30,493,,1,documented
 0xbca120,1,,1,documented
 0xbca140,351,ResourceType::ResourceType,1,rewritten
@@ -22945,7 +22945,7 @@ address,size,name,callers,status
 0xce1640,34,,1,documented
 0xce1670,64,Camera::SharedCE1670,1,rewritten
 0xce16b0,103,Vector::Lerp,0,rewritten
-0xce1720,640,,4,documented
+0xce1720,640,Particles::TimeCE1720,4,rewritten
 0xce19f0,302,,5,documented
 0xce1b20,1,,1,documented
 0xce1b80,351,ResourceType::ResourceType,1,rewritten

@@ -6594,4 +6594,111 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                   return Result{0};
                               }};
     quick(vector_toward_466660);
+    // Particles::TimeCE1720: the game's two shape lists filled (all put back after) with 1-8 points, either list first;
+    // planes through, beside and clear of the shape (data compared)
+    {
+        static uint8_t saved[0x2a0];
+        Test x{0xce1720,
+               [=](Rng &r) {
+                   uint32_t *g = (uint32_t *)0x1400810;
+                   const bool first = r.range(0, 1);
+                   g[0] = first ? 0x1400830 : 0x1400970, g[1] = first ? 0x1400970 : 0x1400830;
+                   const int n = r.range(1, 8);
+                   g[3] = n;
+                   for (int k = 0; k < 0x140 / 4; k++) ((uint32_t *)0x1400830)[k] = r.next(), ((uint32_t *)0x1400970)[k] = r.next();
+                   for (int k = 0; k < n; k++)
+                       for (int c = 0; c < 3; c++) ((float *)(uintptr_t)g[0])[k * 4 + c] = r.range(0, 3) ? r.real(-10, 10) : (float)r.range(-2, 2);
+                   float *pl = arena<float>(0x40);
+                   for (int c = 0; c < 3; c++) pl[c] = r.real(-1, 1);
+                   arena<float>(0x50)[0] = r.real(-12, 12);
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(const void *, float))fn)(arena<void>(0x40), arena<float>(0x50)[0]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { memcpy(saved, (void *)0x1400810, sizeof saved); };
+        x.finish = [](const rewrite::Entry *) { memcpy((void *)0x1400810, saved, sizeof saved); };
+        t.push_back(x);
+    }
+    // Model::BuildBC9C70: the game's SSE switch set either way (put back after); 1-3 groups of 0-4 vertices with random
+    // matrices, vertices and uv offsets
+    {
+        static uint8_t saved_switch;
+        Test x{0xbc9c70,
+               [=](Rng &r) {
+                   *(uint8_t *)0x13d0b14 = r.range(0, 1);
+                   uint8_t *mesh = arena<uint8_t>(0x100);
+                   const int groups = r.range(1, 3);
+                   *(int32_t *)mesh = groups;
+                   *(uint32_t *)(mesh + 8) = (uint32_t)(uintptr_t)arena<void>(0x180);
+                   *(uint32_t *)(mesh + 0x18) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   for (int g = 0; g < 3; g++) arena<int32_t>(0x180)[g] = r.range(0, 4);
+                   for (int k = 0; k < 12 * 8; k++) arena<float>(0x400)[k] = r.real(-5, 5), arena<uint32_t>(0x800)[k] = r.next();
+                   for (int k = 0; k < 3 * 16; k++) arena<float>(0xc00)[k] = r.real(-3, 3);
+                   arena<float>(0x40)[0] = r.real(-1, 1), arena<float>(0x40)[1] = r.real(-1, 1);
+               },
+               [](void *fn) {
+                   ((void (*)(const void *, void *, const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x800), arena<void>(0xc00), arena<void>(0x40));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_switch = *(uint8_t *)0x13d0b14; };
+        x.finish = [](const rewrite::Entry *) { *(uint8_t *)0x13d0b14 = saved_switch; };
+        quick(x);
+    }
+    // Water::Colours908940: grids of 0-5 points a side over random boxes, random or flat heights (flat with a zero scale)
+    Test water_colours_908940{0x908940,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100);
+                                  float *f = (float *)self;
+                                  *(int32_t *)self = r.range(0, 5);
+                                  f[2] = r.real(-50, 0), f[3] = r.real(-50, 0), f[4] = f[2] + r.real(1, 40), f[5] = f[3] + r.real(1, 40);
+                                  f[6] = r.real(-5, 5), f[9] = r.real(0, 2);
+                                  const bool flat = r.range(0, 5) == 0;
+                                  f[11] = flat ? 0.0f : r.real(0.2f, 3);
+                                  *(uint32_t *)(self + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                  *(uint32_t *)(self + 0x58) = (uint32_t)(uintptr_t)arena<void>(0x380);
+                                  for (int k = 0; k < 25; k++) arena<float>(0x400)[k] = flat ? 1.0f : r.real(-1, 3);
+                                  for (int k = 0; k < 9; k++) arena<uint32_t>(0x380)[k] = r.next();
+                                  for (int k = 0; k < 25 * 9; k++) arena<uint32_t>(0x600)[k] = r.next();
+                              },
+                              [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x600))}; }};
+    quick(water_colours_908940);
+    // Grid::GrowChanged: grids of 0-12, changed areas any way round, rectangles inside, across the edges and empty
+    Test grid_grow_changed{0x703170,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(int32_t *)(self + 0x6c) = r.range(0, 12), *(int32_t *)(self + 0x70) = r.range(0, 12);
+                               for (int k = 0; k < 4; k++) *(int32_t *)(self + 0x74 + k * 4) = r.range(-2, 14);
+                               for (int k = 0; k < 4; k++) arena<int32_t>(0x40)[k] = r.range(-3, 15);
+                           },
+                           [](void *fn) {
+                               const int32_t *a = arena<int32_t>(0x40);
+                               ((void(__thiscall *)(void *, int32_t, int32_t, int32_t, int32_t))fn)(arena<void>(0x100), a[0], a[1], a[2], a[3]);
+                               return Result{0};
+                           }};
+    quick(grid_grow_changed);
+    // Key::Matches: entries of every kind, keys of kinds 0-5 with the bytes and dword the same or not, +0xA either sign
+    Test key_matches{0x7e5050,
+                     [=](Rng &r) {
+                         uint8_t *e = arena<uint8_t>(0x100), *k = arena<uint8_t>(0x140);
+                         for (int i = 0; i < 16; i++) e[i] = (uint8_t)r.range(0, 3), k[i] = (uint8_t)r.range(0, 3);
+                         e[0xf] = (uint8_t)r.next();
+                         k[8] = (uint8_t)r.range(0, 5);
+                         if (r.range(0, 1)) k[4] = e[0], k[5] = e[1], k[6] = e[2], k[7] = e[3];
+                         k[0xa] = r.range(0, 3) ? e[0xe] : (uint8_t)(r.range(0, 1) ? 0x80 | r.next() : r.range(0, 3));
+                     },
+                     [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x140)) & 0xff}; }};
+    quick(key_matches);
+    // Window::Match9DAC40: four parts or missing ones with values 0-3, a and b 0-3 (3 matching any)
+    Test window_match_9dac40{0x9dac40,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 for (int k = 0; k < 4; k++) {
+                                     *(uint32_t *)(self + 0x18 + k * 4) = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x200 + k * 0x60) : 0;
+                                     *(int32_t *)arena<uint8_t>(0x254 + k * 0x60) = r.range(0, 3), *(int32_t *)arena<uint8_t>(0x258 + k * 0x60) = r.range(0, 3);
+                                 }
+                                 arena<int32_t>(0x40)[0] = r.range(0, 3), arena<int32_t>(0x40)[1] = r.range(0, 3);
+                             },
+                             [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1]) & 0xff}; }};
+    quick(window_match_9dac40);
 #endif

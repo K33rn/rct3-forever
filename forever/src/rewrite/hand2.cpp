@@ -10593,3 +10593,249 @@ static void __fastcall vector_toward_466660(float *out, const float *eye, const 
 }
 static const uint8_t vector_toward_466660_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x8b, 0x45, 0x08};
 REWRITE("Vector::Toward466660", 0x466660, vector_toward_466660_original, &vector_toward_466660, &g_view_matrices);
+
+// ---- Particles::TimeCE1720(d) (0xCE1720): clips the game's shape to the side of a plane --------------------------------
+// The shape: points (16 bytes) at 0x1400810, count 0x140081C, written to 0x1400814. Keeps what has n . p ((z + y) + x;
+// n is self) below -d: inside points are kept, and where an edge crosses, the point at t = (dp - D) / (dp - dc) (or (D -
+// dp) / (dc - dp) going out; dp the last value as a float) along it (x, y as floats). Then the count is the new one, the
+// written list becomes the shape and the other of the two lists (0x1400830, 0x1400970) the next to write.
+static volatile long g_shape_clips;
+static void __thiscall particles_time_ce1720(const float *n, float d) {
+    g_shape_clips++;
+    volatile uint32_t *const g = (volatile uint32_t *)0x1400810;
+    volatile float big_d = (float)((long double)d * *(const float *)0xf268f0);
+    auto dot = [&](const float *p) { return ((long double)p[2] * n[2] + (long double)p[1] * n[1]) + (long double)p[0] * n[0]; };
+    const float *const last = (const float *)(uintptr_t)g[0] + ((int32_t)g[3] - 1) * 4;
+    volatile float px = last[0], py = last[1], pz = last[2];
+    const long double dp0 = dot(last);
+    volatile float dpf = (float)dp0;
+    bool prev_in = dp0 < big_d;
+    int32_t out = 0;
+    auto cut = [&](const float *c, float *o, long double t) {
+        volatile float dx = (float)((long double)c[0] - px);
+        const long double dy = (long double)c[1] - py;
+        volatile float dz = (float)((long double)c[2] - pz);
+        volatile float mx = (float)((long double)dx * t), my = (float)(dy * t);
+        const long double mz = t * dz;
+        volatile float *const v = o;
+        v[2] = (float)(mz + pz);
+        v[0] = (float)((long double)mx + px);
+        v[1] = (float)((long double)my + py);
+    };
+    auto copy = [&](const float *c, float *o) {
+        for (int k = 0; k < 3; k++) ((volatile uint32_t *)o)[k] = ((const uint32_t *)c)[k];
+    };
+    for (int32_t i = 0; i < (int32_t)g[3]; i++) {
+        const float *const c = (const float *)(uintptr_t)g[0] + i * 4;
+        const long double dc = dot(c);
+        const bool cur_in = dc < big_d;
+        if (cur_in) {
+            if (prev_in) copy(c, (float *)(uintptr_t)g[1] + out * 4), out++;
+            else {
+                cut(c, (float *)(uintptr_t)g[1] + out * 4, ((long double)dpf - big_d) / ((long double)dpf - dc));
+                out++;
+                copy(c, (float *)(uintptr_t)g[1] + out * 4), out++;
+            }
+        } else if (prev_in) {
+            cut(c, (float *)(uintptr_t)g[1] + out * 4, ((long double)big_d - dpf) / (dc - dpf));
+            out++;
+        }
+        px = c[0], py = c[1], pz = c[2];
+        prev_in = cur_in;
+        dpf = (float)dc;
+    }
+    const uint32_t written = g[1];
+    g[3] = (uint32_t)out;
+    g[0] = written;
+    g[1] = written == 0x1400830 ? 0x1400970 : 0x1400830;
+}
+static const uint8_t particles_time_ce1720_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0x53, 0x56, 0x57};
+REWRITE("Particles::TimeCE1720", 0xce1720, particles_time_ce1720_original, &particles_time_ce1720, &g_shape_clips);
+
+// ---- Model::BuildBC9C70(mesh, out, matrices, uv) (0xBC9C70, cdecl): moves a mesh's vertices by their groups' matrices --
+// mesh: group count +0, vertex counts per group +8, vertices (32 bytes: place, normal, uv) +0x18. Each group's vertices
+// go through its matrix (64 bytes): place with the last row added, normal without; uv + the uv offset. With the game's
+// SSE switch (0x13D0B14) in four-wide single sums ((x m0 + y m1) + z m2) + m3; else on the FPU in the game's order
+// (normals adding the last row times 0).
+static volatile long g_mesh_builds;
+__attribute__((target("sse"))) static void mesh_build_sse_h2(const float *v, float *o, int32_t count, const float *m) {
+    const __m128 r0 = _mm_set_ps(0, m[2], m[1], m[0]), r1 = _mm_set_ps(0, m[6], m[5], m[4]);
+    const __m128 r2 = _mm_set_ps(0, m[10], m[9], m[8]), r3 = _mm_set_ps(0, m[14], m[13], m[12]);
+    alignas(16) float p[4], n[4];
+    _mm_store_ps(p, _mm_add_ps(_mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_set1_ps(v[0]), r0), _mm_mul_ps(_mm_set1_ps(v[1]), r1)), _mm_mul_ps(_mm_set1_ps(v[2]), r2)), r3));
+    _mm_store_ps(n, _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_set1_ps(v[3]), r0), _mm_mul_ps(_mm_set1_ps(v[4]), r1)), _mm_mul_ps(_mm_set1_ps(v[5]), r2)));
+    for (int k = 0; k < 3; k++) ((volatile uint32_t *)o)[k] = ((const uint32_t *)p)[k], ((volatile uint32_t *)o)[3 + k] = ((const uint32_t *)n)[k];
+    (void)count;
+}
+static void mesh_build_bc9c70(const uint8_t *mesh, float *out, const float *matrices, const float *uv) {
+    g_mesh_builds++;
+    const int32_t groups = *(const int32_t *)mesh;
+    const int32_t *const counts = *(const int32_t *const *)(mesh + 8);
+    const float *const src = *(const float *const *)(mesh + 0x18);
+    if (*(const volatile uint8_t *)0x13d0b14) {
+        const float *v = src;
+        float *o = out;
+        int32_t g = 0;
+        do {
+            for (uint32_t c = (uint32_t)counts[g]; c; c--, v += 8, o += 8) {
+                mesh_build_sse_h2(v, o, 0, matrices + g * 16);
+                volatile float *const vo = o;
+                vo[7] = (float)((long double)v[7] + uv[1]);
+                vo[6] = (float)((long double)v[6] + uv[0]);
+            }
+            g++;
+        } while (g != groups);
+        return;
+    }
+    const long double zero = *(const float *)0xf264e0;
+    int32_t vi = 0;
+    for (int32_t g = 0; g < *(const int32_t *)mesh; g++) {
+        const int32_t c = (*(const int32_t *const *)(mesh + 8))[g];
+        if (c <= 0) continue;
+        const float *const m = matrices + g * 16;
+        auto mm = [&](int r, int k) { return (long double)m[r * 4 + k]; };
+        for (int32_t j = 0; j < c; j++, vi++) {
+            const float *const v = src + vi * 8;
+            volatile float *const o = out + vi * 8;
+            const long double p0 = v[0], p1 = v[1], p2 = v[2];
+            const long double x = ((p2 * mm(2, 0) + p0 * mm(0, 0)) + p1 * mm(1, 0)) + mm(3, 0);
+            const long double y = ((p2 * mm(2, 1) + p0 * mm(0, 1)) + p1 * mm(1, 1)) + mm(3, 1);
+            volatile float z = (float)(((p1 * mm(1, 2) + p2 * mm(2, 2)) + p0 * mm(0, 2)) + mm(3, 2));
+            o[0] = (float)x, o[1] = (float)y, o[2] = z;
+            const long double n0 = v[3], n1 = v[4], n2 = v[5];
+            const long double nx = ((n0 * mm(0, 0) + n2 * mm(2, 0)) + n1 * mm(1, 0)) + mm(3, 0) * zero;
+            const long double ny = ((n2 * mm(2, 1) + n0 * mm(0, 1)) + n1 * mm(1, 1)) + mm(3, 1) * zero;
+            volatile float nz = (float)(((n1 * mm(1, 2) + n2 * mm(2, 2)) + n0 * mm(0, 2)) + mm(3, 2) * zero);
+            o[3] = (float)nx, o[4] = (float)ny, *(volatile uint32_t *)&o[5] = *(const volatile uint32_t *)&nz;
+            o[6] = (float)((long double)v[6] + uv[0]);
+            o[7] = (float)((long double)v[7] + uv[1]);
+        }
+    }
+}
+static const uint8_t mesh_build_bc9c70_original[] = {0x53, 0x8b, 0xdc, 0x83, 0xec, 0x08, 0x83, 0xe4, 0xf0, 0x83, 0xc4, 0x04};
+REWRITE("Model::BuildBC9C70", 0xbc9c70, mesh_build_bc9c70_original, &mesh_build_bc9c70, &g_mesh_builds);
+
+// ---- Water::Colours908940(out) (0x908940): the water surface's vertices (36 bytes: place, normal, colour, uv) -----------
+// n = +0 points a side over the box (+8, +0xC)-(+0x10, +0x14), heights +0x40 (n x n) times +0x2C (at least 0.5) plus
+// +0x18. n of 1 or less: one vertex at the middle with normal (0, 1, 0), made in the template at +0x58 and copied. Else
+// with q = (+0x10 - +0x8) / n K / +0x2C, m = +0x24 / 2, the box shrunk by m (corners and sizes floats): vertex (i, j) at
+// (A + i / (n - 1) Wx, height, B + j / (n - 1) Wz) with normal (dx, q, dz) made of length 1 (dx, dz the height
+// differences of the neighbours; (dx, q, 1) when all are 0), colour 0xFF0C0C0C, uv = (x, z). Gives the end of out.
+static volatile long g_water_surfaces;
+static float *__thiscall water_colours_908940(const uint8_t *self, float *out) {
+    g_water_surfaces++;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    const long double half = *(const float *)0xf2651c, one = *(const float *)0xf264dc, zero = *(const float *)0xf264e0;
+    const float *const h = *(const float *const *)(self + 0x40);
+    auto height = [&](int32_t at) {
+        long double y = (long double)h[at] * m(0x2c);
+        if (y < half) y = half;
+        return y + m(0x18);
+    };
+    const int32_t n = *(const int32_t *)self;
+    if (n <= 1) {
+        const long double cx = (m(0x10) + m(0x8)) * half, cz = (m(0x14) + m(0xc)) * half;
+        const long double y = height(0);
+        volatile float *const t = *(float *const *)(self + 0x58);
+        ((volatile uint32_t *)t)[6] = 0xff0c0c0c, ((volatile uint32_t *)t)[4] = 0x3f800000;
+        t[0] = (float)cx, ((volatile uint32_t *)t)[3] = 0, t[1] = (float)y, ((volatile uint32_t *)t)[5] = 0;
+        t[2] = (float)cz, t[7] = (float)cx, t[8] = (float)cz;
+        volatile float *const o = out;
+        o[0] = (float)cx;
+        for (int k = 1; k < 9; k++) ((volatile uint32_t *)o)[k] = ((volatile uint32_t *)t)[k];
+        return out + 9;
+    }
+    volatile float q = (float)((m(0x10) - m(0x8)) / (long double)n * *(const float *)0xf26610 / m(0x2c));
+    const long double mg = m(0x24) * half;
+    volatile float a = (float)(mg + m(0x8)), wx = (float)((m(0x10) - mg) - a);
+    volatile float b = (float)(mg + m(0xc)), wz = (float)((m(0x14) - mg) - b);
+    float *o = out;
+    for (int32_t j = 0; j < *(const int32_t *)self; j++) {
+        const int32_t last = *(const int32_t *)self - 1;
+        const int32_t jm = j > 0 ? j - 1 : 0, jp = j < last ? j + 1 : last;
+        volatile float z = (float)((long double)j / (long double)last * wz + b);
+        const long double q2 = (long double)q * q;
+        for (int32_t i = 0; i < *(const int32_t *)self; i++, o += 9) {
+            const int32_t w = *(const int32_t *)self, lst = w - 1;
+            const int32_t im = i > 0 ? i - 1 : 0, ip = i < lst ? i + 1 : lst;
+            const long double dx = (long double)h[w * j + im] - h[w * j + ip];
+            const long double dz = (long double)h[w * jm + i] - h[w * jp + i];
+            const long double len = x87_sqrt_h2((dz * dz + dx * dx) + q2);
+            long double nx, nz;
+            volatile float qn = q;
+            if (len == zero) nz = one, nx = dx;
+            else {
+                const long double inv = one / len;
+                nx = dx * inv;
+                qn = (float)((long double)q * inv);
+                nz = dz * inv;
+            }
+            const long double y = height(w * j + i);
+            volatile float x = (float)((long double)i / (long double)lst * wx + a);
+            volatile float *const v = o;
+            *(volatile uint32_t *)&v[2] = *(const volatile uint32_t *)&z;
+            *(volatile uint32_t *)&v[0] = *(const volatile uint32_t *)&x;
+            v[1] = (float)y;
+            *(volatile uint32_t *)&v[4] = *(const volatile uint32_t *)&qn;
+            v[3] = (float)nx;
+            v[5] = (float)nz;
+            *(volatile uint32_t *)&v[7] = *(const volatile uint32_t *)&x;
+            ((volatile uint32_t *)v)[6] = 0xff0c0c0c;
+            *(volatile uint32_t *)&v[8] = *(const volatile uint32_t *)&z;
+        }
+    }
+    return o;
+}
+static const uint8_t water_colours_908940_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0x8b, 0x01, 0xd9, 0x41, 0x10};
+REWRITE("Water::Colours908940", 0x908940, water_colours_908940_original, &water_colours_908940, &g_water_surfaces);
+
+// ---- Grid::GrowChanged(x0, y0, x1, y1) (0x703170): grows the changed area (+0x74..+0x80) to take in a rectangle ----------
+// The rectangle is kept inside the grid (0 to +0x6C, +0x70); an empty one changes nothing.
+static volatile long g_grid_changes;
+static void __thiscall grid_grow_changed(uint8_t *self, int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
+    g_grid_changes++;
+    int32_t *const c = (int32_t *)(self + 0x74);
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > *(const int32_t *)(self + 0x6c)) x1 = *(const int32_t *)(self + 0x6c);
+    if (y1 > *(const int32_t *)(self + 0x70)) y1 = *(const int32_t *)(self + 0x70);
+    if (x0 >= x1 || y0 >= y1) return;
+    if (x0 < c[0]) c[0] = x0;
+    if (y0 < c[1]) c[1] = y0;
+    if (x1 > c[2]) c[2] = x1;
+    if (y1 > c[3]) c[3] = y1;
+}
+static const uint8_t grid_grow_changed_original[] = {0x53, 0x56, 0x57, 0x8b, 0x7c, 0x24, 0x10, 0x85, 0xff};
+REWRITE("Grid::GrowChanged", 0x703170, grid_grow_changed_original, &grid_grow_changed, &g_grid_changes);
+
+// ---- Key::Matches(key) (0x7E5050): whether an entry matches a search key ----------------------------------------------
+// By the entry's kind bits (+0xF & 6): 4 and 6 never (only al); 0 matches keys of kind (+8) 1, 3 or 4 by its two bytes
+// (key +4, +5) and, when the key's +0xA is not negative, its +0xE; 2 matches keys of other kinds by its whole first
+// dword (key +4).
+static volatile long g_search_key_matches;
+static uint8_t __thiscall key_matches(const uint8_t *e, const uint8_t *key) {
+    g_search_key_matches++;
+    const uint8_t kind = e[0xf] & 6;
+    if (kind == 4 || kind == 6) return 0;
+    const uint8_t t = key[8];
+    const bool named = t == 1 || t == 3 || t == 4;
+    if (!kind) return named && e[0] == key[4] && e[1] == key[5] && ((int8_t)key[0xa] < 0 || e[0xe] == key[0xa]);
+    return !named && *(const uint32_t *)e == *(const uint32_t *)(key + 4);
+}
+static const uint8_t key_matches_original[] = {0x8a, 0x41, 0x0f, 0x24, 0x06, 0x3c, 0x04, 0x74, 0x04};
+REWRITE("Key::Matches", 0x7e5050, key_matches_original, &key_matches, &g_search_key_matches);
+
+// ---- Window::Match9DAC40(a, b) (0x9DAC40): whether any of the four parts (+0x18..+0x24) matches a and b -------------------
+// A part matches when a is 3 or its +0x54 is a, and b is 3 or its +0x58 is b. 1 or 0 (only al).
+static volatile long g_window_part_matches;
+static uint8_t __thiscall window_match_9dac40(const uint8_t *self, int32_t a, int32_t b) {
+    g_window_part_matches++;
+    uint8_t found = 0;
+    for (int k = 0; k < 4; k++) {
+        const uint8_t *const p = *(const uint8_t *const *)(self + 0x18 + k * 4);
+        if (p && (a == 3 || *(const int32_t *)(p + 0x54) == a) && (b == 3 || *(const int32_t *)(p + 0x58) == b)) found = 1;
+    }
+    return found;
+}
+static const uint8_t window_match_9dac40_original[] = {0x8b, 0x51, 0x18, 0x56, 0x8b, 0x74, 0x24, 0x08, 0x32, 0xc0};
+REWRITE("Window::Match9DAC40", 0x9dac40, window_match_9dac40_original, &window_match_9dac40, &g_window_part_matches);
