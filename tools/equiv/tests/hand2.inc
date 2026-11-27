@@ -6406,4 +6406,90 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
         x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10f0e94 = saved_margin, memcpy((void *)0x14002c0, saved_box, 12); };
         quick(x);
     }
+    // Water::Update8FEAE0: on or off, modes 3-9, boxes of 0.3-40 wide and deep, 2-6 points around the middle
+    Test water_update_8feae0{0x8feae0,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 float *f = (float *)self;
+                                 self[0x2c] = r.range(0, 5) != 0;
+                                 *(int32_t *)(self + 0x34) = r.range(3, 9);
+                                 const int n = r.range(2, 6);
+                                 *(int32_t *)(self + 8) = n;
+                                 *(uint32_t *)self = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 f[4] = r.real(-50, 50), f[5] = r.real(-50, 50);
+                                 f[6] = f[4] + (r.range(0, 1) ? r.real(0.3f, 2) : r.real(2, 40)), f[7] = f[5] + (r.range(0, 1) ? r.real(0.3f, 2) : r.real(2, 40));
+                                 f[8] = r.real(0, 500), f[3] = r.real(0, 30);
+                                 for (int k = 0; k < 6 * 3; k++) arena<float>(0x400)[k] = r.real(-60, 60);
+                                 for (int k = 0x44; k < 0x54; k += 4) *(uint32_t *)(self + k) = r.next();
+                             },
+                             [](void *fn) {
+                                 ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                                 return Result{0};
+                             }};
+    quick(water_update_8feae0);
+    // Animal::Pass414470: 0-6 links between 5 points (shared points, some fixed), lengths shorter and longer than the gaps
+    Test animal_pass_414470{0x414470,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                const int n = r.range(0, 6);
+                                *(int32_t *)(self + 0x84) = n, *(uint32_t *)(self + 0x80) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                for (int k = 0; k < 5; k++) {
+                                    float *p = arena<float>(0x400 + k * 0x50);
+                                    for (int c = 0; c < 3; c++) p[c] = r.real(-10, 10);
+                                    p[0x40 / 4] = r.range(0, 3) ? r.real(0.1f, 2) : 0.0f;
+                                }
+                                for (int i = 0; i < n; i++) {
+                                    uint32_t *e = arena<uint32_t>(0x200 + i * 12);
+                                    const int a = r.range(0, 4), b = (a + r.range(1, 4)) % 5;
+                                    e[0] = (uint32_t)(uintptr_t)arena<void>(0x400 + a * 0x50), e[1] = (uint32_t)(uintptr_t)arena<void>(0x400 + b * 0x50);
+                                    ((float *)e)[2] = r.real(0.5f, 20);
+                                }
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                                return Result{0};
+                            }};
+    quick(animal_pass_414470);
+    // Scenery::Flat8B5F60: targets near and far (straight up at times), gravities, launch values, limits, time wanted or
+    // not (target in ecx, out in edx)
+    Test scenery_flat_8b5f60{0x8b5f60,
+                             [=](Rng &r) {
+                                 float *t = arena<float>(0x40);
+                                 t[0] = r.range(0, 7) ? r.real(-20, 20) : 0.0f, t[1] = r.real(-10, 10), t[2] = r.range(0, 7) ? r.real(-20, 20) : 0.0f;
+                                 float *p = arena<float>(0x80);
+                                 p[0] = r.real(0.5f, 10), p[1] = r.real(-1, 1), p[2] = r.real(10, 300), p[3] = r.real(0, 30);
+                                 arena<uint32_t>(0x90)[0] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x70) : 0;
+                                 for (int k = 0; k < 4; k++) arena<uint32_t>(0x60)[k] = r.next();
+                             },
+                             [](void *fn) {
+                                 const float *p = arena<float>(0x80);
+                                 return Result{((uint32_t(__fastcall *)(const void *, void *, float, float, float, float, void *, uint32_t))fn)(arena<void>(0x40), arena<void>(0x60), p[0], p[1], p[2], p[3], (void *)(uintptr_t)arena<uint32_t>(0x90)[0], 0) & 0xff};
+                             }};
+    quick(scenery_flat_8b5f60);
+    // Animal::ValueA88470: the game's 0x13CDF20 set (put back after); counts 0-12 (none at times), sizes 1-6, values from
+    // small to past every cap
+    {
+        static uint32_t saved_scale;
+        Test x{0xa88470,
+               [=](Rng &r) {
+                   *(float *)0x13cdf20 = r.real(0.01f, 2);
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   auto set = [&](uint32_t at, int v) { *(int32_t *)(self + at) = v; };
+                   set(0x28, r.range(1, 6));
+                   for (uint32_t at = 0x2c; at <= 0x3c; at += 4) set(at, r.range(0, 4) ? r.range(0, 12) : 0);
+                   if (*(int32_t *)(self + 0x2c) + *(int32_t *)(self + 0x30) == 0) set(0x30, 1);
+                   for (uint32_t at : {0x60u, 0x6cu, 0x70u, 0x78u, 0x7cu}) set(at, r.range(0, 20));
+                   const int p = r.range(0, 10), m = *(int32_t *)(self + 0x28);
+                   set(0x80, p), set(0x84, (p * p) / m + r.range(0, 30));
+                   *(float *)(self + 0xc) = r.real(0, 30);
+               },
+               [](void *fn) {
+                   Result x;
+                   x.f = ((long double(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                   return x;
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_scale = *(uint32_t *)0x13cdf20; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x13cdf20 = saved_scale; };
+        quick(x);
+    }
 #endif

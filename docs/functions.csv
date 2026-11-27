@@ -299,7 +299,7 @@ address,size,name,callers,status
 0x4141e0,144,FrameTime::Smooth,1,rewritten
 0x414270,173,Wobble::Update,1,rewritten
 0x414320,263,Effect::Pass414320,0,rewritten
-0x414470,445,,1,documented
+0x414470,445,Animal::Pass414470,1,rewritten
 0x414630,311,Effect::Length414630,1,rewritten
 0x414770,1289,,1,documented
 0x414d20,1270,,4,documented
@@ -12184,7 +12184,7 @@ address,size,name,callers,status
 0x8b5ac0,270,,0,documented
 0x8b5bd0,240,,0,documented
 0x8b5cc0,657,,2,documented
-0x8b5f60,465,,1,documented
+0x8b5f60,465,Scenery::Flat8B5F60,1,rewritten
 0x8b6140,517,,3,documented
 0x8b6380,26,Object::Forward2,1,rewritten
 0x8b64c0,30,DeletingDestructor,2,rewritten
@@ -12721,7 +12721,7 @@ address,size,name,callers,status
 0x8fe300,38,Record::Fields,1,rewritten
 0x8fe330,411,,1,documented
 0x8fe4e0,1536,,1,documented
-0x8feae0,441,,1,documented
+0x8feae0,441,Water::Update8FEAE0,1,rewritten
 0x8fed20,115,Whirlpool::FindCell,15,rewritten
 0x8feda0,115,SortedPointers::FindXY2,2,rewritten
 0x8fee20,345,,2,documented
@@ -16392,7 +16392,7 @@ address,size,name,callers,status
 0xa883a0,137,Guest::Band,4,rewritten
 0xa88430,20,,1,documented
 0xa88450,7,Attraction::IdealGuests,1,rewritten
-0xa88470,471,,1,documented
+0xa88470,471,Animal::ValueA88470,1,rewritten
 0xa88680,99,Motion::DistanceAt,9,rewritten
 0xa886f0,3,,1,documented
 0xa887b0,58,,2,documented

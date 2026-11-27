@@ -10119,3 +10119,197 @@ static uint8_t __thiscall fireworks_height_9e0b90(uint8_t *self, float *point, u
 }
 static const uint8_t fireworks_height_9e0b90_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0x55, 0x08};
 REWRITE("Fireworks::Height9E0B90", 0x9e0b90, fireworks_height_9e0b90_original, &fireworks_height_9e0b90, &g_firework_wraps);
+
+// ---- Water::Update8FEAE0() (0x8FEAE0): the flow of a water feature when on (+0x2C) -------------------------------------
+// The box (+0x10..+0x1C): width, depth and middle as floats; k = +0x20 / (count +8 - 1). Modes (+0x34) 4-7: with the
+// width (4, 5) or depth s: +0x44 = k s / 1000 (at most 0.1 by the unrounded value), +0x48 = pi / s 15 (above 8.976 set
+// to 8.976, below 4.189 set to 4.189), +0x4C = 0, +0x44 times 2 - (+0x48 - 4.189) 0.2089, +0x50 = ceil(+0xC 5 +0x48 /
+// pi) pi / +0x48. Mode 8: +0x44 = k 0.0075, +0x4C = the angle (0 to 2 pi) from the middle to the last point (12 bytes
+// at +0), +0x50 = +0xC 5. (The game's constants at 0xF285F0, 0xF2CF10, 0xF29638, 0xF7CFAC-0xF7CFB8 and more.)
+static volatile long g_water_flows;
+static void __thiscall water_update_8feae0(uint8_t *self) {
+    g_water_flows++;
+    if (!self[0x2c]) return;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    float *const f = (float *)self;
+    volatile float *const vf = (volatile float *)self;
+    volatile float w = (float)((long double)f[6] - f[4]), d = (float)((long double)f[7] - f[5]);
+    volatile float cx = (float)(((long double)f[4] + f[6]) * k(0xf2651c)), cz = (float)(((long double)f[7] + f[5]) * k(0xf2651c));
+    const int32_t n = *(const int32_t *)(self + 8);
+    const long double per = (long double)f[8] / (long double)(n - 1);
+    const int32_t mode = *(const int32_t *)(self + 0x34);
+    if (mode >= 4 && mode <= 7) {
+        const long double s = (mode == 4 || mode == 5) ? (long double)w : (long double)d;
+        vf[0x44 / 4] = (float)(per * s);
+        vf[0x48 / 4] = (float)(k(0xf285f0) / s);
+        const long double a = (long double)vf[0x44 / 4] * k(0xf2cf10);
+        vf[0x44 / 4] = (float)a;
+        volatile float b = (float)((long double)vf[0x48 / 4] * k(0xf29638));
+        vf[0x48 / 4] = b;
+        if (a > k(0xf270b0)) *(volatile uint32_t *)(self + 0x44) = 0x3dcccccd;
+        if (b > *(const float *)0xf7cfb8) *(volatile uint32_t *)(self + 0x48) = 0x410f9d9d;
+        if (vf[0x48 / 4] < *(const float *)0xf7cfb4) *(volatile uint32_t *)(self + 0x48) = 0x40860a92;
+        *(volatile uint32_t *)(self + 0x4c) = 0;
+        vf[0x44 / 4] = (float)(((k(0xf264dc) - ((long double)vf[0x48 / 4] - k(0xf7cfb4)) * k(0xf7cfb0)) + k(0xf264dc)) * vf[0x44 / 4]);
+        const long double v = (long double)f[3] * k(0xf28214);
+        vf[0x50 / 4] = (float)v;
+        volatile float t = (float)(v * vf[0x48 / 4] * k(0xf7cfac));
+        volatile float c = (float)ceil_h2(t);
+        vf[0x50 / 4] = (float)((long double)c * k(0xf285f0) / vf[0x48 / 4]);
+        return;
+    }
+    if (mode != 8) return;
+    const float *const last = *(const float *const *)self + n * 3 - 3;
+    long double ang = x87_atan2_h2((long double)last[1] - cz, (long double)last[0] - cx);
+    if (ang < *(const float *)0xf264e0) ang = ang + k(0xf268dc);
+    vf[0x44 / 4] = (float)(per * k(0xf367c4));
+    vf[0x4c / 4] = (float)ang;
+    vf[0x50 / 4] = (float)((long double)f[3] * k(0xf28214));
+}
+static const uint8_t water_update_8feae0_original[] = {0x8a, 0x41, 0x2c, 0x83, 0xec, 0x14, 0x84, 0xc0};
+REWRITE("Water::Update8FEAE0", 0x8feae0, water_update_8feae0_original, &water_update_8feae0, &g_water_flows);
+
+// ---- Animal::Pass414470() (0x414470): pulls each linked pair of points back to its length -----------------------------
+// Links (12 bytes at +0x80, count +0x84: {a, b, length}). d = b - a (x unrounded, y and z floats), L = sqrt((z z + y y)
+// + x x) and f = (L - length) / L (a float). With both points free (+0x40 not 0) each moves half of d f toward the other;
+// with a fixed (its +0x40 is 0) b moves all of it back, else a moves all of it. Roundings as the game's.
+static volatile long g_animal_links;
+static void __thiscall animal_pass_414470(const uint8_t *self) {
+    g_animal_links++;
+    const long double half = *(const float *)0xf2651c, zero = *(const float *)0xf264e0;
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0x84); i++) {
+        const uint32_t *const e = (const uint32_t *)(*(const uint8_t *const *)(self + 0x80) + i * 12);
+        volatile float *const a = (float *)(uintptr_t)e[0], *const b = (float *)(uintptr_t)e[1];
+        const long double dx = (long double)b[0] - a[0];
+        volatile float dy = (float)((long double)b[1] - a[1]);
+        const long double dzu = (long double)b[2] - a[2];
+        volatile float dz = (float)dzu;
+        const long double len = x87_sqrt_h2((dzu * dz + (long double)dy * dy) + dx * dx);
+        volatile float f = (float)((len - *(const float *)&e[2]) / len);
+        const bool afree = !(a[0x40 / 4] == zero), bfree = !(b[0x40 / 4] == zero);
+        if (afree && bfree) {
+            const long double hx = dx * half;
+            volatile float hxf = (float)hx;
+            const long double hy = (long double)dy * half, hz = (long double)dz * half;
+            volatile float hzf = (float)hz;
+            volatile float mx = (float)((long double)hxf * f), my = (float)(hy * f);
+            const long double mz = hz * f;
+            a[0] = (float)((long double)mx + a[0]);
+            a[1] = (float)((long double)my + a[1]);
+            a[2] = (float)(mz + a[2]);
+            volatile float hx2 = (float)hx;
+            volatile float nx = (float)((long double)hx2 * f), ny = (float)(hy * f);
+            const long double nz = (long double)hzf * f;
+            b[0] = (float)((long double)b[0] - nx);
+            b[1] = (float)((long double)b[1] - ny);
+            b[2] = (float)((long double)b[2] - nz);
+            continue;
+        }
+        const long double mx = dx * f, my = (long double)dy * f;
+        volatile float mz = (float)((long double)dz * f);
+        if (!afree) {
+            b[0] = (float)((long double)b[0] - mx);
+            b[1] = (float)((long double)b[1] - my);
+            b[2] = (float)((long double)b[2] - mz);
+        } else {
+            a[0] = (float)(mx + a[0]);
+            a[1] = (float)(my + a[1]);
+            a[2] = (float)((long double)mz + a[2]);
+        }
+    }
+}
+static const uint8_t animal_pass_414470_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x81, 0xec, 0x84, 0x00, 0x00, 0x00};
+REWRITE("Animal::Pass414470", 0x414470, animal_pass_414470_original, &animal_pass_414470, &g_animal_links);
+
+// ---- Scenery::Flat8B5F60(target in ecx, out in edx, g, a, b, most, time, -) (0x8B5F60): how to throw to a target -------
+// D = the flat (x, z) distance (a float), c = b - y a and T = sqrt((c - sqrt(c c - (D D + y y) g)) / (g / 2)) (a float).
+// None (0, only al) when T is past most or not above 0. Else the start velocity: across D / T, up y / T + T a / 2 (a
+// float), along the flat direction (x, z made of length 1; (x, 0, 1) at no distance), made of length 1 ((x, y, 1) at
+// none) into out; time (when given) gets T; gives 1. Roundings as the game's.
+static volatile long g_throw_solves;
+static uint8_t __fastcall scenery_flat_8b5f60(const float *t, float *out, float g, float a, float b, float most, float *time, uint32_t) {
+    g_throw_solves++;
+    const long double zero = *(const float *)0xf264e0, one = *(const float *)0xf264dc, half = *(const float *)0xf7a7e4;
+    const long double x = t[0], z = t[2];
+    volatile float yf = t[1];
+    volatile float df = (float)x87_sqrt_h2(z * z + x * x);
+    const long double c = (long double)b - (long double)yf * a;
+    const long double disc = c * c - ((long double)df * df + (long double)yf * yf) * g;
+    const long double tt = x87_sqrt_h2((c - x87_sqrt_h2(disc)) / ((long double)g * half));
+    volatile float tf = (float)tt;
+    if (tt > most) return 0;
+    if (tf < zero || tf == zero) return 0;
+    const long double inv = one / tf;
+    volatile float across = (float)((long double)df * inv);
+    volatile float up = (float)(inv * yf + (long double)tf * a * half);
+    const long double d2 = x87_sqrt_h2(z * z + x * x);
+    long double nx, nz;
+    volatile float ny = 0.0f;
+    if (d2 == zero) nz = one, nx = x;
+    else {
+        const long double inv2 = one / d2;
+        nx = x * inv2;
+        ny = (float)(zero * inv2);
+        nz = z * inv2;
+    }
+    volatile float vx = (float)((long double)across * nx);
+    volatile float vy = (float)((long double)(float)((long double)ny * across) + up);
+    volatile float vz = (float)(nz * across);
+    volatile float len = (float)x87_sqrt_h2(((long double)vz * vz + (long double)vy * vy) + (long double)vx * vx);
+    volatile float *const o = out;
+    if (len == zero) {
+        *(volatile uint32_t *)&o[0] = *(const volatile uint32_t *)&vx;
+        *(volatile uint32_t *)&o[2] = 0x3f800000;
+        *(volatile uint32_t *)&o[1] = *(const volatile uint32_t *)&vy;
+    } else {
+        const long double invl = one / len;
+        volatile float invf = (float)invl;
+        const long double ox = invl * vx;
+        volatile float oy = (float)((long double)vy * invf);
+        o[0] = (float)ox;
+        o[2] = (float)((long double)vz * invf);
+        *(volatile uint32_t *)&o[1] = *(const volatile uint32_t *)&oy;
+    }
+    if (time) *(volatile float *)time = tf;
+    return 1;
+}
+static const uint8_t scenery_flat_8b5f60_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0xd9, 0x01};
+REWRITE("Scenery::Flat8B5F60", 0x8b5f60, scenery_flat_8b5f60_original, &scenery_flat_8b5f60, &g_throw_solves);
+
+// ---- Animal::ValueA88470() (0xA88470): an enclosure's score ------------------------------------------------------------
+// Each part is capped at 1 (by the unrounded value) and weighted: n (+0x2C) K1 by K2; +0x7C 5 / t and +0x78 5 / t by
+// K3 (t the total of +0x2C..+0x3C, a float); sqrt(+0x84 / m - (+0x80^2) / (m^2)) / 10 by K3 (m = +0x28); +0x70 K5 / t by
+// 15; with n above 0 also +0x60 K5 / n by 5 and +0x6C 20 / n by K5. The sum times (1 - h) / 90 (75 with no n), where h =
+// 1 / the game's 0x13CDF20 / m +0xC / 10, or 0 when h is past 1. (K1 0xF348BC, K2 0xF315C4, K3 0xF2706C, K5 0xF275F4.)
+static volatile long g_animal_scores;
+static long double __thiscall animal_value_a88470(const uint8_t *self) {
+    g_animal_scores++;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    auto i = [&](uint32_t at) { return *(const int32_t *)(self + at); };
+    const long double one = k(0xf264dc);
+    auto cap = [&](long double v) { return v > one ? one : v; };
+    const int32_t n = i(0x2c), m = i(0x28);
+    volatile float nf = (float)n;
+    volatile float tf = (float)(i(0x3c) + i(0x38) + i(0x34) + i(0x30) + n);
+    long double acc = cap((long double)n * k(0xf348bc)) * k(0xf315c4);
+    acc = acc + cap((long double)i(0x7c) * k(0xf28214) / tf) * k(0xf2706c);
+    acc = acc + cap((long double)i(0x78) * k(0xf28214) / tf) * k(0xf2706c);
+    const int32_t p = i(0x80);
+    const long double spread = (long double)i(0x84) / (long double)m - (long double)(int32_t)((uint32_t)p * (uint32_t)p) / (long double)(int32_t)((uint32_t)m * (uint32_t)m);
+    acc = acc + cap(x87_sqrt_h2(spread) * k(0xf270b0)) * k(0xf2706c);
+    acc = acc + cap((long double)i(0x70) * k(0xf275f4) / tf) * k(0xf29638);
+    long double base = 75.0L;
+    if (n > 0) {
+        acc = acc + cap((long double)i(0x60) * k(0xf275f4) / nf) * k(0xf28214);
+        acc = acc + cap((long double)i(0x6c) * k(0xf27630) / nf) * k(0xf275f4);
+        base = 90.0L;
+    }
+    long double h = one / *(const volatile float *)0x13cdf20;
+    h = h / (long double)m;
+    h = h * *(const float *)(self + 0xc);
+    h = h * k(0xf270b0);
+    if (h > one) return k(0xf264e0) / base * acc;
+    return (one - h) / base * acc;
+}
+static const uint8_t animal_value_a88470_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x41, 0x3c, 0x8b, 0x51, 0x34, 0x56};
+REWRITE("Animal::ValueA88470", 0xa88470, animal_value_a88470_original, &animal_value_a88470, &g_animal_scores);
