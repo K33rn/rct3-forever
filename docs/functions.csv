@@ -20050,11 +20050,11 @@ address,size,name,callers,status
 0xbdd7e0,53,Buffers::Destroy891760,1,rewritten
 0xbdd840,30,DeletingDestructor,1,rewritten
 0xbdd860,120,,24,documented
-0xbdd9a0,596,,0,documented
+0xbdd9a0,596,VertexDeclaration::FillBDD9A0,0,rewritten
 0xbddc00,1754,,6,documented
 0xbde370,392,,0,documented
 0xbde530,174,,1,documented
-0xbde5e0,624,,2,documented
+0xbde5e0,624,VertexDeclaration::FillBDE5E0,2,rewritten
 0xbde860,609,,1,documented
 0xbdead0,118,,3,documented
 0xbdeb50,425,,1,documented
@@ -22481,7 +22481,7 @@ address,size,name,callers,status
 0xcbab10,64,,2,documented
 0xcbab50,1728,,1,documented
 0xcbb240,10,,3,documented
-0xcbb250,1244,,3,documented
+0xcbb250,1244,Inflate::BuildHuffmanTable,3,rewritten
 0xcbb740,159,,1,documented
 0xcbb7e0,346,,1,documented
 0xcbb940,40,,1,documented
@@ -22545,7 +22545,7 @@ address,size,name,callers,status
 0xcbec90,5510,,1,documented
 0xcc0400,219,,1,documented
 0xcc04e0,386,,1,documented
-0xcc0670,957,,1,documented
+0xcc0670,957,Inflate::Fast,1,rewritten
 0xcc0a40,1,,1,documented
 0xcc0ae0,30,DeletingDestructor,1,rewritten
 0xcc0b00,7,SetTable,1,rewritten
@@ -22781,7 +22781,7 @@ address,size,name,callers,status
 0xccdd30,7,SetTable,1,rewritten
 0xccdd40,30,DeletingDestructor,1,rewritten
 0xccdd70,1,,1,documented
-0xccdd90,1551,,1,documented
+0xccdd90,1551,ResourceFile::Load,1,rewritten
 0xcce3a0,7,SetTable,1,rewritten
 0xcce4e0,30,DeletingDestructor,1,rewritten
 0xcce500,351,ResourceType::ResourceType,1,rewritten
