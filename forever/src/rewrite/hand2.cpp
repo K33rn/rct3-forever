@@ -3407,3 +3407,476 @@ REWRITE("WildAnimal::InterfaceB355B0", 0xb355b0, wild_animal_class_value_origina
 REWRITE("WildAnimal::InterfaceB355F0", 0xb355f0, wild_animal_class_value_original, &wild_animal_class_value<0x38>, &g_animal_class_values);
 REWRITE("WildAnimal::InterfaceB35630", 0xb35630, wild_animal_class_value_original, &wild_animal_class_value<0x3c>, &g_animal_class_values);
 REWRITE("WildAnimal::InterfaceB35670", 0xb35670, wild_animal_class_value_original, &wild_animal_class_value<0x40>, &g_animal_class_values);
+
+// ---- AttractionPersonStrategy::PointSlot35 and its copies (0x5F7750, 0x5F77B0, 0x5F7810, 0x5F7890, 0x9EE850) ---------
+// A point in this window, (+0x7C + (+0x8C + p.x), +0x80 + (+0x90 + p.y)) (the inner sums on the FPU, the outer rounded
+// to floats), handed to slot S of the GUI root (0x12F83F0); gives what that gives.
+static volatile long g_root_points;
+template <uint32_t S> static uint32_t __thiscall window_point_to_root(const uint8_t *self, const float *p) {
+    g_root_points++;
+    auto f = [&](uint32_t at) { return *(const float *)(self + at); };
+    const long double a = (long double)f(0x8c) + p[0], b = (long double)f(0x90) + p[1];
+    float point[2];
+    *(volatile float *)&point[0] = (float)((long double)f(0x7c) + a);
+    *(volatile float *)&point[1] = (float)((long double)f(0x80) + b);
+    uint8_t *const root = *(uint8_t *const volatile *)0x12f83f0;
+    typedef uint32_t(__thiscall *Slot)(uint8_t *, float *);
+    return (*(Slot const *)(*(const uint8_t *const *)root + S))(root, point);
+}
+static const uint8_t window_point_to_root_original[] = {0x83, 0xec, 0x10, 0x8b, 0x54, 0x24, 0x14, 0x8b, 0xc1};
+REWRITE("AttractionPersonStrategy::PointSlot35", 0x5f7750, window_point_to_root_original, &window_point_to_root<0x8c>, &g_root_points);
+REWRITE("AttractionPersonStrategy::PointSlot38", 0x5f77b0, window_point_to_root_original, &window_point_to_root<0x98>, &g_root_points);
+REWRITE("AttractionPersonStrategy::PointSlot41", 0x5f7810, window_point_to_root_original, &window_point_to_root<0xa4>, &g_root_points);
+REWRITE("AttractionPersonStrategy::PointSlot20", 0x5f7890, window_point_to_root_original, &window_point_to_root<0x50>, &g_root_points);
+REWRITE("Window::PointSlot35", 0x9ee850, window_point_to_root_original, &window_point_to_root<0x8c>, &g_root_points);
+
+// ---- Guest::Shared7594E0 and its copies (0x7594E0, 0x759570, 0x7595F0): a guest value set near the park's, at random --
+// v = the shared park object's (0x1306194, made by 0x708520 when there is none) +SRC; the guest's +DST becomes
+// v + Random::Ran0 x K1 + K2 (kept as a float), then kept between 0 and 1 (a NaN gives 1).
+static volatile long g_guest_shared;
+template <uint32_t SRC, uint32_t DST, uint32_t K1, uint32_t K2> static void __fastcall guest_shared(uint8_t *self) {
+    g_guest_shared++;
+    const uint8_t *park = *(const uint8_t *const volatile *)0x1306194;
+    if (!park) park = ((const uint8_t *(*)())0x708520)();
+    volatile uint32_t *const dst = (volatile uint32_t *)(self + DST);
+    *dst = *(const uint32_t *)(park + SRC);
+    const long double r = ((long double(__cdecl *)())0x475180)();
+    volatile float t = (float)((r * *(const float *)(uintptr_t)K1 + *(volatile float *)dst) + *(const float *)(uintptr_t)K2);
+    *(volatile float *)dst = t;
+    const float lo = 0.0f < t || t != t ? (float)t : 0.0f;
+    const float v = 1.0f > lo ? lo : 1.0f;
+    volatile float out = v;
+    *dst = *(volatile uint32_t *)&out;
+}
+static const uint8_t guest_shared_original[] = {0xa1, 0x94, 0x61, 0x30, 0x01, 0x83, 0xec, 0x10};
+REWRITE("Guest::Shared7594E0", 0x7594e0, guest_shared_original, (&guest_shared<0x168, 0x40c, 0xf283d8, 0xf270b0>), &g_guest_shared);
+REWRITE("Guest::Shared759570", 0x759570, guest_shared_original, (&guest_shared<0x16c, 0x428, 0xf27ca8, 0xf33750>), &g_guest_shared);
+REWRITE("Guest::Shared7595F0", 0x7595f0, guest_shared_original, (&guest_shared<0x170, 0x42c, 0xf27ca8, 0xf33750>), &g_guest_shared);
+
+// ---- Colour::Make6B5D10(out, h, s, l) (0x6B5D10): a colour (0xAARRGGBB, alpha 0xFF) from hue, saturation and lightness ---
+// H = h K6 (0xF2706C; the first test unrounded, the rest on the float). By sector it picks (a, b, c) for red, green and
+// blue (a and b floats, c kept on the FPU): H not below 0 and below K1: (1, H - 1, Q); below K2: (K3 - H, 1, Q); below K4:
+// (-1, 1, H - K5); below K6b: (-1, K7 - H, 1); below K8: (H - K9, -1, 1); else (1, -1, K10 - H). m = s K11 (1 - l when
+// l + m is above 1), then l when l - m is below 0. Each part p gives the whole
+// number p m 255 + l 255 (fistp); they are packed as ((r | 0xFFFFFF00) << 8 | g) << 8 | b in 32 bits. Gives out.
+static volatile long g_colour_makes;
+static uint32_t *__thiscall colour_make_6b5d10(uint32_t *out, float h, float s, float l) {
+    g_colour_makes++;
+    auto k = [](uintptr_t at) { return *(const float *)at; };
+    const long double hl = (long double)h * k(0xf2706c);
+    volatile float hf = (float)hl;
+    const float one = k(0xf264dc);
+    volatile float a = -1.0f, b = -1.0f;
+    long double c;
+    const float H = hf;
+    if (!(hl < k(0xf264e0)) && hl == hl && H < k(0xf2705c)) {
+        b = (float)((long double)H - one), a = 1.0f, c = k(0xf268f0);
+    } else if (H < k(0xf2669c)) {
+        b = 1.0f, a = (float)((long double)k(0xf2784c) - H), c = k(0xf268f0);
+    } else if (H < k(0xf26610)) {
+        c = (long double)H - k(0xf28214), b = 1.0f;
+    } else if (H < k(0xf270e8)) {
+        c = one, b = (float)((long double)k(0xf360ac) - H);
+    } else if (H < k(0xf275f4)) {
+        c = one, a = (float)((long double)H - k(0xf27848));
+    } else {
+        c = (long double)k(0xf31988) - H, a = 1.0f;
+    }
+    long double m = (long double)s * k(0xf270b8);
+    const long double sum = (long double)l + m;
+    if (sum > one) m = (long double)one - l;
+    if ((long double)l - m < k(0xf264e0)) m = l;
+    const float full = k(0xf264c0);
+    const long double base = (long double)l * full;
+    const uint32_t r = (uint32_t)x87_fistp64_h2((long double)a * m * full + base);
+    uint32_t v = (r | 0xffffff00u) << 8;
+    const uint32_t g = (uint32_t)x87_fistp64_h2((long double)b * m * full + base);
+    v = (v | g) << 8;
+    const uint32_t bl = (uint32_t)x87_fistp64_h2(c * m * full + base);
+    *(volatile uint32_t *)out = v | bl;
+    return out;
+}
+static const uint8_t colour_make_6b5d10_original[] = {0x83, 0xec, 0x10, 0xd9, 0x05, 0xf0, 0x68, 0xf2, 0x00};
+REWRITE("Colour::Make6B5D10", 0x6b5d10, colour_make_6b5d10_original, &colour_make_6b5d10, &g_colour_makes);
+
+// ---- Water::Fade919610(this, out, x, y, edge) (0x919610): how strongly a water cell is drawn across and along ---------
+// N is the shared fade width (0x10F0BEC). With edge set: x not past N gives 1 - (x / N) K, else (w - x - 1) / N K (w the
+// width +0x154), less from 1 when flag 0x40 of +0x40 is set. Without: 1 - (x - N) / (w - 2N - 1), times 1, K2 or K3 by
+// the level +0x31C (below 0xF28210, below 0xF360E8, else). out[0] is that; out[1] = (1 - y / (h - 1)) (h +0x158) times 1,
+// K2, K3 or K4 by +0x320 (below 0xF28210, 0xF27604, 0xF27618, else). K 0xF270B8, K2 0xF2705C, K3 0xF2784C, K4 0xF2669C.
+static volatile long g_water_fades;
+static void __thiscall water_fade_919610(const uint8_t *self, float *out, int32_t x, int32_t y, uint32_t edge) {
+    g_water_fades++;
+    auto k = [](uintptr_t at) { return *(const float *)at; };
+    const float one = k(0xf264dc);
+    const int32_t n = *(const volatile int32_t *)0x10f0bec, w = *(const int32_t *)(self + 0x154);
+    long double u;
+    if ((uint8_t)edge) {
+        if (x <= n) {
+            u = (long double)one - (long double)x / n * k(0xf270b8);
+        } else {
+            const long double part = (long double)(int32_t)((uint32_t)w - (uint32_t)x - 1) / n * k(0xf270b8);
+            u = (self[0x40] & 0x40) ? (long double)one - part : part;
+        }
+    } else {
+        const int32_t d = (int32_t)((uint32_t)x - (uint32_t)n), den = (int32_t)((uint32_t)w - 2 * (uint32_t)n - 1);
+        u = (long double)one - (long double)d / den;
+        const float lv = *(const float *)(self + 0x31c);
+        u = u * (lv < k(0xf28210) ? one : lv < k(0xf360e8) ? k(0xf2705c) : k(0xf2784c));
+    }
+    const int32_t h1 = (int32_t)(*(const uint32_t *)(self + 0x158) - 1);
+    const long double v = (long double)one - (long double)y / h1;
+    const float lv2 = *(const float *)(self + 0x320);
+    const float g = lv2 < k(0xf28210) ? one : lv2 < k(0xf27604) ? k(0xf2705c) : lv2 < k(0xf27618) ? k(0xf2784c) : k(0xf2669c);
+    volatile float *const o = out;
+    o[0] = (float)u;
+    o[1] = (float)((long double)g * v);
+}
+static const uint8_t water_fade_919610_original[] = {0x8a, 0x44, 0x24, 0x10, 0x84, 0xc0, 0x74, 0x59};
+REWRITE("Water::Fade919610", 0x919610, water_fade_919610_original, &water_fade_919610, &g_water_fades);
+
+// ---- Vector::ScaleBEE2C0(this, out) (0xBEE2C0): the rotation (quaternion x, y, z, w) of a 3x3 matrix (rows 16 bytes) ----
+// t = (m22 + m11) + m00. Above 0: s = sqrt(t + 1), out = ((m12 - m21), (m20 - m02), (m01 - m10)) K / s and w = s K
+// (K 0xF2651C). Otherwise i is the largest diagonal (1 when m11 is above m00, then 2 when m22 is above that), j and k the
+// next two (1, 2, 0); s = sqrt((mii - (mkk + mjj)) + 1), q[i] = K s, s' = K / s (0 stays 0), w = (mjk - mkj) s',
+// q[j] = (mji + mij) s', q[k] = (mki + mik) s'. Floats where stored.
+static volatile long g_matrix_rotations;
+static void __thiscall matrix_to_rotation(const float *self, float *out) {
+    g_matrix_rotations++;
+    auto m = [&](int r, int c) { return self[4 * r + c]; };
+    const float half = *(const float *)0xf2651c, one = *(const float *)0xf264dc;
+    const long double t = ((long double)m(2, 2) + m(1, 1)) + m(0, 0);
+    volatile float *const o = out;
+    if (t > *(const float *)0xf264e0) {
+        const long double s = x87_sqrt_h2(t + one);
+        const long double inv = (long double)half / s;
+        o[0] = (float)(((long double)m(1, 2) - m(2, 1)) * inv);
+        o[1] = (float)(((long double)m(2, 0) - m(0, 2)) * inv);
+        o[2] = (float)(((long double)m(0, 1) - m(1, 0)) * inv);
+        o[3] = (float)(s * half);
+        return;
+    }
+    static const int next[3] = {1, 2, 0};
+    int i = m(1, 1) > m(0, 0) ? 1 : 0;
+    if (m(2, 2) > m(i, i)) i = 2;
+    const int j = next[i], k = next[j];
+    long double s = x87_sqrt_h2(((long double)m(i, i) - ((long double)m(k, k) + m(j, j))) + one);
+    volatile float q[4];
+    q[i] = (float)((long double)half * s);
+    if (!(s == *(const float *)0xf264e0)) s = (long double)half / s;
+    q[3] = (float)(((long double)m(j, k) - m(k, j)) * s);
+    q[j] = (float)(((long double)m(j, i) + m(i, j)) * s);
+    q[k] = (float)(((long double)m(k, i) + m(i, k)) * s);
+    *(volatile uint32_t *)(out + 1) = *(volatile uint32_t *)&q[1];
+    o[0] = q[0];
+    *(volatile uint32_t *)(out + 2) = *(volatile uint32_t *)&q[2];
+    *(volatile uint32_t *)(out + 3) = *(volatile uint32_t *)&q[3];
+}
+static const uint8_t matrix_to_rotation_original[] = {0x83, 0xec, 0x50, 0x8b, 0x01, 0x8b, 0x51, 0x04};
+REWRITE("Vector::ScaleBEE2C0", 0xbee2c0, matrix_to_rotation_original, &matrix_to_rotation, &g_matrix_rotations);
+
+// ---- Animal::ModeA6F930(this) (0xA6F930): four points put in turning order, in mode 2 (+0 = 2) --------------------------
+// The four records (+0xC's pointers; a point at +0x10 and a second vector at +0x20). n = (p2 - p0) x (p1 - p0) as the
+// game works it (u = p1 - p0 with x a float, v = p2 - p0 with x and y floats; n's parts floats); when (p3 - p0) . n is
+// not above 0, records 1 and 2 swap both vectors.
+static volatile long g_animal_orders;
+static void __fastcall animal_mode_a6f930(const uint8_t *self) {
+    g_animal_orders++;
+    if (*(const int32_t *)self != 2) return;
+    auto rec = [&](int i) { return (uint8_t *)(uintptr_t)((*(const uint32_t *const *)(self + 0xc))[i]); };
+    const float *const p0 = (const float *)(rec(0) + 0x10), *const p1 = (const float *)(rec(1) + 0x10);
+    const float *const p2 = (const float *)(rec(2) + 0x10), *const p3 = (const float *)(rec(3) + 0x10);
+    const long double a0 = p0[0], a1 = p0[1];
+    volatile float u0 = (float)((long double)p1[0] - a0);
+    const long double u1 = (long double)p1[1] - a1, u2 = (long double)p1[2] - p0[2];
+    volatile float v0 = (float)((long double)p2[0] - a0), v1 = (float)((long double)p2[1] - a1);
+    const long double v2 = (long double)p2[2] - p0[2];
+    volatile float n0 = (float)(v2 * u1 - (long double)v1 * u2);
+    volatile float n1 = (float)(u2 * v0 - v2 * u0);
+    volatile float n2 = (float)((long double)v1 * u0 - u1 * v0);
+    volatile float w0 = (float)((long double)p3[0] - a0);
+    const long double w1 = (long double)p3[1] - a1, w2 = (long double)p3[2] - p0[2];
+    const long double d = ((long double)n2 * w2 + w1 * n1) + (long double)w0 * n0;
+    if (d > *(const float *)0xf264e0 || d != d) return;
+    uint8_t *const r1 = rec(1);
+    volatile float sx = *(const float *)(r1 + 0x10), sy = *(const float *)(r1 + 0x14);
+    const uint32_t sz = *(const uint32_t *)(r1 + 0x18);
+    const uint32_t s20 = *(const uint32_t *)(r1 + 0x20), s24 = *(const uint32_t *)(r1 + 0x24), s28 = *(const uint32_t *)(r1 + 0x28);
+    for (uint32_t at = 0x10; at <= 0x28; at += 4) {
+        if (at == 0x1c) continue;
+        *(volatile uint32_t *)(rec(1) + at) = *(const volatile uint32_t *)(rec(2) + at);
+    }
+    uint8_t *const r2 = rec(2);
+    *(volatile float *)(r2 + 0x10) = sx;
+    *(volatile uint32_t *)(r2 + 0x18) = sz;
+    *(volatile float *)(r2 + 0x14) = sy;
+    *(volatile uint32_t *)(r2 + 0x20) = s20, *(volatile uint32_t *)(r2 + 0x24) = s24, *(volatile uint32_t *)(r2 + 0x28) = s28;
+}
+static const uint8_t animal_mode_a6f930_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x58, 0x8b, 0x01, 0x83};
+REWRITE("Animal::ModeA6F930", 0xa6f930, animal_mode_a6f930_original, &animal_mode_a6f930, &g_animal_orders);
+
+// ---- Animal::StepBB6B10(out, a, w, b, t, add) (0xBB6B10): a point between a and b, weighted into out ------------------
+// fastcall out and a. p = a + (b - a) t (x parts floats, y on the FPU, z rounded once), or a when t is exactly the game's
+// 0 (a NaN t blends). With add: out += p w (the x product a float, y and z on the FPU). Without: out = p, then out *= w
+// when w is below 1.
+static volatile long g_animal_blends;
+static void __fastcall animal_step_bb6b10(float *out, const float *a, float w, const float *b, float t, uint32_t add) {
+    g_animal_blends++;
+    volatile float *const o = out;
+    const bool blend = !(t == *(const float *)0xf264e0);
+    const long double a0 = a[0], a1 = a[1];
+    if ((uint8_t)add) {
+        if (blend) {
+            volatile float d0 = (float)((long double)b[0] - a0);
+            const long double d1 = (long double)b[1] - a1, d2 = (long double)b[2] - a[2];
+            volatile float e0 = (float)((long double)d0 * t), e1 = (float)(d1 * t);
+            const long double e2 = d2 * t;
+            volatile float p0 = (float)((long double)e0 + a[0]);
+            const long double p1 = (long double)a[1] + e1;
+            volatile float p2 = (float)((long double)a[2] + e2);
+            volatile float q0 = (float)((long double)p0 * w);
+            const long double q1 = p1 * w, q2 = (long double)p2 * w;
+            o[0] = (float)((long double)q0 + o[0]);
+            o[1] = (float)(q1 + o[1]);
+            o[2] = (float)(q2 + o[2]);
+        } else {
+            volatile float q0 = (float)(a0 * w);
+            const long double q1 = a1 * w, q2 = (long double)a[2] * w;
+            o[0] = (float)((long double)q0 + o[0]);
+            o[1] = (float)(q1 + o[1]);
+            o[2] = (float)(q2 + o[2]);
+        }
+        return;
+    }
+    uint32_t zbits;
+    if (blend) {
+        volatile float d0 = (float)((long double)b[0] - a0);
+        const long double d1 = (long double)b[1] - a1, d2 = (long double)b[2] - a[2];
+        volatile float e0 = (float)((long double)d0 * t), e1 = (float)(d1 * t);
+        const long double e2 = d2 * t;
+        const long double p0 = a0 + e0, p1 = (long double)a[1] + e1;
+        volatile float p2 = (float)((long double)a[2] + e2);
+        zbits = *(volatile uint32_t *)&p2;
+        o[0] = (float)p0;
+        o[1] = (float)p1;
+    } else {
+        o[0] = (float)a0;
+        zbits = *(const uint32_t *)(a + 2);
+        o[1] = (float)a1;
+    }
+    *(volatile uint32_t *)(out + 2) = zbits;
+    if (w < *(const float *)0xf264dc) {
+        o[0] = (float)((long double)w * o[0]);
+        o[1] = (float)((long double)w * o[1]);
+        o[2] = (float)((long double)w * o[2]);
+    }
+}
+static const uint8_t animal_step_bb6b10_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x3c, 0xd9, 0x05, 0xe0};
+REWRITE("Animal::StepBB6B10", 0xbb6b10, animal_step_bb6b10_original, &animal_step_bb6b10, &g_animal_blends);
+
+// ---- Graph::RangeACA200(out, colour) (0xACA200): hue, saturation and lightness of a colour (0x..RRGGBB) ---------------
+// R, G, B = the bytes times K (0xF270F0) as floats. lo = min(min(B, G), R); hi = max(min(B, G), R) (the game takes the
+// smaller of B and G again here); d = hi - lo and L = (hi + lo) / 2 (floats). S = d / (2L, or K2 - 2L from L = 0.5 on)
+// when L is between 0 and 1 (else 0). H = 0 unless d is above 0: by which part hi equals, (G - B) / d, + (B - R) / d + K2
+// and + (R - G) / d + K3 (each when the part is hi and the next is not), times K4 (0xF30500). out = {H, S, L}; gives out.
+// min(x, y) is y when x is above y, else x; max(x, y) is y when x is below y or they are unordered, else x.
+static volatile long g_colour_ranges;
+static float *__stdcall graph_range_aca200(float *out, uint32_t colour) {
+    g_colour_ranges++;
+    auto k = [](uintptr_t at) { return *(const float *)at; };
+    const float kk = k(0xf270f0), zero = k(0xf264e0), one = k(0xf264dc), half = k(0xf2651c), two = k(0xf2705c);
+    volatile float b = (float)((long double)(int32_t)(colour & 0xff) * kk);
+    volatile float g = (float)((long double)(int32_t)(colour >> 8 & 0xff) * kk);
+    volatile float r = (float)((long double)(int32_t)(colour >> 16 & 0xff) * kk);
+    auto mn = [](float x, float y) { return x > y ? y : x; };
+    auto mx = [](float x, float y) { return x < y || x != x || y != y ? y : x; };
+    const float bg = mn(b, g);
+    const float lo = mn(bg, r);
+    const float hi = mx(mn(b, g), r);
+    volatile float d = (float)((long double)hi - lo);
+    volatile float l = (float)(((long double)hi + lo) * half);
+    float s = 0.0f;
+    if (l > zero && l < one) {
+        const long double twice = (long double)l + l;
+        const long double den = l < half ? twice : (long double)two - twice;
+        s = (float)((long double)d / den);
+    }
+    volatile float h = zero;
+    if (d > zero) {
+        long double acc = zero;
+        if (r == hi && g != hi) acc = ((long double)g - b) / d;
+        if (g == hi && b != hi) acc = acc + (((long double)b - r) / d + two);
+        if (b == hi && r != hi) acc = acc + (((long double)r - g) / d + k(0xf2669c));
+        h = (float)(acc * k(0xf30500));
+    }
+    volatile float *const o = out;
+    o[0] = h, o[1] = s, o[2] = l;
+    return out;
+}
+static const uint8_t graph_range_aca200_original[] = {0x83, 0xec, 0x24, 0x8b, 0x44, 0x24, 0x2c, 0x8b, 0xc8};
+REWRITE("Graph::RangeACA200", 0xaca200, graph_range_aca200_original, &graph_range_aca200, &g_colour_ranges);
+
+// ---- Water::Edge95F1E0 (0x95F1E0): a ray against a water triangle, with its place on the triangle written out -----------
+// p in edi, a in esi, b in edx, the direction d in ecx; o, t out, u out and v out on the stack. e1 = p - o (on the FPU),
+// e2 = a - o (floats, z also kept), w = o - b (floats, z also kept); n = e2 x e1 (n2 a float); t = (w . n) / (n . d)
+// (written out); r = w - t d (t dy, t dz floats); a1 = r . e1 and a2 = r . e2 (floats); with E11 (a float), E12 and E22
+// and det's inverse a float, u = (E12 a2 - E22 a1) / det, v = (E12 a1 - E11 a2) / det (floats, written out). 1 when
+// u and v are not below 0 and u + v is not above 1, else 0. Sums in the game's orders.
+static volatile long g_water_edges;
+extern "C" uint32_t __stdcall forever_water_edge(const float *p, const float *a, const float *b, const float *d, const float *o, float *t_out, float *u_out, float *v_out) {
+    g_water_edges++;
+    const long double e10 = (long double)p[0] - o[0], e11 = (long double)p[1] - o[1], e12 = (long double)p[2] - o[2];
+    volatile float e20 = (float)((long double)a[0] - o[0]), e21 = (float)((long double)a[1] - o[1]);
+    const long double e22l = (long double)a[2] - o[2];
+    volatile float e22 = (float)e22l;
+    const long double n0 = e22l * e11 - (long double)e21 * e12;
+    const long double n1 = e12 * e20 - (long double)e22 * e10;
+    volatile float n2 = (float)((long double)e21 * e10 - (long double)e20 * e11);
+    volatile float w0 = (float)((long double)o[0] - b[0]), w1 = (float)((long double)o[1] - b[1]);
+    const long double w2l = (long double)o[2] - b[2];
+    volatile float w2 = (float)w2l;
+    const long double num = (w2l * n2 + (long double)w1 * n1) + (long double)w0 * n0;
+    const long double den = ((long double)n2 * d[2] + n1 * d[1]) + n0 * d[0];
+    const long double t = num / den;
+    *(volatile float *)t_out = (float)t;
+    const long double q0 = t * d[0];
+    volatile float q1 = (float)(t * d[1]), q2 = (float)(t * d[2]);
+    const long double r0 = (long double)w0 - q0, r1 = (long double)w1 - q1, r2 = (long double)w2 - q2;
+    volatile float a1 = (float)((r2 * e12 + r1 * e11) + r0 * e10);
+    volatile float a2 = (float)((r2 * e22 + r1 * e21) + r0 * e20);
+    volatile float ee11 = (float)((e12 * e12 + e10 * e10) + e11 * e11);
+    const long double ee12 = ((long double)e22 * e12 + (long double)e21 * e11) + (long double)e20 * e10;
+    const long double ee22 = ((long double)e22 * e22 + (long double)e21 * e21) + (long double)e20 * e20;
+    volatile float inv = (float)((long double)*(const float *)0xf264dc / ((long double)ee11 * ee22 - ee12 * ee12));
+    volatile float u = (float)((ee12 * a2 - ee22 * a1) * inv);
+    *(volatile uint32_t *)u_out = *(volatile uint32_t *)&u;
+    volatile float v = (float)((ee12 * a1 - (long double)ee11 * a2) * inv);
+    *(volatile uint32_t *)v_out = *(volatile uint32_t *)&v;
+    const float zero = *(const float *)0xf264e0;
+    if (u < zero || u != u) return 0;
+    if (v < zero || v != v) return 0;
+    const long double s = (long double)v + u;
+    return s < *(const float *)0xf264dc || s == *(const float *)0xf264dc;
+}
+extern "C" __attribute__((naked)) void forever_water_edge_regs() {   // p edi, a esi, b edx, d ecx; o, t, u, v on the stack
+    __asm__("pushl 16(%esp)\n\tpushl 16(%esp)\n\tpushl 16(%esp)\n\tpushl 16(%esp)\n\tpushl %ecx\n\tpushl %edx\n\tpushl %esi\n\tpushl %edi\n\tcalll _forever_water_edge@32\n\tret $16");
+}
+static const uint8_t water_edge_95f1e0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x50, 0x8b, 0x45, 0x08};
+REWRITE("Water::Edge95F1E0", 0x95f1e0, water_edge_95f1e0_original, (void *)&forever_water_edge_regs, &g_water_edges);
+
+// ---- Camera::InverseView(this, out) (0xCD78A0): the inverse of the camera's view matrix -------------------------------
+// The 4x4 {right (+0x120), up (+0x130), forward (+0x140), each with 0, and the place (+0x160) with 1} inverted by
+// Matrix::Invert4 (0xC1FC30); out takes the 16 values it gives back. Gives out.
+static volatile long g_inverse_views;
+static uint32_t *__thiscall camera_inverse_view(const uint8_t *self, uint32_t *out) {
+    g_inverse_views++;
+    alignas(16) uint32_t m[16];
+    const uint32_t *const s = (const uint32_t *)self;
+    for (int r = 0; r < 3; r++) {
+        for (int c = 0; c < 3; c++) m[4 * r + c] = s[(0x120 + 16 * r) / 4 + c];
+        m[4 * r + 3] = 0;
+    }
+    m[12] = s[0x160 / 4], m[13] = s[0x164 / 4], m[14] = s[0x168 / 4], m[15] = 0x3f800000;
+    const uint32_t *const inv = ((const uint32_t *(__thiscall *)(uint32_t *))0xc1fc30)(m);
+    volatile uint32_t *const o = out;
+    for (int i = 0; i < 16; i++) o[i] = inv[i];
+    return out;
+}
+static const uint8_t camera_inverse_view_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0x81, 0x20};
+REWRITE("Camera::InverseView", 0xcd78a0, camera_inverse_view_original, &camera_inverse_view, &g_inverse_views);
+
+// ---- Text::ReadNumberCBA820(text, out) (0xCBA820): a whole number (64 bits) read from the start of a C string ----------
+// fastcall. (A first tab or space makes the game spin there for ever: its skipping loop never moves on; kept so.) An
+// optional sign, then digits (bytes compared signed): each step stops before going past 0x0CCCCCCCCCCCCCCC, and after
+// multiplying by 10 stops when the digit would pass the largest value (or the smallest, negated) - the value then keeps
+// that multiplication. No digits: 0. Otherwise out takes the value (negated for '-') and the place after the digits is
+// given.
+static volatile long g_number_reads;
+static uint32_t __fastcall text_read_number(const char *s, int64_t *out) {
+    g_number_reads++;
+    const char c = *s;
+    if (c == 9 || c == ' ')
+        for (;;) (void)*(const volatile char *)s;
+    bool negative = false;
+    if (c == '-') negative = true, s++;
+    else if (c == '+') s++;
+    const char *const start = s;
+    uint64_t v = 0;
+    if ((signed char)*s < '0') return 0;
+    for (;;) {
+        const signed char d = (signed char)*s;
+        if (d > '9' || v > 0x0cccccccccccccccull) break;
+        v *= 10;
+        const uint64_t digit = (uint64_t)(int64_t)(d - '0');
+        if (v > (negative ? 0x8000000000000000ull : 0x7fffffffffffffffull) - digit) break;
+        v += digit;
+        s++;
+        if ((signed char)*s < '0') break;
+    }
+    if (s == start) return 0;
+    if (negative) v = 0 - v;
+    *(volatile int64_t *)out = (int64_t)v;
+    return (uint32_t)(uintptr_t)s;
+}
+static const uint8_t text_read_number_original[] = {0x83, 0xec, 0x10, 0x8b, 0xc1, 0x8a, 0x08, 0x89, 0x54, 0x24, 0x0c};
+REWRITE("Text::ReadNumberCBA820", 0xcba820, text_read_number_original, &text_read_number, &g_number_reads);
+
+// ---- Math::Split9F8680(a, b) (0x9F8680): whether one 64-bit list of four 16-bit parts is found in order in another ---
+// Each 64-bit value (low part first) splits into four 16-bit parts, each less 1 (so 0 becomes -1, "none"). a's parts up to
+// the first none must each be met in b, in order, going forward: b's parts are passed while below the one looked for;
+// a none in b, a larger part or the end means 0. Gives 1 (low byte) when all are met.
+static volatile long g_part_lists;
+static uint8_t __stdcall math_split_9f8680(uint32_t a_lo, uint32_t a_hi, uint32_t b_lo, uint32_t b_hi) {
+    g_part_lists++;
+    const int32_t a[4] = {(int32_t)(a_lo & 0xffff) - 1, (int32_t)(a_lo >> 16) - 1, (int32_t)(a_hi & 0xffff) - 1, (int32_t)(a_hi >> 16) - 1};
+    const int32_t b[4] = {(int32_t)(b_lo & 0xffff) - 1, (int32_t)(b_lo >> 16) - 1, (int32_t)(b_hi & 0xffff) - 1, (int32_t)(b_hi >> 16) - 1};
+    int at = 0;
+    for (int i = 0; i < 4; i++) {
+        if (a[i] < 0) return 1;
+        if (at >= 4) return 0;
+        int k = at;
+        for (;; k++) {
+            if (k >= 4 || b[k] < 0 || b[k] > a[i]) return 0;
+            if (b[k] == a[i]) break;
+        }
+        at = k + 1;
+    }
+    return 1;
+}
+static const uint8_t math_split_9f8680_original[] = {0x83, 0xec, 0x20, 0x8b, 0x44, 0x24, 0x24, 0x8b, 0xc8};
+REWRITE("Math::Split9F8680", 0x9f8680, math_split_9f8680_original, &math_split_9f8680, &g_part_lists);
+
+// ---- Water::Entry94EF60(this, n) (0x94EF60): water entry n taken out of its band's list and its slot freed -------------
+// Entries are 0xD0 bytes at +0x1A4. For one of kind 4 (+0x60): its band by its count (+4: below 0xB, below 0xE, else)
+// picks a list {records (0x80 bytes), count, -, a, b} at this + 0x1C (band + 12); each record whose +0x58 matches the
+// entry's +0xA4 or whose +0x5C matches its +0xA8 is replaced by the last (Record::CopyFields, 0x94CCD0), the count going
+// down (and a by 4, b by 6), and looked at again. Then, when the entry is in use (byte +0), it is marked free and n goes
+// back on the free list (+0x1A8, top +0x1B0 less +0x1AC, which goes down).
+static volatile long g_water_entries;
+static void __thiscall water_entry_94ef60(uint8_t *self, int32_t n) {
+    g_water_entries++;
+    const uint8_t *const e = *(const uint8_t *const *)(self + 0x1a4) + 0xd0 * n;
+    if (*(const int32_t *)(e + 0x60) == 4) {
+        const int32_t c = *(const int32_t *)(e + 4);
+        const int32_t band = c >= 0xe ? 2 : c >= 0xb ? 1 : 0;
+        volatile int32_t *const list = (volatile int32_t *)(self + 0x1c * (band + 12));
+        for (int32_t i = 0; i < list[1]; i++) {
+            uint8_t *const records = (uint8_t *)(uintptr_t)list[0];
+            uint8_t *const r = records + 0x80 * i;
+            if (*(const uint32_t *)(r + 0x58) != *(const uint32_t *)(e + 0xa4) && *(const uint32_t *)(r + 0x5c) != *(const uint32_t *)(e + 0xa8)) continue;
+            list[3] = list[3] - 4, list[4] = list[4] - 6;
+            ((void(__thiscall *)(uint8_t *, const uint8_t *))0x94ccd0)(r, records + 0x80 * list[1] - 0x80);
+            list[1] = list[1] - 1;
+            i--;
+        }
+    }
+    volatile uint8_t *const used = *(uint8_t *const *)(self + 0x1a4) + 0xd0 * n;
+    if (*used) {
+        *used = 0;
+        volatile int32_t *const t = (volatile int32_t *)self;
+        ((volatile int32_t *)(uintptr_t)t[0x1a8 / 4])[t[0x1b0 / 4] - t[0x1ac / 4]] = n;
+        t[0x1ac / 4] = t[0x1ac / 4] - 1;
+    }
+}
+static const uint8_t water_entry_94ef60_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0x69, 0xc0, 0xd0};
+REWRITE("Water::Entry94EF60", 0x94ef60, water_entry_94ef60_original, &water_entry_94ef60, &g_water_entries);

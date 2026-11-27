@@ -5267,10 +5267,10 @@ address,size,name,callers,status
 0x5f7690,87,,1,documented
 0x5f76f0,25,,44,documented
 0x5f7710,55,,44,documented
-0x5f7750,83,,42,documented
-0x5f77b0,83,,43,documented
-0x5f7810,83,,43,documented
-0x5f7890,80,,22,documented
+0x5f7750,83,AttractionPersonStrategy::PointSlot35,42,rewritten
+0x5f77b0,83,AttractionPersonStrategy::PointSlot38,43,rewritten
+0x5f7810,83,AttractionPersonStrategy::PointSlot41,43,rewritten
+0x5f7890,80,AttractionPersonStrategy::PointSlot20,22,rewritten
 0x5f78e0,19,,1,documented
 0x5f7900,133,,42,documented
 0x5f79d0,405,,5,documented
@@ -7114,7 +7114,7 @@ address,size,name,callers,status
 0x6b5920,48,QueryInterface,3,rewritten
 0x6b5a60,146,Destructor::Steps,1,rewritten
 0x6b5b90,375,,2,documented
-0x6b5d10,425,,2,documented
+0x6b5d10,425,Colour::Make6B5D10,2,rewritten
 0x6b5f40,66,,0,documented
 0x6b5fb0,227,,0,documented
 0x6b60a0,86,Blink::Advance,1,rewritten
@@ -8881,9 +8881,9 @@ address,size,name,callers,status
 0x758fe0,138,,3,documented
 0x759070,493,,2,documented
 0x759280,598,,3,documented
-0x7594e0,124,,2,documented
-0x759570,124,,2,documented
-0x7595f0,124,,2,documented
+0x7594e0,124,Guest::Shared7594E0,2,rewritten
+0x759570,124,Guest::Shared759570,2,rewritten
+0x7595f0,124,Guest::Shared7595F0,2,rewritten
 0x759670,22,,0,documented
 0x759690,130,Guest::AddValue759690,14,rewritten
 0x759750,53,,1,documented
@@ -12930,7 +12930,7 @@ address,size,name,callers,status
 0x919510,81,,2,documented
 0x919570,76,,1,documented
 0x9195c0,79,,1,documented
-0x919610,389,,6,documented
+0x919610,389,Water::Fade919610,6,rewritten
 0x9197a0,513,,2,documented
 0x9199b0,149,,4,documented
 0x919a50,33,COND_NOTIFY,1,rewritten
@@ -13334,7 +13334,7 @@ address,size,name,callers,status
 0x94e4b0,608,Array::ResizeRecords,1,rewritten
 0x94e790,1805,,1,documented
 0x94eeb0,173,,11,documented
-0x94ef60,240,,32,documented
+0x94ef60,240,Water::Entry94EF60,32,rewritten
 0x94f060,482,,0,documented
 0x94f250,5118,,1,documented
 0x9506b0,64,Pool::TakeSized,0,rewritten
@@ -13405,7 +13405,7 @@ address,size,name,callers,status
 0x95e640,694,Water::EdgeCutFive,2,rewritten
 0x95e900,803,,3,documented
 0x95ec30,1435,,3,documented
-0x95f1e0,495,,1,documented
+0x95f1e0,495,Water::Edge95F1E0,1,rewritten
 0x95f3d0,184,,2,documented
 0x95f550,26,Object::FreeTwoFields,0,rewritten
 0x95f650,613,,1,documented
@@ -14941,7 +14941,7 @@ address,size,name,callers,status
 0x9ee010,51,,0,documented
 0x9ee050,1728,Window::Titled,1,rewritten
 0x9ee710,215,,2,documented
-0x9ee850,83,,1,documented
+0x9ee850,83,Window::PointSlot35,1,rewritten
 0x9ee8b0,374,,1,documented
 0x9eea50,461,,2,documented
 0x9eec20,44,,2,documented
@@ -15042,7 +15042,7 @@ address,size,name,callers,status
 0x9f8340,186,Box::Overshoot2D,1,rewritten
 0x9f8430,152,Key::FromSmallList,1,rewritten
 0x9f84e0,304,,3,documented
-0x9f8680,228,,0,documented
+0x9f8680,228,Math::Split9F8680,0,rewritten
 0x9f8770,239,,0,documented
 0x9f8870,36,OwnedPair::Free,2,rewritten
 0x9f88c0,36,OwnedPair::Free,2,rewritten
@@ -16199,7 +16199,7 @@ address,size,name,callers,status
 0xa6eff0,161,VerletPoints::AllSettled,0,rewritten
 0xa6f0a0,754,,1,documented
 0xa6f3a0,1306,,9,documented
-0xa6f930,445,,1,documented
+0xa6f930,445,Animal::ModeA6F930,1,rewritten
 0xa6faf0,202,Animal::EntryA6FAF0,3,rewritten
 0xa6fbc0,149,,0,documented
 0xa6fc60,189,,1,documented
@@ -17086,7 +17086,7 @@ address,size,name,callers,status
 0xac9f90,259,,2,documented
 0xaca0e0,7,SetTable,14,rewritten
 0xaca140,189,,1,documented
-0xaca200,552,,0,documented
+0xaca200,552,Graph::RangeACA200,0,rewritten
 0xaca430,922,,0,documented
 0xaca7d0,117,,1,documented
 0xaca850,562,Window::Titled,1,rewritten
@@ -19409,7 +19409,7 @@ address,size,name,callers,status
 0xbb6880,175,,1,documented
 0xbb6970,109,,0,documented
 0xbb69e0,293,,9,documented
-0xbb6b10,459,,0,documented
+0xbb6b10,459,Animal::StepBB6B10,0,rewritten
 0xbb6ce0,843,,0,documented
 0xbb7030,269,Track::PointBB7030,0,rewritten
 0xbb7140,801,,1,documented
@@ -20310,7 +20310,7 @@ address,size,name,callers,status
 0xbee0c0,277,Matrix::Invert3,2,rewritten
 0xbee1e0,154,,1,documented
 0xbee280,52,,0,documented
-0xbee2c0,411,,1,documented
+0xbee2c0,411,Vector::ScaleBEE2C0,1,rewritten
 0xbee460,323,Vector::NormalBEE460,19,rewritten
 0xbee5b0,167,,14,documented
 0xbee890,33,,5,documented
@@ -22476,7 +22476,7 @@ address,size,name,callers,status
 0xcba270,333,,1,documented
 0xcba3c0,287,,2,documented
 0xcba4e0,373,,4,documented
-0xcba820,237,,0,documented
+0xcba820,237,Text::ReadNumberCBA820,0,rewritten
 0xcba910,176,,0,documented
 0xcbab10,64,,2,documented
 0xcbab50,1728,,1,documented
@@ -22857,7 +22857,7 @@ address,size,name,callers,status
 0xcd6850,354,Record::CopyAndSet,16,rewritten
 0xcd69c0,3064,,15,documented
 0xcd75c0,729,,95,documented
-0xcd78a0,273,,22,documented
+0xcd78a0,273,Camera::InverseView,22,rewritten
 0xcd79c0,487,Camera::ScreenRay,55,rewritten
 0xcd7bb0,322,,23,documented
 0xcd7d00,187,,5,documented
