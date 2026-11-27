@@ -10839,3 +10839,133 @@ static uint8_t __thiscall window_match_9dac40(const uint8_t *self, int32_t a, in
 }
 static const uint8_t window_match_9dac40_original[] = {0x8b, 0x51, 0x18, 0x56, 0x8b, 0x74, 0x24, 0x08, 0x32, 0xc0};
 REWRITE("Window::Match9DAC40", 0x9dac40, window_match_9dac40_original, &window_match_9dac40, &g_window_part_matches);
+
+// ---- Window::Value6F13C0() (0x6F13C0): how much of a window's chosen options are on, 0 to 1 -------------------------------
+// By the flags (+0xD0): 0x80 counts +0x10C, 4 counts +0xE4, 8 counts +0xF0 (bytes, on when set); 0x200 counts the last
+// entry's (+0x114, count +0x118, 20 bytes each; its -0x10's +0xC) value; 0x10 counts +0xF4 with min(+0x100, it) on; 0x400
+// counts +0x120 with min(+0x12C, it) on. 1 when all are on (or none counted), else on / counted.
+static volatile long g_window_shares;
+static long double __thiscall window_value_6f13c0(const uint8_t *self) {
+    g_window_shares++;
+    const uint32_t f = *(const uint32_t *)(self + 0xd0);
+    int32_t total = 0, on = 0;
+    if (f & 0x80) total = 1, on = self[0x10c] ? 1 : 0;
+    if (f & 4) total++, on += self[0xe4] ? 1 : 0;
+    if (f & 8) total++, on += self[0xf0] ? 1 : 0;
+    if (f & 0x200) {
+        total++;
+        const uint8_t *const e = *(const uint8_t *const *)(*(const uint8_t *const *)(self + 0x114) + *(const int32_t *)(self + 0x118) * 20 - 0x10);
+        if (*(const uint32_t *)(e + 0xc)) on++;
+    }
+    auto part = [&](uint32_t all, uint32_t some) {
+        const int32_t a = *(const int32_t *)(self + all), s = *(const int32_t *)(self + some);
+        total += a, on += s <= a ? s : a;
+    };
+    if (f & 0x10) part(0xf4, 0x100);
+    if (f & 0x400) part(0x120, 0x12c);
+    if (on == total) return *(const float *)0xf264dc;
+    return (long double)on / (long double)total;
+}
+static const uint8_t window_value_6f13c0_original[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0x99, 0xd0, 0x00, 0x00, 0x00};
+REWRITE("Window::Value6F13C0", 0x6f13c0, window_value_6f13c0_original, &window_value_6f13c0, &g_window_shares);
+
+// ---- Fireworks::List9F4C80() (0x9F4C80): stretches each piece's direction to reach the next piece -----------------------
+// For each piece of the +0x4C list (node list, item +8) and the one after it: d = the gap between their places (+0x10;
+// length (z z + y y) + x x); the direction (+0x30) times d over 3 times its own length ((x x + y y) + z z), x by the
+// unrounded scale, y and z by it as a float.
+static volatile long g_firework_stretches;
+static void __thiscall fireworks_list_9f4c80(const uint8_t *self) {
+    g_firework_stretches++;
+    const uint32_t *p = *(const uint32_t *const *)(self + 0x4c);
+    if (!p[0] || !p) return;
+    for (;;) {
+        __asm__ volatile("" ::: "memory");
+        const uint32_t *const q = (const uint32_t *)(uintptr_t)p[0];
+        if (!q[0] || !q) return;
+        volatile float *const a = (float *)(uintptr_t)p[2];
+        const float *const b = (const float *)(uintptr_t)q[2];
+        const long double dx = (long double)b[4] - a[4], dy = (long double)b[5] - a[5], dz = (long double)b[6] - a[6];
+        const long double len = x87_sqrt_h2((dz * dz + dy * dy) + dx * dx);
+        volatile float v0 = (float)(len * a[12]), v1 = (float)(len * a[13]);
+        const long double v2 = len * a[14];
+        const long double d0 = a[12], d1 = a[13], d2 = a[14];
+        const long double own = x87_sqrt_h2((d0 * d0 + d1 * d1) + d2 * d2);
+        const long double s = (long double)*(const float *)0xf264dc / (own * *(const float *)0xf2784c);
+        volatile float sf = (float)s;
+        const long double x = s * v0;
+        volatile float y = (float)((long double)v1 * sf);
+        a[14] = (float)(v2 * sf);
+        a[12] = (float)x;
+        a[13] = y;
+        p = q;
+    }
+}
+static const uint8_t fireworks_list_9f4c80_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8b, 0x41, 0x4c};
+REWRITE("Fireworks::List9F4C80", 0x9f4c80, fireworks_list_9f4c80_original, &fireworks_list_9f4c80, &g_firework_stretches);
+
+// ---- Window::Value6CC710() (0x6CC710): the total height of a window's rows ---------------------------------------------
+// 0 with no rows (+0xE4). Else 1, then for each row (0x50 bytes at +0xE0): its first part's size (+0x88 - +0x80; not for
+// row 0), its +8 part's size, 3, and the sizes of the parts at +0xC..+0x48 that are there; then 1 more.
+static volatile long g_window_heights;
+static long double __thiscall window_value_6cc710(const uint8_t *self) {
+    g_window_heights++;
+    const int32_t n = *(const int32_t *)(self + 0xe4);
+    if (n <= 0) return *(const float *)0xf264e0;
+    auto size = [](const uint8_t *p) { return (long double)*(const float *)(p + 0x88) - *(const float *)(p + 0x80); };
+    long double acc = *(const float *)0xf264dc;
+    for (int32_t i = 0; i < n; i++) {
+        const uint8_t *const row = *(const uint8_t *const *)(self + 0xe0) + i * 0x50;
+        if (i > 0) acc = acc + size(*(const uint8_t *const *)row);
+        acc = acc + size(*(const uint8_t *const *)(row + 8));
+        acc = acc + *(const float *)0xf2784c;
+        for (int k = 0; k < 16; k++) {
+            const uint8_t *const p = *(const uint8_t *const *)(row + 0xc + k * 4);
+            if (p) acc = acc + size(p);
+        }
+    }
+    return acc + *(const float *)0xf264dc;
+}
+static const uint8_t window_value_6cc710_original[] = {0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00, 0x55, 0x8b, 0xa9, 0xe4, 0x00, 0x00, 0x00};
+REWRITE("Window::Value6CC710", 0x6cc710, window_value_6cc710_original, &window_value_6cc710, &g_window_heights);
+
+// ---- Track::StepBC5090(t, u, c, a, b) (0xBC5090): finds the entry whose range holds t -----------------------------------
+// Rides not flagged 0x400000 or with fewer than two stations (+0xE4): entries {a, b, c} (12 bytes at +0x74, count +0x70)
+// with a <= t <= b. Others: entries {a, b, c, d, e} (20 bytes) with a <= t <= b, u >= d and e below 0 or u below e. The
+// last such entry's c, a, b are written out; gives whether any was found (only al).
+static volatile long g_track_range_finds;
+static uint8_t __thiscall track_step_bc5090(const uint8_t *self, float t, float u, uint32_t *c, uint32_t *a, uint32_t *b) {
+    g_track_range_finds++;
+    uint8_t found = 0;
+    const bool plain = !(*(const uint32_t *)(self + 0x18) & 0x400000) || *(const int32_t *)(self + 0xe4) < 2;
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0x70); i++) {
+        const float *const e = (const float *)(*(const uint8_t *const *)(self + 0x74) + i * (plain ? 12 : 20));
+        if (!(t >= e[0]) || !(t <= e[1])) continue;
+        if (!plain) {
+            if (!(u >= e[3])) continue;
+            if (!(e[4] < *(const float *)0xf264e0) && !(u < e[4])) continue;
+        }
+        *c = ((const uint32_t *)e)[2], *a = ((const uint32_t *)e)[0], *b = ((const uint32_t *)e)[1];
+        found = 1;
+    }
+    return found;
+}
+static const uint8_t track_step_bc5090_original[] = {0x51, 0x8b, 0x41, 0x18, 0x53, 0x55, 0x32, 0xdb};
+REWRITE("Track::StepBC5090", 0xbc5090, track_step_bc5090_original, &track_step_bc5090, &g_track_range_finds);
+
+// ---- Window::Count6CF4B0(ring, least, most) (0x6CF4B0): the smallest and largest values in a ring of floats ---------------
+// least starts at 1e6 and most at -1e6. The ring (values +0, start +4, size +8, count +0xC) is gone over from the newest
+// (index (start + i) % size, i from count - 1 down to 0); each value larger than most or smaller than least takes its
+// place.
+static volatile long g_ring_ranges;
+static void __stdcall window_count_6cf4b0(const uint8_t *ring, uint32_t *least, uint32_t *most) {
+    g_ring_ranges++;
+    *least = 0x49742400, *most = 0xc9742400;
+    const int32_t *const r = (const int32_t *)ring;
+    for (int32_t i = r[3] - 1; i >= 0; i--) {
+        const uint32_t *const v = (const uint32_t *)(uintptr_t)r[0] + (r[1] + i) % r[2];
+        if (*(const float *)v > *(const float *)most) *most = *v;
+        if (*(const float *)v < *(const float *)least) *least = *v;
+    }
+}
+static const uint8_t window_count_6cf4b0_original[] = {0x8b, 0x4c, 0x24, 0x04, 0x53, 0x8b, 0x5c, 0x24, 0x10, 0x56, 0x57};
+REWRITE("Window::Count6CF4B0", 0x6cf4b0, window_count_6cf4b0_original, &window_count_6cf4b0, &g_ring_ranges);

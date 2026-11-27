@@ -6701,4 +6701,84 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                              },
                              [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1]) & 0xff}; }};
     quick(window_match_9dac40);
+    // Window::Value6F13C0: every flag mix, options on and off, counts with more or fewer on than counted
+    Test window_value_6f13c0{0x6f13c0,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(uint32_t *)(self + 0xd0) = r.next() & 0x69c;
+                                 self[0x10c] = r.range(0, 1) ? (uint8_t)r.next() : 0, self[0xe4] = r.range(0, 1) ? (uint8_t)r.next() : 0, self[0xf0] = r.range(0, 1) ? (uint8_t)r.next() : 0;
+                                 *(int32_t *)(self + 0xf4) = r.range(0, 5), *(int32_t *)(self + 0x100) = r.range(0, 7);
+                                 *(int32_t *)(self + 0x120) = r.range(0, 5), *(int32_t *)(self + 0x12c) = r.range(0, 7);
+                                 const int n = r.range(1, 3);
+                                 *(int32_t *)(self + 0x118) = n, *(uint32_t *)(self + 0x114) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                 *(uint32_t *)arena<uint8_t>(0x300 + n * 20 - 0x10) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 *(uint32_t *)arena<uint8_t>(0x40c) = r.range(0, 1) ? r.next() : 0;
+                             },
+                             [](void *fn) {
+                                 Result x;
+                                 x.f = ((long double(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                                 return x;
+                             }};
+    quick(window_value_6f13c0);
+    // Fireworks::List9F4C80: lists of 0-5 pieces with random places and directions
+    Test fireworks_list_9f4c80{0x9f4c80,
+                               [=](Rng &r) {
+                                   for (int k = 0; k < 5; k++)
+                                       for (int c = 4; c < 15; c++) arena<float>(0x400 + k * 0x40)[c] = r.real(-10, 10);
+                                   *(uint32_t *)arena<uint8_t>(0x14c) = node_list_h2(r, 0x200, r.range(0, 5), 0x400);
+                               },
+                               [](void *fn) {
+                                   ((void(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                                   return Result{0};
+                               }};
+    quick(fireworks_list_9f4c80);
+    // Window::Value6CC710: 0-3 rows with their parts there or not, random sizes
+    Test window_value_6cc710{0x6cc710,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 const int n = r.range(0, 3);
+                                 *(int32_t *)(self + 0xe4) = r.range(0, 7) ? n : -1;
+                                 *(uint32_t *)(self + 0xe0) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                 for (int k = 0; k < 18; k++) {
+                                     float *p = arena<float>(0x400 + k * 0x90);
+                                     p[0x80 / 4] = r.real(0, 20), p[0x88 / 4] = r.real(0, 40);
+                                 }
+                                 for (int i = 0; i < 3; i++)
+                                     for (int k = 0; k < 20; k++) arena<uint32_t>(0x200 + i * 0x50)[k] = (k < 3 || r.range(0, 2)) ? (uint32_t)(uintptr_t)arena<void>(0x400 + r.range(0, 17) * 0x90) : 0;
+                             },
+                             [](void *fn) {
+                                 Result x;
+                                 x.f = ((long double(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                                 return x;
+                             }};
+    quick(window_value_6cc710);
+    // Track::StepBC5090: both kinds of ride, 0-5 entries of small whole ranges (t, u on the edges at times), e below 0 or
+    // not
+    Test track_step_bc5090{0xbc5090,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(uint32_t *)(self + 0x18) = r.range(0, 1) ? 0x400000 : 0, *(int32_t *)(self + 0xe4) = r.range(0, 3);
+                               *(int32_t *)(self + 0x70) = r.range(0, 5), *(uint32_t *)(self + 0x74) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                               for (int k = 0; k < 25; k++) arena<float>(0x200)[k] = (float)r.range(-1, 6);
+                               arena<float>(0x40)[0] = r.range(0, 1) ? (float)r.range(0, 6) : r.real(0, 6), arena<float>(0x40)[1] = (float)r.range(-1, 6);
+                               for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                           },
+                           [](void *fn) {
+                               return Result{((uint32_t(__thiscall *)(const void *, float, float, void *, void *, void *))fn)(arena<void>(0x100), arena<float>(0x40)[0], arena<float>(0x40)[1], arena<void>(0x60), arena<void>(0x64), arena<void>(0x68)) & 0xff};
+                           }};
+    quick(track_step_bc5090);
+    // Window::Count6CF4B0: rings of 1-12 slots, any start, 0-12 values (wrapping), small whole values (ties)
+    Test window_count_6cf4b0{0x6cf4b0,
+                             [=](Rng &r) {
+                                 int32_t *ring = arena<int32_t>(0x100);
+                                 const int size = r.range(1, 12);
+                                 ring[0] = (int32_t)(uintptr_t)arena<void>(0x200), ring[1] = r.range(0, size - 1), ring[2] = size, ring[3] = r.range(0, size);
+                                 for (int k = 0; k < 12; k++) arena<float>(0x200)[k] = r.range(0, 1) ? (float)r.range(-3, 3) : r.real(-2e6f, 2e6f);
+                                 arena<uint32_t>(0x40)[0] = r.next(), arena<uint32_t>(0x40)[1] = r.next();
+                             },
+                             [](void *fn) {
+                                 ((void(__stdcall *)(const void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x40), arena<void>(0x44));
+                                 return Result{0};
+                             }};
+    quick(window_count_6cf4b0);
 #endif

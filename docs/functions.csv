@@ -7314,7 +7314,7 @@ address,size,name,callers,status
 0x6ca020,8826,,1,documented
 0x6cc2b0,615,Window::Titled,0,rewritten
 0x6cc580,384,,1,documented
-0x6cc710,304,,4,documented
+0x6cc710,304,Window::Value6CC710,4,rewritten
 0x6cc840,127,Five::Destroy6CC840,1,rewritten
 0x6cc930,30,DeletingDestructor,2,rewritten
 0x6cc950,192,,1,documented
@@ -7329,7 +7329,7 @@ address,size,name,callers,status
 0x6ce2c0,3660,,1,documented
 0x6cf110,738,Window::BuildCentred,1,rewritten
 0x6cf430,40,Text::Widen,0,rewritten
-0x6cf4b0,389,,1,documented
+0x6cf4b0,389,Window::Count6CF4B0,1,rewritten
 0x6cf640,306,,1,documented
 0x6cf7b0,18,Constructor::BaseAndTable,1,rewritten
 0x6cf800,18,Constructor::BaseAndTable,1,rewritten
@@ -7810,7 +7810,7 @@ address,size,name,callers,status
 0x6f11c0,26,OwnedPointer::Reset,1,rewritten
 0x6f11e0,130,Array<4>::SetCapacity,2,rewritten
 0x6f1280,265,,1,documented
-0x6f13c0,242,,2,documented
+0x6f13c0,242,Window::Value6F13C0,2,rewritten
 0x6f14c0,30,DeletingDestructor,2,rewritten
 0x6f14e0,454,,1,documented
 0x6f1990,30,DeletingDestructor,1,rewritten
@@ -14987,7 +14987,7 @@ address,size,name,callers,status
 0x9f47e0,30,DeletingDestructor,1,rewritten
 0x9f4810,849,Class::Construct,2,rewritten
 0x9f4b90,236,,1,documented
-0x9f4c80,229,,1,documented
+0x9f4c80,229,Fireworks::List9F4C80,1,rewritten
 0x9f4da0,93,,10,documented
 0x9f4e10,1584,,1,documented
 0x9f5440,35,,7,documented
@@ -19593,7 +19593,7 @@ address,size,name,callers,status
 0xbc4e20,357,,2,documented
 0xbc4f90,82,Angle::Sector,2,rewritten
 0xbc4ff0,160,Grid::SnapIndex,19,rewritten
-0xbc5090,290,,4,documented
+0xbc5090,290,Track::StepBC5090,4,rewritten
 0xbc51e0,30,Record::SetFields,39,rewritten
 0xbc5200,117,,1,documented
 0xbc5280,25,,1,documented
