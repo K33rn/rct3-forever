@@ -7321,3 +7321,292 @@ static uint32_t __thiscall pool_complex_kind_aade10(const uint8_t *self, uint32_
 }
 static const uint8_t pool_complex_kind_aade10_original[] = {0x8b, 0x81, 0x20, 0x01, 0x00, 0x00, 0x83, 0xf8, 0x05};
 REWRITE("PoolComplex::KindAADE10", 0xaade10, pool_complex_kind_aade10_original, &pool_complex_kind_aade10, &g_pool_kinds);
+
+// ---- Objectives::Find(group, middle, slot) (0x6E9A40) and Window::Slot6E9960(o) (0x6E9960) -------------------------------
+// The table of objectives at +0x28: entry slot + (group + middle) 8, with slot 0-7, middle 0 and group 0-2. Find gives
+// the objective there (0 out of range); Slot6E9960 clears the place of o (its group +0x44, middle +0x48, slot +0x50)
+// when o is there.
+static volatile long g_objective_places;
+static inline uint32_t *objective_place_h2(uint8_t *self, int32_t group, int32_t middle, int32_t slot) {
+    if (slot < 0 || slot >= 8 || middle < 0 || middle >= 1 || group < 0 || group >= 3) return nullptr;
+    return (uint32_t *)(self + 0x28) + slot + (group + middle) * 8;
+}
+static uint32_t __thiscall objectives_find(uint8_t *self, int32_t group, int32_t middle, int32_t slot) {
+    g_objective_places++;
+    const uint32_t *const p = objective_place_h2(self, group, middle, slot);
+    return p ? *p : 0;
+}
+static const uint8_t objectives_find_original[] = {0x56, 0x8b, 0x74, 0x24, 0x10, 0x33, 0xc0, 0x85, 0xf6, 0x7c, 0x30};
+REWRITE("Objectives::Find", 0x6e9a40, objectives_find_original, &objectives_find, &g_objective_places);
+static void __thiscall window_slot_6e9960(uint8_t *self, const uint8_t *o) {
+    g_objective_places++;
+    uint32_t *const p = objective_place_h2(self, *(const int32_t *)(o + 0x44), *(const int32_t *)(o + 0x48), *(const int32_t *)(o + 0x50));
+    if (p && *p == (uint32_t)(uintptr_t)o) *p = 0;
+}
+static const uint8_t window_slot_6e9960_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x50, 0x50, 0x85, 0xd2, 0x56};
+REWRITE("Window::Slot6E9960", 0x6e9960, window_slot_6e9960_original, &window_slot_6e9960, &g_objective_places);
+
+// ---- Text::FindCharBCF3E0(ch, from) (0xBCF3E0): the place of ch's low byte from from on (up to the text's 0), or -1 ----
+// (-1 also when from is past the length +4, unsigned)
+static volatile long g_text_char_finds;
+static int32_t __thiscall text_find_char_bcf3e0(const uint8_t *const *self, uint32_t ch, uint32_t from) {
+    g_text_char_finds++;
+    const uint8_t *const t = *self;
+    if (from > *(const uint32_t *)(t + 4)) return -1;
+    const uint8_t *const buf = *(const uint8_t *const *)(t + 0xc);
+    for (const uint8_t *p = buf + from; *p; p++)
+        if (*p == (uint8_t)ch) return (int32_t)(p - buf);
+    return -1;
+}
+static const uint8_t text_find_char_bcf3e0_original[] = {0x8b, 0x01, 0x8b, 0x4c, 0x24, 0x08, 0x3b, 0x48, 0x04, 0x76, 0x06};
+REWRITE("Text::FindCharBCF3E0", 0xbcf3e0, text_find_char_bcf3e0_original, &text_find_char_bcf3e0, &g_text_char_finds);
+
+// ---- Animals::PassB6C900 (0xB6C900): the first animal of the entries (12 bytes at +0x54, count +0x60) that is in use
+// (byte +0), has flag 4 (+0xA8) and whose byte +0xAC is 0; else 0 ------------------------------------------------------
+static volatile long g_animal_picks;
+static uint32_t __thiscall animals_pass_b6c900(const uint8_t *self) {
+    g_animal_picks++;
+    const int32_t n = *(const int32_t *)(self + 0x60);
+    const uint8_t *const list = *(const uint8_t *const *)(self + 0x54);
+    for (int32_t i = 0; i < n; i++) {
+        const uint8_t *const e = list + i * 12;
+        if (!*e) continue;
+        const uint8_t *const a = *(const uint8_t *const *)(e + 4);
+        if ((a[0xa8] & 4) && !a[0xac]) return (uint32_t)(uintptr_t)a;
+    }
+    return 0;
+}
+static const uint8_t animals_pass_b6c900_original[] = {0x56, 0x8b, 0x71, 0x60, 0x33, 0xd2, 0x85, 0xf6, 0x57};
+REWRITE("Animals::PassB6C900", 0xb6c900, animals_pass_b6c900_original, &animals_pass_b6c900, &g_animal_picks);
+
+// ---- Engine::ListC50B20(v) (0xC50B20): 1 (only al) when on (byte +0x6C) with +0x48 = v, or when an item of the list at
+// +0xCC has +0xC = v; else 0 ------------------------------------------------------------------------------------------
+static volatile long g_engine_has;
+static uint8_t __thiscall engine_list_c50b20(const uint8_t *self, uint32_t v) {
+    g_engine_has++;
+    if (self[0x6c] && *(const uint32_t *)(self + 0x48) == v) return 1;
+    const uint32_t *p = *(const uint32_t *const *)(self + 0xcc);
+    if (!p[0] || !p) return 0;
+    for (;;) {
+        if (*(const uint32_t *)(uintptr_t)(p[2] + 0xc) == v) return 1;
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return 0;
+    }
+}
+static const uint8_t engine_list_c50b20_original[] = {0x8a, 0x41, 0x6c, 0x84, 0xc0, 0x8b, 0x54, 0x24, 0x04};
+REWRITE("Engine::ListC50B20", 0xc50b20, engine_list_c50b20_original, &engine_list_c50b20, &g_engine_has);
+
+// ---- TrackPiece::Check5D1370 (0x5D1370): 0 when +0 or +4 is 7, +8 is 8, any of +0xC..+0x20 is 2 or +0x24 is 3; else 1 -
+static volatile long g_piece_checks;
+static uint32_t __thiscall track_piece_check_5d1370(const int32_t *self) {
+    g_piece_checks++;
+    if (self[0] == 7 || self[1] == 7 || self[2] == 8) return 0;
+    for (int k = 3; k <= 8; k++)
+        if (self[k] == 2) return 0;
+    return self[9] == 3 ? 0 : 1;
+}
+static const uint8_t track_piece_check_5d1370_original[] = {0x83, 0x39, 0x07, 0x74, 0x3d, 0x83, 0x79, 0x04, 0x07};
+REWRITE("TrackPiece::Check5D1370", 0x5d1370, track_piece_check_5d1370_original, &track_piece_check_5d1370, &g_piece_checks);
+
+// ---- Park::Shared774520 (0x774520): 1 (only al) when an item of the game's list (0x10EF8BC) that is on (+0xE4) has a
+// place (+0x104: two dwords) equal to this one's +0x20, +0x24; else 0 -------------------------------------------------
+static volatile long g_park_place_finds;
+static uint8_t __thiscall park_shared_774520(const uint8_t *self) {
+    g_park_place_finds++;
+    const uint32_t *p = *(const uint32_t *const volatile *)0x10ef8bc;
+    if (!p[0] || !p) return 0;
+    for (;;) {
+        const uint8_t *const item = (const uint8_t *)(uintptr_t)p[2];
+        if (*(const uint32_t *)(item + 0xe4)) {
+            const uint32_t *const q = *(const uint32_t *const *)(item + 0x104);
+            if (q[0] == *(const uint32_t *)(self + 0x20) && q[1] == *(const uint32_t *)(self + 0x24)) return 1;
+        }
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return 0;
+    }
+}
+static const uint8_t park_shared_774520_original[] = {0xa1, 0xbc, 0xf8, 0x0e, 0x01, 0x83, 0x38, 0x00, 0x56};
+REWRITE("Park::Shared774520", 0x774520, park_shared_774520_original, &park_shared_774520, &g_park_place_finds);
+
+// ---- TrackPiece::Replace5D0D10(old, now) (0x5D0D10): every old in +0x1C, +0x20 and its list's items' +0x34, +0x3C becomes
+// now -----------------------------------------------------------------------------------------------------------------
+static volatile long g_piece_replaces;
+static void __thiscall track_piece_replace_5d0d10(uint8_t *self, uint32_t old, uint32_t now) {
+    g_piece_replaces++;
+    uint32_t *const u = (uint32_t *)self;
+    if (u[7] == old) u[7] = now;
+    if (u[8] == old) u[8] = now;
+    const uint32_t *p = (const uint32_t *)(uintptr_t)u[0];
+    if (!p[0] || !p) return;
+    for (;;) {
+        uint32_t *const item = (uint32_t *)(uintptr_t)p[2];
+        if (item[0x34 / 4] == old) item[0x34 / 4] = now;
+        if (item[0x3c / 4] == old) item[0x3c / 4] = now;
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return;
+    }
+}
+static const uint8_t track_piece_replace_5d0d10_original[] = {0x8b, 0x54, 0x24, 0x04, 0x3b, 0x51, 0x1c, 0x56};
+REWRITE("TrackPiece::Replace5D0D10", 0x5d0d10, track_piece_replace_5d0d10_original, &track_piece_replace_5d0d10, &g_piece_replaces);
+
+// ---- Window::Mode6A7DA0 (0x6A7DA0): takes the bound value (+0xF4, when there) by the mode (+0xF0): modes 1 and 2 its
+// dword into +0x104, mode 3 its byte into +0xFB ---------------------------------------------------------------------------
+static volatile long g_window_modes;
+static void __thiscall window_mode_6a7da0(uint8_t *self) {
+    g_window_modes++;
+    const uint8_t *const v = *(const uint8_t *const *)(self + 0xf4);
+    const int32_t mode = *(const int32_t *)(self + 0xf0);
+    if (!v || mode < 1 || mode > 3) return;
+    if (mode == 3) self[0xfb] = *v;
+    else *(uint32_t *)(self + 0x104) = *(const uint32_t *)v;
+}
+static const uint8_t window_mode_6a7da0_original[] = {0x8b, 0x81, 0xf0, 0x00, 0x00, 0x00, 0x48, 0x74, 0x2c};
+REWRITE("Window::Mode6A7DA0", 0x6a7da0, window_mode_6a7da0_original, &window_mode_6a7da0, &g_window_modes);
+
+// ---- Scenery::Part827D00 (0x827D00): 1 (only al) when any of the part's (+0x9C) +0x34 pairs of bits in +0x134 is set ---
+static volatile long g_scenery_bits;
+static uint8_t __thiscall scenery_part_827d00(const uint8_t *self) {
+    g_scenery_bits++;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0x9c);
+    if (!p) return 0;
+    const int32_t n = *(const int32_t *)(p + 0x34);
+    const uint32_t mask = *(const uint32_t *)(self + 0x134);
+    for (int32_t i = 0; i < n; i++)
+        if (mask & (1u << (2 * i & 31)) || mask & (2u << (2 * i & 31))) return 1;
+    return 0;
+}
+static const uint8_t scenery_part_827d00_original[] = {0x8b, 0x91, 0x9c, 0x00, 0x00, 0x00, 0x85, 0xd2, 0x56, 0x57};
+REWRITE("Scenery::Part827D00", 0x827d00, scenery_part_827d00_original, &scenery_part_827d00, &g_scenery_bits);
+
+// ---- Text::CompareC46A80(other) (0xC46A80): 1 when two counted texts {word, length word, bytes} are alike ------------
+// (both missing counts as alike, one missing as not)
+static volatile long g_text_alikes;
+static uint32_t __thiscall text_compare_c46a80(const uint16_t *self, const uint16_t *other) {
+    g_text_alikes++;
+    if (!self) return other ? 0 : 1;
+    if (!other || self[0] != other[0] || self[1] != other[1]) return 0;
+    const uint8_t *const a = (const uint8_t *)(self + 2), *const b = (const uint8_t *)(other + 2);
+    for (uint32_t i = 0; i < self[1]; i++)
+        if (a[i] != b[i]) return 0;
+    return 1;
+}
+static const uint8_t text_compare_c46a80_original[] = {0x8b, 0xc1, 0x85, 0xc0, 0x74, 0x2d, 0x8b, 0x54, 0x24, 0x04};
+REWRITE("Text::CompareC46A80", 0xc46a80, text_compare_c46a80_original, &text_compare_c46a80, &g_text_alikes);
+
+// ---- PointerArray::Remove(v) (0xCDB9E0): the first v in the array (+0, count +8) gets the last one (or 0 when it was
+// the last) and the count goes down by one -----------------------------------------------------------------------------
+static volatile long g_pointer_removes2;
+static void __thiscall pointer_array_remove(uint32_t *self, uint32_t v) {
+    g_pointer_removes2++;
+    const int32_t n = (int32_t)self[2];
+    uint32_t *const a = (uint32_t *)(uintptr_t)self[0];
+    int32_t i = 0;
+    while (i < (int32_t)self[2] && a[i] != v) i++;
+    if (i >= n) return;
+    self[2] = (uint32_t)(n - 1);
+    a[i] = i < n - 1 ? a[n - 1] : 0;
+}
+static const uint8_t pointer_array_remove_original[] = {0x56, 0x8b, 0x71, 0x08, 0x33, 0xc0, 0x85, 0xf6};
+REWRITE("PointerArray::Remove", 0xcdb9e0, pointer_array_remove_original, &pointer_array_remove, &g_pointer_removes2);
+
+// ---- Table::Entry45EF10(n, m) (0x45EF10) ---------------------------------------------------------------------------
+// From 0x10000 on, n - 0x10000 indexes the list at +0xC (count +0x10); below it, row n (count +8) column m (0-6) of the
+// rows of 8 at +4 (column 0 their second dword). -1 out of range.
+static volatile long g_table_entries;
+static uint32_t __thiscall table_entry_45ef10(const uint8_t *self, int32_t n, int32_t m) {
+    g_table_entries++;
+    if (n >= 0x10000) {
+        const int32_t k = n - 0x10000;
+        return *(const int32_t *)(self + 0x10) > k ? (*(const uint32_t *const *)(self + 0xc))[k] : 0xffffffff;
+    }
+    if (m >= 7 || m < 0 || n < 0 || n >= *(const int32_t *)(self + 8)) return 0xffffffff;
+    return (*(const uint32_t *const *)(self + 4))[m + n * 8 + 1];
+}
+static const uint8_t table_entry_45ef10_original[] = {0x8b, 0x44, 0x24, 0x04, 0x3d, 0x00, 0x00, 0x01, 0x00, 0x7d, 0x23};
+REWRITE("Table::Entry45EF10", 0x45ef10, table_entry_45ef10_original, &table_entry_45ef10, &g_table_entries);
+
+// ---- Toolbar::Find79C050(mask in ecx) (0x79C050): how many of the game's toolbar items have a flag of mask (+0xB4) ----
+// The items 0x1306BC8[0x1306BE0 .. 0x1306BE4) (empty places skipped); 0 when 0x1306BCC equals 0x1306BD8.
+static volatile long g_toolbar_counts;
+static uint32_t __fastcall toolbar_find_79c050(uint32_t mask) {
+    g_toolbar_counts++;
+    const volatile uint32_t *const g = (const volatile uint32_t *)0x1306bc8;   // g[1] 0x1306BCC, g[4] 0x1306BD8
+    if (g[1] == g[4]) return 0;
+    uint32_t n = 0;
+    const uint32_t *p = (const uint32_t *)(uintptr_t)(g[0] + g[6] * 4), *const end = (const uint32_t *)(uintptr_t)(g[0] + g[7] * 4);
+    for (; p < end; p++)
+        if (*p && *(const uint32_t *)(uintptr_t)(*p + 0xb4) & mask) n++;
+    return n;
+}
+static const uint8_t toolbar_find_79c050_original[] = {0x8b, 0x15, 0xcc, 0x6b, 0x30, 0x01, 0x56};
+REWRITE("Toolbar::Find79C050", 0x79c050, toolbar_find_79c050_original, &toolbar_find_79c050, &g_toolbar_counts);
+
+// ---- Bird::ClearA1CDA0 (0xA1CDA0): takes the node at +0x88 out of its ring ({next, back}) ----------------------------
+// Only when its neighbours point back at it (the game spins otherwise); then its links are cleared.
+static volatile long g_bird_unlinks;
+static void __thiscall bird_clear_a1cda0(const uint8_t *self) {
+    g_bird_unlinks++;
+    for (;;) {
+        __asm__ volatile("" ::: "memory");   // (the game's loop; it may spin, so it must not be assumed to end)
+        uint32_t *const l = *(uint32_t *const *)(self + 0x88);
+        if (!l[0] || !l) return;
+        uint32_t *const next = (uint32_t *)(uintptr_t)l[0], *const back = (uint32_t *)(uintptr_t)l[1];
+        if (!next || !l || !back || !next || next[1] != (uint32_t)(uintptr_t)l || back[0] != (uint32_t)(uintptr_t)l) continue;
+        next[1] = (uint32_t)(uintptr_t)back;
+        ((uint32_t *)(uintptr_t)l[1])[0] = l[0];
+        l[0] = 0, l[1] = 0;
+    }
+}
+static const uint8_t bird_clear_a1cda0_original[] = {0x56, 0x8b, 0x81, 0x88, 0x00, 0x00, 0x00, 0x83, 0x38, 0x00};
+REWRITE("Bird::ClearA1CDA0", 0xa1cda0, bird_clear_a1cda0_original, &bird_clear_a1cda0, &g_bird_unlinks);
+
+// ---- Scenery::Min8439E0(o) (0x8439E0): grows a box {x0, y0, x1, y1, z0, z1} to take in o's (signed) -----------------
+static volatile long g_scenery_boxes;
+static void __thiscall scenery_min_8439e0(int32_t *self, const int32_t *o) {
+    g_scenery_boxes++;
+    if (o[0] < self[0]) self[0] = o[0];
+    if (o[1] < self[1]) self[1] = o[1];
+    if (o[2] > self[2]) self[2] = o[2];
+    if (o[3] > self[3]) self[3] = o[3];
+    if (o[4] < self[4]) self[4] = o[4];
+    if (o[5] > self[5]) self[5] = o[5];
+}
+static const uint8_t scenery_min_8439e0_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x10, 0x56, 0x3b, 0x11};
+REWRITE("Scenery::Min8439E0", 0x8439e0, scenery_min_8439e0_original, &scenery_min_8439e0, &g_scenery_boxes);
+
+// ---- WideString::FindChar(ch, from) (0xBCED20): the place of the wide character ch from from on, or -1 ----------------
+// (-1 also when from is past the length +4, unsigned)
+static volatile long g_wide_char_finds;
+static int32_t __thiscall wide_string_find_char(const uint8_t *const *self, uint32_t ch, uint32_t from) {
+    g_wide_char_finds++;
+    const uint8_t *const t = *self;
+    if (from > *(const uint32_t *)(t + 4)) return -1;
+    const uint16_t *const buf = *(const uint16_t *const *)(t + 0xc);
+    for (const uint16_t *p = buf + from; *p; p++)
+        if (*p == (uint16_t)ch) return (int32_t)((uintptr_t)p - (uintptr_t)buf) >> 1;
+    return -1;
+}
+static const uint8_t wide_string_find_char_original[] = {0x8b, 0x01, 0x8b, 0x4c, 0x24, 0x08, 0x3b, 0x48, 0x04, 0x76, 0x06};
+REWRITE("WideString::FindChar", 0xbced20, wide_string_find_char_original, &wide_string_find_char, &g_wide_char_finds);
+
+// ---- Loop::PartCDEF80 (0xCDEF80): steps to the next used place of a table ----------------------------------------------
+// The table (+0): places +0, from +0x18 (where a place below 0 at +8 starts) up to +0x1C. The place (+8) moves on by
+// one, then past empty places; +4 = the item found there, or 0.
+static volatile long g_loop_steps;
+static void __thiscall loop_part_cdef80(int32_t *self) {
+    g_loop_steps++;
+    const uint8_t *const t = (const uint8_t *)(uintptr_t)self[0];
+    if (!t) return;
+    self[1] = 0;
+    self[2] = self[2] < 0 ? *(const int32_t *)(t + 0x18) : self[2] + 1;
+    while (self[2] < *(const int32_t *)((const uint8_t *)(uintptr_t)self[0] + 0x1c)) {
+        const uint32_t v = (*(const uint32_t *const *)t)[self[2]];
+        if (v) {
+            self[1] = (int32_t)v;
+            return;
+        }
+        self[2]++;
+    }
+}
+static const uint8_t loop_part_cdef80_original[] = {0x8b, 0x11, 0x85, 0xd2, 0x74, 0x44, 0x8b, 0x41, 0x08};
+REWRITE("Loop::PartCDEF80", 0xcdef80, loop_part_cdef80_original, &loop_part_cdef80, &g_loop_steps);
