@@ -4882,3 +4882,478 @@ static void __thiscall animal_loop_b788a0(const uint8_t *self, uint8_t *out) {
 }
 static const uint8_t animal_loop_b788a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x74, 0x8b, 0x51, 0x1c, 0x53};
 REWRITE("Animal::LoopB788A0", 0xb788a0, animal_loop_b788a0_original, &animal_loop_b788a0, &g_animal_lowest);
+
+// ---- Renderer::SetMaterial(material) (0xC946D0) --------------------------------------------------------------------
+// Nothing when it is the current one (+0x2140). Else it is kept, +0x1CB8 becomes -1 and its texture set (+0x28) is kept
+// at +0x2144; with no set +0x1CBC is 0, else -1 and for each texture (count: the set's word +0xCA, read again each time)
+// slot i (+0x214C) points to the set's entry i (0x14 bytes from +0xCC) and the set's byte +0xC4 + i becomes 0xFF (past
+// the sixth these bytes run over the count and the entries, as in the game).
+static volatile long g_material_sets;
+static void __thiscall renderer_set_material(uint8_t *self, const uint8_t *material) {
+    g_material_sets++;
+    if (*(const uint8_t *const *)(self + 0x2140) == material) return;
+    *(const uint8_t **)(self + 0x2140) = material;
+    *(volatile int32_t *)(self + 0x1cb8) = -1;
+    uint8_t *const set = *(uint8_t *const *)(material + 0x28);
+    *(uint8_t **)(self + 0x2144) = set;
+    if (!set) {
+        *(volatile int32_t *)(self + 0x1cbc) = 0;
+        return;
+    }
+    *(volatile int32_t *)(self + 0x1cbc) = -1;
+    for (uint32_t i = 0; i < *(volatile uint16_t *)(set + 0xca); i++) {
+        *(volatile uint32_t *)(self + 0x214c + i * 4) = (uint32_t)(uintptr_t)(set + 0xcc + i * 0x14);
+        *(volatile uint8_t *)(set + 0xc4 + i) = 0xff;
+    }
+}
+static const uint8_t renderer_set_material_original[] = {0x8b, 0x44, 0x24, 0x04, 0x39, 0x81, 0x40, 0x21, 0x00, 0x00};
+REWRITE("Renderer::SetMaterial", 0xc946d0, renderer_set_material_original, &renderer_set_material, &g_material_sets);
+
+// ---- Track::InitBB83A0(owner out, b, from, d) (0xBB83A0): fills a record from its arguments --------------------------
+// +8 = itself, +0xC = the owner place, +0x10 = b, +0x3C = d; from a source: its byte 0 at +0x14, +0x15 = 1, +0x18 = 1
+// when its byte 1 is set else -1, its dwords +8..+0x14 at +0x1C..+0x28 and +4 at +0x2C. +0x30, +0x34 and the words
+// +0x38, +0x3A are 0, then +0x30 = +0x24 when +0x28 is below the smallest float (0xF26E2C). The owner place, when given,
+// is pointed at the record. Gives the record.
+static volatile long g_track_inits;
+static uint8_t *__thiscall track_init_bb83a0(uint8_t *self, uint8_t **owner, uint32_t b, const uint8_t *from, uint32_t d) {
+    g_track_inits++;
+    uint32_t *const u = (uint32_t *)self;
+    const uint32_t *const s = (const uint32_t *)from;
+    u[4] = b;
+    u[2] = (uint32_t)(uintptr_t)self;
+    u[3] = (uint32_t)(uintptr_t)owner;
+    self[0x14] = from[0];
+    self[0x15] = 1;
+    u[6] = from[1] ? 1 : (uint32_t)-1;
+    u[7] = s[2], u[8] = s[3], u[9] = s[4], u[10] = s[5];
+    u[11] = s[1];
+    u[15] = d;
+    u[12] = 0, u[13] = 0;
+    *(uint16_t *)(self + 0x38) = 0, *(uint16_t *)(self + 0x3a) = 0;
+    if (*(const float *)(self + 0x28) < *(const float *)0xf26e2c) u[12] = u[9];
+    if (owner) *owner = self;
+    return self;
+}
+static const uint8_t track_init_bb83a0_original[] = {0x8b, 0x44, 0x24, 0x08, 0x89, 0x41, 0x10, 0x8b, 0x44, 0x24, 0x0c, 0x53};
+REWRITE("Track::InitBB83A0", 0xbb83a0, track_init_bb83a0_original, &track_init_bb83a0, &g_track_inits);
+
+// ---- Effects::Entry455040(n, p, -) (0x455040): a value from entry n (0x90 bytes, kind first) -------------------------
+// Kind 1: the distance from p to the entry's point (+0x40; (z^2 + x^2) + y^2) over its +0x60. Kind 3: the mean of its
+// +8, +0xC and +0x10 ((+0x10 + +0xC) + +8, times 1/3 as a float). Otherwise 0.
+static volatile long g_effect_values;
+static long double __thiscall effects_entry_455040(const uint8_t *self, int32_t n, const float *p, uint32_t) {
+    g_effect_values++;
+    const uint8_t *const e = *(const uint8_t *const *)self + n * 0x90;
+    auto at = [&](uint32_t o) { return *(const float *)(e + o); };
+    switch (*(const int32_t *)e) {
+    case 1: {
+        const long double dx = (long double)at(0x40) - p[0], dy = (long double)at(0x44) - p[1], dz = (long double)at(0x48) - p[2];
+        return x87_sqrt_h2((dz * dz + dx * dx) + dy * dy) / at(0x60);
+    }
+    case 3: return (((long double)at(0x10) + at(0xc)) + at(8)) * *(const float *)0xf27060;
+    default: return *(const float *)0xf264e0;
+    }
+}
+static const uint8_t effects_entry_455040_original[] = {0x55, 0x8b, 0xec, 0x8b, 0x45, 0x08, 0x8b, 0x11, 0x8d, 0x04, 0xc0};
+REWRITE("Effects::Entry455040", 0x455040, effects_entry_455040_original, &effects_entry_455040, &g_effect_values);
+
+
+// ---- KeyMap::Clear, Table::Clear (0xC47750 entries of 48 bytes, 0xC47490 of 20) -------------------------------------
+// Each entry (count +8, read again each time; at +0x10) zeroed and its mark (words at +0x14) 0; then the count 0 and
+// the buckets (+0xC, +4 + 1 dwords) zeroed.
+static volatile long g_table_clears;
+template <uint32_t Size> static void __thiscall table_clear(uint8_t *self) {
+    g_table_clears++;
+    for (uint32_t i = 0; i < *(volatile uint32_t *)(self + 8); i++) {
+        volatile uint32_t *const e = (volatile uint32_t *)(*(uint8_t *const *)(self + 0x10) + i * Size);
+        for (uint32_t k = 0; k < Size / 4; k++) e[k] = 0;
+        (*(volatile uint16_t *const *)(self + 0x14))[i] = 0;
+    }
+    const uint32_t n = *(const uint32_t *)(self + 4) * 4 + 4;
+    volatile uint8_t *const b = *(volatile uint8_t *const *)(self + 0xc);
+    *(volatile uint32_t *)(self + 8) = 0;
+    for (uint32_t i = 0; i < n; i++) b[i] = 0;
+}
+static const uint8_t keymap_clear_original[] = {0x83, 0xec, 0x30, 0x8b, 0xd1, 0x8b, 0x42, 0x08, 0x53, 0x33, 0xdb};
+REWRITE("KeyMap::Clear", 0xc47750, keymap_clear_original, &table_clear<0x30>, &g_table_clears);
+static const uint8_t table_clear_original[] = {0x8b, 0xd1, 0x8b, 0x42, 0x08, 0x33, 0xc9, 0x85, 0xc0, 0x57};
+REWRITE("Table::Clear", 0xc47490, table_clear_original, &table_clear<0x14>, &g_table_clears);
+
+// ---- Entries::Remove(id) (0x940A20): takes out the entry (16 bytes, id first) with an id --------------------------
+// The first entry with the id (count +8, signed) gets the last one's id and +0xC, and swaps its +4 and +8 with the
+// last's (nothing when it is the last); the count goes down by one; 1. 0 (only al) when there is none.
+static volatile long g_entry_removes;
+static uint8_t __thiscall entries_remove(uint8_t *self, uint32_t id) {
+    g_entry_removes++;
+    const int32_t n = *(const int32_t *)(self + 8);
+    uint32_t *const list = *(uint32_t *const *)self;
+    int32_t i = 0;
+    while (i < n && list[i * 4] != id) i++;
+    if (i >= n) return 0;
+    if (i != n - 1) {
+        uint32_t *const e = list + i * 4, *const l = list + (n - 1) * 4;
+        e[0] = l[0];
+        e[3] = l[3];
+        const uint32_t a = e[1], b = e[2];
+        e[1] = l[1], e[2] = l[2];
+        l[1] = a, l[2] = b;
+    }
+    *(int32_t *)(self + 8) -= 1;
+    return 1;
+}
+static const uint8_t entries_remove_original[] = {0x8b, 0x51, 0x08, 0x53, 0x55, 0x56, 0x33, 0xf6, 0x85, 0xd2, 0x57};
+REWRITE("Entries::Remove", 0x940a20, entries_remove_original, &entries_remove, &g_entry_removes);
+
+// ---- Effects::Value4377E0(-, from) (0x4377E0): copies a value of a type into its record ----------------------------
+// The type word (+8): low byte k, high byte h. Its size: h 0 the table at 0x10F2BA8 entry k, h 1 16, h past 0x7F
+// (h - 0x7F) times that entry plus 4, else 0. Copied from from to the record (+0: its +0x14) at the word +0xA. Gives
+// the size.
+static volatile long g_effect_copies;
+static uint32_t __thiscall effects_value_4377e0(const uint8_t *self, uint32_t, const uint8_t *from) {
+    g_effect_copies++;
+    const uint8_t k = self[8], h = self[9];
+    const uint32_t *const sizes = (const uint32_t *)0x10f2ba8;
+    uint32_t n;
+    if (h == 0) n = sizes[k];
+    else if (h == 1) n = 0x10;
+    else if (h > 0x7f) n = (uint32_t)(h - 0x7f) * sizes[k] + 4;
+    else n = 0;
+    volatile uint8_t *const to = *(uint8_t *const *)(*(const uint8_t *const *)self + 0x14) + *(const uint16_t *)(self + 0xa);
+    for (uint32_t i = 0; i < n; i++) to[i] = from[i];
+    return n;
+}
+static const uint8_t effects_value_4377e0_original[] = {0x8b, 0xd1, 0x66, 0x8b, 0x42, 0x08, 0x84, 0xe4, 0x56, 0x57};
+REWRITE("Effects::Value4377E0", 0x4377e0, effects_value_4377e0_original, &effects_value_4377e0, &g_effect_copies);
+
+// ---- UIntSlider::SetValue(f) (0xCA8560) ----------------------------------------------------------------------------
+// v = (max - min) f + min (both unsigned, made so by adding 2^32 to negative ones; rounded by the FPU, low 32 bits),
+// kept within min..max (unsigned), into the bound number (+4).
+static volatile long g_uint_sliders;
+static void __thiscall uint_slider_set_value(const uint8_t *self, float f) {
+    g_uint_sliders++;
+    const uint32_t lo = *(const uint32_t *)(self + 8), hi = *(const uint32_t *)(self + 0xc);
+    const float big = *(const float *)0xf285f8;
+    auto load = [&](uint32_t u) {   // fild, then 2^32 added (a rounded add) when negative, as the game does
+        const int32_t i = (int32_t)u;
+        long double r;
+        __asm__("fildl %1" : "=t"(r) : "m"(i));
+        return i < 0 ? r + big : r;
+    };
+    const long double scaled = load(hi - lo) * f;
+    const long double base = load(lo);
+    uint32_t v = (uint32_t)x87_fistp64_h2(scaled + base);
+    if (lo > v) v = lo;
+    if (hi < v) v = hi;
+    **(uint32_t *const *)(self + 4) = v;
+}
+static const uint8_t uint_slider_set_value_original[] = {0x83, 0xec, 0x08, 0x8b, 0x51, 0x0c, 0x8b, 0x41, 0x08, 0x56};
+REWRITE("UIntSlider::SetValue", 0xca8560, uint_slider_set_value_original, &uint_slider_set_value, &g_uint_sliders);
+
+// ---- WideString::FindLast(ch, from) (0xBCEF20) ---------------------------------------------------------------------
+// The text (+0: characters +0xC, length +4); from the last character (from -1) or from min(length - 1, from)
+// (unsigned) back to the first, the place of the first wide character equal to ch's low byte, or -1.
+static volatile long g_wide_find_lasts;
+static int32_t __thiscall wide_string_find_last(const uint8_t *self, uint32_t ch, uint32_t from) {
+    g_wide_find_lasts++;
+    const uint8_t *const s = *(const uint8_t *const *)self;
+    const uintptr_t buf = *(const uint32_t *)(s + 0xc);
+    const uint32_t last = *(const uint32_t *)(s + 4) - 1;
+    const uint16_t c = (uint8_t)ch;
+    uintptr_t p = buf + (uintptr_t)((from == 0xffffffffu ? last : last > from ? from : last) * 2);
+    for (; p >= buf; p -= 2)
+        if (*(const uint16_t *)p == c) return (int32_t)(p - buf) >> 1;
+    return -1;
+}
+static const uint8_t wide_string_find_last_original[] = {0x51, 0x8b, 0x01, 0x8b, 0x48, 0x0c, 0x8b, 0x40, 0x04, 0x33, 0xd2};
+REWRITE("WideString::FindLast", 0xbcef20, wide_string_find_last_original, &wide_string_find_last, &g_wide_find_lasts);
+
+// ---- TypeList::Copy(from) (0xBD2170) -------------------------------------------------------------------------------
+// The four types and their count (+0x10) copied; +0x1C and +0x28 point at the list, the byte +0x3C and +0x40..+0x48
+// are 0, and each type's size (the table at 0xFA14D8 by its top four bits) goes to +0x2C on. Gives the list.
+static volatile long g_type_list_copies;
+static uint32_t *__thiscall type_list_copy(uint32_t *self, const uint32_t *from) {
+    g_type_list_copies++;
+    for (int k = 0; k < 5; k++) self[k] = from[k];
+    self[7] = (uint32_t)(uintptr_t)self;
+    self[10] = (uint32_t)(uintptr_t)self;
+    *(uint8_t *)(self + 15) = 0;
+    self[16] = 0, self[17] = 0, self[18] = 0;
+    for (int32_t i = 0; i < *(volatile int32_t *)(self + 4); i++) self[11 + i] = ((const uint32_t *)0xfa14d8)[self[i] >> 28];
+    return self;
+}
+static const uint8_t type_list_copy_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x56, 0x8b, 0x31};
+REWRITE("TypeList::Copy", 0xbd2170, type_list_copy_original, &type_list_copy, &g_type_list_copies);
+
+// ---- TrackDesigner::CarSettingMode(car) (0x4EF080) -----------------------------------------------------------------
+// Left alone while +0x810 is 0. Else 1 with no car, 3 when the car's +0x1BC is below 0, 1 when it is 0, else 2.
+static volatile long g_car_setting_modes;
+static void __thiscall track_designer_car_setting_mode(uint8_t *self, const uint8_t *car) {
+    g_car_setting_modes++;
+    int32_t *const mode = (int32_t *)(self + 0x810);
+    if (!*mode) return;
+    if (!car) {
+        *mode = 1;
+        return;
+    }
+    const float v = *(const float *)(car + 0x1bc), zero = *(const float *)0xf264e0;
+    *mode = v < zero ? 3 : v == zero ? 1 : 2;
+}
+static const uint8_t track_designer_car_setting_mode_original[] = {0x8b, 0x81, 0x10, 0x08, 0x00, 0x00, 0x85, 0xc0, 0x74, 0x52};
+REWRITE("TrackDesigner::CarSettingMode", 0x4ef080, track_designer_car_setting_mode_original, &track_designer_car_setting_mode, &g_car_setting_modes);
+
+// ---- Section::Section(name, kind) (0x46FAD0) -----------------------------------------------------------------------
+// Takes a reference to the name (its count +0 goes up), keeps the kind (+4), zeroes +8..+0x324 and +0x328, +0x340,
+// +0x34C, +0x350; the child list at +0x338 ({first +0x344, .., end +0x348 = the list}, +0x33C and +0x344 0); +0x354 = 8
+// and +0x360 = itself. Gives the section.
+static volatile long g_sections;
+static uint8_t *__thiscall section_section(uint8_t *self, uint32_t *const *name, uint32_t kind) {
+    g_sections++;
+    uint32_t *const u = (uint32_t *)self;
+    uint32_t *const n = *name;
+    u[0] = (uint32_t)(uintptr_t)n;
+    n[0]++;
+    u[0x328 / 4] = 0;
+    u[1] = kind;
+    u[0x340 / 4] = 0, u[0x34c / 4] = 0;
+    u[0x33c / 4] = 0, u[0x344 / 4] = 0;
+    u[0x348 / 4] = (uint32_t)(uintptr_t)(self + 0x338);
+    u[0x338 / 4] = (uint32_t)(uintptr_t)(self + 0x344);
+    u[0x350 / 4] = 0, u[0x354 / 4] = 8;
+    u[0x360 / 4] = (uint32_t)(uintptr_t)self;
+    for (uint32_t k = 2; k < 0x328 / 4; k++) u[k] = 0;
+    return self;
+}
+static const uint8_t section_section_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x04, 0x8b, 0x09, 0x89, 0x08};
+REWRITE("Section::Section", 0x46fad0, section_section_original, &section_section, &g_sections);
+
+// ---- ShortSlider::SetValue, UShortSlider::SetValue(f) (0xCA82C0 signed, 0xCA83D0 unsigned) ----------------------------
+// As UIntSlider::SetValue for 16-bit bounds (+8, +0xA): v = (max - min) f + min (rounded by the FPU, low 16 bits),
+// kept within min..max, into the bound number (+4).
+static volatile long g_short_sliders;
+template <class T> static void __thiscall short_slider_set_value(const uint8_t *self, float f) {
+    g_short_sliders++;
+    const T lo = *(const T *)(self + 8), hi = *(const T *)(self + 0xa);
+    T v = (T)x87_fistp64_h2((long double)((int32_t)hi - (int32_t)lo) * f + (long double)(int32_t)lo);
+    if (lo > v) v = lo;
+    **(T *const *)(self + 4) = hi < v ? hi : v;
+}
+static const uint8_t short_slider_set_value_original[] = {0x83, 0xec, 0x0c, 0x66, 0x8b, 0x41, 0x08, 0x66, 0x8b, 0x51, 0x0a, 0x56, 0x57, 0x0f, 0xbf};
+REWRITE("ShortSlider::SetValue", 0xca82c0, short_slider_set_value_original, &short_slider_set_value<int16_t>, &g_short_sliders);
+static const uint8_t ushort_slider_set_value_original[] = {0x83, 0xec, 0x0c, 0x66, 0x8b, 0x41, 0x08, 0x66, 0x8b, 0x51, 0x0a, 0x56, 0x57, 0x0f, 0xb7};
+REWRITE("UShortSlider::SetValue", 0xca83d0, ushort_slider_set_value_original, &short_slider_set_value<uint16_t>, &g_short_sliders);
+
+// ---- String::FindLastBCF540(ch, from) (0xBCF540) -------------------------------------------------------------------------
+// The text (+0: characters +0xC, length +4); from the last character (from -1) or from min(length, from) (unsigned:
+// the end itself when from is past it) back to the first, the place of the first byte equal to ch, or -1.
+static volatile long g_find_lasts;
+static int32_t __thiscall string_find_last_bcf540(const uint8_t *self, uint32_t ch, uint32_t from) {
+    g_find_lasts++;
+    const uint8_t *const s = *(const uint8_t *const *)self;
+    const uintptr_t buf = *(const uint32_t *)(s + 0xc);
+    const uint32_t len = *(const uint32_t *)(s + 4);
+    uintptr_t p = from == 0xffffffffu ? buf + len - 1 : buf + (len > from ? from : len);
+    for (; p >= buf; p--)
+        if (*(const uint8_t *)p == (uint8_t)ch) return (int32_t)(p - buf);
+    return -1;
+}
+static const uint8_t string_find_last_bcf540_original[] = {0x8b, 0x54, 0x24, 0x08, 0x8b, 0x01, 0x8b, 0x48, 0x0c, 0x83, 0xec, 0x08};
+REWRITE("String::FindLastBCF540", 0xbcf540, string_find_last_bcf540_original, &string_find_last_bcf540, &g_find_lasts);
+
+// ---- Sound::VolumeToHundredthsDb, VolumeToHundredthsDb2(v) (0xCE45F0, 0xC193E0) ---------------------------------------
+// -10000 when v is not above F (0xF2CF10); 0 from 1 on; else log10(v) 20 100 rounded by the FPU (low 32 bits).
+static volatile long g_volume_dbs;
+static inline long double x87_log10_h2(long double v) {
+    long double r;
+    __asm__("fldlg2\n\tfxch %%st(1)\n\tfyl2x" : "=t"(r) : "0"(v));
+    return r;
+}
+static int32_t __stdcall sound_volume_to_db(float v) {
+    g_volume_dbs++;
+    if (!(v > *(const float *)0xf2cf10 || v != v)) return -10000;
+    if (!(v < *(const float *)0xf264dc || v != v)) return 0;
+    return (int32_t)x87_fistp64_h2(x87_log10_h2(v) * *(const float *)0xf27630 * *(const float *)0xf27604);
+}
+static const uint8_t sound_volume_to_db_original[] = {0xd9, 0x44, 0x24, 0x04, 0x83, 0xec, 0x08, 0xd8, 0x1d, 0x10, 0xcf, 0xf2, 0x00};
+REWRITE("Sound::VolumeToHundredthsDb", 0xce45f0, sound_volume_to_db_original, &sound_volume_to_db, &g_volume_dbs);
+REWRITE("Sound::VolumeToHundredthsDb2", 0xc193e0, sound_volume_to_db_original, &sound_volume_to_db, &g_volume_dbs);
+
+// ---- Fireworks::Size9FBD30(out, v) (0x9FBD30) ----------------------------------------------------------------------
+// s = the size (+0x74), halved when the game's 0x10EDB90 is set; out = {s v.x, s v.y, s v.z (floats), v.w}. Gives out.
+static volatile long g_firework_sizes;
+static uint32_t *__thiscall fireworks_size_9fbd30(const uint8_t *self, uint32_t *out, const float *v) {
+    g_firework_sizes++;
+    long double s = *(const float *)(self + 0x74);
+    if (*(const volatile uint32_t *)0x10edb90) s *= *(const float *)0xf2651c;
+    volatile float x = (float)(s * v[0]), y = (float)(s * v[1]), z = (float)(s * v[2]);
+    const uint32_t w = ((const uint32_t *)v)[3];
+    volatile uint32_t *const o = out;
+    o[0] = *(volatile uint32_t *)&x, o[1] = *(volatile uint32_t *)&y, o[2] = *(volatile uint32_t *)&z, o[3] = w;
+    return out;
+}
+static const uint8_t fireworks_size_9fbd30_original[] = {0xa1, 0x90, 0xdb, 0x0e, 0x01, 0xd9, 0x41, 0x74, 0x83, 0xec, 0x10};
+REWRITE("Fireworks::Size9FBD30", 0x9fbd30, fireworks_size_9fbd30_original, &fireworks_size_9fbd30, &g_firework_sizes);
+
+// ---- Water::Entry8FE240(out, n, t) (0x8FE240): a point from entry n (0x60 bytes at +0xA8) ----------------------------
+// The entry's point (+0x10); when its byte +0x38 is set its y becomes y t + (h1 + h0) (1 - t), the heights +0x1C and
+// +0x18 of the record +0xC of its part +0x4C. Gives out.
+static volatile long g_water_points;
+static float *__thiscall water_entry_8fe240(const uint8_t *self, float *out, int32_t n, float t) {
+    g_water_points++;
+    const uint8_t *const e = *(const uint8_t *const *)(self + 0xa8) + n * 0x60;
+    const float x = *(const float *)(e + 0x10), z = *(const float *)(e + 0x18);
+    long double y = *(const float *)(e + 0x14);
+    if (e[0x38]) {
+        const uint8_t *const r = *(const uint8_t *const *)(*(const uint8_t *const *)(e + 0x4c) + 0xc);
+        const long double a = ((long double)*(const float *)(r + 0x1c) + *(const float *)(r + 0x18)) * ((long double)*(const float *)0xf264dc - t);
+        y = a + y * t;
+    }
+    volatile float *const o = out;
+    o[0] = x, o[1] = (float)y, o[2] = z;
+    return out;
+}
+static const uint8_t water_entry_8fe240_original[] = {0x55, 0x8b, 0xec, 0x8b, 0x45, 0x0c, 0x8b, 0x91, 0xa8, 0x00, 0x00, 0x00};
+REWRITE("Water::Entry8FE240", 0x8fe240, water_entry_8fe240_original, &water_entry_8fe240, &g_water_points);
+
+// ---- Shop::Swing4C4BA0(p) (0x4C4BA0) -------------------------------------------------------------------------------
+// +0x90 += p.x 0 (a float: only a NaN or an infinity there moves it), then kept within -L..L (L the game's 0x10EE2A4,
+// -L as a float; the unrounded sum is what is compared).
+static volatile long g_shop_swings;
+static void __thiscall shop_swing_4c4ba0(uint8_t *self, const float *p) {
+    g_shop_swings++;
+    volatile float *const v = (volatile float *)(self + 0x90);
+    const long double s = (long double)p[0] * *(const float *)0xf264e0 + *v;
+    *v = (float)s;
+    const volatile float *const limit = (const volatile float *)0x10ee2a4;
+    volatile float neg = (float)-(long double)*limit;
+    if (s < neg) *(volatile uint32_t *)v = *(volatile uint32_t *)&neg;
+    else if (s > *limit) *(volatile uint32_t *)v = *(const volatile uint32_t *)limit;
+}
+static const uint8_t shop_swing_4c4ba0_original[] = {0x8b, 0x44, 0x24, 0x04, 0xd9, 0x00, 0xd8, 0x0d, 0xe0, 0x64, 0xf2, 0x00};
+REWRITE("Shop::Swing4C4BA0", 0x4c4ba0, shop_swing_4c4ba0_original, &shop_swing_4c4ba0, &g_shop_swings);
+
+// ---- PackedRef::Resolve(ref) (0xBDD0D0) ----------------------------------------------------------------------------
+// The top two bits of the low half pick base 0-2 (+8 on) for the low 14 bits; with both set, bit 13 picks a block b:
+// the low 13 bits o are an offset from the block's own place (+0: a list of places) while o is below its first dword's
+// +0x24, else from base +0x14 + 4 b.
+static volatile long g_packed_refs;
+static uintptr_t __thiscall packed_ref_resolve(const uint32_t *self, uint32_t ref) {
+    g_packed_refs++;
+    const uint32_t top = (ref & 0xffff) >> 14;
+    if (top < 3) return self[2 + top] + (ref & 0x3fff);
+    const uint32_t b = ref >> 13 & 1, o = ref & 0x1fff;
+    const uint32_t place = ((const uint32_t *)(uintptr_t)self[0])[b];
+    const uint32_t limit = *(const uint32_t *)(uintptr_t)(*(const uint32_t *)(uintptr_t)place + 0x24);
+    return (o < limit ? place : self[5 + b]) + o;
+}
+static const uint8_t packed_ref_resolve_original[] = {0x8b, 0x44, 0x24, 0x04, 0x66, 0x8b, 0xd0, 0x66, 0xc1, 0xea, 0x0e};
+REWRITE("PackedRef::Resolve", 0xbdd0d0, packed_ref_resolve_original, &packed_ref_resolve, &g_packed_refs);
+
+// ---- Vector::Quadrant (0x55FC10): which of four ways a flat vector (in eax) mostly points -----------------------------
+// When |x| is above |z|: 1 for x above 0, else 0. Otherwise 3 for z above 0, else 2 (a NaN counting as neither).
+static volatile long g_quadrants;
+extern "C" uint32_t __stdcall forever_quadrant(const float *v) {
+    g_quadrants++;
+    const float x = v[0], z = v[2], zero = *(const float *)0xf264e0;
+    const long double ax = __builtin_fabsl((long double)x), az = __builtin_fabsl((long double)z);
+    if (az < ax) return x > zero ? 1 : 0;
+    return z > zero ? 3 : 2;
+}
+extern "C" __attribute__((naked)) void forever_quadrant_regs() {   // v in eax
+    __asm__("pushl %eax\n\tcalll _forever_quadrant@4\n\tret");
+}
+static const uint8_t vector_quadrant_original[] = {0x51, 0xd9, 0x00, 0x8b, 0x40, 0x08, 0xd9, 0xc0, 0x89, 0x04, 0x24};
+REWRITE("Vector::Quadrant", 0x55fc10, vector_quadrant_original, (void *)&forever_quadrant_regs, &g_quadrants);
+
+// ---- ActiveList::Remove(n) (0x9FCA90) ------------------------------------------------------------------------------
+// When entry n's active byte (0x30 bytes each at +0x54, +0xC) is set: it is cleared and n's place in the active list
+// (+0x64, count +0x6C) gets the last one (by the count as it was first read); the count goes down by one.
+static volatile long g_active_removes;
+static void __thiscall active_list_remove(uint8_t *self, int32_t n) {
+    g_active_removes++;
+    uint8_t *const flag = *(uint8_t *const *)(self + 0x54) + n * 0x30 + 0xc;
+    if (!*flag) return;
+    *flag = 0;
+    const int32_t count = *(const int32_t *)(self + 0x6c);
+    int32_t *const list = *(int32_t *const *)(self + 0x64);
+    for (int32_t i = 0; i < *(volatile int32_t *)(self + 0x6c); i++)
+        if (list[i] == n) {
+            list[i] = list[count - 1];
+            *(int32_t *)(self + 0x6c) -= 1;
+            return;
+        }
+}
+static const uint8_t active_list_remove_original[] = {0x8b, 0x51, 0x54, 0x53, 0x8b, 0x5c, 0x24, 0x08, 0x8d, 0x04, 0x5b};
+REWRITE("ActiveList::Remove", 0x9fca90, active_list_remove_original, &active_list_remove, &g_active_removes);
+
+// ---- List::TakeAll(to, from) (0x966E40) ----------------------------------------------------------------------------
+// to becomes empty ({first = its end node +0xC, 0, .., end.next 0, place = to}); then each node of from (from its first
+// until the end node, whose next is 0) is put in after to's place (+0x10): nodes {next, back}.
+static volatile long g_list_take_alls;
+static void __stdcall list_take_all(uint32_t *to, uint32_t *const *from) {
+    g_list_take_alls++;
+    to[0] = (uint32_t)(uintptr_t)(to + 3);
+    to[3] = 0;
+    to[1] = 0;
+    to[4] = (uint32_t)(uintptr_t)to;
+    uint32_t *n = *from;
+    if (!n[0] || !n) return;
+    while (n) {
+        uint32_t *const nx = (uint32_t *)(uintptr_t)n[0];
+        uint32_t *const after = nx[0] ? nx : nullptr;
+        uint32_t *const p = (uint32_t *)(uintptr_t)to[4];
+        n[0] = p[0];
+        ((uint32_t *)(uintptr_t)p[0])[1] = (uint32_t)(uintptr_t)n;
+        n[1] = (uint32_t)(uintptr_t)p;
+        p[0] = (uint32_t)(uintptr_t)n;
+        n = after;
+    }
+}
+static const uint8_t list_take_all_original[] = {0x56, 0x8b, 0x74, 0x24, 0x08, 0x8d, 0x46, 0x0c, 0x89, 0x06};
+REWRITE("List::TakeAll", 0x966e40, list_take_all_original, &list_take_all, &g_list_take_alls);
+
+// ---- MeshPart::CopyFrom(from) (0xBE8AA0) ---------------------------------------------------------------------------
+// Table 0xFA56F8; the 19 dwords from +4 copied, the use count (word +4) 1; each buffer (+0x30 on, count +0x4C read again
+// each time) and the one at +0x1C (when there) count one more use (their word +4). Gives the part.
+static volatile long g_mesh_part_copies;
+static uint32_t *__thiscall mesh_part_copy_from(uint32_t *self, const uint32_t *from) {
+    g_mesh_part_copies++;
+    self[0] = 0xfa56f8;
+    for (int k = 1; k <= 0x13; k++) self[k] = from[k];
+    *(uint16_t *)(self + 1) = 1;
+    for (uint32_t i = 0; i < *(volatile uint32_t *)(self + 0x13); i++) (*(uint16_t *)(uintptr_t)(self[0xc + i] + 4))++;
+    if (self[7]) (*(uint16_t *)(uintptr_t)(self[7] + 4))++;
+    return self;
+}
+static const uint8_t mesh_part_copy_from_original[] = {0x8b, 0xc1, 0x56, 0x8b, 0x74, 0x24, 0x08, 0x8d, 0x50, 0x04};
+REWRITE("MeshPart::CopyFrom", 0xbe8aa0, mesh_part_copy_from_original, &mesh_part_copy_from, &g_mesh_part_copies);
+
+// ---- Table::SumBDC880 (0xBDC880): one past the highest second byte of the table's entries ---------------------------
+// Entries of 4 bytes from +0xC (+0x20C bytes of them); a second byte of 0xFF is skipped. 0 when there are none.
+static volatile long g_table_highs;
+static uint32_t __thiscall table_sum_bdc880(const uint8_t *self) {
+    g_table_highs++;
+    uint32_t m = 0;
+    const uintptr_t end = (uintptr_t)(self + 0xc) + *(const uint32_t *)(self + 0x20c);
+    for (uintptr_t p = (uintptr_t)(self + 0xc); p < end; p += 4) {
+        const uint32_t b = ((const uint8_t *)p)[1];
+        if (b != 0xff && m < b + 1) m = b + 1;
+    }
+    return m;
+}
+static const uint8_t table_sum_bdc880_original[] = {0x83, 0xec, 0x0c, 0x56, 0x8b, 0xb1, 0x0c, 0x02, 0x00, 0x00};
+REWRITE("Table::SumBDC880", 0xbdc880, table_sum_bdc880_original, &table_sum_bdc880, &g_table_highs);
+
+// ---- Car::SpeedFactor(n) (0x4E4A00) --------------------------------------------------------------------------------
+// The game's speed (0x10EE2FC) times 4 when part n (+0x154) is flagged (byte +0x148) and 0x10EE2F8 is set, 1 when its
+// +0x144 is set, else -1.
+static volatile long g_car_speed_factors;
+static long double __thiscall car_speed_factor(const uint8_t *self, int32_t n) {
+    g_car_speed_factors++;
+    const uint8_t *const part = *(const uint8_t *const *)(self + 0x154 + n * 4);
+    const float k = part[0x148] && *(const volatile uint32_t *)0x10ee2f8 ? *(const float *)0xf2669c
+                    : *(const uint32_t *)(part + 0x144)                 ? *(const float *)0xf264dc
+                                                                        : *(const float *)0xf268f0;
+    return (long double)k * *(const volatile float *)0x10ee2fc;
+}
+static const uint8_t car_speed_factor_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x84, 0x81, 0x54, 0x01, 0x00, 0x00};
+REWRITE("Car::SpeedFactor", 0x4e4a00, car_speed_factor_original, &car_speed_factor, &g_car_speed_factors);
