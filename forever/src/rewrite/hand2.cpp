@@ -11067,3 +11067,128 @@ static void __thiscall water_cell_908060(const uint8_t *self, int32_t x0, int32_
 }
 static const uint8_t water_cell_908060_original[] = {0x56, 0x8b, 0x74, 0x24, 0x10, 0x83, 0xfe, 0xff, 0x0f, 0x8c};
 REWRITE("Water::Cell908060", 0x908060, water_cell_908060_original, &water_cell_908060, &g_water_row_moves);
+
+// ---- Window::Scroll9C1FD0(out) (0x9C1FD0): the largest width and height of the ten parts (+0x130..+0x154) -------------
+// Each starts at 0 and takes a part's +0x84 (width) or +0x88 (height) when that is larger. Gives out.
+static volatile long g_window_part_sizes;
+static uint32_t *__thiscall window_scroll_9c1fd0(const uint8_t *self, uint32_t *out) {
+    g_window_part_sizes++;
+    uint32_t w = 0, h = 0;
+    for (int k = 0; k < 10; k++) {
+        const uint8_t *const p = *(const uint8_t *const *)(self + 0x130 + k * 4);
+        if (*(const float *)(p + 0x84) > *(const float *)&w) w = *(const uint32_t *)(p + 0x84);
+        if (*(const float *)&h < *(const float *)(p + 0x88)) h = *(const uint32_t *)(p + 0x88);
+    }
+    out[0] = w, out[1] = h;
+    return out;
+}
+static const uint8_t window_scroll_9c1fd0_original[] = {0x83, 0xec, 0x08, 0x8b, 0x91, 0x30, 0x01, 0x00, 0x00};
+REWRITE("Window::Scroll9C1FD0", 0x9c1fd0, window_scroll_9c1fd0_original, &window_scroll_9c1fd0, &g_window_part_sizes);
+
+// ---- Scenery::Point884D20(p) (0x884D20): the first of the shape's points (+0x100, count +0xF8) near p --------------------
+// p is taken into the shape's frame: u = (p.x - 4) / ((+0x84 - +0x7C) - 8) +0xDC with half width r = +0xDC / (that size)
+// 3 (likewise y with +0x88, +0x80 and +0xF0); the box u - r .. u + r by v - r2 .. v + r2 (floats). Gives the first point
+// {x, y} (8 bytes) inside it, or the count when none is.
+static volatile long g_scenery_point_finds;
+static int32_t __thiscall scenery_point_884d20(const uint8_t *self, const float *p) {
+    g_scenery_point_finds++;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    const long double four = *(const float *)0xf793c8, eight = *(const float *)0xf270e8, three = *(const float *)0xf793c4;
+    const long double u = ((long double)p[0] - four) / ((m(0x84) - m(0x7c)) - eight) * m(0xdc);
+    const long double ru = m(0xdc) / ((m(0x84) - m(0x7c)) - eight) * three;
+    volatile float x0 = (float)(u - ru), x1 = (float)(ru + u);
+    const long double v = ((long double)p[1] - four) / ((m(0x88) - m(0x80)) - eight) * m(0xf0);
+    const long double rv = m(0xf0) / ((m(0x88) - m(0x80)) - eight) * three;
+    volatile float y0 = (float)(v - rv), y1 = (float)(rv + v);
+    const int32_t n = *(const int32_t *)(self + 0xf8);
+    const float *const pts = *(const float *const *)(self + 0x100);
+    int32_t i = 0;
+    for (; i < n; i++)
+        if (x0 <= pts[2 * i] && pts[2 * i] <= x1 && y0 <= pts[2 * i + 1] && pts[2 * i + 1] <= y1) return i;
+    return i;
+}
+static const uint8_t scenery_point_884d20_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x44, 0x24, 0x10, 0xd9, 0x00, 0x56};
+REWRITE("Scenery::Point884D20", 0x884d20, scenery_point_884d20_original, &scenery_point_884d20, &g_scenery_point_finds);
+
+// ---- Ranking::Order7C34F0(values) (0x7C34F0): the order of six values, largest first, into +0x378 -----------------------
+// Six rounds each pick the largest value not yet picked (the first on ties) and put its index (3 bits) at bits 3 r of
+// +0x378, the other bits kept.
+static volatile long g_value_orders;
+static void __thiscall ranking_order_7c34f0(uint8_t *self, const float *v) {
+    g_value_orders++;
+    uint32_t used = 0;
+    for (uint32_t shift = 0; shift < 18; shift += 3) {
+        int32_t best = -1;
+        float top = 0;
+        for (int32_t k = 0; k < 6; k++) {
+            if (used & (1u << k)) continue;
+            if (best < 0 || v[k] > top) top = v[k], best = k;
+        }
+        uint32_t *const bits = (uint32_t *)(self + 0x378);
+        *bits = (*bits & ~(7u << shift)) | ((uint32_t)best << shift);
+        used |= 1u << best;
+    }
+}
+static const uint8_t ranking_order_7c34f0_original[] = {0x51, 0x53, 0x55, 0x56, 0x8b, 0xe9, 0x57, 0x8b, 0x7c, 0x24, 0x18};
+REWRITE("Ranking::Order7C34F0", 0x7c34f0, ranking_order_7c34f0_original, &ranking_order_7c34f0, &g_value_orders);
+
+// ---- Camera::Projection() (0xCD75C0): the camera's projection matrix (+0xE0) --------------------------------------------
+// n = near (+0x188); with a zoom (+0x19C) not 0: n + (far - near) zoom (4 flat, else 1) / 1000 when the game's 0x1400150 is
+// set, else n (zoom + 1). A = +0x1A0 / tan(field of view (+0x190) / 2), B = A +0x194. The matrix is cleared, then A, B,
+// the shift (+0x180, +0x184), q = far / (far - n) (flat (+0x1A6): +0x198 / (far - n) and +0x198 at +0x11C; else 1 at
+// +0x10C) and -q n. Bit 0 of +0x1A4 is cleared when the clip plane (+0x1A7) is on; that plane (+0x170: n, d) in view
+// space (rows +0x120..+0x148, the point -d n less the eye +0x160) replaces the third column when its distance is below
+// -0.001.
+static volatile long g_camera_projections_b;
+static void __thiscall camera_projection(uint8_t *self) {
+    g_camera_projections_b++;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    volatile float *const f = (volatile float *)self;
+    volatile uint32_t *const u = (volatile uint32_t *)self;
+    long double n = m(0x188);
+    if (!(m(0x19c) == *(const float *)0xf264e0)) {
+        if (*(const volatile uint32_t *)0x1400150) {
+            const long double k = self[0x1a6] ? (long double)*(const float *)0xf2669c : (long double)*(const float *)0xf264dc;
+            n = n + (m(0x18c) - m(0x188)) * m(0x19c) * k * *(const float *)0xf2cf10;
+        } else
+            n = n * (m(0x19c) + *(const float *)0xf264dc);
+    }
+    const long double a = m(0x1a0) / x87_tan_h2(m(0x190) * *(const float *)0xf2651c);
+    const long double b = a * m(0x194);
+    for (uint32_t at = 0xe0; at < 0x120; at += 4) u[at / 4] = 0;
+    f[0xe0 / 4] = (float)a;
+    u[0x100 / 4] = *(const uint32_t *)(self + 0x180);
+    f[0xf4 / 4] = (float)b;
+    u[0x104 / 4] = *(const uint32_t *)(self + 0x184);
+    const long double span = m(0x18c) - n;
+    long double q;
+    if (self[0x1a6]) {
+        u[0x11c / 4] = *(const uint32_t *)(self + 0x198);
+        q = m(0x198) / span;
+    } else {
+        q = m(0x18c) / span;
+        u[0x10c / 4] = 0x3f800000;
+    }
+    f[0x108 / 4] = (float)q;
+    f[0x118 / 4] = (float)-(q * n);
+    self[0x1a4] &= 0xfe;
+    if (!self[0x1a7]) return;
+    const long double pa = m(0x170), pb = m(0x174), pc = m(0x178), nd = -m(0x17c);
+    volatile float p0 = (float)(nd * pa), p1 = (float)(pb * nd), p2 = (float)(pc * nd);
+    volatile float n0 = (float)((pc * m(0x128) + pb * m(0x124)) + pa * m(0x120));
+    volatile float n1 = (float)((pc * m(0x138) + pb * m(0x134)) + pa * m(0x130));
+    const long double n2 = (pc * m(0x148) + pb * m(0x144)) + pa * m(0x140);
+    const long double e0 = (long double)p0 - m(0x160), e1 = (long double)p1 - m(0x164), e2 = (long double)p2 - m(0x168);
+    volatile float w0 = (float)((e2 * m(0x128) + e1 * m(0x124)) + e0 * m(0x120));
+    volatile float w1 = (float)((e2 * m(0x138) + e1 * m(0x134)) + e0 * m(0x130));
+    const long double w2 = (e2 * m(0x148) + e1 * m(0x144)) + e0 * m(0x140);
+    const long double dist = -((w2 * n2 + (long double)w1 * n1) + (long double)w0 * n0);
+    volatile float distf = (float)dist;
+    if (!(dist < *(const float *)0xf37b2c)) return;
+    f[0x108 / 4] = (float)n2;
+    u[0xe8 / 4] = *(const volatile uint32_t *)&n0;
+    u[0xf8 / 4] = *(const volatile uint32_t *)&n1;
+    u[0x118 / 4] = *(const volatile uint32_t *)&distf;
+}
+static const uint8_t camera_projection_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0xd9, 0x81, 0x88, 0x01, 0x00, 0x00};
+REWRITE("Camera::Projection", 0xcd75c0, camera_projection_original, &camera_projection, &g_camera_projections_b);

@@ -6831,4 +6831,71 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                return Result{0};
                            }};
     quick(water_cell_908060);
+    // Window::Scroll9C1FD0: ten parts of small whole or random sizes, negative at times
+    Test window_scroll_9c1fd0{0x9c1fd0,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100);
+                                  for (int k = 0; k < 10; k++) {
+                                      *(uint32_t *)(self + 0x130 + k * 4) = (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0x90);
+                                      float *p = arena<float>(0x400 + k * 0x90);
+                                      p[0x84 / 4] = r.range(0, 1) ? (float)r.range(-3, 5) : r.real(-5, 50), p[0x88 / 4] = r.range(0, 1) ? (float)r.range(-3, 5) : r.real(-5, 50);
+                                  }
+                                  arena<uint32_t>(0x40)[0] = r.next(), arena<uint32_t>(0x40)[1] = r.next();
+                              },
+                              [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    quick(window_scroll_9c1fd0);
+    // Scenery::Point884D20: frames of random sizes, 0-9 points around the box (on its edges at times), points anywhere
+    Test scenery_point_884d20{0x884d20,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100);
+                                  float *f = (float *)self;
+                                  f[0x7c / 4] = r.real(-10, 10), f[0x84 / 4] = f[0x7c / 4] + r.real(20, 60);
+                                  f[0x80 / 4] = r.real(-10, 10), f[0x88 / 4] = f[0x80 / 4] + r.real(20, 60);
+                                  f[0xdc / 4] = r.real(5, 30), f[0xf0 / 4] = r.real(5, 30);
+                                  const int n = r.range(-1, 9);
+                                  *(int32_t *)(self + 0xf8) = n, *(uint32_t *)(self + 0x100) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                  arena<float>(0x40)[0] = r.real(0, 40), arena<float>(0x40)[1] = r.real(0, 40);
+                                  const float u = (arena<float>(0x40)[0] - 4) / ((f[0x84 / 4] - f[0x7c / 4]) - 8) * f[0xdc / 4];
+                                  const float v = (arena<float>(0x40)[1] - 4) / ((f[0x88 / 4] - f[0x80 / 4]) - 8) * f[0xf0 / 4];
+                                  for (int k = 0; k < 9; k++) arena<float>(0x300)[2 * k] = u + r.real(-4, 4), arena<float>(0x300)[2 * k + 1] = v + r.real(-4, 4);
+                              },
+                              [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    quick(scenery_point_884d20);
+    // Ranking::Order7C34F0: six small whole (ties) or random values, random bits around the order
+    Test ranking_order_7c34f0{0x7c34f0,
+                              [=](Rng &r) {
+                                  *(uint32_t *)arena<uint8_t>(0x478) = r.next();
+                                  const bool whole = r.range(0, 1);
+                                  for (int k = 0; k < 6; k++) arena<float>(0x40)[k] = whole ? (float)r.range(-2, 2) : r.real(-10, 10);
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40));
+                                  return Result{0};
+                              }};
+    quick(ranking_order_7c34f0);
+    // Camera::Projection: the game's 0x1400150 set either way (put back after); zoom 0 or not, flat or not, clip plane on
+    // or off with planes in front of and behind the eye
+    {
+        static uint32_t saved_switch;
+        Test x{0xcd75c0,
+               [=](Rng &r) {
+                   *(uint32_t *)0x1400150 = r.range(0, 1) ? r.next() | 1 : 0;
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   float *f = (float *)self;
+                   for (uint32_t at = 0xe0; at < 0x1a0; at += 4) f[at / 4] = r.real(-1, 1);
+                   for (int k = 0; k < 3; k++) f[0x160 / 4 + k] = r.real(-20, 20);
+                   f[0x188 / 4] = r.real(0.1f, 5), f[0x18c / 4] = f[0x188 / 4] + r.real(10, 500);
+                   f[0x190 / 4] = r.real(0.3f, 2), f[0x194 / 4] = r.real(0.5f, 2), f[0x198 / 4] = r.real(1, 30);
+                   f[0x19c / 4] = r.range(0, 2) ? 0.0f : r.real(0, 3), f[0x1a0 / 4] = r.real(0.5f, 2);
+                   self[0x1a4] = (uint8_t)r.next(), self[0x1a6] = r.range(0, 1) ? 1 : 0, self[0x1a7] = r.range(0, 1) ? 1 : 0;
+                   f[0x17c / 4] = r.real(-30, 30);
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_switch = *(uint32_t *)0x1400150; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x1400150 = saved_switch; };
+        quick(x);
+    }
 #endif
