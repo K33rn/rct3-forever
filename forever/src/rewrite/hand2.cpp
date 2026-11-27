@@ -7023,3 +7023,301 @@ static uint8_t *__thiscall text_parse_c099a0(uint8_t *self, const char *s) {
 }
 static const uint8_t text_parse_c099a0_original[] = {0x53, 0x55, 0x56, 0x8b, 0x74, 0x24, 0x10, 0x8b, 0xc6, 0x57};
 REWRITE("Text::ParseC099A0", 0xc099a0, text_parse_c099a0_original, &text_parse_c099a0, &g_text_appends);
+
+// ---- TrackPiece::Index5D1BD0(a, b) (0x5D1BD0): the bits +0x24 down to +0xC as a number c, then (b + 3 c) 0x81 + a ----
+static volatile long g_piece_indexes2;
+static int32_t __thiscall track_piece_index_5d1bd0(const int32_t *self, int32_t a, int32_t b) {
+    g_piece_indexes2++;
+    uint32_t h = (uint32_t)self[9];
+    for (int k = 8; k >= 3; k--) h = (uint32_t)self[k] + h * 2;
+    return (int32_t)(((uint32_t)b + h * 3) * 0x81 + (uint32_t)a);
+}
+static const uint8_t track_piece_index_5d1bd0_original[] = {0x8b, 0x51, 0x20, 0x8b, 0x41, 0x24, 0x8d, 0x04, 0x42, 0x8b, 0x51, 0x1c};
+REWRITE("TrackPiece::Index5D1BD0", 0x5d1bd0, track_piece_index_5d1bd0_original, &track_piece_index_5d1bd0, &g_piece_indexes2);
+
+// ---- VertexDeclaration::AddBDF790(a, b) (0xBDF790): finds a two-byte key in the storage -------------------------------
+// Key (a << 8 | b, low 16 bits); entries of 4 bytes from +0xC (+0x20C bytes); for the first match, its second word v:
+// 0 when v has either top bit, else (v & 0x3FFF) + the object's (+0) +0x24. 0 when none matches.
+static volatile long g_declaration_finds;
+static uint32_t __thiscall vertex_declaration_add_bdf790(const uint8_t *self, uint32_t a, uint32_t b) {
+    g_declaration_finds++;
+    const uint16_t key = (uint16_t)(((a & 0xff) << 8) | b);
+    const uintptr_t end = (uintptr_t)(self + 0xc) + *(const uint32_t *)(self + 0x20c);
+    for (uintptr_t p = (uintptr_t)(self + 0xc); p < end; p += 4) {
+        if (*(const uint16_t *)p != key) continue;
+        const uint16_t v = *(const uint16_t *)(p + 2);
+        if (v & 0xc000) return 0;
+        return (v & 0x3fff) + *(const uint32_t *)(*(const uint8_t *const *)self + 0x24);
+    }
+    return 0;
+}
+static const uint8_t vertex_declaration_add_bdf790_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x96, 0x0c, 0x02, 0x00, 0x00};
+REWRITE("VertexDeclaration::AddBDF790", 0xbdf790, vertex_declaration_add_bdf790_original, &vertex_declaration_add_bdf790, &g_declaration_finds);
+
+// ---- Person::Reset801C90 (0x801C90): sorts the items (+8) so those whose byte +8 is set come first ----------------
+// The count of those (+4) starts at all (+0); each clear one is swapped with the last still counted (their +4 values
+// swapped too) and the count goes down.
+static volatile long g_person_sorts;
+static void __thiscall person_reset_801c90(int32_t *self) {
+    g_person_sorts++;
+    self[1] = self[0];
+    if (self[0] <= 0) return;
+    int32_t i = 0;
+    while (i < self[1]) {
+        uint32_t *const list = (uint32_t *)(uintptr_t)self[2];
+        uint8_t *const e = (uint8_t *)(uintptr_t)list[i];
+        if (e[8]) {
+            i++;
+            continue;
+        }
+        self[1]--;
+        uint8_t *const d = (uint8_t *)(uintptr_t)list[self[1]];
+        const uint32_t t = *(const uint32_t *)(d + 4);
+        *(uint32_t *)(d + 4) = *(const uint32_t *)(e + 4);
+        *(uint32_t *)(e + 4) = t;
+        ((uint32_t *)(uintptr_t)self[2])[i] = (uint32_t)(uintptr_t)d;
+        ((uint32_t *)(uintptr_t)self[2])[self[1]] = (uint32_t)(uintptr_t)e;
+    }
+}
+static const uint8_t person_reset_801c90_original[] = {0x8b, 0x01, 0x56, 0x33, 0xf6, 0x85, 0xc0, 0x89, 0x41, 0x04};
+REWRITE("Person::Reset801C90", 0x801c90, person_reset_801c90_original, &person_reset_801c90, &g_person_sorts);
+
+// ---- Park::Pass774010(key, out) (0x774010): for the entry (0x14 bytes at +0x60, count +0x48) whose part (+4) has +0xC
+// = key, out = its point (16 bytes each at +0x13C); gives the point's third dword, or the count when there is none -----
+static volatile long g_park_points;
+static uint32_t __thiscall park_pass_774010(const uint8_t *self, uint32_t key, uint32_t *out) {
+    g_park_points++;
+    const int32_t n = *(const int32_t *)(self + 0x48);
+    const uint8_t *const list = *(const uint8_t *const *)(self + 0x60);
+    for (int32_t i = 0; i < n; i++) {
+        if (*(const uint32_t *)(*(const uint8_t *const *)(list + i * 0x14 + 4) + 0xc) != key) continue;
+        const uint32_t *const p = (const uint32_t *)(*(const uint8_t *const *)(self + 0x13c) + i * 16);
+        out[0] = p[0], out[1] = p[1], out[2] = p[2];
+        return p[2];
+    }
+    return n > 0 ? (uint32_t)n : 0;
+}
+static const uint8_t park_pass_774010_original[] = {0x56, 0x8b, 0x71, 0x48, 0x33, 0xc0, 0x85, 0xf6};
+REWRITE("Park::Pass774010", 0x774010, park_pass_774010_original, &park_pass_774010, &g_park_points);
+
+// ---- Window::Slot6E99B0(a, b) (0x6E99B0): as Window::Count6C80C0 for row a + b of the slots at +0x28, the moved ones
+// getting +0x44 = a, +0x48 = b and +0x50 = their place ----------------------------------------------------------------
+static volatile long g_slot_packs2;
+static void __thiscall window_slot_6e99b0(uint8_t *self, int32_t a, int32_t b) {
+    g_slot_packs2++;
+    uint32_t *const slot = (uint32_t *)(self + 0x28 + (a + b) * 0x20);
+    int32_t j = 0;
+    for (int32_t i = 0; i < 8; i++) {
+        const uint32_t v = slot[i];
+        if (!v) continue;
+        if (j != i) {
+            slot[j] = v;
+            slot[i] = 0;
+            uint8_t *const w = (uint8_t *)(uintptr_t)slot[j];
+            *(int32_t *)(w + 0x44) = a;
+            *(int32_t *)(w + 0x48) = b;
+            *(int32_t *)(w + 0x50) = j;
+        }
+        j++;
+    }
+}
+static const uint8_t window_slot_6e99b0_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x8b, 0x6c, 0x24, 0x10};
+REWRITE("Window::Slot6E99B0", 0x6e99b0, window_slot_6e99b0_original, &window_slot_6e99b0, &g_slot_packs2);
+
+// ---- Ride::List53DDB0(out, n, k) (0x53DDB0): a reference to the object of node k of section n's list ----------------
+// Section n (+0x30); its list's first node (+4), then k steps along next (+0), stopping at the end node (next 0). out =
+// the node's +8's first dword, whose count (+0) goes up. Gives out. (The game reads through 0 past the end.)
+static volatile long g_ride_refs;
+static uint32_t *__thiscall ride_list_53ddb0(const uint8_t *self, uint32_t *out, int32_t n, int32_t k) {
+    g_ride_refs++;
+    const uint32_t *const first = (const uint32_t *)(uintptr_t)(*(const uint32_t *const *)(*(const uint8_t *const *)(self + 0x30) + n * 4))[1];
+    const uint32_t *p = first[0] ? first : nullptr;
+    for (int32_t i = 0; i < k; i++) {
+        if (!p) break;
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0]) p = nullptr;
+    }
+    uint32_t *const object = *(uint32_t *const *)(uintptr_t)p[2];
+    *out = (uint32_t)(uintptr_t)object;
+    object[0]++;
+    return out;
+}
+static const uint8_t ride_list_53ddb0_original[] = {0x51, 0x8b, 0x41, 0x30, 0x8b, 0x4c, 0x24, 0x0c, 0x8b, 0x04, 0x88};
+REWRITE("Ride::List53DDB0", 0x53ddb0, ride_list_53ddb0_original, &ride_list_53ddb0, &g_ride_refs);
+
+// ---- Resource::ValueC307D0 (0xC307D0): the sizes along a chain over a total -------------------------------------------
+// From entry +0x28 (0 when below 0) along the next links (+0xC; 16-byte entries at +0x20) to the last, the sum of their
+// +4; then sum / +0x18, both unsigned (loaded the game's way: fild, then 2^32 added when negative).
+static volatile long g_resource_shares;
+static inline long double fild_u32_h2(uint32_t u) {   // fild, then 2^32 added (a rounded add) when negative, as the game does
+    const int32_t i = (int32_t)u;
+    long double r;
+    __asm__("fildl %1" : "=t"(r) : "m"(i));
+    return i < 0 ? r + *(const float *)0xf285f8 : r;
+}
+static long double __thiscall resource_value_c307d0(const uint8_t *self) {
+    g_resource_shares++;
+    int32_t i = *(const int32_t *)(self + 0x28);
+    if (i < 0) return *(const float *)0xf264e0;
+    uint32_t sum = 0;
+    do {
+        const uint32_t *const e = (const uint32_t *)(*(const uint8_t *const *)(self + 0x20) + i * 16);
+        sum += e[1];
+        i = (int32_t)e[3];
+    } while (i >= 0);
+    const long double a = fild_u32_h2(sum);
+    return a / fild_u32_h2(*(const uint32_t *)(self + 0x18));
+}
+static const uint8_t resource_value_c307d0_original[] = {0x51, 0x8b, 0x41, 0x28, 0x85, 0xc0, 0x7c, 0x42};
+REWRITE("Resource::ValueC307D0", 0xc307d0, resource_value_c307d0_original, &resource_value_c307d0, &g_resource_shares);
+
+// ---- List::Clear (0xCA06A0): gives every node's block (+8) back to the game's free list (0x13E6E28, count 0x13E6E30) --
+// From the first node up to the end node (next 0); then the list is empty: {first = its end +0xC, 0, .., end.next 0,
+// place = the list}.
+static volatile long g_list_clears;
+static void __thiscall list_clear(uint32_t *self) {
+    g_list_clears++;
+    const uint32_t *n = (const uint32_t *)(uintptr_t)self[0];
+    if (n[0] && n) {
+        volatile uint32_t *const free_head = (volatile uint32_t *)0x13e6e28, *const free_count = (volatile uint32_t *)0x13e6e30;
+        while (n) {
+            const uint32_t *const next = (const uint32_t *)(uintptr_t)n[0];
+            uint32_t *const block = (uint32_t *)(uintptr_t)n[2];
+            block[0] = *free_head;
+            *free_count = *free_count + 1;
+            *free_head = (uint32_t)(uintptr_t)block;
+            n = next[0] ? next : nullptr;
+        }
+    }
+    self[1] = 0;
+    self[0] = (uint32_t)(uintptr_t)(self + 3);
+    self[4] = (uint32_t)(uintptr_t)self;
+    self[3] = 0;
+}
+static const uint8_t list_clear_original[] = {0x8b, 0x11, 0x83, 0x3a, 0x00, 0x74, 0x38};
+REWRITE("List::Clear", 0xca06a0, list_clear_original, &list_clear, &g_list_clears);
+
+// ---- Object3AFD0::CopyFrom(from, whole) (0x560460) -----------------------------------------------------------------
+// With whole set: tables 0xF3AFD0 (+0) and 0xF3AFC8 (+0xC), and +0x20 = the dword at from's own base (from + (from's
+// first table)+4). Then from's +4, +8 and +0x10..+0x1C. Gives it.
+static volatile long g_layered_copies;
+static uint32_t *__thiscall object3afd0_copy_from(uint32_t *self, const uint8_t *from, uint32_t whole) {
+    g_layered_copies++;
+    const uint32_t *const f = (const uint32_t *)from;
+    if (whole) {
+        self[0] = 0xf3afd0;
+        self[3] = 0xf3afc8;
+        const uint32_t *const base = from ? (const uint32_t *)(from + *(const int32_t *)(uintptr_t)(f[0] + 4)) : nullptr;
+        self[8] = *base;
+    }
+    self[1] = f[1], self[2] = f[2];
+    self[4] = f[4], self[5] = f[5], self[6] = f[6], self[7] = f[7];
+    return self;
+}
+static const uint8_t object3afd0_copy_from_original[] = {0x8b, 0xc1, 0x8b, 0x4c, 0x24, 0x08, 0x85, 0xc9, 0x8b, 0x4c, 0x24, 0x04, 0x74, 0x21};
+REWRITE("Object3AFD0::CopyFrom", 0x560460, object3afd0_copy_from_original, &object3afd0_copy_from, &g_layered_copies);
+
+// Node lists {next, back, item}: a node is the end when its next is 0; stepping off a node whose next is the end gives 0.
+static inline const uint32_t *list_step_h2(const uint32_t *p) {
+    const uint32_t *const n = (const uint32_t *)(uintptr_t)p[0];
+    return n[0] ? n : nullptr;
+}
+
+// ---- Ride::Find5947B0(n) (0x5947B0): item n of the list at +0x208 (0 for n below 0, an empty list or past the end) --
+static volatile long g_ride_items;
+static uint32_t __thiscall ride_find_5947b0(const uint8_t *self, int32_t n) {
+    g_ride_items++;
+    if (n < 0) return 0;
+    const uint32_t *p = *(const uint32_t *const *)(self + 0x208);
+    if (!p[0] || !p) return 0;
+    for (; n > 0; n--) {
+        p = list_step_h2(p);
+        if (!p) return 0;
+    }
+    return p[2];
+}
+static const uint8_t ride_find_5947b0_original[] = {0x8b, 0x54, 0x24, 0x04, 0x85, 0xd2, 0x7c, 0x29};
+REWRITE("Ride::Find5947B0", 0x5947b0, ride_find_5947b0_original, &ride_find_5947b0, &g_ride_items);
+
+// ---- Ride::Set59FFA0(object) (0x59FFA0): +0x58 = object; +0x8C = the first item of the object's list (+0x74) whose
+// first dword is this ride, or 0 --------------------------------------------------------------------------------------
+static volatile long g_ride_links;
+static void __thiscall ride_set_59ffa0(uint8_t *self, const uint8_t *object) {
+    g_ride_links++;
+    *(const uint8_t **)(self + 0x58) = object;
+    uint32_t found = 0;
+    const uint32_t *p = *(const uint32_t *const *)(object + 0x74);
+    if (p[0] && p)
+        for (;;) {
+            if (*(const uint32_t *)(uintptr_t)p[2] == (uint32_t)(uintptr_t)self) {
+                found = p[2];
+                break;
+            }
+            p = (const uint32_t *)(uintptr_t)p[0];
+            if (!p[0] || !p) break;
+        }
+    *(uint32_t *)(self + 0x8c) = found;
+}
+static const uint8_t ride_set_59ffa0_original[] = {0x8b, 0x44, 0x24, 0x04, 0x89, 0x41, 0x58, 0x8b, 0x40, 0x74};
+REWRITE("Ride::Set59FFA0", 0x59ffa0, ride_set_59ffa0_original, &ride_set_59ffa0, &g_ride_links);
+
+// ---- Window::Count61CEF0 (0x61CEF0) --------------------------------------------------------------------------------
+// 0 (only al) when the count (+0x8C) is at least 2 and the +0x94 part's +0xC is 0; else 1 for a count below 1, or
+// when the +0x74 part's +0xC or the +0x88 part's +4 is set; else 0.
+static volatile long g_window_counts;
+static uint8_t __thiscall window_count_61cef0(const uint8_t *self) {
+    g_window_counts++;
+    auto part = [&](uint32_t o, uint32_t f) { return *(const uint32_t *)(*(const uint8_t *const *)(self + o) + f); };
+    const int32_t c = *(const int32_t *)(self + 0x8c);
+    if (c >= 2 && !part(0x94, 0xc)) return 0;
+    if (c < 1) return 1;
+    return part(0x74, 0xc) || part(0x88, 4) ? 1 : 0;
+}
+static const uint8_t window_count_61cef0_original[] = {0x8b, 0x81, 0x8c, 0x00, 0x00, 0x00, 0x83, 0xf8, 0x02, 0x7c, 0x0f};
+REWRITE("Window::Count61CEF0", 0x61cef0, window_count_61cef0_original, &window_count_61cef0, &g_window_counts);
+
+// ---- Window::SlotC63730(object) (0xC63730): the object's place in the list at +0xB0, or -1 (also when its owner +0x18
+// is another) ----------------------------------------------------------------------------------------------------------
+static volatile long g_window_places;
+static int32_t __thiscall window_slot_c63730(const uint8_t *self, const uint8_t *object) {
+    g_window_places++;
+    if (*(const uint8_t *const *)(object + 0x18) != self) return -1;
+    const uint32_t *p = *(const uint32_t *const *)(self + 0xb0);
+    if (!p[0] || !p) return -1;
+    for (int32_t i = 0; p; i++) {
+        if (p[2] == (uint32_t)(uintptr_t)object) return i;
+        p = list_step_h2(p);
+    }
+    return -1;
+}
+static const uint8_t window_slot_c63730_original[] = {0x8b, 0x54, 0x24, 0x04, 0x39, 0x4a, 0x18, 0x74, 0x06};
+REWRITE("Window::SlotC63730", 0xc63730, window_slot_c63730_original, &window_slot_c63730, &g_window_places);
+
+// ---- Grid::Slot6FDE90 (0x6FDE90): item (+0x40) of the list at +0x4C: its +4's +0xC, or 0 (no slot, past the end, or no
+// item there) ----------------------------------------------------------------------------------------------------------
+static volatile long g_grid_slots;
+static uint32_t __thiscall grid_slot_6fde90(const uint8_t *self) {
+    g_grid_slots++;
+    int32_t n = *(const int32_t *)(self + 0x40);
+    if (n < 0) return 0;
+    const uint32_t *const l = *(const uint32_t *const *)(self + 0x4c);
+    const uint32_t *p = l[0] ? l : nullptr;
+    for (; n > 0; n--) {
+        if (!p) return 0;
+        p = list_step_h2(p);
+    }
+    if (!p || !p[2]) return 0;
+    return *(const uint32_t *)(uintptr_t)(((const uint32_t *)(uintptr_t)p[2])[1] + 0xc);
+}
+static const uint8_t grid_slot_6fde90_original[] = {0x8b, 0x51, 0x40, 0x85, 0xd2, 0x7c, 0x34};
+REWRITE("Grid::Slot6FDE90", 0x6fde90, grid_slot_6fde90_original, &grid_slot_6fde90, &g_grid_slots);
+
+// ---- PoolComplex::KindAADE10(-) (0xAADE10): 0 for kinds 5-9 (+0x120), else 1 ----------------------------------------
+static volatile long g_pool_kinds;
+static uint32_t __thiscall pool_complex_kind_aade10(const uint8_t *self, uint32_t) {
+    g_pool_kinds++;
+    const int32_t k = *(const int32_t *)(self + 0x120);
+    return k >= 5 && k <= 9 ? 0 : 1;
+}
+static const uint8_t pool_complex_kind_aade10_original[] = {0x8b, 0x81, 0x20, 0x01, 0x00, 0x00, 0x83, 0xf8, 0x05};
+REWRITE("PoolComplex::KindAADE10", 0xaade10, pool_complex_kind_aade10_original, &pool_complex_kind_aade10, &g_pool_kinds);

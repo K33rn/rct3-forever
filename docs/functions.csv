@@ -3535,7 +3535,7 @@ address,size,name,callers,status
 0x53dcc0,134,,13,documented
 0x53dd50,45,,3,documented
 0x53dd80,39,,4,documented
-0x53ddb0,82,,1,documented
+0x53ddb0,82,Ride::List53DDB0,1,rewritten
 0x53de10,594,,1,documented
 0x53e070,215,,1,documented
 0x53e150,30,DeletingDestructor,0,rewritten
@@ -3841,7 +3841,7 @@ address,size,name,callers,status
 0x55fc90,24,,1,documented
 0x5601f0,115,,13,documented
 0x5602f0,51,,2,documented
-0x560460,86,,1,documented
+0x560460,86,Object3AFD0::CopyFrom,1,rewritten
 0x5604c0,289,,2,documented
 0x5605f0,162,,1,documented
 0x5606a0,121,,1,documented
@@ -4276,7 +4276,7 @@ address,size,name,callers,status
 0x594710,95,Factory::CreateWith,1,rewritten
 0x594770,30,DeletingDestructor,0,rewritten
 0x594790,30,DeletingDestructor,0,rewritten
-0x5947b0,60,,1,documented
+0x5947b0,60,Ride::Find5947B0,1,rewritten
 0x5947f0,61,Reference::Reference,1,rewritten
 0x594830,105,,1,documented
 0x5948a0,61,Reference::Reference,0,rewritten
@@ -4419,7 +4419,7 @@ address,size,name,callers,status
 0x59fa80,59,,5,documented
 0x59fac0,1173,,1,documented
 0x59ff60,50,,0,documented
-0x59ffa0,60,,3,documented
+0x59ffa0,60,Ride::Set59FFA0,3,rewritten
 0x59ffe0,30,DeletingDestructor,2,rewritten
 0x5a0000,87,,5,documented
 0x5a0060,16,Object::CallThenTail,1,rewritten
@@ -4914,7 +4914,7 @@ address,size,name,callers,status
 0x5d16c0,6,,1,documented
 0x5d1840,723,,6,documented
 0x5d1b40,71,,2,documented
-0x5d1bd0,63,,3,documented
+0x5d1bd0,63,TrackPiece::Index5D1BD0,3,rewritten
 0x5d1cd0,96,,1,documented
 0x5d1d30,22,,6,documented
 0x5d1d50,39,,1,documented
@@ -5476,7 +5476,7 @@ address,size,name,callers,status
 0x61c9b0,436,Class::Construct,1,rewritten
 0x61cb70,111,Text::FromField61CB70,6,rewritten
 0x61cbe0,758,,5,documented
-0x61cef0,60,,3,documented
+0x61cef0,60,Window::Count61CEF0,3,rewritten
 0x61cf40,189,,3,documented
 0x61d000,771,,4,documented
 0x61d310,837,,2,documented
@@ -7727,7 +7727,7 @@ address,size,name,callers,status
 0x6e98d0,49,,1,documented
 0x6e9910,79,,1,documented
 0x6e9960,66,,1,documented
-0x6e99b0,81,,6,documented
+0x6e99b0,81,Window::Slot6E99B0,6,rewritten
 0x6e9a40,63,,13,documented
 0x6e9a80,45,,1,documented
 0x6e9ab0,53,,1,documented
@@ -7888,7 +7888,7 @@ address,size,name,callers,status
 0x6fdc10,180,,1,documented
 0x6fdcd0,116,,1,documented
 0x6fdd50,281,,2,documented
-0x6fde90,62,,3,documented
+0x6fde90,62,Grid::Slot6FDE90,3,rewritten
 0x6fded0,59,,2,documented
 0x6fdf10,364,,1,documented
 0x6fe100,297,,1,documented
@@ -9069,7 +9069,7 @@ address,size,name,callers,status
 0x7739d0,132,,2,documented
 0x773a60,107,,1,documented
 0x773ad0,1165,,2,documented
-0x774010,80,,1,documented
+0x774010,80,Park::Pass774010,1,rewritten
 0x774060,267,,1,documented
 0x774170,98,,1,documented
 0x7741e0,66,,2,documented
@@ -10444,7 +10444,7 @@ address,size,name,callers,status
 0x801a00,210,,3,documented
 0x801ae0,390,,1,documented
 0x801c70,30,DeletingDestructor,0,rewritten
-0x801c90,78,,2,documented
+0x801c90,78,Person::Reset801C90,2,rewritten
 0x801ce0,105,OwnedPair::FreeFields,3,rewritten
 0x801d50,209,,2,documented
 0x801e30,330,,1,documented
@@ -16783,7 +16783,7 @@ address,size,name,callers,status
 0xaad7f0,96,Object::KindCode,2,rewritten
 0xaad870,118,,5,documented
 0xaad930,840,,2,documented
-0xaade10,62,,6,documented
+0xaade10,62,PoolComplex::KindAADE10,6,rewritten
 0xaadee0,99,,7,documented
 0xaadf70,20,,1,documented
 0xaadf90,35,,2,documented
@@ -20068,7 +20068,7 @@ address,size,name,callers,status
 0xbdf5f0,91,Array::Reserve,4,rewritten
 0xbdf650,30,DeletingDestructor,1,rewritten
 0xbdf6a0,38,SharedBlock::Release,1,rewritten
-0xbdf790,75,,0,documented
+0xbdf790,75,VertexDeclaration::AddBDF790,0,rewritten
 0xbdf830,218,,3,documented
 0xbdf910,30,DeletingDestructor,0,rewritten
 0xbdf930,30,DeletingDestructor,0,rewritten
@@ -21114,7 +21114,7 @@ address,size,name,callers,status
 0xc30620,65,,3,documented
 0xc306c0,69,,0,documented
 0xc30710,141,,1,documented
-0xc307d0,82,,1,documented
+0xc307d0,82,Resource::ValueC307D0,1,rewritten
 0xc30830,51,,0,documented
 0xc30890,66,Resource::EntryC30890,1,rewritten
 0xc30b60,9,,4,documented
@@ -21752,7 +21752,7 @@ address,size,name,callers,status
 0xc63570,219,,40,documented
 0xc636a0,95,,10,documented
 0xc63700,47,,3,documented
-0xc63730,61,,1,documented
+0xc63730,61,Window::SlotC63730,1,rewritten
 0xc637c0,90,Items::SizeAt,3,rewritten
 0xc63840,373,,5,documented
 0xc639e0,211,,1,documented
@@ -22077,7 +22077,7 @@ address,size,name,callers,status
 0xc9ef70,2860,,4,documented
 0xc9fad0,218,,0,documented
 0xc9fbb0,2702,,0,documented
-0xca06a0,85,,1,documented
+0xca06a0,85,List::Clear,1,rewritten
 0xca0700,52,,1,documented
 0xca0740,532,,0,documented
 0xca09f0,2669,,0,documented
