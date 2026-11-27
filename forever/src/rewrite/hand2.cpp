@@ -4459,3 +4459,426 @@ static float *__thiscall segment_middle_of_ends(const uint8_t *self, float *out)
 }
 static const uint8_t segment_middle_of_ends_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x3c, 0x56, 0x8b, 0x71, 0x18};
 REWRITE("Segment::MiddleOfEnds", 0xbc61e0, segment_middle_of_ends_original, &segment_middle_of_ends, &g_segment_middles);
+
+// ---- Mover::StepBack(dt) (0x913620) --------------------------------------------------------------------------------
+// time (+0x58) -= dt; r = time / T (0x10F0B88; the time unrounded under it) is kept at +0x50. The node +0x60 of the list
+// at 0x133A0F4 ({.., nodes +0xC, count +0x14}, 0x98 bytes each): when it is out of range (or its place is 0) bit 1 of
+// +0 is set. Otherwise x (+4) = node.x - r dx (+0x64; unrounded) and y (+8) = node.y - r dy (+0x68; a float), y going
+// back to what it was when that was below node.y.
+static volatile long g_mover_steps;
+static void __thiscall mover_step_back(uint8_t *self, float dt) {
+    g_mover_steps++;
+    volatile float *const f = (volatile float *)self;
+    const long double t = (long double)f[0x58 / 4] - dt;
+    f[0x58 / 4] = (float)t;
+    volatile float r = (float)(t / *(const volatile float *)0x10f0b88);
+    f[0x50 / 4] = r;
+    const uint8_t *const nodes = *(const uint8_t *const volatile *)0x133a0f4;
+    const int32_t i = *(const int32_t *)(self + 0x60);
+    const float *const node = i < *(const int32_t *)(nodes + 0x14) && i >= 0 ? (const float *)(*(const uint8_t *const *)(nodes + 0xc) + i * 0x98) : nullptr;
+    if (!node) {
+        *(volatile uint32_t *)self |= 1;
+        return;
+    }
+    const float y = f[2];
+    const long double a = (long double)r * f[0x64 / 4];
+    volatile float b = (float)((long double)r * f[0x68 / 4]);
+    const float ny = node[2];
+    f[1] = (float)((long double)node[1] - a);
+    f[2] = (float)((long double)ny - b);
+    if (y < node[2]) f[2] = y;
+}
+static const uint8_t mover_step_back_original[] = {0x83, 0xec, 0x18, 0xd9, 0x41, 0x58, 0x56, 0xd8, 0x64, 0x24, 0x20};
+REWRITE("Mover::StepBack", 0x913620, mover_step_back_original, &mover_step_back, &g_mover_steps);
+
+// ---- Window::ScreenPosition(out) (0x6AD560) ------------------------------------------------------------------------
+// The window's position (+0x7C) plus, up the parents (+0x3C), each parent's position, and before it the parent's scroll
+// (+0x8C) when the child below it has flag 0x1000 (+0x94). Each sum a float. Gives out.
+static volatile long g_screen_positions;
+static float *__thiscall window_screen_position(const uint8_t *self, float *out) {
+    g_screen_positions++;
+    auto at = [](const uint8_t *w, uint32_t o) { return *(const float *)(w + o); };
+    volatile float x = at(self, 0x7c), y = at(self, 0x80);
+    const uint8_t *child = self;
+    for (const uint8_t *p = *(const uint8_t *const *)(self + 0x3c); p; child = p, p = *(const uint8_t *const *)(p + 0x3c)) {
+        if (*(const uint32_t *)(child + 0x94) >> 12 & 1) {
+            x = (float)((long double)x + at(p, 0x8c));
+            y = (float)((long double)y + at(p, 0x90));
+        }
+        x = (float)((long double)at(p, 0x7c) + x);
+        y = (float)((long double)y + at(p, 0x80));
+    }
+    volatile float *const o = out;
+    o[0] = x, o[1] = y;
+    return out;
+}
+static const uint8_t window_screen_position_original[] = {0x83, 0xec, 0x18, 0x8b, 0x41, 0x7c, 0x8b, 0x91, 0x80, 0x00, 0x00, 0x00};
+REWRITE("Window::ScreenPosition", 0x6ad560, window_screen_position_original, &window_screen_position, &g_screen_positions);
+
+// ---- Fog::Setup(object, distance) (0x7C3D50): the global fog values -------------------------------------------------
+// 0x1307EE4 = 1 / distance when that is above E (0xF3312C), else -1. 0x10EFC80 = -1 and the colour (0x1307EF0..F8) 0;
+// then from the object (ecx, when there): its single value (+0x198) into 0x10EFC80 when +0x1A6 is set, else its colour
+// (+0x160..+0x168).
+static volatile long g_fog_setups;
+static void __thiscall fog_setup(const uint8_t *object, float distance) {
+    g_fog_setups++;
+    volatile uint32_t *const g = (volatile uint32_t *)0x1307ee4;
+    if (distance > *(const float *)0xf3312c) *(volatile float *)g = (float)((long double)*(const float *)0xf264dc / distance);
+    else *g = 0xbf800000;
+    volatile uint32_t *const single = (volatile uint32_t *)0x10efc80, *const colour = (volatile uint32_t *)0x1307ef0;
+    *single = 0xbf800000;
+    colour[0] = 0, colour[1] = 0, colour[2] = 0;
+    if (!object) return;
+    const uint32_t *const o = (const uint32_t *)object;
+    if (object[0x1a6]) *single = o[0x198 / 4];
+    else colour[0] = o[0x160 / 4], colour[1] = o[0x164 / 4], colour[2] = o[0x168 / 4];
+}
+static const uint8_t fog_setup_original[] = {0xd9, 0x44, 0x24, 0x04, 0xd8, 0x1d, 0x2c, 0x31, 0xf3, 0x00};
+REWRITE("Fog::Setup", 0x7c3d50, fog_setup_original, &fog_setup, &g_fog_setups);
+
+// ---- PathGrid::SetEdges / ClearEdges(x, y, bits) (0xB9A810, 0xB9A8C0) --------------------------------------------------
+// Cells of 0x18 bytes (+0x6C), width +0x64 (read again each time), edge bits at +0x14 of each. The cell's bits are set
+// (or cleared); then for bit 1 the cell to its left gets 0x40, for 4 the one to its right 0x10, for 8 the one above
+// (y - 1) 0x20 and for 2 the one below 0x80 (in that order; only the low byte of bits counts).
+static volatile long g_path_edges;
+template <bool Set> static void __thiscall path_grid_edges(const uint8_t *self, int32_t x, int32_t y, uint32_t bits_in) {
+    g_path_edges++;
+    const uint8_t b = (uint8_t)bits_in;
+    auto cell = [&](int32_t cx, int32_t cy) -> volatile uint8_t & {
+        const uint32_t i = (uint32_t)*(const volatile int32_t *)(self + 0x64) * (uint32_t)cy + (uint32_t)cx;
+        return *(volatile uint8_t *)(*(uint8_t *const volatile *)(self + 0x6c) + i * 0x18 + 0x14);
+    };
+    auto put = [](volatile uint8_t &c, uint8_t m) {
+        if (Set) c = c | m;
+        else c = c & (uint8_t)~m;
+    };
+    put(cell(x, y), b);
+    if (b & 1) put(cell(x - 1, y), 0x40);
+    if (b & 4) put(cell(x + 1, y), 0x10);
+    if (b & 8) put(cell(x, y - 1), 0x20);
+    if (b & 2) put(cell(x, y + 1), 0x80);
+}
+static const uint8_t path_grid_set_edges_original[] = {0x8b, 0x41, 0x64, 0x8b, 0x54, 0x24, 0x08, 0x0f, 0xaf, 0xc2, 0x53, 0x8a, 0x5c, 0x24, 0x10};
+REWRITE("PathGrid::SetEdges", 0xb9a810, path_grid_set_edges_original, &path_grid_edges<true>, &g_path_edges);
+static const uint8_t path_grid_clear_edges_original[] = {0x8b, 0x41, 0x64, 0x8b, 0x54, 0x24, 0x08, 0x0f, 0xaf, 0xc2, 0x53, 0x8a, 0x5c, 0x24, 0x10};
+REWRITE("PathGrid::ClearEdges", 0xb9a8c0, path_grid_clear_edges_original, &path_grid_edges<false>, &g_path_edges);
+
+// ---- KeyMap::Find(key) (0xC477D0) ----------------------------------------------------------------------------------
+// The key is 12 dwords; its hash is them all xored, its bucket hash % +4 (unsigned). The bucket's entries run from
+// buckets[b] to buckets[b + 1] (+0xC); entry i (0x30 bytes at +0x10) equal to the key gives +0x14 + 2 i, none 0.
+static volatile long g_keymap_finds;
+static uint16_t *__thiscall keymap_find(const uint8_t *self, const uint32_t *key) {
+    g_keymap_finds++;
+    uint32_t h = 0;
+    for (int k = 0; k < 12; k++) h ^= key[k];
+    const uint32_t *const bucket = *(const uint32_t *const *)(self + 0xc) + h % *(const uint32_t *)(self + 4);
+    const uint32_t end = bucket[1];
+    const uint32_t *const entries = *(const uint32_t *const *)(self + 0x10);
+    for (uint32_t i = bucket[0]; i < end; i++) {
+        const uint32_t *const e = entries + i * 12;
+        int k = 0;
+        while (k < 12 && e[k] == key[k]) k++;
+        if (k == 12) return (uint16_t *)(*(uint8_t *const *)(self + 0x14) + i * 2);
+    }
+    return nullptr;
+}
+static const uint8_t keymap_find_original[] = {0x51, 0x53, 0x55, 0x56, 0x57, 0x89, 0x4c, 0x24, 0x10, 0x8b, 0x5c, 0x24, 0x18};
+REWRITE("KeyMap::Find", 0xc477d0, keymap_find_original, &keymap_find, &g_keymap_finds);
+
+// ---- Fireworks::Step99C660 / Step99C730(values, n, -, -, v) (0x99C660 16-bit values, 0x99C730 8-bit) ----------------
+// The table of the object +0x134: {.., entries of 8 bytes +0xD4, length +0xE0}. k = v / length 5000 rounded by the FPU
+// (one entry for every value). For each signed value s: a = |s K| (K 0xF36BBC for words, 0xF7D05C for bytes); when the
+// entry's second float is smaller in size, the entry becomes {v, a} (-a when k is even). Then the table's dwords
+// +0x9C38/+0x9C3C become 0x71C9F2CA and 0. Gives 0.
+static volatile long g_firework_steps;
+template <class V, uintptr_t K> static uint32_t __thiscall fireworks_step(const uint8_t *self, const V *values, int32_t n, uint32_t, uint32_t, float v) {
+    g_firework_steps++;
+    for (int32_t i = 0; i < n; i++) {
+        const uint8_t *const o = *(const uint8_t *const volatile *)(self + 0x134);
+        const long double a = __builtin_fabsl((long double)(int32_t)values[i] * *(const float *)K);
+        const int32_t k = (int32_t)x87_fistp64_h2((long double)v / *(const float *)(o + 0xe0) * *(const float *)0xf6c844);
+        volatile float *const e = (volatile float *)(*(uint8_t *const *)(o + 0xd4) + k * 8);
+        const long double b = __builtin_fabsl((long double)e[1]);
+        if (b < a) {
+            *(volatile uint32_t *)e = *(const uint32_t *)&v;
+            e[1] = (float)(k & 1 ? a : -a);
+        }
+    }
+    uint8_t *const t = *(uint8_t *const *)(*(const uint8_t *const *)(self + 0x134) + 0xd4);
+    *(volatile uint32_t *)(t + 0x9c38) = 0x71c9f2ca;
+    *(volatile uint32_t *)(t + 0x9c3c) = 0;
+    return 0;
+}
+static const uint8_t fireworks_step_99c660_original[] = {0x83, 0xec, 0x10, 0x55, 0x8b, 0x6c, 0x24, 0x1c, 0x57, 0x33, 0xff, 0x85, 0xed};
+REWRITE("Fireworks::Step99C660", 0x99c660, fireworks_step_99c660_original, (&fireworks_step<int16_t, 0xf36bbc>), &g_firework_steps);
+static const uint8_t fireworks_step_99c730_original[] = {0x83, 0xec, 0x10, 0x55, 0x8b, 0x6c, 0x24, 0x1c, 0x57, 0x33, 0xff, 0x85, 0xed};
+REWRITE("Fireworks::Step99C730", 0x99c730, fireworks_step_99c730_original, (&fireworks_step<int8_t, 0xf7d05c>), &g_firework_steps);
+
+// ---- Fence::CellA906C0(grid, p) (0xA906C0): whether a point's cell is marked in a 16 x 16 bit grid ------------------
+// i = floor((p.x + 2) 4) and j = floor((p.z + 2) 4) (each a float first); outside 0..15 0. Rows pair up in dwords from
+// +8: row j's bits are the dword j / 2's low half (even j) or high half; the bit for i is tested (only al is set).
+static volatile long g_fence_cells;
+static uint8_t __stdcall fence_cell_a906c0(const uint8_t *grid, const float *p) {
+    g_fence_cells++;
+    const float two = *(const float *)0xf2705c, four = *(const float *)0xf2669c;
+    volatile float u = (float)(((long double)p[0] + two) * four);
+    volatile float fu = (float)floor_h2(u);
+    const int32_t i = (int32_t)x87_fistp64_h2(fu);
+    volatile float w = (float)(((long double)p[2] + two) * four);
+    volatile float fw = (float)floor_h2(w);
+    const int32_t j = (int32_t)x87_fistp64_h2(fw);
+    if (i < 0 || i > 15 || j < 0 || j > 15) return 0;
+    const uint32_t mask = (j & 1 ? 0x10000u : 1u) << i;
+    return (*(const uint32_t *)(grid + 8 + (j >> 1) * 4) & mask) != 0;
+}
+static const uint8_t fence_cell_a906c0_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x10, 0xd9, 0x00, 0x56};
+REWRITE("Fence::CellA906C0", 0xa906c0, fence_cell_a906c0_original, &fence_cell_a906c0, &g_fence_cells);
+
+// ---- Animal::SumB81E50(x) (0xB81E50): a level 0-3 from a sum of three values against x ---------------------------
+// s = (+0xC + +0x10) + +8 of the record +0xA4 (unrounded). When B s 300 (B the game's 0x10ED8D8) is not above x, -1.
+// Else with v = A s as a float (A 0x10ED8C4): 0 when 10 v is above x, 1 for 30 v, 2 for 100 v, else 3. At most the
+// record's type (+0: its byte +4) less one (signed).
+static volatile long g_animal_levels;
+static int32_t __thiscall animal_sum_b81e50(const uint8_t *self, float x) {
+    g_animal_levels++;
+    const uint8_t *const rec = *(const uint8_t *const *)(self + 0xa4);
+    auto at = [&](uint32_t o) { return *(const float *)(rec + o); };
+    const long double s = ((long double)at(0xc) + at(0x10)) + at(8);
+    int32_t level = -1;
+    if ((long double)*(const volatile float *)0x10ed8d8 * s * *(const float *)0xf28958 > x) {
+        volatile float v = (float)((long double)*(const volatile float *)0x10ed8c4 * s);
+        if ((long double)v * *(const float *)0xf275f4 > x) level = 0;
+        else if ((long double)v * *(const float *)0xf28218 > x) level = 1;
+        else if ((long double)v * *(const float *)0xf27604 > x) level = 2;
+        else level = 3;
+    }
+    const int32_t top = (int32_t)(*(const uint8_t *const *)rec)[4] - 1;
+    return level > top ? top : level;
+}
+static const uint8_t animal_sum_b81e50_original[] = {0x83, 0xec, 0x08, 0x8b, 0x81, 0xa4, 0x00, 0x00, 0x00, 0xd9, 0x40, 0x08};
+REWRITE("Animal::SumB81E50", 0xb81e50, animal_sum_b81e50_original, &animal_sum_b81e50, &g_animal_levels);
+
+// ---- Animal::AddTimeB828D0(dt) (0xB828D0): times that wrap around their periods -----------------------------------
+// Entries of 0x14 bytes (+4, count +8 read again each time): {kind, time, ..}. time += dt (a float); with T the period
+// for the kind (the float table at +0x10 of the record +4 of +0xA4), a time not below T, or below 0, becomes time -
+// floor(time / T) T (the quotient a float).
+static volatile long g_animal_times;
+static void __thiscall animal_add_time_b828d0(const uint8_t *self, float dt) {
+    g_animal_times++;
+    for (int32_t i = 0; i < *(const volatile int32_t *)(self + 8); i++) {
+        uint8_t *const e = *(uint8_t *const volatile *)(self + 4) + i * 0x14;
+        volatile float *const t = (volatile float *)(e + 4);
+        *t = (float)((long double)dt + *t);
+        const float *const table = *(const float *const *)(*(const uint8_t *const *)(*(const uint8_t *const *)(self + 0xa4) + 4) + 0x10);
+        volatile float period = table[*(const int32_t *)e];
+        const bool wrap = !(*t < period || *t != *t || period != period) || *t < *(const float *)0xf264e0;
+        if (!wrap) continue;
+        volatile float q = (float)((long double)*t / period);
+        volatile float fl = (float)floor_h2(q);
+        *t = (float)((long double)*t - (long double)fl * period);
+    }
+}
+static const uint8_t animal_add_time_b828d0_original[] = {0x8b, 0x41, 0x08, 0x83, 0xec, 0x0c, 0x57, 0x33, 0xff, 0x85, 0xc0};
+REWRITE("Animal::AddTimeB828D0", 0xb828d0, animal_add_time_b828d0_original, &animal_add_time_b828d0, &g_animal_times);
+
+// ---- WildAnimal::PointB18E70(out, p) (0xB18E70): the nearest of the animal's points that are on --------------------
+// Points (+0x110, 0x10 bytes each; count +0x108) with on flags (+0x440, dwords). The best starts as {0, 0, 0} with an
+// offset of (10000, 10000); a point on wins when its distance from p across x and z (dz unrounded for its own square)
+// is below the best offset's length, which is then its {dz, dx} as floats. Gives out.
+static volatile long g_animal_nearest;
+static float *__thiscall wild_animal_point_b18e70(const uint8_t *self, float *out, const float *p) {
+    g_animal_nearest++;
+    long double a = *(const float *)0xf37b34, b = *(const float *)0xf37b34, c = *(const float *)0xf264e0;
+    uint32_t bx = 0, bz = 0;
+    const int32_t n = *(const int32_t *)(self + 0x108);
+    for (int32_t i = 0; i < n; i++) {
+        if (!*(const uint32_t *)(self + 0x440 + i * 4)) continue;
+        const float *const q = (const float *)(self + 0x110 + i * 0x10);
+        volatile float dx = (float)((long double)q[0] - p[0]);
+        const long double dzx = (long double)q[2] - p[2];
+        volatile float dz = (float)dzx;
+        const long double d = x87_sqrt_h2(dzx * dz + (long double)dx * dx);
+        const long double m = x87_sqrt_h2(a * a + b * b);
+        if (!(m > d)) continue;
+        bx = *(const uint32_t *)&q[0], bz = *(const uint32_t *)&q[2];
+        c = q[1], b = dx, a = dz;
+    }
+    volatile float *const o = out;
+    o[0] = *(const float *)&bx;
+    *(volatile uint32_t *)(o + 2) = bz;
+    o[1] = (float)c;
+    return out;
+}
+static const uint8_t wild_animal_point_b18e70_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28, 0x8b, 0x81, 0x08, 0x01, 0x00, 0x00};
+REWRITE("WildAnimal::PointB18E70", 0xb18e70, wild_animal_point_b18e70_original, &wild_animal_point_b18e70, &g_animal_nearest);
+
+// ---- Vector::LengthBECFA0(v) (0xBECFA0): a frame of three axes from a direction -------------------------------------
+// Axis 0 (+0) = v made of length 1 ((x^2 + y^2) + z^2; a length of 0 sets z to 1 and leaves x and y). Axis 1 (+0x10):
+// when |x| is above both |y| and |z|, {-(x y), 1 - y^2, -(y z)}, else {1 - x^2, -(x y), -(x z)} (products as floats),
+// made of length 1 the same way. Axis 2 (+0x20) = axis 1 x axis 0 as floats.
+static volatile long g_frames_from;
+static inline void unit_becfa0(volatile float *p) {
+    const long double x = p[0], y = p[1], z = p[2];
+    const long double len = x87_sqrt_h2((x * x + y * y) + z * z);
+    if (len == *(const float *)0xf264e0) {
+        *(volatile uint32_t *)(p + 2) = 0x3f800000;
+        return;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    p[0] = (float)(inv * p[0]);
+    p[1] = (float)(inv * p[1]);
+    p[2] = (float)(inv * p[2]);
+}
+static void __thiscall vector_length_becfa0(uint8_t *self, const float *v) {
+    g_frames_from++;
+    volatile float *const f = (volatile float *)self;
+    *(volatile uint32_t *)self = *(const uint32_t *)v;
+    *(volatile uint32_t *)(self + 4) = *(const uint32_t *)(v + 1);
+    f[2] = v[2];
+    unit_becfa0(f);
+    const float one = *(const float *)0xf264dc;
+    const long double ax = __builtin_fabsl((long double)f[0]), ay = __builtin_fabsl((long double)f[1]);
+    if (ax > ay && ax > __builtin_fabsl((long double)f[2])) {
+        const long double y = f[1];
+        f[5] = (float)(-(y * y) + one);
+        f[6] = (float)-((long double)f[2] * f[1]);
+        f[4] = (float)-((long double)f[1] * f[0]);
+    } else {
+        f[5] = (float)-((long double)f[1] * f[0]);
+        f[6] = (float)-((long double)f[2] * f[0]);
+        const long double x = f[0];
+        f[4] = (float)(-(x * x) + one);
+    }
+    unit_becfa0(f + 4);
+    const long double a = (long double)f[5] * f[2] - (long double)f[6] * f[1];
+    const long double b = (long double)f[6] * f[0] - (long double)f[2] * f[4];
+    const long double c = (long double)f[1] * f[4] - (long double)f[5] * f[0];
+    f[10] = (float)c;
+    f[8] = (float)a;
+    f[9] = (float)b;
+}
+static const uint8_t vector_length_becfa0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x10, 0x8b, 0x45, 0x08, 0x8b, 0x10};
+REWRITE("Vector::LengthBECFA0", 0xbecfa0, vector_length_becfa0_original, &vector_length_becfa0, &g_frames_from);
+
+// ---- Water::Range907440(a, b, c) (0x907440): evens out the heights where four water grids meet -----------------------
+// Each grid: size n (+0), +4, spread +0x34, samples +0x40, edge heights +0x4C and +0x50 (float arrays). First a with b:
+// the corner samples a1 = a.samples[(n_a - 1) n_a] and b1 = b.samples[n_b - 1] (floats); the larger grid's size over the
+// smaller's, q, scales the larger's sample by q^2 (a float), the spread m is the smaller's, and the smaller's share is
+// 1 / q (a float; 1 for the larger). H = ((a.h4C[+4 n_a] + b.h4C[n_b]) / 2 + (a1 - b1) m) K (K 0xF7D038); b's height
+// becomes its share H, a's H its share. Then the grid itself with c the same way with s = samples[n n - 1] and c0 =
+// c.samples[0] (unrounded, the larger's scaled by q^2), heights h50[(+4 + 1) n] and c.h50[0].
+static volatile long g_water_meets;
+static void __thiscall water_range_907440(const uint8_t *self, const uint8_t *a, const uint8_t *b, const uint8_t *c) {
+    g_water_meets++;
+    auto num = [](const uint8_t *g, uint32_t o) { return *(const int32_t *)(g + o); };
+    auto arr = [](const uint8_t *g, uint32_t o) { return *(volatile float *const *)(g + o); };
+    auto val = [](const uint8_t *g, uint32_t o) { return *(const float *)(g + o); };
+    const float half = *(const float *)0xf2651c, k = *(const float *)0xf7d038, one = *(const float *)0xf264dc;
+    const int32_t n = num(self, 0);
+    const long double s0 = arr(self, 0x40)[n * n - 1];
+    const int32_t na = num(a, 0), nb = num(b, 0);
+    volatile float share_b = 1.0f, share_a = 1.0f;
+    volatile float a1 = arr(a, 0x40)[(na - 1) * na];
+    volatile float b1 = arr(b, 0x40)[nb - 1];
+    const long double c0 = arr(c, 0x40)[0];
+    long double m;
+    if (na > nb) {
+        const int32_t q = na / nb;
+        a1 = (float)((long double)(q * q) * a1);
+        m = val(b, 0x34);
+        share_a = (float)(one / (long double)q);
+    } else {
+        const int32_t q = nb / na;
+        b1 = (float)((long double)(q * q) * b1);
+        m = val(a, 0x34);
+        share_b = (float)(one / (long double)q);
+    }
+    volatile float *const bh = arr(b, 0x4c) + nb;
+    const long double h1 = ((long double)arr(a, 0x4c)[num(a, 4) * na] + *bh) * half;
+    const long double big = (h1 + ((long double)a1 - b1) * m) * k;
+    *bh = (float)((long double)share_b * big);
+    arr(a, 0x4c)[num(a, 0) * num(a, 4)] = (float)(big * share_a);
+
+    const int32_t nc = num(c, 0);
+    long double s = s0, c1 = c0, m2;
+    volatile float share_c = 1.0f, share_s = 1.0f;
+    if (n > nc) {
+        const int32_t q = n / nc;
+        s = s0 * (long double)(q * q);
+        m2 = val(c, 0x34);
+        share_s = (float)(one / (long double)q);
+    } else {
+        const int32_t q = nc / n;
+        c1 = c0 * (long double)(q * q);
+        m2 = val(self, 0x34);
+        share_c = (float)(one / (long double)q);
+    }
+    volatile float *const ch = arr(c, 0x50);
+    const long double h2 = ((long double)arr(self, 0x50)[(num(self, 4) + 1) * n] + *ch) * half;
+    const long double big2 = (h2 + (s - c1) * m2) * k;
+    *ch = (float)((long double)share_c * big2);
+    arr(self, 0x50)[(num(self, 4) + 1) * num(self, 0)] = (float)(big2 * share_s);
+}
+static const uint8_t water_range_907440_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x01, 0x8b, 0xd0, 0x0f, 0xaf, 0xd0, 0x8b, 0x41, 0x40};
+REWRITE("Water::Range907440", 0x907440, water_range_907440_original, &water_range_907440, &g_water_meets);
+
+// ---- List::PassC236C0(out, node, range) (0xC236C0): copies a run of linked nodes into records, last first ----------------
+// Skips range[0] nodes (next at +0x54), then for range[1] nodes fills records of 0xB0 bytes from the last one down: the
+// node at +0, the next node at +4, the node's +0x10..+0x48 dwords (but +0x1C, +0x2C, +0x3C) at the same places and its
+// +0xC0..+0xF8 at +0x50..+0x88 (also skipping each fourth; the first two of +0xC0 and +0xF0 go through the FPU). Then
+// the first record's +0x50.. part is copied onto its own +0x10.. part.
+static volatile long g_node_runs;
+static inline void fpu_copy_h2(void *to, const void *from) { __asm__ volatile("flds (%1)\n\tfstps (%0)" : : "r"(to), "r"(from) : "memory"); }
+static void __stdcall list_pass_c236c0(uint8_t *out, const uint8_t *node, const int32_t *range) {
+    g_node_runs++;
+    auto next = [](const uint8_t *p) { return *(const uint8_t *const *)(p + 0x54); };
+    for (int32_t s = range[0]; s > 0; s--) node = next(node);
+    for (int32_t i = range[1] - 1; i >= 0; i--) {
+        uint32_t *const e = (uint32_t *)(out + i * 0xb0);
+        const uint32_t *const n = (const uint32_t *)node;
+        e[0] = (uint32_t)(uintptr_t)node;
+        for (uint32_t k = 4; k < 0x13; k++)
+            if ((k & 3) != 3) e[k] = n[k];
+        fpu_copy_h2(e + 0x14, n + 0x30);
+        fpu_copy_h2(e + 0x15, n + 0x31);
+        e[0x16] = n[0x32];
+        for (uint32_t k = 0x18; k < 0x1f; k++)
+            if ((k & 3) != 3) e[k] = n[k + 0x1c];
+        e[0x22] = n[0x3e];
+        fpu_copy_h2(e + 0x20, n + 0x3c);
+        fpu_copy_h2(e + 0x21, n + 0x3d);
+        node = next(node);
+        e[1] = (uint32_t)(uintptr_t)node;
+    }
+    uint32_t *const o = (uint32_t *)out;
+    for (uint32_t k = 4; k < 0x13; k++)
+        if ((k & 3) != 3) o[k] = o[k + 0x10];
+}
+static const uint8_t list_pass_c236c0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0x8b, 0x4d, 0x0c, 0x53};
+REWRITE("List::PassC236C0", 0xc236c0, list_pass_c236c0_original, &list_pass_c236c0, &g_node_runs);
+
+// ---- Animal::LoopB788A0(out) (0xB788A0): the record with the lowest value over a list ------------------------------
+// The list runs from +0x1C to its head at +0x28 (next at +0); each node points to a record (+8) whose float +8 is
+// compared: the last one not above the best so far (from 1000) is kept and copied out (dwords +0..+0x1C (the first
+// through the FPU), +0x24..+0x34, +0x40..+0x48, +0x50, +0x54 and the bytes +0x20 and +0x58). With no record kept the
+// game copies out stack bytes it never set; this gives zeros there instead.
+static volatile long g_animal_lowest;
+static void __thiscall animal_loop_b788a0(const uint8_t *self, uint8_t *out) {
+    g_animal_lowest++;
+    uint32_t best[0x5c / 4 + 1] = {};
+    *(float *)&best[2] = 1000.0f;
+    for (const uint32_t *p = *(const uint32_t *const *)(self + 0x1c); p != (const uint32_t *)(self + 0x28); p = (const uint32_t *)(uintptr_t)*p) {
+        const uint32_t *const rec = (const uint32_t *)(uintptr_t)p[2];
+        if (!(*(const float *)&rec[2] <= *(const float *)&best[2])) continue;
+        for (uint32_t k = 0; k <= 0x16; k++) best[k] = rec[k];
+    }
+    uint32_t *const o = (uint32_t *)out;
+    fpu_copy_h2(o, &best[0]);
+    for (uint32_t k = 1; k <= 7; k++) o[k] = best[k];
+    out[0x20] = (uint8_t)best[8];
+    for (uint32_t k = 9; k <= 0xd; k++) o[k] = best[k];
+    o[0x10] = best[0x10], o[0x11] = best[0x11], o[0x12] = best[0x12], o[0x14] = best[0x14], o[0x15] = best[0x15];
+    out[0x58] = (uint8_t)best[0x16];
+}
+static const uint8_t animal_loop_b788a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x74, 0x8b, 0x51, 0x1c, 0x53};
+REWRITE("Animal::LoopB788A0", 0xb788a0, animal_loop_b788a0_original, &animal_loop_b788a0, &g_animal_lowest);

@@ -2143,4 +2143,274 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 },
                                 [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x60))}; }};
     quick(segment_middle_of_ends);
+    // Mover::StepBack: the game's time scale and node list set (and put back after), nodes in and out of range (a list
+    // at 0 at times), heights either side of the node's
+    {
+        static uint32_t saved_scale, saved_nodes;
+        Test x{0x913620,
+               [=](Rng &r) {
+                   *(float *)0x10f0b88 = r.real(0.5f, 4);
+                   uint8_t *nodes = arena<uint8_t>(0x40);
+                   *(uint32_t *)0x133a0f4 = (uint32_t)(uintptr_t)nodes;
+                   *(int32_t *)(nodes + 0x14) = r.range(0, 4);
+                   const bool none = r.range(0, 9) == 0;
+                   *(uint32_t *)(nodes + 0xc) = none ? 0 : (uint32_t)(uintptr_t)arena<void>(0x400);
+                   for (int i = 0; i < 4 * 0x98 / 4; i++) arena<float>(0x400)[i] = r.real(-20, 20);
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int i = 0; i < 0x1c; i++) arena<uint32_t>(0x100)[i] = r.next();
+                   float *f = (float *)self;
+                   f[1] = r.real(-20, 20), f[2] = r.real(-20, 20);
+                   f[0x58 / 4] = r.real(-5, 5), f[0x64 / 4] = r.real(-3, 3), f[0x68 / 4] = r.real(-3, 3);
+                   *(int32_t *)(self + 0x60) = none ? 0 : r.range(-1, 4);
+                   arena<float>(0x60)[0] = r.real(-2, 2);
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x60)[0]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_scale = *(uint32_t *)0x10f0b88, saved_nodes = *(uint32_t *)0x133a0f4; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10f0b88 = saved_scale, *(uint32_t *)0x133a0f4 = saved_nodes; };
+        quick(x);
+    }
+    // Window::ScreenPosition: chains of 0-4 parents, scroll flags on some children
+    Test window_screen_position{0x6ad560,
+                                [=](Rng &r) {
+                                    const int n = r.range(0, 4);
+                                    for (int k = 0; k <= n; k++) {
+                                        uint8_t *w = arena<uint8_t>(0x200 + k * 0xa0);
+                                        for (int i = 0; i < 0x28; i++) arena<uint32_t>(0x200 + k * 0xa0)[i] = r.next();
+                                        for (uint32_t o : {0x7cu, 0x80u, 0x8cu, 0x90u}) *(float *)(w + o) = r.real(-500, 500);
+                                        *(uint32_t *)(w + 0x3c) = k < n ? (uint32_t)(uintptr_t)arena<void>(0x200 + (k + 1) * 0xa0) : 0;
+                                    }
+                                    arena<uint32_t>(0x60)[0] = r.next(), arena<uint32_t>(0x60)[1] = r.next();
+                                },
+                                [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x200), arena<void>(0x60))}; }};
+    quick(window_screen_position);
+    // Fog::Setup: distances either side of the small limit, no object, objects with and without the single value
+    Test fog_setup{0x7c3d50,
+                   [=](Rng &r) {
+                       uint8_t *o = arena<uint8_t>(0x200);
+                       for (int i = 0; i < 0x70; i++) arena<uint32_t>(0x200)[i] = r.next();
+                       o[0x1a6] = r.range(0, 1) ? 0 : (uint8_t)r.range(1, 255);
+                       arena<uint32_t>(0x40)[0] = r.range(0, 3) ? (uint32_t)(uintptr_t)o : 0;
+                       arena<float>(0x40)[1] = r.range(0, 4) == 0 ? r.real(-1e-6f, 2e-6f) : r.real(-5, 500);
+                   },
+                   [](void *fn) {
+                       ((void(__thiscall *)(void *, float))fn)((void *)(uintptr_t)arena<uint32_t>(0x40)[0], arena<float>(0x40)[1]);
+                       return Result{0};
+                   }};
+    t.push_back(fog_setup);   // (its writes are game globals: the data section is compared)
+    // PathGrid::SetEdges / ClearEdges: grids of 3-6 cells a side, inner cells (every neighbour there), any bits
+    for (uintptr_t at : {(uintptr_t)0xb9a810, (uintptr_t)0xb9a8c0}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   const int w = r.range(3, 6), h = r.range(3, 6);
+                   *(int32_t *)(self + 0x64) = w;
+                   *(uint32_t *)(self + 0x6c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   for (int i = 0; i < 36 * 6; i++) arena<uint32_t>(0x400)[i] = r.next();
+                   arena<int32_t>(0x40)[0] = r.range(1, w - 2), arena<int32_t>(0x40)[1] = r.range(1, h - 2);
+                   arena<uint32_t>(0x40)[2] = r.next();
+               },
+               [](void *fn) {
+                   const int32_t *a = arena<int32_t>(0x40);
+                   ((void(__thiscall *)(void *, int32_t, int32_t, uint32_t))fn)(arena<void>(0x100), a[0], a[1], (uint32_t)a[2]);
+                   return Result{0};
+               }};
+        quick(x);
+    }
+    // KeyMap::Find: 1-4 buckets over 0-8 entries, keys copied from an entry (one value changed at times) or random
+    Test keymap_find{0xc477d0,
+                     [=](Rng &r) {
+                         uint8_t *self = arena<uint8_t>(0x100);
+                         const uint32_t nb = r.range(1, 4), n = r.range(0, 8);
+                         *(uint32_t *)(self + 4) = nb;
+                         uint32_t *buckets = arena<uint32_t>(0x140);
+                         *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)buckets;
+                         *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                         *(uint32_t *)(self + 0x14) = (uint32_t)(uintptr_t)arena<void>(0x180);
+                         buckets[0] = 0;
+                         for (uint32_t b = 1; b <= nb; b++) buckets[b] = b == nb ? n : r.range(buckets[b - 1], n);
+                         uint32_t *e = arena<uint32_t>(0x400);
+                         for (uint32_t i = 0; i < 12 * n; i++) e[i] = r.range(0, 3) ? r.range(0, 3) : r.next();
+                         uint32_t *key = arena<uint32_t>(0x200);
+                         if (n && r.range(0, 3)) {
+                             const uint32_t pick = r.range(0, n - 1);
+                             for (int k = 0; k < 12; k++) key[k] = e[pick * 12 + k];
+                             if (r.range(0, 3) == 0) key[r.range(0, 11)] ^= 1u << r.range(0, 31);
+                         } else
+                             for (int k = 0; k < 12; k++) key[k] = r.range(0, 3);
+                     },
+                     [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x200))}; }};
+    quick(keymap_find);
+    // Fireworks::Step99C660 / Step99C730: 0-12 signed values (word or byte), v anywhere along the table, entries random
+    for (uintptr_t at : {(uintptr_t)0x99c660, (uintptr_t)0x99c730}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100), *o = arena<uint8_t>(0x200);
+                   *(uint32_t *)(self + 0x134) = (uint32_t)(uintptr_t)o;
+                   *(uint32_t *)(o + 0xd4) = (uint32_t)(uintptr_t)arena<void>(0x4000);
+                   *(float *)(o + 0xe0) = r.real(0.5f, 8);
+                   float *e = arena<float>(0x4000);
+                   for (int i = 0; i < 0x9c48 / 4; i++) e[i] = r.range(0, 3) ? r.real(-1, 1) : 0.0f;
+                   for (int i = 0; i < 24; i++) arena<uint8_t>(0x40)[i] = (uint8_t)r.next();
+                   arena<int32_t>(0x60)[0] = r.range(0, 9) ? r.range(0, 12) : -1;
+                   arena<float>(0x60)[1] = r.real(0, *(float *)(o + 0xe0));
+               },
+               [](void *fn) {
+                   return Result{((uint32_t(__thiscall *)(void *, const void *, int32_t, uint32_t, uint32_t, float))fn)(arena<void>(0x100), arena<void>(0x40), arena<int32_t>(0x60)[0], 0x1234, 0x5678, arena<float>(0x60)[1])};
+               }};
+        quick(x);
+    }
+    // Fence::CellA906C0: points around and past the 4 x 4 square (cells of a quarter), random bit grids
+    Test fence_cell_a906c0{0xa906c0,
+                           [=](Rng &r) {
+                               for (int i = 0; i < 10; i++) arena<uint32_t>(0x100)[i] = r.range(0, 3) ? r.next() : 0;
+                               float *p = arena<float>(0x40);
+                               for (int c = 0; c < 3; c++) p[c] = r.real(-2.6f, 2.6f);
+                               if (r.range(0, 5) == 0) p[0] = (float)r.range(-10, 10) / 4, p[2] = (float)r.range(-10, 10) / 4;
+                           },
+                           [](void *fn) { return Result{((uint32_t(__stdcall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40)) & 0xff}; }};
+    quick(fence_cell_a906c0);
+    // Animal::SumB81E50: the game's two scales set (and put back after), sums and x around every level's edge, types 0-5
+    {
+        static uint32_t saved_a, saved_b;
+        Test x{0xb81e50,
+               [=](Rng &r) {
+                   *(float *)0x10ed8c4 = r.real(0, 2), *(float *)0x10ed8d8 = r.real(0, 2);
+                   uint8_t *self = arena<uint8_t>(0x100), *rec = arena<uint8_t>(0x200), *type = arena<uint8_t>(0x240);
+                   *(uint32_t *)(self + 0xa4) = (uint32_t)(uintptr_t)rec;
+                   *(uint32_t *)rec = (uint32_t)(uintptr_t)type;
+                   type[4] = (uint8_t)r.range(0, 5);
+                   for (uint32_t o : {8u, 0xcu, 0x10u}) *(float *)(rec + o) = r.real(-1, 3);
+                   arena<float>(0x40)[0] = r.range(0, 3) ? r.real(0, 400) : r.real(-50, 50);
+               },
+               [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0])}; }};
+        x.prepare = [](const rewrite::Entry *) { saved_a = *(uint32_t *)0x10ed8c4, saved_b = *(uint32_t *)0x10ed8d8; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10ed8c4 = saved_a, *(uint32_t *)0x10ed8d8 = saved_b; };
+        quick(x);
+    }
+    // Animal::AddTimeB828D0: 0-6 entries of four kinds, times below 0, inside and past their periods
+    Test animal_add_time_b828d0{0xb828d0,
+                                [=](Rng &r) {
+                                    uint8_t *self = arena<uint8_t>(0x100), *rec = arena<uint8_t>(0x200), *kinds = arena<uint8_t>(0x240);
+                                    *(uint32_t *)(self + 0xa4) = (uint32_t)(uintptr_t)rec;
+                                    *(uint32_t *)(rec + 4) = (uint32_t)(uintptr_t)kinds;
+                                    *(uint32_t *)(kinds + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x280);
+                                    for (int k = 0; k < 4; k++) arena<float>(0x280)[k] = r.real(0.2f, 5);
+                                    const int n = r.range(0, 6);
+                                    *(int32_t *)(self + 8) = r.range(0, 9) ? n : -1;
+                                    *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                    for (int i = 0; i < n; i++) {
+                                        uint32_t *e = arena<uint32_t>(0x400 + i * 0x14);
+                                        for (int k = 0; k < 5; k++) e[k] = r.next();
+                                        e[0] = r.range(0, 3);
+                                        *(float *)(e + 1) = r.real(-12, 12);
+                                    }
+                                    arena<float>(0x40)[0] = r.real(-3, 3);
+                                },
+                                [](void *fn) {
+                                    ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                                    return Result{0};
+                                }};
+    quick(animal_add_time_b828d0);
+    // WildAnimal::PointB18E70: 0-8 points (some off), near and far from p
+    Test wild_animal_point_b18e70{0xb18e70,
+                                  [=](Rng &r) {
+                                      uint8_t *self = arena<uint8_t>(0x1000);
+                                      const int n = r.range(0, 8);
+                                      *(int32_t *)(self + 0x108) = r.range(0, 9) ? n : -1;
+                                      for (int i = 0; i < 8; i++) {
+                                          float *q = (float *)(self + 0x110 + i * 0x10);
+                                          for (int c = 0; c < 4; c++) q[c] = r.real(-300, 300) * (r.range(0, 2) ? 0.02f : 1);
+                                          *(uint32_t *)(self + 0x440 + i * 4) = r.range(0, 3) ? r.next() | 1 : 0;
+                                      }
+                                      float *p = arena<float>(0x40);
+                                      for (int c = 0; c < 3; c++) p[c] = r.real(-6, 6);
+                                      for (int c = 0; c < 3; c++) arena<uint32_t>(0x60)[c] = r.next();
+                                  },
+                                  [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, const void *))fn)(arena<void>(0x1000), arena<void>(0x60), arena<void>(0x40))}; }};
+    quick(wild_animal_point_b18e70);
+    // Vector::LengthBECFA0: random directions (along an axis, or of no length, at times) with x largest or not
+    Test vector_length_becfa0{0xbecfa0,
+                              [=](Rng &r) {
+                                  for (int i = 0; i < 12; i++) arena<uint32_t>(0x100)[i] = r.next();
+                                  float *v = arena<float>(0x40);
+                                  for (int c = 0; c < 3; c++) v[c] = r.real(-5, 5);
+                                  const int shape = r.range(0, 7);
+                                  if (shape == 0) v[0] = v[1] = v[2] = 0;
+                                  if (shape == 1) v[r.range(0, 2)] = 0, v[r.range(0, 2)] = 0;
+                                  if (shape == 2) v[1] = v[0];
+                                  if (shape == 3) v[0] = 1, v[1] = v[2] = 0;
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40));
+                                  return Result{0};
+                              }};
+    quick(vector_length_becfa0);
+    // Water::Range907440: four grids of sizes 1-8 (equal, multiples and not), random samples, heights and spreads
+    Test water_range_907440{0x907440,
+                            [=](Rng &r) {
+                                for (int g = 0; g < 4; g++) {
+                                    uint8_t *grid = arena<uint8_t>(0x100 + g * 0x60);
+                                    for (int i = 0; i < 0x18; i++) arena<uint32_t>(0x100 + g * 0x60)[i] = r.next();
+                                    const int n = r.range(0, 2) ? 1 << r.range(0, 3) : r.range(1, 8);
+                                    *(int32_t *)grid = n, *(int32_t *)(grid + 4) = r.range(0, 7);
+                                    *(float *)(grid + 0x34) = r.real(-2, 2);
+                                    const uintptr_t base = 0x1000 + g * 0x800;
+                                    *(uint32_t *)(grid + 0x40) = (uint32_t)(base);
+                                    *(uint32_t *)(grid + 0x4c) = (uint32_t)(base + 0x200);
+                                    *(uint32_t *)(grid + 0x50) = (uint32_t)(base + 0x400);
+                                    for (int i = 0; i < 0x600 / 4; i++) arena<float>(base)[i] = r.real(-10, 10);
+                                }
+                                for (int g = 0; g < 4; g++) {   // the arrays as game addresses
+                                    uint8_t *grid = arena<uint8_t>(0x100 + g * 0x60);
+                                    for (uint32_t o : {0x40u, 0x4cu, 0x50u}) *(uint32_t *)(grid + o) = (uint32_t)(uintptr_t)arena<void>(*(uint32_t *)(grid + o));
+                                }
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x160), arena<void>(0x1c0), arena<void>(0x220));
+                                return Result{0};
+                            }};
+    quick(water_range_907440);
+    // List::PassC236C0: a chain of 8 nodes of random words (signalling NaNs among them), 0-3 skipped, 0-4 copied
+    Test list_pass_c236c0{0xc236c0,
+                          [=](Rng &r) {
+                              for (int k = 0; k < 8; k++) {
+                                  uint32_t *n = arena<uint32_t>(0x1000 + k * 0x100);
+                                  for (int i = 0; i < 0x40; i++) n[i] = r.range(0, 7) ? r.next() : 0x7f800001u + (r.next() & 0x3fffff);
+                                  n[0x54 / 4] = (uint32_t)(uintptr_t)arena<void>(0x1000 + (k + 1) * 0x100);
+                              }
+                              for (int i = 0; i < 0x380 / 4; i++) arena<uint32_t>(0x400)[i] = r.next();
+                              arena<int32_t>(0x40)[0] = r.range(-1, 3), arena<int32_t>(0x40)[1] = r.range(0, 4);
+                          },
+                          [](void *fn) {
+                              ((void(__stdcall *)(void *, const void *, const void *))fn)(arena<void>(0x400), arena<void>(0x1000), arena<void>(0x40));
+                              return Result{0};
+                          }};
+    quick(list_pass_c236c0);
+    // Animal::LoopB788A0: lists of 1-6 nodes over random records, always one value under 1000 (ties at times); the game
+    // copies out stack bytes it never set when none is
+    Test animal_loop_b788a0{0xb788a0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                const int n = r.range(1, 6);
+                                const float tie = r.real(0, 900);
+                                for (int k = 0; k < n; k++) {
+                                    uint32_t *node = arena<uint32_t>(0x200 + k * 0x10), *rec = arena<uint32_t>(0x400 + k * 0x60);
+                                    node[0] = k + 1 < n ? (uint32_t)(uintptr_t)arena<void>(0x200 + (k + 1) * 0x10) : (uint32_t)(uintptr_t)(self + 0x28);
+                                    node[2] = (uint32_t)(uintptr_t)rec;
+                                    for (int i = 0; i < 0x18; i++) rec[i] = r.next();
+                                    *(float *)&rec[0] = r.real(-50, 50);
+                                    *(float *)&rec[2] = r.range(0, 3) == 0 ? tie : r.real(-100, 1500);
+                                }
+                                *(float *)arena<uint8_t>(0x400 + r.range(0, n - 1) * 0x60 + 8) = r.real(0, 999);
+                                *(uint32_t *)(self + 0x1c) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                for (int i = 0; i < 0x18; i++) arena<uint32_t>(0x800)[i] = r.next();
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x800));
+                                return Result{0};
+                            }};
+    quick(animal_loop_b788a0);
 #endif

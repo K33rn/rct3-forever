@@ -6978,7 +6978,7 @@ address,size,name,callers,status
 0x6ad0b0,13,,102,documented
 0x6ad4c0,76,,0,documented
 0x6ad520,50,,557,documented
-0x6ad560,158,,51,documented
+0x6ad560,158,Window::ScreenPosition,51,rewritten
 0x6ad600,33,,6,documented
 0x6ad690,62,,0,documented
 0x6ad870,122,,3,documented
@@ -9853,7 +9853,7 @@ address,size,name,callers,status
 0x7c38d0,844,,3,documented
 0x7c3c60,58,,2,documented
 0x7c3ca0,102,,3,documented
-0x7c3d50,151,,1,documented
+0x7c3d50,151,Fog::Setup,1,rewritten
 0x7c3df0,195,,12,documented
 0x7c3ec0,141,,3,documented
 0x7c3ff0,354,,3,documented
@@ -12783,7 +12783,7 @@ address,size,name,callers,status
 0x9061c0,306,,1,documented
 0x906300,1603,,1,documented
 0x906950,2759,,1,documented
-0x907440,447,,1,documented
+0x907440,447,Water::Range907440,1,rewritten
 0x907600,1298,,1,documented
 0x907bb0,270,Water::Cell907BB0,3,rewritten
 0x907cc0,920,,1,documented
@@ -12883,7 +12883,7 @@ address,size,name,callers,status
 0x9131c0,408,,1,documented
 0x913360,180,,5,documented
 0x913420,508,,0,documented
-0x913620,168,,1,documented
+0x913620,168,Mover::StepBack,1,rewritten
 0x9136d0,134,,3,documented
 0x913760,61,,0,documented
 0x9137a0,326,,1,documented
@@ -14145,8 +14145,8 @@ address,size,name,callers,status
 0x99c2a0,184,Grid::SnapToRow,4,rewritten
 0x99c360,402,,3,documented
 0x99c500,344,,1,documented
-0x99c660,202,,1,documented
-0x99c730,202,,1,documented
+0x99c660,202,Fireworks::Step99C660,1,rewritten
+0x99c730,202,Fireworks::Step99C730,1,rewritten
 0x99c800,594,,3,documented
 0x99ca60,80,,1,documented
 0x99cab0,79,,1,documented
@@ -16494,7 +16494,7 @@ address,size,name,callers,status
 0xa90560,7,SetTable,2,rewritten
 0xa905d0,18,,2,documented
 0xa905f0,205,Fence::CrossA905F0,2,rewritten
-0xa906c0,188,,4,documented
+0xa906c0,188,Fence::CellA906C0,4,rewritten
 0xa907e0,26,OwnedPointer::Reset,0,rewritten
 0xa90800,61,Array<4>::Allocate,0,rewritten
 0xa90840,130,Array<4>::SetCapacity,1,rewritten
@@ -17721,7 +17721,7 @@ address,size,name,callers,status
 0xb18a70,30,DeletingDestructor,2,rewritten
 0xb18aa0,830,,2,documented
 0xb18de0,78,Record::Fields,2,rewritten
-0xb18e70,206,,0,documented
+0xb18e70,206,WildAnimal::PointB18E70,0,rewritten
 0xb18f40,436,Class::Construct,2,rewritten
 0xb19110,92,Paired::Destroy8CDCD0,1,rewritten
 0xb19170,753,,1,documented
@@ -18622,7 +18622,7 @@ address,size,name,callers,status
 0xb782a0,905,,2,documented
 0xb78630,122,Entries::FindMatching,2,rewritten
 0xb786b0,192,Entries::UpdateMatching,1,rewritten
-0xb788a0,388,,1,documented
+0xb788a0,388,Animal::LoopB788A0,1,rewritten
 0xb78c20,166,,0,documented
 0xb78d20,29,Object::CondCallSet,0,rewritten
 0xb78ea0,309,Entries::SortB78EA0,0,rewritten
@@ -18747,7 +18747,7 @@ address,size,name,callers,status
 0xb81d60,30,DeletingDestructor,0,rewritten
 0xb81d80,30,DeletingDestructor,0,rewritten
 0xb81da0,176,,2,documented
-0xb81e50,208,,1,documented
+0xb81e50,208,Animal::SumB81E50,1,rewritten
 0xb81f20,330,,4,documented
 0xb82090,667,Model::BonePoseOf,2,rewritten
 0xb82330,120,,2,documented
@@ -18761,7 +18761,7 @@ address,size,name,callers,status
 0xb82840,36,,0,documented
 0xb82870,40,,4,documented
 0xb828a0,48,,1,documented
-0xb828d0,175,,3,documented
+0xb828d0,175,Animal::AddTimeB828D0,3,rewritten
 0xb829c0,110,,5,documented
 0xb82a30,417,,2,documented
 0xb82be0,280,,1,documented
@@ -19059,8 +19059,8 @@ address,size,name,callers,status
 0xb9a6c0,157,,0,documented
 0xb9a760,30,DeletingDestructor,1,rewritten
 0xb9a780,139,,1,documented
-0xb9a810,163,,1,documented
-0xb9a8c0,163,,1,documented
+0xb9a810,163,PathGrid::SetEdges,1,rewritten
+0xb9a8c0,163,PathGrid::ClearEdges,1,rewritten
 0xb9aa00,30,DeletingDestructor,1,rewritten
 0xb9aa70,101,,2,documented
 0xb9aae0,146,,19,documented
@@ -20291,7 +20291,7 @@ address,size,name,callers,status
 0xbecec0,92,,1,documented
 0xbecf30,57,,1,documented
 0xbecf70,30,DeletingDestructor,1,rewritten
-0xbecfa0,382,,0,documented
+0xbecfa0,382,Vector::LengthBECFA0,0,rewritten
 0xbed120,395,Vector::LengthBED120,1,rewritten
 0xbed2b0,389,Vector::LengthBED2B0,0,rewritten
 0xbed440,321,Matrix::LookAlongXUp,3,rewritten
@@ -21037,7 +21037,7 @@ address,size,name,callers,status
 0xc23570,78,,0,documented
 0xc235c0,134,,0,documented
 0xc23650,104,,1,documented
-0xc236c0,427,,1,documented
+0xc236c0,427,List::PassC236C0,1,rewritten
 0xc23870,4182,,1,documented
 0xc248e0,2029,,1,documented
 0xc250e0,1316,,1,documented
@@ -21405,7 +21405,7 @@ address,size,name,callers,status
 0xc47630,35,Arrays::Free8E7200,3,rewritten
 0xc47660,239,,3,documented
 0xc47750,113,,1,documented
-0xc477d0,156,,1,documented
+0xc477d0,156,KeyMap::Find,1,rewritten
 0xc478d0,76,Prime::After,3,rewritten
 0xc47920,76,Prime::After,3,rewritten
 0xc479b0,11,,2,documented
