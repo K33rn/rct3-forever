@@ -1234,7 +1234,7 @@ address,size,name,callers,status
 0x466060,30,DeletingDestructor,0,rewritten
 0x466470,98,Effect::Fraction466470,3,rewritten
 0x4664e0,94,Matrix::Ortho,6,rewritten
-0x466660,610,,10,documented
+0x466660,610,Vector::Toward466660,10,rewritten
 0x4668d0,106,Matrix::ScaleOffset2D,13,rewritten
 0x466960,1,,6,documented
 0x466970,188,PairIds::Get,6,rewritten
@@ -12232,7 +12232,7 @@ address,size,name,callers,status
 0x8bbef0,1059,,6,documented
 0x8bc450,37,,13,documented
 0x8bc480,32,,8,documented
-0x8bc4a0,594,,1,documented
+0x8bc4a0,594,Terrain::Height8BC4A0,1,rewritten
 0x8bc700,789,,3,documented
 0x8bca20,610,,1,documented
 0x8bcc90,261,Grid::CellAt,236,rewritten
@@ -22719,7 +22719,7 @@ address,size,name,callers,status
 0xcc6300,14,,1,documented
 0xcc6310,194,,4,documented
 0xcc63e0,54,,3,documented
-0xcc6420,645,,1,documented
+0xcc6420,645,Model::PartsCC6420,1,rewritten
 0xcc66b0,489,Model::PartsCC66B0,12,rewritten
 0xcc68c0,127,Nodes::MatrixFor,2,rewritten
 0xcc69a0,1375,,0,documented

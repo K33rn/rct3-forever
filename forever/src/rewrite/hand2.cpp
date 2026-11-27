@@ -10439,3 +10439,157 @@ static void __thiscall model_parts_cc66b0(uint8_t *self) {
 }
 static const uint8_t model_parts_cc66b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0x8a, 0x41, 0x08};
 REWRITE("Model::PartsCC66B0", 0xcc66b0, model_parts_cc66b0_original, &model_parts_cc66b0, &g_model_part_matrices);
+
+// ---- Model::PartsCC6420(out) (0xCC6420): the parts' matrices with their local matrices in front, into out -------------
+// out[0] = part 0's matrix (64 bytes at +4). Once done (+8): the other parts' matrices copied; else for parts 1.. of the
+// model (*self: count +0x24, local matrices +0x34) out[i] = local x matrix (affine: last column 0, 0, 0, 1), each entry
+// summed in the game's order.
+static volatile long g_model_part_copies;
+static void __thiscall model_parts_cc6420(const uint8_t *self, float *out) {
+    g_model_part_copies++;
+    const float *const mats = *(const float *const *)(self + 4);
+    for (int k = 0; k < 16; k++) ((volatile uint32_t *)out)[k] = ((const uint32_t *)mats)[k];
+    const uint8_t *const model = *(const uint8_t *const *)self;
+    if (self[8]) {
+        for (int32_t i = 1; i < *(const int32_t *)(model + 0x24); i++)
+            for (int k = 0; k < 16; k++) ((volatile uint32_t *)out)[i * 16 + k] = ((const uint32_t *)(*(const float *const *)(self + 4)))[i * 16 + k];
+        return;
+    }
+    for (int32_t i = 1; i < *(const int32_t *)(model + 0x24); i++) {
+        volatile float *const o = out + i * 16;
+        ((volatile uint32_t *)o)[15] = 0x3f800000;
+        ((volatile uint32_t *)o)[3] = 0, ((volatile uint32_t *)o)[7] = 0, ((volatile uint32_t *)o)[11] = 0;
+        const float *const L = (const float *)(*(const uint8_t *const *)(model + 0x34) + i * 0x40);
+        const float *const P = *(const float *const *)(self + 4) + i * 16;
+        auto p = [&](int r, int c) { return (long double)P[r * 4 + c]; };
+        auto l = [&](int r, int c) { return (long double)L[r * 4 + c]; };
+        o[0] = (float)((l(0, 2) * p(2, 0) + p(0, 0) * l(0, 0)) + l(0, 1) * p(1, 0));
+        o[1] = (float)((p(1, 1) * l(0, 1) + l(0, 2) * p(2, 1)) + p(0, 1) * l(0, 0));
+        o[2] = (float)((p(2, 2) * l(0, 2) + p(1, 2) * l(0, 1)) + l(0, 0) * p(0, 2));
+        o[4] = (float)((p(0, 0) * l(1, 0) + l(1, 1) * p(1, 0)) + p(2, 0) * l(1, 2));
+        o[5] = (float)((l(1, 2) * p(2, 1) + l(1, 0) * p(0, 1)) + l(1, 1) * p(1, 1));
+        o[6] = (float)((l(1, 0) * p(0, 2) + p(2, 2) * l(1, 2)) + l(1, 1) * p(1, 2));
+        o[8] = (float)((p(0, 0) * l(2, 0) + l(2, 2) * p(2, 0)) + l(2, 1) * p(1, 0));
+        o[9] = (float)((p(0, 1) * l(2, 0) + l(2, 2) * p(2, 1)) + p(1, 1) * l(2, 1));
+        o[10] = (float)((l(2, 1) * p(1, 2) + l(2, 2) * p(2, 2)) + l(2, 0) * p(0, 2));
+        o[12] = (float)(((p(0, 0) * l(3, 0) + l(3, 1) * p(1, 0)) + p(2, 0) * l(3, 2)) + p(3, 0));
+        o[13] = (float)(((l(3, 2) * p(2, 1) + l(3, 0) * p(0, 1)) + l(3, 1) * p(1, 1)) + p(3, 1));
+        o[14] = (float)(((l(3, 0) * p(0, 2) + p(2, 2) * l(3, 2)) + l(3, 1) * p(1, 2)) + p(3, 2));
+    }
+}
+static const uint8_t model_parts_cc6420_original[] = {0x53, 0x56, 0x57, 0x8b, 0x51, 0x04, 0x8b, 0x44, 0x24, 0x10, 0x8b, 0x32};
+REWRITE("Model::PartsCC6420", 0xcc6420, model_parts_cc6420_original, &model_parts_cc6420, &g_model_part_copies);
+
+// ---- Terrain::Height8BC4A0(x, z, out) (0x8BC4A0): the ground's up direction under a point --------------------------------
+// u = (x - +0xC) / +0x14, v = (z - +0x10) / +0x18 (floats) and their floors; outside the grid (bytes +4, +5) gives (0, 1,
+// 0). In the cell (24 bytes at +0x24, corners h0-h3): past the diagonal (du + dv above 1) the far triangle with a = h2 -
+// h3, b = h1 - h3, X = -+0x14, Z = -+0x18: n = (b 0 - Z a, Z X, a 0 - b X); else a = h2 - h0, b = h1 - h0, X = +0x14, Z =
+// +0x18: n = (a 0 - Z b, Z X, b 0 - a X). n (x, y as floats) made of length 1 ((z z + y y) + x x); a length of 0 leaves
+// (x, y, 1). Roundings as the game's.
+static volatile long g_terrain_normals;
+static void __thiscall terrain_height_8bc4a0(const uint8_t *self, float x, float z, float *out) {
+    g_terrain_normals++;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    const long double zero = *(const float *)0xf264e0, one = *(const float *)0xf264dc;
+    volatile float u = (float)(((long double)x - m(0xc)) / m(0x14));
+    volatile float v = (float)(((long double)z - m(0x10)) / m(0x18));
+    volatile float fu = (float)floor_h2(u), fv = (float)floor_h2(v);
+    volatile float *const o = out;
+    if (fu < zero || (long double)self[4] <= fu || fv < zero || (long double)self[5] <= fv) {
+        ((volatile uint32_t *)o)[0] = 0, ((volatile uint32_t *)o)[1] = 0x3f800000, ((volatile uint32_t *)o)[2] = 0;
+        return;
+    }
+    const int32_t j = (int32_t)x87_fistp64_h2(fv), i = (int32_t)x87_fistp64_h2(fu);
+    const float *const h = (const float *)(*(const uint8_t *const *)(self + 0x24) + (j * (int32_t)self[4] + i) * 24);
+    const long double du = (long double)u - fu, dv = (long double)v - fv;
+    long double nz;
+    volatile float nx, ny;
+    if (dv + du > one) {
+        const long double X = -m(0x14), a = (long double)h[2] - h[3], b = (long double)h[1] - h[3], Z = -m(0x18);
+        nx = (float)(b * zero - Z * a);
+        ny = (float)(Z * X);
+        nz = a * zero - b * X;
+    } else {
+        const long double X = m(0x14), b = (long double)h[1] - h[0], a = (long double)h[2] - h[0], Z = m(0x18);
+        nx = (float)(a * zero - Z * b);
+        ny = (float)(Z * X);
+        nz = b * zero - a * X;
+    }
+    o[1] = ny;
+    o[0] = nx;
+    o[2] = (float)nz;
+    const long double len = x87_sqrt_h2((nz * nz + (long double)ny * ny) + (long double)nx * nx);
+    if (len == zero) {
+        ((volatile uint32_t *)o)[2] = 0x3f800000;
+        return;
+    }
+    const long double inv = one / len;
+    o[0] = (float)((long double)nx * inv);
+    o[1] = (float)((long double)ny * inv);
+    o[2] = (float)(nz * inv);
+}
+static const uint8_t terrain_height_8bc4a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x20, 0xd9, 0x45, 0x08};
+REWRITE("Terrain::Height8BC4A0", 0x8bc4a0, terrain_height_8bc4a0_original, &terrain_height_8bc4a0, &g_terrain_normals);
+
+// ---- Vector::Toward466660(out in ecx, eye in edx, target, up) (0x466660): a view matrix looking from eye to target -----
+// f = target - eye (floats) made of length 1 (x, y floats; z unrounded); s = f x up made of length 1 (y a float); u = s x
+// f made of length 1 (its length a float). Too short an f or s (squared length below 1e-8) gives the identity. Columns
+// (s, u, f) in the first three rows and -(eye . s), -(eye . u), -(eye . f), 1 in the last. Roundings as the game's.
+static volatile long g_view_matrices;
+static void __fastcall vector_toward_466660(float *out, const float *eye, const float *target, const float *up) {
+    g_view_matrices++;
+    const long double zero = *(const float *)0xf264e0, one = *(const float *)0xf264dc, tiny = *(const float *)0xf2a9bc;
+    volatile float *const o = out;
+    auto identity = [&] {
+        for (int k = 0; k < 16; k++) ((volatile uint32_t *)o)[k] = (k % 5 == 0) ? 0x3f800000 : 0;
+    };
+    volatile float f0 = (float)((long double)target[0] - eye[0]), f1 = (float)((long double)target[1] - eye[1]);
+    const long double f2u = (long double)target[2] - eye[2];
+    volatile float f2 = (float)f2u;
+    const long double d2 = (f2u * f2 + (long double)f1 * f1) + (long double)f0 * f0;
+    if (d2 < tiny) return identity();
+    const long double len = x87_sqrt_h2(d2);
+    long double fz;
+    if (len == zero) fz = one;
+    else {
+        const long double inv = one / len;
+        f0 = (float)((long double)f0 * inv);
+        f1 = (float)((long double)f1 * inv);
+        fz = inv * f2;
+    }
+    const long double s0 = fz * up[1] - (long double)f1 * up[2];
+    volatile float m1 = (float)((long double)f0 * up[2] - fz * up[0]);
+    const long double s2u = (long double)f1 * up[0] - (long double)f0 * up[1];
+    volatile float m2 = (float)s2u;
+    const long double q = (s2u * m2 + (long double)m1 * m1) + s0 * s0;
+    if (!(q >= tiny || __builtin_isunordered(q, tiny))) return identity();
+    const long double sl = x87_sqrt_h2(q);
+    long double S0, S2;
+    if (sl == zero) S2 = one, S0 = s0;
+    else {
+        const long double inv2 = one / sl;
+        S0 = s0 * inv2;
+        m1 = (float)((long double)m1 * inv2);
+        S2 = inv2 * m2;
+    }
+    long double U0 = (long double)f1 * S2 - (long double)m1 * fz;
+    long double U1 = fz * S0 - S2 * f0;
+    long double U2 = (long double)m1 * f0 - (long double)f1 * S0;
+    volatile float ulen = (float)x87_sqrt_h2((U2 * U2 + U1 * U1) + U0 * U0);
+    if (ulen == zero) U2 = one;
+    else {
+        const long double iu = one / ulen;
+        U0 = U0 * iu;
+        U1 = U1 * iu;
+        U2 = U2 * iu;
+    }
+    o[0] = (float)S0, o[1] = (float)U0, o[2] = f0, ((volatile uint32_t *)o)[3] = 0;
+    o[4] = m1, o[5] = (float)U1, o[6] = f1, ((volatile uint32_t *)o)[7] = 0;
+    o[8] = (float)S2, o[9] = (float)U2, o[10] = (float)fz, ((volatile uint32_t *)o)[11] = 0;
+    o[12] = (float)-((S0 * eye[0] + (long double)m1 * eye[1]) + S2 * eye[2]);
+    o[13] = (float)-((U0 * eye[0] + U1 * eye[1]) + U2 * eye[2]);
+    o[14] = (float)-(((long double)f0 * eye[0] + (long double)f1 * eye[1]) + fz * eye[2]);
+    ((volatile uint32_t *)o)[15] = 0x3f800000;
+}
+static const uint8_t vector_toward_466660_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x8b, 0x45, 0x08};
+REWRITE("Vector::Toward466660", 0x466660, vector_toward_466660_original, &vector_toward_466660, &g_view_matrices);

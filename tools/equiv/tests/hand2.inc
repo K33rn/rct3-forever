@@ -6544,4 +6544,54 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 return Result{0};
                             }};
     quick(model_parts_cc66b0);
+    // Model::PartsCC6420: done or not, models of 0-5 parts with random matrices
+    Test model_parts_cc6420{0xcc6420,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100), *model = arena<uint8_t>(0x180);
+                                *(uint32_t *)self = (uint32_t)(uintptr_t)model, *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                self[8] = r.range(0, 3) == 0;
+                                *(int32_t *)(model + 0x24) = r.range(0, 5), *(uint32_t *)(model + 0x34) = (uint32_t)(uintptr_t)arena<void>(0x800);
+                                for (int k = 0; k < 5 * 16; k++) arena<float>(0x400)[k] = r.real(-3, 3), arena<float>(0x800)[k] = r.real(-3, 3), arena<uint32_t>(0xc00)[k] = r.next();
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0xc00));
+                                return Result{0};
+                            }};
+    quick(model_parts_cc6420);
+    // Terrain::Height8BC4A0: grids of 1-6 by 1-6 cells of random or flat corners, points in every cell and outside
+    Test terrain_height_8bc4a0{0x8bc4a0,
+                               [=](Rng &r) {
+                                   uint8_t *self = arena<uint8_t>(0x100);
+                                   self[4] = (uint8_t)r.range(1, 6), self[5] = (uint8_t)r.range(1, 6);
+                                   *(float *)(self + 0xc) = r.real(-50, 50), *(float *)(self + 0x10) = r.real(-50, 50);
+                                   *(float *)(self + 0x14) = r.real(0.5f, 8), *(float *)(self + 0x18) = r.real(0.5f, 8);
+                                   *(uint32_t *)(self + 0x24) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                   const bool flat = r.range(0, 5) == 0;
+                                   for (int k = 0; k < 36 * 6; k++) arena<float>(0x400)[k] = flat ? 2.0f : r.real(-20, 20);
+                                   arena<float>(0x40)[0] = *(float *)(self + 0xc) + r.real(-1, 7) * *(float *)(self + 0x14);
+                                   arena<float>(0x40)[1] = *(float *)(self + 0x10) + r.real(-1, 7) * *(float *)(self + 0x18);
+                                   for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                               },
+                               [](void *fn) {
+                                   ((void(__thiscall *)(const void *, float, float, void *))fn)(arena<void>(0x100), arena<float>(0x40)[0], arena<float>(0x40)[1], arena<void>(0x60));
+                                   return Result{0};
+                               }};
+    quick(terrain_height_8bc4a0);
+    // Vector::Toward466660: random eyes and targets (the same point at times), random ups (along the view at times) (out in
+    // ecx, eye in edx)
+    Test vector_toward_466660{0x466660,
+                              [=](Rng &r) {
+                                  float *eye = arena<float>(0x40), *target = arena<float>(0x50), *up = arena<float>(0x60);
+                                  for (int k = 0; k < 3; k++) eye[k] = r.real(-50, 50);
+                                  for (int k = 0; k < 3; k++) target[k] = r.range(0, 7) ? r.real(-50, 50) : eye[k];
+                                  for (int k = 0; k < 3; k++) up[k] = r.real(-1, 1);
+                                  if (r.range(0, 7) == 0)
+                                      for (int k = 0; k < 3; k++) up[k] = target[k] - eye[k];
+                                  for (int k = 0; k < 16; k++) arena<uint32_t>(0x100)[k] = r.next();
+                              },
+                              [](void *fn) {
+                                  ((void(__fastcall *)(void *, const void *, const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40), arena<void>(0x50), arena<void>(0x60));
+                                  return Result{0};
+                              }};
+    quick(vector_toward_466660);
 #endif
