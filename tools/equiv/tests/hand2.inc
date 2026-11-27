@@ -6898,4 +6898,44 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
         x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x1400150 = saved_switch; };
         quick(x);
     }
+    // Person::Values4FEA70: with and without the record (and its +0x66C), every flag either way, counts around each cap,
+    // whole numbers of any size
+    Test person_values_4fea70{0x4fea70,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100), *p = arena<uint8_t>(0x400);
+                                  *(uint32_t *)(self + 0xb8) = r.range(0, 7) ? (uint32_t)(uintptr_t)p : 0;
+                                  *(uint32_t *)(p + 0x66c) = r.range(0, 7) ? r.next() | 1 : 0;
+                                  for (uint32_t at : {0x64cu, 0x654u, 0x644u, 0x648u, 0x650u}) *(int32_t *)(p + at) = r.range(-1, 2);
+                                  for (uint32_t at : {0x65cu, 0x640u, 0x63cu, 0x638u, 0x634u, 0x5f8u}) *(int32_t *)(p + at) = r.range(-2, 16);
+                                  for (uint32_t at = 0x614; at <= 0x62c; at += 4) *(int32_t *)(p + at) = r.range(0, 1) ? r.range(-50, 500) : (int32_t)r.next();
+                                  for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                              },
+                              [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60)) & 0xff}; }};
+    quick(person_values_4fea70);
+    // Track::SpeedBBD650: on or off, random frames, directions inside and past the limit, pushes, places and velocities,
+    // steps of 0.01-0.2
+    Test track_speed_bbd650{0xbbd650,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                float *f = (float *)self;
+                                *(uint32_t *)(self + 0x14) = r.range(0, 5) ? r.next() | 1 : 0;
+                                f[7] = r.real(0.1f, 2), f[8] = r.real(0.5f, 20);
+                                for (int k = 12; k < 15; k++) f[k] = r.real(-20, 20);
+                                for (int k = 16; k < 19; k++) f[k] = r.range(0, 3) ? r.real(-10, 10) : r.real(-200, 200);
+                                for (int k = 0; k < 12; k++) arena<float>(0x200)[k] = r.real(-1, 1);
+                                for (int k = 0; k < 3; k++) arena<float>(0x240)[k] = r.real(-3, 3), arena<float>(0x250)[k] = r.real(-3, 3);
+                                arena<float>(0x40)[0] = r.real(0.01f, 0.2f);
+                                if (r.range(0, 2) == 0) {   // the place right by the target (the eased step overshoots)
+                                    const float *a = arena<float>(0x200), *b = arena<float>(0x240), *c = arena<float>(0x250);
+                                    const float sv = a[8] * b[0] + a[9] * b[1] + a[10] * b[2];
+                                    const float g = sv > f[7] ? 1 : -f[7] < sv ? (sv + f[7]) / (2 * f[7]) : 0;
+                                    const float t = (f[8] * c[0] * a[4] + f[8] * c[1] * a[5] + f[8] * c[2] * a[6]) * g;
+                                    for (int k = 0; k < 3; k++) f[12 + k] = t * a[4 + k] + r.real(-0.004f, 0.004f);
+                                }
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, float, const void *, const void *, const void *))fn)(arena<void>(0x100), arena<float>(0x40)[0], arena<void>(0x200), arena<void>(0x240), arena<void>(0x250));
+                                return Result{0};
+                            }};
+    quick(track_speed_bbd650);
 #endif

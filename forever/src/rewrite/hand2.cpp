@@ -11192,3 +11192,142 @@ static void __thiscall camera_projection(uint8_t *self) {
 }
 static const uint8_t camera_projection_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0xd9, 0x81, 0x88, 0x01, 0x00, 0x00};
 REWRITE("Camera::Projection", 0xcd75c0, camera_projection_original, &camera_projection, &g_camera_projections_b);
+
+// ---- Person::Values4FEA70(out) (0x4FEA70): three values from the +0xB8 record's +0x5F8..+0x65C group --------------------
+// None (0, only al) without the record or its +0x66C. Three sums built from the record's flags (+0x64C, +0x654, +0x644 /
+// +0x648, +0x650), its count +0x65C (capped at 9 and 11, and +0x65C - 5 kept in 0..10), its six whole numbers +0x614..
+// +0x62C (as floats) and the capped +0x640, +0x63C, +0x638, +0x634, +0x5F8, each with the game's weights
+// (0xF36794..0xF367EC and others), in the game's order and roundings.
+static volatile long g_person_values_e;
+static uint8_t __thiscall person_values_4fea70(const uint8_t *self, float *out) {
+    g_person_values_e++;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0xb8);
+    if (!p || !*(const uint32_t *)(p + 0x66c)) return 0;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    auto i = [&](uint32_t at) { return *(const int32_t *)(p + at); };
+    auto cap = [](int32_t v, int32_t most) { return (long double)(v < most ? v : most); };
+    long double x = *(const float *)0xf264e0;
+    volatile float l0 = 0.0f, l1 = 0.0f;
+    if (i(0x64c) > 0) {
+        *(volatile uint32_t *)&l1 = 0x3ecccccd;
+        x = k(0xf270b8);
+        *(volatile uint32_t *)&l0 = 0x3f0ccccd;
+    }
+    long double y = l1;
+    if (i(0x654) > 0) {
+        y = y + k(0xf367ec), x = x + k(0xf367e8);
+        l0 = (float)((long double)l0 + k(0xf367e4));
+    }
+    if (i(0x644) > 0 || i(0x648) > 0) {
+        y = y + k(0xf2651c), x = x + k(0xf27ca8);
+        l0 = (float)((long double)l0 + k(0xf283d8));
+    }
+    if (i(0x650) > 0) y = y + k(0xf367e8), x = x + k(0xf27ca8);
+    const int32_t v = i(0x65c);
+    if (v > 0) {
+        y = y + cap(v, 9) * k(0xf367e0);
+        x = x + cap(v, 11) * k(0xf367dc);
+        int32_t c = v - 5;
+        c = c < 0 ? 0 : c > 10 ? 10 : c;
+        l0 = (float)((long double)c * k(0xf283d8) + l0);
+    }
+    volatile float f2 = (float)i(0x61c), f3 = (float)i(0x618), f4 = (float)i(0x614), f5 = (float)i(0x62c), f6 = (float)i(0x628), f7 = (float)i(0x624);
+    l1 = (float)((((((long double)f2 * k(0xf29304) + y) + (long double)f3 * k(0xf367d8)) + (long double)f4 * k(0xf367d4)) + (long double)f5 * k(0xf367d0) + (long double)f6 * k(0xf367d0)) + (long double)f7 * k(0xf367cc));
+    x = (((((x + (long double)f2 * k(0xf367c8)) + (long double)f3 * k(0xf367c4)) + (long double)f4 * k(0xf367c0)) + (long double)f5 * k(0xf367c8)) + (long double)f6 * k(0xf367c4)) + (long double)f7 * k(0xf367c0);
+    long double z = (((((long double)f2 * k(0xf270b4) + l0) + (long double)f3 * k(0xf367bc)) + (long double)f4 * k(0xf367b8)) + (long double)f5 * k(0xf367b4) + (long double)f6 * k(0xf367bc)) + (long double)f7 * k(0xf367b0);
+    const int32_t w = i(0x640);
+    l1 = (float)(cap(w, 4) * k(0xf29320) + l1);
+    z = z + cap(w, 8) * k(0xf29320);
+    long double d = cap(i(0x63c), 6) * k(0xf270e4) + l1;
+    d = d + cap(i(0x638), 6) * k(0xf367ac);
+    d = d + cap(i(0x634), 7) * k(0xf367a8);
+    const int32_t f = i(0x5f8);
+    if (f > 0) {
+        d = d + cap(f, 6) * k(0xf367a4);
+        x = x + cap(f, 6) * k(0xf2651c);
+        z = z + cap(f, 6) * k(0xf367a0);
+    }
+    volatile float *const o = out;
+    o[0] = (float)(d * k(0xf3679c));
+    o[1] = (float)(x * k(0xf36798));
+    o[2] = (float)(z * k(0xf36794));
+    return 1;
+}
+static const uint8_t person_values_4fea70_original[] = {0x8b, 0x81, 0xb8, 0x00, 0x00, 0x00, 0x83, 0xec, 0x20, 0x85, 0xc0};
+REWRITE("Person::Values4FEA70", 0x4fea70, person_values_4fea70_original, &person_values_4fea70, &g_person_values_e);
+
+// ---- Track::SpeedBBD650(dt, frame, dir, push) (0xBBD650): moves a body along a track frame's axis -----------------------
+// When on (+0x14): s = frame's third row (+0x20) . dir; g = 1 past the limit (+0x1C), (s + lim) / 2 lim inside it, else 0.
+// The target f = ((g k push) . the second row (+0x10)) times that row (k +0x20). The velocity wanted toward f from the
+// place (+0x30) over dt is eased (sqrt of its length times K1 over (length + K2)); if that would carry past f it heads
+// straight for f instead. The change from the velocity (+0x40), capped at length K3, is added over dt; then the place
+// moves by the velocity dt. (K1 0xF355E4, K2 0xF26E2C, K3 0xF28218; roundings as the game's.)
+static volatile long g_track_speeds;
+static void __thiscall track_speed_bbd650(uint8_t *self, float dt, const float *a, const float *b, const float *c) {
+    g_track_speeds++;
+    if (!*(const uint32_t *)(self + 0x14)) return;
+    volatile float *const s = (volatile float *)self;
+    auto k = [](uint32_t at) { return (long double)*(const float *)at; };
+    const long double one = k(0xf264dc), zero = k(0xf264e0), lim = s[7];
+    const long double sv = ((long double)a[10] * b[2] + (long double)a[9] * b[1]) + (long double)b[0] * a[8];
+    volatile float sf = (float)sv;
+    long double g;
+    if (sv > lim) g = one;
+    else if (-lim < sf) g = ((long double)sf + lim) / (lim + lim);
+    else g = zero;
+    const long double kk = s[8];
+    const long double a0 = kk * c[0] * g;
+    volatile float kc1 = (float)(kk * c[1]), kc2 = (float)(kk * c[2]);
+    const long double a1 = (long double)kc1 * g, a2 = g * kc2;
+    const long double f = (a2 * a[6] + a1 * a[5]) + a0 * a[4];
+    volatile float f0 = (float)(f * a[4]), f1 = (float)(f * a[5]), f2 = (float)(f * a[6]);
+    volatile float d0 = (float)((long double)f0 - s[12]), d1 = (float)((long double)f1 - s[13]), d2 = (float)((long double)f2 - s[14]);
+    const long double r = one / dt;
+    const long double e0 = (long double)d0 * r;
+    volatile float e1 = (float)((long double)d1 * r);
+    const long double e2 = (long double)d2 * r;
+    volatile float e2f = (float)e2;
+    const long double len = x87_sqrt_h2((e2 * e2f + (long double)e1 * e1) + e0 * e0);
+    const long double h = x87_sqrt_h2(len) * k(0xf355e4) / (len + k(0xf26e2c));
+    volatile float hf = (float)h;
+    volatile float he0 = (float)(h * e0), he2 = (float)((long double)e2f * hf);
+    long double he1 = (long double)e1 * hf;
+    const long double g0 = (long double)s[12] - f0, g1 = (long double)s[13] - f1, g2 = (long double)s[14] - f2;
+    volatile float n0 = (float)((long double)he0 * dt + s[12]), n1 = (float)(he1 * dt + s[13]);
+    volatile float he2dt = (float)((long double)he2 * dt);
+    const long double n2 = (long double)he2dt + s[14];
+    volatile float m0 = (float)((long double)n0 - f0), m1 = (float)((long double)n1 - f1);
+    const long double m2 = n2 - f2;
+    if ((m2 * g2 + (long double)m1 * g1) + (long double)m0 * g0 < zero) {
+        const long double x0 = (long double)f0 - s[12];
+        volatile float x1 = (float)((long double)f1 - s[13]), x2 = (float)((long double)f2 - s[14]);
+        volatile float rf = (float)r;
+        he0 = (float)(x0 * r);
+        he1 = (long double)x1 * rf;
+        he2 = (float)((long double)x2 * rf);
+    }
+    volatile float w0 = (float)((long double)he0 - s[16]), w1 = (float)(he1 - s[17]), w2 = (float)((long double)he2 - s[18]);
+    volatile float rf2 = (float)r;
+    long double z0 = r * w0, z1 = (long double)w1 * rf2;
+    const long double z2 = (long double)w2 * rf2;
+    volatile float z2f = (float)z2;
+    const long double zl = x87_sqrt_h2((z2 * z2f + z1 * z1) + z0 * z0);
+    if (zl > k(0xf28218)) {
+        const long double sc = k(0xf28218) / (zl + k(0xf26e2c));
+        z0 = z0 * sc;
+        z1 = z1 * sc;
+        z2f = (float)((long double)z2f * sc);
+    }
+    volatile float q0 = (float)(z0 * dt), q1 = (float)(z1 * dt);
+    const long double q2 = (long double)z2f * dt;
+    s[18] = (float)(q2 + s[18]);
+    s[16] = (float)((long double)q0 + s[16]);
+    s[17] = (float)((long double)q1 + s[17]);
+    const long double p0 = (long double)dt * s[16];
+    volatile float p1 = (float)((long double)dt * s[17]), p2 = (float)((long double)dt * s[18]);
+    s[14] = (float)((long double)p2 + s[14]);
+    s[12] = (float)(p0 + s[12]);
+    s[13] = (float)((long double)p1 + s[13]);
+}
+static const uint8_t track_speed_bbd650_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x50, 0x8b, 0x41, 0x14};
+REWRITE("Track::SpeedBBD650", 0xbbd650, track_speed_bbd650_original, &track_speed_bbd650, &g_track_speeds);

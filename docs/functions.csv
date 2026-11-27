@@ -2985,7 +2985,7 @@ address,size,name,callers,status
 0x4fe690,207,Ride::Part4FE690,1,rewritten
 0x4fe790,282,,5,documented
 0x4fe8f0,380,Person::Values4FE8F0,1,rewritten
-0x4fea70,894,,1,documented
+0x4fea70,894,Person::Values4FEA70,1,rewritten
 0x4fedf0,182,Person::Values4FEDF0,1,rewritten
 0x4feeb0,268,Person::Values4FEEB0,1,rewritten
 0x4fefc0,804,,1,documented
@@ -19461,7 +19461,7 @@ address,size,name,callers,status
 0xbbd3d0,368,,1,documented
 0xbbd540,53,,2,documented
 0xbbd580,199,,1,documented
-0xbbd650,799,,1,documented
+0xbbd650,799,Track::SpeedBBD650,1,rewritten
 0xbbd970,1010,,0,documented
 0xbbde40,261,,1,documented
 0xbbdf50,1,,1,documented
