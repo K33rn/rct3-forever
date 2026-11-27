@@ -10079,7 +10079,7 @@ address,size,name,callers,status
 0x7e5f60,26,OwnedPointer::Reset,2,rewritten
 0x7e5f80,26,OwnedPointer::Reset,0,rewritten
 0x7e5fa0,1734,,2,documented
-0x7e6750,303,,0,documented
+0x7e6750,303,Person::Loop7E6750,0,rewritten
 0x7e6890,33,,0,documented
 0x7e68c0,26,OwnedPointer::Reset,0,rewritten
 0x7e68e0,107,MEMBER_DTOR,2,rewritten
@@ -16745,8 +16745,8 @@ address,size,name,callers,status
 0xaa9f70,33,,1,documented
 0xaa9fa0,52,,1,documented
 0xaaa060,30,DeletingDestructor,1,rewritten
-0xaaa110,323,,0,documented
-0xaaa300,346,,0,documented
+0xaaa110,323,PoolComplex::LoopAAA110,0,rewritten
+0xaaa300,346,PoolComplex::PointsAAA300,0,rewritten
 0xaaa460,12,,1,documented
 0xaaa470,130,,1,documented
 0xaaa500,148,,1,documented
@@ -22797,7 +22797,7 @@ address,size,name,callers,status
 0xcd0270,530,Triangle::RayHit,1,rewritten
 0xcd0490,51,,2,documented
 0xcd04d0,49,,1,documented
-0xcd0510,336,,2,documented
+0xcd0510,336,Camera::TimeCD0510,2,rewritten
 0xcd0660,107,SinTable::Sin,0,rewritten
 0xcd06d0,1412,,0,documented
 0xcd0c60,131,,4,documented
@@ -22861,7 +22861,7 @@ address,size,name,callers,status
 0xcd79c0,487,Camera::ScreenRay,55,rewritten
 0xcd7bb0,322,,23,documented
 0xcd7d00,187,,5,documented
-0xcd7dc0,334,,10,documented
+0xcd7dc0,334,Camera::RayCD7DC0,10,rewritten
 0xcd7f60,62,Camera::PartCD7F60,0,rewritten
 0xcd8010,14,,1,documented
 0xcd8060,228,Camera::PassCD8060,1,rewritten
@@ -22928,7 +22928,7 @@ address,size,name,callers,status
 0xcdf0f0,26,,1,documented
 0xcdf110,204,,0,documented
 0xcdf1e0,26,,1,documented
-0xcdf200,323,,5,documented
+0xcdf200,323,Vector::CompareCDF200,5,rewritten
 0xcdf3c0,38,Slot::ResetCDF3C0,3,rewritten
 0xcdf3f0,26,Object::FreeTwoFields,12,rewritten
 0xcdf410,38,Slot::ResetCDF3C0,1,rewritten

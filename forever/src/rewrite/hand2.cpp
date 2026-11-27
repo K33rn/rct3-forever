@@ -9374,3 +9374,183 @@ static void __thiscall track_round_bb69e0(const uint8_t *self, const uint16_t *l
 }
 static const uint8_t track_round_bb69e0_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x10, 0x53, 0x55, 0x56};
 REWRITE("Track::RoundBB69E0", 0xbb69e0, track_round_bb69e0_original, &track_round_bb69e0, &g_track_key_places);
+
+// ---- Camera::TimeCD0510(track, t, wrap, part, from, to) (0xCD0510): which two keys of a track t lies between -----------
+// Track k (64 bytes at +0x24: key count +0x24, key times +0x28). t below 0 or a single key gives 0, 0, 0. t at or past
+// the last time: without wrap gives the last key twice and 0; with wrap t - floor(t / last + 0.00001 (a float)) last.
+// Then from = the first key whose time is above t (a binary search), to = the next (0 after the last), and part = (t -
+// the time before from (0 for the first)) / (from's time - that).
+static volatile long g_camera_key_finds;
+static void __thiscall camera_time_cd0510(const uint8_t *self, int32_t k, float t, uint8_t wrap, float *part, int32_t *from, int32_t *to) {
+    g_camera_key_finds++;
+    const uint8_t *const e = *(const uint8_t *const *)(self + 0x24) + k * 64;
+    const int32_t count = *(const int32_t *)(e + 0x24);
+    const float *const times = *(const float *const *)(e + 0x28);
+    const float last = times[count - 1];
+    if (t < *(const float *)0xf264e0 || count == 1) {
+        *from = 0, *to = 0, *(uint32_t *)part = 0;
+        return;
+    }
+    long double v = t;
+    if (!(t < last || __builtin_isunordered(t, last))) {
+        if (!wrap) {
+            *from = count - 1, *to = count - 1, *(uint32_t *)part = 0;
+            return;
+        }
+        volatile float x = (float)((long double)t / last + *(const float *)0xf2e9f0);
+        volatile float f = (float)floor_h2(x);
+        v = (long double)t - (long double)f * last;
+    }
+    int32_t lo = 0, hi = count - 1;
+    while (lo != hi) {
+        const int32_t mid = (lo + hi) >> 1;
+        if (v < times[mid]) hi = mid;
+        else lo = mid + 1;
+    }
+    *from = lo;
+    *to = lo + 1 >= count ? 0 : lo + 1;
+    const long double prev = lo ? (long double)times[lo - 1] : (long double)*(const float *)0xf264e0;
+    *(volatile float *)part = (float)((v - prev) / ((long double)times[lo] - prev));
+}
+static const uint8_t camera_time_cd0510_original[] = {0x51, 0x8b, 0x54, 0x24, 0x08, 0x8b, 0x41, 0x24, 0xc1, 0xe2, 0x06};
+REWRITE("Camera::TimeCD0510", 0xcd0510, camera_time_cd0510_original, &camera_time_cd0510, &g_camera_key_finds);
+
+// ---- PoolComplex::LoopAAA110(i, n, nodes) (0xAAA110): sifts heap place i down among n (smallest key on top) ------------
+// The heap (*self) holds node numbers; a node's key is its +0x2C + +0x28 (nodes of 0x38 bytes at *nodes). The smaller
+// child (the second on ties) moves up while its key is below the moved node's.
+static volatile long g_pool_heap_sifts;
+static void __thiscall pool_complex_loop_aaa110(const uint32_t *const *self, int32_t i, int32_t n, const uint8_t *const *nodes) {
+    g_pool_heap_sifts++;
+    auto key = [&](uint32_t node) {
+        const float *const p = (const float *)(*nodes + node * 0x38);
+        return (long double)p[0x2c / 4] + p[0x28 / 4];
+    };
+    uint32_t *const heap = (uint32_t *)*self;
+    const uint32_t v = heap[i];
+    int32_t hole = i, c = 2 * i + 1;
+    for (; c + 1 < n; c = 2 * hole + 1) {
+        const int32_t pick = key(heap[c + 1]) > key(heap[c]) ? c : c + 1;
+        if (!(key(v) > key(heap[pick]))) goto done;
+        heap[hole] = heap[pick];
+        hole = pick;
+    }
+    if (c < n && key(v) > key(heap[c])) {
+        heap[hole] = heap[c];
+        hole = c;
+    }
+done:
+    heap[hole] = v;
+}
+static const uint8_t pool_complex_loop_aaa110_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x0c, 0x53, 0x55, 0x56};
+REWRITE("PoolComplex::LoopAAA110", 0xaaa110, pool_complex_loop_aaa110_original, &pool_complex_loop_aaa110, &g_pool_heap_sifts);
+
+// ---- PoolComplex::PointsAAA300(nodes) (0xAAA300): takes the top off the pool's heap ------------------------------------
+// The count (+8) goes down; with any left, the last takes the top place and sifts down as PoolComplex::LoopAAA110 does.
+static volatile long g_pool_heap_pops;
+static void __thiscall pool_complex_points_aaa300(uint32_t *self, const uint8_t *const *nodes) {
+    g_pool_heap_pops++;
+    const int32_t n = (int32_t)--self[2];
+    if (!n) return;
+    uint32_t *const heap = (uint32_t *)(uintptr_t)self[0];
+    heap[0] = heap[n];
+    auto key = [&](uint32_t node) {
+        const float *const p = (const float *)(*nodes + node * 0x38);
+        return (long double)p[0x2c / 4] + p[0x28 / 4];
+    };
+    const uint32_t v = heap[0];
+    int32_t hole = 0, c = 1;
+    for (; c + 1 < n; c = 2 * hole + 1) {
+        const int32_t pick = key(heap[c + 1]) > key(heap[c]) ? c : c + 1;
+        if (!(key(v) > key(heap[pick]))) goto done;
+        heap[hole] = heap[pick];
+        hole = pick;
+    }
+    if (c < n && key(v) > key(heap[c])) {
+        heap[hole] = heap[c];
+        hole = c;
+    }
+done:
+    heap[hole] = v;
+}
+static const uint8_t pool_complex_points_aaa300_original[] = {0x83, 0xec, 0x10, 0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x08, 0x48};
+REWRITE("PoolComplex::PointsAAA300", 0xaaa300, pool_complex_points_aaa300_original, &pool_complex_points_aaa300, &g_pool_heap_pops);
+
+// ---- Person::Loop7E6750(i, n, items) (0x7E6750): sifts heap place i down among n (smallest key on top) ----------------
+// The heap (*self) holds item numbers; an item's key is the float at +8 (items of 20 bytes at *items). The smaller child
+// (the second on ties) moves up while its key is below the moved item's.
+static volatile long g_person_heap_sifts;
+static void __thiscall person_loop_7e6750(const uint32_t *const *self, int32_t i, int32_t n, const uint8_t *const *items) {
+    g_person_heap_sifts++;
+    auto key = [&](uint32_t item) { return *(const float *)(*items + item * 20 + 8); };
+    uint32_t *const heap = (uint32_t *)*self;
+    const uint32_t v = heap[i];
+    int32_t hole = i, c = 2 * i + 1;
+    for (; c + 1 < n; c = 2 * hole + 1) {
+        const int32_t pick = key(heap[c]) < key(heap[c + 1]) ? c : c + 1;
+        if (!(key(heap[pick]) < key(v))) goto done;
+        heap[hole] = heap[pick];
+        hole = pick;
+    }
+    if (c < n && key(heap[c]) < key(v)) {
+        heap[hole] = heap[c];
+        hole = c;
+    }
+done:
+    heap[hole] = v;
+}
+static const uint8_t person_loop_7e6750_original[] = {0x83, 0xec, 0x10, 0x8b, 0x44, 0x24, 0x14, 0x53, 0x55, 0x8b, 0xd1};
+REWRITE("Person::Loop7E6750", 0x7e6750, person_loop_7e6750_original, &person_loop_7e6750, &g_person_heap_sifts);
+
+// ---- Camera::RayCD7DC0(out, point, size) (0xCD7DC0): where a point lands on a screen of size, and whether it is on it ----
+// d = point - place (+0x160); c = d against the camera's right (+0x120), up (+0x130), forward (+0x140) ((z + y) + x; the
+// first two floats). w = (flat (+0x1A6): +0x198, else c.z) tan(field of view (+0x190) / 2). out = ((cx / w + 1) size.x,
+// (cy / (w / +0x194) + 1) size.y) / 2 (floats). 1 when c.z is past the near distance (+0x188) and out lies within
+// 0..size, else 0.
+static volatile long g_camera_projections;
+static uint32_t __thiscall camera_ray_cd7dc0(const uint8_t *self, float *out, const float *point, const float *size) {
+    g_camera_projections++;
+    auto m = [&](uint32_t at) { return *(const float *)(self + at); };
+    const long double dx = (long double)point[0] - m(0x160), dy = (long double)point[1] - m(0x164), dz = (long double)point[2] - m(0x168);
+    volatile float cx = (float)((dz * m(0x128) + dy * m(0x124)) + dx * m(0x120));
+    volatile float cy = (float)((dz * m(0x138) + dy * m(0x134)) + dx * m(0x130));
+    const long double cz = (dz * m(0x148) + dy * m(0x144)) + dx * m(0x140);
+    const long double h = self[0x1a6] ? (long double)m(0x198) : cz;
+    const long double half = *(const float *)0xf2651c, one = *(const float *)0xf264dc;
+    const long double w = h * x87_tan_h2((long double)m(0x190) * half);
+    const long double wa = w / m(0x194);
+    volatile float *const o = out;
+    o[0] = (float)(((long double)cx / w + one) * size[0] * half);
+    volatile float y = (float)(((long double)cy / wa + one) * size[1] * half);
+    o[1] = y;
+    if (!(cz > m(0x188))) return 0;
+    if (!(o[0] >= *(const float *)0xf264e0) || !(o[0] <= size[0])) return 0;
+    if (!(y >= *(const float *)0xf264e0) || !(y <= size[1])) return 0;
+    return 1;
+}
+static const uint8_t camera_ray_cd7dc0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x0c, 0x8b, 0x45, 0x0c};
+REWRITE("Camera::RayCD7DC0", 0xcd7dc0, camera_ray_cd7dc0_original, &camera_ray_cd7dc0, &g_camera_projections);
+
+// ---- Vector::CompareCDF200(a in ecx, b in edx, points, dir) (0xCDF200): which of two triangles reaches less far along dir --
+// Each triangle's least (y dy + z dz) + x dx over its three point numbers (points of 16 bytes; the second and third
+// as floats, the first unrounded, ties keeping the earlier). 1 when a's is above b's, -1 when below, else 0.
+static volatile long g_triangle_compares;
+static long double triangle_least_h2(const uint32_t *t, const float *points, const float *d) {
+    auto dot = [&](uint32_t i) {
+        const float *const v = points + i * 4;
+        return ((long double)v[1] * d[1] + (long double)v[2] * d[2]) + (long double)v[0] * d[0];
+    };
+    volatile float f1 = (float)dot(t[1]), f2 = (float)dot(t[2]);
+    long double m = dot(t[0]);
+    if (f1 < m) m = f1;
+    if (f2 < m) m = f2;
+    return m;
+}
+static int32_t __fastcall vector_compare_cdf200(const uint32_t *a, const uint32_t *b, const float *points, const float *d) {
+    g_triangle_compares++;
+    const long double ma = triangle_least_h2(a, points, d), mb = triangle_least_h2(b, points, d);
+    if (ma > mb) return 1;
+    if (ma < mb) return -1;
+    return 0;
+}
+static const uint8_t vector_compare_cdf200_original[] = {0x8b, 0x01, 0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x8b, 0x74, 0x24, 0x10};
+REWRITE("Vector::CompareCDF200", 0xcdf200, vector_compare_cdf200_original, &vector_compare_cdf200, &g_triangle_compares);

@@ -5978,4 +5978,110 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 return Result{0};
                             }};
     quick(track_round_bb69e0);
+    // Camera::TimeCD0510: tracks of 1-8 rising key times, t below, inside (on keys at times) and past the end, with or
+    // without wrap
+    Test camera_time_cd0510{0xcd0510,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                *(uint32_t *)(self + 0x24) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                const int k = r.range(0, 2), count = r.range(0, 5) ? r.range(2, 8) : 1;
+                                uint8_t *e = arena<uint8_t>(0x200 + k * 64);
+                                *(int32_t *)(e + 0x24) = count, *(uint32_t *)(e + 0x28) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                float tm = r.real(0.1f, 2);
+                                for (int j = 0; j < count; j++) arena<float>(0x400)[j] = tm, tm += r.real(0.1f, 2);
+                                const float last = arena<float>(0x400)[count - 1];
+                                float t;
+                                switch (r.range(0, 4)) {
+                                case 0: t = r.real(-2, 0); break;
+                                case 1: t = arena<float>(0x400)[r.range(0, count - 1)]; break;
+                                case 2: t = r.real(last, last * 4); break;
+                                default: t = r.real(0, last); break;
+                                }
+                                arena<int32_t>(0x40)[0] = k, arena<float>(0x40)[1] = t, arena<uint32_t>(0x40)[2] = r.range(0, 1) | (r.next() & 0xff00);
+                                for (int j = 0; j < 3; j++) arena<uint32_t>(0x60)[j] = r.next();
+                            },
+                            [](void *fn) {
+                                const uint32_t *a = arena<uint32_t>(0x40);
+                                ((void(__thiscall *)(const void *, int32_t, float, uint32_t, void *, void *, void *))fn)(arena<void>(0x100), (int32_t)a[0], arena<float>(0x40)[1], a[2], arena<void>(0x60), arena<void>(0x64), arena<void>(0x68));
+                                return Result{0};
+                            }};
+    quick(camera_time_cd0510);
+    // PoolComplex::LoopAAA110: heaps of 1-12 node numbers over 12 nodes with small whole keys (ties), any place i
+    Test pool_complex_loop_aaa110{0xaaa110,
+                                  [=](Rng &r) {
+                                      *arena<uint32_t>(0x100) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                      *arena<uint32_t>(0x110) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                      const int n = r.range(1, 12);
+                                      for (int j = 0; j < 12; j++) {
+                                          arena<uint32_t>(0x200)[j] = r.range(0, 11);
+                                          float *node = arena<float>(0x400 + j * 0x38);
+                                          node[0x28 / 4] = (float)r.range(0, 4), node[0x2c / 4] = r.range(0, 1) ? (float)r.range(0, 4) : r.real(0, 4);
+                                      }
+                                      arena<int32_t>(0x40)[0] = r.range(0, n - 1), arena<int32_t>(0x40)[1] = n;
+                                  },
+                                  [](void *fn) {
+                                      ((void(__thiscall *)(const void *, int32_t, int32_t, const void *))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1], arena<void>(0x110));
+                                      return Result{0};
+                                  }};
+    quick(pool_complex_loop_aaa110);
+    // PoolComplex::PointsAAA300: heaps of 1-12 node numbers over 12 nodes with small whole keys (ties)
+    Test pool_complex_points_aaa300{0xaaa300,
+                                    [=](Rng &r) {
+                                        uint32_t *self = arena<uint32_t>(0x100);
+                                        self[0] = (uint32_t)(uintptr_t)arena<void>(0x200), self[2] = r.range(1, 12);
+                                        *arena<uint32_t>(0x110) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                        for (int j = 0; j < 12; j++) {
+                                            arena<uint32_t>(0x200)[j] = r.range(0, 11);
+                                            float *node = arena<float>(0x400 + j * 0x38);
+                                            node[0x28 / 4] = (float)r.range(0, 4), node[0x2c / 4] = r.range(0, 1) ? (float)r.range(0, 4) : r.real(0, 4);
+                                        }
+                                    },
+                                    [](void *fn) {
+                                        ((void(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x110));
+                                        return Result{0};
+                                    }};
+    quick(pool_complex_points_aaa300);
+    // Person::Loop7E6750: heaps of 1-12 item numbers over 12 items with small whole keys (ties), any place i
+    Test person_loop_7e6750{0x7e6750,
+                            [=](Rng &r) {
+                                *arena<uint32_t>(0x100) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                *arena<uint32_t>(0x110) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                const int n = r.range(1, 12);
+                                for (int j = 0; j < 12; j++) {
+                                    arena<uint32_t>(0x200)[j] = r.range(0, 11);
+                                    arena<float>(0x408 + j * 20)[0] = r.range(0, 1) ? (float)r.range(0, 4) : r.real(0, 4);
+                                }
+                                arena<int32_t>(0x40)[0] = r.range(0, n - 1), arena<int32_t>(0x40)[1] = n;
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(const void *, int32_t, int32_t, const void *))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1], arena<void>(0x110));
+                                return Result{0};
+                            }};
+    quick(person_loop_7e6750);
+    // Camera::RayCD7DC0: random camera frames, fields of view 0.3-2, flat or not, points ahead, behind and to the sides
+    Test camera_ray_cd7dc0{0xcd7dc0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               for (int k = 0; k < 12; k++) *(float *)(self + 0x120 + k * 4) = r.real(-1, 1);
+                               for (int k = 0; k < 3; k++) *(float *)(self + 0x160 + k * 4) = r.real(-20, 20);
+                               *(float *)(self + 0x188) = r.real(0, 2), *(float *)(self + 0x190) = r.real(0.3f, 2);
+                               *(float *)(self + 0x194) = r.real(0.5f, 2), *(float *)(self + 0x198) = r.real(1, 30);
+                               self[0x1a6] = r.range(0, 2) == 0;
+                               for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = *(float *)(self + 0x160 + k * 4) + r.real(-30, 30);
+                               arena<float>(0x50)[0] = r.real(100, 1000), arena<float>(0x50)[1] = r.real(100, 1000);
+                               arena<uint32_t>(0x60)[0] = r.next(), arena<uint32_t>(0x60)[1] = r.next();
+                           },
+                           [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, void *, const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x60), arena<void>(0x40), arena<void>(0x50))}; }};
+    quick(camera_ray_cd7dc0);
+    // Vector::CompareCDF200: two triangles over 8 points of small whole or random values (ties), random directions (a in
+    // ecx, b in edx)
+    Test vector_compare_cdf200{0xcdf200,
+                               [=](Rng &r) {
+                                   const bool whole = r.range(0, 1);
+                                   for (int k = 0; k < 32; k++) arena<float>(0x200)[k] = whole ? (float)r.range(-3, 3) : r.real(-10, 10);
+                                   for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = whole ? (float)r.range(-2, 2) : r.real(-1, 1);
+                                   for (int k = 0; k < 6; k++) arena<uint32_t>(0x60)[k] = r.range(0, 7);
+                               },
+                               [](void *fn) { return Result{(uint32_t)((int32_t(__fastcall *)(const void *, const void *, const void *, const void *))fn)(arena<void>(0x60), arena<void>(0x6c), arena<void>(0x200), arena<void>(0x40))}; }};
+    quick(vector_compare_cdf200);
 #endif
