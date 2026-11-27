@@ -1919,3 +1919,527 @@ static uint32_t __fastcall model_blend_ccf530(int32_t n, const float *m, float t
 }
 static const uint8_t model_blend_ccf530_original[] = {0x55, 0x8b, 0xec, 0x83, 0xec, 0x14, 0xd9, 0x45, 0x08};
 REWRITE("Model::BlendCCF530", 0xccf530, model_blend_ccf530_original, &model_blend_ccf530, &g_model_blends);
+
+static inline long double x87_sqrt_h2(long double v) {
+    __asm__("fsqrt" : "+t"(v));
+    return v;
+}
+
+// ---- Water::Segment925AC0(px, py, ax, ay, bx, by, out) (0x925AC0): the nearest point of a segment and how far ---------
+// d = b - a (floats); t = (p - a) . d. When t (unrounded) is not above the game's 0 (0xF264E0) the nearest point is a;
+// when |d|^2 is not above t (as a float) it is b; both give the game's constant 0xF268F0. Otherwise it is a + d t / |d|^2
+// (each part rounded to a float, written to out) and the distance to it is given on the FPU, unrounded. A NaN goes on.
+static volatile long g_water_segments;
+static long double __stdcall water_segment(float px, float py, float ax, float ay, float bx, float by, float *out) {
+    g_water_segments++;
+    volatile float dx = (float)((long double)bx - ax), dy = (float)((long double)by - ay);
+    const long double tl = ((long double)py - ay) * dy + ((long double)px - ax) * dx;
+    volatile float t = (float)tl;
+    const float zero = *(const float *)0xf264e0;
+    if (!(tl > zero) && !(tl != tl || zero != zero)) {
+        out[0] = ax, out[1] = ay;
+        return *(const float *)0xf268f0;
+    }
+    const long double l = (long double)dy * dy + (long double)dx * dx;
+    const float tf = t;
+    if (!(l > tf) && !(l != l || tf != tf)) {
+        out[0] = bx, out[1] = by;
+        return *(const float *)0xf268f0;
+    }
+    const long double s = (long double)tf / l;
+    volatile float sy = (float)((long double)dy * s);
+    volatile float qx = (float)((long double)dx * s + ax);
+    *(volatile float *)out = qx;
+    volatile float qy = (float)((long double)sy + ay);
+    *(volatile float *)(out + 1) = qy;
+    const long double ex = (long double)px - out[0], ey = (long double)py - out[1];
+    return x87_sqrt_h2(ey * ey + ex * ex);
+}
+static const uint8_t water_segment_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x44, 0x24, 0x20, 0xd8};
+REWRITE("Water::Segment925AC0", 0x925ac0, water_segment_original, &water_segment, &g_water_segments);
+
+// ---- WildAnimal::NearB1CED0(animal, p, v, r, out) (0xB1CED0): a point pulled back along a direction when too far ------
+// D = the flat distance from the animal (+0x80, +0x88) to p (x rounded to a float, z not). Within r, out = p. Beyond:
+// S = (D - r) (C2 / (C1 + D)) / (|v| + C3) (constants 0xF2669C, 0xF2784C, 0xF26E2C) and out = p - S v (the y and z
+// products rounded to floats, the x one not).
+static volatile long g_animal_nears;
+static void __stdcall wild_animal_near(const uint8_t *animal, const float *p, const float *v, float r, float *out) {
+    g_animal_nears++;
+    const float vx = v[0], vy = v[1], vz = v[2];
+    volatile float dx = (float)((long double)*(const float *)(animal + 0x80) - p[0]);
+    const long double dz = (long double)*(const float *)(animal + 0x88) - p[2];
+    const long double d = x87_sqrt_h2(dz * dz + (long double)dx * dx);
+    if (!(d > r) && !(d != d || r != r)) {
+        volatile uint32_t *const o = (volatile uint32_t *)out;
+        const uint32_t *const q = (const uint32_t *)p;
+        o[0] = q[0], o[1] = q[1], o[2] = q[2];
+        return;
+    }
+    const long double q = (long double)*(const float *)0xf2784c / ((long double)*(const float *)0xf2669c + d);
+    const long double w = (d - r) * q;
+    const long double n = x87_sqrt_h2(((long double)vz * vz + (long double)vy * vy) + (long double)vx * vx);
+    const long double s = w / (n + *(const float *)0xf26e2c);
+    const long double ax = (long double)vx * s;
+    volatile float sy = (float)(s * vy);
+    volatile float sz = (float)((long double)vz * s);
+    const long double x = (long double)p[0] - ax;
+    const long double y = (long double)p[1] - sy;
+    const long double z = (long double)p[2] - sz;
+    volatile float *const o = out;
+    o[0] = (float)x, o[1] = (float)y, o[2] = (float)z;
+}
+static const uint8_t wild_animal_near_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x20, 0x8b, 0x45, 0x10};
+REWRITE("WildAnimal::NearB1CED0", 0xb1ced0, wild_animal_near_original, &wild_animal_near, &g_animal_nears);
+
+// A unit direction written out, or (0, 0, 1) when its length is exactly the game's 0 (0xF264E0); x and y come as
+// floats, z unrounded; scaled by C1 / length (C1 0xF264DC), each part rounded once.
+static void unit_or_up(float x, float y, long double z, float *out) {
+    const long double len = x87_sqrt_h2((z * z + (long double)y * y) + (long double)x * x);
+    if (len == *(const float *)0xf264e0) {
+        volatile uint32_t *const o = (volatile uint32_t *)out;
+        o[0] = 0, o[1] = 0, o[2] = 0x3f800000;
+        return;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    volatile float *const o = out;
+    o[0] = (float)((long double)x * inv);
+    o[1] = (float)((long double)y * inv);
+    o[2] = (float)(z * inv);
+}
+// the sum of two points negated (x and y rounded to floats, z not), as a unit direction
+static void back_from(const float *e, const float *f, float *out) {
+    volatile float sx = (float)(-(long double)f[0] + -(long double)e[0]);
+    volatile float sy = (float)(-(long double)f[1] + -(long double)e[1]);
+    unit_or_up(sx, sy, -(long double)f[2] + -(long double)e[2], out);
+}
+
+// ---- Ride::Last5BB3A0(this, out) (0x5BB3A0) and TrackPiece::Length5BB2B0 (0x5BB2B0): the way back from two points ---
+// Lists at +0x2C and +0x28 hold {count, 0x24-byte entries}. Ride::Last takes each list's last entry's point (+0xC),
+// TrackPiece::Length each first entry's (+0x18): back_from of the two.
+static volatile long g_ride_lasts;
+static void __thiscall ride_last_5bb3a0(const uint8_t *self, float *out) {
+    g_ride_lasts++;
+    auto last = [&](uint32_t at) {
+        const uint32_t *const list = *(const uint32_t *const *)(self + at);
+        return (const float *)(uintptr_t)(list[1] + 0x24 * list[0] - 0x18);
+    };
+    back_from(last(0x2c), last(0x28), out);
+}
+static void __thiscall track_piece_length(const uint8_t *self, float *out) {
+    g_ride_lasts++;
+    auto first = [&](uint32_t at) { return (const float *)(uintptr_t)((*(const uint32_t *const *)(self + at))[1] + 0x18); };
+    back_from(first(0x2c), first(0x28), out);
+}
+static const uint8_t ride_last_5bb3a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8b, 0x41, 0x2c};
+REWRITE("Ride::Last5BB3A0", 0x5bb3a0, ride_last_5bb3a0_original, &ride_last_5bb3a0, &g_ride_lasts);
+REWRITE("TrackPiece::Length5BB2B0", 0x5bb2b0, ride_last_5bb3a0_original, &track_piece_length, &g_ride_lasts);
+
+// ---- TrackPiece::Last5BE8B0(this, out) (0x5BE8B0): the unit direction from one list's last point to the other's -----
+// The last entries' points (+0) of the lists at +0x28 (from) and +0x2C (to): x as a float, y and z unrounded.
+static void __thiscall track_piece_last(const uint8_t *self, float *out) {
+    g_ride_lasts++;
+    auto last = [&](uint32_t at) {
+        const uint32_t *const list = *(const uint32_t *const *)(self + at);
+        return (const float *)(uintptr_t)(list[1] + 0x24 * list[0] - 0x24);
+    };
+    const float *const e = last(0x28), *const f = last(0x2c);
+    const long double dy = (long double)f[1] - e[1];
+    volatile float dx = (float)((long double)f[0] - e[0]);
+    const long double dz = (long double)f[2] - e[2];
+    const long double len = x87_sqrt_h2((dz * dz + dy * dy) + (long double)dx * dx);
+    if (len == *(const float *)0xf264e0) {
+        volatile uint32_t *const o = (volatile uint32_t *)out;
+        o[0] = 0, o[1] = 0, o[2] = 0x3f800000;
+        return;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    volatile float *const o = out;
+    o[0] = (float)((long double)dx * inv);
+    o[1] = (float)(dy * inv);
+    o[2] = (float)(dz * inv);
+}
+static const uint8_t track_piece_last_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8b, 0x41, 0x28};
+REWRITE("TrackPiece::Last5BE8B0", 0x5be8b0, track_piece_last_original, &track_piece_last, &g_ride_lasts);
+
+static inline long double x87_round_h2(long double v) {
+    __asm__("frndint" : "+t"(v));
+    return v;
+}
+static inline long double x87_sin_h2(long double v) {
+    __asm__("fsin" : "+t"(v));
+    return v;
+}
+static inline long double x87_cos_h2(long double v) {
+    __asm__("fcos" : "+t"(v));
+    return v;
+}
+
+// ---- Ride::Blend55FA00(this, t) (0x55FA00): three spinning parts moved on and their turn matrices made -----------------
+// For each part j: its angle (+0x3DC) grows by t times the speed (+0x70) over its period (+0x3D0); the whole turns
+// (angle x C (0xF36EE4), rounded down as a float) times a turn (0xF268DC) are taken off (the angle kept as a float).
+// Its matrix (0x40 bytes from +0x310) gets cos and sin of the angle (floats) as a turn about z: {c, s} in the first row,
+// {-s, c} in the second, and in the third and fourth {k1 - c k1 + s k2, k2 - s k1 - c k2} (k1 0xF3AF7C, k2 0xF3AF78;
+// each rounded once and written to both).
+static volatile long g_ride_spins;
+static void __thiscall ride_blend_55fa00(uint8_t *self, float t) {
+    g_ride_spins++;
+    const float k1 = *(const float *)0xf3af7c, k2 = *(const float *)0xf3af78;
+    for (int j = 0; j < 3; j++) {
+        volatile float *const angle = (volatile float *)(self + 0x3dc + 4 * j);
+        const long double v = (long double)t * *(const float *)(self + 0x70) / *(const float *)(self + 0x3d0 + 4 * j) + *angle;
+        *angle = (float)v;
+        volatile float u = (float)(v * *(const float *)0xf36ee4);
+        const long double r = x87_round_h2(u);
+        volatile float whole = (float)((long double)u >= r ? r : r - 1.0L);
+        const long double f = (long double)*angle - (long double)whole * *(const float *)0xf268dc;
+        *angle = (float)f;
+        volatile float s = (float)x87_sin_h2(f);
+        volatile float c = (float)x87_cos_h2(f);
+        uint8_t *const m = self + 0x310 + 0x40 * j;
+        *(volatile uint32_t *)m = *(volatile uint32_t *)&c;
+        *(volatile float *)(m + 0x10) = (float)-(long double)s;
+        *(volatile uint32_t *)(m + 4) = *(volatile uint32_t *)&s;
+        *(volatile uint32_t *)(m + 0x14) = *(volatile uint32_t *)&c;
+        const long double x = ((long double)k1 - (long double)c * k1) + (long double)s * k2;
+        *(volatile float *)(m + 0x20) = (float)x;
+        const long double y = ((long double)k2 - (long double)s * k1) - (long double)c * k2;
+        *(volatile float *)(m + 0x24) = (float)y;
+        *(volatile float *)(m + 0x30) = (float)x;
+        *(volatile float *)(m + 0x34) = (float)y;
+    }
+}
+static const uint8_t ride_blend_55fa00_original[] = {0x83, 0xec, 0x0c, 0x56, 0x57, 0x8d, 0x91, 0xdc, 0x03, 0x00, 0x00};
+REWRITE("Ride::Blend55FA00", 0x55fa00, ride_blend_55fa00_original, &ride_blend_55fa00, &g_ride_spins);
+
+// ---- Scenery::Points856900 (0x856900) and Water::Points97ACA0 (0x97ACA0): n vertices moved by a matrix ---------------
+// Vertices of 0x24 bytes: position, normal, then two values. Each written one gets the position times the 4x4 matrix
+// (rows 16 bytes apart; with its last row added) and the normal times its 3x3, each sum added in the game's order and
+// rounded once, then value at +0x18 and the source's +0x1C and +0x20. The source is read again after each write (as
+// the game does, so a vertex list moved in place gives what the game gives). Registers: n in eax, the matrix in ecx;
+// Scenery's then takes (to, from, value), Water's has from in edx and takes (to, value).
+static volatile long g_vertex_moves;
+extern "C" uint32_t __stdcall forever_vertices_move(int32_t n, const float *m, const uint8_t *from, uint8_t *to, uint32_t value) {
+    g_vertex_moves++;
+    for (; n > 0; n--, from += 0x24, to += 0x24) {
+        const volatile float *const s = (const volatile float *)from;
+        volatile float *const d = (volatile float *)to;
+        d[0] = (float)((((long double)s[2] * m[8] + (long double)m[4] * s[1]) + (long double)s[0] * m[0]) + m[12]);
+        d[1] = (float)((((long double)m[5] * s[1] + (long double)m[1] * s[0]) + (long double)s[2] * m[9]) + m[13]);
+        d[2] = (float)((((long double)s[2] * m[10] + (long double)m[6] * s[1]) + (long double)s[0] * m[2]) + m[14]);
+        d[3] = (float)(((long double)s[5] * m[8] + (long double)s[4] * m[4]) + (long double)s[3] * m[0]);
+        d[4] = (float)(((long double)m[5] * s[4] + (long double)m[1] * s[3]) + (long double)s[5] * m[9]);
+        const long double nz = ((long double)s[5] * m[10] + (long double)m[6] * s[4]) + (long double)s[3] * m[2];
+        *(volatile uint32_t *)(to + 0x18) = value;
+        d[5] = (float)nz;
+        *(volatile uint32_t *)(to + 0x1c) = *(const volatile uint32_t *)(from + 0x1c);
+        *(volatile uint32_t *)(to + 0x20) = *(const volatile uint32_t *)(from + 0x20);
+    }
+    return 0;
+}
+extern "C" __attribute__((naked)) void forever_scenery_points_regs() {   // (to, from, value) on the stack
+    __asm__("pushl 12(%esp)\n\tpushl 8(%esp)\n\tpushl 16(%esp)\n\tpushl %ecx\n\tpushl %eax\n\tcalll _forever_vertices_move@20\n\tret $12");
+}
+extern "C" __attribute__((naked)) void forever_water_points_regs() {   // from in edx; (to, value) on the stack
+    __asm__("pushl 8(%esp)\n\tpushl 8(%esp)\n\tpushl %edx\n\tpushl %ecx\n\tpushl %eax\n\tcalll _forever_vertices_move@20\n\tret $8");
+}
+static const uint8_t scenery_points_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x0c, 0x55, 0x8b, 0x6c, 0x24, 0x14};
+static const uint8_t water_points_original[] = {0x53, 0x55, 0x8b, 0x6c, 0x24, 0x10, 0x56, 0x8b, 0x74, 0x24, 0x10};
+REWRITE("Scenery::Points856900", 0x856900, scenery_points_original, (void *)&forever_scenery_points_regs, &g_vertex_moves);
+REWRITE("Water::Points97ACA0", 0x97aca0, water_points_original, (void *)&forever_water_points_regs, &g_vertex_moves);
+
+static inline int64_t x87_fistp64_h2(long double v) {   // to a whole number by the FPU's rounding (the "indefinite" value when out of range)
+    int64_t r;
+    __asm__("fistpll %0" : "=m"(r) : "t"(v) : "st");
+    return r;
+}
+
+// ---- Animal::CheckAE09F0(this, t, out) (0xAE09F0): a point along a path of points, and the next point's flag -------
+// With no points (+0x50) 0. f = n / length (+0x54) x t; t is kept as a float, f rounded to a whole i. From the last point
+// on, out is the last point and 0 is given; otherwise out is the blend of points i and i + 1 ({x, y} at +0x40) by the
+// part of t past its whole (floats as the game rounds them: the second point's y and both of the first's products),
+// and the byte for point i + 1 (+0x48) is given.
+static volatile long g_animal_checks;
+static uint8_t __thiscall animal_check_ae09f0(const uint8_t *self, float t, float *out) {
+    g_animal_checks++;
+    const int32_t n = *(const int32_t *)(self + 0x50);
+    if (!n) return 0;
+    const long double f = (long double)n / *(const float *)(self + 0x54) * t;
+    volatile float tf = (float)f;
+    const int32_t i = (int32_t)x87_fistp64_h2(f);
+    if (i >= n - 1) {
+        const uint32_t *const p = (const uint32_t *)(*(const uint8_t *const *)(self + 0x40) + 8 * (n - 1));
+        volatile uint32_t *const o = (volatile uint32_t *)out;
+        o[0] = p[0], o[1] = p[1];
+        return 0;
+    }
+    const long double r = x87_round_h2(tf);
+    volatile float whole = (float)((long double)tf >= r ? r : r - 1.0L);
+    const long double frac = (long double)tf - whole;
+    const float *const p = (const float *)(*(const uint8_t *const *)(self + 0x40) + 8 * i);
+    const long double a = frac * p[2];
+    volatile float b = (float)(frac * p[3]);
+    const long double g = (long double)*(const float *)0xf264dc - frac;
+    volatile float c = (float)(g * p[0]);
+    volatile float d = (float)(g * p[1]);
+    volatile float *const o = out;
+    o[0] = (float)((long double)c + a);
+    o[1] = (float)((long double)b + d);
+    return (*(const uint8_t *const *)(self + 0x48))[i + 1];
+}
+static const uint8_t animal_check_ae09f0_original[] = {0x8b, 0x41, 0x50, 0x83, 0xec, 0x18, 0x85, 0xc0};
+REWRITE("Animal::CheckAE09F0", 0xae09f0, animal_check_ae09f0_original, &animal_check_ae09f0, &g_animal_checks);
+
+// ---- Effects::Point498630(this, a, b, c, d, e) (0x498630): an effect's place and sizes, and two counts rounded up -----
+// Without a part (+0x24) all five are 0 and 0 is given. Otherwise a = +0x40, b = the part's +4, c = twice its +8 (a
+// float), d = a rounded up and e = (b + c) a (a float) rounded up, both as whole numbers; gives 1.
+static volatile long g_effect_points;
+static inline long double ceil_h2(float v) {   // rounded up as the game does: frndint, and one more when that was below
+    const long double r = x87_round_h2(v);
+    return (long double)v <= r || v != v ? r : r + 1.0L;
+}
+static uint8_t __thiscall effects_point_498630(const uint8_t *self, float *a, float *b, float *c, int32_t *d, int32_t *e) {
+    g_effect_points++;
+    const uint8_t *const part = *(const uint8_t *const *)(self + 0x24);
+    if (!part) {
+        *(volatile uint32_t *)a = 0, *(volatile uint32_t *)b = 0, *(volatile uint32_t *)c = 0, *(volatile int32_t *)d = 0, *(volatile int32_t *)e = 0;
+        return 0;
+    }
+    *(volatile uint32_t *)a = *(const uint32_t *)(self + 0x40);
+    *(volatile uint32_t *)b = *(const uint32_t *)(part + 4);
+    *(volatile float *)c = (float)((long double)*(const float *)(part + 8) + *(const float *)(part + 8));
+    volatile float up = (float)ceil_h2(*(volatile float *)a);
+    *(volatile int32_t *)d = (int32_t)x87_fistp64_h2(up);
+    volatile float w = (float)(((long double)*(volatile float *)b + *(volatile float *)c) * *(volatile float *)a);
+    volatile float up2 = (float)ceil_h2(w);
+    *(volatile int32_t *)e = (int32_t)x87_fistp64_h2(up2);
+    return 1;
+}
+static const uint8_t effects_point_498630_original[] = {0x8b, 0x41, 0x24, 0x83, 0xec, 0x08, 0x85, 0xc0};
+REWRITE("Effects::Point498630", 0x498630, effects_point_498630_original, &effects_point_498630, &g_effect_points);
+
+static inline long double floor_h2(float v) {   // rounded down as the game does: frndint, and one less when that was above
+    const long double r = x87_round_h2(v);
+    return (long double)v >= r ? r : r - 1.0L;
+}
+
+// ---- Scenery::Round85D200(out, s, w, m) (0x85D200): a colour from a table by a scale, blended toward white -----------
+// u = s K (0xF26610, a float); i = u rounded down (at most 5, then the part past it counts from 0xF28214 and the next
+// row is row 0). The three tables (0xF780C0, 0xF780A8, 0xF78090) give rows i and i + 1, blended by the part f: f next +
+// (1 - f) this (1 at 0xF264DC); out[3] = 1. Then each part p becomes ((1 - w) p + w) m.
+static volatile long g_scenery_rounds;
+static void __thiscall scenery_round_85d200(float *out, float s, float w, float m) {
+    g_scenery_rounds++;
+    volatile float u = (float)((long double)s * *(const float *)0xf26610);
+    volatile float fl = (float)floor_h2(u);
+    int32_t i = (int32_t)x87_fistp64_h2(fl), j;
+    long double base;
+    if (i >= 5) i = 5, j = 0, base = *(const float *)0xf28214;
+    else j = i + 1, base = fl;
+    const long double f = (long double)u - base;
+    const long double g = (long double)*(const float *)0xf264dc - f;
+    const float *const t0 = (const float *)0xf780c0, *const t1 = (const float *)0xf780a8, *const t2 = (const float *)0xf78090;
+    volatile float *const o = out;
+    o[0] = (float)(f * t0[j] + g * t0[i]);
+    o[1] = (float)(f * t1[j] + g * t1[i]);
+    *(volatile uint32_t *)(out + 3) = 0x3f800000;
+    o[2] = (float)(f * t2[j] + g * t2[i]);
+    const long double h = (long double)*(const float *)0xf264dc - w;
+    o[0] = (float)((h * o[0] + w) * m);
+    o[1] = (float)((h * o[1] + w) * m);
+    o[2] = (float)((h * o[2] + w) * m);
+}
+static const uint8_t scenery_round_85d200_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x44, 0x24, 0x10, 0xd8, 0x0d};
+REWRITE("Scenery::Round85D200", 0x85d200, scenery_round_85d200_original, &scenery_round_85d200, &g_scenery_rounds);
+
+// ---- Grid::Round4414F0(this) (0x4414F0): a slot number from an angle and a height -----------------------------------
+// a = +0x48 less the reference (0x1106C54's +0x54, or the game's 0 without one); whole turns of 2880 taken off (by a K1,
+// 0xF28D28, rounded down); s = that rest x K2 (0xF28CE8) rounded down, and 360 s taken off the rest (as a float); a
+// band from (+0x48 - +0x54) K3 (0xF28CF8) rounded down, quartered (toward 0) and taken modulo 8 (signed), picks a whole
+// number from the table 0x10EC748; the rest times it times K2, rounded down, plus 1 is given. Each rounding down is the
+// game's (frndint and one less when above), of a float; the whole numbers by fistp.
+static volatile long g_grid_rounds;
+static int32_t __fastcall grid_round_4414f0(const uint8_t *self) {
+    g_grid_rounds++;
+    const uint8_t *const ref = *(const uint8_t *const volatile *)0x1106c54;
+    const float base = ref ? *(const float *)(ref + 0x54) : *(const float *)0xf264e0;
+    volatile float a = (float)((long double)*(const float *)(self + 0x48) - base);
+    volatile float u1 = (float)((long double)a * *(const float *)0xf28d28);
+    volatile float f1 = (float)floor_h2(u1);
+    const int32_t i1 = (int32_t)x87_fistp64_h2(f1);
+    const long double rest = (long double)a - (long double)(int32_t)((uint32_t)i1 * 0xb40u);
+    a = (float)rest;
+    volatile float u2 = (float)(rest * *(const float *)0xf28ce8);
+    volatile float f2 = (float)floor_h2(u2);
+    volatile float u3 = (float)(((long double)*(const float *)(self + 0x48) - *(const float *)(self + 0x54)) * *(const float *)0xf28cf8);
+    volatile float f3 = (float)floor_h2(u3);
+    const int32_t i2 = (int32_t)x87_fistp64_h2(f2);
+    const long double c = (long double)a - (long double)(int32_t)((uint32_t)i2 * 0x168u);
+    const int32_t i3 = (int32_t)x87_fistp64_h2(f3);
+    const int32_t k = (i3 / 4) % 8;
+    volatile float u4 = (float)(c * (long double)((const int32_t *)0x10ec748)[k] * *(const float *)0xf28ce8);
+    volatile float f4 = (float)floor_h2(u4);
+    return (int32_t)x87_fistp64_h2(f4) + 1;
+}
+static const uint8_t grid_round_4414f0_original[] = {0xa1, 0x54, 0x6c, 0x10, 0x01, 0xd9, 0x41, 0x48};
+REWRITE("Grid::Round4414F0", 0x4414f0, grid_round_4414f0_original, &grid_round_4414f0, &g_grid_rounds);
+
+// ---- Scenery::Part862DF0(this, out, n) (0x862DF0): where part n is ---------------------------------------------------
+// Parts are 0x48 bytes at +0x104 (count +0x108): a pointer to the part (its point at +0x30) and a byte (+4) saying the
+// point is already placed. Past the count: (0, the game's 0 (0xF264E0), 0). Placed: the point. Otherwise the point
+// moved by this's matrix (rows +0x60, +0x70, +0x80, then +0x90 added), each part's sum in the game's order.
+static volatile long g_scenery_parts;
+static void __thiscall scenery_part_862df0(const uint8_t *self, float *out, int32_t n) {
+    g_scenery_parts++;
+    volatile float *const o = out;
+    if (n >= *(const int32_t *)(self + 0x108)) {
+        o[0] = 0.0f;
+        *(volatile uint32_t *)(out + 2) = 0;
+        o[1] = *(const float *)0xf264e0;
+        return;
+    }
+    const uint8_t *const e = *(const uint8_t *const *)(self + 0x104) + 0x48 * n;
+    const float *const p = (const float *)(*(const uint8_t *const *)e + 0x30);
+    const float x = p[0], y = p[1];
+    const uint32_t zbits = *(const uint32_t *)(p + 2);
+    if (e[4]) {
+        o[0] = x;
+        *(volatile uint32_t *)(out + 2) = zbits;
+        o[1] = y;
+        return;
+    }
+    const float z = p[2];
+    const float *const m = (const float *)(self + 0x60);
+    const long double tx = (((long double)z * m[8] + (long double)y * m[4]) + (long double)x * m[0]) + m[12];
+    volatile float ty = (float)((((long double)z * m[9] + (long double)y * m[5]) + (long double)x * m[1]) + m[13]);
+    volatile float tz = (float)((((long double)z * m[10] + (long double)y * m[6]) + (long double)x * m[2]) + m[14]);
+    volatile float fx = (float)tx;
+    o[0] = fx;
+    *(volatile uint32_t *)(out + 2) = *(volatile uint32_t *)&tz;
+    o[1] = ty;
+}
+static const uint8_t scenery_part_862df0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x3c, 0x8b, 0x45, 0x0c};
+REWRITE("Scenery::Part862DF0", 0x862df0, scenery_part_862df0_original, &scenery_part_862df0, &g_scenery_parts);
+
+// ---- Camera::PassCD8060(this, out) (0xCD8060): the camera's target point (+8's +0x10, or 0s) moved by its matrix ------
+// Rows at +0x60 (added), +0x70, +0x80, +0x90; the products and partial sums rounded to floats where the game rounds
+// them: x = ((a r70 + (b r80)) + (c r90)) + r60 and y likewise, z = ((b r88 + (a r78)) + (c r98)) + r68 (the
+// parenthesised parts floats, a r70, a r74 and b r88 not).
+static volatile long g_camera_passes;
+static void __thiscall camera_pass_cd8060(const uint8_t *self, float *out) {
+    g_camera_passes++;
+    float a, b, c;
+    const uint8_t *const part = *(const uint8_t *const *)(self + 8);
+    if (part) {
+        const float *const q = *(const float *const *)(part + 0x10);
+        a = q[0], b = q[1], c = q[2];
+    } else {
+        a = b = c = *(const float *)0xf264e0;
+    }
+    const float *const m = (const float *)(self + 0x60);
+    volatile float c0 = (float)((long double)c * m[12]), c1 = (float)((long double)c * m[13]), c2 = (float)((long double)c * m[14]);
+    volatile float b0 = (float)((long double)b * m[8]), b1 = (float)((long double)b * m[9]);
+    const long double b2 = (long double)b * m[10];
+    const long double a0 = (long double)a * m[4], a1 = (long double)a * m[5];
+    volatile float a2 = (float)((long double)a * m[6]);
+    volatile float s0 = (float)(a0 + b0);
+    volatile float s1 = (float)(a1 + b1);
+    const long double zz = b2 + a2;
+    volatile float t0 = (float)((long double)s0 + c0);
+    volatile float t1 = (float)((long double)s1 + c1);
+    const long double z = (zz + c2) + m[2];
+    const long double y = (long double)t1 + m[1];
+    const long double x = (long double)t0 + m[0];
+    volatile float *const o = out;
+    o[0] = (float)x, o[1] = (float)y, o[2] = (float)z;
+}
+static const uint8_t camera_pass_cd8060_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0x41, 0x08};
+REWRITE("Camera::PassCD8060", 0xcd8060, camera_pass_cd8060_original, &camera_pass_cd8060, &g_camera_passes);
+
+// ---- Track::PointBB7030(this, out, length, p, q, t) (0xBB7030): a point added into a running average along a track ---
+// The point is p, or p + (q - p) t when t is not exactly the game's 0 (0xF264E0) (x and z rounded to floats, y not).
+// When *length is above 0 it grows by this's step (+0x30) and out moves toward the point by step / length (x and y
+// differences rounded where the game rounds them); otherwise *length becomes the step and out the point.
+static volatile long g_track_points;
+static void __thiscall track_point_bb7030(const uint8_t *self, float *out, float *length, const float *p, const float *q, float t) {
+    g_track_points++;
+    const float k0 = *(const float *)0xf264e0;
+    volatile float px = p[0], pz = p[2];
+    long double py = p[1];
+    if (!(t == k0)) {
+        volatile float d0 = (float)((long double)q[0] - px);
+        const long double d1 = (long double)q[1] - py;
+        const long double d2 = (long double)q[2] - pz;
+        volatile float e0 = (float)((long double)d0 * t);
+        volatile float e1 = (float)(d1 * t);
+        const long double e2 = d2 * t;
+        px = (float)((long double)e0 + px);
+        py = py + e1;
+        pz = (float)(e2 + pz);
+    }
+    const float step = *(const float *)(self + 0x30);
+    if (!(*length > k0)) {
+        *(volatile uint32_t *)length = *(const uint32_t *)(self + 0x30);
+        volatile float *const o = out;
+        o[0] = px;
+        *(volatile uint32_t *)(out + 2) = *(volatile uint32_t *)&pz;
+        o[1] = (float)py;
+        return;
+    }
+    volatile float l = (float)((long double)*length + step);
+    *(volatile float *)length = l;
+    volatile float *const o = out;
+    volatile float g0 = (float)((long double)px - o[0]);
+    const long double g1 = py - o[1];
+    const long double g2 = (long double)pz - o[2];
+    const long double r = (long double)step / l;
+    volatile float h0 = (float)((long double)g0 * r);
+    volatile float h1 = (float)(g1 * r);
+    const long double h2 = g2 * r;
+    o[0] = (float)((long double)h0 + o[0]);
+    o[1] = (float)((long double)h1 + o[1]);
+    o[2] = (float)(h2 + o[2]);
+}
+static const uint8_t track_point_bb7030_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0x45, 0x10};
+REWRITE("Track::PointBB7030", 0xbb7030, track_point_bb7030_original, &track_point_bb7030, &g_track_points);
+
+// ---- Ride::Set53CAD0(this, a, b, s, list) (0x53CAD0): a ride part set up from shared parts and scaled values ---------
+// +4 = s K (K 0xF2704C, a float); +0x34 and +0x38 take *a and *b and count each up (their first value); +8 to +0x30
+// take the eleven values of list times K. Gives this.
+static volatile long g_ride_sets;
+static uint8_t *__thiscall ride_set_53cad0(uint8_t *self, uint32_t **a, uint32_t **b, float s, const float *list) {
+    g_ride_sets++;
+    const float k = *(const float *)0xf2704c;
+    volatile float *const f = (volatile float *)self;
+    f[1] = (float)((long double)s * k);
+    volatile uint32_t *const x = *a;
+    *(volatile uint32_t *)(self + 0x34) = (uint32_t)(uintptr_t)x;
+    x[0]++;
+    volatile uint32_t *const y = *b;
+    *(volatile uint32_t *)(self + 0x38) = (uint32_t)(uintptr_t)y;
+    y[0]++;
+    for (int i = 0; i < 11; i++) f[2 + i] = (float)((long double)list[i] * k);
+    return self;
+}
+static const uint8_t ride_set_53cad0_original[] = {0xd9, 0x44, 0x24, 0x0c, 0x8b, 0x54, 0x24, 0x08};
+REWRITE("Ride::Set53CAD0", 0x53cad0, ride_set_53cad0_original, &ride_set_53cad0, &g_ride_sets);
+
+// ---- List::StepBCBE20(this, n, a, b, c, d) (0xBCBE20): the four control points of curve piece n ----------------------
+// Entries of 0x24 bytes ({count, entries} at this) hold three points: P (+0), Q (+0xC) and R (+0x18). With m the next
+// entry (entry 0 after the last): a = n's P, d = m's P, b = n's R + a, c = m's Q + d (each part one float sum).
+static volatile long g_curve_steps;
+static void __thiscall list_step_bcbe20(const uint32_t *self, int32_t n, float *a, float *b, float *c, float *d) {
+    g_curve_steps++;
+    const int32_t m = n < (int32_t)self[0] - 1 ? n + 1 : 0;
+    auto entry = [&](int32_t i) { return (const float *)(uintptr_t)(self[1] + 0x24 * i); };
+    volatile float *const va = a, *const vb = b, *const vc = c, *const vd = d;
+    for (int k = 0; k < 3; k++) va[k] = entry(n)[k];
+    for (int k = 0; k < 3; k++) vd[k] = entry(m)[k];
+    const float *const r = entry(n) + 6;
+    const float b0 = (float)((long double)r[0] + va[0]), b1 = (float)((long double)r[1] + va[1]), b2 = (float)((long double)r[2] + va[2]);
+    vb[0] = b0, vb[1] = b1, vb[2] = b2;
+    const float *const q = entry(m) + 3;
+    const float c0 = (float)((long double)q[0] + vd[0]), c1 = (float)((long double)q[1] + vd[1]), c2 = (float)((long double)q[2] + vd[2]);
+    vc[0] = c0, vc[1] = c1, vc[2] = c2;
+}
+static const uint8_t list_step_bcbe20_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x14, 0x8b, 0x11, 0x8b};
+REWRITE("List::StepBCBE20", 0xbcbe20, list_step_bcbe20_original, &list_step_bcbe20, &g_curve_steps);
