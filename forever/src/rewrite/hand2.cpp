@@ -9179,3 +9179,198 @@ static float *__thiscall track_last_bc65d0(const uint8_t *self, float *out) {
 }
 static const uint8_t track_last_bc65d0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x56, 0x8b, 0x71, 0x18};
 REWRITE("Track::LastBC65D0", 0xbc65d0, track_last_bc65d0_original, &track_last_bc65d0, &g_track_end_directions);
+
+// ---- Track::LengthBC62A0(out) (0xBC62A0): the reversed sum of the two end lists' first directions, made of length 1 ------
+// The first points (+0x110's, +0x10C's; lists as Track::LengthBC64E0 finds them) and their vectors at +0x18: s = -q - p
+// (x and y floats, z unrounded), made of length 1 ((z^2 + y^2) + x^2); a length of 0 gives {0, 0, 1}. Gives out.
+static volatile long g_track_turns;
+static float *__thiscall track_length_bc62a0(const uint8_t *self, float *out) {
+    g_track_turns++;
+    const bool there = (*(const uint32_t *)(self + 0x18) & 0x400000) && *(const int32_t *)(self + 0xe4) >= 2;
+    const uint32_t *const volatile la = there ? *(const uint32_t *const *)(self + 0x110) : nullptr;
+    const float *const p = (const float *)((const uint8_t *)(uintptr_t)la[1] + 0x18);
+    volatile float px = (float)-(long double)p[0], py = (float)-(long double)p[1];
+    const long double pz = -(long double)p[2];
+    const uint32_t *const volatile lb = there ? *(const uint32_t *const *)(self + 0x10c) : nullptr;
+    const float *const q = (const float *)((const uint8_t *)(uintptr_t)lb[1] + 0x18);
+    volatile float qx = (float)-(long double)q[0];
+    const long double qy = -(long double)q[1], qz = -(long double)q[2];
+    volatile float sx = (float)((long double)qx + px);
+    volatile float sy = (float)(qy + py);
+    const long double sz = qz + pz;
+    const long double len = x87_sqrt_h2((sz * sz + (long double)sy * sy) + (long double)sx * sx);
+    volatile float *const o = out;
+    if (len == *(const float *)0xf264e0) {
+        ((volatile uint32_t *)o)[0] = 0, ((volatile uint32_t *)o)[1] = 0, ((volatile uint32_t *)o)[2] = 0x3f800000;
+        return out;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    o[0] = (float)((long double)sx * inv);
+    o[1] = (float)((long double)sy * inv);
+    o[2] = (float)(sz * inv);
+    return out;
+}
+static const uint8_t track_length_bc62a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8b, 0x51, 0x18};
+REWRITE("Track::LengthBC62A0", 0xbc62a0, track_length_bc62a0_original, &track_length_bc62a0, &g_track_turns);
+
+// ---- Track::PassBB7470(out) (0xBB7470): one byte per piece, picked by the piece's key -----------------------------------
+// The table (+0x10): count +0x20, flags +0x30, runs +0x40 ({count, offset} words per piece), keys +0x50. For piece i
+// (written at out[the word (+0x3C's +8)[i]]): with runs, the place of the key (+0x38) among its sorted keys as
+// SortedShorts::Find finds it (the guess count times +0x2C), and the flag at offset + place; without, the flag at
+// +0x3A count + i. Each byte written is 1 when the flag is set, else 0.
+static volatile long g_track_piece_flags;
+static void __thiscall track_pass_bb7470(const uint8_t *self, uint8_t *out) {
+    g_track_piece_flags++;
+    const uint8_t *const t = *(const uint8_t *const *)(self + 0x10);
+    const uint32_t n = *(const uint32_t *)(t + 0x20);
+    for (uint32_t i = 0; i < n; i++) {
+        const uint16_t slot = (*(const uint16_t *const *)(*(const uint8_t *const *)(self + 0x3c) + 8))[i];
+        const uint8_t *const tt = *(const uint8_t *const *)(self + 0x10);
+        const uint16_t *const runs = *(const uint16_t *const *)(tt + 0x40);
+        uint8_t flag;
+        if (runs) {
+            const uint32_t cnt = runs[i * 2], off = runs[i * 2 + 1];
+            const uint16_t *const list = *(const uint16_t *const *)(tt + 0x50) + off;
+            const uint16_t key = *(const uint16_t *)(self + 0x38);
+            uint32_t lo = 0, hi = cnt;
+            uint32_t j = (uint32_t)x87_fistp64_h2((long double)(int32_t)cnt * *(const float *)(self + 0x2c));
+            for (;;) {
+                __asm__ volatile("" ::: "memory");
+                const uint16_t d = list[j];
+                if (d > key) {
+                    if (!j || list[j - 1] <= key) break;
+                    hi = j;
+                } else if (d == key) {
+                    j++;
+                    break;
+                } else
+                    lo = j;
+                j = (lo + hi) >> 1;
+            }
+            flag = (*(const uint8_t *const *)(tt + 0x30) + off)[j];
+        } else
+            flag = (*(const uint8_t *const *)(tt + 0x30) + *(const uint16_t *)(self + 0x3a) * *(const uint32_t *)(tt + 0x20))[i];
+        out[slot] = flag != 0;
+    }
+}
+static const uint8_t track_pass_bb7470_original[] = {0x83, 0xec, 0x18, 0x8b, 0x41, 0x10, 0x57, 0x8b, 0x78, 0x20};
+REWRITE("Track::PassBB7470", 0xbb7470, track_pass_bb7470_original, &track_pass_bb7470, &g_track_piece_flags);
+
+// ---- Water::Cell93DA00(x, y, low, high) (0x93DA00): a cell's two water levels, the smaller first ------------------------
+// Inside the grid (width byte +0x58, height byte +0x59; cells of 0x30 bytes at +0x5C, by the low bytes of x and y): its
+// two parts (+4, +0x1C) and their levels (+0x30). With both: low = the first's when below the second's, else the
+// second's, and high the other; with one: both its level; with none 0 (only al), else 1.
+static volatile long g_water_cell_levels;
+static uint8_t __thiscall water_cell_93da00(const uint8_t *self, int32_t x, int32_t y, uint32_t *low, uint32_t *high) {
+    g_water_cell_levels++;
+    if (y < 0 || y >= self[0x59] || x < 0 || x >= self[0x58]) return 0;
+    const uint8_t *const c = *(const uint8_t *const *)(self + 0x5c) + ((uint32_t)(uint8_t)y * self[0x58] + (uint8_t)x) * 0x30;
+    const uint8_t *const a = *(const uint8_t *const *)(c + 4), *const b = *(const uint8_t *const *)(c + 0x1c);
+    auto level = [](const uint8_t *p) { return *(const uint32_t *)(p + 0x30); };
+    if (a && b) {
+        if (*(const float *)(a + 0x30) < *(const float *)(b + 0x30)) *low = level(a), *high = level(b);
+        else *low = level(b), *high = level(a);
+        return 1;
+    }
+    if (a) return *low = level(a), *high = level(a), 1;
+    if (b) return *low = level(b), *high = level(b), 1;
+    return 0;
+}
+static const uint8_t water_cell_93da00_original[] = {0x53, 0x57, 0x8b, 0xf9, 0x8b, 0x4c, 0x24, 0x10, 0x85, 0xc9};
+REWRITE("Water::Cell93DA00", 0x93da00, water_cell_93da00_original, &water_cell_93da00, &g_water_cell_levels);
+
+// ---- Grid::Round435EA0(x, y) (0x435EA0): the height at a point from its cell's four corners ---------------------------
+// u = (x - +0xC) +0x1C, v = (y - +0x10) +0x20 (floats), the cell their floors (i, j; -32768 outside 0..+4 byte, 0..+5
+// byte). With du, dv the parts past the floors and s = du + dv: above 1 the far triangle (1 - du) h2 + (1 - dv) h1 + (s -
+// 1) h3, else the near one (1 - s) h0 + du h1 + dv h2 (cells of 24 bytes at +0x24, row by row).
+static volatile long g_grid_heights;
+static long double __thiscall grid_round_435ea0(const uint8_t *self, float x, float y) {
+    g_grid_heights++;
+    auto at = [&](uint32_t o) { return *(const float *)(self + o); };
+    volatile float u = (float)(((long double)x - at(0xc)) * at(0x1c));
+    volatile float v = (float)(((long double)y - at(0x10)) * at(0x20));
+    volatile float fu = (float)floor_h2(u), fv = (float)floor_h2(v);
+    const int32_t i = (int32_t)x87_fistp64_h2(fu), j = (int32_t)x87_fistp64_h2(fv);
+    if (i < 0 || j < 0 || i >= self[4] || j >= self[5]) return *(const float *)0xf28530;
+    const float *const h = (const float *)(*(const uint8_t *const *)(self + 0x24) + ((uint32_t)self[4] * j + i) * 24);
+    const long double dv = (long double)v - fv, du = (long double)u - fu, s = du + dv;
+    const long double one = *(const float *)0xf264dc;
+    if (s > one) return ((one - du) * h[2] + (one - dv) * h[1]) + (s - one) * h[3];
+    return ((one - s) * h[0] + du * h[1]) + dv * h[2];
+}
+static const uint8_t grid_round_435ea0_original[] = {0x83, 0xec, 0x10, 0xd9, 0x44, 0x24, 0x14, 0x56, 0xd8, 0x61, 0x0c};
+REWRITE("Grid::Round435EA0", 0x435ea0, grid_round_435ea0_original, &grid_round_435ea0, &g_grid_heights);
+
+// ---- Track::LengthBC63B0(out) (0xBC63B0): the reversed sum of the two end lists' last directions, made of length 1 ------
+// As Track::LengthBC62A0 with each list's last point (36 bytes each) and its vector at +0xC.
+static volatile long g_track_end_turns;
+static float *__thiscall track_length_bc63b0(const uint8_t *self, float *out) {
+    g_track_end_turns++;
+    const bool there = (*(const uint32_t *)(self + 0x18) & 0x400000) && *(const int32_t *)(self + 0xe4) >= 2;
+    const uint32_t *const volatile la = there ? *(const uint32_t *const *)(self + 0x110) : nullptr;
+    const float *const p = (const float *)((const uint8_t *)(uintptr_t)la[1] + la[0] * 36 - 0x18);
+    volatile float px = (float)-(long double)p[0], py = (float)-(long double)p[1];
+    const long double pz = -(long double)p[2];
+    const uint32_t *const volatile lb = there ? *(const uint32_t *const *)(self + 0x10c) : nullptr;
+    const float *const q = (const float *)((const uint8_t *)(uintptr_t)lb[1] + lb[0] * 36 - 0x18);
+    volatile float qx = (float)-(long double)q[0];
+    const long double qy = -(long double)q[1], qz = -(long double)q[2];
+    volatile float sx = (float)((long double)qx + px);
+    volatile float sy = (float)(qy + py);
+    const long double sz = qz + pz;
+    const long double len = x87_sqrt_h2((sz * sz + (long double)sy * sy) + (long double)sx * sx);
+    volatile float *const o = out;
+    if (len == *(const float *)0xf264e0) {
+        ((volatile uint32_t *)o)[0] = 0, ((volatile uint32_t *)o)[1] = 0, ((volatile uint32_t *)o)[2] = 0x3f800000;
+        return out;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    o[0] = (float)((long double)sx * inv);
+    o[1] = (float)((long double)sy * inv);
+    o[2] = (float)(sz * inv);
+    return out;
+}
+static const uint8_t track_length_bc63b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x3c, 0x56, 0x8b, 0x71, 0x18};
+REWRITE("Track::LengthBC63B0", 0xbc63b0, track_length_bc63b0_original, &track_length_bc63b0, &g_track_end_turns);
+
+// ---- Track::RoundBB69E0(keys, n, place, part) (0xBB69E0): where the key (+0x38) falls among n sorted keys, and how far --
+// The place j as SortedShorts::Find finds it (the guess n (unsigned) times +0x2C); 0 gives 0 and 0. Else with m = the
+// table's (+0x10) +4 count - 1 and a, b the keys j - 1, j over m: t = (+0x2C - a) / (b - a) (a float). Above 0.95 gives
+// j and 0; else j - 1 with t, or 0 when t is below 0.05.
+static volatile long g_track_key_places;
+static void __thiscall track_round_bb69e0(const uint8_t *self, const uint16_t *list, uint32_t n, int32_t *place, float *part) {
+    g_track_key_places++;
+    const uint16_t key = *(const uint16_t *)(self + 0x38);
+    uint32_t lo = 0, hi = n;
+    uint32_t j = (uint32_t)x87_fistp64_h2(fild_u32_h2(n) * *(const float *)(self + 0x2c));
+    for (;;) {
+        __asm__ volatile("" ::: "memory");
+        const uint16_t d = list[j];
+        if (d > key) {
+            if (!j) break;
+            if (list[j - 1] <= key) break;
+            hi = j;
+        } else if (d == key) {
+            j++;
+            break;
+        } else
+            lo = j;
+        j = (lo + hi) >> 1;
+    }
+    if (!j) {
+        *place = 0, *(uint32_t *)part = 0;
+        return;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / (long double)(*(const int32_t *)(*(const uint8_t *const *)(self + 0x10) + 4) - 1);
+    const long double a = (long double)list[j - 1] * inv;
+    volatile float t = (float)(((long double)*(const float *)(self + 0x2c) - a) / ((long double)list[j] * inv - a));
+    if (t > *(const float *)0xf29660) {
+        *place = (int32_t)j, *(uint32_t *)part = 0;
+        return;
+    }
+    *place = (int32_t)j - 1;
+    if (t < *(const float *)0xf270b4) *(uint32_t *)part = 0;
+    else *(volatile float *)part = t;
+}
+static const uint8_t track_round_bb69e0_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x10, 0x53, 0x55, 0x56};
+REWRITE("Track::RoundBB69E0", 0xbb69e0, track_round_bb69e0_original, &track_round_bb69e0, &g_track_key_places);

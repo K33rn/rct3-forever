@@ -5854,4 +5854,128 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                            },
                            [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60))}; }};
     quick(track_last_bc65d0);
+    // Track::LengthBC62A0: two end lists' first points with random vectors (opposite at times)
+    Test track_length_bc62a0{0xbc62a0,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(uint32_t *)(self + 0x18) = r.next() | 0x400000, *(int32_t *)(self + 0xe4) = r.range(2, 4);
+                                 *(uint32_t *)(self + 0x110) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                 *(uint32_t *)(self + 0x10c) = (uint32_t)(uintptr_t)arena<void>(0x320);
+                                 arena<uint32_t>(0x300)[1] = (uint32_t)(uintptr_t)arena<void>(0x400), arena<uint32_t>(0x320)[1] = (uint32_t)(uintptr_t)arena<void>(0x500);
+                                 for (int c = 0; c < 3; c++) arena<float>(0x418)[c] = r.real(-3, 3), arena<float>(0x518)[c] = r.range(0, 5) ? r.real(-3, 3) : -arena<float>(0x418)[c];
+                                 for (int c = 0; c < 3; c++) arena<uint32_t>(0x60)[c] = r.next();
+                             },
+                             [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60))}; }};
+    quick(track_length_bc62a0);
+    // Track::PassBB7470: 1-6 pieces with runs of 2-6 sorted keys each (the key below each run's last; guesses inside), or no
+    // runs, flags set or not
+    Test track_pass_bb7470{0xbb7470,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100), *t = arena<uint8_t>(0x200);
+                               *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)t;
+                               const int n = r.range(1, 6);
+                               *(uint32_t *)(t + 0x20) = n;
+                               *(uint32_t *)(self + 0x3c) = (uint32_t)(uintptr_t)arena<void>(0x2c0);
+                               *(uint32_t *)arena<uint8_t>(0x2c8) = (uint32_t)(uintptr_t)arena<void>(0x2e0);
+                               for (int i = 0; i < 6; i++) arena<uint16_t>(0x2e0)[i] = (uint16_t)r.range(0, 15);
+                               *(uint32_t *)(t + 0x30) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int i = 0; i < 0x40; i++) arena<uint8_t>(0x400)[i] = r.range(0, 1) ? (uint8_t)r.next() : 0;
+                               const uint16_t key = (uint16_t)r.range(0, 8);
+                               *(uint16_t *)(self + 0x38) = key, *(uint16_t *)(self + 0x3a) = (uint16_t)r.range(0, 3);
+                               *(float *)(self + 0x2c) = r.real(0, 0.5f);
+                               const bool runs = r.range(0, 4) != 0;
+                               *(uint32_t *)(t + 0x40) = runs ? (uint32_t)(uintptr_t)arena<void>(0x500) : 0;
+                               *(uint32_t *)(t + 0x50) = (uint32_t)(uintptr_t)arena<void>(0x600);
+                               for (int i = 0; i < n; i++) {
+                                   const int cnt = r.range(2, 6);
+                                   arena<uint16_t>(0x500)[i * 2] = (uint16_t)cnt, arena<uint16_t>(0x500)[i * 2 + 1] = (uint16_t)(i * 6);
+                                   uint16_t v = (uint16_t)r.range(0, 2);
+                                   for (int k = 0; k < cnt; k++) arena<uint16_t>(0x600)[i * 6 + k] = v, v = (uint16_t)(v + r.range(0, 3));
+                                   if (arena<uint16_t>(0x600)[i * 6 + cnt - 1] <= key) arena<uint16_t>(0x600)[i * 6 + cnt - 1] = (uint16_t)(key + 1);
+                               }
+                               for (int i = 0; i < 16; i++) arena<uint8_t>(0x700)[i] = (uint8_t)r.next();
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x700));
+                               return Result{0};
+                           }};
+    quick(track_pass_bb7470);
+    // Water::Cell93DA00: grids of 1-4 by 1-4 cells, places in and out, cells with both, one or no parts (levels tied at
+    // times)
+    Test water_cell_93da00{0x93da00,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               self[0x58] = (uint8_t)r.range(1, 4), self[0x59] = (uint8_t)r.range(1, 4);
+                               *(uint32_t *)(self + 0x5c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int c = 0; c < 16; c++) {
+                                   uint32_t *cell = arena<uint32_t>(0x400 + c * 0x30);
+                                   cell[1] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x1000 + c * 0x80) : 0;
+                                   cell[7] = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x1040 + c * 0x80) : 0;
+                                   *(float *)arena<uint8_t>(0x1030 + c * 0x80) = (float)r.range(0, 3), *(float *)arena<uint8_t>(0x1070 + c * 0x80) = (float)r.range(0, 3);
+                               }
+                               arena<int32_t>(0x40)[0] = r.range(-1, 4), arena<int32_t>(0x40)[1] = r.range(-1, 4);
+                               arena<uint32_t>(0x50)[0] = r.next(), arena<uint32_t>(0x50)[1] = r.next();
+                           },
+                           [](void *fn) {
+                               return Result{((uint32_t(__thiscall *)(const void *, int32_t, int32_t, void *, void *))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1], arena<void>(0x50), arena<void>(0x54)) & 0xff};
+                           }};
+    quick(water_cell_93da00);
+    // Grid::Round435EA0: grids of 1-6 by 1-6 cells of random corner heights, points in every cell and outside
+    Test grid_round_435ea0{0x435ea0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               self[4] = (uint8_t)r.range(1, 6), self[5] = (uint8_t)r.range(1, 6);
+                               *(float *)(self + 0xc) = r.real(-50, 50), *(float *)(self + 0x10) = r.real(-50, 50);
+                               *(float *)(self + 0x1c) = r.real(0.2f, 2), *(float *)(self + 0x20) = r.real(0.2f, 2);
+                               *(uint32_t *)(self + 0x24) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int i = 0; i < 36 * 6; i++) arena<float>(0x400)[i] = r.real(-20, 20);
+                               arena<float>(0x40)[0] = *(float *)(self + 0xc) + r.real(-1, 7) / *(float *)(self + 0x1c);
+                               arena<float>(0x40)[1] = *(float *)(self + 0x10) + r.real(-1, 7) / *(float *)(self + 0x20);
+                           },
+                           [](void *fn) {
+                               Result x;
+                               x.f = ((long double(__thiscall *)(const void *, float, float))fn)(arena<void>(0x100), arena<float>(0x40)[0], arena<float>(0x40)[1]);
+                               return x;
+                           }};
+    quick(grid_round_435ea0);
+    // Track::LengthBC63B0: two end lists of 1-4 points with random last vectors (opposite at times)
+    Test track_length_bc63b0{0xbc63b0,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(uint32_t *)(self + 0x18) = r.next() | 0x400000, *(int32_t *)(self + 0xe4) = r.range(2, 4);
+                                 *(uint32_t *)(self + 0x110) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                 *(uint32_t *)(self + 0x10c) = (uint32_t)(uintptr_t)arena<void>(0x320);
+                                 arena<uint32_t>(0x300)[0] = r.range(1, 4), arena<uint32_t>(0x300)[1] = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 arena<uint32_t>(0x320)[0] = r.range(1, 4), arena<uint32_t>(0x320)[1] = (uint32_t)(uintptr_t)arena<void>(0x600);
+                                 for (int i = 0; i < 36; i++) arena<float>(0x400)[i] = r.real(-3, 3), arena<float>(0x600)[i] = r.real(-3, 3);
+                                 if (r.range(0, 4) == 0)
+                                     for (int c = 0; c < 3; c++) arena<float>(0x60c + (arena<uint32_t>(0x320)[0] - 1) * 36)[c] = -arena<float>(0x40c + (arena<uint32_t>(0x300)[0] - 1) * 36)[c];
+                                 for (int c = 0; c < 3; c++) arena<uint32_t>(0x60)[c] = r.next();
+                             },
+                             [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60))}; }};
+    quick(track_length_bc63b0);
+    // Track::RoundBB69E0: 2-8 sorted keys (the key below the last; ties and keys below the first), scales 0-1 against
+    // counts 2-20
+    Test track_round_bb69e0{0xbb69e0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                const int m = r.range(2, 20);
+                                arena<int32_t>(0x200)[1] = m;
+                                const int n = r.range(2, 8);
+                                uint16_t v = (uint16_t)r.range(0, 3);
+                                for (int k = 0; k < n; k++) arena<uint16_t>(0x300)[k] = v, v = (uint16_t)(v + r.range(0, 4));
+                                uint16_t key = (uint16_t)r.range(0, arena<uint16_t>(0x300)[n - 1] + 1);
+                                if (arena<uint16_t>(0x300)[n - 1] <= key) arena<uint16_t>(0x300)[n - 1] = (uint16_t)(key + 1 + r.range(0, 2));
+                                *(uint16_t *)(self + 0x38) = key;
+                                *(float *)(self + 0x2c) = r.range(0, 3) ? (key + r.real(0, 1.2f)) / (float)(m - 1) : r.real(0, 0.9f);
+                                if (*(float *)(self + 0x2c) * n >= n - 0.6f) *(float *)(self + 0x2c) = r.real(0, (n - 0.6f) / n);
+                                arena<uint32_t>(0x40)[0] = n;
+                                arena<uint32_t>(0x50)[0] = r.next(), arena<uint32_t>(0x50)[1] = r.next();
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(const void *, const void *, uint32_t, void *, void *))fn)(arena<void>(0x100), arena<void>(0x300), arena<uint32_t>(0x40)[0], arena<void>(0x50), arena<void>(0x54));
+                                return Result{0};
+                            }};
+    quick(track_round_bb69e0);
 #endif

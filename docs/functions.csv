@@ -710,7 +710,7 @@ address,size,name,callers,status
 0x435bf0,31,Object::Fwd2Clear,5,rewritten
 0x435c10,7,SetTable,37,rewritten
 0x435dc0,96,,1,documented
-0x435ea0,283,,0,documented
+0x435ea0,283,Grid::Round435EA0,0,rewritten
 0x436030,108,Factory::Lazy,29,rewritten
 0x436100,118,Singleton::Get,29,rewritten
 0x436190,110,,21,documented
@@ -13196,7 +13196,7 @@ address,size,name,callers,status
 0x93d870,232,,10,documented
 0x93d960,34,,0,documented
 0x93d990,106,,9,documented
-0x93da00,264,,16,documented
+0x93da00,264,Water::Cell93DA00,16,rewritten
 0x93dbf0,205,Water::Cell93DBF0,36,rewritten
 0x93dcd0,672,Water::Range93DCD0,0,rewritten
 0x93df70,1644,,2,documented
@@ -19408,12 +19408,12 @@ address,size,name,callers,status
 0xbb6620,37,Block::Delete72F200,0,rewritten
 0xbb6880,175,,1,documented
 0xbb6970,109,SortedShorts::Find,0,rewritten
-0xbb69e0,293,,9,documented
+0xbb69e0,293,Track::RoundBB69E0,9,rewritten
 0xbb6b10,459,Animal::StepBB6B10,0,rewritten
 0xbb6ce0,843,,0,documented
 0xbb7030,269,Track::PointBB7030,0,rewritten
 0xbb7140,801,,1,documented
-0xbb7470,264,,1,documented
+0xbb7470,264,Track::PassBB7470,1,rewritten
 0xbb7580,176,,1,documented
 0xbb7630,21,,1,documented
 0xbb7650,10,,1,documented
@@ -19620,8 +19620,8 @@ address,size,name,callers,status
 0xbc60c0,22,,1,documented
 0xbc6140,155,Segment::Middle,0,rewritten
 0xbc61e0,181,Segment::MiddleOfEnds,0,rewritten
-0xbc62a0,270,,0,documented
-0xbc63b0,293,,0,documented
+0xbc62a0,270,Track::LengthBC62A0,0,rewritten
+0xbc63b0,293,Track::LengthBC63B0,0,rewritten
 0xbc64e0,235,Track::LengthBC64E0,0,rewritten
 0xbc65d0,258,Track::LastBC65D0,0,rewritten
 0xbc67b0,178,,1,documented
