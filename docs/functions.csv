@@ -11943,7 +11943,7 @@ address,size,name,callers,status
 0x884520,11,,6,documented
 0x884540,251,,1,documented
 0x884680,82,Values::SumFirst,9,rewritten
-0x8847a0,233,,2,documented
+0x8847a0,233,Scenery::Slot8847A0,2,rewritten
 0x884890,120,Columns::Hit,2,rewritten
 0x884910,141,Destructor::Steps,1,rewritten
 0x8849b0,284,,5,documented
@@ -12779,7 +12779,7 @@ address,size,name,callers,status
 0x905f30,164,Array<20>::SetCapacity,1,rewritten
 0x905fe0,26,OwnedPointer::Reset,1,rewritten
 0x906000,164,Array<20>::SetCapacity,1,rewritten
-0x9060f0,204,,1,documented
+0x9060f0,204,Water::Value9060F0,1,rewritten
 0x9061c0,306,,1,documented
 0x906300,1603,,1,documented
 0x906950,2759,,1,documented
@@ -13176,7 +13176,7 @@ address,size,name,callers,status
 0x93ca20,55,,1,documented
 0x93ca60,277,,1,documented
 0x93cbe0,102,,15,documented
-0x93cc50,207,,4,documented
+0x93cc50,207,Water::Set93CC50,4,rewritten
 0x93cd30,112,,12,documented
 0x93cdf0,33,,0,documented
 0x93ce50,20,,0,documented
@@ -13635,7 +13635,7 @@ address,size,name,callers,status
 0x970e20,30,DeletingDestructor,1,rewritten
 0x970e50,50,Record::SetFields,1,rewritten
 0x970e90,143,Destructor::Steps,2,rewritten
-0x970f20,204,,2,documented
+0x970f20,204,Water::Entry970F20,2,rewritten
 0x971000,85,,1,documented
 0x971060,1685,,1,documented
 0x971700,414,,2,documented
@@ -13929,7 +13929,7 @@ address,size,name,callers,status
 0x989180,90,,7,documented
 0x9891e0,182,,4,documented
 0x9892a0,85,Cars::TotalLoad,1,rewritten
-0x989300,225,,2,documented
+0x989300,225,Fireworks::Find989300,2,rewritten
 0x989440,676,,1,documented
 0x989710,30,DeletingDestructor,2,rewritten
 0x98a330,30,DeletingDestructor,1,rewritten
@@ -19622,7 +19622,7 @@ address,size,name,callers,status
 0xbc61e0,181,Segment::MiddleOfEnds,0,rewritten
 0xbc62a0,270,,0,documented
 0xbc63b0,293,,0,documented
-0xbc64e0,235,,0,documented
+0xbc64e0,235,Track::LengthBC64E0,0,rewritten
 0xbc65d0,258,,0,documented
 0xbc67b0,178,,1,documented
 0xbc6940,169,,0,documented
@@ -19882,7 +19882,7 @@ address,size,name,callers,status
 0xbd29e0,68,,3,documented
 0xbd2a30,325,,2,documented
 0xbd2b80,284,,3,documented
-0xbd2ca0,196,,1,documented
+0xbd2ca0,196,Groups::Totals,1,rewritten
 0xbd2d70,202,,1,documented
 0xbd2e40,140,,3,documented
 0xbd2ed0,157,,1,documented

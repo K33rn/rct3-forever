@@ -8820,3 +8820,174 @@ static int32_t __thiscall plane_box_corner_distance(const float *self, const flo
 }
 static const uint8_t plane_box_corner_distance_original[] = {0x8b, 0x44, 0x24, 0x0c, 0xd9, 0x40, 0x08, 0xd8, 0x49, 0x08};
 REWRITE("Plane::BoxCornerDistance", 0xc1e7e0, plane_box_corner_distance_original, &plane_box_corner_distance, &g_box_corners);
+
+// ---- Groups::Totals (0xBD2CA0): for each group on the list at +0x1C, totals over its members (list +0x14) ---------------
+// The group's +0x38, +0x30, +0x34 and byte +0x40 start at 0; each member adds its +0x40 to +0x38 and +0x3C, ors its byte
+// +0x3C into +0x40, and +0x30, +0x34 keep the larger of theirs and the member's +0x44, +0x48 (the FPU's way).
+static volatile long g_group_totals;
+static void __thiscall groups_totals(const uint8_t *self) {
+    g_group_totals++;
+    const uint32_t *p = *(const uint32_t *const *)(self + 0x1c);
+    if (!p[0] || !p) return;
+    for (;;) {
+        uint8_t *const g = (uint8_t *)(uintptr_t)p[2];
+        *(uint32_t *)(g + 0x38) = 0, *(uint32_t *)(g + 0x30) = 0, *(uint32_t *)(g + 0x34) = 0;
+        g[0x40] = 0;
+        const uint32_t *q = *(const uint32_t *const *)(g + 0x14);
+        if (q[0] && q)
+            for (;;) {
+                const uint8_t *const m = (const uint8_t *)(uintptr_t)q[2];
+                *(int32_t *)(g + 0x38) += *(const int32_t *)(m + 0x40);
+                *(int32_t *)(g + 0x3c) += *(const int32_t *)(m + 0x40);
+                g[0x40] |= m[0x3c];
+                for (int k = 0; k < 2; k++) {
+                    const float cur = *(const float *)(g + 0x30 + k * 4), v = *(const float *)(m + 0x44 + k * 4);
+                    volatile float r = v < cur || v != v || cur != cur ? cur : v;
+                    *(volatile float *)(g + 0x30 + k * 4) = r;
+                }
+                q = (const uint32_t *)(uintptr_t)q[0];
+                if (!q[0] || !q) break;
+            }
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return;
+    }
+}
+static const uint8_t groups_totals_original[] = {0x83, 0xec, 0x18, 0x57, 0x8b, 0x79, 0x1c, 0x8b, 0x07, 0x33, 0xd2};
+REWRITE("Groups::Totals", 0xbd2ca0, groups_totals_original, &groups_totals, &g_group_totals);
+
+// ---- Water::Entry970F20(i, n) (0x970F20): sifts entry i down the min-heap of n {id, key float} entries at +0x90 --------
+// The smaller child (the right one unless the left is below it) moves up while the entry's key is above it.
+static volatile long g_water_heap_sifts;
+static void __thiscall water_entry_970f20(const uint8_t *self, int32_t i, int32_t n) {
+    g_water_heap_sifts++;
+    uint32_t *const h = *(uint32_t *const *)(self + 0x90);
+    const uint32_t id = h[i * 2];
+    const float k = *(const float *)&h[i * 2 + 1];
+    auto key = [&](int32_t j) { return *(const float *)&h[j * 2 + 1]; };
+    int32_t l = 2 * i + 1;
+    for (; l + 1 < n; l = 2 * i + 1) {
+        const int32_t c = key(l) < key(l + 1) ? l : l + 1;
+        if (!(k > key(c))) goto done;
+        h[i * 2] = h[c * 2], h[i * 2 + 1] = h[c * 2 + 1];
+        i = c;
+    }
+    if (l < n && k > key(l)) {
+        h[i * 2] = h[l * 2], h[i * 2 + 1] = h[l * 2 + 1];
+        i = l;
+    }
+done:
+    h[i * 2] = id;
+    fpu_copy_h2(&h[i * 2 + 1], &k);
+}
+static const uint8_t water_entry_970f20_original[] = {0x8b, 0x81, 0x90, 0x00, 0x00, 0x00, 0x53, 0x8b, 0x5c, 0x24, 0x0c};
+REWRITE("Water::Entry970F20", 0x970f20, water_entry_970f20_original, &water_entry_970f20, &g_water_heap_sifts);
+
+// ---- Water::Set93CC50(terrain) (0x93CC50): which of a cell's three heights the water's level is above ----------------
+// With no water (+4) +0x14 = 0. Else the level (water +0x30) against the cell (x byte +0, y byte +1) of the terrain (width
+// byte +4, cells of 24 bytes at +0x24): bits 1, 2, 4 for its +0, +4, +8 (or +0xC, +8, +4 when byte +2 is set).
+static volatile long g_water_levels;
+static void __thiscall water_set_93cc50(uint8_t *self, const uint8_t *terrain) {
+    g_water_levels++;
+    const uint8_t *const w = *(const uint8_t *const *)(self + 4);
+    if (!w) {
+        *(uint32_t *)(self + 0x14) = 0;
+        return;
+    }
+    const float h = *(const float *)(w + 0x30);
+    const float *const c = (const float *)(*(const uint8_t *const *)(terrain + 0x24) + ((uint32_t)terrain[4] * self[1] + self[0]) * 24);
+    const bool turned = self[2] != 0;
+    const float h1 = turned ? c[3] : c[0], h2 = turned ? c[2] : c[1], h4 = turned ? c[1] : c[2];
+    *(uint32_t *)(self + 0x14) = (h > h4 ? 4u : 0u) | (h > h2 ? 2u : 0u) | (h > h1 ? 1u : 0u);
+}
+static const uint8_t water_set_93cc50_original[] = {0x8b, 0x41, 0x04, 0x85, 0xc0, 0x0f, 0x84, 0xba, 0x00, 0x00, 0x00};
+REWRITE("Water::Set93CC50", 0x93cc50, water_set_93cc50_original, &water_set_93cc50, &g_water_levels);
+
+// ---- Water::Value9060F0(x, y, n) (0x9060F0): a sum along a row of the water grids ------------------------------------
+// From 0: the n samples of +0x44 from row y (width +0) column x, then for the n - 1 after column x of row y (width +4)
+// each one of +0x4C followed by the same one of +0x50.
+static volatile long g_water_row_sums;
+static long double __thiscall water_value_9060f0(const uint8_t *self, int32_t x, int32_t y, int32_t n) {
+    g_water_row_sums++;
+    long double sum = *(const float *)0xf264e0;
+    const float *const a = *(const float *const *)(self + 0x44) + (*(const int32_t *)self * y + x);
+    for (int32_t i = 0; i < n; i++) sum = sum + a[i];
+    if (n > 1) {
+        const int32_t at = *(const int32_t *)(self + 4) * y + x + 1;
+        const float *const b = *(const float *const *)(self + 0x4c) + at, *const c = *(const float *const *)(self + 0x50) + at;
+        for (int32_t i = 0; i < n - 1; i++) {
+            sum = sum + b[i];
+            sum = sum + c[i];
+        }
+    }
+    return sum;
+}
+static const uint8_t water_value_9060f0_original[] = {0x8b, 0x01, 0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00, 0x8b, 0x51, 0x44};
+REWRITE("Water::Value9060F0", 0x9060f0, water_value_9060f0_original, &water_value_9060f0, &g_water_row_sums);
+
+// ---- Fireworks::Find989300(o) (0x989300): of o's items (+0xCC, count +0x58; from the last back), the part (+0xA0) with
+// the largest value (+0x4C) above 0, the first found keeping ties; 0 when none is above 0 --------------------------------
+static volatile long g_firework_bests;
+static uint32_t __stdcall fireworks_find_989300(const uint8_t *o) {
+    g_firework_bests++;
+    float best = *(const float *)0xf264e0;
+    uint32_t found = 0;
+    const uint32_t *const items = *(const uint32_t *const *)(o + 0xcc);
+    for (int32_t i = *(const int32_t *)(o + 0x58) - 1; i >= 0; i--) {
+        const uint32_t part = *(const uint32_t *)(uintptr_t)(items[i] + 0xa0);
+        const float v = *(const float *)(uintptr_t)(part + 0x4c);
+        if (best < v) best = v, found = part;
+    }
+    return found;
+}
+static const uint8_t fireworks_find_989300_original[] = {0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00, 0x55, 0x8b, 0x6c, 0x24, 0x08};
+REWRITE("Fireworks::Find989300", 0x989300, fireworks_find_989300_original, &fireworks_find_989300, &g_firework_bests);
+
+// ---- Scenery::Slot8847A0(v) (0x8847A0): the slot of a value in the sorted stops at +0xFC (count +0xF4) -----------------
+// With W = (+0x84 - +0x7C) - 8 and s = +0xDC: t = (v - 4) / W s - s / W 3 (a float); the first stop above t, or the count.
+static volatile long g_scenery_slots;
+static int32_t __thiscall scenery_slot_8847a0(const uint8_t *self, float v) {
+    g_scenery_slots++;
+    auto at = [&](uint32_t o) { return *(const float *)(self + o); };
+    const float k1 = *(const float *)0xf793c8, k2 = *(const float *)0xf270e8, k3 = *(const float *)0xf793c4;
+    const long double a = ((long double)v - k1) / (((long double)at(0x84) - at(0x7c)) - k2) * at(0xdc);
+    const long double b = (long double)at(0xdc) / (((long double)at(0x84) - at(0x7c)) - k2) * k3;
+    volatile float t = (float)(a - b);
+    const int32_t n = *(const int32_t *)(self + 0xf4);
+    const float *const stops = *(const float *const *)(self + 0xfc);
+    int32_t i = 0;
+    for (; i < n; i++)
+        if (stops[i] > t) return i;
+    return i;
+}
+static const uint8_t scenery_slot_8847a0_original[] = {0xd9, 0x44, 0x24, 0x04, 0x56, 0xd8, 0x25, 0xc8, 0x93, 0xf7, 0x00};
+REWRITE("Scenery::Slot8847A0", 0x8847a0, scenery_slot_8847a0_original, &scenery_slot_8847a0, &g_scenery_slots);
+
+// ---- Track::LengthBC64E0(out) (0xBC64E0): the direction from the first point of one end list to the first of the other --
+// The lists (+0x110, +0x10C; points at their +4) are there with flag 0x400000 (+0x18) and at least two ends (+0xE4); the
+// game reads through 0 otherwise. D = q - p (x and y floats, z unrounded) made of length 1 ((z^2 + y^2) + x^2); a length of
+// 0 gives {0, 0, 1}. Gives out.
+static volatile long g_track_directions;
+static float *__thiscall track_length_bc64e0(const uint8_t *self, float *out) {
+    g_track_directions++;
+    const bool there = (*(const uint32_t *)(self + 0x18) & 0x400000) && *(const int32_t *)(self + 0xe4) >= 2;
+    const uint32_t *const volatile la = there ? *(const uint32_t *const *)(self + 0x110) : nullptr;
+    const float *const p = (const float *)(uintptr_t)la[1];
+    const uint32_t *const volatile lb = there ? *(const uint32_t *const *)(self + 0x10c) : nullptr;
+    const float *const q = (const float *)(uintptr_t)lb[1];
+    volatile float dx = (float)((long double)q[0] - p[0]);
+    volatile float dy = (float)((long double)q[1] - p[1]);
+    const long double dz = (long double)q[2] - p[2];
+    const long double len = x87_sqrt_h2((dz * dz + (long double)dy * dy) + (long double)dx * dx);
+    volatile float *const o = out;
+    if (len == *(const float *)0xf264e0) {
+        ((volatile uint32_t *)o)[0] = 0, ((volatile uint32_t *)o)[1] = 0, ((volatile uint32_t *)o)[2] = 0x3f800000;
+        return out;
+    }
+    const long double inv = (long double)*(const float *)0xf264dc / len;
+    o[0] = (float)((long double)dx * inv);
+    o[1] = (float)((long double)dy * inv);
+    o[2] = (float)(dz * inv);
+    return out;
+}
+static const uint8_t track_length_bc64e0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x8b, 0x51, 0x18};
+REWRITE("Track::LengthBC64E0", 0xbc64e0, track_length_bc64e0_original, &track_length_bc64e0, &g_track_directions);
