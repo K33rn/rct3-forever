@@ -7610,3 +7610,202 @@ static void __thiscall loop_part_cdef80(int32_t *self) {
 }
 static const uint8_t loop_part_cdef80_original[] = {0x8b, 0x11, 0x85, 0xd2, 0x74, 0x44, 0x8b, 0x41, 0x08};
 REWRITE("Loop::PartCDEF80", 0xcdef80, loop_part_cdef80_original, &loop_part_cdef80, &g_loop_steps);
+
+// ---- Graph::FindAC5A00(o) (0xAC5A00): 1 (only al) when an entry (0x24 bytes at +0x40, count +0x44; from the last back)
+// matches o: its +8 dword is o's +8, its byte +0x20 o's +0x20 and its byte +0x21 o's +0x21; else 0 --------------------
+static volatile long g_graph_finds;
+static uint8_t __thiscall graph_find_ac5a00(const uint8_t *self, const uint8_t *o) {
+    g_graph_finds++;
+    const uint8_t *const list = *(const uint8_t *const *)(self + 0x40);
+    for (int32_t i = *(const int32_t *)(self + 0x44) - 1; i >= 0; i--) {
+        const uint8_t *const e = list + i * 0x24 + 8;
+        if (e[0x19] == o[0x21] && *(const uint32_t *)e == *(const uint32_t *)(o + 8) && e[0x18] == o[0x20]) return 1;
+    }
+    return 0;
+}
+static const uint8_t graph_find_ac5a00_original[] = {0x8b, 0x41, 0x44, 0x48, 0x53, 0x56, 0x57, 0x78, 0x33};
+REWRITE("Graph::FindAC5A00", 0xac5a00, graph_find_ac5a00_original, &graph_find_ac5a00, &g_graph_finds);
+
+// ---- WideString::FindBCED70(ch, from) (0xBCED70): as WideString::FindChar for ch's low byte -----------------------------
+static volatile long g_wide_byte_finds;
+static int32_t __thiscall wide_string_find_bced70(const uint8_t *const *self, uint32_t ch, uint32_t from) {
+    g_wide_byte_finds++;
+    const uint8_t *const t = *self;
+    if (from > *(const uint32_t *)(t + 4)) return -1;
+    const uint16_t *const buf = *(const uint16_t *const *)(t + 0xc);
+    for (const uint16_t *p = buf + from; *p; p++)
+        if (*p == (uint8_t)ch) return (int32_t)((uintptr_t)p - (uintptr_t)buf) >> 1;
+    return -1;
+}
+static const uint8_t wide_string_find_bced70_original[] = {0x33, 0xc0, 0x8a, 0x44, 0x24, 0x04, 0x56, 0x25, 0xff, 0x00, 0x00, 0x00};
+REWRITE("WideString::FindBCED70", 0xbced70, wide_string_find_bced70_original, &wide_string_find_bced70, &g_wide_byte_finds);
+
+// ---- Labels::Shared475C10(v) (0x475C10) ----------------------------------------------------------------------------
+// The game's 0x10ECA08 = v; then for each label on the game's list (0x10ECA14): a label whose turn (+0x64) is not the
+// game's 0x12F0144 takes it and has +0x1C and +0x70 cleared; +0x1C = old +0x1C + +0x1C (a float: doubled when it kept
+// its turn).
+static volatile long g_label_turns;
+static void __thiscall labels_shared_475c10(const void *, uint32_t v) {
+    g_label_turns++;
+    *(volatile uint32_t *)0x10eca08 = v;
+    const uint32_t *p = *(const uint32_t *const volatile *)0x10eca14;
+    if (!p[0] || !p) return;
+    for (;;) {
+        uint8_t *const label = (uint8_t *)(uintptr_t)p[2];
+        const uint32_t turn = *(const volatile uint32_t *)0x12f0144;
+        const long double old = *(const float *)(label + 0x1c);
+        if (*(const uint32_t *)(label + 0x64) != turn) {
+            *(uint32_t *)(label + 0x64) = turn;
+            *(uint32_t *)(label + 0x1c) = 0;
+            *(uint32_t *)(label + 0x70) = 0;
+        }
+        *(volatile float *)(label + 0x1c) = (float)(old + *(const float *)(label + 0x1c));
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return;
+    }
+}
+static const uint8_t labels_shared_475c10_original[] = {0x8b, 0x44, 0x24, 0x04, 0x8b, 0x0d, 0x14, 0xca, 0x0e, 0x01};
+REWRITE("Labels::Shared475C10", 0x475c10, labels_shared_475c10_original, &labels_shared_475c10, &g_label_turns);
+
+// ---- Window::Flag683770(c) (0x683770): 1 (only al) when flagged (bit 0 of byte +0x97) and the part's (+0x130) wide text
+// (count +4, characters +0xC) holds c (signed byte); else 0 ------------------------------------------------------------
+static volatile long g_window_text_has;
+static uint8_t __thiscall window_flag_683770(const uint8_t *self, uint32_t c) {
+    g_window_text_has++;
+    if (!(self[0x97] & 1)) return 0;
+    const uint8_t *const p = *(const uint8_t *const *)(self + 0x130);
+    const uint32_t n = *(const uint32_t *)(p + 4);
+    const int32_t want = (int8_t)c;
+    for (uint32_t i = 0; i < n; i++)
+        if ((int32_t)(*(const uint16_t *const *)(p + 0xc))[i] == want) return 1;
+    return 0;
+}
+static const uint8_t window_flag_683770_original[] = {0xf6, 0x81, 0x97, 0x00, 0x00, 0x00, 0x01, 0x53, 0x56, 0x57};
+REWRITE("Window::Flag683770", 0x683770, window_flag_683770_original, &window_flag_683770, &g_window_text_has);
+
+// ---- Zip::CheckEndCB0B60 (0xCB0B60): 1 for a zip end record that fits ------------------------------------------------
+// Signature 0x06054B50, disk 0 (+4) and directory disk 0 (+6), entries on this disk (+8) = all entries (+0xA), no comment
+// (+0x14), and the directory offset (+0xC) = the file's end place (+0x18's +0x44, -1 counting as 0) - its size (+0x10) -
+// 22.
+static volatile long g_zip_checks;
+static uint32_t __thiscall zip_check_end_cb0b60(const uint8_t *self) {
+    g_zip_checks++;
+    if (*(const uint32_t *)self != 0x6054b50 || *(const uint16_t *)(self + 4) || *(const uint16_t *)(self + 8) != *(const uint16_t *)(self + 0xa) ||
+        *(const uint16_t *)(self + 6) || *(const uint16_t *)(self + 0x14))
+        return 0;
+    uint32_t end = *(const uint32_t *)(*(const uint8_t *const *)(self + 0x18) + 0x44);
+    if (end == 0xffffffff) end = 0;
+    return *(const uint32_t *)(self + 0xc) == end - *(const uint32_t *)(self + 0x10) - 0x16 ? 1 : 0;
+}
+static const uint8_t zip_check_end_cb0b60_original[] = {0x81, 0x39, 0x50, 0x4b, 0x05, 0x06, 0x75, 0x43};
+REWRITE("Zip::CheckEndCB0B60", 0xcb0b60, zip_check_end_cb0b60_original, &zip_check_end_cb0b60, &g_zip_checks);
+
+// ---- Person::Shared7E9130 (0x7E9130): a weight over the game's list (0x10F0620) of people -----------------------------
+// Each adds by its kind (+0x414): 1 adds 1.5, 2 adds 2, 3 adds 3, others 1 (summed unrounded from 0).
+static volatile long g_person_weights;
+static long double __stdcall person_shared_7e9130() {
+    g_person_weights++;
+    long double sum = *(const float *)0xf264e0;
+    const uint32_t *p = *(const uint32_t *const volatile *)0x10f0620;
+    if (!p[0] || !p) return sum;
+    for (;;) {
+        switch (*(const int32_t *)(p[2] + 0x414)) {
+        case 1: sum = sum + *(const float *)0xf26648; break;
+        case 2: sum = sum + *(const float *)0xf2705c; break;
+        case 3: sum = sum + *(const float *)0xf2784c; break;
+        default: sum = sum + *(const float *)0xf264dc; break;
+        }
+        p = (const uint32_t *)(uintptr_t)p[0];
+        if (!p[0] || !p) return sum;
+    }
+}
+static const uint8_t person_shared_7e9130_original[] = {0xa1, 0x20, 0x06, 0x0f, 0x01, 0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00};
+REWRITE("Person::Shared7E9130", 0x7e9130, person_shared_7e9130_original, &person_shared_7e9130, &g_person_weights);
+
+// ---- Water::Remove95A570(a, b) (0x95A570): the edge between a and b in a's chain -------------------------------------
+// From index (+0x20)[a] along 16-byte edges (+8) {from, to, .., next for from +8, next for to +0xA} (words): the first
+// edge from a to b or from b; gives its index (a word), 0xFFFF at the chain's end.
+static volatile long g_water_edge_finds;
+static uint32_t __thiscall water_remove_95a570(const uint8_t *self, uint32_t a_in, uint32_t b_in) {
+    g_water_edge_finds++;
+    const uint16_t a = (uint16_t)a_in, b = (uint16_t)b_in;
+    uint16_t i = (*(const uint16_t *const *)(self + 0x20))[a];
+    while (i != 0xffff) {
+        const uint16_t *const e = (const uint16_t *)(*(const uint8_t *const *)(self + 8) + i * 16);
+        if (e[0] == a) {
+            if (e[1] == b) break;
+            i = e[4];
+        } else {
+            if (e[0] == b) break;
+            i = e[5];
+        }
+    }
+    return i;
+}
+static const uint8_t water_remove_95a570_original[] = {0x8b, 0x51, 0x20, 0x56, 0x66, 0x8b, 0x74, 0x24, 0x08};
+REWRITE("Water::Remove95A570", 0x95a570, water_remove_95a570_original, &water_remove_95a570, &g_water_edge_finds);
+
+// ---- GridArea::ValueAt, PartAt, ValueAt2(x, y) (0xABC6D0, 0xABC730, 0xABC790) -------------------------------------------
+// The cell at x, y inside the area {x0 +0x4C, y0 +0x50, x1 +0x54, y1 +0x58} (cells of 0x58 bytes at +0x5C, rows x1 - x0 +
+// 1 wide): ValueAt gives its +0x4C when its part's (+0x3C) +0xC is set, else 0; PartAt that +0xC (0 outside);
+// ValueAt2 its +0x50 (-1 outside).
+static volatile long g_grid_cells;
+template <int Kind> static uint32_t __thiscall grid_area_at(const uint8_t *self, int32_t x, int32_t y) {
+    g_grid_cells++;
+    const int32_t *const b = (const int32_t *)(self + 0x4c);
+    const uint32_t outside = Kind == 2 ? 0xffffffff : 0;
+    if (x < b[0] || x > b[2] || y < b[1] || y > b[3]) return outside;
+    const uint32_t i = (uint32_t)(b[2] - b[0] + 1) * (uint32_t)(y - b[1]) - (uint32_t)b[0] + (uint32_t)x;
+    const uint8_t *const cell = *(const uint8_t *const *)(self + 0x5c) + i * 0x58;
+    if (!cell) return outside;
+    if (Kind == 2) return *(const uint32_t *)(cell + 0x50);
+    const uint32_t part = *(const uint32_t *)(*(const uint8_t *const *)(cell + 0x3c) + 0xc);
+    if (Kind == 1) return part;
+    return part ? *(const uint32_t *)(cell + 0x4c) : 0;
+}
+static const uint8_t grid_area_at_original[] = {0x8b, 0x41, 0x4c, 0x53, 0x8b, 0x5c, 0x24, 0x08, 0x3b, 0xd8, 0x56, 0x57};
+REWRITE("GridArea::ValueAt", 0xabc6d0, grid_area_at_original, &grid_area_at<0>, &g_grid_cells);
+REWRITE("GridArea::PartAt", 0xabc730, grid_area_at_original, &grid_area_at<1>, &g_grid_cells);
+REWRITE("GridArea::ValueAt2", 0xabc790, grid_area_at_original, &grid_area_at<2>, &g_grid_cells);
+
+// ---- List::Count6C3CC0(v) (0x6C3CC0): whether every sub-list of a list (in eax: {sub-lists, count}) holds v ------------
+// Each sub-list {values, count}; 0 (only al) for an empty list or when one lacks v, else 1.
+static volatile long g_list_all_have;
+extern "C" uint8_t __stdcall forever_list_all_have(const uint32_t *list, uint32_t v) {
+    g_list_all_have++;
+    const int32_t n = (int32_t)list[1];
+    if (!n) return 0;
+    for (int32_t i = 0; i < n; i++) {
+        const uint32_t *const sub = (const uint32_t *)(uintptr_t)((const uint32_t *)(uintptr_t)list[0])[i];
+        const int32_t m = (int32_t)sub[1];
+        int32_t j = 0;
+        while (j < m && ((const uint32_t *)(uintptr_t)sub[0])[j] != v) j++;
+        if (j >= m) return 0;
+    }
+    return 1;
+}
+extern "C" __attribute__((naked)) void forever_list_all_have_regs() {   // list in eax; v on the stack
+    __asm__("pushl 4(%esp)\n\tpushl %eax\n\tcalll _forever_list_all_have@8\n\tret $4");
+}
+static const uint8_t list_count_6c3cc0_original[] = {0x53, 0x8b, 0x58, 0x04, 0x85, 0xdb, 0x55, 0x8b, 0x6c, 0x24, 0x0c};
+REWRITE("List::Count6C3CC0", 0x6c3cc0, list_count_6c3cc0_original, (void *)&forever_list_all_have_regs, &g_list_all_have);
+
+// ---- Values4::Snap(tolerance) (0x8E0C30): makes near-equal values of four equal -------------------------------------
+// Each value after the first becomes the first earlier kept value it is within tolerance of (|difference| below it);
+// one that matches none is kept for the later ones.
+static volatile long g_value_snaps;
+static void __thiscall values4_snap(uint32_t *self, float tolerance) {
+    g_value_snaps++;
+    uint32_t kept[4];
+    kept[0] = self[0];
+    int32_t n = 1;
+    for (int j = 1; j < 4; j++) {
+        int32_t i = 0;
+        for (; i < n; i++)
+            if (__builtin_fabsl((long double)*(const float *)&self[j] - *(const float *)&kept[i]) < tolerance) break;
+        if (i < n) self[j] = kept[i];
+        else kept[n++] = self[j];
+    }
+}
+static const uint8_t values4_snap_original[] = {0x83, 0xec, 0x10, 0x8b, 0x01, 0x56, 0x57, 0x89, 0x44, 0x24, 0x08};
+REWRITE("Values4::Snap", 0x8e0c30, values4_snap_original, &values4_snap, &g_value_snaps);

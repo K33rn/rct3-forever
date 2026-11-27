@@ -4633,4 +4633,190 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                               return Result{0};
                           }};
     quick(loop_part_cdef80);
+    // Graph::FindAC5A00: 0-6 entries from a few values, o matching one or none
+    Test graph_find_ac5a00{0xac5a00,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(int32_t *)(self + 0x44) = r.range(0, 9) ? r.range(0, 6) : -1;
+                               *(uint32_t *)(self + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                               for (int i = 0; i < 6 * 9; i++) arena<uint32_t>(0x200)[i] = r.next();
+                               for (int k = 0; k < 6; k++) {
+                                   uint8_t *e = arena<uint8_t>(0x200 + k * 0x24 + 8);
+                                   *(uint32_t *)e = r.range(0, 1), e[0x18] = (uint8_t)r.range(0, 1), e[0x19] = (uint8_t)r.range(0, 1);
+                               }
+                               uint8_t *o = arena<uint8_t>(0x400);
+                               *(uint32_t *)(o + 8) = r.range(0, 1), o[0x20] = (uint8_t)r.range(0, 1), o[0x21] = (uint8_t)r.range(0, 1);
+                           },
+                           [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x400)) & 0xff}; }};
+    quick(graph_find_ac5a00);
+    // WideString::FindBCED70: texts of 0-12 wide characters (high ones at times), from inside, at and past the end
+    Test wide_string_find_bced70{0xbced70,
+                                 [=](Rng &r) {
+                                     uint32_t *t = arena<uint32_t>(0x140);
+                                     arena<uint32_t>(0x100)[0] = (uint32_t)(uintptr_t)t;
+                                     const int n = r.range(0, 12);
+                                     t[1] = n, t[3] = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                     for (int i = 0; i < n; i++) arena<uint16_t>(0x200)[i] = (uint16_t)(r.range(0, 5) ? 0x41 + r.range(0, 3) : 0x141);
+                                     arena<uint16_t>(0x200)[n] = 0;
+                                     arena<uint32_t>(0x40)[0] = (r.next() & ~0xffu) | (uint32_t)(0x41 + r.range(0, 3));
+                                     arena<uint32_t>(0x40)[1] = r.range(0, n + 2);
+                                 },
+                                 [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(const void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1])}; }};
+    quick(wide_string_find_bced70);
+    // Labels::Shared475C10: the game's label list (0-4 labels, turns alike or not) and turn set; the game's data compared
+    // (all put back after)
+    {
+        static uint32_t saved_value, saved_list, saved_turn;
+        Test x{0x475c10,
+               [=](Rng &r) {
+                   *(uint32_t *)0x10eca14 = node_list_h2(r, 0x200, r.range(0, 4), 0x400);
+                   *(uint32_t *)0x12f0144 = r.range(0, 1);
+                   for (int k = 0; k < 4; k++) {
+                       uint8_t *l = arena<uint8_t>(0x400 + k * 0x40);
+                       for (int i = 0; i < 16; i++) arena<uint32_t>(0x400 + k * 0x40)[i] = r.next();
+                       *(uint32_t *)(l + 0x64) = r.range(0, 1);
+                       *(float *)(l + 0x1c) = r.real(-50, 50);
+                       arena<uint32_t>(0x200 + k * 0x20)[2] = (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0x40);
+                   }
+                   arena<uint32_t>(0x40)[0] = r.next();
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(const void *, uint32_t))fn)(nullptr, arena<uint32_t>(0x40)[0]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_value = *(uint32_t *)0x10eca08, saved_list = *(uint32_t *)0x10eca14, saved_turn = *(uint32_t *)0x12f0144; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10eca08 = saved_value, *(uint32_t *)0x10eca14 = saved_list, *(uint32_t *)0x12f0144 = saved_turn; };
+        t.push_back(x);
+    }
+    // Window::Flag683770: flagged or not, texts of 0-8 wide characters, c with its high bit at times
+    Test window_flag_683770{0x683770,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                self[0x97] = (uint8_t)r.next();
+                                *(uint32_t *)(self + 0x130) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                *(uint32_t *)arena<uint8_t>(0x304) = r.range(0, 8);
+                                *(uint32_t *)arena<uint8_t>(0x30c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                for (int i = 0; i < 8; i++) arena<uint16_t>(0x400)[i] = (uint16_t)(r.range(0, 4) ? 0x41 + r.range(0, 3) : 0xffc1);
+                                arena<uint32_t>(0x40)[0] = (r.next() & ~0xffu) | (uint32_t)(r.range(0, 4) ? 0x41 + r.range(0, 3) : 0xc1);
+                            },
+                            [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0]) & 0xff}; }};
+    quick(window_flag_683770);
+    // Zip::CheckEndCB0B60: good end records and ones off in each field
+    Test zip_check_end_cb0b60{0xcb0b60,
+                              [=](Rng &r) {
+                                  uint8_t *z = arena<uint8_t>(0x100);
+                                  *(uint32_t *)z = 0x6054b50;
+                                  *(uint16_t *)(z + 4) = 0, *(uint16_t *)(z + 6) = 0;
+                                  *(uint16_t *)(z + 8) = *(uint16_t *)(z + 0xa) = (uint16_t)r.range(0, 50);
+                                  *(uint16_t *)(z + 0x14) = 0;
+                                  *(uint32_t *)(z + 0x18) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                  const uint32_t end = r.range(0, 3) ? r.range(100, 100000) : 0xffffffff;
+                                  *(uint32_t *)arena<uint8_t>(0x244) = end;
+                                  *(uint32_t *)(z + 0x10) = r.range(0, 90);
+                                  *(uint32_t *)(z + 0xc) = (end == 0xffffffff ? 0 : end) - *(uint32_t *)(z + 0x10) - 0x16;
+                                  switch (r.range(0, 9)) {
+                                  case 0: *(uint32_t *)z ^= 1; break;
+                                  case 1: *(uint16_t *)(z + 4) = 1; break;
+                                  case 2: *(uint16_t *)(z + 6) = 1; break;
+                                  case 3: *(uint16_t *)(z + 0xa) += 1; break;
+                                  case 4: *(uint16_t *)(z + 0x14) = 1; break;
+                                  case 5: *(uint32_t *)(z + 0xc) += 1; break;
+                                  default: break;
+                                  }
+                              },
+                              [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *))fn)(arena<void>(0x100))}; }};
+    quick(zip_check_end_cb0b60);
+    // Person::Shared7E9130: the game's list of 0-5 people of kinds 0-4 set (put back after)
+    {
+        static uint32_t saved_list;
+        Test x{0x7e9130,
+               [=](Rng &r) {
+                   *(uint32_t *)0x10f0620 = node_list_h2(r, 0x200, r.range(0, 5), 0x400);
+                   for (int k = 0; k < 5; k++) {
+                       arena<uint32_t>(0x200 + k * 0x20)[2] = (uint32_t)(uintptr_t)arena<void>(0x1000 + k * 0x500);
+                       *(int32_t *)arena<uint8_t>(0x1000 + k * 0x500 + 0x414) = r.range(0, 4);
+                   }
+               },
+               [](void *fn) {
+                   Result x;
+                   x.f = ((long double(__stdcall *)())fn)();
+                   return x;
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_list = *(uint32_t *)0x10f0620; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10f0620 = saved_list; };
+        quick(x);
+    }
+    // Water::Remove95A570: chains of 0-5 edges among points 0-3 (each edge's next links in order)
+    Test water_remove_95a570{0x95a570,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 *(uint32_t *)(self + 0x20) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                 *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 const uint16_t a = (uint16_t)r.range(0, 3);
+                                 const int n = r.range(0, 5);
+                                 for (int p = 0; p < 4; p++) arena<uint16_t>(0x200)[p] = 0xffff;
+                                 if (n) arena<uint16_t>(0x200)[a] = 0;
+                                 for (int k = 0; k < n; k++) {
+                                     uint16_t *e = arena<uint16_t>(0x400 + k * 16);
+                                     for (int i = 0; i < 8; i++) e[i] = (uint16_t)r.next();
+                                     const bool from = r.range(0, 1);
+                                     e[0] = from ? a : (uint16_t)((a + r.range(1, 3)) % 4);   // (not a: those follow the other link)
+                                     e[1] = from ? (uint16_t)r.range(0, 3) : a;
+                                     e[from ? 4 : 5] = (uint16_t)(k + 1 < n ? k + 1 : 0xffff);
+                                 }
+                                 arena<uint32_t>(0x40)[0] = (r.next() & ~0xffffu) | a, arena<uint32_t>(0x40)[1] = (r.next() & ~0xffffu) | r.range(0, 3);
+                             },
+                             [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1])}; }};
+    quick(water_remove_95a570);
+    // GridArea::ValueAt / PartAt / ValueAt2: areas of 1-4 a side, places inside and past every edge
+    for (uintptr_t at : {(uintptr_t)0xabc6d0, (uintptr_t)0xabc730, (uintptr_t)0xabc790}) {
+        Test x{at,
+               [=](Rng &r) {
+                   int32_t *b = arena<int32_t>(0x14c);
+                   b[0] = r.range(-3, 3), b[1] = r.range(-3, 3), b[2] = b[0] + r.range(0, 3), b[3] = b[1] + r.range(0, 3);
+                   *(uint32_t *)arena<uint8_t>(0x15c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   for (int c = 0; c < 16; c++) {
+                       uint8_t *cell = arena<uint8_t>(0x400 + c * 0x58);
+                       *(uint32_t *)(cell + 0x3c) = (uint32_t)(uintptr_t)arena<void>(0x1000 + c * 0x10);
+                       *(uint32_t *)arena<uint8_t>(0x1000 + c * 0x10 + 0xc) = r.range(0, 1) ? r.next() | 1 : 0;
+                       *(uint32_t *)(cell + 0x4c) = r.next(), *(uint32_t *)(cell + 0x50) = r.next();
+                   }
+                   arena<int32_t>(0x40)[0] = r.range(b[0] - 1, b[2] + 1), arena<int32_t>(0x40)[1] = r.range(b[1] - 1, b[3] + 1);
+               },
+               [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1])}; }};
+        quick(x);
+    }
+    // List::Count6C3CC0: lists of 0-3 sub-lists of 0-4 values from a few (the list in eax)
+    Test list_count_6c3cc0{0x6c3cc0,
+                           [=](Rng &r) {
+                               uint32_t *list = arena<uint32_t>(0x100);
+                               list[0] = (uint32_t)(uintptr_t)arena<void>(0x140), list[1] = r.range(0, 9) ? r.range(0, 3) : (uint32_t)-1;
+                               for (int s = 0; s < 3; s++) {
+                                   uint32_t *sub = arena<uint32_t>(0x200 + s * 0x10);
+                                   arena<uint32_t>(0x140)[s] = (uint32_t)(uintptr_t)sub;
+                                   sub[0] = (uint32_t)(uintptr_t)arena<void>(0x300 + s * 0x20), sub[1] = r.range(0, 4);
+                                   for (int i = 0; i < 4; i++) arena<uint32_t>(0x300 + s * 0x20)[i] = r.range(0, 2);
+                               }
+                               arena<uint32_t>(0x40)[0] = r.range(0, 2);
+                           },
+                           [](void *fn) {
+                               uint32_t stack[1] = {arena<uint32_t>(0x40)[0]};
+                               uint32_t *ps = stack;
+                               uint32_t a = (uint32_t)(uintptr_t)arena<void>(0x100);
+                               __asm__ volatile("pushl (%%edx)\n\tcall *%%ebx" : "+a"(a), "+d"(ps) : "b"(fn) : "ecx", "memory", "cc");
+                               return Result{a & 0xff};
+                           }};
+    quick(list_count_6c3cc0);
+    // Values4::Snap: four values near each other or not, tolerances small and large
+    Test values4_snap{0x8e0c30,
+                      [=](Rng &r) {
+                          const float base = r.real(-10, 10);
+                          for (int i = 0; i < 4; i++) arena<float>(0x100)[i] = base + (r.range(0, 1) ? r.real(-0.1f, 0.1f) : r.real(-5, 5));
+                          arena<float>(0x40)[0] = r.range(0, 1) ? r.real(0, 0.3f) : r.real(0, 6);
+                      },
+                      [](void *fn) {
+                          ((void(__thiscall *)(void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                          return Result{0};
+                      }};
+    quick(values4_snap);
 #endif

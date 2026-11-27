@@ -1434,7 +1434,7 @@ address,size,name,callers,status
 0x475a30,139,Array<8>::SetCapacity,9,rewritten
 0x475ae0,178,,0,documented
 0x475ba0,101,,11,documented
-0x475c10,78,,2,documented
+0x475c10,78,Labels::Shared475C10,2,rewritten
 0x475c60,72,,0,documented
 0x475cb0,79,Events::Add475CB0,6,rewritten
 0x475d00,79,Events::Add475CB0,8,rewritten
@@ -6534,7 +6534,7 @@ address,size,name,callers,status
 0x683570,30,DeletingDestructor,2,rewritten
 0x6835a0,47,,158,documented
 0x683620,66,,0,documented
-0x683770,78,,1,documented
+0x683770,78,Window::Flag683770,1,rewritten
 0x6837c0,78,,2,documented
 0x683810,157,,2,documented
 0x6838c0,168,,2,documented
@@ -7249,7 +7249,7 @@ address,size,name,callers,status
 0x6c3bc0,26,OwnedPointer::Reset,0,rewritten
 0x6c3be0,149,,10,documented
 0x6c3c80,54,,1,documented
-0x6c3cc0,86,,1,documented
+0x6c3cc0,86,List::Count6C3CC0,1,rewritten
 0x6c3d20,46,,0,documented
 0x6c3d50,213,,2,documented
 0x6c3e40,35,,11,documented
@@ -10103,7 +10103,7 @@ address,size,name,callers,status
 0x7e8e40,78,,6,documented
 0x7e8f50,97,Make::OnceFor754DE0,1,rewritten
 0x7e8fc0,45,Mode::Step799750,1,rewritten
-0x7e9130,80,,3,documented
+0x7e9130,80,Person::Shared7E9130,3,rewritten
 0x7e91e0,320,,2,documented
 0x7e9350,110,,1,documented
 0x7e93d0,1231,Guest::MakeRandom,2,rewritten
@@ -12502,7 +12502,7 @@ address,size,name,callers,status
 0x8e0340,153,,1,documented
 0x8e03e0,192,,1,documented
 0x8e04b0,1682,,0,documented
-0x8e0c30,89,,9,documented
+0x8e0c30,89,Values4::Snap,9,rewritten
 0x8e0cd0,143,,1,documented
 0x8e0d90,23,,1,documented
 0x8e0db0,1203,,1,documented
@@ -13378,7 +13378,7 @@ address,size,name,callers,status
 0x95a3d0,64,Record::SetFields,1,rewritten
 0x95a410,254,,2,documented
 0x95a510,80,,1,documented
-0x95a570,82,,45,documented
+0x95a570,82,Water::Remove95A570,45,rewritten
 0x95a660,152,,3,documented
 0x95a700,222,,1,documented
 0x95a7e0,551,,0,documented
@@ -16906,9 +16906,9 @@ address,size,name,callers,status
 0xabc690,7,SetTable,1,rewritten
 0xabc6a0,30,DeletingDestructor,1,rewritten
 0xabc6c0,7,SetTable,1,rewritten
-0xabc6d0,91,,17,documented
-0xabc730,84,,3,documented
-0xabc790,82,,1,documented
+0xabc6d0,91,GridArea::ValueAt,17,rewritten
+0xabc730,84,GridArea::PartAt,3,rewritten
+0xabc790,82,GridArea::ValueAt2,1,rewritten
 0xabc910,114,,1,documented
 0xabc990,137,,3,documented
 0xabca20,398,,2,documented
@@ -17000,7 +17000,7 @@ address,size,name,callers,status
 0xac55e0,864,Class::Construct,2,rewritten
 0xac5960,30,DeletingDestructor,2,rewritten
 0xac5980,122,,1,documented
-0xac5a00,76,,1,documented
+0xac5a00,76,Graph::FindAC5A00,1,rewritten
 0xac5b30,30,DeletingDestructor,1,rewritten
 0xac5b60,102,Factory::Create,1,rewritten
 0xac5bd0,97,,1,documented
@@ -19792,7 +19792,7 @@ address,size,name,callers,status
 0xbceba0,142,,0,documented
 0xbcec90,139,,7,documented
 0xbced20,75,WideString::FindChar,1,rewritten
-0xbced70,77,,27,documented
+0xbced70,77,WideString::FindBCED70,27,rewritten
 0xbcedc0,142,WideString::Find,1,rewritten
 0xbcee60,18,,14,documented
 0xbcee80,59,,1,documented
@@ -22346,7 +22346,7 @@ address,size,name,callers,status
 0xcb09a0,21,,3,documented
 0xcb09c0,93,,2,documented
 0xcb0a20,313,,2,documented
-0xcb0b60,78,,2,documented
+0xcb0b60,78,Zip::CheckEndCB0B60,2,rewritten
 0xcb0bb0,39,Attached::AttachCB0BB0,2,rewritten
 0xcb0be0,584,,2,documented
 0xcb0e30,31,,0,documented
