@@ -10313,3 +10313,129 @@ static long double __thiscall animal_value_a88470(const uint8_t *self) {
 }
 static const uint8_t animal_value_a88470_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x41, 0x3c, 0x8b, 0x51, 0x34, 0x56};
 REWRITE("Animal::ValueA88470", 0xa88470, animal_value_a88470_original, &animal_value_a88470, &g_animal_scores);
+
+// ---- Water::Range941EF0(level, a, b, grid) (0x941EF0): whether water at level gets from cell a to cell b ---------------
+// a, b are byte (x, y) places in the grid (width byte +4; cells of 24 bytes at +0x24, corner heights 0-3). The two
+// corners of each cell on their shared side (by which way b lies: x first, then y; the same cell its 2, 1) are p0, p1
+// and q0, q1. 1 when p0 and q0, or p1 and q1, are both below the level; else when the side crosses (p0 and q1, or p1 and
+// q0, below) and d = ((q1 - q0) - p0) + p1 is larger than 0xF3312C, whether p0 + (p1 - p0) (p0 - q0) / d is below; else
+// 0 (only al).
+static volatile long g_water_crossings;
+static uint8_t __stdcall water_range_941ef0(float level, const uint8_t *a, const uint8_t *b, const uint8_t *grid) {
+    g_water_crossings++;
+    const uint32_t w = grid[4];
+    auto cell = [&](const uint8_t *p) { return (const float *)(*(const uint8_t *const *)(grid + 0x24) + (p[1] * w + p[0]) * 24); };
+    const float *const A = cell(a), *const B = cell(b);
+    int ia0, ia1, ib0, ib1;
+    if (a[0] > b[0]) ia0 = 0, ia1 = 2, ib0 = 1, ib1 = 3;
+    else if (a[0] < b[0]) ia0 = 1, ia1 = 3, ib0 = 0, ib1 = 2;
+    else if (a[1] > b[1]) ia0 = 0, ia1 = 1, ib0 = 2, ib1 = 3;
+    else if (a[1] < b[1]) ia0 = 2, ia1 = 3, ib0 = 0, ib1 = 1;
+    else ia0 = 2, ia1 = 1, ib0 = 2, ib1 = 1;
+    const long double p0 = A[ia0], p1 = A[ia1], q0 = B[ib0], q1 = B[ib1], L = level;
+    if ((p0 < L && q0 < L) || (p1 < L && q1 < L)) return 1;
+    if (!((p0 < L && q1 < L) || (p1 < L && q0 < L))) return 0;
+    const long double d = ((q1 - q0) - p0) + p1;
+    if (!(__builtin_fabsl(d) > *(const float *)0xf3312c)) return 0;
+    const long double t = (p0 - q0) / d;
+    return (p1 - p0) * t + p0 < L;
+}
+static const uint8_t water_range_941ef0_original[] = {0x8b, 0x44, 0x24, 0x08, 0x8a, 0x08, 0x55, 0x8b, 0x6c, 0x24, 0x10};
+REWRITE("Water::Range941EF0", 0x941ef0, water_range_941ef0_original, &water_range_941ef0, &g_water_crossings);
+
+// ---- Animal::PointA6ED40(out) (0xA6ED40): the mean offset of a shape's points -------------------------------------------
+// Over the n (+0x10) points (pointers at +0xC): out = (sum of +0x10..+0x18 - sum of +0x20..+0x28) / (n K) (K the game's
+// 0xF8F954; the scale a float). The sums go four points at a time and then one at a time, some kept unrounded between
+// steps exactly as the game's are.
+static volatile long g_animal_means;
+static void __thiscall animal_point_a6ed40(const uint8_t *self, float *out) {
+    g_animal_means++;
+    const int32_t n = *(const int32_t *)(self + 0x10);
+    const float *const *const list = *(const float *const *const *)(self + 0xc);
+    long double x = *(const float *)0xf264e0, ureg = *(const float *)0xf264e0;
+    volatile float y = 0, z = 0, u = 0, v = 0, w = 0, xf;
+    auto uvw = [&](const float *e) {
+        u = (float)((long double)u + e[8]);
+        v = (float)((long double)v + e[9]);
+        w = (float)((long double)w + e[10]);
+    };
+    int32_t i = 0;
+    if (n >= 4) {
+        for (uint32_t m = (uint32_t)(n - 4) / 4 + 1; m; m--, i += 4) {
+            const float *const e0 = list[i], *const e1 = list[i + 1], *const e2 = list[i + 2], *const e3 = list[i + 3];
+            x = x + e0[4];
+            long double yt = (long double)y + e0[5];
+            z = (float)((long double)z + e0[6]);
+            uvw(e0);
+            xf = (float)(x + e1[4]);
+            yt = yt + e1[5];
+            const long double zt = (long double)z + e1[6];
+            uvw(e1);
+            xf = (float)((long double)xf + e2[4]);
+            y = (float)(yt + e2[5]);
+            z = (float)(zt + e2[6]);
+            uvw(e2);
+            x = (long double)xf + e3[4];
+            y = (float)((long double)y + e3[5]);
+            z = (float)((long double)z + e3[6]);
+            ureg = (long double)u + e3[8];
+            u = (float)ureg;
+            v = (float)((long double)v + e3[9]);
+            w = (float)((long double)w + e3[10]);
+        }
+    }
+    for (; i < n; i++) {
+        const float *const e = list[i];
+        x = x + e[4];
+        y = (float)((long double)y + e[5]);
+        z = (float)((long double)z + e[6]);
+        ureg = ureg + e[8];
+        v = (float)((long double)v + e[9]);
+        w = (float)((long double)w + e[10]);
+    }
+    const long double dx = x - ureg;
+    volatile float dy = (float)((long double)y - v), dz = (float)((long double)z - w);
+    volatile float s = (float)((long double)*(const float *)0xf264dc / ((long double)n * *(const float *)0xf8f954));
+    volatile float *const o = out;
+    o[0] = (float)(dx * s);
+    o[1] = (float)((long double)dy * s);
+    o[2] = (float)((long double)dz * s);
+}
+static const uint8_t animal_point_a6ed40_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00};
+REWRITE("Animal::PointA6ED40", 0xa6ed40, animal_point_a6ed40_original, &animal_point_a6ed40, &g_animal_means);
+
+// ---- Model::PartsCC66B0() (0xCC66B0): puts each part's local matrix in front of its matrix, once (+8) -------------------
+// For parts 1.. of the model (*self: count +0x24, local matrices +0x34) the part's matrix (64 bytes at +4) becomes local
+// x matrix (affine: the last column 0, 0, 0, 1), each entry summed in the game's order. Then +8 is set.
+static volatile long g_model_part_matrices;
+static void __thiscall model_parts_cc66b0(uint8_t *self) {
+    g_model_part_matrices++;
+    if (self[8]) return;
+    const uint8_t *const model = *(const uint8_t *const *)self;
+    for (int32_t i = 1; i < *(const int32_t *)(model + 0x24); i++) {
+        float *const P = (float *)(*(uint8_t *const *)(self + 4) + i * 0x40);
+        const float *const L = (const float *)(*(const uint8_t *const *)(model + 0x34) + i * 0x40);
+        auto p = [&](int r, int c) { return (long double)P[r * 4 + c]; };
+        auto l = [&](int r, int c) { return (long double)L[r * 4 + c]; };
+        volatile float r00 = (float)((l(0, 1) * p(1, 0) + p(2, 0) * l(0, 2)) + l(0, 0) * p(0, 0));
+        volatile float r01 = (float)((l(0, 0) * p(0, 1) + l(0, 2) * p(2, 1)) + p(1, 1) * l(0, 1));
+        volatile float r02 = (float)((l(0, 0) * p(0, 2) + l(0, 2) * p(2, 2)) + p(1, 2) * l(0, 1));
+        volatile float r10 = (float)((p(0, 0) * l(1, 0) + p(2, 0) * l(1, 2)) + l(1, 1) * p(1, 0));
+        volatile float r11 = (float)((l(1, 2) * p(2, 1) + l(1, 0) * p(0, 1)) + l(1, 1) * p(1, 1));
+        volatile float r12 = (float)((p(2, 2) * l(1, 2) + l(1, 0) * p(0, 2)) + l(1, 1) * p(1, 2));
+        volatile float r20 = (float)((p(0, 0) * l(2, 0) + p(2, 0) * l(2, 2)) + l(2, 1) * p(1, 0));
+        volatile float r21 = (float)((l(2, 2) * p(2, 1) + l(2, 0) * p(0, 1)) + l(2, 1) * p(1, 1));
+        volatile float r22 = (float)((l(2, 2) * p(2, 2) + l(2, 0) * p(0, 2)) + l(2, 1) * p(1, 2));
+        volatile float r30 = (float)(((p(0, 0) * l(3, 0) + p(2, 0) * l(3, 2)) + l(3, 1) * p(1, 0)) + p(3, 0));
+        volatile float r31 = (float)(((l(3, 2) * p(2, 1) + l(3, 0) * p(0, 1)) + l(3, 1) * p(1, 1)) + p(3, 1));
+        volatile float r32 = (float)(((l(3, 2) * p(2, 2) + l(3, 0) * p(0, 2)) + l(3, 1) * p(1, 2)) + p(3, 2));
+        volatile float *const o = P;
+        o[0] = r00, o[1] = r01, o[2] = r02, ((volatile uint32_t *)o)[3] = 0;
+        o[4] = r10, o[5] = r11, o[6] = r12, ((volatile uint32_t *)o)[7] = 0;
+        o[8] = r20, o[9] = r21, o[10] = r22, ((volatile uint32_t *)o)[11] = 0;
+        o[12] = r30, o[13] = r31, o[14] = r32, ((volatile uint32_t *)o)[15] = 0x3f800000;
+    }
+    self[8] = 1;
+}
+static const uint8_t model_parts_cc66b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0x8a, 0x41, 0x08};
+REWRITE("Model::PartsCC66B0", 0xcc66b0, model_parts_cc66b0_original, &model_parts_cc66b0, &g_model_part_matrices);

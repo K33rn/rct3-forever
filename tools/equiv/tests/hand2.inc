@@ -6492,4 +6492,56 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
         x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x13cdf20 = saved_scale; };
         quick(x);
     }
+    // Water::Range941EF0: 4 x 4 grids of small whole or random heights, neighbouring cells each way (and the same cell),
+    // levels across the heights
+    Test water_range_941ef0{0x941ef0,
+                            [=](Rng &r) {
+                                uint8_t *g = arena<uint8_t>(0x100);
+                                g[4] = 4, *(uint32_t *)(g + 0x24) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                const bool whole = r.range(0, 1);
+                                for (int k = 0; k < 16 * 6; k++) arena<float>(0x400)[k] = whole ? (float)r.range(0, 4) : r.real(0, 4);
+                                uint8_t *a = arena<uint8_t>(0x40), *b = arena<uint8_t>(0x44);
+                                a[0] = (uint8_t)r.range(1, 2), a[1] = (uint8_t)r.range(1, 2);
+                                b[0] = a[0], b[1] = a[1];
+                                switch (r.range(0, 4)) {
+                                case 0: b[0]++; break;
+                                case 1: b[0]--; break;
+                                case 2: b[1]++; break;
+                                case 3: b[1]--; break;
+                                }
+                                arena<float>(0x48)[0] = whole ? (float)r.range(0, 4) + (r.range(0, 1) ? 0.5f : 0.0f) : r.real(-0.5f, 4.5f);
+                            },
+                            [](void *fn) { return Result{((uint32_t(__stdcall *)(float, const void *, const void *, const void *))fn)(arena<float>(0x48)[0], arena<void>(0x40), arena<void>(0x44), arena<void>(0x100)) & 0xff}; }};
+    quick(water_range_941ef0);
+    // Animal::PointA6ED40: 1-13 points of random values (every unrolled count and tail)
+    Test animal_point_a6ed40{0xa6ed40,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100);
+                                 const int n = r.range(1, 13);
+                                 *(int32_t *)(self + 0x10) = n, *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                 for (int k = 0; k < 13; k++) {
+                                     arena<uint32_t>(0x200)[k] = (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0x30);
+                                     for (int c = 4; c < 11; c++) arena<float>(0x400 + k * 0x30)[c] = r.real(-100, 100);
+                                 }
+                                 for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                             },
+                             [](void *fn) {
+                                 ((void(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60));
+                                 return Result{0};
+                             }};
+    quick(animal_point_a6ed40);
+    // Model::PartsCC66B0: done or not, models of 0-5 parts with random matrices
+    Test model_parts_cc66b0{0xcc66b0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100), *model = arena<uint8_t>(0x180);
+                                *(uint32_t *)self = (uint32_t)(uintptr_t)model, *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                self[8] = r.range(0, 4) == 0;
+                                *(int32_t *)(model + 0x24) = r.range(0, 5), *(uint32_t *)(model + 0x34) = (uint32_t)(uintptr_t)arena<void>(0x800);
+                                for (int k = 0; k < 5 * 16; k++) arena<float>(0x400)[k] = r.real(-3, 3), arena<float>(0x800)[k] = r.real(-3, 3);
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                                return Result{0};
+                            }};
+    quick(model_parts_cc66b0);
 #endif

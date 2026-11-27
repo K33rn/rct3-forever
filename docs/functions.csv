@@ -13233,7 +13233,7 @@ address,size,name,callers,status
 0x941090,2862,,3,documented
 0x941c00,245,,1,documented
 0x941d00,486,,4,documented
-0x941ef0,460,,3,documented
+0x941ef0,460,Water::Range941EF0,3,rewritten
 0x9420e0,44,GlobalList::Each452E40,3,rewritten
 0x942110,84,,4,documented
 0x942170,44,GlobalList::Each452E40,1,rewritten
@@ -16194,7 +16194,7 @@ address,size,name,callers,status
 0xa6c9e0,41,,3,documented
 0xa6ca10,3454,,2,documented
 0xa6d7b0,5493,,6,documented
-0xa6ed40,513,,4,documented
+0xa6ed40,513,Animal::PointA6ED40,4,rewritten
 0xa6ef50,152,PhysicsWorld::AtRest,1,rewritten
 0xa6eff0,161,VerletPoints::AllSettled,0,rewritten
 0xa6f0a0,754,,1,documented
@@ -22720,7 +22720,7 @@ address,size,name,callers,status
 0xcc6310,194,,4,documented
 0xcc63e0,54,,3,documented
 0xcc6420,645,,1,documented
-0xcc66b0,489,,12,documented
+0xcc66b0,489,Model::PartsCC66B0,12,rewritten
 0xcc68c0,127,Nodes::MatrixFor,2,rewritten
 0xcc69a0,1375,,0,documented
 0xcc6f00,761,,3,documented
