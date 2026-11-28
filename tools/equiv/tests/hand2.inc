@@ -7116,4 +7116,121 @@ static long double __fastcall h2_effect_value(uint32_t a, uint32_t b, uint32_t c
                              },
                              [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x200), arena<void>(0x40))}; }};
     quick(window_place_6adb60);
+    // Water::Cell90B150: grids 1-6 wide over random boxes, places in and around them, random amounts (the move itself real)
+    Test water_cell_90b150{0x90b150,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               float *f = (float *)self;
+                               const int w = r.range(1, 6);
+                               *(int32_t *)self = w, *(uint32_t *)(self + 0x20) = r.next() & 0xc, f[0x38 / 4] = r.real(0, 2);
+                               f[2] = r.real(-50, 50), f[3] = r.real(-50, 50), f[4] = f[2] + r.real(5, 60), f[5] = f[3] + r.real(5, 60);
+                               *(uint32_t *)(self + 0x44) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                               for (int k = 0; k < 8 * 8; k++) arena<float>(0x400)[k] = r.real(-10, 10);
+                               float *a = arena<float>(0x40);
+                               a[0] = f[2] + r.real(-0.2f, 1.2f) * (f[4] - f[2]), a[1] = f[2] + r.real(-0.2f, 1.2f) * (f[4] - f[2]);
+                               a[2] = f[3] + r.real(-0.3f, 1.3f) * (f[5] - f[3]), a[3] = r.real(-3, 3);
+                           },
+                           [](void *fn) {
+                               const float *a = arena<float>(0x40);
+                               ((void(__thiscall *)(void *, float, float, float, float))fn)(arena<void>(0x100), a[0], a[1], a[2], a[3]);
+                               return Result{0};
+                           }};
+    quick(water_cell_90b150);
+    // Animal::StepA91180: shapes of 0-7 corners within -2..2 (the real inside test), random bits before
+    Test animal_step_a91180{0xa91180,
+                            [=](Rng &r) {
+                                uint32_t *shape = arena<uint32_t>(0x100);
+                                shape[0] = (uint32_t)(uintptr_t)arena<void>(0x200), shape[1] = r.range(0, 7);
+                                for (int k = 0; k < 8; k++) shape[2 + k] = r.next();
+                                for (int k = 0; k < 16; k++) arena<float>(0x200)[k] = r.range(0, 2) ? r.real(-2.2f, 2.2f) : (float)r.range(-8, 8) * 0.25f;
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x300), arena<void>(0x100));
+                                return Result{0};
+                            }};
+    quick(animal_step_a91180);
+    // Terrain::Corner8F3650: 0-3 rings of 0-4 by 0-4 steps (the real edge fill), random grids
+    Test terrain_corner_8f3650{0x8f3650,
+                               [=](Rng &r) {
+                                   uint8_t *self = arena<uint8_t>(0x100), *g = arena<uint8_t>(0x180);
+                                   *(uint32_t *)self = (uint32_t)(uintptr_t)g, *(int32_t *)(self + 4) = r.range(0, 3);
+                                   *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                   g[4] = (uint8_t)r.range(1, 40), g[5] = (uint8_t)r.range(1, 40);
+                                   *(float *)(g + 0xc) = r.real(-100, 100), *(float *)(g + 0x10) = r.real(-100, 100);
+                                   *(float *)(g + 0x14) = r.real(0.5f, 8), *(float *)(g + 0x18) = r.real(0.5f, 8);
+                                   for (int i = 0; i < 3; i++) {
+                                       uint8_t *ring = arena<uint8_t>(0x200 + i * 0x30);
+                                       *(int32_t *)(ring + 8) = r.range(0, 4), *(int32_t *)(ring + 0xc) = r.range(0, 4);
+                                       *(uint32_t *)(ring + 0x14) = (uint32_t)(uintptr_t)arena<void>(0x400 + i * 0x200);
+                                   }
+                                   for (int k = 0; k < 3 * 0x80; k++) arena<uint32_t>(0x400)[k] = r.next();
+                               },
+                               [](void *fn) {
+                                   ((void(__thiscall *)(const void *))fn)(arena<void>(0x100));
+                                   return Result{0};
+                               }};
+    quick(terrain_corner_8f3650);
+    // Window::Hit655360: rectangles and points in and out (by the real Rect::Contains), with or without a child, points
+    // near its rounded corner
+    Test window_hit_655360{0x655360,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100), *k = arena<uint8_t>(0x300);
+                               float *f = (float *)self;
+                               f[0x7c / 4] = r.real(0, 100), f[0x80 / 4] = r.real(0, 100);
+                               f[0x84 / 4] = f[0x7c / 4] + r.real(40, 200), f[0x88 / 4] = f[0x80 / 4] + r.real(10, 60);
+                               *(uint32_t *)(self + 0x100) = r.range(0, 3) ? (uint32_t)(uintptr_t)k : 0;
+                               *(float *)(k + 0x7c) = r.real(0, 30), *(float *)(k + 0x84) = *(float *)(k + 0x7c) + r.real(10, 120);
+                               float *p = arena<float>(0x40);
+                               p[0] = f[0x7c / 4] + r.real(-10, f[0x84 / 4] - f[0x7c / 4] + 10);
+                               p[1] = r.range(0, 1) ? f[0x80 / 4] + r.real(-2, 25) : f[0x80 / 4] + r.real(-10, f[0x88 / 4] - f[0x80 / 4] + 10);
+                           },
+                           [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40)) & 0xff}; }};
+    quick(window_hit_655360);
+    // Loop::StepCDF760 and Loop::StepCDF690: 0-8 triangles over 8 points of small whole or random values (ties), random
+    // directions and other fields (n in ecx, list in edx; the real compares and sifts)
+    for (uintptr_t at : {0xcdf760u, 0xcdf690u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   const bool whole = r.range(0, 1);
+                   for (int k = 0; k < 32; k++) arena<float>(0x200)[k] = whole ? (float)r.range(-3, 3) : r.real(-10, 10);
+                   for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = whole ? (float)r.range(-2, 2) : r.real(-1, 1);
+                   for (int t = 0; t < 8; t++) {
+                       uint32_t *rec = arena<uint32_t>(0x400 + t * 0x20);
+                       for (int k = 0; k < 8; k++) rec[k] = r.next();
+                       for (int k = 0; k < 3; k++) rec[k] = r.range(0, 7);
+                       for (int k = 4; k < 6; k++) ((float *)rec)[k] = r.real(-5, 5);
+                   }
+                   arena<int32_t>(0x60)[0] = r.range(0, 8);
+               },
+               [](void *fn) {
+                   ((void(__fastcall *)(int32_t, void *, const void *, const void *))fn)(arena<int32_t>(0x60)[0], arena<void>(0x400), arena<void>(0x200), arena<void>(0x40));
+                   return Result{0};
+               }};
+        quick(x);
+    }
+    // Table::StepCE2BB0: meshes of 0-6 triangles over 8 points around the point (the real ray test) (mesh in ecx, p in edx)
+    Test table_step_ce2bb0{0xce2bb0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(uint32_t *)(self + 0x24) = r.range(0, 6);
+                               *(uint32_t *)(self + 0x28) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                               *(uint32_t *)(self + 0x2c) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                               for (int k = 0; k < 8; k++)
+                                   for (int c = 0; c < 4; c++) arena<float>(0x200 + k * 16)[c] = r.real(-5, 5);
+                               for (int k = 0; k < 18; k++) arena<uint16_t>(0x300)[k] = (uint16_t)r.range(0, 7);
+                               for (int c = 0; c < 3; c++) arena<float>(0x40)[c] = r.real(-3, 3);
+                           },
+                           [](void *fn) { return Result{((uint32_t(__fastcall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40)) & 0xff}; }};
+    quick(table_step_ce2bb0);
+    // Water::Step91C0E0: 0-5 triangles around rays from random places in random directions (the real ray test)
+    Test water_step_91c0e0{0x91c0e0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               *(int32_t *)(self + 0x318) = r.range(0, 5), *(uint32_t *)(self + 0x310) = (uint32_t)(uintptr_t)arena<void>(0x500);
+                               for (int k = 0; k < 5 * 12; k++) arena<float>(0x500)[k] = r.real(-5, 5);
+                               for (int c = 0; c < 3; c++) arena<float>(0x40)[c] = r.real(-3, 3), arena<float>(0x50)[c] = r.real(-1, 1);
+                               arena<uint32_t>(0x60)[0] = r.next();
+                           },
+                           [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *, const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40), arena<void>(0x50), arena<void>(0x60)) & 0xff}; }};
+    quick(water_step_91c0e0);
 #endif

@@ -11654,3 +11654,186 @@ static float *__thiscall window_place_6adb60(const uint8_t *self, float *out) {
 }
 static const uint8_t window_place_6adb60_original[] = {0x83, 0xec, 0x18, 0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x3c, 0x85, 0xc9};
 REWRITE("Window::Place6ADB60", 0x6adb60, window_place_6adb60_original, &window_place_6adb60, &g_window_screen_rects);
+
+// ---- Water::Cell90B150(x, y, z, amount) (0x90B150): moves water by places given in the grid's units --------------------
+// i = floor((x - +8) / (+0x10 - +8) n), j likewise for y, k = floor((z - +0xC) / (+0x14 - +0xC) n) (n = +0, the steps
+// floats), then Water::Cell908060 (0x908060) with i, j, k and amount.
+static volatile long g_water_place_moves;
+static void __thiscall water_cell_90b150(uint8_t *self, float x, float y, float z, float amount) {
+    g_water_place_moves++;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    const int32_t n = *(const int32_t *)self;
+    auto cell = [&](float v, uint32_t lo, uint32_t hi) {
+        volatile float f = (float)(((long double)v - m(lo)) / (m(hi) - m(lo)) * (long double)n);
+        volatile float c = (float)floor_h2(f);
+        return (int32_t)x87_fistp64_h2(c);
+    };
+    const int32_t i = cell(x, 8, 0x10), j = cell(y, 8, 0x10), k = cell(z, 0xc, 0x14);
+    ((void(__thiscall *)(uint8_t *, int32_t, int32_t, int32_t, float))0x908060)(self, i, j, k, amount);
+}
+static const uint8_t water_cell_90b150_original[] = {0x83, 0xec, 0x14, 0xd9, 0x44, 0x24, 0x18, 0x8b, 0x41, 0x08};
+REWRITE("Water::Cell90B150", 0x90b150, water_cell_90b150_original, &water_cell_90b150, &g_water_place_moves);
+
+// ---- Animal::StepA91180(shape) (0xA91180): a 16 x 16 map of which places of a fence shape lie inside -------------------
+// The shape ({corners, count} at +0) gets its +8..+0x24 cleared, then for z and then x from -1.875 to 1.875 by 0.25 a bit
+// (from bit 0 of +8 on) set when Fence::CountA90B50 (0xA90B50) puts (x, 0, z) inside.
+static volatile long g_fence_maps;
+static void __thiscall animal_step_a91180(void *, uint8_t *shape) {
+    g_fence_maps++;
+    uint32_t *bits = (uint32_t *)(shape + 8);
+    for (int k = 0; k < 8; k++) bits[k] = 0;
+    uint32_t mask = 1;
+    const long double step = *(const float *)0xf270b8, end = *(const float *)0xf2705c;
+    for (volatile float z = *(const float *)0xf91904;;) {
+        for (volatile float x = *(const float *)0xf91904;;) {
+            const float p[3] = {x, 0.0f, z};
+            if (((uint8_t(__stdcall *)(const void *, const float *))0xa90b50)(shape, p) & 0xff) *bits |= mask;
+            mask <<= 1;
+            const long double nx = (long double)x + step;
+            x = (float)nx;
+            if (!(nx < end)) break;
+        }
+        if (!mask) mask = 1, bits++;
+        const long double nz = (long double)z + step;
+        z = (float)nz;
+        if (!(nz < end)) break;
+    }
+}
+static const uint8_t animal_step_a91180_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x24, 0x33, 0xc0, 0x53};
+REWRITE("Animal::StepA91180", 0xa91180, animal_step_a91180_original, &animal_step_a91180, &g_fence_maps);
+
+// ---- Terrain::Corner8F3650() (0x8F3650): the edges of each terrain ring, each wider than the last ---------------------
+// From the grid (*self): origin (+0xC, +0x10) and size (bytes +4, +5 times +0x14, +0x18; floats). For each ring (0x30
+// bytes at +8, count +4): the origin moves out by the margins (a, b start at 4), the margins double, the size grows by
+// them (all floats), then Terrain::Scale8F2480 (0x8F2480) fills the ring.
+static volatile long g_terrain_rings;
+static void __thiscall terrain_corner_8f3650(const uint8_t *self) {
+    g_terrain_rings++;
+    const uint8_t *const g = *(const uint8_t *const *)self;
+    float origin[2], size[2];
+    volatile float *const o = origin, *const s = size;
+    *(volatile uint32_t *)&o[0] = *(const uint32_t *)(g + 0xc), *(volatile uint32_t *)&o[1] = *(const uint32_t *)(g + 0x10);
+    s[0] = (float)((long double)g[4] * *(const float *)(g + 0x14));
+    s[1] = (float)((long double)g[5] * *(const float *)(g + 0x18));
+    volatile float a = 4.0f, b = 4.0f;
+    for (int32_t i = 0; i < *(const int32_t *)(self + 4); i++) {
+        o[0] = (float)((long double)o[0] - a);
+        o[1] = (float)((long double)o[1] - b);
+        a = (float)((long double)a + a);
+        b = (float)((long double)b + b);
+        s[0] = (float)((long double)a + s[0]);
+        s[1] = (float)((long double)b + s[1]);
+        ((void(__thiscall *)(const uint8_t *, const float *, const float *))0x8f2480)(*(const uint8_t *const *)(self + 8) + i * 0x30, origin, size);
+    }
+}
+static const uint8_t terrain_corner_8f3650_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf8, 0x83, 0xec, 0x1c, 0x53, 0x56};
+REWRITE("Terrain::Corner8F3650", 0x8f3650, terrain_corner_8f3650_original, &terrain_corner_8f3650, &g_terrain_rings);
+
+// ---- Window::Hit655360(p) (0x655360): whether a point hits the window (and not its child's rounded corner) -------------
+// 0 (only al) when p is outside the rectangle (+0x7C, Rect::Contains 0xBE7780) or below its bottom - 1. With no child
+// (+0x100) 1. Else with the point inside (lx, ly = p - the corner): 1 when lx is left of or past the child's span (+0x7C,
+// +0x84), else 1 only when (lx - (child x + 19), ly + 1) is farther than 18.
+static volatile long g_window_hits;
+static uint8_t __thiscall window_hit_655360(const uint8_t *self, const float *p) {
+    g_window_hits++;
+    if (!(((uint8_t(__thiscall *)(const void *, const float *))0xbe7780)(self + 0x7c, p) & 0xff)) return 0;
+    auto m = [](const uint8_t *w, uint32_t at) { return (long double)*(const float *)(w + at); };
+    if (m(self, 0x88) - *(const float *)0xf264dc < p[1]) return 0;
+    const uint8_t *const k = *(const uint8_t *const *)(self + 0x100);
+    if (!k) return 1;
+    volatile float lx = (float)((long double)p[0] - m(self, 0x7c)), ly = (float)((long double)p[1] - m(self, 0x80));
+    if (lx < *(const float *)(k + 0x7c)) return 1;
+    if (lx > *(const float *)(k + 0x84)) return 1;
+    const long double dx = (long double)lx - (m(k, 0x7c) + *(const float *)0xf279b8);
+    const long double dy = (long double)ly - *(const float *)0xf268f0;
+    return x87_sqrt_h2(dy * dy + dx * dx) > *(const float *)0xf360c4;
+}
+static const uint8_t window_hit_655360_original[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0x5c, 0x24, 0x10, 0x56, 0x8b, 0xf1};
+REWRITE("Window::Hit655360", 0x655360, window_hit_655360_original, &window_hit_655360, &g_window_hits);
+
+// ---- Triangle record swaps (32 bytes): the three point numbers, the two floats at +0x10 (into b through the FPU) and
+// +0x18 trade places; +0xC and +0x1C stay.
+static inline void swap_tri_h2(uint32_t *a, uint32_t *b) {
+    const uint32_t a0 = a[0], a1 = a[1], a2 = a[2], a6 = a[6];
+    alignas(4) uint32_t a4[2] = {a[4], a[5]};
+    a[0] = b[0], a[1] = b[1], a[2] = b[2], a[4] = b[4], a[5] = b[5], a[6] = b[6];
+    b[0] = a0, b[1] = a1, b[2] = a2;
+    fpu_copy_h2(b + 4, a4);
+    fpu_copy_h2(b + 5, a4 + 1);
+    b[6] = a6;
+}
+
+// ---- Loop::StepCDF760(n in ecx, list in edx, points, dir) (0xCDF760): sorts n triangles, nearest along dir last --------
+// n - 1 passes over all neighbouring pairs, swapping when Vector::CompareCDF200 (0xCDF200) of the pair is above 0.
+static volatile long g_triangle_bubbles;
+static void __fastcall loop_step_cdf760(int32_t n, uint8_t *list, const float *points, const float *dir) {
+    g_triangle_bubbles++;
+    for (int32_t pass = n - 1; pass > 0; pass--)
+        for (int32_t j = 0; j < n - 1; j++) {
+            uint32_t *const a = (uint32_t *)(list + j * 0x20), *const b = (uint32_t *)(list + j * 0x20 + 0x20);
+            if (((int32_t(__fastcall *)(const void *, const void *, const float *, const float *))0xcdf200)(a, b, points, dir) > 0) swap_tri_h2(a, b);
+        }
+}
+static const uint8_t loop_step_cdf760_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0x53, 0x8d, 0x59, 0xff};
+REWRITE("Loop::StepCDF760", 0xcdf760, loop_step_cdf760_original, &loop_step_cdf760, &g_triangle_bubbles);
+
+// ---- Loop::StepCDF690(n in ecx, list in edx, points, dir) (0xCDF690): heap-sorts n triangles -------------------------
+// Heaps from n - 1 down with Loop::StepCDF4C0 (0xCDF4C0), then for k = n - 1 down to 0 swaps the first with triangle k
+// and sifts the first down among k.
+static volatile long g_triangle_heapsorts;
+static void __fastcall loop_step_cdf690(int32_t n, uint8_t *list, const float *points, const float *dir) {
+    g_triangle_heapsorts++;
+    auto sift = (void(__fastcall *)(int32_t, int32_t, uint8_t *, const float *, const float *))0xcdf4c0;
+    for (int32_t i = n - 1; i >= 0; i--) sift(i, n, list, points, dir);
+    for (int32_t k = n - 1; k >= 0; k--) {
+        swap_tri_h2((uint32_t *)list, (uint32_t *)(list + k * 0x20));
+        sift(0, k, list, points, dir);
+    }
+}
+static const uint8_t loop_step_cdf690_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x24, 0x53, 0x56, 0x8b, 0xd9};
+REWRITE("Loop::StepCDF690", 0xcdf690, loop_step_cdf690_original, &loop_step_cdf690, &g_triangle_heapsorts);
+
+// ---- Table::StepCE2BB0(mesh in ecx, p in edx) (0xCE2BB0): whether p is inside a closed mesh (odd hits straight up) -----
+// For each triangle (count +0x24; word point numbers at +0x2C, three each; points of 16 bytes at +0x28): a, b, c and
+// the ray from p along (0, 1, 0) through Plane::BelowCDB0E0 (0xCDB0E0) with a, b - a, c - a (floats). Gives the count's
+// lowest bit (only al).
+static volatile long g_mesh_insides;
+static uint8_t __fastcall table_step_ce2bb0(const uint8_t *self, const float *p) {
+    g_mesh_insides++;
+    uint32_t hits = 0;
+    const float dir[3] = {0.0f, 1.0f, 0.0f};
+    for (uint32_t i = 0; i < *(const uint32_t *)(self + 0x24); i++) {
+        const uint16_t *const ix = *(const uint16_t *const *)(self + 0x2c) + i * 3;
+        const float *const pts = *(const float *const *)(self + 0x28);
+        const float *const a = pts + ix[0] * 4, *const b = pts + ix[1] * 4, *const c = pts + ix[2] * 4;
+        float ca[3], ba[3], t;
+        volatile float *const vca = ca, *const vba = ba;
+        for (int k = 0; k < 3; k++) vca[k] = (float)((long double)c[k] - a[k]);
+        for (int k = 0; k < 3; k++) vba[k] = (float)((long double)b[k] - a[k]);
+        if (((uint8_t(__fastcall *)(const float *, const float *, const float *, const float *, const float *, float *))0xcdb0e0)(a, ba, ca, p, dir, &t) & 0xff) hits++;
+    }
+    return hits & 1;
+}
+static const uint8_t table_step_ce2bb0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x54, 0x8b, 0x41, 0x24};
+REWRITE("Table::StepCE2BB0", 0xce2bb0, table_step_ce2bb0_original, &table_step_ce2bb0, &g_mesh_insides);
+
+// ---- Water::Step91C0E0(origin, dir, t) (0x91C0E0): whether a ray meets any of the water's triangles ---------------------
+// Triangles of 0x30 bytes at +0x310 (count +0x318): v0 (+0), v1 (+0x10), v2 (+0x20); Plane::BelowCDB0E0 (0xCDB0E0) with
+// a copy of v0, v1 - v0 and v2 - v0 (floats). 1 at the first that meets it, else 0 (only al).
+static volatile long g_water_ray_hits;
+static uint8_t __thiscall water_step_91c0e0(const uint8_t *self, const float *origin, const float *dir, float *t) {
+    g_water_ray_hits++;
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0x318); i++) {
+        const float *const e = (const float *)(*(const uint8_t *const *)(self + 0x310) + i * 0x30);
+        float v0[3], e1[3], e2[3];
+        for (int k = 0; k < 3; k++) ((volatile uint32_t *)v0)[k] = ((const uint32_t *)e)[k];
+        volatile float *const ve1 = e1, *const ve2 = e2;
+        for (int k = 0; k < 3; k++) ve1[k] = (float)((long double)e[4 + k] - e[k]);
+        for (int k = 0; k < 3; k++) ve2[k] = (float)((long double)e[8 + k] - e[k]);
+        const uint8_t hit = ((uint8_t(__fastcall *)(const float *, const float *, const float *, const float *, const float *, float *))0xcdb0e0)(v0, e1, e2, origin, dir, t);
+        if (hit) return 1;
+    }
+    return 0;
+}
+static const uint8_t water_step_91c0e0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0x53, 0x56, 0x8b, 0xf1};
+REWRITE("Water::Step91C0E0", 0x91c0e0, water_step_91c0e0_original, &water_step_91c0e0, &g_water_ray_hits);

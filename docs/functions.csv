@@ -6036,7 +6036,7 @@ address,size,name,callers,status
 0x654f70,30,DeletingDestructor,2,rewritten
 0x654fc0,493,Window::Titled,1,rewritten
 0x6551d0,30,DeletingDestructor,2,rewritten
-0x655360,194,,1,documented
+0x655360,194,Window::Hit655360,1,rewritten
 0x655430,35,,1,documented
 0x6554d0,44,,2,documented
 0x655500,7554,,1,documented
@@ -12639,7 +12639,7 @@ address,size,name,callers,status
 0x8f33f0,144,,2,documented
 0x8f34a0,261,,1,documented
 0x8f35b0,151,Terrain::LodDistance,1,rewritten
-0x8f3650,202,,1,documented
+0x8f3650,202,Terrain::Corner8F3650,1,rewritten
 0x8f3720,39,,1,documented
 0x8f3750,958,,2,documented
 0x8f3b30,91,,1,documented
@@ -12806,7 +12806,7 @@ address,size,name,callers,status
 0x90a290,2963,,1,documented
 0x90ae30,184,,5,documented
 0x90aef0,600,,1,documented
-0x90b150,212,,1,documented
+0x90b150,212,Water::Cell90B150,1,rewritten
 0x90b230,212,,1,documented
 0x90b310,18,Constructor::BaseAndTable,0,rewritten
 0x90b360,26,OwnedPointer::Reset,2,rewritten
@@ -12960,7 +12960,7 @@ address,size,name,callers,status
 0x91bdf0,411,,1,documented
 0x91bf90,172,,4,documented
 0x91c040,148,,3,documented
-0x91c0e0,222,,1,documented
+0x91c0e0,222,Water::Step91C0E0,1,rewritten
 0x91c1d0,63,Park::Pass91C1D0,2,rewritten
 0x91c210,128,,1,documented
 0x91c290,136,,1,documented
@@ -16510,7 +16510,7 @@ address,size,name,callers,status
 0xa90e70,308,Fence::NearA90E70,1,rewritten
 0xa90fb0,373,,1,documented
 0xa91160,30,DeletingDestructor,1,rewritten
-0xa91180,186,,2,documented
+0xa91180,186,Animal::StepA91180,2,rewritten
 0xa91240,598,,1,documented
 0xa914b0,315,,1,documented
 0xa915f0,651,,1,documented
@@ -22934,8 +22934,8 @@ address,size,name,callers,status
 0xcdf410,38,Slot::ResetCDF3C0,1,rewritten
 0xcdf440,26,Object::FreeTwoFields,3,rewritten
 0xcdf4c0,457,Loop::StepCDF4C0,2,rewritten
-0xcdf690,198,,12,documented
-0xcdf760,200,,0,documented
+0xcdf690,198,Loop::StepCDF690,12,rewritten
+0xcdf760,200,Loop::StepCDF760,0,rewritten
 0xcdf840,1667,,0,documented
 0xcdfed0,1641,,2,documented
 0xce0540,301,,0,documented
@@ -22976,7 +22976,7 @@ address,size,name,callers,status
 0xce2b20,30,DeletingDestructor,1,rewritten
 0xce2b40,7,SetTable,1,rewritten
 0xce2b50,30,DeletingDestructor,1,rewritten
-0xce2bb0,242,,1,documented
+0xce2bb0,242,Table::StepCE2BB0,1,rewritten
 0xce2d60,26,OwnedPointer::Reset,1,rewritten
 0xce2d80,130,Array<4>::SetCapacity,3,rewritten
 0xce2e10,26,OwnedPointer::Reset,2,rewritten
