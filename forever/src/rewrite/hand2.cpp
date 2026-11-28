@@ -11434,3 +11434,123 @@ static long double __thiscall points_step_a6f0a0(const uint8_t *self, float dt) 
 }
 static const uint8_t points_step_a6f0a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0xd9, 0x45, 0x08};
 REWRITE("Points::StepA6F0A0", 0xa6f0a0, points_step_a6f0a0_original, &points_step_a6f0a0, &g_point_pulls);
+
+// ---- Track::Turn85CB30(out in ecx, n in edx) (0x85CB30): the matrix turned about y by (n + 2) quarter turns back -------
+// An identity matrix (16-byte aligned) turned by Matrix::TurnPairs (0xC208C0) with (n + 2) times -pi/2 (a float), copied
+// into out. Gives out.
+static volatile long g_track_quarter_turns;
+static float *__fastcall track_turn_85cb30(float *out, int32_t n) {
+    g_track_quarter_turns++;
+    alignas(16) float m[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    volatile float angle = (float)((long double)(n + 2) * *(const float *)0xf7808c);
+    ((void(__thiscall *)(float *, float))0xc208c0)(m, angle);
+    for (int k = 0; k < 16; k++) ((volatile uint32_t *)out)[k] = ((const uint32_t *)m)[k];
+    return out;
+}
+static const uint8_t track_turn_85cb30_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x4c, 0x83, 0xc2, 0x02};
+REWRITE("Track::Turn85CB30", 0x85cb30, track_turn_85cb30_original, &track_turn_85cb30, &g_track_quarter_turns);
+
+// ---- Window::SetPoint680B50(p) (0x680B50): moves a window part to a point --------------------------------------------
+// +0xD4, +0xD8 = p. The part's rectangle (+0x7C..+0x88) moved so its corner sits at p: x0 = (x0 - p.x) + p.x, y0 = (y0 -
+// p.y) + p.y, x1 = (x1 - x0) + that x0, y1 = (y1 - y0) + the new y0 (the game's roundings), handed to Window::UpdateRect
+// (0x6AFAF0). Gives what that gives.
+static volatile long g_window_part_moves;
+static uint32_t __thiscall window_set_point_680b50(uint8_t *self, const uint32_t *p) {
+    g_window_part_moves++;
+    *(uint32_t *)(self + 0xd4) = p[0], *(uint32_t *)(self + 0xd8) = p[1];
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    volatile float t = (float)(m(0x7c) - m(0xd4));
+    const long double x0 = (long double)t + m(0xd4);
+    float r[4];
+    volatile float *const rv = r;
+    rv[1] = (float)((m(0x80) - m(0xd8)) + m(0xd8));
+    rv[0] = (float)x0;
+    rv[2] = (float)((m(0x84) - m(0x7c)) + x0);
+    rv[3] = (float)((m(0x88) - m(0x80)) + rv[1]);
+    return ((uint32_t(__thiscall *)(void *, float *))0x6afaf0)(self, r);
+}
+static const uint8_t window_set_point_680b50_original[] = {0x83, 0xec, 0x18, 0x8b, 0x44, 0x24, 0x1c, 0x8b, 0x10};
+REWRITE("Window::SetPoint680B50", 0x680b50, window_set_point_680b50_original, &window_set_point_680b50, &g_window_part_moves);
+
+// ---- Window::Scale6ACBD0(out in ecx, p in edx) (0x6ACBD0): a point snapped to whole steps of the screen's scale -------
+// With (sx, sy) from Screen::AreaScale (0x6ACB30): out = (floor(p.x / sx + 0.5) sx, sy floor(p.y / sy + 0.5)) (the
+// floors of floats). Gives out.
+static volatile long g_screen_snaps;
+static float *__fastcall window_scale_6acbd0(float *out, const float *p) {
+    g_screen_snaps++;
+    float sc[2];
+    ((void(__thiscall *)(float *))0x6acb30)(sc);
+    const long double half = *(const float *)0xf2651c;
+    volatile float a = (float)((long double)p[1] / sc[1] + half);
+    volatile float qy = (float)floor_h2(a);
+    volatile float b = (float)((long double)p[0] / sc[0] + half);
+    volatile float qx = (float)floor_h2(b);
+    volatile float *const o = out;
+    o[0] = (float)((long double)qx * sc[0]);
+    o[1] = (float)((long double)sc[1] * qy);
+    return out;
+}
+static const uint8_t window_scale_6acbd0_original[] = {0x83, 0xec, 0x14, 0x56, 0x57, 0x8b, 0xf1, 0x8d, 0x4c, 0x24, 0x14};
+REWRITE("Window::Scale6ACBD0", 0x6acbd0, window_scale_6acbd0_original, &window_scale_6acbd0, &g_screen_snaps);
+
+// ---- Car::Dot50BEA0(a in ecx, b in edx) (0x50BEA0): the signed angle between two directions ---------------------------
+// d = (a.y b.y + a.x b.x) + b.z a.z (a float): 0 at or past 0.9999, pi below -0.9999, else the game's acos(d) (0xDDEBC0),
+// negated when b.x a.z - b.z a.x is above 0.
+static volatile long g_car_angles;
+static long double car_acos_h2(long double x) {
+    __asm__ volatile("call *%1" : "+t"(x) : "r"((uintptr_t)0xddebc0) : "eax", "ecx", "edx", "memory", "st(1)", "st(2)", "st(3)",
+                     "st(4)", "st(5)", "st(6)", "st(7)");
+    return x;
+}
+static long double __fastcall car_dot_50bea0(const float *a, const float *b) {
+    g_car_angles++;
+    const long double d = ((long double)a[1] * b[1] + (long double)a[0] * b[0]) + (long double)b[2] * a[2];
+    volatile float df = (float)d;
+    if (!(d < *(const float *)0xf36e48)) return *(const float *)0xf264e0;
+    if (df < *(const float *)0xf36e44) return *(const float *)0xf285f0;
+    long double r = car_acos_h2(df);
+    if ((long double)b[0] * a[2] - (long double)b[2] * a[0] > *(const float *)0xf264e0) r = -r;
+    return r;
+}
+static const uint8_t car_dot_50bea0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x08, 0x56, 0x57};
+REWRITE("Car::Dot50BEA0", 0x50bea0, car_dot_50bea0_original, &car_dot_50bea0, &g_car_angles);
+
+// ---- Vector::RotateByAxis988070(axis) (0x988070): turns the vector about axis's direction by axis's length --------------
+// L = sqrt((x x + y y) + z z) (a float): below 1e-20 nothing changes and gives the vector; else Vector::RotateAround
+// (0xBFB0B0) with axis / L (16-byte aligned floats) and L, giving what that gives (the vector).
+static volatile long g_axis_rotations;
+static float *__thiscall vector_rotate_by_axis_988070(float *v, const float *axis) {
+    g_axis_rotations++;
+    const long double x = axis[0], y = axis[1], z = axis[2];
+    const long double len = x87_sqrt_h2((x * x + y * y) + z * z);
+    volatile float lf = (float)len;
+    if (len < *(const float *)0xf27c70) return v;
+    const long double inv = (long double)*(const float *)0xf264dc / lf;
+    alignas(16) float d[3];
+    volatile float *const dv = d;
+    dv[0] = (float)(inv * axis[0]), dv[1] = (float)(inv * axis[1]), dv[2] = (float)(inv * axis[2]);
+    return ((float *(__thiscall *)(float *, const float *, float))0xbfb0b0)(v, d, lf);
+}
+static const uint8_t vector_rotate_by_axis_988070_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x20, 0x8b, 0x55, 0x08};
+REWRITE("Vector::RotateByAxis988070", 0x988070, vector_rotate_by_axis_988070_original, &vector_rotate_by_axis_988070, &g_axis_rotations);
+
+// ---- Fireworks::Point9A9FD0(object) (0x9A9FD0): places a window part (self is its +0xDC) at an object's offset ---------
+// With the part w = self - 0xDC: x0 = (o.+0xF8 - o.+0xE8) + w.+0x114, y0 = (o.+0xFC - o.+0xEC) + w.+0x118, x1 = (w.+0x84 -
+// w.+0x7C) + x0, y1 = (w.+0x88 - w.+0x80) + y0 (the game's roundings), handed to Window::UpdateRect (0x6AFAF0) for w.
+// Gives what that gives.
+static volatile long g_firework_part_places;
+static uint32_t __thiscall fireworks_point_9a9fd0(uint8_t *self, const uint8_t *o) {
+    g_firework_part_places++;
+    uint8_t *const w = self - 0xdc;
+    auto f = [](const uint8_t *p, uint32_t at) { return (long double)*(const float *)(p + at); };
+    float r[4];
+    volatile float *const rv = r;
+    rv[0] = (float)((f(o, 0xf8) - f(o, 0xe8)) + f(w, 0x114));
+    const long double y0 = (f(o, 0xfc) - f(o, 0xec)) + f(w, 0x118);
+    rv[1] = (float)y0;
+    rv[2] = (float)((f(w, 0x84) - f(w, 0x7c)) + rv[0]);
+    rv[3] = (float)((f(w, 0x88) - f(w, 0x80)) + y0);
+    return ((uint32_t(__thiscall *)(void *, float *))0x6afaf0)(w, r);
+}
+static const uint8_t fireworks_point_9a9fd0_original[] = {0x83, 0xec, 0x18, 0x8b, 0x44, 0x24, 0x1c, 0xd9, 0x80, 0xf8, 0x00, 0x00, 0x00};
+REWRITE("Fireworks::Point9A9FD0", 0x9a9fd0, fireworks_point_9a9fd0_original, &fireworks_point_9a9fd0, &g_firework_part_places);

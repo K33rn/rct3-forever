@@ -6975,4 +6975,89 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 return x;
                             }};
     quick(points_step_a6f0a0);
+    // Track::Turn85CB30: quarter-turn counts -6..6 (out in ecx, n in edx)
+    Test track_turn_85cb30{0x85cb30,
+                           [=](Rng &r) {
+                               for (int k = 0; k < 16; k++) arena<uint32_t>(0x100)[k] = r.next();
+                               arena<int32_t>(0x40)[0] = r.range(-6, 6);
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0])}; }};
+    quick(track_turn_85cb30);
+    // Window::SetPoint680B50: random rectangles and points; Window::UpdateRect stood in for (it notes the part and the
+    // rectangle at arena 0x40)
+    {
+        Test x{0x680b50,
+               [=](Rng &r) {
+                   for (int k = 0; k < 4; k++) arena<float>(0x17c)[k] = r.real(-500, 500);
+                   arena<float>(0x80)[0] = r.real(-500, 500), arena<float>(0x80)[1] = r.real(-500, 500);
+                   arena<uint32_t>(0x1d4)[0] = r.next(), arena<uint32_t>(0x1d4)[1] = r.next();
+                   arena<uint32_t>(0x40)[0] = 0;
+               },
+               [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x80))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6afaf0, (void *)h2_update_rect}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Window::Scale6ACBD0: the game's GUI area and screen set (put back after) or no area; random points (out in ecx, p in
+    // edx)
+    {
+        static uint32_t saved_area, saved_screen;
+        Test x{0x6acbd0,
+               [=](Rng &r) {
+                   uint8_t *area = arena<uint8_t>(0x300), *screen = arena<uint8_t>(0x400);
+                   *(uint32_t *)0x12f83f0 = r.range(0, 4) ? (uint32_t)(uintptr_t)area : 0;
+                   *(uint32_t *)0x12f4618 = (uint32_t)(uintptr_t)screen;
+                   *(float *)(area + 0x7c) = r.real(0, 100), *(float *)(area + 0x84) = *(float *)(area + 0x7c) + r.real(100, 2000);
+                   *(float *)(area + 0x80) = r.real(0, 100), *(float *)(area + 0x88) = *(float *)(area + 0x80) + r.real(100, 2000);
+                   *(int32_t *)(screen + 4) = r.range(320, 2560), *(int32_t *)(screen + 8) = r.range(200, 1600);
+                   arena<float>(0x40)[0] = r.real(-3000, 3000), arena<float>(0x40)[1] = r.real(-3000, 3000);
+                   arena<uint32_t>(0x60)[0] = r.next(), arena<uint32_t>(0x60)[1] = r.next();
+               },
+               [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, const void *))fn)(arena<void>(0x60), arena<void>(0x40))}; }};
+        x.prepare = [](const rewrite::Entry *) { saved_area = *(uint32_t *)0x12f83f0, saved_screen = *(uint32_t *)0x12f4618; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x12f83f0 = saved_area, *(uint32_t *)0x12f4618 = saved_screen; };
+        quick(x);
+    }
+    // Car::Dot50BEA0: unit directions at every angle, the same and opposite ones (a in ecx, b in edx)
+    Test car_dot_50bea0{0x50bea0,
+                        [=](Rng &r) {
+                            float *a = arena<float>(0x40), *b = arena<float>(0x50);
+                            for (int k = 0; k < 3; k++) a[k] = r.real(-1, 1);
+                            const float la = sqrtf(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+                            for (int k = 0; k < 3; k++) a[k] /= la;
+                            const int kind = r.range(0, 4);
+                            for (int k = 0; k < 3; k++) b[k] = kind == 0 ? a[k] : kind == 1 ? -a[k] : r.real(-1, 1);
+                            const float lb = sqrtf(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
+                            for (int k = 0; k < 3; k++) b[k] /= lb;
+                        },
+                        [](void *fn) {
+                            Result x;
+                            x.f = ((long double(__fastcall *)(const void *, const void *))fn)(arena<void>(0x40), arena<void>(0x50));
+                            return x;
+                        }};
+    quick(car_dot_50bea0);
+    // Vector::RotateByAxis988070: random vectors and axes (tiny and zero ones at times)
+    Test vector_rotate_by_axis_988070{0x988070,
+                                      [=](Rng &r) {
+                                          for (int k = 0; k < 3; k++) arena<float>(0x100)[k] = r.real(-30, 30);
+                                          const int kind = r.range(0, 6);
+                                          for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = kind == 0 ? 0.0f : kind == 1 ? r.real(-1e-21f, 1e-21f) : r.real(-4, 4);
+                                      },
+                                      [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    quick(vector_rotate_by_axis_988070);
+    // Fireworks::Point9A9FD0: random part rectangles, offsets and objects; Window::UpdateRect stood in for (it notes the part
+    // and the rectangle at arena 0x40)
+    {
+        Test x{0x9a9fd0,
+               [=](Rng &r) {
+                   for (int k = 0; k < 4; k++) arena<float>(0x17c)[k] = r.real(-500, 500);
+                   arena<float>(0x214)[0] = r.real(-500, 500), arena<float>(0x214)[1] = r.real(-500, 500);
+                   for (uint32_t at : {0xe8u, 0xecu, 0xf8u, 0xfcu}) *(float *)arena<uint8_t>(0x400 + at) = r.real(-500, 500);
+                   arena<uint32_t>(0x40)[0] = 0;
+               },
+               [](void *fn) { return Result{((uint32_t(__thiscall *)(void *, const void *))fn)(arena<uint8_t>(0x100) + 0xdc, arena<void>(0x400))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x6afaf0, (void *)h2_update_rect}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
 #endif

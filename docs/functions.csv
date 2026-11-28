@@ -3113,7 +3113,7 @@ address,size,name,callers,status
 0x50bd80,136,Frame::Flip,1,rewritten
 0x50be10,1,,1,documented
 0x50be20,125,,1,documented
-0x50bea0,135,,6,documented
+0x50bea0,135,Car::Dot50BEA0,6,rewritten
 0x50bf80,171,,1,documented
 0x50c030,8,,1,documented
 0x50c040,43,,1,documented
@@ -6497,7 +6497,7 @@ address,size,name,callers,status
 0x680a40,32,,1,documented
 0x680a90,29,,2,documented
 0x680ab0,63,Window::Ring680AB0,8,rewritten
-0x680b50,138,,0,documented
+0x680b50,138,Window::SetPoint680B50,0,rewritten
 0x680be0,268,Destructor::Steps,4,rewritten
 0x680d20,163,,2,documented
 0x681050,547,,2,documented
@@ -6967,7 +6967,7 @@ address,size,name,callers,status
 0x6acac0,7,,1,documented
 0x6acad0,13,,4,documented
 0x6acb30,156,Screen::AreaScale,2,rewritten
-0x6acbd0,132,,2,documented
+0x6acbd0,132,Window::Scale6ACBD0,2,rewritten
 0x6acc60,260,,1,documented
 0x6acd70,43,,18,documented
 0x6acda0,20,,336,documented
@@ -11614,7 +11614,7 @@ address,size,name,callers,status
 0x85c890,432,,4,documented
 0x85cae0,57,,40,documented
 0x85cb20,9,,32,documented
-0x85cb30,288,,12,documented
+0x85cb30,288,Track::Turn85CB30,12,rewritten
 0x85cc50,738,,9,documented
 0x85cfd0,536,,3,documented
 0x85d200,228,Scenery::Round85D200,0,rewritten
@@ -13894,7 +13894,7 @@ address,size,name,callers,status
 0x9868d0,180,NamedTextRef::NamedTextRef(text),6,rewritten
 0x986990,931,,1,documented
 0x986d40,4865,,1,documented
-0x988070,124,,0,documented
+0x988070,124,Vector::RotateByAxis988070,0,rewritten
 0x9880f0,48,QueryInterface,6,rewritten
 0x988120,18,Destructor::TablesThenBase,5,rewritten
 0x988170,30,DeletingDestructor,2,rewritten
@@ -14269,7 +14269,7 @@ address,size,name,callers,status
 0x9a9ed0,61,Array<4>::Allocate,0,rewritten
 0x9a9f10,130,Array<4>::SetCapacity,2,rewritten
 0x9a9fb0,30,DeletingDestructor,2,rewritten
-0x9a9fd0,122,,1,documented
+0x9a9fd0,122,Fireworks::Point9A9FD0,1,rewritten
 0x9aa0a0,271,,6,documented
 0x9aa2d0,459,,1,documented
 0x9aa4a0,491,,1,documented

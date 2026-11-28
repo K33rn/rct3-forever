@@ -167,14 +167,16 @@ static void rotate_about(float *v, const float *u, float sin_f, float cos_f) {
     v[1] = (float)out1;
     v[2] = out2;
 }
-static void __thiscall vector_rotate_around(float *v, const float *axis, float angle) {
+static float *__thiscall vector_rotate_around(float *v, const float *axis, float angle) {   // gives v, as the game's does
     g_vector_rotations++;
     const volatile float s = (float)x87_sin(angle), c = (float)x87_cos(angle);
     rotate_about(v, axis, s, c);
+    return v;
 }
-static void __thiscall vector_rotate_around_sin_cos(float *v, const float *axis, float sin_f, float cos_f) {
+static float *__thiscall vector_rotate_around_sin_cos(float *v, const float *axis, float sin_f, float cos_f) {   // gives v
     g_vector_rotations++;
     rotate_about(v, axis, sin_f, cos_f);
+    return v;
 }
 static const uint8_t vector_rotate_around_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Vector::RotateAround", 0xbfb0b0, vector_rotate_around_original, &vector_rotate_around, &g_vector_rotations);

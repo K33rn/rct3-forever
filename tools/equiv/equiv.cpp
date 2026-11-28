@@ -5686,7 +5686,7 @@ static std::vector<Test> tests() {
                           }};
     quick(matrix_transform);
     // Vector::RotateAround(v, axis, angle) and RotateAroundSinCos(v, axis, sin, cos): a unit axis (or not quite), any
-    // angle (some large)
+    // angle (some large); both give v back
     auto rotation_case = [=](Rng &r) {
         float a[3], len = 0;
         for (int i = 0; i < 3; i++) a[i] = r.real(-1, 1), len += a[i] * a[i];
@@ -5697,12 +5697,11 @@ static std::vector<Test> tests() {
         arena<float>(0x120)[0] = angle, arena<float>(0x120)[1] = sinf(angle), arena<float>(0x120)[2] = r.range(0, 4) ? cosf(angle) : r.real(-1, 1);
     };
     Test vector_rotate_around{0xbfb0b0, rotation_case,
-                              [](void *fn) { ((void(__thiscall *)(void *, void *, float))fn)(arena<void>(0x110), arena<void>(0x100), arena<float>(0x120)[0]); return Result{}; }};
+                              [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, float))fn)(arena<void>(0x110), arena<void>(0x100), arena<float>(0x120)[0])}; }};
     quick(vector_rotate_around);
     Test vector_rotate_around_sin_cos{0xbfb1c0, rotation_case,
                                       [](void *fn) {
-                                          ((void(__thiscall *)(void *, void *, float, float))fn)(arena<void>(0x110), arena<void>(0x100), arena<float>(0x120)[1], arena<float>(0x120)[2]);
-                                          return Result{};
+                                          return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, float, float))fn)(arena<void>(0x110), arena<void>(0x100), arena<float>(0x120)[1], arena<float>(0x120)[2])};
                                       }};
     quick(vector_rotate_around_sin_cos);
     // Bezier::Point(out, p0, p1, p2, p3, t): t mostly within [0, 1], sometimes outside
