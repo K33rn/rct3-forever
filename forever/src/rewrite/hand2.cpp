@@ -12284,3 +12284,157 @@ static void __thiscall water_shared_9142c0(uint8_t *self) {
 }
 static const uint8_t water_shared_9142c0_original[] = {0xa1, 0xf4, 0xa0, 0x33, 0x01, 0x56, 0x8b, 0xf1, 0xf6, 0x40, 0x08, 0x10};
 REWRITE("Water::Shared9142C0", 0x9142c0, water_shared_9142c0_original, &water_shared_9142c0, &g_water_trails);
+
+// ---- Text::FindBCEAA0 / BCE9D0 / BCF0A0 / BCF170(other) (0xBCEAA0..): compares two texts, case aside -----------------
+// Both are held by pointer (this and the argument): +4 the length, +0xC the letters (bytes, signed, or two-byte). Over the
+// shorter length, the first letters that differ after the game's tolower (0xDDE005) give lower(this) - lower(other);
+// else this length - the other's. BCEAA0 lowers this's letter first, the others the other's first.
+static volatile long g_text_orders;
+template <typename A, typename B, bool ThisFirst> static int32_t __thiscall text_order(const uint8_t *const *self, const uint8_t *const *other) {
+    g_text_orders++;
+    auto lower = (int(__cdecl *)(int))0xdde005;
+    const uint8_t *const a = *self, *const b = *other;
+    const uint32_t la = *(const uint32_t *)(a + 4), lb = *(const uint32_t *)(b + 4);
+    const A *const ta = *(const A *const *)(a + 0xc);
+    const B *const tb = *(const B *const *)(b + 0xc);
+    const uint32_t n = lb < la ? lb : la;
+    for (uint32_t i = 0; i < n; i++) {
+        int x, y;
+        if (ThisFirst) x = lower(ta[i]), y = lower(tb[i]);
+        else y = lower(tb[i]), x = lower(ta[i]);
+        if (x != y) return x - y;
+    }
+    return (int32_t)(la - lb);
+}
+static const uint8_t text_order_short_original[] = {0x83, 0xec, 0x08, 0x8b, 0xd1, 0x8b, 0x4c, 0x24, 0x0c};
+static const uint8_t text_order_long_original[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0xd1, 0x8b, 0x4c, 0x24, 0x10};
+REWRITE("Text::FindBCEAA0", 0xbceaa0, text_order_short_original, (&text_order<uint16_t, int8_t, true>), &g_text_orders);
+REWRITE("Text::FindBCE9D0", 0xbce9d0, text_order_short_original, (&text_order<uint16_t, uint16_t, false>), &g_text_orders);
+REWRITE("Text::FindBCF0A0", 0xbcf0a0, text_order_long_original, (&text_order<int8_t, int8_t, false>), &g_text_orders);
+REWRITE("Text::FindBCF170", 0xbcf170, text_order_long_original, (&text_order<int8_t, uint16_t, false>), &g_text_orders);
+
+// ---- WildAnimal::RandomB34740(n in ecx) (0xB34740): n nudged at random, kept to 1..20 -----------------------------------
+// u = Random::Unit (0x475180, a float), then a second draw gives the way d (+1 above 0.5, else -1): n + 2d when u is below
+// 0.05, n + d when u - 0.05 is below 0.15 (that wins), else n; then at most 20 and at least 1.
+static volatile long g_animal_nudges;
+static int32_t __fastcall wildanimal_random_b34740(int32_t n) {
+    g_animal_nudges++;
+    auto unit = (float(__cdecl *)())0x475180;
+    const float u = unit();
+    const long double second = unit();
+    const int32_t d = second > *(const float *)0xf2651c ? 1 : -1;
+    const long double k1 = *(const float *)0xf270b4;
+    int32_t v = n;
+    if (u < k1) v = n + 2 * d;
+    if ((long double)u - k1 < *(const float *)0xf33750) v = n + d;
+    return v > 20 ? 20 : v < 1 ? 1 : v;
+}
+static const uint8_t wildanimal_random_b34740_original[] = {0x51, 0x56, 0x8b, 0xf1, 0xe8};
+REWRITE("WildAnimal::RandomB34740", 0xb34740, wildanimal_random_b34740_original, &wildanimal_random_b34740, &g_animal_nudges);
+
+// ---- Water::Step90F610(a, b) (0x90F610): two bytes of one marked entry, picked evenly at random -----------------------
+// When +4 and +0x10 differ: over the entries +0x18..+0x1C (pointers at +0, the end read again each time), each non-empty
+// one with +0x14 & 7 == 7 is the k-th seen, and when Random::Advance (0x4751E0, signed) % k is 0 *b, *a = its +1 and +0
+// bytes. The original leaves 0, the end's address (no entries) or +0x1C in eax: kept.
+static volatile long g_water_picks;
+static uint32_t __thiscall water_step_90f610(uint8_t *self, int32_t *a, int32_t *b) {
+    g_water_picks++;
+    if (*(const int32_t *)(self + 4) == *(const int32_t *)(self + 0x10)) return 0;
+    auto at = [&](uint32_t i) { return *(uint8_t *const *)self + i * 4; };
+    uint8_t *e = at(*(const uint32_t *)(self + 0x18));
+    if (e >= at(*(const uint32_t *)(self + 0x1c))) return (uint32_t)(uintptr_t)at(*(const uint32_t *)(self + 0x1c));
+    int32_t seen = 0;
+    for (; e < at(*(const uint32_t *)(self + 0x1c)); e += 4) {
+        const uint8_t *const p = *(const uint8_t *const *)e;
+        if (!p || (*(const uint32_t *)(p + 0x14) & 7) != 7) continue;
+        seen++;
+        if ((int32_t)((uint32_t(__cdecl *)())0x4751e0)() % seen == 0) *b = p[1], *a = p[0];
+    }
+    return *(const uint32_t *)(self + 0x1c);
+}
+static const uint8_t water_step_90f610_original[] = {0x51, 0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x04, 0x2b, 0x47, 0x10};
+REWRITE("Water::Step90F610", 0x90f610, water_step_90f610_original, &water_step_90f610, &g_water_picks);
+
+// ---- Table::FindC2FA90(name, hash) (0xC2FA90): a name's number in a hashed table (0 when missing) -------------------------
+// Empty names give 0. Records are 8-byte entries at +0 (their first dword, bit 0 cleared, plus +4 is the record); the
+// buckets are two-byte numbers in the record of entry +0x10 (two bytes), hash % +0x14 picks one, and the chain follows each
+// record's first two bytes until one whose name (+4) equals name case aside (the game's _stricmp, 0xDE22DF).
+static volatile long g_table_name_finds;
+static uint16_t __thiscall table_find_c2fa90(const uint8_t *self, const char *name, uint32_t hash) {
+    g_table_name_finds++;
+    if (!*name) return 0;
+    const uint8_t *const entries = *(const uint8_t *const *)self;
+    const uint32_t extra = *(const uint32_t *)(self + 4);
+    auto record = [&](uint32_t i) { return (const uint8_t *)(uintptr_t)((*(const uint32_t *)(entries + i * 8) & ~1u) + extra); };
+    const uint32_t slot = hash % *(const uint32_t *)(self + 0x14);
+    const uint32_t buckets = *(const uint32_t *)(entries + *(const uint16_t *)(self + 0x10) * 8) & ~1u;
+    for (uint16_t i = *(const uint16_t *)(uintptr_t)(buckets + slot * 2 + extra); i; i = *(const uint16_t *)record(i))
+        if (!((int(__cdecl *)(const char *, const char *))0xde22df)((const char *)record(i) + 4, name)) return i;
+    return 0;
+}
+static const uint8_t table_find_c2fa90_original[] = {0x55, 0x8b, 0x6c, 0x24, 0x08, 0x80, 0x7d, 0x00, 0x00};
+REWRITE("Table::FindC2FA90", 0xc2fa90, table_find_c2fa90_original, &table_find_c2fa90, &g_table_name_finds);
+
+// ---- Camera::AddCE7370(a, b, n) (0xCE7370): adds a 16-byte record, taking n from the room left ---------------------------
+// The list (+0x14 entries, +0x18 room, +0x1C count) grows by 100 when full (0xCE7110); the new record is {a, b, +0xC, n};
+// +0x20 is lowered to the old count when above it, +0xC += n, +0x10 -= n, the count goes up. Gives the old count.
+static volatile long g_camera_adds;
+static int32_t __thiscall camera_add_ce7370(uint8_t *self, uint32_t a, uint32_t b, int32_t n) {
+    g_camera_adds++;
+    int32_t &count = *(int32_t *)(self + 0x1c);
+    if (count >= *(const int32_t *)(self + 0x18)) ((void(__thiscall *)(uint8_t *, int32_t))0xce7110)(self + 0x14, count + 100);
+    uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(self + 0x14) + count * 16);
+    e[0] = a, e[1] = b, e[2] = *(const uint32_t *)(self + 0xc), e[3] = (uint32_t)n;
+    const int32_t old = count;
+    if (old < *(const int32_t *)(self + 0x20)) *(int32_t *)(self + 0x20) = old;
+    *(int32_t *)(self + 0xc) += n, *(int32_t *)(self + 0x10) -= n;
+    count = old + 1;
+    return old;
+}
+static const uint8_t camera_add_ce7370_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x1c, 0x3b, 0x46, 0x18};
+REWRITE("Camera::AddCE7370", 0xce7370, camera_add_ce7370_original, &camera_add_ce7370, &g_camera_adds);
+
+// ---- List::Add42DE10(flags, a, b) (0x42DE10): takes a free 16-byte item from a pool and sets it up ----------------------
+// The pool ({items, free list, used, room}) grows (Pool::Grow42D730) to twice its room, or 200 when it has none, when full.
+// The item is the free list's last free entry (room - used - 1): {1, flags bit 0x2000 | bit 0x4000 << 1, 0xFF x4, 0, 0, a,
+// b}; used goes up. Gives the item's number.
+static volatile long g_pool_item_adds;
+static uint32_t __thiscall list_add_42de10(uint8_t *self, uint32_t flags, uint32_t a, uint32_t b) {
+    g_pool_item_adds++;
+    const int32_t room = *(const int32_t *)(self + 0xc);
+    if (*(const int32_t *)(self + 8) >= room) ((void(__thiscall *)(uint8_t *, int32_t))0x42d730)(self, room > 0 ? room * 2 : 200);
+    const uint32_t i = (*(const uint32_t *const *)(self + 4))[*(const int32_t *)(self + 0xc) - *(const int32_t *)(self + 8) - 1];
+    uint8_t *const e = *(uint8_t *const *)self + i * 16;
+    e[0] = 1;
+    (*(int32_t *)(self + 8))++;
+    e[2] = e[3] = e[4] = e[5] = 0xff;
+    *(uint32_t *)(e + 8) = a, *(uint32_t *)(e + 0xc) = b;
+    e[1] = 0, e[6] = 0, e[7] = 0;
+    if (flags & 0x2000) e[1] = 1;
+    if (flags & 0x4000) e[1] |= 2;
+    return i;
+}
+static const uint8_t list_add_42de10_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x0c, 0x39, 0x46, 0x08};
+REWRITE("List::Add42DE10", 0x42de10, list_add_42de10_original, &list_add_42de10, &g_pool_item_adds);
+
+// ---- Model::SetPartCC6280(n, t) (0xCC6280): marks part n set to t and finds its keys at t --------------------------------
+// Part n (8 bytes at +0x14) = {1, t}. For each of the part's tracks (the model's (+0) +8 list entry n: count +4, 0x14-byte
+// tracks at +0xC), +0xC[track's number] = Keys::Find2 (0xE025F0) and +0x10[number] = Keys::Find (0xE02670) at t. The
+// original leaves the track count in eax: kept.
+static volatile long g_model_part_sets;
+static int32_t __thiscall model_set_part_cc6280(uint8_t *self, int32_t n, float t) {
+    g_model_part_sets++;
+    uint8_t *const part = *(uint8_t *const *)(self + 0x14) + n * 8;
+    part[0] = 1, *(float *)(part + 4) = t;
+    const uint8_t *const list = ((const uint8_t *const *)*(const uint8_t *const *)(*(const uint8_t *const *)self + 8))[n];
+    for (int32_t i = 0; i < *(const int32_t *)(list + 4); i++) {
+        const uint8_t *const track = *(const uint8_t *const *)(list + 0xc) + i * 0x14;
+        const uint32_t r = ((uint32_t(__thiscall *)(const uint8_t *, float))0xe025f0)(track, t);
+        (*(uint32_t *const *)(self + 0xc))[*(const uint32_t *)track] = r;
+        const uint32_t s = ((uint32_t(__thiscall *)(const uint8_t *, float))0xe02670)(track, t);
+        (*(uint32_t *const *)(self + 0x10))[*(const uint32_t *)track] = s;
+    }
+    return *(const int32_t *)(list + 4);
+}
+static const uint8_t model_set_part_cc6280_original[] = {0x8b, 0x44, 0x24, 0x04, 0xd9, 0x44, 0x24, 0x08, 0x53};
+REWRITE("Model::SetPartCC6280", 0xcc6280, model_set_part_cc6280_original, &model_set_part_cc6280, &g_model_part_sets);

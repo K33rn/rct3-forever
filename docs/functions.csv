@@ -612,7 +612,7 @@ address,size,name,callers,status
 0x42dd30,105,,5,documented
 0x42dda0,63,Pool::Take,0,rewritten
 0x42dde0,39,Global::Delete,1,rewritten
-0x42de10,131,,1,documented
+0x42de10,131,List::Add42DE10,1,rewritten
 0x42dea0,203,,8,documented
 0x42df90,85,Single::Get42DF90,18,rewritten
 0x42e000,39,,1,documented
@@ -12843,7 +12843,7 @@ address,size,name,callers,status
 0x90dea0,5621,,3,documented
 0x90f4d0,194,,1,documented
 0x90f5a0,98,,2,documented
-0x90f610,122,,1,documented
+0x90f610,122,Water::Step90F610,1,rewritten
 0x90f6f0,122,,5,documented
 0x90f770,206,,0,documented
 0x90f840,56,,2,documented
@@ -18002,7 +18002,7 @@ address,size,name,callers,status
 0xb345b0,48,QueryInterface,0,rewritten
 0xb345e0,92,,0,documented
 0xb346b0,103,,4,documented
-0xb34740,116,,10,documented
+0xb34740,116,WildAnimal::RandomB34740,10,rewritten
 0xb347e0,48,,1,documented
 0xb34810,280,,1,documented
 0xb34950,352,,5,documented
@@ -19786,9 +19786,9 @@ address,size,name,callers,status
 0xbce310,121,,4,documented
 0xbce410,1160,,2,documented
 0xbce970,89,WideString::Compare,357,rewritten
-0xbce9d0,125,,15,documented
+0xbce9d0,125,Text::FindBCE9D0,15,rewritten
 0xbcea50,78,WideString::CompareNarrow,1,rewritten
-0xbceaa0,130,,0,documented
+0xbceaa0,130,Text::FindBCEAA0,0,rewritten
 0xbceba0,142,Text::FindBCEBA0,0,rewritten
 0xbcec90,139,Text::FindBCEC90,7,rewritten
 0xbced20,75,WideString::FindChar,1,rewritten
@@ -19798,9 +19798,9 @@ address,size,name,callers,status
 0xbcee80,59,,1,documented
 0xbcef20,96,WideString::FindLast,11,rewritten
 0xbcf040,87,String::Compare,34,rewritten
-0xbcf0a0,123,,0,documented
+0xbcf0a0,123,Text::FindBCF0A0,0,rewritten
 0xbcf120,78,String::CompareWide,1,rewritten
-0xbcf170,115,,1,documented
+0xbcf170,115,Text::FindBCF170,1,rewritten
 0xbcf260,137,Text::FindBCF260,0,rewritten
 0xbcf3e0,64,Text::FindCharBCF3E0,1,rewritten
 0xbcf460,127,String::Find,3,rewritten
@@ -21099,7 +21099,7 @@ address,size,name,callers,status
 0xc2f850,56,Quad::WriteC2F850,0,rewritten
 0xc2f910,188,,1,documented
 0xc2f9d0,191,,1,documented
-0xc2fa90,125,,5,documented
+0xc2fa90,125,Table::FindC2FA90,5,rewritten
 0xc2fb10,273,,9,documented
 0xc2fc30,169,,9,documented
 0xc2fd20,104,,1,documented
@@ -22715,7 +22715,7 @@ address,size,name,callers,status
 0xcc61a0,84,,3,documented
 0xcc6200,104,Record::CopyCC6200,4,rewritten
 0xcc6270,4,,1,documented
-0xcc6280,122,,1,documented
+0xcc6280,122,Model::SetPartCC6280,1,rewritten
 0xcc6300,14,,1,documented
 0xcc6310,194,,4,documented
 0xcc63e0,54,,3,documented
@@ -23052,7 +23052,7 @@ address,size,name,callers,status
 0xce71d0,130,Array<4>::SetCapacity,1,rewritten
 0xce7260,102,SortedPointers::FindFlagged,2,rewritten
 0xce7300,105,,4,documented
-0xce7370,121,,3,documented
+0xce7370,121,Camera::AddCE7370,3,rewritten
 0xce7430,30,DeletingDestructor,0,rewritten
 0xce7450,275,,3,documented
 0xce7570,58,Vector::FreePair,1,rewritten
