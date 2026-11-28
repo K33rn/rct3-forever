@@ -12728,3 +12728,69 @@ static bool __thiscall stamp_search(uint8_t *self, uint32_t a, uint32_t b, const
 static const uint8_t stamp_search_original[] = {0x53, 0x55, 0x56, 0x8b, 0xe9};
 REWRITE("Scenery::Step8915F0", 0x8915f0, stamp_search_original, (&stamp_search<0x3d4, false, 0x88f750>), &g_stamp_searches);
 REWRITE("Water::Step973500", 0x973500, stamp_search_original, (&stamp_search<0x18, true, 0x973140>), &g_stamp_searches);
+
+// ---- Water::Step973580(a, b, c, d, e, f, out) (0x973580): finds a key in a sorted list of pointers ----------------------
+// Keys {a, b, c (three ints), d, e, f} are ordered by Key::Compare (0x9731C0); the list (pointers at +0x24, count +0x28) is
+// halved over: found, *out is its place and 1 is given; else *out is where it would go and 0.
+static volatile long g_key_searches;
+static bool __thiscall water_step_973580(uint8_t *self, uint32_t a, uint32_t b, const int32_t *c, int32_t d, int32_t e, int32_t f, int32_t *out) {
+    g_key_searches++;
+    int32_t lo = 0, hi = *(const int32_t *)(self + 0x28) - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const uint8_t *const k = (*(const uint8_t *const *const *)(self + 0x24))[mid];
+        auto at = [&](uint32_t o) { return *(const uint32_t *)(k + o); };
+        const int32_t r = ((int32_t(__thiscall *)(uint8_t *, uint32_t, uint32_t, const int32_t *, int32_t, int32_t, int32_t, uint32_t, uint32_t,
+                                                   const int32_t *, uint32_t, uint32_t, uint32_t))0x9731c0)(
+            self, a, b, c, d, e, f, at(0), at(4), (const int32_t *)(k + 8), at(0x14), at(0x18), at(0x1c));
+        if (r > 0) lo = mid + 1;
+        else if (r < 0) hi = mid - 1;
+        else {
+            *out = mid;
+            return true;
+        }
+    }
+    *out = lo;
+    return false;
+}
+static const uint8_t water_step_973580_original[] = {0x53, 0x55, 0x56, 0x8b, 0xe9, 0x8b, 0x5d, 0x28};
+REWRITE("Water::Step973580", 0x973580, water_step_973580_original, &water_step_973580, &g_key_searches);
+
+// ---- Water::Pass942280(key, p) (0x942280): the 8-byte entry for a key, added with three bytes of p when missing -----------
+// Entries at +0x16C (room +0x170, count +0x174) hold their key at +4: found, its number is given. Else the list grows by 4
+// (0x940730) when full and gets {p[0], p[1], p[2], -, key}; then p[2] is given (in al; the rest of eax is left aside).
+static volatile long g_water_key_entries;
+static uint32_t __thiscall water_pass_942280(uint8_t *self, uint32_t key, const uint8_t *p) {
+    g_water_key_entries++;
+    const int32_t count = *(const int32_t *)(self + 0x174);
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0x174); i++)
+        if ((*(const uint32_t *const *)(self + 0x16c))[i * 2 + 1] == key) return (uint32_t)i;
+    if (count >= *(const int32_t *)(self + 0x170)) ((void(__thiscall *)(uint8_t *, int32_t))0x940730)(self + 0x16c, count + 4);
+    uint8_t *const e = *(uint8_t *const *)(self + 0x16c) + *(const int32_t *)(self + 0x174) * 8;
+    e[0] = p[0], e[1] = p[1], e[2] = p[2];
+    *(uint32_t *)(e + 4) = key;
+    (*(int32_t *)(self + 0x174))++;
+    return p[2];
+}
+static const uint8_t water_pass_942280_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x96, 0x74, 0x01, 0x00, 0x00};
+REWRITE("Water::Pass942280", 0x942280, water_pass_942280_original, &water_pass_942280, &g_water_key_entries);
+
+// ---- Car::Step5124B0(a, b, c, d, e, f) (0x5124B0): adds a 64-byte record of two triples and four values ---------------------
+// The list ({entries, room, count}) grows by 2 (Array::ResizeRecords 0x5101A0) when full; the record gets c at +0, a at
+// +0x10, b at +0x20 (12 bytes each), d at +0x30, e at +0x34 and f at +0x38. The original leaves the entries' address in eax:
+// kept.
+static volatile long g_car_record_adds;
+static uint8_t *__thiscall car_step_5124b0(uint8_t *self, const uint32_t *a, const uint32_t *b, uint32_t c, uint32_t d, uint32_t e, uint32_t f) {
+    g_car_record_adds++;
+    const int32_t count = *(const int32_t *)(self + 8);
+    if (count == *(const int32_t *)(self + 4)) ((void(__thiscall *)(uint8_t *, int32_t))0x5101a0)(self, count + 2);
+    uint8_t *const data = *(uint8_t *const *)self;
+    uint32_t *const r = (uint32_t *)(data + *(const int32_t *)(self + 8) * 64);
+    r[4] = a[0], r[5] = a[1], r[6] = a[2];
+    r[8] = b[0], r[9] = b[1], r[10] = b[2];
+    r[0] = c, r[12] = d, r[14] = f, r[13] = e;
+    (*(int32_t *)(self + 8))++;
+    return data;
+}
+static const uint8_t car_step_5124b0_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x08, 0x3b, 0x46, 0x04};
+REWRITE("Car::Step5124B0", 0x5124b0, car_step_5124b0_original, &car_step_5124b0, &g_car_record_adds);

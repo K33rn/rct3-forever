@@ -3211,7 +3211,7 @@ address,size,name,callers,status
 0x512390,113,,1,documented
 0x512410,103,,2,documented
 0x512480,39,Global::Delete,1,rewritten
-0x5124b0,156,,1,documented
+0x5124b0,156,Car::Step5124B0,1,rewritten
 0x512550,482,,1,documented
 0x512740,61,Reference::Reference,1,rewritten
 0x512790,67,Reference::Reference(object),14,rewritten
@@ -13238,7 +13238,7 @@ address,size,name,callers,status
 0x942110,84,,4,documented
 0x942170,44,GlobalList::Each452E40,1,rewritten
 0x9421a0,48,,1,documented
-0x942280,160,,2,documented
+0x942280,160,Water::Pass942280,2,rewritten
 0x942320,126,Water::Grow942320,7,rewritten
 0x9423a0,106,,4,documented
 0x942510,152,,3,documented
@@ -13659,7 +13659,7 @@ address,size,name,callers,status
 0x9733f0,165,,0,documented
 0x9734a0,84,SortedPointers::FindFirst,1,rewritten
 0x973500,125,Water::Step973500,0,rewritten
-0x973580,143,,0,documented
+0x973580,143,Water::Step973580,0,rewritten
 0x9738e0,311,,0,documented
 0x974060,27,,1,documented
 0x974080,30,DeletingDestructor,1,rewritten

@@ -8033,4 +8033,56 @@ static void __thiscall h2_grid_give(void *grid, int32_t n, void *block) {
                }};
         quick(x);
     }
+    // Water::Step973580: sorted lists of 0-7 keys from few values, the key sought one of them or between (the real
+    // Key::Compare)
+    Test water_step_973580{0x973580,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               uint32_t *keys = arena<uint32_t>(0x800), *ptrs = arena<uint32_t>(0x700);
+                               uint32_t key = r.range(0, 3);
+                               auto fill = [](uint32_t *s, uint32_t k) {
+                                   s[0] = k >> 4, s[1] = k >> 3 & 1, s[2] = k >> 2 & 1, s[3] = 0, s[4] = 0, s[5] = k >> 1 & 1, s[6] = 0, s[7] = (int32_t)(k & 1) - 1;
+                               };
+                               for (int i = 0; i < 8; i++) {
+                                   uint32_t *s = keys + i * 8;
+                                   fill(s, key);
+                                   key += r.range(1, 3);
+                                   ptrs[i] = (uint32_t)(uintptr_t)s;
+                               }
+                               *(uint32_t *)(self + 0x24) = (uint32_t)(uintptr_t)ptrs, *(int32_t *)(self + 0x28) = r.range(0, 7);
+                               fill(arena<uint32_t>(0x40), r.range(0, 24));
+                               arena<uint32_t>(0x60)[0] = r.next();
+                           },
+                           [](void *fn) {
+                               uint32_t *q = arena<uint32_t>(0x40);
+                               const uint8_t found = ((uint8_t(__thiscall *)(void *, uint32_t, uint32_t, const void *, uint32_t, uint32_t, uint32_t, void *))fn)(
+                                   arena<void>(0x100), q[0], q[1], q + 2, q[5], q[6], q[7], arena<void>(0x60));
+                               return Result{found};
+                           }};
+    quick(water_step_973580);
+    // Water::Pass942280 and Car::Step5124B0: lists of 0-4 entries, keys found or not, full or not; the grows stood in for
+    for (uintptr_t at : {0x942280u, 0x5124b0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 0; k < 0x180; k += 4) *(uint32_t *)(self + k) = r.next();
+                   uint8_t *list = at == 0x942280u ? self + 0x16c : self;
+                   const int32_t c = r.range(0, 4);
+                   *(uint32_t *)list = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(int32_t *)(list + 8) = c, *(int32_t *)(list + 4) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   for (int k = 0; k < 0x80; k++) arena<uint32_t>(0x400)[k] = r.range(0, 7);
+                   for (int k = 0; k < 8; k++) arena<uint32_t>(0x40)[k] = r.next(), arena<uint32_t>(0x60)[k] = r.next();
+                   arena<uint32_t>(0x60)[0] = r.range(0, 7);
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+               },
+               [at](void *fn) {
+                   uint32_t *v = arena<uint32_t>(0x60);
+                   if (at == 0x942280u) return Result{((uint32_t(__thiscall *)(void *, uint32_t, const void *))fn)(arena<void>(0x100), v[0], arena<void>(0x40)) & 0xff};
+                   return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *, const void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(
+                       arena<void>(0x100), arena<void>(0x40), arena<void>(0x50), v[1], v[2], v[3], v[4])};
+               }};
+        x.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at == 0x942280u ? 0x940730u : 0x5101a0u, (void *)h2_list_grow}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
 #endif
