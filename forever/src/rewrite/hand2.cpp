@@ -11564,3 +11564,93 @@ static uint32_t __thiscall fireworks_point_9a9fd0(uint8_t *self, const uint8_t *
 }
 static const uint8_t fireworks_point_9a9fd0_original[] = {0x83, 0xec, 0x18, 0x8b, 0x44, 0x24, 0x1c, 0xd9, 0x80, 0xf8, 0x00, 0x00, 0x00};
 REWRITE("Fireworks::Point9A9FD0", 0x9a9fd0, fireworks_point_9a9fd0_original, &fireworks_point_9a9fd0, &g_firework_part_places);
+
+// ---- Animal::RayA5EF50(out) (0xA5EF50): the point a distance along the camera's middle ray ------------------------------
+// Camera::ScreenRay (0xCD79C0) of the camera (+4) at (0, 0) gives origin o and direction d; with s = *(+8): out = (o.x +
+// d.x s, o.y + d.y s, o.z + d.z s) (the y and z steps floats). Gives out.
+static volatile long g_animal_camera_points;
+static float *__thiscall animal_ray_a5ef50(const uint8_t *self, float *out) {
+    g_animal_camera_points++;
+    float o[4], d[4];
+    o[3] = d[3] = 3.40282347e38f;
+    ((void(__thiscall *)(const void *, float, float, float *, float *))0xcd79c0)(*(const void *const *)(self + 4), 0.0f, 0.0f, o, d);
+    const long double s = **(const float *const *)(self + 8);
+    volatile float ty = (float)((long double)d[1] * s), tz = (float)((long double)d[2] * s);
+    volatile float *const v = out;
+    v[0] = (float)((long double)o[0] + (long double)d[0] * s);
+    v[1] = (float)((long double)o[1] + ty);
+    v[2] = (float)((long double)o[2] + tz);
+    return out;
+}
+static const uint8_t animal_ray_a5ef50_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x3c, 0x56, 0x8b, 0xf1};
+REWRITE("Animal::RayA5EF50", 0xa5ef50, animal_ray_a5ef50_original, &animal_ray_a5ef50, &g_animal_camera_points);
+
+// ---- Effect::Value7B06C0(effect in esi, a, b) (0x7B06C0): takes a share of the effect's direction off its place ---------
+// v = Effect::Value7B05E0 (0x7B05E0, a and b in ecx and edx, 0 on the stack). The place (+0x30..) loses the direction
+// (+0x10..) times v (x, y steps floats, z unrounded) and +0x3C becomes 1 (nothing is left on the FPU).
+static volatile long g_effect_pulls;
+extern "C" void __stdcall forever_effect_value_7b06c0(uint8_t *e, uint32_t a, uint32_t b) {
+    g_effect_pulls++;
+    const long double v = ((long double(__fastcall *)(uint32_t, uint32_t, uint32_t))0x7b05e0)(a, b, 0);
+    float *const f = (float *)e;
+    volatile float px = (float)((long double)f[4] * v), py = (float)((long double)f[5] * v);
+    const long double pz = v * f[6];
+    *(volatile uint32_t *)(e + 0x3c) = 0x3f800000;
+    volatile float *const p = f + 12;
+    p[2] = (float)((long double)p[2] - pz);
+    p[0] = (float)((long double)p[0] - px);
+    p[1] = (float)((long double)p[1] - py);
+}
+extern "C" __attribute__((naked)) void forever_effect_value_7b06c0_regs() {   // effect in esi; a, b on the stack
+    __asm__("pushl 8(%esp)\n\tpushl 8(%esp)\n\tpushl %esi\n\tcalll _forever_effect_value_7b06c0@12\n\tret $8");
+}
+static const uint8_t effect_value_7b06c0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x50, 0x8b, 0x4e, 0x14};
+REWRITE("Effect::Value7B06C0", 0x7b06c0, effect_value_7b06c0_original, (void *)&forever_effect_value_7b06c0_regs, &g_effect_pulls);
+
+// ---- Track::TurnBC5D50(out in ecx, n in edx) (0xBC5D50): the 3 x 4 matrix turned about y by (n + 2) quarter turns back --
+// An identity (each row's fourth the largest float; 16-byte aligned) turned by 0xBEDF70 with (n + 2) times -pi/2 (a
+// float); the first three of each row copied into out (the fourths left). Gives out.
+static volatile long g_track_quarter_turns2;
+static float *__fastcall track_turn_bc5d50(float *out, int32_t n) {
+    g_track_quarter_turns2++;
+    const float big = 3.40282347e38f;
+    alignas(16) float m[12] = {1, 0, 0, big, 0, 1, 0, big, 0, 0, 1, big};
+    volatile float angle = (float)((long double)(n + 2) * *(const float *)0xf7808c);
+    ((void(__thiscall *)(float *, float))0xbedf70)(m, angle);
+    for (int r = 0; r < 3; r++)
+        for (int k = 0; k < 3; k++) ((volatile uint32_t *)out)[r * 4 + k] = ((const uint32_t *)m)[r * 4 + k];
+    return out;
+}
+static const uint8_t track_turn_bc5d50_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x3c, 0x83, 0xc2, 0x02};
+REWRITE("Track::TurnBC5D50", 0xbc5d50, track_turn_bc5d50_original, &track_turn_bc5d50, &g_track_quarter_turns2);
+
+// ---- Window::Place6ADB60(out) (0x6ADB60): a part's rectangle on the screen ---------------------------------------------
+// Without a parent (+0x3C): its rectangle (+0x7C..+0x88). Else the rectangle plus the parent's place on the screen
+// (Window::ScreenPosition, 0x6AD560), and with flag 0x1000 (+0x94) first plus the parent's scroll (+0x8C, +0x90) (those
+// sums floats). Gives out.
+static volatile long g_window_screen_rects;
+static float *__thiscall window_place_6adb60(const uint8_t *self, float *out) {
+    g_window_screen_rects++;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    uint8_t *const parent = *(uint8_t *const *)(self + 0x3c);
+    if (!parent) {
+        for (int k = 0; k < 4; k++) ((volatile uint32_t *)out)[k] = ((const uint32_t *)(self + 0x7c))[k];
+        return out;
+    }
+    volatile float t[4];
+    if ((*(const uint32_t *)(self + 0x94) >> 12) & 1) {
+        const long double sx = *(const float *)(parent + 0x8c), sy = *(const float *)(parent + 0x90);
+        t[0] = (float)(sx + m(0x7c)), t[1] = (float)(m(0x80) + sy), t[2] = (float)(sx + m(0x84)), t[3] = (float)(m(0x88) + sy);
+    } else
+        for (int k = 0; k < 4; k++) t[k] = *(const float *)(self + 0x7c + k * 4);
+    float place[2];
+    const float *const p = ((const float *(__thiscall *)(uint8_t *, float *))0x6ad560)(parent, place);
+    volatile float *const o = out;
+    o[0] = (float)((long double)t[0] + p[0]);
+    o[1] = (float)((long double)t[1] + p[1]);
+    o[2] = (float)((long double)t[2] + p[0]);
+    o[3] = (float)((long double)t[3] + p[1]);
+    return out;
+}
+static const uint8_t window_place_6adb60_original[] = {0x83, 0xec, 0x18, 0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x3c, 0x85, 0xc9};
+REWRITE("Window::Place6ADB60", 0x6adb60, window_place_6adb60_original, &window_place_6adb60, &g_window_screen_rects);

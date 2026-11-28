@@ -6984,7 +6984,7 @@ address,size,name,callers,status
 0x6ad870,122,,3,documented
 0x6ad8f0,198,,3,documented
 0x6ad9c0,188,,3,documented
-0x6adb60,235,,8,documented
+0x6adb60,235,Window::Place6ADB60,8,rewritten
 0x6adc50,112,Window::FirstFocusable,1,rewritten
 0x6adcc0,285,,4,documented
 0x6ade60,226,,6,documented
@@ -9616,7 +9616,7 @@ address,size,name,callers,status
 0x7b03e0,108,,4,documented
 0x7b0460,354,,0,documented
 0x7b05e0,171,,11,documented
-0x7b06c0,134,,0,documented
+0x7b06c0,134,Effect::Value7B06C0,0,rewritten
 0x7b0750,59,Reference::Interface,4,rewritten
 0x7b0790,804,,1,documented
 0x7b0ad0,30,DeletingDestructor,1,rewritten
@@ -16052,7 +16052,7 @@ address,size,name,callers,status
 0xa5ed70,75,Animal::ValueA5ED70,6,rewritten
 0xa5edc0,207,Animal::ClampA5EDC0,5,rewritten
 0xa5ee90,178,,3,documented
-0xa5ef50,127,,3,documented
+0xa5ef50,127,Animal::RayA5EF50,3,rewritten
 0xa5eff0,421,,4,documented
 0xa5f1b0,64,Record::SetFields,1,rewritten
 0xa5f1f0,11,,3,documented
@@ -19613,7 +19613,7 @@ address,size,name,callers,status
 0xbc5b40,120,Stat::GetBC5AB0,14,rewritten
 0xbc5be0,40,,2,documented
 0xbc5c10,309,,1,documented
-0xbc5d50,207,,6,documented
+0xbc5d50,207,Track::TurnBC5D50,6,rewritten
 0xbc5e20,69,Track::ValueBC5E20,2,rewritten
 0xbc5eb0,95,Pieces::PairAllowed,5,rewritten
 0xbc5fd0,187,,2,documented

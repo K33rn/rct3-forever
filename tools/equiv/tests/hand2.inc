@@ -29,6 +29,12 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
     log[2] = (uint32_t)(uintptr_t)root;
     return log[0] ^ (log[1] * 3);
 }
+// a stand-in for Effect::Value7B05E0 (a, b in ecx, edx, c on the stack): notes them at arena 0x80, answers by them
+static long double __fastcall h2_effect_value(uint32_t a, uint32_t b, uint32_t c) {
+    uint32_t *log = arena<uint32_t>(0x80);
+    log[0] = a, log[1] = b, log[2] = c;
+    return (long double)(int32_t)((a ^ (b * 7)) & 0xffff) / 4096.0L - 4.0L;
+}
 #else
     // Inflate::BuildHuffmanTable: complete, incomplete, all-zero and random code lengths for bit-length codes (s 19),
     // literals (s 257) and distances (s 0); sometimes little room left
@@ -7054,4 +7060,60 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
         x.finish = [](const rewrite::Entry *) { unstub_many(); };
         quick(x);
     }
+    // Animal::RayA5EF50: random cameras (flat or not), random distances
+    Test animal_ray_a5ef50{0xa5ef50,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100), *cam = arena<uint8_t>(0x200);
+                               *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)cam, *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x180);
+                               for (uint32_t at = 0x120; at < 0x1a0; at += 4) *(float *)(cam + at) = r.real(-1, 1);
+                               for (int k = 0; k < 3; k++) *(float *)(cam + 0x160 + k * 4) = r.real(-50, 50);
+                               *(float *)(cam + 0x190) = r.real(0.3f, 2), *(float *)(cam + 0x194) = r.real(0.5f, 2), *(float *)(cam + 0x198) = r.real(1, 30);
+                               cam[0x1a6] = r.range(0, 1) ? 1 : 0;
+                               arena<float>(0x180)[0] = r.real(-100, 100);
+                               for (int k = 0; k < 3; k++) arena<uint32_t>(0x40)[k] = r.next();
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    quick(animal_ray_a5ef50);
+    // Effect::Value7B06C0: random effects and arguments; Effect::Value7B05E0 stood in for (effect in esi)
+    {
+        Test x{0x7b06c0,
+               [=](Rng &r) {
+                   for (int k = 0; k < 0x10; k++) arena<float>(0x100)[k] = r.real(-20, 20);
+                   arena<uint32_t>(0x40)[0] = r.next(), arena<uint32_t>(0x40)[1] = r.next();
+               },
+               [](void *fn) {
+                   void *e = arena<void>(0x100);
+                   const uint32_t a = arena<uint32_t>(0x40)[0], b = arena<uint32_t>(0x40)[1];
+                   __asm__ volatile("pushl %[b]\n\tpushl %[a]\n\tcall *%[f]"
+                                    : "+S"(e)
+                                    : [a] "m"(a), [b] "m"(b), [f] "r"(fn)
+                                    : "eax", "ecx", "edx", "memory", "cc");
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x7b05e0, (void *)h2_effect_value}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Track::TurnBC5D50: quarter-turn counts -6..6 (out in ecx, n in edx)
+    Test track_turn_bc5d50{0xbc5d50,
+                           [=](Rng &r) {
+                               for (int k = 0; k < 12; k++) arena<uint32_t>(0x100)[k] = r.next();
+                               arena<int32_t>(0x40)[0] = r.range(-6, 6);
+                           },
+                           [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0])}; }};
+    quick(track_turn_bc5d50);
+    // Window::Place6ADB60: no parent, or a chain of one to three parents, scroll flags either way, random places
+    Test window_place_6adb60{0x6adb60,
+                             [=](Rng &r) {
+                                 const int depth = r.range(0, 3);
+                                 for (int w = 0; w < 4; w++) {
+                                     uint8_t *win = arena<uint8_t>(0x200 + w * 0x100);
+                                     for (uint32_t at = 0x7c; at <= 0x90; at += 4) *(float *)(win + at) = r.real(-500, 500);
+                                     *(uint32_t *)(win + 0x94) = r.next();
+                                     *(uint32_t *)(win + 0x3c) = w < depth ? (uint32_t)(uintptr_t)arena<void>(0x300 + w * 0x100) : 0;
+                                 }
+                                 for (int k = 0; k < 4; k++) arena<uint32_t>(0x40)[k] = r.next();
+                             },
+                             [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x200), arena<void>(0x40))}; }};
+    quick(window_place_6adb60);
 #endif
