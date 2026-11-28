@@ -6968,7 +6968,7 @@ address,size,name,callers,status
 0x6acad0,13,,4,documented
 0x6acb30,156,Screen::AreaScale,2,rewritten
 0x6acbd0,132,Window::Scale6ACBD0,2,rewritten
-0x6acc60,260,,1,documented
+0x6acc60,260,Screen::Scale6ACC60,1,rewritten
 0x6acd70,43,,18,documented
 0x6acda0,20,,336,documented
 0x6ace00,3,,542,documented
@@ -12486,7 +12486,7 @@ address,size,name,callers,status
 0x8defc0,66,Record::SetRanges,1,rewritten
 0x8df030,7,SetTable,6,rewritten
 0x8df040,52,,1,documented
-0x8df080,193,,3,documented
+0x8df080,193,Terrain::Curve8DF080,3,rewritten
 0x8df150,71,,2,documented
 0x8df1a0,23,,1,documented
 0x8df1c0,1192,,2,documented
@@ -12892,7 +12892,7 @@ address,size,name,callers,status
 0x913e10,491,,3,documented
 0x914010,133,,1,documented
 0x9140a0,535,,1,documented
-0x9142c0,193,,2,documented
+0x9142c0,193,Water::Shared9142C0,2,rewritten
 0x914390,48,,0,documented
 0x9143c0,322,Table::Make,2,rewritten
 0x914510,51,ObjectArray::Free,4,rewritten
@@ -14141,7 +14141,7 @@ address,size,name,callers,status
 0x99c140,30,DeletingDestructor,4,rewritten
 0x99c160,30,DeletingDestructor,4,rewritten
 0x99c180,30,DeletingDestructor,4,rewritten
-0x99c1a0,249,,2,documented
+0x99c1a0,249,Window::Fits99C1A0,2,rewritten
 0x99c2a0,184,Grid::SnapToRow,4,rewritten
 0x99c360,402,Fireworks::Count99C360,3,rewritten
 0x99c500,344,,1,documented
@@ -14879,7 +14879,7 @@ address,size,name,callers,status
 0x9e85f0,120,Value::MoveToward,24,rewritten
 0x9e8670,265,,1,documented
 0x9e8790,77,Fireworks::Point9E8790,2,rewritten
-0x9e87e0,184,,2,documented
+0x9e87e0,184,Fireworks::Entry9E87E0,2,rewritten
 0x9e88b0,199,,1,documented
 0x9e89a0,1021,,1,documented
 0x9e8df0,12,,1,documented
@@ -16104,7 +16104,7 @@ address,size,name,callers,status
 0xa62bc0,181,,1,documented
 0xa62c90,193,,1,documented
 0xa62d60,37,,2,documented
-0xa62d90,269,,5,documented
+0xa62d90,269,Camera::PickA62D90,5,rewritten
 0xa62ea0,1,,2,documented
 0xa62eb0,59,,3,documented
 0xa62ef0,18,,18,documented

@@ -61,6 +61,20 @@ static void __thiscall h2_water_point(const void *self, const float *m, float h,
 }
 // a stand-in for WildAnimal::InterfaceB35450 (0xB35450): the animal's +0x140 on the FPU
 static long double __thiscall h2_animal_class_value(const uint8_t *animal) { return *(const float *)(animal + 0x140); }
+// a stand-in for Triple::Set (0x6A4B10): notes its part and three values at arena 0xE0 (each call after the last) and
+// gives the call count
+static uint32_t __thiscall h2_triple_set(void *part, uint32_t a, uint32_t b, uint32_t c) {
+    uint32_t *log = arena<uint32_t>(0xe0);
+    const uint32_t n = log[0]++;
+    log[1 + n * 4] = (uint32_t)(uintptr_t)part, log[2 + n * 4] = a, log[3 + n * 4] = b, log[4 + n * 4] = c;
+    return n;
+}
+// a stand-in for the trail's grow (0x913CA0, this = the array {entries, room}): notes n at arena 0x90 and sets the room
+// (the arena already has the space)
+static void __thiscall h2_trail_grow(uint32_t *array, int32_t n) {
+    arena<uint32_t>(0x90)[0]++, arena<int32_t>(0x90)[1] = n;
+    array[1] = (uint32_t)n;
+}
 #else
     // Inflate::BuildHuffmanTable: complete, incomplete, all-zero and random code lengths for bit-length codes (s 19),
     // literals (s 257) and distances (s 0); sometimes little room left
@@ -7471,6 +7485,126 @@ static long double __thiscall h2_animal_class_value(const uint8_t *animal) { ret
                    ((void(__thiscall *)(const void *, uint32_t, void *, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<void>(0x60), arena<void>(0x68));
                    return Result{0};
                }};
+        quick(x);
+    }
+    // Screen::Scale6ACC60 and Camera::PickA62D90: the game's GUI root and screen set (put back after); random rectangles
+    // (out in ecx, r in edx), random cameras (own or at +0x48), planes and screen points
+    for (uintptr_t at : {0x6acc60u, 0xa62d90u}) {
+        static uint32_t saved_area, saved_screen;
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *area = arena<uint8_t>(0x700), *screen = arena<uint8_t>(0x800);
+                   *(uint32_t *)0x12f83f0 = (at == 0xa62d90u || r.range(0, 4)) ? (uint32_t)(uintptr_t)area : 0;
+                   *(uint32_t *)0x12f4618 = (uint32_t)(uintptr_t)screen;
+                   *(float *)(area + 0x7c) = r.real(0, 100), *(float *)(area + 0x84) = *(float *)(area + 0x7c) + r.real(100, 2000);
+                   *(float *)(area + 0x80) = r.real(0, 100), *(float *)(area + 0x88) = *(float *)(area + 0x80) + r.real(100, 2000);
+                   *(int32_t *)(screen + 4) = r.range(320, 2560), *(int32_t *)(screen + 8) = r.range(200, 1600);
+                   for (int k = 0; k < 4; k++) arena<float>(0x40)[k] = r.real(-3000, 3000);
+                   uint8_t *self = arena<uint8_t>(0x100), *cam = r.range(0, 1) ? self + 0x200 : arena<uint8_t>(0x900);
+                   *(uint32_t *)(self + 0x48) = cam == self + 0x200 ? 0 : (uint32_t)(uintptr_t)cam;
+                   for (uint32_t o = 0x120; o < 0x1a0; o += 4) *(float *)(cam + o) = r.real(-1, 1);
+                   for (int k = 0; k < 3; k++) *(float *)(cam + 0x160 + k * 4) = r.real(-50, 50);
+                   *(float *)(cam + 0x190) = r.real(0.3f, 2), *(float *)(cam + 0x194) = r.real(0.5f, 2), *(float *)(cam + 0x198) = r.real(1, 30);
+                   cam[0x1a6] = r.range(0, 1) ? 1 : 0;
+                   for (int k = 0; k < 3; k++) arena<float>(0x60)[k] = r.real(-1, 1);
+                   arena<float>(0x6c)[0] = r.real(-20, 20), arena<float>(0x70)[0] = r.real(0, 2000), arena<float>(0x74)[0] = r.real(0, 2000);
+                   for (int k = 0; k < 4; k++) arena<uint32_t>(0x80)[k] = r.next();
+               },
+               [at](void *fn) {
+                   if (at == 0x6acc60u) return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, const void *))fn)(arena<void>(0x80), arena<void>(0x40))};
+                   return Result{((uint32_t(__thiscall *)(void *, const void *, float, float, float, void *))fn)(arena<void>(0x100), arena<void>(0x60), arena<float>(0x6c)[0], arena<float>(0x70)[0], arena<float>(0x74)[0], arena<void>(0x80))};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_area = *(uint32_t *)0x12f83f0, saved_screen = *(uint32_t *)0x12f4618; };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x12f83f0 = saved_area, *(uint32_t *)0x12f4618 = saved_screen; };
+        quick(x);
+    }
+    // Window::Fits99C1A0: the game's 0x13413B0 set (put back after); rows and sizes either side of both limits;
+    // Triple::Set stood in for (it notes each call)
+    {
+        static uint32_t saved_height;
+        Test x{0x99c1a0,
+               [=](Rng &r) {
+                   *(float *)0x13413b0 = r.real(10, 30);
+                   uint8_t *self = arena<uint8_t>(0x100), *inner = arena<uint8_t>(0x300), *part = arena<uint8_t>(0x500);
+                   float *f = (float *)self;
+                   f[0x7c / 4] = r.real(0, 50), f[0x84 / 4] = f[0x7c / 4] + r.real(50, 400);
+                   f[0x80 / 4] = r.real(0, 50), f[0x88 / 4] = f[0x80 / 4] + r.real(50, 400);
+                   f[0x8c / 4] = r.real(-100, 100), f[0x90 / 4] = r.real(-100, 100), f[0x114 / 4] = r.real(0, 500);
+                   *(int32_t *)(self + 0x108) = r.range(0, 25);
+                   *(uint32_t *)(self + 0xe0) = (uint32_t)(uintptr_t)inner;
+                   *(uint32_t *)(inner + 0x158) = (uint32_t)(uintptr_t)part, *(uint32_t *)(inner + 0x164) = r.next(), *(uint32_t *)(inner + 0x168) = r.next();
+                   *(float *)(part + 0x7c) = r.real(0, 50), *(float *)(part + 0x84) = r.real(50, 400);
+                   for (int k = 0; k < 9; k++) arena<uint32_t>(0xe0)[k] = 0;
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_height = *(uint32_t *)0x13413b0, stubs_for_now({{0x6a4b10, (void *)h2_triple_set}}); };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x13413b0 = saved_height, unstub_many(); };
+        quick(x);
+    }
+    // Terrain::Curve8DF080: curves with random weights, t before, inside and past the curve's span, random seeds (the game's
+    // random numbers really used: data compared)
+    Test terrain_curve_8df080{0x8df080,
+                              [=](Rng &r) {
+                                  float *c = arena<float>(0x100);
+                                  for (int k = 0; k < 8; k++) c[k] = r.real(-2, 2);
+                                  c[2] = r.real(0, 0.3f), c[3] = r.real(0, 0.3f);
+                                  arena<float>(0x40)[0] = r.real(-0.2f, 1.2f), arena<uint32_t>(0x40)[1] = r.next();
+                              },
+                              [](void *fn) {
+                                  Result x;
+                                  x.f = ((long double(__stdcall *)(float, const void *, uint32_t))fn)(arena<float>(0x40)[0], arena<void>(0x100), arena<uint32_t>(0x40)[1]);
+                                  return x;
+                              }};
+    t.push_back(terrain_curve_8df080);
+    // Fireworks::Entry9E87E0: the game's flag and table pointers set (put back after); entries of random weights (zero
+    // ones at times), the game's random numbers really used (data compared)
+    {
+        static uint32_t saved_flag, saved_tables[4];
+        Test x{0x9e87e0,
+               [=](Rng &r) {
+                   *(uint32_t *)0x10edae0 = r.range(0, 5) ? 0 : 1;
+                   for (int k = 0; k < 4; k++) ((uint32_t *)0x10f1cd0)[k] = (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0x100);
+                   for (int k = 0; k < 0x100; k++) arena<float>(0x400)[k] = r.range(0, 3) ? r.real(0, 5) : 0.0f;
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   *(int32_t *)(self + 0x58) = r.range(0, 3);
+                   for (int k = 0; k < 5; k++) *(uint32_t *)(self + 0x70 + k * 4) = r.next();
+                   arena<int32_t>(0x40)[0] = r.range(0, 7);
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_flag = *(uint32_t *)0x10edae0, memcpy(saved_tables, (void *)0x10f1cd0, 16); };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x10edae0 = saved_flag, memcpy((void *)0x10f1cd0, saved_tables, 16); };
+        t.push_back(x);
+    }
+    // Water::Shared9142C0: the game's shared object set (put back after), flagged or not; trails of 0-50 entries, full or
+    // not, places moved or not; the trail's grow stood in for
+    {
+        static uint32_t saved_shared;
+        Test x{0x9142c0,
+               [=](Rng &r) {
+                   *(uint32_t *)0x133a0f4 = (uint32_t)(uintptr_t)arena<void>(0x80);
+                   arena<uint32_t>(0x80)[2] = r.range(0, 3) ? 0x10 | r.next() : r.next() & ~0x10u;
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 1; k < 5; k++) *(float *)(self + k * 4) = r.real(-5, 5);
+                   if (r.range(0, 3) == 0) *(uint32_t *)(self + 0xc) = *(uint32_t *)(self + 4), *(uint32_t *)(self + 0x10) = *(uint32_t *)(self + 8);
+                   *(int32_t *)(self + 0x34) = r.range(0, 2);
+                   *(uint32_t *)(self + 0x40) = r.next(), *(uint32_t *)(self + 0x44) = r.next();
+                   const int c = r.range(0, 4) ? r.range(0, 8) : r.range(48, 51);
+                   *(int32_t *)(self + 0x84) = c, *(int32_t *)(self + 0x80) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   *(uint32_t *)(self + 0x7c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   arena<uint32_t>(0x90)[0] = 0, arena<uint32_t>(0x90)[1] = 0;
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_shared = *(uint32_t *)0x133a0f4, stubs_for_now({{0x913ca0, (void *)h2_trail_grow}}); };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x133a0f4 = saved_shared, unstub_many(); };
         quick(x);
     }
 #endif

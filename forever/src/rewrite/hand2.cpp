@@ -12118,3 +12118,169 @@ template <bool TableX> static void __thiscall static_step_frame(const uint8_t *s
 static const uint8_t static_step_4987c0_original[] = {0x83, 0xec, 0x14, 0x56, 0x8b, 0xf1, 0x8d, 0x44, 0x24, 0x04};
 REWRITE("Static::Step4987C0", 0x4987c0, static_step_4987c0_original, (&static_step_frame<false>), &g_static_frames);
 REWRITE("Static::Step498840", 0x498840, static_step_4987c0_original, (&static_step_frame<true>), &g_static_frames);
+
+// ---- Screen::Scale6ACC60(out in ecx, r in edx) (0x6ACC60): a rectangle snapped to whole steps of the screen's scale -----
+// With (sx, sy) from Screen::AreaScale (0x6ACB30) and ix = 1 / sx, iy = 1 / sy (floats; the y and x of the far corner
+// use them unrounded): each part p becomes floor(p i + 0.5) (of a float) times its scale. Gives out.
+static volatile long g_screen_rect_snaps;
+static float *__fastcall screen_scale_6acc60(float *out, const float *r) {
+    g_screen_rect_snaps++;
+    float sc[2];
+    ((void(__thiscall *)(float *))0x6acb30)(sc);
+    const long double one = *(const float *)0xf264dc, half = *(const float *)0xf2651c;
+    auto snap = [&](long double v) {
+        volatile float f = (float)(v + half);
+        return (float)floor_h2(f);
+    };
+    const long double iy = one / sc[1];
+    volatile float iyf = (float)iy;
+    volatile float v3 = snap(iy * r[3]);
+    const long double ix = one / sc[0];
+    volatile float ixf = (float)ix;
+    volatile float v2 = snap(ix * r[2]);
+    volatile float v1 = snap((long double)iyf * r[1]);
+    volatile float v0 = snap((long double)ixf * r[0]);
+    volatile float *const o = out;
+    o[0] = (float)((long double)v0 * sc[0]);
+    o[1] = (float)((long double)sc[1] * v1);
+    o[2] = (float)((long double)v2 * sc[0]);
+    o[3] = (float)((long double)sc[1] * v3);
+    return out;
+}
+static const uint8_t screen_scale_6acc60_original[] = {0x83, 0xec, 0x1c, 0x56, 0x57, 0x8b, 0xf1, 0x8d, 0x4c, 0x24, 0x1c};
+REWRITE("Screen::Scale6ACC60", 0x6acc60, screen_scale_6acc60_original, &screen_scale_6acc60, &g_screen_rect_snaps);
+
+// ---- Camera::PickA62D90(n, d, x, y, out) (0xA62D90): where the ray through a screen point meets a plane -------------------
+// The screen point taken to -1..1 by the GUI root's size (0x12F83F0: (2x - w) / w, (2y - h) / h); Camera::ScreenRay
+// (0xCD79C0) of the camera (+0x48, or +0x200 of this without one) gives origin o and direction v. a = o . n + d, b = v . n
+// ((y + z) + x); out = o - v a / b (x unrounded, y and z steps floats). 1 when a b is below 0, else 0.
+static volatile long g_camera_plane_picks;
+static uint32_t __thiscall camera_pick_a62d90(uint8_t *self, const float *n, float d, float x, float y, float *out) {
+    g_camera_plane_picks++;
+    const uint8_t *const root = *(const uint8_t *const *)0x12f83f0;
+    auto f = [](const uint8_t *p, uint32_t at) { return (long double)*(const float *)(p + at); };
+    const long double w = f(root, 0x84) - f(root, 0x7c), h = f(root, 0x88) - f(root, 0x80);
+    uint8_t *const cam = *(uint8_t *const *)(self + 0x48) ? *(uint8_t *const *)(self + 0x48) : self + 0x200;
+    const long double y2 = (long double)y + y, x2 = (long double)x + x;
+    volatile float sy = (float)((y2 - h) / h), sx = (float)((x2 - w) / w);
+    float o[4], v[4];
+    o[3] = v[3] = 3.40282347e38f;
+    ((void(__thiscall *)(uint8_t *, float, float, float *, float *))0xcd79c0)(cam, sx, sy, o, v);
+    const long double a = (((long double)o[1] * n[1] + (long double)o[2] * n[2]) + (long double)o[0] * n[0]) + d;
+    const long double b = ((long double)v[1] * n[1] + (long double)v[2] * n[2]) + (long double)v[0] * n[0];
+    const long double t = a / b;
+    volatile float p1 = (float)((long double)v[1] * t), p2 = (float)((long double)v[2] * t);
+    volatile float *const r = out;
+    r[0] = (float)((long double)o[0] - (long double)v[0] * t);
+    r[1] = (float)((long double)o[1] - p1);
+    r[2] = (float)((long double)o[2] - p2);
+    return b * a < *(const float *)0xf264e0;
+}
+static const uint8_t camera_pick_a62d90_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0xa1, 0xf0, 0x83, 0x2f, 0x01};
+REWRITE("Camera::PickA62D90", 0xa62d90, camera_pick_a62d90_original, &camera_pick_a62d90, &g_camera_plane_picks);
+
+// ---- Window::Fits99C1A0() (0x99C1A0): keeps a list window's rows and width in view ------------------------------------
+// With g the game's 0x13413B0 and need = g rows (+0x108, whole): when need - the height (+0x88 - +0x80) is below 16 -
+// +0x90, +0x90 = (height + 16) - need, the inner window's (+0xE0) +0x1B8 = rows and its +0x168 part gets Triple::Set
+// (0x6A4B10) of 16, need, g 7 (floats). When +0x114 - the width (+0x84 - +0x7C) is below -+0x8C, +0x8C = width - +0x114 and
+// the inner window's +0x164 part gets Triple::Set of 0, +0x114 and the width of its +0x158 part.
+static volatile long g_list_fits;
+static void __thiscall window_fits_99c1a0(uint8_t *self) {
+    g_list_fits++;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    volatile float *const f = (volatile float *)self;
+    auto set = (uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))0x6a4b10;
+    const long double g = *(const volatile float *)0x13413b0, sixteen = *(const float *)0xf2737c;
+    const long double rows = *(const int32_t *)(self + 0x108);
+    const long double need = g * rows;
+    const long double h = m(0x88) - m(0x80);
+    if (need - h < sixteen - m(0x90)) {
+        f[0x90 / 4] = (float)((h + sixteen) - need);
+        uint8_t *const inner = *(uint8_t *const *)(self + 0xe0);
+        *(volatile float *)(inner + 0x1b8) = (float)rows;
+        volatile float a = (float)(g * *(const float *)0xf360ac), b = (float)(g * rows);
+        set(*(void *const *)(inner + 0x168), 0x41800000, *(const volatile uint32_t *)&b, *(const volatile uint32_t *)&a);
+    }
+    const long double w = m(0x84) - m(0x7c);
+    if (m(0x114) - w < -m(0x8c)) {
+        f[0x8c / 4] = (float)(w - m(0x114));
+        uint8_t *const inner = *(uint8_t *const *)(self + 0xe0);
+        const uint8_t *const part = *(const uint8_t *const *)(inner + 0x158);
+        volatile float pw = (float)((long double)*(const float *)(part + 0x84) - *(const float *)(part + 0x7c));
+        set(*(void *const *)(inner + 0x164), 0, *(const uint32_t *)(self + 0x114), *(const volatile uint32_t *)&pw);
+    }
+}
+static const uint8_t window_fits_99c1a0_original[] = {0x56, 0x8b, 0xf1, 0xdb, 0x86, 0x08, 0x01, 0x00, 0x00};
+REWRITE("Window::Fits99C1A0", 0x99c1a0, window_fits_99c1a0_original, &window_fits_99c1a0, &g_list_fits);
+
+// ---- Terrain::Curve8DF080(t, curve, seed) (0x8DF080): a curve's value at t with a seeded wobble -----------------------
+// t at or below c2 (+8) gives c0 (+0); at or past 1 - c3 (+0xC) gives 0. Else u = (t - c2) / (1 - (c3 + c2)), v = 1 - u,
+// p = v c5, q = 1 - p, r = u c7, s = 1 - r and y = (s c6 s r + q c4 q p) + v c0 (a float); then the game's random
+// numbers start from seed (0x475170) and y + (0.5 - Random::Unit) c1 (1 - t) is given.
+static volatile long g_terrain_curves;
+static long double __stdcall terrain_curve_8df080(float t, const float *c, uint32_t seed) {
+    g_terrain_curves++;
+    const long double one = *(const float *)0xf264dc;
+    if (!(t > c[2] || __builtin_isunordered(t, c[2]))) return c[0];
+    if (!(one - c[3] > t || __builtin_isunordered(one - c[3], (long double)t))) return *(const float *)0xf264e0;
+    const long double u = ((long double)t - c[2]) / (one - ((long double)c[3] + c[2]));
+    const long double v = one - u;
+    const long double p = v * c[5], q = one - p, r = u * c[7], s = one - r;
+    volatile float y = (float)((s * c[6] * s * r + q * c[4] * q * p) + v * c[0]);
+    ((void(__fastcall *)(uint32_t))0x475170)(seed);
+    const long double un = ((float(__cdecl *)())0x475180)();
+    return ((long double)*(const float *)0xf2651c - un) * c[1] * (one - t) + y;
+}
+static const uint8_t terrain_curve_8df080_original[] = {0xd9, 0x44, 0x24, 0x04, 0x56, 0x8b, 0x74, 0x24, 0x0c};
+REWRITE("Terrain::Curve8DF080", 0x8df080, terrain_curve_8df080_original, &terrain_curve_8df080, &g_terrain_curves);
+
+// ---- Fireworks::Entry9E87E0(n) (0x9E87E0): picks one of seven variants of entry n by weight --------------------------
+// Unless the game's 0x10EDAE0 is set: the table (the game's 0x10F1CD0 by +0x58) entry n (32 bytes) with weights +4..+0x1C
+// (their sum a float s). Random::Unit (0x475180) times s less each weight in turn: the first that goes below 0 is the pick
+// i (0 when none). +0x70 = the entry's +0 + the game's 0x10F1CF8 + 20 i, +0x74.. = that record's +8, +4, +0xC, +0x80 = i.
+static volatile long g_firework_picks;
+static void __thiscall fireworks_entry_9e87e0(uint8_t *self, int32_t n) {
+    g_firework_picks++;
+    if (*(const volatile uint32_t *)0x10edae0) return;
+    const float *const e = (const float *)(*(const uint8_t *const *)(0x10f1cd0 + *(const int32_t *)(self + 0x58) * 4) + n * 32);
+    volatile float s = (float)((((((long double)e[1] + e[2]) + e[3]) + e[4]) + e[5]) + e[6] + e[7]);
+    long double x = (long double)((float(__cdecl *)())0x475180)() * s;
+    int32_t i = 0;
+    for (; i < 7; i++) {
+        x = x - e[1 + i];
+        if (x < *(const float *)0xf264e0) break;
+    }
+    if (i >= 7) i = 0;
+    const uint8_t *const g = (const uint8_t *)0x10f1cf8 + i * 20;
+    *(volatile float *)(self + 0x70) = (float)((long double)e[0] + *(const float *)g);
+    *(uint32_t *)(self + 0x74) = *(const uint32_t *)(g + 8);
+    *(uint32_t *)(self + 0x78) = *(const uint32_t *)(g + 4);
+    *(uint32_t *)(self + 0x7c) = *(const uint32_t *)(g + 0xc);
+    *(int32_t *)(self + 0x80) = i;
+}
+static const uint8_t fireworks_entry_9e87e0_original[] = {0xa1, 0xe0, 0xda, 0x0e, 0x01, 0x85, 0xc0, 0x56, 0x8b, 0xf1};
+REWRITE("Fireworks::Entry9E87E0", 0x9e87e0, fireworks_entry_9e87e0_original, &fireworks_entry_9e87e0, &g_firework_picks);
+
+// ---- Water::Shared9142C0() (0x9142C0): adds the water's place to its trail when it has moved ---------------------------
+// When the game's shared object (0x133A0F4) has flag 0x10, the trail (+0x84 used, under 50) is not in mode 1 (+0x34) and
+// the place (+4, +8) has moved at least 0.001 (squared, from +0xC, +0x10): +0xC, +0x10 = the place, the trail (20-byte
+// entries at +0x7C, room +0x80) grown by 0x913CA0 to the count + 8 when full, and a new entry {place, +0x40, +0x44, 0}.
+static volatile long g_water_trails;
+static void __thiscall water_shared_9142c0(uint8_t *self) {
+    g_water_trails++;
+    if (!(*(*(const uint8_t *const *)0x133a0f4 + 8) & 0x10)) return;
+    const int32_t c = *(const int32_t *)(self + 0x84);
+    if (c >= 50 || *(const int32_t *)(self + 0x34) == 1) return;
+    auto m = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    const long double dx = m(0xc) - m(4), dz = m(0x10) - m(8);
+    if (dz * dz + dx * dx < *(const float *)0xf2cf10) return;
+    *(uint32_t *)(self + 0x10) = *(const uint32_t *)(self + 8);
+    *(uint32_t *)(self + 0xc) = *(const uint32_t *)(self + 4);
+    if (c >= *(const int32_t *)(self + 0x80)) ((void(__thiscall *)(uint8_t *, int32_t))0x913ca0)(self + 0x7c, c + 8);
+    uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(self + 0x7c) + *(const int32_t *)(self + 0x84) * 20);
+    e[0] = *(const uint32_t *)(self + 4), e[1] = *(const uint32_t *)(self + 8);
+    e[2] = *(const uint32_t *)(self + 0x40), e[3] = *(const uint32_t *)(self + 0x44), e[4] = 0;
+    (*(int32_t *)(self + 0x84))++;
+}
+static const uint8_t water_shared_9142c0_original[] = {0xa1, 0xf4, 0xa0, 0x33, 0x01, 0x56, 0x8b, 0xf1, 0xf6, 0x40, 0x08, 0x10};
+REWRITE("Water::Shared9142C0", 0x9142c0, water_shared_9142c0_original, &water_shared_9142c0, &g_water_trails);
