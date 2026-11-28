@@ -12,8 +12,8 @@ Understood   ██████████████████████�
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 13,010 | 2,190,277 bytes | 26.34% |
-| Documented, not rewritten yet | 12,709 | 6,126,472 bytes | 73.66% |
+| Rewritten | 13,014 | 2,191,014 bytes | 26.34% |
+| Documented, not rewritten yet | 12,705 | 6,125,735 bytes | 73.66% |
 | To do | 0 | 0 bytes | 0.00% |
 | **Game total** | **25,719** | **8,316,749 bytes** | |
 | Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |
@@ -1491,6 +1491,7 @@ Understood   ██████████████████████�
 | `0x4ff2f0` | 165 | Person::Scale4FF2F0 | 1 |
 | `0x4ff3a0` | 152 | Value::Band | 1 |
 | `0x4ff440` | 57 | Values::Map | 1 |
+| `0x4ff580` | 199 | Car::Count4FF580 | 2 |
 | `0x4ff6f0` | 57 | Reference::Make4FF6F0 | 1 |
 | `0x500780` | 221 | Person::Values500780 | 1 |
 | `0x501e90` | 59 | Release::Five501E90 | 0 |
@@ -6104,6 +6105,7 @@ Understood   ██████████████████████�
 | `0x937870` | 26 | OwnedPointer::Reset | 2 |
 | `0x937890` | 151 | Array<12>::SetCapacity | 1 |
 | `0x938670` | 167 | Water::Find938670 | 2 |
+| `0x938cd0` | 168 | Water::Cell938CD0 | 40 |
 | `0x939340` | 54 | Reference::Interface | 3 |
 | `0x939410` | 26 | OwnedPointer::Reset | 2 |
 | `0x939430` | 246 | TRIVIAL_SETCAP | 1 |
@@ -9158,6 +9160,7 @@ Understood   ██████████████████████�
 | `0xbb6b10` | 459 | Animal::StepBB6B10 | 0 |
 | `0xbb7030` | 269 | Track::PointBB7030 | 0 |
 | `0xbb7470` | 264 | Track::PassBB7470 | 1 |
+| `0xbb7580` | 176 | Track::PassBB7580 | 1 |
 | `0xbb7800` | 404 | Vector::StepBB7800 | 0 |
 | `0xbb7cf0` | 30 | Object::CountList | 1 |
 | `0xbb83a0` | 137 | Track::InitBB83A0 | 1 |
@@ -10502,6 +10505,7 @@ Understood   ██████████████████████�
 | `0xcc5c80` | 929 | Quaternion::Slerp | 5 |
 | `0xcc6200` | 104 | Record::CopyCC6200 | 4 |
 | `0xcc6280` | 122 | Model::SetPartCC6280 | 1 |
+| `0xcc6310` | 194 | Model::Part2CC6310 | 4 |
 | `0xcc6420` | 645 | Model::PartsCC6420 | 1 |
 | `0xcc66b0` | 489 | Model::PartsCC66B0 | 12 |
 | `0xcc68c0` | 127 | Nodes::MatrixFor | 2 |
@@ -14561,7 +14565,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x4fefc0` | 804 | - | 1 |
 | `0x4ff4a0` | 20 | - | 4 |
 | `0x4ff550` | 41 | - | 1 |
-| `0x4ff580` | 199 | - | 2 |
 | `0x4ff730` | 1,738 | - | 1 |
 | `0x4ffe20` | 697 | - | 1 |
 | `0x5000e0` | 128 | - | 1 |
@@ -20068,7 +20071,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x9385f0` | 71 | - | 0 |
 | `0x938720` | 1,094 | - | 1 |
 | `0x938b70` | 349 | - | 6 |
-| `0x938cd0` | 168 | - | 40 |
 | `0x938d80` | 259 | - | 12 |
 | `0x938e90` | 1,061 | - | 0 |
 | `0x939610` | 589 | - | 1 |
@@ -23287,7 +23289,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xbb6880` | 175 | - | 1 |
 | `0xbb6ce0` | 843 | - | 0 |
 | `0xbb7140` | 801 | - | 1 |
-| `0xbb7580` | 176 | - | 1 |
 | `0xbb7630` | 21 | - | 1 |
 | `0xbb7650` | 10 | - | 1 |
 | `0xbb7660` | 10 | - | 1 |
@@ -25229,7 +25230,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xcc61a0` | 84 | - | 3 |
 | `0xcc6270` | 4 | - | 1 |
 | `0xcc6300` | 14 | - | 1 |
-| `0xcc6310` | 194 | - | 4 |
 | `0xcc63e0` | 54 | - | 3 |
 | `0xcc69a0` | 1,375 | - | 0 |
 | `0xcc6f00` | 761 | - | 3 |

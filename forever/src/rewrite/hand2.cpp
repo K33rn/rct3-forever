@@ -13140,3 +13140,106 @@ static int32_t __thiscall animal_step_afdcb0(uint8_t *self, const uint32_t *p, c
 }
 static const uint8_t animal_step_afdcb0_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x4c, 0x24, 0x14};
 REWRITE("Animal::StepAFDCB0", 0xafdcb0, animal_step_afdcb0_original, &animal_step_afdcb0, &g_animal_slot_fills);
+
+// ---- Car::Count4FF580(n, v) (0x4FF580): adds v to slot n of a growing list of floats -----------------------------------
+// k = n, at least 0. Past the list's count (+0x1A0) it is extended to k + 1, the new slots 0 (room +0x19C grown to the next
+// multiple of 8 above k by 0x423DA0 when short; floats at +0x198). Slot k += v; gives its address.
+static volatile long g_car_slot_sums;
+static float *__thiscall car_count_4ff580(uint8_t *self, int32_t n, float v) {
+    g_car_slot_sums++;
+    const int32_t k = n > 0 ? n : 0;
+    if (k >= *(const int32_t *)(self + 0x1a0)) {
+        if (k >= *(const int32_t *)(self + 0x19c)) ((void(__thiscall *)(uint8_t *, int32_t))0x423da0)(self + 0x198, k / 8 * 8 + 8);
+        for (int32_t i = *(const int32_t *)(self + 0x1a0); i <= k; i++) (*(uint32_t *const *)(self + 0x198))[i] = 0;
+        *(int32_t *)(self + 0x1a0) = k + 1;
+    }
+    volatile float *const slot = *(float *const *)(self + 0x198) + k;
+    *slot = (float)((long double)v + *slot);
+    return (float *)slot;
+}
+static const uint8_t car_count_4ff580_original[] = {0x51, 0x56, 0x57, 0x8b, 0xf1, 0xb8, 0x00, 0x00, 0x00, 0x00};
+REWRITE("Car::Count4FF580", 0x4ff580, car_count_4ff580_original, &car_count_4ff580, &g_car_slot_sums);
+
+// ---- Model::Part2CC6310(n) (0xCC6310): wraps part n's time into its first track's length and finds its keys there -------
+// Part n (8 bytes at +0x14) has its time at +4: while it is past the length (the +8 of the first entry of the model's (+0)
+// +8 list entry n) the length is taken off (a float each time). Only when it was past it to start with: for each track of
+// that list entry (count +4, 0x14-byte tracks at +0xC), +0xC[track's number] = Keys::Find2 (0xE025F0) and
+// +0x10[number] = Keys::Find (0xE02670) at the new time.
+static volatile long g_model_part_wraps;
+static void __thiscall model_part2_cc6310(uint8_t *self, int32_t n) {
+    g_model_part_wraps++;
+    volatile float *const t = (volatile float *)(*(uint8_t *const *)(self + 0x14) + n * 8 + 4);
+    auto list = [&] { return ((const uint8_t *const *)*(const uint8_t *const *)(*(const uint8_t *const *)self + 8))[n]; };
+    auto length = [&] { return *(const float *)(*(const uint8_t *const *)list() + 8); };
+    if (!(*t > length())) return;
+    do *t = (float)((long double)*t - length());
+    while (*t > length());
+    const uint8_t *const l = list();
+    for (int32_t i = 0; i < *(const int32_t *)(l + 4); i++) {
+        const uint8_t *const track = *(const uint8_t *const *)(l + 0xc) + i * 0x14;
+        const uint32_t r = ((uint32_t(__thiscall *)(const uint8_t *, float))0xe025f0)(track, *t);
+        (*(uint32_t *const *)(self + 0xc))[*(const uint32_t *)track] = r;
+        const uint32_t s = ((uint32_t(__thiscall *)(const uint8_t *, float))0xe02670)(track, *t);
+        (*(uint32_t *const *)(self + 0x10))[*(const uint32_t *)track] = s;
+    }
+}
+static const uint8_t model_part2_cc6310_original[] = {0x51, 0x8b, 0x54, 0x24, 0x08, 0x53, 0x8b, 0xd9};
+REWRITE("Model::Part2CC6310", 0xcc6310, model_part2_cc6310_original, &model_part2_cc6310, &g_model_part_wraps);
+
+// ---- Water::Cell938CD0(col, row) (0x938CD0): the point number of a grid cell, made when it has none ---------------------
+// Cells (two bytes at +0x38, width +0x30) hold 0xFFFF for none: then a 16-byte point {col step x (+4's +0x14) + its +0xC,
+// +0, row step (+0x18) + its +0x10} is added to the points (+0x10, count +0xC, room +0x14; grown by +8 by 0x417A20 when
+// full) and the cell gets its number. Gives the cell (in ax; the cells' or the point's upper half above it).
+static volatile long g_water_cell_points;
+static uint32_t __thiscall water_cell_938cd0(uint8_t *self, uint32_t col32, uint32_t row32) {
+    g_water_cell_points++;
+    const int32_t col = (uint8_t)col32, row = (uint8_t)row32;
+    uint16_t *const cell = *(uint16_t *const *)(self + 0x38) + (*(const int32_t *)(self + 0x30) * row + col);
+    if (*cell != 0xffff) return (*(const uint32_t *)(self + 0x38) & 0xffff0000u) | *cell;
+    const float *const step = *(const float *const *)(self + 4);
+    volatile float x = (float)((long double)col * step[5] + step[3]);
+    const uint32_t y = *(const uint32_t *)self;
+    volatile float z = (float)((long double)row * step[6] + step[4]);
+    const int32_t room = *(const int32_t *)(self + 0x14);
+    if (*(const int32_t *)(self + 0xc) >= room) ((void(__thiscall *)(uint8_t *, int32_t))0x417a20)(self + 0x10, *(const int32_t *)(self + 8) + room);
+    const int32_t n = *(const int32_t *)(self + 0xc);
+    uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(self + 0x10) + n * 16);
+    e[0] = *(const volatile uint32_t *)&x, e[2] = *(const volatile uint32_t *)&z, e[1] = y;
+    *(int32_t *)(self + 0xc) = n + 1;
+    *cell = (uint16_t)n;
+    return ((uint32_t)(uintptr_t)e & 0xffff0000u) | *cell;
+}
+static const uint8_t water_cell_938cd0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x18, 0x0f, 0xb6, 0x45, 0x0c};
+REWRITE("Water::Cell938CD0", 0x938cd0, water_cell_938cd0_original, &water_cell_938cd0, &g_water_cell_points);
+
+// ---- Track::PassBB7580(out) (0xBB7580): the part's values at the track's place, into out by slot ----------------------
+// For each of the part's (+0x10) +0x24 entries i (slots from +0x3C's +0xC, two bytes each): with a key table (+0x44, two
+// two-byte halves per entry) Track::RoundBB69E0 (0xBB69E0) gives a key k and fraction t for the keys at +0x54 + 2 hi and
+// lo; the value is a + (b - a) t of the floats at +0x34 + 4 hi, k and k + 1. Without one it is a + (c - a) +0x34 (this's),
+// a the float at +0x34 + 4 (+0x3A (two bytes) count + i) and c the count-th after it. out[slot] = the value.
+static volatile long g_track_value_passes;
+static void __thiscall track_pass_bb7580(uint8_t *self, float *out) {
+    g_track_value_passes++;
+    const uint32_t count = *(const uint32_t *)(*(const uint8_t *const *)(self + 0x10) + 0x24);
+    for (uint32_t i = 0; i < count; i++) {
+        const uint32_t slot = (*(const uint16_t *const *)(*(const uint8_t *const *)(self + 0x3c) + 0xc))[i];
+        const uint8_t *const part = *(const uint8_t *const *)(self + 0x10);
+        long double v;
+        if (*(const uint32_t *)(part + 0x44)) {
+            const uint16_t *const key = *(const uint16_t *const *)(part + 0x44) + i * 2;
+            const uint32_t hi = key[1], lo = key[0];
+            int32_t k;
+            float t;
+            ((void(__thiscall *)(uint8_t *, const uint16_t *, uint32_t, int32_t *, float *))0xbb69e0)(
+                self, *(const uint16_t *const *)(part + 0x54) + hi, lo, &k, &t);
+            const float *const a = *(const float *const *)(*(const uint8_t *const *)(self + 0x10) + 0x34) + hi + k;
+            v = ((long double)a[1] - a[0]) * t + a[0];
+        } else {
+            const float *const a = *(const float *const *)(part + 0x34) + (*(const uint16_t *)(self + 0x3a) * *(const uint32_t *)(part + 0x24) + i);
+            v = ((long double)a[count] - a[0]) * *(const float *)(self + 0x34) + a[0];
+        }
+        *(volatile float *)(out + slot) = (float)v;
+    }
+}
+static const uint8_t track_pass_bb7580_original[] = {0x83, 0xec, 0x0c, 0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x10};
+REWRITE("Track::PassBB7580", 0xbb7580, track_pass_bb7580_original, &track_pass_bb7580, &g_track_value_passes);

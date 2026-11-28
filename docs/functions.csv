@@ -2994,7 +2994,7 @@ address,size,name,callers,status
 0x4ff440,57,Values::Map,1,rewritten
 0x4ff4a0,20,,4,documented
 0x4ff550,41,,1,documented
-0x4ff580,199,,2,documented
+0x4ff580,199,Car::Count4FF580,2,rewritten
 0x4ff6f0,57,Reference::Make4FF6F0,1,rewritten
 0x4ff730,1738,,1,documented
 0x4ffe20,697,,1,documented
@@ -13141,7 +13141,7 @@ address,size,name,callers,status
 0x938670,167,Water::Find938670,2,rewritten
 0x938720,1094,,1,documented
 0x938b70,349,,6,documented
-0x938cd0,168,,40,documented
+0x938cd0,168,Water::Cell938CD0,40,rewritten
 0x938d80,259,,12,documented
 0x938e90,1061,,0,documented
 0x939340,54,Reference::Interface,3,rewritten
@@ -19414,7 +19414,7 @@ address,size,name,callers,status
 0xbb7030,269,Track::PointBB7030,0,rewritten
 0xbb7140,801,,1,documented
 0xbb7470,264,Track::PassBB7470,1,rewritten
-0xbb7580,176,,1,documented
+0xbb7580,176,Track::PassBB7580,1,rewritten
 0xbb7630,21,,1,documented
 0xbb7650,10,,1,documented
 0xbb7660,10,,1,documented
@@ -22717,7 +22717,7 @@ address,size,name,callers,status
 0xcc6270,4,,1,documented
 0xcc6280,122,Model::SetPartCC6280,1,rewritten
 0xcc6300,14,,1,documented
-0xcc6310,194,,4,documented
+0xcc6310,194,Model::Part2CC6310,4,rewritten
 0xcc63e0,54,,3,documented
 0xcc6420,645,Model::PartsCC6420,1,rewritten
 0xcc66b0,489,Model::PartsCC66B0,12,rewritten

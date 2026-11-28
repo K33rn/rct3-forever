@@ -45,8 +45,8 @@ Understood   ██████████████████████�
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 13,010 | 2,190,277 bytes | 26.34% |
-| Documented, not rewritten yet | 12,709 | 6,126,472 bytes | 73.66% |
+| Rewritten | 13,014 | 2,191,014 bytes | 26.34% |
+| Documented, not rewritten yet | 12,705 | 6,125,735 bytes | 73.66% |
 | To do | 0 | 0 bytes | 0.00% |
 | **Game total** | **25,719** | **8,316,749 bytes** | |
 | Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |
