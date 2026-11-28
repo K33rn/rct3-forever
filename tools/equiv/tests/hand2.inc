@@ -7233,4 +7233,57 @@ static long double __fastcall h2_effect_value(uint32_t a, uint32_t b, uint32_t c
                            },
                            [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *, const void *, const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40), arena<void>(0x50), arena<void>(0x60)) & 0xff}; }};
     quick(water_step_91c0e0);
+    // Text::FindBCEBA0 / BCEC90 / BCF260: texts and keys of 0-6 letters from a small set in both cases (equal at times,
+    // one a start of the other), bytes past 0x7F now and then; tolower stood in for (the game's needs its CRT set up)
+    for (uintptr_t at : {0xbceba0u, 0xbcec90u, 0xbcf260u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   static const char set[] = "aAbBzZ_1";
+                   uint8_t *s = arena<uint8_t>(0x100);
+                   *(uint32_t *)arena<uint8_t>(0x40) = (uint32_t)(uintptr_t)s;
+                   const int tl = r.range(0, 6), kl = r.range(0, 1) ? tl - r.range(0, tl) : r.range(0, 6);
+                   *(uint32_t *)(s + 4) = tl, *(uint32_t *)(s + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                   uint8_t text[8];
+                   for (int i = 0; i < 8; i++) text[i] = r.range(0, 9) ? (uint8_t)set[r.range(0, 7)] : (uint8_t)r.range(0x80, 0xff);
+                   for (int i = 0; i < 8; i++) {
+                       const uint8_t c = i < kl ? (r.range(0, 2) ? text[i] : (uint8_t)set[r.range(0, 7)]) : 0;
+                       const uint8_t t = i < tl ? text[i] : (uint8_t)r.next();
+                       const uint8_t kc = (c >= 'a' && c <= 'z' && r.range(0, 1)) ? (uint8_t)(c - 32) : c;
+                       if (at == 0xbcf260u) arena<uint8_t>(0x200)[i] = t;
+                       else arena<uint16_t>(0x200)[i] = t;
+                       if (at == 0xbceba0u) arena<uint16_t>(0x300)[i] = kc;
+                       else arena<uint8_t>(0x300)[i] = kc;
+                   }
+               },
+               [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(const void *, const void *))fn)(arena<void>(0x40), arena<void>(0x300))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xdde005, (void *)h2_lower}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Matrix::StepBEE1E0 and Vector::StepBEE5B0: rotation matrices from random turns (the identity at times) and random
+    // matrices (the real turns and rotation reads)
+    for (uintptr_t at : {0xbee1e0u, 0xbee5b0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   float *m = arena<float>(0x100);
+                   for (int k = 0; k < 16; k++) m[k] = r.real(-1, 1);
+                   const int kind = r.range(0, 4);
+                   if (kind < 3) {
+                       const float a = kind ? r.real(-3.1f, 3.1f) : 0.0f, b = kind ? r.real(-1.5f, 1.5f) : 0.0f;
+                       const float ca = cosf(a), sa = sinf(a), cb = cosf(b), sb = sinf(b);
+                       const float rm[9] = {ca, sa * sb, -sa * cb, 0, cb, sb, sa, -ca * sb, ca * cb};
+                       for (int i = 0; i < 3; i++)
+                           for (int j = 0; j < 3; j++) m[i * 4 + j] = rm[i * 3 + j];
+                   }
+                   for (int k = 0; k < 4; k++) arena<uint32_t>(0x40)[k] = r.next();
+               },
+               [at](void *fn) {
+                   if (at == 0xbee1e0u) {
+                       ((void(__thiscall *)(const void *, void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x40), arena<void>(0x44), arena<void>(0x48));
+                       return Result{0};
+                   }
+                   return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))};
+               }};
+        quick(x);
+    }
 #endif

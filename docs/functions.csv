@@ -19789,8 +19789,8 @@ address,size,name,callers,status
 0xbce9d0,125,,15,documented
 0xbcea50,78,WideString::CompareNarrow,1,rewritten
 0xbceaa0,130,,0,documented
-0xbceba0,142,,0,documented
-0xbcec90,139,,7,documented
+0xbceba0,142,Text::FindBCEBA0,0,rewritten
+0xbcec90,139,Text::FindBCEC90,7,rewritten
 0xbced20,75,WideString::FindChar,1,rewritten
 0xbced70,77,WideString::FindBCED70,27,rewritten
 0xbcedc0,142,WideString::Find,1,rewritten
@@ -19801,7 +19801,7 @@ address,size,name,callers,status
 0xbcf0a0,123,,0,documented
 0xbcf120,78,String::CompareWide,1,rewritten
 0xbcf170,115,,1,documented
-0xbcf260,137,,0,documented
+0xbcf260,137,Text::FindBCF260,0,rewritten
 0xbcf3e0,64,Text::FindCharBCF3E0,1,rewritten
 0xbcf460,127,String::Find,3,rewritten
 0xbcf540,90,String::FindLastBCF540,4,rewritten
@@ -20308,11 +20308,11 @@ address,size,name,callers,status
 0xbedf70,131,Matrix::TurnPairs,12,rewritten
 0xbee000,133,Matrix::TurnPairs,1,rewritten
 0xbee0c0,277,Matrix::Invert3,2,rewritten
-0xbee1e0,154,,1,documented
+0xbee1e0,154,Matrix::StepBEE1E0,1,rewritten
 0xbee280,52,,0,documented
 0xbee2c0,411,Vector::ScaleBEE2C0,1,rewritten
 0xbee460,323,Vector::NormalBEE460,19,rewritten
-0xbee5b0,167,,14,documented
+0xbee5b0,167,Vector::StepBEE5B0,14,rewritten
 0xbee890,33,,5,documented
 0xbee8c0,1000,Matrices::Times,3,rewritten
 0xbeecb0,134,Indices::CopyOffset,2,rewritten

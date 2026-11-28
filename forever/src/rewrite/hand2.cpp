@@ -11837,3 +11837,80 @@ static uint8_t __thiscall water_step_91c0e0(const uint8_t *self, const float *or
 }
 static const uint8_t water_step_91c0e0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0x53, 0x56, 0x8b, 0xf1};
 REWRITE("Water::Step91C0E0", 0x91c0e0, water_step_91c0e0_original, &water_step_91c0e0, &g_water_ray_hits);
+
+// ---- Text::FindBCEBA0 / BCEC90 / BCF260(key) (0xBCEBA0, 0xBCEC90, 0xBCF260): compares a text to a key, case aside -----
+// The text (*self: characters +0xC, length +4; wide in the first two, bytes in the last) against a key (wide in the
+// first, a byte string in the others; signed bytes): over the shorter length each pair through the game's tolower
+// (0xDDE005; the key's first in BCEBA0 and BCF260, the text's first in BCEC90); the first that differ give text - key;
+// else the text's length - the key's.
+static volatile long g_text_compares;
+template <class T, class K, bool KeyFirst> static int32_t __thiscall text_compare_ci(const uint8_t *const *self, const K *key) {
+    g_text_compares++;
+    auto lower = (int(__cdecl *)(int))0xdde005;
+    uint32_t klen = 0;
+    while (key[klen]) klen++;
+    const uint8_t *const s = *self;
+    const T *const data = *(const T *const *)(s + 0xc);
+    uint32_t n = *(const uint32_t *)(s + 4);
+    if (klen < n) n = klen;
+    for (uint32_t i = 0; i < n; i++) {
+        int a, b;
+        if (KeyFirst) b = lower((int)key[i]), a = lower((int)data[i]);
+        else a = lower((int)data[i]), b = lower((int)key[i]);
+        if (a - b) return a - b;
+    }
+    return (int32_t)(*(const uint32_t *)((*self) + 4) - klen);
+}
+static const uint8_t text_find_bceba0_original[] = {0x83, 0xec, 0x08, 0x53, 0x55, 0x8b, 0xe9, 0x8b, 0x45, 0x00};
+static const uint8_t text_find_bcec90_original[] = {0x83, 0xec, 0x08, 0x8b, 0x01, 0x8b, 0x50, 0x0c, 0x53};
+static const uint8_t text_find_bcf260_original[] = {0x83, 0xec, 0x08, 0x53, 0x8b, 0xd9, 0x8b, 0x4c, 0x24, 0x10};
+REWRITE("Text::FindBCEBA0", 0xbceba0, text_find_bceba0_original, (&text_compare_ci<uint16_t, uint16_t, true>), &g_text_compares);
+REWRITE("Text::FindBCEC90", 0xbcec90, text_find_bcec90_original, (&text_compare_ci<uint16_t, int8_t, false>), &g_text_compares);
+REWRITE("Text::FindBCF260", 0xbcf260, text_find_bcf260_original, (&text_compare_ci<int8_t, int8_t, true>), &g_text_compares);
+
+// ---- Matrix::StepBEE1E0(a, b, c) (0xBEE1E0): three turn angles that undo a rotation matrix ----------------------------
+// On a copy of the 3 x 3 part (16-byte aligned): a = -atan2(m20, m22), b = atan2(m21, m11) (floats); the copy turned by
+// 0xBEDF70 with -a and by 0xBEDEE0 with -b; then c = -atan2(m01, m00) of the turned copy.
+static volatile long g_matrix_angle_reads;
+static void __thiscall matrix_step_bee1e0(const float *self, float *a, float *b, float *c) {
+    g_matrix_angle_reads++;
+    alignas(16) float m[12] = {};
+    static const int copied[] = {0, 1, 2, 4, 5, 6, 8, 9, 10};
+    for (int k : copied) ((uint32_t *)m)[k] = ((const uint32_t *)self)[k];
+    *(volatile float *)a = (float)-x87_atan2_h2(m[8], m[10]);
+    *(volatile float *)b = (float)x87_atan2_h2(m[9], m[5]);
+    ((void(__thiscall *)(float *, float))0xbedf70)(m, -*a);
+    ((void(__thiscall *)(float *, float))0xbedee0)(m, -*b);
+    *(volatile float *)c = (float)-x87_atan2_h2(m[1], m[0]);
+}
+static const uint8_t matrix_step_bee1e0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8b, 0x01, 0x89, 0x04, 0x24};
+REWRITE("Matrix::StepBEE1E0", 0xbee1e0, matrix_step_bee1e0_original, &matrix_step_bee1e0, &g_matrix_angle_reads);
+
+// ---- Vector::StepBEE5B0(out) (0xBEE5B0): the turn of a rotation matrix as axis times angle -----------------------------
+// q = Vector::ScaleBEE2C0 (0xBEE2C0) of it (x, y, z, w); L = |(x, y, z)| (a float; (y y + z z) + x x). L of 0 gives (x, y,
+// z); else s = 2 atan2(L, w) / L and out = (s x, y s (a float), z s (a float)). Gives out.
+static volatile long g_rotation_logs;
+static float *__thiscall vector_step_bee5b0(const void *self, float *out) {
+    g_rotation_logs++;
+    alignas(16) float q[4];
+    ((void(__thiscall *)(const void *, float *))0xbee2c0)(self, q);
+    volatile float len = (float)x87_sqrt_h2(((long double)q[1] * q[1] + (long double)q[2] * q[2]) + (long double)q[0] * q[0]);
+    volatile float *const o = out;
+    if (len == *(const float *)0xf264e0) {
+        ((volatile uint32_t *)o)[0] = ((const uint32_t *)q)[0];
+        ((volatile uint32_t *)o)[2] = ((const uint32_t *)q)[2];
+        o[1] = q[1];
+        return out;
+    }
+    long double s = x87_atan2_h2(len, q[3]) / len;
+    s = s + s;
+    volatile float sf = (float)s;
+    volatile float x = (float)(s * q[0]), z = (float)((long double)q[2] * sf);
+    const long double y = (long double)q[1] * sf;
+    o[0] = x;
+    *(volatile float *)&o[2] = z;
+    o[1] = (float)y;
+    return out;
+}
+static const uint8_t vector_step_bee5b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8d, 0x44, 0x24, 0x10};
+REWRITE("Vector::StepBEE5B0", 0xbee5b0, vector_step_bee5b0_original, &vector_step_bee5b0, &g_rotation_logs);
