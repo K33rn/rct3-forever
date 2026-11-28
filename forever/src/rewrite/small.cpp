@@ -283,7 +283,7 @@ REWRITE("Grid::RotateCoords", 0x838c00, grid_rotate_coords_original, &grid_rotat
 // Quarter turns about the vertical: facing 1 puts (0, 0, 1 / -1, 0, 0) in the first and third rows' x and z, 2 negates
 // both, 3 is 1's opposite; 0 (or anything over 3) is the identity.
 static volatile long g_facing_rotations;
-static void __stdcall matrix_facing_rotation(uint32_t *out, uint32_t facing) {
+static uint32_t *__stdcall matrix_facing_rotation(uint32_t *out, uint32_t facing) {
     g_facing_rotations++;
     const uint32_t one = 0x3f800000, minus = 0xbf800000;
     uint32_t xx = one, xz = 0, zx = 0, zz = one;
@@ -293,6 +293,7 @@ static void __stdcall matrix_facing_rotation(uint32_t *out, uint32_t facing) {
     volatile uint32_t *const o = out;
     for (int i = 0; i < 16; i++) o[i] = (i == 5 || i == 15) ? one : 0;
     o[0] = xx, o[2] = xz, o[8] = zx, o[10] = zz;
+    return out;
 }
 static const uint8_t matrix_facing_rotation_original[] = {0x8b, 0x44, 0x24, 0x08, 0x83, 0xf8, 0x03, 0x77};
 REWRITE("Matrix::FacingRotation", 0x585870, matrix_facing_rotation_original, &matrix_facing_rotation, &g_facing_rotations);

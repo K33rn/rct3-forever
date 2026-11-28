@@ -1222,7 +1222,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                  arena<int32_t>(0x10)[0] = r.range(0, 3);
                                  for (int i = 0; i < 3; i++) arena<uint32_t>(0x20)[i] = r.next();
                              },
-                             [](void *fn) { ((void(__thiscall *)(void *, void *, int32_t))fn)(arena<void>(0x100), arena<void>(0x20), arena<int32_t>(0x10)[0]); return Result{}; }};
+                             [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, int32_t))fn)(arena<void>(0x100), arena<void>(0x20), arena<int32_t>(0x10)[0])}; }};
     quick(scenery_part_862df0);
     // Camera::PassCD8060: with or without a target, a random matrix
     Test camera_pass_cd8060{0xcd8060,
@@ -1234,7 +1234,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 for (int k = 0; k < 3; k++) arena<float>(0x380)[k] = r.real(-10, 10);
                                 for (int i = 0; i < 3; i++) arena<uint32_t>(0x20)[i] = r.next();
                             },
-                            [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x20)); return Result{}; }};
+                            [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x20))}; }};
     quick(camera_pass_cd8060);
     // Track::PointBB7030: t 0 or not, lengths at, below and above 0, a random step
     Test track_point_bb7030{0xbb7030,
@@ -1548,7 +1548,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                              if (r.range(0, 5) == 0) for (int k = 0; k < 3; k++) arena<float>(0x1a0)[k] = arena<float>(0x190)[k];
                              for (int i = 0; i < 3; i++) arena<uint32_t>(0x20)[i] = r.next();
                          },
-                         [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x20)); return Result{}; }};
+                         [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x20))}; }};
     t.push_back(sound_direction);
     // Vector::SameC5D1C0: pairs close or not in each part (exact, tiny and large differences), either order
     Test vector_same_c5d1c0{0xc5d1c0,
@@ -1681,8 +1681,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                            },
                            [](void *fn) {
                                const int32_t *a = arena<int32_t>(0x10);
-                               ((void(__thiscall *)(void *, void *, int32_t, int32_t, uint32_t))fn)(arena<void>(0x100), arena<void>(0x20), a[0], a[1], (uint32_t)a[2]);
-                               return Result{};
+                               return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, int32_t, int32_t, uint32_t))fn)(arena<void>(0x100), arena<void>(0x20), a[0], a[1], (uint32_t)a[2])};
                            }};
     t.push_back(water_fade_919610);
     // Vector::ScaleBEE2C0: random matrices and turns (traces either side of 0, each diagonal the largest), zeros at times
@@ -2385,8 +2384,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                               arena<int32_t>(0x40)[0] = r.range(-1, 3), arena<int32_t>(0x40)[1] = r.range(0, 4);
                           },
                           [](void *fn) {
-                              ((void(__stdcall *)(void *, const void *, const void *))fn)(arena<void>(0x400), arena<void>(0x1000), arena<void>(0x40));
-                              return Result{0};
+                              return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *, const void *, const void *))fn)(arena<void>(0x400), arena<void>(0x1000), arena<void>(0x40))};
                           }};
     quick(list_pass_c236c0);
     // Animal::LoopB788A0: lists of 1-6 nodes over random records, always one value under 1000 (ties at times); the game
@@ -3706,8 +3704,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                    for (int i = 0; i < 24; i++) arena<uint32_t>(0x200)[i] = r.next(), arena<uint32_t>(0x400)[i] = r.next();
                },
                [](void *fn) {
-                   ((void(__stdcall *)())fn)();
-                   return Result{0};
+                   return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)())fn)()};
                }};
         x.prepare = [](const rewrite::Entry *) { memcpy(saved, (void *)0x1400810, 16); };
         x.finish = [](const rewrite::Entry *) { memcpy((void *)0x1400810, saved, 16); };
@@ -3834,8 +3831,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                  arena<int32_t>(0x40)[0] = r.range(0, 2);
                              },
                              [](void *fn) {
-                                 ((void(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0]);
-                                 return Result{0};
+                                 return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0])};
                              }};
     quick(window_count_6c80c0);
     // Fireworks::Time9E0E20: the game's flag and offset set (put back after)
@@ -4214,8 +4210,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 arena<int32_t>(0x40)[0] = a, arena<int32_t>(0x40)[1] = r.range(0, 2 - a);
                             },
                             [](void *fn) {
-                                ((void(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1]);
-                                return Result{0};
+                                return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1])};
                             }};
     quick(window_slot_6e99b0);
     // Ride::List53DDB0: sections 0-1 with lists of 1-4 nodes, steps 0-3 (never past the end)
@@ -6526,8 +6521,7 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                  for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
                              },
                              [](void *fn) {
-                                 ((void(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60));
-                                 return Result{0};
+                                 return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x60))};
                              }};
     quick(animal_point_a6ed40);
     // Model::PartsCC66B0: done or not, models of 0-5 parts with random matrices

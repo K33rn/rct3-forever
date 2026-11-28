@@ -187,7 +187,7 @@ REWRITE("Vector::RotateAroundSinCos", 0xbfb1c0, vector_rotate_around_original, &
 // and its sums: x = (3st^2 p2x + (s^3 p0x + 3s^2t p1x)) + t^3 p3x, y likewise, z = ((s^3 p0z + 3s^2t p1z) + 3st^2 p2z)
 // + t^3 p3z; the products and partial sums it stores are rounded there, the rest kept unrounded.
 static volatile long g_bezier_points;
-static void __fastcall bezier_point(float *out, const float *p0, const float *p1, const float *p2, const float *p3, float t_f) {
+static float *__fastcall bezier_point(float *out, const float *p0, const float *p1, const float *p2, const float *p3, float t_f) {
     g_bezier_points++;
     const long double t = t_f, three = *(const float *)0xf2784c;
     const long double s = (long double)*(const float *)0xf264dc - t;
@@ -210,6 +210,7 @@ static void __fastcall bezier_point(float *out, const float *p0, const float *p1
     out[0] = (float)(x + q0);
     out[1] = (float)(y + q1);
     out[2] = (float)((long double)v2 + q2);
+    return out;
 }
 static const uint8_t bezier_point_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Bezier::Point", 0xbcbf90, bezier_point_original, &bezier_point, &g_bezier_points);
@@ -426,27 +427,31 @@ static void rect_combine(float *into, const float *self, const float *other, boo
         *(volatile float *)&into[i] = (float)(unite == (i < 2) ? x87_lesser(a, b) : x87_greater(a, b));
     }
 }
-static void __thiscall rect_union(float *self, uint32_t *out, const float *other) {
+static uint32_t *__thiscall rect_union(float *self, uint32_t *out, const float *other) {
     g_rects++;
     rect_combine(self, self, other, true);
     for (int i = 0; i < 4; i++) out[i] = ((volatile uint32_t *)self)[i];
+    return out;
 }
-static void __thiscall rect_intersect(float *self, uint32_t *out, const float *other) {
+static uint32_t *__thiscall rect_intersect(float *self, uint32_t *out, const float *other) {
     g_rects++;
     rect_combine(self, self, other, false);
     for (int i = 0; i < 4; i++) out[i] = ((volatile uint32_t *)self)[i];
+    return out;
 }
-static void __thiscall rect_union_into(const float *self, float *out, const float *other) {
+static float *__thiscall rect_union_into(const float *self, float *out, const float *other) {
     g_rects++;
     float r[4];
     rect_combine(r, self, other, true);
     for (int i = 0; i < 4; i++) ((volatile uint32_t *)out)[i] = ((volatile uint32_t *)r)[i];
+    return out;
 }
-static void __thiscall rect_intersect_into(const float *self, float *out, const float *other) {
+static float *__thiscall rect_intersect_into(const float *self, float *out, const float *other) {
     g_rects++;
     float r[4];
     rect_combine(r, self, other, false);
     for (int i = 0; i < 4; i++) ((volatile uint32_t *)out)[i] = ((volatile uint32_t *)r)[i];
+    return out;
 }
 static const uint8_t rect_union_original[] = {0x83, 0xec, 0x08, 0x8b, 0x44, 0x24, 0x10, 0x8b};
 static const uint8_t rect_union_into_original[] = {0x83, 0xec, 0x14, 0x8b, 0x44, 0x24, 0x1c, 0x8b};
@@ -657,7 +662,7 @@ REWRITE("Bits::PackScaled", 0xc197d0, bits_pack_scaled_original, &bits_pack_scal
 // With t = y 0 (rounded): (z - t, x 0 - z 0, t - x), made one long; when its length is exactly 0 the first two are
 // given unscaled and the last is 1.
 static volatile long g_side_directions;
-static void __thiscall vector_side_direction(const uint8_t *self, float *out) {
+static float *__thiscall vector_side_direction(const uint8_t *self, float *out) {
     g_side_directions++;
     const float *const v = (const float *)(self + 0x3f0);
     const long double zero = *(const float *)0xf264e0;
@@ -670,12 +675,13 @@ static void __thiscall vector_side_direction(const uint8_t *self, float *out) {
         out[0] = (float)a;
         out[1] = (float)b;
         out[2] = *(const float *)0xf264dc;
-        return;
+        return out;
     }
     const long double inverse = 1.0L / length;
     out[0] = (float)(a * inverse);
     out[1] = (float)(b * inverse);
     out[2] = (float)(c * inverse);
+    return out;
 }
 static const uint8_t vector_side_direction_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Vector::SideDirection", 0x4262f0, vector_side_direction_original, &vector_side_direction, &g_side_directions);
@@ -909,7 +915,7 @@ REWRITE("Terrain::Make8BE610", 0x8be610, terrain_make_original, &terrain_make, &
 // each difference's z stored; of each weighted difference x and z stored (as are the partial sums of x, y and z), y of
 // the first two kept unrounded.
 static volatile long g_curve_steps;
-static void __fastcall vector_step_bcc090(float *out, const float *p0, const float *p1, const float *p2, const float *p3, float t_f) {
+static float *__fastcall vector_step_bcc090(float *out, const float *p0, const float *p1, const float *p2, const float *p3, float t_f) {
     g_curve_steps++;
     const long double t = t_f, s = (long double)*(const float *)0xf264dc - t, three = *(const float *)0xf2784c;
     const long double d3x = (long double)p3[0] - p2[0], d3y = (long double)p3[1] - p2[1];
@@ -936,6 +942,7 @@ static void __fastcall vector_step_bcc090(float *out, const float *p0, const flo
     out[0] = (float)((long double)x2 * three);
     out[1] = (float)(y2 * three);
     out[2] = (float)(z2 * three);
+    return out;
 }
 static const uint8_t vector_step_bcc090_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Vector::StepBCC090", 0xbcc090, vector_step_bcc090_original, &vector_step_bcc090, &g_curve_steps);
@@ -1764,7 +1771,7 @@ REWRITE("Window::OutsideEllipse", 0x63a920, window_outside_ellipse_original, &wi
 // x = (cos(angle) r (rounded) + (734 - h / 2)) times (window width (+0x84 - +0x7C) / 1024), y = (sin(angle) r + (527 -
 // h / 2 rounded)) times (height (+0x88 - +0x80) / 768, rounded).
 static volatile long g_window_arcs;
-static void __thiscall window_arc(const uint8_t *self, float *out, float angle, float r, float h) {
+static float *__thiscall window_arc(const uint8_t *self, float *out, float angle, float r, float h) {
     g_window_arcs++;
     const float *const f = (const float *)self;
     const long double hh = (long double)h * *(const float *)0xf2651c;
@@ -1779,6 +1786,7 @@ static void __thiscall window_arc(const uint8_t *self, float *out, float angle, 
     const volatile float sy = (float)(((long double)f[0x88 / 4] - f[0x80 / 4]) * *(const float *)0xf28568);
     out[0] = (float)(sx * xa);
     out[1] = (float)((y + b) * sy);
+    return out;
 }
 static const uint8_t window_arc_original[] = {0x83, 0xec, 0x08, 0xd9, 0x44, 0x24, 0x18, 0x8b};
 REWRITE("Window::ArcA45670", 0xa45670, window_arc_original, &window_arc, &g_window_arcs);
@@ -1810,13 +1818,14 @@ REWRITE("Sound::DistanceFade", 0x47bd90, sound_distance_fade_original, &sound_di
 // d = sqrt(dy dy + dx dx) from the light's centre (+0x3C, +0x40); (1 - (d - near) / (far - near)) times the strength
 // (+0x38), kept within 0 and 1, times 255 (fistp), in the top byte of *out (the rest 0).
 static volatile long g_light_fades;
-static void __thiscall light_fade_alpha(const uint8_t *self, uint32_t *out, float x, float y) {
+static uint32_t *__thiscall light_fade_alpha(const uint8_t *self, uint32_t *out, float x, float y) {
     g_light_fades++;
     const float *const f = (const float *)self;
     const long double dx = (long double)x - f[0x3c / 4], dy = (long double)y - f[0x40 / 4];
     const long double d = x87_sqrt(dy * dy + dx * dx);
     const long double v = fade_kept(((long double)*(const float *)0xf264dc - (d - f[0x44 / 4]) / ((long double)f[0x48 / 4] - f[0x44 / 4])) * f[0x38 / 4]);
     *(volatile uint32_t *)out = (uint32_t)x87_whole((long double)*(const float *)0xf264c0 * v) << 24;
+    return out;
 }
 static const uint8_t light_fade_alpha_original[] = {0xd9, 0x44, 0x24, 0x08, 0x83, 0xec, 0x08, 0xd8};
 REWRITE("Light::FadeAlpha", 0x959f30, light_fade_alpha_original, &light_fade_alpha, &g_light_fades);
@@ -2052,7 +2061,7 @@ static inline float x87_floor_float(float q) {
 
 // ---- Vector2::SnapToGrid(out, p, spacing) (0x617290): a 2D point snapped down to a grid --------------------------------
 // i = 1 / spacing (rounded); each coordinate becomes floor(i value (rounded)) spacing; y is worked out first.
-static void __fastcall vector2_snap_to_grid(float *out, const float *p, float spacing) {
+static float *__fastcall vector2_snap_to_grid(float *out, const float *p, float spacing) {
     g_grid_snaps++;
     const volatile float inv = (float)((long double)*(const float *)0xf264dc / spacing);
     const volatile float qy = (float)((long double)inv * p[1]);
@@ -2061,6 +2070,7 @@ static void __fastcall vector2_snap_to_grid(float *out, const float *p, float sp
     const float dx = x87_floor_float(qx);
     ((volatile float *)out)[0] = (float)((long double)dx * spacing);
     ((volatile float *)out)[1] = (float)((long double)dy * spacing);
+    return out;
 }
 static const uint8_t vector2_snap_to_grid_original[] = {0x83, 0xec, 0x0c, 0xd9, 0x05, 0xdc, 0x64, 0xf2};
 REWRITE("Vector2::SnapToGrid", 0x617290, vector2_snap_to_grid_original, &vector2_snap_to_grid, &g_grid_snaps);
@@ -2150,7 +2160,7 @@ REWRITE("Vector::TransformPointInPlace", 0x4bb400, vector_transform_point_in_pla
 // ---- Vector::Lerp(out, a, b, t) (0xCE16B0, and Vector::Lerp2 0x466A60, the same code): a + (b - a) t -------------------
 // The x difference is rounded, the y and z ones not; the x and y products are rounded, z's not; written z, x, y.
 static volatile long g_lerps;
-static void __fastcall vector_lerp(float *out, const float *a, const float *b, float t) {
+static float *__fastcall vector_lerp(float *out, const float *a, const float *b, float t) {
     g_lerps++;
     const volatile float dx = (float)((long double)b[0] - a[0]);
     const long double dy = (long double)b[1] - a[1], dz = (long double)b[2] - a[2];
@@ -2161,6 +2171,7 @@ static void __fastcall vector_lerp(float *out, const float *a, const float *b, f
     o[2] = (float)z;
     o[0] = (float)x;
     o[1] = (float)y;
+    return out;
 }
 static const uint8_t vector_lerp_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec};
 REWRITE("Vector::Lerp", 0xce16b0, vector_lerp_original, &vector_lerp, &g_lerps);
@@ -2948,7 +2959,7 @@ REWRITE("Window::CaseA45110", 0xa45110, window_case_a45110_original, &window_cas
 // y = |v.y| (negated when the byte below is set); out.y = (y + 1) (+0x88 - +0x80) / 2; with s = the scale record at
 // +0xDC: out.x = s's +0xDC v.x + s's +0x8C.
 static volatile long g_graph_points;
-static void __thiscall graph_point_for(const uint8_t *self, float *out, const float *v, uint32_t below) {
+static float *__thiscall graph_point_for(const uint8_t *self, float *out, const float *v, uint32_t below) {
     g_graph_points++;
     long double y = x87_abs(v[1]);
     if ((uint8_t)below)
@@ -2960,6 +2971,7 @@ static void __thiscall graph_point_for(const uint8_t *self, float *out, const fl
     const long double px = (long double)s[0xdc / 4] * v[0] + s[0x8c / 4];
     ((volatile float *)out)[0] = (float)px;
     ((volatile float *)out)[1] = (float)py;
+    return out;
 }
 static const uint8_t graph_point_for_original[] = {0x8b, 0x44, 0x24, 0x08, 0xd9, 0x40, 0x04, 0x8a};
 REWRITE("Graph::PointFor", 0x99d300, graph_point_for_original, &graph_point_for, &g_graph_points);

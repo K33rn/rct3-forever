@@ -5711,9 +5711,8 @@ static std::vector<Test> tests() {
                           arena<float>(0x10)[0] = r.range(0, 5) ? r.real(0, 1) : r.range(0, 1) ? r.real(-3, 3) : geo_pick(r);
                       },
                       [](void *fn) {
-                          ((void(__fastcall *)(void *, void *, void *, void *, void *, float))fn)(arena<void>(0x200), arena<void>(0x100), arena<void>(0x110),
-                                                                                                  arena<void>(0x120), arena<void>(0x130), arena<float>(0x10)[0]);
-                          return Result{};
+                          return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *, void *, void *, float))fn)(arena<void>(0x200), arena<void>(0x100), arena<void>(0x110),
+                                                                                                  arena<void>(0x120), arena<void>(0x130), arena<float>(0x10)[0])};
                       }};
     quick(bezier_point);
     // Plane::FromPoints(a, b, c, normal, d) and Plane::FromPointsC9B970(plane, a, b, c): three points, sometimes on one
@@ -5802,7 +5801,7 @@ static std::vector<Test> tests() {
         if (r.range(0, 6) == 0) arena<uint32_t>(0x100)[r.range(0, 7)] = 0x7f800001u + (uint32_t)r.range(0, 0x3fffff);   // (signalling)
         for (int i = 0; i < 4; i++) arena<uint32_t>(0x200)[i] = r.next();
     };
-    auto rect_call = [](void *fn) { ((void(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x110)); return Result{}; };
+    auto rect_call = [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, void *))fn)(arena<void>(0x100), arena<void>(0x200), arena<void>(0x110))}; };
     Test rect_union{0xbe7690, rect_case, rect_call};
     quick(rect_union);
     Test rect_intersect{0xbe7520, rect_case, rect_call};
@@ -5918,7 +5917,7 @@ static std::vector<Test> tests() {
                                    if (r.range(0, 4) == 0) arena<float>(0x4f0)[0] = arena<float>(0x4f0)[2] = 0.0f;
                                    for (int i = 0; i < 4; i++) arena<uint32_t>(0x200)[i] = r.next();
                                },
-                               [](void *fn) { ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200)); return Result{}; }};
+                               [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *))fn)(arena<void>(0x100), arena<void>(0x200))}; }};
     quick(vector_side_direction);
     // Segment::Direction(this, out): two parts (+0x2C, +0x28) whose +4 points at a point; sometimes the same point
     Test segment_direction{0x5be7f0,
@@ -6036,9 +6035,8 @@ static std::vector<Test> tests() {
                                 arena<float>(0x10)[0] = r.range(0, 5) ? r.real(0, 1) : r.range(0, 1) ? r.real(-3, 3) : geo_pick(r);
                             },
                             [](void *fn) {
-                                ((void(__fastcall *)(void *, void *, void *, void *, void *, float))fn)(arena<void>(0x200), arena<void>(0x100), arena<void>(0x110),
-                                                                                                        arena<void>(0x120), arena<void>(0x130), arena<float>(0x10)[0]);
-                                return Result{};
+                                return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *, void *, void *, float))fn)(arena<void>(0x200), arena<void>(0x100), arena<void>(0x110),
+                                                                                                        arena<void>(0x120), arena<void>(0x130), arena<float>(0x10)[0])};
                             }};
     quick(vector_step_bcc090);
     // Water::Compare95DE00(vertices, indices, count, a, b, c, d, sum, low): heights with NaNs (signalling too) now and then
@@ -6330,7 +6328,7 @@ static std::vector<Test> tests() {
     // Matrix::FacingRotation(out, facing): facings 0-5
     Test matrix_facing_rotation{0x585870,
                                 [=](Rng &r) { for (int i = 0; i < 16; i++) arena<uint32_t>(0x100)[i] = r.next(); arena<uint32_t>(0x10)[0] = r.range(0, 5); },
-                                [](void *fn) { ((void(__stdcall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0]); return Result{}; }};
+                                [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x10)[0])}; }};
     quick(matrix_facing_rotation);
     // Animation::FrameAt(this, step): an info with one track (frames and rate), times near the wrap
     Test animation_frame_at{0x911c80,
@@ -6564,8 +6562,7 @@ static std::vector<Test> tests() {
                     },
                     [](void *fn) {
                         const float *a = arena<float>(0x10);
-                        ((void(__thiscall *)(void *, void *, float, float, float))fn)(arena<void>(0x100), arena<void>(0x20), a[0], a[1], a[2]);
-                        return Result{};
+                        return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, float, float, float))fn)(arena<void>(0x100), arena<void>(0x20), a[0], a[1], a[2])};
                     }};
     quick(window_arc);
     // Request::Request(this, owner, a, b, c, flag, value, d, e): the owner's list with one node, the game's request count
@@ -6615,7 +6612,7 @@ static std::vector<Test> tests() {
                               arena<float>(0x148)[0] = r.range(0, 9) ? r.real(10, 60) : geo_pick(r), arena<float>(0x138)[0] = r.range(0, 9) ? r.real(0, 1.5f) : geo_pick(r);
                               arena<float>(0x10)[0] = r.real(-80, 80), arena<float>(0x10)[1] = r.real(-80, 80);
                           },
-                          [](void *fn) { ((void(__thiscall *)(void *, void *, float, float))fn)(arena<void>(0x100), arena<void>(0x20), arena<float>(0x10)[0], arena<float>(0x10)[1]); return Result{}; }};
+                          [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, float, float))fn)(arena<void>(0x100), arena<void>(0x20), arena<float>(0x10)[0], arena<float>(0x10)[1])}; }};
     quick(light_fade_alpha);
     // Slider::SetValue(this, fraction)
     Test slider_set_value{0xca6f90,
@@ -6800,7 +6797,7 @@ static std::vector<Test> tests() {
                                   arena<float>(0x100)[0] = r.range(0, 9) ? r.real(-500, 500) : geo_pick(r), arena<float>(0x100)[1] = r.range(0, 9) ? r.real(-500, 500) : geo_pick(r);
                                   arena<float>(0x10)[0] = r.range(0, 9) ? r.real(0.5f, 40) : geo_pick(r), arena<uint32_t>(0x20)[0] = r.next(), arena<uint32_t>(0x24)[0] = r.next();
                               },
-                              [](void *fn) { ((void(__fastcall *)(void *, void *, float))fn)(arena<void>(0x20), arena<void>(0x100), arena<float>(0x10)[0]); return Result{}; }};
+                              [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, float))fn)(arena<void>(0x20), arena<void>(0x100), arena<float>(0x10)[0])}; }};
     quick(vector2_snap_to_grid);
     // Vector::LerpPoint(out, a, b, t)
     Test vector_lerp_point{0x4259f0,
@@ -6881,8 +6878,8 @@ static std::vector<Test> tests() {
                          [at](void *fn) {
                              if (at == 0xa67e40u)
                                  ((void(__thiscall *)(void *, void *, void *, float))fn)(arena<void>(0x20), arena<void>(0x100), arena<void>(0x110), arena<float>(0x10)[0]);
-                             else
-                                 ((void(__fastcall *)(void *, void *, void *, float))fn)(arena<void>(0x20), arena<void>(0x100), arena<void>(0x110), arena<float>(0x10)[0]);
+                             else   // Lerp and Lerp2 give out back
+                                 return Result{(uint32_t)(uintptr_t)((void *(__fastcall *)(void *, void *, void *, float))fn)(arena<void>(0x20), arena<void>(0x100), arena<void>(0x110), arena<float>(0x10)[0])};
                              return Result{};
                          }};
         quick(vector_lerp);
@@ -7547,8 +7544,7 @@ static std::vector<Test> tests() {
                              arena<uint32_t>(0x18)[0] = r.next() & 0x1ff, arena<uint32_t>(0x20)[0] = r.next(), arena<uint32_t>(0x24)[0] = r.next();
                          },
                          [](void *fn) {
-                             ((void(__thiscall *)(void *, void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x20), arena<void>(0x10), arena<uint32_t>(0x18)[0]);
-                             return Result{};
+                             return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, void *, void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x20), arena<void>(0x10), arena<uint32_t>(0x18)[0])};
                          }};
     quick(graph_point_for);
     // Ride::Flip548A90(this): signalling NaNs now and then

@@ -2288,14 +2288,14 @@ REWRITE("Grid::Round4414F0", 0x4414f0, grid_round_4414f0_original, &grid_round_4
 // point is already placed. Past the count: (0, the game's 0 (0xF264E0), 0). Placed: the point. Otherwise the point
 // moved by this's matrix (rows +0x60, +0x70, +0x80, then +0x90 added), each part's sum in the game's order.
 static volatile long g_scenery_parts;
-static void __thiscall scenery_part_862df0(const uint8_t *self, float *out, int32_t n) {
+static float *__thiscall scenery_part_862df0(const uint8_t *self, float *out, int32_t n) {
     g_scenery_parts++;
     volatile float *const o = out;
     if (n >= *(const int32_t *)(self + 0x108)) {
         o[0] = 0.0f;
         *(volatile uint32_t *)(out + 2) = 0;
         o[1] = *(const float *)0xf264e0;
-        return;
+        return out;
     }
     const uint8_t *const e = *(const uint8_t *const *)(self + 0x104) + 0x48 * n;
     const float *const p = (const float *)(*(const uint8_t *const *)e + 0x30);
@@ -2305,7 +2305,7 @@ static void __thiscall scenery_part_862df0(const uint8_t *self, float *out, int3
         o[0] = x;
         *(volatile uint32_t *)(out + 2) = zbits;
         o[1] = y;
-        return;
+        return out;
     }
     const float z = p[2];
     const float *const m = (const float *)(self + 0x60);
@@ -2316,6 +2316,7 @@ static void __thiscall scenery_part_862df0(const uint8_t *self, float *out, int3
     o[0] = fx;
     *(volatile uint32_t *)(out + 2) = *(volatile uint32_t *)&tz;
     o[1] = ty;
+    return out;
 }
 static const uint8_t scenery_part_862df0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x3c, 0x8b, 0x45, 0x0c};
 REWRITE("Scenery::Part862DF0", 0x862df0, scenery_part_862df0_original, &scenery_part_862df0, &g_scenery_parts);
@@ -2325,7 +2326,7 @@ REWRITE("Scenery::Part862DF0", 0x862df0, scenery_part_862df0_original, &scenery_
 // them: x = ((a r70 + (b r80)) + (c r90)) + r60 and y likewise, z = ((b r88 + (a r78)) + (c r98)) + r68 (the
 // parenthesised parts floats, a r70, a r74 and b r88 not).
 static volatile long g_camera_passes;
-static void __thiscall camera_pass_cd8060(const uint8_t *self, float *out) {
+static float *__thiscall camera_pass_cd8060(const uint8_t *self, float *out) {
     g_camera_passes++;
     float a, b, c;
     const uint8_t *const part = *(const uint8_t *const *)(self + 8);
@@ -2351,6 +2352,7 @@ static void __thiscall camera_pass_cd8060(const uint8_t *self, float *out) {
     const long double x = (long double)t0 + m[0];
     volatile float *const o = out;
     o[0] = (float)x, o[1] = (float)y, o[2] = (float)z;
+    return out;
 }
 static const uint8_t camera_pass_cd8060_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x40, 0x8b, 0x41, 0x08};
 REWRITE("Camera::PassCD8060", 0xcd8060, camera_pass_cd8060_original, &camera_pass_cd8060, &g_camera_passes);
@@ -3213,7 +3215,7 @@ REWRITE("Water::Length94CA80", 0x94ca80, water_bend_original, (void *)&forever_w
 // sqrt(|p - a|^2 - perp^2) (|p - a|^2 as a float there) and perp^2 from (h^2 - (h . d)^2 / L^2) with h = |p - a| as a
 // float. NaNs go on.
 static volatile long g_sound_directions;
-static void __thiscall sound_direction(const uint8_t *self, float *out) {
+static float *__thiscall sound_direction(const uint8_t *self, float *out) {
     g_sound_directions++;
     const float *const a = (const float *)(self + 0x90), *const b = (const float *)(self + 0xa0), *const p = (const float *)0x10f4620;
     const float a0 = a[0], a1 = a[1], a2 = a[2], b0 = b[0], b1 = b[1], b2 = b[2];
@@ -3238,13 +3240,13 @@ static void __thiscall sound_direction(const uint8_t *self, float *out) {
     if (s1 + m0 * a0 < 0) {
         *(volatile uint32_t *)(out + 2) = *(const uint32_t *)&a2;
         o[0] = a0, o[1] = a1;
-        return;
+        return out;
     }
     const long double t1 = (((long double)p2 * mf2 + (long double)mf1 * p1) + n2 * b2) + (long double)n1 * b1;
     if ((t1 + m0 * p0) + (long double)n0 * b0 < 0) {
         o[0] = b0;
         *(volatile uint32_t *)(out + 1) = *(const uint32_t *)&b1, *(volatile uint32_t *)(out + 2) = *(const uint32_t *)&b2;
-        return;
+        return out;
     }
     const long double h0 = (long double)p0 - a0, h1 = (long double)p1 - a1, h2 = (long double)p2 - a2;
     const long double q = (h2 * h2 + h1 * h1) + h0 * h0;
@@ -3258,6 +3260,7 @@ static void __thiscall sound_direction(const uint8_t *self, float *out) {
     o[0] = (float)(x + a0);
     o[1] = (float)((long double)y + a1);
     o[2] = (float)((long double)z + a2);
+    return out;
 }
 static const uint8_t sound_direction_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x60, 0x8b, 0x81, 0x90};
 REWRITE("Sound::Direction", 0xce55d0, sound_direction_original, &sound_direction, &g_sound_directions);
@@ -3505,7 +3508,7 @@ REWRITE("Colour::Make6B5D10", 0x6b5d10, colour_make_6b5d10_original, &colour_mak
 // the level +0x31C (below 0xF28210, below 0xF360E8, else). out[0] is that; out[1] = (1 - y / (h - 1)) (h +0x158) times 1,
 // K2, K3 or K4 by +0x320 (below 0xF28210, 0xF27604, 0xF27618, else). K 0xF270B8, K2 0xF2705C, K3 0xF2784C, K4 0xF2669C.
 static volatile long g_water_fades;
-static void __thiscall water_fade_919610(const uint8_t *self, float *out, int32_t x, int32_t y, uint32_t edge) {
+static float *__thiscall water_fade_919610(const uint8_t *self, float *out, int32_t x, int32_t y, uint32_t edge) {
     g_water_fades++;
     auto k = [](uintptr_t at) { return *(const float *)at; };
     const float one = k(0xf264dc);
@@ -3531,6 +3534,7 @@ static void __thiscall water_fade_919610(const uint8_t *self, float *out, int32_
     volatile float *const o = out;
     o[0] = (float)u;
     o[1] = (float)((long double)g * v);
+    return out;
 }
 static const uint8_t water_fade_919610_original[] = {0x8a, 0x44, 0x24, 0x10, 0x84, 0xc0, 0x74, 0x59};
 REWRITE("Water::Fade919610", 0x919610, water_fade_919610_original, &water_fade_919610, &g_water_fades);
@@ -4829,10 +4833,11 @@ REWRITE("Water::Range907440", 0x907440, water_range_907440_original, &water_rang
 // the first record's +0x50.. part is copied onto its own +0x10.. part.
 static volatile long g_node_runs;
 static inline void fpu_copy_h2(void *to, const void *from) { __asm__ volatile("flds (%1)\n\tfstps (%0)" : : "r"(to), "r"(from) : "memory"); }
-static void __stdcall list_pass_c236c0(uint8_t *out, const uint8_t *node, const int32_t *range) {
+static const uint8_t *__stdcall list_pass_c236c0(uint8_t *out, const uint8_t *node, const int32_t *range) {
     g_node_runs++;
     auto next = [](const uint8_t *p) { return *(const uint8_t *const *)(p + 0x54); };
-    for (int32_t s = range[0]; s > 0; s--) node = next(node);
+    const uint8_t *prev = node;   // the last node skipped (the game gives it back)
+    for (int32_t s = range[0]; s > 0; s--) prev = node, node = next(node);
     for (int32_t i = range[1] - 1; i >= 0; i--) {
         uint32_t *const e = (uint32_t *)(out + i * 0xb0);
         const uint32_t *const n = (const uint32_t *)node;
@@ -4853,6 +4858,7 @@ static void __stdcall list_pass_c236c0(uint8_t *out, const uint8_t *node, const 
     uint32_t *const o = (uint32_t *)out;
     for (uint32_t k = 4; k < 0x13; k++)
         if ((k & 3) != 3) o[k] = o[k + 0x10];
+    return prev;
 }
 static const uint8_t list_pass_c236c0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0x8b, 0x4d, 0x0c, 0x53};
 REWRITE("List::PassC236C0", 0xc236c0, list_pass_c236c0_original, &list_pass_c236c0, &g_node_runs);
@@ -6547,13 +6553,14 @@ REWRITE("Park::Pass91C1D0", 0x91c1d0, park_pass_91c1d0_original, &park_pass_91c1
 // ---- Camera::SharedCE1670 (0xCE1670): copies the game's points (0x1400810, 16 bytes each) to 0x1400818 ------------------
 // The first three dwords of each, the count 0x140081C read again each time.
 static volatile long g_camera_copies;
-static void __stdcall camera_shared_ce1670() {
+static int32_t __stdcall camera_shared_ce1670() {
     g_camera_copies++;
     for (int32_t i = 0; i < *(const volatile int32_t *)0x140081c; i++) {
         const uint32_t *const from = (const uint32_t *)(*(const volatile uint32_t *)0x1400810 + i * 16);
         uint32_t *const to = (uint32_t *)(*(const volatile uint32_t *)0x1400818 + i * 16);
         to[0] = from[0], to[1] = from[1], to[2] = from[2];
     }
+    return *(const volatile int32_t *)0x140081c;
 }
 static const uint8_t camera_shared_ce1670_original[] = {0xa1, 0x1c, 0x08, 0x40, 0x01, 0x56, 0x33, 0xf6};
 REWRITE("Camera::SharedCE1670", 0xce1670, camera_shared_ce1670_original, &camera_shared_ce1670, &g_camera_copies);
@@ -6692,7 +6699,7 @@ REWRITE("Static::Reset4984C0", 0x4984c0, static_reset_4984c0_original, &static_r
 // ---- Window::Count6C80C0(n) (0x6C80C0): packs row n's eight slots (+0x30 + 0x20 n) to the front ----------------------
 // Each slot in use that moves down to place j is cleared where it was and gets its row (+0x4C) and place (+0x50).
 static volatile long g_slot_packs;
-static void __thiscall window_count_6c80c0(uint8_t *self, int32_t n) {
+static int32_t __thiscall window_count_6c80c0(uint8_t *self, int32_t n) {
     g_slot_packs++;
     uint32_t *const slot = (uint32_t *)(self + 0x30 + n * 0x20);
     int32_t j = 0;
@@ -6708,6 +6715,7 @@ static void __thiscall window_count_6c80c0(uint8_t *self, int32_t n) {
         }
         j++;
     }
+    return j;
 }
 static const uint8_t window_count_6c80c0_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x57, 0x8b, 0xd3};
 REWRITE("Window::Count6C80C0", 0x6c80c0, window_count_6c80c0_original, &window_count_6c80c0, &g_slot_packs);
@@ -7103,7 +7111,7 @@ REWRITE("Park::Pass774010", 0x774010, park_pass_774010_original, &park_pass_7740
 // ---- Window::Slot6E99B0(a, b) (0x6E99B0): as Window::Count6C80C0 for row a + b of the slots at +0x28, the moved ones
 // getting +0x44 = a, +0x48 = b and +0x50 = their place ----------------------------------------------------------------
 static volatile long g_slot_packs2;
-static void __thiscall window_slot_6e99b0(uint8_t *self, int32_t a, int32_t b) {
+static int32_t __thiscall window_slot_6e99b0(uint8_t *self, int32_t a, int32_t b) {
     g_slot_packs2++;
     uint32_t *const slot = (uint32_t *)(self + 0x28 + (a + b) * 0x20);
     int32_t j = 0;
@@ -7120,6 +7128,7 @@ static void __thiscall window_slot_6e99b0(uint8_t *self, int32_t a, int32_t b) {
         }
         j++;
     }
+    return j;
 }
 static const uint8_t window_slot_6e99b0_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x8b, 0x6c, 0x24, 0x10};
 REWRITE("Window::Slot6E99B0", 0x6e99b0, window_slot_6e99b0_original, &window_slot_6e99b0, &g_slot_packs2);
@@ -10348,7 +10357,7 @@ REWRITE("Water::Range941EF0", 0x941ef0, water_range_941ef0_original, &water_rang
 // 0xF8F954; the scale a float). The sums go four points at a time and then one at a time, some kept unrounded between
 // steps exactly as the game's are.
 static volatile long g_animal_means;
-static void __thiscall animal_point_a6ed40(const uint8_t *self, float *out) {
+static float *__thiscall animal_point_a6ed40(const uint8_t *self, float *out) {
     g_animal_means++;
     const int32_t n = *(const int32_t *)(self + 0x10);
     const float *const *const list = *(const float *const *const *)(self + 0xc);
@@ -10400,6 +10409,7 @@ static void __thiscall animal_point_a6ed40(const uint8_t *self, float *out) {
     o[0] = (float)(dx * s);
     o[1] = (float)((long double)dy * s);
     o[2] = (float)((long double)dz * s);
+    return out;
 }
 static const uint8_t animal_point_a6ed40_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x34, 0xd9, 0x05, 0xe0, 0x64, 0xf2, 0x00};
 REWRITE("Animal::PointA6ED40", 0xa6ed40, animal_point_a6ed40_original, &animal_point_a6ed40, &g_animal_means);
