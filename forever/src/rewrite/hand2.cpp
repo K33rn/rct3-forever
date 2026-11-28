@@ -12027,3 +12027,94 @@ static void __thiscall effect_entry_44b2a0(const uint8_t *self, int32_t n, float
 }
 static const uint8_t effect_entry_44b2a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28, 0x8b, 0x55, 0x08};
 REWRITE("Effect::Entry44B2A0", 0x44b2a0, effect_entry_44b2a0_original, &effect_entry_44b2a0, &g_effect_entry_moves);
+
+// ---- Terrain::Entry8E8140(n, lo, hi) (0x8E8140): sets water entry n's box and works out its span and heights ----------
+// Entry n (0x130 bytes at +0x118). When on (byte +3): its +0x20 = lo, +0x30 = hi and Water::BoxSpan (0x8E6980) of lo, hi
+// into +0x50 (growing when byte +1 is 0). Then Water::Point8E6D20 (0x8E6D20) of +0x50 with +0x10, into +0x80 and +0x90.
+static volatile long g_water_entry_boxes;
+static void __thiscall terrain_entry_8e8140(const uint8_t *self, int32_t n, const uint32_t *lo, const uint32_t *hi) {
+    g_water_entry_boxes++;
+    uint8_t *const e = *(uint8_t *const *)(self + 0x118) + n * 0x130;
+    if (e[3]) {
+        for (int k = 0; k < 3; k++) ((uint32_t *)(e + 0x20))[k] = lo[k];
+        for (int k = 0; k < 3; k++) ((uint32_t *)(e + 0x30))[k] = hi[k];
+        ((float *(__thiscall *)(const uint8_t *, const uint32_t *, const uint32_t *, uint8_t *, uint8_t))0x8e6980)(self, lo, hi, e + 0x50, e[1] == 0);
+    }
+    ((void(__thiscall *)(const uint8_t *, uint8_t *, float, uint8_t *, uint8_t *))0x8e6d20)(self, e + 0x50, *(const float *)(e + 0x10), e + 0x80, e + 0x90);
+}
+static const uint8_t terrain_entry_8e8140_original[] = {0x56, 0x57, 0x8b, 0x7c, 0x24, 0x0c, 0x69, 0xff, 0x30, 0x01, 0x00, 0x00};
+REWRITE("Terrain::Entry8E8140", 0x8e8140, terrain_entry_8e8140_original, &terrain_entry_8e8140, &g_water_entry_boxes);
+
+// ---- Guest::Part753180(p) (0x753180): adds a quad at p to the guest's part (+0x14) ------------------------------------
+// The part's next entry (0x50 bytes at +0x40, count +0x4C, which then goes up): place p, (0, 1, 0), 0xFF at +0x20, the
+// rectangle (-w, -h, w, h) (w, h the guest's +0xC, +0x10) at +0x24 and (0, 0, 1, 1) at +0x34. Nothing without a part.
+static volatile long g_guest_quads;
+static void __thiscall guest_part_753180(const uint8_t *self, const uint32_t *p) {
+    g_guest_quads++;
+    uint8_t *const part = *(uint8_t *const *)(self + 0x14);
+    if (!part) return;
+    uint32_t r[4], uv[4] = {0, 0, 0x3f800000, 0x3f800000};
+    *(volatile float *)&r[0] = (float)-(long double)*(const float *)(self + 0xc);
+    *(volatile float *)&r[1] = (float)-(long double)*(const float *)(self + 0x10);
+    r[2] = *(const uint32_t *)(self + 0xc), r[3] = *(const uint32_t *)(self + 0x10);
+    uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(part + 0x40) + *(const int32_t *)(part + 0x4c) * 0x50);
+    e[0] = p[0], e[1] = p[1], e[2] = p[2];
+    e[4] = 0, e[5] = 0x3f800000, e[6] = 0, e[8] = 0xff;
+    ((void(__thiscall *)(uint32_t *, const uint32_t *))0xbe7450)(e + 9, r);
+    ((void(__thiscall *)(uint32_t *, const uint32_t *))0xbe7450)(e + 13, uv);
+    (*(int32_t *)(part + 0x4c))++;
+}
+static const uint8_t guest_part_753180_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28, 0x56, 0x57, 0x8b, 0x79, 0x14};
+REWRITE("Guest::Part753180", 0x753180, guest_part_753180_original, &guest_part_753180, &g_guest_quads);
+
+// ---- Animal::BitsB6CD90() (0xB6CD90): whether the animals' weighted size share passes K2 -----------------------------
+// Over the entries (12 bytes at +0x54, count +0x60) that are on (byte +0) and whose animal (+4) lacks flag 8 (+0xA8): v =
+// WildAnimal::InterfaceB35450 (0xB35450) of it, t = its +0x130; f = (t - 0.5) 2 above 0.5, else (0.5 - t) K
+// (0xF513B0); the sum (a float) gains f v. 1 when the sum is above K2 (0xF2706C), else 0 (only al).
+static volatile long g_animal_shares;
+static uint8_t __thiscall animal_bits_b6cd90(const uint8_t *self) {
+    g_animal_shares++;
+    volatile float sum = 0.0f;
+    const long double half = *(const float *)0xf2651c;
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0x60); i++) {
+        const uint8_t *const e = *(const uint8_t *const *)(self + 0x54) + i * 12;
+        if (!e[0]) continue;
+        uint8_t *const a = *(uint8_t *const *)(e + 4);
+        if ((*(const uint32_t *)(a + 0xa8) >> 3) & 1) continue;
+        const long double v = ((long double(__thiscall *)(uint8_t *))0xb35450)(a);
+        const long double t = *(const float *)(a + 0x130);
+        long double f;
+        if (t > half) {
+            f = t - half;
+            f = f + f;
+        } else
+            f = (half - t) * *(const float *)0xf513b0;
+        sum = (float)(f * v + sum);
+    }
+    return sum > *(const float *)0xf2706c;
+}
+static const uint8_t animal_bits_b6cd90_original[] = {0x51, 0x55, 0x57, 0x8b, 0xf9, 0x8b, 0x47, 0x60, 0x33, 0xed};
+REWRITE("Animal::BitsB6CD90", 0xb6cd90, animal_bits_b6cd90_original, &animal_bits_b6cd90, &g_animal_shares);
+
+// ---- Static::Step4987C0 / Step498840(id, at, size) (0x4987C0, 0x498840): where a frame sits on its texture --------------
+// Effects::Point498630 (0x498630) gives d and k (its last two outputs). The table (+0x54 + 4 (id >> 24, signed)) with n
+// frames (+4) and entries (24 bytes at +0x18, id's low 24 bits) of height h (+0x14, whole numbers): at = (d / n, k / n);
+// size = (0 (or the table's +0xC in 498840), 1 - (h k + k) / n) (floats).
+static volatile long g_static_frames;
+template <bool TableX> static void __thiscall static_step_frame(const uint8_t *self, uint32_t id, float *at, uint32_t *size) {
+    g_static_frames++;
+    float a, b, c;
+    int32_t d, k;
+    ((uint8_t(__thiscall *)(const uint8_t *, float *, float *, float *, int32_t *, int32_t *))0x498630)(self, &a, &b, &c, &d, &k);
+    const uint8_t *const t = *(const uint8_t *const *)(self + 0x54 + ((int32_t)id >> 24) * 4);
+    const int32_t n = *(const int32_t *)(t + 4);
+    const int32_t h = *(const int32_t *)(*(const uint8_t *const *)(t + 0x18) + (id & 0xffffff) * 24 + 0x14);
+    const long double kk = k;
+    *(volatile float *)&size[1] = (float)(*(const float *)0xf264dc - ((long double)h * kk + kk) / (long double)n);
+    *(volatile float *)&at[1] = (float)(kk / (long double)n);
+    size[0] = TableX ? *(const uint32_t *)(t + 0xc) : 0;
+    *(volatile float *)&at[0] = (float)((long double)d / (long double)n);
+}
+static const uint8_t static_step_4987c0_original[] = {0x83, 0xec, 0x14, 0x56, 0x8b, 0xf1, 0x8d, 0x44, 0x24, 0x04};
+REWRITE("Static::Step4987C0", 0x4987c0, static_step_4987c0_original, (&static_step_frame<false>), &g_static_frames);
+REWRITE("Static::Step498840", 0x498840, static_step_4987c0_original, (&static_step_frame<true>), &g_static_frames);

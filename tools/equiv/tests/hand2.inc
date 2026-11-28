@@ -43,6 +43,24 @@ static void __thiscall h2_quad_move(void *tree, const int32_t *item, void *handl
     for (int k = 0; k < 3; k++) memcpy(&log[3 + k], &a[k], 4), memcpy(&log[6 + k], &b[k], 4);
     log[9]++;
 }
+// stand-ins for Water::BoxSpan (0x8E6980) and Water::Point8E6D20 (0x8E6D20): note what they are given at arena 0xA0 and
+// 0xC0 and write a mark into their outputs
+static float *__thiscall h2_box_span(const void *self, const float *lo, const float *hi, float *out, uint8_t grow) {
+    uint32_t *log = arena<uint32_t>(0xa0);
+    log[0] = (uint32_t)(uintptr_t)self, log[1] = (uint32_t)(uintptr_t)lo, log[2] = (uint32_t)(uintptr_t)hi, log[3] = (uint32_t)(uintptr_t)out, log[4] = grow;
+    log[5]++;
+    out[0] = lo[0] + hi[1];
+    return out;
+}
+static void __thiscall h2_water_point(const void *self, const float *m, float h, float *low, float *high) {
+    uint32_t *log = arena<uint32_t>(0xc0);
+    log[0] = (uint32_t)(uintptr_t)self, log[1] = (uint32_t)(uintptr_t)m, log[3] = (uint32_t)(uintptr_t)low, log[4] = (uint32_t)(uintptr_t)high;
+    memcpy(&log[2], &h, 4);
+    log[5]++;
+    low[0] = m[0] + h, high[0] = m[0] - h;
+}
+// a stand-in for WildAnimal::InterfaceB35450 (0xB35450): the animal's +0x140 on the FPU
+static long double __thiscall h2_animal_class_value(const uint8_t *animal) { return *(const float *)(animal + 0x140); }
 #else
     // Inflate::BuildHuffmanTable: complete, incomplete, all-zero and random code lengths for bit-length codes (s 19),
     // literals (s 257) and distances (s 0); sometimes little room left
@@ -7371,6 +7389,88 @@ static void __thiscall h2_quad_move(void *tree, const int32_t *item, void *handl
                }};
         x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x431240, (void *)h2_quad_move}}); };
         x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Terrain::Entry8E8140: entries on or off, growing or not, random boxes; Water::BoxSpan and Water::Point8E6D20 stood in
+    // for (they note what they are given)
+    {
+        Test x{0x8e8140,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   *(uint32_t *)(self + 0x118) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   for (int k = 0; k < 3 * 0x130 / 4; k++) arena<uint32_t>(0x400)[k] = r.next();
+                   for (int e = 0; e < 3; e++) {
+                       uint8_t *en = arena<uint8_t>(0x400 + e * 0x130);
+                       en[3] = r.range(0, 1) ? (uint8_t)r.range(1, 255) : 0, en[1] = r.range(0, 1) ? (uint8_t)r.range(1, 255) : 0;
+                       *(float *)(en + 0x10) = r.real(-5, 5), *(float *)(en + 0x50) = r.real(-5, 5);
+                   }
+                   for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = r.real(-50, 50), arena<float>(0x50)[k] = r.real(-50, 50);
+                   for (int k = 0; k < 12; k++) arena<uint32_t>(0xa0)[k] = 0;
+                   arena<int32_t>(0x60)[0] = r.range(0, 2);
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(const void *, int32_t, const void *, const void *))fn)(arena<void>(0x100), arena<int32_t>(0x60)[0], arena<void>(0x40), arena<void>(0x50));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x8e6980, (void *)h2_box_span}, {0x8e6d20, (void *)h2_water_point}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Guest::Part753180: with or without a part, 0-3 entries already, random sizes and places (the real copies)
+    Test guest_part_753180{0x753180,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100), *part = arena<uint8_t>(0x200);
+                               *(uint32_t *)(self + 0x14) = r.range(0, 5) ? (uint32_t)(uintptr_t)part : 0;
+                               *(float *)(self + 0xc) = r.real(-5, 5), *(float *)(self + 0x10) = r.real(-5, 5);
+                               *(uint32_t *)(part + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x400), *(int32_t *)(part + 0x4c) = r.range(0, 3);
+                               for (int k = 0; k < 0x50; k++) arena<uint32_t>(0x400)[k] = r.next();
+                               for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = r.real(-50, 50);
+                           },
+                           [](void *fn) {
+                               ((void(__thiscall *)(const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40));
+                               return Result{0};
+                           }};
+    quick(guest_part_753180);
+    // Animal::BitsB6CD90: 0-6 entries on or off, animals flagged or not, sizes either side of 0.5; the class value stood in
+    // for
+    {
+        Test x{0xb6cd90,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   *(int32_t *)(self + 0x60) = r.range(0, 6), *(uint32_t *)(self + 0x54) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                   for (int i = 0; i < 6; i++) {
+                       uint8_t *e = arena<uint8_t>(0x200 + i * 12), *a = arena<uint8_t>(0x400 + i * 0x180);
+                       e[0] = r.range(0, 3) ? 1 : 0, *(uint32_t *)(e + 4) = (uint32_t)(uintptr_t)a;
+                       *(uint32_t *)(a + 0xa8) = r.next(), *(float *)(a + 0x130) = r.range(0, 5) ? r.real(0, 1) : 0.5f, *(float *)(a + 0x140) = r.real(0, 3);
+                   }
+               },
+               [](void *fn) { return Result{((uint32_t(__thiscall *)(const void *))fn)(arena<void>(0x100)) & 0xff}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xb35450, (void *)h2_animal_class_value}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Static::Step4987C0 / Step498840: tables 0-1 by id, 1-16 frames, entries of any height, frame counts from the real
+    // Effects::Point498630 (no part at times)
+    for (uintptr_t at : {0x4987c0u, 0x498840u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int t = 0; t < 2; t++) {
+                       uint8_t *tab = arena<uint8_t>(0x200 + t * 0x40);
+                       *(uint32_t *)(self + 0x54 + t * 4) = (uint32_t)(uintptr_t)tab;
+                       *(int32_t *)(tab + 4) = r.range(1, 16), *(uint32_t *)(tab + 0xc) = r.next();
+                       *(uint32_t *)(tab + 0x18) = (uint32_t)(uintptr_t)arena<void>(0x400 + t * 0x100);
+                   }
+                   for (int k = 0; k < 0x80; k++) arena<int32_t>(0x400)[k] = r.range(-5, 40);
+                   *(uint32_t *)(self + 0x24) = r.range(0, 5) ? (uint32_t)(uintptr_t)arena<void>(0x380) : 0;
+                   *(float *)(self + 0x40) = r.real(0, 3), *(float *)arena<uint8_t>(0x384) = r.real(0, 3), *(float *)arena<uint8_t>(0x388) = r.real(0, 2);
+                   arena<uint32_t>(0x40)[0] = (uint32_t)r.range(0, 1) << 24 | (uint32_t)r.range(0, 9);
+                   for (int k = 0; k < 4; k++) arena<uint32_t>(0x60)[k] = r.next();
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(const void *, uint32_t, void *, void *))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<void>(0x60), arena<void>(0x68));
+                   return Result{0};
+               }};
         quick(x);
     }
 #endif

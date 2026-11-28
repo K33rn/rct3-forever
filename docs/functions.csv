@@ -1915,8 +1915,8 @@ address,size,name,callers,status
 0x498510,287,,1,documented
 0x498630,217,Effects::Point498630,5,rewritten
 0x4987a0,27,,1,documented
-0x4987c0,127,,1,documented
-0x498840,126,,9,documented
+0x4987c0,127,Static::Step4987C0,1,rewritten
+0x498840,126,Static::Step498840,9,rewritten
 0x4988c0,1413,,1,documented
 0x498e50,99,,1,documented
 0x498ec0,670,,1,documented
@@ -8762,7 +8762,7 @@ address,size,name,callers,status
 0x752cc0,380,,1,documented
 0x752e40,51,,1,documented
 0x753150,45,,0,documented
-0x753180,170,,2,documented
+0x753180,170,Guest::Part753180,2,rewritten
 0x753300,180,NamedTextRef::NamedTextRef(text),1,rewritten
 0x7533d0,76,Destructor::MemberThenBase,2,rewritten
 0x753420,30,DeletingDestructor,0,rewritten
@@ -12575,7 +12575,7 @@ address,size,name,callers,status
 0x8e7e60,553,Record::CopyFields,1,rewritten
 0x8e80e0,30,DeletingDestructor,0,rewritten
 0x8e8100,56,,0,documented
-0x8e8140,159,,5,documented
+0x8e8140,159,Terrain::Entry8E8140,5,rewritten
 0x8e81e0,27,,7,documented
 0x8e8200,423,,0,documented
 0x8e83b0,162,,4,documented
@@ -18523,7 +18523,7 @@ address,size,name,callers,status
 0xb6ca20,140,,1,documented
 0xb6cab0,288,,1,documented
 0xb6cbd0,433,,1,documented
-0xb6cd90,163,,1,documented
+0xb6cd90,163,Animal::BitsB6CD90,1,rewritten
 0xb6ce40,178,,1,documented
 0xb6cf00,51,Entries::VisitB6C360,1,rewritten
 0xb6cf40,30,DeletingDestructor,2,rewritten
