@@ -153,6 +153,24 @@ static void __thiscall h2_track_round(void *, const uint16_t *list, uint32_t n, 
     log[0]++, log[1] = (uint32_t)(uintptr_t)list, log[2] = n;
     *place = arena<int32_t>(0x80)[0], *part = arena<float>(0x80)[1];
 }
+// a stand-in for QuadTree::Insert (0x4311C0): notes its tree, the key's and box's three dwords at arena 0x140 and gives
+// arena 0x15C's dword
+static uint32_t __thiscall h2_tree_insert(void *tree, const uint32_t *key, const uint32_t *lo, const uint32_t *hi) {
+    uint32_t *log = arena<uint32_t>(0x140);
+    log[0] = (uint32_t)(uintptr_t)tree;
+    for (int k = 0; k < 3; k++) log[1 + k] = key[k], log[4 + k] = lo[k] | hi[k] << 1;
+    return log[7];
+}
+// a stand-in for Names::Find (0x805C10): notes its name, table and count at arena 0x160 and gives the found flag and place
+// kept at arena 0x170 (both outs set)
+static uint8_t __fastcall h2_names_find(void *name, void *table, int32_t count, int32_t *at, int32_t *at2) {
+    uint32_t *log = arena<uint32_t>(0x160);
+    log[0] = (uint32_t)(uintptr_t)name, log[1] = (uint32_t)(uintptr_t)table, log[2] = (uint32_t)count, log[3] = (uint32_t)(at == at2);
+    *at = arena<int32_t>(0x170)[1];
+    return (uint8_t)arena<uint32_t>(0x170)[0];
+}
+// a stand-in for an object's interface (0x4712B0): the object itself
+static void *__thiscall h2_same_object(void *self) { return self; }
 #else
     // Inflate::BuildHuffmanTable: complete, incomplete, all-zero and random code lengths for bit-length codes (s 19),
     // literals (s 257) and distances (s 0); sometimes little room left
@@ -8486,6 +8504,198 @@ static void __thiscall h2_track_round(void *, const uint16_t *list, uint32_t n, 
                    return Result{0};
                }};
         x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbb69e0, (void *)h2_track_round}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Water::Step9733F0: sorted lists of 0-7 keys (rising first values, the rest alike, junk past the flag bytes), the key
+    // sought one of them or between (the real Water::Step973040)
+    Test water_step_9733f0{0x9733f0,
+                           [=](Rng &r) {
+                               uint8_t *self = arena<uint8_t>(0x100);
+                               uint32_t *ptrs = arena<uint32_t>(0x700);
+                               for (int k = 0; k < 4; k++) arena<int32_t>(0x780)[k] = 0;
+                               uint32_t a = r.range(0, 3);
+                               for (int i = 0; i < 8; i++) {
+                                   uint8_t *e = arena<uint8_t>(0x800 + i * 0x40);
+                                   for (int k = 0; k < 0x28; k += 4) *(uint32_t *)(e + k) = 0;
+                                   *(uint32_t *)e = a, e[0x19] = (uint8_t)r.next(), e[0x25] = (uint8_t)r.next();
+                                   a += r.range(1, 3);
+                                   ptrs[i] = (uint32_t)(uintptr_t)e;
+                               }
+                               *(uint32_t *)self = (uint32_t)(uintptr_t)ptrs, *(int32_t *)(self + 4) = r.range(0, 7);
+                               uint32_t *q = arena<uint32_t>(0x40);
+                               q[0] = r.range(0, 24), q[1] = 0, q[2] = (uint32_t)(uintptr_t)arena<void>(0x780), q[3] = 0;
+                               q[4] = r.next() & ~0xffu, q[5] = 0, q[6] = 0, q[7] = r.next() & ~0xffu;
+                               arena<uint32_t>(0x60)[0] = r.next();
+                           },
+                           [](void *fn) {
+                               struct Key8 {
+                                   uint32_t v[8];
+                               } k;
+                               memcpy(&k, arena<void>(0x40), sizeof k);
+                               return Result{((uint8_t(__thiscall *)(void *, Key8, void *))fn)(arena<void>(0x100), k, arena<void>(0x60))};
+                           }};
+    quick(water_step_9733f0);
+    // Draw::Step470EB0: random objects, places, directions and values (the real Matrix::LookAlongZSide)
+    Test draw_step_470eb0{0x470eb0,
+                          [=](Rng &r) {
+                              uint8_t *obj = arena<uint8_t>(0x1000);
+                              for (int k = 0x130; k < 0x1c0; k += 4) *(uint32_t *)(obj + k) = r.next();
+                              for (int k = 0; k < 3; k++) arena<uint32_t>(0x40)[k] = r.next(), arena<float>(0x50)[k] = r.real(-1, 1);
+                              arena<uint32_t>(0x60)[0] = r.next(), arena<uint32_t>(0x60)[1] = r.next();
+                          },
+                          [](void *fn) {
+                              return Result{((uint32_t(__stdcall *)(void *, const void *, const void *, uint32_t, uint32_t))fn)(
+                                  arena<void>(0x1000), arena<void>(0x40), arena<void>(0x50), arena<uint32_t>(0x60)[0], arena<uint32_t>(0x60)[1])};
+                          }};
+    quick(draw_step_470eb0);
+    // Person::Add7E6DD0: 0-6 records on a valid heap (built by pushing in turn), full or not, with growth steps 0-3; the new
+    // record's key below, among or above theirs; the grows stood in for
+    {
+        Test x{0x7e6dd0,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   const int32_t c = r.range(0, 6);
+                   *(int32_t *)self = r.range(0, 3);
+                   *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(int32_t *)(self + 0xc) = c, *(int32_t *)(self + 8) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                   *(int32_t *)(self + 0x18) = c, *(int32_t *)(self + 0x14) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   for (int k = 0; k < 0x40; k++) arena<uint32_t>(0x400)[k] = r.next();
+                   int32_t *heap = arena<int32_t>(0x300);
+                   for (int n = 0; n < c; n++) {
+                       const float key = (float)r.range(0, 8);
+                       arena<float>(0x400 + n * 20 + 8)[0] = key;
+                       int32_t i = n;
+                       while (i > 0 && key < arena<float>(0x400 + heap[(i - 1) >> 1] * 20 + 8)[0]) heap[i] = heap[(i - 1) >> 1], i = (i - 1) >> 1;
+                       heap[i] = n;
+                   }
+                   for (int k = 0; k < 5; k++) arena<uint32_t>(0x40)[k] = r.next();
+                   arena<float>(0x40)[2] = (float)r.range(0, 8);
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+               },
+               [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x7e5400, (void *)h2_list_grow}, {0x417c20, (void *)h2_list_grow}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Fireworks::Find9F9DA0: pools of room 0-6 (empty ones grow to 200), full or not, free lists of item numbers 0-7, c with
+    // bit 2 or not and its list full or not; the pool's and list's grows stood in for
+    {
+        Test x{0x9f9da0,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   uint32_t *pool = (uint32_t *)(self + 0x10), *free_list = arena<uint32_t>(0x1000);
+                   const int32_t room = r.range(0, 6), used = r.range(0, 3) ? r.range(0, room) : room;
+                   pool[0] = (uint32_t)(uintptr_t)arena<void>(0x2000), pool[1] = (uint32_t)(uintptr_t)free_list, pool[2] = used, pool[3] = room;
+                   for (int k = 0; k < 8; k++) free_list[k] = r.range(0, 7);
+                   for (int k = 0; k < 0x120; k++) arena<uint32_t>(0x2000)[k] = r.next();
+                   const int32_t c = r.range(0, 3);
+                   *(uint32_t *)(self + 0x24) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                   *(int32_t *)(self + 0x2c) = c, *(int32_t *)(self + 0x28) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   arena<uint32_t>(0x98)[0] = arena<uint32_t>(0x98)[1] = 0, arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+                   for (int k = 0; k < 5; k++) arena<uint32_t>(0x40)[k] = r.next();
+               },
+               [](void *fn) {
+                   uint32_t *v = arena<uint32_t>(0x40);
+                   return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), v[0], v[1], v[2], v[3], v[4])};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x9f98a0, (void *)h2_pool_grow}, {0x417c20, (void *)h2_list_grow}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Sky::Find431E30: pools of room 0-6 (empty ones grow to 200), full or not, free lists of item numbers 0-7; the pool's
+    // grow and the tree's insert stood in for
+    {
+        Test x{0x431e30,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x200);
+                   uint32_t *pool = (uint32_t *)(self + 0x40), *free_list = arena<uint32_t>(0x1000);
+                   const int32_t room = r.range(0, 6), used = r.range(0, 3) ? r.range(0, room) : room;
+                   pool[0] = (uint32_t)(uintptr_t)arena<void>(0x2000), pool[1] = (uint32_t)(uintptr_t)free_list, pool[2] = used, pool[3] = room;
+                   for (int k = 0; k < 8; k++) free_list[k] = r.range(0, 7);
+                   for (int k = 0; k < 0x60; k++) arena<uint32_t>(0x2000)[k] = r.next();
+                   *(uint32_t *)(self + 0x50) = r.next();
+                   for (int k = 0; k < 7; k++) arena<uint32_t>(0x140)[k] = 0;
+                   arena<uint32_t>(0x140)[7] = r.next();
+                   arena<uint32_t>(0x98)[0] = arena<uint32_t>(0x98)[1] = 0;
+               },
+               [](void *fn) { return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x200))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x4303c0, (void *)h2_pool_grow}, {0x4311c0, (void *)h2_tree_insert}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Module::CheckBE40D0: on or not, parts with flags 2 and 0x2000 in all four ways (the game's debug place put back after;
+    // the game's _strncpy really used)
+    {
+        static uint8_t saved_place[0x90];
+        Test x{0xbe40d0,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100), *holder = arena<uint8_t>(0x140), *part = arena<uint8_t>(0x200);
+                   *(uint32_t *)self = (uint32_t)(uintptr_t)holder, *(uint32_t *)(holder + 8) = (uint32_t)(uintptr_t)part;
+                   self[0xc] = (uint8_t)(r.range(0, 4) ? 1 : 0), *(uint32_t *)(self + 8) = r.next();
+                   *(uint32_t *)(part + 0x10) = r.next() & ~0x2002u | (r.range(0, 1) ? 2 : 0) | (r.range(0, 1) ? 0x2000 : 0);
+                   *(uint32_t *)(part + 0xc4) = r.next();
+                   *(uint32_t *)0x13d28c0 = 0, *(uint32_t *)0x10f2e60 = 0, *(uint8_t *)0x13d28c8 = 0, *(uint8_t *)0x13d2947 = 1;
+               },
+               [](void *fn) {
+                   const uint8_t on = ((uint8_t(__thiscall *)(void *))fn)(arena<void>(0x100));
+                   Result x{on};
+                   x.f = *(uint32_t *)0x13d28c0 + *(uint32_t *)0x10f2e60 * 3 + *(uint8_t *)0x13d28c8 * 7 + *(uint8_t *)0x13d2947;
+                   return x;
+               }};
+        x.prepare = [](const rewrite::Entry *) {
+            memcpy(saved_place, (void *)0x13d28c0, 0x88), memcpy(saved_place + 0x88, (void *)0x10f2e60, 4);
+        };
+        x.finish = [](const rewrite::Entry *) { memcpy((void *)0x13d28c0, saved_place, 0x88), memcpy((void *)0x10f2e60, saved_place + 0x88, 4); };
+        quick(x);
+    }
+    // Regions::Find805F60: maps of 0-6 names, found or not at each place; Names::Find stood in for
+    {
+        Test x{0x805f60,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   const int32_t c = r.range(0, 6);
+                   *(uint32_t *)self = (uint32_t)(uintptr_t)arena<void>(0x400), *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x500);
+                   *(int32_t *)(self + 0x14) = c;
+                   for (int k = 0; k < 8; k++) arena<uint32_t>(0x400)[k] = r.next(), arena<uint32_t>(0x500)[k] = r.next();
+                   arena<uint32_t>(0x170)[0] = r.range(0, 1) && c ? 1 : 0, arena<int32_t>(0x170)[1] = c ? r.range(0, c - 1) : 0;
+                   for (int k = 0; k < 4; k++) arena<uint32_t>(0x160)[k] = 0;
+                   arena<uint32_t>(0x40)[0] = r.next();
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *, void *))fn)(arena<void>(0x100), (void *)(uintptr_t)arena<uint32_t>(0x40)[0]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x805c10, (void *)h2_names_find}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Guest::Grow799A40: lists full or not, 0-5 objects (none at times) either side of the plane (on it at times); the
+    // interface (the object itself) and grow stood in for
+    {
+        Test x{0x799a40,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x1000);
+                   const int32_t c = r.range(0, 4);
+                   *(uint32_t *)(self + 0x108) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(int32_t *)(self + 0x110) = c, *(int32_t *)(self + 0x10c) = c + r.range(0, 6);
+                   for (int k = 0; k < 0x10; k++) arena<uint32_t>(0x400)[k] = r.next();
+                   for (int k = 0; k < 3; k++) *(float *)(self + 0x120 + k * 4) = r.real(-5, 5), *(float *)(self + 0x130 + k * 4) = r.real(-1, 1);
+                   const int32_t n = r.range(0, 5);
+                   for (int i = 0; i < 6; i++) {
+                       uint8_t *obj = arena<uint8_t>(0x2000 + i * 0x100);
+                       for (int k = 0; k < 3; k++) *(float *)(obj + 0x80 + k * 4) = r.range(0, 7) ? r.real(-10, 10) : *(float *)(self + 0x120 + k * 4);
+                       arena<uint32_t>(0x300)[i] = r.range(0, 5) ? (uint32_t)(uintptr_t)obj : 0;
+                   }
+                   arena<int32_t>(0x40)[0] = n;
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *, const void *, int32_t))fn)(arena<void>(0x1000), arena<void>(0x300), arena<int32_t>(0x40)[0]);
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x4712b0, (void *)h2_same_object}, {0x7735e0, (void *)h2_list_grow}}); };
         x.finish = [](const rewrite::Entry *) { unstub_many(); };
         quick(x);
     }

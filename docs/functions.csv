@@ -679,7 +679,7 @@ address,size,name,callers,status
 0x431450,958,,0,documented
 0x431810,799,,1,documented
 0x431b80,684,,2,documented
-0x431e30,204,,2,documented
+0x431e30,204,Sky::Find431E30,2,rewritten
 0x431f00,177,Sky::Entry431F00,2,rewritten
 0x431fc0,15,,0,documented
 0x431fd0,1046,,0,documented
@@ -1357,7 +1357,7 @@ address,size,name,callers,status
 0x470b20,549,,0,documented
 0x470d70,106,Labels::Step470D70,0,rewritten
 0x470e90,27,GlobalCleanup,1,rewritten
-0x470eb0,207,,3,documented
+0x470eb0,207,Draw::Step470EB0,3,rewritten
 0x471090,26,OwnedPointer::Reset,1,rewritten
 0x4710b0,130,Array<4>::SetCapacity,3,rewritten
 0x471160,26,OwnedPointer::Reset,1,rewritten
@@ -9380,7 +9380,7 @@ address,size,name,callers,status
 0x799750,45,Mode::Step799750,1,rewritten
 0x799780,114,Record::Fields,2,rewritten
 0x799910,297,,1,documented
-0x799a40,227,,1,documented
+0x799a40,227,Guest::Grow799A40,1,rewritten
 0x799b30,40,,0,documented
 0x799b60,34,Object::FreeField,1,rewritten
 0x799e90,30,DeletingDestructor,1,rewritten
@@ -10089,7 +10089,7 @@ address,size,name,callers,status
 0x7e6b80,29,Object::CondCallSet,0,rewritten
 0x7e6c20,331,Person::Points7E6C20,0,rewritten
 0x7e6d70,87,Holder::Construct7E6D70,1,rewritten
-0x7e6dd0,204,,0,documented
+0x7e6dd0,204,Person::Add7E6DD0,0,rewritten
 0x7e6ea0,96,,24,documented
 0x7e6f00,30,DeletingDestructor,0,rewritten
 0x7e6f20,53,,0,documented
@@ -10488,7 +10488,7 @@ address,size,name,callers,status
 0x805df0,121,SORTED_MAP_CTOR,1,rewritten
 0x805e80,52,Names::Value,0,rewritten
 0x805ec0,153,Names::Add,1,rewritten
-0x805f60,106,,1,documented
+0x805f60,106,Regions::Find805F60,1,rewritten
 0x805fd0,324,,293,documented
 0x806130,97,,1,documented
 0x8061a0,30,DeletingDestructor,0,rewritten
@@ -13656,7 +13656,7 @@ address,size,name,callers,status
 0x973140,127,Stamp::Compare88F750,1,rewritten
 0x9731c0,155,Key::Compare,1,rewritten
 0x9732b0,313,,0,documented
-0x9733f0,165,,0,documented
+0x9733f0,165,Water::Step9733F0,0,rewritten
 0x9734a0,84,SortedPointers::FindFirst,1,rewritten
 0x973500,125,Water::Step973500,0,rewritten
 0x973580,143,Water::Step973580,0,rewritten
@@ -15065,7 +15065,7 @@ address,size,name,callers,status
 0x9f9c10,249,,6,documented
 0x9f9d10,100,Pair::Release8535C0,4,rewritten
 0x9f9d80,21,,2,documented
-0x9f9da0,230,,5,documented
+0x9f9da0,230,Fireworks::Find9F9DA0,5,rewritten
 0x9f9e90,160,,1,documented
 0x9fa010,74,,0,documented
 0x9fa0c0,30,DeletingDestructor,0,rewritten
@@ -20112,7 +20112,7 @@ address,size,name,callers,status
 0xbe4060,41,,434,documented
 0xbe4090,29,,82,documented
 0xbe40b0,9,,105,documented
-0xbe40d0,104,,32,documented
+0xbe40d0,104,Module::CheckBE40D0,32,rewritten
 0xbe4140,74,,0,documented
 0xbe41c0,140,,4,documented
 0xbe4410,10,,12,documented

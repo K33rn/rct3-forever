@@ -13243,3 +13243,199 @@ static void __thiscall track_pass_bb7580(uint8_t *self, float *out) {
 }
 static const uint8_t track_pass_bb7580_original[] = {0x83, 0xec, 0x0c, 0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x10};
 REWRITE("Track::PassBB7580", 0xbb7580, track_pass_bb7580_original, &track_pass_bb7580, &g_track_value_passes);
+
+// ---- Water::Step9733F0(key, out) (0x9733F0): finds a water key in a sorted list of pointers -------------------------------
+// The key (eight dwords, as Water::Step973040 takes it) is sought by halving over the list (pointers at +0, count +4), each
+// entry read as {+0, +4, +8 (its address), +0x14, the byte +0x18, +0x1C, +0x20, the byte +0x24}: found, *out is its place
+// and 1 is given; else *out is where it would go and 0.
+static volatile long g_water_key_searches;
+static bool __thiscall water_step_9733f0(uint8_t *self, WaterKey key, int32_t *out) {
+    g_water_key_searches++;
+    int32_t lo = 0, hi = *(const int32_t *)(self + 4) - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const uint8_t *const e = (*(const uint8_t *const *const *)self)[mid];
+        auto at = [&](uint32_t o) { return *(const uint32_t *)(e + o); };
+        const WaterKey y{at(0), at(4), (const int32_t *)(e + 8), (int32_t)at(0x14), e[0x18], (int32_t)at(0x1c), (int32_t)at(0x20), e[0x24]};
+        const int32_t r = ((int32_t(__thiscall *)(uint8_t *, WaterKey, WaterKey))0x973040)(self, key, y);
+        if (r > 0) lo = mid + 1;
+        else if (r < 0) hi = mid - 1;
+        else {
+            *out = mid;
+            return true;
+        }
+    }
+    *out = lo;
+    return false;
+}
+static const uint8_t water_step_9733f0_original[] = {0x53, 0x55, 0x56, 0x8b, 0xe9, 0x8b, 0x5d, 0x04};
+REWRITE("Water::Step9733F0", 0x9733f0, water_step_9733f0_original, &water_step_9733f0, &g_water_key_searches);
+
+// ---- Draw::Step470EB0(object, place, dir, a, b) (0x470EB0): points an object along dir from a place ----------------------
+// The object's matrix (+0x130) looks along dir with up (0, 1, 0) (Matrix::LookAlongZSide, 0xBEDAC0) and its +0x30 is
+// cleared; +0x170.. = place (12 bytes), +0x1B6 = 0, +0x1A0 = a, +0x198 = b and the flags (+0x1B4, two bytes) get 3. Gives b.
+static volatile long g_draw_look_alongs;
+static uint32_t __stdcall draw_step_470eb0(uint8_t *object, const uint32_t *place, const float *dir, uint32_t a, uint32_t b) {
+    g_draw_look_alongs++;
+    const float up[3] = {0.0f, 1.0f, 0.0f};
+    ((uint32_t(__thiscall *)(uint8_t *, const float *, const float *))0xbedac0)(object + 0x130, dir, up);
+    *(uint32_t *)(object + 0x160) = 0;
+    *(uint32_t *)(object + 0x170) = place[0], *(uint32_t *)(object + 0x174) = place[1], *(uint32_t *)(object + 0x178) = place[2];
+    object[0x1b6] = 0;
+    *(uint32_t *)(object + 0x1a0) = a, *(uint32_t *)(object + 0x198) = b;
+    *(uint16_t *)(object + 0x1b4) |= 3;
+    return b;
+}
+static const uint8_t draw_step_470eb0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x14, 0x8b, 0x4d, 0x10};
+REWRITE("Draw::Step470EB0", 0x470eb0, draw_step_470eb0_original, &draw_step_470eb0, &g_draw_look_alongs);
+
+// ---- Person::Add7E6DD0(rec) (0x7E6DD0): adds a 20-byte record and pushes it on a heap ordered by its +8 ----------------
+// Records at +4 (room +8, count +0xC) grow to +0 more than the count (0x7E5400) when full and that is more than the room.
+// The new record's number goes on the heap (+0x10, room +0x14, count +0x18; grown to fit by 0x417C20) and moves up past
+// each parent whose record's +8 is larger (floats). Gives the record's number.
+static volatile long g_person_heap_adds;
+static int32_t __thiscall person_add_7e6dd0(uint8_t *self, const uint32_t *rec) {
+    g_person_heap_adds++;
+    const int32_t count = *(const int32_t *)(self + 0xc), room = *(const int32_t *)(self + 8);
+    if (count >= room && *(const int32_t *)self + count > room) ((void(__thiscall *)(uint8_t *, int32_t))0x7e5400)(self + 4, *(const int32_t *)self + count);
+    const int32_t n = (*(int32_t *)(self + 0xc))++;
+    uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(self + 4) + n * 20);
+    for (int k = 0; k < 5; k++) e[k] = rec[k];
+    int32_t i = *(const int32_t *)(self + 0x18);
+    *(int32_t *)(self + 0x18) = i + 1;
+    if (i + 1 > *(const int32_t *)(self + 0x14)) ((void(__thiscall *)(uint8_t *, int32_t))0x417c20)(self + 0x10, i + 1);
+    while (i > 0) {
+        const int32_t parent = (i - 1) >> 1;
+        const int32_t p = (*(const int32_t *const *)(self + 0x10))[parent];
+        const uint8_t *const recs = *(const uint8_t *const *)(self + 4);
+        if (!(*(const float *)(recs + n * 20 + 8) < *(const float *)(recs + p * 20 + 8))) break;
+        (*(int32_t *const *)(self + 0x10))[i] = p;
+        i = parent;
+    }
+    (*(int32_t *const *)(self + 0x10))[i] = n;
+    return n;
+}
+static const uint8_t person_add_7e6dd0_original[] = {0x83, 0xec, 0x08, 0x53, 0x55, 0x56, 0x57, 0x8b, 0xf9};
+REWRITE("Person::Add7E6DD0", 0x7e6dd0, person_add_7e6dd0_original, &person_add_7e6dd0, &g_person_heap_adds);
+
+// ---- Fireworks::Find9F9DA0(a, b, c, d, e) (0x9F9DA0): takes a free 0x90-byte firework from the pool and sets it up ------------
+// The pool at +0x10 ({items, free list, used, room}) grows (Pool::GrowCopied, 0x9F98A0) to twice its room, or 200 for none,
+// when full; the item is the free list's last free entry. It gets +0x80 = 1, the byte a at +0x20, b at +0x24, c at +0x28,
+// the byte d at +0x2C, e at +0x60, -1 at +0x68 and +0x6C and 0 in its other value fields. With c bit 2 its number also goes
+// on the list at +0x24 (room +0x28, count +0x2C; grown to twice, or 0x80, by 0x417C20). Gives the number.
+static volatile long g_firework_takes;
+static uint32_t __thiscall fireworks_find_9f9da0(uint8_t *self, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e) {
+    g_firework_takes++;
+    uint8_t *const pool = self + 0x10;
+    const int32_t room = *(const int32_t *)(pool + 0xc);
+    if (*(const int32_t *)(pool + 8) >= room) ((void(__thiscall *)(uint8_t *, int32_t))0x9f98a0)(pool, room > 0 ? room * 2 : 200);
+    const uint32_t i = (*(const uint32_t *const *)(pool + 4))[*(const int32_t *)(pool + 0xc) - *(const int32_t *)(pool + 8) - 1];
+    uint8_t *const it = *(uint8_t *const *)pool + i * 0x90;
+    it[0x80] = 1;
+    (*(int32_t *)(pool + 8))++;
+    it[0x20] = (uint8_t)a, *(uint32_t *)(it + 0x24) = b, *(uint32_t *)(it + 0x28) = c, it[0x2c] = (uint8_t)d;
+    static const uint8_t zeros[] = {0, 4, 8, 0x10, 0x14, 0x18, 0x1c, 0x30, 0x34, 0x38, 0x40, 0x44, 0x48, 0x50, 0x54, 0x58, 0x64};
+    for (uint8_t at : zeros) *(uint32_t *)(it + at) = 0;
+    *(uint32_t *)(it + 0x60) = e, *(int32_t *)(it + 0x68) = -1, *(int32_t *)(it + 0x6c) = -1;
+    if (c & 2) {
+        const int32_t count = *(const int32_t *)(self + 0x2c);
+        if (count >= *(const int32_t *)(self + 0x28)) ((void(__thiscall *)(uint8_t *, int32_t))0x417c20)(self + 0x24, count > 0 ? count * 2 : 0x80);
+        (*(uint32_t *const *)(self + 0x24))[*(const int32_t *)(self + 0x2c)] = i;
+        (*(int32_t *)(self + 0x2c))++;
+    }
+    return i;
+}
+static const uint8_t fireworks_find_9f9da0_original[] = {0x53, 0x55, 0x8b, 0xe9, 0x8b, 0x45, 0x1c, 0x8b, 0x4d, 0x18};
+REWRITE("Fireworks::Find9F9DA0", 0x9f9da0, fireworks_find_9f9da0_original, &fireworks_find_9f9da0, &g_firework_takes);
+
+// ---- Sky::Find431E30() (0x431E30): takes a free 48-byte sky item from the pool and puts it in the quad tree ---------------
+// The pool at +0x40 ({items, free list, used, room}) grows (Pool::GrowFields, 0x4303C0) to twice its room, or 200 for none,
+// when full; the item is the free list's last free entry and gets +0x28 = 1. The tree (+0x50) takes it (QuadTree::Insert,
+// 0x4311C0) as {number, this, item} with a zero box (both corners); its +0x2C keeps the answer. The item's two points are
+// cleared, +0x20 = 500 and +0x24 = -1. Gives its number.
+static volatile long g_sky_item_takes;
+static uint32_t __thiscall sky_find_431e30(uint8_t *self) {
+    g_sky_item_takes++;
+    uint8_t *const pool = self + 0x40;
+    const int32_t room = *(const int32_t *)(pool + 0xc);
+    if (*(const int32_t *)(pool + 8) >= room) ((void(__thiscall *)(uint8_t *, int32_t))0x4303c0)(pool, room > 0 ? room * 2 : 200);
+    const uint32_t i = (*(const uint32_t *const *)(pool + 4))[*(const int32_t *)(pool + 0xc) - *(const int32_t *)(pool + 8) - 1];
+    (*(uint8_t *const *)pool)[i * 48 + 0x28] = 1;
+    (*(int32_t *)(pool + 8))++;
+    uint8_t *const item = *(uint8_t *const *)pool + i * 48;
+    const uint32_t key[3] = {i, (uint32_t)(uintptr_t)self, (uint32_t)(uintptr_t)item};
+    const uint32_t box[3] = {0, 0, 0};
+    *(uint32_t *)(item + 0x2c) =
+        ((uint32_t(__thiscall *)(void *, const uint32_t *, const uint32_t *, const uint32_t *))0x4311c0)(*(void *const *)(self + 0x50), key, box, box);
+    uint32_t *const it = (uint32_t *)(*(uint8_t *const *)pool + i * 48);
+    it[0] = it[1] = it[2] = 0, it[4] = it[5] = it[6] = 0;
+    it[8] = 0x43fa0000, it[9] = 0xffffffff;
+    return i;
+}
+static const uint8_t sky_find_431e30_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x24, 0x8b, 0x41, 0x4c};
+REWRITE("Sky::Find431E30", 0x431e30, sky_find_431e30_original, &sky_find_431e30, &g_sky_item_takes);
+
+// ---- Module::CheckBE40D0() (0xBE40D0): picks up a module's part once it is ready ----------------------------------------------
+// When on (+0xC) and the part ((+0)'s +8) has flag 2 or flag 0x2000 set in +0x10: the game's debug place is set
+// (0x13D28C0 = 0xFA563C, 0x10F2E60 = 0x38F, the text at 0xFA566C copied into 0x13D28C8 (0x7F bytes, _strncpy) and ended),
+// +8 = the part's +0xC4 and it is turned off. Gives +0xC.
+static volatile long g_module_pickups;
+static bool __thiscall module_check_be40d0(uint8_t *self) {
+    g_module_pickups++;
+    if (self[0xc]) {
+        const uint8_t *const part = *(const uint8_t *const *)(*(const uint8_t *const *)self + 8);
+        const uint32_t flags = *(const uint32_t *)(part + 0x10);
+        if ((flags & 2) || (flags & 0x2000)) {
+            const uint32_t take = *(const uint32_t *)(part + 0xc4);
+            *(uint32_t *)0x13d28c0 = 0xfa563c, *(uint32_t *)0x10f2e60 = 0x38f;
+            ((char *(__cdecl *)(char *, const char *, size_t))0xddef30)((char *)0x13d28c8, (const char *)0xfa566c, 0x7f);
+            *(uint8_t *)0x13d2947 = 0;
+            *(uint32_t *)(self + 8) = take;
+            self[0xc] = 0;
+        }
+    }
+    return self[0xc];
+}
+static const uint8_t module_check_be40d0_original[] = {0x56, 0x8b, 0xf1, 0x8a, 0x46, 0x0c, 0x84, 0xc0};
+REWRITE("Module::CheckBE40D0", 0xbe40d0, module_check_be40d0_original, &module_check_be40d0, &g_module_pickups);
+
+// ---- Regions::Find805F60(name) (0x805F60): removes a name and its value from a sorted map ----------------------------------
+// Names::Find (0x805C10) looks name up among the keys (+0, count +0x14); when found the keys and the values (+8) after its
+// place move down one and the count drops.
+static volatile long g_region_name_drops;
+static void __thiscall regions_find_805f60(uint8_t *self, void *name) {
+    g_region_name_drops++;
+    int32_t at = (int32_t)(uintptr_t)name;
+    if (!((uint8_t(__fastcall *)(void *, void *, int32_t, int32_t *, int32_t *))0x805c10)(name, *(void **)self, *(const int32_t *)(self + 0x14), &at, &at))
+        return;
+    for (int32_t i = at + 1; i < *(const int32_t *)(self + 0x14); i++) (*(uint32_t *const *)self)[i - 1] = (*(const uint32_t *const *)self)[i];
+    for (int32_t i = at + 1; i < *(const int32_t *)(self + 0x14); i++) (*(uint32_t *const *)(self + 8))[i - 1] = (*(const uint32_t *const *)(self + 8))[i];
+    (*(int32_t *)(self + 0x14))--;
+}
+static const uint8_t regions_find_805f60_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x56, 0x14, 0x8d, 0x44, 0x24, 0x08};
+REWRITE("Regions::Find805F60", 0x805f60, regions_find_805f60_original, &regions_find_805f60, &g_region_name_drops);
+
+// ---- Guest::Grow799A40(objects, n) (0x799A40): keeps those of n objects that lie in front of the guest's plane ----------------
+// The list at +0x108 (room +0x10C, count +0x110) grows to the count + n rounded up to 8 (0x7735E0) when short. Each object's
+// interface (0x4712B0) whose place (+0x80) less the plane's point (+0x120), dotted with its normal (+0x130), is above 0 is
+// added (the x difference kept as a float).
+static volatile long g_guest_front_picks;
+static void __thiscall guest_grow_799a40(uint8_t *self, void *const *objects, int32_t n) {
+    g_guest_front_picks++;
+    const int32_t want = *(const int32_t *)(self + 0x110) + n;
+    if (want > *(const int32_t *)(self + 0x10c)) ((void(__thiscall *)(uint8_t *, int32_t))0x7735e0)(self + 0x108, (want + 7) / 8 * 8);
+    auto f = [&](uint32_t at) { return (long double)*(const float *)(self + at); };
+    for (int32_t i = 0; i < n; i++) {
+        const uint8_t *const it = ((const uint8_t *(__thiscall *)(void *))0x4712b0)(objects[i]);
+        if (!it) continue;
+        const float *const p = (const float *)(it + 0x80);
+        volatile float dx = (float)((long double)p[0] - f(0x120));
+        const long double dy = (long double)p[1] - f(0x124), dz = (long double)p[2] - f(0x128);
+        const long double d = dz * f(0x138) + dy * f(0x134) + (long double)dx * f(0x130);
+        if (!(d > *(const float *)0xf264e0)) continue;
+        const int32_t k = (*(int32_t *)(self + 0x110))++;
+        (*(const uint8_t **const *)(self + 0x108))[k] = it;
+    }
+}
+static const uint8_t guest_grow_799a40_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x24, 0x53, 0x8b, 0x5d, 0x0c};
+REWRITE("Guest::Grow799A40", 0x799a40, guest_grow_799a40_original, &guest_grow_799a40, &g_guest_front_picks);
