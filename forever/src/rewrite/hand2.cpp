@@ -12607,3 +12607,124 @@ static char *__thiscall guest_next_749b60(uint8_t *self) {
 }
 static const uint8_t guest_next_749b60_original[] = {0x8b, 0x41, 0x40, 0x8b, 0x50, 0x08, 0x55, 0x56};
 REWRITE("Guest::Next749B60", 0x749b60, guest_next_749b60_original, &guest_next_749b60, &g_guest_byte_texts);
+
+// ---- Effect::Entry44A690(n) (0x44A690): frees entry n and its slot ---------------------------------------------------------
+// For n in 0..+0x28: entry n (0x40 bytes at +0x1C) has its slot at +0x24 (high word: the pool's block, low: the slot).
+// The pool (+0x2C) block's 0x1C-byte record frees the slot (Slots::Free, 0x42F6F0) and the pool marks the block
+// (Grid::MarkUp, 0x42F670). When the entry's +0x20 byte is set it is cleared, n goes on the free list (+0x20, at
+// +0x28 - +0x24) and +0x24 goes down.
+static volatile long g_effect_entry_frees;
+static void __thiscall effect_entry_44a690(uint8_t *self, int32_t n) {
+    g_effect_entry_frees++;
+    if (n < 0 || n >= *(const int32_t *)(self + 0x28)) return;
+    uint8_t *const pool = *(uint8_t *const *)(self + 0x2c);
+    const uint32_t slot = *(const uint32_t *)(*(const uint8_t *const *)(self + 0x1c) + n * 0x40 + 0x24);
+    const uint32_t block = (uint32_t)((int32_t)slot >> 16) & 0xffff;
+    ((void(__thiscall *)(uint8_t *, uint32_t))0x42f6f0)(*(uint8_t *const *)(pool + 8) + block * 0x1c, slot & 0xffff);
+    ((void(__thiscall *)(uint8_t *, uint32_t))0x42f670)(pool, block);
+    uint8_t *const used = *(uint8_t *const *)(self + 0x1c) + n * 0x40 + 0x20;
+    if (!*used) return;
+    *used = 0;
+    (*(int32_t *const *)(self + 0x20))[*(const int32_t *)(self + 0x28) - *(const int32_t *)(self + 0x24)] = n;
+    (*(int32_t *)(self + 0x24))--;
+}
+static const uint8_t effect_entry_44a690_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x85, 0xdb, 0x57, 0x8b, 0xf9};
+REWRITE("Effect::Entry44A690", 0x44a690, effect_entry_44a690_original, &effect_entry_44a690, &g_effect_entry_frees);
+
+// ---- Fireworks::Slot9F9B90(p) (0x9F9B90): appends *p to a power-of-two list --------------------------------------------
+// {grid, least bits +4, entries +8, bits +0xC (none when negative), count +0x10}: when the count reaches 1 << bits the list
+// takes a block of max(bits + 1, least) bits from the grid (Grid::GrowM4, 0x850030), the old entries copied over and their
+// block handed back (Pool::Free, 0x8501C0) when there was one. Gives *p.
+static volatile long g_firework_slot_adds;
+static uint32_t __thiscall fireworks_slot_9f9b90(uint8_t *self, const uint32_t *p) {
+    g_firework_slot_adds++;
+    const int32_t bits = *(const int32_t *)(self + 0xc);
+    const int32_t room = bits >= 0 ? (int32_t)(1u << (bits & 31)) : 0;
+    if (*(const int32_t *)(self + 0x10) >= room) {
+        uint32_t *const old = *(uint32_t *const *)(self + 8);
+        int32_t nb = bits + 1;
+        if (nb < *(const int32_t *)(self + 4)) nb = *(const int32_t *)(self + 4);
+        void *const grid = *(void *const *)self;
+        *(uint32_t **)(self + 8) = ((uint32_t * (__thiscall *)(void *, int32_t))0x850030)(grid, nb);
+        if (*(const int32_t *)(self + 0xc) >= 0) {
+            for (int32_t i = 0; i < *(const int32_t *)(self + 0x10); i++) (*(uint32_t *const *)(self + 8))[i] = old[i];
+            ((void(__thiscall *)(void *, int32_t, void *))0x8501c0)(*(void *const *)self, *(const int32_t *)(self + 0xc), old);
+        }
+        *(int32_t *)(self + 0xc) = nb;
+    }
+    const uint32_t v = *p;
+    (*(uint32_t *const *)(self + 8))[*(const int32_t *)(self + 0x10)] = v;
+    (*(int32_t *)(self + 0x10))++;
+    return v;
+}
+static const uint8_t fireworks_slot_9f9b90_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x4e, 0x0c, 0x85, 0xc9};
+REWRITE("Fireworks::Slot9F9B90", 0x9f9b90, fireworks_slot_9f9b90_original, &fireworks_slot_9f9b90, &g_firework_slot_adds);
+
+// ---- Record::Pass9838D0(key, value) (0x9838D0): puts {key, value} in the first free 8-byte record ------------------------
+// Records at +0x20 (count +0x24) are free when +0 is 0. With none free the list grows by 16 (0x9837E0), the pair goes in the
+// first new one and the rest are cleared (+0 = 0). Gives the record's number.
+static volatile long g_record_puts;
+static int32_t __thiscall record_pass_9838d0(uint8_t *self, uint32_t key, float value) {
+    g_record_puts++;
+    const int32_t count = *(const int32_t *)(self + 0x24);
+    for (int32_t i = 0; i < count; i++) {
+        uint32_t *const e = *(uint32_t *const *)(self + 0x20) + i * 2;
+        if (!e[0]) {
+            e[0] = key, *(volatile float *)(e + 1) = (float)(long double)value;
+            return i;
+        }
+    }
+    ((void(__thiscall *)(uint8_t *, int32_t))0x9837e0)(self + 0x20, count + 16);
+    uint32_t *const e = *(uint32_t *const *)(self + 0x20) + count * 2;
+    e[0] = key, *(volatile float *)(e + 1) = (float)(long double)value;
+    for (int32_t i = count + 1; i < *(const int32_t *)(self + 0x24); i++) (*(uint32_t *const *)(self + 0x20))[i * 2] = 0;
+    return count;
+}
+static const uint8_t record_pass_9838d0_original[] = {0x53, 0x8b, 0xd9, 0x56, 0x8b, 0x73, 0x24, 0x33, 0xc0};
+REWRITE("Record::Pass9838D0", 0x9838d0, record_pass_9838d0_original, &record_pass_9838d0, &g_record_puts);
+
+// ---- Effect::InRange7B3A50(object, ...) (0x7B3A50): notes an object inside a rectangle -------------------------------------
+// The object's (*object) +0x80 and +0x88 (floats) within [+0, +8] and [+4, +0xC] (inclusive; NaNs never) puts it on the
+// list at +0x10 (room +0x14, count +0x18; grown by 16 by 0x72AF00 when full). Takes four arguments, uses the first.
+static volatile long g_effect_range_notes;
+static void __thiscall effect_inrange_7b3a50(const float *self, const uint8_t *const *object, uint32_t, uint32_t, uint32_t) {
+    g_effect_range_notes++;
+    const long double v = *(const float *)(*object + 0x80), w = *(const float *)(*object + 0x88);
+    if (!(v >= self[0] && v <= self[2] && w >= self[1] && w <= self[3])) return;
+    uint8_t *const list = (uint8_t *)self + 0x10;
+    const int32_t room = *(const int32_t *)(list + 4);
+    if (*(const int32_t *)(list + 8) >= room) ((void(__thiscall *)(uint8_t *, int32_t))0x72af00)(list, room + 16);
+    const int32_t i = (*(int32_t *)(list + 8))++;
+    (*(uint32_t *const *)list)[i] = (uint32_t)(uintptr_t)*object;
+}
+static const uint8_t effect_inrange_7b3a50_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x18, 0x56, 0x57};
+REWRITE("Effect::InRange7B3A50", 0x7b3a50, effect_inrange_7b3a50_original, &effect_inrange_7b3a50, &g_effect_range_notes);
+
+// ---- Scenery::Step8915F0 / Water::Step973500(a, b, c, d, out) (0x8915F0, 0x973500): finds a stamp in a sorted list --------
+// Stamps {a, b, c (three ints), d} are ordered by Stamp::Compare (0x88F750 / 0x973140); the list (32-byte stamps inline at
+// +0x3D4, count +0x3D8; or pointers at +0x18, count +0x1C) is halved over: found, *out is its place and 1 is given; else
+// *out is where it would go and 0.
+static volatile long g_stamp_searches;
+template <uint32_t LIST, bool POINTERS, uint32_t COMPARE>
+static bool __thiscall stamp_search(uint8_t *self, uint32_t a, uint32_t b, const int32_t *c, int32_t d, int32_t *out) {
+    g_stamp_searches++;
+    int32_t lo = 0, hi = *(const int32_t *)(self + LIST + 4) - 1;
+    while (lo <= hi) {
+        const int32_t mid = (hi - lo) / 2 + lo;
+        const uint8_t *const e = POINTERS ? (*(const uint8_t *const *const *)(self + LIST))[mid] : *(const uint8_t *const *)(self + LIST) + mid * 32;
+        const int32_t r = ((int32_t(__thiscall *)(uint8_t *, uint32_t, uint32_t, const int32_t *, int32_t, uint32_t, uint32_t, const int32_t *,
+                                                   int32_t))COMPARE)(self, a, b, c, d, *(const uint32_t *)e, *(const uint32_t *)(e + 4),
+                                                                     (const int32_t *)(e + 8), *(const int32_t *)(e + 0x14));
+        if (r > 0) lo = mid + 1;
+        else if (r < 0) hi = mid - 1;
+        else {
+            *out = mid;
+            return true;
+        }
+    }
+    *out = lo;
+    return false;
+}
+static const uint8_t stamp_search_original[] = {0x53, 0x55, 0x56, 0x8b, 0xe9};
+REWRITE("Scenery::Step8915F0", 0x8915f0, stamp_search_original, (&stamp_search<0x3d4, false, 0x88f750>), &g_stamp_searches);
+REWRITE("Water::Step973500", 0x973500, stamp_search_original, (&stamp_search<0x18, true, 0x973140>), &g_stamp_searches);

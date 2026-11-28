@@ -936,7 +936,7 @@ address,size,name,callers,status
 0x44a200,277,,2,documented
 0x44a320,570,,0,documented
 0x44a560,264,,1,documented
-0x44a690,118,,7,documented
+0x44a690,118,Effect::Entry44A690,7,rewritten
 0x44a710,64,,0,documented
 0x44a750,1226,,0,documented
 0x44ac20,30,DeletingDestructor,0,rewritten
@@ -9659,7 +9659,7 @@ address,size,name,callers,status
 0x7b3890,174,,0,documented
 0x7b39c0,64,Batch::Push7B39C0,0,rewritten
 0x7b3a30,14,,1,documented
-0x7b3a50,136,,0,documented
+0x7b3a50,136,Effect::InRange7B3A50,0,rewritten
 0x7b3ae0,28,Object::FreeField,1,rewritten
 0x7b3b00,31,Record::SetFields,1,rewritten
 0x7b3b20,207,Effect::Normalise7B3B20,1,rewritten
@@ -12034,7 +12034,7 @@ address,size,name,callers,status
 0x890b50,1446,,5,documented
 0x891100,1218,,1,documented
 0x8915d0,24,Entries::Ask8915D0,6,rewritten
-0x8915f0,133,,2,documented
+0x8915f0,133,Scenery::Step8915F0,2,rewritten
 0x891680,222,,7,documented
 0x891760,53,Buffers::Destroy891760,0,rewritten
 0x8917a0,375,,1,documented
@@ -13658,7 +13658,7 @@ address,size,name,callers,status
 0x9732b0,313,,0,documented
 0x9733f0,165,,0,documented
 0x9734a0,84,SortedPointers::FindFirst,1,rewritten
-0x973500,125,,0,documented
+0x973500,125,Water::Step973500,0,rewritten
 0x973580,143,,0,documented
 0x9738e0,311,,0,documented
 0x974060,27,,1,documented
@@ -13849,7 +13849,7 @@ address,size,name,callers,status
 0x9837c0,26,OwnedPointer::Reset,1,rewritten
 0x9837e0,139,Array<8>::SetCapacity,1,rewritten
 0x983870,96,Buffers::Free84F220,0,rewritten
-0x9838d0,131,,1,documented
+0x9838d0,131,Record::Pass9838D0,1,rewritten
 0x983960,17,,1,documented
 0x983980,71,,0,documented
 0x9839d0,112,,2,documented
@@ -15061,7 +15061,7 @@ address,size,name,callers,status
 0x9f99d0,290,,2,documented
 0x9f9b00,68,,0,documented
 0x9f9b50,61,Pool::Take40D480,0,rewritten
-0x9f9b90,126,,4,documented
+0x9f9b90,126,Fireworks::Slot9F9B90,4,rewritten
 0x9f9c10,249,,6,documented
 0x9f9d10,100,Pair::Release8535C0,4,rewritten
 0x9f9d80,21,,2,documented
