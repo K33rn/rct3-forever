@@ -7789,4 +7789,31 @@ static void __thiscall h2_pool_grow(uint32_t *pool, int32_t n) {
                                    return Result{(uint32_t)((int32_t(__thiscall *)(void *, int32_t, float))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<float>(0x40)[1])};
                                }};
     quick(model_set_part_cc6280);
+    // List::Add42A2B0, List::Add430D00 and Water::Add90F6F0: lists of 0-4 records, full or not (the empty water list grows to
+    // 64), random points and values; the grows stood in for (they note the new room)
+    for (uintptr_t at : {0x42a2b0u, 0x430d00u, 0x90f6f0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 0; k < 0x50; k += 4) *(uint32_t *)(self + k) = r.next();
+                   uint8_t *list = at == 0x90f6f0u ? self + 0x40 : self;
+                   const int32_t c = r.range(0, 4);
+                   *(uint32_t *)list = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(int32_t *)(list + 8) = c, *(int32_t *)(list + 4) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   for (int k = 0; k < 0x100; k++) arena<uint32_t>(0x400)[k] = r.next();
+                   for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = r.real(-100, 100), arena<float>(0x50)[k] = r.real(-100, 100);
+                   arena<float>(0x60)[0] = r.real(-100, 100), arena<float>(0x60)[1] = r.real(-100, 100);
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+               },
+               [at](void *fn) {
+                   if (at == 0x90f6f0u)
+                       return Result{((uint32_t(__thiscall *)(void *, const void *, float, float))fn)(arena<void>(0x100), arena<void>(0x40), arena<float>(0x60)[0], arena<float>(0x60)[1])};
+                   return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *, const void *, uint32_t))fn)(arena<void>(0x100), arena<void>(0x40), arena<void>(0x50), arena<uint32_t>(0x60)[0])};
+               }};
+        x.prepare = [](const rewrite::Entry *e) {
+            stubs_for_now({{e->at == 0x42a2b0u ? 0x42a050u : e->at == 0x430d00u ? 0x430690u : 0x90d7a0u, (void *)h2_list_grow}});
+        };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
 #endif

@@ -546,7 +546,7 @@ address,size,name,callers,status
 0x429fb0,13,,1,documented
 0x429fc0,139,,1,documented
 0x42a050,597,Array::ResizeRecords,1,rewritten
-0x42a2b0,112,,4,documented
+0x42a2b0,112,List::Add42A2B0,4,rewritten
 0x42a3c0,20,,1,documented
 0x42a430,72,QueryInterface::OrReport,0,rewritten
 0x42a480,72,QueryInterface::OrReport,3,rewritten
@@ -666,7 +666,7 @@ address,size,name,callers,status
 0x430b70,102,Factory::Create,1,rewritten
 0x430be0,40,,10,documented
 0x430c10,240,,1,documented
-0x430d00,109,,5,documented
+0x430d00,109,List::Add430D00,5,rewritten
 0x430d90,30,DeletingDestructor,0,rewritten
 0x430db0,300,,0,documented
 0x430ee0,137,,1,documented
@@ -12844,7 +12844,7 @@ address,size,name,callers,status
 0x90f4d0,194,,1,documented
 0x90f5a0,98,,2,documented
 0x90f610,122,Water::Step90F610,1,rewritten
-0x90f6f0,122,,5,documented
+0x90f6f0,122,Water::Add90F6F0,5,rewritten
 0x90f770,206,,0,documented
 0x90f840,56,,2,documented
 0x90f880,101,,5,documented

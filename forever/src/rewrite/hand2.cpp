@@ -12438,3 +12438,62 @@ static int32_t __thiscall model_set_part_cc6280(uint8_t *self, int32_t n, float 
 }
 static const uint8_t model_set_part_cc6280_original[] = {0x8b, 0x44, 0x24, 0x04, 0xd9, 0x44, 0x24, 0x08, 0x53};
 REWRITE("Model::SetPartCC6280", 0xcc6280, model_set_part_cc6280_original, &model_set_part_cc6280, &g_model_part_sets);
+
+// ---- List::Add42A2B0(a, b, c) (0x42A2B0): adds a 32-byte record of two points and a value ------------------------------
+// The list ({entries, room, count}) grows by 16 (Array::ResizeRecords 0x42A050) when full; the record is {a x, a y (floats),
+// a +8, b x, b y, b +8, c}. Gives the record's address.
+static volatile long g_point_pair_adds;
+static uint8_t *__thiscall list_add_42a2b0(uint8_t *self, const float *a, const float *b, uint32_t c) {
+    g_point_pair_adds++;
+    const int32_t count = *(const int32_t *)(self + 8);
+    if (count >= *(const int32_t *)(self + 4)) ((void(__thiscall *)(uint8_t *, int32_t))0x42a050)(self, count + 16);
+    const int32_t i = *(const int32_t *)(self + 8);
+    *(int32_t *)(self + 8) = i + 1;
+    uint8_t *const e = *(uint8_t *const *)self + i * 32;
+    volatile float *const f = (volatile float *)e;
+    f[0] = (float)(long double)a[0], f[1] = (float)(long double)a[1], *(uint32_t *)(e + 8) = ((const uint32_t *)a)[2];
+    f[3] = (float)(long double)b[0], f[4] = (float)(long double)b[1], *(uint32_t *)(e + 0x14) = ((const uint32_t *)b)[2];
+    *(uint32_t *)(e + 0x18) = c;
+    return e;
+}
+static const uint8_t list_add_42a2b0_original[] = {0x83, 0xec, 0x0c, 0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x08};
+REWRITE("List::Add42A2B0", 0x42a2b0, list_add_42a2b0_original, &list_add_42a2b0, &g_point_pair_adds);
+
+// ---- List::Add430D00(a, b, c) (0x430D00): adds a 0x70-byte record of two triples and a value ----------------------------
+// The list ({entries, room, count}) grows by 500 (0x430690) when full; the record gets a at +0, b at +0x10 (12 bytes each)
+// and c at +0x20. The original leaves the entries' address in eax: kept.
+static volatile long g_triple_pair_adds;
+static uint8_t *__thiscall list_add_430d00(uint8_t *self, const uint32_t *a, const uint32_t *b, uint32_t c) {
+    g_triple_pair_adds++;
+    const int32_t count = *(const int32_t *)(self + 8);
+    if (*(const int32_t *)(self + 4) <= count) ((void(__thiscall *)(uint8_t *, int32_t))0x430690)(self, count + 500);
+    uint8_t *const data = *(uint8_t *const *)self;
+    uint32_t *const e = (uint32_t *)(data + *(const int32_t *)(self + 8) * 0x70);
+    e[0] = a[0], e[1] = a[1], e[2] = a[2];
+    e[4] = b[0], e[5] = b[1], e[6] = b[2];
+    e[8] = c;
+    (*(int32_t *)(self + 8))++;
+    return data;
+}
+static const uint8_t list_add_430d00_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x08, 0x39, 0x46, 0x04};
+REWRITE("List::Add430D00", 0x430d00, list_add_430d00_original, &list_add_430d00, &g_triple_pair_adds);
+
+// ---- Water::Add90F6F0(p, s, t) (0x90F6F0): adds a 32-byte record of a point and two values ---------------------------------
+// The list at +0x40 ({entries, room +0x44, count +0x48}) grows (Array::ResizeRecords 0x90D7A0) to twice its count, or 64
+// for none, when full; the record is {p (12 bytes), -, s, t (floats), 0}. The original leaves the old count times 32 in eax:
+// kept.
+static volatile long g_water_point_adds;
+static uint32_t __thiscall water_add_90f6f0(uint8_t *self, const uint32_t *p, float s, float t) {
+    g_water_point_adds++;
+    const int32_t count = *(const int32_t *)(self + 0x48);
+    if (count >= *(const int32_t *)(self + 0x44)) ((void(__thiscall *)(uint8_t *, int32_t))0x90d7a0)(self + 0x40, count > 0 ? count * 2 : 64);
+    const int32_t i = *(const int32_t *)(self + 0x48);
+    uint8_t *const e = *(uint8_t *const *)(self + 0x40) + i * 32;
+    ((uint32_t *)e)[0] = p[0], ((uint32_t *)e)[1] = p[1], ((uint32_t *)e)[2] = p[2];
+    *(volatile float *)(e + 0x10) = (float)(long double)s, *(volatile float *)(e + 0x14) = (float)(long double)t;
+    *(uint32_t *)(e + 0x18) = 0;
+    *(int32_t *)(self + 0x48) = i + 1;
+    return (uint32_t)i << 5;
+}
+static const uint8_t water_add_90f6f0_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x48, 0x3b, 0x46, 0x44};
+REWRITE("Water::Add90F6F0", 0x90f6f0, water_add_90f6f0_original, &water_add_90f6f0, &g_water_point_adds);
