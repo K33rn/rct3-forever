@@ -11914,3 +11914,116 @@ static float *__thiscall vector_step_bee5b0(const void *self, float *out) {
 }
 static const uint8_t vector_step_bee5b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8d, 0x44, 0x24, 0x10};
 REWRITE("Vector::StepBEE5B0", 0xbee5b0, vector_step_bee5b0_original, &vector_step_bee5b0, &g_rotation_logs);
+
+// ---- Sky::Point4266A0(out, angle) (0x4266A0): straight down turned about the sky's axis --------------------------------
+// The axis (+0x3F0..), negated when angle is below 0; (0, -1, 0) turned about it by |angle| (a float) with
+// Vector::RotateAround (0xBFB0B0) unless |angle| is below 1e-20. Gives out.
+static volatile long g_sky_points;
+static float *__thiscall sky_point_4266a0(const uint8_t *self, float *out, float angle) {
+    g_sky_points++;
+    alignas(16) float axis[4], v[4] = {0.0f, -1.0f, 0.0f, 0.0f};
+    for (int k = 0; k < 3; k++) ((uint32_t *)axis)[k] = *(const uint32_t *)(self + 0x3f0 + k * 4);
+    if (angle < *(const float *)0xf264e0)
+        for (int k = 0; k < 3; k++) *(volatile float *)&axis[k] = (float)-(long double)axis[k];
+    volatile float a = (float)__builtin_fabsl(angle);
+    if (!(__builtin_fabsl((long double)a) < *(const float *)0xf27c70)) ((float *(__thiscall *)(float *, const float *, float))0xbfb0b0)(v, axis, a);
+    *(volatile float *)&out[0] = v[0];
+    ((volatile uint32_t *)out)[1] = ((const uint32_t *)v)[1], ((volatile uint32_t *)out)[2] = ((const uint32_t *)v)[2];
+    return out;
+}
+static const uint8_t sky_point_4266a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0x8b, 0x81, 0xf0, 0x03, 0x00, 0x00};
+REWRITE("Sky::Point4266A0", 0x4266a0, sky_point_4266a0_original, &sky_point_4266a0, &g_sky_points);
+
+// ---- Waterfall::Copy9199B0(out, p, i, n) (0x9199B0): a point turned about y across a fan of n --------------------------
+// a = ((i / n) 2 - 1) 30 degrees (in radians; a float); p turned about (0, 1, 0) by a with Vector::RotateAround (0xBFB0B0)
+// unless |a| is below 1e-20. Gives out.
+static volatile long g_waterfall_fans;
+static float *__stdcall waterfall_copy_9199b0(float *out, const float *p, int32_t i, int32_t n) {
+    g_waterfall_fans++;
+    alignas(16) float v[4], axis[4] = {0.0f, 1.0f, 0.0f, 0.0f};
+    for (int k = 0; k < 3; k++) ((uint32_t *)v)[k] = ((const uint32_t *)p)[k];
+    long double t = (long double)i / (long double)n;
+    t = t + t;
+    const long double a = (t - *(const float *)0xf264dc) * *(const float *)0xf28218 * *(const float *)0xf27c7c;
+    volatile float af = (float)a;
+    if (!(__builtin_fabsl(a) < *(const float *)0xf27c70)) ((float *(__thiscall *)(float *, const float *, float))0xbfb0b0)(v, axis, af);
+    *(volatile float *)&out[0] = v[0];
+    ((volatile uint32_t *)out)[1] = ((const uint32_t *)v)[1], ((volatile uint32_t *)out)[2] = ((const uint32_t *)v)[2];
+    return out;
+}
+static const uint8_t waterfall_copy_9199b0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x30, 0xdb, 0x45, 0x10};
+REWRITE("Waterfall::Copy9199B0", 0x9199b0, waterfall_copy_9199b0_original, &waterfall_copy_9199b0, &g_waterfall_fans);
+
+// ---- Scenery::Point8B5510(a in ecx, b in edx) (0x8B5510): the angle between two directions -----------------------------
+// The game's acos (0xDDEBC0) of ((a.x b.x + a.z b.z) + a.y b.y) / (|b| |a|) (lengths (x x + y y) + z z, unrounded).
+static volatile long g_scenery_angles;
+static long double __fastcall scenery_point_8b5510(const float *a, const float *b) {
+    g_scenery_angles++;
+    const long double dot = ((long double)a[0] * b[0] + (long double)a[2] * b[2]) + (long double)a[1] * b[1];
+    const long double lb = x87_sqrt_h2(((long double)b[0] * b[0] + (long double)b[1] * b[1]) + (long double)b[2] * b[2]);
+    const long double la = x87_sqrt_h2(((long double)a[0] * a[0] + (long double)a[1] * a[1]) + (long double)a[2] * a[2]);
+    return car_acos_h2(dot / (lb * la));
+}
+static const uint8_t scenery_point_8b5510_original[] = {0x83, 0xec, 0x18, 0xd9, 0x01, 0x8b, 0x42, 0x08, 0xd8, 0x0a};
+REWRITE("Scenery::Point8B5510", 0x8b5510, scenery_point_8b5510_original, &scenery_point_8b5510, &g_scenery_angles);
+
+// ---- Scenery::Turn847040(x, y, a, b) (0x847040): a footprint cell's two values for a place --------------------------------
+// Scenery::Turn827530 (0x827530) of the turn at +0x20 takes (x, y) into the footprint (*(+0x20)); when that is inside,
+// the footprint is there and the cell (20 bytes at +0x18, rows of +0x10) has bit 0 set: a and b get its +4 and +8 plus
+// +0x2C (whole numbers, as floats) and 1; else 0 (only al).
+static volatile long g_scenery_cell_reads;
+static uint8_t __thiscall scenery_turn_847040(uint8_t *self, int32_t x, int32_t y, float *a, float *b) {
+    g_scenery_cell_reads++;
+    int32_t cx = x, cy = y;
+    if (!(((uint8_t(__thiscall *)(uint8_t *, int32_t, int32_t, int32_t *, int32_t *))0x827530)(self + 0x20, x, y, &cx, &cy) & 0xff)) return 0;
+    const uint8_t *const f = *(const uint8_t *const *)(self + 0x20);
+    if (!f) return 0;
+    const int32_t *const cell = (const int32_t *)(*(const uint8_t *const *)(f + 0x18) + (*(const int32_t *)(f + 0x10) * cy + cx) * 20);
+    if (!(cell[0] & 1)) return 0;
+    *(volatile float *)a = (float)(cell[1] + *(const int32_t *)(self + 0x2c));
+    *(volatile float *)b = (float)(cell[2] + *(const int32_t *)(self + 0x2c));
+    return 1;
+}
+static const uint8_t scenery_turn_847040_original[] = {0x51, 0x8b, 0x54, 0x24, 0x0c, 0x53, 0x56, 0x57, 0x8b, 0xd9};
+REWRITE("Scenery::Turn847040", 0x847040, scenery_turn_847040_original, &scenery_turn_847040, &g_scenery_cell_reads);
+
+// ---- Box around a point for QuadTree::Move: p less and plus (4, 2, 4) (floats) -----------------------------------------
+static inline void quad_box_h2(const float *p, float *lo, float *hi) {
+    const long double four = *(const float *)0xf2669c, two = *(const float *)0xf2705c;
+    volatile float *const l = lo, *const h = hi;
+    h[0] = (float)((long double)p[0] + four), h[1] = (float)((long double)p[1] + two), h[2] = (float)((long double)p[2] + four);
+    l[0] = (float)((long double)p[0] - four), l[1] = (float)((long double)p[1] - two), l[2] = (float)((long double)p[2] - four);
+}
+
+// ---- Sky::Entry431F00(n, p) (0x431F00): moves sky entry n (48 bytes at +0x40, count +0x4C) to p ---------------------
+// The entry's place (+0) = p; then QuadTree::Move (0x431240) of the tree (+0x50) with n (by address), the entry's handle
+// (+0x2C) and the box p -/+ (4, 2, 4).
+static volatile long g_sky_moves;
+static void __thiscall sky_entry_431f00(const uint8_t *self, int32_t n, const uint32_t *p) {
+    g_sky_moves++;
+    if (n < 0 || n >= *(const int32_t *)(self + 0x4c)) return;
+    uint8_t *const e = *(uint8_t *const *)(self + 0x40) + n * 0x30;
+    for (int k = 0; k < 3; k++) ((uint32_t *)e)[k] = p[k];
+    float lo[3], hi[3];
+    quad_box_h2((const float *)p, lo, hi);
+    ((void(__thiscall *)(void *, void *, void *, const float *, const float *))0x431240)(*(void *const *)(self + 0x50), &n, e + 0x2c, lo, hi);
+}
+static const uint8_t sky_entry_431f00_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28, 0x8b, 0x45, 0x08};
+REWRITE("Sky::Entry431F00", 0x431f00, sky_entry_431f00_original, &sky_entry_431f00, &g_sky_moves);
+
+// ---- Effect::Entry44B2A0(n, value, p) (0x44B2A0): sets effect entry n (64 bytes at +0x1C, count +0x28) and moves it ------
+// The entry's +0 = value (through the FPU), its place (+0x10) = p; then QuadTree::Move (0x431240) of the tree (+0x2C)
+// with n (by address), the entry's handle (+0x24) and the box p -/+ (4, 2, 4).
+static volatile long g_effect_entry_moves;
+static void __thiscall effect_entry_44b2a0(const uint8_t *self, int32_t n, float value, const uint32_t *p) {
+    g_effect_entry_moves++;
+    if (n < 0 || n >= *(const int32_t *)(self + 0x28)) return;
+    uint8_t *const e = *(uint8_t *const *)(self + 0x1c) + n * 0x40;
+    *(volatile float *)e = value;
+    for (int k = 0; k < 3; k++) ((uint32_t *)(e + 0x10))[k] = p[k];
+    float lo[3], hi[3];
+    quad_box_h2((const float *)p, lo, hi);
+    ((void(__thiscall *)(void *, void *, void *, const float *, const float *))0x431240)(*(void *const *)(self + 0x2c), &n, e + 0x24, lo, hi);
+}
+static const uint8_t effect_entry_44b2a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x28, 0x8b, 0x55, 0x08};
+REWRITE("Effect::Entry44B2A0", 0x44b2a0, effect_entry_44b2a0_original, &effect_entry_44b2a0, &g_effect_entry_moves);

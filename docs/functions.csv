@@ -512,7 +512,7 @@ address,size,name,callers,status
 0x4262f0,172,Vector::SideDirection,3,rewritten
 0x4263a0,435,Settings::Copy,2,rewritten
 0x426560,315,,3,documented
-0x4266a0,181,,2,documented
+0x4266a0,181,Sky::Point4266A0,2,rewritten
 0x426770,25,Object::FreeTwoFields,4,rewritten
 0x426790,434,,144,documented
 0x426950,594,,39,documented
@@ -680,7 +680,7 @@ address,size,name,callers,status
 0x431810,799,,1,documented
 0x431b80,684,,2,documented
 0x431e30,204,,2,documented
-0x431f00,177,,2,documented
+0x431f00,177,Sky::Entry431F00,2,rewritten
 0x431fc0,15,,0,documented
 0x431fd0,1046,,0,documented
 0x4323f0,2719,,1,documented
@@ -943,7 +943,7 @@ address,size,name,callers,status
 0x44ac40,634,,3,documented
 0x44aec0,674,,3,documented
 0x44b170,291,,3,documented
-0x44b2a0,183,,6,documented
+0x44b2a0,183,Effect::Entry44B2A0,6,rewritten
 0x44b360,1321,,0,documented
 0x44b890,157,,6,documented
 0x44b930,222,,1,documented
@@ -11320,7 +11320,7 @@ address,size,name,callers,status
 0x846de0,11,,1,documented
 0x846df0,418,,1,documented
 0x846ff0,68,,3,documented
-0x847040,168,,6,documented
+0x847040,168,Scenery::Turn847040,6,rewritten
 0x8470f0,268,,3,documented
 0x847210,303,,1,documented
 0x847340,135,,1,documented
@@ -12173,7 +12173,7 @@ address,size,name,callers,status
 0x8b5350,40,Value::Describe8B5320,0,rewritten
 0x8b5380,40,Value::Describe8B5320,2,rewritten
 0x8b53b0,200,,0,documented
-0x8b5510,141,,0,documented
+0x8b5510,141,Scenery::Point8B5510,0,rewritten
 0x8b5650,30,DeletingDestructor,2,rewritten
 0x8b5690,26,OwnedPointer::Reset,0,rewritten
 0x8b56f0,26,OwnedPointer::Reset,1,rewritten
@@ -12932,7 +12932,7 @@ address,size,name,callers,status
 0x9195c0,79,,1,documented
 0x919610,389,Water::Fade919610,6,rewritten
 0x9197a0,513,,2,documented
-0x9199b0,149,,4,documented
+0x9199b0,149,Waterfall::Copy9199B0,4,rewritten
 0x919a50,33,COND_NOTIFY,1,rewritten
 0x919a80,33,COND_NOTIFY,1,rewritten
 0x919ab0,33,COND_NOTIFY,1,rewritten

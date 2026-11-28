@@ -35,6 +35,14 @@ static long double __fastcall h2_effect_value(uint32_t a, uint32_t b, uint32_t c
     log[0] = a, log[1] = b, log[2] = c;
     return (long double)(int32_t)((a ^ (b * 7)) & 0xffff) / 4096.0L - 4.0L;
 }
+// a stand-in for QuadTree::Move (0x431240): notes the tree, the value its item points at, the handle and both boxes at
+// arena 0x80
+static void __thiscall h2_quad_move(void *tree, const int32_t *item, void *handle, const float *a, const float *b) {
+    uint32_t *log = arena<uint32_t>(0x80);
+    log[0] = (uint32_t)(uintptr_t)tree, log[1] = (uint32_t)*item, log[2] = (uint32_t)(uintptr_t)handle;
+    for (int k = 0; k < 3; k++) memcpy(&log[3 + k], &a[k], 4), memcpy(&log[6 + k], &b[k], 4);
+    log[9]++;
+}
 #else
     // Inflate::BuildHuffmanTable: complete, incomplete, all-zero and random code lengths for bit-length codes (s 19),
     // literals (s 257) and distances (s 0); sometimes little room left
@@ -7284,6 +7292,85 @@ static long double __fastcall h2_effect_value(uint32_t a, uint32_t b, uint32_t c
                    }
                    return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *))fn)(arena<void>(0x100), arena<void>(0x40))};
                }};
+        quick(x);
+    }
+    // Sky::Point4266A0: random unit axes, angles either sign (0 and tiny ones at times; the real turn)
+    Test sky_point_4266a0{0x4266a0,
+                          [=](Rng &r) {
+                              float a[3], len = 0;
+                              for (int k = 0; k < 3; k++) a[k] = r.real(-1, 1), len += a[k] * a[k];
+                              for (int k = 0; k < 3; k++) *(float *)arena<uint8_t>(0x100 + 0x3f0 + k * 4) = a[k] / sqrtf(len);
+                              const int kind = r.range(0, 6);
+                              arena<float>(0x40)[0] = kind == 0 ? 0.0f : kind == 1 ? r.real(-1e-21f, 1e-21f) : r.real(-7, 7);
+                              for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                          },
+                          [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(const void *, void *, float))fn)(arena<void>(0x100), arena<void>(0x60), arena<float>(0x40)[0])}; }};
+    quick(sky_point_4266a0);
+    // Waterfall::Copy9199B0: random points, i from 0 to n (the middle giving no turn), n 1-12 (the real turn)
+    Test waterfall_copy_9199b0{0x9199b0,
+                               [=](Rng &r) {
+                                   for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = r.real(-20, 20);
+                                   const int n = r.range(1, 12);
+                                   arena<int32_t>(0x50)[0] = r.range(0, 4) ? r.range(0, n) : n / 2, arena<int32_t>(0x50)[1] = n;
+                                   for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.next();
+                               },
+                               [](void *fn) {
+                                   return Result{(uint32_t)(uintptr_t)((void *(__stdcall *)(void *, const void *, int32_t, int32_t))fn)(arena<void>(0x60), arena<void>(0x40), arena<int32_t>(0x50)[0], arena<int32_t>(0x50)[1])};
+                               }};
+    quick(waterfall_copy_9199b0);
+    // Scenery::Point8B5510: random directions, nearly the same and nearly opposite ones (exactly so can put the ratio past
+    // 1, where the game's acos needs its CRT set up) (a in ecx, b in edx)
+    Test scenery_point_8b5510{0x8b5510,
+                              [=](Rng &r) {
+                                  float *a = arena<float>(0x40), *b = arena<float>(0x50);
+                                  for (int k = 0; k < 3; k++) a[k] = r.real(-5, 5);
+                                  const int kind = r.range(0, 4);
+                                  for (int k = 0; k < 3; k++) b[k] = kind == 0 ? a[k] * 2 + r.real(-0.05f, 0.05f) : kind == 1 ? -a[k] + r.real(-0.05f, 0.05f) : r.real(-5, 5);
+                              },
+                              [](void *fn) {
+                                  Result x;
+                                  x.f = ((long double(__fastcall *)(const void *, const void *))fn)(arena<void>(0x40), arena<void>(0x50));
+                                  return x;
+                              }};
+    quick(scenery_point_8b5510);
+    // Scenery::Turn847040: footprints of 1-4 by 1-4 cells, every turn, places in and out (the real turn)
+    Test scenery_turn_847040{0x847040,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100), *f = arena<uint8_t>(0x200);
+                                 int32_t *t = (int32_t *)(self + 0x20);
+                                 t[0] = (int32_t)(uintptr_t)f, t[1] = r.range(-3, 3), t[2] = r.range(-3, 3), t[3] = r.range(-50, 50), t[4] = r.range(0, 4);
+                                 *(int32_t *)(f + 0x10) = r.range(1, 4), *(int32_t *)(f + 0x14) = r.range(1, 4);
+                                 *(uint32_t *)(f + 0x18) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                                 for (int k = 0; k < 16 * 5; k++) arena<uint32_t>(0x300)[k] = r.range(0, 2) ? r.next() : (uint32_t)r.range(-100, 100);
+                                 arena<int32_t>(0x40)[0] = t[1] + r.range(-2, 5), arena<int32_t>(0x40)[1] = t[2] + r.range(-2, 5);
+                                 arena<uint32_t>(0x50)[0] = r.next(), arena<uint32_t>(0x50)[1] = r.next();
+                             },
+                             [](void *fn) {
+                                 return Result{((uint32_t(__thiscall *)(void *, int32_t, int32_t, void *, void *))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<int32_t>(0x40)[1], arena<void>(0x50), arena<void>(0x54)) & 0xff};
+                             }};
+    quick(scenery_turn_847040);
+    // Sky::Entry431F00 and Effect::Entry44B2A0: n from -1 past the count, random places and values; QuadTree::Move stood
+    // in for (it notes what it is given)
+    for (uintptr_t at : {0x431f00u, 0x44b2a0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   const int count = r.range(0, 4);
+                   *(int32_t *)(self + 0x4c) = count, *(int32_t *)(self + 0x28) = count;
+                   *(uint32_t *)(self + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x400), *(uint32_t *)(self + 0x1c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(uint32_t *)(self + 0x50) = (uint32_t)(uintptr_t)arena<void>(0x300), *(uint32_t *)(self + 0x2c) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                   for (int k = 0; k < 0x40; k++) arena<uint32_t>(0x400)[k] = r.next();
+                   for (int k = 0; k < 10; k++) arena<uint32_t>(0x80)[k] = 0;
+                   arena<int32_t>(0x40)[0] = r.range(-1, 5), arena<float>(0x40)[1] = r.real(-10, 10);
+                   for (int k = 0; k < 3; k++) arena<float>(0x50)[k] = r.real(-100, 100);
+               },
+               [at](void *fn) {
+                   if (at == 0x431f00u) ((void(__thiscall *)(void *, int32_t, const void *))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<void>(0x50));
+                   else ((void(__thiscall *)(void *, int32_t, float, const void *))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0], arena<float>(0x40)[1], arena<void>(0x50));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x431240, (void *)h2_quad_move}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
         quick(x);
     }
 #endif
