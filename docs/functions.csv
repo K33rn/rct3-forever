@@ -486,7 +486,7 @@ address,size,name,callers,status
 0x424e70,78,,1,documented
 0x424ec0,405,,1,documented
 0x425060,339,,1,documented
-0x4251c0,150,,4,documented
+0x4251c0,150,Sky::Pass4251C0,4,rewritten
 0x425260,293,StructArrayField<36>::Save,1,rewritten
 0x425390,124,StructArrayField<36>::Size,1,rewritten
 0x425470,230,StructArrayLoad,0,rewritten
@@ -1355,7 +1355,7 @@ address,size,name,callers,status
 0x470560,1151,,1,documented
 0x470a10,232,,1,documented
 0x470b20,549,,0,documented
-0x470d70,106,,0,documented
+0x470d70,106,Labels::Step470D70,0,rewritten
 0x470e90,27,GlobalCleanup,1,rewritten
 0x470eb0,207,,3,documented
 0x471090,26,OwnedPointer::Reset,1,rewritten
@@ -3146,7 +3146,7 @@ address,size,name,callers,status
 0x50d310,3275,,1,documented
 0x50dff0,531,,1,documented
 0x50e210,881,,2,documented
-0x50e630,106,,12,documented
+0x50e630,106,Car::Pass50E630,12,rewritten
 0x50e6a0,39,,4,documented
 0x50e6d0,95,Car::Kind50E6D0,36,rewritten
 0x50e730,584,,1,documented
@@ -12959,7 +12959,7 @@ address,size,name,callers,status
 0x91ba70,883,,1,documented
 0x91bdf0,411,,1,documented
 0x91bf90,172,,4,documented
-0x91c040,148,,3,documented
+0x91c040,148,Water::Pass91C040,3,rewritten
 0x91c0e0,222,Water::Step91C0E0,1,rewritten
 0x91c1d0,63,Park::Pass91C1D0,2,rewritten
 0x91c210,128,,1,documented
@@ -13379,7 +13379,7 @@ address,size,name,callers,status
 0x95a410,254,,2,documented
 0x95a510,80,,1,documented
 0x95a570,82,Water::Remove95A570,45,rewritten
-0x95a660,152,,3,documented
+0x95a660,152,Water::Remove95A660,3,rewritten
 0x95a700,222,,1,documented
 0x95a7e0,551,,0,documented
 0x95aa10,345,,3,documented
@@ -13868,7 +13868,7 @@ address,size,name,callers,status
 0x9846f0,120,,2,documented
 0x9847c0,26,OwnedPointer::Reset,1,rewritten
 0x9847e0,130,Array<4>::SetCapacity,2,rewritten
-0x984870,142,,1,documented
+0x984870,142,Record::Kind984870,1,rewritten
 0x984900,57,Reference::Interface,4,rewritten
 0x984950,66,,1,documented
 0x984a80,237,StructArrayLoad,0,rewritten
@@ -17220,7 +17220,7 @@ address,size,name,callers,status
 0xadb1c0,334,,1,documented
 0xadb340,90,CachedInterface,38,rewritten
 0xadb3a0,2632,,1,documented
-0xadbdf0,108,,1,documented
+0xadbdf0,108,Animal::CheckADBDF0,1,rewritten
 0xadbe60,13762,,1,documented
 0xadf440,152,,1,documented
 0xadf4e0,1482,Class::Construct,4,rewritten
@@ -18527,7 +18527,7 @@ address,size,name,callers,status
 0xb6ce40,178,,1,documented
 0xb6cf00,51,Entries::VisitB6C360,1,rewritten
 0xb6cf40,30,DeletingDestructor,2,rewritten
-0xb6cf60,141,,1,documented
+0xb6cf60,141,Animal::StepB6CF60,1,rewritten
 0xb6cff0,107,,1,documented
 0xb6d090,220,QuadTree::QuadTree,1,rewritten
 0xb6d270,298,Pool::GrowFields,2,rewritten
@@ -22491,7 +22491,7 @@ address,size,name,callers,status
 0xcbbca0,148,,1,documented
 0xcbbd70,85,Scanner::FlushC09740,2,rewritten
 0xcbbdd0,26,,11,documented
-0xcbbe20,108,,3,documented
+0xcbbe20,108,Shader::ParseCBBE20,3,rewritten
 0xcbbe90,675,ShaderLexer::Message,2,rewritten
 0xcbc140,675,ShaderLexer::Message,23,rewritten
 0xcbc490,83,,2,documented

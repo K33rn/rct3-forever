@@ -12794,3 +12794,186 @@ static uint8_t *__thiscall car_step_5124b0(uint8_t *self, const uint32_t *a, con
 }
 static const uint8_t car_step_5124b0_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x08, 0x3b, 0x46, 0x04};
 REWRITE("Car::Step5124B0", 0x5124b0, car_step_5124b0_original, &car_step_5124b0, &g_car_record_adds);
+
+// ---- Water::Pass91C040(a, b, c) (0x91C040): the 0x2C-byte entry for a triple, added when missing -----------------------
+// Entries at +0x130 (room +0x134, count +0x138) hold their triple at +0x10: found, its +0x14 is given. Else the list grows
+// by 8 (0x91A0B0) when full and gets {0, 0, 0, 0, a, b, c}; that entry is given.
+static volatile long g_water_triple_entries;
+static uint8_t *__thiscall water_pass_91c040(uint8_t *self, uint32_t a, uint32_t b, uint32_t c) {
+    g_water_triple_entries++;
+    const int32_t count = *(const int32_t *)(self + 0x138);
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0x138); i++) {
+        uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(self + 0x130) + i * 0x2c);
+        if (e[4] == a && e[5] == b && e[6] == c) return (uint8_t *)(e + 5);
+    }
+    if (count >= *(const int32_t *)(self + 0x134)) ((void(__thiscall *)(uint8_t *, int32_t))0x91a0b0)(self + 0x130, count + 8);
+    uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(self + 0x130) + *(const int32_t *)(self + 0x138) * 0x2c);
+    e[4] = a, e[5] = b, e[6] = c, e[0] = e[1] = e[2] = e[3] = 0;
+    (*(int32_t *)(self + 0x138))++;
+    return (uint8_t *)e;
+}
+static const uint8_t water_pass_91c040_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x0c, 0x55, 0x56, 0x8b, 0xf1};
+REWRITE("Water::Pass91C040", 0x91c040, water_pass_91c040_original, &water_pass_91c040, &g_water_triple_entries);
+
+// ---- Record::Kind984870() (0x984870): fills the record out to 12 values and keeps +0xA4 from going below 0 -----------------
+// Unless the values (+0x9C, count +0xA0) are 12 already, they are resized to 12 (0x9847E0) and the new ones set to 0.5.
+// +0xA4 below 0 (or a NaN) becomes 0.
+static volatile long g_record_value_fills;
+static void __thiscall record_kind_984870(uint8_t *self) {
+    g_record_value_fills++;
+    const int32_t n = *(const int32_t *)(self + 0xa0);
+    if (n != 12) {
+        ((void(__thiscall *)(uint8_t *, int32_t))0x9847e0)(self + 0x9c, 12);
+        for (int32_t i = n; i < 12; i++) (*(uint32_t *const *)(self + 0x9c))[i] = 0x3f000000;
+    }
+    if (!(*(const float *)(self + 0xa4) >= *(const float *)0xf264e0)) *(uint32_t *)(self + 0xa4) = 0;
+}
+static const uint8_t record_kind_984870_original[] = {0x53, 0x8b, 0xd9, 0x57, 0x8b, 0xbb, 0xa0, 0x00, 0x00, 0x00};
+REWRITE("Record::Kind984870", 0x984870, record_kind_984870_original, &record_kind_984870, &g_record_value_fills);
+
+// ---- Sky::Pass4251C0(p, n) (0x4251C0): adds a 36-byte record {p, -n, n} -------------------------------------------------------
+// Marks +0x5C, grows the list at +0x44 (count +0x48) by one (0x424290) and fills the old count's record with p, n negated
+// and n (floats; the third parts of p and n copied as they are). Gives the record's n.
+static volatile long g_sky_records;
+static float *__thiscall sky_pass_4251c0(uint8_t *self, const float *p, const float *n) {
+    g_sky_records++;
+    const int32_t i = *(const int32_t *)(self + 0x48);
+    self[0x5c] = 1;
+    ((void(__thiscall *)(uint8_t *, int32_t))0x424290)(self + 0x44, i + 1);
+    volatile float *const e = (volatile float *)(*(uint8_t *const *)(self + 0x44) + i * 36);
+    e[0] = (float)(long double)p[0], *(volatile uint32_t *)(e + 2) = ((const uint32_t *)p)[2], e[1] = (float)(long double)p[1];
+    const float nz = (float)-(long double)n[2];
+    *(volatile uint32_t *)(e + 5) = *(const uint32_t *)&nz;
+    e[3] = (float)-(long double)n[0], e[4] = (float)-(long double)n[1];
+    e[6] = (float)(long double)n[0], *(volatile uint32_t *)(e + 8) = ((const uint32_t *)n)[2], e[7] = (float)(long double)n[1];
+    return (float *)(e + 6);
+}
+static const uint8_t sky_pass_4251c0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x18, 0x56, 0x57};
+REWRITE("Sky::Pass4251C0", 0x4251c0, sky_pass_4251c0_original, &sky_pass_4251c0, &g_sky_records);
+
+// ---- Water::Remove95A660(a, b) (0x95A660): the edge between corners a and b, added when missing ---------------------------
+// Water::Remove95A570 (0x95A570) finds it: a number (two bytes) under the count (+0x10) is given as it is. Else the count's
+// edge k is added (16 bytes at +8, room +0xC, grown by 0x200 by 0x95A090): {a, b, 0xFFFF, 0xFFFF, the corners' last edges
+// (two-byte table at +0x20)}, and both corners' last edge becomes k. Gives k (in ax; the table's upper half above it).
+static volatile long g_water_edge_adds;
+static uint32_t __thiscall water_remove_95a660(uint8_t *self, uint32_t a32, uint32_t b32) {
+    g_water_edge_adds++;
+    const uint32_t found = ((uint32_t(__thiscall *)(uint8_t *, uint32_t, uint32_t))0x95a570)(self, a32, b32);
+    const int32_t count = *(const int32_t *)(self + 0x10);
+    if ((int32_t)(found & 0xffff) < count) return found;
+    const uint16_t k = (uint16_t)count, a = (uint16_t)a32, b = (uint16_t)b32;
+    *(int32_t *)(self + 0x10) = count + 1;
+    const int32_t room = *(const int32_t *)(self + 0xc);
+    if (k >= room) ((void(__thiscall *)(uint8_t *, int32_t))0x95a090)(self + 8, room + 0x200);
+    uint16_t *const e = (uint16_t *)(*(uint8_t *const *)(self + 8) + k * 16);
+    e[0] = a, e[1] = b, e[2] = 0xffff, e[3] = 0xffff;
+    e[4] = (*(uint16_t *const *)(self + 0x20))[a];
+    e[5] = (*(uint16_t *const *)(self + 0x20))[b];
+    (*(uint16_t *const *)(self + 0x20))[a] = k;
+    (*(uint16_t *const *)(self + 0x20))[b] = k;
+    return (*(const uint32_t *)(self + 0x20) & 0xffff0000u) | k;
+}
+static const uint8_t water_remove_95a660_original[] = {0x8b, 0x44, 0x24, 0x04, 0x55, 0x8b, 0x6c, 0x24, 0x0c, 0x56};
+REWRITE("Water::Remove95A660", 0x95a660, water_remove_95a660_original, &water_remove_95a660, &g_water_edge_adds);
+
+// ---- Car::Pass50E630(list) (0x50E630): hands back the water entries held by a list's 32-byte records -----------------------
+// For each record ({records, count}), its +4 and +8 entries (when not negative) go back to the game's water (0x133A380)
+// through Water::Entry94EF60 and become -1. Gives the count.
+static volatile long g_car_entry_releases;
+static int32_t __stdcall car_pass_50e630(const uint8_t *list) {
+    g_car_entry_releases++;
+    uint8_t *const water = *(uint8_t *const *)0x133a380;
+    auto release = (void(__thiscall *)(uint8_t *, int32_t))0x94ef60;
+    int32_t i = 0;
+    for (; i < *(const int32_t *)(list + 4); i++) {
+        for (uint32_t at = 4; at <= 8; at += 4) {
+            const int32_t n = *(const int32_t *)(*(uint8_t *const *)list + i * 32 + at);
+            if (n < 0) continue;
+            release(water, n);
+            *(int32_t *)(*(uint8_t *const *)list + i * 32 + at) = -1;
+        }
+    }
+    return *(const int32_t *)(list + 4);
+}
+static const uint8_t car_pass_50e630_original[] = {0x53, 0x8b, 0x1d, 0x80, 0xa3, 0x33, 0x01, 0x55, 0x56};
+REWRITE("Car::Pass50E630", 0x50e630, car_pass_50e630_original, &car_pass_50e630, &g_car_entry_releases);
+
+// ---- Labels::Step470D70(dir) (0x470D70): turns the label's matrix to look along dir -----------------------------------------
+// The matrix at +0x120 looks along dir with up (0, 1, 0) (Matrix::LookAlongZSide, 0xBEDAC0); its +0x30 is cleared and the
+// flags (+0x1A4) get 3 when +0x1A7 is set, else 2.
+static volatile long g_label_look_alongs;
+static void __thiscall labels_step_470d70(uint8_t *self, const float *dir) {
+    g_label_look_alongs++;
+    const float up[3] = {0.0f, 1.0f, 0.0f};
+    ((uint32_t(__thiscall *)(uint8_t *, const float *, const float *))0xbedac0)(self + 0x120, dir, up);
+    *(uint32_t *)(self + 0x150) = 0;
+    self[0x1a4] |= self[0x1a7] ? 3 : 2;
+}
+static const uint8_t labels_step_470d70_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x18, 0x56, 0x57, 0x8b, 0xf1};
+REWRITE("Labels::Step470D70", 0x470d70, labels_step_470d70_original, &labels_step_470d70, &g_label_look_alongs);
+
+// ---- Animal::CheckADBDF0(out) (0xADBDF0): the newest of the animal's 48-byte records, when it is in state 2 ----------------
+// When on (+0xB0), out is given, the animal's interface (0xADB340) has +0x50 = 2 and the ring (+0xC120 start, +0xC124 end,
+// 1024 records from +0x120) is not empty: *out = the first 12 bytes of the record before the end, and 1. Else 0.
+static volatile long g_animal_newest;
+static bool __thiscall animal_check_adbdf0(uint8_t *self, uint32_t *out) {
+    g_animal_newest++;
+    if (!self[0xb0] || !out) return false;
+    const uint8_t *const it = ((const uint8_t *(__thiscall *)(uint8_t *))0xadb340)(self);
+    if (*(const int32_t *)(it + 0x50) != 2) return false;
+    const int32_t end = *(const int32_t *)(self + 0xc124);
+    if (end == *(const int32_t *)(self + 0xc120)) return false;
+    const uint32_t *const rec = (const uint32_t *)(self + ((end + 0x3ff) % 0x400 + 6) * 48);
+    out[0] = rec[0], out[1] = rec[1], out[2] = rec[2];
+    return true;
+}
+static const uint8_t animal_check_adbdf0_original[] = {0x56, 0x57, 0x8b, 0xf9, 0x8a, 0x87, 0xb0, 0x00, 0x00, 0x00};
+REWRITE("Animal::CheckADBDF0", 0xadbdf0, animal_check_adbdf0_original, &animal_check_adbdf0, &g_animal_newest);
+
+// ---- Animal::StepB6CF60(dt) (0xB6CF60): fades a value up or down by twice the step -------------------------------------
+// f = Animals::PassB6C900 (0xB6C900) of the game's animals (0x13CEEE8): the flags at -0xA8 lose bit 0x400000 with one, gain
+// it without. Rising (+8 set): v = 2 dt + v (-0x78), at 1 it stops rising and v = 1. Falling: v = v - 2 dt, below 0.1 it
+// is held at 0.1 and, with f, starts rising.
+static volatile long g_animal_fades;
+static void __thiscall animal_step_b6cf60(uint8_t *self, const float *dt) {
+    g_animal_fades++;
+    const uint32_t f = ((uint32_t(__thiscall *)(void *))0xb6c900)(*(void *const *)0x13ceee8);
+    uint32_t &flags = *(uint32_t *)(self - 0xa8);
+    flags = f ? flags & ~0x400000u : flags | 0x400000u;
+    volatile float *const v = (volatile float *)(self - 0x78);
+    const long double one = *(const float *)0xf264dc, low = *(const float *)0xf270b0;
+    if (self[8]) {
+        const long double x = ((long double)*dt + *dt) + *v;
+        if (x > one) {
+            self[8] = 0;
+            *v = (float)one;
+        } else *v = (float)x;
+        return;
+    }
+    const long double x = (long double)*v - ((long double)*dt + *dt);
+    if (x < low) {
+        if (f) self[8] = 1;
+        *v = (float)low;
+    } else *v = (float)x;
+}
+static const uint8_t animal_step_b6cf60_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x0d, 0xe8, 0xee, 0x3c, 0x01};
+REWRITE("Animal::StepB6CF60", 0xb6cf60, animal_step_b6cf60_original, &animal_step_b6cf60, &g_animal_fades);
+
+// ---- Shader::ParseCBBE20(s) (0xCBBE20): appends a C string to the shader's text ------------------------------------------
+// The text at +0x20 (length +4, letters +0xC) is made its own with room for the length + strlen(s) + 1 (0xBD02B0); s is
+// copied after it and ended, and the length grows by strlen(s). Gives the new length.
+static volatile long g_shader_appends;
+static int32_t __thiscall shader_parse_cbbe20(uint8_t *self, const char *s) {
+    g_shader_appends++;
+    uint8_t **const text = (uint8_t **)(self + 0x20);
+    uint32_t n = 0;
+    while (s[n]) n++;
+    ((void(__thiscall *)(uint8_t **, uint32_t))0xbd02b0)(text, *(const uint32_t *)(*text + 4) + n + 1);
+    char *const to = *(char *const *)(*text + 0xc) + *(const uint32_t *)(*text + 4);
+    uint32_t i = 0;
+    for (; i < n && s[i]; i++) to[i] = s[i];
+    to[i] = 0;
+    return *(int32_t *)(*text + 4) += (int32_t)n;
+}
+static const uint8_t shader_parse_cbbe20_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x8d, 0x69, 0x20};
+REWRITE("Shader::ParseCBBE20", 0xcbbe20, shader_parse_cbbe20_original, &shader_parse_cbbe20, &g_shader_appends);

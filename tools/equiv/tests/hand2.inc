@@ -124,6 +124,28 @@ static void __thiscall h2_grid_give(void *grid, int32_t n, void *block) {
     uint32_t *log = arena<uint32_t>(0xc8);
     log[0] = (uint32_t)(uintptr_t)grid, log[1] = (uint32_t)n, log[2] = (uint32_t)(uintptr_t)block;
 }
+// a stand-in for Water::Remove95A570 (0x95A570): notes its this and corners at arena 0xD0 and gives arena 0xD0's first dword
+static uint32_t __thiscall h2_edge_find(void *self, uint32_t a, uint32_t b) {
+    uint32_t *log = arena<uint32_t>(0xd0);
+    log[1] = (uint32_t)(uintptr_t)self, log[2] = a, log[3] = b;
+    return log[0];
+}
+// a stand-in for Water::Entry94EF60 (0x94EF60): notes each this and n at arena 0xE0 (up to 8 calls)
+static void __thiscall h2_water_release(void *self, int32_t n) {
+    uint32_t *log = arena<uint32_t>(0xe0);
+    const uint32_t k = log[0]++ & 7;
+    log[1 + k * 2] = (uint32_t)(uintptr_t)self, log[2 + k * 2] = (uint32_t)n;
+}
+// a stand-in for the animal's interface (0xADB340): notes its this at arena 0xF8 and gives arena 0x180
+static void *__thiscall h2_animal_interface(void *self) {
+    arena<uint32_t>(0xf8)[0] = (uint32_t)(uintptr_t)self;
+    return arena<void>(0x180);
+}
+// a stand-in for Animals::PassB6C900 (0xB6C900): notes its this at arena 0xFC and gives arena 0x1F0's first dword
+static uint32_t __thiscall h2_animals_pass(void *self) {
+    arena<uint32_t>(0xfc)[0] = (uint32_t)(uintptr_t)self;
+    return arena<uint32_t>(0x1f0)[0];
+}
 #else
     // Inflate::BuildHuffmanTable: complete, incomplete, all-zero and random code lengths for bit-length codes (s 19),
     // literals (s 257) and distances (s 0); sometimes little room left
@@ -8082,6 +8104,161 @@ static void __thiscall h2_grid_give(void *grid, int32_t n, void *block) {
                        arena<void>(0x100), arena<void>(0x40), arena<void>(0x50), v[1], v[2], v[3], v[4])};
                }};
         x.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at == 0x942280u ? 0x940730u : 0x5101a0u, (void *)h2_list_grow}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Water::Pass91C040, Record::Kind984870 and Sky::Pass4251C0: lists of 0-4 entries (triples found or not, full or not),
+    // 0-12 values with +0xA4 either side of 0 (NaNs at times), random points; the grows stood in for
+    for (uintptr_t at : {0x91c040u, 0x984870u, 0x4251c0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 0; k < 0x140; k += 4) *(uint32_t *)(self + k) = r.next();
+                   for (int k = 0; k < 0x80; k++) arena<uint32_t>(0x400)[k] = r.range(0, 2);
+                   for (int k = 0; k < 6; k++) arena<float>(0x40)[k] = r.real(-100, 100);
+                   for (int k = 0; k < 3; k++) arena<uint32_t>(0x60)[k] = r.range(0, 2);
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+                   const int32_t c = r.range(0, 4);
+                   if (at == 0x91c040u) {
+                       *(uint32_t *)(self + 0x130) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                       *(int32_t *)(self + 0x138) = c, *(int32_t *)(self + 0x134) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   } else if (at == 0x984870u) {
+                       *(uint32_t *)(self + 0x9c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                       *(int32_t *)(self + 0xa0) = r.range(0, 3) ? r.range(0, 12) : 12;
+                       *(float *)(self + 0xa4) = r.range(0, 9) ? r.real(-5, 5) : r.range(0, 1) ? NAN : -0.0f;
+                   } else {
+                       *(uint32_t *)(self + 0x44) = (uint32_t)(uintptr_t)arena<void>(0x400), *(int32_t *)(self + 0x48) = c;
+                   }
+               },
+               [at](void *fn) {
+                   uint32_t *v = arena<uint32_t>(0x60);
+                   if (at == 0x91c040u) return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), v[0], v[1], v[2])};
+                   if (at == 0x984870u) return ((void(__thiscall *)(void *))fn)(arena<void>(0x100)), Result{0};
+                   return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40), arena<float>(0x40) + 3)};
+               }};
+        x.prepare = [](const rewrite::Entry *e) {
+            stubs_for_now({{e->at == 0x91c040u ? 0x91a0b0u : e->at == 0x984870u ? 0x9847e0u : 0x424290u, (void *)h2_list_grow}});
+        };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Water::Remove95A660: the find giving numbers under, at and past the count (high halves at times), edges lists full or
+    // not, corners 0-7 with their last edges; the find and the list's grow stood in for
+    {
+        Test x{0x95a660,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 0; k < 0x24; k += 4) *(uint32_t *)(self + k) = r.next();
+                   const int32_t c = r.range(0, 4);
+                   *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(int32_t *)(self + 0x10) = c, *(int32_t *)(self + 0xc) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   *(uint32_t *)(self + 0x20) = (uint32_t)(uintptr_t)arena<void>(0x600);
+                   for (int k = 0; k < 0x40; k++) arena<uint32_t>(0x400)[k] = r.next(), arena<uint32_t>(0x600)[k] = r.next();
+                   arena<uint32_t>(0xd0)[0] = (r.range(0, 3) ? 0 : r.next() & 0xffff0000) | (r.range(0, 1) ? r.range(0, 6) : 0xffff);
+                   for (int k = 1; k < 4; k++) arena<uint32_t>(0xd0)[k] = 0;
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+                   arena<uint32_t>(0x40)[0] = r.next() & 0xffff0000 | r.range(0, 7), arena<uint32_t>(0x40)[1] = r.next() & 0xffff0000 | r.range(0, 7);
+               },
+               [](void *fn) {
+                   return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1])};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x95a570, (void *)h2_edge_find}, {0x95a090, (void *)h2_list_grow}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Car::Pass50E630: the game's water pointer set (put back after); 0-4 records holding entries or -1s; the release stood
+    // in for
+    {
+        static uint32_t saved_water;
+        Test x{0x50e630,
+               [=](Rng &r) {
+                   *(uint32_t *)0x133a380 = (uint32_t)(uintptr_t)arena<void>(0x180);
+                   uint32_t *list = arena<uint32_t>(0x100);
+                   list[0] = (uint32_t)(uintptr_t)arena<void>(0x400), list[1] = r.range(0, 4);
+                   for (int k = 0; k < 0x20; k++) arena<uint32_t>(0x400)[k] = r.range(0, 2) ? r.range(0, 99) : (uint32_t)-(int32_t)r.range(1, 3);
+                   for (int k = 0; k < 17; k++) arena<uint32_t>(0xe0)[k] = 0;
+               },
+               [](void *fn) { return Result{(uint32_t)((int32_t(__stdcall *)(const void *))fn)(arena<void>(0x100))}; }};
+        x.prepare = [](const rewrite::Entry *) { saved_water = *(uint32_t *)0x133a380, stubs_for_now({{0x94ef60, (void *)h2_water_release}}); };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x133a380 = saved_water, unstub_many(); };
+        quick(x);
+    }
+    // Labels::Step470D70: random directions (unit and not), flags either way (the real Matrix::LookAlongZSide)
+    Test labels_step_470d70{0x470d70,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x1000);
+                                for (int k = 0x120; k < 0x1b0; k += 4) *(uint32_t *)(self + k) = r.next();
+                                self[0x1a7] = (uint8_t)r.range(0, 1);
+                                for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = r.real(-1, 1);
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, const void *))fn)(arena<void>(0x1000), arena<void>(0x40));
+                                return Result{0};
+                            }};
+    quick(labels_step_470d70);
+    // Animal::CheckADBDF0: on or not, out given or not, interface states 1-3, rings empty or not with ends 0-1023 (the
+    // record before 0 is the last); the interface stood in for
+    {
+        Test x{0xadbdf0,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x1000);
+                   self[0xb0] = (uint8_t)(r.range(0, 5) ? 1 : 0);
+                   const int32_t end = r.range(0, 3) ? r.range(0, 1023) : 0, start = r.range(0, 3) ? r.range(0, 1023) : end;
+                   *(int32_t *)(self + 0xc124) = end, *(int32_t *)(self + 0xc120) = start;
+                   const uint32_t *slot = (uint32_t *)(self + ((end + 0x3ff) % 0x400 + 6) * 48);
+                   for (int k = 0; k < 3; k++) ((uint32_t *)slot)[k] = r.next();
+                   *(int32_t *)(arena<uint8_t>(0x180) + 0x50) = r.range(1, 3);
+                   for (int k = 0; k < 3; k++) arena<uint32_t>(0x40)[k] = r.next();
+                   arena<uint32_t>(0x60)[0] = r.range(0, 5) ? (uint32_t)(uintptr_t)arena<void>(0x40) : 0;
+                   arena<uint32_t>(0xf8)[0] = 0;
+               },
+               [](void *fn) {
+                   return Result{((uint8_t(__thiscall *)(void *, void *))fn)(arena<void>(0x1000), (void *)(uintptr_t)arena<uint32_t>(0x60)[0])};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xadb340, (void *)h2_animal_interface}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Animal::StepB6CF60: the game's animals set (put back after); rising or falling, values and steps near both ends (and
+    // exactly on them), the find giving 0 or not; the find stood in for
+    {
+        static uint32_t saved_animals;
+        Test x{0xb6cf60,
+               [=](Rng &r) {
+                   *(uint32_t *)0x13ceee8 = r.next();
+                   uint8_t *self = arena<uint8_t>(0x200);
+                   *(uint32_t *)(self - 0xa8) = r.next();
+                   self[8] = (uint8_t)r.range(0, 1);
+                   *(float *)(self - 0x78) = r.range(0, 5) ? r.real(0, 1.1f) : r.range(0, 1) ? 1.0f : 0.1f;
+                   arena<float>(0x40)[0] = r.range(0, 5) ? r.real(0, 0.2f) : 0.0f;
+                   arena<uint32_t>(0x1f0)[0] = r.range(0, 1) ? r.next() : 0;
+                   arena<uint32_t>(0xfc)[0] = 0;
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *, const void *))fn)(arena<void>(0x200), arena<void>(0x40));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { saved_animals = *(uint32_t *)0x13ceee8, stubs_for_now({{0xb6c900, (void *)h2_animals_pass}}); };
+        x.finish = [](const rewrite::Entry *) { *(uint32_t *)0x13ceee8 = saved_animals, unstub_many(); };
+        quick(x);
+    }
+    // Shader::ParseCBBE20: texts of 0-6 letters and strings of 0-6; the own stood in for
+    {
+        Test x{0xcbbe20,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100), *text = arena<uint8_t>(0x200);
+                   *(uint32_t *)(self + 0x20) = (uint32_t)(uintptr_t)text;
+                   const uint32_t len = r.range(0, 6);
+                   *(uint32_t *)(text + 4) = len, *(uint32_t *)(text + 8) = len + r.range(0, 3), *(uint32_t *)(text + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                   for (int k = 0; k < 0x10; k++) arena<uint32_t>(0x300)[k] = r.next();
+                   char *s = arena<char>(0x40);
+                   const int n = r.range(0, 6);
+                   for (int k = 0; k < n; k++) s[k] = (char)r.range('a', 'z');
+                   s[n] = 0;
+                   for (int k = 0; k < 5; k++) arena<uint32_t>(0xa0)[k] = 0;
+               },
+               [](void *fn) { return Result{(uint32_t)((int32_t(__thiscall *)(void *, const char *))fn)(arena<void>(0x100), arena<char>(0x40))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbd02b0, (void *)h2_text_own}}); };
         x.finish = [](const rewrite::Entry *) { unstub_many(); };
         quick(x);
     }
