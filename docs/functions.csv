@@ -11746,7 +11746,7 @@ address,size,name,callers,status
 0x86f730,110,,1,documented
 0x86f7b0,88,Block::Destroy86F7B0,1,rewritten
 0x86f810,118,,1,documented
-0x86f890,833,,2,documented
+0x86f890,833,Scenery::Near86F890,2,rewritten
 0x86fbe0,36,,2,documented
 0x86fc10,38,,1,documented
 0x86fc40,51,,2,documented
@@ -16197,7 +16197,7 @@ address,size,name,callers,status
 0xa6ed40,513,Animal::PointA6ED40,4,rewritten
 0xa6ef50,152,PhysicsWorld::AtRest,1,rewritten
 0xa6eff0,161,VerletPoints::AllSettled,0,rewritten
-0xa6f0a0,754,,1,documented
+0xa6f0a0,754,Points::StepA6F0A0,1,rewritten
 0xa6f3a0,1306,,9,documented
 0xa6f930,445,Animal::ModeA6F930,1,rewritten
 0xa6faf0,202,Animal::EntryA6FAF0,3,rewritten

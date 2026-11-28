@@ -6938,4 +6938,41 @@ static uint32_t __thiscall h2_root_slot(void *root, const float *p) {
                                 return Result{0};
                             }};
     quick(track_speed_bbd650);
+    // Scenery::Near86F890: grids of 1-4 place cells, 2-6 by 2-6 cells, items in and near the corners (negative offsets at
+    // times), random weights
+    Test scenery_near_86f890{0x86f890,
+                             [=](Rng &r) {
+                                 uint8_t *self = arena<uint8_t>(0x100), *item = arena<uint8_t>(0x200), *a = arena<uint8_t>(0x300);
+                                 const int cw = r.range(1, 4), rw = r.range(2, 6), rh = r.range(2, 6);
+                                 *(int32_t *)(self + 4) = cw, *(int32_t *)(self + 8) = rw, *(int32_t *)(self + 0xc) = rh;
+                                 *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                                 for (int k = 0; k < 36; k++) arena<float>(0x400)[k] = r.real(-5, 5);
+                                 *(uint32_t *)(item + 0x9c) = (uint32_t)(uintptr_t)a;
+                                 *(int32_t *)(a + 0x10) = r.range(-6, 6), *(int32_t *)(a + 0x14) = r.range(-6, 6);
+                                 *(int32_t *)(item + 0xa0) = r.range(-4, cw * rw + 4), *(int32_t *)(item + 0xa4) = r.range(-4, cw * rh + 4);
+                                 arena<float>(0x40)[0] = r.real(-3, 3);
+                             },
+                             [](void *fn) {
+                                 ((void(__thiscall *)(const void *, const void *, float))fn)(arena<void>(0x100), arena<void>(0x200), arena<float>(0x40)[0]);
+                                 return Result{0};
+                             }};
+    quick(scenery_near_86f890);
+    // Points::StepA6F0A0: 1-13 points of random values (every unrolled count and tail), steps small and large
+    Test points_step_a6f0a0{0xa6f0a0,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                const int n = r.range(1, 13);
+                                *(int32_t *)(self + 0x10) = n, *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x200);
+                                for (int k = 0; k < 13; k++) {
+                                    arena<uint32_t>(0x200)[k] = (uint32_t)(uintptr_t)arena<void>(0x400 + k * 0x30);
+                                    for (int c = 4; c < 11; c++) arena<float>(0x400 + k * 0x30)[c] = r.real(-20, 20);
+                                }
+                                arena<float>(0x40)[0] = r.range(0, 1) ? r.real(0, 0.5f) : r.real(0, 2000);
+                            },
+                            [](void *fn) {
+                                Result x;
+                                x.f = ((long double(__thiscall *)(const void *, float))fn)(arena<void>(0x100), arena<float>(0x40)[0]);
+                                return x;
+                            }};
+    quick(points_step_a6f0a0);
 #endif

@@ -11331,3 +11331,106 @@ static void __thiscall track_speed_bbd650(uint8_t *self, float dt, const float *
 }
 static const uint8_t track_speed_bbd650_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x50, 0x8b, 0x41, 0x14};
 REWRITE("Track::SpeedBBD650", 0xbbd650, track_speed_bbd650_original, &track_speed_bbd650, &g_track_speeds);
+
+// ---- Scenery::Near86F890(item, w) (0x86F890): spreads w over the cells near an item ------------------------------------
+// The item's middle: (+0xA0, +0xA4) plus (its +0x9C's +0x10 + +0x14) / 4. Over the places 7 before to 7 after it in x
+// and y (kept within 0..+4 +8 and 0..+0xC +4): within a squared distance of 26 the place's cell (cells of +4 places,
+// rows of +8, floats at +0x10) gains w, within 50 it gains w / 2. In the game's order (x outside, y inside).
+static volatile long g_scenery_spreads;
+static void __thiscall scenery_near_86f890(const uint8_t *self, const uint8_t *item, float w) {
+    g_scenery_spreads++;
+    const uint8_t *const a = *(const uint8_t *const *)(item + 0x9c);
+    const int32_t c = (*(const int32_t *)(a + 0x10) + *(const int32_t *)(a + 0x14)) / 4;
+    const int32_t cx = *(const int32_t *)(item + 0xa0) + c, cy = *(const int32_t *)(item + 0xa4) + c;
+    const int32_t cw = *(const int32_t *)(self + 4), rw = *(const int32_t *)(self + 8), rh = *(const int32_t *)(self + 0xc);
+    const int32_t x0 = cx - 7 < 0 ? 0 : cx - 7, x1 = cx + 8 > cw * rw ? cw * rw : cx + 8;
+    const int32_t y0 = cy - 7 < 0 ? 0 : cy - 7, y1 = cy + 8 > rh * cw ? rh * cw : cy + 8;
+    for (int32_t x = x0; x < x1; x++)
+        for (int32_t y = y0; y < y1; y++) {
+            const int32_t d = (y - cy) * (y - cy) + (x - cx) * (x - cx);
+            if (d > 50) continue;
+            const long double add = d > 26 ? (long double)w * *(const float *)0xf2651c : (long double)w;
+            float *const cell = *(float *const *)(self + 0x10) + (y / *(const int32_t *)(self + 4)) * *(const int32_t *)(self + 8) + x / *(const int32_t *)(self + 4);
+            *(volatile float *)cell = (float)(add + *cell);
+        }
+}
+static const uint8_t scenery_near_86f890_original[] = {0x83, 0xec, 0x1c, 0x55, 0x56, 0x8b, 0x74, 0x24, 0x28};
+REWRITE("Scenery::Near86F890", 0x86f890, scenery_near_86f890_original, &scenery_near_86f890, &g_scenery_spreads);
+
+// ---- Points::StepA6F0A0(dt) (0xA6F0A0): pulls a shape's points so their mean offset moves at most dt K -------------------
+// The sums as Animal::PointA6ED40 takes them (four points at a time, the same roundings; here the y difference is left
+// unrounded); m = (sum of +0x10.. - sum of +0x20..) / n (1 / n a float; m a float each). Gives L = |m| K2 (K2 0xF8F980).
+// With m.y below 0 taken as 0: when |m| is past dt K (K 0xF8F954, a float), every point's +0x10.. moves back by m (1 -
+// dt K / |m|).
+static volatile long g_point_pulls;
+static long double __thiscall points_step_a6f0a0(const uint8_t *self, float dt) {
+    g_point_pulls++;
+    volatile float most = (float)((long double)dt * *(const float *)0xf8f954);
+    const int32_t n = *(const int32_t *)(self + 0x10);
+    const float *const *const list = *(const float *const *const *)(self + 0xc);
+    long double x = *(const float *)0xf264e0, ureg = *(const float *)0xf264e0;
+    volatile float y = 0, z = 0, u = 0, v = 0, w = 0, xf;
+    auto uvw = [&](const float *e) {
+        u = (float)((long double)u + e[8]);
+        v = (float)((long double)v + e[9]);
+        w = (float)((long double)w + e[10]);
+    };
+    int32_t i = 0;
+    if (n >= 4) {
+        for (uint32_t m = (uint32_t)(n - 4) / 4 + 1; m; m--, i += 4) {
+            const float *const e0 = list[i], *const e1 = list[i + 1], *const e2 = list[i + 2], *const e3 = list[i + 3];
+            x = x + e0[4];
+            long double yt = (long double)y + e0[5];
+            z = (float)((long double)z + e0[6]);
+            uvw(e0);
+            xf = (float)(x + e1[4]);
+            yt = yt + e1[5];
+            const long double zt = (long double)z + e1[6];
+            uvw(e1);
+            xf = (float)((long double)xf + e2[4]);
+            y = (float)(yt + e2[5]);
+            z = (float)(zt + e2[6]);
+            uvw(e2);
+            x = (long double)xf + e3[4];
+            y = (float)((long double)y + e3[5]);
+            z = (float)((long double)z + e3[6]);
+            ureg = (long double)u + e3[8];
+            u = (float)ureg;
+            v = (float)((long double)v + e3[9]);
+            w = (float)((long double)w + e3[10]);
+        }
+    }
+    for (; i < n; i++) {
+        const float *const e = list[i];
+        x = x + e[4];
+        y = (float)((long double)y + e[5]);
+        z = (float)((long double)z + e[6]);
+        ureg = ureg + e[8];
+        v = (float)((long double)v + e[9]);
+        w = (float)((long double)w + e[10]);
+    }
+    const long double dx = x - ureg, dy = (long double)y - v;
+    volatile float dz = (float)((long double)z - w);
+    volatile float s = (float)((long double)*(const float *)0xf264dc / (long double)n);
+    volatile float mx = (float)(dx * s), my = (float)(dy * s);
+    const long double mzu = (long double)dz * s;
+    volatile float mz = (float)mzu;
+    volatile float a = (float)(mzu * mz), b = (float)((long double)mx * mx);
+    const long double len = x87_sqrt_h2(((long double)my * my + b) + a) * *(const float *)0xf8f980;
+    if (my < *(const float *)0xf264e0) *(volatile uint32_t *)&my = 0;
+    const long double l2 = x87_sqrt_h2(((long double)my * my + b) + a);
+    if (!(l2 > most)) return len;
+    const long double q = (long double)most / l2;
+    volatile float t1 = (float)((long double)my * q), t2 = (float)((long double)mz * q);
+    volatile float e0 = (float)((long double)mx - (long double)mx * q);
+    volatile float e1 = (float)((long double)my - t1), e2 = (float)((long double)mz - t2);
+    for (int32_t k = 0; k < *(const int32_t *)(self + 0x10); k++) {
+        volatile float *const p = (float *)list[k] + 4;
+        p[0] = (float)((long double)p[0] - e0);
+        p[1] = (float)((long double)p[1] - e1);
+        p[2] = (float)((long double)p[2] - e2);
+    }
+    return len;
+}
+static const uint8_t points_step_a6f0a0_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x44, 0xd9, 0x45, 0x08};
+REWRITE("Points::StepA6F0A0", 0xa6f0a0, points_step_a6f0a0_original, &points_step_a6f0a0, &g_point_pulls);
