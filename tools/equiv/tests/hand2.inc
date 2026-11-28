@@ -8699,4 +8699,100 @@ static void *__thiscall h2_same_object(void *self) { return self; }
         x.finish = [](const rewrite::Entry *) { unstub_many(); };
         quick(x);
     }
+    // Curves::StepC21520: new steps and the same step, weights either side of 1 (exactly 1 at times), t either side of 0,
+    // small random rotations (the real Quaternion::Slerp)
+    Test curves_step_c21520{0xc21520,
+                            [=](Rng &r) {
+                                uint8_t *self = arena<uint8_t>(0x100);
+                                for (int k = 0; k < 3; k++) *(float *)(self + 0x10 + k * 4) = r.real(-1, 1), *(float *)(self + 0x20 + k * 4) = r.real(-1, 1);
+                                for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = r.real(-1, 1);
+                                *(float *)(self + 0x30) = r.range(0, 5) ? r.real(0, 2) : 1.0f;
+                                *(int32_t *)(self + 0x34) = r.range(0, 3);
+                                arena<int32_t>(0x60)[0] = r.range(0, 4), arena<float>(0x60)[1] = r.range(0, 5) ? r.real(-0.5f, 1) : 0.0f;
+                            },
+                            [](void *fn) {
+                                ((void(__thiscall *)(void *, const void *, int32_t, float))fn)(arena<void>(0x100), arena<void>(0x40), arena<int32_t>(0x60)[0], arena<float>(0x60)[1]);
+                                return Result{0};
+                            }};
+    quick(curves_step_c21520);
+    // SceneryBehaviour::Kind81A760: kinds 0-6 (the game's tables), with an effect or none; the reference stood in for
+    {
+        Test x{0x81a760,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 0x60; k < 0x74; k += 4) *(uint32_t *)(self + k) = r.next();
+                   *(uint32_t *)(self + 0x64) = r.range(0, 3) ? (uint32_t)(uintptr_t)arena<void>(0x200) : 0;
+                   for (int k = 0; k < 0x14; k++) arena<uint32_t>(0x200)[k] = r.next();
+                   for (int k = 0; k < 3; k++) *(float *)(arena<uint8_t>(0x180) + 0x120 + k * 4) = r.real(-500, 500);
+                   arena<uint32_t>(0xf8)[0] = 0;
+                   arena<int32_t>(0x40)[0] = r.range(0, 6);
+               },
+               [](void *fn) {
+                   return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, int32_t))fn)(arena<void>(0x100), arena<int32_t>(0x40)[0])};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x833850, (void *)h2_animal_interface}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Skeleton::StepC1F960: 0-5 random planes, boxes and directions, spans of random ends (the real
+    // Plane::BoxCornerDistance)
+    Test skeleton_step_c1f960{0xc1f960,
+                              [=](Rng &r) {
+                                  uint8_t *self = arena<uint8_t>(0x100);
+                                  *(int32_t *)(self + 0xd0) = r.range(0, 5);
+                                  for (int i = 0; i < 5; i++) {
+                                      float *p = (float *)(self + 0x10 + i * 32);
+                                      for (int k = 0; k < 3; k++) p[k] = r.real(-1, 1);
+                                      p[4] = r.real(-5, 5);
+                                  }
+                                  for (int k = 0; k < 3; k++) arena<float>(0x40)[k] = r.real(-3, 0), arena<float>(0x50)[k] = r.real(0, 3), arena<float>(0x60)[k] = r.real(-1, 1);
+                                  arena<float>(0x70)[0] = r.real(-20, 5), arena<float>(0x70)[1] = r.real(-5, 20);
+                              },
+                              [](void *fn) {
+                                  ((void(__thiscall *)(void *, const void *, const void *, const void *, float *, float *))fn)(
+                                      arena<void>(0x100), arena<void>(0x40), arena<void>(0x50), arena<void>(0x60), arena<float>(0x70), arena<float>(0x70) + 1);
+                                  return Result{0};
+                              }};
+    quick(skeleton_step_c1f960);
+    // Category::Clear: random categories; the text assign and the list resize stood in for (they note their this and
+    // argument)
+    {
+        Test x{0x6bf800,
+               [=](Rng &r) {
+                   for (int k = 0; k < 0x20; k++) arena<uint32_t>(0x100)[k] = r.next();
+                   for (int k = 0; k < 5; k++) arena<uint32_t>(0xb0)[k] = 0;
+               },
+               [](void *fn) {
+                   ((void(__thiscall *)(void *))fn)(arena<void>(0x100));
+                   return Result{0};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x40a6e0, (void *)h2_slot_free}, {0x6bf490, (void *)h2_block_mark}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Math::CosineRuleC23650: triangles of random sides, flat ones (cosines of exactly -1 and 1) and impossible ones past
+    // both ends (the game's acos only ever sees -1..1)
+    Test math_cosinerule_c23650{0xc23650,
+                                [=](Rng &r) {
+                                    float *s = arena<float>(0x40);
+                                    s[1] = r.real(0.5f, 10), s[2] = r.real(0.5f, 10);
+                                    const int k = r.range(0, 5);
+                                    s[0] = k == 0 ? s[1] + s[2] : k == 1 ? fabsf(s[1] - s[2]) : k == 2 ? s[1] + s[2] + r.real(0.1f, 5) : r.real(fabsf(s[1] - s[2]), s[1] + s[2]);
+                                    if (k == 3 && r.range(0, 1)) s[0] = r.real(0, 0.2f);
+                                },
+                                [](void *fn) {
+                                    Result x;
+                                    float *s = arena<float>(0x40);
+                                    x.f = ((long double(__stdcall *)(float, float, float))fn)(s[0], s[1], s[2]);
+                                    return x;
+                                }};
+    quick(math_cosinerule_c23650);
+    // Effect::Init40BB90: random points, ups and directions (the real Matrix::LookAlongZSide)
+    Test effect_init_40bb90{0x40bb90,
+                            [=](Rng &r) {
+                                for (int k = 0; k < 0x10; k++) arena<uint32_t>(0x100)[k] = r.next();
+                                for (int k = 0; k < 12; k++) arena<float>(0x40)[k] = r.real(-1, 1);
+                            },
+                            [](void *fn) { return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x40))}; }};
+    quick(effect_init_40bb90);
 #endif

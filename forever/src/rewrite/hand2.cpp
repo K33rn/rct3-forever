@@ -13439,3 +13439,128 @@ static void __thiscall guest_grow_799a40(uint8_t *self, void *const *objects, in
 }
 static const uint8_t guest_grow_799a40_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x24, 0x53, 0x8b, 0x5d, 0x0c};
 REWRITE("Guest::Grow799A40", 0x799a40, guest_grow_799a40_original, &guest_grow_799a40, &g_guest_front_picks);
+
+// ---- Curves::StepC21520(p, n, t) (0xC21520): folds a sample p at step n with weight t into a running blend --------------
+// The blend (+0x10, 12 bytes) and the last finished one (+0x20) with weight +0x30 and step +0x34. A new step (n past
+// +0x34): the last becomes the blend when its weight is at least 1, else the rotation blend (Quaternion::Slerp, 0xC5A1F0)
+// of the last towards the blend by the weight; then the blend = p and the weight = t. The same step with t above 0: the
+// weight grows by t and the blend moves towards p by t over the new weight (that weight unrounded). +0x34 = n.
+static volatile long g_curve_blends;
+static void __thiscall curves_step_c21520(uint8_t *self, const uint32_t *p, int32_t n, float t) {
+    g_curve_blends++;
+    auto blend = (float *(__fastcall *)(float *, const float *, const float *, float))0xc5a1f0;
+    uint32_t *const now = (uint32_t *)(self + 0x10), *const last = (uint32_t *)(self + 0x20);
+    float out[3];
+    if (n > *(const int32_t *)(self + 0x34)) {
+        if (!(*(const float *)(self + 0x30) < *(const float *)0xf264dc)) last[0] = now[0], last[1] = now[1], last[2] = now[2];
+        else {
+            const uint32_t *const r = (const uint32_t *)blend(out, (const float *)last, (const float *)now, *(const float *)(self + 0x30));
+            last[0] = r[0], last[1] = r[1], last[2] = r[2];
+        }
+        *(float *)(self + 0x30) = t;
+        now[0] = p[0], now[1] = p[1], now[2] = p[2];
+    } else if (t > *(const float *)0xf264e0) {
+        const long double w = (long double)t + *(const float *)(self + 0x30);
+        *(volatile float *)(self + 0x30) = (float)w;
+        const float k = (float)((long double)t / w);
+        const uint32_t *const r = (const uint32_t *)blend(out, (const float *)now, (const float *)p, k);
+        now[0] = r[0], now[1] = r[1], now[2] = r[2];
+    }
+    *(int32_t *)(self + 0x34) = n;
+}
+static const uint8_t curves_step_c21520_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x14, 0x53, 0x8b, 0x5d, 0x0c};
+REWRITE("Curves::StepC21520", 0xc21520, curves_step_c21520_original, &curves_step_c21520, &g_curve_blends);
+
+// ---- SceneryBehaviour::Kind81A760(kind) (0x81A760): sets the behaviour's kind and passes it on to its effect -----------------
+// +0x70 = kind, +0x68 and +0x6C from the game's tables at 0x10F0718 and 0x10F0734. With an effect (+0x64): its +0x20 = the
+// referenced object's (0x833850) +0x120 point with 0xF32898 added to y, +0x30/+0x34 = +0x68/+0x6C, +0x38 from the table at
+// 0x10F0750 and +0x40 = 0. Gives the effect.
+static volatile long g_scenery_kinds;
+static uint8_t *__thiscall scenerybehaviour_kind_81a760(uint8_t *self, int32_t kind) {
+    g_scenery_kinds++;
+    *(int32_t *)(self + 0x70) = kind;
+    *(uint32_t *)(self + 0x68) = ((const uint32_t *)0x10f0718)[kind];
+    *(uint32_t *)(self + 0x6c) = ((const uint32_t *)0x10f0734)[kind];
+    if (!*(const uint32_t *)(self + 0x64)) return nullptr;
+    const float *const at = (const float *)(((const uint8_t *(__thiscall *)(uint8_t *))0x833850)(self) + 0x120);
+    volatile float *const e = (volatile float *)*(uint8_t *const *)(self + 0x64);
+    const float x = (float)(long double)at[0], z = (float)(long double)at[2];
+    e[8] = x;
+    e[9] = (float)((long double)at[1] + *(const float *)0xf32898);
+    e[10] = z;
+    uint8_t *const eff = *(uint8_t *const *)(self + 0x64);
+    *(uint32_t *)(eff + 0x30) = *(const uint32_t *)(self + 0x68);
+    *(uint32_t *)(eff + 0x34) = *(const uint32_t *)(self + 0x6c);
+    *(uint32_t *)(eff + 0x38) = ((const uint32_t *)0x10f0750)[*(const int32_t *)(self + 0x70)];
+    eff[0x40] = 0;
+    return eff;
+}
+static const uint8_t scenerybehaviour_kind_81a760_original[] = {0x55, 0x8b, 0xec, 0x83, 0xe4, 0xf0, 0x83, 0xec, 0x2c, 0x8b, 0x45, 0x08};
+REWRITE("SceneryBehaviour::Kind81A760", 0x81a760, scenerybehaviour_kind_81a760_original, &scenerybehaviour_kind_81a760, &g_scenery_kinds);
+
+// ---- Skeleton::StepC1F960(a, b, d, lo, hi) (0xC1F960): narrows a span along d by the skeleton's planes --------------------
+// For each plane (32 bytes from +0x10, count +0xD0) Plane::BoxCornerDistance (0xC1E7E0) of the box (a, b) along d gives a
+// side and a distance t: going in (-1) with t above *lo, *lo = the smaller of t and *hi as it was at the start; going out
+// (1) with t below *hi, *hi = the larger of t and *lo as it was at the start (a NaN t is taken).
+static volatile long g_skeleton_spans;
+static void __thiscall skeleton_step_c1f960(uint8_t *self, const float *a, const float *b, const float *d, float *lo, float *hi) {
+    g_skeleton_spans++;
+    const float lo0 = *lo, hi0 = *hi;
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0xd0); i++) {
+        float t;
+        const int32_t side = ((int32_t(__thiscall *)(uint8_t *, const float *, const float *, const float *, float *))0xc1e7e0)(self + 0x10 + i * 32, a, b, d, &t);
+        if (side == -1) {
+            if (t > *lo) *lo = hi0 > t ? t : hi0;
+        } else if (side == 1) {
+            if (t < *hi) *hi = lo0 < t || __builtin_isunordered(lo0, t) ? t : lo0;
+        }
+    }
+}
+static const uint8_t skeleton_step_c1f960_original[] = {0x83, 0xec, 0x0c, 0x8b, 0x44, 0x24, 0x1c, 0x8b, 0x54, 0x24, 0x20};
+REWRITE("Skeleton::StepC1F960", 0xc1f960, skeleton_step_c1f960_original, &skeleton_step_c1f960, &g_skeleton_spans);
+
+// ---- Category::Clear() (0x6BF800): clears a category's values ---------------------------------------------------------------
+// +4..+0x50 and +0x58..+0x68 become 0, the name (+0x54) is set to the text at 0xF61EC0 (Text::Assign40A6E0) and the list
+// at +0x6C is resized to 0 (0x6BF490).
+static volatile long g_category_clears;
+static void __thiscall category_clear(uint8_t *self) {
+    g_category_clears++;
+    for (uint32_t at = 4; at <= 0x50; at += 4) *(uint32_t *)(self + at) = 0;
+    for (uint32_t at = 0x58; at <= 0x68; at += 4) *(uint32_t *)(self + at) = 0;
+    ((void(__thiscall *)(uint8_t *, const char *))0x40a6e0)(self + 0x54, (const char *)0xf61ec0);
+    ((void(__thiscall *)(uint8_t *, int32_t))0x6bf490)(self + 0x6c, 0);
+}
+static const uint8_t category_clear_original[] = {0x56, 0x8b, 0xf1, 0x8d, 0x4e, 0x54, 0x57, 0x33, 0xff};
+REWRITE("Category::Clear", 0x6bf800, category_clear_original, &category_clear, &g_category_clears);
+
+// ---- Math::CosineRuleC23650(a, b, c) (0xC23650): the angle opposite side a of a triangle, by the cosine rule ----------------
+// v = ((b b + c c) - a a) / (b c + b c): at or below -1 gives pi; else v as a float at or past 1 gives 0, below it the game's
+// acos (0xDDEBC0) of that float.
+static volatile long g_cosine_rules;
+static long double __stdcall math_cosinerule_c23650(float a, float b, float c) {
+    g_cosine_rules++;
+    const long double bc = (long double)b * c;
+    const long double v = (((long double)b * b + (long double)c * c) - (long double)a * a) / (bc + bc);
+    volatile float vf = (float)v;
+    if (!(v > *(const float *)0xf268f0 || __builtin_isunordered(v, (long double)*(const float *)0xf268f0))) return *(const float *)0xf285f0;
+    if (!(vf < *(const float *)0xf264dc || __builtin_isunordered(vf, *(const float *)0xf264dc))) return *(const float *)0xf264e0;
+    return car_acos_h2(vf);
+}
+static const uint8_t math_cosinerule_c23650_original[] = {0xd9, 0x44, 0x24, 0x08, 0xd8, 0x4c, 0x24, 0x08, 0xd9, 0x44, 0x24, 0x0c};
+REWRITE("Math::CosineRuleC23650", 0xc23650, math_cosinerule_c23650_original, &math_cosinerule_c23650, &g_cosine_rules);
+
+// ---- Effect::Init40BB90(from) (0x40BB90): sets up a frame from a point, an up and a direction --------------------------------
+// +0xC, +0x1C and +0x2C get the largest float; +0, +0x10 and +0x20 the three 12-byte parts of from (at +0, +0x10, +0x20);
+// then the frame looks along its +0x20 with up +0x10 (Matrix::LookAlongZSide, 0xBEDAC0) and +0x30 = 0. Gives the frame.
+static volatile long g_effect_frame_inits;
+static uint8_t *__thiscall effect_init_40bb90(uint8_t *self, const uint32_t *from) {
+    g_effect_frame_inits++;
+    uint32_t *const s = (uint32_t *)self;
+    s[3] = s[7] = s[11] = 0x7f7fffff;
+    for (int k = 0; k < 3; k++) s[k] = from[k], s[4 + k] = from[4 + k], s[8 + k] = from[8 + k];
+    ((uint32_t(__thiscall *)(uint8_t *, const float *, const float *))0xbedac0)(self, (const float *)(self + 0x20), (const float *)(self + 0x10));
+    s[12] = 0;
+    return self;
+}
+static const uint8_t effect_init_40bb90_original[] = {0x56, 0x8b, 0xf1, 0xb8, 0xff, 0xff, 0x7f, 0x7f};
+REWRITE("Effect::Init40BB90", 0x40bb90, effect_init_40bb90_original, &effect_init_40bb90, &g_effect_frame_inits);

@@ -130,7 +130,7 @@ address,size,name,callers,status
 0x40b860,133,COMPACT4,1,rewritten
 0x40ba70,151,Record::CopyFields,1,rewritten
 0x40bb10,27,,0,documented
-0x40bb90,102,,0,documented
+0x40bb90,102,Effect::Init40BB90,0,rewritten
 0x40bc00,414,,2,documented
 0x40bda0,26,Rows::Ask40BDA0,3,rewritten
 0x40bdc0,26,Rows::Ask40BDA0,3,rewritten
@@ -7203,7 +7203,7 @@ address,size,name,callers,status
 0x6bf530,265,ObjectArray::SetCapacity,2,rewritten
 0x6bf640,299,,1,documented
 0x6bf770,141,,7,documented
-0x6bf800,106,,3,documented
+0x6bf800,106,Category::Clear,3,rewritten
 0x6bf870,126,,1,documented
 0x6bf900,159,,2,documented
 0x6bfaf0,87,,2,documented
@@ -10773,7 +10773,7 @@ address,size,name,callers,status
 0x81a570,107,Factory::CreateFromFields,0,rewritten
 0x81a610,40,Text::Widen,0,rewritten
 0x81a660,48,QueryInterface,0,rewritten
-0x81a760,170,,2,documented
+0x81a760,170,SceneryBehaviour::Kind81A760,2,rewritten
 0x81a8d0,30,DeletingDestructor,2,rewritten
 0x81aaf0,30,DeletingDestructor,2,rewritten
 0x81ab10,26,Object::GetRef,1,rewritten
@@ -20992,7 +20992,7 @@ address,size,name,callers,status
 0xc1e970,1340,,2,documented
 0xc1ef70,572,,2,documented
 0xc1f1b0,1957,,2,documented
-0xc1f960,191,,2,documented
+0xc1f960,191,Skeleton::StepC1F960,2,rewritten
 0xc1fc30,2635,Matrix::Invert4,29,rewritten
 0xc20680,138,Matrix::TurnPairs,5,rewritten
 0xc20710,131,Matrix::TurnPairs,4,rewritten
@@ -21021,7 +21021,7 @@ address,size,name,callers,status
 0xc21320,48,,5,documented
 0xc21380,40,,24,documented
 0xc213b0,325,Curves::StepC213B0,5,rewritten
-0xc21520,205,,9,documented
+0xc21520,205,Curves::StepC21520,9,rewritten
 0xc21610,349,Matrix::InverseTransform,0,rewritten
 0xc21770,525,Matrix::TransformRows,0,rewritten
 0xc219d0,152,Lerp::Current,0,rewritten
@@ -21036,7 +21036,7 @@ address,size,name,callers,status
 0xc23470,253,,5,documented
 0xc23570,78,,0,documented
 0xc235c0,134,,0,documented
-0xc23650,104,,1,documented
+0xc23650,104,Math::CosineRuleC23650,1,rewritten
 0xc236c0,427,List::PassC236C0,1,rewritten
 0xc23870,4182,,1,documented
 0xc248e0,2029,,1,documented
