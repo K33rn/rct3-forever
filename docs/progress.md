@@ -12,8 +12,8 @@ Understood   ██████████████████████�
 
 | Status | Functions | Code | Share of the game's code |
 |---|---:|---:|---:|
-| Rewritten | 12,980 | 2,186,071 bytes | 26.29% |
-| Documented, not rewritten yet | 12,739 | 6,130,678 bytes | 73.71% |
+| Rewritten | 12,985 | 2,186,666 bytes | 26.29% |
+| Documented, not rewritten yet | 12,734 | 6,130,083 bytes | 73.71% |
 | To do | 0 | 0 bytes | 0.00% |
 | **Game total** | **25,719** | **8,316,749 bytes** | |
 | Library code from Microsoft (stays as is; see [library.md](docs/notes/library.md)) | 2,850 | 874,041 bytes | |
@@ -4152,6 +4152,7 @@ Understood   ██████████████████████�
 | `0x747e80` | 30 | DeletingDestructor | 2 |
 | `0x747ea0` | 291 | Destructor::Steps | 1 |
 | `0x749120` | 160 | AvatarEditor::Tick | 1 |
+| `0x749b60` | 126 | Guest::Next749B60 | 5 |
 | `0x749be0` | 258 | ObjectArray::SetCapacity | 1 |
 | `0x749cf0` | 126 | ObjectRef::AssignWide | 1 |
 | `0x74d800` | 54 | Group::Update74D800 | 6 |
@@ -6097,6 +6098,7 @@ Understood   ██████████████████████�
 | `0x939530` | 26 | OwnedPointer::Reset | 2 |
 | `0x939550` | 97 | Record::CopyFields | 1 |
 | `0x939ac0` | 224 | Array::ResizeSized46CFB0 | 2 |
+| `0x939e40` | 119 | Park::Pass939E40 | 1 |
 | `0x939ec0` | 30 | DeletingDestructor | 1 |
 | `0x93c0b0` | 48 | QueryInterface | 0 |
 | `0x93c2c0` | 30 | DeletingDestructor | 1 |
@@ -6131,6 +6133,7 @@ Understood   ██████████████████████�
 | `0x941ef0` | 460 | Water::Range941EF0 | 3 |
 | `0x9420e0` | 44 | GlobalList::Each452E40 | 3 |
 | `0x942170` | 44 | GlobalList::Each452E40 | 1 |
+| `0x942320` | 126 | Water::Grow942320 | 7 |
 | `0x9465e0` | 89 | Queue::HasId | 1 |
 | `0x946f50` | 37 | Listed::Construct4535C0 | 3 |
 | `0x946f80` | 60 | Listener::~Listener | 9 |
@@ -8799,6 +8802,7 @@ Understood   ██████████████████████�
 | `0xb82690` | 26 | OwnedPointer::Reset | 1 |
 | `0xb826b0` | 130 | Array<4>::SetCapacity | 1 |
 | `0xb828d0` | 175 | Animal::AddTimeB828D0 | 3 |
+| `0xb829c0` | 110 | Animal::FindB829C0 | 5 |
 | `0xb82e30` | 230 | StructArrayLoad | 0 |
 | `0xb82f20` | 30 | DeletingDestructor | 1 |
 | `0xb82f50` | 117 | TEXT_CREATE3 | 2 |
@@ -9389,6 +9393,7 @@ Understood   ██████████████████████�
 | `0xbdbe10` | 43 | Twin::CopyBDBE10 | 2 |
 | `0xbdbeb0` | 30 | DeletingDestructor | 1 |
 | `0xbdc140` | 26 | Object::FreeTwoFields | 0 |
+| `0xbdc800` | 114 | VertexDeclaration::MoveBDC800 | 22 |
 | `0xbdc880` | 86 | Table::SumBDC880 | 1 |
 | `0xbdcaf0` | 32 | Object::FreeTwoTable | 3 |
 | `0xbdd0d0` | 88 | PackedRef::Resolve | 15 |
@@ -17542,7 +17547,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x749000` | 94 | - | 1 |
 | `0x7491e0` | 1,575 | - | 1 |
 | `0x749810` | 483 | - | 1 |
-| `0x749b60` | 126 | - | 5 |
 | `0x749d70` | 74 | - | 1 |
 | `0x749dc0` | 11,646 | - | 1 |
 | `0x74ccb0` | 50 | - | 1 |
@@ -20061,7 +20065,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x939a60` | 90 | - | 1 |
 | `0x939ba0` | 400 | - | 1 |
 | `0x939d40` | 254 | - | 1 |
-| `0x939e40` | 119 | - | 1 |
 | `0x939ee0` | 5,899 | - | 1 |
 | `0x93b5f0` | 1,877 | - | 4 |
 | `0x93bd50` | 816 | - | 1 |
@@ -20109,7 +20112,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0x942110` | 84 | - | 4 |
 | `0x9421a0` | 48 | - | 1 |
 | `0x942280` | 160 | - | 2 |
-| `0x942320` | 126 | - | 7 |
 | `0x9423a0` | 106 | - | 4 |
 | `0x942510` | 152 | - | 3 |
 | `0x942660` | 77 | - | 0 |
@@ -22964,7 +22966,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xb82840` | 36 | - | 0 |
 | `0xb82870` | 40 | - | 4 |
 | `0xb828a0` | 48 | - | 1 |
-| `0xb829c0` | 110 | - | 5 |
 | `0xb82a30` | 417 | - | 2 |
 | `0xb82be0` | 280 | - | 1 |
 | `0xb82fd0` | 232 | - | 1 |
@@ -23633,7 +23634,6 @@ Described in [the notes](notes/), [the exe map](exe-map.md) or [the research not
 | `0xbdc4f0` | 54 | - | 1 |
 | `0xbdc5c0` | 42 | - | 7 |
 | `0xbdc770` | 85 | - | 67 |
-| `0xbdc800` | 114 | - | 22 |
 | `0xbdc8e0` | 39 | - | 0 |
 | `0xbdc910` | 27 | - | 0 |
 | `0xbdc9b0` | 166 | - | 2 |

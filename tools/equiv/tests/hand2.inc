@@ -98,6 +98,13 @@ static void __thiscall h2_pool_grow(uint32_t *pool, int32_t n) {
     for (int32_t k = (int32_t)pool[3] - (int32_t)pool[2]; k < n - (int32_t)pool[2]; k++) free_list[k] = (uint32_t)(k * 5 + n) & 7;
     pool[3] = (uint32_t)n;
 }
+// a stand-in for Shared::Own (0xBCFFE0, this = the text's holder): notes each n at arena 0xA0 and sets the room to n when
+// above it (the arena already has the space)
+static void __thiscall h2_text_own(uint8_t **holder, uint32_t n) {
+    uint32_t *log = arena<uint32_t>(0xa0);
+    log[1 + (log[0]++ & 3)] = n;
+    if (n > *(uint32_t *)(*holder + 8)) *(uint32_t *)(*holder + 8) = n;
+}
 #else
     // Inflate::BuildHuffmanTable: complete, incomplete, all-zero and random code lengths for bit-length codes (s 19),
     // literals (s 257) and distances (s 0); sometimes little room left
@@ -7813,6 +7820,78 @@ static void __thiscall h2_pool_grow(uint32_t *pool, int32_t n) {
         x.prepare = [](const rewrite::Entry *e) {
             stubs_for_now({{e->at == 0x42a2b0u ? 0x42a050u : e->at == 0x430d00u ? 0x430690u : 0x90d7a0u, (void *)h2_list_grow}});
         };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Water::Grow942320, Park::Pass939E40 and Animal::FindB829C0: lists of 0-5 entries, full or not, n or keys within and
+    // past them; the grows stood in for (they note and set the new size)
+    for (uintptr_t at : {0x942320u, 0x939e40u, 0xb829c0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 0; k < 0x170; k += 4) *(uint32_t *)(self + k) = r.next();
+                   for (int k = 0; k < 0x100; k++) arena<uint32_t>(0x400)[k] = r.range(0, 3) ? r.range(0, 7) : r.next();
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+                   const int32_t c = r.range(0, 5);
+                   if (at == 0x942320u) {
+                       *(uint32_t *)(self + 0x160) = (uint32_t)(uintptr_t)arena<void>(0x400), *(int32_t *)(self + 0x164) = c;
+                       arena<int32_t>(0x40)[0] = r.range(0, 9);
+                   } else if (at == 0x939e40u) {
+                       *(uint32_t *)(self + 0xc) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                       *(int32_t *)(self + 0x14) = c, *(int32_t *)(self + 0x10) = r.range(0, 1) ? c : c + r.range(1, 3);
+                       *(int32_t *)(self + 0x18) = r.range(0, 9), *(int32_t *)(self + 0x34) = r.range(0, 2) ? r.range(1, 9) : 0;
+                   } else {
+                       *(uint32_t *)(self + 4) = (uint32_t)(uintptr_t)arena<void>(0x400), *(int32_t *)(self + 8) = c;
+                       arena<uint32_t>(0x40)[0] = r.range(0, 7);
+                   }
+               },
+               [at](void *fn) {
+                   if (at == 0x939e40u) return Result{((uint32_t(__thiscall *)(void *))fn)(arena<void>(0x100))};
+                   return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0])};
+               }};
+        x.prepare = [](const rewrite::Entry *e) {
+            stubs_for_now({{e->at == 0x942320u ? 0x940670u : e->at == 0x939e40u ? 0x939430u : 0xb82520u, (void *)h2_list_grow}});
+        };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // VertexDeclaration::MoveBDC800: 0-6 ordered entries of few kinds and values, new ones before, among and after them
+    // (the game's memmove really used)
+    Test vertexdeclaration_move_bdc800{0xbdc800,
+                                       [=](Rng &r) {
+                                           uint8_t *self = arena<uint8_t>(0x1000);
+                                           const int32_t c = r.range(0, 6);
+                                           uint16_t *e = (uint16_t *)(self + 0xc);
+                                           uint32_t key = 0;
+                                           for (int i = 0; i < 0x20; i++) e[i] = (uint16_t)r.next();
+                                           for (int i = 0; i < c; i++) {
+                                               key += r.range(0, 3);
+                                               e[i * 2] = (uint16_t)(key & 3), e[i * 2 + 1] = (uint16_t)((key >> 2 & 3) << 14 | r.range(0, 0x3fff));
+                                           }
+                                           *(int32_t *)(self + 0x20c) = c * 4;
+                                           arena<uint32_t>(0x40)[0] = r.next() & 0xffff0000 | r.range(0, 4);
+                                           arena<uint32_t>(0x40)[1] = r.next() & 0xffff0000 | r.range(0, 3) << 14 | r.range(0, 0x3fff);
+                                       },
+                                       [](void *fn) {
+                                           return Result{(uint32_t)((int32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x1000), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1])};
+                                       }};
+    quick(vertexdeclaration_move_bdc800);
+    // Guest::Next749B60: texts of 0-6 two-byte letters (a 0 inside at times), already ended or not, with room or not;
+    // Shared::Own stood in for
+    {
+        Test x{0x749b60,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100), *text = arena<uint8_t>(0x200);
+                   uint16_t *letters = arena<uint16_t>(0x300);
+                   *(uint32_t *)(self + 0x40) = (uint32_t)(uintptr_t)text;
+                   const uint32_t n = r.range(0, 6);
+                   for (int i = 0; i < 0x40; i++) letters[i] = (uint16_t)(r.range(0, 9) ? r.range(0x20, 0x17f) : 0);
+                   if (r.range(0, 1)) letters[n] = 0;
+                   *(uint32_t *)(text + 4) = n, *(uint32_t *)(text + 8) = n + r.range(0, 2), *(uint32_t *)(text + 0xc) = (uint32_t)(uintptr_t)letters;
+                   for (int k = 0; k < 5; k++) arena<uint32_t>(0xa0)[k] = 0;
+               },
+               [](void *fn) { return Result{(uint32_t)(uintptr_t)((char *(__thiscall *)(void *))fn)(arena<void>(0x100))}; }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xbcffe0, (void *)h2_text_own}}); };
         x.finish = [](const rewrite::Entry *) { unstub_many(); };
         quick(x);
     }

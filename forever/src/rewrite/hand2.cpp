@@ -12497,3 +12497,113 @@ static uint32_t __thiscall water_add_90f6f0(uint8_t *self, const uint32_t *p, fl
 }
 static const uint8_t water_add_90f6f0_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x48, 0x3b, 0x46, 0x44};
 REWRITE("Water::Add90F6F0", 0x90f6f0, water_add_90f6f0_original, &water_add_90f6f0, &g_water_point_adds);
+
+// ---- Water::Grow942320(n) (0x942320): counts one more use of slot n, growing the slots to reach it ----------------------
+// The slots (12 bytes, at +0x160, count +0x164): when n is at or past the count they grow (0x940670) to n + 4 rounded down
+// to 4, the new ones {0, 1, 0}. Slot n's +0 goes up and its +4 byte becomes 1. Gives n times 12.
+static volatile long g_water_slot_uses;
+static uint32_t __thiscall water_grow_942320(uint8_t *self, int32_t n) {
+    g_water_slot_uses++;
+    int32_t old = *(const int32_t *)(self + 0x164);
+    if (n >= old) {
+        ((void(__thiscall *)(uint8_t *, int32_t))0x940670)(self + 0x160, (n + 4) & ~3);
+        for (; old < *(const int32_t *)(self + 0x164); old++) {
+            uint8_t *const e = *(uint8_t *const *)(self + 0x160) + old * 12;
+            *(uint32_t *)e = 0, e[4] = 1, *(uint32_t *)(e + 8) = 0;
+        }
+    }
+    uint8_t *const e = *(uint8_t *const *)(self + 0x160) + n * 12;
+    (*(int32_t *)e)++;
+    e[4] = 1;
+    return (uint32_t)n * 12;
+}
+static const uint8_t water_grow_942320_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x8b, 0xe9, 0x57};
+REWRITE("Water::Grow942320", 0x942320, water_grow_942320_original, &water_grow_942320, &g_water_slot_uses);
+
+// ---- Park::Pass939E40() (0x939E40): closes the last 12-byte span and opens a new one -------------------------------------
+// Spans at +0xC (room +0x10, count +0x14): the last one's end (+4) = its start + the run (+0x18) + 1, and the run is reset.
+// The list grows by 8 (0x939430) when full; the new span is {+0x34 - 1 (0 for none), -1, -1}. Gives the old count times 3.
+static volatile long g_park_spans;
+static uint32_t __thiscall park_pass_939e40(uint8_t *self) {
+    g_park_spans++;
+    int32_t count = *(const int32_t *)(self + 0x14);
+    if (count > 0) {
+        int32_t *const last = (int32_t *)(*(uint8_t *const *)(self + 0xc) + (count - 1) * 12);
+        last[1] = *(const int32_t *)(self + 0x18) + last[0] + 1;
+    }
+    *(int32_t *)(self + 0x18) = 0;
+    if (count >= *(const int32_t *)(self + 0x10)) ((void(__thiscall *)(uint8_t *, int32_t))0x939430)(self + 0xc, count + 8);
+    const int32_t at = *(const int32_t *)(self + 0x34);
+    count = *(const int32_t *)(self + 0x14);
+    int32_t *const e = (int32_t *)(*(uint8_t *const *)(self + 0xc) + count * 12);
+    e[0] = at ? at - 1 : 0, e[1] = -1, e[2] = -1;
+    *(int32_t *)(self + 0x14) = count + 1;
+    return (uint32_t)count * 3;
+}
+static const uint8_t park_pass_939e40_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x46, 0x14, 0x85, 0xc0};
+REWRITE("Park::Pass939E40", 0x939e40, park_pass_939e40_original, &park_pass_939e40, &g_park_spans);
+
+// ---- Animal::FindB829C0(key) (0xB829C0): the 20-byte entry for a key, added when missing --------------------------------
+// Entries at +4 (count +8): the first whose +0 is key; else the list grows by one (0xB82520) and the new last entry is
+// {key, 0, 0, 0}. Gives the entry.
+static volatile long g_animal_key_finds;
+static uint32_t *__thiscall animal_find_b829c0(uint8_t *self, uint32_t key) {
+    g_animal_key_finds++;
+    const int32_t count = *(const int32_t *)(self + 8);
+    uint32_t *const first = *(uint32_t *const *)(self + 4);
+    for (int32_t i = 0; i < count; i++)
+        if (first[i * 5] == key) return first + i * 5;
+    ((void(__thiscall *)(uint8_t *, int32_t))0xb82520)(self + 4, count + 1);
+    uint32_t *const e = *(uint32_t *const *)(self + 4) + count * 5;
+    e[0] = key, e[1] = 0, e[2] = 0, e[3] = 0;
+    return e;
+}
+static const uint8_t animal_find_b829c0_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x57, 0x8b, 0x79, 0x08};
+REWRITE("Animal::FindB829C0", 0xb829c0, animal_find_b829c0_original, &animal_find_b829c0, &g_animal_key_finds);
+
+// ---- VertexDeclaration::MoveBDC800(a, b) (0xBDC800): inserts a two-word entry in order -----------------------------------
+// Entries {a, b} (4 bytes) at +0xC, +0x20C bytes in use, kept ordered by b's top two bits then a: the new one goes before
+// the first that sorts after it (the rest moved up with the game's memmove, 0xDDF260); +0x20C grows by 4 and is given.
+static volatile long g_declaration_inserts;
+static int32_t __thiscall vertexdeclaration_move_bdc800(uint8_t *self, uint32_t a32, uint32_t b32) {
+    g_declaration_inserts++;
+    const uint16_t a = (uint16_t)a32, b = (uint16_t)b32;
+    uint8_t *e = self + 0xc;
+    uint8_t *const end = self + 0xc + *(const int32_t *)(self + 0x20c);
+    for (; e < end; e += 4) {
+        const uint16_t kind = *(const uint16_t *)(e + 2) >> 14;
+        if (kind > (b >> 14) || (kind == (b >> 14) && *(const uint16_t *)e > a)) break;
+    }
+    ((void *(__cdecl *)(void *, const void *, size_t))0xddf260)(e + 4, e, (size_t)(end - e));
+    *(uint16_t *)e = a, *(uint16_t *)(e + 2) = b;
+    return *(int32_t *)(self + 0x20c) += 4;
+}
+static const uint8_t vertexdeclaration_move_bdc800_original[] = {0x53, 0x66, 0x8b, 0x5c, 0x24, 0x08, 0x55};
+REWRITE("VertexDeclaration::MoveBDC800", 0xbdc800, vertexdeclaration_move_bdc800_original, &vertexdeclaration_move_bdc800, &g_declaration_inserts);
+
+// ---- Guest::Next749B60() (0x749B60): a byte copy of the guest's two-byte text, kept just after it ----------------------
+// The text at +0x40 (length +4, room +8, letters +0xC): made its own with room for the length (Shared::Own, 0xBCFFE0) and
+// ended with a 0 unless that is already so, then given room for (length + 1) 3; the letters up to the first 0 are copied
+// as bytes (their low halves) after the ending 0, and ended. Gives the copy.
+static volatile long g_guest_byte_texts;
+static char *__thiscall guest_next_749b60(uint8_t *self) {
+    g_guest_byte_texts++;
+    uint8_t **const text = (uint8_t **)(self + 0x40);
+    auto own = (void(__thiscall *)(uint8_t **, uint32_t))0xbcffe0;
+    auto len = [&] { return *(const uint32_t *)(*text + 4); };
+    auto letters = [&] { return *(uint16_t *const *)(*text + 0xc); };
+    if (!(*(const uint32_t *)(*text + 8) > len() && letters()[len()] == 0)) {
+        own(text, len());
+        letters()[len()] = 0;
+    }
+    own(text, (len() + 1) * 3);
+    const uint32_t n = len();
+    const uint16_t *const from = letters();
+    char *const to = (char *)(from + n + 1);
+    uint32_t i = 0;
+    for (; i < n && from[i]; i++) to[i] = (char)from[i];
+    to[i] = 0;
+    return (char *)(letters() + len() + 1);
+}
+static const uint8_t guest_next_749b60_original[] = {0x8b, 0x41, 0x40, 0x8b, 0x50, 0x08, 0x55, 0x56};
+REWRITE("Guest::Next749B60", 0x749b60, guest_next_749b60_original, &guest_next_749b60, &g_guest_byte_texts);

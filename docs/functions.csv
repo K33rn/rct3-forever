@@ -8693,7 +8693,7 @@ address,size,name,callers,status
 0x749120,160,AvatarEditor::Tick,1,rewritten
 0x7491e0,1575,,1,documented
 0x749810,483,,1,documented
-0x749b60,126,,5,documented
+0x749b60,126,Guest::Next749B60,5,rewritten
 0x749be0,258,ObjectArray::SetCapacity,1,rewritten
 0x749cf0,126,ObjectRef::AssignWide,1,rewritten
 0x749d70,74,,1,documented
@@ -13157,7 +13157,7 @@ address,size,name,callers,status
 0x939ac0,224,Array::ResizeSized46CFB0,2,rewritten
 0x939ba0,400,,1,documented
 0x939d40,254,,1,documented
-0x939e40,119,,1,documented
+0x939e40,119,Park::Pass939E40,1,rewritten
 0x939ec0,30,DeletingDestructor,1,rewritten
 0x939ee0,5899,,1,documented
 0x93b5f0,1877,,4,documented
@@ -13239,7 +13239,7 @@ address,size,name,callers,status
 0x942170,44,GlobalList::Each452E40,1,rewritten
 0x9421a0,48,,1,documented
 0x942280,160,,2,documented
-0x942320,126,,7,documented
+0x942320,126,Water::Grow942320,7,rewritten
 0x9423a0,106,,4,documented
 0x942510,152,,3,documented
 0x942660,77,,0,documented
@@ -18762,7 +18762,7 @@ address,size,name,callers,status
 0xb82870,40,,4,documented
 0xb828a0,48,,1,documented
 0xb828d0,175,Animal::AddTimeB828D0,3,rewritten
-0xb829c0,110,,5,documented
+0xb829c0,110,Animal::FindB829C0,5,rewritten
 0xb82a30,417,,2,documented
 0xb82be0,280,,1,documented
 0xb82e30,230,StructArrayLoad,0,rewritten
@@ -20021,7 +20021,7 @@ address,size,name,callers,status
 0xbdc4f0,54,,1,documented
 0xbdc5c0,42,,7,documented
 0xbdc770,85,,67,documented
-0xbdc800,114,,22,documented
+0xbdc800,114,VertexDeclaration::MoveBDC800,22,rewritten
 0xbdc880,86,Table::SumBDC880,1,rewritten
 0xbdc8e0,39,,0,documented
 0xbdc910,27,,0,documented
