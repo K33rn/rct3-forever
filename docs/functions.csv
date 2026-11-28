@@ -3752,7 +3752,7 @@ address,size,name,callers,status
 0x557cc0,26,OwnedPointer::Reset,2,rewritten
 0x557ce0,59,Array<16>::Allocate,0,rewritten
 0x557d20,157,Array<16>::SetCapacity,1,rewritten
-0x557dc0,168,,4,documented
+0x557dc0,168,Ride::Pass557DC0,4,rewritten
 0x557e70,99,Entries::Differs,1,rewritten
 0x557ee0,1043,,2,documented
 0x558380,2554,,1,documented
@@ -11666,7 +11666,7 @@ address,size,name,callers,status
 0x863140,2288,,4,documented
 0x863a60,226,Plain::Resize863A60,2,rewritten
 0x863b60,28,Object::FreeField,4,rewritten
-0x863b80,165,,1,documented
+0x863b80,165,Scenery::Copy863B80,1,rewritten
 0x863c30,985,,3,documented
 0x864010,317,Scenery::ShapeBox,0,rewritten
 0x864150,1134,,15,documented
@@ -12973,7 +12973,7 @@ address,size,name,callers,status
 0x91ca60,105,OwnedPair::FreeFields,4,rewritten
 0x91cad0,3316,,1,documented
 0x91d7d0,159,,4,documented
-0x91d8c0,188,,1,documented
+0x91d8c0,188,Water::Add91D8C0,1,rewritten
 0x91d980,293,StructArrayField<28>::Save,1,rewritten
 0x91dab0,124,StructArrayField<28>::Size,1,rewritten
 0x91db90,293,StructArrayField<44>::Save,1,rewritten
@@ -13138,7 +13138,7 @@ address,size,name,callers,status
 0x938030,1117,,1,documented
 0x9384a0,324,,1,documented
 0x9385f0,71,,0,documented
-0x938670,167,,2,documented
+0x938670,167,Water::Find938670,2,rewritten
 0x938720,1094,,1,documented
 0x938b70,349,,6,documented
 0x938cd0,168,,40,documented
@@ -16207,7 +16207,7 @@ address,size,name,callers,status
 0xa6ff20,608,Array::ResizeRecords,1,rewritten
 0xa70180,600,,1,documented
 0xa70400,225,,2,documented
-0xa704f0,186,,0,documented
+0xa704f0,186,Animal::StepA704F0,0,rewritten
 0xa705b0,6896,,1,documented
 0xa720b0,3759,,1,documented
 0xa72f80,3675,,3,documented
@@ -17475,7 +17475,7 @@ address,size,name,callers,status
 0xafda30,122,,1,documented
 0xafdaf0,368,,2,documented
 0xafdc60,69,,1,documented
-0xafdcb0,180,,0,documented
+0xafdcb0,180,Animal::StepAFDCB0,0,rewritten
 0xafdd70,330,,1,documented
 0xafdec0,182,,1,documented
 0xafdf80,30,DeletingDestructor,1,rewritten
@@ -22987,7 +22987,7 @@ address,size,name,callers,status
 0xce2fa0,151,Array<12>::SetCapacity,1,rewritten
 0xce3040,185,,2,documented
 0xce3100,92,Table::RemoveCE3100,2,rewritten
-0xce3160,168,,8,documented
+0xce3160,168,Table::SetCE3160,8,rewritten
 0xce3210,61,,1,documented
 0xce3250,93,Table::RemoveCE3250,1,rewritten
 0xce32b0,269,,3,documented

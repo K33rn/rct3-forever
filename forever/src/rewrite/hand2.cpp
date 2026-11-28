@@ -12977,3 +12977,166 @@ static int32_t __thiscall shader_parse_cbbe20(uint8_t *self, const char *s) {
 }
 static const uint8_t shader_parse_cbbe20_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x8d, 0x69, 0x20};
 REWRITE("Shader::ParseCBBE20", 0xcbbe20, shader_parse_cbbe20_original, &shader_parse_cbbe20, &g_shader_appends);
+
+// ---- Water::Add91D8C0(a, b, q) (0x91D8C0): adds a 28-byte record {-, a, b, q (16 bytes)} ----------------------------------
+// The list at +0x110 (room +0x114, count +0x118) grows by 16 (0x91C630) when full. Gives the new count.
+static volatile long g_water_quad_adds;
+static int32_t __thiscall water_add_91d8c0(uint8_t *self, uint32_t a, uint32_t b, const uint32_t *q) {
+    g_water_quad_adds++;
+    const int32_t count = *(const int32_t *)(self + 0x118);
+    if (count >= *(const int32_t *)(self + 0x114)) ((void(__thiscall *)(uint8_t *, int32_t))0x91c630)(self + 0x110, count + 16);
+    uint32_t *const e = (uint32_t *)(*(uint8_t *const *)(self + 0x110) + *(const int32_t *)(self + 0x118) * 0x1c);
+    e[1] = a, e[2] = b, e[3] = q[0], e[4] = q[1], e[5] = q[2], e[6] = q[3];
+    return ++*(int32_t *)(self + 0x118);
+}
+static const uint8_t water_add_91d8c0_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0x18, 0x01, 0x00, 0x00};
+REWRITE("Water::Add91D8C0", 0x91d8c0, water_add_91d8c0_original, &water_add_91d8c0, &g_water_quad_adds);
+
+// ---- Scenery::Copy863B80(from) (0x863B80): copies a piece of scenery's fields, its 28-byte records included -----------------
+// +0, the bytes +4 and +5, +8, +0xC..+0x18, +0x1C, +0x20 and the byte +0x24; the records (+0x28, count +0x2C) resized to
+// from's count (Plain::Resize863A60) and copied; +0x30, the byte +0x34 and +0x38..+0x44. The original leaves from's +0x40 in
+// eax: kept.
+static volatile long g_scenery_copies;
+static uint32_t __thiscall scenery_copy_863b80(uint8_t *self, const uint8_t *from) {
+    g_scenery_copies++;
+    auto dw = [&](uint32_t at) { *(uint32_t *)(self + at) = *(const uint32_t *)(from + at); };
+    dw(0), self[4] = from[4], self[5] = from[5], dw(8);
+    for (uint32_t at = 0xc; at <= 0x20; at += 4) dw(at);
+    self[0x24] = from[0x24];
+    const int32_t n = *(const int32_t *)(from + 0x2c);
+    ((void(__thiscall *)(uint8_t *, int32_t))0x863a60)(self + 0x28, n);
+    for (int32_t i = 0; i < n; i++)
+        for (int32_t k = 0; k < 7; k++)
+            ((uint32_t *)(*(uint8_t *const *)(self + 0x28) + i * 0x1c))[k] = ((const uint32_t *)(*(const uint8_t *const *)(from + 0x28) + i * 0x1c))[k];
+    dw(0x30), self[0x34] = from[0x34];
+    for (uint32_t at = 0x38; at <= 0x44; at += 4) dw(at);
+    return *(const uint32_t *)(from + 0x40);
+}
+static const uint8_t scenery_copy_863b80_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x8b, 0x03, 0x55, 0x8b, 0xe9};
+REWRITE("Scenery::Copy863B80", 0x863b80, scenery_copy_863b80_original, &scenery_copy_863b80, &g_scenery_copies);
+
+// ---- Ride::Pass557DC0(a, b, bits, d) (0x557DC0): ors bits into the 16-byte entry for (a, b, d), added when missing -------
+// Marks +0x90. Entries at +0x94 (count +0x98) hold {a, b, bits, d}: found, bits is ored into its +8, which is given. Else
+// the list grows by one (0x557D20) and the new entry is {a, b, bits, d}; the original leaves its offset in eax: kept.
+static volatile long g_ride_bit_entries;
+static uint32_t __thiscall ride_pass_557dc0(uint8_t *self, uint32_t a, uint32_t b, uint32_t bits, uint32_t d) {
+    g_ride_bit_entries++;
+    const int32_t count = *(const int32_t *)(self + 0x98);
+    self[0x90] = 1;
+    for (int32_t i = 0; i < *(const int32_t *)(self + 0x98); i++) {
+        uint32_t *const e = *(uint32_t *const *)(self + 0x94) + i * 4;
+        if (e[0] == a && e[1] == b && e[3] == d) {
+            e[2] |= bits;
+            return (uint32_t)(uintptr_t)(e + 2);
+        }
+    }
+    ((void(__thiscall *)(uint8_t *, int32_t))0x557d20)(self + 0x94, count + 1);
+    uint32_t *const e = *(uint32_t *const *)(self + 0x94) + count * 4;
+    e[0] = a, e[1] = b, e[3] = d, e[2] = bits;
+    return (uint32_t)count << 4;
+}
+static const uint8_t ride_pass_557dc0_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x14, 0x55, 0x8b, 0x6c, 0x24, 0x10};
+REWRITE("Ride::Pass557DC0", 0x557dc0, ride_pass_557dc0_original, &ride_pass_557dc0, &g_ride_bit_entries);
+
+// ---- Water::Find938670(key, a, b) (0x938670): adds to the 16-byte totals kept for a key, adding it when missing -----------
+// Entries at +0x40 (count +0x3C, room +0x44) keep the key at +4 (two bytes): when missing a new one {0xFFFF, 0xFFFF, key,
+// 0, 0, 0} is added (grown by 0x100 by 0x9377D0 when full). Its +6 byte counts up, +8 += a and +0xC += b (floats). Gives its
+// number (in ax; the entry's upper half above it).
+static volatile long g_water_key_totals;
+static uint32_t __thiscall water_find_938670(uint8_t *self, uint32_t key32, float a, float b) {
+    g_water_key_totals++;
+    const uint16_t key = (uint16_t)key32;
+    const int32_t count = *(const int32_t *)(self + 0x3c);
+    uint16_t i = 0;
+    for (int32_t k = 0; k < *(const int32_t *)(self + 0x3c); k++, i++)
+        if (*(const uint16_t *)(*(const uint8_t *const *)(self + 0x40) + k * 16 + 4) == key) break;
+    if ((int32_t)i == count) {
+        if (count >= *(const int32_t *)(self + 0x44)) ((void(__thiscall *)(uint8_t *, int32_t))0x9377d0)(self + 0x40, count + 0x100);
+        const int32_t n = (*(int32_t *)(self + 0x3c))++;
+        uint8_t *const e = *(uint8_t *const *)(self + 0x40) + n * 16;
+        *(uint16_t *)e = 0xffff, *(uint16_t *)(e + 2) = 0xffff, *(uint16_t *)(e + 4) = key, e[6] = 0;
+        *(uint32_t *)(e + 8) = 0, *(uint32_t *)(e + 0xc) = 0;
+    }
+    uint8_t *const e = *(uint8_t *const *)(self + 0x40) + i * 16;
+    *(volatile float *)(e + 8) = (float)((long double)a + *(const float *)(e + 8));
+    e[6]++;
+    *(volatile float *)(e + 0xc) = (float)((long double)b + *(const float *)(e + 0xc));
+    return ((uint32_t)(uintptr_t)e & 0xffff0000u) | i;
+}
+static const uint8_t water_find_938670_original[] = {0x53, 0x66, 0x8b, 0x5c, 0x24, 0x08, 0x55, 0x56};
+REWRITE("Water::Find938670", 0x938670, water_find_938670_original, &water_find_938670, &g_water_key_totals);
+
+// ---- Table::SetCE3160(a, b) (0xCE3160): sets b on the slot for a, adding the slot when missing -----------------------------
+// Table::RemoveCE3100 (0xCE3100) finds (a, a): found (not 0xFFFF), its 16-byte entry (+0x14) gets b at +6 and the find's
+// result is given. Else the count's (+0x1C) entry k is added (room +0x18, grown by 0x100 by 0xCE2E30): {a, a, b, 0xFFFF,
+// a's last slot twice (two-byte table at +8), the +2 half of a's +0x10 entry}; a's last slot becomes k. Gives k (in ax; the
+// table's upper half above it).
+static volatile long g_table_slot_sets;
+static uint32_t __thiscall table_set_ce3160(uint8_t *self, uint32_t a32, uint32_t b32) {
+    g_table_slot_sets++;
+    const uint32_t found = ((uint32_t(__thiscall *)(uint8_t *, uint32_t, uint32_t))0xce3100)(self, a32, a32);
+    if ((uint16_t)found != 0xffff) {
+        *(uint16_t *)(*(uint8_t *const *)(self + 0x14) + (found & 0xffff) * 16 + 6) = (uint16_t)b32;
+        return found;
+    }
+    const int32_t count = *(const int32_t *)(self + 0x1c);
+    const uint16_t k = (uint16_t)count, a = (uint16_t)a32;
+    *(int32_t *)(self + 0x1c) = count + 1;
+    const int32_t room = *(const int32_t *)(self + 0x18);
+    if (k == room) ((void(__thiscall *)(uint8_t *, int32_t))0xce2e30)(self + 0x14, room + 0x100);
+    uint16_t *const e = (uint16_t *)(*(uint8_t *const *)(self + 0x14) + k * 16);
+    uint16_t *const last = *(uint16_t *const *)(self + 8);
+    e[0] = a, e[1] = a, e[4] = last[a], e[5] = last[a];
+    e[2] = (uint16_t)b32, e[3] = 0xffff;
+    e[6] = (*(const uint16_t *const *)(self + 0x10))[a * 2 + 1];
+    (*(uint16_t *const *)(self + 8))[a] = k;
+    return (*(const uint32_t *)(self + 8) & 0xffff0000u) | k;
+}
+static const uint8_t table_set_ce3160_original[] = {0x53, 0x8b, 0x5c, 0x24, 0x08, 0x56, 0x53, 0x53};
+REWRITE("Table::SetCE3160", 0xce3160, table_set_ce3160_original, &table_set_ce3160, &g_table_slot_sets);
+
+// ---- Animal::StepA704F0(a, b, c, d) (0xA704F0): adds a 48-byte record of two triples and two values ----------------------
+// The list at +0x50B4 (room +0x50B8, count +0x50BC) grows (Array::ResizeRecords 0xA6FF20) to twice its count, or 16 for
+// none, when full; the record gets a at +0, b at +0x10 (12 bytes each), c at +0x20 and d at +0x24. The original leaves the
+// entries' address in eax: kept.
+static volatile long g_animal_record_adds;
+static uint8_t *__thiscall animal_step_a704f0(uint8_t *self, const uint32_t *a, const uint32_t *b, uint32_t c, uint32_t d) {
+    g_animal_record_adds++;
+    const int32_t count = *(const int32_t *)(self + 0x50bc);
+    if (count >= *(const int32_t *)(self + 0x50b8)) ((void(__thiscall *)(uint8_t *, int32_t))0xa6ff20)(self + 0x50b4, count > 0 ? count * 2 : 16);
+    uint8_t *const data = *(uint8_t *const *)(self + 0x50b4);
+    uint32_t *const e = (uint32_t *)(data + *(const int32_t *)(self + 0x50bc) * 48);
+    e[0] = a[0], e[1] = a[1], e[2] = a[2];
+    e[4] = b[0], e[5] = b[1], e[6] = b[2];
+    e[8] = c, e[9] = d;
+    (*(int32_t *)(self + 0x50bc))++;
+    return data;
+}
+static const uint8_t animal_step_a704f0_original[] = {0x56, 0x8b, 0xf1, 0x8b, 0x86, 0xbc, 0x50, 0x00, 0x00};
+REWRITE("Animal::StepA704F0", 0xa704f0, animal_step_a704f0_original, &animal_step_a704f0, &g_animal_record_adds);
+
+// ---- Animal::StepAFDCB0(p, q, n) (0xAFDCB0): fills a 48-byte slot with two triples, taking a free one when n is 0 ------------
+// Slot n - 1 when n is given; else the last of the free list (+0x1088, count +0x1090), or a new one at the end (+0x107C,
+// count +0x1084, room +0x1080; grown to the count + 5 by 0xAFD3B0 when the next would not fit). The slot gets 1 at +0, p
+// at +0x10 and q at +0x20. Gives its number + 1.
+static volatile long g_animal_slot_fills;
+static int32_t __thiscall animal_step_afdcb0(uint8_t *self, const uint32_t *p, const uint32_t *q, int32_t n) {
+    g_animal_slot_fills++;
+    int32_t slot;
+    if (n) slot = n - 1;
+    else if (*(const int32_t *)(self + 0x1090)) {
+        const int32_t k = --*(int32_t *)(self + 0x1090);
+        slot = (*(const int32_t *const *)(self + 0x1088))[k];
+    } else {
+        const int32_t count = *(const int32_t *)(self + 0x1084);
+        if (count + 1 >= *(const int32_t *)(self + 0x1080)) ((void(__thiscall *)(uint8_t *, int32_t))0xafd3b0)(self + 0x107c, count + 5);
+        slot = (*(int32_t *)(self + 0x1084))++;
+    }
+    uint8_t *const e = *(uint8_t *const *)(self + 0x107c) + slot * 48;
+    e[0] = 1;
+    ((uint32_t *)e)[4] = p[0], ((uint32_t *)e)[5] = p[1], ((uint32_t *)e)[6] = p[2];
+    ((uint32_t *)e)[8] = q[0], ((uint32_t *)e)[9] = q[1], ((uint32_t *)e)[10] = q[2];
+    return slot + 1;
+}
+static const uint8_t animal_step_afdcb0_original[] = {0x53, 0x56, 0x8b, 0xf1, 0x8b, 0x4c, 0x24, 0x14};
+REWRITE("Animal::StepAFDCB0", 0xafdcb0, animal_step_afdcb0_original, &animal_step_afdcb0, &g_animal_slot_fills);

@@ -8262,4 +8262,115 @@ static uint32_t __thiscall h2_animals_pass(void *self) {
         x.finish = [](const rewrite::Entry *) { unstub_many(); };
         quick(x);
     }
+    // Water::Add91D8C0, Scenery::Copy863B80 and Ride::Pass557DC0: lists of 0-4 entries (full or not, found or not), random
+    // fields and records; the grows and resize stood in for
+    for (uintptr_t at : {0x91d8c0u, 0x863b80u, 0x557dc0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100), *from = arena<uint8_t>(0x300);
+                   for (int k = 0; k < 0x120; k += 4) *(uint32_t *)(self + k) = r.next(), *(uint32_t *)(from + k) = r.next();
+                   for (int k = 0; k < 0x40; k++) arena<uint32_t>(0x400)[k] = r.range(0, 2), arena<uint32_t>(0x600)[k] = r.next();
+                   for (int k = 0; k < 4; k++) arena<uint32_t>(0x40)[k] = r.range(0, 2), arena<uint32_t>(0x60)[k] = r.next();
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+                   const int32_t c = r.range(0, 4);
+                   if (at == 0x91d8c0u) {
+                       *(uint32_t *)(self + 0x110) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                       *(int32_t *)(self + 0x118) = c, *(int32_t *)(self + 0x114) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   } else if (at == 0x863b80u) {
+                       *(uint32_t *)(self + 0x28) = (uint32_t)(uintptr_t)arena<void>(0x400), *(int32_t *)(self + 0x2c) = r.range(0, 4);
+                       *(uint32_t *)(from + 0x28) = (uint32_t)(uintptr_t)arena<void>(0x600), *(int32_t *)(from + 0x2c) = c;
+                   } else {
+                       *(uint32_t *)(self + 0x94) = (uint32_t)(uintptr_t)arena<void>(0x400), *(int32_t *)(self + 0x98) = c;
+                   }
+               },
+               [at](void *fn) {
+                   uint32_t *v = arena<uint32_t>(0x40);
+                   if (at == 0x91d8c0u) return Result{(uint32_t)((int32_t(__thiscall *)(void *, uint32_t, uint32_t, const void *))fn)(arena<void>(0x100), v[0], v[1], arena<void>(0x60))};
+                   if (at == 0x863b80u) return Result{((uint32_t(__thiscall *)(void *, const void *))fn)(arena<void>(0x100), arena<void>(0x300))};
+                   return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t, uint32_t, uint32_t))fn)(arena<void>(0x100), v[0], v[1], arena<uint32_t>(0x60)[0], v[3])};
+               }};
+        x.prepare = [](const rewrite::Entry *e) {
+            stubs_for_now({{e->at == 0x91d8c0u ? 0x91c630u : e->at == 0x863b80u ? 0x863a60u : 0x557d20u, (void *)h2_list_grow}});
+        };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Water::Find938670: 0-4 entries with keys 0-3 (high halves random), keys found or not, full or not; the grow stood in for
+    {
+        Test x{0x938670,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 0; k < 0x48; k += 4) *(uint32_t *)(self + k) = r.next();
+                   const int32_t c = r.range(0, 4);
+                   *(uint32_t *)(self + 0x40) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(int32_t *)(self + 0x3c) = c, *(int32_t *)(self + 0x44) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   for (int k = 0; k < 0x40; k++) arena<uint32_t>(0x400)[k] = r.next();
+                   for (int k = 0; k < 8; k++) arena<uint16_t>(0x404)[k * 8] = (uint16_t)r.range(0, 3), arena<float>(0x408)[k * 4] = r.real(-9, 9), arena<float>(0x40c)[k * 4] = r.real(-9, 9);
+                   arena<uint32_t>(0x40)[0] = r.next() & 0xffff0000 | r.range(0, 4);
+                   arena<float>(0x40)[1] = r.real(-5, 5), arena<float>(0x40)[2] = r.real(-5, 5);
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+               },
+               [](void *fn) {
+                   return Result{((uint32_t(__thiscall *)(void *, uint32_t, float, float))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<float>(0x40)[1], arena<float>(0x40)[2])};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0x9377d0, (void *)h2_list_grow}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Table::SetCE3160: the find giving a slot or 0xFFFF (high halves random), lists full or not, a 0-7; the find and grow
+    // stood in for
+    {
+        Test x{0xce3160,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x100);
+                   for (int k = 0; k < 0x20; k += 4) *(uint32_t *)(self + k) = r.next();
+                   const int32_t c = r.range(0, 4);
+                   *(uint32_t *)(self + 8) = (uint32_t)(uintptr_t)arena<void>(0x600), *(uint32_t *)(self + 0x10) = (uint32_t)(uintptr_t)arena<void>(0x700);
+                   *(uint32_t *)(self + 0x14) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                   *(int32_t *)(self + 0x1c) = c, *(int32_t *)(self + 0x18) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   for (int k = 0; k < 0x40; k++) arena<uint32_t>(0x400)[k] = r.next(), arena<uint32_t>(0x600)[k] = r.next(), arena<uint32_t>(0x700)[k] = r.next();
+                   arena<uint32_t>(0xd0)[0] = (r.next() & 0xffff0000) | (r.range(0, 1) ? r.range(0, 4) : 0xffff);
+                   for (int k = 1; k < 4; k++) arena<uint32_t>(0xd0)[k] = 0;
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+                   arena<uint32_t>(0x40)[0] = r.next() & 0xffff0000 | r.range(0, 7), arena<uint32_t>(0x40)[1] = r.next();
+               },
+               [](void *fn) {
+                   return Result{((uint32_t(__thiscall *)(void *, uint32_t, uint32_t))fn)(arena<void>(0x100), arena<uint32_t>(0x40)[0], arena<uint32_t>(0x40)[1])};
+               }};
+        x.prepare = [](const rewrite::Entry *) { stubs_for_now({{0xce3100, (void *)h2_edge_find}, {0xce2e30, (void *)h2_list_grow}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
+    // Animal::StepA704F0 and Animal::StepAFDCB0: lists of 0-4 records, full or not (the empty one grows to 16), free lists
+    // of 0-3 slots, n 0-4; the grows stood in for
+    for (uintptr_t at : {0xa704f0u, 0xafdcb0u}) {
+        Test x{at,
+               [=](Rng &r) {
+                   uint8_t *self = arena<uint8_t>(0x1000);
+                   const int32_t c = r.range(0, 4);
+                   for (int k = 0; k < 0x80; k++) arena<uint32_t>(0x400)[k] = r.next();
+                   for (int k = 0; k < 4; k++) arena<uint32_t>(0x40)[k] = r.next(), arena<uint32_t>(0x60)[k] = r.next();
+                   arena<uint32_t>(0x90)[0] = arena<uint32_t>(0x90)[1] = 0;
+                   if (at == 0xa704f0u) {
+                       *(uint32_t *)(self + 0x50b4) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                       *(int32_t *)(self + 0x50bc) = c, *(int32_t *)(self + 0x50b8) = r.range(0, 1) ? c : c + r.range(1, 3);
+                   } else {
+                       *(uint32_t *)(self + 0x107c) = (uint32_t)(uintptr_t)arena<void>(0x400);
+                       *(int32_t *)(self + 0x1084) = c, *(int32_t *)(self + 0x1080) = c + r.range(0, 3);
+                       *(uint32_t *)(self + 0x1088) = (uint32_t)(uintptr_t)arena<void>(0x300);
+                       for (int k = 0; k < 4; k++) arena<int32_t>(0x300)[k] = r.range(0, 4);
+                       *(int32_t *)(self + 0x1090) = r.range(0, 3);
+                       arena<int32_t>(0x60)[0] = r.range(0, 2) ? 0 : r.range(1, 5);
+                   }
+               },
+               [at](void *fn) {
+                   uint32_t *v = arena<uint32_t>(0x60);
+                   if (at == 0xa704f0u)
+                       return Result{(uint32_t)(uintptr_t)((void *(__thiscall *)(void *, const void *, const void *, uint32_t, uint32_t))fn)(arena<void>(0x1000), arena<void>(0x40), arena<void>(0x50), v[1], v[2])};
+                   return Result{(uint32_t)((int32_t(__thiscall *)(void *, const void *, const void *, int32_t))fn)(arena<void>(0x1000), arena<void>(0x40), arena<void>(0x50), (int32_t)v[0])};
+               }};
+        x.prepare = [](const rewrite::Entry *e) { stubs_for_now({{e->at == 0xa704f0u ? 0xa6ff20u : 0xafd3b0u, (void *)h2_list_grow}}); };
+        x.finish = [](const rewrite::Entry *) { unstub_many(); };
+        quick(x);
+    }
 #endif
